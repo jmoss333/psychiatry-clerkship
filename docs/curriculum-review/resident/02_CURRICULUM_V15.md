@@ -6,12 +6,1121 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
-## Sleep-Wake Disorders
+## Orientation Packet
 
-- **Slug:** `t_sleep.md` · **Type:** md · **Sidebar:** hidden (deep link only)
-- **Source:** `03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md`
+- **Slug:** `orientation.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
+- **Length:** 1,010 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 5 min
+
+**TL;DR (shown above the page text):**
+
+> One safety rule above all: if you are worried about immediate safety, tell the resident or attending now — do not wait, do not carry it alone; the four daily questions, PHI discipline, and student boundary rules structure everything else.
+
+**Key points (bulleted card):**
+
+- Escalate immediately for: current suicidal intent or new plan, threats or escalating agitation, confusion/fever/rigidity suggesting delirium or catatonia, or any withdrawal concern — these cannot wait for rounds and belong in Week 1 safety recognition.
+- Use four questions for every patient: what is the syndrome? What medical/substance/sleep/medication factor is driving it? What family/social/discharge context changes the plan? What must be safer before discharge?
+- Students may interview patients, draft notes, suggest differentials, and observe family meetings with a defined role — but may not make independent safety or discharge decisions, promise anything, or provide unsupervised therapy.
+
+**Can't-miss / red-flag line:**
+
+> No PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — For every patient, ask what syndrome is present, what is driving it, what family/discharge context matters, and what must be safer before discharge.
+- **mse** — Start with observable behavior, speech, mood/affect, thought process/content, perception, cognition, insight, and judgment.
+- **safety** — Tell the resident or attending immediately for current suicidal intent, threats/escalating agitation, delirium/catatonia signs, or withdrawal concern.
+- **say** — I am a medical student on the team. I will share safety concerns with my supervising clinicians, and I want to understand what would help you feel safer here.
+- **collateral** — Ask permission for collateral when possible; if safety requires it, use the minimum necessary information and involve supervision.
+- **rounds** — Present one patient with syndrome, driver, risk, family/discharge context, and the one question you need help answering.
+- **exam** — Orientation facts become exam reasoning when you connect safety, capacity, confidentiality, and supervision boundaries.
+- **actions** — Practice direct suicide question; Open interview circle; Open rounding prep
+
+**Cross-references and tagging:**
+
+- **Related tools:** `interview-circle.html`, `mse.html`, `cssrs.html`, `withdrawal.html`, `communication-practice.html`, `oral.html`
+- **Communication cases:** `suicide_direct_question_001`, `guardedness_privacy_001`, `collateral_questions_001`
+- **Workflow stages:** `encounter`, `safety`, `team`
+- **Workflow modes:** `ward`, `safety`, `5min`
+
+#### Page text (as shipped)
+
+# MS3 Adult Inpatient Psychiatry Orientation Packet
+
+Generated: 2026-06-27
+
+Audience: third-year medical students on a six-week adult inpatient psychiatry rotation.
+
+## Welcome
+
+This rotation teaches psychiatric assessment, safety reasoning, formulation,
+treatment planning, documentation, and communication in the setting where
+psychiatric symptoms, medical risk, family stress, and systems barriers converge.
+
+Your job is not to know everything on Day 1. Your job is to be curious,
+prepared, safe, honest about uncertainty, and responsive to feedback.
+
+<video src="media/day-in-the-life.mp4" autoplay muted loop playsinline
+  aria-label="A day in the life: five moments across a typical inpatient day, each paired with the hub tool that fits."
+  style="width:100%;max-width:960px;aspect-ratio:16/9;border-radius:12px;display:block;margin:16px 0">
+</video>
+
+## The Single Safety Rule
+
+<!-- single-safety-rule:start -->
+If you are worried about immediate safety, tell the resident or attending now.
+Do not wait for rounds. Do not carry it alone.
+<!-- single-safety-rule:end -->
+
+Escalate immediately for:
+
+- Current suicidal intent, new plan, access to lethal means, or sudden worsening.
+- Threats toward others or escalating agitation.
+- Confusion, fluctuating consciousness, fever, rigidity, autonomic instability, or possible delirium/catatonia.
+- Alcohol, benzodiazepine, opioid, or other withdrawal concern.
+- Medication adverse effect that could be urgent.
+- Any patient, family, or staff interaction that feels unsafe.
+
+## PHI Discipline
+
+- No real patient details leave the clinical system.
+- Do not put patient details into AI tools, personal notes, cloud docs, texts, or email.
+- Teaching cases must be synthetic or carefully de-identified composites.
+- When in doubt, ask before sharing.
+
+## Daily Rhythm
+
+| Time | Student Task |
+|---|---|
+| Before rounds | Review assigned patients, vitals, sleep, PRNs, nursing notes, labs, safety events |
+| Rounds | Listen for risk, diagnosis, medication changes, family/discharge barriers |
+| After rounds | See patients, gather collateral with permission, update note draft |
+| Midday | Teaching, consults, family meetings, discharge planning |
+| Afternoon | Present updates, revise notes, identify questions for next day |
+| End of day | Clarify follow-up tasks and safety concerns |
+
+Local times and locations should be inserted by the clerkship director.
+
+## What Students Should Practice Each Week
+
+| Week | Focus | Observable Skill |
+|---|---|---|
+| 1 | Orientation, safety recognition, interview, MSE | Present a focused interview/MSE and name what you would escalate immediately |
+| 2 | Diagnosis, differential, formulation | Build a differential beyond the primary psychiatric diagnosis |
+| 3 | Treatment | Explain why a medication and one non-medication intervention fit the formulation |
+| 4 | Family/discharge/systems | Draft a family-meeting agenda and discharge barrier map |
+| 5 | Acute/consult psychiatry deep practice | Formulate suicide/violence risk, recognize delirium/catatonia/withdrawal, and document supervised escalation reasoning |
+| 6 | Integration | Present a full case with formulation, risk reasoning, and plan |
+
+## How To Think On This Rotation
+
+Use four questions for every patient:
+
+1. What is the current syndrome or problem?
+2. What medical, substance, sleep, medication, or neurologic factors could be driving it?
+3. What family, trauma, social, legal, or discharge context will change the plan?
+4. What must be safer, clearer, or more connected before discharge?
+
+## Expected Competencies By End Of Rotation
+
+By Week 6, the student should be able to:
+
+- Gather a psychiatric history and MSE.
+- Prioritize a differential diagnosis after a psychiatric encounter.
+- Present a concise oral case summary.
+- Write a note that includes reasoning, not just checklist facts.
+- Recognize urgent safety concerns and escalate.
+- Describe basic medication rationale and monitoring.
+- Participate in collateral gathering and family meetings under supervision.
+- Map discharge barriers and outpatient follow-up needs.
+
+EPA alignment: AAMC Core EPAs 1, 2, 5, 6, 8, and 10.
+
+## What Good Student Presentations Sound Like
+
+Start with:
+
+> "This is a [age]-year-old [person] admitted for [reason], now hospital day
+> [X], with current priority of [risk/diagnostic/treatment/disposition issue]."
+
+Then cover:
+
+- Overnight safety events, sleep, PRNs, vital signs, labs.
+- Patient report and MSE changes.
+- Risk update: what is better, worse, unchanged.
+- Differential or formulation update.
+- Plan for medication, therapy/milieu, family/collateral, discharge.
+
+## How Feedback Works
+
+Ask for feedback on one behavior at a time:
+
+- "Can you watch my MSE language today?"
+- "Can you tell me if my risk formulation separates chronic and acute risk?"
+- "Can you help me make my presentation more concise?"
+- "Can you review whether my note shows reasoning?"
+
+You should receive brief daily feedback and a midpoint check-in.
+
+## Student Boundaries
+
+You may:
+
+- Interview patients under supervision.
+- Gather collateral when the patient gives permission and the team approves.
+- Draft notes according to local policy.
+- Present differential, formulation, and plan suggestions.
+- Observe or participate in family meetings with a defined role.
+
+You may not:
+
+- Make independent safety or discharge decisions.
+- Promise discharge, medication changes, privileges, or family access.
+- Provide unsupervised psychotherapy.
+- Contact family without team approval and patient consent unless an emergency/legal exception applies.
+- Put patient information into personal systems.
+
+## Day 1 Checklist
+
+- Know how to contact the attending/resident.
+- Know where rounds happen.
+- Confirm EMR access.
+- Learn unit safety expectations.
+- Read the Single Safety Rule and identify who you call for suicide intent, escalating agitation, delirium/catatonia concern, or withdrawal concern.
+- Identify assigned patients.
+- Read the interview/MSE pocket guide.
+- Skim the Suicide Risk & Safety card plus the agitation, delirium, and withdrawal spot-and-escalate links in Week 1.
+- Ask what note type, if any, you should draft.
+- Ask when and how feedback happens.
+
+## Day 2 Preparation
+
+Read:
+
+- Interview/MSE pocket guide.
+- Week 1 section of the reading map.
+- Suicide Risk & Safety card.
+- One short landmark summary: Engel biopsychosocial model or Brown expressed emotion.
+
+Bring:
+
+- One question about diagnosis.
+- One question about safety.
+- One question about discharge or family context.
+
+Plain-English note: this packet tells students how to be useful and safe on the
+unit before they know the medicine deeply. It turns the rotation into observable
+skills rather than vague exposure.
+
+
+---
+
+## Week 1 — Foundations & the MSE
+
+- **Slug:** `week1.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `01_Six_Week_Curriculum/Week_1_Foundations/README.md`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
+- **Length:** 433 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 4 min
+
+**TL;DR (shown above the page text):**
+
+> Week 1 — Foundations: orient to the unit, learn the call-now safety check, conduct your first psychiatric interview, structure a mental status exam, write an admission note, and ask one capacity question on rounds.
+
+**Key points (bulleted card):**
+
+- The skill of the week is the Mental Status Exam plus the call-now safety check — use the interactive MSE module, write your first admission note, and tell the resident or attending immediately when safety could change today.
+- Required Week 1 safety recognition set: suicide intent/plan/preparation/means, escalating agitation, delirium/catatonia signs, and alcohol/benzodiazepine/opioid withdrawal concern.
+- Suggested landmark readings: Engel 1977 (biopsychosocial), Rosenhan 1973 (labeling), and Appelbaum & Grisso 1988 (capacity) — three papers that shape how the unit thinks about diagnosis and autonomy.
+- On the unit this week: shadow an admission, ask one capacity question on rounds, and name one safety concern you would escalate immediately.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Open with the patient's story, then make sure suicide risk, violence risk, vulnerability, substances/withdrawal, medical contributors, and collateral needs are covered before you close.
+- **mse** — Write one concrete example for each MSE domain instead of only using adjectives.
+- **safety** — Escalate immediately for current suicidal intent or preparation, escalating threats/agitation, delirium/catatonia signs, withdrawal concern, or any interaction that feels unsafe.
+- **say** — You can choose what you answer. I do have to tell the team if there is an immediate safety concern, and my goal is to understand what would help.
+- **collateral** — Ask what the patient is like at baseline, what changed, when it changed, and what safety or function concerns have appeared.
+- **rounds** — Give a one-liner, the key MSE findings, the safety read, and one capacity or collateral question.
+- **exam** — Interview/MSE questions test observation, organization, and whether you ask direct safety questions.
+- **actions** — Open MSE builder; Open suicide safety card; Open withdrawal tool; Practice guardedness; Open capacity tool
+
+**Cross-references and tagging:**
+
+- **Related tools:** `interview-circle.html`, `mse.html`, `cssrs.html`, `violence.html`, `withdrawal.html`, `capacity.html`, `communication-practice.html`, `oral.html`
+- **Communication cases:** `suicide_direct_question_001`, `guardedness_privacy_001`, `collateral_questions_001`
+- **Workflow stages:** `encounter`, `safety`, `team`
+- **Workflow modes:** `ward`, `5min`, `safety`
+
+#### Page text (as shipped)
+
+# Week 1 — Foundations & Orientation
+
+
+
+**Objectives:** orient to the unit; recognize immediate safety concerns and escalate; conduct a basic psychiatric interview; structure an MSE; write an admission note; begin assessing capacity.
+
+**Suggested reading:** Engel 1977 (biopsychosocial) · Rosenhan 1973 (labeling) · Appelbaum & Grisso 1988 (capacity). *(See the Landmark reading list + the Download Checklist.)*
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — The biopsychosocial frame</summary>
+<p class="pairing-blurb"><em>Why the interview is the instrument, and what it is an instrument for.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=pg_interview.md">Interview &amp; MSE Pocket Guide</a></li>
+  <li><strong>Listen (1:29)</strong> — Engel's Biopsychosocial Model for Modern Psychiatry <span class="pairing-src">— landmark brief: The Engel Biopsychosocial Model: Foundations of Modern Psychiatry</span><br><audio controls preload="none" src="audio_oe/OE-34_The_Engel_Biopsychosocial_Model_Foundations_of_Modern_Psychiatry__Engel_s_Biopsychosocial_Model_for_Modern_Psychiatry.m4a" aria-label="Landmark brief: The Engel Biopsychosocial Model: Foundations of Modern Psychiatry"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/mse.html" target="_blank" rel="noopener">Mental Status Exam</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
+**Skill of the week:** the Mental Status Exam → use the interactive **MSE module** (the Mental Status Exam tool) and write your first admission note (the Documentation guide). Pair this with the **call-now safety check**: if a finding could change safety today, tell the resident or attending now rather than waiting for rounds.
+
+**Required Week 1 safety recognition set:**
+
+- **Suicide:** ask directly about suicidal thoughts, current intent, plan, preparation, and access to lethal means; use the [Suicide Risk & Safety card](?page=pg_suicide.md) and the [C-SSRS official form & training page](?tool=cssrs.html). Escalate current intent, preparatory behavior, means access, intoxication/withdrawal, severe agitation, psychosis, or contradictory collateral.
+- **Agitation:** flag escalating threats, inability to collaborate, weapon/exit concerns, intoxication or withdrawal, pain, akathisia, or delirium signs; review [Agitation & Restraint](?page=agitation.md) for the least-restrictive verbal de-escalation sequence. Do not manage an unsafe interaction alone.
+- **Delirium/catatonia:** new or fluctuating inattention, altered arousal, fever, rigidity, autonomic instability, mutism, immobility, poor intake, or purposeless agitation should be treated as a medical/safety escalation; start with [Delirium](?page=delirium.md) and [Catatonia](?page=catatonia.md).
+- **Withdrawal:** ask last use and prior seizures/DTs for alcohol or benzodiazepines, and look for tremor, diaphoresis, tachycardia, vomiting, confusion, or escalating autonomic instability; use the [CIWA-Ar/COWS teaching tool](?tool=withdrawal.html) for language and trends, not independent dosing.
+
+**Pocket refs:** BHU2 Top-20 Pocket Card; the MSE card; Suicide Risk & Safety card; Delirium/Withdrawal spot-and-escalate notes.
+
+**Case:** composite case #1 (the practice cases).
+
+**Reflection:** "What did the label do?" → the Reflection & Identity tool (Week 1 prompt).
+
+**On the unit:** shadow an admission; ask one capacity question on rounds; name one safety concern you would escalate immediately and who you would tell.
+
+**Time:** ~3.5 hours outside clinical time.
+
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+
+---
+
+## Week 2 — Mood, Psychosis & Pharm
+
+- **Slug:** `week2.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
+- **Length:** 191 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 3 min
+
+**TL;DR (shown above the page text):**
+
+> Week 2 — Mood, Psychosis & Pharmacology: build a differential for depression, mania, and psychosis; learn antipsychotic-selection logic by side-effect profile; and run a Bush-Francis catatonia screen on any mute or immobile patient.
+
+**Key points (bulleted card):**
+
+- The skill of the week is the psychopharmacology primer — work through the top-10 inpatient classes and apply the CATIE lesson: choose antipsychotics by side-effect profile (metabolic, QTc, EPS), not by generation.
+- Suggested landmarks: CATIE (Lieberman 2005), STAR*D (Rush 2006), and Bush 1996 (catatonia) — Journal Clubs 1 and 5 pair with these readings.
+- On the unit: run a Bush-Francis catatonia screen on any mute or immobile patient — the screen is diagnostic and the lorazepam challenge can be therapeutic.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — For every mood or psychosis presentation, ask about mania/hypomania, substances, sleep, medical causes, medication exposure, and catatonia signs.
+- **mse** — Track mood/affect, thought process, delusions/hallucinations, sleep/energy, psychomotor signs, and attention.
+- **safety** — Do not miss catatonia, delirium, withdrawal, serotonin syndrome/NMS, command hallucinations, or suicide risk.
+- **say** — That sounds frightening. I do not see it the same way, but I want to understand what you are experiencing and what would help you feel safer.
+- **collateral** — Ask family/staff about baseline, time course, sleep, substances, adherence, prior episodes, and what changed right before admission.
+- **rounds** — Present syndrome, differential, safety concern, medication logic by side-effect profile, and the one mimic you still need to rule out.
+- **exam** — Mood/psychosis questions often hinge on bipolar screening, substance/medical mimics, catatonia, and medication adverse effects.
+- **actions** — Open reasoning workbench; Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Practice psychosis validation
+
+**Cross-references and tagging:**
+
+- **Related tools:** `diagnostic-reasoning.html`, `bfcrs.html`, `screeners.html`, `decision-aids.html`, `communication-practice.html`
+- **Communication cases:** `psychosis_validation_001`, `mania_limit_sleep_001`, `medication_ambivalence_001`
+- **Workflow stages:** `diagnosis`, `treatment`, `safety`
+- **Workflow modes:** `ward`, `shelf`, `safety`, `5min`
+
+#### Page text (as shipped)
+
+# Week 2 — Mood, Psychosis & Pharmacology
+
+
+
+**Objectives:** build a differential for depression/mania/psychosis; understand measurement-based care; learn antipsychotic-selection logic; screen for catatonia.
+
+**Suggested reading:** CATIE (Lieberman 2005) · STAR*D (Rush 2006) · Bush 1996 (catatonia). **Journal Club #1 (CATIE)** and **#5 (Catatonia)**.
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Choosing an antipsychotic</summary>
+<p class="pairing-blurb"><em>Efficacy differences are small; the side-effect profile is what you are actually choosing.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=t_psychosis.md">Psychotic Disorders</a></li>
+  <li><strong>Listen (1:57)</strong> — Side Effects Drive Antipsychotic Selection <span class="pairing-src">— landmark brief: The CATIE Trial: Rethinking Antipsychotic Efficacy and Selection</span><br><audio controls preload="none" src="audio_oe/OE-28_The_CATIE_Trial_Rethinking_Antipsychotic_Efficacy_and_Selection__Side_Effects_Drive_Antipsychotic_Selection.m4a" aria-label="Landmark brief: The CATIE Trial: Rethinking Antipsychotic Efficacy and Selection"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/decision-aids.html" target="_blank" rel="noopener">Algorithms &amp; Decision Aids</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
+**Skill of the week:** the **Top-10 inpatient psychopharm** primer (the Psychopharmacology section); run a Bush-Francis screen on any mute/immobile patient.
+
+**Topic pages:** Mood and Psychosis inpatient one-pagers (the Core Topics pages).
+
+**Case:** psychosis/mania composite.
+
+**Reflection:** apply CATIE to a real unit patient — "pick by profile, not class."
+
+**Time:** ~4 hours.
+
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+
+---
+
+## Week 3 — Psychotherapy & Personality
+
+- **Slug:** `week3.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
+- **Length:** 210 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 3 min
+
+**TL;DR (shown above the page text):**
+
+> Week 3 — Psychotherapy, Personality & the Relationship: understand common factors, practice DBT-informed care for borderline-pattern crises, and complete a supervised collaborative safety plan using the Stanley-Brown model.
+
+**Key points (bulleted card):**
+
+- The skill of the week is completing a supervised safety plan with a patient using the Stanley-Brown Safety Planning Intervention — practice building it collaboratively in real time, not as a form to fill; the C-SSRS structures the risk assessment that comes before it, not the plan itself.
+- Suggested landmarks: Wampold 1997 (common factors) and Linehan 1991 (DBT for BPD) — Journal Club 3 (Safety Planning) ties them to the clinical week.
+- On the unit: draft a full biopsychosocial and relational formulation, and notice a rupture-and-repair moment in the therapeutic relationship for the Week 3 reflection.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Ask what crisis pattern brought the patient in, what has helped before, what invalidates or escalates, and what skill or support is missing after discharge.
+- **mse** — Track affective reactivity, impulse control, interpersonal stance, self-harm urges, and whether the patient can collaborate in the moment.
+- **safety** — Collaborative safety planning is supervised clinical work; do not treat a completed form as risk resolution.
+- **say** — I can see why that landed as hurtful. I want to understand the impact, and then we can work together on the most accurate way to describe the crisis.
+- **collateral** — Ask supports about baseline risk, effective limits, outpatient continuity, crisis plans, and what tends to rupture trust.
+- **rounds** — Name the relational pattern, the current safety state, one repair move, and the discharge-continuity need.
+- **exam** — Psychotherapy/personality questions test validation plus limits, not reassurance or jargon used at the patient.
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice rupture repair; Open reflection tool
+
+**Cross-references and tagging:**
+
+- **Related tools:** `cssrs.html`, `communication-practice.html`, `reflection.html`, `family-systems.html`
+- **Communication cases:** `suicide_direct_question_001`, `bpd_rupture_repair_001`, `medication_ambivalence_001`
+- **Workflow stages:** `communication`, `safety`, `treatment`
+- **Workflow modes:** `ward`, `family`, `safety`, `5min`
+
+#### Page text (as shipped)
+
+# Week 3 — Psychotherapy, Personality & the Relationship
+
+
+
+**Objectives:** understand common factors; the logic of DBT for BPD; basic CBT/MI/exposure literacy; build a case formulation.
+
+**Suggested reading:** Wampold 1997 (common factors) · Linehan 1991 (DBT). **Journal Club #3 (Safety Planning).**
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — What makes therapy work</summary>
+<p class="pairing-blurb"><em>The alliance predicts outcome across modalities — including the ten minutes you have on rounds.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=psychotherapy.md">Psychotherapies at a Glance</a></li>
+  <li><strong>Listen (1:48)</strong> — Therapeutic Alliance Predicts Treatment Outcomes <span class="pairing-src">— landmark brief: The Therapeutic Alliance and Psychotherapy Outcomes Study Summary</span><br><audio controls preload="none" src="audio_oe/OE-48_The_Therapeutic_Alliance_and_Psychotherapy_Outcomes_Study_Summary__Therapeutic_Alliance_Predicts_Treatment_Outcomes.m4a" aria-label="Landmark brief: The Therapeutic Alliance and Psychotherapy Outcomes Study Summary"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/communication-practice.html" target="_blank" rel="noopener">What Do You Say Next?</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
+**Skill of the week:** complete a **safety plan** with a patient (supervised) using the suicide-risk & safety tools; draft a BPS + relational **formulation** (the Case Formulation guide).
+
+**Topic pages:** Personality and Anxiety/Trauma/OCD one-pagers; **[Brief Psychotherapy on the Unit](?page=brief_psychotherapy.md)** (match the skill to the mechanism) and the [Motivational Interviewing](?page=motivational_interviewing.md) page.
+
+**Case:** BPD / safety composite.
+
+**Reflection:** a rupture-and-repair moment → `Reflection_PIF` (Week 3).
+
+**Time:** ~3.5 hours.
+
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+
+---
+
+## Week 4 — Family Systems & EE
+
+- **Slug:** `week4.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
+- **Length:** 184 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 3 min
+
+**TL;DR (shown above the page text):**
+
+> Week 4 — Family, Systems & Expressed Emotion: observe or co-facilitate a family meeting, spot high expressed emotion, and cite the family-intervention evidence for relapse prevention.
+
+**Key points (bulleted card):**
+
+- The skill of the week is the Family Meeting Playbook (90-min) — observe first, then co-facilitate with a defined role; use an expressed-emotion spotting checklist during the meeting.
+- Suggested landmarks: Brown 1962 (expressed emotion) and Pharoah 2010 (Cochrane family intervention) — Journal Clubs 2 and 6 pair with these.
+- Reflection prompt: 'What would I change about that family meeting?' — identify the phase where time was lost and debrief with your supervisor.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Before the meeting, clarify consent, purpose, family concerns, discharge tasks, and what the patient does not want discussed.
+- **mse** — Notice patient affect, participation, shutdown, activation, and whether family criticism or over-involvement changes the room.
+- **safety** — Do not let family anxiety or reassurance replace a concrete risk and discharge plan.
+- **say** — Before details, let's agree on the goal, what the patient has consented for us to discuss, and what needs to be decided before discharge.
+- **collateral** — Ask for baseline, timeline, safety observations, medication/adherence barriers, and what support is realistic at home.
+- **rounds** — Report the family meeting goal, consent boundary, key collateral, discharge barrier, and next family/system task.
+- **exam** — Family questions test confidentiality, expressed emotion, psychoeducation, and whether support actually changes risk.
+- **actions** — Open family systems practice; Practice opening a family meeting; Open rounding prep
+
+**Cross-references and tagging:**
+
+- **Related tools:** `family-systems.html`, `communication-practice.html`, `oral.html`
+- **Communication cases:** `family_meeting_opening_001`, `collateral_questions_001`, `family_conflict_discharge_001`
+- **Workflow stages:** `family`, `communication`, `team`
+- **Workflow modes:** `ward`, `family`, `5min`
+
+#### Page text (as shipped)
+
+# Week 4 — Family, Systems & Expressed Emotion
+
+
+
+**Objectives:** observe/run a family meeting; recognize high expressed emotion (EE); cite the family-intervention evidence.
+
+**Suggested reading:** Brown 1962 (EE) · Pharoah 2010 (Cochrane family intervention). **Journal Club #2 (EE)** and **#6 (Family Intervention).**
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Family work changes relapse rates</summary>
+<p class="pairing-blurb"><em>Expressed emotion is modifiable, and modifying it is a treatment.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=exp_family.md">Family &amp; Discharge</a></li>
+  <li><strong>Listen (1:51)</strong> — Family Focused Therapy Prevents Bipolar Relapse <span class="pairing-src">— landmark brief: Family-Focused Therapy and Relapse Prevention in Bipolar Disorder</span><br><audio controls preload="none" src="audio_oe/OE-10_Family_Focused_Therapy_and_Relapse_Prevention_in_Bipolar_Disorder__Family_Focused_Therapy_Prevents_Bipolar_Relapse.m4a" aria-label="Landmark brief: Family-Focused Therapy and Relapse Prevention in Bipolar Disorder"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/family-systems.html" target="_blank" rel="noopener">Family Systems Practice</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
+**Skill of the week:** the **[Family Meeting Playbook (90-min)](?page=family_playbook.md)**; observe then co-facilitate a meeting; use an EE-spotting checklist.
+
+**Media:** the canonical Family-Therapy didactic deck + "The Family is the Milieu."
+
+**Case:** family-collateral composite.
+
+**Reflection:** "What would I change about that family meeting?"
+
+**Time:** ~4 hours.
+
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+
+---
+
+## Week 5 — Acute & Emergency
+
+- **Slug:** `week5.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
+- **Length:** 263 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 3 min
+
+**TL;DR (shown above the page text):**
+
+> Week 5 — Acute & Emergency Psychiatry deepens the Week 1 recognition set: manage agitation safely through the verbal de-escalation ladder, distinguish delirium/catatonia/withdrawal from psychiatric symptoms, assess violence risk with structured tools, and document supervised escalation reasoning.
+
+**Key points (bulleted card):**
+
+- The skills of the week are the agitation ladder and Violence Risk (FRST) tool, delirium prevention and cause search, and supervised CIWA-Ar/COWS trend interpretation — all are bedside tools available in the hub sidebar.
+- What is different from Week 1: Week 1 teaches spot it and call now; Week 5 asks you to explain the likely driver, try least-restrictive communication when safe, use structured tools with supervision, and document what would change the plan.
+- Pocket references to keep on hand: restraint checklist, benzo taper protocol, and clozapine ANC monitoring schedule.
+- Case of the week: substance plus psychosis plus risk composite — designed to integrate the acute safety calls covered throughout the rotation.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — For acute concerns, ask what changed, what is the immediate risk, what medical/substance driver could explain it, and what has de-escalated before.
+- **mse** — Prioritize attention, arousal, motor signs, psychosis, intoxication/withdrawal signs, and observable agitation trajectory.
+- **safety** — Escalate early for delirium/catatonia concern, withdrawal, escalating threats, severe agitation, restraint/seclusion, or medication-toxicity signs.
+- **say** — I hear that this feels urgent. Tonight the safest plan is to lower stimulation, keep clear limits, and choose the next calming step together.
+- **collateral** — Ask nursing/family about baseline, trigger, substances, access to means, prior agitation plans, and what usually helps or worsens things.
+- **rounds** — Give the acute problem, current safety level, medical mimic, de-escalation step tried, and what would trigger senior/security/medical escalation.
+- **exam** — Acute questions often test delirium, catatonia, withdrawal, violence risk, and least-restrictive escalation.
+- **actions** — Open violence-risk tool; Open withdrawal tool; Practice limit-setting repair
+
+**Cross-references and tagging:**
+
+- **Related tools:** `violence.html`, `withdrawal.html`, `decision-aids.html`, `communication-practice.html`, `family-systems.html`
+- **Communication cases:** `rupture_limit_setting_001`, `mania_limit_sleep_001`, `guardedness_privacy_001`
+- **Workflow stages:** `safety`, `communication`, `team`
+- **Workflow modes:** `ward`, `safety`, `5min`
+
+#### Page text (as shipped)
+
+# Week 5 — Acute & Emergency Psychiatry
+
+
+
+**Objectives:** deepen the Week 1 recognition set into supervised acute-safety practice: manage agitation safely, distinguish delirium/catatonia/withdrawal from primary psychiatric symptoms, assess violence risk, document reasoning, and reduce access to means.
+
+**Suggested reading:** Franklin 2017 (limits of suicide prediction) · Volkow 2016 (addiction).
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Delirium</summary>
+<p class="pairing-blurb"><em>The medical emergency that looks psychiatric — and the one you prevent rather than treat.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=delirium.md">Delirium</a></li>
+  <li><strong>Listen (1:47)</strong> — Stopping delirium with the HELP trial <span class="pairing-src">— landmark brief: The HELP Trial: Multicomponent Strategies for Delirium Prevention</span><br><audio controls preload="none" src="audio_oe/OE-38_The_HELP_Trial_Multicomponent_Strategies_for_Delirium_Prevention__Stopping_delirium_with_the_HELP_trial.m4a" aria-label="Landmark brief: The HELP Trial: Multicomponent Strategies for Delirium Prevention"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/capacity.html" target="_blank" rel="noopener">Decisional Capacity</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
+**Skills of the week:** the **agitation ladder** + **Violence Risk (FRST)** tool (the Acute & Safety pages); **Delirium** prevention and medical-cause search; **CIWA-Ar/COWS** trend interpretation with the Withdrawal card; supervised documentation of what triggered escalation, what was tried first, and what would change the plan.
+
+**What is different from Week 1:** Week 1 teaches "spot it and call now." Week 5 asks you to explain the driver, try least-restrictive communication when safe, use the structured tool with supervision, document the risk reasoning, and debrief after restraint, seclusion, medication, transfer, or a near miss.
+
+**Pocket refs:** Restraint checklist; Benzo taper; Clozapine ANC monitoring.
+
+**Case:** substance + psychosis + risk composite.
+
+**Reflection:** "Document reasoning, not certainty" (Franklin).
+
+**Time:** ~4 hours.
+
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+
+---
+
+## Week 6 — Integration & Exam
+
+- **Slug:** `week6.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
+- **Length:** 166 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 3 min
+
+**TL;DR (shown above the page text):**
+
+> Week 6 — Integration, Disposition & Exam Readiness: build a discharge/disposition plan, present a full case with formulation and risk reasoning, and complete the shelf high-yield review and OSCE station set.
+
+**Key points (bulleted card):**
+
+- Skills of the week: the Risk-Stratified Discharge Pathway, the shelf high-yield review with self-check, and the full OSCE station set for stations you have not yet completed.
+- Suggested readings: Felitti 1998 (ACE study) and Deegan 1996 (recovery) — the two papers that frame trauma and the patient's own goals in the discharge plan.
+- Reflection: end-of-rotation professional-identity reflection — what changed in how you think about psychiatric illness, the therapeutic relationship, and your role on the team.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — For your final patients, ask what diagnosis still feels uncertain, what risk remains modifiable, and what discharge support is still unproven.
+- **mse** — Use serial MSE changes to support your formulation rather than presenting the admission snapshot as static.
+- **safety** — Before discharge discussion, name remaining acute risk, chronic risk, means access, follow-up reliability, and what would change the plan.
+- **say** — We cannot promise zero risk, but we can name the specific safety steps that must be in place before discharge.
+- **collateral** — Confirm the discharge plan with supports: medications, follow-up, means safety, supervision, transportation, warning signs, and what to do if risk escalates.
+- **rounds** — Present a full case with formulation, risk reasoning, family/system plan, and the one uncertainty you would track after discharge.
+- **exam** — Use the patient in front of you as the shelf organizer: syndrome, mimic, treatment, safety/legal issue, and disposition.
+- **actions** — Open rounding prep; Practice family discharge conflict; Open practice questions
+
+**Cross-references and tagging:**
+
+- **Related tools:** `oral.html`, `diagnostic-reasoning.html`, `communication-practice.html`, `family-systems.html`, `question-bank-practice.html`, `review.html`
+- **Communication cases:** `family_conflict_discharge_001`, `collateral_questions_001`, `medication_ambivalence_001`
+- **Workflow stages:** `team`, `exam`, `family`, `safety`
+- **Workflow modes:** `ward`, `family`, `safety`, `shelf`
+
+#### Page text (as shipped)
+
+# Week 6 — Integration, Disposition & Exam Readiness
+
+
+
+**Objectives:** build a discharge/disposition plan; integrate a full case; demonstrate shelf/OSCE readiness.
+
+**Suggested reading:** Felitti 1998 (ACE) · Deegan 1996 (recovery).
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Formulation, not just diagnosis</summary>
+<p class="pairing-blurb"><em>A diagnosis names the problem; a formulation explains why this person, why now.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=case_formulation.md">Case Formulation</a></li>
+  <li><strong>Listen (1:45)</strong> — Social reality is core psychiatry <span class="pairing-src">— landmark brief: Social Determinants and Clinical Frameworks in Modern Psychiatry</span><br><audio controls preload="none" src="audio_oe/OE-24_Social_Determinants_and_Clinical_Frameworks_in_Modern_Psychiatry__Social_reality_is_core_psychiatry.m4a" aria-label="Landmark brief: Social Determinants and Clinical Frameworks in Modern Psychiatry"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/shelf-mode.html" target="_blank" rel="noopener">Shelf Mode — Exam Simulation</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
+**Skills of the week:** the Risk-Stratified Discharge Pathway + Maine aftercare disposition case; **shelf high-yield review + self-check** and the **OSCE station set** (the exam-prep pages / the student pack).
+
+
+**Reflection:** end-of-rotation professional-identity reflection.
+
+**Time:** ~4.5 hours.
+
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+
+---
+
+## Culture, Disparities & Formulation
+
+- **Slug:** `cultural_psychiatry.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 675 words
+- **Length:** 622 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 4 min
+
+**TL;DR (shown above the page text):**
+
+> Elicit the patient's explanatory model, use the DSM-5-TR Cultural Formulation Interview, work through trained interpreters — never family — and guard against documented diagnostic bias.
+
+**Key points (bulleted card):**
+
+- Kleinman's explanatory-model questions surface what the illness means to the patient.
+- Cultural concepts of distress (e.g., ataque de nervios) can mimic panic or psychosis — ask before you label.
+- Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against.
+
+**Can't-miss / red-flag line:**
+
+> Never use family members — especially children — as interpreters; book a trained professional and speak directly to the patient.
+
+**Rule-out list (differential the page forces):**
+
+- Misdiagnosis from language or cultural bias
+- Cultural idiom of distress vs primary disorder
+- Religious or spiritual experience vs psychosis
+- Trauma or migration-related distress
+
+**First move (the action the page tells the learner to take):**
+
+> Ask the explanatory-model questions early, then structure a real cultural formulation with the CFI's four domains.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Ask the patient what they call the problem, what they think caused it, what they fear most, what help they expect, and what would make care feel respectful.
+- **mse** — Separate culturally shaped expression from psychopathology; describe affect, beliefs, language, and behavior without assuming your own norm is neutral.
+- **safety** — Use trained interpreters for every clinical conversation, not only the safety questions; assess discrimination/trauma and structural barriers; never put a family member in the interpreter role.
+- **say** — I do not want to assume my framework fits yours. Can you tell me how you understand what is happening?
+- **collateral** — Ask about baseline, family meaning, community supports, immigration/language barriers, religious or cultural practices, and what the patient permits sharing.
+- **rounds** — Present the cultural formulation as clinical reasoning: explanatory model, identity/context, supports, barriers, bias risks, and treatment implications.
+- **exam** — DSM-5-TR Cultural Formulation Interview, trained interpreters, and diagnostic bias around psychosis vs mood disorders are high-yield.
+- **actions** — Open Interview & MSE; Practice guardedness; Practice interpreter/culture family contact
+
+**Embedded check-for-understanding**
+
+1. *Stem:* A Spanish-speaking patient describes sudden trembling, screaming, and a sense of losing control after a family conflict. Her son offers to interpret. Best first step?
+   - Book a professional interpreter and explore the episode through the patient's explanatory model before assigning a diagnosis **← keyed correct**
+   - Diagnose panic disorder and start an SSRI
+   - Diagnose brief psychotic disorder and start an antipsychotic
+   - Let her son interpret to save time
+   - *Rationale:* This presentation is consistent with ataque de nervios, a cultural concept of distress that can mimic panic or psychosis; a professional interpreter (never family) and the explanatory model prevent mislabeling.
+
+**Cross-references and tagging:**
+
+- **Related tools:** `mse.html`, `interview-circle.html`, `communication-practice.html`, `family-systems.html`
+- **Communication cases:** `guardedness_privacy_001`, `collateral_questions_001`
+- **Workflow stages:** `encounter`, `diagnosis`, `communication`, `family`, `team`
+- **Workflow modes:** `ward`, `family`, `5min`, `shelf`
+- **Shelf blueprint tags:** `relational`
+- **EPA crosswalk:** `EPA1`, `EPA9`
+- **Call-to-action buttons:** Open Ethics & the Law; Practice interpreter/culture family contact
+
+#### Page text (as shipped)
+
+# Culture, Disparities & the Cultural Formulation
+
+
+**In one line** — Culture shapes how distress is experienced, expressed, and treated — and ignoring it produces misdiagnosis and inequity — so the core clerkship skills are eliciting the patient's own **explanatory model**, using the **Cultural Formulation Interview**, working correctly with **interpreters**, and recognizing the **disparities and biases** that distort psychiatric care.
+
+**Why it matters on the unit** — The same inner experience can present as an "idiom of distress" you won't recognize unless you ask. Diagnostic accuracy, rapport, adherence, and safety all depend on understanding the patient's context — and documented biases (see below) mean cultural humility is a patient-safety issue, not a courtesy.
+
+**Elicit the explanatory model** — Ask, in the patient's own terms: *What do you call this problem? What do you think caused it? How does it affect you? What are you most afraid of? What treatment do you expect?* (Kleinman's explanatory-model questions.) This surfaces beliefs, expectations, and **cultural concepts of distress** — culturally patterned ways of experiencing/expressing suffering (e.g., *ataque de nervios*, *susto*) that can be mistaken for panic, psychosis, or malingering.
+
+**Cultural Formulation Interview (CFI)** — DSM-5-TR provides the **CFI**, a set of standardized questions across four domains: (1) cultural definition of the problem, (2) cultural perceptions of cause, context, and support, (3) cultural factors affecting self-coping and past help-seeking, and (4) cultural factors affecting current help-seeking. Use it to build the **cultural formulation** within your biopsychosocial assessment.
+
+**Disparities & bias — what's tested and true** — Mental-health disparities are driven by access, stigma, social determinants, and clinician bias, not by different rates of underlying illness. A classic, exam-relevant example: **Black (and some other minority) patients are disproportionately *over*-diagnosed with schizophrenia and *under*-diagnosed with mood disorders** relative to comparable presentations. Social determinants — poverty, housing, trauma, discrimination — are core clinical data, not background. Structural and cultural humility means examining how the *system* and *your own defaults* contribute.
+
+**Working with interpreters** — Use a **trained professional interpreter** (in person or via phone/video) for any language barrier — **not family members or children**, who introduce error and confidentiality/role problems. Speak **to the patient** in the first and second person, in short segments; allow extra time; and remember interpreters convey meaning, not just words.
+
+**Religion, spirituality & community** — Ask about faith and community supports, which can be protective and central to recovery; distinguish culturally normative beliefs and experiences (e.g., bereavement visions, religious practices) from psychopathology before labeling them.
+
+**What the student does** —
+- Ask the explanatory-model questions early; don't assume your framework matches the patient's.
+- Use the CFI to structure a real cultural formulation, not a one-line demographic label.
+- Book a professional interpreter and address the patient directly — never lean on family to interpret.
+- Distinguish culturally normative beliefs/experiences from psychopathology.
+- Name social determinants and watch for diagnostic bias (e.g., schizophrenia over-diagnosis) in yourself and the team.
+
+**High-yield pearls**
+- Kleinman's explanatory-model questions surface what the illness *means* to the patient.
+- The DSM-5-TR Cultural Formulation Interview is the standardized tool — know it exists and what it covers.
+- Cultural concepts of distress (e.g., *ataque de nervios*) can mimic panic or psychosis — ask before you label.
+- Use trained interpreters, not family/children; speak directly to the patient.
+- Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against.
+- Social determinants of mental health are clinical data; address them in the formulation and plan.
+
+**Pair with** — the [Interview & MSE pocket guide](?page=pg_interview.md), the [Formulation & DDx pocket guide](?page=pg_formulation.md), [Ethics & the Law](?page=ethics_legal.md), and the <a href="tools/mse.html" target="_blank" rel="noopener">Mental Status Exam trainer</a>.
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+
+---
+
+## Ethics & the Law
+
+- **Slug:** `ethics_legal.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md`
+- **Governance:** status=`reviewed` · riskKind=`legal` · riskLevel=`high`
+- **Length:** 1,186 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> flagged **high-yield** · est. read 5 min · safetyLevel=`moderate`
+
+**TL;DR (shown above the page text):**
+
+> Confidentiality is the default — know exactly when it yields: a credible threat to an identifiable victim, suspected child/elder abuse, and danger-based commitment — and remember commitment does not equal consent to medicate.
+
+**Key points (bulleted card):**
+
+- Duty to protect (Tarasoff): a serious threat to a reasonably identifiable person overrides confidentiality — warn, notify police, or hospitalize.
+- Child and elder abuse are mandated reports on reasonable suspicion, not proof; good-faith reporters are protected.
+- Capacity is clinical and decision-specific; competence is a legal (court) determination.
+
+**Can't-miss / red-flag line:**
+
+> Involuntary hospitalization does not authorize involuntary medication — refusal stands absent a true emergency or a separate legal process.
+
+**Rule-out list (differential the page forces):**
+
+- Identifiable-victim threat (duty to protect)
+- Child / elder / dependent-adult abuse (mandated report)
+- Imminent danger to self
+- Grave disability / decisional incapacity
+
+**First move (the action the page tells the learner to take):**
+
+> Default to confidentiality; when risk appears, name which exception applies (identifiable-victim threat, abuse, danger to self) and take the least restrictive protective action — then document your reasoning.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Clarify the exact ethical or legal question: confidentiality, duty to protect, mandated reporting, capacity, commitment, consent, or refusal.
+- **mse** — Document observations relevant to capacity, risk, coercion, intoxication, psychosis, mania, delirium, and ability to communicate a stable choice.
+- **safety** — Escalate identifiable threats, abuse concerns, imminent self-harm, grave disability, or urgent refusal of high-stakes medical care to the supervising team immediately.
+- **say** — I want to protect your privacy, and I also need to explain the few safety situations where clinicians must involve others.
+- **collateral** — Share the minimum necessary information; ask family or systems partners only what changes risk, capacity, disposition, or mandatory reporting duties — and treat substance-use-treatment information as a separate consent gate (42 CFR Part 2) before you repeat it to family or an outside provider.
+- **rounds** — Name the legal frame, the patient-specific facts, the local-policy dependency, and the supervising/faculty decision still needed.
+- **exam** — Capacity is clinical and decision-specific; competence is legal. Involuntary hospitalization does not automatically authorize involuntary medication.
+- **actions** — Open capacity tool; Open violence risk tool; Practice interpreter/culture family contact
+
+**Embedded check-for-understanding**
+
+1. *Stem:* An inpatient tells you he plans to kill his ex-girlfriend when discharged, naming her. What must you do?
+   - Take protective action — warn the victim and/or notify police, and continue hospitalization **← keyed correct**
+   - Keep it confidential — HIPAA forbids disclosure
+   - Discharge as planned but document the statement
+   - Ask his family to pass along a warning
+   - *Rationale:* A serious threat against a reasonably identifiable victim triggers the duty to protect (Tarasoff): confidentiality yields, and reasonable steps include warning the victim, notifying police, and continued hospitalization.
+
+**Cross-references and tagging:**
+
+- **Related tools:** `capacity.html`, `violence.html`, `cssrs.html`, `family-systems.html`
+- **Communication cases:** `suicide_direct_question_001`, `collateral_questions_001`
+- **Workflow stages:** `safety`, `communication`, `family`, `team`, `exam`
+- **Workflow modes:** `ward`, `safety`, `family`, `5min`, `shelf`
+- **Shelf blueprint tags:** `ethics`
+- **EPA crosswalk:** `EPA2`, `EPA11`
+- **Call-to-action buttons:** Read Culture, Disparities & Formulation; Practice interpreter/culture family contact
+
+#### Page text (as shipped)
+
+# Ethics & the Law: Confidentiality, Tarasoff & Reporting
+
+
+**In one line** — Psychiatry runs on confidentiality, but the exam and the ward turn on knowing its **limits** — when you *must* break it to protect a third party, when you *must* report abuse, and when you can treat or hold a patient *against their will* — always choosing the **least restrictive** option that keeps people safe.
+
+**Confidentiality and its limits** — Protect patient information by default. The recognized exceptions where disclosure is permitted or required include: a **serious, credible threat to an identifiable person** (duty to protect), **mandatory reporting of abuse**, **imminent danger to self**, certain communicable-disease reporting, and specific legal/court mandates. Disclose the **minimum necessary**. Note that HIPAA permits sharing for treatment, payment, and operations — but do not take that as the whole rule on an inpatient unit, because two carve-outs sit on top of it. Records originating from a **federally assisted substance use disorder treatment program** fall under **42 CFR Part 2**, which carries its own consent requirements; recent rulemaking has been aligning Part 2 more closely with HIPAA, so confirm the current rule and whether your program is a Part 2 program rather than assuming either way. **Psychotherapy notes** are separately protected. The practical default: assume SUD-treatment information needs its own consent before you repeat it to an outside provider or a family member.
+
+**Duty to protect / warn (Tarasoff)** — When a patient makes a **serious threat of violence against a reasonably identifiable victim**, the clinician has a duty to take reasonable protective steps — which may include **warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment**. Specifics vary by state (some mandate warning, some permit it), but the tested principle is: *a specific threat to a specific person overrides confidentiality.*
+
+**Mandatory reporting** — Report suspected **child abuse or neglect** and **elder/dependent-adult abuse** to the appropriate agency — reporting requires **reasonable suspicion, not proof**, and mandated reporters are generally protected when reporting in good faith. Remember: **factitious disorder imposed on another (medical child abuse)** is reportable, and many jurisdictions add specific duties (e.g., certain injuries, some intimate-partner situations). When in doubt, protect the vulnerable person.
+
+**Involuntary hospitalization (civil commitment)** — The usual criteria are a mental illness *plus* **danger to self, danger to others, or grave disability** (inability to meet basic needs). Emergency holds allow short-term detention for evaluation; longer commitment requires due process (hearing), and the constitutionally required standard of proof is **"clear and convincing evidence"** (*Addington v. Texas*, 1979). A person who is **not dangerous and can survive safely in the community cannot be confined** against their will (*O'Connor v. Donaldson*, 1975). Involuntary hospitalization does **not** by itself authorize involuntary medication.
+
+**Right to refuse & involuntary medication** — Competent patients (including many involuntarily hospitalized ones) generally retain the **right to refuse medication**. Overriding that refusal requires either a **true emergency** (imminent danger) or a **separate legal/adjudicated process** (e.g., a court or independent review depending on jurisdiction) — for example, an **administrative review** for a dangerous, mentally ill prisoner (*Washington v. Harper*, 1990), or the **four-part *Sell* test** to medicate a defendant solely to restore competency to stand trial (*Sell v. United States*, 2003). Commitment status ≠ consent.
+
+**Informed consent & capacity** — Valid consent requires **capacity, disclosure (risks/benefits/alternatives), and voluntariness**. **Capacity is decision-specific and clinical** (a physician assesses it); **competence is a legal determination** (a court decides). The four abilities: *communicate a choice, understand, appreciate, and reason.* The **emergency exception** permits necessary treatment when consent can't be obtained and delay would cause harm. For patients who lack capacity, use advance directives or a surrogate/substituted judgment.
+
+**Minors & special situations** — Parents/guardians generally consent for minors, with exceptions (emancipated/mature minors and, in many states, care for STIs, contraception, substance use, and some mental-health services). Balance adolescent confidentiality against safety.
+
+**Boundaries & professionalism** — Maintain professional boundaries; **sexual relationships with patients are never acceptable**. Avoid dual relationships and manage conflicts of interest. Document decisions — especially risk assessments and any breach of confidentiality — with your reasoning.
+
+**What the student does** —
+- Treat confidentiality as the default and know the specific exceptions cold.
+- For a threat to an identifiable person, escalate (warn/notify/hospitalize) — don't sit on it.
+- Report suspected child or elder abuse on *reasonable suspicion* — you don't need proof.
+- Separate the four legal states: voluntary vs committed, and has-capacity vs court-determined-incompetent — commitment doesn't equal consent to medicate.
+- Document capacity assessments and the reasoning behind any disclosure or involuntary intervention.
+
+**High-yield pearls**
+- A serious threat to an identifiable victim triggers a duty to protect (Tarasoff) — confidentiality yields.
+- Child and elder abuse are mandated reports on *reasonable suspicion*; good-faith reporters are protected.
+- Commitment criteria: danger to self, danger to others, or grave disability — and use the least restrictive option.
+- The commitment standard of proof is *clear and convincing evidence* (*Addington v. Texas*); a non-dangerous patient who can survive safely in the community cannot be confined (*O'Connor v. Donaldson*).
+- Involuntary hospitalization ≠ involuntary medication; refusal stands absent an emergency or legal process.
+- Capacity is clinical and decision-specific; competence is a legal (court) determination.
+- Informed consent = capacity + disclosure + voluntariness; the emergency exception covers necessary urgent care.
+- Sexual contact with a patient is always an ethics violation.
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
+
+**Pair with** — the <a href="tools/capacity.html" target="_blank" rel="noopener">Decisional Capacity tool</a>, the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), the <a href="tools/violence.html" target="_blank" rel="noopener">Violence Risk (FRST) tool</a>, and [Culture, Disparities & Formulation](?page=cultural_psychiatry.md).
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Laws vary by state — follow your institution's policy and local statute.*
+
+
+---
+
+## Treatment Basics
+
+- **Slug:** `exp_tx.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/treatment_basics_digest.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 648 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 4 min
+
+**TL;DR (shown above the page text):**
+
+> Every treatment decision starts with a target symptom linked to the formulation — name what the intervention is treating and why it fits, monitor for adverse effects, and remember that inpatient treatment is medication plus supportive therapy plus milieu plus family.
+
+**Key points (bulleted card):**
+
+- Treatment rationale template: 'The main target is [symptom/risk]; I think [intervention] fits because [formulation reason]; the main monitoring need is [X]; the discharge implication is [Y].'
+- Inpatient treatment is not just medication — monitor sleep schedule, group attendance, PRN use, and family calls that worsen or improve regulation as clinical data equal in weight to the medication.
+- Ask what the patient has tried before, what helped, what caused adverse effects, and what medication belief or fear needs to be addressed — prior history changes the choice.
+
+**Can't-miss / red-flag line:**
+
+> Recommending a medication without naming the target symptom or the formulation reason — 'continue olanzapine' without linking it to a specific symptom target — is not a treatment plan.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — For every intervention, ask the target symptom, target risk, prior response, adverse-effect risk, patient preference, family/system barrier, and discharge implication.
+- **mse** — Link the plan to observed targets: sleep, psychosis, mania, depression, anxiety, cognition, behavior, alliance, and functional participation.
+- **safety** — Check monitoring, toxicity, withdrawal, overdose risk, falls, QTc/metabolic/EPS risks, and whether the plan depends on local order sets.
+- **say** — Let us name what this treatment is meant to help, what could go wrong, and what would tell us it is working.
+- **collateral** — Ask family or outpatient clinicians about previous trials, adherence barriers, side effects, practical supports, and what made past plans fail.
+- **rounds** — Present treatment as target plus rationale plus monitoring plus discharge consequence.
+- **exam** — Treatment questions reward matching diagnosis, acuity, contraindications, side effects, and patient-specific barriers rather than choosing the newest medication.
+- **actions** — Open protocol library; Practice medication ambivalence
+
+**Embedded check-for-understanding**
+
+1. *Stem:* A student recommends olanzapine for a patient admitted with acute psychosis. The attending asks for the treatment rationale. Which response demonstrates the required reasoning?
+   - Olanzapine is an atypical antipsychotic with established efficacy for schizophrenia
+   - The main targets are persecutory delusions and sleep disruption driving acute risk; olanzapine addresses both; monitor baseline weight, glucose, and lipids given metabolic burden **← keyed correct**
+   - The patient has failed two other antipsychotics, so olanzapine is the next logical step
+   - The family requested this medication and the patient tolerated it well in the past
+   - *Rationale:* A treatment rationale links a specific target symptom to the formulation, names why the intervention fits, identifies the monitoring need, and implies the discharge plan. Naming the drug class without the target is not a rationale; prior failures change choice but are not the rationale; family request and past tolerance are clinical data, not sufficient justification on their own.
+
+**Cross-references and tagging:**
+
+- **Related tools:** `decision-aids.html`, `communication-practice.html`, `oral.html`
+- **Communication cases:** `medication_ambivalence_001`, `family_conflict_discharge_001`
+- **Workflow stages:** `treatment`, `communication`, `family`, `team`, `exam`
+- **Workflow modes:** `ward`, `family`, `5min`, `shelf`
+- **EPA crosswalk:** `EPA2`, `EPA4`
+
+#### Page text (as shipped)
+
+# Treatment Basics Digest For MS3 Inpatient Psychiatry
+
+Generated: 2026-06-27
+
+Audience: MS3 students.
+
+This is a conceptual guide, not a prescribing protocol. Use attending guidance,
+local policy, and current references for medication choice, dosing, and monitoring.
+
+## Treatment Planning Starts With The Formulation
+
+For each plan item, ask:
+
+- What problem is this treating?
+- What risk does it reduce?
+- What adverse effect or monitoring issue matters?
+- What patient value or barrier could affect adherence?
+- What happens after discharge?
+
+## Medication Classes Students Should Recognize
+
+| Class | Common Uses | Student Should Watch For |
+|---|---|---|
+| SSRIs/SNRIs | depression, anxiety, OCD, PTSD | activation, GI effects, sexual side effects, serotonin syndrome risk, mania switch |
+| Antipsychotics | psychosis, mania, agitation, adjunctive mood treatment | EPS, akathisia, metabolic effects, sedation, QTc issues, NMS concern |
+| Mood stabilizers | bipolar disorder, mania prevention | lithium renal/thyroid/level monitoring, valproate hepatic/platelet/teratogenic concerns |
+| Benzodiazepines | acute anxiety, catatonia, withdrawal protocols | sedation, falls, respiratory risk, dependence, withdrawal |
+| Stimulants/non-stimulants | ADHD | insomnia, appetite, anxiety, misuse, cardiovascular considerations |
+| Sleep agents | short-term sleep support | falls, sedation, anticholinergic burden depending on agent |
+
+## Inpatient Medication Questions
+
+Ask:
+
+- What has the patient tried before?
+- What helped?
+- What caused adverse effects?
+- What is the family history of medication response?
+- What medical conditions change medication choice?
+- What substances could interfere?
+- What monitoring is needed?
+- What medication belief or fear needs to be addressed?
+
+## Supportive Psychotherapy Basics
+
+Students are not expected to provide independent psychotherapy. They should
+practice supportive moves:
+
+- Listen before advising.
+- Name the emotion.
+- Reflect the dilemma.
+- Clarify the immediate problem.
+- Strengthen reality testing without humiliating the patient.
+- Support adaptive coping already present.
+- Avoid premature reassurance.
+
+Example:
+
+> "Part of you wants to leave because the unit feels overwhelming, and another
+> part knows things were unsafe last night. Can we slow down and look at what
+> would need to be different for discharge to be safer?"
+
+## Milieu And Behavioral Treatment
+
+Inpatient treatment is more than medication.
+
+Watch for:
+
+- Sleep schedule.
+- Meals and hydration.
+- Group attendance.
+- PRN use.
+- Staff splitting or conflict.
+- Isolation vs overstimulation.
+- Family calls that worsen or improve regulation.
+- Discharge avoidance or discharge pressure.
+
+## Family As Treatment Context
+
+Students should ask:
+
+- Who noticed the change?
+- Who can support safety?
+- Who escalates conflict?
+- Who understands the diagnosis?
+- Who controls medications, transportation, housing, or follow-up?
+- What does the patient want family to know?
+
+Family involvement is not automatically good or bad. It is clinical data.
+
+## How To Present A Treatment Rationale
+
+Template:
+
+> "The main target is [symptom/risk]. I think [intervention] fits because
+> [formulation reason]. The main risk or adverse effect to monitor is [X].
+> The discharge implication is [Y]."
+
+Example:
+
+> "The main target is manic insomnia and psychosis. Antipsychotic treatment fits
+> because sleep loss and paranoia are driving acute risk. We should monitor
+> sedation, EPS/akathisia, metabolic risk, and acceptance. The discharge
+> implication is that family needs education about early warning signs and the
+> patient needs rapid follow-up."
+
+## Student Pitfalls
+
+- Recommending a medication without naming the target symptom.
+- Forgetting adverse-effect monitoring.
+- Treating therapy as "referral" without specifying why.
+- Ignoring substance use.
+- Ignoring family beliefs about medication.
+- Assuming discharge equals recovery.
+
+## Faculty Mini-Teaching Prompts
+
+- "What is the medication target?"
+- "What adverse effect would change your plan?"
+- "What non-medication intervention matters today?"
+- "What would make this plan fail after discharge?"
+
+Plain-English note: this digest gives students a safe way to discuss treatment
+without pretending they are independently prescribing. It links medications,
+therapy, milieu, family, and discharge back to the formulation.
+
+
+---
+
+## ECT & Neuromodulation
+
+- **Slug:** `ect_neuromodulation.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
+- **Length:** 681 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -20,1591 +1129,395 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **TL;DR (shown above the page text):**
 
-> Restoring the sleep-wake cycle is high-leverage — choose CBT-I over hypnotics, screen OSA in treatment-resistant depression, and don't sedate inpatients with benzodiazepines or antihistamines.
+> ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications; anterograde memory effects resolve over weeks, though some retrograde gaps around the treatment period can persist — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.
 
 **Key points (bulleted card):**
 
-- CBT-I is first-line for chronic insomnia and beats hypnotics long-term.
-- Untreated OSA mimics and perpetuates depression — a classic reversible cause of 'treatment resistance.'
-- Cataplexy = narcolepsy type 1 (low orexin); sleep paralysis/hypnagogic hallucinations are not psychosis.
+- Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, or prior ECT response — pregnancy is not a fifth trigger, it is what makes ECT preferred over drugs once one of those is present.
+- Hold benzodiazepines and anticonvulsants pre-ECT (they blunt the seizure), and plan continuation treatment — relapse is the rule without it.
+- rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours on depressive symptoms — not on suicidality itself, so they never replace monitoring, means restriction, or safety planning (esketamine requires REMS monitoring).
 
 **Can't-miss / red-flag line:**
 
-> In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them.
-
-**Rule-out list (differential the page forces):**
-
-- Obstructive sleep apnea
-- Mood / anxiety driver
-- Substances / caffeine / meds
-- Restless legs (check ferritin)
-- REM sleep behavior disorder
-
-**First move (the action the page tells the learner to take):**
-
-> Sleep hygiene + CBT-I; treat the specific disorder (CPAP, iron, modafinil, melatonin/clonazepam) and taper offending agents.
+> There are no absolute contraindications to ECT — raised intracranial pressure and recent MI/unstable cardiac disease are the key relative risks.
 
 **Clinical-workflow narration (per-stage coaching text):**
 
-- **ask** — Ask sleep schedule, insomnia pattern, decreased need for sleep, nightmares, OSA symptoms, substances, meds, caffeine, and restless legs.
-- **mse** — Look for fatigue vs manic activation, attention impairment, psychomotor changes, irritability, and delirium risk.
-- **safety** — Assess mania, delirium, falls, respiratory risk with sedatives, OSA, substance withdrawal, and suicidality when insomnia is severe.
-- **say** — The goal is to restore the sleep-wake rhythm without using medications that create dependence or worsen confusion.
-- **collateral** — Ask nursing/family about actual sleep, nighttime behavior, snoring/apnea, nightmares, and daytime naps.
-- **rounds** — Present sleep syndrome, psychiatric driver, medical contributors, behavioral plan, and medication risk/benefit.
-- **exam** — CBT-I is first-line for chronic insomnia; decreased need for sleep suggests mania, not simple insomnia.
-- **actions** — Open psychopharm primer
+- **ask** — Ask about psychotic depression, catatonia, severe suicidality, refusal to eat/drink, pregnancy, prior ECT response, cognitive baseline, and anesthesia/cardiac risk.
+- **mse** — Look for psychomotor retardation, catatonic signs, psychotic guilt, severe mood congruent delusions, cognition, and capacity to consent.
+- **safety** — Escalate catatonia, malignant catatonia/NMS concern, inability to eat/drink, or severe suicidal depression where rapid definitive treatment may be needed.
+- **say** — ECT is a medical treatment done under anesthesia; for the right patient it can work faster and more reliably than waiting on medications.
+- **collateral** — Ask family about prior response, baseline memory, functional decline, fears about ECT, and who can support continuation treatment.
+- **rounds** — Present indication, urgency, capacity/consent status, medical workup needs, medication adjustments, and continuation plan after response.
+- **exam** — ECT is most effective for severe, psychotic, catatonic, or life-threatening depression; there are no absolute contraindications, but relative risks require planning.
+- **actions** — Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Open mood topic
 
 **Embedded check-for-understanding**
 
-1. *Stem:* A patient with 'treatment-resistant' depression snores, is obese, and is sleepy all day. Best next step?
-   - Start a long-acting benzodiazepine
-   - Add a third antidepressant
-   - Start nightly diphenhydramine
-   - Evaluate for obstructive sleep apnea (polysomnography) and treat it **← keyed correct**
-   - *Rationale:* Untreated OSA is a common, reversible driver of apparent treatment resistance; diagnose with polysomnography and treat with CPAP before escalating pharmacotherapy.
+1. *Stem:* A pregnant patient has severe major depression with psychotic features and is refusing food and fluids. Most effective next step?
+   - Electroconvulsive therapy **← keyed correct**
+   - Start an SSRI and reassess in 4–6 weeks
+   - Repetitive transcranial magnetic stimulation
+   - Bright light therapy
+   - *Rationale:* ECT is the most effective treatment for severe/psychotic depression, acts fastest when the patient cannot safely wait, and is safe in pregnancy when indicated.
 
 **Cross-references and tagging:**
 
-- **Related tools:** `mse.html`, `screeners.html`
-- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `exam`
-- **Workflow modes:** `ward`, `5min`, `shelf`
-- **Shelf blueprint tags:** `otherdx`
-- **EPA crosswalk:** `EPA1`, `EPA2`
+- **Related tools:** `bfcrs.html`, `decision-aids.html`, `communication-practice.html`
+- **Communication cases:** `medication_ambivalence_001`, `collateral_questions_001`
+- **Workflow stages:** `treatment`, `safety`, `communication`, `team`, `exam`
+- **Workflow modes:** `ward`, `safety`, `family`, `5min`, `shelf`
+- **Shelf blueprint tags:** `mood`, `pharm`
+- **EPA crosswalk:** `EPA2`, `EPA4`
 
 #### Page text (as shipped)
 
-# Sleep-Wake Disorders
+# ECT & Neuromodulation (Somatic Therapies)
 
 
-**In one line** — Sleep is both a driver and a mirror of psychiatric illness — restoring the sleep-wake cycle is one of the highest-leverage things you do on the unit, and the exam rewards you for choosing **CBT-I over hypnotics**, screening **OSA in treatment-resistant depression**, and *not* reaching for benzodiazepines or antihistamines in older inpatients.
+**In one line** — Brain-based treatments are core clerkship content and a common blind spot: **ECT is the most effective treatment for severe, psychotic, or catatonic depression** and is safe in pregnancy and the medically fragile when indicated — and you should be able to name its indications, workup, and side effects, and place TMS, VNS, esketamine/ketamine, and bright light therapy alongside it.
 
-**How it presents on the unit** — Almost every admitted patient sleeps badly, and poor sleep worsens mood, psychosis, delirium risk, and agitation. You will see primary insomnia, hospital-induced sleep disruption, obstructive sleep apnea masquerading as or worsening depression, and occasionally the specific syndromes (narcolepsy, restless legs, REM sleep behavior disorder). The recurring skill is protecting sleep *without* creating iatrogenic harm.
+## Electroconvulsive therapy (ECT)
 
-**Differential & can't-miss mimics** — Distinguish the primary sleep disorders and the psychiatric/medical contributors:
+**Indications** — Severe major depression (especially with **psychotic features, catatonia, or high suicide risk**), treatment-resistant depression, **acute mania**, and **catatonia/neuroleptic malignant syndrome**. Choose ECT when a **rapid, definitive response is needed** — active suicidality, refusal to eat or drink, pregnancy where medications are undesirable, or prior good ECT response.
 
-- **Insomnia disorder** — dissatisfaction with quantity/quality despite adequate opportunity, with daytime impairment; screen for the mood, anxiety, substance, and pain drivers underneath it.
-- **Obstructive sleep apnea** — snoring, witnessed apneas, obesity, morning headache, daytime sleepiness; **untreated OSA mimics and perpetuates depression** and is a common cause of "treatment resistance."
-- **Narcolepsy** — chronic daytime sleepiness with sleep-onset REM phenomena; **type 1 has cataplexy** (emotion-triggered loss of tone) and low CSF orexin/hypocretin; also sleep paralysis and hypnagogic hallucinations (don't mislabel these as psychosis).
-- **Restless legs syndrome** — urge to move the legs, worse at rest and at night, relieved by movement; **check ferritin/iron**.
-- **REM sleep behavior disorder** — dream-enactment with loss of normal REM atonia; a **prodrome of synucleinopathies** (Lewy body dementia, Parkinson disease).
-- **Circadian rhythm disorders** — misalignment (shift work, delayed sleep phase) rather than an inability to sleep.
+**How it works / course** — A brief generalized seizure is induced under general anesthesia with a muscle relaxant; a typical acute course is ~6–12 treatments 2–3×/week. Because relapse is high after a successful course, **continuation/maintenance** is essential — pharmacotherapy (e.g., lithium + nortriptyline reduced post-ECT relapse in the Sackeim trial) and/or maintenance ECT.
 
-**Initial workup** — Take a structured sleep history (schedule, latency, awakenings, daytime function, snoring/apneas, leg symptoms, substances, caffeine, screens). Use a sleep diary. Screen for the psychiatric and medical contributors and for OSA (e.g., STOP-BANG). Order **polysomnography** for suspected OSA, parasomnias, or narcolepsy (with MSLT); check **ferritin** for restless legs. Review medications and substances that fragment sleep (steroids, activating antidepressants, stimulants, alcohol, nicotine).
+**Workup & safety** — Pre-ECT: history/exam, cardiac and anesthesia assessment, and medication review (hold/adjust benzodiazepines and anticonvulsants, which raise seizure threshold; caution with lithium). **There are no absolute contraindications**; raised intracranial pressure and recent MI/unstable cardiac disease are the major relative risks. Side effects: transient **cognitive effects (anterograde/retrograde memory disturbance, usually improving over weeks)**, post-ictal confusion, headache, myalgia, nausea; anesthesia risks. Right unilateral placement is gentler on memory; bitemporal is faster/more potent.
 
-**Acute inpatient management** — Lead with **sleep hygiene and environmental measures**: cluster overnight care, reduce light/noise, daytime light and activity, limit daytime napping, and taper offending agents. For chronic insomnia, **cognitive behavioral therapy for insomnia (CBT-I) is first-line** and outperforms medication long-term. If short-term pharmacologic help is needed, prefer lower-risk agents and time-limit them; **avoid chronic benzodiazepines and z-drugs, and avoid diphenhydramine/anticholinergics in older adults** (falls, cognitive impairment, delirium). Treat the specific disorders on their own terms: **CPAP for OSA** (and reassess mood after), iron repletion and dopaminergic/alpha-2-delta agents for restless legs, modafinil/armodafinil (± sodium oxybate) for narcolepsy, **melatonin or clonazepam for REM sleep behavior disorder** plus a safe sleep environment.
+## Other neuromodulation
+
+- **Repetitive transcranial magnetic stimulation (rTMS)** — FDA-cleared for **treatment-resistant depression** (and OCD); outpatient, **no anesthesia**, no memory effects; main risk is a small seizure risk. Less potent than ECT but far better tolerated.
+- **Vagus nerve stimulation (VNS)** — an implanted device for chronic, highly treatment-resistant depression; slow onset.
+- **Deep brain stimulation (DBS)** — investigational for refractory depression and OCD.
+
+## Rapid-acting and light-based options
+
+- **Esketamine (intranasal) and IV ketamine** — glutamatergic (NMDA) agents with **rapid antidepressant effects** in treatment-resistant depression, including in patients presenting with acute suicidal ideation — but note the limit: the pivotal trials showed rapid improvement in *depressive symptoms*, not a demonstrated effect on suicidality itself, and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated (Zarate 2006 established the IV signal). Esketamine is delivered under a **REMS** with in-office monitoring; watch dissociation, sedation, and blood-pressure spikes.
+- **Bright light therapy** — first-line for **seasonal** depression, and — per a 2024 *JAMA Psychiatry* meta-analysis — an **effective *adjunctive* treatment for *nonseasonal* depression** as well (roughly doubling remission odds). Cheap and well-tolerated; screen for bipolar (can precipitate switch) and eye disease.
 
 **What the student does** —
-- Make restoring the sleep-wake cycle part of every treatment plan (and a pillar of delirium prevention).
-- Choose CBT-I first for insomnia; if a hypnotic is used, keep it short and low-risk.
-- Screen for OSA whenever depression is "treatment-resistant" — and treat it.
-- Don't sedate inpatients (especially older ones) with benzodiazepines or antihistamines by reflex.
-- Recognize cataplexy, sleep paralysis, and hypnagogic hallucinations as narcolepsy — not psychosis.
-
-**Disposition & discharge essentials** — Ensure the sleep plan survives discharge: outpatient CBT-I referral, sleep-study follow-up and CPAP adherence support, iron/ferritin recheck for restless legs, and a clear taper for any hypnotic started inpatient. Reconcile activating or sedating psychotropics with sleep in mind.
+- Recognize when depression needs ECT: psychotic, catatonic, suicidal, not eating/drinking, or a prior ECT response — and know that pregnancy does not add an indication, it changes the calculus once one of those is already present.
+- Know ECT has no absolute contraindications and that memory effects are usually transient.
+- Plan continuation treatment after a successful ECT course — relapse is the rule without it.
+- Distinguish rTMS (outpatient, no anesthesia, TRD) from ECT (inpatient-grade, most potent).
+- Frame esketamine/ketamine as rapid-acting with monitoring needs, and bright light therapy as useful beyond SAD.
 
 **High-yield pearls**
-- CBT-I, not hypnotics, is first-line for chronic insomnia.
-- Untreated OSA is a classic reversible cause of "treatment-resistant" depression — screen and treat with CPAP.
-- Cataplexy = narcolepsy type 1 (low orexin); sleep paralysis and hypnagogic hallucinations are not psychosis.
-- Check ferritin in restless legs syndrome.
-- REM sleep behavior disorder predicts future Lewy body dementia/Parkinson disease.
-- In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them.
+- ECT is the single most effective treatment for severe/psychotic/catatonic depression and works in catatonia and NMS.
+- No absolute contraindications to ECT; raised ICP and unstable cardiac disease are the key relative ones.
+- Hold benzodiazepines/anticonvulsants before ECT (they blunt the seizure).
+- rTMS: outpatient, no anesthesia, small seizure risk, for treatment-resistant depression and OCD.
+- Ketamine/esketamine act within hours on *depressive symptoms* — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.
+- Bright light therapy now has evidence as an adjunct in *nonseasonal* depression, not just SAD.
 
-**Pair with** — the [Mood topic](?page=t_mood.md), [Delirium](?page=delirium.md), [Major & Mild Neurocognitive Disorders](?page=t_neurocog.md), and the [Psychopharmacology primer](?page=psychopharm_primer.md).
+**Pair with** — the [Mood topic](?page=t_mood.md), [Catatonia](?page=catatonia.md), the [Psychopharmacology primer](?page=psychopharm_primer.md), and the [Landmark Trials audio library](?page=landmark_trials.md).
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
 
 ---
 
-## Dissociative Disorders
+## Osteopathic (OMM) Resources
 
-- **Slug:** `t_dissociative.md` · **Type:** md · **Sidebar:** hidden (deep link only)
-- **Source:** `03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 893 words
+- **Slug:** `omm_resources.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
+- **Length:** 456 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
 
-> est. read 4 min
+> est. read 3 min
 
 **TL;DR (shown above the page text):**
 
-> Rule out the medical, seizure, and substance mimics; keep dissociation separate from psychosis and malingering; and stabilize safety before any trauma work.
+> OMM/OPP competencies in psychiatry are taught and checked by your osteopathic faculty — this page points to AACOM and AOA resources; the evidence base is emerging and limited, and OMM should be framed as adjunctive, not established first-line.
 
 **Key points (bulleted card):**
 
-- Exclude delirium, seizure, TBI, and substances before diagnosing a dissociative disorder.
-- Depersonalization/derealization disorder = detachment with intact reality testing.
-- Suicide/self-harm risk is high — assess it every time.
-
-**Can't-miss / red-flag line:**
-
-> Don't reflexively start an antipsychotic for dissociative phenomena — no medication treats dissociation itself.
-
-**Rule-out list (differential the page forces):**
-
-- Delirium / medical cause
-- Seizure (temporal lobe) / TBI
-- Substance (ketamine, PCP, cannabis)
-- PTSD / acute stress disorder
-- Malingering / factitious
-
-**First move (the action the page tells the learner to take):**
-
-> Exclude organic causes, ground the patient, assess suicide risk, and treat comorbidities; refer for phase-based trauma therapy.
+- OMM objectives for the psychiatry rotation focus on structural exam for somatic dysfunction tied to anxiety, insomnia, and autonomic dysregulation — gentle techniques (suboccipital release, rib raising, diaphragmatic release) are the target skills.
+- The mechanistic rationale is autonomic balance shift toward parasympathetic tone; the evidence is emerging — mostly small pilot studies — so present it as adjunctive rather than established.
+- Document your osteopathic reasoning in the assessment when anxiety, insomnia, or chronic pain are present — that is what the OPP competency is looking for in the note.
 
 **Clinical-workflow narration (per-stage coaching text):**
 
-- **ask** — Ask about depersonalization, derealization, amnesia, identity disruption, trauma, substances, seizures, sleep, and neurologic symptoms.
-- **mse** — Observe orientation, attention, memory gaps, affective detachment, psychosis markers, and neurologic red flags.
-- **safety** — Assess suicide, self-harm, exploitation, unsafe wandering, intoxication, and trauma-related destabilization.
-- **say** — You do not have to describe trauma details now; I want to understand what happens when you lose time or feel unreal.
-- **collateral** — Ask about episodes, triggers, duration, injuries, substance use, seizures, and baseline functioning.
-- **rounds** — Present dissociation vs psychosis vs seizure/substance differential, safety risks, and stabilization plan.
-- **exam** — Rule out seizures, substances, and neurologic causes before diagnosing dissociative disorders.
+- **ask** — Ask whether anxiety, insomnia, pain, autonomic arousal, or somatic distress are clinically relevant before considering an OPP frame.
+- **mse** — Observe posture, tension, breathing, psychomotor activation, and distress while keeping the psychiatric assessment primary.
+- **safety** — OMM is adjunctive here; it does not replace evidence-based psychiatry, medical workup, emergency care, or attending supervision.
+- **say** — Ask permission before any body-based discussion or intervention and describe it as optional supportive care.
+- **collateral** — Clarify prior osteopathic care, trauma history, touch preferences, pain history, and what has helped regulate distress.
+- **rounds** — Document osteopathic reasoning briefly when it changes the assessment or plan, and defer technique details to trained faculty.
+- **exam** — Know the competency frame: structural exam, autonomic rationale, adjunctive role, and limits of the evidence base.
+- **actions** — Practice an ambivalence conversation; Open reflection prompts
+
+**Cross-references and tagging:**
+
+- **Related tools:** `reflection.html`, `communication-practice.html`, `oral.html`
+- **Communication cases:** `medication_ambivalence_001`
+- **Workflow stages:** `treatment`, `communication`, `team`
+- **Workflow modes:** `ward`, `5min`
+
+#### Page text (as shipped)
+
+# Osteopathic (OMM/OPP) Resources for the Psychiatry Clerkship
+
+> **Note from Dr. Moss:** I'm an MD, so this page does **not** teach OMM technique. It points you to trusted osteopathic resources and — most importantly — to **your OMM/OPP faculty and OMM lab**, who own the hands-on instruction and check-offs for the osteopathic objectives in your syllabus.
+
+**Why this page exists.** Your UNE COM syllabus lists Osteopathic Principles & Practice as a graded competency and names OMM objectives in psychiatry: a basic **structural exam** for somatic dysfunction tied to anxiety/insomnia/pain/autonomic dysregulation, and **gentle techniques** (e.g., suboccipital release, rib raising, diaphragmatic/thoracic release) to support anxiety, somatic tension, and sympathetic overactivity. Use the resources below — and your osteopathic faculty — to meet them.
+
+## Start here (your primary sources)
+- **Your course OMM/OPP faculty and OMM lab materials.** They hold the authoritative technique instruction, indications/contraindications, and your check-offs. This site can't substitute for that.
+
+## Trusted reference resources
+- **AACOM — [OMM Explained](https://www.aacom.org/become-a-doctor/about-osteopathic-medicine/omm-explained):** a clear overview of osteopathic manipulative medicine and its principles.
+- **AACOM — [Competency & Curriculum Resources](https://www.aacom.org/medical-education/teaching-and-learning/competency-curriculum-resources):** materials from AACOM's Educational Council on Osteopathic Principles (ECOP) that frame OMM competencies.
+- **American Osteopathic Association ([osteopathic.org](https://osteopathic.org/)):** the profession's body; standards and patient/clinician resources.
+- **Foundations of Osteopathic Medicine, 4th ed.** (Seffinger MA, ed.; Wolters Kluwer; AOA-endorsed) — the standard comprehensive text, including osteopathic considerations in the behavioral sciences and specialties. Often available through your library ([LWW Health Library](https://osteopathicmedicine.lwwhealthlibrary.com/book.aspx?bookid=2582)).
+
+## The evidence base (read it critically)
+The mechanistic rationale is that OMM may shift **autonomic balance** (toward parasympathetic tone), which is why it's proposed for anxiety, sleep, and stress-related somatic symptoms. **Be honest about the evidence:** it is **emerging and limited** — mostly small, heterogeneous, or pilot studies, with few rigorous double-blind trials. Present it as adjunctive, not established first-line.
+
+- [OMT as a complementary approach to mitigate stress, anxiety, and depression — a systematic review](https://www.sciencedirect.com/science/article/abs/pii/S1550830725001818) (2025).
+- [OMT and autonomic function through the lens of heart-rate variability](https://pmc.ncbi.nlm.nih.gov/articles/PMC7575744/) (Frontiers, 2020).
+- [Manual osteopathic techniques and the autonomic nervous system — a systematic review](https://www.frontiersin.org/journals/medicine/articles/10.3389/fmed.2024.1358529/full) (Frontiers, 2024).
+
+## How to use this on the rotation
+Frame OMM as part of the **biopsychosocial / osteopathic structure–function** picture: when you note anxiety, insomnia, chronic pain, or autonomic symptoms, consider a structural contribution and discuss with your osteopathic faculty whether a gentle technique is appropriate. Document your osteopathic reasoning in the assessment — that's what the OPP competency is looking for.
+
+*Curated by Joshua Moss, MD | Psychiatrist — pointers only, not OMM instruction. Verify techniques and indications with your osteopathic faculty.*
+
+Sources: [AACOM OMM Explained](https://www.aacom.org/become-a-doctor/about-osteopathic-medicine/omm-explained) · [AACOM Competency & Curriculum Resources](https://www.aacom.org/medical-education/teaching-and-learning/competency-curriculum-resources) · [Foundations of Osteopathic Medicine (LWW)](https://osteopathicmedicine.lwwhealthlibrary.com/book.aspx?bookid=2582) · [Frontiers 2024 ANS review](https://www.frontiersin.org/journals/medicine/articles/10.3389/fmed.2024.1358529/full) · [OMT/HRV 2020](https://pmc.ncbi.nlm.nih.gov/articles/PMC7575744/) · [OMT stress/anxiety/depression review 2025](https://www.sciencedirect.com/science/article/abs/pii/S1550830725001818)
+
+
+---
+
+## Neurocognitive (Dementia)
+
+- **Slug:** `t_neurocog.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
+- **Length:** 933 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> flagged **high-yield** · est. read 6 min · safetyLevel=`high`
+
+**TL;DR (shown above the page text):**
+
+> Sort delirium vs dementia vs depression, rule out the reversible causes, and name the subtype — because subtype decides what you prescribe and what you must not.
+
+**Key points (bulleted card):**
+
+- Onset, course, and attention separate delirium (acute, fluctuating, inattentive) from dementia.
+- Screen every new diagnosis for reversible causes — labs (B12/folate, TSH, CMP, ± RPR/HIV) plus structural imaging, which is the only way NPH or a chronic subdural turns up.
+- Antipsychotics carry a black-box mortality warning in dementia — and are dangerous in Lewy body disease.
+
+**Can't-miss / red-flag line:**
+
+> New, fluctuating confusion with inattention is delirium, not 'worse dementia' — work it up before relabeling.
+
+**Rule-out list (differential the page forces):**
+
+- Delirium (superimposed)
+- Depression (pseudodementia)
+- B12 / thyroid / metabolic
+- Normal-pressure hydrocephalus
+- Medication (anticholinergic / sedative)
+
+**First move (the action the page tells the learner to take):**
+
+> Establish trajectory, run the reversible-cause panel, identify the subtype, and treat behavior nonpharmacologically first.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Ask onset, course, ADLs/IADLs, medication changes, hallucinations, parkinsonism, vascular history, sleep behaviors, and caregiver burden.
+- **mse** — Assess arousal, attention, memory, language, visuospatial function, executive function, psychosis, mood, and gait when possible.
+- **safety** — Assess delirium, driving, cooking, weapons, wandering, exploitation, medication errors, capacity, and caregiver burnout.
+- **say** — The pattern of change helps us separate delirium, dementia subtype, and depression, which lead to different plans.
+- **collateral** — Ask caregivers about baseline, functional losses, fluctuations, behavior symptoms, home safety, and realistic supervision.
+- **rounds** — Present syndrome, subtype clues, reversible workup, capacity/safety issues, caregiver plan, and medication cautions.
+- **exam** — Lewy body dementia has visual hallucinations/parkinsonism/fluctuations and antipsychotic sensitivity.
+- **actions** — Open capacity tool; Practice caregiver baseline/adaptations; Open caregiver collateral workflow
+
+**Embedded check-for-understanding**
+
+1. *Stem:* An older adult with dementia has fluctuating cognition, recurrent visual hallucinations, and parkinsonism. Which is most dangerous to give?
+   - Melatonin
+   - A cholinesterase inhibitor
+   - A typical antipsychotic (severe neuroleptic sensitivity in Lewy body disease) **← keyed correct**
+   - Nonpharmacologic reorientation
+   - *Rationale:* This is Lewy body dementia; antipsychotics can cause life-threatening neuroleptic sensitivity, so they are avoided or used only with great caution (quetiapine/pimavanserin).
+
+**Family overlay:** `neurocognitive_caregiver_safety_and_baseline`
+
+**Cross-references and tagging:**
+
+- **Related tools:** `capacity.html`, `decision-aids.html`, `family-systems.html`
+- **Evidence sources:** `schneider-2005-antipsychotic-dementia-mortality`, `mckeith-2017-dlb-consensus`, `nasreddine-2005-moca`, `fda-drug-safety`
+- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `family`, `exam`
+- **Workflow modes:** `ward`, `family`, `safety`, `5min`, `shelf`
+- **Shelf blueprint tags:** `neurocog`
+- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA3`
+- **Call-to-action buttons:** Open the Decisional Capacity tool; Practice caregiver baseline/adaptations; Open caregiver collateral workflow
+- **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-08"}
+
+#### Page text (as shipped)
+
+# Major & Mild Neurocognitive Disorders (Dementia)
+
+
+**In one line** — Dementia (DSM-5-TR: *major neurocognitive disorder*) is an acquired, usually progressive decline in one or more cognitive domains that impairs independence — and your first job on the unit is to separate it from delirium and from depression, rule out the reversible mimics, and identify the subtype, because subtype changes what you prescribe and what you must *not*.
+
+**How it presents on the unit** — Patients with dementia are rarely admitted "for dementia." They arrive with a superimposed delirium, behavioral and psychological symptoms (agitation, psychosis, wandering, sundowning), a failed home situation, medication mismanagement, or a safety event. The recurring inpatient task is the three-way sort — **delirium vs dementia vs depression** — and recognizing that the three coexist: a delirium is layered on a dementia far more often than either occurs alone.
+
+**Differential & can't-miss mimics** — Anchor first on tempo and attention:
+
+- **Delirium** — acute onset, fluctuating course, *impaired attention*, altered arousal. New confusion in a person with dementia is delirium until proven otherwise; work it up ([Delirium](?page=delirium.md)).
+- **Depression ("pseudodementia")** — subacute, "I don't know" answers, prominent low mood, preserved attention, often reversible with treatment. When in doubt, treat the depression and reassess cognition.
+- **Reversible/contributory causes — screen every new diagnosis:** B12 and folate deficiency, hypothyroidism, neurosyphilis, HIV, hypercalcemia, **normal-pressure hydrocephalus** (the triad — *wet, wacky, wobbly*: urinary incontinence, cognitive decline, magnetic gait), medication effect (anticholinergics, sedative-hypnotics), and chronic subdural hematoma.
+- **Subtypes that change management:**
+  - *Alzheimer disease* — insidious, amnestic-predominant, gradual.
+  - *Vascular* — stepwise decline, focal signs, vascular risk factors.
+  - *Lewy body dementia* — four **core** clinical features: **fluctuating cognition, recurrent visual hallucinations, REM sleep behavior disorder, and spontaneous parkinsonism.** **Severe neuroleptic sensitivity is a *supportive* feature, not a core one** (DLB Consortium, fourth consensus report) — it does not make the diagnosis, but it is the feature with the most immediate consequence, so let it govern what you prescribe rather than what you conclude.
+  - *Frontotemporal* — younger onset with early personality/behavior change or progressive aphasia; memory relatively spared early.
+  - *Creutzfeldt-Jakob* — rapidly progressive dementia with myoclonus.
+
+**Initial workup** — Establish the cognitive baseline and trajectory from family and records. Cognitive screen — the **MoCA is more sensitive than the MMSE** for mild impairment and executive/visuospatial domains. Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Neuroimaging (CT or MRI) as part of the initial workup of any new cognitive diagnosis — it is the only way the NPH and chronic subdural hematoma on the reversible list above get found — with MRI preferred, and expedited for atypical, rapid, focal, or early-onset presentations. Medication reconciliation to strip anticholinergic and sedative burden. Formally assess **decisional capacity** and safety (driving, wandering, finances, firearms).
+
+**Acute inpatient management** — For **behavioral and psychological symptoms of dementia (BPSD)**, nonpharmacologic measures are first-line: identify the trigger (pain, constipation, infection, fear, overstimulation), reorient, keep routines, involve family. Reserve medication for danger or severe distress. **Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis** — use the lowest dose for the shortest time, document informed consent, and reassess. **In Lewy body dementia, avoid antipsychotics** (especially typicals) because of life-threatening neuroleptic sensitivity — if one is unavoidable, quetiapine or pimavanserin are lower-risk choices. Cognitive symptoms: **cholinesterase inhibitors** (donepezil, rivastigmine, galantamine) for mild–moderate Alzheimer/Lewy body disease; add **memantine** (NMDA antagonist) for moderate–severe disease. Newer **anti-amyloid antibodies (lecanemab, donanemab)** modestly slow *early* Alzheimer decline but require amyloid confirmation and ARIA (edema/hemorrhage) MRI monitoring — specialist-initiated, not started on a psych unit.
+
+**What the student does** —
+- Sort delirium vs dementia vs depression explicitly — lead with onset, course, and attention.
+- Order the reversible-cause panel (B12/folate, TSH, CMP, ± RPR/HIV) **and confirm structural imaging is done** on every new cognitive diagnosis — the panel alone cannot exclude NPH or a chronic subdural.
+- Name the subtype and flag Lewy body features *before* anyone reaches for an antipsychotic.
+- For agitation, hunt the trigger (pain, constipation, infection) before a PRN.
+- Assess capacity and safety, and start discharge/caregiver planning early.
+
+**Disposition & discharge essentials** — Dementia admissions succeed or fail at the transition. Reconcile medications with clear indications (justify and time-limit any antipsychotic; deprescribe anticholinergics). Coordinate with caregivers, geriatrics, and community services; address home safety, caregiver burden, and advance care planning. Confirm follow-up that can monitor cognition, function, and any high-risk medication.
+
+**High-yield pearls**
+- New, fluctuating confusion with inattention = delirium, not "worse dementia" — work it up.
+- Antipsychotics in dementia carry a black-box mortality warning; nonpharmacologic first, and **avoid neuroleptics in Lewy body disease**.
+- Lewy body **core four** = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a *supportive* feature — it doesn't make the diagnosis, but it decides what you must not prescribe.
+- Frontotemporal dementia: young(er), behavior/personality or language first, memory later.
+- NPH triad = wet, wacky, wobbly (incontinence, cognition, gait) — potentially reversible with shunting.
+- MoCA beats MMSE for mild and executive impairment.
+- Cholinesterase inhibitors for mild–moderate; add memantine for moderate–severe.
+
+**Pair with** — [Delirium](?page=delirium.md), the [Geriatric Psychiatry topic](?page=t_geri.md), the [Differential Diagnosis scaffolds](?page=ddx.md), and the <a href="tools/capacity.html" target="_blank" rel="noopener">Decisional Capacity tool</a>.
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Antipsychotic use in dementia carries a black-box mortality warning and, in Lewy body disease, a risk of life-threatening neuroleptic sensitivity — any agent, dose, or duration here is a teaching illustration, and the decision goes through your attending.*
+
+
+---
+
+## Somatic Symptom & Related
+
+- **Slug:** `t_somatic.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 757 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 5 min
+
+**TL;DR (shown above the page text):**
+
+> Treat the suffering without chasing endless workups — the diagnosis rests on the excessive response to symptoms, and the entities separate on two axes: conscious? and external incentive?
+
+**Key points (bulleted card):**
+
+- Somatic symptom disorder is defined by the excessive thoughts/feelings/behaviors, not by whether symptoms are 'explained.'
+- Conversion (functional neurological) is a rule-in diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures.
+- Factitious = internal (sick role); malingering = external incentive and is not a disorder.
+
+**Can't-miss / red-flag line:**
+
+> Factitious disorder imposed on another is child/vulnerable-adult abuse — a reporting duty; and real disease can coexist, so don't anchor either way.
+
+**Rule-out list (differential the page forces):**
+
+- Occult medical disease
+- Depression / anxiety / PTSD
+- Substance use
+- Factitious (sick role)
+- Malingering (external incentive)
+
+**First move (the action the page tells the learner to take):**
+
+> Focused workup once, then one consistent clinician with scheduled visits, validation, CBT, and treatment of comorbidities.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Ask symptom timeline, prior workup, illness beliefs, function, reassurance cycles, trauma, mood/anxiety, and substance/medication factors.
+- **mse** — Look for preoccupation, anxiety, functional impairment, affect, insight, and whether symptoms are intentionally produced or not.
+- **safety** — Assess suicide, iatrogenic harm from repeated workups, medication misuse, and missed medical red flags.
+- **say** — I believe the symptoms are real and distressing; our job is to reduce suffering and function loss while avoiding harmful repeat testing.
+- **collateral** — Ask outpatient clinicians about completed workups, utilization pattern, functional decline, and helpful communication approaches.
+- **rounds** — Present the medical rule-out, symptom-response pattern, functional impairment, and consistent follow-up plan.
+- **exam** — Somatic symptom disorder is defined by excessive thoughts/behaviors around symptoms, not by symptoms being medically unexplained.
 - **actions** — Open MSE tool
 
 **Embedded check-for-understanding**
 
-1. *Stem:* A trauma survivor reports feeling detached and unreal but knows the feeling isn't real. Best next step?
-   - Start a scheduled antipsychotic
-   - Grounding and safety, screen risk, treat comorbidities — after excluding organic causes **← keyed correct**
-   - Begin trauma-processing therapy immediately
-   - Reassure and discharge
-   - *Rationale:* Depersonalization/derealization (intact reality testing) is managed with grounding, risk assessment, and comorbidity treatment once organic mimics are excluded; stabilization precedes trauma processing.
+1. *Stem:* A patient has leg weakness that gives way on formal testing but shows a positive Hoover sign. Best framing?
+   - Tell the patient nothing is wrong
+   - Malingering for disability
+   - Order repeat MRIs until something appears
+   - Functional neurological (conversion) disorder — diagnosed by positive signs **← keyed correct**
+   - *Rationale:* Conversion/functional neurological disorder is a positive, rule-in diagnosis based on internal inconsistency (Hoover sign), not a diagnosis of exclusion.
 
 **Cross-references and tagging:**
 
-- **Related tools:** `cssrs.html`, `mse.html`, `communication-practice.html`
-- **Communication cases:** `guardedness_privacy_001`, `suicide_direct_question_001`
-- **Workflow stages:** `diagnosis`, `safety`, `communication`, `exam`
-- **Workflow modes:** `ward`, `safety`, `5min`, `shelf`
-- **Shelf blueprint tags:** `otherdx`
-- **EPA crosswalk:** `EPA1`, `EPA2`
-
-#### Page text (as shipped)
-
-# Dissociative Disorders
-
-
-**In one line** — Dissociation is a disruption in the normal integration of memory, identity, perception, and awareness — usually trauma-linked — and on the unit your tasks are to rule out the medical and substance causes that mimic it, keep it separate from psychosis and malingering, and stabilize safety before doing any trauma work.
-
-**How it presents on the unit** — You will see dissociation most often as a *feature* — depersonalization/derealization during panic or PTSD flashbacks, dissociative amnesia after acute trauma, or non-epileptic (dissociative) seizures on consult-liaison — and less often as a primary dissociative identity presentation. The immediate skills are excluding organic causes, assessing suicide/self-harm risk (elevated in this group), and grounding the patient.
-
-**Differential & can't-miss mimics** — Dissociation is a *diagnosis you protect from mimics*:
-
-- **Delirium and other medical causes** — always exclude an acute medical/neurologic cause of altered awareness or memory first.
-- **Seizure (temporal lobe/complex partial), TBI, migraine** — can produce amnesia, déjà vu, and derealization; EEG/imaging when features fit.
-- **Substance intoxication/withdrawal** — dissociatives (ketamine, PCP), cannabis, and hallucinogens cause depersonalization/derealization; alcohol blackout mimics dissociative amnesia.
-- **PTSD/acute stress disorder** — dissociative symptoms are core here; the diagnosis often *is* the trauma disorder with dissociation.
-- **Psychosis** — dissociative "voices" are typically experienced as internal and self-related, with intact reality testing between episodes; don't reflexively start an antipsychotic.
-- **Malingering/factitious** — consider external incentive or sick-role motivation, especially with dramatic, inconsistent identity presentations.
-
-**The core diagnoses** — **Dissociative amnesia** (inability to recall important, usually traumatic, autobiographical information beyond ordinary forgetting; may include *dissociative fugue*). **Depersonalization/derealization disorder** (persistent/recurrent detachment from one's self or surroundings *with intact reality testing* — the patient knows it isn't real). **Dissociative identity disorder** (two or more distinct personality states with recurrent gaps in recall; strongly associated with severe early trauma).
-
-**Initial workup** — Rule out medical and substance causes: focused neuro exam, toxicology, glucose/metabolic screen, and EEG/neuroimaging when the history suggests seizure or brain injury. Take a trauma and substance history sensitively. **Assess suicide and self-harm risk carefully** — it is high in dissociative disorders. Screen for the common comorbidities: PTSD, depression, anxiety, substance use, and borderline personality traits.
-
-**Acute inpatient management** — **Safety and stabilization come first**, not trauma processing. Use **grounding techniques** (orienting to the present, sensory anchoring) during acute dissociation. Build safety and containment; treat comorbid depression, anxiety, PTSD, and substance use. **Psychotherapy is the mainstay** — phase-based, trauma-informed care; there is **no medication that treats dissociation itself** (medications target comorbid conditions). Avoid reflexive antipsychotics for dissociative phenomena. For non-epileptic seizures, deliver the diagnosis collaboratively and avoid iatrogenic antiseizure escalation.
-
-**What the student does** —
-- Exclude delirium, seizure, TBI, and substances before calling it dissociation.
-- Ask about trauma and safety directly; screen suicide/self-harm risk every time.
-- Recognize depersonalization/derealization by *intact reality testing* — the patient knows it feels unreal.
-- Use grounding, not sedation, for acute dissociation.
-- Treat the comorbidities; refer for phase-based trauma therapy.
-
-**Disposition & discharge essentials** — Arrange trauma-informed outpatient psychotherapy and continuity for comorbid conditions. Establish a safety plan and grounding strategies the patient can use. Communicate the formulation (and any non-epileptic seizure diagnosis) clearly to outpatient and primary-care teams to prevent fragmented, escalating workups.
-
-**High-yield pearls**
-- Rule out delirium, seizure, TBI, and substances before diagnosing a dissociative disorder.
-- Depersonalization/derealization disorder = detachment *with intact reality testing*.
-- Dissociative disorders are trauma-linked and carry high suicide/self-harm risk — assess it.
-- Stabilize and ground first; trauma processing comes later.
-- Psychotherapy is the mainstay; no drug treats dissociation itself — treat comorbidities.
-- Non-epileptic (dissociative) seizures are a consult-liaison classic — diagnose positively, avoid antiseizure escalation.
-
-> <div class="crisis-block-hook" hidden></div>
->
-> ### If someone is in crisis
->
-> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
->
-> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
-> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
-> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
-> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
-> - **Emergency services** — 911. 24/7. For imminent danger to life.
->
-> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
-
-**Pair with** — the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), [Somatic Symptom & Related Disorders](?page=t_somatic.md), the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), and the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS screener</a>.
-
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
-
-
----
-
-## Sexual, Paraphilic & Gender
-
-- **Slug:** `t_sexual.md` · **Type:** md · **Sidebar:** hidden (deep link only)
-- **Source:** `03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 666 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 5 min
-
-**TL;DR (shown above the page text):**
-
-> Three distinct topics: sexual dysfunctions (check meds first), paraphilic disorders (distress/impairment or non-consent defines the disorder), and gender dysphoria (distress from incongruence — not a disorder of being transgender).
-
-**Key points (bulleted card):**
-
-- SSRIs and antipsychotics are leading causes of sexual dysfunction — review meds before a primary diagnosis.
-- A paraphilia (interest) becomes a paraphilic disorder only with distress/impairment or harm to non-consenting others.
-- Gender dysphoria names the distress; use affirming care and screen the elevated suicide risk.
-
-**Can't-miss / red-flag line:**
-
-> Paraphilic disorders involving a child or non-consenting person raise safety and reporting duties.
-
-**Rule-out list (differential the page forces):**
-
-- Medication-induced (SSRI, antipsychotic, beta-blocker)
-- Endocrine / vascular / neurologic cause
-- Depression or anxiety driver
-- Substance use
-- Relationship or situational factor
-
-**First move (the action the page tells the learner to take):**
-
-> For dysfunction, treat the cause (switch to bupropion/mirtazapine, add PDE5i); for gender dysphoria, provide affirming care and continuity; report when a child is at risk.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Ask respectfully about function, distress, medication effects, consent, coercion, trauma, identity, and medical contributors.
-- **mse** — Assess shame, anxiety, depression, trauma response, psychosis/mania when relevant, and capacity/consent concerns.
-- **safety** — Assess non-consent, exploitation, violence risk, suicidality in gender dysphoria, and medication/medical contributors.
-- **say** — I ask everyone these questions because medications, mood, trauma, and safety can all affect sexual health.
-- **collateral** — Collateral is usually limited by confidentiality; involve others only with permission or when safety/legal duties require it.
-- **rounds** — Present the specific domain, medication/medical contributors, consent/safety concerns, and respectful treatment plan.
-- **exam** — Paraphilic disorder requires distress/impairment or harm/risk to others; gender dysphoria is distress from incongruence, not identity itself.
-- **actions** — Open psychopharm primer
-
-**Embedded check-for-understanding**
-
-1. *Stem:* A patient on an SSRI reports new anorgasmia and distress. Best first step?
-   - Tell the patient it is unrelated
-   - Diagnose a primary orgasmic disorder immediately
-   - Stop all psychiatric treatment
-   - Address the medication (dose-reduce, switch to bupropion/mirtazapine, or augment) **← keyed correct**
-   - *Rationale:* SSRI-induced sexual dysfunction is common and reversible; manage the medication before diagnosing a primary sexual disorder.
-
-**Cross-references and tagging:**
-
-- **Related tools:** `communication-practice.html`
-- **Workflow stages:** `diagnosis`, `treatment`, `communication`, `exam`
+- **Related tools:** `mse.html`, `communication-practice.html`
+- **Communication cases:** `guardedness_privacy_001`
+- **Workflow stages:** `diagnosis`, `communication`, `treatment`, `exam`
 - **Workflow modes:** `ward`, `5min`, `shelf`
 - **Shelf blueprint tags:** `otherdx`
 - **EPA crosswalk:** `EPA1`, `EPA2`
 
 #### Page text (as shipped)
 
-# Sexual Dysfunctions, Paraphilic Disorders & Gender Dysphoria
+# Somatic Symptom & Related Disorders
 
 
-**In one line** — Three distinct topics grouped by the blueprint: **sexual dysfunctions** (where your first move is to check medications and medical causes), **paraphilic disorders** (where the diagnosis turns on *distress/impairment or non-consent*, not on the interest itself), and **gender dysphoria** (distress from gender incongruence — where being transgender is *not* a disorder and affirming, respectful care is the standard).
+**In one line** — This family is about *distress and disability driven by bodily symptoms and health worry* — the diagnosis rests on the excessive thoughts, feelings, and behaviors around the symptoms, not on whether the symptoms are "medically explained," and your job is to treat the suffering without chasing endless workups or telling the patient "it's all in your head."
 
-## Sexual dysfunctions
+**How it presents on the unit** — You will meet these patients on consult-liaison far more than as primary admissions: the patient with high symptom burden and repeated negative workups, the sudden neurologic deficit that doesn't fit anatomy, the caregiver whose child has unexplained recurrent illness, or the patient whose presentation shifts when incentives change. The core skills are recognizing the pattern, screening for treatable depression/anxiety, and building one consistent, validating care plan.
 
-**How it presents** — Usually a comorbidity or a medication effect rather than a reason for admission. DSM-5-TR groups them by phase and sex (e.g., erectile disorder, female sexual interest/arousal disorder, delayed/premature ejaculation, female orgasmic disorder, genito-pelvic pain/penetration disorder); most require ~6 months and clinically significant distress.
+**Differential & can't-miss mimics** — The cardinal error runs both ways: over-investigating benign symptoms *and* dismissing a real disease as "psychosomatic." Real illness can coexist — don't anchor. Distinguish the entities by **conscious intent** and **external incentive**:
 
-**Differential & can't-miss** — Rule out the reversible and medical drivers before labeling a primary disorder: **medications (SSRIs/SNRIs are a leading cause of sexual dysfunction)**, antipsychotics (hyperprolactinemia), antihypertensives; endocrine (diabetes, low testosterone, thyroid), vascular disease, pelvic/neurologic disease, substance use; and relationship, trauma, and mood/anxiety factors. Depression itself lowers libido.
+- **Somatic symptom disorder** — ≥1 distressing somatic symptom *plus* excessive thoughts/feelings/behaviors about it (disproportionate worry, high anxiety, excessive time/energy), persistent >6 months. The symptom may or may not be medically explained. Not conscious.
+- **Illness anxiety disorder** — preoccupation with *having or acquiring* a serious illness with minimal or no somatic symptoms; care-seeking or maladaptive avoidance. Not conscious.
+- **Functional neurological symptom disorder (conversion)** — neurologic symptoms (weakness, non-epileptic seizures, sensory loss) *incompatible* with recognized disease; diagnosis rests on **positive signs** (Hoover sign, give-way weakness, tremor entrainment, seizure with preserved awareness/eyes closed). Not conscious.
+- **Factitious disorder** — **conscious** falsification or induction of illness (self or another) motivated by assuming the sick role, **without external reward**. *Imposed on another* (formerly Munchausen by proxy) is a form of **abuse — report it** ([Ethics & the Law](?page=ethics_legal.md)).
+- **Malingering** — **conscious** feigning for an **external incentive** (money, drugs, disability, avoiding work/jail). *Not a mental disorder* — a V-code/observation.
 
-**Management** — Treat the cause. For antidepressant-induced dysfunction: wait, dose-reduce, switch to a lower-liability agent (**bupropion, mirtazapine**), or add an agent (e.g., PDE5 inhibitor for erectile dysfunction). Address medical contributors, and offer psychoeducation/sex therapy and couples work.
+**Initial workup** — Take the somatic complaint seriously and do a *focused, guideline-appropriate* evaluation — then stop escalating. Review prior records to avoid repeating negative studies. Screen for depression, anxiety, PTSD, and substance use, which are common and treatable. Ask about early adversity and current stressors. For suspected factitious disorder imposed on another, prioritize the dependent's safety and reporting duties over confrontation.
 
-## Paraphilic disorders
-
-**The key distinction** — A **paraphilia** is an atypical sexual interest; a **paraphilic disorder** requires that it causes **distress or impairment to the person, or entails harm/risk of harm to others (non-consenting persons)**. An interest alone is not a diagnosis. Examples include voyeuristic, exhibitionistic, frotteuristic, sexual sadism, sexual masochism, pedophilic, fetishistic, and transvestic disorders.
-
-**Can't-miss** — Disorders involving **non-consenting victims (pedophilic, exhibitionistic, voyeuristic, frotteuristic, sadism)** raise **safety and legal/reporting duties** — child protection reporting where a child is at risk ([Ethics & the Law](?page=ethics_legal.md)). **Pedophilic disorder is a chronic sexual interest, not the same as a "child molester,"** but any current risk to an identifiable child is a protection issue.
-
-**Management** — Specialized psychotherapy (relapse-prevention/CBT); pharmacologic options for high-risk offending include SSRIs and, in severe cases, antiandrogen/GnRH agents. Screen for comorbid mood, substance, and personality disorders.
-
-## Gender dysphoria
-
-**Frame it correctly** — Gender dysphoria is the **clinically significant distress from incongruence between experienced gender and sex assigned at birth**. Being transgender or gender-diverse is **not itself a mental disorder**; the diagnosis names the *distress* (and provides access to care). Use the patient's stated name and pronouns.
-
-**On the unit** — Screen for the elevated rates of depression, anxiety, trauma, and **suicidality**, which are driven substantially by stigma and minority stress, not by gender identity itself. Provide affirming, respectful care; continue gender-affirming hormone therapy where clinically appropriate and coordinate with the patient's providers; ensure safe rooming.
-
-**Management** — Multidisciplinary, patient-centered gender-affirming care (mental health support, and, per established guidelines and patient goals, hormonal/surgical options in the outpatient setting). The inpatient priorities are safety, respect, comorbidity treatment, and continuity.
+**Acute inpatient management** — Set the frame: **one consistent clinician** (or a designated primary team), **regularly scheduled** visits rather than symptom-triggered ones, and minimization of unnecessary tests, referrals, and procedures. Validate that the suffering is real ("these symptoms are real and distressing") while gently reframing toward function and coping — avoid both false reassurance and "there's nothing wrong." **CBT** is the best-evidenced treatment; treat comorbid depression/anxiety (SSRIs help, especially with comorbidity). For conversion/functional neurological disorder, deliver the diagnosis positively (based on the rule-in signs), enlist physiotherapy, and avoid iatrogenic harm. Do not confront suspected malingering aggressively; document objective findings.
 
 **What the student does** —
-- For sexual dysfunction: review meds first (SSRIs, antipsychotics) and screen medical/endocrine/vascular causes before a primary diagnosis.
-- Separate a paraphilia (interest) from a paraphilic *disorder* (distress/impairment or non-consent).
-- Recognize reporting/safety duties when a paraphilic disorder involves a child or non-consenting person.
-- Use affirming language for gender-diverse patients; treat the *distress* and screen suicide risk.
-- Coordinate continuity of gender-affirming care and outpatient sexual-health follow-up.
+- Separate the entities on two axes: *conscious?* and *external incentive?*
+- Do the focused workup once, review old records, and resist the reflex to keep ordering.
+- Screen for and treat depression, anxiety, PTSD, and substance use.
+- Name conversion by its positive signs — don't make it a diagnosis of exclusion alone.
+- If factitious disorder imposed on another is suspected, protect the dependent and know your reporting duty.
+
+**Disposition & discharge essentials** — Consolidate care under a single outpatient clinician with scheduled follow-up and a shared plan to limit fragmented, escalating workups. Communicate the formulation to the receiving team in function-focused language. Arrange psychotherapy (CBT) and treat comorbidities. For factitious-by-proxy concerns, ensure protective services and safe disposition for the dependent.
 
 **High-yield pearls**
-- SSRIs are a top cause of sexual dysfunction; switch to bupropion/mirtazapine or add a PDE5 inhibitor.
-- Paraphilia ≠ paraphilic disorder — the disorder requires distress/impairment or harm to others.
-- Non-consenting paraphilic behavior triggers safety and reporting duties.
-- Gender dysphoria names *distress from incongruence*; transgender identity is not a disorder.
-- Elevated suicidality in gender-diverse patients reflects minority stress — screen and support.
-- Depression lowers libido — treat the mood disorder, and mind the medication's sexual side effects.
+- SSD is defined by the *excessive response* to symptoms, not by whether they're medically explained (a key DSM-5-TR shift from "medically unexplained").
+- Conversion/functional neurological disorder is a *rule-in* diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures.
+- Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder).
+- Factitious disorder imposed on another is child (or vulnerable-adult) abuse — a reporting duty.
+- Management = one clinician, scheduled visits, fewer tests, validate + CBT, treat comorbidities.
+- Real disease and a somatic disorder can coexist — don't anchor either way.
 
-**Pair with** — the [Psychopharmacology primer](?page=psychopharm_primer.md), [Ethics & the Law](?page=ethics_legal.md), [Culture, Disparities & Formulation](?page=cultural_psychiatry.md), and the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md).
-
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
-
-
----
-
-## Impulse-Control & Conduct
-
-- **Slug:** `t_impulse.md` · **Type:** md · **Sidebar:** hidden (deep link only)
-- **Source:** `03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 719 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 5 min
-
-**TL;DR (shown above the page text):**
-
-> Look past the behavior for the driver — trace ODD → conduct disorder → antisocial personality disorder, and rule out mania, substances, ADHD, and trauma underneath the aggression.
-
-**Key points (bulleted card):**
-
-- ODD is defiance; conduct disorder violates others' rights; antisocial PD requires conduct disorder onset before age 15.
-- Episodic aggression with low sleep and grandiosity is mania — not a conduct disorder.
-- Psychosocial/family interventions are first-line; medication treats the comorbidity, not the 'behavior.'
-
-**Can't-miss / red-flag line:**
-
-> Don't reach for a standing antipsychotic for 'behavior' — screen for and treat mania, substances, ADHD, and trauma first.
-
-**Rule-out list (differential the page forces):**
-
-- Bipolar mania / hypomania
-- Substance intoxication / withdrawal
-- ADHD
-- Trauma / PTSD
-- Delirium / medical cause (new change)
-
-**First move (the action the page tells the learner to take):**
-
-> Set a consistent behavioral frame, treat the driving comorbidity, and start parent-management/skills interventions in youth.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Ask what happened before the behavior, developmental history, trauma, ADHD, conduct symptoms, mania, substances, access to weapons, and remorse.
-- **mse** — Look for arousal, irritability, impulsivity, intoxication, grandiosity, paranoia, attention, and capacity for reflection.
-- **safety** — Assess imminent violence, weapon access, target specificity, intoxication, command hallucinations, and environmental triggers.
-- **say** — I want to understand what set this off so we can reduce risk, not just label the behavior.
-- **collateral** — Ask family/schools/systems about longstanding patterns, recent escalation, triggers, victims, weapons, and supervision capacity.
-- **rounds** — Present driver of aggression, ruled-out mania/substances/psychosis, violence risk factors, and de-escalation plan.
-- **exam** — Conduct disorder before age 15 is required for antisocial personality disorder; always rule out mania and substances.
-- **actions** — Open violence risk tool
-
-**Embedded check-for-understanding**
-
-1. *Stem:* A 16-year-old has a lifelong pattern of aggression, theft, and rule violations. Which adult diagnosis requires this history to have begun before age 15?
-   - Oppositional defiant disorder
-   - Intermittent explosive disorder
-   - Antisocial personality disorder **← keyed correct**
-   - Bipolar disorder
-   - *Rationale:* Antisocial personality disorder (age ≥18) requires evidence of conduct disorder with onset before age 15.
-
-**Cross-references and tagging:**
-
-- **Related tools:** `violence.html`, `communication-practice.html`
-- **Communication cases:** `rupture_limit_setting_001`, `collateral_questions_001`
-- **Workflow stages:** `diagnosis`, `safety`, `communication`, `family`, `exam`
-- **Workflow modes:** `ward`, `family`, `safety`, `5min`, `shelf`
-- **Shelf blueprint tags:** `childdev`
-- **EPA crosswalk:** `EPA1`, `EPA2`
-
-#### Page text (as shipped)
-
-# Disruptive, Impulse-Control & Conduct Disorders
-
-
-**In one line** — This group is defined by problems with **self-control of emotions and behavior that violate others' rights or bring the person into conflict with social norms** — and the exam rewards you for the developmental thread: **oppositional defiant disorder → conduct disorder → antisocial personality disorder**, and for separating these from mania, substance use, and a treatable mood disorder underneath the behavior.
-
-**How it presents on the unit** — Usually as *behavior*, not a chief complaint: the aggressive adolescent, the adult with explosive outbursts disproportionate to provocation, or destructive/rule-violating conduct that has led to admission or legal involvement. Your job is to look past the behavior for the driver.
-
-**The core diagnoses** —
-- **Oppositional defiant disorder (ODD)** — angry/irritable mood, argumentative/defiant behavior, and vindictiveness toward authority; *does not* involve major violations of others' rights.
-- **Conduct disorder** — a repetitive pattern violating others' rights or major age-appropriate norms (aggression to people/animals, destruction, deceit/theft, serious rule violations); *childhood-onset* (before age 10) carries worse prognosis than adolescent-onset. Specify **limited prosocial emotions** (callous-unemotional).
-- **Intermittent explosive disorder (IED)** — recurrent, impulsive aggressive outbursts grossly out of proportion to provocation, not premeditated.
-- **Kleptomania** — recurrent failure to resist stealing items *not needed* for use or value (tension before, relief after) — distinct from ordinary theft for gain.
-- **Pyromania** — deliberate fire-setting for tension release/fascination — distinct from arson for profit, concealment, or ideology.
-
-**Differential & can't-miss mimics** — Behavior is a final common pathway; rule out the treatable causes:
-
-- **Bipolar mania/hypomania** — episodic irritability, decreased need for sleep, grandiosity; treat the mood episode.
-- **Substance intoxication/withdrawal** — a leading cause of new aggression; screen and treat.
-- **ADHD** — impulsivity and conflict; commonly comorbid and treatable.
-- **Depression/DMDD in youth** — chronic irritability with outbursts (disruptive mood dysregulation disorder is classified with the *depressive* disorders — don't call it bipolar).
-- **Delirium, intellectual disability/autism, or a medical cause** — especially for *new* behavior change.
-- **Trauma/PTSD** — reactive aggression and hypervigilance.
-
-**Initial workup** — Get collateral (family, school/IEP, records, legal). Establish whether the behavior is *episodic* (mood/substance flag) or a *chronic pattern*. Screen for ADHD, substance use, trauma, mood disorders, and — for new changes — medical/neurologic causes. Assess **violence and suicide risk** and victim safety.
-
-**Acute inpatient management** — Lead with a **structured, consistent behavioral frame**: clear expectations, predictable consequences, de-escalation, and a unified team plan (see [Agitation & Restraint](?page=agitation.md)). **Treat the comorbidity that drives the behavior** — ADHD, mood, substance, trauma — because that is where the leverage is. Evidence-based psychosocial treatments are first-line for youth: **parent management training, multisystemic therapy, and problem-solving/anger-management skills**. **No medication is FDA-approved for conduct disorder or IED per se**; pharmacotherapy targets comorbidities (e.g., stimulants for ADHD, mood stabilization where indicated), and SSRIs have some evidence for IED. Avoid reflexive standing antipsychotics for "behavior."
-
-**What the student does** —
-- Trace the developmental line: ODD (defiance) vs conduct disorder (rights violations) vs antisocial PD (adult; requires conduct disorder before 15).
-- Ask whether aggression is *episodic* — and if so, work up mania and substances.
-- Screen ADHD, substance use, trauma, and mood; treat what's treatable.
-- Assess violence/suicide risk and victim safety; document.
-- Recommend behavioral/family interventions first; reserve medication for comorbidities.
-
-**Disposition & discharge essentials** — Coordinate with family, school, primary care, and (where relevant) juvenile-justice or social services. Set up the psychosocial interventions (parent training, MST, skills therapy), continuity for ADHD/mood/substance treatment, and a safety plan. Reconcile medications with clear, comorbidity-based indications.
-
-**High-yield pearls**
-- ODD → conduct disorder → antisocial personality disorder is the developmental spine; antisocial PD *requires* conduct disorder onset before age 15 (and the patient must be ≥18).
-- Childhood-onset conduct disorder and callous-unemotional traits predict worse outcomes.
-- IED = impulsive, out-of-proportion outbursts; kleptomania/pyromania are about tension-release, not gain.
-- Episodic irritability with low sleep and grandiosity is mania, not a conduct disorder.
-- DMDD lives with the depressive disorders — it is not pediatric bipolar disorder.
-- Psychosocial/family interventions are first-line; medication treats the comorbidity, not the "behavior."
-
-**Pair with** — the [Mood topic](?page=t_mood.md), [Neurodevelopmental Disorders](?page=t_neurodev.md), [Substance Use](?page=t_sud.md), the [Agitation & Restraint guide](?page=agitation.md), and the <a href="tools/violence.html" target="_blank" rel="noopener">Violence Risk (FRST) tool</a>.
+**Pair with** — the [Differential Diagnosis scaffolds](?page=ddx.md), [Ethics & the Law](?page=ethics_legal.md), the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), and the <a href="tools/mse.html" target="_blank" rel="noopener">Mental Status Exam trainer</a>.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
-
-
----
-
-## Adjustment Disorders
-
-- **Slug:** `t_adjustment.md` · **Type:** md · **Sidebar:** hidden (deep link only)
-- **Source:** `03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 910 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 4 min
-
-**TL;DR (shown above the page text):**
-
-> Distress or impairment beginning within 3 months of a stressor and resolving within 6 months of its end — the diagnosis for someone struggling more than expected who doesn't meet criteria for another disorder, and it still carries real suicide risk.
-
-**Key points (bulleted card):**
-
-- If full criteria for MDD, an anxiety disorder, or PTSD are met — it is not adjustment disorder.
-- PTSD/acute stress disorder require a traumatic event; adjustment disorder follows any stressor.
-- First-line treatment is time-limited psychotherapy (supportive, problem-solving); medication is adjunctive.
-
-**Can't-miss / red-flag line:**
-
-> Don't be lulled by the 'subthreshold' label — assess suicide risk directly, as impulsive self-harm can occur.
-
-**Rule-out list (differential the page forces):**
-
-- Major depressive disorder
-- Anxiety disorder
-- Acute stress disorder / PTSD
-- Normal reaction / prolonged grief
-- Substance-induced / medical
-
-**First move (the action the page tells the learner to take):**
-
-> Anchor the timeline to the stressor, confirm criteria for other disorders aren't met, quantify suicide risk, and start brief supportive therapy.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Anchor symptoms to the stressor, onset within three months, impairment, and whether full criteria for MDD, PTSD, anxiety, or substance-induced disorder are met.
-- **mse** — Look for affect congruence, hopelessness, agitation, sleep change, substance use, and whether symptoms exceed expected coping.
-- **safety** — Ask directly about suicide and impulsive self-harm even when symptoms seem subthreshold.
-- **say** — This diagnosis does not mean the distress is minor; it means the symptoms are stress-linked and we still take safety seriously.
-- **collateral** — Ask what changed after the stressor, supports, coping, substance use, and whether risk has escalated.
-- **rounds** — Present stressor timeline, excluded full syndromes, functional impairment, safety assessment, and brief therapy/support plan.
-- **exam** — Adjustment disorder requires stressor-linked distress that does not meet criteria for another disorder and resolves after the stressor ends.
-- **actions** — Columbia C-SSRS — Official Form & Training
-
-**Embedded check-for-understanding**
-
-1. *Stem:* Two months after a divorce, a patient has low mood and impaired work function but does not meet criteria for major depression. Best diagnosis and first-line treatment?
-   - Adjustment disorder — time-limited psychotherapy **← keyed correct**
-   - Major depressive disorder — start an SSRI as monotherapy
-   - PTSD — begin trauma-focused therapy
-   - No diagnosis — reassure and discharge without follow-up
-   - *Rationale:* Symptoms tied to a stressor, within 3 months, not meeting full criteria for another disorder, indicate an adjustment disorder; supportive/problem-solving psychotherapy is first-line, with suicide-risk assessment.
-
-**Cross-references and tagging:**
-
-- **Related tools:** `cssrs.html`, `communication-practice.html`
-- **Communication cases:** `suicide_direct_question_001`
-- **Evidence sources:** `felitti-1998-ace`
-- **Workflow stages:** `diagnosis`, `safety`, `communication`, `exam`
-- **Workflow modes:** `ward`, `safety`, `5min`, `shelf`
-- **Shelf blueprint tags:** `otherdx`
-- **EPA crosswalk:** `EPA1`, `EPA2`
-
-#### Page text (as shipped)
-
-# Adjustment Disorders
-
-
-**In one line** — An adjustment disorder is **clinically significant distress or impairment that begins within 3 months of an identifiable stressor and resolves within 6 months after the stressor (or its consequences) ends** — it is the diagnosis for someone struggling *more than expected* with a real-life event who does *not* meet criteria for another disorder, and it still carries meaningful, sometimes acute, suicide risk.
-
-**How it presents on the unit** — Common on consult-liaison and after acute life events: a new serious diagnosis, a loss, a relationship or job crisis, legal trouble, or hospitalization itself. Presentations are subthreshold — low mood, anxiety, or behavioral disturbance tied clearly to the stressor. The task is to distinguish a normal reaction, an adjustment disorder, and a full syndromic disorder — and to take the suicide risk seriously despite the "mild" label.
-
-**Differential & can't-miss mimics** — Adjustment disorder is a **diagnosis of specification, not exclusion-by-default** — you must actively rule out the alternatives:
-
-- **Major depressive disorder / an anxiety disorder** — if full criteria are met, diagnose *that*, not adjustment disorder.
-- **Acute stress disorder / PTSD** — require a *traumatic* (criterion-A) event and a specific symptom cluster; adjustment disorder follows *any* stressor and lacks that cluster.
-- **Normal/expected reaction** — distress proportionate to the stressor without significant impairment is not a disorder; **prolonged grief disorder** is the diagnosis for pervasive, persistent grief beyond expected norms.
-- **Bereavement** — uncomplicated grief is normal; screen for a superimposed major depressive episode.
-- **Substance-induced or medical** — new medications, substances, or illness can drive the symptoms.
-
-**Subtypes** — Specify the predominant feature: with depressed mood; with anxiety; mixed anxiety and depressed mood; with disturbance of conduct; mixed disturbance of emotions and conduct; unspecified. Course may be acute or persistent (chronic, if the stressor or its consequences endure).
-
-**Initial workup** — Anchor the timeline to the stressor (onset within 3 months). Confirm the symptoms don't meet criteria for another disorder and aren't a normal reaction. Screen for depression, anxiety, PTSD, and substance use. **Assess suicide risk explicitly** — impulsive self-harm can occur even with "subthreshold" symptoms, especially around acute stressors.
-
-**Acute inpatient management** — Treatment is **primarily psychotherapeutic and time-limited**: supportive therapy, problem-solving, building coping and social support, and addressing the stressor directly where possible. Medication is *not* first-line but may briefly target prominent symptoms (e.g., short-term sleep or anxiety support). Mobilize the patient's own resources and practical supports. If the picture crosses into a full disorder over time, re-diagnose and treat accordingly.
-
-**What the student does** —
-- Tie the symptoms to a specific stressor and to the 3-month/6-month timeline.
-- Confirm the patient does *not* meet criteria for MDD, an anxiety disorder, or PTSD before choosing this label.
-- Screen and *quantify* suicide risk — don't be lulled by "mild."
-- Recommend supportive/problem-solving therapy first; keep any medication short and symptom-targeted.
-- Re-evaluate over time; escalate the diagnosis if the syndrome evolves.
-
-**Disposition & discharge essentials** — Arrange brief outpatient psychotherapy and practical support around the stressor. Provide a safety plan. Ensure follow-up that can catch a transition to a full mood or anxiety disorder, or to prolonged grief, and reconcile any short-term medication with a stop date.
-
-**High-yield pearls**
-- Onset within 3 months of a stressor; resolves within 6 months once the stressor (or its consequences) ends.
-- If full criteria for MDD, an anxiety disorder, or PTSD are met — it's *not* adjustment disorder.
-- PTSD/acute stress disorder require a *traumatic* event; adjustment disorder follows any stressor.
-- Suicide risk is real even at "subthreshold" severity — assess it directly.
-- First-line treatment is psychotherapy (supportive, problem-solving), time-limited; medication is adjunctive.
-- Prolonged grief disorder is the diagnosis for persistent, impairing grief beyond expected norms.
-
-> <div class="crisis-block-hook" hidden></div>
->
-> ### If someone is in crisis
->
-> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
->
-> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
-> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
-> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
-> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
-> - **Emergency services** — 911. 24/7. For imminent danger to life.
->
-> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
-
-**Pair with** — the [Mood topic](?page=t_mood.md), the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), and the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a>.
-
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
-
-
----
-
-## Weekly Reading Map
-
-- **Slug:** `reading_map.md` · **Type:** md · **Sidebar:** hidden (deep link only)
-- **Source:** `14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 588 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 4 min
-
-**TL;DR (shown above the page text):**
-
-> Six weeks of suggested readings paired with one clinical skill and one observable task each week — a coverage map, not a reading list; nothing here should take longer than 20 minutes.
-
-**Key points (bulleted card):**
-
-- Each week has a small suggested core plus optional deeper resources — the weekly skill anchor is the clinical behavior you are building toward, not the reading itself.
-- Week 4 is the most reading-intensive, covering the Family Meeting Playbook, family therapy modalities, and the family/discharge module — reflecting this rotation's signature focus on family work.
-- Week 6 reading is deliberately light because the skill of the week is a full OSCE-style case presentation integrating everything from the prior five weeks.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — For the current week, identify the skill anchor, one patient-linked reading, and one observable task you can actually do on the unit.
-- **mse** — Use the weekly focus to decide what part of the MSE deserves extra attention this week.
-- **safety** — When a weekly task touches risk, capacity, withdrawal, delirium, catatonia, or family safety, do it with supervision rather than as a solo checklist.
-- **say** — This week I am practicing one clinical behavior, not trying to read everything.
-- **collateral** — Use the family/systems weeks to practice permission, baseline questions, and discharge feasibility with supervision.
-- **rounds** — Bring one weekly reading into rounds as a clinical question, not a literature summary.
-- **exam** — The reading map is a spaced sequence; pair each week with review cards or one question-bank session.
-- **actions** — Open Week 1; Open daily review
-
-**Cross-references and tagging:**
-
-- **Related tools:** `review.html`, `communication-practice.html`, `family-systems.html`
-- **Communication cases:** `guardedness_privacy_001`, `family_meeting_opening_001`, `collateral_questions_001`
-- **Workflow stages:** `encounter`, `communication`, `family`, `exam`
-- **Workflow modes:** `ward`, `family`, `5min`, `shelf`
-- **EPA crosswalk:** `EPA7`
-
-#### Page text (as shipped)
-
-# Week-by-Week Reading & Skills Map
-
-Design principle: suggested reading should be short enough to protect clinical learning. Most source material stays optional or faculty-facing. The weeks below match the six-week curriculum in the sidebar. Links open the matching page on this site.
-
-## Week 1 — Foundations & Orientation
-
-**Suggested**
-
-- [Orientation packet](?page=orientation.md).
-- [Interview / MSE pocket guide](?page=pg_interview.md).
-- [Suicide-risk & safety pocket card](?page=pg_suicide.md).
-- Week 1 safety recognition links: [Agitation & restraint](?page=agitation.md), [Delirium](?page=delirium.md), and the [Withdrawal (CIWA-Ar/COWS) teaching tool](?tool=withdrawal.html).
-- [One landmark summary — Engel biopsychosocial model](?page=landmark_trials.md).
-
-**Optional**
-
-- [Biopsychosocial formulation worksheet](?page=pg_formulation.md).
-- [Differential diagnosis scaffolds](?page=ddx.md).
-
-**Skill**
-
-Conduct a focused interview, present MSE findings, write an admission note, and name what safety finding would make you interrupt the usual workflow to get the resident or attending now.
-
-**Assignment**
-
-One de-identified MSE plus a one-paragraph formulation and one sentence that separates "routine follow-up" from "call now" safety escalation.
-
-## Week 2 — Mood, Psychosis & Pharmacology
-
-**Suggested**
-
-- [Mood disorders](?page=t_mood.md) and [Psychosis](?page=t_psychosis.md) teaching pages.
-- [Psychopharmacology primer](?page=psychopharm_primer.md).
-- [One psychopharm landmark — CATIE, STAR*D, STEP-BD, lithium/suicide, or clozapine](?page=landmark_trials.md).
-
-**Optional**
-
-- [Differential diagnosis scaffolds](?page=ddx.md).
-- Bush-Francis Catatonia Rating Scale (the BFCRS tool in the sidebar).
-
-**Skill**
-
-Explain why one medication fits the patient; recognize and score catatonia with the BFCRS.
-
-**Assignment**
-
-A treatment-rationale paragraph for a mood or psychosis patient.
-
-## Week 3 — Psychotherapy, Personality & the Relationship
-
-**Suggested**
-
-- [Supportive psychotherapy basics](?page=exp_tx.md).
-- [Personality disorders](?page=t_personality.md) teaching page.
-- [One psychotherapy landmark — Wampold common factors or Linehan DBT](?page=landmark_trials.md).
-
-**Optional**
-
-- [Motivational interviewing](?page=motivational_interviewing.md).
-- [Suicide-risk & safety pocket card](?page=pg_suicide.md).
-
-**Skill**
-
-Build a therapeutic alliance; complete a Stanley–Brown safety plan.
-
-**Assignment**
-
-A safety plan plus a brief therapy rationale.
-
-## Week 4 — Family, Systems & Expressed Emotion
-
-**Suggested**
-
-- [Family Meeting Playbook (90-min)](?page=family_playbook.md).
-- [Family therapy modalities](?page=family_modalities.md).
-- [Family & discharge module](?page=exp_family.md).
-
-**Optional**
-
-- [One family/EE landmark — Brown expressed emotion or Pharoah Cochrane family](?page=landmark_trials.md).
-- [Family-therapy inpatient evidence](?page=evidence_inpatient.md).
-
-**Skill**
-
-Prepare and co-facilitate a 90-minute family meeting; spot expressed emotion.
-
-**Assignment**
-
-A family-meeting agenda using synthetic or de-identified facts.
-
-## Week 5 — Acute & Emergency Psychiatry
-
-**Suggested**
-
-- [Consult module — capacity / delirium / catatonia / withdrawal](?page=exp_consult.md).
-- [Agitation & restraint](?page=agitation.md) with the Algorithms & Decision Aids tool.
-- [Violence risk](?tool=violence.html), [C-SSRS](?tool=cssrs.html), and [Withdrawal: CIWA-Ar/COWS](?tool=withdrawal.html) tools for supervised structured practice.
-
-**Optional**
-
-- Revisit the [Suicide-risk & safety pocket card](?page=pg_suicide.md) and [Delirium](?page=delirium.md) teaching page with a real patient presentation in mind.
-- [Stanley–Brown safety-planning summary](?page=landmark_trials.md).
-
-**Skill**
-
-Move beyond Week 1 recognition: formulate the likely driver, use least-restrictive de-escalation when safe, trend structured tools with supervision, and document why the plan did or did not escalate.
-
-**Assignment**
-
-A risk formulation plus a consult question.
-
-## Week 6 — Integration, Disposition & Exam Readiness
-
-**Suggested**
-
-- [OSCE station set](?page=osce.md).
-- [COMAT & shelf review guide](?page=shelf.md).
-- [Documentation & presenting guide](?page=doc_oral.md).
-
-**Optional**
-
-- [High-Yield Rounds Questions](?page=rounds_questions.md); the Daily Review and Shelf Mode tools.
-- [A Landmark Trials summary or audio of your choice](?page=landmark_trials.md).
-
-**Skill**
-
-Present a full case with formulation, risk reasoning, and a disposition plan.
-
-**Assignment**
-
-A final synthetic or de-identified case presentation and reflection.
-
-## Faculty Note
-
-If a reading takes longer than 20 minutes, assign a specific question — for example:
-
-- "Read for how this changes your risk formulation."
-- "Read for one medication adverse effect that matters inpatient."
-- "Read for one family-system variable to ask about on rounds."
-
-*Each week has a small suggested core, optional deeper resources, and one observable clinical skill — so the curriculum never becomes a document dump.*
-
-
----
-
-## COMAT & Shelf Review
-
-- **Slug:** `shelf.md` · **Type:** md · **Sidebar:** hidden (deep link only)
-- **Source:** `14_Tracks/MS3/Student_Ready_Pack/07_shelf_guide/shelf_review_guide.md`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 742 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 5 min
-
-**TL;DR (shown above the page text):**
-
-> Use patients to organize exam review — for each patient, name the syndrome, write the differential, name one medical mimic, name first-line treatment, and name one safety or legal issue; the exam is patient-anchored, not topic-anchored.
-
-**Key points (bulleted card):**
-
-- Six COMAT/shelf exam traps to internalize: 'denies SI — low risk' (ask about means and preparatory behavior), 'psychosis means schizophrenia' (check substances, mood, and delirium first), and 'family support means discharge is safe' (family support is data, not a risk decision).
-- The final week 9-item checklist covers mania vs. stimulant intoxication, delirium vs. psychosis, capacity in 4 abilities, chronic vs. acute risk formulation, catatonia red flags, antipsychotic adverse effects, lithium monitoring, alcohol withdrawal risk, and case presentation under 6 minutes.
-- Legal and ethical questions anchor on decision-specific capacity, duty-to-protect jurisdictional variation, and voluntary vs. involuntary hospitalization — treat these as clinical reasoning problems, not rule memorization.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Turn each patient into an exam stem: age, time course, syndrome, key risk, mimic, and next best step.
-- **mse** — Translate MSE into exam language: attention for delirium, psychomotor change for catatonia/mania, thought process/content for psychosis.
-- **safety** — Shelf traps often hide safety in plain sight: means access, preparatory behavior, delirium, withdrawal, capacity, and adverse medication effects.
-- **say** — My answer is..., because the discriminating feature is..., and the tempting wrong answer misses...
-- **collateral** — Use collateral facts as exam discriminators: baseline, timeline, adherence, substance exposure, family safety, and follow-up feasibility.
-- **rounds** — Rehearse one 20-second answer before rounds, then test the same concept in the question bank.
-- **exam** — Study by patient problem, not topic list: syndrome, mimic, treatment, safety/legal, and disposition.
-- **actions** — Open practice questions; Open shelf mode; Practice suicide wording
-
-**Cross-references and tagging:**
-
-- **Related tools:** `question-bank-practice.html`, `shelf-mode.html`, `review.html`, `diagnostic-reasoning.html`, `communication-practice.html`
-- **Communication cases:** `suicide_direct_question_001`, `psychosis_validation_001`, `medication_ambivalence_001`
-- **Workflow stages:** `exam`, `diagnosis`, `safety`
-- **Workflow modes:** `shelf`, `5min`
-
-#### Page text (as shipped)
-
-# Psychiatry COMAT & Shelf Review Guide — Inpatient Rotation
-
-Audience: MS3 students.
-
-**Your exam is the COMAT.** UNE COM uses the **NBOME COMAT Clinical Psychiatry** subject exam (not the NBME shelf) for the Medical Knowledge grade. The high-yield content below serves both; for the official content blueprint and sample items, see the [COMAT Clinical Psychiatry page (NBOME)](https://www.nbome.org/assessments/comat/clinical-subject-exams/comat-clinical-psychiatry/).
-
-## How To Study During The Rotation
-
-Use patients to organize exam review:
-
-- For each patient, identify the syndrome.
-- Write the differential.
-- Name one medical/substance mimic.
-- Name first-line treatment.
-- Name one safety or legal issue.
-- Name one discharge barrier.
-
-## High-Yield Domains
-
-### Mood Disorders
-
-Know:
-
-- Major depressive episode criteria.
-- Bipolar I vs bipolar II.
-- Mixed features.
-- Psychotic depression.
-- Suicide risk assessment.
-- Antidepressant-induced mania concern.
-
-Clinical anchor:
-
-- Sleep change and episodicity matter.
-
-### Psychotic Disorders
-
-Know:
-
-- Schizophrenia spectrum timeline.
-- Brief psychotic disorder, schizophreniform disorder, schizophrenia.
-- Schizoaffective disorder vs mood disorder with psychotic features.
-- Substance/medication-induced psychosis.
-- Delirium as mimic.
-
-Clinical anchor:
-
-- Always ask about mood episodes, substances, medications, sleep, and medical symptoms.
-
-### Anxiety, OCD, Trauma
-
-Know:
-
-- Panic disorder vs panic attack.
-- GAD vs adjustment disorder.
-- OCD obsessions/compulsions.
-- PTSD intrusion, avoidance, negative mood/cognition, arousal.
-
-Clinical anchor:
-
-- Avoid forcing trauma details in the acute setting unless needed for safety.
-
-### Personality Disorders
-
-Know:
-
-- Cluster A, B, C patterns.
-- Borderline personality disorder criteria and self-harm risk.
-- Splitting, idealization/devaluation, abandonment fears.
-
-Clinical anchor:
-
-- Describe behavior and context; avoid pejorative labels.
-
-### Substance Use And Withdrawal
-
-Know:
-
-- Alcohol withdrawal timeline and seizure/DT risk.
-- Opioid intoxication vs withdrawal.
-- Stimulant intoxication and crash.
-- Cannabis-associated anxiety/psychosis in vulnerable patients.
-
-Clinical anchor:
-
-- Last use and prior complicated withdrawal are essential.
-
-### Neurocognitive And Medical Mimics
-
-Know:
-
-- Delirium: acute, fluctuating, inattentive.
-- Dementia: chronic, progressive.
-- Catatonia: motor/behavioral syndrome requiring urgent recognition.
-- Medication effects: steroids, anticholinergics, dopaminergic agents, intoxication/withdrawal.
-
-Clinical anchor:
-
-- New confusion in hospital is delirium until proven otherwise.
-
-### Psychopharmacology
-
-Know broad classes:
-
-- SSRIs/SNRIs.
-- Mood stabilizers: lithium, valproate, carbamazepine, lamotrigine.
-- Antipsychotics: first vs second generation, EPS, metabolic effects.
-- Benzodiazepines: short-term use, withdrawal risk.
-- Stimulants and non-stimulants for ADHD.
-
-Clinical anchor:
-
-- For inpatient psychiatry, monitoring and adverse effects are as important as starting dose.
-
-### Legal/Ethical
-
-Know:
-
-- Capacity vs competence.
-- Voluntary vs involuntary hospitalization basics.
-- Duty to protect/warn varies by jurisdiction.
-- Confidentiality and collateral.
-- Emergency treatment principles.
-
-Clinical anchor:
-
-- Capacity is decision-specific and time-specific.
-
-## Exam Traps (COMAT & Shelf)
-
-| Trap | Better Thinking |
-|---|---|
-| "Patient denies SI, so low risk" | Ask about acute factors, means, preparatory behavior, collateral |
-| "Psychosis means schizophrenia" | Check mood episodes, substances, delirium, medical causes |
-| "Refusal means no capacity" | Assess four decision abilities |
-| "Agitation means antipsychotic" | Consider delirium, withdrawal, pain, akathisia, trauma |
-| "Family wants discharge, so discharge is safe" | Family support is data, not a substitute for risk reasoning |
-| "Bizarre behavior is behavioral" | Consider catatonia, delirium, intoxication, neurologic illness |
-
-## Weekly Exam Integration
-
-| Week | Exam Focus |
-|---|---|
-| 1 | MSE, suicide assessment, psychiatric interview |
-| 2 | DSM differentials and medical/substance mimics |
-| 3 | Medication classes and psychotherapy basics |
-| 4 | Emergency psychiatry, capacity, delirium, catatonia, withdrawal |
-| 5 | Family, systems, discharge, ethics |
-| 6 | Mixed practice questions and OSCE-style review |
-
-## Practice Question Template
-
-For each topic, make one question:
-
-1. Stem: age, setting, symptoms, timeline.
-2. Key clue: one detail that changes diagnosis or management.
-3. Ask: diagnosis, next step, mechanism, adverse effect, risk, legal issue.
-4. Explain why the wrong answers are tempting.
-
-## Final Week Checklist
-
-- Can I distinguish mania from stimulant intoxication?
-- Can I distinguish delirium from psychosis?
-- Can I explain capacity in four abilities?
-- Can I write a chronic vs acute suicide risk formulation?
-- Can I identify catatonia red flags?
-- Can I name common antipsychotic adverse effects?
-- Can I name lithium monitoring concerns?
-- Can I describe alcohol withdrawal risk?
-- Can I present a case in under 6 minutes?
-
-Plain-English note: this guide links exam studying to real inpatient cases so
-students do not treat test prep and clinical reasoning as separate tasks.
-
-
----
-
-## OSCE Stations
-
-- **Slug:** `osce.md` · **Type:** md · **Sidebar:** hidden (deep link only)
-- **Source:** `14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 1,546 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 4 min
-
-**TL;DR (shown above the page text):**
-
-> Six OSCE stations covering the skills most tested on rounds — suicide risk with collateral, capacity with delirium recognition, catatonia, alcohol withdrawal, family meeting agenda, and oral case presentation — with entrustment anchors 1–4.
-
-**Key points (bulleted card):**
-
-- Each station specifies behaviors to practice, not answers to memorize — rater focus is on clinical reasoning, communication, and appropriate escalation, not on naming the correct drug first.
-- Station 2 (capacity) and Station 3 (catatonia) test whether you avoid premature psychiatric labels when a medical mimic is present — both require recognizing the underlying driver before concluding behavior.
-- Target entrustment level 3 by end of rotation: able to perform routine parts with indirect supervision and escalate appropriately — safe and organized, not yet independent.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — For each OSCE station, first identify the task: risk, capacity, catatonia, withdrawal, family meeting, or oral presentation.
-- **mse** — Use observable MSE findings to justify your next step; stations reward saying what you saw, not only naming a diagnosis.
-- **safety** — State when you would stop the station and get supervision, medical evaluation, or emergency support.
-- **say** — I want to ask this directly because safety matters: have you had thoughts of killing yourself?
-- **collateral** — Use collateral to test baseline, time course, risk, and discharge feasibility rather than asking for global impressions.
-- **rounds** — Give a concise assessment, your immediate safety action, and the data that would change your plan.
-- **exam** — Practice stations aloud: opening line, core questions, safety escalation, and summary.
-- **actions** — Practice direct suicide question; Open reasoning workbench; Open rounding prep
-
-**Cross-references and tagging:**
-
-- **Related tools:** `communication-practice.html`, `diagnostic-reasoning.html`, `family-systems.html`, `oral.html`, `cssrs.html`, `capacity.html`
-- **Communication cases:** `suicide_direct_question_001`, `family_meeting_opening_001`, `collateral_questions_001`
-- **Workflow stages:** `encounter`, `safety`, `communication`, `team`, `exam`
-- **Workflow modes:** `ward`, `safety`, `family`, `shelf`
-
-#### Page text (as shipped)
-
-# MS3 Psychiatry OSCE Station Set
-
-Generated: 2026-06-27
-
-All cases are synthetic. No real patient details are used.
-
-## Station 1 - Suicide Risk With Collateral Hesitation
-
-**Time:** 12 minutes encounter, 3 minutes summary, 10 minutes feedback.
-
-**Student task**
-
-Conduct a focused suicide risk assessment, ask permission for collateral, and
-state an acute risk impression.
-
-**Patient brief**
-
-29-year-old retail worker admitted after sending a concerning text to a sibling.
-The patient says the ED overreacted. Sleep has been 3-4 hours nightly. Cannabis
-use increased. A goodbye letter exists but is not volunteered unless asked
-directly. Firearm access is at a parent's home.
-
-**Behaviors to practice**
-
-- Opens with role and purpose.
-- Asks directly about suicidal thoughts, plan, intent, preparation, past attempts.
-- Asks about means access.
-- Separates chronic and acute factors.
-- Asks permission for collateral.
-- Reflects the patient's worry about burdening family.
-- Names one next step.
-
-**Rater focus**
-
-Risk formulation, means restriction, collateral consent, tone.
-
-## Station 2 - Capacity To Refuse Medical Treatment
-
-**Time:** 12 minutes encounter, 5 minutes oral capacity summary.
-
-**Student task**
-
-Assess decision-making capacity for a specific refusal.
-
-**Patient brief**
-
-67-year-old admitted to medicine with infection and new paranoia that IV
-antibiotics are poison. The patient is intermittently inattentive and worse at
-night. The medical team asks, "Does the patient have capacity to refuse?"
-
-**Behaviors to practice**
-
-- Identifies the exact decision.
-- Assesses choice, understanding, appreciation, and reasoning.
-- Screens attention and fluctuation.
-- Considers delirium and psychosis.
-- Avoids equating disagreement with incapacity.
-- Presents which capacity ability is impaired.
-
-**Rater focus**
-
-Decision-specific reasoning and delirium recognition.
-
-## Station 3 - Possible Catatonia
-
-**Time:** 10 minutes observation/interview, 5 minutes team presentation.
-
-**Student task**
-
-Identify catatonia concern and escalate.
-
-**Patient brief**
-
-35-year-old with depression sits motionless, answers rarely, has eaten little,
-and intermittently holds the same posture. Nursing reports the patient is
-"refusing everything." Vital signs are stable but oral intake is poor.
-
-**Behaviors to practice**
-
-- Describes motor signs objectively.
-- Asks about intake, mobility, autonomic signs, and medication exposure.
-- Considers catatonia in differential.
-- Avoids labeling behavior as "noncompliance."
-- Escalates to resident/attending.
-
-**Rater focus**
-
-Recognition and language.
-
-## Station 4 - Alcohol Withdrawal Risk On Psychiatry Unit
-
-**Time:** 10 minutes encounter, 5 minutes presentation.
-
-**Student task**
-
-Screen for alcohol withdrawal risk and escalate appropriately.
-
-**Patient brief**
-
-48-year-old admitted for suicidal ideation after job loss. Reports drinking
-"more than usual." Last drink was yesterday morning. Prior tremors and one
-possible withdrawal seizure years ago, revealed only if asked.
-
-**Behaviors to practice**
-
-- Asks amount/frequency/last drink.
-- Asks prior withdrawal, seizure, delirium tremens.
-- Checks current symptoms and vitals.
-- Recognizes alcohol withdrawal risk.
-- Does not propose unsupervised management.
-
-**Rater focus**
-
-Withdrawal history and escalation.
-
-## Station 5 - Family Meeting Agenda Before Discharge
-
-**Time:** 15 minutes prep/presentation.
-
-**Student task**
-
-Prepare a family meeting agenda for a synthetic patient nearing discharge.
-
-**Case brief**
-
-22-year-old admitted for first manic episode. Sleep and agitation have improved.
-Family is frightened and divided: one parent wants strict control, another wants
-to avoid conflict. Patient wants discharge and refuses to discuss warning signs.
-
-**Behaviors to practice**
-
-- Names meeting goal.
-- Defines student/team role.
-- Includes patient voice.
-- Covers warning signs, medication plan, sleep, means safety, follow-up.
-- Avoids making family responsible for treatment adherence alone.
-- Names one unresolved discharge barrier.
-
-**Rater focus**
-
-Structure, boundaries, patient autonomy, family support.
-
-## Station 6 - Oral Presentation Of A New Admission
-
-**Time:** 6-minute presentation, 4-minute questions.
-
-**Student task**
-
-Present a synthetic admission with differential, risk, formulation, and plan.
-
-**Case brief**
-
-40-year-old with insomnia, paranoia, weight loss, and new stimulant use. Family
-history includes bipolar disorder. Patient has hypertension and recently started
-a corticosteroid burst.
-
-**Behaviors to practice**
-
-- Organized timeline.
-- Differential includes stimulant-induced psychosis, mania, steroid effect,
-  primary psychosis, medical/neurologic contributors.
-- MSE uses observable language.
-- Risk is explicit.
-- Plan matches differential and safety concerns.
-
-**Rater focus**
-
-Diagnostic reasoning and concision.
-
-## Entrustment Anchors
-
-| Level | Description |
-|---|---|
-| 1 | Needs full prompting; misses safety or diagnosis issue |
-| 2 | Identifies main issue but needs direct supervision |
-| 3 | Performs with indirect supervision for routine parts; escalates appropriately |
-| 4 | Organized, safe, concise, anticipates next step |
-
-## Shared Debrief Questions
-
-- What information changed your risk or differential?
-- What did you ask directly rather than imply?
-- What patient/family emotion did you notice?
-- What would you escalate immediately?
-- What would you document in one sentence?
-
-Plain-English note: these OSCEs practice what students actually do on an
-inpatient unit: ask safety questions, recognize medical mimics, talk to families,
-and present clearly.
-
----
-
-## Scored Checklists & Critical-Fail Criteria
-
-*Added 2026-07-04 — reviewed and attested by Joshua Moss, MD (2026-07-09). Each station is scored out of 10.
-**A critical-fail auto-fails the station regardless of the numeric score** (mark the station "1" on the entrustment anchor and debrief the safety miss).*
-
-**How to score.** Award the listed points for behaviors performed unprompted; give half credit if the examiner had to prompt. Pass = **≥ 7/10 AND no critical-fail**. Map the total to the entrustment anchors (≤4 → level 1; 5–6 → level 2; 7–8 → level 3; 9–10 → level 4).
-
-### Station 1 — Suicide risk with collateral hesitation (10 pts)
-
-- Introduces role, purpose, and the limits of confidentiality — 1
-- Asks directly about ideation, **plan, intent, and preparatory acts** — 2
-- Elicits the goodbye letter / preparation by asking directly (not volunteered) — 1
-- Asks about **means access, including the firearm at the parent's home** — 2
-- Separates chronic from acute risk factors; notes protective factors — 1
-- Asks permission for collateral — 1
-- Responds empathically to the "burden on family" worry — 1
-- States an acute risk impression **and** one concrete next step — 1
-
-**Critical-fail (auto-fail):** never asks about means/firearm access · never screens plan/intent/preparation · elicits an active plan yet states no protective step (means restriction, observation level, escalation).
-
-### Station 2 — Capacity to refuse medical treatment (10 pts)
-
-- Identifies the **exact decision** at stake (refuse IV antibiotics) — 2
-- Assesses all four abilities — choice, understanding, appreciation, reasoning — 4 (1 each)
-- Screens attention and fluctuation (delirium) — 1
-- Considers delirium/psychosis as contributors — 1
-- Names **which specific ability is impaired**; frames capacity as decision- and time-specific — 2
-
-**Critical-fail:** equates disagreement/refusal alone with incapacity · misses delirium in a clearly fluctuating patient (no attention screen) · declares the patient globally "incompetent" rather than decision-specific.
-
-### Station 3 — Possible catatonia (10 pts)
-
-- Describes motor signs objectively (immobility, mutism, posturing, negativism) — 2
-- Asks about intake, mobility, autonomic signs, medication exposure — 2
-- Names **catatonia** in the differential — 2
-- Recognizes escalation/benzodiazepine (lorazepam) challenge; does **not** reflexively give an antipsychotic — 1
-- Avoids "noncompliance / refusing everything" language — 1
-- Escalates to resident/attending — 1
-- Flags malignant catatonia / NMS as the dangerous end — 1
-
-**Critical-fail:** labels the patient "refusing/noncompliant" without considering catatonia · fails to escalate a patient with poor intake + motor signs · proposes an antipsychotic as the fix without recognizing catatonia/NMS risk.
-
-### Station 4 — Alcohol withdrawal risk (10 pts)
-
-- Asks amount / frequency / **last drink** — 2
-- Asks about prior withdrawal, **seizure, and DTs** (revealed only if asked) — 2
-- Checks current symptoms and vital signs — 2
-- Recognizes elevated withdrawal/seizure risk — 2
-- Escalates to a protocol (symptom-triggered benzodiazepine per team) and names **thiamine before or with glucose** — 1
-- Does **not** propose unsupervised management — 1
-
-**Critical-fail:** proposes unsupervised/self-directed management or discharge · never asks the withdrawal-seizure history (misses it) · fails to escalate a high-risk withdrawal.
-
-### Station 5 — Family meeting agenda before discharge (10 pts)
-
-- Names the meeting goal — 2
-- Defines the student/team role and boundaries — 1
-- Includes the patient's voice and protects autonomy — 2
-- Covers warning signs, medication plan, sleep, **means safety**, and follow-up — 2
-- Avoids making the family solely responsible for adherence — 1
-- Holds the divided parents without taking a side — 1
-- Names one unresolved discharge barrier — 1
-
-**Critical-fail:** omits means-safety and warning-signs for a first-manic patient who refuses to discuss them · proposes a discharge decision beyond MS3 scope · sidelines patient autonomy.
-
-### Station 6 — Oral presentation of a new admission (10 pts)
-
-- Organized one-liner and timeline — 2
-- Differential includes **stimulant-induced psychosis, mania, steroid effect, primary psychosis, and medical/neurologic** contributors — 3
-- MSE in observable language — 1
-- Risk stated explicitly — 2
-- Plan matches the differential and safety concerns (includes medical workup) — 2
-
-**Critical-fail:** anchors on a primary psychiatric diagnosis without the medical/substance/steroid differential · omits risk entirely · proposes management beyond MS3 scope without escalation.
-
----
-
-**Examiner note.** The critical-fail list encodes the non-negotiable safety behaviors for each station — a student can be fluent and still fail if they miss one. Use the Shared Debrief Questions above to close every station, and always name the safety behavior that was missed.
-
-
----
-
-## Practice Cases
-
-- **Slug:** `cases.md` · **Type:** md · **Sidebar:** hidden (deep link only)
-- **Source:** `14_Tracks/MS3/Student_Ready_Pack/08_synthetic_cases/synthetic_practice_cases.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 849 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 6 min
-
-**TL;DR (shown above the page text):**
-
-> Eight synthetic composite cases spanning first-episode mania, suicide risk, withdrawal, delirium, catatonia, family dynamics, and discharge planning — each includes student tasks, hidden clinical detail that rewards direct questioning, and a case discussion template.
-
-**Key points (bulleted card):**
-
-- Each case contains hidden clinical detail that is only revealed when the student asks directly — the reward for thorough, non-assumption-based history-taking.
-- Student tasks mirror the OSCE: build the differential, name the safety questions, draft an MSE, prepare a family meeting agenda, and identify the discharge barrier.
-- The case discussion template asks: what would change the differential? what collateral is missing? what is the discharge barrier? what must be done before tomorrow? — use it after every case.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — For each case, ask what hidden detail would change diagnosis, risk, disposition, or family/system plan.
-- **mse** — Document the MSE finding that most changes the differential and the one finding that could be misleading.
-- **safety** — Name the safety question before the diagnosis question when the case includes suicide, violence, withdrawal, delirium, catatonia, or discharge risk.
-- **say** — What is he like at baseline, what changed, when did it change, and what specific safety concerns have you noticed?
-- **collateral** — Use collateral to define baseline, timeline, safety, adherence, supports, and discharge barriers.
-- **rounds** — After the case, present problem representation, differential, risk formulation, collateral gap, and next action.
-- **exam** — Synthetic cases are practice for illness scripts: syndrome, mimic, first-line treatment, safety/legal issue, and disposition.
-- **actions** — Open reasoning workbench; Practice collateral questions; Open family systems practice
-
-**Cross-references and tagging:**
-
-- **Related tools:** `diagnostic-reasoning.html`, `communication-practice.html`, `family-systems.html`, `oral.html`, `decision-aids.html`
-- **Communication cases:** `suicide_direct_question_001`, `collateral_questions_001`, `family_conflict_discharge_001`
-- **Workflow stages:** `diagnosis`, `safety`, `family`, `team`, `exam`
-- **Workflow modes:** `ward`, `safety`, `family`, `shelf`
-
-#### Page text (as shipped)
-
-# Synthetic Practice Cases
-
-Generated: 2026-06-27
-
-All cases are fictional composites for teaching. No real patient details are used.
-
-## Case 1 - First-Episode Mania With Family Conflict
-
-**Presentation**
-
-22-year-old college student brought by family for 6 days of little sleep,
-increased spending, pressured speech, grand plans, irritability, and paranoid
-concerns about roommates. Urine toxicology is positive for cannabis only.
-
-**Student tasks**
-
-- Build differential.
-- Identify safety questions.
-- Draft MSE.
-- Prepare family meeting agenda.
-- Name discharge barriers.
-
-**Teaching points**
-
-- Mania vs substance-induced symptoms.
-- Sleep as both symptom and treatment target.
-- Family fear can become control; family support still matters.
-- Discharge readiness requires more than reduced agitation.
-
-## Case 2 - Depression, Alcohol Escalation, And Suicide Risk
-
-**Presentation**
-
-46-year-old admitted after telling a coworker, "I cannot do this anymore."
-Reports 2 months of low mood, insomnia, guilt, and increased nightly alcohol
-use. No prior psychiatric care. Initially denies a plan but later describes
-stockpiled medication at home.
-
-**Student tasks**
-
-- Separate chronic and acute suicide risk.
-- Ask withdrawal screening questions.
-- Draft means-restriction plan for team review.
-- Write one-paragraph formulation.
-
-**Teaching points**
-
-- "Denies SI" is not enough.
-- Alcohol can increase acute risk and complicate treatment.
-- If withdrawal risk or malnutrition is present, verify thiamine is given before or with glucose/carbohydrate when possible; true hypoglycemia still gets treated immediately.
-- Means restriction must be concrete.
-- Collateral can change risk formulation.
-
-## Case 3 - Delirium Mistaken For Psychosis
-
-**Presentation**
-
-73-year-old on medical floor becomes paranoid overnight, sees insects, pulls at
-IV line, and is calm by morning. Family says the patient was independent last
-week. New medications include diphenhydramine for sleep.
-
-**Student tasks**
-
-- Identify delirium features.
-- Perform brief attention screen.
-- Build medical differential.
-- Present consult question.
-
-**Teaching points**
-
-- Fluctuation and inattention are key.
-- Visual hallucinations in an older hospitalized patient should trigger delirium concern.
-- Medication review is part of psychiatric assessment.
-
-## Case 4 - Possible Catatonia In Severe Depression
-
-**Presentation**
-
-38-year-old with severe depression is lying still, minimally speaking, eating
-little, and holding odd postures. Staff describe "refusal." No fever. Recently
-started antipsychotic for suspected psychotic depression.
-
-**Student tasks**
-
-- Describe motor findings objectively.
-- Name catatonia in differential.
-- Identify escalation triggers.
-- Avoid stigmatizing documentation.
-
-**Teaching points**
-
-- Catatonia can be missed when behavior is framed as refusal.
-- Poor intake and immobility are safety issues.
-- Catatonia and delirium can overlap; ask for help early.
-
-## Case 5 - Capacity To Refuse Treatment
-
-**Presentation**
-
-58-year-old with bipolar disorder and pneumonia refuses antibiotics, saying
-"the hospital is experimenting on me." The patient can repeat the diagnosis but
-cannot explain what might happen without treatment and becomes distracted
-during questioning.
-
-**Student tasks**
-
-- State the exact decision.
-- Assess choice, understanding, appreciation, reasoning.
-- Screen attention.
-- Present capacity summary.
-
-**Teaching points**
-
-- Capacity is decision-specific.
-- Psychosis does not automatically remove capacity.
-- Inattention raises delirium concern.
-
-## Case 6 - Withdrawal Risk On Admission
-
-**Presentation**
-
-51-year-old admitted for suicidal ideation after divorce. Reports drinking "a
-few" drinks nightly, then clarifies it is 10-12 drinks daily. Last drink was 18
-hours ago. Prior withdrawal seizure 5 years ago.
-
-**Student tasks**
-
-- Ask alcohol withdrawal questions.
-- Identify red flags.
-- Escalate to team.
-- Include withdrawal risk in formulation.
-
-**Teaching points**
-
-- Quantify "a few."
-- Prior complicated withdrawal changes acuity.
-- Thiamine before/with glucose is a safety check in alcohol withdrawal risk because carbohydrate loading can precipitate Wernicke encephalopathy in thiamine-depleted patients.
-- Psychiatric units still manage medical risk.
-
-## Case 7 - Discharge Barrier Hidden In Family System
-
-**Presentation**
-
-31-year-old admitted for psychosis is improved on medication. Patient wants to
-return home. Parent says privately, "I cannot do this again," but tells patient
-"of course you can come home."
-
-**Student tasks**
-
-- Identify mismatch between stated and actual support.
-- Prepare family meeting agenda.
-- Draft discharge barrier map.
-- Name patient autonomy issue.
-
-**Teaching points**
-
-- Family agreement is not the same as viable discharge support.
-- Discharge planning requires honest capacity of the support system.
-- The patient should not be triangulated between team and family.
-
-## Case 8 - Oral Presentation Integration
-
-**Presentation**
-
-40-year-old with insomnia, paranoia, weight loss, stimulant use, and recent
-corticosteroid prescription. Family history of bipolar disorder. Medical workup
-is incomplete.
-
-**Student tasks**
-
-- Give 6-minute admission presentation.
-- Include differential.
-- Name next diagnostic steps.
-- Name immediate safety concerns.
-
-**Teaching points**
-
-- Psychosis has many causes.
-- Timeline and medication exposure matter.
-- Do not close on a primary psychiatric diagnosis too early.
-
-## Case Discussion Template
-
-For each case:
-
-1. One-line summary.
-2. Top three differential diagnoses.
-3. What could be medically dangerous?
-4. What safety questions are mandatory?
-5. What collateral would help?
-6. What would change discharge readiness?
-7. What should the note say in one sentence?
-
-Plain-English note: these cases let students practice reasoning without using
-real patient details. They are deliberately common enough to teach patterns but
-synthetic enough for safe reuse.
-
-
----
-
-# SECTION: Feedback
-
----
-
-## Improve this library — send feedback
-
-- **Slug:** `feedback.html` · **Type:** tool · **Sidebar:** listed
-- **Source:** `13_Faculty_Resources/Feedback/feedback.html`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-
-#### Tool — clinical content
-
-_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
-
-**Static shell text:**
-
-- Feedback on the library Reviewed by Joshua Moss, MD on 2026-07-05
-- Skip to content ψ
-- Improve this library
-- Feedback on the site · Joshua Moss, MD
-- Tell me what helped, what was confusing, a broken link, or a resource worth adding. This shapes what gets built next.
-- About the learning site only — not your preceptor and not any patient. Please include no patient information (PHI) . For feedback about the rotation or clinical supervision, use your school's official evaluation.
-- Leave blank:
-- Which page or part of the library? Type of feedback This was helpful Confusing or unclear Broken link or error Missing content — suggest a resource Idea / other How useful was this? (optional) 1 2 3 4 5
-- Your feedback * You are (optional) Prefer not to say MS3 student Resident Faculty / other Name or email (optional — leave blank to stay anonymous) Send feedback Goes privately to Dr. Moss. Anonymous unless you add your name.
-- Something went wrong sending that. Please try again, or email jmoss333@gmail.com.
-- Thank you — that helps.
-- Your feedback shapes what gets built and fixed next.
-- Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.

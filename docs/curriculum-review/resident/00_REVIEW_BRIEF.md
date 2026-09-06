@@ -1,7 +1,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-06 from build `9c19767` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-06 from build `b2d3dd6` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -47,6 +47,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | `02_CURRICULUM_V14.md` | Curriculum volume 14 |
 | `02_CURRICULUM_V15.md` | Curriculum volume 15 |
 | `02_CURRICULUM_V16.md` | Curriculum volume 16 |
+| `02_CURRICULUM_V17.md` | Curriculum volume 17 |
 | `A1_QUESTION_BANK.md` | Question bank |
 | `A2_CASE_SIMULATIONS.md` | Case simulations and rehearsal banks |
 | `A3_AUDIO_COMPANION_QUIZZES.md` | Audio companion quiz decks |
