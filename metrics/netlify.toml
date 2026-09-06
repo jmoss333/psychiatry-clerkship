@@ -1,0 +1,45 @@
+# Usage-analytics collector — its own tiny Netlify site (same repo, base directory: metrics).
+# Kept SEPARATE from sp-proxy so analytics never shares a deployment bundle with the LLM
+# API key, and so an analytics change never re-opens sp-proxy's REDTEAM_CHECKLIST.
+#
+# `ignore = "/bin/false"` = ALWAYS BUILD, NEVER "CANCEL". A site with a base directory
+# otherwise cancels any build whose commit did not touch metrics/, and Netlify records that
+# cancel as a FAILED deploy — firing the "Deploy failed" alarm on every unrelated push
+# (~75/day observed 2026-09-02). Exit 1 means "content changed, build". See sp-proxy/netlify.toml.
+[build]
+  publish = "."
+  command = "npm ci --omit=dev"
+  ignore = "/bin/false"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# node_bundler = "nft" (NOT "esbuild"). ev.mjs loads its allowlist at module scope via
+# `readFileSync(new URL('../../allowlist.json', import.meta.url))`. esbuild only rewrites a
+# `new URL(..., import.meta.url)` reference for its `file`/`copy` loaders; a `.json` target
+# uses esbuild's `json` loader instead, so esbuild would NOT carry allowlist.json into the
+# bundle. The read would throw at module load, the function would never boot, and — because
+# this handler is silent by design (no logging, every store error swallowed) — nothing would
+# report it: counters would simply stay at zero. "nft" (Node File Trace, via @vercel/nft — the
+# same tracer zip-it-and-ship-it's default "zisi" bundler uses internally) traces the real
+# runtime file reads a function performs instead of statically rewriting import specifiers, so
+# it finds and includes this readFileSync target on its own. included_files below is kept as a
+# second, explicit guarantee — see the note on it.
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "nft"
+  # Path is relative to this site's BASE DIRECTORY ("metrics", set in the Netlify UI per Step
+  # 6), not to the repo root and not to the functions directory — Netlify's file-based-config
+  # docs: "All paths defined in the netlify.toml file must be absolute paths relative to the
+  # base directory." metrics/allowlist.json relative to base directory "metrics" is
+  # "allowlist.json".
+  included_files = ["allowlist.json"]
+
+# Pinned explicitly: in-source route registration was observed NOT to register on the live
+# sp-proxy deploy, so the path fell through to the static 404 (which carries no CORS header)
+# and the browser reported a generic load failure. Status 200 = rewrite, not redirect.
+[[redirects]]
+  from = "/api/ev"
+  to = "/.netlify/functions/ev"
+  status = 200
+  force = true
