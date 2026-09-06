@@ -23,7 +23,10 @@ function fixture() {
     voice: 'marin', model: 'gpt-4o-mini-tts-2025-12-15'};
   manifest.entries = manifest.entries.map(entry => ({...entry, audioSha256: hash(audioBytes), bytes: audioBytes.length, durationSeconds: 3}));
   const requests = [], players = [], urls = [], revoked = [], timers = new Map();
-  let nextTimer = 0, audioResponse = null, playResponse = null;
+  let nextTimer = 0, audioResponse = null, playResponse = null, digestDelay = 0;
+  const subtle = {digest: (algorithm, data) => digestDelay
+    ? new Promise(resolve => setTimeout(() => resolve(webcrypto.subtle.digest(algorithm, data)), digestDelay))
+    : webcrypto.subtle.digest(algorithm, data)};
   class LocalURL extends URL {
     static createObjectURL(blob) { const url = 'blob:local/' + urls.length; urls.push({url, blob}); return url; }
     static revokeObjectURL(url) { revoked.push(url); }
@@ -36,7 +39,7 @@ function fixture() {
     load() { this.released = true; }
   }
   const env = {location: {href: 'http://127.0.0.1:4318/_prototypes/sp-interview/sp-interview.preview.html?danaConversation=1'},
-    crypto: webcrypto, TextEncoder, AbortController, Blob, URL: LocalURL, Audio,
+    crypto: {subtle}, TextEncoder, AbortController, Blob, URL: LocalURL, Audio,
     setTimeout(callback, delay) { const id = ++nextTimer; timers.set(id, {callback, delay}); return id; },
     clearTimeout(id) { timers.delete(id); },
     async fetch(url, options) {
@@ -46,7 +49,8 @@ function fixture() {
       return {ok: true, arrayBuffer: async () => audioBytes.buffer.slice(0)};
     }};
   return {env, manifest, requests, players, urls, revoked, timers,
-    audioResponse(value) { audioResponse = value; }, playResponse(value) { playResponse = value; }};
+    audioResponse(value) { audioResponse = value; }, playResponse(value) { playResponse = value; },
+    slowDigest(ms) { digestDelay = ms; }};
 }
 function openingFixture(caseId, slug, extraCase = null) {
   const f = fixture();
@@ -77,7 +81,12 @@ async function loaded(t, f = fixture()) {
   t.after(() => library.dispose());
   return {library, ...f};
 }
-async function waitFor(check) { for (let i = 0; i < 30 && !check(); i++) await tick(); assert.ok(check(), 'expected asynchronous adapter work to settle'); }
+const WAIT_BUDGET_MS = 5000;
+async function waitFor(check, message = 'expected asynchronous adapter work to settle') {
+  const deadline = Date.now() + WAIT_BUDGET_MS;
+  while (!check() && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 1));
+  assert.ok(check(), message);
+}
 
 test('validates all 75 canonical lines and serves exact recordings through a reusable verified cache', async t => {
   const f = await loaded(t); const endings = [], errors = [];
@@ -270,4 +279,42 @@ test('disposing an in-progress load suppresses callbacks and prevents new playba
   assert.match(closedError.message, /closed|reload/i);
   assert.equal(staleCallbacks, 0); assert.equal(f.players.length, 0); assert.equal(f.urls.length, 0);
   assert.equal(f.requests.length, 2); assert.equal(f.timers.size, 0);
+});
+
+test('a turn-counted wait cannot cover real hashing latency, which is why CI reddened while the focused suite passed', async () => {
+  // Thirty setImmediate iterations elapse in microseconds on an idle loop, so the
+  // old helper was polling a proxy for nothing. A digest dispatched to the thread
+  // pool needs wall-clock time, and a loaded runner is where that shows.
+  const afterRealDelay = ms => { let done = false; setTimeout(() => { done = true; }, ms); return () => done; };
+  const turnCounted = async check => { for (let i = 0; i < 30 && !check(); i++) await new Promise(resolve => setImmediate(resolve)); return check(); };
+  assert.equal(await turnCounted(afterRealDelay(50)), false, 'the previous helper gives up before real latency settles');
+  const settles = afterRealDelay(50);
+  await waitFor(settles, 'the shipped wait must tolerate real hashing latency');
+  assert.equal(settles(), true);
+});
+
+test('exact recordings, verified cache reuse, cancellation and revoked URLs all survive slow WebCrypto hashing', async t => {
+  const f = fixture();
+  const {library} = await loaded(t, f);
+  // Slow only the audio-verification digest: the load path already hashed 75 lines
+  // against the manifest, and it is the per-recording digest that raced in CI.
+  f.slowDigest(150);
+  const endings = [], errors = [];
+  const handle = library.speak({text: opening, onEnded() { endings.push('done'); }, onError(e) { errors.push(e); }});
+  assert.equal(typeof handle.stop, 'function', 'speak still returns cancellation immediately');
+  await waitFor(() => f.players.length === 1 && f.players[0].played, 'delayed hashing must be awaited, not abandoned');
+  assert.match(f.requests[1].url, /\/output\/speech\/dana-marin-v1\/[a-f0-9]{64}\.mp3$/, 'the exact recording is still addressed by its hash');
+  assert.equal(f.players[0].src, 'blob:local/0');
+  f.players[0].onended();
+  assert.deepEqual(endings, ['done']); assert.deepEqual(errors, []);
+
+  library.speak({text: opening, onEnded() {}, onError(e) { throw e; }});
+  await waitFor(() => f.players.length === 2 && f.players[1].played);
+  assert.equal(f.requests.length, 2, 'a verified recording is still served from cache rather than refetched');
+
+  library.dispose();
+  assert.deepEqual(f.revoked, ['blob:local/0'], 'object URLs are still revoked');
+  assert.equal(f.players[1].paused, true);
+  assert.equal(f.players[1].onended, null);
+  assert.equal(f.timers.size, 0);
 });
