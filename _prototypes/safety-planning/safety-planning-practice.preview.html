@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [CLERKSHIP-META v1] tool="Safety Planning Practice" version="0.1-preview" built="2026-09-05" category="acute-safety" audience="trainee,ms3,resident" settings="inpatient,ED,self-study" time="10-15min" clinicalClaim="true" summary="WP-06R-b PREVIEW — rehearsal tool for the six-step safety-planning conversation. Generate-then-reveal loop on the family-systems-practice pattern: the learner writes their own opening line before any model line is shown, then self-rates. Reproduces NOTHING from the Stanley-Brown Safety Plan form: original headings, no field labels, no prompts, no output document, no export. Clinical strings are FIRST DRAFT from SPEC_Safety_Planning_Practice_v1_DRAFT.md and are NOT author-attested; this file is deliberately unregistered from site_manifest.json and nav so it ships to neither site." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Safety Planning Practice — preview (unattested)</title>
+<meta name="description" content="Rehearsal tool for the six-step safety-planning conversation. Preview build; clinical content is a first draft awaiting author review.">
+<style>
+  :root{
+    --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
+    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+    --success:#357160; --success-light:#e7f1ed;
+    --warning:#7a6234; --warning-light:#f5efe2;
+    --danger:#a34132; --danger-light:#fbece9;
+    --info:#41618a; --info-light:#eaf0f6;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:14px;
+    --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  .shell{width:min(900px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) var(--sp5)}
+  h1,h2,h3{font-family:var(--font-head);line-height:1.25;margin:0 0 var(--sp2)}
+  h1{font-size:2rem;color:var(--primary)} h2{font-size:1.25rem} h3{font-size:1.02rem}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
+  .sub{color:var(--text-mid);max-width:66ch;margin:0 0 var(--sp3)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
+  /* Draft banner. This file exists to be redlined; the status must be the first thing read. */
+  .draft{background:var(--warning-light);border:2px solid var(--warning);border-radius:var(--radius-md);padding:var(--sp3);margin-bottom:var(--sp4);font-size:.9rem}
+  .draft b{color:var(--warning)}
+  .draft ul{margin:var(--sp2) 0 0;padding-left:1.2em}
+  .boundary{background:var(--danger-light);border-left:3px solid var(--danger);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);font-size:.88rem;margin-bottom:var(--sp3)}
+  .boundary b{color:var(--danger)}
+  /* Case + step choosers */
+  .chooser{display:flex;gap:var(--sp1);flex-wrap:wrap;margin-bottom:var(--sp3)}
+  .chip{border:1px solid var(--border);background:var(--surface);color:var(--text-mid);border-radius:999px;padding:6px 14px;font:inherit;font-size:.84rem;cursor:pointer}
+  .chip.on{background:var(--accent-dark);border-color:var(--accent-dark);color:#fff;font-weight:600}
+  .steps{display:flex;gap:var(--sp1);flex-wrap:wrap;border-bottom:2px solid var(--border);margin-bottom:var(--sp4);padding-bottom:var(--sp2)}
+  .stepbtn{border:none;background:transparent;padding:8px 12px;font:inherit;font-size:.9rem;font-weight:600;color:var(--text-mid);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-10px;border-radius:var(--radius-sm) var(--radius-sm) 0 0}
+  .stepbtn.on{color:var(--primary-dark);border-bottom-color:var(--primary-dark)}
+  .stepbtn .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:6px;vertical-align:middle;background:var(--border)}
+  .stepbtn .dot.done{background:var(--success)}
+  /* The rehearsal loop */
+  .task{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);margin-bottom:var(--sp3)}
+  .task b{color:var(--accent-dark)}
+  label.rehearse{display:block;font-weight:600;font-size:.92rem;margin-bottom:var(--sp1)}
+  label.rehearse span{display:block;font-weight:400;font-size:.84rem;color:var(--text-light);margin-top:2px}
+  textarea{width:100%;min-height:88px;font:inherit;font-size:.95rem;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-alt);color:var(--text);resize:vertical}
+  textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .ephemeral{font-size:.78rem;color:var(--text-light);margin-top:var(--sp1)}
+  .btn{border:none;border-radius:var(--radius-sm);padding:9px 16px;font:inherit;font-weight:600;font-size:.9rem;cursor:pointer;background:var(--accent-dark);color:#fff;margin-top:var(--sp3)}
+  .btn:hover,.btn:focus{background:var(--accent)}
+  .btn.secondary{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+  .reveal{margin-top:var(--sp4);border-top:1px dashed var(--border);padding-top:var(--sp3)}
+  .model{background:var(--bg-alt);border-left:3px solid var(--primary);border-radius:var(--radius-sm);padding:var(--sp3);font-family:var(--font-head);font-size:1.05rem;font-style:italic;color:var(--text)}
+  .model small{display:block;font-family:var(--font-body);font-style:normal;font-size:.74rem;color:var(--text-light);margin-top:var(--sp2)}
+  ol.selfcheck{margin:var(--sp2) 0 0;padding-left:1.3em}
+  ol.selfcheck li{margin-bottom:6px;font-size:.94rem}
+  .traps{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);margin-top:var(--sp3);font-size:.92rem}
+  .traps h3{color:var(--warning);margin-bottom:var(--sp1)}
+  .traps ul{margin:0;padding-left:1.1em} .traps li{margin-bottom:5px}
+  .traps em{color:var(--warning);font-style:normal;font-weight:600}
+  .rate{display:flex;gap:var(--sp1);flex-wrap:wrap;margin-top:var(--sp3);align-items:center}
+  .rate span{font-size:.86rem;color:var(--text-mid);margin-right:var(--sp1)}
+  .rate button{border:1px solid var(--border);background:var(--surface);color:var(--text-mid);border-radius:var(--radius-sm);padding:6px 14px;font:inherit;font-size:.85rem;cursor:pointer}
+  .rate button.on{background:var(--accent-dark);border-color:var(--accent-dark);color:#fff;font-weight:600}
+  /* Reference blocks */
+  details{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);margin-bottom:var(--sp2)}
+  details[open]{padding-bottom:var(--sp3)}
+  summary{cursor:pointer;font-weight:600;font-size:.95rem;color:var(--accent-dark)}
+  table{width:100%;border-collapse:collapse;margin-top:var(--sp2);font-size:.88rem}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{font-weight:700;color:var(--text-mid)}
+  .tablewrap{overflow-x:auto}
+  .route{background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius-md);padding:var(--sp3);margin-top:var(--sp3)}
+  .route h3{color:var(--accent-dark);margin-bottom:var(--sp1)}
+  .route .go{display:inline-block;background:var(--accent-dark);color:#fff;text-decoration:none;font-weight:600;font-size:.88rem;padding:9px 15px;border-radius:var(--radius-sm);margin:var(--sp1) 0}
+  .route .go:hover,.route .go:focus{background:var(--accent)}
+  .route p{margin:0 0 var(--sp2);font-size:.88rem;color:var(--text-mid)}
+  .route .cost{font-size:.78rem;color:var(--text-light);margin-bottom:0}
+  .localpolicy{display:inline-block;background:var(--info-light);border:1px dashed var(--info);color:var(--info);border-radius:var(--radius-sm);padding:2px 8px;font-size:.78rem;font-weight:600;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .sources{font-size:.82rem;color:var(--text-mid);margin-top:var(--sp4);line-height:1.5;border-top:1px solid var(--border);padding-top:var(--sp3)}
+  .sources a{color:inherit}
+  footer{margin-top:var(--sp4);padding-top:var(--sp3);border-top:1px solid var(--border);font-size:.85rem;color:var(--text-light);text-align:center}
+  @media(max-width:640px){.shell{padding:var(--sp3) var(--sp2) var(--sp4)}h1{font-size:1.6rem}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="kicker">Acute &amp; Safety · Suicide risk · WP-06R-b preview</div>
+  <h1>Safety Planning Practice</h1>
+  <p class="sub">Six conversations, rehearsed one at a time. You write the sentence you would
+  actually say <em>before</em> you see a model line — that ordering is the whole point, because
+  recognising a good line is easy and producing one under time pressure is not.</p>
+
+  <div class="draft">
+    <b>⚠ PREVIEW — not attested, not published.</b> Every clinical string on this page is a first
+    draft from <code>SPEC_Safety_Planning_Practice_v1_DRAFT.md</code>, awaiting redline and
+    signature by Joshua Moss, MD. This file is deliberately absent from
+    <code>site_manifest.json</code> and from nav, so it ships to neither site.
+    <ul>
+      <li>Model lines, self-checks and traps: <b>draft, unsigned</b>.</li>
+      <li>Lethal-means three-tier framing: <b>author confirmation outstanding</b>.</li>
+      <li><span class="localpolicy">LOCAL_POLICY</span> tokens are left as tokens by the
+        generic-not-Maine-specific scope decision (author, 2026-08-20).</li>
+      <li>MS3 vs resident scope: <b>undecided</b> — currently written as shared.</li>
+    </ul>
+  </div>
+
+  <div class="boundary"><b>Boundary:</b> fictional composites only. Nothing you type here is
+  stored, transmitted, or recoverable. Do not enter anything about a real patient. This tool
+  rehearses a conversation; it does not produce a safety plan, and it is not a substitute for
+  supervision or your unit's policy.</div>
+
+  <!-- Reproduction discipline, stated on the page because the constraint is pedagogically
+       load-bearing: the learner should know the form is a real artifact they must go and get. -->
+  <div class="card">
+    <h2>What this is, and what it is not</h2>
+    <p style="margin-top:0">This tool teaches the <b>method</b> — the six conversations that
+    produce a safety plan — under headings original to this library. It reproduces no part of the
+    Stanley&ndash;Brown Safety Plan: no field labels, no prompts, no instructions, and no fillable
+    copy. It produces <b>no output document of any kind</b>, deliberately: an export button here
+    would be the worst protected-information surface this library could add, and a plan the
+    patient never physically holds is one of the failure modes the tool exists to teach against.</p>
+    <p style="margin-bottom:0">The form itself is a real thing you need. Get it from the authors:</p>
+    <div class="route">
+      <h3>Get the official form</h3>
+      <p>Barbara Stanley, PhD and Gregory K. Brown, PhD publish the Safety Plan form and their own
+      training in the intervention.</p>
+      <a class="go" href="https://suicidesafetyplan.com/" target="_blank" rel="noopener noreferrer">Stanley-Brown Safety Plan &amp; training &rarr;</a>
+      <p class="cost">Free for individual clinical use; leaves this site for suicidesafetyplan.com.
+      The authors require written permission to alter the form or place it in an electronic medical
+      record — which is the same term that makes programming it reproduction, and why this tool
+      rehearses the conversation instead. Use your unit's approved version where one exists.</p>
+    </div>
+  </div>
+
+  <h2 style="margin-top:var(--sp5)">Choose a case</h2>
+  <p class="sub" style="margin-bottom:var(--sp2)">Each case is a fictional composite chosen to
+  provoke a different failure mode. Switching cases changes the patient you are rehearsing with,
+  not the six steps.</p>
+  <div class="chooser" id="cases" role="group" aria-label="Practice case"></div>
+  <div class="card" id="casecard"></div>
+
+  <div class="steps" id="steps" role="tablist" aria-label="Safety planning steps"></div>
+  <div id="stepcard"></div>
+
+  <h2 style="margin-top:var(--sp5)">Reference — the lethal-means conversation</h2>
+  <p class="sub">Step 6 is the step with the best outcome evidence and the one learners skip. It
+  gets its own reference block because in the rest of the tool layer this content appears exactly
+  once, as a sub-clause.</p>
+
+  <details>
+    <summary>Why this conversation is worth having — stated honestly</summary>
+    <p>Suicidal crises are often short-lived, and case fatality differs enormously between methods,
+    so <em>which</em> method is within reach during the crisis matters more than most learners
+    expect. The evidence sits at three different strengths, and you should be able to say all
+    three:</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Level</th><th>What the evidence shows</th></tr></thead>
+        <tbody>
+          <tr><td><b>Population-level means restriction</b></td>
+            <td><b>Strong.</b> Barriers at jumping sites, pesticide bans, analgesic pack-size limits; large method-specific declines.</td></tr>
+          <tr><td><b>Individual lethal-means counselling</b></td>
+            <td><b>Thin but favourable.</b> Quasi-experimental and observational; a 2024 systematic review found most counselling studies at high risk of bias. VA/DoD issues a <b>weak</b> recommendation.</td></tr>
+          <tr><td><b>Firearm-legislation reviews</b></td>
+            <td><b>Weak, and honestly so.</b> A 2026 systematic review found &ldquo;a small reduction, if any,&rdquo; no high-quality randomised trials, and an ecological level of analysis that precluded individual-level causal inference.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-bottom:0"><b>So the case for doing this rests on three things — the mechanism
+    is sound, the intervention is cheap and low-risk, and guidelines recommend it. It does not rest
+    on a demonstrated mortality reduction from counselling itself.</b> Say it that way if a student
+    pushes, because a student who has read the primary review will push.</p>
+    <p class="ephemeral">⚑ Author: confirm this three-tier framing. Effect sizes are deliberately
+    omitted from this preview pending the evidence-annotation pass — every number here would need
+    a verbatim <code>sourceSpan</code> in <code>evidence_annotations.json</code> before it ships.</p>
+  </details>
+
+  <details>
+    <summary>Firearms — ask directly, early, and without apology</summary>
+    <p>The goal during a high-risk period is <b>temporary out-of-home storage</b> — with family, a
+    trusted friend, or (jurisdiction-dependent) a licensed dealer or law-enforcement agency. If
+    out-of-home storage is refused, work <em>down the ladder</em> rather than abandoning the
+    conversation: a locking device; ammunition stored separately and elsewhere; the key or
+    combination held by someone else.</p>
+    <p><b>Framing that works:</b> temporary · collaborative · &ldquo;while things are hard&rdquo; ·
+    &ldquo;so you have time on your side.&rdquo;<br>
+    <b>Framing that fails:</b> permanent · confiscatory · moralising · delivered as a condition of
+    discharge.</p>
+    <p style="margin-bottom:0"><span class="localpolicy">LOCAL_POLICY:means_storage</span> — legal
+    transfer rules and available storage options vary by state and this page must not guess.</p>
+  </details>
+
+  <details>
+    <summary>Medications, collateral, and asking again</summary>
+    <p><b>Medications.</b> Quantity is the lever — smaller quantities dispensed, a lockbox, or
+    someone else holding them. Ask about over-the-counter as well; <b>acetaminophen is the one
+    learners forget.</b></p>
+    <p><b>Who is actually in this conversation.</b> The person who controls access is frequently
+    not the patient. That makes means safety a <b>collateral</b> conversation with its own consent
+    considerations.</p>
+    <p><b>Document</b> what was asked, what was found, what was agreed, who is doing it, and by
+    when.</p>
+    <p style="margin-bottom:0"><b>Ask again.</b> Means access changes. One conversation at
+    admission is not a plan.</p>
+  </details>
+
+  <div class="sources">
+    <b>Method source.</b> Stanley B, Brown GK. Safety Planning Intervention: a brief intervention
+    to mitigate suicide risk. <em>Cogn Behav Pract.</em> 2012;19(2):256&ndash;64. The form itself is
+    copyrighted (Stanley &amp; Brown, 2008, 2021) and is <b>not reproduced here</b> — see the route
+    above. This tool never calls its content &ldquo;a Stanley&ndash;Brown Safety Plan&rdquo; and
+    produces no plan document.
+    <br><br>
+    <b>Rights discipline.</b> Recorded in <code>instrument_rights.json</code> (<code>stanley-brown</code>,
+    status <code>restricted</code>): the instrument's own terms name programming the form as
+    reproduction, which is why WP-06R-b is a rehearsal tool. The official-source route above is the
+    one recorded there.
+  </div>
+
+  <footer>Safety Planning Practice · <b>PREVIEW, unattested</b> · Psychiatry Clerkship Library ·
+  Joshua Moss, MD | Psychiatrist</footer>
+</div>
+
+<!-- Crisis contacts are build-injected from crisis_resources.json (site_build/crisis_block.py).
+     The marker is present so promotion out of _prototypes/ picks it up automatically; it renders
+     nothing in this standalone preview. Numbers are NEVER hard-coded here — CLAUDE.md, and the
+     spec leaves LOCAL_POLICY:crisis_contacts open for the author besides. -->
+<!-- crisis-block-html -->
+
+<script>
+/* Safety Planning Practice — preview shell for WP-06R-b.
+ *
+ * Built against SPEC_Safety_Planning_Practice_v1_DRAFT.md, which authorises exactly this:
+ * "Claude Code may build the shell against this structure but must not treat any string as final
+ * until the author marks it so." Every string in STEPS below is therefore a DRAFT carried over
+ * from the spec verbatim, so the author redlines the spec and the tool together.
+ *
+ * Three invariants are enforced HERE, in code, rather than asserted in copy (spec §1):
+ *   1. The learner's rehearsal text is NEVER persisted. It lives in the DOM and dies with the
+ *      step change. There is no localStorage write of free text anywhere in this file.
+ *   2. There is NO export of any kind — no download, no copy-to-clipboard, no print view, no
+ *      generated document. The spec names this the verdict() failure mode.
+ *   3. Only the self-RATING is stored (step id + grade + timestamp), under cw_sp_practice_v1.
+ *      On promotion to the shipped tool layer this is swapped for the build-injected cw_srs_v1
+ *      adapter (/*__SRS_STORE__* / + /*__SM2_APPLY_GRADE__* / markers) so the cards join the
+ *      shared review queue; keeping it local here lets the preview open as a plain file.
+ */
+(function(){
+  'use strict';
+
+  var STORE_KEY = 'cw_sp_practice_v1';   // cw_* namespace — QA gate hard-fails anything else.
+
+  /* ---- DRAFT clinical content, from the spec. Author redlines the spec, not this array. ---- */
+  var STEPS = [
+    {
+      id:'sp1', n:'1', title:'Finding the slope, not the cliff',
+      task:'Get this patient’s own early-warning signature, in their words, specific enough that they could actually notice it.',
+      model:'Think back to the last time things got really bad. What was going on a day or two before the worst of it? Not the worst part — the part just before.',
+      check:[
+        'Did you anchor to a <b>specific past episode</b> rather than asking in general?',
+        'Is what you got <b>observable</b> — a behaviour, a thought, a time of day — rather than “feeling bad”?',
+        'Is it in <b>the patient’s words</b>, not yours?'
+      ],
+      traps:[
+        ['The general question','“What are your warning signs?” gets you a shrug or a textbook answer.'],
+        ['The clinician’s warning signs','you write “increased social withdrawal”; the patient would have said “I stop answering my sister.”'],
+        ['Starting at the cliff','asking about the worst moment gets you the crisis, not the runway. The runway is the part they can act on.']
+      ]
+    },
+    {
+      id:'sp2', n:'2', title:'What you can do alone',
+      task:'Things this person can do without involving anyone else, that have actually worked before.',
+      model:'When you’ve gotten through a bad night before without calling anyone — what did you do? Even if it seems small, or stupid.',
+      check:[
+        'Did you ask what has <b>worked before</b> rather than offering suggestions?',
+        'Is it doable <b>at 3 a.m., alone, with no money and no car</b>?',
+        'Did you test it out loud — <em>“Would that actually be possible on the worst night?”</em>'
+      ],
+      traps:[
+        ['The clinician’s list','you offer deep breathing and a warm bath; nothing on the list is theirs, so nothing on the list gets used.'],
+        ['The untested strategy','“go for a walk,” from someone who does not leave the apartment when it is bad.'],
+        ['Skipping the feasibility check','a strategy that quietly requires daylight, a working car, or another person.']
+      ]
+    },
+    {
+      id:'sp3', n:'3', title:'Somewhere else to be',
+      task:'Interruption, NOT disclosure. People or places that break the spiral without any conversation about suicide.',
+      model:'Who could you be around, or where could you go, just to not be alone with it? You wouldn’t have to talk about any of this.',
+      check:[
+        'Did you make explicit that this is <b>not</b> the telling-someone step?',
+        'Is it available <b>at the hours the crisis actually happens</b>?',
+        'Is it a <b>named</b> person or place, not “friends” or “out”?'
+      ],
+      traps:[
+        ['Collapsing three and four','<b>the most common learner error.</b> The distraction step becomes a second disclosure step, the patient balks, and you lose both.'],
+        ['The unavailable setting','the coffee shop that closes at six, in a crisis that happens at midnight.'],
+        ['Names without a route','a person listed with no way to actually reach them.']
+      ]
+    },
+    {
+      id:'sp4', n:'4', title:'Who you’d actually tell',
+      task:'People this patient WOULD tell — not people who SHOULD be told.',
+      model:'Who’s someone you could tell that it’s a bad night? Not the whole story if you don’t want — just that it’s bad.',
+      check:[
+        'Did you ask who they <b>would</b> tell, not who they <b>should</b>?',
+        'Did you ask <b>what would make it hard</b> to reach out to that person?',
+        'Does that person <b>know they are on the plan</b>?'
+      ],
+      traps:[
+        ['The obligatory family member','the mother the patient hasn’t spoken to in two years goes on the list because it looked thin.'],
+        ['Support that has never been asked','the person named has no idea. Same rule as the family-systems pages: do not write “family supportive” without specific tasks.'],
+        ['Skipping the barrier','you never ask what would stop them from calling, so you never find out the plan is already dead.']
+      ]
+    },
+    {
+      id:'sp5', n:'5', title:'The professional layer',
+      task:'Real numbers, in the patient’s phone, with realistic expectations about what happens when they call.',
+      model:'If it’s the middle of the night and the people on your list aren’t enough — who do you call? Let’s put the number in your phone right now, before you leave.',
+      check:[
+        'Is the number <b>in the patient’s phone, now</b> — not on a handout?',
+        'Does the patient know <b>what actually happens</b> when they call?',
+        'Is there a <b>named clinician and a scheduled appointment</b>, or just an agency?'
+      ],
+      traps:[
+        ['The handout that goes in a drawer','a printed number is not an accessible number.'],
+        ['The unexamined fear of calling','many patients will not use a crisis line because they believe it means police or commitment. If you never ask, you never learn that this step is decorative. Ask: <em>“What do you think would happen if you called?”</em>'],
+        ['The agency without an appointment','“follow up with outpatient” is not a step.']
+      ],
+      /* Crisis numbers are NOT listed here. crisis_resources.json owns them, the block is
+         build-injected, and the spec leaves LOCAL_POLICY:crisis_contacts open besides. */
+      localPolicy:'LOCAL_POLICY:crisis_contacts — the crisis line, the unit’s after-hours number, and the local mobile crisis service. Author to confirm what is listed, and whether the MS3 and resident builds differ.'
+    },
+    {
+      id:'sp6', n:'6', title:'Time and distance from means',
+      task:'Put time and distance between this person and the method they would most plausibly use.',
+      model:'I ask everyone this, and it isn’t about taking anything away from you. When things are at their worst, what’s within reach? Let’s think about how to make that harder to get to for a while.',
+      check:[
+        'Did you <b>normalise before asking</b> — “I ask everyone this”?',
+        'Did you ask about <b>firearms specifically</b>, rather than waiting to be told?',
+        'Did you land on a <b>concrete change, a named person, and a timeframe</b> — not “be careful”?'
+      ],
+      traps:[
+        ['Waiting to be told','means access is never volunteered. It is asked about.'],
+        ['The confiscation frame','framing it as removal starts an argument and ends the conversation.'],
+        ['The unowned action','“we’ll secure the medications,” with nobody named and no date.'],
+        ['Firearm avoidance','the clinician’s discomfort becomes the patient’s risk. This is the honest name for the most common failure in this step.']
+      ]
+    },
+    {
+      id:'spc', n:'✓', title:'The close — who does what by when',
+      task:'Convert a document into owned actions.',
+      model:'Let’s go through it once more. Where will you keep this? Who else has seen it? Who’s doing the thing with the [means], and when?',
+      check:[
+        'Does the patient <b>physically have it</b>, in a form they will actually have on them?',
+        'Is it <b>in the chart</b>?',
+        'Does the person who controls means access <b>know their part</b>?',
+        'Is there a <b>scheduled follow-up contact</b>, and does the patient know when?'
+      ],
+      traps:[
+        ['The plan in the chart only','the patient doesn’t have it.'],
+        ['The unshared plan','the people on it don’t know they’re on it.'],
+        ['The paperwork close','signed, filed, and nothing about the next bad night is different.']
+      ]
+    }
+  ];
+
+  /* Synthetic seeds, spec §5. Fictional composites; author to finalise. */
+  var CASES = [
+    {
+      id:'c1', label:'Pre-discharge, minimises',
+      blurb:'Middle-aged, admitted after an interrupted attempt, now “fine” and eager to leave. A firearm at home, mentioned once and not returned to.',
+      targets:'Step 6 avoidance · the confiscation frame · the paperwork close'
+    },
+    {
+      id:'c2', label:'Post-overdose, young adult',
+      blurb:'Lives with parents. Embarrassed, wants no one told. Medications in a shared bathroom cabinet.',
+      targets:'Steps 3/4 collapse · the obligatory family member · the collateral consent problem in Step 6'
+    },
+    {
+      id:'c3', label:'ED boarding, recent bereavement',
+      blurb:'Older man, stoic, brief answers, first psychiatric contact of his life. No prior treatment.',
+      targets:'Step 1 anchoring · the unexamined fear of calling · firearm avoidance in a patient the learner finds hard to read'
+    }
+  ];
+
+  var GRADES = [['again','Again'],['hard','Hard'],['good','Good'],['easy','Easy']];
+
+  var state = { caseId: CASES[0].id, stepIdx: 0, revealed: false, ratings: load() };
+
+  /* The learner's rehearsal line, held in memory for the length of one step and nothing longer.
+     It is deliberately NOT part of `state`: state.ratings is what save() persists, and keeping
+     the draft out of that object means no future edit can persist it by widening the save call.
+     Captured before any in-step re-render (reveal, grade) so the line survives to be compared
+     against the model; dropped on step or case change, which is what the page promises. */
+  var draft = '';
+  function captureDraft(){
+    var el = document.getElementById('say');
+    if (el) draft = el.value;
+  }
+
+  function load(){
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}') || {}; }
+    catch(_){ return {}; }
+  }
+  function save(){
+    // Ratings only: {stepId: {grade, at}}. No free text ever reaches this call.
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state.ratings)); } catch(_){}
+  }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+  }
+  function ratingKey(){ return state.caseId + ':' + STEPS[state.stepIdx].id; }
+
+  function renderCases(){
+    document.getElementById('cases').innerHTML = CASES.map(function(c){
+      return '<button type="button" class="chip' + (c.id === state.caseId ? ' on' : '') +
+        '" data-case="' + esc(c.id) + '" aria-pressed="' + (c.id === state.caseId) + '">' +
+        esc(c.label) + '</button>';
+    }).join('');
+    var c = CASES.filter(function(x){ return x.id === state.caseId; })[0];
+    document.getElementById('casecard').innerHTML =
+      '<h3 style="margin-top:0">' + esc(c.label) + '</h3><p style="margin:0 0 var(--sp2)">' +
+      esc(c.blurb) + '</p><p class="ephemeral" style="margin:0"><b>This case is built to catch:</b> ' +
+      esc(c.targets) + '</p>';
+  }
+
+  function renderSteps(){
+    document.getElementById('steps').innerHTML = STEPS.map(function(s, i){
+      var done = !!state.ratings[state.caseId + ':' + s.id];
+      return '<button type="button" role="tab" class="stepbtn' + (i === state.stepIdx ? ' on' : '') +
+        '" data-step="' + i + '" aria-selected="' + (i === state.stepIdx) + '">' +
+        esc(s.n) + ' · ' + esc(s.title) +
+        '<span class="dot' + (done ? ' done' : '') + '" aria-hidden="true"></span></button>';
+    }).join('');
+  }
+
+  function renderStep(){
+    var s = STEPS[state.stepIdx];
+    var rated = state.ratings[ratingKey()];
+    var html = '<div class="card">';
+    html += '<h2>' + esc(s.n) + ' · ' + esc(s.title) + '</h2>';
+    html += '<div class="task"><b>Your task.</b> ' + esc(s.task) + '</div>';
+
+    html += '<label class="rehearse" for="say">Write the sentence you would actually say.' +
+      '<span>Out loud is better. Do not look ahead — producing the line is the exercise; ' +
+      'recognising a good one is not.</span></label>';
+    // The learner's line must SURVIVE the reveal — comparing it against the model is the whole
+    // exercise, and re-rendering into a fresh empty box destroyed it exactly when it was needed
+    // (Codex review on #533). `draft` is an in-memory variable: it never reaches storage, and it
+    // is dropped on step or case change, which is what the line below promises.
+    html += '<textarea id="say" placeholder="Type or say your opening line…">' + esc(draft) + '</textarea>';
+    html += '<p class="ephemeral">Not saved, not sent, not recoverable — this box is cleared ' +
+      'when you change step or case.</p>';
+
+    if (!state.revealed) {
+      html += '<button type="button" class="btn" id="revealbtn">I’ve got my line — show me a model →</button>';
+    } else {
+      html += '<div class="reveal">';
+      html += '<h3>A model line</h3>';
+      html += '<div class="model">“' + esc(s.model) + '”' +
+        '<small>One way to say it, not the only way. Compare against yours — the ' +
+        'self-check below is what actually matters.</small></div>';
+      html += '<h3 style="margin-top:var(--sp3)">Self-check</h3><ol class="selfcheck">' +
+        s.check.map(function(c){ return '<li>' + c + '</li>'; }).join('') + '</ol>';
+      html += '<div class="traps"><h3>Traps</h3><ul>' + s.traps.map(function(t){
+        return '<li><em>' + esc(t[0]) + '</em> — ' + t[1] + '</li>';
+      }).join('') + '</ul></div>';
+      if (s.localPolicy) {
+        html += '<p style="margin-top:var(--sp3)"><span class="localpolicy">' +
+          esc(s.localPolicy) + '</span></p>';
+      }
+      html += '<div class="rate"><span>How did that go?</span>' + GRADES.map(function(g){
+        return '<button type="button" data-grade="' + g[0] + '"' +
+          (rated && rated.grade === g[0] ? ' class="on"' : '') + '>' + esc(g[1]) + '</button>';
+      }).join('') + '</div>';
+      html += '<button type="button" class="btn secondary" id="nextbtn">Next step →</button>';
+      html += '</div>';
+    }
+    html += '</div>';
+    document.getElementById('stepcard').innerHTML = html;
+  }
+
+  function render(){ renderCases(); renderSteps(); renderStep(); }
+
+  document.addEventListener('click', function(ev){
+    var t = ev.target.closest ? ev.target.closest('[data-case],[data-step],[data-grade],#revealbtn,#nextbtn') : null;
+    if (!t) return;
+    // Leaving the step drops the draft; staying on it keeps the line alive across the re-render.
+    // Note dataset values are STRINGS, so step 0 arrives as "0" — truthy, and the first tab works.
+    if (t.dataset.case)  { draft = ''; state.caseId = t.dataset.case; state.revealed = false; render(); return; }
+    if (t.dataset.step)  { draft = ''; state.stepIdx = +t.dataset.step; state.revealed = false; render(); return; }
+    if (t.id === 'revealbtn') { captureDraft(); state.revealed = true; renderStep(); return; }
+    if (t.dataset.grade) {
+      captureDraft();
+      state.ratings[ratingKey()] = { grade: t.dataset.grade, at: Date.now() };
+      save(); renderSteps(); renderStep(); return;
+    }
+    if (t.id === 'nextbtn') {
+      draft = '';
+      state.stepIdx = Math.min(state.stepIdx + 1, STEPS.length - 1);
+      state.revealed = false; render();
+      document.getElementById('stepcard').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

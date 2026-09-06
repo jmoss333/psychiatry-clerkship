@@ -82,12 +82,12 @@ export default defineConfig({
   projects: [
     {
       name: 'nav-ms3',
-      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'qbank-retired.spec.js', 'aria-live.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js'],
+      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'qbank-retired.spec.js', 'aria-live.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: MS3_URL },
     },
     {
       name: 'nav-res',
-      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'communication-practice.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js'],
+      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'communication-practice.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: RES_URL },
     },
     // Production-only. See CANARY_SHARED_SPECS above for why these are narrower than nav-*.
@@ -104,6 +104,14 @@ export default defineConfig({
     {
       name: 'lfs',
       testMatch: 'lfs-integrity.spec.js',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    // No baseURL on purpose (the lfs precedent): prototypes are driven over file://, because
+    // that is how a person opens them. The spec blocks the network itself, so this project
+    // needs no server and behaves identically in CI and in a sandbox.
+    {
+      name: 'prototypes',
+      testMatch: 'prototypes.spec.js',
       use: { ...devices['Desktop Chrome'] },
     },
     {
