@@ -111,7 +111,32 @@ function fdBlockRouteForStep(step){
   var s=step||{};
   if(s.kind==='review') return '?tool=review.html&block=1&limit='+encodeURIComponent(String(s.n||1));
   if(s.kind==='qb') return '?tool=question-bank-practice.html&block=1&n='+encodeURIComponent(String(s.n||5))+(s.cat?'&cat='+encodeURIComponent(String(s.cat)):'');
-  return '?page='+encodeURIComponent(String(s.ref||''));
+  return '?page='+encodeURIComponent(String(s.ref||''))+'&block=1';
+}
+
+/* The page's primary action records this reading and follows the saved block, even when the
+   ordinary weekly auto-advance preference is off. A matching page is required: browsing away
+   from a live block must not turn an unrelated resource into one of its steps. Derive the
+   prospective status without mutating the saved block or the caller's progress map. */
+function fdBlockPageHandoff(block, ref, doneMap){
+  var steps=block&&block.steps||[], found=false, done={}, i, key;
+  for(i=0;i<steps.length;i++){
+    if(steps[i]&&steps[i].kind==='page'&&steps[i].ref===ref){ found=true; break; }
+  }
+  if(!found) return null;
+  for(key in (doneMap||{})){
+    if(Object.prototype.hasOwnProperty.call(doneMap,key)) done[key]=doneMap[key];
+  }
+  done[ref]=true;
+  return fdBlockStatus(block, done);
+}
+
+function fdBlockHandoffLabel(handoff){
+  var next=handoff&&handoff.next;
+  if(!next) return 'Finish block →';
+  if(next.kind==='qb') return 'Continue to your '+next.n+' question'+(next.n===1?'':'s')+' →';
+  if(next.kind==='review') return 'Continue to your '+next.n+' review'+(next.n===1?'':'s')+' →';
+  return 'Continue: '+next.title+' →';
 }
 
 /* Done state per step, page steps derived from the progress map. */

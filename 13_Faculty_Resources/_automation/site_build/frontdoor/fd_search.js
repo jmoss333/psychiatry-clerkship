@@ -49,22 +49,10 @@
    week set, the raw candidate count can reach 9 and the cap trims the last pinned tool -- see
    the header note above; this is the prototype's own behaviour, not a bug introduced here.
 
-   ---- Sheet-vs-navigate signalling (task-8-brief.md's flagged divergence) ----
-   Every other row in this codebase that carries data-fd-open="<ref>" NAVIGATES (fd_today.js's
-   .fd-row__open/.fd-pick/.fd-quicktool, fd_library.js's .fd-collink, fd_reader.js's
-   .fd-prevnext__btn/.fd-railnav__row). Search results must NOT: the overlay's own footer copy
-   promises "opens as a side sheet -- whatever you're doing stays put", and Task 7's review
-   already flagged that reusing data-fd-open unchanged gives the wiring layer no way to tell a
-   search pick apart from a normal row. Two established conventions cover the two result kinds
-   without inventing a new "open an item" attribute name:
-     - protocol results reuse data-fd-safety="<ref>" UNCHANGED -- fd_today.js's fdKitCard already
-       established this exact payload ("a kit ref opens that protocol's sheet directly"), so a
-       protocol search hit is indistinguishable, on the wire, from clicking its safety-kit card.
-     - item results keep data-fd-open="<ref>" (same attribute, same meaning: "this is the ref")
-       and add a bare boolean modifier, data-fd-sheet, alongside it. The wiring layer's existing
-       data-fd-open handler branches on whether that modifier is present on the SAME element
-       before deciding sheet-vs-navigate, rather than a second attribute name carrying the ref a
-       second time. Task 9 (fd_sheet.js) is the consumer of both signals.
+   ---- Search destinations ----
+   Ordinary results navigate directly via data-fd-open, like the library and weekly rows.
+   Safety results retain data-fd-safety and its established quick-access protocol panel.
+   The explicit data-fd-sheet modifier remains available to other preview surfaces.
 
    Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. */
@@ -297,9 +285,7 @@ function fdSearchResults(index, query, synonyms, state){
   return protoResults.concat(itemResults).slice(0,8);
 }
 
-/* See the header note "Sheet-vs-navigate signalling" -- protocol rows carry data-fd-safety
-   (the established kit-card payload), item rows carry data-fd-open plus the bare data-fd-sheet
-   modifier so the SAME attribute keeps meaning "this is the ref" everywhere in the codebase. */
+/* Protocol rows keep the safety panel; ordinary results open the resource directly. */
 function fdSearchResultRow(r){
   var it=r.item;
   var isProto=(r.kind==='protocol');
@@ -308,7 +294,7 @@ function fdSearchResultRow(r){
   else if(it.kind==='tool'&&!it.rights) dotCls+=' is-tool';
   var openAttrs=isProto
     ?(' data-fd-safety="'+fdEsc(it.ref)+'"')
-    :(' data-fd-open="'+fdEsc(it.ref)+'" data-fd-sheet');
+    :(' data-fd-open="'+fdEsc(it.ref)+'"');
   return '<button type="button" class="fd-result"'+openAttrs+'>'+
     '<span class="'+dotCls+'"></span>'+
     '<span class="fd-result__title">'+fdEsc(it.title)+'</span>'+
@@ -348,8 +334,7 @@ function fdSearchOverlay(index, query, synonyms, state){
     for(var i=0;i<results.length;i++){ out+=fdSearchResultRow(results[i]); }
   }
   out+='</div>';
-  out+='<div class="fd-searchpanel__foot">↵ opens as a side sheet — whatever you\'re '+
-    'doing stays put.</div>';
+  out+='<div class="fd-searchpanel__foot">Choose a result to open it. Safety protocols open in a quick-access panel.</div>';
   out+='</div>';
   out+='</div>';
   return out;

@@ -5,7 +5,7 @@
 
 Welcome. This rotation is built as a **structured six-week arc** so that wherever you are in the year, you get the same strong foundation in inpatient psychiatry — and prepare for the shelf and a future sub-internship.
 
-The hub is meant to be useful in the moment: a structured sequence from foundations to integration, plus bedside tools, clinical one-pagers, and readings you can navigate by week, topic, or tool. Use it when it helps you prepare for rounds, understand a patient, practice a skill, or review for the exam.
+The hub is meant to be useful in the moment: a suggested sequence from foundations to integration, plus bedside tools, clinical one-pagers, and readings you can navigate by week, topic, or tool. Use it when it helps you prepare for rounds, understand a patient, practice a skill, or review for the exam. Confirm required work with your supervising team — the hub suggests, it does not assign.
 
 **What you'll do.** Work as part of the treatment team on the inpatient unit: interview and follow patients, build differentials and formulations, present on rounds, participate in family meetings, and practice safe, evidence-based management under direct supervision.
 
