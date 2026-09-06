@@ -139,7 +139,13 @@ cd tests/smoke && npm ci && npx playwright test
   prunes a checklist), and a measurement that **fails reports `unknown`, never zero** — zero means
   done and would silently retire real work. A metric nobody can drive to zero does not belong in
   it: "topics with no book" and "unattributed claims" were both dropped for that, one a category
-  mismatch, the other gameable by renaming a heading. Report-only, exits 0, not a gate.
+  mismatch, the other gameable by renaming a heading. **The mirror failure is worse**: a task
+  whose predicate a DIFFERENT task's output can satisfy retires work that never happened —
+  "isbn-verify" (confirm each edition against a catalogue) was measured by whether the line
+  carried an ISBN-13, so the moment `isbn-derive` wrote them it reported 0 of 51 and retired,
+  having queried nothing. A never-retiring task wastes runs; a falsely-retiring one loses the
+  work silently. Confirmation needs its own persisted marker, so until something records one the
+  task is not listed. Report-only, exits 0, not a gate.
 - `docs/SILENT_SHRINK_CHECKLIST.md` — the failure mode every `bin/` tool exists for, as a
   checklist: **a check reporting success over a set smaller than the one it claims to check.**
   Twelve entries, each earned by a defect that actually shipped here (#480, #517, #534, #539,

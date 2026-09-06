@@ -111,7 +111,7 @@ test('judgement tasks can never be picked up by a runner', () => {
   // coverage-unserved is curation — what belongs in front of a learner is not mechanisable.
   // faculty-review is an attestation: a person putting their name to a clinical page.
   const q = (s) => py(s, 'what_can_i_do_today');
-  for (const key of ['coverage-unserved', 'faculty-review', 'isbn-verify', 'podcast-canonical']) {
+  for (const key of ['coverage-unserved', 'faculty-review', 'podcast-canonical', 'instrument-routes']) {
     const auto = q(`t = next(t for t in M.TASKS if t["key"] == ${JSON.stringify(key)})
 print(M.is_autonomous(t))`);
     assert.equal(auto, 'False', `${key} must not be autonomous`);
@@ -173,4 +173,35 @@ test('the queue asks the deriver what is left, rather than deciding for itself',
   const src = fs.readFileSync(path.join(repo, 'bin', 'what_can_i_do_today.py'), 'utf8');
   assert.match(src, /import derive_isbn13 as deriver/,
     'measure_isbn_derivable must import the deriver, not re-derive its rule');
+});
+
+test('no task retires on another task\'s output', () => {
+  // The mirror of the infinite-loop bug, and worse: "isbn-verify" (confirm each edition against
+  // a catalogue) was measured by whether the line carried an ISBN-13. The moment isbn-derive
+  // wrote those ISBNs it reported 0 of 51 and retired itself, having queried nothing — real work
+  // vanished because a DIFFERENT task's output satisfied its predicate. Found by an automated
+  // review, not by the tests, which is why this one exists.
+  //
+  // Guard the general property: do the work of every autonomous task, then assert that no OTHER
+  // task changed its mind about being finished.
+  const books = path.join(repo, '07_Evidence_and_Reading', 'Book_Summaries', 'ms3_book_library.md');
+  const original = fs.readFileSync(books, 'utf8');
+  const statuses = () => JSON.parse(py(
+    `import json; print(json.dumps({t["key"]: (M.evaluate(t, {})[0]) for t in M.TASKS}))`,
+    'what_can_i_do_today'));
+  try {
+    const before = statuses();
+    const auto = JSON.parse(py('import json; print(json.dumps([t["key"] for t in M.TASKS if M.is_autonomous(t)]))',
+      'what_can_i_do_today'));
+    spawnSync('python3', [path.join(repo, 'bin', 'derive_isbn13.py'), '--write'],
+      { cwd: repo, encoding: 'utf8', timeout: 120_000 });
+    const after = statuses();
+    for (const [key, was] of Object.entries(before)) {
+      if (auto.includes(key)) continue;            // the task that did the work may change
+      assert.equal(after[key], was,
+        `${key} changed status because another task ran — it is measuring someone else's output`);
+    }
+  } finally {
+    fs.writeFileSync(books, original);
+  }
 });

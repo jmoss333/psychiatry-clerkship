@@ -84,47 +84,26 @@ LAST_RUN = AUTOMATION / "surveillance" / "history" / "last_run.json"
 #     bibliography line, and renaming one heading retires items without touching a claim.
 # A number nobody can drive to zero is a mood, not a queue.
 
-def _isbn10_valid(code):
-    return sum((10 - i) * (10 if c in "Xx" else int(c)) for i, c in enumerate(code)) % 11 == 0
-
-
-def _book_entries():
-    # Key on "- **", not "- **[": an entry with no link at all is maximally unresolved
-    # and must not be invisible to both numerator and denominator.
-    return [ln for ln in BOOKS.read_text(encoding="utf-8").splitlines() if ln.startswith("- **")]
-
-
 # A route that is vendor-independent. Matched positively: a negative "not amazon.com"
 # test would let an amzn.to shortlink or amazon.co.uk retire an entry falsely.
-DURABLE_HOST = re.compile(r"openlibrary\.org|worldcat\.org|doi\.org|\bisbn", re.I)
-ISBN13 = re.compile(r"\b97[89][-\s]?(?:\d[-\s]?){10}\b")
-
-
-def measure_isbn():
-    entries = _book_entries()
-    unresolved = [ln for ln in entries
-                  if not (ISBN13.search(ln) or DURABLE_HOST.search(ln))]
-    return len(unresolved), len(entries)
-
-
 def measure_isbn_derivable():
     """Book entries the deriver would still change.
 
     This imports bin/derive_isbn13.py's OWN notion of an unfinished line rather than
-    re-deriving one. That is not tidiness — it is the difference between a task that
-    retires and one that cannot. An earlier version counted "ASINs that are valid
-    ISBN-10s", a number the work does not move, because the ISBN is recorded BESIDE the
-    Amazon link rather than replacing it. The task therefore reported 51/51 ready forever,
-    and the nightly runner built on top of it would have opened an empty draft PR every
-    night for the rest of time — breaking the self-retirement contract on the very task
-    chosen to demonstrate it.
+    re-deriving one. That is not tidiness — it is the difference between a task that retires
+    and one that cannot. An earlier version counted "ASINs that are valid ISBN-10s", a number
+    the work does not move, because the ISBN is recorded BESIDE the Amazon link rather than
+    replacing it. The task reported 51/51 ready forever, and the nightly runner built on it
+    would have opened an empty draft PR every night.
 
-    The rule this encodes: when a task has a `run` script, the queue must ask THAT SCRIPT
-    what is left. Two independent definitions of "done" is one too many.
+    The rule this encodes: when a task has a `run` script, the queue must ask THAT SCRIPT what
+    is left. Two independent definitions of "done" is one too many — and the other way round,
+    a predicate that a DIFFERENT task's output can satisfy retires work that never happened,
+    which is how isbn-verify came to mark itself finished without querying a catalogue.
 
-    The surprise that makes the work possible at all is unchanged: every book links to
-    amazon.com/dp/<ASIN>, and for a print book Amazon's ASIN IS the ISBN-10 — all of them
-    pass the check digit — so ISBN-13 is arithmetic, not a lookup.
+    The surprise that makes the work possible at all: every book links to
+    amazon.com/dp/<ASIN>, and for a print book Amazon's ASIN IS the ISBN-10 — all of them pass
+    the check digit — so ISBN-13 is arithmetic, not a lookup.
     """
     bin_dir = ROOT / "bin"
     sys.path.insert(0, str(bin_dir))
@@ -281,16 +260,6 @@ TASKS = [
         "why": "The real holes. A learner on one of these finds nothing on any surface. Curation, "
                "not network — which makes it the substantial piece an offline session can finish.",
         "do": "python3 13_Faculty_Resources/_automation/library_coverage_scan.py   # then curate",
-    },
-    {
-        "key": "isbn-verify",
-        "title": "Confirm each book's edition against a catalogue",
-        "host": "books",
-        "measure": measure_isbn,
-        "unit": "books with no ISBN-13 and no vendor-independent route",
-        "why": "The identifier can be derived offline (see isbn-derive); confirming it names the "
-               "edition each summary actually describes is the half that needs a lookup.",
-        "do": "get a books.googleapis.com key, then query it per ISBN-13",
     },
     {
         "key": "instrument-routes",
