@@ -88,7 +88,7 @@ TARGETS = [
     {
         "key": "doi",
         "url": "https://doi.org/10.1001/jama.2020.1585",
-        "gates": "run_citation_check.py DOI resolution — 102 doi.org URLs in evidence_registry.json",
+        "gates": "run_citation_check.py DOI resolution — 645 distinct DOIs/PMIDs cited across the curriculum (86 of evidence_registry.json's citation.urls are DOIs; a raw grep says 102 because 16 are prose mentioning a DOI, not resolvable citation URLs)",
     },
     {
         "key": "apify",
