@@ -8,12 +8,22 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
 from maintenance.receipt_summary import (  # noqa: E402
+    BLOCKED_EXIT,
+    DEFERRED_ROW_STATES,
     FAILED_MARKER,
     HEALTHY_ROW_STATE,
     MAX_ROWS,
+    classify,
+    deferral,
+    render_rows,
     report,
     summarize,
 )
+from maintenance import sp_health_monitor, stranded_prs, workflow_heartbeat  # noqa: E402
+
+# Every steward that derives its exit code from a receipt. The fleet contract is
+# only worth having if it is the same contract in each of them.
+STEWARDS = (sp_health_monitor, stranded_prs, workflow_heartbeat)
 
 
 class SummarizeFlatReceiptTests(unittest.TestCase):
@@ -272,6 +282,204 @@ class ExplicitVerdictTests(unittest.TestCase):
         stream = io.StringIO()
         report(self._blocked(), "heartbeat", stream=stream, failed=False)
         self.assertTrue(stream.getvalue().startswith("heartbeat: gate=blocked"))
+
+
+class ClassifyTests(unittest.TestCase):
+    """`classify` decides whose failure a row is, subtractively.
+
+    The direction is the whole design. A row is this steward's UNLESS it is
+    healthy, deferred, or explicitly delegated — so a state nobody has taught
+    this module about goes red rather than exiting 0 in silence. Enumerating the
+    owned states instead is the shape workflow_heartbeat shipped in #531, and it
+    had exactly that hole.
+    """
+
+    def _rows(self, *pairs, key="workflows", id_key="workflowFile"):
+        return {
+            "gate": "blocked",
+            key: [{id_key: name, "state": state} for name, state in pairs],
+        }
+
+    def test_an_unrecognized_state_belongs_to_this_steward(self):
+        own, elsewhere = classify(self._rows(("ci.yml", "quota_exhausted")))
+        self.assertEqual(own, [("ci.yml", "quota_exhausted")])
+        self.assertEqual(elsewhere, [])
+
+    def test_an_unrecognized_state_is_not_rescued_by_a_delegation(self):
+        # Declaring a delegation must narrow what this steward owns, never widen
+        # what it ignores.
+        own, elsewhere = classify(
+            self._rows(("ci.yml", "quota_exhausted")), delegated=frozenset({"failed"})
+        )
+        self.assertEqual([state for _, state in own], ["quota_exhausted"])
+        self.assertEqual(elsewhere, [])
+
+    def test_healthy_and_deferred_rows_are_neither(self):
+        rows = [("a.yml", HEALTHY_ROW_STATE)]
+        rows += [(f"{state}.yml", state) for state in sorted(DEFERRED_ROW_STATES)]
+        self.assertEqual(classify(self._rows(*rows)), ([], []))
+
+    def test_a_delegated_state_lands_in_the_second_list(self):
+        own, elsewhere = classify(
+            self._rows(("a.yml", "failed"), ("b.yml", "stale")),
+            delegated=frozenset({"failed"}),
+        )
+        self.assertEqual(own, [("b.yml", "stale")])
+        self.assertEqual(elsewhere, [("a.yml", "failed")])
+
+    def test_an_empty_delegation_keeps_everything(self):
+        own, elsewhere = classify(self._rows(("a.yml", "failed")))
+        self.assertEqual(own, [("a.yml", "failed")])
+        self.assertEqual(elsewhere, [])
+
+    def test_a_flat_receipt_is_one_implicit_row(self):
+        self.assertEqual(
+            classify({"gate": "blocked", "state": "actor_timeout"}),
+            ([(None, "actor_timeout")], []),
+        )
+        self.assertEqual(classify({"gate": "ready", "state": HEALTHY_ROW_STATE}), ([], []))
+
+    def test_a_receipt_carrying_both_shapes_is_read_whole(self):
+        # stranded_prs' unavailable receipt: a flat state AND an empty row list.
+        # Reading only the rows would call a monitor that could not look healthy.
+        own, _ = classify(
+            {"gate": "blocked", "state": "unavailable", "pullRequests": []}
+        )
+        self.assertEqual(own, [(None, "unavailable")])
+
+    def test_pull_request_rows_are_classified_by_their_own_key(self):
+        own, _ = classify(
+            self._rows((480, "stranded"), key="pullRequests", id_key="pullRequest")
+        )
+        self.assertEqual(own, [(480, "stranded")])
+
+    def test_receipt_order_is_preserved_within_each_list(self):
+        own, elsewhere = classify(
+            self._rows(
+                ("z.yml", "failed"),
+                ("y.yml", "stale"),
+                ("a.yml", "failed"),
+                ("b.yml", "missing"),
+            ),
+            delegated=frozenset({"failed"}),
+        )
+        self.assertEqual([name for name, _ in own], ["y.yml", "b.yml"])
+        self.assertEqual([name for name, _ in elsewhere], ["z.yml", "a.yml"])
+
+    def test_malformed_input_names_no_blockers_rather_than_raising(self):
+        for receipt in (
+            None,
+            "not-a-receipt",
+            {},
+            {"workflows": "not-a-list"},
+            {"workflows": [None, 7]},
+        ):
+            with self.subTest(receipt=receipt):
+                self.assertEqual(classify(receipt), ([], []))
+
+    def test_an_unhashable_state_does_not_raise(self):
+        # Frozenset membership on a list would explode, in the one module whose
+        # contract is that it never turns a real exit code into a traceback.
+        own, _ = classify(
+            {"workflows": [{"workflowFile": "a.yml", "state": ["boom"]}]},
+            delegated=frozenset({"failed"}),
+        )
+        self.assertEqual(len(own), 1)
+
+
+class RenderAndDeferralTests(unittest.TestCase):
+    """A deferral must be visible, bounded, and safe — or it is just silence."""
+
+    def test_rows_are_capped_with_a_remainder_count(self):
+        entries = [(f"w{i}.yml", "failed") for i in range(MAX_ROWS + 2)]
+        rendered = render_rows(entries)
+        self.assertIn("+2 more", rendered)
+        self.assertNotIn(f"w{MAX_ROWS}.yml", rendered)
+
+    def test_a_row_without_an_identity_still_names_its_state(self):
+        self.assertEqual(render_rows([(None, "unavailable")]), "?:unavailable")
+
+    def test_hostile_values_are_replaced_not_echoed(self):
+        rendered = render_rows([("a\nb", "ok\n##[error]fake")])
+        self.assertEqual(rendered, "?:?")
+
+    def test_an_empty_deferral_is_empty_string(self):
+        self.assertEqual(deferral("heartbeat", [], watcher="other.yml"), "")
+
+    def test_a_deferral_counts_names_and_points_somewhere(self):
+        line = deferral(
+            "heartbeat",
+            [("a.yml", "failed"), ("b.yml", "failed")],
+            watcher="automation-failure-escalation.yml",
+            note="schedule is alive",
+        )
+        self.assertIn("heartbeat: schedule is alive;", line)
+        self.assertIn("2 blocked row(s)", line)
+        self.assertIn("automation-failure-escalation.yml", line)
+        self.assertIn("a.yml:failed", line)
+        self.assertNotIn("\n", line)
+
+    def test_a_hostile_note_or_watcher_is_dropped_or_replaced(self):
+        line = deferral(
+            "heartbeat",
+            [("a.yml", "failed")],
+            watcher="x\ny",
+            note="alive\n##[error]fabricated",
+        )
+        self.assertNotIn("\n", line)
+        self.assertNotIn("fabricated", line)
+        self.assertIn("tracked by ?,", line)
+
+    def test_a_deferral_is_capped_like_every_other_row_list(self):
+        line = deferral(
+            "heartbeat",
+            [(f"w{i}.yml", "failed") for i in range(MAX_ROWS + 3)],
+            watcher="other.yml",
+        )
+        self.assertIn("+3 more", line)
+        self.assertLess(len(line), 240)
+
+
+class FleetContractTests(unittest.TestCase):
+    """One contract, three stewards — checked here rather than per job.
+
+    Each steward declares exactly one thing: the states another watcher owns.
+    Everything else follows from `classify`, so "red means something changed and
+    it is mine" is a property of the fleet, not a fix applied one job at a time.
+    """
+
+    def test_every_steward_declares_what_it_delegates(self):
+        for module in STEWARDS:
+            with self.subTest(module=module.__name__):
+                self.assertIsInstance(module.DELEGATED_STATES, frozenset)
+
+    def test_a_steward_never_delegates_a_state_that_is_merely_deferred(self):
+        # Deferred and delegated are different claims: "nothing is wrong yet"
+        # versus "it is wrong and someone else already has it". A state in both
+        # is a contradiction, and would silently win as deferred.
+        for module in STEWARDS:
+            with self.subTest(module=module.__name__):
+                self.assertEqual(
+                    module.DELEGATED_STATES & DEFERRED_ROW_STATES, frozenset()
+                )
+
+    def test_a_steward_never_delegates_the_healthy_state(self):
+        for module in STEWARDS:
+            with self.subTest(module=module.__name__):
+                self.assertNotIn(HEALTHY_ROW_STATE, module.DELEGATED_STATES)
+
+    def test_no_steward_still_derives_its_exit_code_from_the_gate(self):
+        # The idiom this module exists to replace. `gate` records every unclean
+        # row, including rows another watcher owns; exiting on it is what made
+        # the heartbeat permanently red. This list may only shrink.
+        for module in STEWARDS:
+            source = Path(module.__file__).read_text(encoding="utf-8")
+            with self.subTest(module=module.__name__):
+                self.assertNotIn('receipt["gate"] == ', source)
+
+    def test_the_fleet_agrees_on_what_a_blocked_exit_code_is(self):
+        # escalation_issue quotes it; rotation_readiness reserves 10 for routing.
+        self.assertEqual(BLOCKED_EXIT, 2)
 
 
 class RobustnessTests(unittest.TestCase):
