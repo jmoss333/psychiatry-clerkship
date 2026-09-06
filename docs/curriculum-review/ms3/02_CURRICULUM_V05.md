@@ -53,7 +53,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **collateral** — Ask what changed after the stressor, supports, coping, substance use, and whether risk has escalated.
 - **rounds** — Present stressor timeline, excluded full syndromes, functional impairment, safety assessment, and brief therapy/support plan.
 - **exam** — Adjustment disorder requires stressor-linked distress that does not meet criteria for another disorder and resolves after the stressor ends.
-- **actions** — Open C-SSRS
+- **actions** — Columbia C-SSRS — Official Form & Training
 
 **Embedded check-for-understanding**
 
@@ -282,7 +282,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **collateral** — With permission or safety exception, ask about means, recent behavior, prior attempts, supervision, and discharge environment.
 - **rounds** — Present risk state, risk status, drivers, means access, protective factors, and what supervision or discharge barriers remain.
 - **exam** — Do not treat scales as disposition tools; risk assessment is a formulation plus supervised plan.
-- **actions** — Open C-SSRS; Practice direct suicide questions; Map family safety roles; Open safety collateral workflow
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice direct suicide questions; Map family safety roles; Open safety collateral workflow
 
 **Embedded check-for-understanding**
 
@@ -304,7 +304,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Workflow modes:** `ward`, `safety`, `family`, `5min`, `shelf`
 - **Shelf blueprint tags:** `safety`
 - **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Call-to-action buttons:** Open the Columbia C-SSRS screener; Open safety collateral workflow
+- **Call-to-action buttons:** Columbia C-SSRS — Official Form & Training; Open safety collateral workflow
 - **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-03"}
 
 #### Page text (as shipped)
@@ -526,7 +526,7 @@ directly and then turn answers into a real risk formulation.
 - **collateral** — With permission or safety exception, ask about means, recent behavior, prior attempts, supervision, and the discharge environment.
 - **rounds** — Present risk state, risk status, drivers, means access, protective factors, collateral, and the supervised plan.
 - **exam** — Direct questions do not implant suicidality; safety plans replace no-suicide contracts, and risk tools do not decide disposition.
-- **actions** — Open C-SSRS; Practice direct suicide questions; Map family safety roles
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice direct suicide questions; Map family safety roles
 
 **Family overlay:** `suicide_safety_family_means_restriction`
 
@@ -539,7 +539,7 @@ directly and then turn answers into a real risk formulation.
 - **Workflow modes:** `ward`, `safety`, `family`, `5min`, `shelf`
 - **Shelf blueprint tags:** `safety`
 - **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Call-to-action buttons:** Open C-SSRS; Practice direct suicide questions; Open suicide pocket card
+- **Call-to-action buttons:** Columbia C-SSRS — Official Form & Training; Practice direct suicide questions; Open suicide pocket card
 - **Faculty review:** {"status": "reviewed", "lastReviewed": "2026-07-09", "reviewer": "Joshua Moss, MD"}
 
 #### Page text (as shipped)
@@ -1001,7 +1001,7 @@ Pair this with the Violence Risk tool, the delirium guidance, and the catatonia 
 - **collateral** — Ask family/staff what changed, whether the patient eats/drinks, baseline movement/speech, and prior response to lorazepam or ECT.
 - **rounds** — Present BFCRS signs, medical/NMS rule-out, lorazepam challenge plan, supportive care, and ECT escalation threshold.
 - **exam** — Lorazepam challenge is diagnostic and therapeutic; antipsychotics can worsen malignant catatonia/NMS.
-- **actions** — Open BFCRS; Practice catatonia reasoning
+- **actions** — Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Practice catatonia reasoning
 
 **Embedded check-for-understanding**
 
