@@ -1,0 +1,50 @@
+import {createCipheriv, createDecipheriv, createHash, randomBytes} from 'node:crypto';
+
+export const hash = value => createHash('sha256').update(value).digest('hex');
+export const problem = (status, code) => Object.assign(new Error(code), {status, code});
+const bad = () => problem(400, 'preview_state_invalid');
+export function createStateCodec({key, binding, now=Date.now}) {
+  if (typeof key !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(key) || Buffer.from(key,'base64url').length!==32 || !binding) throw problem(503,'preview_unavailable');
+  const bytes=Buffer.from(key,'base64url'), aad=Buffer.from(binding);
+  function seal(value) {
+    const iv=randomBytes(12), cipher=createCipheriv('aes-256-gcm',bytes,iv);
+    cipher.setAAD(aad);
+    const encrypted=Buffer.concat([cipher.update(JSON.stringify(value),'utf8'),cipher.final()]);
+    return Buffer.concat([iv,cipher.getAuthTag(),encrypted]).toString('base64url');
+  }
+  function open(token) {
+    if(typeof token!=='string'||token.length<40||token.length>120000||!/^[A-Za-z0-9_-]+$/.test(token))throw bad();
+    let value;
+    try {
+      const data=Buffer.from(token,'base64url'), cipher=createDecipheriv('aes-256-gcm',bytes,data.subarray(0,12));
+      cipher.setAAD(aad);cipher.setAuthTag(data.subarray(12,28));
+      value=JSON.parse(Buffer.concat([cipher.update(data.subarray(28)),cipher.final()]).toString('utf8'));
+    }catch{throw bad();}
+    if(!value||value.v!==1||typeof value.sid!=='string'||!/^[a-f0-9]{32}$/.test(value.sid)||typeof value.nonce!=='string'||!/^[a-f0-9]{32}$/.test(value.nonce)
+      ||!Number.isSafeInteger(value.expires)||!Number.isInteger(value.turn)||value.turn<0||value.turn>10
+      ||!Array.isArray(value.history)||value.history.length!==value.turn*2+1||!Array.isArray(value.segments)||value.segments.length<1||value.segments.length>2
+      ||!Number.isInteger(value.completed)||value.completed<0||value.completed>value.segments.length)throw bad();
+    if(now()>=value.expires)throw problem(410,'preview_session_expired');
+    return value;
+  }
+  return {seal,open};
+}
+
+export function initialState(opening,now=Date.now) {
+  return {v:1,sid:randomBytes(16).toString('hex'),nonce:randomBytes(16).toString('hex'),expires:now()+1800000,turn:0,
+    history:[{who:'pt',text:opening,playbackStatus:'pending'}],segments:[opening],completed:0};
+}
+export function nextHistory(state,{text,previousPlayback,previousCompletedSegments}) {
+  if(state.turn>=10)throw problem(409,'preview_encounter_finished');
+  if(typeof text!=='string'||!text.trim()||text.length>1200||/[\u0000-\u001f\u007f]/.test(text)
+    ||!['played','interrupted'].includes(previousPlayback)||!Number.isInteger(previousCompletedSegments)||previousCompletedSegments<0||previousCompletedSegments>state.completed)throw problem(400,'preview_input_invalid');
+  const history=structuredClone(state.history), previous=history.at(-1);
+  const heard=state.segments.slice(0,previousCompletedSegments);
+  if(heard.length){previous.text=heard.join('');previous.playbackStatus='played';if(heard.length<state.segments.length)previous.omittedTail=true;}
+  else previous.playbackStatus='interrupted';
+  history.push({who:'me',text:text.trim()});
+  return history;
+}
+export function issuedState(previous,history,reply,segments) {
+  return {...previous,nonce:randomBytes(16).toString('hex'),turn:previous.turn+1,history:[...history,{who:'pt',text:reply,playbackStatus:'pending'}],segments,completed:0};
+}
