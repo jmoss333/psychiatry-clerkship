@@ -183,6 +183,16 @@ else
   echo "  SKIP  build_and_check ms3/res             (--quick; NOT a gate run)"
 fi
 
+# --- build-OUTPUT contracts: these need the tree the two builds above just produced ---
+# Deliberately after the builds and not in tests/: `node --test` runs before BOTH
+# build_and_check.sh invocations and _build/ starts absent in CI, so a build-output assertion
+# placed there skips exactly where it matters (CLAUDE.md, build-output test paragraph).
+# check_crisis_surfaces.py reads _build/ and skips itself, with the rebuild command, whenever
+# that tree is absent or older than its inputs — so under --quick it checks a build left over
+# from an earlier run if one is current, and says why it checked nothing if not.
+step "unit — crisis surfaces checker"       python3 bin/check_crisis_surfaces.py --self-test
+step "crisis contacts in the built sites"   python3 bin/check_crisis_surfaces.py
+
 echo "─────────────────────────────────────────────────────────────────────"
 if [ ${#FAILED[@]} -eq 0 ]; then
   [ $QUICK -eq 1 ] && { echo "QUICK PASS — builds skipped, not a gate run"; exit 0; }
