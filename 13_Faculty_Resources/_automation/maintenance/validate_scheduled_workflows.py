@@ -189,6 +189,8 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Unit — faculty console modules and pending-visibility invariant"),
             ("name", "Install — managed SP proxy dependencies"),
             ("name", "Test — SP Interview and managed proxy"),
+            ("name", "Install — hosted Dana preview dependencies"),
+            ("name", "Test — hosted Dana preview suite and public build"),
             ("name", "Red-team tier 1 — gate integrity (deterministic probes)"),
             ("name", "Build + static QA gate (ms3)"),
             ("name", "Build + static QA gate (res)"),
@@ -350,7 +352,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "97cce854ae22f6fcbf24a87d220582ea4f125d8136d4c8d306deb9492bcdf5be"
     ),
-    "ci.yml": "4100b90a2dd26cf4467e5d38e2ae1dd83167b2544d674d7f70dd1d238a693692",
+    "ci.yml": "4ac24d1a27d0392bf4c535f04931ed5ee93fd554d5a24f22d8e56dcbe0d3cc57",
     "maintenance-governance-digest.yml": (
         "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
     ),

@@ -214,6 +214,17 @@ jobs:
           bash _prototypes/sp-interview/tests/run-all.sh
           python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py
 
+      - name: Install — hosted Dana preview dependencies
+        run: npm --prefix sp-preview ci
+
+      # The spoken-turn lifecycle, the NDJSON protocol, the budget, the handler, and
+      # the three-file public build. The paid hosted proof (test:hosted) is opt-in
+      # only: it demands DANA_QA_URL and DANA_QA_ACCESS_FILE and never runs here.
+      - name: Test — hosted Dana preview suite and public build
+        run: |
+          npm --prefix sp-preview test
+          npm --prefix sp-preview run build
+
       - name: Red-team tier 1 — gate integrity (deterministic probes)
         run: node bin/redteam-offline.mjs
 
