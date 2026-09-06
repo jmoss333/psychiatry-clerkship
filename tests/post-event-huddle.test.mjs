@@ -5,6 +5,8 @@ import test from 'node:test';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
+import { staleBuildReason } from './_build_freshness.mjs';
+
 // Deterministic acceptance tests for the Post-Event Learning Huddle.
 // V1 design:  docs/superpowers/specs/2026-09-04-post-event-learning-huddle-design.md (§10)
 // Event 2:    docs/superpowers/specs/2026-09-05-post-event-huddle-event-2-discharge-design.md (§5)
@@ -15,11 +17,21 @@ import { fileURLToPath } from 'node:url';
 // universal policy exists, resident-only placement, and a pure deterministic debrief.
 // Since V1.1 the page carries an `events` array selected by ?event=<id>; T14, T16 and T20
 // run per event, and T21/T22 pin the selector and the switcher.
-// T1–T16 and T18–T22 run against the SOURCE file; T17 runs against _build/ when present.
+// T1–T16 and T18–T22 run against the SOURCE file; T17 runs against _build/ when it is CURRENT
+// — see tests/_build_freshness.mjs for why existence is not the same question as freshness.
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SLUG = 'rp-post-event-huddle.html';
 const SRC = path.join(repo, '_prototypes', 'post-event-huddle', SLUG);
+// Every input T17's assertions depend on. site_extras.py is the producer that copies this tool
+// (it is NOT in site_manifest.json); curriculum.json feeds the resident nav and library columns.
+const BUILD_INPUTS = [
+  SRC,
+  path.join(repo, '13_Faculty_Resources', '_automation', 'site_build', 'site_extras.py'),
+  path.join(repo, '13_Faculty_Resources', '_automation', 'site_build', 'build_deploy.py'),
+  path.join(repo, '13_Faculty_Resources', '_automation', 'site_build', 'resident_section.py'),
+  path.join(repo, 'curriculum.json'),
+];
 const html = fs.readFileSync(SRC, 'utf8');
 const lower = html.toLowerCase();
 
@@ -232,7 +244,14 @@ test('T16 pure deterministic debrief logic across all 64 combinations of every e
 test('T17 (build) resident-only: ships on res, absent from ms3, built copy adds only the shared injections', (t) => {
   const res = path.join(repo, '_build', 'res', 'tools', SLUG);
   const ms3 = path.join(repo, '_build', 'ms3', 'tools', SLUG);
-  if (!fs.existsSync(path.join(repo, '_build', 'res'))) { t.skip('no _build/res'); return; }
+  // BOTH trees must be current. A stale _build/res fails the 'built on the resident site'
+  // assertion honestly and then blocks the rebuild that would fix it (build_and_check.sh runs
+  // this suite before build_deploy.py under `set -e`). And the 'absent from ms3' half is
+  // VACUOUS against an ms3 tree that was never built — it would pass a real leak.
+  for (const site of ['res', 'ms3']) {
+    const stale = staleBuildReason(repo, site, BUILD_INPUTS);
+    if (stale) { t.skip(stale); return; }
+  }
   assert.ok(fs.existsSync(res), 'built on the resident site');
   assert.ok(!fs.existsSync(ms3), 'not built on the MS3 site');
   const built = fs.readFileSync(res, 'utf8');
