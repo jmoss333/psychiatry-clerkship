@@ -6,6 +6,8 @@ An isolated engineering/faculty proof of ten spoken turns. This directory does n
 
 Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Run the full root and prototype suites sequentially. The `dist` folder contains only `index.html`, `app.js`, and `styles.css`; never publish the repository root, `_prototypes`, or `sp-preview` itself.
 
+The opt-in `npm run test:hosted` also requires the `tests/smoke` Playwright dependencies, explicit `DANA_QA_URL` and `DANA_QA_ACCESS_FILE` environment variables, and an authorized preview passcode file. It makes one paid opening and ten paid conversation requests, with synthetic recognition and native muted audio at 2x. It never runs as part of `npm test`; reports contain counts/timings, not dialogue, keys, or state receipts. See `ACCEPTANCE.md` for the completed run and its limits.
+
 ## Hosting configuration
 
 Use a separate Netlify preview site with this directory as its base. Keep its provider key and access credentials separate from learner/faculty console credentials. Required Function environment variables:

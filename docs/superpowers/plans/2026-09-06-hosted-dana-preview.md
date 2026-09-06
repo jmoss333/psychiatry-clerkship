@@ -53,8 +53,9 @@
 
 - [x] Test stream validation, one active turn, typed fallback, pause controls, keyboard completion/interruption, memory cleanup, and ten-turn limit.
 - [x] Copy only public allowlisted files to `dist`; bundle the server independently. Assert private source routes are absent.
-- [ ] Verify hosted function routing, no-store headers, restrictive CSP, same-origin microphone policy, and disabled production behavior.
-- [ ] Produce a draft integration PR and isolated deploy preview. Run a ten-turn hosted proof and record latency, cancellation, and failure recovery. A local or bundle pass is not a hosted pass.
+- [x] Verify hosted function routing, no-store headers, restrictive CSP, same-origin microphone policy, and unchanged production behavior.
+- [x] Produce an isolated deploy preview. Run a ten-turn hosted proof and record latency, cancellation, and failure recovery. A local or bundle pass is not a hosted pass.
+- [ ] Publish the packaged commits as a draft integration PR; do not merge or activate learner production.
 
 ## Release boundary
 
@@ -65,3 +66,5 @@ This is an engineering/faculty preview, not learner activation or clinical appro
 The isolated preview has 81 passing focused checks, including provider, budget, encrypted state, browser client, asset allowlist, and function bundle contracts. Desktop/mobile mocked browser checks passed under the actual CSP. The rolling allowance is 72 conservative operation units and the deployment lifetime cap remains 120, allowing verification plus a complete user encounter without raising the lifetime ceiling.
 
 Two hosted-only defects were reproduced and fixed: a custom Function path disabled the default endpoint targeted by the explicit rewrite (404), and build-only DEPLOY_ID was unavailable during invocation (503). The route now uses the default Function endpoint and trusted context.deploy.id. Access probes return 403 without the passcode and 400 for authenticated malformed input, before any provider call.
+
+Actual hosted proof completed: 10 questions via synthetic recognition and Space, 21 native audio completions, no browser/audio errors, no remaining recognition or browser storage, and no mobile overflow. Median Space-to-audio was 2.93 seconds, with a 12.28-second outlier to investigate. A separate hosted Escape test stopped audio and Clear removed the dialogue. The detailed evidence and remaining faculty/learner boundaries are in `sp-preview/ACCEPTANCE.md`.
