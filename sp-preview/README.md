@@ -4,9 +4,13 @@ An isolated engineering/faculty proof of ten spoken turns. This directory does n
 
 ## Local verification
 
-Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Run the full root and prototype suites sequentially. The `dist` folder contains only `index.html`, `app.js`, and `styles.css`; never publish the repository root, `_prototypes`, or `sp-preview` itself.
+Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Both also run in `ci.yml`'s `build-test-validate` job and in `bin/verify.sh`, so a change here reddens a pull request rather than surfacing only when someone remembers the commands. Run the full root and prototype suites sequentially. The `dist` folder contains only `index.html`, `app.js`, and `styles.css`; never publish the repository root, `_prototypes`, or `sp-preview` itself.
 
-The opt-in `npm run test:hosted` also requires the `tests/smoke` Playwright dependencies, explicit `DANA_QA_URL` and `DANA_QA_ACCESS_FILE` environment variables, and an authorized preview passcode file. It makes one paid opening and ten paid conversation requests, with synthetic recognition and native muted audio at 2x. It never runs as part of `npm test`; reports contain counts/timings, not dialogue, keys, or state receipts. See `ACCEPTANCE.md` for the completed run and its limits.
+The opt-in `npm run test:hosted` also requires the `tests/smoke` Playwright dependencies, explicit `DANA_QA_URL` and `DANA_QA_ACCESS_FILE` environment variables, and an authorized preview passcode file. It makes one paid opening and ten paid conversation requests, with synthetic recognition and native muted audio at 2x. It never runs as part of `npm test` or in CI; reports contain counts/timings, not dialogue, keys, or state receipts.
+
+It has two modes. `DANA_QA_MODE=automatic` (the default) is the hands-free proof: it waits out the real 4.5-second quiet window on every turn and makes no click, key press, focus change or composer write after Start — the page counts every such event it receives and the run fails if any arrives. It reports `quietMs` (final recognized words to dispatch) separately from `replyMs` (dispatch to first audio), so the wait for automatic completion is never confused with provider latency. `DANA_QA_MODE=shortcut` retains coverage of the Space completion path as its own separate paid run.
+
+Neither mode is microphone evidence: both replace `SpeechRecognition`, and both assert and record `nativeRecognition: false`. Only a human walkthrough in a supported browser can close that gap. See `ACCEPTANCE.md` for what has and has not been verified.
 
 ## Hosting configuration
 
@@ -39,9 +43,14 @@ The ledger stores hashes, timestamps, and counts only. Each opening reserves one
 
 - Wrong/missing access phrase or origin, altered/expired receipts, and budget exhaustion fail before provider calls.
 - Ten turns work across fresh Function instances. Duplicate requests start no duplicate generation.
-- Space finishes outside input controls; reflective pacing and typed fallback work; Escape stops late playback.
+- A spoken turn sends itself 4.5 seconds after the learner's last words (8 with more thinking time), through ordinary recognition restarts and background noise, with no click or key press. Hold suspends it; Space and Done finish early; Escape stops late playback; a composer edit pauses automatic sending until voice resumes or the question is sent explicitly.
+- An unfinished recognition ending keeps the completed words, recovers the microphone, and never promotes the truncated half into a question.
 - Native MP3 completion, microphone behavior, cancellation, and response delays are verified in the actual hosted browser journey.
 - Private source paths are absent from published assets; public failures contain no provider details or keys.
 - Canonical production voice flags and learner routes remain unchanged.
+
+## Diagnosing a real microphone session
+
+`DanaPreview.session.getDiagnostics()` returns fixed state codes, counts and timings only — no speech, no transcript, no draft text — and is the intended way to establish what happened on a physical microphone without recording anything. `nativeRecognition` distinguishes the browser's own recognition from a synthetic replacement; `automaticSubmissions` and `explicitSubmissions` distinguish turns that sent themselves from turns sent by Space, Done or the composer; `counts.voice_wordless`, `counts.unfinished` and `counts.reconnect` name the three lifecycle paths that previously ended hands-free operation.
 
 Retry/reflection, Morgan, and family information replay are preserved in the packaged local prototype. They are subsequent hosted slices, not implied by this first proof.
