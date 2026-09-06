@@ -106,6 +106,14 @@ export default defineConfig({
       testMatch: 'lfs-integrity.spec.js',
       use: { ...devices['Desktop Chrome'] },
     },
+    // No baseURL on purpose (the lfs precedent): prototypes are driven over file://, because
+    // that is how a person opens them. The spec blocks the network itself, so this project
+    // needs no server and behaves identically in CI and in a sandbox.
+    {
+      name: 'prototypes',
+      testMatch: 'prototypes.spec.js',
+      use: { ...devices['Desktop Chrome'] },
+    },
     {
       name: 'visual',
       testMatch: 'visual-regression.spec.js',
