@@ -1,6 +1,6 @@
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-05 @ `e7bd62b`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-06 @ `c10a31a`.
 
 ## Orientation  *(pinned)*
 
@@ -9,7 +9,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Welcome to the Rotation | `welcome.md` | md | listed | status=`pending` · riskKind=`general` · riskLevel=`low` | `13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md` | 406 |
 | 2 | Orientation Packet | `orientation.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md` | 1010 |
 | 3 | Core Reading List | `core_readings.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md` | 399 |
-| 4 | Orientation Video | `orientation-video.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `_prototypes/video-library/ (build-generated shell)` |  |
+| 4 | Orientation Video | `orientation-video.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `_prototypes/orientation-video/orientation-video.html` |  |
 | 5 | Week 1 — Foundations & the MSE | `week1.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_1_Foundations/README.md` | 433 |
 | 6 | Week 2 — Mood, Psychosis & Pharm | `week2.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md` | 191 |
 | 7 | Week 3 — Psychotherapy & Personality | `week3.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md` | 210 |
@@ -24,7 +24,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Interview & MSE | `pg_interview.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/interview_mse_pocket_guide.md` | 1126 |
 | 2 | Mental Status Exam | `mse.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Mental_Status_Exam/mental-status-exam-module.html` |  |
 | 3 | The Interview Circle | `interview-circle.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Interviewing/interview-circle.html` |  |
-| 4 | The Interview Room — AI Standardized Patient | `sp-interview.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `_prototypes/sp-interview/sp-interview.html` |  |
+| 4 | The Interview Room — AI Standardized Patient | `sp-interview.html` | tool | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `_prototypes/sp-interview/sp-interview.html` |  |
 | 5 | Screeners: PHQ-9 & GAD-7 | `screeners.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Screeners/screeners.html` |  |
 
 ## Understand the Problem
@@ -143,7 +143,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_MS3.md` | 2753 |
 | 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md` | 2601 |
 | 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md` | 2403 |
-| 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md` | 1434 |
+| 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md` | 1447 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md` | 1664 |
 | 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_MS3.md` | 1735 |
 | 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_MS3.md` | 1504 |

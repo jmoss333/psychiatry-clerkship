@@ -9,9 +9,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
-from maintenance.receipt_summary import summarize  # noqa: E402
+from maintenance.receipt_summary import (  # noqa: E402
+    DEFERRED_ROW_STATES,
+    HEALTHY_ROW_STATE,
+    classify,
+    summarize,
+)
 from maintenance.stranded_prs import (  # noqa: E402
     DEFAULT_MAX_IDLE_HOURS,
+    DELEGATED_STATES,
     ROW_OK,
     ROW_STRANDED,
     ROW_WAITING,
@@ -171,6 +177,67 @@ class FetchTests(unittest.TestCase):
     def test_missing_token_is_rejected(self):
         with self.assertRaises(StrandedPRError):
             fetch_open_pulls("jmoss333/psychiatry-clerkship", token="")
+
+
+class FleetContractTests(unittest.TestCase):
+    """Adopting receipt_summary.classify must not move a single verdict here.
+
+    This steward delegates nothing, but for a different reason than
+    sp_health_monitor: the distinction it needs was already made a level up. A
+    row it does not own is `armed_waiting`, which is *deferred* — nothing is
+    wrong yet and nobody has been told — rather than *delegated*, which would
+    mean real and already someone else's. Declaring the empty set says so.
+    """
+
+    def test_delegation_is_empty_and_the_waiting_row_is_deferred_instead(self):
+        self.assertEqual(DELEGATED_STATES, frozenset())
+        self.assertIn(ROW_WAITING, DEFERRED_ROW_STATES)
+        self.assertEqual(ROW_OK, HEALTHY_ROW_STATE)
+
+    def test_classify_agrees_with_the_gate_on_every_row_combination(self):
+        cases = [
+            [],
+            [pull(number=1, idle_hours=0)],
+            [pull(number=2, mergeable_state="dirty")],
+            [pull(number=3, auto_merge=False)],
+            [pull(number=4, draft=True)],
+            [pull(number=5)],
+            [pull(number=6, mergeable_state=None)],
+            [pull(number=7, mergeable_state="behind"), pull(number=8)],
+        ]
+        seen = set()
+        for pulls in cases:
+            receipt = evaluate_pulls(pulls, now=NOW)
+            own, delegated = classify(receipt, delegated=DELEGATED_STATES)
+            with self.subTest(gate=receipt["gate"], rows=len(receipt["pullRequests"])):
+                self.assertEqual(bool(own), receipt["gate"] != "ready")
+                self.assertEqual(delegated, [])
+            seen.add(receipt["gate"])
+        self.assertEqual(seen, {"ready", "blocked"})
+
+    def test_the_unavailable_receipt_still_blocks(self):
+        # main()'s fallback when the API cannot be read: a flat `state` beside an
+        # empty row list. Reading only the rows would call a monitor that could
+        # not look healthy, so classify must see the flat state too.
+        own, _ = classify(
+            {
+                "schemaVersion": 1,
+                "gate": "blocked",
+                "state": "unavailable",
+                "pullRequests": [],
+            },
+            delegated=DELEGATED_STATES,
+        )
+        self.assertEqual(own, [(None, "unavailable")])
+
+    def test_a_row_state_nobody_classified_blocks(self):
+        # If a future revision adds a row state and forgets the gate, the exit
+        # code still goes red rather than passing in silence.
+        own, _ = classify(
+            {"pullRequests": [{"pullRequest": 9, "state": "conflicted"}]},
+            delegated=DELEGATED_STATES,
+        )
+        self.assertEqual(own, [(9, "conflicted")])
 
 
 if __name__ == "__main__":

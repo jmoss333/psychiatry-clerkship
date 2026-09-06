@@ -68,6 +68,16 @@ def compile_guard(claim_id, kind, guard, failures):
         return None
 
 
+def scope_digest(loci):
+    """sha256 over the resolved loci, pointer-labelled and order-independent.
+
+    Labelling with the pointer means two loci swapping values is a change, and
+    sorting means reordering `scope` in the registry is not.
+    """
+    return sha256_text("\n".join(
+        "{}\x00{}".format(pointer, text) for pointer, text in sorted(loci)))
+
+
 def resolve_scope(path, pointers, claim_id, failures):
     """Return the text guards should run against, narrowed to the cited loci.
 
@@ -155,17 +165,91 @@ def check_claim(claim_id, claim, failures, notices):
                             claim_id, at, guard["why"])
                     )
 
+        # Drift detection, in order of precision.
+        #
+        # contentHashAtReview covers the WHOLE file, so on a many-claim file it fires
+        # for edits nowhere near the governed text: topic_meta.json is cited here by 7
+        # and 6 pointers, and any unrelated topic edit flags both claims. A signal that
+        # cries wolf gets ignored, which is worse than no signal.
+        #
+        # scopeHashAtReview covers only the resolved loci, so it fires when the governed
+        # text itself moves and stays quiet otherwise. It is optional: an entry keeps the
+        # whole-file check until a human re-attests, because the registry cannot tell,
+        # from a stale whole-file hash alone, whether the governed loci also changed.
+        scoped_hash = entry.get("scopeHashAtReview")
+        if scoped_hash and entry.get("scope"):
+            if scope_digest(loci) != scoped_hash:
+                notices.append(
+                    "{}: the governed text in {} changed since attestation -- re-check it "
+                    "against the canonical statement, then update scopeHashAtReview".format(
+                        claim_id, rel)
+                )
+            continue
+
         recorded = entry.get("contentHashAtReview")
         if recorded:
             actual = sha256_text(text)
             if actual != recorded:
+                where = (" (whole-file check; the {} governed locus/loci may be untouched -- "
+                         "add scopeHashAtReview to narrow this)".format(len(entry["scope"]))
+                         if entry.get("scope") else "")
                 notices.append(
                     "{}: {} changed since attestation -- re-check it against the "
-                    "canonical statement, then update contentHashAtReview".format(claim_id, rel)
+                    "canonical statement, then update contentHashAtReview{}".format(
+                        claim_id, rel, where)
                 )
 
 
+def self_test():
+    """Prove the scoped digest fires on the governed text and only on it.
+
+    The defect this guards: contentHashAtReview covers the whole file, so an edit
+    anywhere in topic_meta.json (cited here by 7 and 6 pointers) flagged every claim
+    that named it. Four of nine entries were flagged on 2026-09-05 and none of the
+    flags pointed at a governed locus.
+    """
+    import tempfile
+
+    doc = {"items": [{"pearl": "governed text"}, {"pearl": "unrelated text"}]}
+    scope = ["/items/0/pearl"]
+    ok = True
+
+    with tempfile.TemporaryDirectory() as td:
+        target = Path(td) / "f.json"
+
+        def digest(data):
+            target.write_text(json.dumps(data), encoding="utf-8")
+            failures = []
+            loci = resolve_scope(target, scope, "self-test", failures)
+            assert not failures, failures
+            return scope_digest(loci)
+
+        base = digest(doc)
+
+        moved = json.loads(json.dumps(doc))
+        moved["items"][1]["pearl"] = "unrelated text, edited"
+        quiet = digest(moved) == base
+
+        touched = json.loads(json.dumps(doc))
+        touched["items"][0]["pearl"] = "governed text, edited"
+        loud = digest(touched) != base
+
+        whole_file_would_fire = sha256_text(json.dumps(moved)) != sha256_text(json.dumps(doc))
+
+    print("self-test: unrelated edit leaves the scoped digest unchanged = {}".format(quiet))
+    print("self-test: governed edit changes the scoped digest           = {}".format(loud))
+    print("self-test: the same unrelated edit DOES move the whole-file hash = {}"
+          .format(whole_file_would_fire))
+    ok = quiet and loud and whole_file_would_fire
+    print("self-test: {} -- scoped hashing must be quiet on the first and loud on the second"
+          .format("OK" if ok else "FAILED"))
+    return 0 if ok else 1
+
+
 def main():
+    if "--self-test" in sys.argv[1:]:
+        return self_test()
+
     failures = []
     notices = []
 

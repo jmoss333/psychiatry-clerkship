@@ -1,6 +1,6 @@
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-05 @ `e7bd62b`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-06 @ `c10a31a`.
 
 ## Orientation  *(pinned)*
 
@@ -18,7 +18,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Interview & MSE | `pg_interview.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/interview_mse_pocket_guide.md` | 1126 |
 | 2 | Mental Status Exam | `mse.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Mental_Status_Exam/mental-status-exam-module.html` |  |
 | 3 | The Interview Circle | `interview-circle.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Interviewing/interview-circle.html` |  |
-| 4 | The Interview Room — AI Standardized Patient | `sp-interview.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `_prototypes/sp-interview/sp-interview.html` |  |
+| 4 | The Interview Room — AI Standardized Patient | `sp-interview.html` | tool | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `_prototypes/sp-interview/sp-interview.html` |  |
 | 5 | Screeners: PHQ-9 & GAD-7 | `screeners.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Screeners/screeners.html` |  |
 
 ## Understand the Problem
@@ -58,7 +58,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 12 | Withdrawal: COWS Tool · CIWA-Ar Official Form & Training | `withdrawal.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html` |  |
 | 13 | Decisional Capacity | `capacity.html` | tool | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html` |  |
 | 14 | Consult Questions: Capacity, Delirium, Catatonia, Withdrawal | `exp_consult.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md` | 935 |
-| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 1114 |
+| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 1171 |
 | 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1520 |
 
 ## Make a Plan

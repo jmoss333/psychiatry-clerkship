@@ -37,17 +37,27 @@ VALIDATOR = os.path.join(HERE, "validate_curriculum.py")
 SHIPPED_RELATIVE = os.path.join(
     "13_Faculty_Resources", "_automation", "site_build", "shipped_pages.json")
 
+# The rights-reference contract (INV-IR1). validate_curriculum.py resolves
+# instrument_rights.json from ITS OWN location, not from the fixture root, so a fixture must
+# satisfy the REAL contract to be accepted. Derived here rather than restated: a hard-coded
+# copy is exactly how this fixture rotted before — the contract gained a field, the copy did
+# not, and no gate ran the test to say so.
+with open(os.path.join(ROOT, "instrument_rights.json"), encoding="utf-8") as _fh:
+    RIGHTS_REFS = tuple(sorted({
+        page["file"]
+        for entry in json.load(_fh).get("instruments", [])
+        for page in entry.get("pages", [])
+        if page.get("requiredDisclaimerType") == "instrument-not-reproduced"
+    }))
+
 # The six MS3 week landing pages, shaped like the real ones: shared Markdown rows the
 # manifest ships to both sites. prepare_cards resolves each week's landingRef against
 # the listing, so they belong in the listing, not in a second synthetic document.
 WEEK_ROWS = [["src/week%d.md" % n, "week%d.md" % n, "Week %d" % n] for n in range(1, 7)]
 
 MANIFEST = {
-    "tools": [
-        ["src/a.html", "mse.html", "Mental Status Exam"],
-        ["src/bfcrs.html", "bfcrs.html", "BFCRS reference"],
-        ["src/cssrs.html", "cssrs.html", "C-SSRS reference"],
-    ],
+    "tools": [["src/a.html", "mse.html", "Mental Status Exam"]]
+    + [["src/%s" % ref, ref, "%s reference" % ref[:-5].upper()] for ref in RIGHTS_REFS],
     "md": [
         ["src/b.md", "welcome.md", "Welcome to the Rotation"],
         ["src/pg_suicide.md", "pg_suicide.md", "Suicide Safety"],
@@ -99,7 +109,7 @@ FIXTURE_SAFETY_EXCLUDES = [
 ]
 FIXTURE_RIGHTS_EXCLUDES = [
     {"ref": ref, "reason": "outside this fixture — supplied only for rights-reference validation"}
-    for ref in ("bfcrs.html", "cssrs.html")
+    for ref in RIGHTS_REFS
 ]
 FIXTURE_WEEK_EXCLUDES = [
     {"ref": row[1], "reason": "outside this fixture — supplied only for landing-ref validation"}
@@ -204,7 +214,10 @@ def _curriculum(items):
             list(EXTRA_EXCLUDES) + list(FIXTURE_SAFETY_EXCLUDES)
             + list(FIXTURE_RIGHTS_EXCLUDES) + list(FIXTURE_WEEK_EXCLUDES)
         ),
-        "rightsReferences": ["bfcrs.html", "cssrs.html"],
+        "rightsReferences": list(RIGHTS_REFS),
+        # `triggers` became mandatory on 2026-08-28, when "i want to kill myself" was found to
+        # reach pg_suicide.md only through the stopword "to". This fixture went without it for
+        # months and every accept-case here failed — invisibly, because no gate ran the file.
         "safetyKit": [
             {"ref": ref, "sub": "Protocol " + str(index + 1), "triggers": ["safety"]}
             for index, ref in enumerate(SAFETY_REFS)

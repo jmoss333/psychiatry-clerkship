@@ -30,6 +30,13 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
   not the code (2026-08-30 outage) — see `site_build/NETLIFY_LFS_RUNBOOK.md` "Incident pattern 2".
   `site_build/lfs_pull_cached.sh` pulls media inside the build from Netlify's persistent cache so
   a merge costs ~0 MB; it only takes effect once `GIT_LFS_ENABLED` is removed from the site's UI.
+- **`CLERKSHIP_ANALYTICS=off|ms3|res|both`** gates the usage-analytics emitter (`common.py`'s
+  `analytics_enabled_for()`), **default `off`**. Per the rollout in
+  `docs/superpowers/specs/2026-09-04-usage-analytics-design.md`, enabling it is the repo owner's
+  call, not a build default — set it in the Netlify UI per site when the owner decides to enable a
+  site (`res` first, then `both`), never as a repo-wide default. Off ships neither `analytics.js`
+  nor any `CW_SITE`/`CW_PAGE` tag; `check-static-site.mjs` §12 treats that as a clean, gated build,
+  not a failure.
 
 ## Validate & test
 ```bash
@@ -133,6 +140,15 @@ cd tests/smoke && npm ci && npx playwright test
   done and would silently retire real work. A metric nobody can drive to zero does not belong in
   it: "topics with no book" and "unattributed claims" were both dropped for that, one a category
   mismatch, the other gameable by renaming a heading. Report-only, exits 0, not a gate.
+- `docs/SILENT_SHRINK_CHECKLIST.md` — the failure mode every `bin/` tool exists for, as a
+  checklist: **a check reporting success over a set smaller than the one it claims to check.**
+  Twelve entries, each earned by a defect that actually shipped here (#480, #517, #534, #539,
+  #545, #548, the 2026-08-21 annotation pass) and none of them caught by a schema or a type,
+  because each item was individually valid and the corpus was jointly wrong. Run it when you
+  write or review a guard, and use §F to answer it by BREAKING the check rather than by
+  reasoning about it — including the step people skip, reverting the fix to prove the fix is
+  what made the difference. Only §D2 is mechanised (`bin/check_vacuity.py`); the rest is
+  judgment, which is why it is written down.
 - `docs/curriculum-review/findings/` — the review→remediation loop. `export_curriculum_review.py`
   produces the transcripts, a review pass writes `findings.json` (id · verbatim `quote` ·
   ready-to-paste `replacement` · `verification`), and remediation lands as small per-work-package
@@ -149,6 +165,14 @@ cd tests/smoke && npm ci && npx playwright test
 ## Conventions & gotchas
 - **localStorage keys must be namespaced `cw_*` (shared hub) or `rp_*` (resident).** The QA gate
   hard-fails any other prefix. Item-id collisions silently corrupt attestation (`cw_qbank_attest_v1`) and SRS state.
+- **Usage analytics store integers, never events.** `metrics/` is a separate Netlify site whose
+  one function accepts an allowlisted event key and increments a counter keyed by site + ISO week.
+  It stores no IP, user agent, session id, or timestamp finer than the week, and it does not log
+  requests. The allowlist is GENERATED from `shipped_pages.json` — regenerate with
+  `analytics_events.py --write` after adding a page or a tool step, or the freshness gate fails.
+  Cohorts here are 4-10 learners, so reported cells below n=5 are suppressed. Adding a metric is a
+  registry edit, never a free-text string: `check-static-site.mjs` hard-fails a computed or
+  unlisted `cwAnalytics.record()` argument.
 - **No hard-coded `/Users` or `/sessions` paths in tracked `.py`** — CI lints for this; derive from `__file__`.
 - Clinical tools are **single-file HTML** (Clinical Warm palette — build-injected from
   `13_Faculty_Resources/_automation/site_build/clinical-warm.css`). Dose literals
