@@ -99,10 +99,62 @@ sides — both fail against the previous helper.
 The hosted preview suite and its public build now run in `ci.yml` and in
 `bin/verify.sh`. The paid hosted proof is absent from both by design.
 
-## Hosted run record
+## Hosted run record — 2026-09-06, automatic mode
 
-*(This section is completed by an actual `DANA_QA_MODE=automatic` run against the
-deployed preview. Leave it empty rather than describing an intended run.)*
+- Preview: <https://dana--interview-room-faculty-preview.netlify.app>
+- Deploy: `6a9d88fb67b31fba859f641d` (branch-deploy, alias `dana`; the site has no
+  production deploy and remains unlinked from Git by design).
+- Application assets built from `sp-preview/public/` at `dbd3170`.
+- Run: `DANA_QA_MODE=automatic`, 15:43:32–15:46:18 UTC.
+
+**Ten turns sent themselves.** After Start and the opening, the run made no click,
+key press, focus change or composer write. The page counted every `keydown`,
+`pointerdown`, `click`, `focusin` and `input` it received while armed and recorded
+exactly one: `focusin:clear`, which is the application moving focus to the Clear
+button when the encounter ends, after the tenth turn was already complete. No
+learner-capable event occurred at all.
+
+| Measure | Result |
+| --- | --- |
+| Automatic submissions / explicit submissions | 10 / 0 |
+| Quiet window, final recognized words to dispatch | 4500–4503 ms (nominal 4500) |
+| Provider latency, dispatch to first audio | 2450–3759 ms |
+| HTTP responses | 11 × 200; 1 start, 10 turns, 0 blocked extras |
+| Native audio segments created / played / ended / errors | 21 / 21 / 21 / 0 |
+| Transcript rows | 10 learner, 11 Dana, all "Voice completed" |
+| Recognition sessions | 11 (one mid-encounter session end at turn 5, survived) |
+| Page errors / console errors | 0 / 0 |
+| Microphone at End / browser storage / mobile overflow at 390 px | off / empty / none |
+| `nativeRecognition` | **false — synthetic recognition** |
+
+The quiet window is the number the acceptance requirement is about, and it is
+separated from provider latency on purpose: the previous record could only report
+Space-to-audio, which conflates the two and measures the shortcut rather than
+automatic completion.
+
+`captureCounts` from the same run: `wait_interim: 10` — on every turn the service
+delivered `speechend` while an interim was still live, so the timer correctly
+refused to arm until the final result landed. That is the ordering the previous
+test doubles never produced, and the one the repair is built around.
+`reconnect: 1` is the deliberate mid-encounter session end at turn 5.
+
+Two paid runs were made. The first completed all ten turns with the same
+substantive results and failed only on this file's own interaction assertion,
+which had not yet allowed for the application's end-of-encounter focus move; the
+harness now records the event type and target rather than a bare count, so the
+report names what happened instead of leaving it to be inferred. Both runs
+together reserved 62 conservative operation units against the 72-per-half-hour
+and 120-per-deployment ceilings. The redeploy was a single intentional one to
+ship the repair, not a budget reset.
+
+### Still not verified
+
+A physical microphone in a supported browser. Both QA modes replace
+`SpeechRecognition`, so nothing above speaks to real microphone permission, real
+speech-service latency, real accents, or a real noisy room — which is where two of
+the three fixed defects actually live. That check is a human walkthrough; see the
+diagnostics note at the end of this file for how to read the result without
+recording anything.
 
 ## Material limits and next release work
 

@@ -58,7 +58,7 @@ try{
  });
  await page.addInitScript(()=>{
   const NativeAudio=window.Audio;
-  const qa=window.__hostedDanaQA={recognizers:[],audioCreated:0,audioPlaying:0,audioEnded:0,audioErrors:0,durations:[],metrics:[],interactions:0,armed:false};
+  const qa=window.__hostedDanaQA={recognizers:[],audioCreated:0,audioPlaying:0,audioEnded:0,audioErrors:0,durations:[],metrics:[],interactions:[],armed:false};
   window.Audio=function(source){
    const audio=new NativeAudio(source);audio.muted=true;audio.playbackRate=2;qa.audioCreated++;
    let played=false;
@@ -93,10 +93,12 @@ try{
    }
   }
   window.SpeechRecognition=Recognition;window.webkitSpeechRecognition=undefined;
-  // Anything the learner would have had to do is counted, so a hands-free claim
-  // cannot survive a harness that quietly clicked or typed.
+  // Anything the learner would have had to do is recorded by type and target, so a
+  // hands-free claim cannot survive a harness that quietly clicked or typed — and so
+  // the report names what happened instead of leaving a bare count to be guessed at.
   for(const type of ['keydown','pointerdown','click','focusin','input'])
-   document.addEventListener(type,()=>{if(qa.armed)qa.interactions++;},true);
+   document.addEventListener(type,event=>{if(qa.armed&&qa.interactions.length<50)
+    qa.interactions.push(type+':'+((event.target&&event.target.id)||(event.target&&event.target.tagName||'?').toLowerCase()));},true);
  });
  report.stage='load';await page.goto(PREVIEW_URL,{waitUntil:'domcontentloaded'});verify(await page.title()==='Meet Dana · The Interview Room','page_identity');
  await page.locator('#preview-key').fill(passcode);await page.locator('#voice-mode').check();
@@ -128,7 +130,7 @@ try{
   const diagnostics=window.DanaPreview.session.getDiagnostics();
   return {audioCreated:qa.audioCreated,audioPlaying:qa.audioPlaying,audioEnded:qa.audioEnded,audioErrors:qa.audioErrors,durations:qa.durations,
    metrics:qa.metrics.map(({turn,finalAt,dispatchAt,replyMs})=>({turn,quietMs:finalAt!==null&&dispatchAt!==null?Math.round(dispatchAt-finalAt):null,replyMs})),
-   interactionsAfterStart:qa.interactions,activeRecognizers:qa.recognizers.filter(item=>item.active).length,
+   interactionsAfterStart:qa.interactions.slice(),activeRecognizers:qa.recognizers.filter(item=>item.active).length,
    browserStorageEntries:localStorage.length+sessionStorage.length,
    nativeRecognition:diagnostics.nativeRecognition,recognitionSessions:diagnostics.sessions,
    automaticSubmissions:diagnostics.automaticSubmissions,explicitSubmissions:diagnostics.explicitSubmissions,
@@ -146,7 +148,11 @@ try{
  verify(report.metrics.length===10&&quiet.length===10&&replies.length===10,'latency_metrics');
  verify(report.nativeRecognition===false,'synthetic_recognition_declared');
  if(MODE==='automatic'){
-  verify(report.interactionsAfterStart===0,'no_interaction_after_start');
+  // The application moves focus to Clear once the encounter ends, which is its own
+  // accessibility behaviour and happens after the tenth turn is already complete.
+  // Everything else would be a learner action and must not have occurred.
+  const learnerActions=report.interactionsAfterStart.filter(entry=>entry!=='focusin:clear');
+  verify(learnerActions.length===0,'no_interaction_after_start');
   verify(report.automaticSubmissions===10&&report.explicitSubmissions===0,'every_turn_sent_itself');
   // Below the quiet window a turn cannot have waited it out; the upper bound keeps
   // an unbounded stall from passing as success.
