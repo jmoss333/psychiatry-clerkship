@@ -110,6 +110,18 @@
         "13_Faculty_Resources/_automation/site_build/cotw_slug.py",
         "13_Faculty_Resources/_automation/site_build/site_extras.py"
       ]
+    },
+    {
+      "id": "analytics-allowlist",
+      "title": "Analytics event keys come from a generated allowlist",
+      "status": "active",
+      "decided": "2026-09-04",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "docs/superpowers/specs/2026-09-04-usage-analytics-design.md",
+      "note": "Cohorts are 4-10 learners, so aggregate data can still identify. Free text in an event key is the path by which PHI or a re-identifying detail would reach the counter store. Deriving the allowlist from shipped_pages.json makes what can be measured and what ships the same set by construction.",
+      "governs": [
+        "13_Faculty_Resources/_automation/site_build/check-static-site.mjs"
+      ]
     }
   ]
 }

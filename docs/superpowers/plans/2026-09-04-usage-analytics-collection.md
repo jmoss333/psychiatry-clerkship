@@ -34,7 +34,7 @@ Every task's requirements implicitly include all of these. Values are copied ver
 |---|---|---|
 | `bin/check-verify-coverage.py` | **No** | It enforces that every **ci.yml** step has a local equivalent. This plan adds steps to `verify.sh` only and does **not** touch `ci.yml` — `verify.sh` is allowed to be a superset. |
 | `validate_scheduled_workflows.py` step-inventory + sha256 digest | **No** | No workflow YAML is edited, so no digest recompute. |
-| `test_validate_registry_schemas.py` `PAIRS` | **No** | `analytics_events.json` lives in `site_build/`, not the repo root. `PAIRS` pins **root** registries only; this follows the `shipped_pages.json` precedent exactly. |
+| `test_validate_registry_schemas.py` `PAIRS` | **Yes** | `PAIRS` is not root-only: it already carries `shipped_pages.json` (and its schema) by full repo-relative path even though that pair lives beside `site_build/`, not at the repo root. `analytics_events.json` follows that same precedent — it needs the identical full-path entry in both `PAIRS` tuples (the validator's and its test's), not an exemption. |
 
 If a later change *does* add an analytics step to `ci.yml`, all three reactivate — recompute the digest by importing the validator's own `_load`/`_contract_digest` rather than reimplementing its canonicalisation.
 
