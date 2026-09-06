@@ -210,6 +210,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Check 2: LFS integrity — Netlify deploy preview"),
             ("name", "Check 3: visual regression — resident site"),
             ("name", "Check 4: offline shell — service worker"),
+            ("name", "Check 5: prototype contract — file:// with the network blocked"),
             ("uses", "actions/upload-artifact"),
         ),
     },
@@ -352,7 +353,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "97cce854ae22f6fcbf24a87d220582ea4f125d8136d4c8d306deb9492bcdf5be"
     ),
-    "ci.yml": "d6644f87e5eb90f21884dbcd678e9e0752dea04ed607223ed772fbc78279e5cf",
+    "ci.yml": "b7f297b9416398d9232ebca506208d679e75b3a497692bc0f4caff19830b06da",
     "maintenance-governance-digest.yml": (
         "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
     ),
