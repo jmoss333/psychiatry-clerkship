@@ -137,11 +137,16 @@ step "unit — qbank coherence"              python3 bin/check_qbank_coherence.p
 # doctrine calls the paired falsification. Each passes; none needed an exemption. The guards
 # themselves run on a schedule or on demand, but a falsification that never runs is worth
 # nothing wherever its guard runs.
+# check_twin_parity.py is the fifth, and it arrived the other way round: the tool landed on a
+# branch, main grew the vacuity checker, and the merge caught it. The sweep below it is
+# report-only like the qbank one -- read its output, a PASS line is not "nothing found".
 step "unit — decision drift"                python3 bin/check_decision_drift.py --self-test
 step "unit — ruleset drift"                 python3 bin/check_ruleset_drift.py --self-test
 step "unit — claim exposure"                python3 bin/claim_exposure.py --self-test
 step "unit — offrunner findings"            python3 bin/verify_findings_offrunner.py --self-test
+step "unit — twin parity"                   python3 bin/check_twin_parity.py --self-test
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
+step "twin parity (report-only)"           python3 bin/check_twin_parity.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py
 step "evidence drill is regenerated"        python3 $A/generate_evidence_drill.py --check
 step "test_longitudinal_case"               python3 $A/test_longitudinal_case.py
