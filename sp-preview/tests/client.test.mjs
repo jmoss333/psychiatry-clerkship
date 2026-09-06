@@ -21,15 +21,34 @@ function response(events,signal){
 }
 function environment(fetcher){
   let now=0,id=0;const timers=new Map(),calls=[],audios=[],recognizers=[],revoked=[],urls=[];
-  const env={document:{hidden:false},crypto:{randomUUID:()=> '123e4567-e89b-42d3-a456-426614174000'},atob,Blob,
+  const env={document:{hidden:false},now(){return now;},crypto:{randomUUID:()=> '123e4567-e89b-42d3-a456-426614174000'},atob,Blob,
     setTimeout(callback,delay){const key=++id;timers.set(key,{callback,at:now+delay});return key;},clearTimeout(key){timers.delete(key);},
     URL:{createObjectURL(){const value='blob:preview-'+urls.length;urls.push(value);return value;},revokeObjectURL(value){revoked.push(value);}},
     fetch(path,options){calls.push({path,options,body:JSON.parse(options.body)});return fetcher?fetcher(path,options,calls.length):Promise.resolve(response(frames(calls.length-1),options.signal));},
     Audio:class{constructor(src){this.src=src;this.pauses=0;audios.push(this);}play(){return Promise.resolve();}pause(){this.pauses++;}removeAttribute(){this.src='';}load(){}},
-    SpeechRecognition:class{constructor(){this.results=[];this.active=false;recognizers.push(this);}start(){this.active=true;this.onstart?.();}abort(){this.active=false;}emit(text,final=true){const result=Object.assign([{transcript:text}],{isFinal:final});if(final)this.results.push(result);this.onspeechstart?.();this.onresult?.({results:final?this.results:[...this.results,result]});this.onspeechend?.();}}
+    SpeechRecognition:class{
+      constructor(){this.results=[];this.cursor=0;this.active=false;recognizers.push(this);}
+      start(){this.active=true;this.onstart?.();}
+      abort(){this.active=false;}
+      fire(){this.onresult?.({results:this.results,resultIndex:this.cursor});}
+      interim(text){this.results[this.cursor]=Object.assign([{transcript:text}],{isFinal:false});this.results.length=this.cursor+1;this.fire();}
+      final(text){this.results[this.cursor]=Object.assign([{transcript:text}],{isFinal:true});this.cursor++;this.fire();}
+      speechStart(){this.onspeechstart?.();}
+      speechEnd(){this.onspeechend?.();}
+      noSpeech(){this.onerror?.({error:'no-speech'});this.active=false;this.onend?.();}
+      serviceEnd(){this.active=false;this.onend?.();}
+      emit(text,final=true){this.speechStart();if(final)this.final(text);else this.interim(text);this.speechEnd();}}
   };
   function advance(ms){now+=ms;let due;while((due=[...timers].filter(([,timer])=>timer.at<=now).sort((a,b)=>a[1].at-b[1].at)[0])){timers.delete(due[0]);due[1].callback();}}
-  return {env,calls,audios,recognizers,revoked,urls,timers,advance};
+  return {env,calls,audios,recognizers,revoked,urls,timers,advance,
+    live(){return recognizers.filter(item=>item.active).at(-1);},
+    // One spoken utterance in Chrome's real order: speechend arrives before the
+    // final result, several hundred milliseconds after the last interim.
+    speaks(words){const recognition=this.live();assert.ok(recognition,'an active recognizer must be listening');
+      const parts=String(words).split(' ');
+      recognition.speechStart();
+      for(let count=1;count<parts.length;count++){recognition.interim(parts.slice(0,count).join(' '));advance(200);}
+      recognition.speechEnd();advance(400);recognition.final(words);return recognition;}};
 }
 async function finishAudio(harness,index){await until(()=>harness.audios[index]);harness.audios[index].onended?.();await flush();}
 
@@ -110,10 +129,111 @@ test('spoken capture waits 4.5 seconds, waits 8 with thinking time, and hold nev
   capture.setHold(true);h.recognizers[0].emit('I am still thinking');h.advance(60000);assert.equal(submissions,2);capture.setHold(false);h.advance(8000);assert.equal(submissions,3);capture.stop();
 });
 
-test('interim words prevent sending and unfinished speech service endings pause with completed words retained',()=>{
-  const h=environment();let draft='',submissions=0,problem;const capture=createCapture(h.env,{hasDraft:()=>!!draft,onFinal:text=>draft=text,onSubmit:()=>submissions++,onError:error=>problem=error.code});
-  capture.start();h.recognizers[0].emit('I wanted to ask');h.recognizers[0].emit('what matters',false);h.advance(10000);assert.equal(submissions,0);
-  h.recognizers[0].onend();assert.equal(problem,'unfinished_speech');assert.equal(draft,'I wanted to ask');assert.equal(capture.isActive(),false);
+function spoken(h=environment()){
+  let draft='',submissions=0;const notices=[],errors=[];
+  const capture=createCapture(h.env,{hasDraft:()=>!!draft.trim(),onFinal:text=>{draft=(draft.trim()+' '+text).trim();},
+    onSubmit:()=>submissions++,onNotice:error=>notices.push(error.code),onError:error=>errors.push(error.code)});
+  return {h,capture,notices,errors,draft:()=>draft,submissions:()=>submissions,clearDraft(){draft='';}};
+}
+
+test('interim words block sending, and an unfinished ending keeps the words, recovers the microphone, and never auto-sends the truncated half',()=>{
+  const t=spoken();t.capture.start();
+  t.h.speaks('I wanted to ask');
+  const recognition=t.h.live();recognition.speechStart();recognition.interim('what matters');
+  t.h.advance(10000);assert.equal(t.submissions(),0,'a live interim never sends');
+  recognition.serviceEnd();
+  assert.deepEqual(t.notices,['unfinished_speech'],'the learner is told, once, without a fatal error');
+  assert.deepEqual(t.errors,[],'an unfinished ending is recoverable, not a stop');
+  assert.equal(t.draft(),'I wanted to ask','completed words survive');
+  assert.equal(t.capture.isActive(),true,'the microphone comes back by itself');
+  t.h.advance(120000);
+  assert.equal(t.submissions(),0,'the completed half is never promoted to a whole question');
+  t.h.speaks('and what matters to you');
+  t.h.advance(4500);
+  assert.equal(t.submissions(),1,'new speech clears the suspension and the turn sends itself');
+  assert.equal(t.draft(),'I wanted to ask and what matters to you');
+});
+
+test('voice activity that never becomes words cannot suppress the turn forever',()=>{
+  // 'the real question' finalises 800 ms in, so the learner deadline is 5300 ms.
+  const t=spoken();t.capture.start();t.h.speaks('the real question');
+  t.h.advance(1000);t.h.live().speechStart();     // a fan, a hallway voice: the VAD trips
+  t.h.advance(2000);assert.equal(t.submissions(),0,'a possible speaker is given a full grace period');
+  t.h.advance(1499);assert.equal(t.submissions(),0,'the original quiet window is honoured, not restarted');
+  t.h.advance(1);assert.equal(t.submissions(),1,'and it still sends at the learner own deadline');
+  assert.equal(t.capture.isActive(),true);
+
+  // Noise that keeps re-tripping the detector must not compound into a stall.
+  const noisy=spoken();noisy.capture.start();noisy.h.speaks('a second question');
+  for(let burst=0;burst<40&&noisy.submissions()===0;burst++){noisy.h.live().speechStart();noisy.h.advance(500);}
+  assert.equal(noisy.submissions(),1,'repeated wordless trips end at most one grace past the deadline');
+});
+
+test('ordinary silence cycles restart the microphone indefinitely; only a true restart storm stops with an explicit error',()=>{
+  const healthy=spoken();healthy.capture.start();healthy.h.speaks('a question I am still weighing');
+  for(let cycle=0;cycle<30;cycle++){healthy.h.advance(3000);const recognition=healthy.h.live();if(recognition)recognition.noSpeech();healthy.h.advance(0);}
+  assert.deepEqual(healthy.errors,[],'a thinking pause must never retire the microphone');
+  assert.equal(healthy.capture.isActive(),true);
+
+  const storm=spoken();storm.capture.start();
+  for(let cycle=0;cycle<40&&storm.capture.isActive();cycle++){const recognition=storm.h.live();if(recognition)recognition.serviceEnd();storm.h.advance(2000);}
+  assert.deepEqual(storm.errors,['recognition_failed'],'a genuine storm is bounded and surfaced');
+  assert.equal(storm.capture.isActive(),false,'and it stops rather than reconnecting forever');
+});
+
+test('a restart keeps the completed words and the original quiet deadline rather than extending it',()=>{
+  const t=spoken();t.capture.start();t.h.speaks('preserved words');
+  t.h.advance(2000);t.h.live().noSpeech();t.h.advance(0);
+  assert.equal(t.h.recognizers.length,2,'the session was replaced');
+  t.h.advance(2499);assert.equal(t.submissions(),0,'the deadline was not restarted by the reconnect');
+  t.h.advance(1);assert.equal(t.submissions(),1);
+  assert.equal(t.draft(),'preserved words');
+});
+
+test('a late duplicate result list adds no second copy and no second turn',()=>{
+  const t=spoken();t.capture.start();const recognition=t.h.speaks('only once');
+  recognition.fire();recognition.fire();
+  t.h.advance(4500);
+  assert.equal(t.draft(),'only once');assert.equal(t.submissions(),1);
+});
+
+test('ten spoken turns complete with no click, key press, focus change or composer edit after Start',async()=>{
+  const h=environment((path,options,number)=>Promise.resolve(response(frames(number-1,['One completed reply.']),options.signal))),
+        controller=createController(h.env);
+  const opening=controller.start('key',true);await finishAudio(h,0);await opening;
+  assert.equal(controller.getSnapshot().phase,'listening','voice mode is listening as soon as Dana finishes');
+
+  for(let turn=1;turn<=10;turn++){
+    await until(()=>!!h.live());
+    h.speaks('Question number '+turn);
+    // Chrome ends and restarts the session mid-pause; hands-free must survive it.
+    if(turn%3===0){h.advance(1500);h.live().noSpeech();h.advance(0);}
+    h.advance(4500);
+    await until(()=>h.calls.length===turn+1);
+    await finishAudio(h,turn);
+    await until(()=>controller.getSnapshot().turn===turn);
+  }
+
+  const diagnostics=controller.getDiagnostics();
+  assert.equal(diagnostics.startRequests,1,'exactly one opening');
+  assert.equal(diagnostics.turnRequests,10,'exactly ten turns, no duplicates');
+  assert.equal(diagnostics.automaticSubmissions,10,'every turn sent itself');
+  assert.equal(diagnostics.explicitSubmissions,0,'nothing was sent by Send, Space or Done');
+  assert.equal(diagnostics.nativeRecognition,false,'this evidence is synthetic recognition, not a physical microphone');
+  assert.equal(h.calls.length,11);
+  assert.equal(controller.getSnapshot().phase,'ended');
+  assert.equal(h.recognizers.filter(item=>item.active).length,0,'the microphone is off at the end');
+  assert.equal(await controller.send('An eleventh question'),false);
+});
+
+test('a manual composer edit still pauses automatic sending until voice is explicitly resumed',async()=>{
+  const h=environment((path,options)=>Promise.resolve(response(frames(0,['Hello.']),options.signal))),controller=createController(h.env);
+  const opening=controller.start('key',true);await finishAudio(h,0);await opening;
+  controller.setDraft('A question I am still editing.');
+  h.advance(60000);
+  assert.equal(h.calls.length,1,'an edited draft is never sent by the silence timer');
+  assert.equal(controller.getSnapshot().phase,'paused');
+  assert.equal(controller.getDiagnostics().automaticSubmissions,0);
 });
 
 test('page disposal closes audio, revokes its URL, drops draft and cannot resume microphone',async()=>{

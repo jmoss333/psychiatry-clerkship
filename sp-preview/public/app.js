@@ -1,7 +1,7 @@
 (function(root,factory){
   'use strict';var api=factory();
   if(typeof module==='object'&&module.exports)module.exports=api;
-  if(root){root.DanaPreview=api;if(root.document.getElementById('preview-root'))api.mount(root);}
+  if(root){root.DanaPreview=api;if(root.document.getElementById('preview-root'))api.session=api.mount(root);}
 }(typeof window!=='undefined'?window:null,function(){
   'use strict';
   var MAX_AUDIO=4000000,MAX_STATE=128*1024;
@@ -57,45 +57,78 @@
   }
 
   function createCapture(env,callbacks){
-    var Constructor=env.SpeechRecognition||env.webkitSpeechRecognition,current=null,active=false,timer=null,restart=null,serial=0,rapid=0,interim='',thinking=false,hold=false;
+    var Constructor=env.SpeechRecognition||env.webkitSpeechRecognition,current=null,active=false,timer=null,restart=null,serial=0,fruitless=0,interim='',thinking=false,hold=false,quietSince=null,voice=null,suspended=false;
+    // Recognition sessions end and restart on their own. VOICE_GRACE bounds a
+    // voice-activity trip that never produces words (noise), HEALTHY_RUN marks a
+    // session that lived long enough to be an ordinary silence cycle rather than a
+    // failure, and MAX_FRUITLESS bounds a genuine restart storm.
+    var VOICE_GRACE=2000,HEALTHY_RUN=1000,MAX_FRUITLESS=8,TRACE_LIMIT=200,trace=[],counts=Object.create(null);
+    var nativeRecognition=!!Constructor&&/\[native code\]/.test(String(Constructor));
+    function clock(){return typeof env.now==='function'?env.now():env.performance&&typeof env.performance.now==='function'?env.performance.now():Date.now();}
+    function note(code){counts[code]=(counts[code]||0)+1;trace.push({at:Math.round(clock()),code:code});if(trace.length>TRACE_LIMIT)trace.shift();}
     function emit(name,value){if(typeof callbacks[name]==='function')callbacks[name](value);}
     function clear(){env.clearTimeout(timer);timer=null;}
-    function arm(){clear();if(active&&!hold&&!interim&&callbacks.hasDraft())timer=env.setTimeout(function(){timer=null;if(active&&!hold&&!interim)emit('onSubmit');},thinking?8000:4500);}
+    function releaseVoice(){env.clearTimeout(voice);voice=null;}
+    function quiet(){return thinking?8000:4500;}
+    function blocked(){return !active?'inactive':hold?'hold':interim?'interim':suspended?'unfinished':voice?'voice':callbacks.hasDraft()?'':'nodraft';}
+    // The deadline is absolute from the last recognized words, so a restart or a
+    // noise burst resumes the learner's original quiet window instead of extending it.
+    function arm(){clear();var why=blocked();if(why){note('wait_'+why);return;}
+      if(quietSince===null)quietSince=clock();
+      note('armed');timer=env.setTimeout(function(){timer=null;if(blocked())return;note('submit');quietSince=null;emit('onSubmit');},Math.max(0,quietSince+quiet()-clock()));}
     function detach(){var old=current;current=null;if(!old)return;old.onstart=old.onresult=old.onerror=old.onend=old.onspeechstart=old.onspeechend=null;try{old.abort();}catch(_){}}
-    function stop(){active=false;clear();env.clearTimeout(restart);restart=null;detach();interim='';emit('onInterim','');}
-    function fail(code){stop();emit('onError',issue(code));}
+    function stop(){active=false;clear();releaseVoice();env.clearTimeout(restart);restart=null;detach();interim='';suspended=false;quietSince=null;note('stop');emit('onInterim','');}
+    function fail(code){stop();note('fail');emit('onError',issue(code));}
     function connect(){
-      if(!active)return;var recognition=new Constructor(),id=++serial,finals=Object.create(null),madeProgress=false,startedAt=Date.now();current=recognition;
+      if(!active)return;var recognition=new Constructor(),id=++serial,finals=Object.create(null),madeProgress=false,startedAt=clock();current=recognition;
       recognition.lang='en-US';recognition.continuous=true;recognition.interimResults=true;
-      recognition.onstart=function(){if(active&&current===recognition)emit('onReady');};
-      recognition.onspeechstart=function(){if(active&&current===recognition)clear();};
-      recognition.onspeechend=function(){if(active&&current===recognition)arm();};
+      recognition.onstart=function(){if(active&&current===recognition){note('ready');emit('onReady');}};
+      // Voice activity suppresses the quiet deadline only while it might still become
+      // words. Held open indefinitely it is the difference between hands-free and not.
+      recognition.onspeechstart=function(){if(!active||current!==recognition)return;note('voice_start');clear();releaseVoice();
+        // Repeated wordless trips cannot compound: suppression ends at most one grace
+        // period past the learner's own deadline.
+        var budget=quietSince===null?VOICE_GRACE:Math.max(0,quietSince+quiet()+VOICE_GRACE-clock());
+        voice=env.setTimeout(function(){voice=null;note('voice_wordless');arm();},Math.min(VOICE_GRACE,budget));};
+      recognition.onspeechend=function(){if(!active||current!==recognition)return;note('voice_end');releaseVoice();arm();};
       recognition.onresult=function(event){
-        if(!active||current!==recognition)return;var words=[];
+        if(!active||current!==recognition)return;var words=[],heard=false;
         for(var index=0;index<event.results.length;index++){
           var result=event.results[index],text=result[0]&&result[0].transcript||'';
-          if(result.isFinal){if(!finals[index]){finals[index]=true;if(text.trim()){madeProgress=true;emit('onFinal',text.trim());}}}else words.push(text);
+          if(result.isFinal){if(!finals[index]){finals[index]=true;if(text.trim()){madeProgress=true;heard=true;note('words_final');emit('onFinal',text.trim());}}}
+          else{if(text.trim())heard=true;words.push(text);}
           if(!active||current!==recognition)return;
         }
-        interim=words.join(' ').trim();emit('onInterim',interim);if(interim)clear();else arm();
+        if(heard){suspended=false;releaseVoice();quietSince=clock();}
+        interim=words.join(' ').trim();emit('onInterim',interim);if(interim){note('words_interim');clear();}else arm();
       };
       function reconnect(){
-        if(!active||current!==recognition)return;if(interim){fail('unfinished_speech');return;}
-        rapid=madeProgress||Date.now()-startedAt>=5000?0:rapid+1;if(rapid>3){fail('recognition_failed');return;}
-        detach();emit('onConnecting');restart=env.setTimeout(function(){restart=null;try{connect();}catch(_){fail('microphone_unavailable');}},0);
+        if(!active||current!==recognition)return;
+        // Words the service never finished are kept but never auto-sent: recover the
+        // microphone and wait for new speech or an explicit finish instead.
+        if(interim){suspended=true;interim='';clear();note('unfinished');emit('onInterim','');emit('onNotice',issue('unfinished_speech'));}
+        fruitless=madeProgress||clock()-startedAt>=HEALTHY_RUN?0:fruitless+1;
+        if(fruitless>MAX_FRUITLESS){fail('recognition_failed');return;}
+        var delay=fruitless?Math.min(2000,100*Math.pow(2,fruitless-1)):0;
+        detach();note('reconnect');emit('onConnecting',{resuming:true,delayed:delay>0});
+        restart=env.setTimeout(function(){restart=null;try{connect();}catch(_){fail('microphone_unavailable');}},delay);
       }
-      recognition.onend=reconnect;recognition.onerror=function(event){if(!active||current!==recognition)return;if(event.error==='no-speech'){reconnect();return;}fail(event.error==='not-allowed'||event.error==='service-not-allowed'?'microphone_denied':event.error==='audio-capture'?'microphone_unavailable':'recognition_failed');};
+      recognition.onend=reconnect;recognition.onerror=function(event){if(!active||current!==recognition)return;if(event.error==='no-speech'||event.error==='aborted'){note('lifecycle_'+event.error);reconnect();return;}fail(event.error==='not-allowed'||event.error==='service-not-allowed'?'microphone_denied':event.error==='audio-capture'?'microphone_unavailable':'recognition_failed');};
       recognition.start();
     }
-    return {start:function(){if(active)return;if(!Constructor){emit('onError',issue('microphone_unavailable'));return;}active=true;rapid=0;try{connect();}catch(_){fail('microphone_unavailable');}},stop:stop,setThinking:function(value){thinking=!!value;arm();},setHold:function(value){hold=!!value;arm();},edited:function(){interim='';emit('onInterim','');arm();},isActive:function(){return active;}};
+    return {start:function(){if(active)return;if(!Constructor){emit('onError',issue('microphone_unavailable'));return;}active=true;fruitless=0;suspended=false;quietSince=null;note('start');try{connect();}catch(_){fail('microphone_unavailable');}},stop:stop,
+      setThinking:function(value){thinking=!!value;arm();},setHold:function(value){var released=hold&&!value;hold=!!value;note(hold?'hold_on':'hold_off');if(released)quietSince=clock();arm();},
+      edited:function(){interim='';suspended=false;quietSince=clock();note('edited');emit('onInterim','');arm();},isActive:function(){return active;},
+      diagnostics:function(){return {nativeRecognition:nativeRecognition,sessions:serial,counts:Object.assign({},counts),events:trace.slice()};}};
   }
 
   function createController(env,options){
     options=options||{};var phase='gate',key='',receipt=null,turn=0,messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false;
     var previousPlayback='interrupted',previousCompletedSegments=0,generation=0;
+    var tally={startRequests:0,turnRequests:0,automaticSubmissions:0,explicitSubmissions:0};
     function snapshot(){return {phase:phase,turn:turn,messages:messages.map(function(message){return Object.assign({},message);}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired};}
     function publish(){if(!disposed&&typeof options.onChange==='function')options.onChange(snapshot());}
-    var capture=createCapture(env,{hasDraft:function(){return !!draft.trim();},onReady:function(){if(!task&&!disposed&&!ended){phase='listening';publish();}},onConnecting:function(){if(!task&&!disposed&&!ended){phase='connecting';publish();}},onFinal:function(text){if(task||disposed)return;draft=(draft.trim()+' '+text).trim();if(draft.length>1200){capture.stop();phase='paused';problem=safeMessage('text_too_long');}publish();},onInterim:function(text){interim=text;publish();},onSubmit:function(){send();},onError:function(error){if(disposed)return;phase='paused';problem=safeMessage(error.code);publish();}});
+    var capture=createCapture(env,{hasDraft:function(){return !!draft.trim();},onReady:function(){if(!task&&!disposed&&!ended){phase='listening';publish();}},onConnecting:function(info){if(!task&&!disposed&&!ended){phase=info&&info.resuming&&!info.delayed&&phase==='listening'?'listening':'connecting';publish();}},onFinal:function(text){if(task||disposed)return;draft=(draft.trim()+' '+text).trim();if(problem&&(phase==='listening'||phase==='connecting'))problem='';if(draft.length>1200){capture.stop();phase='paused';problem=safeMessage('text_too_long');}publish();},onInterim:function(text){interim=text;publish();},onSubmit:function(){send(undefined,true);},onNotice:function(error){if(disposed||ended||task)return;problem=safeMessage(error.code);publish();},onError:function(error){if(disposed)return;phase='paused';problem=safeMessage(error.code);publish();}});
     function stopPlayer(){if(player){player.stop();player=null;}}
     function play(event,operation){
       return new Promise(function(resolve,reject){
@@ -116,6 +149,7 @@
     function ready(){if(disposed||ended||restartRequired||task)return;if(turn>=10){ended=true;phase='ended';publish();return;}if(voice&&!env.document.hidden){phase='connecting';publish();capture.start();}else{phase='ready';publish();}}
     async function request(body,learner){
       if(task||disposed||restartRequired||ended)return false;capture.stop();problem='';interim='';
+      if(body.action==='start')tally.startRequests++;else tally.turnRequests++;
       var operation={id:++generation,abort:new AbortController(),receivedState:false,completed:0,reply:null,error:null,cancelled:false,learner:learner};task=operation;phase='responding';publish();
       var timeout=env.setTimeout(function(){operation.error=issue('timeout');operation.abort.abort();if(task===operation)stopPlayer();},90000),queue=Promise.resolve();
       try{
@@ -148,11 +182,12 @@
       voice=!!useVoice&&!!(env.SpeechRecognition||env.webkitSpeechRecognition);problem='';receipt=null;messages=[];turn=0;ended=false;restartRequired=false;
       return request({action:'start',requestId:env.crypto.randomUUID()},null);
     }
-    async function send(text){
+    async function send(text,automatic){
       if(task||disposed||ended||restartRequired||!receipt)return false;
       if(text!==undefined){draft=String(text);interim='';}
       if(interim){problem=safeMessage('still_recognizing');publish();return false;}
       var value=normalized(draft);if(!value||value.length>1200||/[\u0000-\u001f\u007f]/.test(value)){problem=safeMessage(!value?'no_words':value.length>1200?'text_too_long':'input_invalid');publish();return false;}
+      if(automatic)tally.automaticSubmissions++;else tally.explicitSubmissions++;
       var learner={role:'you',text:value,status:'pending'};messages.push(learner);draft='';
       return request({action:'turn',state:receipt,text:value,previousPlayback:previousPlayback,previousCompletedSegments:previousCompletedSegments},learner);
     }
@@ -163,6 +198,7 @@
     function clear(){generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';publish();}
     function dispose(){if(disposed)return;disposed=true;end();clear();}
     return {start:start,send:send,pause:pause,interrupt:pause,end:end,resume:resume,setDraft:setDraft,clear:clear,dispose:dispose,getSnapshot:snapshot,
+      getDiagnostics:function(){return Object.assign({},tally,capture.diagnostics());},
       setThinking:function(value){thinking=!!value;capture.setThinking(thinking);publish();},setHold:function(value){hold=!!value;capture.setHold(hold);publish();}};
   }
 
@@ -177,8 +213,9 @@
       el('access-panel').hidden=active;el('start').disabled=snapshot.busy;el('encounter-panel').hidden=!active;el('conversation-panel').hidden=!snapshot.messages.length;
       el('closing-panel').hidden=snapshot.phase!=='ended';el('clear').hidden=el('clear-note').hidden=!active;el('clear').disabled=snapshot.busy;
       el('turn-count').textContent=snapshot.turn+' of 10 questions';
-      el('status').textContent={gate:'Ready',ready:'Your turn — type your question',connecting:'Connecting microphone…',responding:'Dana is preparing her reply…',speaking:'Dana is speaking',listening:'Listening',paused:'Paused — microphone off',restart:'Restart needed — microphone off',ended:'Encounter ended — microphone off'}[snapshot.phase]||'Ready';
-      el('hint').textContent=snapshot.restartRequired?'The last request has an uncertain outcome. Clear and restart to continue.':snapshot.phase==='speaking'||snapshot.phase==='responding'?'Choose Interrupt Dana or press Escape to continue your thought. Completed audio segments are remembered.':snapshot.phase==='ended'?'Bring what you learned and what remains uncertain to your supervisor.':snapshot.hold?'Your turn is held. Keep speaking or thinking, then choose Done speaking when ready.':'Take your time. You can speak, pause, or type.';
+      el('status').textContent={gate:'Ready',ready:'Your turn — type your question',connecting:'Connecting microphone…',responding:'Dana is preparing her reply…',speaking:'Dana is speaking',listening:'Listening — I’ll send when you finish',paused:'Paused — microphone off',restart:'Restart needed — microphone off',ended:'Encounter ended — microphone off'}[snapshot.phase]||'Ready';
+      if(snapshot.phase==='listening'&&snapshot.hold)el('status').textContent='Listening — your turn is held';
+      el('hint').textContent=snapshot.restartRequired?'The last request has an uncertain outcome. Clear and restart to continue.':snapshot.phase==='speaking'||snapshot.phase==='responding'?'Choose Interrupt Dana or press Escape to continue your thought. Completed audio segments are remembered.':snapshot.phase==='ended'?'Bring what you learned and what remains uncertain to your supervisor.':snapshot.hold?'Your turn is held. Keep speaking or thinking, then choose Done speaking when ready.':snapshot.phase==='listening'?'Just speak. Your question sends itself once you stop — no click needed. Space sends it sooner.':'Take your time. You can speak, pause, or type.';
       el('done').hidden=snapshot.phase!=='listening';el('done').disabled=!!snapshot.interim||!snapshot.draft.trim();
       el('pause').hidden=!['listening','connecting'].includes(snapshot.phase);el('resume').hidden=!recognitionAvailable||!['paused','ready'].includes(snapshot.phase)||snapshot.restartRequired;el('resume').disabled=snapshot.busy;
       el('interrupt').hidden=!snapshot.busy;el('end').hidden=snapshot.phase==='ended'||snapshot.phase==='restart';
