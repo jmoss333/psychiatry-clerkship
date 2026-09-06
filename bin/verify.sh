@@ -152,7 +152,12 @@ step "unit — decision drift"                python3 bin/check_decision_drift.p
 step "unit — ruleset drift"                 python3 bin/check_ruleset_drift.py --self-test
 step "unit — claim exposure"                python3 bin/claim_exposure.py --self-test
 step "unit — offrunner findings"            python3 bin/verify_findings_offrunner.py --self-test
+# A fifth joined that class straight away: #536 (WP-5p) shipped bin/check_twin_parity.py with
+# a --self-test that no gate ran, because #548's branch was cut before the tool existed. Same
+# defect, one merge later — which is the argument for the mechanical check, not against it.
+step "unit — twin parity"                   python3 bin/check_twin_parity.py --self-test
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
+step "twin parity (audience copies)"        python3 bin/check_twin_parity.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py
 step "evidence drill is regenerated"        python3 $A/generate_evidence_drill.py --check
 step "test_longitudinal_case"               python3 $A/test_longitudinal_case.py
