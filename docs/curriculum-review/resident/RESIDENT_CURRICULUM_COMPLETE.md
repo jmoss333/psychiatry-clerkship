@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-06 from build `c10a31a` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-06 from build `9c19767` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-06 @ `c10a31a`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-06 @ `9c19767`.
 
 ## Orientation  *(pinned)*
 
@@ -188,7 +188,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Documentation & Oral Presentation | `doc_oral.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md` | 817 |
 | 2 | Treatment Team Rounding Prep | `oral.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html` |  |
 | 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8784 |
-| 4 | Post-Event Learning Huddle (2 min) | `rp-post-event-huddle.html` | tool | listed | status=`reviewed` · riskKind=`general` · riskLevel=`moderate` | `_prototypes/post-event-huddle/rp-post-event-huddle.html` |  |
+| 4 | Post-Event Learning Huddle (2 min) | `rp-post-event-huddle.html` | tool | listed | status=`pending` · riskKind=`general` · riskLevel=`moderate` | `_prototypes/post-event-huddle/rp-post-event-huddle.html` |  |
 
 ## Practice and Exam Prep
 
@@ -10649,7 +10649,7 @@ Using a fictional, synthetic, or fully de-identified case:
 - **Workflow modes:** `ward`, `family`, `safety`
 - **Shelf blueprint tags:** `relational`
 - **EPA crosswalk:** `EPA9`
-- **Call-to-action buttons:** Open the Family Meeting Playbook; Practice family conflict; Map discharge family roles; Open collateral workflow
+- **Call-to-action buttons:** Open the Family Meeting Playbook; Practice family conflict; Map discharge family roles; Open collateral workflow; Run a 2-minute Post-Event Learning Huddle (discharge)
 
 #### Page text (as shipped)
 
@@ -12492,7 +12492,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Slug:** `rp-post-event-huddle.html` · **Type:** tool · **Sidebar:** listed
 - **Source:** `_prototypes/post-event-huddle/rp-post-event-huddle.html`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`moderate`
+- **Governance:** status=`pending` · riskKind=`general` · riskLevel=`moderate`
 
 #### Tool — clinical content
 
@@ -12500,23 +12500,22 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Static shell text:**
 
-- Post-Event Learning Huddle — 2 minutes Reviewed by Joshua Moss, MD on 2026-09-04
+- Post-Event Learning Huddle — 2 minutes Pending faculty review General · Moderate risk Event 2 (a discharge whose follow-up never reached the patient) added to the attested V1 tool; its event text, twelve debriefs and boundary wording await faculty attestation. Event 1 attested 2026-09-04.
 - Skip to content Resident · systems practice · about 2 minutes
 - Post-Event Learning Huddle
 - One fictional event. Three choices. A short debrief on how a patient question, a team signal and a system condition fit together. Nothing you choose here is saved, sent, or shown to anyone.
-- Fictional composite for teaching · no real patient, staff member, unit or date · your institution's own processes for safety and reporting are separate from this page and come first.
+- Fictional composites for teaching · no real patient, staff member, unit, clinic or date · your institution's own processes for safety and reporting are separate from this page and come first.
 - Where this huddle sits
 - Already handled before this huddle (not here)
 - This huddle (later; learning only)
 - The event
-- What he said to the night mental-health worker
 - Your three choices
 - Pick one in each group. Every option is defensible; the debrief explains what each one surfaces and what it leaves to the other two lenses.
 - Show the debrief 0 of 3 chosen
-- Pair with: Agitation & Restraint · Inpatient Systems & Med-Legal · Documentation & Oral Presentation · Repair after limit-setting
-- Joshua Moss, MD · Psychiatrist · Educational; fictional composite only, no PHI. Reviewed and attested by Joshua Moss, MD (2026-09-04).
+- Pair with: Agitation & Restraint · Inpatient Systems & Med-Legal · Family & Discharge · I Need Collateral · Documentation & Oral Presentation · Repair after limit-setting
+- Joshua Moss, MD · Psychiatrist · Educational; fictional composites only, no PHI. Event 1 attested 2026-09-04; Event 2 pending faculty attestation.
 
-**Authored clinical strings (64):**
+**Authored clinical strings (118):**
 
 - Evening escalation at shift change — hospital day 2
 - Adult inpatient unit, voluntary admission. A 41-year-old man with schizoaffective disorder, admitted two days ago for worsening paranoia and several nights without sleep.
@@ -12527,6 +12526,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - About 20:00. He accepted the already-ordered oral PRN and walked to the quiet room himself. No restraint or seclusion. No injuries. Vitals checked.
 - Later. No reassessment time was agreed; the resident assumed nursing had checked in with him, nursing assumed the resident had. Nobody on the evening team had met him before that shift.
 - Nobody asked me what happened. They just decided I was dangerous.
+- What he said to the night mental-health worker
 - He was reassessed and is safe.
 - Orders and monitoring per unit practice.
 - Any notification or report your institution requires is a separate step through its own process.
@@ -12575,9 +12575,62 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - This condition is the one his own words are asking for — a check-in that is expected, not incidental.
 - Three lenses, one evening — each true on its own, and incomplete on its own.
 - His answer tells you which signal mattered most; the signal tells you which condition to raise first; the condition is what changes the next patient's answer. One of each is the huddle — none of the other options was wrong.
+- The follow-up that never arrived
+- The follow-up that never arrived — nine days after discharge
+- Adult inpatient unit. A 28-year-old woman with bipolar I disorder, admitted for a manic episode, improved by hospital day nine and discharged to her sister's across town.
+- Discharge morning. The resident booked a clinic follow-up six days out and wrote a 30-day prescription. She mentioned she had no working phone and was using her sister's. The sister's number went into the narrative of the discharge summary.
+- Same morning — paperwork. The clinic's scheduling system pulled her contact details from registration: her own old number, and the apartment she had just left.
+- Day 3. The clinic's reminder call and text went to the old number. The system recorded "reminder sent".
+- Day 6. She did not attend. The clinic recorded a no-show and posted a letter to the old address. Nothing came back to the inpatient team.
+- Days 1–8 — the prescription. It had gone electronically to the pharmacy on file, near her old apartment. She never collected it; no one knew.
+- Day 9. Her sister brought her to the emergency department: two nights without sleep, speech fast, off medication since discharge. She was assessed, found to be safe, and admitted for observation.
+- I did everything you told me. Nobody called. I thought the appointment got cancelled.
+- What she said in the emergency department
+- She was assessed in the emergency department and is safe.
+- The clinic and her sister have been told.
+- One question you would ask her first, next time you sit down
+- "When you left, what did you understand was going to happen next — and who did you think would call?"
+- Starts with her model of the plan, not ours. Most discharge plans are clear to the team and vague to the patient about who moves first. Her answer shows which step she was waiting on. It leaves her current contacts and her feelings about the return for later.
+- Her picture of who was going to call is the only thing that can tell you which information path actually mattered to her.
+- "Where do you get calls and pick up medication now — and who else should we tell?"
+- Asks the two practical questions the system did not ask. It treats her sister's phone and a pharmacy near her sister's home as clinical information, not clerical detail. It repairs nothing by itself, and it does not explain why the old details were still in use.
+- Whatever she names here is the content the next handoff to the clinic and the pharmacy has to carry.
+- "What was it like to be back in the emergency department after doing what we asked?"
+- Puts repair first. "I did everything you told me" is an alliance rupture as much as a relapse; unnamed, it follows her into the next admission. It may surface shame, anger or resignation. It gathers less about the mechanics than the other questions.
+- Repairing the alliance is what makes her answers to the other two lenses usable rather than polite.
+- "If we write the next plan together, what would make it one you could actually use — and where should a copy live?"
+- Makes her the author of the next attempt and asks where the plan should live — a sister's fridge is a system too. The risk is moving to the next plan before she has said what this one felt like; some patients need the third question first.
+- A plan in her words, kept where she and her sister can see it, is the shortest route from this event to the condition you named.
+- Her sister's number lived in the discharge narrative; the clinic's reminders read registration.
+- Information existed and did not travel. The resident wrote the right thing in the place they write things; the reminder system reads a different place. Neither side could see the other. It says nothing about the pharmacy or the no-show.
+- This signal is about where a phone number lived, not who typed it — a design fact, not a verdict on anyone.
+- The prescription went to the pharmacy on file, near the apartment she had left.
+- A default did the choosing. E-prescribing is fast precisely because it does not ask; here the unasked question was the one that mattered. It is upstream of the missed visit and independent of it — she would have been off medication even if the reminder had reached her.
+- This signal points at a default that chose for her — the fix is a question at the moment of prescribing, not a person.
+- The no-show closed with a letter to an old address, and nothing came back to the team that discharged her.
+- The loop closed on paper. A no-show is the clinic's most useful signal about a discharge, and it went to the one place she was not, then stopped. This signal produced the sentence she said in the emergency department.
+- This signal is where the system stopped looking — the loop closed for the clinic before it closed for her.
+- The discharge conversation ended with the plan handed over, but no one said aloud who would call whom, and when.
+- Each side assumed the other owned the first call: inpatient thought the clinic would remind; the clinic thought the patient would come. "Someone will call" reliably becomes nobody. It is the cheapest signal to change — one sentence at the bedside.
+- This signal is the unspoken sentence — naming who calls whom, and when, is the smallest change with the largest reach.
+- The discharge workflow has no step that confirms phone, address and pharmacy before the summary is signed.
+- Three fields, one moment. Confirming them at discharge would have changed all three information paths in this story. Worth raising with the unit's discharge or quality group as a question — they will know what the workflow can hold and what it already tries to.
+- This condition is the durable home for what she tells you about where she can be reached — a step outlives the shift and the rotation.
+- A clinic no-show after discharge has no route back to the discharging team or to a second contact.
+- The signal exists; it has nowhere to go. The discussable part is whether a no-show in the first two weeks after discharge can reach the inpatient team, or a named second contact, before a letter goes out. Whoever owns the inpatient–clinic interface is the person to ask.
+- This condition sits between two teams — raising it means asking how a signal from one side could reach the other.
+- No shared field says who owns the first contact after discharge — inpatient and clinic each assume the other.
+- An ownership gap rather than a workload gap; both sides were doing their jobs. The condition worth discussing is a single visible answer to "who calls first, and by when," carried on the summary and readable by the clinic. A resident can also model it in the discharge conversation.
+- This condition is about what the handoff carries — it is the one a resident can also model at the bedside.
+- A check-in call in the first days after discharge is not a standard step, so whether it happens depends on who discharged her.
+- An absent step is invisible until someone notices it was skipped. Making "someone calls the number the patient chose, within the first days, and says so" a named expectation is how "nobody called" stops being predictable. Worth proposing at a team meeting; it is the condition most directly tied to her experience.
+- This condition is the one her own words are asking for — a call that is expected, not incidental.
+- Three lenses, one discharge — each true on its own, and incomplete on its own.
+- Her answer tells you which signal mattered most; the signal tells you which condition to raise first; the condition is what changes the next patient's answer. One of each is the huddle — none of the other options was wrong.
 - It did not file a report, decide what your institution requires, evaluate anyone on that shift, or replace the debrief your unit may require after restraint or seclusion. It gave you one question, one signal and one condition to carry into tomorrow.
+- Post-Event Learning Huddle —
 - One question, one signal, one condition
-- Keep his sentence in the room while you read.
+- Keep this sentence in the room while you read.
 - How the three fit together
 - What this huddle did not do.
 - Try a different combination
@@ -21376,7 +21429,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Opening this step or resizing the browser does not count. Each action below validates a fresh envelope and projects it through the same student projector.
 - Desktop preview not yet reviewed · Mobile preview not yet reviewed
 
-**Authored clinical strings (1799, first 400 shown):**
+**Authored clinical strings (1800, first 400 shown):**
 
 - Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.
 - a feedback form, not library content — reachable from the header
@@ -21779,7 +21832,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Malingering (external incentive)
 - Focused workup once, then one consistent clinician with scheduled visits, validation, CBT, and treatment of comorbidities.
 
-_1399 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
+_1400 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
 
 
 <!-- ==================== A1_QUESTION_BANK.md ==================== -->
