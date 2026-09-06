@@ -236,16 +236,23 @@ def _tokens(text: str) -> list[tuple[list[str], bool]]:
             try:
                 parts = _peel(shlex.split(piece, comments=True))
             except ValueError:
-                # Splitting cut through a quote — a `||` inside `bash -c "..."` does that.
-                # Dropping the piece would silently shrink what this checker believes runs,
-                # which is the defect it exists to find. Re-read the WHOLE line instead and
-                # treat it as fail-soft, the conservative reading.
+                # Splitting cut through a quote — ANY separator inside `bash -c "..."` does
+                # that, not just `||`. Dropping the piece would silently shrink what this
+                # checker believes runs, which is the defect it exists to find, so re-read
+                # the WHOLE line instead.
+                #
+                # Handed off as fail_soft=False deliberately. Marking the whole line soft was
+                # the conservative reading only for `||`; for a quoted `&&` or `;` it demoted
+                # a REAL gate to "runs where a failure is swallowed" — which is a false
+                # orphan, the same wrong answer in the other direction. Separators survive
+                # into the peeled token list, and _resolve_command re-splits there and marks
+                # fail-softness PER SEGMENT, so a quoted `|| true` is still caught exactly.
                 try:
                     whole = _peel(shlex.split(line, comments=True))
                 except ValueError:
                     continue
-                if whole and (whole, True) not in lines:
-                    lines.append((whole, True))
+                if whole and (whole, False) not in lines:
+                    lines.append((whole, False))
                 break
             if parts:
                 lines.append((parts, fail_soft))
@@ -274,11 +281,23 @@ def _resolve_command(parts: list[str], cwd: Path, depth: int = 0,
         hard, soft, understood = set(), set(), True
         segment: list[str] = []
         prev = None
+        # `cd DIR && node --test GLOB` runs the glob in DIR. Resolving it against the
+        # original cwd does not fail — it MATCHES THE WRONG FILES (the root suite), which
+        # reads as coverage for files the step never runs while the real ones look orphaned.
+        # A resolver that answers wrongly is worse than one that admits it cannot classify,
+        # so an unusable `cd` gives up loudly instead of guessing.
+        seg_cwd = cwd
         for tok in parts + [";"]:
             if tok in ("||", "&&", ";"):
-                if segment:
+                if segment and segment[0] == "cd":
+                    target = (seg_cwd / segment[1]) if len(segment) == 2 else None
+                    if target is not None and target.is_dir():
+                        seg_cwd = target
+                    else:
+                        understood = False
+                elif segment:
                     a, b, ok = _resolve_command(
-                        segment, cwd, depth, fail_soft or prev == "||" or tok == "||")
+                        segment, seg_cwd, depth, fail_soft or prev == "||" or tok == "||")
                     hard |= a
                     soft |= b
                     understood = understood and ok
@@ -437,6 +456,38 @@ def self_test() -> int:
                        ("tests/", "node --test tests/*.test.mjs")):
         reached = [f for f in hard if f.startswith(probe)]
         cases.append((f"{probe}* is reached through {how} ({len(reached)} files)", len(reached) > 0))
+
+    # `bash -c "cd DIR && node --test GLOB"` runs the glob in DIR, not at the repo root.
+    # Resolving it at the root silently matched the ROOT suite instead, so metrics/tests/*
+    # read as orphaned while verify.sh was running them all along (#542 landing on #548,
+    # 2026-09-06). A misresolved cwd is worse than an unclassified command: this one
+    # answered, and answered wrong.
+    _cd_parts = _tokens(
+        'step "x" bash -c "cd metrics && node --test tests/*.test.mjs"')[0][0]
+    _cd_ran, _cd_soft, _cd_ok = _resolve_command(_cd_parts, REPO)
+    cases.append((f"`cd DIR &&` moves the glob into DIR ({len(_cd_ran)} files)",
+                  _cd_ok and bool(_cd_ran)
+                  and all(f.startswith("metrics/tests/") for f in _cd_ran)))
+
+    # A separator inside `bash -c "..."` cuts the quote and forces the whole-line re-read.
+    # That path used to assume fail-soft, so a plain `&&` demoted a real gate to "runs where
+    # a failure is swallowed". Only a surviving `||` may do that, and _resolve_command
+    # attributes it per segment — so the `&&` form must come back HARD...
+    _hard_line, _soft_line_, _ = _resolve_command(
+        *_tokens('step "x" bash -c "cd metrics && node --test tests/*.test.mjs"')[0][:1],
+        REPO, fail_soft=_tokens(
+            'step "x" bash -c "cd metrics && node --test tests/*.test.mjs"')[0][1])
+    cases.append(("a quoted `&&` does not demote a real gate to fail-soft",
+                  bool(_hard_line) and not _soft_line_))
+    # ...while a quoted `|| true` must STILL be fail-soft. This is the half the old
+    # blanket assumption got right, and the fix must not trade one error for the other.
+    _q = _tokens('step "x" bash -c "python3 13_Faculty_Resources/_automation/'
+                 'test_validate_curriculum.py || true"')[0]
+    _qh, _qs, _ = _resolve_command(_q[0], REPO, fail_soft=_q[1])
+    cases.append(("a quoted `|| true` is still fail-soft", bool(_qs) and not _qh))
+    _bad_ran, _bad_soft, _bad_ok = _resolve_command(
+        _tokens('step "x" bash -c "cd no_such_dir && node --test tests/*.test.mjs"')[0][0], REPO)
+    cases.append(("a `cd` into a missing directory gives up LOUDLY", not _bad_ok))
 
     # A file no gate runs must be REPORTED, not absorbed.
     ghost = "13_Faculty_Resources/_automation/test_ghost_never_wired.py"
