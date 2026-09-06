@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-06 from build `732db5b` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-06 from build `ec8c5f5` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 80 |
 | Interactive tools | 23 |
 | Deep-link-only (hidden) surfaces | 10 |
-| Words of narrative curriculum | 101,520 |
+| Words of narrative curriculum | 101,516 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -83,22 +83,22 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-06 @ `732db5b`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-06 @ `ec8c5f5`.
 
 ## Orientation  *(pinned)*
 
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
-| 1 | Welcome to the Rotation | `welcome.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md` | 416 |
-| 2 | Orientation Packet | `orientation.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md` | 1004 |
+| 1 | Welcome to the Rotation | `welcome.md` | md | listed | status=`pending` · riskKind=`general` · riskLevel=`low` | `13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md` | 406 |
+| 2 | Orientation Packet | `orientation.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md` | 1010 |
 | 3 | Core Reading List | `core_readings.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md` | 399 |
 | 4 | Orientation Video | `orientation-video.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `_prototypes/orientation-video/orientation-video.html` |  |
-| 5 | Week 1 — Foundations | `week1.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_1_Foundations/README.md` | 433 |
-| 6 | Week 2 — Mood/Psychosis/Pharm | `week2.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md` | 191 |
-| 7 | Week 3 — Psychotherapy/Personality | `week3.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md` | 210 |
-| 8 | Week 4 — Family/Systems/EE | `week4.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md` | 184 |
-| 9 | Week 5 — Acute/Emergency | `week5.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md` | 263 |
-| 10 | Week 6 — Integration/Exam | `week6.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md` | 166 |
+| 5 | Week 1 — Foundations & the MSE | `week1.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_1_Foundations/README.md` | 433 |
+| 6 | Week 2 — Mood, Psychosis & Pharm | `week2.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md` | 191 |
+| 7 | Week 3 — Psychotherapy & Personality | `week3.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md` | 210 |
+| 8 | Week 4 — Family Systems & EE | `week4.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md` | 184 |
+| 9 | Week 5 — Acute & Emergency | `week5.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md` | 263 |
+| 10 | Week 6 — Integration & Exam | `week6.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md` | 166 |
 
 ## Start the Encounter
 
@@ -265,8 +265,8 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - **Slug:** `welcome.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 416 words
+- **Governance:** status=`pending` · riskKind=`general` · riskLevel=`low`
+- **Length:** 406 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -275,13 +275,13 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **TL;DR (shown above the page text):**
 
-> Start with orientation, then use Today / Progress for repeat visits — the hub is meant to answer what to do before rounds, after rounds, before leaving, and before exam study.
+> Start with the Six-Week Compass and Orientation Packet, then choose the resource relevant to the task you are preparing to discuss with your supervising team.
 
 **Key points (bulleted card):**
 
-- First visit: open the orientation packet and learn the safety/supervision boundaries before using bedside tools.
-- Repeat visits: use Today / Progress to choose one ward task, one practice drill, and one review item.
-- Nothing here replaces supervision; the hub should help you ask better questions and escalate earlier.
+- The Compass is a wayfinding map, not a checklist, clinical protocol, or measure of readiness.
+- Review the Orientation Packet's safety and supervision boundaries before using bedside tools.
+- Use the optional captioned orientation overview when a narrated walkthrough helps; the transcript provides the non-video route.
 
 **Clinical-workflow narration (per-stage coaching text):**
 
@@ -306,32 +306,17 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 # Inpatient Psychiatry — Your 6-Week MS3 Rotation
 ### UNE COM third-year clerkship · with Joshua Moss, MD · Maine Medical Center – Sanford
 
-<video src="media/intro-trailer.mp4" controls playsinline preload="none" poster="media/intro-trailer-poster.jpg"
-  aria-label="Clerkship Hub introduction trailer: a 78-second tour of the hub — the six-week arc, the bedside tools, and how to get started."
-  style="width:100%;max-width:960px;aspect-ratio:16/9;border-radius:12px;display:block;margin:14px 0">
-</video>
+<div data-fd-compass-root><aside data-fd-compass-safety role="note"><p>If you are worried about immediate safety, tell the resident or attending now. Do not wait for rounds. Do not carry it alone.</p><a href="?page=orientation.md">Open the Orientation Packet</a></aside><p data-fd-compass-scope>This map supports orientation, supervised practice, and reflection. It is not a checklist, clinical protocol, or measure of readiness. Using or viewing this map does not establish competence, entrustment, or permission to act independently.</p><section class="fd-compass" data-fd-compass aria-labelledby="fd-compass-title"><h2 class="fd-compass__title" id="fd-compass-title">Six-Week Compass</h2><ol class="fd-compass__weeks" data-fd-compass-weeks role="list"><li class="fd-compass__week" data-fd-compass-week="1"><h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 1</span> Foundations &amp; the MSE</h3><a class="fd-compass__link" data-fd-compass-link href="?page=week1.md">Open Week 1</a></li><li class="fd-compass__week" data-fd-compass-week="2"><h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 2</span> Mood, Psychosis &amp; Pharm</h3><a class="fd-compass__link" data-fd-compass-link href="?page=week2.md">Open Week 2</a></li><li class="fd-compass__week" data-fd-compass-week="3"><h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 3</span> Psychotherapy &amp; Personality</h3><a class="fd-compass__link" data-fd-compass-link href="?page=week3.md">Open Week 3</a></li><li class="fd-compass__week" data-fd-compass-week="4"><h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 4</span> Family Systems &amp; EE</h3><a class="fd-compass__link" data-fd-compass-link href="?page=week4.md">Open Week 4</a></li><li class="fd-compass__week" data-fd-compass-week="5"><h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 5</span> Acute &amp; Emergency</h3><a class="fd-compass__link" data-fd-compass-link href="?page=week5.md">Open Week 5</a></li><li class="fd-compass__week" data-fd-compass-week="6"><h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 6</span> Integration &amp; Exam</h3><a class="fd-compass__link" data-fd-compass-link href="?page=week6.md">Open Week 6</a></li></ol></section><p data-fd-compass-prompt>Choose the week or task you are preparing to discuss with your supervising team.</p><a data-fd-compass-orientation href="?tool=orientation-video.html">Optional: watch the captioned orientation overview (transcript available)</a></div>
 
-Welcome. This rotation is built as a **structured six-week arc** so that wherever you are in the year, you get the same strong foundation in inpatient psychiatry — and leave ready for the shelf and your sub-internship.
+Welcome. This rotation is built as a **structured six-week arc** so that wherever you are in the year, you get the same strong foundation in inpatient psychiatry — and prepare for the shelf and a future sub-internship.
 
 The hub is meant to be useful in the moment: a structured sequence from foundations to integration, plus bedside tools, clinical one-pagers, and readings you can navigate by week, topic, or tool. Use it when it helps you prepare for rounds, understand a patient, practice a skill, or review for the exam.
 
 **What you'll do.** Work as part of the treatment team on the inpatient unit: interview and follow patients, build differentials and formulations, present on rounds, participate in family meetings, and practice safe, evidence-based management under direct supervision.
 
-**Your weekly arc.**
-- **Week 1 — Foundations:** the psychiatric interview, the mental status exam, capacity, writing an admission note.
-- **Week 2 — Mood, Psychosis & Pharmacology:** the major diagnoses and how we choose medications.
-- **Week 3 — Psychotherapy & Personality:** the therapeutic relationship, DBT-informed care, safety planning.
-- **Week 4 — Family & Systems:** family meetings and expressed emotion (a signature focus of this rotation).
-- **Week 5 — Acute & Emergency:** agitation, delirium, catatonia, withdrawal, risk assessment.
-- **Week 6 — Integration & Exam:** disposition, shelf + OSCE prep.
-
-**Tools you'll actually use at the bedside** (interactive): mental status exam builder · decisional-capacity assessor · Columbia C-SSRS suicide screener · safety planning · violence-risk (FRST) · CIWA-Ar/COWS withdrawal scales · oral-presentation practice timer.
-
 **Also included:** short teaching one-pagers for the core diagnoses, a differential-diagnosis "can't-miss" guide, a landmark-article reading pathway, practice OSCE stations, and a shelf high-yield review.
 
 **How you'll be supported & evaluated.** Direct supervision with frequent formative feedback, observed interviews and presentations, case discussion, and teaching rounds. Clear expectations and entrustment levels so you always know what "doing well" looks like.
-
-**Start here:** use the menu to move through the rotation by week, topic, or tool — nothing here is required reading; it's all available whenever it's useful to you.
 
 Next: [open the Orientation Packet](?page=orientation.md).
 
@@ -345,7 +330,7 @@ Next: [open the Orientation Packet](?page=orientation.md).
 - **Slug:** `orientation.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 1,004 words
+- **Length:** 1,010 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -408,8 +393,10 @@ prepared, safe, honest about uncertainty, and responsive to feedback.
 
 ## The Single Safety Rule
 
+<!-- single-safety-rule:start -->
 If you are worried about immediate safety, tell the resident or attending now.
 Do not wait for rounds. Do not carry it alone.
+<!-- single-safety-rule:end -->
 
 Escalate immediately for:
 
@@ -665,7 +652,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 ---
 
-## Week 1 — Foundations
+## Week 1 — Foundations & the MSE
 
 - **Slug:** `week1.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_1_Foundations/README.md`
@@ -752,7 +739,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 ---
 
-## Week 2 — Mood/Psychosis/Pharm
+## Week 2 — Mood, Psychosis & Pharm
 
 - **Slug:** `week2.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md`
@@ -829,7 +816,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 ---
 
-## Week 3 — Psychotherapy/Personality
+## Week 3 — Psychotherapy & Personality
 
 - **Slug:** `week3.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md`
@@ -906,7 +893,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 ---
 
-## Week 4 — Family/Systems/EE
+## Week 4 — Family Systems & EE
 
 - **Slug:** `week4.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md`
@@ -983,7 +970,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 ---
 
-## Week 5 — Acute/Emergency
+## Week 5 — Acute & Emergency
 
 - **Slug:** `week5.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md`
@@ -1063,7 +1050,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 ---
 
-## Week 6 — Integration/Exam
+## Week 6 — Integration & Exam
 
 - **Slug:** `week6.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md`
@@ -18403,7 +18390,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Opening this step or resizing the browser does not count. Each action below validates a fresh envelope and projects it through the same student projector.
 - Desktop preview not yet reviewed · Mobile preview not yet reviewed
 
-**Authored clinical strings (1793, first 400 shown):**
+**Authored clinical strings (1799, first 400 shown):**
 
 - Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.
 - a feedback form, not library content — reachable from the header
@@ -18806,7 +18793,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Factitious disorder imposed on another is child/vulnerable-adult abuse — a reporting duty; and real disease can coexist, so don't anchor either way.
 - Depression / anxiety / PTSD
 
-_1393 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
+_1399 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
 
 
 <!-- ==================== A1_QUESTION_BANK.md ==================== -->

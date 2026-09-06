@@ -77,6 +77,11 @@ step "CLAUDE.md/AGENTS.md byte-parity"      diff -q CLAUDE.md AGENTS.md
 
 # --- contract: this script still mirrors ci.yml's gate (it silently drifted before) ---
 step "gate coverage vs ci.yml"              python3 bin/check-verify-coverage.py
+# The sibling contract. check-verify-coverage.py asks whether every CI step has a local
+# equivalent; this asks whether every falsification is RUN BY ANYTHING. Both exist because a
+# gate nobody executes looks exactly like a gate.
+step "unit — vacuity checker"               python3 bin/check_vacuity.py --self-test
+step "every falsification is on a gate"     python3 bin/check_vacuity.py
 
 # --- python validators ---
 # This block mirrors the python half of ci.yml's build-test-validate job, step for step.
@@ -87,7 +92,18 @@ step "gate coverage vs ci.yml"              python3 bin/check-verify-coverage.py
 A=13_Faculty_Resources/_automation
 step "validate_registry_schemas"            python3 $A/validate_registry_schemas.py
 step "test_validate_registry_schemas"       python3 $A/test_validate_registry_schemas.py
+step "unit — curriculum contract"            python3 $A/test_validate_curriculum.py
+step "unit — MS3 welcome compass"            python3 $A/site_build/test_welcome_compass.py
 step "validate_topic_meta"                  python3 $A/validate_topic_meta.py
+# Six passing tests for topic_meta's safety contract that ran NOWHERE — found by
+# bin/check_vacuity.py, which is why that checker is a step above. Its own docstring says it
+# exists because "validate_topic_meta.py has no existing harness", and then no gate ever ran
+# the harness. (test_validate_curriculum.py was the same defect and is now the step above,
+# wired by #527, which also repaired the seven accept-cases its stale fixture had been
+# failing since safetyKit `triggers` became mandatory on 2026-08-28 — for months, silently,
+# because nothing ran the file. Two people hitting the same rot is the argument for the
+# checker, not against it.)
+step "test_validate_topic_meta_safety"      python3 $A/test_validate_topic_meta_safety.py
 # ci.yml runs this validator's own unit suite inside the "Test — SP Interview and managed
 # proxy" step, which check-verify-coverage.py exempts wholesale — so until 2026-09 it ran
 # in CI and nowhere else. A change to validate_attestation_consistency.py that broke its
@@ -116,6 +132,15 @@ step "unit — evidence annotations"          python3 $A/validate_evidence_annot
 step "validate_evidence_annotations"        python3 $A/validate_evidence_annotations.py
 step "span audit (verbatim vs paper)"       python3 bin/verify_spans.py
 step "unit — qbank coherence"              python3 bin/check_qbank_coherence.py --self-test
+# Four tools shipped a --self-test that NO gate invoked — found by bin/check_vacuity.py after
+# Codex pointed out it was inventorying only test FILES, not the --self-test modes its own
+# doctrine calls the paired falsification. Each passes; none needed an exemption. The guards
+# themselves run on a schedule or on demand, but a falsification that never runs is worth
+# nothing wherever its guard runs.
+step "unit — decision drift"                python3 bin/check_decision_drift.py --self-test
+step "unit — ruleset drift"                 python3 bin/check_ruleset_drift.py --self-test
+step "unit — claim exposure"                python3 bin/claim_exposure.py --self-test
+step "unit — offrunner findings"            python3 bin/verify_findings_offrunner.py --self-test
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py
 step "evidence drill is regenerated"        python3 $A/generate_evidence_drill.py --check
@@ -183,6 +208,16 @@ if [ $QUICK -eq 0 ]; then
 else
   echo "  SKIP  build_and_check ms3/res             (--quick; NOT a gate run)"
 fi
+
+# --- build-OUTPUT contracts: these need the tree the two builds above just produced ---
+# Deliberately after the builds and not in tests/: `node --test` runs before BOTH
+# build_and_check.sh invocations and _build/ starts absent in CI, so a build-output assertion
+# placed there skips exactly where it matters (CLAUDE.md, build-output test paragraph).
+# check_crisis_surfaces.py reads _build/ and skips itself, with the rebuild command, whenever
+# that tree is absent or older than its inputs — so under --quick it checks a build left over
+# from an earlier run if one is current, and says why it checked nothing if not.
+step "unit — crisis surfaces checker"       python3 bin/check_crisis_surfaces.py --self-test
+step "crisis contacts in the built sites"   python3 bin/check_crisis_surfaces.py
 
 echo "─────────────────────────────────────────────────────────────────────"
 if [ ${#FAILED[@]} -eq 0 ]; then

@@ -306,10 +306,10 @@ test('cotwTwinSlug pairs the two halves and ignores everything else', () => {
   for (const slug of cotw) assert.ok(universe.has(cotwTwinSlug(slug)), slug);
 });
 
-test('the pending-visibility invariant fails when a producer stops being read', () => {
-  // The July 2026 state reconstructed exactly: the shared manifest alone, which is what
-  // the console used to derive its universe from. Every one of the 22 built
-  // Case-of-the-Week pages falls outside it while reviewed.json still calls them pending.
+test('the current universe exposes the former manifest-only reader\'s blind spot', () => {
+  // Current counterfactual: substitute the shared-manifest reader the console formerly
+  // used. Faculty statuses legitimately change, so define the blind spot by producer
+  // rather than pinning today's pending total or treating the live ledger as July history.
   const manifestOnly = new Set([
     ...MANIFEST.md.map(([, slug]) => slug),
     ...MANIFEST.tools.map(([, slug]) => slug),
@@ -319,19 +319,25 @@ test('the pending-visibility invariant fails when a producer stops being read', 
     .filter(([, entry]) => entry && typeof entry === 'object' && entry.status === 'pending')
     .map(([slug]) => slug);
 
-  assert.equal(pending.length, 24);
-  const invisibleBefore = pending.filter(slug => !manifestOnly.has(slug) && !allowlist.has(slug));
-  assert.equal(invisibleBefore.length, 24);
-  assert.equal(invisibleBefore.filter(isCotwSlug).length, 22);
-  // The two that are NOT Case-of-the-Week pages are the resident-only role-play tools —
-  // the ones #517's allowlist called undeployed while the resident site served them.
+  // Welcome ships from the shared manifest, so it is visible even to the former reader
+  // whatever its review status is today.
+  assert.ok(manifestOnly.has('welcome.md'));
+
+  const universe = contentUniverseSlugs({ shipped: SHIPPED });
+  const nonManifestProducerSlugs = SHIPPED.pages
+    .filter(entry => entry.producer !== 'site_manifest')
+    .map(entry => entry.slug)
+    .sort();
+  const missedByManifestOnly = [...universe]
+    .filter(slug => !manifestOnly.has(slug))
+    .sort();
   assert.deepEqual(
-    invisibleBefore.filter(slug => !isCotwSlug(slug)).sort(),
-    ['rp-agitation.html', 'rp-brief-psych.html'],
+    missedByManifestOnly,
+    nonManifestProducerSlugs,
+    'the former reader must miss exactly the surfaces shipped by non-manifest producers',
   );
 
   // Reading the one derived listing, nothing pending is unreachable and nothing is excluded.
-  const universe = contentUniverseSlugs({ shipped: SHIPPED });
   assert.deepEqual(pending.filter(slug => !universe.has(slug) && !allowlist.has(slug)), []);
   // …and no exclusion masks a live item. The list is empty; see content-universe.mjs.
   assert.deepEqual(NOT_REVIEWABLE_IN_CONSOLE.filter(slug => universe.has(slug)), []);
