@@ -182,6 +182,22 @@ approval; carrying `draft-pending-attestation` content is consistent with that, 
 the alternative — hosted Dana teaching a suicide chain the library has just
 corrected — is the defect WP-5m exists to fix.
 
+### Redeployed with the adopted gate
+
+The Function bundles the pack, the local-dana overlay and the live context, so the
+correction only reaches the preview through a deploy. Deploy
+`6a9da178fe2df33df5c23744`, same site, same `dana` alias — the second and last
+intentional deploy of this delivery.
+
+The hands-free evidence above was **not** re-purchased. `sp-preview/public/` is
+byte-identical between the proven run and this deploy (`app.js` sha256 begins
+`61754a6b6f5de38a`, verified against the served file), and WP-5m changes only the
+Function's private grounding, so the recognition lifecycle under test is unchanged.
+Re-verified for free after the deploy: root 200, missing and wrong passcode 403,
+`/lib/case.mjs`, `/preview-access.txt`, `/.env.hosted` and `/package.json` all 404,
+and the CSP, `Permissions-Policy`, `Cache-Control: no-store` and `X-Robots-Tag`
+headers intact.
+
 ### Two lines have no archived recording
 
 WP-5m **added** two lines and removed or reworded none, so **all 75 existing
