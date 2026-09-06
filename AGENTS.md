@@ -65,8 +65,12 @@ cd tests/smoke && npm ci && npx playwright test
 - `bin/verify.sh` is a **superset** of `ci.yml`, not a mirror: `bin/check-verify-coverage.py`
   enforces that every CI step has a local equivalent (or a recorded `ALLOWED` exemption), but
   verify.sh may run more. `bin/verify_spans.py` and `bin/check_qbank_coherence.py` run there and
-  not in CI — and both **exit 0 even when they flag rows**, so they surface findings at push time
-  without blocking. Read their output; a PASS line is not "nothing found".
+  not in CI — and both **exit 1 when they flag rows** (`return 1 if n_para else 0`,
+  `return 1 if out else 0`), so since verify.sh's `step` treats any non-zero as FAIL and verify.sh
+  is the pre-push hook, either one **can block a push**. They look harmless today only because
+  each currently finds nothing. Read their output; a PASS line is not "nothing found", and
+  verify_spans.py in particular prints "0 clean, 0 flagged, N uncached" and exits 0 when its cache
+  path is wrong — a silent pass, not a clean bill.
 - **A local gate failing while CI is green usually means bash 3.2**, not your change: the Mac's
   `/bin/bash` is 3.2.57 and CI's is >= 4.4. Under `set -u`, bash < 4.4 treats `"${ARR[@]}"` on an
   empty array as unbound and aborts with an empty message (PR #469). Write
@@ -128,6 +132,14 @@ cd tests/smoke && npm ci && npx playwright test
   need a credential — and reachability is a fact about the environment, never a content finding.
   Results cache outside the repo for 6h and invalidate when the proxy changes;
   `CLERKSHIP_SKIP_EGRESS_PROBE=1` turns it off.
+- **The queue that cannot rot.** `bin/what_can_i_do_today.py` joins the egress probe's capability
+  map to a per-task measurement of how much work is left, and ranks what is actually possible
+  *here, now*: ready / needs-a-key / blocked. Two rules make it trustworthy and both are pinned by
+  `tests/what-can-i-do-today.test.mjs`: a task whose count reaches zero **retires itself** (nobody
+  prunes a checklist), and a measurement that **fails reports `unknown`, never zero** — zero means
+  done and would silently retire real work. A metric nobody can drive to zero does not belong in
+  it: "topics with no book" and "unattributed claims" were both dropped for that, one a category
+  mismatch, the other gameable by renaming a heading. Report-only, exits 0, not a gate.
 - `docs/SILENT_SHRINK_CHECKLIST.md` — the failure mode every `bin/` tool exists for, as a
   checklist: **a check reporting success over a set smaller than the one it claims to check.**
   Twelve entries, each earned by a defect that actually shipped here (#480, #517, #534, #539,
