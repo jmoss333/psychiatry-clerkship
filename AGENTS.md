@@ -149,6 +149,18 @@ cd tests/smoke && npm ci && npx playwright test
   reasoning about it — including the step people skip, reverting the fix to prove the fix is
   what made the difference. Only §D2 is mechanised (`bin/check_vacuity.py`); the rest is
   judgment, which is why it is written down.
+- **A nightly runner acts on that queue.** `_automation/AUTONOMOUS_QUEUE_RUNNER.md` is the
+  runbook a scheduled session follows: it takes `what_can_i_do_today.py --next-autonomous` — one
+  task or nothing — runs that task's own script, proves it with that task's own verify command,
+  and opens a **draft** PR. It never merges, never marks ready, and never edits `reviewed.json`.
+  Autonomy is derived, not declared: a task qualifies only by carrying both a deterministic `run`
+  and a `verify` that can fail, so curation and attestation are excluded by construction rather
+  than by a reviewer remembering. Two traps are written down there because both are silent: the
+  measurement must track the work (a task measured by a number the work cannot move makes the
+  runner open an empty PR every night — it happened), and an automated edit to an attested page
+  leaves `reviewed.json` byte-identical, so the PR body must say the attestation went stale —
+  `post_edit_validate.py` catches that only for Edit/Write/MultiEdit, and these scripts write
+  through Bash.
 - `docs/curriculum-review/findings/` — the review→remediation loop. `export_curriculum_review.py`
   produces the transcripts, a review pass writes `findings.json` (id · verbatim `quote` ·
   ready-to-paste `replacement` · `verification`), and remediation lands as small per-work-package
