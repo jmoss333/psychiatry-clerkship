@@ -77,6 +77,11 @@ step "CLAUDE.md/AGENTS.md byte-parity"      diff -q CLAUDE.md AGENTS.md
 
 # --- contract: this script still mirrors ci.yml's gate (it silently drifted before) ---
 step "gate coverage vs ci.yml"              python3 bin/check-verify-coverage.py
+# The sibling contract. check-verify-coverage.py asks whether every CI step has a local
+# equivalent; this asks whether every falsification is RUN BY ANYTHING. Both exist because a
+# gate nobody executes looks exactly like a gate.
+step "unit — vacuity checker"               python3 bin/check_vacuity.py --self-test
+step "every falsification is on a gate"     python3 bin/check_vacuity.py
 
 # --- python validators ---
 # This block mirrors the python half of ci.yml's build-test-validate job, step for step.
@@ -88,6 +93,14 @@ A=13_Faculty_Resources/_automation
 step "validate_registry_schemas"            python3 $A/validate_registry_schemas.py
 step "test_validate_registry_schemas"       python3 $A/test_validate_registry_schemas.py
 step "validate_topic_meta"                  python3 $A/validate_topic_meta.py
+# Both of the next two existed for months and ran NOWHERE — found by bin/check_vacuity.py,
+# which is why that checker is a step above. test_validate_curriculum.py was worse than
+# unused: seven of its accept-cases were red, because safetyKit `triggers` became mandatory
+# on 2026-08-28 (the fix for "i want to kill myself" reaching pg_suicide.md only through the
+# stopword "to") and its fixture never grew the field. A falsification nothing runs does not
+# fail loudly when it rots; it just quietly stops being true.
+step "test_validate_topic_meta_safety"      python3 $A/test_validate_topic_meta_safety.py
+step "test_validate_curriculum"             python3 $A/test_validate_curriculum.py
 # ci.yml runs this validator's own unit suite inside the "Test — SP Interview and managed
 # proxy" step, which check-verify-coverage.py exempts wholesale — so until 2026-09 it ran
 # in CI and nowhere else. A change to validate_attestation_consistency.py that broke its

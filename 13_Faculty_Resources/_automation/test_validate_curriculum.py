@@ -30,8 +30,22 @@ VALIDATOR = os.path.join(HERE, "validate_curriculum.py")
 SHIPPED_RELATIVE = os.path.join(
     "13_Faculty_Resources", "_automation", "site_build", "shipped_pages.json")
 
+# The rights-reference contract (INV-IR1). validate_curriculum.py resolves
+# instrument_rights.json from ITS OWN location, not from the fixture root, so a fixture must
+# satisfy the REAL contract to be accepted. Derived here rather than restated: a hard-coded
+# copy is exactly how this fixture rotted — the contract gained pages, the copy did not, and
+# no gate ran the test to say so.
+with open(os.path.join(ROOT, "instrument_rights.json"), encoding="utf-8") as _fh:
+    RIGHTS_REFS = tuple(sorted({
+        page["file"]
+        for entry in json.load(_fh).get("instruments", [])
+        for page in entry.get("pages", [])
+        if page.get("requiredDisclaimerType") == "instrument-not-reproduced"
+    }))
+
 MANIFEST = {
-    "tools": [["src/a.html", "mse.html", "Mental Status Exam"]],
+    "tools": [["src/a.html", "mse.html", "Mental Status Exam"]]
+    + [["src/%s" % ref, ref, "Rights reference"] for ref in RIGHTS_REFS],
     "md": [
         ["src/b.md", "welcome.md", "Welcome to the Rotation"],
         ["src/pg_suicide.md", "pg_suicide.md", "Suicide Safety"],
@@ -42,7 +56,7 @@ MANIFEST = {
     ],
 }
 MANIFEST_SLUGS = {"mse.html", "welcome.md", "pg_suicide.md", "agitation.md",
-                  "exp_consult.md", "t_sud.md", "delirium.md"}
+                  "exp_consult.md", "t_sud.md", "delirium.md"} | set(RIGHTS_REFS)
 
 # The real build extras: everything the repo's own listing ships that neither
 # site_manifest.json nor the weekly-case registry produces. Read, not restated.
@@ -80,6 +94,10 @@ EXTRA_EXCLUDES = [
 FIXTURE_SAFETY_EXCLUDES = [
     {"ref": ref, "reason": "outside this fixture — supplied only for safety-kit validation"}
     for ref in SAFETY_REFS
+]
+FIXTURE_RIGHTS_EXCLUDES = [
+    {"ref": ref, "reason": "outside this fixture — supplied only for the rights-reference check"}
+    for ref in RIGHTS_REFS
 ]
 
 
@@ -149,9 +167,15 @@ def _curriculum(items):
             {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
             {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
         ],
-        "libraryExclude": list(EXTRA_EXCLUDES) + list(FIXTURE_SAFETY_EXCLUDES),
+        "libraryExclude": (list(EXTRA_EXCLUDES) + list(FIXTURE_SAFETY_EXCLUDES)
+                           + list(FIXTURE_RIGHTS_EXCLUDES)),
+        "rightsReferences": list(RIGHTS_REFS),
+        # `triggers` became mandatory on 2026-08-28, when "i want to kill myself" was found to
+        # reach pg_suicide.md only through the stopword "to". The fixture never grew the field,
+        # so every accept-case in this file has failed since — invisibly, because no gate ran it.
         "safetyKit": [
-            {"ref": ref, "sub": "Protocol " + str(index + 1)}
+            {"ref": ref, "sub": "Protocol " + str(index + 1),
+             "triggers": [ref.replace(".md", "").replace("_", " ")]}
             for index, ref in enumerate(SAFETY_REFS)
         ],
         "roles": {"ms3": [], "resident": []},
@@ -332,7 +356,8 @@ class LibraryTotalityTest(unittest.TestCase):
     def _cur(self, columns, exclude):
         c = _curriculum([])
         c["libraryColumns"] = columns
-        c["libraryExclude"] = list(exclude) + EXTRA_EXCLUDES + FIXTURE_SAFETY_EXCLUDES
+        c["libraryExclude"] = (list(exclude) + EXTRA_EXCLUDES + FIXTURE_SAFETY_EXCLUDES
+                               + FIXTURE_RIGHTS_EXCLUDES)
         return c
 
     def test_accepts_full_coverage(self):
