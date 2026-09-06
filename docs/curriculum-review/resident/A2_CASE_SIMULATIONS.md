@@ -316,8 +316,8 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
   - *feedback:* Best choice. It validates fear, avoids a false guarantee, and turns conflict into a concrete safety-planning task.
 - **(c)** The decision is ultimately up to the doctors, so let's move on.  *(rated: **missed**)*
   - *feedback:* This shuts down collateral and increases adversarial tension. The family may hold key safety and feasibility information.
-- **(d)** Can you tell us exactly what you think he is hiding from us?  *(rated: **partial**)*
-  - *feedback:* Specific concerns matter, but this phrasing can shame the patient and intensify triangulation. Invite concerns while preserving the patient's dignity.
+- **(d)** Can you tell us exactly what you think he is hiding from us?  *(rated: **missed**)*
+  - *feedback:* Specific concerns matter, but this presumes he is lying and cross-examines him through his family, right after he went quiet. Ask the family what worries them, and keep him a participant.
 
 ### interview_motive_suspicion_001 — Respond When the Patient Questions Why You're Asking
 
@@ -481,7 +481,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 *Prompt.* Which recommendation best balances psychiatry input with medical ownership?
 
-- **(a)** Recommend a delirium driver review, deliriogenic medication reduction where feasible, infection/metabolic/hypoxia assessment, sleep-wake support, mobilization, sensory aids, and supervised agitation planning.  *(rated: **best**)*
+- **(a)** Recommend a delirium driver review, deliriogenic medication reduction where feasible, infection/metabolic/hypoxia and alcohol or sedative withdrawal assessment, sleep-wake support, mobilization, sensory aids, and supervised agitation planning.  *(rated: **best**)*
   - *feedback:* Best. It is practical, multidisciplinary, and avoids framing delirium as only a psychiatry medication problem.
 - **(b)** Recommend an antipsychotic only if the patient is dangerous, but otherwise defer all workup to the primary team.  *(rated: **partial**)*
   - *feedback:* This respects medical ownership but is too passive. Psychiatry can help structure the reversible-driver review and nonpharmacologic plan.
