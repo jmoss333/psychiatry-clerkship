@@ -388,7 +388,7 @@ The boiled-down starting set for the inpatient rotation. Read these fourteen and
 ## Orientation Video
 
 - **Slug:** `orientation-video.html` · **Type:** tool · **Sidebar:** hidden (deep link only)
-- **Source:** `_prototypes/video-library/ (build-generated shell)`
+- **Source:** `_prototypes/orientation-video/orientation-video.html`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
 
 #### Tool — clinical content
