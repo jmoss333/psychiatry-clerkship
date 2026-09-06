@@ -111,9 +111,10 @@ RESIDENT_EXTRA_PAGES = RESIDENT_COTW_INDEX + RESIDENT_TRACK_PAGES
 # ---- resident-only prototype tools --------------------------------------------
 # These DO ship: they are in _build/res/tools/ on every resident deploy. They are
 # not in site_manifest.json's shared tools list because the MS3 site does not
-# serve them. surface_governance.py's _ADDITIONAL_TOOL_SOURCES and
-# validate_tool_governance.py's SITE_EXTRAS carry the same three source paths for
-# their own purposes; those are Phase-2 migrations (ADR-002).
+# serve them. surface_governance.py and validate_tool_governance.py used to carry
+# hand-synced copies of these source paths (_ADDITIONAL_TOOL_SOURCES, SITE_EXTRAS);
+# both were migrated to shipped_pages.json in ADR-002 Phase 2 and deleted, so this
+# is now the only place the resident-only tool sources are written down.
 RESIDENT_PROTO_TOOLS = [
     (
         "_prototypes/agitation-trainer/rp-agitation.html",

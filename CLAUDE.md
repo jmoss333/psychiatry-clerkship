@@ -73,12 +73,13 @@ cd tests/smoke && npm ci && npx playwright test
   `build_and_check.sh` (build + gate), `check-static-site.mjs` (static QA), `site_manifest.json` (source→slug map).
 - `site_manifest.json` is the registry of **hand-registered** shipped pages (tools + content md). A
   new page must be registered here **and** in nav inside `build_deploy.py`, or the QA gate's
-  orphaned-source check hard-fails the build. **It is not the only source of what ships**: Case-of-
-  the-Week pages are appended at build time from
-  `08_Cases_and_Simulation/case-of-the-week/cotw_registry.json` (`_cotw_slug()` in `build_deploy.py`
-  and `resident_section.py`). Anything that needs "the set of shipped pages" must use
-  `faculty-console/content-universe.mjs` (JS) or `validate_attestation_consistency.py`'s
-  `cotw_built_slugs()` (Python) — never the manifest alone. See the gotcha below.
+  orphaned-source check hard-fails the build. **It is not the only source of what ships** — it is
+  one of five producers; Case-of-the-Week pages, for instance, are appended at build time from
+  `08_Cases_and_Simulation/case-of-the-week/cotw_registry.json` (`cotw_slug()` in
+  `site_build/cotw_slug.py`). Anything that needs "the set of shipped pages" must read the one
+  derived listing, `site_build/shipped_pages.json` — `load_shipped_pages()` in `shipped_pages.py`
+  (Python) or `deriveContentUniverse()` in `faculty-console/content-universe.mjs` (JS) — never the
+  manifest alone. See the gotcha below.
 - `NN_Category/` (00–14, 99) — curriculum **content source**, not build output. `14_Tracks/<audience>/`
   are link-only overlays; content never forks (see README).
 - Root data + schemas: `question_bank.json`, `topic_meta.json`, `communication_cases.json`, etc. —
