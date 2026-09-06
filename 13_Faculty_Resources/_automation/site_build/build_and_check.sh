@@ -35,6 +35,8 @@ LIB="$(cd "$HERE/../../.." && pwd)"   # repo root
 MS3_OUT="$LIB/_build/ms3"
 RES_OUT="$LIB/_build/res"
 
+python3 "$LIB/13_Faculty_Resources/_automation/test_validate_curriculum.py"
+python3 "$HERE/test_welcome_compass.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_topic_meta.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_curriculum.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_rotation_edition_schema.py"

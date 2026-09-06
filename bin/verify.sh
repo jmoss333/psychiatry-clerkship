@@ -92,15 +92,18 @@ step "every falsification is on a gate"     python3 bin/check_vacuity.py
 A=13_Faculty_Resources/_automation
 step "validate_registry_schemas"            python3 $A/validate_registry_schemas.py
 step "test_validate_registry_schemas"       python3 $A/test_validate_registry_schemas.py
+step "unit — curriculum contract"            python3 $A/test_validate_curriculum.py
+step "unit — MS3 welcome compass"            python3 $A/site_build/test_welcome_compass.py
 step "validate_topic_meta"                  python3 $A/validate_topic_meta.py
-# Both of the next two existed for months and ran NOWHERE — found by bin/check_vacuity.py,
-# which is why that checker is a step above. test_validate_curriculum.py was worse than
-# unused: seven of its accept-cases were red, because safetyKit `triggers` became mandatory
-# on 2026-08-28 (the fix for "i want to kill myself" reaching pg_suicide.md only through the
-# stopword "to") and its fixture never grew the field. A falsification nothing runs does not
-# fail loudly when it rots; it just quietly stops being true.
+# Six passing tests for topic_meta's safety contract that ran NOWHERE — found by
+# bin/check_vacuity.py, which is why that checker is a step above. Its own docstring says it
+# exists because "validate_topic_meta.py has no existing harness", and then no gate ever ran
+# the harness. (test_validate_curriculum.py was the same defect and is now the step above,
+# wired by #527, which also repaired the seven accept-cases its stale fixture had been
+# failing since safetyKit `triggers` became mandatory on 2026-08-28 — for months, silently,
+# because nothing ran the file. Two people hitting the same rot is the argument for the
+# checker, not against it.)
 step "test_validate_topic_meta_safety"      python3 $A/test_validate_topic_meta_safety.py
-step "test_validate_curriculum"             python3 $A/test_validate_curriculum.py
 # ci.yml runs this validator's own unit suite inside the "Test — SP Interview and managed
 # proxy" step, which check-verify-coverage.py exempts wholesale — so until 2026-09 it ran
 # in CI and nowhere else. A change to validate_attestation_consistency.py that broke its
