@@ -71,6 +71,13 @@ governance decision for Dr. Moss, and it belongs in a reviewed PR of its own.
    `.claude/hooks/lfs_guard.py` denies bulk staging, but do not rely on a hook to save you.
 8. **Push and open a DRAFT pull request.** Never mark it ready. Never merge. Never approve.
 
+   **If your session has no GitHub PR tool**, push the branch anyway and say so. A scheduled
+   session may fire without connectors, in which case `git push` still works — the credentials
+   are environment-level — but `mcp__github__*` is absent. A pushed branch is still a visible,
+   reviewable artifact and GitHub offers a "Compare & pull request" banner on it. What is not
+   acceptable is leaving finished work only on disk in a container that is about to be reclaimed.
+   Push, then report the branch name and the one-line command a human needs to open the PR.
+
 ---
 
 ## 3. What the pull request must say
