@@ -73,12 +73,13 @@ cd tests/smoke && npm ci && npx playwright test
   `build_and_check.sh` (build + gate), `check-static-site.mjs` (static QA), `site_manifest.json` (source→slug map).
 - `site_manifest.json` is the registry of **hand-registered** shipped pages (tools + content md). A
   new page must be registered here **and** in nav inside `build_deploy.py`, or the QA gate's
-  orphaned-source check hard-fails the build. **It is not the only source of what ships**: Case-of-
-  the-Week pages are appended at build time from
-  `08_Cases_and_Simulation/case-of-the-week/cotw_registry.json` (`_cotw_slug()` in `build_deploy.py`
-  and `resident_section.py`). Anything that needs "the set of shipped pages" must use
-  `faculty-console/content-universe.mjs` (JS) or `validate_attestation_consistency.py`'s
-  `cotw_built_slugs()` (Python) — never the manifest alone. See the gotcha below.
+  orphaned-source check hard-fails the build. **It is not the only source of what ships** — it is
+  one of five producers; Case-of-the-Week pages, for instance, are appended at build time from
+  `08_Cases_and_Simulation/case-of-the-week/cotw_registry.json` (`cotw_slug()` in
+  `site_build/cotw_slug.py`). Anything that needs "the set of shipped pages" must read the one
+  derived listing, `site_build/shipped_pages.json` — `load_shipped_pages()` in `shipped_pages.py`
+  (Python) or `deriveContentUniverse()` in `faculty-console/content-universe.mjs` (JS) — never the
+  manifest alone. See the gotcha below.
 - `NN_Category/` (00–14, 99) — curriculum **content source**, not build output. `14_Tracks/<audience>/`
   are link-only overlays; content never forks (see README).
 - Root data + schemas: `question_bank.json`, `topic_meta.json`, `communication_cases.json`, etc. —
@@ -110,6 +111,16 @@ cd tests/smoke && npm ci && npx playwright test
   (two question-bank items that teach different steps for the same scenario),
   `check_instrument_links.py` (dev-only; the recorded instrument routes still resolve —
   deliberately not in CI, external links are flaky and the build egress blocks those hosts).
+- **Egress is an allowlist, and which side of it a host falls on decides which tasks are possible
+  today.** `bin/probe_egress.py` reports that in the repo's own terms — not "itunes.apple.com is
+  unreachable" but "the podcast canonical backfill cannot run here". The SessionStart hook prints
+  a capped summary; run it directly for the full table, `--json` for a machine-readable one.
+  Report-only, exits 0 always, deliberately not in CI and not in `verify.sh` (a report that fails
+  a push is a report nobody keeps). Two traps it exists to prevent: a refused CONNECT tunnel and
+  a host's own 403 are **not** the same thing — one means you cannot get there, the other that you
+  need a credential — and reachability is a fact about the environment, never a content finding.
+  Results cache outside the repo for 6h and invalidate when the proxy changes;
+  `CLERKSHIP_SKIP_EGRESS_PROBE=1` turns it off.
 - `docs/curriculum-review/findings/` — the review→remediation loop. `export_curriculum_review.py`
   produces the transcripts, a review pass writes `findings.json` (id · verbatim `quote` ·
   ready-to-paste `replacement` · `verification`), and remediation lands as small per-work-package
@@ -189,6 +200,16 @@ cd tests/smoke && npm ci && npx playwright test
   `node --test tests/*.test.mjs` *before* `build_deploy.py`, so a failing contract test exits early
   and `_build/` keeps serving **stale output** while the script merely looks "failed". If a source
   edit isn't showing up in the built site, run the node suite first.
+  The corollary for **build-output tests**: guard on freshness, not existence. A `_build/` older
+  than the source under test fails such a test honestly — the page really is not built yet — and
+  that red then aborts the only supported fix, so the staleness protects itself. Use
+  `staleBuildReason()` from `tests/_build_freshness.mjs`: it skips with the rebuild command when a
+  declared input outran the build, and still hard-fails when a *current* build did not produce the
+  page (that is a real regression, not a stale tree). Declare every input the assertions depend on
+  — a path that does not exist throws, because a typo would make the check vacuously "fresh" and
+  retire the contract silently. Note such assertions never run on Netlify or in CI: `node --test`
+  runs before **both** `build_and_check.sh` invocations and `_build/` starts absent, so a
+  build-output test is a local-only contract — do not rely on CI to catch what it pins.
 - **THE LIBRARY TEACHES ADMINISTRATION; IT DOES NOT REPRODUCE INSTRUMENTS.** Same standing as the
   dose-literal rule. Teach *how to give* an instrument — the elicitation, the confounds, what the
   score does and does not license, what a negative result fails to rule out — and link to the
