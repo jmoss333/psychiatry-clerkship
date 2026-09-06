@@ -81,8 +81,11 @@ Two kinds, both drawn from a build-time allowlist:
 
 `analytics_events.json` sits beside `shipped_pages.json` in `site_build/` with a paired
 `analytics_events.schema.json`, following that file's precedent exactly. Placing it there rather
-than at the repo root is deliberate: `test_validate_registry_schemas.py`'s `PAIRS` tuple pins
-*root* registries, and a root file would add a fourth contract to keep in sync for no benefit.
+than at the repo root is deliberate: `test_validate_registry_schemas.py`'s `PAIRS` tuple already
+carries `shipped_pages.json` by its full repo-relative path even though that pair lives beside
+`site_build/`, not at the repo root — `PAIRS` is not root-only, and a non-root registry gets the
+identical gate. The analytics pair is registered there the same way, so sitting beside its
+precedent is one contract to keep in sync, not a new one.
 
 The allowlist deriving from `shipped_pages.json` is the point, not a convenience. That file became
 the single source of "what ships" in #517/#522, after Case-of-the-Week pages shipped by a second
@@ -153,8 +156,10 @@ Every gate below runs offline, so `bin/verify.sh` covers it without network.
 | Python test — CSP | `connect-src` contains the metrics origin and nothing unexpected |
 
 Per `CLAUDE.md`, adding a CI step trips `bin/check-verify-coverage.py`, the scheduled-workflow
-contract digest, and `test_validate_registry_schemas.py`'s `PAIRS` if a root registry is added.
-The implementation plan must budget for all three.
+contract digest, and `test_validate_registry_schemas.py`'s `PAIRS` tuple — which carries full
+repo-relative paths for non-root registries too, not root registries only, so
+`analytics_events.json` needed the same pair entry as `shipped_pages.json` and is registered
+there. The implementation plan must budget for all three.
 
 ## Open decision for the author
 

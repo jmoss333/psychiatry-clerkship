@@ -370,6 +370,93 @@ SKIP_LINK_CSS = (
 )
 FAVICON_LINK = '<link rel="icon" href="/favicon.svg">'
 CLINICAL_CSS_LINK = '<link rel="stylesheet" href="/clinical-warm.css">'
+# Usage analytics. CW_SITE tells the emitter which site it is on; CW_PAGE (when
+# known at build time) tells it which page. The emitter sends only allowlisted
+# keys and never an identifier. See
+# docs/superpowers/specs/2026-09-04-usage-analytics-design.md
+ANALYTICS_TAG = '<script src="/analytics.js" defer></script>'
+
+
+def analytics_head(site, page=None):
+    """The tags every built page carries, in <head> order.
+
+    `page` must be a build-time-known literal identical to this page's own
+    slug in shipped_pages.json (e.g. a tool's own output filename) -- never
+    derived from a URL, query string, or anything read in the browser. Pass
+    None for a file with no single fixed page identity: the SPA shell
+    (index.html) serves dozens of content pages by client-side routing, so no
+    one CW_PAGE literal could describe it truthfully, and a wrong one would be
+    silently dropped by the collector's allowlist anyway (worse than none,
+    since it looks instrumented but never counts).
+    """
+    tag = "<script>window.CW_SITE='%s'" % site
+    if page:
+        # Structurally safe, not just incidentally safe: every current slug is
+        # already [A-Za-z0-9._-] (a filesystem basename), so this never fires
+        # today -- but %s-into-a-single-quoted-JS-string has no enforcement of
+        # that without this assertion, and a future slug source (or a typo)
+        # could otherwise break out of the string literal.
+        if not re.fullmatch(r"[A-Za-z0-9._-]+", page):
+            raise ValueError(
+                "analytics_head: page slug %r is not build-time-safe for JS "
+                "string interpolation (must match [A-Za-z0-9._-]+)" % (page,)
+            )
+        tag += ";window.CW_PAGE='%s'" % page
+    tag += "</script>" + ANALYTICS_TAG
+    return tag
+
+
+# Regex for the exact literal analytics_head() ever produces, so it can be
+# removed again when a site's OWN enablement disagrees with what it inherited
+# (see resident_section.py's reconciliation block, the only caller). Never
+# used during a normal build -- there, the tag is either injected or it is
+# not; this exists only to undo an inherited mismatch.
+_ANALYTICS_TAG_RE = re.compile(
+    r"<script>window\.CW_SITE='[A-Za-z0-9_-]+'"
+    r"(?:;window\.CW_PAGE='[A-Za-z0-9._-]+')?</script>"
+    r"<script src=\"/analytics\.js\" defer></script>\n?"
+)
+
+
+def strip_analytics_tag(text):
+    """Remove the usage-analytics <script> tag(s) analytics_head() injects."""
+    return _ANALYTICS_TAG_RE.sub("", text)
+
+
+# The emitter file itself, co-located with this module (build_deploy.py has
+# its own ANALYTICS_JS constant computed the same way; resident_section.py
+# has none, since it normally inherits the file via the MS3 copytree -- this
+# constant exists for the one case where it must copy the file itself: its
+# own site enabled while ms3's build was not).
+ANALYTICS_JS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "analytics.js")
+
+ANALYTICS_MODES = ("off", "ms3", "res", "both")
+
+
+def analytics_mode():
+    """Read CLERKSHIP_ANALYTICS from the environment; default 'off'.
+
+    See docs/superpowers/specs/2026-09-04-usage-analytics-design.md's Rollout
+    section (steps 2-4): the emitter ships behind an off-by-default build
+    flag so enabling it -- and with it, deciding the spec's open learner-
+    notice question by omission -- is a deliberate, reversible, per-site call
+    the repo owner makes, never a default an agent or a build silently picks.
+    Values: off (default, ships nothing), ms3, res, both.
+    """
+    raw = os.environ.get("CLERKSHIP_ANALYTICS", "off").strip().lower()
+    if raw not in ANALYTICS_MODES:
+        raise ValueError(
+            "CLERKSHIP_ANALYTICS must be one of %s, got %r"
+            % ("|".join(ANALYTICS_MODES), raw)
+        )
+    return raw
+
+
+def analytics_enabled_for(site, mode=None):
+    """Whether `site` ('ms3' or 'res') should ship the usage-analytics emitter."""
+    mode = analytics_mode() if mode is None else mode
+    return mode == "both" or mode == site
+
 
 # Pre-paint theme init: runs before first paint so dark mode never flashes.
 THEME_INIT = (
@@ -543,8 +630,17 @@ def apply_page_chrome(path, is_index=False):
     return t != o
 
 
-def apply_dark_mode(path, is_index=False, cache_bust=None):
-    """Theme init, dark tokens via clinical-warm.css, motion CSS, iframe nav shim."""
+def apply_dark_mode(path, is_index=False, cache_bust=None, page_slug=None, inject_analytics=False):
+    """Theme init, dark tokens via clinical-warm.css, motion CSS, iframe nav shim.
+
+    `page_slug` is this file's own build-time-known slug (its basename, passed
+    by `apply_full_page_pass` below) -- used only for the usage-analytics tag.
+
+    `inject_analytics` gates the usage-analytics tag ONLY -- every other
+    transform here is unconditional. Defaults False (the flag's own default;
+    see analytics_enabled_for()) so a caller that does not pass it explicitly
+    never ships the emitter by accident.
+    """
     t = open(path, encoding="utf-8").read()
     o = t
 
@@ -559,6 +655,17 @@ def apply_dark_mode(path, is_index=False, cache_bust=None):
     # Dark tokens come from the linked stylesheet — one file, not N inline copies.
     if '[data-theme="dark"]' not in t and "clinical-warm.css" not in t and "</head>" in t:
         t = t.replace("</head>", CLINICAL_CSS_LINK + "\n</head>", 1)
+
+    # Usage analytics. Injected here so every polished page carries it from one
+    # source; the emitter itself sends only allowlisted keys. The default site
+    # is ms3 because resident_section.py derives the resident build from the
+    # MS3 one and rewrites CW_SITE in its own pass (see resident_section.py).
+    # Gated behind CLERKSHIP_ANALYTICS (off by default -- see
+    # analytics_enabled_for()): the spec's Rollout step 2 requires the emitter
+    # ship behind an off-by-default build flag, so a caller that does not ask
+    # for it must get nothing, not a tag pointing at a file nobody copied.
+    if inject_analytics and "analytics.js" not in t and "</head>" in t:
+        t = t.replace("</head>", analytics_head("ms3", page_slug) + "\n</head>", 1)
 
     if "cc-rise" not in t and "</style>" in t:
         t = t.replace("</style>", MOTION_CSS + "\n</style>", 1)
@@ -636,13 +743,18 @@ def inject_shared_snippets(path):
     return False
 
 
-def apply_full_page_pass(out_dir, cache_bust=None):
+def apply_full_page_pass(out_dir, cache_bust=None, inject_analytics=False):
     """Run chrome + dark-mode over every shipped HTML page in a build.
 
     Safe to re-run: every transform is idempotent. Callers that write additional
     HTML after the main pass (e.g. resident-only tools) should call this again
     rather than hand-rolling a subset — hand-rolled subsets are exactly how the
     rp-* tools ended up shipping without clinical-warm.css and the iframe shim.
+
+    `inject_analytics` is this CALL's own decision (typically the caller's own
+    site under analytics_enabled_for()), threaded straight to apply_dark_mode.
+    Defaults False so a caller that has not been updated to pass it explicitly
+    never ships the emitter.
     """
     pages = sorted(glob.glob(os.path.join(out_dir, "tools", "*.html")))
     index = os.path.join(out_dir, "index.html")
@@ -650,9 +762,20 @@ def apply_full_page_pass(out_dir, cache_bust=None):
         pages.append(index)
     for p in pages:
         is_index = os.path.abspath(p) == os.path.abspath(index)
+        # Every non-shell page in this loop is its own standalone HTML document
+        # named after its shipped_pages.json slug (a tool's own output
+        # filename) -- so the basename IS the build-time-known page identity
+        # analytics_head() needs. The SPA shell has no single one (see there).
+        page_slug = None if is_index else os.path.basename(p)
         inject_shared_snippets(p)
         apply_page_chrome(p, is_index=is_index)
-        apply_dark_mode(p, is_index=is_index, cache_bust=cache_bust)
+        apply_dark_mode(
+            p,
+            is_index=is_index,
+            cache_bust=cache_bust,
+            page_slug=page_slug,
+            inject_analytics=inject_analytics,
+        )
     return len(pages)
 
 

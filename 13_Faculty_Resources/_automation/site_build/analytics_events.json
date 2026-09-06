@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "_note": "Hand-edited: tool step lists ONLY. Page keys derive from shipped_pages.json. Regenerate the bundled allowlist: python3 13_Faculty_Resources/_automation/site_build/analytics_events.py --write",
+  "tools": {
+    "interview-room": ["open", "first-turn", "five-turns", "wrapped"],
+    "reasoning-workbench": ["open", "step1", "step2", "step3", "done"]
+  }
+}
