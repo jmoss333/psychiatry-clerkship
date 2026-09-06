@@ -85,13 +85,18 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   for(var w=0;w<cw.length;w++){
     var items=[], src=cw[w].items||[];
     for(var j=0;j<src.length;j++){ items.push(ensure(src[j].ref, src[j].kind)); }
-    weeks.push({
+    var week={
       n:cw[w].n,
       title:cw[w].title,
       theme:cw[w].theme,
       focusCategories:(cw[w].focusCategories||[]).slice(),
       items:items
-    });
+    };
+    // Landing destinations need reader identity without becoming assigned items or Library rows.
+    if(typeof cw[w].landingRef==='string'&&cw[w].landingRef){
+      week.landingRef=cw[w].landingRef;
+    }
+    weeks.push(week);
   }
 
   var columns=[], cc=cur.libraryColumns||[];
@@ -107,6 +112,12 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   var kit=[], ck=cur.safetyKit||[];
   for(var k=0;k<ck.length;k++){
     kit.push({ item: ensure(ck[k].ref, null), sub: ck[k].sub, triggers: (ck[k].triggers||[]).slice() });
+  }
+
+  // Resolve unplaced landing pages after browse items, so existing placements keep their behavior.
+  for(var l=0;l<weeks.length;l++){
+    var landing=weeks[l].landingRef;
+    if(landing&&!byRef[landing]) ensure(landing, 'read').readerOnly=true;
   }
 
   var sourcePath=cur.path||{};
@@ -189,7 +200,7 @@ function fdLibraryOnlyReads(index){
   var out=[];
   for(var ref in index.byRef){
     var it=index.byRef[ref];
-    if(it.kind==='read'&&!inWeek[ref]) out.push(it);
+    if(it.kind==='read'&&!it.readerOnly&&!inWeek[ref]) out.push(it);
   }
   out.sort(function(a,b){ return a.ref<b.ref?-1:(a.ref>b.ref?1:0); });
   return out;

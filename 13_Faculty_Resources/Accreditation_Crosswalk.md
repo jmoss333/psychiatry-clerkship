@@ -25,7 +25,7 @@
 | **Transitions / disposition** | Risk-stratified discharge; post-discharge kit; Week 6 | EPA 8 | Discharge-plan reasoning |
 
 ## B. Weekly arc → competency emphasis
-Week 1 Foundations (interview, MSE, capacity) · Week 2 Mood/Psychosis/Pharm (diagnosis, psychopharm) · Week 3 Psychotherapy/Personality (alliance, common factors) · Week 4 Family/Systems/EE (family-centered care) · Week 5 Acute/Emergency (risk, delirium, withdrawal) · Week 6 Integration/Exam (disposition, shelf, OSCE).
+Week 1 Foundations & the MSE (interview, MSE, capacity) · Week 2 Mood, Psychosis & Pharm (diagnosis, psychopharm) · Week 3 Psychotherapy & Personality (alliance, common factors) · Week 4 Family Systems & EE (family-centered care) · Week 5 Acute & Emergency (risk, delirium, withdrawal) · Week 6 Integration & Exam (disposition, shelf, OSCE).
 
 ## C. Assessment toolkit included
 Oral-presentation rubric + entrustment anchors (levels 1–4); 6-station OSCE set with checklists; documentation exemplars; reflection/PIF prompts; shelf high-yield + self-check; Journal-Club packets for teaching rounds.

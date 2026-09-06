@@ -11,6 +11,7 @@ every ref it names is a page the build actually ships:
   - item kind agrees with the slug's type (.html => tool, .md => read)
   - refs within a week are unique
   - every shipped slug is placed in a library column or explicitly excluded
+  - every MS3 week's landingRef is a shipped MS3 Markdown page (welcome_compass.prepare_cards)
 
 WHAT "SHIPPED" COVERS — read this before trusting the totality guard.
 The shipped set is READ, not re-derived: site_build/shipped_pages.json is the one
@@ -55,6 +56,7 @@ REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 
 sys.path.insert(0, os.path.join(HERE, "site_build"))
 from shipped_pages import ShippedPagesError, load_shipped_pages  # noqa: E402
+from welcome_compass import CompassContractError, prepare_cards  # noqa: E402
 
 # The weekly-case producer, excluded from every set below by the decision recorded
 # in this module's docstring. Named once so the exclusion is greppable.
@@ -120,6 +122,11 @@ def main(argv):
 
     try:
         tool_slugs, md_slugs, site_shipped = shipped_sets(shipped_root)
+        # The Compass gate below asks the listing about each week's landing page directly —
+        # kind, sites and slug together — which the three flattened sets no longer carry.
+        # Loading the document a second time keeps shipped_sets' signature the ADR-002 shape
+        # every other reader uses; the read is a small local JSON file.
+        shipped_document = load_shipped_pages(shipped_root)
     except ShippedPagesError as error:
         print("curriculum.json INVALID — %s" % error)
         return 1
@@ -234,6 +241,11 @@ def main(argv):
                 if kind != expected_kind:
                     bad(week_label, "ref '%s' has kind '%s' but the build ships it as '%s'" %
                         (ref, kind, expected_kind))
+        if site == "ms3":
+            try:
+                prepare_cards(weeks, shipped_document)
+            except CompassContractError as error:
+                bad(label, str(error))
         path_totals[site] = sum(len(w.get("items", [])) for w in weeks if isinstance(w, dict))
 
     # ---- library totality: every shipped slug is placed or explicitly excluded ----
