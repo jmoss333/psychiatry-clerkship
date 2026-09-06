@@ -41,7 +41,6 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -52,6 +51,20 @@ RESIDENT_SECTION = SITE_BUILD / "resident_section.py"
 CRISIS_JSON = REPO / "crisis_resources.json"
 SHIPPED_PAGES = SITE_BUILD / "shipped_pages.json"
 REBUILD = "bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh {site}"
+
+# ADR-002's own reader. Asked for by name rather than re-parsed here: load_shipped_pages()
+# validates the document's version and every page's shape and RAISES on a malformed entry,
+# which is the behaviour a safety checker needs. See sites_by_slug().
+sys.path.insert(0, str(SITE_BUILD))
+from shipped_pages import ShippedPagesError, load_shipped_pages  # noqa: E402
+
+# Every file whose content changes WHAT THIS CHECKS or what a correct answer looks like.
+# shipped_pages.json belongs here because it decides which audience each required surface is
+# demanded of: regenerating it after a build (a `--quick` run, adding a producer) changes the
+# question while the tree being read is unchanged, and an undeclared input means that run
+# reports a confident OK over the wrong set (Codex P2 on #545).
+STALE_INPUTS = (CRISIS_JSON, BUILD_DEPLOY, RESIDENT_SECTION,
+                SITE_BUILD / "crisis_block.py", SHIPPED_PAGES)
 
 
 class Undeterminable(Exception):
@@ -104,7 +117,7 @@ def canonical_contacts() -> list[tuple[str, str]]:
     return out
 
 
-def sites_by_slug() -> dict[str, list[str]]:
+def sites_by_slug(root: Path | None = None) -> dict[str, list[str]]:
     """slug -> which audiences ship it, from the derived universe ADR-002 says to ask.
 
     This is load-bearing, not decoration. _CRISIS_REQUIRED_MD holds three MS3-only
@@ -112,15 +125,22 @@ def sites_by_slug() -> dict[str, list[str]]:
     shared list wholesale to both audiences reports three phantom failures on res. The first
     run of this checker did exactly that. Asking shipped_pages.json which site ships a slug is
     both the fix and the architecturally correct source — never the producers.
+
+    READ THROUGH load_shipped_pages(), never json.loads. A private parser here looked
+    equivalent and was not: `list(page.get("sites") or [])` turned a missing, empty or
+    malformed `sites` into [], `site in []` is False for BOTH audiences, and the required
+    surface silently left the list while the run still printed OK over a smaller set. That is
+    the vacuity this whole file exists to catch, reproduced inside the file itself (Codex P2
+    on #545). The loader validates version and page shape and fails closed; the self-test
+    proves a malformed entry now raises.
     """
     try:
-        data = json.loads(SHIPPED_PAGES.read_text(encoding="utf-8"))
-    except (OSError, ValueError) as exc:
-        raise Undeterminable(f"cannot read shipped_pages.json: {exc}") from exc
-    out = {p["slug"]: list(p.get("sites") or []) for p in data.get("pages", []) if p.get("slug")}
-    if not out:
-        raise Undeterminable("shipped_pages.json lists no pages")
-    return out
+        document = load_shipped_pages(root if root is not None else REPO)
+    except ShippedPagesError as exc:
+        # The loader's messages already name the file; re-prefixing would double it.
+        raise Undeterminable(str(exc)) from exc
+    # load_shipped_pages guarantees a non-empty pages list and a non-empty `sites` on each.
+    return {page["slug"]: list(page["sites"]) for page in document["pages"]}
 
 
 def required_surfaces() -> dict[str, list[tuple[str, str]]]:
@@ -161,23 +181,34 @@ def required_surfaces() -> dict[str, list[tuple[str, str]]]:
     return out
 
 
-def stale_reason(site: str) -> str | None:
+def newer_input(built_at: float, inputs=STALE_INPUTS) -> Path | None:
+    """The first declared input that outran the build, or None. Pure, so it is falsifiable.
+
+    A declared path that does not exist RAISES rather than being skipped: a typo in
+    STALE_INPUTS would otherwise make the freshness check vacuously "fresh" and retire the
+    contract in silence (CLAUDE.md, staleBuildReason paragraph).
+    """
+    for src in inputs:
+        if not src.exists():
+            raise Undeterminable(f"declared input does not exist: {src}")
+        if src.stat().st_mtime > built_at:
+            return src
+    return None
+
+
+def stale_reason(site: str, build_root: Path | None = None) -> str | None:
     """None when _build/<site> is current enough to mean something, else why it is not.
 
     Mirrors tests/_build_freshness.mjs: a build older than the sources under test fails such a
     check honestly, and that red would then be blamed on content rather than on the stale tree.
     """
-    stamp = REPO / "_build" / site / "index.html"
+    stamp = (build_root if build_root is not None else REPO / "_build" / site) / "index.html"
     if not stamp.exists():
         return f"_build/{site} is not built"
-    built_at = stamp.stat().st_mtime
-    inputs = [CRISIS_JSON, BUILD_DEPLOY, RESIDENT_SECTION, SITE_BUILD / "crisis_block.py"]
-    for src in inputs:
-        if not src.exists():
-            raise Undeterminable(f"declared input does not exist: {src}")
-        if src.stat().st_mtime > built_at:
-            return f"_build/{site} is stale ({src.relative_to(REPO)} is newer than the build)"
-    return None
+    src = newer_input(stamp.stat().st_mtime)
+    if src is None:
+        return None
+    return f"_build/{site} is stale ({src.relative_to(REPO)} is newer than the build)"
 
 
 def check_site(site: str, surfaces: list[tuple[str, str]],
@@ -205,7 +236,9 @@ def self_test() -> int:
     This is the lesson from #539, where a coverage assertion passed cleanly and turned out to be
     unfalsifiable. Run it before trusting a green result from the real check.
     """
+    import os
     import tempfile
+    import time
 
     contacts = canonical_contacts()
     good = " ".join(c for _, c in contacts)
@@ -267,6 +300,65 @@ def self_test() -> int:
         cases.append(("a renamed list raises instead of checking nothing", False))
     except Undeterminable:
         cases.append(("a renamed list raises instead of checking nothing", True))
+
+    # --- the two ways this checker could quietly check LESS than it claims (Codex, #545) ---
+    #
+    # Both are the same defect wearing different clothes: the run still prints OK, over a set
+    # that is no longer the required one. Neither is visible in the output, which is why each
+    # gets a falsification rather than a comment.
+
+    # (1) A required slug whose `sites` is missing, empty or malformed. The old private parser
+    #     turned it into [], and `site in []` is False for BOTH audiences, so the surface left
+    #     the required list with no trace. Reproduced on the real document, one field changed.
+    with tempfile.TemporaryDirectory() as tmp:
+        fake_root = Path(tmp)
+        fake = fake_root / SHIPPED_PAGES.relative_to(REPO)
+        fake.parent.mkdir(parents=True)
+        document = json.loads(SHIPPED_PAGES.read_text(encoding="utf-8"))
+        victim = sorted(literal_set(BUILD_DEPLOY, "_CRISIS_REQUIRED_MD"))[0]
+        hit = [page for page in document["pages"] if page.get("slug") == victim]
+        # If the victim is not in the universe the case proves nothing, so say so rather than
+        # passing: a fixture that stopped matching reality is how a test goes quietly vacuous.
+        cases.append((f"the malformed-sites fixture still names a shipped page ({victim})",
+                      len(hit) == 1))
+        for page in hit:
+            page["sites"] = []
+        fake.write_text(json.dumps(document), encoding="utf-8")
+        label = f"a malformed `sites` on {victim} raises, never a silent drop"
+        try:
+            scoped = sites_by_slug(fake_root)
+            cases.append((f"{label} (returned {len(scoped)} pages)", False))
+        except Undeterminable:
+            cases.append((label, True))
+
+    # (2) shipped_pages.json regenerated after a build changes WHICH AUDIENCE each surface is
+    #     demanded of, so an undeclared input means the guard calls a stale tree current and
+    #     the run answers a question the build never saw. Pinned as membership AND behaviour.
+    cases.append(("shipped_pages.json is a declared freshness input",
+                  SHIPPED_PAGES in STALE_INPUTS))
+    try:
+        cases.append(("an input newer than the build is named, not ignored",
+                      newer_input(0.0, [SHIPPED_PAGES]) == SHIPPED_PAGES))
+        cases.append(("a build newer than every declared input is not called stale",
+                      newer_input(time.time() + 3600) is None))
+        try:
+            newer_input(0.0, [SITE_BUILD / "no_such_declared_input.py"])
+            cases.append(("a declared input that does not exist raises", False))
+        except Undeterminable:
+            cases.append(("a declared input that does not exist raises", True))
+    except Undeterminable as exc:
+        cases.append((f"the declared freshness inputs all resolve ({exc})", False))
+
+    # And the whole guard end to end: a build stamped before every input must SKIP with the
+    # rebuild command, never silently check a tree that predates what it is being checked for.
+    with tempfile.TemporaryDirectory() as tmp:
+        fake_build = Path(tmp)
+        stamp = fake_build / "index.html"
+        stamp.write_text("built", encoding="utf-8")
+        os.utime(stamp, (0, 0))
+        reason = stale_reason("t", build_root=fake_build)
+        cases.append(("a build older than its inputs is reported stale, not checked",
+                      bool(reason) and "stale" in reason))
 
     for label, ok in cases:
         print(f"  {'ok  ' if ok else 'FAIL'} {label}")
