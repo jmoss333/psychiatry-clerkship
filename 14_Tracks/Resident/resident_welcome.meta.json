@@ -1,0 +1,9 @@
+{
+  "_note": "Resident-site overlay for the shared welcome.md topic_meta entry (tldr + points only). resident_section.py applies it through welcome_compass.project_resident_welcome; the MS3 entry in topic_meta.json is untouched. Keep this beside resident_welcome.md so a reviewer sees the page and its summary together.",
+  "tldr": "Start with the four-week Rotation Plan, then use the core references and Resident Depth pages to prepare for patient care and supervision.",
+  "points": [
+    "Start with the 4-Week Rotation Plan.",
+    "Use Resident Depth for advanced psychopharmacology, systems and med-legal work, supervision, and teaching.",
+    "Bring an agenda to supervision and expect frequent, specific, behavior-based feedback."
+  ]
+}

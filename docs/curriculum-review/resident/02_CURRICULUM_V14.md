@@ -11,7 +11,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `orientation.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 1,004 words
+- **Length:** 1,010 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -74,8 +74,10 @@ prepared, safe, honest about uncertainty, and responsive to feedback.
 
 ## The Single Safety Rule
 
+<!-- single-safety-rule:start -->
 If you are worried about immediate safety, tell the resident or attending now.
 Do not wait for rounds. Do not carry it alone.
+<!-- single-safety-rule:end -->
 
 Escalate immediately for:
 
@@ -220,7 +222,7 @@ skills rather than vague exposure.
 
 ---
 
-## Week 1 — Foundations
+## Week 1 — Foundations & the MSE
 
 - **Slug:** `week1.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_1_Foundations/README.md`
@@ -307,7 +309,7 @@ skills rather than vague exposure.
 
 ---
 
-## Week 2 — Mood/Psychosis/Pharm
+## Week 2 — Mood, Psychosis & Pharm
 
 - **Slug:** `week2.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md`
@@ -384,7 +386,7 @@ skills rather than vague exposure.
 
 ---
 
-## Week 3 — Psychotherapy/Personality
+## Week 3 — Psychotherapy & Personality
 
 - **Slug:** `week3.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md`
@@ -461,7 +463,7 @@ skills rather than vague exposure.
 
 ---
 
-## Week 4 — Family/Systems/EE
+## Week 4 — Family Systems & EE
 
 - **Slug:** `week4.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md`
@@ -538,7 +540,7 @@ skills rather than vague exposure.
 
 ---
 
-## Week 5 — Acute/Emergency
+## Week 5 — Acute & Emergency
 
 - **Slug:** `week5.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md`
@@ -618,7 +620,7 @@ skills rather than vague exposure.
 
 ---
 
-## Week 6 — Integration/Exam
+## Week 6 — Integration & Exam
 
 - **Slug:** `week6.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md`
