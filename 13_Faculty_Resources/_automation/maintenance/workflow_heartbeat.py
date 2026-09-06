@@ -41,6 +41,33 @@ SAFE_GIT_SHA = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
 MAX_API_BYTES = 2_000_000
 API_TIMEOUT_SECONDS = 20
 
+# A heartbeat measures pulse, not health.
+#
+# `gate` records every reason a row is not clean, and the receipt keeps saying so.
+# But the EXIT CODE answers a narrower question — is the schedule itself alive,
+# and could this run evaluate it? — because that is the only question no other
+# automation answers.
+#
+# These states mean the pulse is genuinely wrong. Nothing else reports them, so
+# they exit non-zero:
+PULSE_BLOCKING_STATES = frozenset({
+    "unavailable",            # the runs could not be read
+    "provenance_unavailable",  # a run could not be tied to the current definition
+    "stale",                   # it fired, but too long ago
+    "missing",                 # it never fired inside its window
+})
+
+# This state means the workflow fired exactly on schedule and its run then
+# failed. Real, and worth fixing — but automation-failure-escalation.yml watches
+# all ten of these workflows on `workflow_run` and upserts one rolling issue for
+# precisely this. A heartbeat that also fails on it reports nothing new and goes
+# permanently red: on 2026-09-04 the canary recovered and the heartbeat stayed
+# red for surveillance-citations.yml and surveillance-link-monitor.yml, whose
+# `gh pr create` write-back has been failing since long before, and which the
+# escalation was already tracking. Daily red for an already-tracked failure is
+# how a monitor becomes wallpaper.
+DELEGATED_BLOCKING_STATES = frozenset({"failed"})
+
 
 class HeartbeatError(RuntimeError):
     """A workflow run or activation record could not be trusted."""
@@ -306,12 +333,46 @@ def evaluate_runs(
         if state == "missing":
             gate = "blocked"
 
+    pulse_blockers, _delegated = _split_blockers(workflows)
     return {
         "schemaVersion": 1,
         "generatedAt": now.isoformat(timespec="seconds"),
         "gate": gate,
+        # Additive: `gate` still records every unclean row. `pulse` records the
+        # subset the heartbeat itself owns, and is what the exit code follows.
+        "pulse": "blocked" if pulse_blockers else "ready",
         "workflows": workflows,
     }
+
+
+def _split_blockers(workflows):
+    """Split rows into (pulse blockers, delegated blockers), by workflow file."""
+    pulse = []
+    delegated = []
+    for row in workflows:
+        if not isinstance(row, dict):
+            continue
+        state = row.get("state")
+        name = row.get("workflowFile")
+        if state in PULSE_BLOCKING_STATES:
+            pulse.append((name, state))
+        elif state in DELEGATED_BLOCKING_STATES:
+            delegated.append((name, state))
+    return pulse, delegated
+
+
+def classify_blockers(receipt):
+    """Public split of a receipt's blocking rows. Returns (pulse, delegated).
+
+    A caller decides its exit code from `pulse` alone; `delegated` is for the
+    log line, so a human still sees what the escalation is carrying.
+    """
+    if not isinstance(receipt, dict):
+        return [], []
+    workflows = receipt.get("workflows")
+    if not isinstance(workflows, list):
+        return [], []
+    return _split_blockers(workflows)
 
 
 def fetch_runs(repository, workflow_file, *, token, opener=None):
@@ -598,10 +659,20 @@ def main(argv=None, *, opener=None, now=_utc_now):
         activation_records=activations,
         run_provenance=provenance,
     )
-    # Name the workflows that blocked the gate before exiting. The heartbeat is
-    # red *because* something it watches is red, and without this the log gives
-    # no hint which one — see receipt_summary.
-    report(receipt, "heartbeat", stream=sys.stderr)
+    # Name every unclean workflow before exiting — without this the log gives no
+    # hint which one (see receipt_summary). The verdict is passed explicitly:
+    # only a pulse failure is this steward's, so only that may read as "failed".
+    pulse_blockers, delegated = classify_blockers(receipt)
+    report(receipt, "heartbeat", stream=sys.stderr, failed=bool(pulse_blockers))
+    if delegated and not pulse_blockers:
+        named = ",".join(f"{name}:{state}" for name, state in delegated)
+        print(
+            "heartbeat: schedule is alive; "
+            f"{len(delegated)} watched workflow(s) fired on time but their last "
+            f"run failed ({named}). Tracked by automation-failure-escalation.yml, "
+            "not by this gate — see its rolling issue.",
+            file=sys.stderr,
+        )
     try:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(
@@ -609,9 +680,9 @@ def main(argv=None, *, opener=None, now=_utc_now):
             encoding="utf-8",
         )
     except OSError:
-        print("heartbeat: receipt write failed", file=sys.stderr)
+        print("heartbeat failed: receipt write failed", file=sys.stderr)
         return 2
-    return 0 if receipt["gate"] == "ready" else 2
+    return 2 if pulse_blockers else 0
 
 
 def _expected_cron(workflow_file):

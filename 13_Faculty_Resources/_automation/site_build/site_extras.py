@@ -1,12 +1,14 @@
 """Pages and tools that ship OUTSIDE site_manifest.json's shared lists.
 
 WHY THIS MODULE EXISTS: "what ships" is not one list. site_manifest.json carries
-the shared md/tools both learner sites publish, but three more routes reach a
+the shared md/tools both learner sites publish, but four more routes reach a
 built site without touching it:
 
   1. build_deploy.py copies the MS3 orientation video tool from _prototypes/.
   2. resident_section.py copies resident-only markdown (RES_EXTRA).
   3. resident_section.py copies three resident-only role-play tools (PROTO_TOOLS).
+  4. resident_section.py copies the resident onboarding media
+     (RESIDENT_ONBOARDING_MEDIA) into <deploy>/media/.
 
 Until 2026-09 each list was a literal inside the build script that used it, so
 nothing outside that script could enumerate the real shipped set without
@@ -16,12 +18,14 @@ so nothing could. shipped_pages.py needs exactly these lists and must not
 re-type them; hoisting them here is what makes the derivation a read rather
 than a transcription.
 
-Entries use the same 3-tuple shape as site_manifest.json --
+Page and tool entries use the same 3-tuple shape as site_manifest.json --
 ``(source path relative to the repo root, built filename, display title)`` --
 so a reader that already understands the manifest understands these too. The
-titles are the ones the two site navs use.
+titles are the ones the two site navs use. RESIDENT_ONBOARDING_MEDIA is the
+exception: its entries are ``(source path, built filename)`` pairs, because its
+files are media the onboarding page plays, not pages, so they have no nav title.
 
-Fourth route, deliberately NOT here: the Case-of-the-Week pages, which are
+Fifth route, deliberately NOT here: the Case-of-the-Week pages, which are
 registry-driven and derived by cotw_slug.py.
 
 DECISION: shipped-pages-single-source
@@ -30,6 +34,7 @@ DECISION: shipped-pages-single-source
 __all__ = [
     "MS3_ORIENT_VIDEO",
     "MS3_EXTRA_TOOLS",
+    "RESIDENT_ONBOARDING_MEDIA",
     "RESIDENT_COTW_INDEX",
     "RESIDENT_TRACK_PAGES",
     "RESIDENT_EXTRA_PAGES",
@@ -62,6 +67,14 @@ MS3_ORIENT_VIDEO = [
 # The subset of the above that is a shipped tool rather than a media asset.
 # resident_section.py strips these from the resident build, so they are MS3-only.
 MS3_EXTRA_TOOLS = [entry for entry in MS3_ORIENT_VIDEO if entry[1].endswith(".html")]
+
+# ---- resident-only onboarding media ("Yours to Run.", ~87s, silent/kinetic-text) ----
+# Copied by resident_section.py into <deploy>/media/; not a page. welcome_compass.py
+# derives the resident output contract from this list, so it is declared once.
+RESIDENT_ONBOARDING_MEDIA = [
+    ("_prototypes/video-library/resident-onboarding.mp4", "resident-onboarding.mp4"),
+    ("_prototypes/video-library/resident-onboarding-poster.jpg", "resident-onboarding-poster.jpg"),
+]
 
 # ---- resident-only markdown ---------------------------------------------------
 # Two of these deliberately reuse a slug the manifest already ships

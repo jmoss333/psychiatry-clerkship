@@ -227,13 +227,14 @@
     "by": "Joshua Moss, MD"
   },
   "welcome.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "general",
       "level": "low"
     },
-    "at": "2026-06-29",
-    "by": "Joshua Moss, MD"
+    "reason": "Welcome page revision awaiting faculty review.",
+    "at": "2026-09-04",
+    "by": "Pending faculty review"
   },
   "core_readings.md": {
     "status": "reviewed",

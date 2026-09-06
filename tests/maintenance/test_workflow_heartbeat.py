@@ -1,3 +1,5 @@
+import contextlib
+import io
 import os
 import json
 import subprocess
@@ -13,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
 from maintenance import workflow_heartbeat as heartbeat_module  # noqa: E402
+from maintenance.receipt_summary import FAILED_MARKER  # noqa: E402
 from maintenance.workflow_heartbeat import (  # noqa: E402
     EXPECTATIONS,
     HeartbeatError,
@@ -886,6 +889,160 @@ class WorkflowHeartbeatTests(unittest.TestCase):
             check=True,
             env=environment,
         )
+
+
+class PulseVersusDelegatedTests(unittest.TestCase):
+    """The exit code follows the pulse, not every unclean row.
+
+    A heartbeat's subject is whether each watched schedule is still firing and
+    whether this run could evaluate it. A workflow that fired exactly on time
+    and then failed is real, but automation-failure-escalation.yml watches all
+    ten of these workflows and upserts one rolling issue for it — so a heartbeat
+    that also goes red reports nothing new and becomes wallpaper.
+    """
+
+    def _row(self, workflow_file, state):
+        return {"workflowFile": workflow_file, "state": state}
+
+    def _receipt(self, *rows, gate="blocked"):
+        return {"schemaVersion": 1, "gate": gate, "workflows": list(rows)}
+
+    def test_the_2026_09_04_receipt_no_longer_exits_non_zero(self):
+        # The exact rows from the run that stayed red after the canary recovered.
+        receipt = self._receipt(
+            self._row("surveillance-citations.yml", "failed"),
+            self._row("surveillance-link-monitor.yml", "failed"),
+            self._row("ci.yml", "pending_first_run"),
+            self._row("maintenance-governance-digest.yml", "pending_first_run"),
+        )
+        pulse, delegated = heartbeat_module.classify_blockers(receipt)
+        self.assertEqual(pulse, [])
+        self.assertEqual(
+            [name for name, _ in delegated],
+            ["surveillance-citations.yml", "surveillance-link-monitor.yml"],
+        )
+
+    def test_every_pulse_state_still_exits_non_zero(self):
+        for state in sorted(heartbeat_module.PULSE_BLOCKING_STATES):
+            with self.subTest(state=state):
+                receipt = self._receipt(self._row("ci.yml", state))
+                pulse, _ = heartbeat_module.classify_blockers(receipt)
+                self.assertEqual([name for name, _ in pulse], ["ci.yml"])
+
+    def test_a_pulse_failure_wins_over_a_delegated_one(self):
+        receipt = self._receipt(
+            self._row("surveillance-citations.yml", "failed"),
+            self._row("maintenance-production-canary.yml", "stale"),
+        )
+        pulse, delegated = heartbeat_module.classify_blockers(receipt)
+        self.assertEqual(
+            [name for name, _ in pulse], ["maintenance-production-canary.yml"]
+        )
+        self.assertEqual(
+            [name for name, _ in delegated], ["surveillance-citations.yml"]
+        )
+
+    def test_the_two_state_sets_are_disjoint_and_cover_the_blocking_states(self):
+        self.assertEqual(
+            heartbeat_module.PULSE_BLOCKING_STATES
+            & heartbeat_module.DELEGATED_BLOCKING_STATES,
+            frozenset(),
+        )
+        # pending_first_run is deliberately in neither: it never blocked the gate.
+        self.assertNotIn(
+            "pending_first_run",
+            heartbeat_module.PULSE_BLOCKING_STATES
+            | heartbeat_module.DELEGATED_BLOCKING_STATES,
+        )
+
+    def test_pending_first_run_alone_is_not_a_blocker(self):
+        receipt = self._receipt(
+            self._row("ci.yml", "pending_first_run"), gate="ready"
+        )
+        self.assertEqual(heartbeat_module.classify_blockers(receipt), ([], []))
+
+    def test_a_malformed_receipt_names_no_blockers_rather_than_raising(self):
+        for receipt in (None, {}, {"workflows": "not-a-list"}, {"workflows": [None]}):
+            with self.subTest(receipt=receipt):
+                self.assertEqual(
+                    heartbeat_module.classify_blockers(receipt), ([], [])
+                )
+
+    def _run_main_with_receipt(self, receipt):
+        """Drive main() to its exit with a canned receipt, capturing stderr."""
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "heartbeat.json"
+            stderr = io.StringIO()
+            with (
+                mock.patch.object(
+                    heartbeat_module, "fetch_runs", return_value=[]
+                ),
+                mock.patch.object(
+                    heartbeat_module,
+                    "derive_schedule_activation",
+                    return_value=NOW,
+                ),
+                mock.patch.object(
+                    heartbeat_module, "evaluate_runs", return_value=receipt
+                ),
+                mock.patch.dict(
+                    os.environ,
+                    {
+                        "GITHUB_REPOSITORY": "example/repo",
+                        "GITHUB_TOKEN": "PRIVATE TOKEN SENTINEL",
+                    },
+                ),
+                contextlib.redirect_stderr(stderr),
+            ):
+                code = heartbeat_module.main(
+                    ["--out", str(output)], now=lambda: NOW
+                )
+            return code, stderr.getvalue()
+
+    def test_main_exits_zero_and_defers_when_only_watched_runs_failed(self):
+        code, stderr = self._run_main_with_receipt(
+            self._receipt(
+                self._row("surveillance-citations.yml", "failed"),
+                self._row("surveillance-link-monitor.yml", "failed"),
+            )
+        )
+        self.assertEqual(code, 0)
+        # The lead must not read as this steward's failure...
+        self.assertTrue(stderr.startswith("heartbeat: gate=blocked"))
+        # ...but the deferral must be stated, and name where it is tracked.
+        self.assertIn("schedule is alive", stderr)
+        self.assertIn("automation-failure-escalation.yml", stderr)
+        self.assertIn("surveillance-citations.yml:failed", stderr)
+
+    def test_main_exits_two_when_a_schedule_stopped_firing(self):
+        code, stderr = self._run_main_with_receipt(
+            self._receipt(self._row("maintenance-production-canary.yml", "stale"))
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(f"heartbeat {FAILED_MARKER}:", stderr)
+        # A pulse failure is not a deferral; it must not claim the schedule is fine.
+        self.assertNotIn("schedule is alive", stderr)
+
+    def test_main_exits_zero_when_every_row_is_healthy(self):
+        code, stderr = self._run_main_with_receipt(
+            self._receipt(self._row("ci.yml", "success"), gate="ready")
+        )
+        self.assertEqual(code, 0)
+        self.assertNotIn(FAILED_MARKER, stderr)
+
+    def test_the_receipt_records_the_pulse_alongside_the_gate(self):
+        # evaluate_runs must emit `pulse` so the uploaded artifact is
+        # self-describing, without changing what `gate` means.
+        receipt = evaluate_runs(
+            {"ci.yml": 1},
+            {"ci.yml": []},
+            now=NOW,
+            activation_records={"ci.yml": None},
+            run_provenance={"ci.yml": {}},
+        )
+        self.assertEqual(receipt["gate"], "blocked")
+        self.assertEqual(receipt["pulse"], "blocked")
+        self.assertIn("workflows", receipt)
 
 
 if __name__ == "__main__":

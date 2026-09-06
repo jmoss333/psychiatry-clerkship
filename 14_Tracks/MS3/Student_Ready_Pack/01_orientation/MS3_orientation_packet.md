@@ -20,8 +20,10 @@ prepared, safe, honest about uncertainty, and responsive to feedback.
 
 ## The Single Safety Rule
 
+<!-- single-safety-rule:start -->
 If you are worried about immediate safety, tell the resident or attending now.
 Do not wait for rounds. Do not carry it alone.
+<!-- single-safety-rule:end -->
 
 Escalate immediately for:
 

@@ -230,6 +230,50 @@ class EscalationGrepContractTests(unittest.TestCase):
         self.assertRegex(FAILED_MARKER, self.ESCALATION_GREP)
 
 
+class ExplicitVerdictTests(unittest.TestCase):
+    """`failed=` lets a steward whose exit code is not `gate != ready` say so.
+
+    The heartbeat is the case: a blocked gate there can mean its own subject
+    (a schedule stopped firing) or someone else's (a run fired on time and
+    failed, which the escalation already tracks). The lead must match the exit
+    code, or the log line lies about what happened.
+    """
+
+    def _blocked(self):
+        return {
+            "gate": "blocked",
+            "workflows": [
+                {"workflowFile": "surveillance-citations.yml", "state": "failed"}
+            ],
+        }
+
+    def test_failed_false_keeps_the_lead_clean_on_a_blocked_gate(self):
+        line = summarize(self._blocked(), "heartbeat", failed=False)
+        self.assertTrue(line.startswith("heartbeat: gate=blocked"))
+        self.assertNotIn(f"heartbeat {FAILED_MARKER}", line)
+
+    def test_failed_true_marks_the_lead_on_a_ready_gate(self):
+        line = summarize({"gate": "ready", "state": "ok"}, "sp-health", failed=True)
+        self.assertTrue(line.startswith(f"sp-health {FAILED_MARKER}:"))
+
+    def test_omitting_failed_still_follows_the_gate(self):
+        self.assertEqual(
+            summarize(self._blocked(), "heartbeat"),
+            summarize(self._blocked(), "heartbeat", failed=True),
+        )
+
+    def test_the_row_states_are_still_named_when_the_lead_is_clean(self):
+        # Suppressing the marker must not suppress the evidence: a human reading
+        # a green heartbeat still needs to see which workflows are failing.
+        line = summarize(self._blocked(), "heartbeat", failed=False)
+        self.assertIn("surveillance-citations.yml:failed", line)
+
+    def test_report_forwards_the_verdict(self):
+        stream = io.StringIO()
+        report(self._blocked(), "heartbeat", stream=stream, failed=False)
+        self.assertTrue(stream.getvalue().startswith("heartbeat: gate=blocked"))
+
+
 class RobustnessTests(unittest.TestCase):
     """A summary must never turn a steward's real exit code into a traceback."""
 

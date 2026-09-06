@@ -170,7 +170,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **collateral** — Ask partner/family about sleep, behavior change, psychosis, infant safety, medication adherence, and who can provide supervision.
 - **rounds** — Present postpartum timing, PMAD vs bipolar/postpartum psychosis, maternal-infant safety, medication risk/benefit, and support plan.
 - **exam** — Postpartum psychosis is an emergency, often bipolar-spectrum, and requires urgent supervised treatment.
-- **actions** — Open C-SSRS; Practice direct suicide questions
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice direct suicide questions
 
 **Embedded check-for-understanding**
 

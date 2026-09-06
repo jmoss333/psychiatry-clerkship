@@ -144,10 +144,17 @@ after (238 files on MS3, 250 on resident).
 output on the same inputs, and each deleted its line from
 `tests/shipped-pages-readers.test.mjs`.
 
-**Deferred:** #535 (B5 — `bin/sweep_unlicensed_claims.py` and
-`tools/pdf_library_export` are a deliberate widening awaiting Josh's sign-off;
-`anki/pcl_anki/release.py` needs re-batching with `pcl_anki/sources.py`).
-`frontdoor/fd_data.js` carries only a prose mention, not a read.
+**B5 — #535 (`bin/sweep_unlicensed_claims.py`, `tools/pdf_library_export`),
+approved by Josh 2026-09-06.** Not byte-identical by design: neither tool ever
+re-derived Case-of-the-Week privately, so reading `shipped_pages.json` IS the
+widening — the same 33-surface delta the console accepted in Phase 1 (sweep
+91 → 124 surfaces, 42 → 115 flagged rows; PDFs 69 → 97, tools 22 → 27). Parity was
+proven as restricted parity (every previously-covered row identical) plus an
+enumerated delta (every new row on a surface the manifest was blind to).
+
+**Deferred:** `anki/pcl_anki/release.py` needs re-batching with
+`pcl_anki/sources.py` (its manifest use is fail-closed validation, not a
+"what ships" query). `frontdoor/fd_data.js` carries only a prose mention, not a read.
 
 Two readers are **partially** migrated on purpose and will keep a manifest read:
 `attest.mjs` (the question bank's page anchors and its conflict revision) and

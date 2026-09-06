@@ -12,7 +12,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - **Slug:** `welcome.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/resident_welcome.md`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
+- **Governance:** status=`pending` · riskKind=`general` · riskLevel=`low`
 - **Length:** 385 words
 
 <!-- topic_meta overlay -->
@@ -22,13 +22,13 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **TL;DR (shown above the page text):**
 
-> Start with orientation, then use Today / Progress for repeat visits — the hub is meant to answer what to do before rounds, after rounds, before leaving, and before exam study.
+> Start with the four-week Rotation Plan, then use the core references and Resident Depth pages to prepare for patient care and supervision.
 
 **Key points (bulleted card):**
 
-- First visit: open the orientation packet and learn the safety/supervision boundaries before using bedside tools.
-- Repeat visits: use Today / Progress to choose one ward task, one practice drill, and one review item.
-- Nothing here replaces supervision; the hub should help you ask better questions and escalate earlier.
+- Start with the 4-Week Rotation Plan.
+- Use Resident Depth for advanced psychopharmacology, systems and med-legal work, supervision, and teaching.
+- Bring an agenda to supervision and expect frequent, specific, behavior-based feedback.
 
 **Clinical-workflow narration (per-stage coaching text):**
 

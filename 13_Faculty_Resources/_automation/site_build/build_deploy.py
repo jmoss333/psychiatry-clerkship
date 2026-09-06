@@ -7,6 +7,9 @@ from pathlib import Path
 # so these no longer exist as two drifting copies.
 import common
 import frontdoor_catalog
+import shipped_pages
+import welcome_compass
+from site_extras import MS3_ORIENT_VIDEO as ORIENT_VIDEO
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location instead of a
 # hard-coded sandbox mount, so the build runs under any Cowork session or the real filesystem.
 HERE=os.path.dirname(os.path.abspath(__file__))
@@ -18,6 +21,15 @@ MARKED=os.path.join(HERE,"marked.min.js")                 # vendored marked (co-
 MANIFEST=os.path.join(HERE,"site_manifest.json")          # content/tool build manifest
 CLINICAL_CSS=os.path.join(HERE,"clinical-warm.css")       # shared dark-mode tokens
 FRONTDOOR_CSS=os.path.join(HERE,"frontdoor","frontdoor.css")
+CURRICULUM=os.path.join(LIB,"curriculum.json")
+ORIENTATION_PACKET=os.path.join(
+    LIB,
+    "14_Tracks",
+    "MS3",
+    "Student_Ready_Pack",
+    "01_orientation",
+    "MS3_orientation_packet.md",
+)
 
 def _relpath(p):
     for base in (LIB,HERE):
@@ -40,8 +52,54 @@ def _copy_required(src,dst,missing):
     else:
         missing.append(src)
 
-_bootstrap_missing=[p for p in [MANIFEST,SPA,MARKED,CLINICAL_CSS,FRONTDOOR_CSS] if not os.path.exists(p)]
+_bootstrap_missing=[
+    p
+    for p in [
+        MANIFEST,
+        SPA,
+        MARKED,
+        CLINICAL_CSS,
+        FRONTDOOR_CSS,
+    ]
+    if not os.path.exists(p)
+]
 _abort_missing(_bootstrap_missing)
+
+# The same source triples are deliberately projected into separate source and
+# built paths: source validation must never be confused with output validation.
+_orientation_source_paths=[src for src,_dst,_title in ORIENT_VIDEO]
+_orientation_built_paths=[
+    os.path.join("tools",dst) for _src,dst,_title in ORIENT_VIDEO
+]
+try:
+    _curriculum,_orientation_packet=welcome_compass.load_ms3_preflight_sources(
+        CURRICULUM,ORIENTATION_PACKET
+    )
+    _shipped_document=shipped_pages.load_shipped_pages(LIB)
+    _compass_cards=welcome_compass.prepare_cards(
+        _curriculum["learningPaths"]["ms3"]["weeks"],
+        _shipped_document,
+    )
+    _safety_text=welcome_compass.extract_safety_rule(_orientation_packet)
+    _compass_fragment=welcome_compass.render_compass(_compass_cards,_safety_text)
+    welcome_compass.require_real_files(LIB,_orientation_source_paths)
+    with open(os.path.join(LIB,"media_manifest.json"),encoding="utf-8") as _media_manifest_handle:
+        welcome_compass.validate_media_manifest(json.load(_media_manifest_handle))
+except welcome_compass.CompassPreflightError as error:
+    print(error)
+    raise SystemExit(1)
+except (
+    OSError,
+    UnicodeError,
+    json.JSONDecodeError,
+    KeyError,
+    TypeError,
+    shipped_pages.ShippedPagesError,
+    welcome_compass.CompassContractError,
+) as error:
+    print("BUILD ABORTED — MS3 Compass:",error)
+    raise SystemExit(1)
+
 if os.path.exists(OUT): shutil.rmtree(OUT)
 os.makedirs(OUT+"/content"); os.makedirs(OUT+"/tools")
 
@@ -81,22 +139,21 @@ _abort_missing(_missing_req)
 # The list lives in site_extras.py, not here: orientation-video.html is a shipped,
 # attestable tool that is NOT in site_manifest.json, so shipped_pages.py has to be able
 # to enumerate it without executing this script. Same list, one importable home.
-from site_extras import MS3_ORIENT_VIDEO as ORIENT_VIDEO
+_missing_orientation=[]
 for src,dst,_title in ORIENT_VIDEO:
-    p=os.path.join(LIB,src)
-    if os.path.exists(p):
-        out_p=OUT+"/tools/"+dst
-        shutil.copy2(p, out_p)
-        os.chmod(out_p, 0o644)   # source MP4 arrives with mode 400 (LFS/download artifact); world-readable required
-    else: print("  WARN: orientation video asset missing from source:",src)
+    out_path=os.path.join(OUT,"tools",dst)
+    _copy_required(os.path.join(LIB,src),out_path,_missing_orientation)
+    if os.path.isfile(out_path):
+        os.chmod(out_path,0o644)   # source MP4 arrives with mode 400 (LFS/download artifact); world-readable required
+_abort_missing(_missing_orientation)
 
-# ---- video library (intro trailer, day-in-the-life, week stingers, tool spotlights) ----
+# ---- video library (active day-in-the-life, week stingers, and tool spotlights) ----
 # Design source: Clerkship_video_handoff package (2026-07-02/03). Each .mp4 is exported by hand
-# from the design tool (Cowork can't click "Export"); until a file lands in _prototypes/video-library/,
-# its entry below is a silent no-op and the page embed referencing it just won't play yet.
+# from the design tool (Cowork can't click "Export"). This list copies active source files that exist;
+# page embedding and missing-media treatment are handled separately by the generated-site media guard.
 # See _prototypes/video-library/README.md for the exact export filenames + placement map.
 VIDEO_MEDIA=[
- "intro-trailer.mp4","intro-trailer-poster.jpg","day-in-the-life.mp4",
+ "day-in-the-life.mp4",
  "week-intro-1.mp4","week-intro-2.mp4","week-intro-3.mp4","week-intro-4.mp4","week-intro-5.mp4","week-intro-6.mp4",
  "tool-spotlight-interview-circle.mp4","tool-spotlight-capacity.mp4","tool-spotlight-violence.mp4",
  "tool-spotlight-withdrawal.mp4","tool-spotlight-bfcrs.mp4","tool-spotlight-decision-aids.mp4",
@@ -319,7 +376,10 @@ for src,dst,_ in md:
         _t=open(p,encoding="utf-8").read()
         _t,_did=_crisis.inject_markdown(_t,_crisis_data)
         _t,_pdid=_pairings.inject_markdown(_t,_pair_data,dst,"ms3")
-        if _did or _pdid:
+        _compass_did=False
+        if dst=="welcome.md":
+            _t,_compass_did=welcome_compass.inject_compass(_t,_compass_fragment)
+        if _did or _pdid or _compass_did:
             open(OUT+"/content/"+dst,"w",encoding="utf-8").write(_t)
         if _did: _crisis_md_done.add(dst)
         if _pdid: _pair_md_done.add(dst)
@@ -355,7 +415,26 @@ def _md(t,f,hidden=False):
     return dict({"t":t,"f":f,"k":"md"},**({"hidden":True} if hidden else {}))
 def _tool(f,t=None,hidden=None):
     return dict({"t":t or _tool_titles.get(f,f),"f":f,"k":"tool"},**({"hidden":True} if (hidden if hidden is not None else f in HIDDEN_TOOLS) else {}))
-_week_items=[_md(t,f,True) for f,t in [("week%d.md"%i,["Week 1 — Foundations","Week 2 — Mood/Psychosis/Pharm","Week 3 — Psychotherapy/Personality","Week 4 — Family/Systems/EE","Week 5 — Acute/Emergency","Week 6 — Integration/Exam"][i-1]) for i in range(1,7)]]
+_week_items=[
+    _md(welcome_compass.week_nav_title(card),card.landing_ref,True)
+    for card in _compass_cards
+]
+# The manifest, both navs and the Compass must agree on a week page's title; the curriculum
+# is the source and the manifest is checked against it here (2026-09-05 review, finding 8).
+# Deliberately compared against site_manifest.json, the PRODUCER a maintainer edits to fix a
+# drift, rather than shipped_pages.json, the derived listing -- and it reuses the `md` rows
+# this script already loaded rather than opening the manifest again, because
+# tests/shipped-pages-readers.test.mjs freezes the set of direct manifest readers.
+_manifest_titles={row[1]:row[2] for row in md}
+_week_title_drift=[
+    (card.landing_ref,_manifest_titles.get(card.landing_ref),welcome_compass.week_nav_title(card))
+    for card in _compass_cards
+    if _manifest_titles.get(card.landing_ref)!=welcome_compass.week_nav_title(card)
+]
+if _week_title_drift:
+    print("BUILD ABORTED — week page titles drift between site_manifest.json and curriculum.json:")
+    for _slug,_have,_want in _week_title_drift: print("   -",_slug,"manifest",repr(_have),"curriculum",repr(_want))
+    raise SystemExit(1)
 nav=[
  {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md"),_tool("orientation-video.html","Orientation Video",True)]+_week_items},
  {"section":"Start the Encounter","items":[_md("Interview & MSE","pg_interview.md"),_tool("mse.html","Mental Status Exam"),_tool("interview-circle.html","The Interview Circle"),_tool("sp-interview.html","The Interview Room — AI Standardized Patient"),_tool("screeners.html","Screeners: PHQ-9 & GAD-7")]},
@@ -372,6 +451,7 @@ nav=[
 ]
 _navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
+welcome_compass.assert_nav_projection(nav,_compass_cards,label="MS3")
 
 # ---------- SURFACE GOVERNANCE: nav annotation ----------
 # Canonical review/risk state (13_Faculty_Resources/reviewed.json) flattened into
@@ -429,7 +509,7 @@ try:
     _validate_rotation_catalog(_rotation_catalog,_rotation_governance,today=date.today())
     _rotation_projection=_build_rotation_projection(_rotation_catalog,_rotation_governance,"ms3")
     _fd_payload=frontdoor_catalog.build_frontdoor_payload(
-        "ms3", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav, _core_revision,
+        "ms3", _curriculum, nav, _core_revision,
         _rotation_projection)
     _frontdoor_destinations=(OUT+"/index.html", OUT+"/tools/rotation-curator.html")
     for _frontdoor_destination in _frontdoor_destinations:
@@ -576,3 +656,8 @@ print("tool governance: emitted", len(_governance["items"]), "items")
 # Last artifact step: the precache manifest must reflect the completed,
 # published-artifact file tree, not an intermediate one.
 common.emit_service_worker(OUT)
+try:
+    welcome_compass.assert_ms3_output(OUT, _compass_cards, _safety_text, _orientation_built_paths)
+except welcome_compass.CompassContractError as _compass_error:
+    print("BUILD ABORTED — MS3 Compass output:", _compass_error)
+    raise SystemExit(1)

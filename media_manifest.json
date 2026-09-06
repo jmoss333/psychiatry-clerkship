@@ -1,5 +1,5 @@
 {
-  "_note": "Media accessibility manifest (WP-13): text-alternative / caption status per media asset. Generated 2026-07-16, corrected after build verification showed the OE paper-overview audio (review.html) is actually live for 50/79 quiz decks (build-time title-join in build_deploy.py), not dormant as first assumed. 'onDisk' = a matching file exists in the working tree; 'served' = reachable from a built page on the live site as of this audit (both ms3 and res builds pass hard:0).",
+  "_note": "Media accessibility manifest (WP-13): text-alternative / caption status per media asset. Generated 2026-07-16, corrected after build verification showed the OE paper-overview audio (review.html) is live for 50/79 quiz decks. \"onDisk\" means matching source bytes exist in the working tree; \"assetShipped\" means the file is copied into a generated learner site; \"served\" means a built learner page references it. A retired provenance asset may therefore be onDisk true while assetShipped and served are false. Served media still requires a text alternative or captions/transcript as recorded per entry.",
   "audio": [
     {
       "file": "07_Evidence_and_Reading/Landmark_Library/_source/listening-guide-briefs.html#01-CATIE-Lieberman-2005.m4a",
@@ -974,6 +974,18 @@
       "captions": false,
       "textAlt": "aria-label (\"Tool spotlight: CIWA-Ar / COWS withdrawal scoring...\") + in-<video> <p> fallback with download link (added WP-13)",
       "note": "individual tool-spotlight-*.mp4 clips were never exported (only the combined reel media/tool-spotlight-reel.mp4 exists, in _prototypes/video-library/); the build's media_guard.py currently strips this <details class=\"tl-spotlight\"> block entirely on both built sites, so the video does not reach learners yet. Source markup fixed now (controls added, loop removed, text alternative added) so it is compliant the moment the real clip ships and the guard stops stripping it."
+    },
+    {
+      "file": "_prototypes/video-library/intro-trailer.mp4",
+      "poster": "_prototypes/video-library/intro-trailer-poster.jpg",
+      "kind": "retired-intro-trailer",
+      "onDisk": true,
+      "assetShipped": false,
+      "served": false,
+      "retired": true,
+      "captions": false,
+      "textAlt": null,
+      "note": "The source MP4 and _prototypes/video-library/intro-trailer-poster.jpg both remain on disk for provenance; neither is copied into or referenced by either generated learner site."
     }
   ]
 }

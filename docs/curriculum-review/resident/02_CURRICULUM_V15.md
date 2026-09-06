@@ -6,6 +6,118 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Sleep-Wake Disorders
+
+- **Slug:** `t_sleep.md` · **Type:** md · **Sidebar:** hidden (deep link only)
+- **Source:** `03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 675 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> flagged **high-yield** · est. read 5 min
+
+**TL;DR (shown above the page text):**
+
+> Restoring the sleep-wake cycle is high-leverage — choose CBT-I over hypnotics, screen OSA in treatment-resistant depression, and don't sedate inpatients with benzodiazepines or antihistamines.
+
+**Key points (bulleted card):**
+
+- CBT-I is first-line for chronic insomnia and beats hypnotics long-term.
+- Untreated OSA mimics and perpetuates depression — a classic reversible cause of 'treatment resistance.'
+- Cataplexy = narcolepsy type 1 (low orexin); sleep paralysis/hypnagogic hallucinations are not psychosis.
+
+**Can't-miss / red-flag line:**
+
+> In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them.
+
+**Rule-out list (differential the page forces):**
+
+- Obstructive sleep apnea
+- Mood / anxiety driver
+- Substances / caffeine / meds
+- Restless legs (check ferritin)
+- REM sleep behavior disorder
+
+**First move (the action the page tells the learner to take):**
+
+> Sleep hygiene + CBT-I; treat the specific disorder (CPAP, iron, modafinil, melatonin/clonazepam) and taper offending agents.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Ask sleep schedule, insomnia pattern, decreased need for sleep, nightmares, OSA symptoms, substances, meds, caffeine, and restless legs.
+- **mse** — Look for fatigue vs manic activation, attention impairment, psychomotor changes, irritability, and delirium risk.
+- **safety** — Assess mania, delirium, falls, respiratory risk with sedatives, OSA, substance withdrawal, and suicidality when insomnia is severe.
+- **say** — The goal is to restore the sleep-wake rhythm without using medications that create dependence or worsen confusion.
+- **collateral** — Ask nursing/family about actual sleep, nighttime behavior, snoring/apnea, nightmares, and daytime naps.
+- **rounds** — Present sleep syndrome, psychiatric driver, medical contributors, behavioral plan, and medication risk/benefit.
+- **exam** — CBT-I is first-line for chronic insomnia; decreased need for sleep suggests mania, not simple insomnia.
+- **actions** — Open psychopharm primer
+
+**Embedded check-for-understanding**
+
+1. *Stem:* A patient with 'treatment-resistant' depression snores, is obese, and is sleepy all day. Best next step?
+   - Start a long-acting benzodiazepine
+   - Add a third antidepressant
+   - Start nightly diphenhydramine
+   - Evaluate for obstructive sleep apnea (polysomnography) and treat it **← keyed correct**
+   - *Rationale:* Untreated OSA is a common, reversible driver of apparent treatment resistance; diagnose with polysomnography and treat with CPAP before escalating pharmacotherapy.
+
+**Cross-references and tagging:**
+
+- **Related tools:** `mse.html`, `screeners.html`
+- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `exam`
+- **Workflow modes:** `ward`, `5min`, `shelf`
+- **Shelf blueprint tags:** `otherdx`
+- **EPA crosswalk:** `EPA1`, `EPA2`
+
+#### Page text (as shipped)
+
+# Sleep-Wake Disorders
+
+
+**In one line** — Sleep is both a driver and a mirror of psychiatric illness — restoring the sleep-wake cycle is one of the highest-leverage things you do on the unit, and the exam rewards you for choosing **CBT-I over hypnotics**, screening **OSA in treatment-resistant depression**, and *not* reaching for benzodiazepines or antihistamines in older inpatients.
+
+**How it presents on the unit** — Almost every admitted patient sleeps badly, and poor sleep worsens mood, psychosis, delirium risk, and agitation. You will see primary insomnia, hospital-induced sleep disruption, obstructive sleep apnea masquerading as or worsening depression, and occasionally the specific syndromes (narcolepsy, restless legs, REM sleep behavior disorder). The recurring skill is protecting sleep *without* creating iatrogenic harm.
+
+**Differential & can't-miss mimics** — Distinguish the primary sleep disorders and the psychiatric/medical contributors:
+
+- **Insomnia disorder** — dissatisfaction with quantity/quality despite adequate opportunity, with daytime impairment; screen for the mood, anxiety, substance, and pain drivers underneath it.
+- **Obstructive sleep apnea** — snoring, witnessed apneas, obesity, morning headache, daytime sleepiness; **untreated OSA mimics and perpetuates depression** and is a common cause of "treatment resistance."
+- **Narcolepsy** — chronic daytime sleepiness with sleep-onset REM phenomena; **type 1 has cataplexy** (emotion-triggered loss of tone) and low CSF orexin/hypocretin; also sleep paralysis and hypnagogic hallucinations (don't mislabel these as psychosis).
+- **Restless legs syndrome** — urge to move the legs, worse at rest and at night, relieved by movement; **check ferritin/iron**.
+- **REM sleep behavior disorder** — dream-enactment with loss of normal REM atonia; a **prodrome of synucleinopathies** (Lewy body dementia, Parkinson disease).
+- **Circadian rhythm disorders** — misalignment (shift work, delayed sleep phase) rather than an inability to sleep.
+
+**Initial workup** — Take a structured sleep history (schedule, latency, awakenings, daytime function, snoring/apneas, leg symptoms, substances, caffeine, screens). Use a sleep diary. Screen for the psychiatric and medical contributors and for OSA (e.g., STOP-BANG). Order **polysomnography** for suspected OSA, parasomnias, or narcolepsy (with MSLT); check **ferritin** for restless legs. Review medications and substances that fragment sleep (steroids, activating antidepressants, stimulants, alcohol, nicotine).
+
+**Acute inpatient management** — Lead with **sleep hygiene and environmental measures**: cluster overnight care, reduce light/noise, daytime light and activity, limit daytime napping, and taper offending agents. For chronic insomnia, **cognitive behavioral therapy for insomnia (CBT-I) is first-line** and outperforms medication long-term. If short-term pharmacologic help is needed, prefer lower-risk agents and time-limit them; **avoid chronic benzodiazepines and z-drugs, and avoid diphenhydramine/anticholinergics in older adults** (falls, cognitive impairment, delirium). Treat the specific disorders on their own terms: **CPAP for OSA** (and reassess mood after), iron repletion and dopaminergic/alpha-2-delta agents for restless legs, modafinil/armodafinil (± sodium oxybate) for narcolepsy, **melatonin or clonazepam for REM sleep behavior disorder** plus a safe sleep environment.
+
+**What the student does** —
+- Make restoring the sleep-wake cycle part of every treatment plan (and a pillar of delirium prevention).
+- Choose CBT-I first for insomnia; if a hypnotic is used, keep it short and low-risk.
+- Screen for OSA whenever depression is "treatment-resistant" — and treat it.
+- Don't sedate inpatients (especially older ones) with benzodiazepines or antihistamines by reflex.
+- Recognize cataplexy, sleep paralysis, and hypnagogic hallucinations as narcolepsy — not psychosis.
+
+**Disposition & discharge essentials** — Ensure the sleep plan survives discharge: outpatient CBT-I referral, sleep-study follow-up and CPAP adherence support, iron/ferritin recheck for restless legs, and a clear taper for any hypnotic started inpatient. Reconcile activating or sedating psychotropics with sleep in mind.
+
+**High-yield pearls**
+- CBT-I, not hypnotics, is first-line for chronic insomnia.
+- Untreated OSA is a classic reversible cause of "treatment-resistant" depression — screen and treat with CPAP.
+- Cataplexy = narcolepsy type 1 (low orexin); sleep paralysis and hypnagogic hallucinations are not psychosis.
+- Check ferritin in restless legs syndrome.
+- REM sleep behavior disorder predicts future Lewy body dementia/Parkinson disease.
+- In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them.
+
+**Pair with** — the [Mood topic](?page=t_mood.md), [Delirium](?page=delirium.md), [Major & Mild Neurocognitive Disorders](?page=t_neurocog.md), and the [Psychopharmacology primer](?page=psychopharm_primer.md).
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+
+---
+
 ## Dissociative Disorders
 
 - **Slug:** `t_dissociative.md` · **Type:** md · **Sidebar:** hidden (deep link only)
@@ -421,7 +533,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **collateral** — Ask what changed after the stressor, supports, coping, substance use, and whether risk has escalated.
 - **rounds** — Present stressor timeline, excluded full syndromes, functional impairment, safety assessment, and brief therapy/support plan.
 - **exam** — Adjustment disorder requires stressor-linked distress that does not meet criteria for another disorder and resolves after the stressor ends.
-- **actions** — Open C-SSRS
+- **actions** — Columbia C-SSRS — Official Form & Training
 
 **Embedded check-for-understanding**
 
