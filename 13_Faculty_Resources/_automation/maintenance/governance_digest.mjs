@@ -239,7 +239,7 @@ export function parseAttestationValidatorResult(result) {
   if (stderr.trim()) throw new Error('attestation validator wrote unexpected stderr');
   if (
     result.status === 0
-    && /^attestation consistency OK — [1-9][0-9]* manifest item\(s\), [0-9]+ topic facultyReview (?:entry|entries) aligned\.\n?$/.test(stdout)
+    && /^attestation consistency OK — [1-9][0-9]* shipped item\(s\), [0-9]+ topic facultyReview (?:entry|entries) aligned\.\n?$/.test(stdout)
   ) {
     return [];
   }
