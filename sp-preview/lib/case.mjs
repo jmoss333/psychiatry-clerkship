@@ -28,7 +28,3 @@ for(const id of REGISTERED){
   const {caseDef}=CASES[id];
   createContext(caseDef,[],[{who:'pt',text:caseDef.persona.opening,playbackStatus:'pending'}]);
 }
-
-// Retained so this task changes no consumer. Task 2 removes the last use.
-export const dana=CASES[DANA_ID].caseDef;
-export const caseBinding=CASES[DANA_ID].binding;

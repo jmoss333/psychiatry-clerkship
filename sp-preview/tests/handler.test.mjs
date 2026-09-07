@@ -213,7 +213,7 @@ test('the receipt a retry was asked from cannot then be reused, or the one-alter
 });
 
 test('the registry carries exactly the reviewed cases, each with its own binding',async()=>{
- const {CASES,caseIds,getCase,dana,caseBinding}=await import('../lib/case.mjs');
+ const {CASES,caseIds,getCase}=await import('../lib/case.mjs');
  assert.deepEqual([...caseIds].sort(),['sp_depression_gated_si_001','sp_mania_redirect_001','sp_psychosis_paranoid_001']);
  assert.equal(caseIds.includes('sp_alcohol_ambivalence_001'),false,'Morgan is out of scope for this slice');
  const bindings=caseIds.map(id=>CASES[id].binding);
@@ -221,8 +221,6 @@ test('the registry carries exactly the reviewed cases, each with its own binding
  for(const id of caseIds)assert.equal(CASES[id].caseDef.id,id);
  assert.equal(getCase('sp_mania_redirect_001').caseDef.persona.displayName.length>0,true);
  assert.equal(getCase('not_a_case'),undefined);
- assert.equal(dana.id,'sp_depression_gated_si_001');
- assert.equal(caseBinding,CASES.sp_depression_gated_si_001.binding);
 });
 
 test('only Dana carries the direct-suicide-question overlay',async()=>{
