@@ -104,7 +104,7 @@ The pure derivation, tested without a handler or a provider. This is where the "
 
 **Interfaces:**
 - Consumes: `retried` validation from Task 1.
-- Produces: `retryState(state, turnId, randomSid)` returning a new state with a fresh `sid`, `turn: turnId - 1`, history truncated to `turnId*2 - 1` entries, `segments` and `completed` reset to the truncated tail, `retried` **absent** (it is set on the issued state, not the child input), and the parent `expires` preserved. Throws `preview_input_invalid` for a `turnId` outside `1..state.turn`, and `preview_encounter_finished` when `state.retried` is already true.
+- Produces: `retryState(state, turnId, sid)` returning a new state with a fresh `sid`, `turn: turnId - 1`, history truncated to `turnId*2 - 1` entries, `segments` and `completed` reset to the truncated tail, `retried` **absent** (it is set on the issued state, not the child input), and the parent `expires` preserved. Throws `preview_input_invalid` for a `turnId` outside `1..state.turn`, and `preview_encounter_finished` when `state.retried` is already true.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -183,20 +183,13 @@ export function retryState(state,turnId,sid) {
   if(!Number.isInteger(turnId)||turnId<1||turnId>state.turn)throw problem(400,'preview_input_invalid');
   const history=structuredClone(state.history).slice(0,turnId*2-1);
   const tail=history.at(-1);
-  return {...state,sid,nonce:randomBytes(16).toString('hex'),turn:turnId-1,history,
-    segments:[tail.text],completed:1,retried:undefined};
-}
-```
-
-Delete the `retried:undefined` key rather than setting it to `undefined`, so `Object.hasOwn` stays false after a seal-and-open round trip:
-
-```js
   const child={...state,sid,nonce:randomBytes(16).toString('hex'),turn:turnId-1,history,segments:[tail.text],completed:1};
+  // The key is DELETED, not set to undefined: codec.open uses Object.hasOwn, and
+  // a sealed `undefined` does not survive the JSON round trip as an absent key.
   delete child.retried;
   return child;
+}
 ```
-
-Use the second form; the first is shown only to make the difference explicit.
 
 - [ ] **Step 4: Run tests to verify they pass**
 
@@ -311,13 +304,13 @@ with:
 
 Add `retryState` to the existing import from `./state.mjs`, and `randomBytes` from `node:crypto`.
 
-Reserve the same three units a turn costs. Replace:
+Do **not** edit the reservation line. Verify by reading it that
 
 ```js
    await budget.reserve({operationId:hash(operationId),bindingHash:hash(JSON.stringify(body)),units:action==='start'?1:3});
 ```
 
-with the identical line — no change is needed, because `action==='start'?1:3` already gives a retry three units. Verify this rather than editing it.
+already charges a retry three units, because `action` is `'retry'` and the ternary falls to `3`. If you find yourself editing this line, stop — the cost is already correct and changing it would alter the turn cost too.
 
 Mark the alternative spent on the issued state. In the streaming body, replace:
 
@@ -406,16 +399,17 @@ test('retry moments list completed exchanges, played first, quoting only what wa
     you('Q3'),dana('R3 played.','played',['R3 played.'],1)
   ],'ended'));
   const moments=station.getRetryMoments();
-  assert.deepEqual(moments.map(m=>m.turnId),[3,1,2].slice(0,moments.length).sort((a,b)=>0)||moments.map(m=>m.turnId));
+  // Played moments first; original turn order preserved within each group.
+  assert.deepEqual(moments.map(m=>m.turnId),[3,1,2]);
   assert.equal(moments[0].playbackStatus,'played','a fully played moment is offered first');
   const second=moments.find(m=>m.turnId===2);
   assert.equal(second.heardText,'R2 heard.');
   assert.equal(second.heardText.includes('R2 tail.'),false);
+  const first=moments.find(m=>m.turnId===1);
+  assert.equal(first.heardText,undefined,'a moment with nothing heard offers no quote');
   station.dispose();
 });
 ```
-
-Replace the first assertion in that test with the concrete expectation once the ordering is implemented; the intent is: played moments first, original turn order preserved within each group.
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -463,22 +457,22 @@ Add to `sp-preview/tests/budget.test.mjs`, in the style of the existing reservat
 
 ```js
 test('an encounter with one alternative reserves 34 units, inside the window ceiling',async()=>{
-  const budget=freshBudget();
-  await budget.reserve({operationId:'op-start',bindingHash:'b0',units:1});
-  for(let turn=1;turn<=10;turn++)await budget.reserve({operationId:'op-turn-'+turn,bindingHash:'b'+turn,units:3});
-  await budget.reserve({operationId:'op-retry',bindingHash:'br',units:3});
-  const used=await budget.used();
-  assert.equal(used,34);
-  assert.equal(used<=72,true,'a full encounter with its alternative fits the rolling window');
+  const f=fixture();
+  await f.budget.reserve(request('session:opening',1));
+  for(let turn=1;turn<=10;turn++)await f.budget.reserve(request('session:turn-'+turn,3));
+  const afterRetry=await f.budget.reserve(request('session:retry-2',3));
+  // reserve() is the only method; its frozen result carries the running total.
+  assert.equal(afterRetry.chargedUnits,34);
+  assert.equal(afterRetry.chargedUnits<=72,true,'a full encounter with its alternative fits the rolling window');
 });
 ```
 
-Use whatever accessor the existing budget tests use to read consumption; if none exists, assert instead that a reservation which would exceed 72 is rejected after the 34 above plus enough further units to cross it.
+`fixture()` and `request(operationId, units)` are the helpers the existing tests in this file already use; follow their signatures rather than inventing new ones.
 
 - [ ] **Step 2: Run test to verify it fails or passes for the right reason**
 
 Run: `node --test sp-preview/tests/budget.test.mjs`
-Expected: PASS if the ledger already sums correctly — in which case this test is a regression pin, not a driver. Confirm it fails when you temporarily change the retry reservation to a different number of units, then restore.
+Expected: PASS. This test is a regression pin rather than a driver — the ledger already sums correctly. Prove it has teeth: temporarily change the final reservation to `4` units, confirm the test fails with `35 !== 34`, then restore it to `3`.
 
 - [ ] **Step 3: Document**
 
