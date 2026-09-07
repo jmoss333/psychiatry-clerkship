@@ -135,7 +135,11 @@ consumed nonce is ever re-presented. The handler:
 2. refuses when `state.retried` is already set (one alternative per encounter);
 3. derives the child: `history` truncated to `turnId*2 - 1` entries — everything
    through the patient reply *preceding* the learner's turn-`turnId` question,
-   with the heard-only rewriting already recorded there;
+   with the heard-only rewriting already recorded there. The codec's own invariant
+   confirms the arithmetic: it requires `history.length === turn*2 + 1`, and with
+   `turn = turnId - 1` that is `2*turnId - 1`, so a correct truncation is exactly
+   the length the decoder will accept and an off-by-one fails closed rather than
+   sending the actor a turn it should not see;
 4. mints a **fresh `sid`** so the child's ledger entries cannot collide with the
    parent's, keeps the parent `expires`, and sets `turn = turnId - 1`;
 5. runs the existing turn path unchanged;
