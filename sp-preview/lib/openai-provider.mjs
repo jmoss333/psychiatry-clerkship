@@ -1,4 +1,4 @@
-import {speechProfile, DANA_CASE_ID} from '../../_prototypes/sp-interview/conversation-speech-profiles.mjs';
+import {speechProfile} from '../../_prototypes/sp-interview/conversation-speech-profiles.mjs';
 import {createUsageCounter, normalizeUsage} from '../../_prototypes/sp-interview/dana-provider-usage.mjs';
 
 const BASE_URL = 'https://api.openai.com/v1';
@@ -264,12 +264,15 @@ export function createOpenAIProvider({env=process.env,fetchImpl=globalThis.fetch
       const input=actorInput(system,messages,true);
       return request('actor','/responses',input,signal,(response,signal,setUsage)=>readActorStream(response,signal,onLead,setUsage));
     },
-    async speak({text,signal,caseId=DANA_CASE_ID}={}) {
+    async speak({text,signal,caseId}={}) {
+      // No default: an omitted case would speak a reply in the wrong patient's voice.
+      if(typeof caseId!=='string'||!caseId)throw fail('invalid_reply','validation');
       const chunks=[];
       await request('speech','/audio/speech',speechInput(text,caseId),signal,(response,signal)=>readSpeech(response,signal,chunk=>chunks.push(chunk)));
       return Buffer.concat(chunks);
     },
-    async speakStream({text,signal,onChunk,caseId=DANA_CASE_ID}={}) {
+    async speakStream({text,signal,onChunk,caseId}={}) {
+      if(typeof caseId!=='string'||!caseId)throw fail('invalid_reply','validation');
       if(typeof onChunk!=='function')throw fail('invalid_reply','validation');
       return request('speech','/audio/speech',speechInput(text,caseId),signal,(response,signal)=>readSpeech(response,signal,onChunk));
     },
