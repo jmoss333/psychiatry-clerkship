@@ -277,3 +277,39 @@ test('a snapshot cannot be used to mutate the controller segment list',async()=>
   assert.equal(controller.getSnapshot().messages[0].segments.includes('injected'),false);
   controller.clear();await opening;
 });
+
+test('an alternative can be asked once, only after the encounter ends, and never resent after a failure',async()=>{
+  const h=environment((path,options,number)=>{const body=JSON.parse(options.body);
+    return Promise.resolve(response(frames(body.action==='retry'?body.turnId:number-1,['One completed reply.']),options.signal));}),
+    controller=createController(h.env);
+  let work=controller.start('key',false);await finishAudio(h,0);await work;
+  assert.equal(await controller.retry(1,'Too early'),false,'no alternative before the encounter ends');
+  for(let turn=1;turn<=10;turn++){work=controller.send('Question '+turn);await finishAudio(h,turn);await work;}
+  assert.equal(controller.getSnapshot().phase,'ended');
+  const before=h.calls.length;
+  const alternative=controller.retry(3,'A different way of asking');
+  await until(()=>h.calls.length===before+1);
+  assert.deepEqual(Object.keys(h.calls.at(-1).body).sort(),['action','state','text','turnId']);
+  assert.equal(h.calls.at(-1).body.action,'retry');
+  assert.equal(h.calls.at(-1).body.turnId,3);
+  await finishAudio(h,11);await alternative;
+  assert.equal(controller.getSnapshot().retryUsed,true);
+  assert.equal(controller.getSnapshot().phase,'ended','an alternative does not reopen the encounter');
+  assert.equal(controller.getSnapshot().turn,10,'nor does it rewind the turn count');
+  assert.equal(await controller.retry(4,'A second alternative'),false,'only one alternative per encounter');
+  assert.equal(h.calls.length,before+1);
+});
+
+test('an alternative that fails before its receipt does not resend and asks for a restart',async()=>{
+  const h=environment((path,options,number)=>Promise.resolve(response(number<=11?frames(number-1,['A reply.']):[],options.signal))),
+    controller=createController(h.env);
+  let work=controller.start('key',false);await finishAudio(h,0);await work;
+  for(let turn=1;turn<=10;turn++){work=controller.send('Question '+turn);await finishAudio(h,turn);await work;}
+  const alternative=controller.retry(2,'An alternative');await flush();controller.interrupt();await alternative;
+  const snapshot=controller.getSnapshot();
+  assert.equal(snapshot.restartRequired,true);
+  assert.match(snapshot.error,/outcome is unknown/);
+  const count=h.calls.length;
+  assert.equal(await controller.retry(2,'Again'),false);
+  assert.equal(h.calls.length,count,'an uncertain alternative is never repeated automatically');
+});

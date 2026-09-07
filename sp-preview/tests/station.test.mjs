@@ -157,3 +157,41 @@ test('the station never reproduces actor guidance',()=>{
   assert.equal(text.includes('gated facts'),false);
   station.dispose();
 });
+
+test('retry moments list completed exchanges, played first, quoting only what was heard',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  const station=createStation({document:doc},host,{caseId:'sp_depression_gated_si_001',content:contentModule.exports});
+  station.update(hosted([
+    you('Q1'),dana('R1 full.','interrupted',['R1 full.'],0),
+    you('Q2'),dana('R2 heard. R2 tail.','interrupted',['R2 heard.',' R2 tail.'],1),
+    you('Q3'),dana('R3 played.','played',['R3 played.'],1)
+  ],'ended'));
+  const moments=station.getRetryMoments();
+  // Played moments first; original turn order preserved within each group.
+  assert.deepEqual(moments.map(m=>m.turnId),[3,1,2]);
+  assert.equal(moments[0].playbackStatus,'played','a fully played moment is offered first');
+  const second=moments.find(m=>m.turnId===2);
+  assert.equal(second.heardText,'R2 heard.');
+  assert.equal(second.heardText.includes('R2 tail.'),false);
+  const first=moments.find(m=>m.turnId===1);
+  assert.equal(first.heardText,undefined,'a moment with nothing heard offers no quote');
+  station.dispose();
+});
+
+test('an unanswered final question is not offered as a retry moment',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  const station=createStation({document:doc},host,{caseId:'sp_depression_gated_si_001',content:contentModule.exports});
+  station.update(hosted([you('Q1'),dana('R1.','played',['R1.'],1),you('Q2','pending')],'ended'));
+  assert.deepEqual(station.getRetryMoments().map(m=>m.turnId),[1],'a question with no reply is not a completed moment');
+  station.dispose();
+});
+
+test('the station asks for a retry through a callback, never through a controller',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  const asked=[];
+  const station=createStation({document:doc},host,{caseId:'sp_depression_gated_si_001',content:contentModule.exports,onRetry:(turnId,text)=>{asked.push([turnId,text]);return Promise.resolve(true);}});
+  station.update(hosted([you('Q1'),dana('R1.','played',['R1.'],1)],'ended'));
+  station.requestRetry(1,'A different way of asking');
+  assert.deepEqual(asked,[[1,'A different way of asking']]);
+  station.dispose();
+});

@@ -23,7 +23,10 @@ export function createStateCodec({key, binding, now=Date.now}) {
     if(!value||value.v!==1||typeof value.sid!=='string'||!/^[a-f0-9]{32}$/.test(value.sid)||typeof value.nonce!=='string'||!/^[a-f0-9]{32}$/.test(value.nonce)
       ||!Number.isSafeInteger(value.expires)||!Number.isInteger(value.turn)||value.turn<0||value.turn>10
       ||!Array.isArray(value.history)||value.history.length!==value.turn*2+1||!Array.isArray(value.segments)||value.segments.length<1||value.segments.length>2
-      ||!Number.isInteger(value.completed)||value.completed<0||value.completed>value.segments.length)throw bad();
+      ||!Number.isInteger(value.completed)||value.completed<0||value.completed>value.segments.length
+      // One alternative per encounter, carried in the sealed state so a reload
+      // cannot restore it. Present means spent; any value but true is a forgery.
+      ||(Object.hasOwn(value,'retried')&&value.retried!==true))throw bad();
     if(now()>=value.expires)throw problem(410,'preview_session_expired');
     return value;
   }
@@ -47,4 +50,21 @@ export function nextHistory(state,{text,previousPlayback,previousCompletedSegmen
 }
 export function issuedState(previous,history,reply,segments) {
   return {...previous,nonce:randomBytes(16).toString('hex'),turn:previous.turn+1,history:[...history,{who:'pt',text:reply,playbackStatus:'pending'}],segments,completed:0};
+}
+// A retry is a child session, not a replayed receipt: re-presenting an earlier
+// receipt is what the budget ledger refuses, and that refusal is a control worth
+// keeping. The parent's own history already records what was HEARD rather than
+// what was generated — nextHistory rewrites each patient entry to its completed
+// segments and marks omittedTail — so truncating it is exactly "only the
+// information heard at that moment", with nothing extra to track.
+export function retryState(state,turnId,sid) {
+  if(state.retried===true)throw problem(409,'preview_encounter_finished');
+  if(!Number.isInteger(turnId)||turnId<1||turnId>state.turn)throw problem(400,'preview_input_invalid');
+  const history=structuredClone(state.history).slice(0,turnId*2-1);
+  const tail=history.at(-1);
+  const child={...state,sid,nonce:randomBytes(16).toString('hex'),turn:turnId-1,history,segments:[tail.text],completed:1};
+  // DELETED, not set to undefined: codec.open uses Object.hasOwn, and a sealed
+  // `undefined` would not survive the JSON round trip as an absent key.
+  delete child.retried;
+  return child;
 }

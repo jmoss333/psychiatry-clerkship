@@ -214,6 +214,59 @@ prototype's device mode only**, where the manifest must carry all 77 entries bef
 recorded playback will load. Generating those two lines is a separate, deliberate
 act against the existing manifest tooling; nothing here does it implicitly.
 
+## One-moment retry (slice 1B)
+
+A learner can re-ask one earlier moment of a finished encounter and hear Dana's
+alternative reply. What it does, and what it deliberately does not:
+
+- It is a **child session**, not a replayed receipt. The client presents its
+  latest, unconsumed receipt plus a `turnId`; the server truncates the stored
+  history, mints a fresh `sid`, and runs the ordinary turn path.
+- **The anti-replay control is untouched.** Re-presenting a consumed turn receipt
+  still fails as `preview_operation_duplicate`, and a test pins that it does — it
+  is the control the whole design was shaped around rather than through.
+- **Only what was heard reaches the actor.** The parent's history already records
+  the heard prefix and `omittedTail`, so truncation carries the guarantee. A test
+  asserts the prompt contains the earlier question and the alternative wording,
+  and contains neither the retried question nor the reply it produced.
+- **One alternative per encounter**, sealed into the receipt as `retried:true`, so
+  a page reload cannot restore it. A second attempt is refused with
+  `preview_encounter_finished` before any provider call.
+- **Three budget units**, the same as a turn. A full encounter with its
+  alternative reserves 34 of the 72-per-half-hour and 120-per-deployment ceilings.
+- An alternative that loses its receipt asks for a restart and explains why. It is
+  never resent automatically.
+- The client reports no playback for a retry and cannot: those counts describe the
+  reply it last heard at the end of the encounter, not the moment being returned
+  to. The server synthesizes them from the child's own settled state.
+
+### Verified against the live preview — 2026-09-07
+
+Deploy `6a9ed10fd85e0ef5a2ddbe4c`, alias `dana`. `npm --prefix sp-preview run
+test:hosted-retry`, a harness capped at four paid requests: one opening, two
+turns, one alternative — **10 reserved units** of the 72-per-half-hour ceiling.
+
+| Check | Result |
+| --- | --- |
+| Opening and two turns through the real Function and provider | 200, 200, 200 |
+| Alternative asked at turn 2 | 200, reply `turn: 2`, two segments |
+| Second alternative | refused `preview_encounter_finished`, no provider call |
+| Reusing the receipt the alternative was asked from | refused `preview_operation_mismatch` |
+
+**The first run of this harness found a real defect, which is the argument for
+having made it.** The retry reserved `retry:sid:nonce:turnId` — a different ledger
+slot from the `turn:sid:nonce` a turn consumes — so the receipt a retry was asked
+from stayed live. A turn from it would branch without the `retried` flag, and a
+second alternative could be asked from the branch. The one-alternative cap was
+bypassable by anyone holding the pre-retry receipt, which is every client, since
+the cap exists precisely to survive the client forgetting. A retry now consumes
+the same slot a turn does: one continuation per receipt, whatever kind.
+
+Two paid runs, 20 units total, both inside the window. What this run does **not**
+prove is the truncation property — that the actor sees nothing from the retried
+turn onward is unobservable from outside and is pinned by the node handler tests
+instead.
+
 ## Material limits and next release work
 
 This hosted slice is Dana only. The full station UI, Morgan, Marcus, Ray, the
