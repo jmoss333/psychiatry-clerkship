@@ -195,3 +195,32 @@ test('the station asks for a retry through a callback, never through a controlle
   assert.deepEqual(asked,[[1,'A different way of asking']]);
   station.dispose();
 });
+
+const REGISTERED=['sp_depression_gated_si_001','sp_mania_redirect_001','sp_psychosis_paranoid_001'];
+
+test('every registered case has learner-facing station content and no actor direction',()=>{
+  for(const caseId of REGISTERED){
+    const profile=contentModule.exports.getProfile(caseId);
+    assert.ok(profile,caseId+' has a profile');
+    assert.equal(profile.caseId,caseId);
+    for(const key of ['title','task','doorNote','objectives','chartCards','priorities','cues','reflectionQuestion'])
+      assert.ok(profile[key],caseId+' is missing '+key);
+    assert.equal(JSON.stringify(profile).includes('portrayal'),false,caseId+' must not carry actor direction');
+  }
+  assert.equal(contentModule.exports.getProfile('sp_alcohol_ambivalence_001'),null,'Morgan is out of scope');
+  assert.equal(contentModule.exports.getProfile('not_a_case'),null);
+});
+
+test('the station renders each registered case without leaking another case content',()=>{
+  for(const caseId of REGISTERED){
+    const doc=documentStub(),host=doc.createElement('div');
+    const station=createStation({document:doc},host,{caseId,content:contentModule.exports});
+    station.update(hosted([],'ready'));
+    const text=allText(host);
+    const profile=contentModule.exports.getProfile(caseId);
+    assert.ok(text.includes(profile.doorNote.slice(0,40)),caseId+' shows its own door note');
+    for(const other of REGISTERED.filter(id=>id!==caseId))
+      assert.equal(text.includes(contentModule.exports.getProfile(other).doorNote.slice(0,40)),false,caseId+' leaked '+other);
+    station.dispose();
+  }
+});
