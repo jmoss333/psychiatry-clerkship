@@ -332,6 +332,10 @@ _CRISIS_REQUIRED_MD={
     # safetyLevel:high, coaches suicide/self-harm/DV screening, and its discharge paragraph
     # tells the learner to hand the patient and family crisis contacts (MS3V03-F001).
     "t_anxiety.md",
+    # The pocket guide has the learner rehearse the suicide, violence and vulnerability
+    # elicitation ladders verbatim -- risk work under the scope rule, not a page that merely
+    # mentions suicide (MS3V01-F005; author's scope call, 2026-09-07).
+    "pg_interview.md",
     # Case-of-the-Week pages that rehearse risk work. These reach the injection pass through
     # the _cotw_slug(w,"ms3") entries appended to `md` above, so no pipeline change is needed
     # on this side; the resident twins are gated in resident_section.py instead.

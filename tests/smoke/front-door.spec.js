@@ -676,22 +676,25 @@ test('wide interview table remains accessible and contained in the live Reader',
   await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
   await expect(page.locator('.fd-fallback[role="alert"]')).toHaveCount(0);
 
-  const tableSection = page.locator('.fd-article__body .sec-c').filter({
+  /* pg_interview.md carries the build-injected crisis block (MS3V01-F005), and makeCollapsible()
+     deliberately bails out on any page that does, so the crisis lines can never be left inside a
+     display:none section body. This page therefore has NO .sec-c wrapper and no toggle to click,
+     and asserting that is the point: it pins the crisis-block/no-collapse interaction, which
+     until now lived only in a comment in spa_index.html. enhanceTables() runs independently of
+     makeCollapsible(), so every accessibility property below still holds, and tableLabel() falls
+     back from the missing .sec-h button to the nearest heading -- which is why the label is still
+     'MSE Structure table'. The collapse toggle itself moved to the doc_oral.md test below rather
+     than being dropped. */
+  await expect(page.locator('.fd-article__body .crisis-block-hook')).toHaveCount(1);
+  await expect(page.locator('.fd-article__body .sec-c')).toHaveCount(0);
+
+  const viewport = page.locator('.fd-article__body .table-scroll-viewport').first();
+  await expect(viewport).toBeVisible();
+  await expect(viewport.locator('table')).toBeVisible();
+
+  const shell = page.locator('.fd-article__body .table-scroll').filter({
     has: page.locator('.table-scroll-viewport'),
   }).first();
-  await expect(tableSection).toBeVisible();
-  const tableHeader = tableSection.locator('.sec-h button');
-  await expect(tableHeader).toHaveCount(1);
-  const viewport = tableSection.locator('.table-scroll-viewport');
-  await expect(tableSection).toHaveClass(/open/);
-  await expect(viewport.locator('table')).toBeVisible();
-  await tableHeader.click();
-  await expect(tableSection).not.toHaveClass(/open/);
-  await expect(viewport).toBeHidden();
-  await tableHeader.click();
-  await expect(tableSection).toHaveClass(/open/);
-
-  const shell = tableSection.locator('.table-scroll');
   await expect(shell).toHaveClass(/is-scrollable/);
   await expect(viewport).toHaveAttribute('role', 'region');
   await expect(viewport).toHaveAttribute('tabindex', '0');
@@ -720,5 +723,38 @@ test('wide interview table remains accessible and contained in the live Reader',
   }));
   expect(widths.content).toBeLessThanOrEqual(widths.document);
   expect(widths.scroll).toBeLessThanOrEqual(widths.document);
+  await expectHealthy(page);
+});
+
+test('collapsible section toggle hides and restores a wide table', async ({ page }, testInfo) => {
+  /* This is the coverage the pg_interview test above used to carry. It moved here when
+     pg_interview.md gained a crisis block, which switches that page to never-collapsed by
+     design. doc_oral.md has nine sections, no crisis block, and a scrollable rubric table, so
+     the toggle behaviour keeps a home instead of quietly losing its only assertion. */
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo, { state: { tab: 'library' } });
+  await page.goto('/?page=doc_oral.md');
+  await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+  await expect(page.locator('.fd-article__body .crisis-block-hook')).toHaveCount(0);
+
+  const tableSection = page.locator('.fd-article__body .sec-c').filter({
+    has: page.locator('.table-scroll-viewport'),
+  }).first();
+  await expect(tableSection).toBeVisible();
+  const tableHeader = tableSection.locator('.sec-h button');
+  await expect(tableHeader).toHaveCount(1);
+  const viewport = tableSection.locator('.table-scroll-viewport');
+  await expect(tableSection).toHaveClass(/open/);
+  await expect(viewport.locator('table')).toBeVisible();
+
+  await tableHeader.click();
+  await expect(tableSection).not.toHaveClass(/open/);
+  await expect(viewport).toBeHidden();
+  await expect(tableHeader).toHaveAttribute('aria-expanded', 'false');
+
+  await tableHeader.click();
+  await expect(tableSection).toHaveClass(/open/);
+  await expect(tableHeader).toHaveAttribute('aria-expanded', 'true');
+  await expect(viewport.locator('table')).toBeVisible();
   await expectHealthy(page);
 });
