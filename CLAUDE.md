@@ -30,6 +30,13 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
   not the code (2026-08-30 outage) — see `site_build/NETLIFY_LFS_RUNBOOK.md` "Incident pattern 2".
   `site_build/lfs_pull_cached.sh` pulls media inside the build from Netlify's persistent cache so
   a merge costs ~0 MB; it only takes effect once `GIT_LFS_ENABLED` is removed from the site's UI.
+- **`CLERKSHIP_ANALYTICS=off|ms3|res|both`** gates the usage-analytics emitter (`common.py`'s
+  `analytics_enabled_for()`), **default `off`**. Per the rollout in
+  `docs/superpowers/specs/2026-09-04-usage-analytics-design.md`, enabling it is the repo owner's
+  call, not a build default — set it in the Netlify UI per site when the owner decides to enable a
+  site (`res` first, then `both`), never as a repo-wide default. Off ships neither `analytics.js`
+  nor any `CW_SITE`/`CW_PAGE` tag; `check-static-site.mjs` §12 treats that as a clean, gated build,
+  not a failure.
 
 ## Validate & test
 ```bash
@@ -58,8 +65,12 @@ cd tests/smoke && npm ci && npx playwright test
 - `bin/verify.sh` is a **superset** of `ci.yml`, not a mirror: `bin/check-verify-coverage.py`
   enforces that every CI step has a local equivalent (or a recorded `ALLOWED` exemption), but
   verify.sh may run more. `bin/verify_spans.py` and `bin/check_qbank_coherence.py` run there and
-  not in CI — and both **exit 0 even when they flag rows**, so they surface findings at push time
-  without blocking. Read their output; a PASS line is not "nothing found".
+  not in CI — and both **exit 1 when they flag rows** (`return 1 if n_para else 0`,
+  `return 1 if out else 0`), so since verify.sh's `step` treats any non-zero as FAIL and verify.sh
+  is the pre-push hook, either one **can block a push**. They look harmless today only because
+  each currently finds nothing. Read their output; a PASS line is not "nothing found", and
+  verify_spans.py in particular prints "0 clean, 0 flagged, N uncached" and exits 0 when its cache
+  path is wrong — a silent pass, not a clean bill.
 - **A local gate failing while CI is green usually means bash 3.2**, not your change: the Mac's
   `/bin/bash` is 3.2.57 and CI's is >= 4.4. Under `set -u`, bash < 4.4 treats `"${ARR[@]}"` on an
   empty array as unbound and aborts with an empty message (PR #469). Write
@@ -73,12 +84,13 @@ cd tests/smoke && npm ci && npx playwright test
   `build_and_check.sh` (build + gate), `check-static-site.mjs` (static QA), `site_manifest.json` (source→slug map).
 - `site_manifest.json` is the registry of **hand-registered** shipped pages (tools + content md). A
   new page must be registered here **and** in nav inside `build_deploy.py`, or the QA gate's
-  orphaned-source check hard-fails the build. **It is not the only source of what ships**: Case-of-
-  the-Week pages are appended at build time from
-  `08_Cases_and_Simulation/case-of-the-week/cotw_registry.json` (`_cotw_slug()` in `build_deploy.py`
-  and `resident_section.py`). Anything that needs "the set of shipped pages" must use
-  `faculty-console/content-universe.mjs` (JS) or `validate_attestation_consistency.py`'s
-  `cotw_built_slugs()` (Python) — never the manifest alone. See the gotcha below.
+  orphaned-source check hard-fails the build. **It is not the only source of what ships** — it is
+  one of five producers; Case-of-the-Week pages, for instance, are appended at build time from
+  `08_Cases_and_Simulation/case-of-the-week/cotw_registry.json` (`cotw_slug()` in
+  `site_build/cotw_slug.py`). Anything that needs "the set of shipped pages" must read the one
+  derived listing, `site_build/shipped_pages.json` — `load_shipped_pages()` in `shipped_pages.py`
+  (Python) or `deriveContentUniverse()` in `faculty-console/content-universe.mjs` (JS) — never the
+  manifest alone. See the gotcha below.
 - `NN_Category/` (00–14, 99) — curriculum **content source**, not build output. `14_Tracks/<audience>/`
   are link-only overlays; content never forks (see README).
 - Root data + schemas: `question_bank.json`, `topic_meta.json`, `communication_cases.json`, etc. —
@@ -110,6 +122,51 @@ cd tests/smoke && npm ci && npx playwright test
   (two question-bank items that teach different steps for the same scenario),
   `check_instrument_links.py` (dev-only; the recorded instrument routes still resolve —
   deliberately not in CI, external links are flaky and the build egress blocks those hosts).
+- **Egress is an allowlist, and which side of it a host falls on decides which tasks are possible
+  today.** `bin/probe_egress.py` reports that in the repo's own terms — not "itunes.apple.com is
+  unreachable" but "the podcast canonical backfill cannot run here". The SessionStart hook prints
+  a capped summary; run it directly for the full table, `--json` for a machine-readable one.
+  Report-only, exits 0 always, deliberately not in CI and not in `verify.sh` (a report that fails
+  a push is a report nobody keeps). Two traps it exists to prevent: a refused CONNECT tunnel and
+  a host's own 403 are **not** the same thing — one means you cannot get there, the other that you
+  need a credential — and reachability is a fact about the environment, never a content finding.
+  Results cache outside the repo for 6h and invalidate when the proxy changes;
+  `CLERKSHIP_SKIP_EGRESS_PROBE=1` turns it off.
+- **The queue that cannot rot.** `bin/what_can_i_do_today.py` joins the egress probe's capability
+  map to a per-task measurement of how much work is left, and ranks what is actually possible
+  *here, now*: ready / needs-a-key / blocked. Two rules make it trustworthy and both are pinned by
+  `tests/what-can-i-do-today.test.mjs`: a task whose count reaches zero **retires itself** (nobody
+  prunes a checklist), and a measurement that **fails reports `unknown`, never zero** — zero means
+  done and would silently retire real work. A metric nobody can drive to zero does not belong in
+  it: "topics with no book" and "unattributed claims" were both dropped for that, one a category
+  mismatch, the other gameable by renaming a heading. **The mirror failure is worse**: a task
+  whose predicate a DIFFERENT task's output can satisfy retires work that never happened —
+  "isbn-verify" (confirm each edition against a catalogue) was measured by whether the line
+  carried an ISBN-13, so the moment `isbn-derive` wrote them it reported 0 of 51 and retired,
+  having queried nothing. A never-retiring task wastes runs; a falsely-retiring one loses the
+  work silently. Confirmation needs its own persisted marker, so until something records one the
+  task is not listed. Report-only, exits 0, not a gate.
+- `docs/SILENT_SHRINK_CHECKLIST.md` — the failure mode every `bin/` tool exists for, as a
+  checklist: **a check reporting success over a set smaller than the one it claims to check.**
+  Twelve entries, each earned by a defect that actually shipped here (#480, #517, #534, #539,
+  #545, #548, the 2026-08-21 annotation pass) and none of them caught by a schema or a type,
+  because each item was individually valid and the corpus was jointly wrong. Run it when you
+  write or review a guard, and use §F to answer it by BREAKING the check rather than by
+  reasoning about it — including the step people skip, reverting the fix to prove the fix is
+  what made the difference. Only §D2 is mechanised (`bin/check_vacuity.py`); the rest is
+  judgment, which is why it is written down.
+- **A nightly runner acts on that queue.** `_automation/AUTONOMOUS_QUEUE_RUNNER.md` is the
+  runbook a scheduled session follows: it takes `what_can_i_do_today.py --next-autonomous` — one
+  task or nothing — runs that task's own script, proves it with that task's own verify command,
+  and opens a **draft** PR. It never merges, never marks ready, and never edits `reviewed.json`.
+  Autonomy is derived, not declared: a task qualifies only by carrying both a deterministic `run`
+  and a `verify` that can fail, so curation and attestation are excluded by construction rather
+  than by a reviewer remembering. Two traps are written down there because both are silent: the
+  measurement must track the work (a task measured by a number the work cannot move makes the
+  runner open an empty PR every night — it happened), and an automated edit to an attested page
+  leaves `reviewed.json` byte-identical, so the PR body must say the attestation went stale —
+  `post_edit_validate.py` catches that only for Edit/Write/MultiEdit, and these scripts write
+  through Bash.
 - `docs/curriculum-review/findings/` — the review→remediation loop. `export_curriculum_review.py`
   produces the transcripts, a review pass writes `findings.json` (id · verbatim `quote` ·
   ready-to-paste `replacement` · `verification`), and remediation lands as small per-work-package
@@ -126,6 +183,14 @@ cd tests/smoke && npm ci && npx playwright test
 ## Conventions & gotchas
 - **localStorage keys must be namespaced `cw_*` (shared hub) or `rp_*` (resident).** The QA gate
   hard-fails any other prefix. Item-id collisions silently corrupt attestation (`cw_qbank_attest_v1`) and SRS state.
+- **Usage analytics store integers, never events.** `metrics/` is a separate Netlify site whose
+  one function accepts an allowlisted event key and increments a counter keyed by site + ISO week.
+  It stores no IP, user agent, session id, or timestamp finer than the week, and it does not log
+  requests. The allowlist is GENERATED from `shipped_pages.json` — regenerate with
+  `analytics_events.py --write` after adding a page or a tool step, or the freshness gate fails.
+  Cohorts here are 4-10 learners, so reported cells below n=5 are suppressed. Adding a metric is a
+  registry edit, never a free-text string: `check-static-site.mjs` hard-fails a computed or
+  unlisted `cwAnalytics.record()` argument.
 - **No hard-coded `/Users` or `/sessions` paths in tracked `.py`** — CI lints for this; derive from `__file__`.
 - Clinical tools are **single-file HTML** (Clinical Warm palette — build-injected from
   `13_Faculty_Resources/_automation/site_build/clinical-warm.css`). Dose literals
@@ -151,22 +216,34 @@ cd tests/smoke && npm ci && npx playwright test
   rejects a positively-voiced claim licensed by a null/negative span; the fix is to rewrite the
   claim to match the paper, never to trim the span. Note the gate verifies the *stored* claim, not
   page prose — keep the two saying the same thing yourself.
-- **Every page that ships must be attestable — "what ships" has two sources, and the second one
-  was invisible to faculty for two months.** From 2026-07-09 to 2026-09-04 the faculty console
-  (`clerkship-faculty-attest.netlify.app`) built its review queue from `site_manifest.json` alone,
-  while COTW pages shipped from `cotw_registry.json`; 22 pending case pages never appeared under
-  "Needs review" and nobody noticed because the console showed *something* (questions). Fixed in
-  #517. The guard is `faculty-console/check_pending_visible.mjs` (CI + `bin/verify.sh`): it fails
-  if any `status:"pending"` key in `13_Faculty_Resources/reviewed.json` is outside the console's
-  content universe and not listed in `NOT_REVIEWABLE_IN_CONSOLE`. Rules that follow from it:
-  (1) if you add a content type that reaches the learner build by any route other than
-  `site_manifest.json`, extend `deriveContentUniverse()` in `faculty-console/content-universe.mjs`
-  **and** `cotw_built_slugs()` in `validate_attestation_consistency.py` in the same PR — the
-  invariant will fail the build until you do; (2) never "fix" a red `check_pending_visible` by
-  adding a slug to `NOT_REVIEWABLE_IN_CONSOLE` — that list is only for items that are not
-  deployed on any learner site (today: the two `_prototypes/` tools), and each entry needs a reason
-  in the code comment; (3) when a faculty-facing surface shows a partial list, treat "partial" as a
-  bug signal, not a filter — compare its count against `reviewed.json` before assuming it is right.
+- **Every page that ships must be attestable, and "what ships" is ONE derived file.**
+  `13_Faculty_Resources/_automation/site_build/shipped_pages.json` is generated by
+  `site_build/shipped_pages.py` from every producer (`site_manifest.json`, `cotw_registry.json`,
+  and the `site_extras.py` lists the two build scripts copy), and `build_and_check.sh` verifies it
+  against the **real build output** on every build. **Read it — do not read the producers.**
+  Python: `load_shipped_pages()` in `shipped_pages.py`. JS: `deriveContentUniverse()` in
+  `faculty-console/content-universe.mjs`. See `site_build/ADR-002-shipped-pages-single-source.md`.
+  Why: from 2026-07-09 to 2026-09-04 the faculty console (`clerkship-faculty-attest.netlify.app`)
+  built its review queue from `site_manifest.json` alone while COTW pages shipped from
+  `cotw_registry.json`; 22 pending case pages never appeared under "Needs review" and nobody
+  noticed, because the console showed *something* (questions). #517 taught the console the second
+  source; ADR-002 found there were five producers in total and replaced remembering them with a
+  derivation the build checks. Rules that follow:
+  (1) a new route that puts a page on a learner site is a new **producer** — add it to
+  `site_extras.py` and to `shipped_pages.py`'s `derive()`, and regenerate with
+  `python3 13_Faculty_Resources/_automation/site_build/shipped_pages.py --write`; until you do,
+  `--check-build` fails the build and names the slug;
+  (2) do not add a direct read of `site_manifest.json`/`cotw_registry.json` to new code —
+  `tests/shipped-pages-readers.test.mjs` freezes the remaining direct readers and that list may
+  only shrink;
+  (3) never "fix" a red `check_pending_visible` by adding a slug to `NOT_REVIEWABLE_IN_CONSOLE` —
+  that list is only for items **not deployed on any learner site**, and it is empty today: the two
+  `_prototypes/` tools that used to sit on it turned out to ship on the resident site all along,
+  which is what deriving the universe from the build surfaced;
+  (4) if you edit a producer, regenerate — a stale `shipped_pages.json` fails `--check` in CI, in
+  `bin/verify.sh`, in the build, and in the post-edit hook;
+  (5) when a faculty-facing surface shows a partial list, treat "partial" as a bug signal, not a
+  filter — compare its count against `reviewed.json` before assuming it is right (today: 123).
 - **Adding a step to `ci.yml` trips three separate contracts.** `bin/check-verify-coverage.py`
   (mirror it in `bin/verify.sh` or justify an `ALLOWED` exemption);
   `_automation/maintenance/validate_scheduled_workflows.py`, which pins the workflow by **exact step
@@ -177,6 +254,16 @@ cd tests/smoke && npm ci && npx playwright test
   `node --test tests/*.test.mjs` *before* `build_deploy.py`, so a failing contract test exits early
   and `_build/` keeps serving **stale output** while the script merely looks "failed". If a source
   edit isn't showing up in the built site, run the node suite first.
+  The corollary for **build-output tests**: guard on freshness, not existence. A `_build/` older
+  than the source under test fails such a test honestly — the page really is not built yet — and
+  that red then aborts the only supported fix, so the staleness protects itself. Use
+  `staleBuildReason()` from `tests/_build_freshness.mjs`: it skips with the rebuild command when a
+  declared input outran the build, and still hard-fails when a *current* build did not produce the
+  page (that is a real regression, not a stale tree). Declare every input the assertions depend on
+  — a path that does not exist throws, because a typo would make the check vacuously "fresh" and
+  retire the contract silently. Note such assertions never run on Netlify or in CI: `node --test`
+  runs before **both** `build_and_check.sh` invocations and `_build/` starts absent, so a
+  build-output test is a local-only contract — do not rely on CI to catch what it pins.
 - **THE LIBRARY TEACHES ADMINISTRATION; IT DOES NOT REPRODUCE INSTRUMENTS.** Same standing as the
   dose-literal rule. Teach *how to give* an instrument — the elicitation, the confounds, what the
   score does and does not license, what a negative result fails to rule out — and link to the

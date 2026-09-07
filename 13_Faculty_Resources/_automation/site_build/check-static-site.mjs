@@ -1057,6 +1057,219 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
   }
 }
 
+/* ---------- 12. usage analytics build integration (HARD) ----------
+ * usage-analytics-collection Task 6, gating the gap its own review found
+ * (task-6-report.md finding #1): tests/analytics-build.test.mjs asserts the
+ * emitter tag, the CW_PAGE injection, and the allowlist match, but that file
+ * runs via `node --test tests/*.test.mjs` in ci.yml and bin/verify.sh
+ * BEFORE either site is built -- every assertion there hits its own
+ * `t.skip('no _build/...')` guard on a clean runner and gates nothing. This
+ * section re-asserts the same postconditions HARD, in the one place that
+ * actually runs after the build for both sites: this QA gate, invoked by
+ * build_and_check.sh right after build_deploy.py / resident_section.py.
+ * tests/analytics-build.test.mjs stays as-is -- still useful for a quick
+ * local check after a manual build -- it just must not be the only gate.
+ *
+ * Scoped to a real ms3/res build the same way §9's soft-finding ratchet is:
+ * an unrecognized site dir (a fixture written by an unrelated test, a
+ * mkdtemp scratch dir with no analytics build step) has never had analytics
+ * built into it, so gating it here unconditionally would turn every
+ * non-analytics fixture test in this repo into a false HARD failure. Site
+ * key derived from `basename(resolve(SITE))` -- the same call §9 already
+ * makes, which normalizes a trailing slash on the CLI argument for free
+ * (`resolve()` strips it before `basename()` ever sees it).
+ *
+ * The CW_SITE mislabel check (task-6-report.md finding #2, resident_section.py's
+ * own fail-closed postcondition) is generalized here to both sites and to
+ * every shipped .html file, not just the tools/*.html + index.html glob the
+ * Python relabel sweep hardcodes -- a future HTML surface outside that glob
+ * would otherwise keep an inherited/mislabelled CW_SITE with this QA gate
+ * none the wiser.
+ *
+ * Final whole-branch review finding #1: the emitter ships behind CLERKSHIP_
+ * ANALYTICS (common.py's analytics_enabled_for()), default off. A build made
+ * with the flag off is legitimate and must PASS this gate with nothing
+ * asserted about the emitter's presence -- it ships neither analytics.js nor
+ * any CW_SITE literal, by design. Detected from the build itself (this gate
+ * has no reliable view of the env var the build ran with): a single walk
+ * collects every CW_SITE literal in the site once, and that walk plus
+ * analytics.js's presence sort the build into disabled (info note, emitter-
+ * presence assertions skipped), enabled (every assertion below runs exactly
+ * as before), or inconsistent (exactly one of the two present -- always a
+ * hard failure, flag or no flag, because that state cannot be a clean build
+ * in either direction).
+ */
+{
+  const siteBase = basename(resolve(SITE));
+  const analyticsSite = (siteBase === 'ms3' || siteBase === 'res') ? siteBase : null;
+  if (!analyticsSite) {
+    I('usage analytics: unrecognized site dir — §12 skipped (fixture or scratch build)');
+  } else {
+    const ANALYTICS_TAG = '<script src="/analytics.js" defer></script>';
+
+    let allowlist = null;
+    try {
+      allowlist = JSON.parse(readFileSync(join(LIBROOT, 'metrics', 'allowlist.json'), 'utf8'));
+    } catch (e) {
+      H(`usage analytics: metrics/allowlist.json missing or unparsable — ${e.message}`);
+    }
+    const allowedKeys = new Set((allowlist && allowlist.keys && allowlist.keys[analyticsSite]) || []);
+
+    // Walk every shipped .html file once, collecting every CW_SITE literal
+    // found — glob-agnostic on purpose (a future HTML surface outside
+    // tools/*.html + index.html must still be seen). This single walk answers
+    // two questions: is the emitter present AT ALL in this build (below), and
+    // for the enabled case, is any CW_SITE mislabelled (finding #2, further
+    // down).
+    const cwSiteHits = [];
+    const scanForCwSite = (dir) => {
+      if (!existsSync(dir)) return;
+      for (const name of readdirSync(dir)) {
+        const fp = join(dir, name);
+        if (statSync(fp).isDirectory()) { scanForCwSite(fp); continue; }
+        if (!name.endsWith('.html')) continue;
+        const html = readFileSync(fp, 'utf8');
+        for (const m of html.matchAll(/window\.CW_SITE='([^']+)'/g)) {
+          cwSiteHits.push({ rel: relative(SITE, fp), value: m[1] });
+        }
+      }
+    };
+    scanForCwSite(SITE);
+    const hasAnalyticsFile = existsSync(p('analytics.js'));
+    const anyCwSite = cwSiteHits.length > 0;
+
+    // CLERKSHIP_ANALYTICS defaults off (common.py's analytics_enabled_for()):
+    // a legitimately-disabled build ships this site with NEITHER analytics.js
+    // NOR any CW_SITE literal. Detect that state from the build itself (not
+    // the env var, which this post-build gate may not even see) and skip the
+    // emitter-presence assertions below cleanly rather than hard-failing a
+    // build that correctly shipped nothing. A build with exactly ONE of the
+    // two present is inconsistent regardless of the flag, and stays a hard
+    // failure — that is a real defect, not a legitimate disabled state.
+    if (hasAnalyticsFile && !anyCwSite) {
+      H('usage analytics: analytics.js present at site root but no page references CW_SITE — inconsistent build');
+    } else if (!hasAnalyticsFile && anyCwSite) {
+      H(`usage analytics: page(s) reference CW_SITE but analytics.js is missing from the built site root: ${cwSiteHits.map((h) => h.rel).join(', ')}`);
+    } else if (!hasAnalyticsFile && !anyCwSite) {
+      I(`usage analytics: emitter disabled for this "${analyticsSite}" build (CLERKSHIP_ANALYTICS) — §12 emitter-presence assertions skipped`);
+    } else {
+      // Enabled: full teeth, unchanged from before the build flag existed.
+
+      // The complete set of files apply_full_page_pass() (common.py) ever hands
+      // a <head> to inject the emitter tag into: tools/*.html + index.html. The
+      // SPA shell serves every content/*.md page via client-side routing and
+      // carries no per-page CW_PAGE by design (see common.py's analytics_head()).
+      const analyticsPages = listHtml(p('tools')).map((f) => join('tools', f));
+      if (existsSync(p('index.html'))) analyticsPages.push('index.html');
+
+      let pagesWithCwPage = 0;
+      for (const rel of analyticsPages) {
+        const fp = p(rel);
+        if (!existsSync(fp)) continue;
+        const html = readFileSync(fp, 'utf8');
+        if (!html.includes(ANALYTICS_TAG)) {
+          H(`usage analytics: emitter tag missing from a page that should carry it: ${rel}`);
+        }
+        const m = /window\.CW_PAGE='([^']+)'/.exec(html);
+        if (m) {
+          pagesWithCwPage += 1;
+          const key = `page:${m[1]}`;
+          if (allowlist && !allowedKeys.has(key)) {
+            H(`usage analytics: injected CW_PAGE not on the "${analyticsSite}" allowlist: ${rel} -> ${key}`);
+          }
+        }
+      }
+      if (analyticsPages.length && pagesWithCwPage === 0) {
+        H(`usage analytics: no built ${analyticsSite} page carries CW_PAGE`);
+      }
+
+      // Fail-closed CW_SITE check (finding #2), site-agnostic and glob-agnostic:
+      // flag any CW_SITE literal (from the single walk above) that disagrees
+      // with this build's own site key.
+      const mislabelled = cwSiteHits
+        .filter((h) => h.value !== analyticsSite)
+        .map((h) => `${h.rel} (CW_SITE='${h.value}')`);
+      if (mislabelled.length) {
+        H(`usage analytics: CW_SITE mislabelled for a "${analyticsSite}" build: ${mislabelled.join(', ')}`);
+      }
+    }
+
+    // DECISION: analytics-allowlist  (decisions.json; bin/check_decision_drift.py)
+    // Every cwAnalytics.record() call in shipped HTML must pass EXACTLY ONE
+    // string-literal argument on this build's allowlist. A computed argument,
+    // an unlisted literal, or ANY additional argument is how free text -- and
+    // therefore PHI -- would reach the counter store, which the design forbids
+    // structurally rather than by policy. No tool calls record() yet (this plan
+    // ships only the emitter and the registry), so this rule currently guards
+    // future per-tool instrumentation rather than anything shipped today.
+    //
+    // A simple "first char after ( isn't a quote" regex is not enough here:
+    // `\s*` in a class-negated lookahead can itself satisfy `[^'")]` by
+    // backtracking to zero width, so a *padded* literal like
+    // `record( 'page:x' )` false-positives as computed. And a regex anchored
+    // on "starts with a quote" can't see a second argument trailing after the
+    // closing quote (`record('page:x', foo)`), because nothing in that shape
+    // requires the argument list to end where the string does. So instead we
+    // find each call's matching closing paren by hand (paren/quote aware, so
+    // a literal may itself contain "()" ) and require the *entire*, trimmed
+    // argument-list text to be exactly one quoted string literal -- nothing
+    // before it, nothing after it, no second argument.
+    const STRING_LITERAL_ONLY = /^(['"])(?:\\.|(?!\1)[^\\])*\1$/;
+    const findMatchingParen = (html, openIdx) => {
+      let depth = 1;
+      let inString = null;
+      for (let i = openIdx; i < html.length; i++) {
+        const ch = html[i];
+        if (inString) {
+          if (ch === '\\') { i += 1; continue; }
+          if (ch === inString) inString = null;
+          continue;
+        }
+        if (ch === '"' || ch === "'" || ch === '`') { inString = ch; continue; }
+        if (ch === '(') depth += 1;
+        else if (ch === ')') { depth -= 1; if (depth === 0) return i; }
+      }
+      return -1;
+    };
+
+    const recordedKeys = [];
+    const scanForAnalyticsRecords = (dir) => {
+      if (!existsSync(dir)) return;
+      for (const name of readdirSync(dir)) {
+        const fp = join(dir, name);
+        if (statSync(fp).isDirectory()) { scanForAnalyticsRecords(fp); continue; }
+        if (!name.endsWith('.html')) continue;
+        const html = readFileSync(fp, 'utf8');
+        const rel = relative(SITE, fp);
+        let invalidCalls = 0;
+        const CALL_RE = /cwAnalytics\.record\(/g;
+        let m;
+        while ((m = CALL_RE.exec(html))) {
+          const openIdx = m.index + m[0].length;
+          const closeIdx = findMatchingParen(html, openIdx);
+          if (closeIdx === -1) { invalidCalls += 1; break; } // unterminated call
+          const argsText = html.slice(openIdx, closeIdx).trim();
+          if (STRING_LITERAL_ONLY.test(argsText)) {
+            recordedKeys.push({ rel, key: argsText.slice(1, -1) });
+          } else {
+            invalidCalls += 1;
+          }
+          CALL_RE.lastIndex = closeIdx + 1;
+        }
+        if (invalidCalls) {
+          H(`usage analytics: invalid cwAnalytics.record() argument in ${rel} (${invalidCalls}) — record() takes exactly one string-literal argument, no computed value and no second argument`);
+        }
+      }
+    };
+    scanForAnalyticsRecords(SITE);
+    for (const { rel, key } of recordedKeys) {
+      if (allowlist && !allowedKeys.has(key)) {
+        H(`usage analytics: unlisted analytics key in ${rel}: "${key}" (add it to analytics_events.json and regenerate)`);
+      }
+    }
+  }
+}
+
 /* ---------- report ---------- */
 const line = '─'.repeat(64);
 console.log(`\n${line}\nStatic QA — ${SITE}\n${line}`);

@@ -9,10 +9,15 @@
    A ledger entry that says "pending" is a standing claim that someone still has to look
    at this; a console that cannot show it makes that claim unfulfillable.
 
-   Reads the three files the console and the two builds actually derive from, and fails
-   in BOTH directions:
+   Reads the ledger and the one derived listing of what ships (shipped_pages.json, which
+   build_and_check.sh verifies against the real build output on every build — ADR-002),
+   and fails in BOTH directions:
      - a pending slug outside the universe and off the allowlist  -> unreachable item
      - an allowlist entry that IS in the universe                 -> stale exclusion
+
+   The second direction is not hypothetical: pointing this check at shipped_pages.json
+   is what proved 'rp-agitation.html' and 'rp-brief-psych.html' had been excluded as
+   undeployed while the resident site was serving both. See content-universe.mjs.
 
    Run from anywhere:  node faculty-console/check_pending_visible.mjs */
 
@@ -22,8 +27,7 @@ import { NOT_REVIEWABLE_IN_CONSOLE, contentUniverseSlugs } from './content-unive
 
 const ROOT = new URL('../', import.meta.url);
 const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
-const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
-const REGISTRY_PATH = '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json';
+const SHIPPED_PAGES_PATH = '13_Faculty_Resources/_automation/site_build/shipped_pages.json';
 
 function load(relativePath) {
   const url = new URL(relativePath, ROOT);
@@ -38,12 +42,11 @@ function load(relativePath) {
 
 function main() {
   const reviewed = load(REVIEWED_PATH);
-  const manifest = load(MANIFEST_PATH);
-  const registry = load(REGISTRY_PATH);
+  const shipped = load(SHIPPED_PAGES_PATH);
 
   let universe;
   try {
-    universe = contentUniverseSlugs({ manifest, registry });
+    universe = contentUniverseSlugs({ shipped });
   } catch (error) {
     console.error(`pending visibility INVALID — the content universe is malformed: ${error.message}`);
     return 1;
@@ -65,10 +68,10 @@ function main() {
     );
     for (const slug of unreachable) {
       console.error(
-        `  - ${slug}: reviewed.json says pending, but it is in neither site_manifest.json `
-        + 'nor cotw_registry.json, so the faculty console cannot show it. Either wire it '
-        + 'into the build that ships it, or add it to NOT_REVIEWABLE_IN_CONSOLE in '
-        + 'faculty-console/content-universe.mjs with a reason.',
+        `  - ${slug}: reviewed.json says pending, but no site ships it according to `
+        + 'shipped_pages.json, so the faculty console cannot show it. Either wire its '
+        + 'producer into site_build/shipped_pages.py and regenerate, or add it to '
+        + 'NOT_REVIEWABLE_IN_CONSOLE in faculty-console/content-universe.mjs with a reason.',
       );
     }
     for (const slug of staleExclusions) {
@@ -83,7 +86,8 @@ function main() {
   console.log(
     `pending visibility OK — ${pending.length} pending item(s), `
     + `${universe.size} in the console universe, `
-    + `${allowlist.size} explicitly excluded (${[...allowlist].join(', ')}).`,
+    + `${allowlist.size} explicitly excluded`
+    + `${allowlist.size ? ` (${[...allowlist].join(', ')})` : ''}.`,
   );
   return 0;
 }

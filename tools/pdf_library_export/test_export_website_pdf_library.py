@@ -11,21 +11,50 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 from export_website_pdf_library import (
-    DEFAULT_MANIFEST,
     REVIEW_STATUS,
+    SHIPPED_PAGES_RELATIVE,
     WebsiteEntry,
     _resolve_cli_paths,
     build_pdf,
     export_website_pdf_library,
     format_library_date,
     inline_markdown_to_text,
-    load_manifest,
+    load_shipped_entries,
     markdown_has_h1,
     markdown_to_flowables,
     pdf_styles,
     section_for_entry,
     slugify,
 )
+
+
+def _write_shipped_pages(root: Path, pages: list[dict]) -> Path:
+    """Write a synthetic shipped_pages.json where load_shipped_pages() looks for it."""
+
+    path = root / SHIPPED_PAGES_RELATIVE
+    _write(
+        path,
+        json.dumps(
+            {
+                "version": 1,
+                "_note": "synthetic fixture",
+                "generated_from": {},
+                "pages": pages,
+            }
+        ),
+    )
+    return path
+
+
+def _page(source: str, slug: str, title: str, kind: str = "page") -> dict:
+    return {
+        "slug": slug,
+        "kind": kind,
+        "sites": ["ms3", "res"],
+        "title": title,
+        "source": source,
+        "producer": "site_manifest",
+    }
 
 
 def _write(path: Path, text: str) -> None:
@@ -132,17 +161,13 @@ def test_section_for_entry_matches_website_groups():
     assert section_for_entry(WebsiteEntry("06_Family_and_Relational/mi.md", "motivational_interviewing.md", "MI", "markdown", 7)) == "06_communicate_patients"
 
 
-def test_load_manifest_fails_on_missing_source():
+def test_load_shipped_entries_fails_on_missing_source():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
-        manifest = root / "manifest.json"
-        _write(
-            manifest,
-            json.dumps({"md": [["missing.md", "missing.md", "Missing"]], "tools": []}),
-        )
+        _write_shipped_pages(root, [_page("missing.md", "missing.md", "Missing")])
 
         try:
-            load_manifest(root, manifest)
+            load_shipped_entries(root)
         except FileNotFoundError as exc:
             assert "missing.md" in str(exc)
         else:
@@ -153,26 +178,24 @@ def test_export_creates_pdf_manifest_and_index():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp) / "repo"
         out_dir = Path(tmp) / "out"
-        manifest = root / "site_manifest.json"
         _write(root / "01_Six_Week_Curriculum/Week_1_Foundations/README.md", "# Week 1\n\n## Safety\n\n- Call the resident.\n")
         _write(root / "03_Core_Topics/Mood/mood.md", "# Mood\n\n| Topic | Point |\n|---|---|\n| MDD | Ask about safety |\n")
         _write(root / "02_Clinical_Skills/Mental_Status_Exam/mse.html", "<html><body>MSE</body></html>")
-        _write(
-            manifest,
-            json.dumps(
-                {
-                    "md": [
-                        ["01_Six_Week_Curriculum/Week_1_Foundations/README.md", "week1.md", "Week 1"],
-                        ["03_Core_Topics/Mood/mood.md", "t_mood.md", "Mood Disorders"],
-                    ],
-                    "tools": [
-                        ["02_Clinical_Skills/Mental_Status_Exam/mse.html", "mse.html", "Mental Status Exam"]
-                    ],
-                }
-            ),
+        _write_shipped_pages(
+            root,
+            [
+                _page("01_Six_Week_Curriculum/Week_1_Foundations/README.md", "week1.md", "Week 1"),
+                _page("03_Core_Topics/Mood/mood.md", "t_mood.md", "Mood Disorders"),
+                _page(
+                    "02_Clinical_Skills/Mental_Status_Exam/mse.html",
+                    "mse.html",
+                    "Mental Status Exam",
+                    kind="tool",
+                ),
+            ],
         )
 
-        result = export_website_pdf_library(root, manifest, out_dir, generated_on="2026-07-11")
+        result = export_website_pdf_library(root, out_dir, generated_on="2026-07-11")
 
         assert result["pdf_count"] == 2
         assert result["interactive_tools_not_converted"] == 1
@@ -188,7 +211,7 @@ def test_export_creates_pdf_manifest_and_index():
 
         stale = out_dir / "pdfs" / "stale.pdf"
         _write(stale, "old")
-        export_website_pdf_library(root, manifest, out_dir, generated_on="2026-07-11")
+        export_website_pdf_library(root, out_dir, generated_on="2026-07-11")
         assert not stale.exists()
 
 
@@ -196,15 +219,14 @@ def test_export_rejects_invalid_date_before_publishing_output():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp) / "repo"
         out_dir = Path(tmp) / "out"
-        manifest = root / "site_manifest.json"
         source = root / "guide.md"
         stale = out_dir / "pdfs" / "stale.pdf"
         _write(source, "# Guide\n")
-        _write(manifest, json.dumps({"md": [["guide.md", "guide.md", "Guide"]], "tools": []}))
+        _write_shipped_pages(root, [_page("guide.md", "guide.md", "Guide")])
         _write(stale, "existing output")
 
         try:
-            export_website_pdf_library(root, manifest, out_dir, generated_on="07/12/2026")
+            export_website_pdf_library(root, out_dir, generated_on="07/12/2026")
         except ValueError as exc:
             assert "ISO date" in str(exc)
         else:
@@ -264,20 +286,22 @@ def test_build_pdf_uses_manifest_title_when_markdown_has_no_h1():
     assert "Section" in text
 
 
-def test_default_site_manifest_sources_exist_in_repo():
+def test_shipped_page_sources_exist_in_repo():
+    # 124 shipped surfaces, not the 91 the site manifest alone lists: +22 Case-of-the-Week
+    # pages, +6 resident-only pages, +1 MS3 orientation video, +4 resident-only tools
+    # (ADR-002). The count moves whenever a producer does; shipped_pages.py --check is
+    # what keeps the listing honest, and this only asserts every source really exists.
     repo_root = Path(__file__).resolve().parents[2]
-    manifest = repo_root / DEFAULT_MANIFEST
-    md_entries, tool_entries = load_manifest(repo_root, manifest)
+    md_entries, tool_entries = load_shipped_entries(repo_root)
 
-    assert len(md_entries) == 69  # +therapy_on_the_unit.md, +therapy_reading_room.md (2026-08-21, WP-T3)
-    assert len(tool_entries) == 22  # +rotation-curator.html (2026-08-20, PR #377)
+    assert len(md_entries) == 97  # 69 manifest md + 22 case-of-the-week + 6 resident
+    assert len(tool_entries) == 27  # 22 manifest tools + 1 orientation video + 4 resident
 
 
 def test_resolve_cli_paths_expands_relative_paths():
-    repo_root, manifest, out_dir = _resolve_cli_paths("/tmp/repo", "manifest.json", "outputs/pdf_library")
+    repo_root, out_dir = _resolve_cli_paths("/tmp/repo", "outputs/pdf_library")
 
     assert repo_root == Path("/tmp/repo").resolve()
-    assert manifest == (Path("/tmp/repo") / "manifest.json").resolve()
     assert out_dir == (Path("/tmp/repo") / "outputs/pdf_library").resolve()
 
 
@@ -294,12 +318,12 @@ def run_tests():
         test_slugify_returns_ascii_file_safe_text,
         test_markdown_to_flowables_strips_wrapped_blockquote_markers,
         test_section_for_entry_matches_website_groups,
-        test_load_manifest_fails_on_missing_source,
+        test_load_shipped_entries_fails_on_missing_source,
         test_export_creates_pdf_manifest_and_index,
         test_export_rejects_invalid_date_before_publishing_output,
         test_build_pdf_is_content_only_with_title_once_and_dated_footer,
         test_build_pdf_uses_manifest_title_when_markdown_has_no_h1,
-        test_default_site_manifest_sources_exist_in_repo,
+        test_shipped_page_sources_exist_in_repo,
         test_resolve_cli_paths_expands_relative_paths,
     ]
 

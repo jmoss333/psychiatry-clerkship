@@ -64,15 +64,66 @@ def synthetic_ledger_for_site_entries(root: Path) -> dict:
     return {slug: entry for slug in slugs}
 
 
+SYNTHETIC_SHIPPED_TOOLS = [
+    # one shared tool, plus the per-site extras -- the shape shipped_pages.py
+    # derives from site_manifest.json, MS3_EXTRA_TOOLS and RESIDENT_PROTO_TOOLS.
+    ("synthetic/base.html", "base.html", ["ms3", "res"], "site_manifest"),
+    (
+        "_prototypes/orientation-video/orientation-video.html",
+        "orientation-video.html",
+        ["ms3"],
+        "ms3_extra_tool",
+    ),
+    (
+        "_prototypes/agitation-trainer/rp-agitation.html",
+        "rp-agitation.html",
+        ["res"],
+        "resident_tool",
+    ),
+    (
+        "_prototypes/brief-psych/rp-brief-psych.html",
+        "rp-brief-psych.html",
+        ["res"],
+        "resident_tool",
+    ),
+    (
+        "_prototypes/canon-quiz/rp-canon-quiz.html",
+        "rp-canon-quiz.html",
+        ["res"],
+        "resident_tool",
+    ),
+    (
+        "_prototypes/post-event-huddle/rp-post-event-huddle.html",
+        "rp-post-event-huddle.html",
+        ["res"],
+        "resident_tool",
+    ),
+]
+
+
 def write_synthetic_repository(root: Path) -> None:
-    manifest = {
-        "tools": [
-            ["synthetic/base.html", "base.html", "Synthetic title excluded from output"],
-        ]
+    # ADR-002 Phase 2: _tool_entries() reads the one derived listing, so the
+    # fixture writes that rather than a private site_manifest.json + extras pair.
+    shipped = {
+        "version": 1,
+        "pages": sorted(
+            (
+                {
+                    "slug": built_slug,
+                    "kind": "tool",
+                    "sites": sites,
+                    "title": "Synthetic title excluded from output",
+                    "source": source_relative,
+                    "producer": producer,
+                }
+                for source_relative, built_slug, sites, producer in SYNTHETIC_SHIPPED_TOOLS
+            ),
+            key=lambda page: page["slug"],
+        ),
     }
-    manifest_path = root / "13_Faculty_Resources/_automation/site_build/site_manifest.json"
-    manifest_path.parent.mkdir(parents=True, exist_ok=True)
-    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    shipped_path = root / "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
+    shipped_path.parent.mkdir(parents=True, exist_ok=True)
+    shipped_path.write_text(json.dumps(shipped), encoding="utf-8")
     reviewed = root / "13_Faculty_Resources/reviewed.json"
     reviewed.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(SCHEMA_SOURCE, reviewed.with_name("reviewed.schema.json"))
@@ -87,6 +138,7 @@ def write_synthetic_repository(root: Path) -> None:
                     "rp-agitation.html",
                     "rp-brief-psych.html",
                     "rp-canon-quiz.html",
+                    "rp-post-event-huddle.html",
                 )
             }
         ),
@@ -98,6 +150,7 @@ def write_synthetic_repository(root: Path) -> None:
         "_prototypes/agitation-trainer/rp-agitation.html": b'<!-- [RC-META] tool="synthetic-a" audience="trainee" -->\n',
         "_prototypes/brief-psych/rp-brief-psych.html": b'<!-- [RC-META] tool="synthetic-b" audience="trainee" -->\n',
         "_prototypes/canon-quiz/rp-canon-quiz.html": b'<!-- [RC-META] tool="synthetic-c" audience="trainee" -->\n',
+        "_prototypes/post-event-huddle/rp-post-event-huddle.html": b'<!-- [CLERKSHIP-META v1] tool="synthetic-d" audience="resident" -->\n',
     }
     for relative, value in sources.items():
         path = root / relative
@@ -495,7 +548,13 @@ class NormalizationTests(unittest.TestCase):
 
 
 class RepositoryProducerTests(unittest.TestCase):
-    def test_builds_minimal_sorted_documents_from_manifest_and_existing_extras(self) -> None:
+    # test_site_extras_literal_still_matches_the_derived_listing lived here. It held the
+    # dead `SITE_EXTRAS` literal against shipped_pages.json for as long as the literal had
+    # to stay -- validate_curriculum.py AST-parsed this module for it. B1 (#530) removed
+    # that parse and the literal was deleted 2026-09-05, so the anti-drift test has nothing
+    # left to guard: _tool_entries() reads the derived listing directly.
+
+    def test_builds_minimal_sorted_documents_from_the_derived_listing(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             write_synthetic_repository(root)
@@ -540,7 +599,7 @@ class RepositoryProducerTests(unittest.TestCase):
             diagnostics, documents = governance.validate_repository(ROOT)
 
         self.assertEqual(len(documents["ms3"]["items"]), 23)
-        self.assertEqual(len(documents["resident"]["items"]), 25)
+        self.assertEqual(len(documents["resident"]["items"]), 26)
         self.assertEqual(len(diagnostics), 1)
         self.assertTrue(diagnostics[0].startswith("legacy metadata warning: "))
 
@@ -635,7 +694,7 @@ class RepositoryProducerTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("tool governance OK", result.stdout)
         self.assertIn("ms3: 23 item(s)", result.stdout)
-        self.assertIn("resident: 25 item(s)", result.stdout)
+        self.assertIn("resident: 26 item(s)", result.stdout)
 
     def test_rotation_curator_is_an_attested_faculty_local_policy_tool(self) -> None:
         # Reviewed by Joshua Moss, MD in the faculty console on 2026-08-23; the attestation

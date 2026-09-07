@@ -833,7 +833,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **collateral** — Ask family/staff what changed, whether the patient eats/drinks, baseline movement/speech, and prior response to lorazepam or ECT.
 - **rounds** — Present BFCRS signs, medical/NMS rule-out, lorazepam challenge plan, supportive care, and ECT escalation threshold.
 - **exam** — Lorazepam challenge is diagnostic and therapeutic; antipsychotics can worsen malignant catatonia/NMS.
-- **actions** — Open BFCRS; Practice catatonia reasoning
+- **actions** — Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Practice catatonia reasoning
 
 **Embedded check-for-understanding**
 
@@ -1591,7 +1591,7 @@ should independently manage high-risk consults.
 - **Slug:** `cl_reference.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/cl_reference.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,114 words
+- **Length:** 1,171 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1634,7 +1634,7 @@ should independently manage high-risk consults.
 - **collateral** — Clarify medication timing, dose changes, substances, infection/medical triggers, baseline cognition, and prior reactions.
 - **rounds** — Present consult problems as syndrome, evidence, immediate risk, next test or treatment, and escalation plan.
 - **exam** — Differentiate serotonin syndrome, NMS, malignant catatonia, lithium toxicity, delirium, and withdrawal by tempo and exam findings.
-- **actions** — Open BFCRS; Open withdrawal tools; Open decision aids
+- **actions** — Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Open withdrawal tools; Open decision aids
 
 **Embedded check-for-understanding**
 
@@ -1685,6 +1685,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 ## Lithium toxicity
 - Therapeutic 0.6–1.2 mEq/L; **toxicity generally ≥1.5**, severe ≥2.5. In *chronic* toxicity (especially older adults) symptoms may be severe even when the level looks only mildly elevated — **treat the patient, not the number.**
 - Precipitants: dehydration, AKI, low sodium, NSAIDs, thiazides, ACE-inhibitors/ARBs.
+- **Before dialysis is even the question:** hold lithium, stop the contributors (NSAID, thiazide, ACEi/ARB), send a level with renal function and electrolytes, and start **IV isotonic saline** to restore volume and renal lithium clearance. Repeat the level every 2–4 h until it is falling; nephrogenic diabetes insipidus can drive hypernatremia, so follow sodium as you hydrate.
 - **Hemodialysis** if level **>4.0** mEq/L (any patient), or **>2.5** with severe neuro/renal signs or life-threatening features.
 - **Activated charcoal does not bind lithium** — consider whole-bowel irrigation for sustained-release ingestions.
 - Recheck levels after dialysis — **rebound** from tissue redistribution is expected.
@@ -1773,6 +1774,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 - **Communication cases:** `suicide_direct_question_001`, `collateral_questions_001`, `family_conflict_discharge_001`
 - **Workflow stages:** `safety`, `family`, `team`
 - **Workflow modes:** `ward`, `safety`, `family`
+- **Call-to-action buttons:** Open Family & Discharge; Run a 2-minute Post-Event Learning Huddle
 
 #### Page text (as shipped)
 

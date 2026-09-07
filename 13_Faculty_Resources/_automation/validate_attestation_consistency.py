@@ -18,20 +18,26 @@ from urllib.parse import urlparse
 from surface_governance import SurfaceGovernanceError, load_validated_ledger
 from validate_tool_governance import GovernanceError, parse_metadata_marker
 
+sys.path.insert(
+    0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "site_build")
+)
+from shipped_pages import (  # noqa: E402
+    ShippedPagesError,
+    load_shipped_pages,
+)
+
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 REVIEWED_PATH = os.path.join("13_Faculty_Resources", "reviewed.json")
 TOPIC_META_PATH = "topic_meta.json"
+# site_manifest.json is still read for the PER-ENTRY checks below (source banners, tool
+# metadata headers, case packs), which need each entry's source path. It is no longer how
+# this validator decides WHAT SHIPS.
 MANIFEST_PATH = os.path.join(
     "13_Faculty_Resources", "_automation", "site_build", "site_manifest.json"
 )
-# The SECOND source of truth for what ships. build_deploy.py and resident_section.py both
-# append Case-of-the-Week pages from this registry without touching site_manifest.json, so
-# a validator that reads only the manifest cannot tell that a built page has no ledger
-# entry — the same blind spot that hid 22 pending pages from the faculty console from
-# July to September 2026. Mirrors faculty-console/content-universe.mjs.
-COTW_REGISTRY_PATH = os.path.join(
-    "08_Cases_and_Simulation", "case-of-the-week", "cotw_registry.json"
+SHIPPED_PAGES_RELATIVE = os.path.join(
+    "13_Faculty_Resources", "_automation", "site_build", "shipped_pages.json"
 )
 
 REVIEWED_STATUSES = {"reviewed", "attested"}
@@ -767,27 +773,27 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
     return errors
 
 
-def cotw_built_slugs(root):
-    """Every Case-of-the-Week page the two site builds actually publish.
+def shipped_slugs(root):
+    """Every page and tool either learner site publishes.
 
-    Byte-identical to _cotw_slug() in build_deploy.py / resident_section.py.
+    Read from the one derived listing, site_build/shipped_pages.json, rather than
+    re-derived here. Until 2026-09 this function privately rebuilt the Case-of-the-Week
+    slugs from cotw_registry.json -- a fourth copy of the same formula, and still blind
+    to the resident-only pages and tools resident_section.py ships. shipped_pages.py
+    enumerates every producer and build_and_check.sh verifies its output against the real
+    build on every build, so "what ships" is now a read rather than a re-derivation.
 
-    An absent registry means no weekly cases, matching how both build scripts read it
-    (``json.load(...).get("weeks", [])``). The synthetic roots this validator's own test
-    suite builds carry a manifest and a ledger but no registry, and a repository that has
-    not yet started publishing weekly cases would not have one either.
+    A root with no listing yields the empty set: the synthetic roots this validator's own
+    test suite builds carry a manifest and a ledger but no shipped_pages.json, and the
+    manifest-driven per-entry checks below still run against them.
     """
-    registry_path = os.path.join(root, COTW_REGISTRY_PATH)
-    if not os.path.exists(registry_path):
+    if not os.path.exists(os.path.join(root, SHIPPED_PAGES_RELATIVE)):
         return set()
-    registry = load(registry_path)
-    weeks = registry.get("weeks", []) if isinstance(registry, dict) else []
-    return {
-        "cotw_%s_%s_%s.md" % (w["date"].replace("-", ""), w["topic"], level)
-        for w in weeks
-        if isinstance(w, dict) and w.get("date") and w.get("topic")
-        for level in ("ms3", "res")
-    }
+    try:
+        document = load_shipped_pages(root)
+    except ShippedPagesError as error:
+        raise SystemExit("attestation consistency INVALID — %s" % error)
+    return {page["slug"] for page in document["pages"]}
 
 
 def validate(root):
@@ -802,11 +808,12 @@ def validate(root):
     manifest_md_entries = manifest.get("md", [])
     manifest_tool_entries = manifest.get("tools", [])
     manifest_md = {slug for _src, slug, _title in manifest_md_entries}
-    manifest_tools = {slug for _src, slug, _title in manifest_tool_entries}
-    manifest_items = manifest_md | manifest_tools | cotw_built_slugs(root)
+    # Every slug that reaches a learner site, from every producer -- not just the two
+    # manifest lists. A shipped page with no ledger row is a page nobody can attest.
+    shipped_items = shipped_slugs(root)
 
     errors = []
-    for slug in sorted(manifest_items):
+    for slug in sorted(shipped_items):
         if slug not in reviewed:
             errors.append("%s: missing reviewed.json entry" % slug)
 
@@ -909,9 +916,7 @@ def main():
     topic_meta = load(os.path.join(ROOT, TOPIC_META_PATH))
     manifest = load(os.path.join(ROOT, MANIFEST_PATH))
     manifest_md = {slug for _src, slug, _title in manifest.get("md", [])}
-    manifest_items = manifest_md | {
-        slug for _src, slug, _title in manifest.get("tools", [])
-    } | cotw_built_slugs(ROOT)
+    shipped_items = shipped_slugs(ROOT)
     faculty_count = sum(
         1
         for slug in manifest_md
@@ -920,8 +925,8 @@ def main():
     )
     noun = "entry" if faculty_count == 1 else "entries"
     print(
-        "attestation consistency OK — %d manifest item(s), %d topic facultyReview %s aligned."
-        % (len(manifest_items), faculty_count, noun)
+        "attestation consistency OK — %d shipped item(s), %d topic facultyReview %s aligned."
+        % (len(shipped_items), faculty_count, noun)
     )
     return 0
 

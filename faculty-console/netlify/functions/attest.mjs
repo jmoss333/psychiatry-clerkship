@@ -30,12 +30,17 @@ const DEFAULT_ATTESTER_EMAIL = 'faculty@clerkship.local';
 
 const DEFAULT_BASE_LAG_ALARM = 3;
 const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
+// site_manifest.json is still read, but ONLY for the question bank: manifestPages gates
+// which page a question may anchor to, and manifestRevision is the qbank conflict key.
+// It is no longer where the review queue comes from.
 const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
-// The SECOND source of truth for what ships. Both site builds append Case-of-the-Week
-// pages from this file without touching the manifest, so a console that reads only the
-// manifest cannot see them — which is exactly how 22 pending pages stayed invisible
-// from July to September 2026. Read it here for the same reason the builds do.
-const REGISTRY_PATH = '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json';
+// THE source of truth for what ships, and therefore for what is reviewable here. Derived
+// from every producer by site_build/shipped_pages.py and checked against the real build
+// output on every build (ADR-002). The manifest alone missed the 22 Case-of-the-Week
+// pages that stayed invisible to attestation from July to September 2026; the manifest
+// plus the case registry still missed the resident-only pages and tools. One derived
+// listing, verified against the build, ends that class of gap.
+const SHIPPED_PAGES_PATH = '13_Faculty_Resources/_automation/site_build/shipped_pages.json';
 const QBANK_PATH = 'question_bank.json';
 
 // Both files are stored 2-space indented, so every write must re-emit them that way.
@@ -865,18 +870,17 @@ function contentApiStatus(entry) {
   return entry.status === 'pending' ? 'unreviewed' : entry.status;
 }
 
-// The console's content universe is manifest pages + manifest tools + the
-// Case-of-the-Week twins the registry generates — the exact set the two site builds
-// publish (see faculty-console/content-universe.mjs). deriveContentUniverse throws
-// TypeError on a malformed manifest or registry; that becomes the same
-// repository_file_invalid 502 requireManifest already returns, because a content
-// universe that is silently short is precisely the failure this change exists to end.
-function buildContentItems(reviewed, manifest, registry) {
+// The console's content universe is exactly what shipped_pages.json lists — every page
+// and tool either learner site publishes, whichever producer put it there (see
+// faculty-console/content-universe.mjs). deriveContentUniverse throws TypeError on a
+// malformed listing; that becomes the same repository_file_invalid 502 requireManifest
+// already returns, because a content universe that is silently short is precisely the
+// failure this change exists to end.
+function buildContentItems(reviewed, shipped) {
   if (!isRecord(reviewed)) invalidRepositoryFile();
-  requireManifest(manifest);
   let universe;
   try {
-    universe = deriveContentUniverse({ manifest, registry });
+    universe = deriveContentUniverse({ shipped });
   } catch {
     invalidRepositoryFile();
   }
@@ -903,16 +907,25 @@ function buildContentItems(reviewed, manifest, registry) {
 async function buildState(repository, { student, resident, attester }) {
   const reviewedFile = await repository.read(REVIEWED_PATH);
   const manifestFile = await repository.read(MANIFEST_PATH);
-  const registryFile = await repository.read(REGISTRY_PATH);
+  const shippedFile = await repository.read(SHIPPED_PAGES_PATH);
   const qbankFile = await repository.read(QBANK_PATH, { maxBytes: MAX_BANK_BYTES });
-  const items = buildContentItems(reviewedFile.json, manifestFile.json, registryFile.json);
+  const items = buildContentItems(reviewedFile.json, shippedFile.json);
+  // The qbank half still needs the manifest itself: requireManifest both validates it and
+  // yields manifestPages, the list a question may anchor to.
+  requireManifest(manifestFile.json);
   const qbankPayload = buildQbankPayload(qbankFile, manifestFile.json);
   return {
     student,
     resident,
     attester,
+    // manifestRevision stays the SITE MANIFEST's blob sha: it is the qbank conflict key
+    // (commitQbankMutation re-reads the manifest at parent head and compares), so it must
+    // keep tracking the file that gates question anchors.
     manifestRevision: manifestFile.sha,
-    registryRevision: registryFile.sha,
+    // The revision of the listing the review queue was built from, replacing the old
+    // registryRevision. Nothing in app.mjs consumes it; it is here so a support question
+    // about a stale queue can be answered from the payload alone.
+    shippedPagesRevision: shippedFile.sha,
     items,
     ...qbankPayload,
     counts: {

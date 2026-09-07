@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Behavior tests for the eleven-registry Draft-07 schema gate."""
+"""Behavior tests for the thirteen-registry Draft-07 schema gate."""
 
 import json
 import shutil
@@ -26,15 +26,22 @@ PAIRS = (
     ("instrument_rights.json", "instrument_rights.schema.json"),
     ("decisions.json", "decisions.schema.json"),
     ("pairings.json", "pairings.schema.json"),
+    (
+        "13_Faculty_Resources/_automation/site_build/shipped_pages.json",
+        "13_Faculty_Resources/_automation/site_build/shipped_pages.schema.json",
+    ),
+    (
+        "13_Faculty_Resources/_automation/site_build/analytics_events.json",
+        "13_Faculty_Resources/_automation/site_build/analytics_events.schema.json",
+    ),
 )
 
-# pairings_integrity_diagnostics resolves page/tool/audio_oe references against these two
-# shipped files. A synthetic registry copy must carry them, or the gate would have nothing
-# to resolve against and would silently stop checking the thing it exists to check.
-PAIRINGS_RESOLUTION_SOURCES = (
-    Path("13_Faculty_Resources/_automation/site_build/site_manifest.json"),
-    Path("12_Media/audio_oe/MANIFEST.csv"),
-)
+# pairings_integrity_diagnostics resolves page and tool references against
+# shipped_pages.json, which a synthetic copy already carries because it is one of the
+# PAIRS above. Only the audio brief manifest has to be copied separately -- without it the
+# gate would have nothing to resolve against and would silently stop checking the thing it
+# exists to check.
+PAIRINGS_RESOLUTION_SOURCES = (Path("12_Media/audio_oe/MANIFEST.csv"),)
 
 
 def run_validator(
@@ -90,8 +97,11 @@ class RegistrySchemaGateTests(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory()
         destination = Path(temporary.name)
         for document, schema in PAIRS:
-            shutil.copy2(ROOT / document, destination / document)
-            shutil.copy2(ROOT / schema, destination / schema)
+            # Not every pair sits at the root any more (shipped_pages.json lives beside
+            # the build), so make the parent directory before copying.
+            for relative in (document, schema):
+                (destination / relative).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ROOT / relative, destination / relative)
         for source in PAIRINGS_RESOLUTION_SOURCES:
             (destination / source.parent).mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / source, destination / source)
@@ -122,7 +132,7 @@ class RegistrySchemaGateTests(unittest.TestCase):
 
         with self.make_registry_copy() as temporary:
             stdout = self._mutated_pairings(Path(temporary), mutate)
-        self.assertIn("page 'no_such_page.md' is not in site_manifest.json", stdout)
+        self.assertIn("page 'no_such_page.md' is not in shipped_pages.json", stdout)
 
     def test_pairings_dangling_tool_reference_fails(self) -> None:
         def mutate(document):
@@ -132,7 +142,31 @@ class RegistrySchemaGateTests(unittest.TestCase):
 
         with self.make_registry_copy() as temporary:
             stdout = self._mutated_pairings(Path(temporary), mutate)
-        self.assertIn("tool 'no-such-tool.html' is not in site_manifest.json", stdout)
+        self.assertIn("tool 'no-such-tool.html' is not in shipped_pages.json", stdout)
+
+    def test_broken_shipped_pages_is_reported_not_crashed(self) -> None:
+        """The gate reads a file this validator also validates -- report, never crash.
+
+        pairings_integrity_diagnostics resolves against shipped_pages.json, and
+        shipped_pages.json is itself one of the PAIRS. A broken one must still be
+        REPORTED by its own pair, with the pairings gate degrading to one line.
+        """
+        for content in ('{"version": 99, "pages": []}\n', "{not json}\n", None):
+            with self.subTest(content=content), self.make_registry_copy() as temporary:
+                root = Path(temporary)
+                target = root / "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
+                if content is None:
+                    target.unlink()
+                else:
+                    target.write_text(content, encoding="utf-8")
+
+                result = run_validator(root)
+
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                # the broken file is named by its own pair, not swallowed by the gate
+                self.assertIn("shipped_pages.json", result.stdout)
+                self.assertIn("pairings.json: cannot resolve references", result.stdout)
 
     def test_pairings_dangling_audio_brief_fails(self) -> None:
         def mutate(document):

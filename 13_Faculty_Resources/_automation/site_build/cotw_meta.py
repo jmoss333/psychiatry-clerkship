@@ -95,9 +95,10 @@ def load_weeks(lib):
         return json.load(fh).get("weeks", [])
 
 
-def cotw_slug(week, level):
-    """Built page name. Mirrors _cotw_slug() in build_deploy.py / resident_section.py."""
-    return "cotw_%s_%s_%s.md" % (week["date"].replace("-", ""), week["topic"], level)
+# Built page name. Re-exported from the one shared formula (site_build/cotw_slug.py)
+# rather than restated: this module's callers import cotw_meta.cotw_slug, and a private
+# copy here is exactly the drift ADR-002 closes.
+from cotw_slug import cotw_slug  # noqa: F401  (re-exported for this module's callers)
 
 
 def _clean(values, vocab):

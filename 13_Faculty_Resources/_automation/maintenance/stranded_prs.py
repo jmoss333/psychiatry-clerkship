@@ -51,9 +51,9 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 # Dual-mode: this module runs both as a package (tests) and as a script (workflows).
 try:  # package
-    from .receipt_summary import report
+    from .receipt_summary import BLOCKED_EXIT, classify, report
 except ImportError:  # script - siblings are on sys.path
-    from receipt_summary import report
+    from receipt_summary import BLOCKED_EXIT, classify, report
 
 
 SAFE_REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}$")
@@ -76,7 +76,17 @@ STRANDED_MERGE_STATES = frozenset({"clean", "unknown", None})
 # exception, so the healthy value is the one it skips.
 ROW_OK = "success"
 ROW_STRANDED = "stranded"
+# Must be in receipt_summary.DEFERRED_ROW_STATES: "armed, idle, and GitHub is
+# naming a real blocker" is someone's work to do, not this steward's alarm.
 ROW_WAITING = "armed_waiting"
+
+# This module's half of receipt_summary.classify's contract, and it is empty on
+# purpose. The distinction this steward needs is already made a level up: a row
+# it does not own is `armed_waiting`, which is *deferred* (nothing is wrong yet
+# and no one else has been told), not *delegated* (real, and another watcher has
+# it). Nothing else in the fleet looks at auto-merge, so there is no one to hand
+# a row to. Declaring the empty set says that on purpose rather than by omission.
+DELEGATED_STATES = frozenset()
 
 
 class StrandedPRError(RuntimeError):
@@ -312,7 +322,8 @@ def main(argv=None, *, opener=None, now=_utc_now):
             "state": "unavailable",
             "pullRequests": [],
         }
-    report(receipt, "stranded-prs", stream=sys.stderr)
+    own, _delegated = classify(receipt, delegated=DELEGATED_STATES)
+    report(receipt, "stranded-prs", stream=sys.stderr, failed=bool(own))
     try:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(
@@ -321,8 +332,8 @@ def main(argv=None, *, opener=None, now=_utc_now):
         )
     except OSError:
         print("stranded-prs failed: receipt write failed", file=sys.stderr)
-        return 2
-    return 0 if receipt["gate"] == "ready" else 2
+        return BLOCKED_EXIT
+    return BLOCKED_EXIT if own else 0
 
 
 if __name__ == "__main__":

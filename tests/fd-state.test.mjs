@@ -31,6 +31,7 @@ const make = new Function('localStorage', `
     fdSave: fdSave,
     fdProgressDoneMap: fdProgressDoneMap,
     fdProgressToggle: fdProgressToggle,
+    progressWeek: function(state,index){ return fdProgressWeek(state,index); },
     fdRotationWeek: fdRotationWeek,
     fdRotationStartForWeek: fdRotationStartForWeek,
     fdExamCountdown: fdExamCountdown,
@@ -87,6 +88,86 @@ test('fdSave persists only whitelisted keys, never done/streak/week', () => {
   assert.equal(out.done, undefined);
   assert.equal(out.streak, undefined);
   assert.equal(out.week, undefined);
+});
+
+// A resource may recur in the plan; doing its practice once must not complete every week.
+const PRACTICE_INDEX = {
+  byRef: { 'practice.html': { kind: 'tool' }, 'guide.md': { kind: 'read' },
+    'reference.html': { kind: 'tool', rights: true } },
+  weeks: [1, 2, 3].map((n) => ({ n, items: [
+    { ref: 'practice.html', kind: 'tool' }, { ref: 'guide.md', kind: 'read' },
+    { ref: 'reference.html', kind: 'tool', rights: true },
+  ] })),
+};
+
+test('repeated practice completes only the selected week while reading history remains shared', () => {
+  const { fdProgressDoneMap: project, fdProgressToggle: toggle } = make(memStorage());
+  const before = { 'guide.md': { done: true, at: '2026-08-03' },
+    'reference.html': { done: true, at: '2026-08-03' } };
+  const after = toggle(before, 'practice.html', true, atDay(0), PRACTICE_INDEX, 1);
+  assert.equal(project(after, PRACTICE_INDEX, 1)['practice.html'], true);
+  assert.notEqual(project(after, PRACTICE_INDEX, 2)['practice.html'], true);
+  assert.equal(project(after, PRACTICE_INDEX, 2)['guide.md'], true);
+  assert.equal(project(after, PRACTICE_INDEX, 2)['reference.html'], true);
+  assert.equal(before['practice.html'], undefined, 'writes do not mutate their input');
+});
+
+test('old unscoped practice history is preserved without guessing which week it completed', () => {
+  const { fdProgressDoneMap: project, fdProgressToggle: toggle } = make(memStorage());
+  const previous = { done: true, at: '2026-07-02', note: 'keep-existing-field' };
+  const raw = { 'practice.html': previous };
+  assert.equal(project(raw)['practice.html'], true, 'legacy readers still see saved history');
+  for (const n of [1, 2, 3]) assert.notEqual(project(raw, PRACTICE_INDEX, n)['practice.html'], true);
+  const after = toggle(raw, 'practice.html', true, atDay(0), PRACTICE_INDEX, 2);
+  assert.equal(after['practice.html'].note, previous.note);
+  assert.equal(raw['practice.html'].at, '2026-07-02');
+  assert.notEqual(project(after, PRACTICE_INDEX, 1)['practice.html'], true);
+  assert.equal(project(after, PRACTICE_INDEX, 2)['practice.html'], true);
+});
+
+test('undoing one practice week retains other practice weeks and timestamps for activity history', () => {
+  const { fdProgressDoneMap: project, fdProgressToggle: toggle, fdActivityDays: activity } = make(memStorage());
+  const one = toggle({}, 'practice.html', true, atDay(0), PRACTICE_INDEX, 1);
+  const two = toggle(one, 'practice.html', true, atDay(2), PRACTICE_INDEX, 2);
+  const undo = toggle(two, 'practice.html', false, atDay(3), PRACTICE_INDEX, 2);
+  assert.equal(project(undo, PRACTICE_INDEX, 1)['practice.html'], true);
+  assert.notEqual(project(undo, PRACTICE_INDEX, 2)['practice.html'], true);
+  assert.equal(project(two, PRACTICE_INDEX, 2)['practice.html'], true, 'older snapshot remains intact');
+  assert.deepEqual(activity({ progress: two }, atDay(3)), [false, false, false, true, false, true, false]);
+});
+
+test('unscoped browsing can toggle practice history without awarding or erasing weekly practice', () => {
+  const { fdProgressDoneMap: project, fdProgressToggle: toggle } = make(memStorage());
+  for (const week of [null, '1', 0, 99, NaN, 1.5]) {
+    const raw = { 'practice.html': { note: 'keep', practiceWeeks: { 2: { done: true, at: '2026-08-02' } } } };
+    const done = toggle(raw, 'practice.html', true, atDay(0), PRACTICE_INDEX, week);
+    assert.equal(project(done, PRACTICE_INDEX, week)['practice.html'], true);
+    assert.notEqual(project(done, PRACTICE_INDEX, 1)['practice.html'], true);
+    assert.equal(project(done, PRACTICE_INDEX, 2)['practice.html'], true);
+    const undone = toggle(done, 'practice.html', false, atDay(1), PRACTICE_INDEX, week);
+    assert.notEqual(project(undone, PRACTICE_INDEX, week)['practice.html'], true);
+    assert.equal(project(undone, PRACTICE_INDEX, 2)['practice.html'], true);
+    assert.equal(undone['practice.html'].note, 'keep');
+    assert.deepEqual(undone['practice.html'].practiceWeeks, raw['practice.html'].practiceWeeks);
+    assert.equal(raw['practice.html'].done, undefined, 'previous snapshot remains intact');
+  }
+});
+
+test('malformed saved practice values cannot award weekly completion', () => {
+  const { fdProgressDoneMap: project } = make(memStorage());
+  for (const practiceWeeks of [true, [], 'bad', { 1: true }, { 1: { done: 'true' } }]) {
+    assert.notEqual(project({ 'practice.html': { done: true, practiceWeeks } }, PRACTICE_INDEX, 1)['practice.html'], true);
+  }
+  assert.deepEqual(project('bad', PRACTICE_INDEX, 1), {});
+  assert.deepEqual(project([{ done: true }]), {});
+});
+
+test('progress context follows the viewed Path week and the current week on Today', () => {
+  const { progressWeek } = make(memStorage());
+  assert.equal(progressWeek({ tab: 'path', week: 1, viewWeek: 3 }, PRACTICE_INDEX), 3);
+  assert.equal(progressWeek({ tab: 'today', week: 1, viewWeek: 3 }, PRACTICE_INDEX), 1);
+  assert.equal(progressWeek({ tab: 'today', openId: 'practice.html', fromTab: 'path', week: 1, viewWeek: 3 }, PRACTICE_INDEX), 3);
+  assert.equal(progressWeek({ tab: 'path', week: 2, viewWeek: 99 }, PRACTICE_INDEX), 1);
 });
 
 test('rotation week and start derive from explicit path membership', () => {

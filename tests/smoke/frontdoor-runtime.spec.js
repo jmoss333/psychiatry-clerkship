@@ -1949,8 +1949,11 @@ test('completion updates desktop, mobile, and the audience-correct rail immediat
     document.querySelector('.fd-article') === window.__completionArticle
       && document.querySelector('.fd-article iframe') === window.__completionFrame
   ))).toBe(true);
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_progress_v1'))['question-bank-practice.html'].done))
-    .toBe(true);
+  const savedCompletion = await page.evaluate(() => (
+    JSON.parse(localStorage.getItem('cw_progress_v1'))['question-bank-practice.html']
+  ));
+  expect(savedCompletion.done).toBe(true);
+  if (!resident) expect(savedCompletion.practiceWeeks['1'].done).toBe(true);
 
   await page.reload();
   await expect(page.locator('.fd-article iframe')).toBeVisible();
@@ -1977,9 +1980,14 @@ test('completion updates desktop, mobile, and the audience-correct rail immediat
     document.querySelector('.fd-article') === window.__completionArticle
       && document.querySelector('.fd-article iframe') === window.__completionFrame
   ))).toBe(true);
-  expect(await page.evaluate(() => Object.hasOwn(
-    JSON.parse(localStorage.getItem('cw_progress_v1')), 'question-bank-practice.html',
-  ))).toBe(false);
+  const afterUndo = await page.evaluate(() => (
+    JSON.parse(localStorage.getItem('cw_progress_v1'))['question-bank-practice.html']
+  ));
+  if (resident) {
+    expect(afterUndo).toBeUndefined();
+  } else {
+    expect(afterUndo).toEqual({ ...savedCompletion, practiceWeeks: {} });
+  }
 });
 
 test('legacy aliases canonicalize on load, delegated actions, messages, and history without fake resource IO', async ({ page }) => {

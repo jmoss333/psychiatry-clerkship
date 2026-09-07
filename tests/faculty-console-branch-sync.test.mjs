@@ -279,10 +279,27 @@ test('the conflict message names branch protection, not just a race', async () =
  * ------------------------------------------------------------------------- */
 
 const MANIFEST_FIXTURE = { tools: [], md: [['x/anki.md', 'anki.md', 'Anki']] };
+// The review queue comes from shipped_pages.json now (ADR-002); the manifest above is
+// still read for the question bank's page anchors and its conflict revision.
+const SHIPPED_FIXTURE = {
+  version: 1,
+  generated_from: {},
+  pages: [
+    {
+      slug: 'anki.md',
+      kind: 'page',
+      sites: ['ms3', 'res'],
+      title: 'Anki',
+      source: 'x/anki.md',
+      producer: 'site_manifest',
+    },
+  ],
+};
 const QBANK_FIXTURE = { items: [] };
 
 function contentsFor(url) {
   if (url.includes('question_bank.json')) return QBANK_FIXTURE;
+  if (url.includes('shipped_pages.json')) return SHIPPED_FIXTURE;
   if (url.includes('site_manifest.json')) return MANIFEST_FIXTURE;
   return REVIEWED;
 }

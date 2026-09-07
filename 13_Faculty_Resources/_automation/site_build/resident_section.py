@@ -7,6 +7,7 @@ from datetime import date
 import common
 import crisis_block as _crisis
 import frontdoor_catalog
+import welcome_compass
 from pathlib import Path
 
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location.
@@ -15,6 +16,12 @@ LIB=os.path.abspath(os.path.join(HERE,"..","..",".."))   # .../Psychiatry-Clerks
 ROOT=os.path.dirname(LIB)                                 # parent dir that holds the deploy repos
 MS3=os.environ.get("MS3_DIR", os.path.join(ROOT,"clerkship-hub-deploy"))
 OUT=os.environ.get("OUT_DIR", os.path.join(ROOT,"mmc-resident-deploy"))
+
+# Usage analytics -- this site's OWN CLERKSHIP_ANALYTICS decision (default off;
+# see common.analytics_enabled_for()). Computed once, up front, because it can
+# legitimately disagree with whatever the MS3 build (copied below) decided --
+# see the reconciliation block near the CW_SITE relabel further down.
+_ANALYTICS_RES = common.analytics_enabled_for("res")
 
 if os.path.exists(OUT): shutil.rmtree(OUT)
 shutil.copytree(MS3, OUT)   # start as a full copy of the polished/dark/motion MS3 build
@@ -29,9 +36,11 @@ if os.path.exists(_copied_governance): os.remove(_copied_governance)
 _copied_surface_governance=os.path.join(OUT,"governance.json")
 if os.path.exists(_copied_surface_governance): os.remove(_copied_surface_governance)
 
-# ---- orientation video is MS3-scoped (its own narration says "clerkship") — strip the 4 files
+# ---- orientation video is MS3-scoped (its own narration says "clerkship") — strip the files
 # that rode along via the MS3 copytree above; resident gets its own prototypes only (below).
-for _f in ["orientation-video.html","Inpatient_Psych_Orientation.mp4","Inpatient_Psych_Orientation.vtt","poster.jpg"]:
+# The package is declared once in site_extras.py, so this strip cannot drift from the copy.
+from site_extras import MS3_ORIENT_VIDEO
+for _src,_f,_t in MS3_ORIENT_VIDEO:
     _p=os.path.join(OUT,"tools",_f)
     if os.path.exists(_p): os.remove(_p)
 
@@ -43,13 +52,11 @@ for _f in glob.glob(OUT+"/content/cotw_*_ms3.md"): os.remove(_f)
 # ---- resident onboarding trailer ("Yours to Run.", ~87s, silent/kinetic-text) — resident-only,
 # so it's copied here rather than added to build_deploy.py's VIDEO_MEDIA (which would also ship it,
 # unused, on the MS3 site). Embed lives in resident_welcome.md -> welcome.md.
-RESIDENT_VIDEO_MEDIA=["resident-onboarding.mp4","resident-onboarding-poster.jpg"]
-_rvidsrc=os.path.join(LIB,"_prototypes","video-library")
+from site_extras import RESIDENT_ONBOARDING_MEDIA
 os.makedirs(OUT+"/media",exist_ok=True)
-for _rvf in RESIDENT_VIDEO_MEDIA:
-    _rp=os.path.join(_rvidsrc,_rvf)
-    if os.path.exists(_rp): shutil.copy2(_rp, OUT+"/media/"+_rvf)
-    else: print("  WARN: resident onboarding video asset missing from source:",_rvf)
+# Fail closed (2026-09-05 review): assert_resident_output hard-requires these two files at
+# the end of the build, so a silent WARN here only delayed the same failure by a full build.
+common.copy_required_sources(RESIDENT_ONBOARDING_MEDIA, LIB, OUT+"/media", label="resident onboarding media")
 
 # ---- resident-only pages (welcome overrides the MS3 welcome.md) ----
 # ---- Case of the Week: resident per-week pages are registry-driven (single source of truth:
@@ -57,17 +64,16 @@ for _rvf in RESIDENT_VIDEO_MEDIA:
 # overwritten here with the resident index; per-week resident pages are appended below.
 _COTW_DIR="08_Cases_and_Simulation/case-of-the-week"
 _cotw_weeks=json.load(open(os.path.join(LIB,_COTW_DIR,"cotw_registry.json"),encoding="utf-8")).get("weeks",[])
-def _cotw_slug(w,level): return "cotw_%s_%s_%s.md"%(w["date"].replace("-",""),w["topic"],level)
+# The slug formula and the resident-only source lists are shared (site_build/cotw_slug.py,
+# site_build/site_extras.py) rather than restated here. Nothing outside this script could
+# enumerate the resident-only pages while they were literals inside it — and this script
+# cannot be imported to ask (it deletes and rebuilds a directory at import time). See ADR-002.
+from cotw_slug import cotw_slug as _cotw_slug
+from site_extras import RESIDENT_COTW_INDEX, RESIDENT_TRACK_PAGES
 RES_EXTRA=[
- ("08_Cases_and_Simulation/case-of-the-week/index_resident.md","cotw_index.md"),
+ (src,dst) for src,dst,_t in RESIDENT_COTW_INDEX
 ]+[(os.path.join(_COTW_DIR,w["res_src"]),_cotw_slug(w,"res")) for w in _cotw_weeks]+[
- ("14_Tracks/Resident/resident_welcome.md","welcome.md"),
- ("14_Tracks/Resident/resident_curriculum.md","rotation.md"),
- ("14_Tracks/Resident/adv_psychopharmacology.md","adv_psychopharm.md"),
- ("14_Tracks/Resident/systems_medlegal.md","systems_medlegal.md"),
- ("14_Tracks/Resident/supervision_teaching.md","supervision_teaching.md"),
- ("14_Tracks/Resident/canon_200.md","canon_200.md"),
- ("14_Tracks/Resident/cl_reference.md","cl_reference.md"),
+ (src,dst) for src,dst,_t in RESIDENT_TRACK_PAGES
 ]
 # Fail closed (2026-08-01 audit): the copytree base means a missing resident-only
 # source would silently ship the inherited MS3 file under the resident nav title.
@@ -145,13 +151,11 @@ common.apply_contrast_fix(glob.glob(OUT+"/content/*.md"))
 # ---- resident-only prototype tools (reconciled into source build 2026-07-02) ----
 # Previously hand-copied straight into the deploy dir (source/deploy drift); now built from
 # git-tracked _prototypes/ so build-on-push keeps them live. Copied raw to match live (no polish pass).
-PROTO_TOOLS=[
- ("_prototypes/agitation-trainer/rp-agitation.html","rp-agitation.html"),
- ("_prototypes/brief-psych/rp-brief-psych.html","rp-brief-psych.html"),
- ("_prototypes/canon-quiz/rp-canon-quiz.html","rp-canon-quiz.html"),
-]
+# Same reasoning as RES_EXTRA above: these three DO ship (_build/res/tools/), so
+# shipped_pages.py has to be able to enumerate them without running this script.
+from site_extras import RESIDENT_PROTO_TOOLS as PROTO_TOOLS
 os.makedirs(OUT+"/tools",exist_ok=True)
-for src,dst in PROTO_TOOLS:
+for src,dst,_title in PROTO_TOOLS:
     p=os.path.join(LIB,src)
     if os.path.exists(p): shutil.copyfile(p,OUT+"/tools/"+dst)
     else: print("  WARN: prototype tool missing from source:",src)
@@ -165,7 +169,7 @@ for src,dst in PROTO_TOOLS:
 # inherited from the MS3 copytree are untouched and only the newly-written rp-* tools
 # actually change. This replaces the hand-rolled skip-link-only subset that shipped
 # these three tools without the motion CSS and the in-iframe link interceptor.
-common.apply_full_page_pass(OUT)
+common.apply_full_page_pass(OUT, inject_analytics=_ANALYTICS_RES)
 # vendor React (shared across all three rp-* tools; files are byte-for-byte identical)
 _vendor_src=os.path.join(LIB,"_prototypes/agitation-trainer/vendor")
 _vendor_dst=OUT+"/tools/vendor"
@@ -181,7 +185,7 @@ if os.path.isdir(_vendor_src):
 # consumed by check-static-site.mjs's orphaned-source check.
 _ms3map=MS3.rstrip("/\\")+".source-map.json"
 _srcs=set(json.load(open(_ms3map,encoding="utf-8"))["sources"]) if os.path.exists(_ms3map) else set()
-_srcs|={s for s,_ in RES_EXTRA}|{s for s,_ in PROTO_TOOLS}
+_srcs|={s for s,_ in RES_EXTRA}|{s for s,_,_ in PROTO_TOOLS}
 _srcs.add("reasoning_cases_resident.json")   # required — build aborts below if missing
 open(OUT.rstrip("/\\")+".source-map.json","w",encoding="utf-8").write(json.dumps({"sources":sorted(_srcs)}))
 
@@ -234,14 +238,28 @@ shutil.copy2(_resident_reasoning, OUT+"/reasoning_cases.json")
 # NOTE: the former TOOLS list and HIDDEN_TOOLS set lived here. Both were dead code —
 # declared but never read (the nav below hardcodes "hidden":True inline). Removed
 # 2026-07-26; site_manifest.json is the source of truth for what ships.
+# The six inherited week pages take their titles from curriculum.json through the same
+# formula the MS3 nav and the Compass use, so the two sites never label one page two ways.
+from shipped_pages import ShippedPagesError as _ShippedPagesError, load_shipped_pages as _load_shipped_pages
+try:
+    _week_cards=welcome_compass.prepare_cards(
+        json.load(open(LIB+"/curriculum.json",encoding="utf-8"))["learningPaths"]["ms3"]["weeks"],
+        _load_shipped_pages(LIB))
+except (
+    OSError,
+    UnicodeError,
+    json.JSONDecodeError,
+    KeyError,
+    TypeError,
+    welcome_compass.CompassContractError,
+    _ShippedPagesError,
+) as _week_error:
+    print("BUILD ABORTED — week nav titles:",_week_error)
+    raise SystemExit(1)
+_HIDDEN_WEEKS=[{"t":welcome_compass.week_nav_title(_c),"f":_c.landing_ref,"k":"md","hidden":True} for _c in _week_cards]
 _HIDDEN_INHERITED=[
   {"t":"Orientation Packet","f":"orientation.md","k":"md","hidden":True},
-  {"t":"Week 1 — Foundations","f":"week1.md","k":"md","hidden":True},
-  {"t":"Week 2 — Mood/Psychosis/Pharm","f":"week2.md","k":"md","hidden":True},
-  {"t":"Week 3 — Psychotherapy/Personality","f":"week3.md","k":"md","hidden":True},
-  {"t":"Week 4 — Family/Systems/EE","f":"week4.md","k":"md","hidden":True},
-  {"t":"Week 5 — Acute/Emergency","f":"week5.md","k":"md","hidden":True},
-  {"t":"Week 6 — Integration/Exam","f":"week6.md","k":"md","hidden":True},
+  *_HIDDEN_WEEKS,
   {"t":"Culture, Disparities & Formulation","f":"cultural_psychiatry.md","k":"md","hidden":True},
   {"t":"Ethics & the Law","f":"ethics_legal.md","k":"md","hidden":True},
   {"t":"Treatment Basics","f":"exp_tx.md","k":"md","hidden":True},
@@ -271,7 +289,7 @@ nav=[
  {"section":"Make a Plan","items":[{"t":"Psychopharmacology Primer","f":"psychopharm_primer.md","k":"md"},{"t":"Advanced Psychopharmacology","f":"adv_psychopharm.md","k":"md"},{"t":"Medication Monitoring & Labs","f":"med_monitoring.md","k":"md"},{"t":"Protocol Library","f":"protocol_library.md","k":"md"},{"t":"Algorithms & Decision Aids","f":"decision-aids.html","k":"tool"},{"t":"Interaction Cards — One Action","f":"interaction-cards.html","k":"tool"},{"t":"Nutrition & Metabolic Health","f":"nutrition_metabolic.md","k":"md"}]},
  {"section":"Communicate with Patients","items":[{"t":"What Do You Say Next?","f":"communication-practice.html","k":"tool"},{"t":"Psychotherapies at a Glance","f":"psychotherapy.md","k":"md"},{"t":"Motivational Interviewing","f":"motivational_interviewing.md","k":"md"},{"t":"Brief Psychotherapy on the Unit","f":"brief_psychotherapy.md","k":"md"},{"t":"Therapy on the Unit","f":"therapy_on_the_unit.md","k":"md"},{"t":"Five Good Minutes — Brief Psych Coach","f":"rp-brief-psych.html","k":"tool"},{"t":"Reflection & Identity","f":"reflection.html","k":"tool"}]},
  {"section":"Work with Family and Systems","items":[{"t":"Family Systems Practice","f":"family-systems.html","k":"tool"},{"t":"I Need Collateral: 10-Minute Workflow","f":"collateral_workflow.md","k":"md"},{"t":"Family & Discharge","f":"exp_family.md","k":"md"},{"t":"Family Meeting Playbook (90-min)","f":"family_playbook.md","k":"md"},{"t":"Family Therapy Modalities","f":"family_modalities.md","k":"md"}]},
- {"section":"Present and Work with the Team","items":[{"t":"Documentation & Oral Presentation","f":"doc_oral.md","k":"md"},{"t":"Treatment Team Rounding Prep","f":"oral.html","k":"tool"},{"t":"High-Yield Rounds Questions","f":"rounds_questions.md","k":"md"}]},
+ {"section":"Present and Work with the Team","items":[{"t":"Documentation & Oral Presentation","f":"doc_oral.md","k":"md"},{"t":"Treatment Team Rounding Prep","f":"oral.html","k":"tool"},{"t":"High-Yield Rounds Questions","f":"rounds_questions.md","k":"md"},{"t":"Post-Event Learning Huddle (2 min)","f":"rp-post-event-huddle.html","k":"tool"}]},
  {"section":"Practice and Exam Prep","items":[{"t":"Practice Questions — Question Bank","f":"question-bank-practice.html","k":"tool"},{"t":"One Patient, Six Weeks","f":"one-patient-six-weeks.html","k":"tool"},{"t":"Daily Review (Spaced Repetition)","f":"review.html","k":"tool","hidden":True},{"t":"Board-Style Question Bank","f":"shelf-mode.html","k":"tool","hidden":True},{"t":"Canon Quiz — 200-Paper Spine","f":"rp-canon-quiz.html","k":"tool"},{"t":"Rapid Review — Buzzwords","f":"rapid_review.md","k":"md"},{"t":"Landmark Trials — Listen & Test","f":"landmark_trials.md","k":"md"},{"t":"Anki Flashcard Decks","f":"anki.md","k":"md"}]},
  {"section":"Case of the Week","items":[{"t":"Index — All Cases","f":"cotw_index.md","k":"md"}]+[{"t":w["label"],"f":_cotw_slug(w,"res"),"k":"md"} for w in _cotw_weeks]},
  {"section":"Evidence and Reference","items":[{"t":"Evidence-Based Inpatient Psychiatry","f":"evidence_inpatient.md","k":"md"},{"t":"The Therapy Reading Room","f":"therapy_reading_room.md","k":"md"},{"t":"The Psychiatry Canon (200)","f":"canon_200.md","k":"md"},{"t":"Book Library","f":"book_library.md","k":"md"},{"t":"Podcast Library (Psychiatry & Psychotherapy)","f":"podcast_library.md","k":"md"}]+_HIDDEN_INHERITED},
@@ -279,6 +297,7 @@ nav=[
 ]
 _navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
+welcome_compass.assert_nav_projection(nav,_week_cards,label="resident")
 
 # ---------- SURFACE GOVERNANCE: nav annotation (resident) ----------
 # Built from the SAME canonical ledger as MS3, but scoped to THIS site's own nav
@@ -307,6 +326,11 @@ open(OUT + "/nav.json", "w", encoding="utf-8").write(
 _tmp=OUT+"/topic_meta.json"
 if os.path.exists(_tmp):
     _tm=json.load(open(_tmp,encoding="utf-8"))
+    try:
+        _tm = welcome_compass.project_resident_welcome(_tm, welcome_compass.load_resident_welcome_overlay(LIB))
+    except welcome_compass.CompassContractError as _overlay_error:
+        print("BUILD ABORTED — resident Welcome overlay:", _overlay_error)
+        raise SystemExit(1)
     def _addcta(key,cta):
         e=_tm.get(key,{})
         cur=e.get("cta")
@@ -314,6 +338,9 @@ if os.path.exists(_tmp):
         if not any(c.get("href")==cta["href"] for c in lst): lst.append(cta)
         e["cta"]=lst; _tm[key]=e
     _addcta("agitation.md",{"label":"Open the Agitation Ladder trainer","href":"tools/rp-agitation.html"})
+    _addcta("agitation.md",{"label":"Run a 2-minute Post-Event Learning Huddle","href":"tools/rp-post-event-huddle.html"})
+    _addcta("systems_medlegal.md",{"label":"Run a 2-minute Post-Event Learning Huddle","href":"tools/rp-post-event-huddle.html"})
+    _addcta("exp_family.md",{"label":"Run a 2-minute Post-Event Learning Huddle (discharge)","href":"?tool=rp-post-event-huddle.html&event=discharge"})
     _addcta("brief_psychotherapy.md",{"label":"Open Five Good Minutes","href":"tools/rp-brief-psych.html"})
     open(_tmp,"w",encoding="utf-8").write(json.dumps(_tm,ensure_ascii=False))
 # Per-case cotw topic_meta, derived from cotw_registry.json (see cotw_meta.py). Resident
@@ -393,6 +420,116 @@ apply_tool_status(Path(OUT) / "tools", _surface_governance)
 write_site_document(Path(OUT) / "governance.json", _surface_governance)
 print("surface governance: emitted", len(_surface_governance["items"]), "items (resident)")
 
+# ---------- USAGE ANALYTICS: reconcile against resident's OWN flag ----------
+# The resident build begins as a copytree of the finished MS3 build (top of
+# this file) and therefore inherits WHATEVER the ms3 build decided under
+# CLERKSHIP_ANALYTICS -- which can legitimately disagree with res's own
+# enablement (_ANALYTICS_RES, computed at the top of this file): rollout step
+# 3 turns res on alone, step 4 is the reverse gap while both are mid-rollout.
+# Reconcile explicitly instead of trusting inheritance. Must run before the
+# CW_SITE relabel sweep just below, and after every pass above that rewrites
+# tools/*.html or index.html (apply_full_page_pass, apply_tool_status), for
+# the same reason that sweep runs last: no later step can reintroduce a
+# mismatch under this one.
+_analytics_js_out = os.path.join(OUT, "analytics.js")
+if _ANALYTICS_RES:
+    # apply_full_page_pass(OUT, inject_analytics=_ANALYTICS_RES) above already
+    # added the <script> tags to any page that lacked them (both pages
+    # inherited from an ms3 build that had analytics OFF, and freshly-written
+    # rp-* tools) -- but it never places the emitter FILE itself; that is
+    # build_deploy.py's job for ms3, and the copytree only carries the file
+    # over when ms3's OWN build enabled it too. Ensure it here so
+    # CLERKSHIP_ANALYTICS=res (ms3 not enabled) still ships a working emitter.
+    if not os.path.exists(_analytics_js_out):
+        shutil.copy2(common.ANALYTICS_JS_PATH, _analytics_js_out)
+else:
+    # The copytree may HAVE inherited the tag + emitter from an ms3 build that
+    # enabled analytics while res's own flag does not (CLERKSHIP_ANALYTICS=ms3).
+    # Strip both. Walk every shipped .html rather than trusting a hardcoded
+    # glob -- the fail-closed postcondition pattern a few lines down (and the
+    # one already used for the CW_SITE relabel) exists precisely because a
+    # hardcoded glob missed a surface before.
+    if os.path.exists(_analytics_js_out):
+        os.remove(_analytics_js_out)
+    _analytics_stripped = 0
+    _analytics_leaked = []
+    for _dirpath, _dirnames, _filenames in os.walk(OUT):
+        for _fname in _filenames:
+            if not _fname.endswith(".html"):
+                continue
+            _fp = os.path.join(_dirpath, _fname)
+            _at = open(_fp, encoding="utf-8").read()
+            _at2 = common.strip_analytics_tag(_at)
+            if _at2 != _at:
+                open(_fp, "w", encoding="utf-8").write(_at2)
+                _analytics_stripped += 1
+                _at = _at2
+            if "CW_SITE" in _at or "analytics.js" in _at:
+                _analytics_leaked.append(os.path.relpath(_fp, OUT))
+    print(
+        "usage analytics: disabled for resident (CLERKSHIP_ANALYTICS=%s) -- stripped "
+        "inherited emitter from %d page(s)" % (common.analytics_mode(), _analytics_stripped)
+    )
+    if _analytics_leaked:
+        raise SystemExit(
+            "usage analytics: disabled for resident but still referenced after the "
+            "strip sweep (fix common.strip_analytics_tag or the offending surface): %s"
+            % ", ".join(sorted(_analytics_leaked))
+        )
+
+# ---------- USAGE ANALYTICS: relabel CW_SITE for the resident build ----------
+# The resident build starts as a copytree of the finished MS3 build (top of this
+# file), so every inherited page arrives labelled window.CW_SITE='ms3'. The
+# rp-* prototype tools copied in above are NOT inherited -- they are written
+# fresh from _prototypes/ and then run through common.apply_full_page_pass()
+# (which hardcodes site "ms3", since it is shared with the MS3 build and has no
+# way to know which audience is calling it) -- so they too land labelled 'ms3'.
+# Without this relabel every resident event would be recorded as MS3 traffic:
+# a silent, total mislabelling of one whole audience. Run last, after every
+# other pass that rewrites tools/*.html or index.html (apply_full_page_pass,
+# the Front Door payload injection, media_guard, apply_tool_status above), so
+# no later step can reintroduce a stale 'ms3' label under this one.
+#
+# CW_PAGE is untouched here: its value is a page's own output filename, which
+# is the same string on both sites for a shared tool (e.g. bfcrs.html), and
+# resident-only tools already received their own correct filename-derived
+# CW_PAGE from apply_full_page_pass -- only the site label needs rewriting.
+_analytics_relabelled = 0
+for _analytics_path in sorted(glob.glob(OUT + "/tools/*.html")) + [OUT + "/index.html"]:
+    if not os.path.exists(_analytics_path):
+        continue
+    _at = open(_analytics_path, encoding="utf-8").read()
+    _at2 = _at.replace("window.CW_SITE='ms3'", "window.CW_SITE='res'")
+    if _at2 != _at:
+        open(_analytics_path, "w", encoding="utf-8").write(_at2)
+        _analytics_relabelled += 1
+print("usage analytics: relabelled CW_SITE ms3->res on", _analytics_relabelled, "page(s)")
+
+# Fail-closed postcondition. The relabel above only ever walks a hardcoded
+# glob (tools/*.html + index.html) -- exactly the surfaces the resident build
+# currently ships as standalone HTML. A future resident HTML surface outside
+# that glob would inherit (or be polished into) window.CW_SITE='ms3' from the
+# MS3 copytree / common.apply_full_page_pass(), the relabel sweep would never
+# see it, and the resident site would report its entire audience as MS3 with
+# every existing gate green -- silently. So instead of trusting the glob was
+# exhaustive, verify the postcondition directly: walk every .html file
+# actually shipped under OUT and confirm none still carries the ms3 label.
+_stale_ms3_labelled = []
+for _dirpath, _dirnames, _filenames in os.walk(OUT):
+    for _fname in _filenames:
+        if not _fname.endswith(".html"):
+            continue
+        _fp = os.path.join(_dirpath, _fname)
+        if "window.CW_SITE='ms3'" in open(_fp, encoding="utf-8").read():
+            _stale_ms3_labelled.append(os.path.relpath(_fp, OUT))
+if _stale_ms3_labelled:
+    raise SystemExit(
+        "usage analytics: resident build still carries window.CW_SITE='ms3' "
+        "on %d file(s) after the relabel sweep -- add the offending "
+        "surface(s) to the relabel glob above: %s"
+        % (len(_stale_ms3_labelled), ", ".join(sorted(_stale_ms3_labelled)))
+    )
+
 print("RESIDENT build: out",OUT)
 print(" sections:",[s["section"] for s in nav])
 
@@ -416,3 +553,8 @@ print("tool governance: emitted", len(_governance["items"]), "items")
 # paths/tools), so this call MUST run last to overwrite the inherited ms3
 # sw.js with a resident-specific manifest (rp-* tools, resident content tree).
 common.emit_service_worker(OUT)
+try:
+    welcome_compass.assert_resident_output(OUT)
+except welcome_compass.CompassContractError as _compass_error:
+    print("BUILD ABORTED — resident Compass isolation:", _compass_error)
+    raise SystemExit(1)

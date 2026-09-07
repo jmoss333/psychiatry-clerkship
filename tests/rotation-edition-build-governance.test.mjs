@@ -3,6 +3,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
+import { staleBuildReason } from './_build_freshness.mjs';
+
 const root = new URL('..', import.meta.url).pathname;
 const catalog = JSON.parse(readFileSync(join(root, '13_Faculty_Resources/Rotation_Curation/rotation_edition_catalog.json'), 'utf8'));
 const governance = JSON.parse(readFileSync(join(root, '13_Faculty_Resources/Rotation_Curation/rotation_edition_catalog_governance.json'), 'utf8'));
@@ -45,11 +47,28 @@ test('both catalog contexts fail closed unless a digest revision and enabled gat
   }
 });
 
-test('published trees contain neither raw catalog source nor governance source', () => {
+// Inputs that decide whether these two registries can leak into a published tree.
+const BUILD_INPUTS = [
+  join(root, '13_Faculty_Resources/Rotation_Curation/rotation_edition_catalog.json'),
+  join(root, '13_Faculty_Resources/Rotation_Curation/rotation_edition_catalog_governance.json'),
+  join(root, '13_Faculty_Resources/_automation/site_build/build_deploy.py'),
+  join(root, '13_Faculty_Resources/_automation/site_build/resident_section.py'),
+];
+
+test('published trees contain neither raw catalog source nor governance source', (t) => {
+  // A build predating a leak's REMOVAL still contains the leaked file, so an existence-only
+  // guard fails here long after the source was fixed — and that red aborts build_and_check.sh
+  // before it can rebuild. Skip a stale tree per-site; only skip the whole test if neither
+  // tree could be checked, so one fresh tree still enforces the contract.
+  const skipped = [];
+  let checked = 0;
   for (const site of ['ms3', 'res']) {
+    const stale = staleBuildReason(root, site, BUILD_INPUTS);
+    if (stale) { skipped.push(stale); continue; }
     const output = join(root, '_build', site);
-    if (!existsSync(output)) continue;
     assert.equal(existsSync(join(output, 'rotation_edition_catalog.json')), false);
     assert.equal(existsSync(join(output, 'rotation_edition_catalog_governance.json')), false);
+    checked += 1;
   }
+  if (checked === 0) t.skip(skipped.join(' | '));
 });
