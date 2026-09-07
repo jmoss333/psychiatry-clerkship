@@ -96,3 +96,64 @@ test('an unanswered question left pending at the end reads as cancelled',()=>{
   store.sync(stationSnapshot(hosted([you('A question','pending')],'ended')));
   assert.equal(store.entries()[0].playbackStatus,'cancelled');
 });
+
+const {createStation}=stationModule.exports;
+const contentModule={exports:{}};
+vm.runInThisContext('(function(module,exports){'+fs.readFileSync(new URL('../public/station-content.js',import.meta.url),'utf8')+'\n})',{filename:'station-content.js'})(contentModule,contentModule.exports);
+
+// No DOM dependency is added; the station is asserted against a minimal document
+// stub, the same way client.test.mjs stubs env.
+function documentStub(){
+  function node(tag){
+    return {tagName:tag,children:[],attributes:{},textContent:'',hidden:false,value:'',
+      classList:{add(){},remove(){}},
+      appendChild(child){this.children.push(child);return child;},
+      setAttribute(name,value){this.attributes[name]=value;},
+      getAttribute(name){return this.attributes[name];},
+      addEventListener(){},removeEventListener(){},
+      replaceChildren(){this.children=[];}};
+  }
+  return {createElement:node,createTextNode(text){return {textContent:text,children:[]};},addEventListener(){},removeEventListener(){},hidden:false};
+}
+const flat=root=>{const out=[];(function walk(n){out.push(n);(n.children||[]).forEach(walk);})(root);return out;};
+const byStation=(root,name)=>flat(root).find(n=>n.attributes&&n.attributes['data-station']===name);
+const allText=root=>flat(root).map(n=>typeof n.textContent==='string'?n.textContent:'').join(' ');
+
+test('the station renders the door note and task before the first question',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  const station=createStation({document:doc},host,{caseId:'sp_depression_gated_si_001',content:contentModule.exports});
+  station.update(hosted([],'ready'));
+  const door=byStation(host,'door-note');
+  assert.ok(door,'a door note surface is rendered');
+  assert.ok(allText(door).includes('adult inpatient psychiatry'),'the door note text is present');
+  assert.ok(allText(host).includes('establish a shared agenda'),'the task is present');
+  station.dispose();
+});
+
+test('the station exposes bookmarks and reflections without any network or storage call',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  let fetches=0;
+  const station=createStation({document:doc,fetch(){fetches++;}},host,{caseId:'sp_depression_gated_si_001',content:contentModule.exports});
+  for(let turn=1;turn<=10;turn++)station.update(hosted([you('Question '+turn),dana('Reply '+turn,'played',['Reply '+turn],1)],'listening'));
+  assert.equal(fetches,0,'the station never calls fetch');
+  assert.deepEqual(station.getBookmarks(),[]);
+  assert.deepEqual(station.getReflections(),{});
+  assert.equal(station.getPresentation(),'');
+  station.dispose();
+});
+
+test('an unknown case id yields no station rather than a partly rendered one',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  assert.equal(createStation({document:doc},host,{caseId:'not_a_case',content:contentModule.exports}),null);
+  assert.equal(host.children.length,0,'nothing was rendered');
+});
+
+test('the station never reproduces actor guidance',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  const station=createStation({document:doc},host,{caseId:'sp_depression_gated_si_001',content:contentModule.exports});
+  station.update(hosted([],'listening'));
+  const text=allText(host);
+  assert.equal(text.includes('Keep the short, polite style'),false,'portrayal guidance must not reach the learner');
+  assert.equal(text.includes('gated facts'),false);
+  station.dispose();
+});

@@ -108,5 +108,97 @@
     return {sync:sync,candidate:candidate,add:add,entries:entries,setReflection:setReflection,remove:remove,clear:clear};
   }
 
-  return {stationSnapshot:stationSnapshot,createBookmarkStore:createBookmarkStore};
+  var STYLE='.sp-station [hidden]{display:none!important}.sp-station{min-width:0}.sp-station .station-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}.sp-station .station-inset{padding:16px;border:1px solid var(--line,#ded6ca);border-radius:12px;margin-block:14px}.sp-station textarea{display:block;width:100%;box-sizing:border-box;min-height:100px;margin-block:8px 16px;font:inherit}.sp-station blockquote{margin:14px 0;padding:12px 16px;border-left:3px solid #2d726c;overflow-wrap:anywhere}.sp-station .station-small{font-size:.9rem;line-height:1.5}.sp-station summary{cursor:pointer;padding:8px 0;min-height:28px}.sp-station button,.sp-station select{min-height:44px;max-width:100%}.sp-station .station-cue{border-left:4px solid #847359;padding-left:16px}.sp-station li{margin-block:6px}';
+
+  // The station is a projection of the snapshot. It never calls fetch, never
+  // touches the controller, and never reads or writes browser storage.
+  function createStation(env,host,options){
+    options=options||{};
+    var doc=env&&env.document,content=options.content,profile=content&&content.getProfile&&content.getProfile(options.caseId);
+    if(!doc||!host||!profile)return null;
+    var disposed=false,store=createBookmarkStore(),notes=Object.create(null),presentation='',requested=Object.create(null),lastCue='';
+    function el(tag,text,parent,attrs){
+      var node=doc.createElement(tag);
+      if(text!==null&&text!==undefined)node.textContent=text;
+      var names=Object.keys(attrs||{});for(var i=0;i<names.length;i++)node.setAttribute(names[i],attrs[names[i]]);
+      if(parent)parent.appendChild(node);return node;
+    }
+    if(host.classList&&host.classList.add)host.classList.add('sp-station');
+    el('style',STYLE,host);
+
+    var before=el('section',null,host,{class:'panel'});
+    el('p','YOUR STANDARDIZED-PATIENT STATION',before,{class:'section-label'});
+    el('h2','Before you enter',before);
+    el('p','Fictional practice for MD and DO learners. This station provides practice, not a readiness judgment.',before,{class:'fine'});
+    var door=el('div',null,before,{class:'station-inset','data-station':'door-note'});
+    el('h3','Door note',door);el('p',profile.doorNote,door);
+    el('p',profile.task,door);
+    var goals=el('ul',null,door);
+    profile.objectives.forEach(function(objective){el('li',objective,goals);});
+
+    var chart=el('details',null,before,{'data-station':'chart'});
+    el('summary','Request available chart information',chart);
+    el('p','Open only what you want to review. Unavailable information stays unknown; you can identify what you would seek from the clinical team.',chart,{class:'fine'});
+    var chartItems=el('div',null,chart,{class:'station-grid'});
+    profile.chartCards.forEach(function(card){
+      var box=el('div',null,chartItems,{class:'station-inset'});
+      var body=el('p','',box,{hidden:''});
+      var open=el('button',card.title,box,{type:'button'});
+      open.addEventListener('click',function(){requested[card.id]=true;body.textContent=card.source+' — '+card.text;body.hidden=false;open.hidden=true;});
+    });
+
+    var priorities=el('section',null,host,{class:'panel'});
+    el('h2','What matters to this patient',priorities);
+    var list=el('ul',null,priorities);
+    profile.priorities.forEach(function(item){el('li',item,list);});
+    var cue=el('p','',priorities,{class:'station-cue','data-station':'cue','aria-live':'polite'});
+
+    var marks=el('section',null,host,{class:'panel','data-station':'bookmarks'});
+    el('h2','Moments you marked',marks);
+    el('p','Mark a moment to come back to it. Quotes show only what you actually heard.',marks,{class:'fine'});
+    var markButton=el('button','Mark this moment',marks,{type:'button','data-station':'mark'});
+    var markList=el('div',null,marks);
+    markButton.addEventListener('click',function(){if(latest){store.add(latest);draw();}});
+
+    var closing=el('section',null,host,{class:'panel','data-station':'closing',hidden:''});
+    el('h2','Present to your attending',closing);
+    el('p','Give a brief presentation in your own words: who you met and why, the patient’s priorities, key findings and uncertainties, your working formulation, and what you would ask your supervisor to help decide.',closing);
+    el('p','This presentation stays on this page. It is never sent to the patient or to any reply request.',closing,{class:'fine'});
+    var handoff=el('textarea','',closing,{id:'station-presentation',maxlength:'4000','aria-label':'Attending presentation'});
+    handoff.addEventListener('input',function(){presentation=String(handoff.value||'').slice(0,4000);});
+    el('p',profile.reflectionQuestion,closing,{class:'fine'});
+
+    var latest=null;
+    function draw(){
+      markList.replaceChildren();
+      store.entries().forEach(function(entry){
+        var box=el('div',null,markList,{class:'station-inset'});
+        el('p','You: '+entry.learnerText,box);
+        if(entry.danaText)el('blockquote','Dana: '+entry.danaText,box);
+        else el('p',entry.playbackStatus==='cancelled'?'No reply was confirmed heard for this moment.':'Nothing has been confirmed heard for this moment yet.',box,{class:'fine'});
+        var note=el('textarea',null,box,{maxlength:'1200','aria-label':'Reflection on moment '+entry.id});
+        note.value=notes[entry.id]||'';
+        note.addEventListener('input',function(){notes[entry.id]=String(note.value||'').slice(0,1200);store.setReflection(entry.id,notes[entry.id]);});
+      });
+    }
+    function update(hostedSnapshot){
+      if(disposed)return;
+      latest=stationSnapshot(hostedSnapshot);
+      store.sync(latest);
+      var next=latest.phase==='speaking'?profile.cues.interrupted:latest.phase==='ended'?profile.cues.closing:profile.cues.opening;
+      if(next!==lastCue){lastCue=next;cue.textContent=next;}
+      markButton.hidden=!store.candidate(latest);
+      closing.hidden=latest.phase!=='ended';
+      draw();
+    }
+    update({phase:'gate',messages:[]});
+    return {update:update,
+      dispose:function(){disposed=true;},
+      getPresentation:function(){return presentation;},
+      getReflections:function(){return Object.assign({},notes);},
+      getBookmarks:function(){return store.entries();},
+      getRequestedChart:function(){return Object.keys(requested);}};
+  }
+
+  return {stationSnapshot:stationSnapshot,createBookmarkStore:createBookmarkStore,createStation:createStation};
 }));

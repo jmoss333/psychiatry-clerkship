@@ -208,6 +208,8 @@
     el('voice-mode').checked=recognitionAvailable;el('voice-mode').disabled=!recognitionAvailable;
     if(!recognitionAvailable)el('voice-support').textContent='This browser does not offer speech recognition. Dana still speaks, and you can type each question.';
     var controller=createController(env,{onChange:render});
+    // The station is a projection of the snapshot: it never calls the controller.
+    var station=env.DanaStation&&env.DanaStationContent&&el('station-root')?env.DanaStation.createStation(env,el('station-root'),{caseId:'sp_depression_gated_si_001',content:env.DanaStationContent}):null;
     function render(snapshot){
       var active=snapshot.phase!=='gate',canSend=active&&!snapshot.busy&&!snapshot.restartRequired&&snapshot.phase!=='ended';
       el('access-panel').hidden=active;el('start').disabled=snapshot.busy;el('encounter-panel').hidden=!active;el('conversation-panel').hidden=!snapshot.messages.length;
@@ -226,6 +228,7 @@
       el('error').hidden=!snapshot.error;el('error').textContent=snapshot.error;
       var serialized=JSON.stringify(snapshot.messages);if(serialized!==lastTranscript){lastTranscript=serialized;el('transcript').replaceChildren();snapshot.messages.forEach(function(message){var row=doc.createElement('article');row.className='message '+message.role;var name=doc.createElement('span');name.className='name';name.textContent=message.role==='you'?'You':'Dana';row.appendChild(name);row.appendChild(doc.createTextNode(message.text));var delivery=doc.createElement('span');delivery.className='delivery';delivery.textContent=message.role==='you'?(message.status==='pending'?'Request in progress':message.status==='unconfirmed'?'Request outcome unknown — not sent again':'Submitted'):message.status==='played'?'Voice completed':message.status==='interrupted'?(message.completedSegments?message.completedSegments+' completed audio segment(s) remembered; the remaining text did not finish playing.':'Voice interrupted; no complete audio segment was confirmed heard.'):'Voice being prepared / played';row.appendChild(delivery);el('transcript').appendChild(row);});}
       if(snapshot.phase!==lastPhase&&(snapshot.phase==='restart'||snapshot.phase==='ended'))el('clear').focus();
+      if(station)station.update(snapshot);
       lastPhase=snapshot.phase;
     }
     el('access-form').addEventListener('submit',function(event){event.preventDefault();var passcode=el('preview-key').value;el('preview-key').value='';controller.start(passcode,el('voice-mode').checked);});
