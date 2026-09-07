@@ -23,7 +23,10 @@ export function createStateCodec({key, binding, now=Date.now}) {
     if(!value||value.v!==1||typeof value.sid!=='string'||!/^[a-f0-9]{32}$/.test(value.sid)||typeof value.nonce!=='string'||!/^[a-f0-9]{32}$/.test(value.nonce)
       ||!Number.isSafeInteger(value.expires)||!Number.isInteger(value.turn)||value.turn<0||value.turn>10
       ||!Array.isArray(value.history)||value.history.length!==value.turn*2+1||!Array.isArray(value.segments)||value.segments.length<1||value.segments.length>2
-      ||!Number.isInteger(value.completed)||value.completed<0||value.completed>value.segments.length)throw bad();
+      ||!Number.isInteger(value.completed)||value.completed<0||value.completed>value.segments.length
+      // One alternative per encounter, carried in the sealed state so a reload
+      // cannot restore it. Present means spent; any value but true is a forgery.
+      ||(Object.hasOwn(value,'retried')&&value.retried!==true))throw bad();
     if(now()>=value.expires)throw problem(410,'preview_session_expired');
     return value;
   }

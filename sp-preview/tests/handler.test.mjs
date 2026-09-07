@@ -77,3 +77,16 @@ test('cancelling the response aborts pending speech and suppresses late audio',a
  const first=await reader.read();assert.equal(JSON.parse(new TextDecoder().decode(first.value)).type,'reply');
  await reader.cancel();await new Promise(resolve=>setImmediate(resolve));assert.equal(stopped,true);assert.equal(s.calls.length,1);
 });
+
+test('a receipt may record that its one alternative is spent, and rejects any other value',()=>{
+ const codec=createStateCodec({key:env.DANA_PREVIEW_STATE_KEY,binding:'test',now:()=>0}),base=initialState('Opening',()=>0);
+ assert.equal(codec.open(codec.seal(base)).retried,undefined,'a fresh encounter has spent nothing');
+ assert.equal(codec.open(codec.seal({...base,retried:true})).retried,true);
+ for(const bad of [false,1,'true',null,0])assert.throws(()=>codec.open(codec.seal({...base,retried:bad})),{code:'preview_state_invalid'},String(bad));
+});
+
+test('an issued state carries the spent flag forward so a reload cannot restore the alternative',()=>{
+ const spent={...initialState('Opening'),retried:true};
+ const next=issuedState(spent,[...spent.history,{who:'me',text:'A question'}],'A reply.',['A reply.']);
+ assert.equal(next.retried,true);
+});
