@@ -124,7 +124,7 @@ test('the coverage gap has exactly its known dimensions', () => {
   const byProducer = {};
   for (const p of uncovered) byProducer[p.producer] = (byProducer[p.producer] || 0) + 1;
 
-  assert.deepEqual(byProducer, { cotw_registry: 22, site_manifest: 1 },
+  assert.deepEqual(byProducer, { cotw_registry: 24, site_manifest: 1 },
     'the set of shipped pages with no snapshot changed.\n'
     + '  cotw_registry: Case-of-the-Week panels, derived at build time, unrenderable from source.\n'
     + '  site_manifest: rapid_review.md ships to both sites with no topic_meta entry, so no panel.\n'

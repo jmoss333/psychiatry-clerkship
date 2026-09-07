@@ -287,14 +287,14 @@ def test_build_pdf_uses_manifest_title_when_markdown_has_no_h1():
 
 
 def test_shipped_page_sources_exist_in_repo():
-    # 124 shipped surfaces, not the 91 the site manifest alone lists: +22 Case-of-the-Week
+    # 126 shipped surfaces, not the 91 the site manifest alone lists: +24 Case-of-the-Week
     # pages, +6 resident-only pages, +1 MS3 orientation video, +4 resident-only tools
     # (ADR-002). The count moves whenever a producer does; shipped_pages.py --check is
     # what keeps the listing honest, and this only asserts every source really exists.
     repo_root = Path(__file__).resolve().parents[2]
     md_entries, tool_entries = load_shipped_entries(repo_root)
 
-    assert len(md_entries) == 97  # 69 manifest md + 22 case-of-the-week + 6 resident
+    assert len(md_entries) == 99  # 69 manifest md + 24 case-of-the-week + 6 resident
     assert len(tool_entries) == 27  # 22 manifest tools + 1 orientation video + 4 resident
 
 
