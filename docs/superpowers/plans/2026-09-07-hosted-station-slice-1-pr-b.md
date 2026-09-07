@@ -213,7 +213,17 @@ git commit -m "feat(sp-preview): derive a retry child from the truncated heard-o
 
 **Interfaces:**
 - Consumes: `retryState` from Task 2.
-- Produces: `POST` body `{action:'retry', state, turnId, text, previousPlayback, previousCompletedSegments}`; response identical in shape to a `turn`; the issued receipt carries `retried:true`.
+- Produces: `POST` body `{action:'retry', state, turnId, text}`; response identical in shape to a `turn`; the issued receipt carries `retried:true`.
+
+> **Deviation from the design, found while implementing.** The body was specified
+> with `previousPlayback` and `previousCompletedSegments`, mirroring a `turn`. That
+> is wrong: those fields describe the reply the client last heard, at the *end* of
+> the encounter, while a retry returns to a moment in the middle whose playback is
+> already recorded in the truncated history. Passing them through made the handler
+> reject valid retries (the child has one segment; the client's count was two). The
+> client now reports no playback for a retry and the handler synthesizes it from the
+> child's own settled state — one less field a client can get wrong, and one less
+> thing a client could lie about.
 
 - [ ] **Step 1: Write the failing test**
 

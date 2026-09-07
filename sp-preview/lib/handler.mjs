@@ -1,7 +1,7 @@
-import {timingSafeEqual} from 'node:crypto';
+import {randomBytes,timingSafeEqual} from 'node:crypto';
 import {createContext,validateReply} from '../../_prototypes/sp-interview/dana-live-context.mjs';
 import {dana,caseBinding} from './case.mjs';
-import {hash,problem,createStateCodec,initialState,nextHistory,issuedState} from './state.mjs';
+import {hash,problem,createStateCodec,initialState,nextHistory,issuedState,retryState} from './state.mjs';
 
 const HEADERS={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
 const safeCodes=new Set(['preview_unavailable','preview_forbidden','preview_input_invalid','preview_state_invalid','preview_session_expired','preview_encounter_finished','preview_operation_duplicate','preview_operation_mismatch','preview_budget_exhausted','preview_window_exhausted','preview_budget_unavailable','preview_budget_contention','preview_provider_unavailable','preview_cancelled']);
@@ -36,6 +36,17 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
    }else if(action==='turn'){
     if(!exact(body,['action','state','text','previousPlayback','previousCompletedSegments']))throw problem(400,'preview_input_invalid');
     state=codec.open(body.state);history=nextHistory(state,body);operationId=`turn:${state.sid}:${state.nonce}`;
+   }else if(action==='retry'){
+    if(!exact(body,['action','state','turnId','text']))throw problem(400,'preview_input_invalid');
+    // The receipt presented here is the LATEST, unconsumed one. An earlier receipt
+    // would be refused by the ledger, and that refusal is the control being kept.
+    const parent=codec.open(body.state);
+    state=retryState(parent,body.turnId,randomBytes(16).toString('hex'));
+    // The client reports no playback for a retry, and must not: its counts describe
+    // the reply it last heard, at the END of the encounter, not the moment being
+    // returned to. The truncated history already records what was heard there.
+    history=nextHistory(state,{text:body.text,previousPlayback:'played',previousCompletedSegments:state.completed});
+    operationId=`retry:${parent.sid}:${parent.nonce}:${body.turnId}`;
    }else throw problem(400,'preview_input_invalid');
    if(request.signal.aborted)throw problem(409,'preview_cancelled');
    await budget.reserve({operationId:hash(operationId),bindingHash:hash(JSON.stringify(body)),units:action==='start'?1:3});
@@ -78,6 +89,7 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
         else if(remainder.length)throw problem(502,'preview_provider_unavailable');
        }else{segments=[reply];jobs=[begin(reply)];}
        state=issuedState(state,history,reply,segments);
+       if(action==='retry')state={...state,retried:true};
       }
       send({type:'reply',reply,segments:segments.map(text=>({text})),state:codec.seal(state),turn:state.turn});
       for(let index=0;index<jobs.length;index++){

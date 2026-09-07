@@ -139,3 +139,61 @@ test('an out-of-range turn or a spent alternative is refused before any work',()
  for(const bad of [0,-1,4,1.5,'2',null,undefined])assert.throws(()=>retryState(parent,bad,'d'.repeat(32)),{code:'preview_input_invalid'},String(bad));
  assert.throws(()=>retryState({...parent,retried:true},2,'d'.repeat(32)),{code:'preview_encounter_finished'});
 });
+
+// One opening plus `turns` sequential turns; returns the latest sealed receipt.
+async function runEncounter(s,turns){
+ let state=(await start(s)).at(-1).state;
+ for(let n=1;n<=turns;n++){
+  const output=await events(await s.handler()(request({action:'turn',state,text:'Q'+n,previousPlayback:'played',previousCompletedSegments:n===1?1:2})));
+  state=output.at(-1).state;
+ }
+ return state;
+}
+
+test('a retry sends the actor the truncated history and nothing from the retried turn onward',async()=>{
+ const s=setup();
+ const state=await runEncounter(s,2);
+ const before=s.contexts.length;
+ const output=await events(await s.handler()(request({action:'retry',state,turnId:2,text:'A different way of asking'})));
+ assert.deepEqual(output.map(x=>x.type),['reply','audio','audio','complete']);
+ const prompt=JSON.stringify(s.contexts.at(-1).messages);
+ assert.equal(s.contexts.length,before+1);
+ assert.equal(prompt.includes('Q1'),true,'the earlier question is still in context');
+ assert.equal(prompt.includes('Q2'),false,'the retried question is not');
+ assert.equal(prompt.includes('A different way of asking'),true,'the alternative wording is');
+});
+
+test('a second retry on the same encounter is refused before any provider work',async()=>{
+ const s=setup();
+ const state=await runEncounter(s,2);
+ const first=await events(await s.handler()(request({action:'retry',state,turnId:2,text:'Once'})));
+ const after=s.contexts.length;
+ const second=await s.handler()(request({action:'retry',state:first.at(-1).state,turnId:2,text:'Twice'}));
+ assert.equal(second.status,409);
+ assert.equal((await second.json()).error,'preview_encounter_finished');
+ assert.equal(s.contexts.length,after,'no provider call was made for the refused retry');
+});
+
+test('re-presenting a consumed turn receipt still fails, which is the control this design preserves',async()=>{
+ const s=setup();
+ const state=await runEncounter(s,1);
+ const body={action:'turn',state,text:'Q2',previousPlayback:'played',previousCompletedSegments:2};
+ await events(await s.handler()(request(body)));
+ const replay=await s.handler()(request({...body,text:'A different question'}));
+ assert.equal(replay.status,409);
+ assert.equal((await replay.json()).error,'preview_operation_duplicate');
+});
+
+test('a malformed retry body is refused before reservation',async()=>{
+ const s=setup();
+ const state=await runEncounter(s,2);
+ const before=s.calls.length;
+ for(const body of [
+  {action:'retry',state,turnId:2},
+  {action:'retry',state,turnId:9,text:'A question'},
+  {action:'retry',state,turnId:2,text:''},
+  {action:'retry',state,turnId:2,text:'A question',extra:true},
+  {action:'retry',state,turnId:2,text:'A question',previousPlayback:'played',previousCompletedSegments:2}
+ ])assert.equal((await s.handler()(request(body))).status>=400,true,JSON.stringify(Object.keys(body)));
+ assert.equal(s.calls.length,before,'nothing was reserved for a malformed retry');
+});
