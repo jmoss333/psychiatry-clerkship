@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
 import {createHandler} from '../lib/handler.mjs';
-import {createStateCodec, initialState, nextHistory,issuedState} from '../lib/state.mjs';
+import {createStateCodec, initialState, nextHistory,issuedState,retryState} from '../lib/state.mjs';
 const origin='https://preview.example.test';
 const env={DANA_PREVIEW_ENABLED:'true',DANA_PREVIEW_PASSCODE:'test-preview-passcode-only',DANA_PREVIEW_STATE_KEY:randomBytes(32).toString('base64url'),DEPLOY_ID:'fixture-deploy',DEPLOY_URL:origin};
 const mp3=Buffer.concat([Buffer.from('ID3'),Buffer.alloc(197)]);
@@ -89,4 +89,53 @@ test('an issued state carries the spent flag forward so a reload cannot restore 
  const spent={...initialState('Opening'),retried:true};
  const next=issuedState(spent,[...spent.history,{who:'me',text:'A question'}],'A reply.',['A reply.']);
  assert.equal(next.retried,true);
+});
+
+// Three completed turns; turn 1's reply has two segments, both heard.
+function encounterOfThree(){
+ let state=initialState('Opening line.');
+ for(const [question,reply,segments] of [['Q1','R1 first. R1 second.',['R1 first.',' R1 second.']],['Q2','R2 only.',['R2 only.']],['Q3','R3 only.',['R3 only.']]]){
+  const history=nextHistory(state,{text:question,previousPlayback:'played',previousCompletedSegments:state.completed});
+  state=issuedState(state,history,reply,segments);
+  state={...state,completed:state.segments.length};
+ }
+ return state;
+}
+
+test('a retry truncates history to everything before the chosen question',()=>{
+ const parent=encounterOfThree(),child=retryState(parent,2,'a'.repeat(32));
+ assert.equal(child.turn,1);
+ assert.equal(child.history.length,child.turn*2+1,'the codec length invariant holds by construction');
+ assert.deepEqual(child.history.map(entry=>entry.text),['Opening line.','Q1','R1 first. R1 second.']);
+ assert.equal(child.history.some(entry=>entry.text==='Q2'),false,'the question being retried is not in the child history');
+ assert.equal(child.history.some(entry=>entry.text==='R2 only.'),false,'nor is any later reply');
+});
+
+test('a retry gets its own session id and keeps the parent expiry',()=>{
+ const parent=encounterOfThree(),child=retryState(parent,3,'b'.repeat(32));
+ assert.equal(child.sid,'b'.repeat(32));
+ assert.notEqual(child.sid,parent.sid,'a child cannot share the parent ledger identity');
+ assert.equal(child.expires,parent.expires);
+ assert.equal(Object.hasOwn(child,'retried'),false,'the flag is set on the issued state, not on the child input');
+});
+
+test('a retry presents only what was heard at that earlier moment',()=>{
+ // The opening has to be marked heard before a turn can claim it played.
+ let state={...initialState('Opening line.'),completed:1};
+ let history=nextHistory(state,{text:'Q1',previousPlayback:'played',previousCompletedSegments:1});
+ state=issuedState(state,history,'Heard part. Unheard tail.',['Heard part.',' Unheard tail.']);
+ state={...state,completed:1};
+ history=nextHistory(state,{text:'Q2',previousPlayback:'interrupted',previousCompletedSegments:1});
+ state=issuedState(state,history,'R2.',['R2.']);
+ state={...state,completed:1};
+ const reply=retryState(state,2,'c'.repeat(32)).history.at(-1);
+ assert.equal(reply.text,'Heard part.','the unheard tail is not replayed to the actor');
+ assert.equal(reply.omittedTail,true);
+ assert.equal(reply.playbackStatus,'played');
+});
+
+test('an out-of-range turn or a spent alternative is refused before any work',()=>{
+ const parent=encounterOfThree();
+ for(const bad of [0,-1,4,1.5,'2',null,undefined])assert.throws(()=>retryState(parent,bad,'d'.repeat(32)),{code:'preview_input_invalid'},String(bad));
+ assert.throws(()=>retryState({...parent,retried:true},2,'d'.repeat(32)),{code:'preview_encounter_finished'});
 });

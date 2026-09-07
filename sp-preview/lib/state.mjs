@@ -51,3 +51,20 @@ export function nextHistory(state,{text,previousPlayback,previousCompletedSegmen
 export function issuedState(previous,history,reply,segments) {
   return {...previous,nonce:randomBytes(16).toString('hex'),turn:previous.turn+1,history:[...history,{who:'pt',text:reply,playbackStatus:'pending'}],segments,completed:0};
 }
+// A retry is a child session, not a replayed receipt: re-presenting an earlier
+// receipt is what the budget ledger refuses, and that refusal is a control worth
+// keeping. The parent's own history already records what was HEARD rather than
+// what was generated — nextHistory rewrites each patient entry to its completed
+// segments and marks omittedTail — so truncating it is exactly "only the
+// information heard at that moment", with nothing extra to track.
+export function retryState(state,turnId,sid) {
+  if(state.retried===true)throw problem(409,'preview_encounter_finished');
+  if(!Number.isInteger(turnId)||turnId<1||turnId>state.turn)throw problem(400,'preview_input_invalid');
+  const history=structuredClone(state.history).slice(0,turnId*2-1);
+  const tail=history.at(-1);
+  const child={...state,sid,nonce:randomBytes(16).toString('hex'),turn:turnId-1,history,segments:[tail.text],completed:1};
+  // DELETED, not set to undefined: codec.open uses Object.hasOwn, and a sealed
+  // `undefined` would not survive the JSON round trip as an absent key.
+  delete child.retried;
+  return child;
+}
