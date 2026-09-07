@@ -1,12 +1,12 @@
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-06 @ `9c19767`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-06 @ `b2d3dd6`.
 
 ## Orientation  *(pinned)*
 
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
-| 1 | Welcome to the Rotation | `welcome.md` | md | listed | status=`pending` · riskKind=`general` · riskLevel=`low` | `13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md` | 406 |
+| 1 | Welcome to the Rotation | `welcome.md` | md | listed | status=`pending` · riskKind=`general` · riskLevel=`low` | `13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md` | 421 |
 | 2 | Orientation Packet | `orientation.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md` | 1010 |
 | 3 | Core Reading List | `core_readings.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md` | 399 |
 | 4 | Orientation Video | `orientation-video.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `_prototypes/orientation-video/orientation-video.html` |  |

@@ -84,41 +84,37 @@ LAST_RUN = AUTOMATION / "surveillance" / "history" / "last_run.json"
 #     bibliography line, and renaming one heading retires items without touching a claim.
 # A number nobody can drive to zero is a mood, not a queue.
 
-def _isbn10_valid(code):
-    return sum((10 - i) * (10 if c in "Xx" else int(c)) for i, c in enumerate(code)) % 11 == 0
-
-
-def _book_entries():
-    # Key on "- **", not "- **[": an entry with no link at all is maximally unresolved
-    # and must not be invisible to both numerator and denominator.
-    return [ln for ln in BOOKS.read_text(encoding="utf-8").splitlines() if ln.startswith("- **")]
-
-
 # A route that is vendor-independent. Matched positively: a negative "not amazon.com"
 # test would let an amzn.to shortlink or amazon.co.uk retire an entry falsely.
-DURABLE_HOST = re.compile(r"openlibrary\.org|worldcat\.org|doi\.org|\bisbn", re.I)
-ISBN13 = re.compile(r"\b97[89][-\s]?(?:\d[-\s]?){10}\b")
+def measure_isbn_derivable():
+    """Book entries the deriver would still change.
 
+    This imports bin/derive_isbn13.py's OWN notion of an unfinished line rather than
+    re-deriving one. That is not tidiness — it is the difference between a task that retires
+    and one that cannot. An earlier version counted "ASINs that are valid ISBN-10s", a number
+    the work does not move, because the ISBN is recorded BESIDE the Amazon link rather than
+    replacing it. The task reported 51/51 ready forever, and the nightly runner built on it
+    would have opened an empty draft PR every night.
 
-def measure_isbn():
-    entries = _book_entries()
-    unresolved = [ln for ln in entries
-                  if not (ISBN13.search(ln) or DURABLE_HOST.search(ln))]
-    return len(unresolved), len(entries)
+    The rule this encodes: when a task has a `run` script, the queue must ask THAT SCRIPT what
+    is left. Two independent definitions of "done" is one too many — and the other way round,
+    a predicate that a DIFFERENT task's output can satisfy retires work that never happened,
+    which is how isbn-verify came to mark itself finished without querying a catalogue.
 
-
-def measure_isbn_convertible():
-    """How many of those can be resolved offline right now.
-
-    The surprise, and the reason this is not network-gated: every book links to
-    amazon.com/dp/<ASIN>, and for a print book Amazon's ASIN *is* the ISBN-10 — all 51
-    pass the check-digit test, which a random 10-digit string does about 1 time in 11.
-    So ISBN-13 is arithmetic (prefix 978, recompute the check digit), not a lookup. A
-    catalogue key buys edition confirmation; it does not buy the identifier.
+    The surprise that makes the work possible at all: every book links to
+    amazon.com/dp/<ASIN>, and for a print book Amazon's ASIN IS the ISBN-10 — all of them pass
+    the check digit — so ISBN-13 is arithmetic, not a lookup.
     """
-    text = BOOKS.read_text(encoding="utf-8")
-    asins = re.findall(r"amazon\.com/dp/([0-9Xx]{10})", text)
-    return sum(1 for a in asins if _isbn10_valid(a)), len(_book_entries())
+    bin_dir = ROOT / "bin"
+    sys.path.insert(0, str(bin_dir))
+    try:
+        import derive_isbn13 as deriver
+    finally:
+        sys.path.remove(str(bin_dir))
+    lines = BOOKS.read_text(encoding="utf-8").splitlines()
+    actions = [deriver.rewrite(ln)[1] for ln in lines]
+    entries = [a for a in actions if a != "skip"]
+    return actions.count("add"), len(entries)
 
 
 def _episodes():
@@ -230,7 +226,7 @@ TASKS = [
         "key": "isbn-derive",
         "title": "Surface an ISBN-13 for every book",
         "host": None,
-        "measure": measure_isbn_convertible,
+        "measure": measure_isbn_derivable,
         "unit": "books whose ISBN-10 is already sitting in the page",
         "why": "Every book links to amazon.com/dp/<ASIN>, and for a print book that ASIN IS the "
                "ISBN-10 — all of them pass the check digit, which chance would manage about one "
@@ -238,9 +234,9 @@ TASKS = [
                "Until it is surfaced, a learner without an Amazon account cannot find these books "
                "in a library catalogue — the same 'a withdrawal must leave a route' principle the "
                "instrument work already follows, applied to books.",
-        "do": "convert each /dp/ ASIN to ISBN-13 (prefix 978, recompute the check digit) and record "
-              "it beside the link in 07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md "
-              "(that page ships to BOTH audiences, so one edit serves both)",
+        "do": "python3 bin/derive_isbn13.py --write && python3 bin/derive_isbn13.py --check",
+        "run": "python3 bin/derive_isbn13.py --write",
+        "verify": "python3 bin/derive_isbn13.py --check",
     },
     {
         "key": "faculty-review",
@@ -264,16 +260,6 @@ TASKS = [
         "why": "The real holes. A learner on one of these finds nothing on any surface. Curation, "
                "not network — which makes it the substantial piece an offline session can finish.",
         "do": "python3 13_Faculty_Resources/_automation/library_coverage_scan.py   # then curate",
-    },
-    {
-        "key": "isbn-verify",
-        "title": "Confirm each book's edition against a catalogue",
-        "host": "books",
-        "measure": measure_isbn,
-        "unit": "books with no ISBN-13 and no vendor-independent route",
-        "why": "The identifier can be derived offline (see isbn-derive); confirming it names the "
-               "edition each summary actually describes is the half that needs a lookup.",
-        "do": "get a books.googleapis.com key, then query it per ISBN-13",
     },
     {
         "key": "instrument-routes",
@@ -330,6 +316,27 @@ TASKS = [
         "do": "resolve each episode against the show's feed and record the canonical alongside",
     },
 ]
+
+
+def is_autonomous(task):
+    """May an unattended agent perform this task?
+
+    The criterion is deliberately not a per-task opinion, because opinions drift and a
+    hand-set boolean is one careless edit away from letting a bot loose on curation. A task
+    qualifies only if BOTH of these exist:
+
+      run     a deterministic script that makes the change — so the diff comes from
+              reviewable code, not from an agent's free-hand editing of 51 lines;
+      verify  a command that proves the change afterwards and exits non-zero if it is wrong.
+
+    Everything requiring judgement therefore fails the test by construction, which is the
+    point. `coverage-unserved` is curation: what belongs in front of a learner is not
+    mechanisable. `faculty-review` is an attestation — a person putting their name to a
+    clinical page — and a bot advancing it would be a governance failure of a different
+    order from a formatting mistake. Neither has a `run`, so neither can ever be picked up,
+    and no reviewer has to remember that.
+    """
+    return bool(task.get("run")) and bool(task.get("verify"))
 
 
 def probe_capability():
@@ -417,6 +424,9 @@ def main():
     ap.add_argument("--json", action="store_true", help="machine-readable output")
     ap.add_argument("--all", action="store_true", help="include tasks that report zero remaining")
     ap.add_argument("--why", metavar="KEY", help="explain one task in full")
+    ap.add_argument("--next-autonomous", action="store_true",
+                    help="emit the single task an unattended runner may do now, as JSON; "
+                         "prints nothing and exits 0 when there is none")
     args = ap.parse_args()
 
     capability, note = probe_capability()
@@ -426,8 +436,19 @@ def main():
         rows.append({"key": task["key"], "title": task["title"], "status": status,
                      "remaining": remaining, "total": total, "unit": task["unit"],
                      "detail": detail, "why": task["why"], "do": task["do"],
-                     "host": task["host"]})
+                     "host": task["host"], "autonomous": is_autonomous(task),
+                     "run": task.get("run"), "verify": task.get("verify")})
     rows.sort(key=lambda r: (RANK[r["status"]], -(r["remaining"] or 0)))
+
+    if args.next_autonomous:
+        # Exactly one task, or nothing. Silence is the normal, correct answer on most
+        # nights: the queue retires its own work, so a runner that finds nothing to do has
+        # succeeded rather than failed.
+        for row in rows:
+            if row["status"] == READY and row["autonomous"]:
+                print(json.dumps(row, indent=2))
+                break
+        return 0
 
     if args.why:
         match = next((r for r in rows if r["key"] == args.why), None)
