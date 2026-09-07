@@ -46,7 +46,11 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
     // the reply it last heard, at the END of the encounter, not the moment being
     // returned to. The truncated history already records what was heard there.
     history=nextHistory(state,{text:body.text,previousPlayback:'played',previousCompletedSegments:state.completed});
-    operationId=`retry:${parent.sid}:${parent.nonce}:${body.turnId}`;
+    // The SAME ledger slot a turn would consume, deliberately. A receipt gets one
+    // continuation, whatever its kind: otherwise the receipt a retry was asked from
+    // stays live, a turn from it branches without the retried flag, and the
+    // one-alternative cap is bypassable. Found by the hosted proof, 2026-09-07.
+    operationId=`turn:${parent.sid}:${parent.nonce}`;
    }else throw problem(400,'preview_input_invalid');
    if(request.signal.aborted)throw problem(409,'preview_cancelled');
    await budget.reserve({operationId:hash(operationId),bindingHash:hash(JSON.stringify(body)),units:action==='start'?1:3});

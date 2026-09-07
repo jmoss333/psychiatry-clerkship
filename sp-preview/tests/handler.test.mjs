@@ -197,3 +197,16 @@ test('a malformed retry body is refused before reservation',async()=>{
  ])assert.equal((await s.handler()(request(body))).status>=400,true,JSON.stringify(Object.keys(body)));
  assert.equal(s.calls.length,before,'nothing was reserved for a malformed retry');
 });
+
+test('the receipt a retry was asked from cannot then be reused, or the one-alternative cap is bypassable',async()=>{
+ const s=setup();
+ const state=await runEncounter(s,2);
+ await events(await s.handler()(request({action:'retry',state,turnId:2,text:'One alternative'})));
+ // Continuing from the PRE-retry receipt would produce a branch with no retried
+ // flag, and a second alternative could be asked from it.
+ const reused=await s.handler()(request({action:'turn',state,text:'Continuing from before the alternative',previousPlayback:'played',previousCompletedSegments:2}));
+ assert.equal(reused.status>=400,true,'the receipt a retry consumed must not also serve a turn');
+ // This fixture's ledger only checks the operation id, so it says duplicate; the
+ // real ledger also compares the binding hash and says mismatch. Either is a refusal.
+ assert.equal(['preview_operation_duplicate','preview_operation_mismatch'].includes((await reused.json()).error),true);
+});
