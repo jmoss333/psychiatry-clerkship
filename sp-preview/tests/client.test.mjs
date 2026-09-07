@@ -248,3 +248,32 @@ test('typing pauses active capture and cannot send an edited question on the spe
   assert.equal(controller.getSnapshot().phase,'paused');assert.equal(h.calls.length,1);assert.equal(h.recognizers.some(item=>item.active),false);
   assert.equal(controller.getSnapshot().draft,'A question I am still editing.');
 });
+
+test('a dana message carries its segment texts so the heard prefix can be quoted exactly',async()=>{
+  const h=environment(),controller=createController(h.env);
+  const opening=controller.start('key',false);
+  await finishAudio(h,0);await finishAudio(h,1);await opening;
+  const first=controller.getSnapshot().messages[0];
+  assert.deepEqual(first.segments,['Hello.',' What would you like to discuss?']);
+  assert.equal(first.segments.length,first.totalSegments);
+  assert.equal(first.segments.slice(0,first.completedSegments).join(''),first.text);
+
+  // An interrupted reply must expose only what actually played.
+  const next=controller.send('And after that?');await until(()=>h.audios.length===3);
+  await finishAudio(h,2);controller.interrupt();await next;
+  const second=controller.getSnapshot().messages.at(-1);
+  assert.equal(second.status,'interrupted');
+  assert.equal(second.completedSegments,1);
+  assert.equal(second.segments.slice(0,second.completedSegments).join(''),'Hello.');
+  assert.notEqual(second.segments.join(''),'Hello.');
+});
+
+test('a snapshot cannot be used to mutate the controller segment list',async()=>{
+  const h=environment(),controller=createController(h.env);
+  const opening=controller.start('key',false);
+  await until(()=>controller.getSnapshot().messages.length===1);
+  const snapshot=controller.getSnapshot();
+  snapshot.messages[0].segments.push('injected');
+  assert.equal(controller.getSnapshot().messages[0].segments.includes('injected'),false);
+  controller.clear();await opening;
+});
