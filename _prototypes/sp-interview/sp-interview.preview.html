@@ -279,6 +279,27 @@ MockProvider.prototype.respond=function(s,text){
   if(flags.length){ reply=this._pick(s,flags[0],'any'); }
   var g=s.caseDef.gated, tier=this._tier(s);
   if(!reply){
+    // PASS 1 — mirrors sp.mjs deriveState: a turn that can OPEN a gate does so, in pack order,
+    // before an already-open gate replays its repeatAsk or a locked one deflects. Without it a
+    // follow-up that also names the act re-hit gated[0] (si_active) and the follow-up gate was
+    // never reached, so the stronger phrasing got less than the vaguer one. Client and server
+    // must agree bit-for-bit on s.unlocked (parity.test.mjs).
+    var self=this;
+    var opens=function(gd){
+      if(s.unlocked[gd.id])return false;
+      if(!(gd.requiresIntents||[]).some(function(ri){return hits.indexOf(ri)>=0;}))return false;
+      if(gd.requiresGate)return !!s.unlocked[gd.requiresGate];
+      return s.rapport>=(gd.requiresRapport||0) && !self._recentFlag(s,gd.blockedByRecentFlags||[]);
+    };
+    var opening=null;
+    for(var oi=0;oi<g.length && !opening;oi++){ if(opens(g[oi])) opening=g[oi]; }
+    if(opening){
+      s.unlocked[opening.id]=true;
+      reply=opening.reveal;
+      if(!opening.requiresGate) critical='disclosure';
+    }
+  }
+  if(!reply){
     for(var i=0;i<g.length && !reply;i++){
       var gd=g[i];
       var reqHit=(gd.requiresIntents||[]).some(function(ri){return hits.indexOf(ri)>=0;});
