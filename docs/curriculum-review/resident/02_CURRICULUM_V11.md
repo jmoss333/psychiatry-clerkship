@@ -527,7 +527,7 @@ For **mortality**, the agonist evidence is the strongest thing we have: all-caus
 
 - **Slug:** `cotw_20260726_etohwd_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
 - **Length:** 3,351 words
 
 <!-- topic_meta overlay -->

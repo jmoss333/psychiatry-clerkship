@@ -302,7 +302,7 @@ Based on articles retrieved from PubMed.
 
 - **Slug:** `cotw_20260713_agitation_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
 - **Length:** 2,405 words
 
 <!-- topic_meta overlay -->

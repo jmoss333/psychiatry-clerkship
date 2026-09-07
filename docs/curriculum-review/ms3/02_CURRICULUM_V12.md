@@ -10,7 +10,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - **Slug:** `cotw_20260720_bipolar_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
 - **Length:** 1,664 words
 
 <!-- topic_meta overlay -->
@@ -149,7 +149,7 @@ Based on articles retrieved from PubMed.
 
 - **Slug:** `cotw_20260713_agitation_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_MS3.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
 - **Length:** 1,735 words
 
 <!-- topic_meta overlay -->
