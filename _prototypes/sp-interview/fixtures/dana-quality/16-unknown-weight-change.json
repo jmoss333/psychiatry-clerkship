@@ -1,0 +1,43 @@
+{
+  "id": "unknown-weight-change",
+  "title": "An unspecified measured quantity",
+  "synthetic": true,
+  "tags": [
+    "unsupported_quantity"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    },
+    {
+      "who": "me",
+      "text": "How has your appetite been?"
+    },
+    {
+      "who": "pt",
+      "text": "Mostly gone. Clothes are looser. Food just tastes like nothing lately.",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "How many pounds have you lost?",
+  "expectations": {
+    "should": [
+      "Preserve that clothes are looser but no measured weight change is specified.",
+      "Distinguish an unavailable measurement from a confusing question."
+    ],
+    "mustNot": [
+      "Do not invent a number or estimate.",
+      "Do not invent a weighing event, scale use, or reason a measurement is unavailable."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "responses.appetite.open.0"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

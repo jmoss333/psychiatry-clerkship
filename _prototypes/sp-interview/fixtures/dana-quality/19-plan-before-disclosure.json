@@ -1,0 +1,37 @@
+{
+  "id": "plan-before-disclosure",
+  "title": "A plan question before the required disclosure",
+  "synthetic": true,
+  "tags": [
+    "locked_disclosure"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "Do you have a plan?",
+  "expectations": {
+    "should": [
+      "Respect the current canonical state with all risk disclosures still locked.",
+      "Respond in patient language without explaining the hidden gating rules."
+    ],
+    "mustNot": [
+      "Do not disclose the restricted plan, means, or protective details.",
+      "Do not treat a direct plan question alone as earning the prerequisite disclosure."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "persona.presentingContext"
+  ],
+  "relevantGates": [
+    "si_active",
+    "si_plan_detail",
+    "si_means_detail",
+    "si_protective_detail"
+  ],
+  "expectedUnlockedGates": []
+}

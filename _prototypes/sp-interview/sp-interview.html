@@ -885,6 +885,7 @@ function App(){
   /* ---------- select ---------- */
   if(S.screen==='select'){
     return e('div',null,header,
+      danaConversationPreviewEntry(window.location,previewConfig),
       e('div',{className:'casegrid'},
         eligibleCases(S.pack).map(function(cd){
           var P=paceFor(cd), tp=cd.title.split(' — '), managedCaseUnavailable=voiceMode==='managed'&&!managedEligible(cd);
@@ -1133,7 +1134,58 @@ function App(){
   return null;
 }
 try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible};}catch(x){}
-ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+function isLocalDanaPreview(location, config){
+  return !!(location && config && config.generated === true && config.providerMode === 'mock' &&
+    (location.protocol === 'http:' || location.protocol === 'https:') &&
+    ['localhost','127.0.0.1','[::1]'].indexOf(location.hostname) >= 0);
+}
+function isDanaConversationPreview(location, config){
+  return !!(isLocalDanaPreview(location, config) &&
+    new URLSearchParams(location.search).get('danaConversation') === '1');
+}
+function danaConversationPreviewEntry(location, config){
+  if(!isLocalDanaPreview(location, config) || isDanaConversationPreview(location, config)) return null;
+  return e('section',{className:'card','aria-label':'Local spoken prototype'},
+    e('h2',null,'Talk with Dana'),
+    e('p',null,'Try ten spoken turns with Dana’s recorded Marin voice. Opens a separate practice encounter.'),
+    e('div',{className:'actions'},e('a',{className:'btn primary',href:'./sp-interview.preview.html?danaConversation=1'},'Talk with Dana')));
+}
+if(isDanaConversationPreview(window.location,previewConfig)){
+  // Local generated preview only. These prototype assets are not learner-site sidecars.
+  var prototypeRoot=document.getElementById('root');
+  prototypeRoot.textContent='Loading the local Dana conversation prototype…';
+  var prototypeAssetVersion=Date.now().toString(36);
+  function loadPrototypeScript(src){return new Promise(function(resolve,reject){var script=document.createElement('script');script.src=src+'?preview='+prototypeAssetVersion;script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});}
+  loadPrototypeScript('./sp-interview.turns.js').then(function(){return loadPrototypeScript('./sp-interview.local-dana.js');}).then(function(){return loadPrototypeScript('./sp-interview.recordings.js');}).then(function(){return loadPrototypeScript('./sp-interview.responses.js');}).then(function(){return loadPrototypeScript('./sp-encounter-profiles.js');}).then(function(){return loadPrototypeScript('./sp-encounter-rhythm.js');}).then(function(){return loadPrototypeScript('./sp-encounter-ui.js');}).then(function(){return loadPrototypeScript('./sp-interview.conversation.js');}).then(function(){
+    if(new URLSearchParams(window.location.search).get('danaLive')==='1') return loadPrototypeScript('./sp-interview.local-cases.js').then(function(){return loadPrototypeScript('./sp-interview.live.js');}).then(function(){return loadPrototypeScript('./sp-interview.retry.js');}).then(function(){return loadPrototypeScript('./sp-interview.bookmarks.js');});
+  }).then(function(){
+    var station=null,lastStationSnapshot=null,stationRetryActive=false;
+    var liveStation=new URLSearchParams(window.location.search).get('danaLive')==='1';
+    var stationCase=new URLSearchParams(window.location.search).get('case') || 'sp_depression_gated_si_001';
+    function stationState(snapshot){lastStationSnapshot=snapshot;if(station)station.update(Object.assign({},snapshot,{caseId:stationCase,isRetry:stationRetryActive}));}
+    var spokenController=window.SPInterviewConversation.mount({window:window,root:prototypeRoot,core:window.__SP_TEST__,pack:window.__SP_PACK__,live:liveStation,
+      onState:stationState,beforeEnd:function(){return station?station.requestClose():true;},onDispose:function(){if(station)station.dispose();},
+      onRetryActive:function(active){stationRetryActive=active;if(lastStationSnapshot)stationState(lastStationSnapshot);}});
+    if(spokenController&&window.SPEncounterUI&&window.SPEncounterProfiles.getProfile(stationCase)){
+      var stationHost=document.createElement('div');stationHost.id='conversation-station';
+      var stationHeader=prototypeRoot.querySelector('header');
+      if(stationHeader)stationHeader.insertAdjacentElement('afterend',stationHost);else prototypeRoot.prepend(stationHost);
+      station=window.SPEncounterUI.mount(stationHost,{window:window,caseId:stationCase,profiles:window.SPEncounterProfiles,afterHost:prototypeRoot,
+        createSpeechInput:function(callbacks){return window.SPInterviewConversation.createSpeechInput(window,callbacks);},
+        onPause:function(){spokenController.pause();},onResume:function(){document.getElementById('conversation-resume').click();},onEnd:function(){spokenController.end();},
+        onRepair:function(){document.getElementById('conversation-repair').click();},
+        onRetry:liveStation?function(turnId){return spokenController.retryAt?spokenController.retryAt(Number(turnId)):Promise.resolve(false);}:null});
+      stationState(lastStationSnapshot||spokenController.getSnapshot());
+      document.getElementById('conversation-repair').addEventListener('click',function(){
+        if(!station||document.getElementById('conversation-repair-card').hidden)return;
+        var participant=window.SPEncounterProfiles.getProfile(stationCase).participants[0];
+        if(participant&&participant.cues.repair)station.update(Object.assign({},spokenController.getSnapshot(),{caseId:stationCase,cue:participant.cues.repair,isRetry:stationRetryActive}));
+      });
+    }
+  }).catch(function(){prototypeRoot.textContent='The local conversation prototype could not load. Remove the preview query to use the usual Interview Room.';});
+}else{
+  ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+}
 })();
 </script>
 <!-- Static (non-React) on purpose: crisis contacts must render even if the app script
