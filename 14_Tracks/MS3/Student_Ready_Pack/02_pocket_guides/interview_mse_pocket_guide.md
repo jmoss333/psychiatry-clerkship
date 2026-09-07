@@ -69,6 +69,12 @@ Vulnerability:
 - "Has anyone hurt, threatened, coerced, or exploited you?"
 - "Do you feel safe returning to where you were living?"
 
+A positive answer anywhere above goes to your resident or attending now, not at the
+end of the day — the disposition call is theirs. These are the contacts that belong
+in what you hand the patient:
+
+<!-- crisis-block -->
+
 ## Substance And Withdrawal Screen
 
 Ask about:
