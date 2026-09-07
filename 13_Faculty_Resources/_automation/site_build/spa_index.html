@@ -1980,7 +1980,13 @@
       if(item.triaged)continue;
       var match=null, results=SI?runSearch(item.text):[];
       if(results.length){
+        /* Prefer the best-ranked hit the learner can actually revisit. topicHasQuiz gates the
+           "Review this topic" action (fd_due.js), and Case-of-the-Week pages are not in TOPIC_META,
+           so a case named for the same topic outranks the topic page and the affordance vanishes
+           silently -- "first-episode psychosis" displaced t_psychosis.md on 2026-09-07. Falls back
+           to the top hit when nothing reviewable matched, so a capture never loses its match. */
         var hit=results[0].d;
+        for(var q=0;q<results.length;q++){ if(topicHasQuiz(results[q].d.f)){ hit=results[q].d; break; } }
         match={ref:hit.f,title:hit.t,hasQuiz:topicHasQuiz(hit.f)};
       }
       rows.push({id:item.id,text:item.text,triaged:false,match:match});
