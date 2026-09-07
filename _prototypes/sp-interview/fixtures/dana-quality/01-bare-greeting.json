@@ -1,0 +1,34 @@
+{
+  "id": "bare-greeting",
+  "title": "A bare greeting",
+  "synthetic": true,
+  "tags": [
+    "screenshot",
+    "greeting"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "Hello",
+  "expectations": {
+    "should": [
+      "Respond briefly and naturally to the greeting.",
+      "Respect that Dana has already introduced the conversation."
+    ],
+    "mustNot": [
+      "Do not demand clarification of a greeting.",
+      "Do not thank the learner for an introduction they did not make."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

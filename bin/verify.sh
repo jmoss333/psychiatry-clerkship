@@ -211,6 +211,18 @@ fi
 step "sp-proxy test suite"                  npm --prefix sp-proxy test
 step "sp-interview suites (incl. parity)"   bash _prototypes/sp-interview/tests/run-all.sh
 
+# --- hosted Dana faculty preview: the spoken-turn lifecycle and its public build ---
+# build.test.mjs imports esbuild (a devDependency) and the Function entry, which pulls
+# @netlify/blobs, so install with --include=dev for the same reason sp-proxy does above.
+# The paid hosted proof is deliberately absent: `npm --prefix sp-preview run test:hosted`
+# makes real provider calls and is opt-in only, here and in ci.yml.
+if [ ! -d sp-preview/node_modules/esbuild ] || [ ! -d sp-preview/node_modules/@netlify/blobs ]; then
+  echo "  ....  installing sp-preview deps incl. dev (required by the build + handler tests)"
+  npm --prefix sp-preview ci --include=dev >/dev/null 2>&1 || true
+fi
+step "hosted Dana preview suite"            npm --prefix sp-preview test
+step "hosted Dana preview public build"     npm --prefix sp-preview run build
+
 # Red-team tier 1: the deterministic gate probes from sp-proxy/REDTEAM_CHECKLIST.md,
 # run against the real sp.mjs gate logic. No model call, ~1s, so it belongs in the gate.
 # It is NOT a red-team pass — sections A, C1/C4/C5, D and E are human/live checks.

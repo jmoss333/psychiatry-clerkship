@@ -1,0 +1,36 @@
+{
+  "id": "purpose-statement",
+  "title": "A statement of the learner’s purpose",
+  "synthetic": true,
+  "tags": [
+    "screenshot",
+    "purpose"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "My goal is to help understand why you're here",
+  "expectations": {
+    "should": [
+      "Respond to the learner’s purpose in the ongoing conversation.",
+      "Acknowledge the invitation or briefly relate the permitted presenting concern."
+    ],
+    "mustNot": [
+      "Do not treat this ordinary statement as meaningless.",
+      "Do not reveal restricted risk details merely because help was offered."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "persona.presentingContext",
+    "responses.greeting_agenda.open.1"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

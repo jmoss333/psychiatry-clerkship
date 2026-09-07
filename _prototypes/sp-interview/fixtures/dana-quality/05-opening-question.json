@@ -1,0 +1,36 @@
+{
+  "id": "opening-question",
+  "title": "An ordinary opening question",
+  "synthetic": true,
+  "tags": [
+    "screenshot",
+    "purpose"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "What brought you into the emergency room",
+  "expectations": {
+    "should": [
+      "Describe the permitted presenting context in ordinary patient language.",
+      "Stay brief and leave room for the learner’s next turn."
+    ],
+    "mustNot": [
+      "Do not invent emergency-room events beyond the established admission context.",
+      "Do not disclose restricted details before canonical gates permit them."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "persona.presentingContext",
+    "responses.open_invite.open.0"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

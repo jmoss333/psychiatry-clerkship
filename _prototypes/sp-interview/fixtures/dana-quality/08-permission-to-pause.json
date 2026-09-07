@@ -1,0 +1,44 @@
+{
+  "id": "permission-to-pause",
+  "title": "Permission for reflective pauses",
+  "synthetic": true,
+  "tags": [
+    "reflective_pause",
+    "reassurance"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    },
+    {
+      "who": "me",
+      "text": "How has your mood been?"
+    },
+    {
+      "who": "pt",
+      "text": "Empty is the closest word. Not even sad exactly — just gray, all day, every day, for maybe two months.",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "No worries take your time",
+  "expectations": {
+    "should": [
+      "Accept permission to pause naturally.",
+      "Keep any acknowledgement brief and consistent with the current discussion."
+    ],
+    "mustNot": [
+      "Do not ask for rephrasing solely because this is not a question.",
+      "Do not score fluency, speed, hesitation, or the learner’s skill."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "responses.mood.open.0"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

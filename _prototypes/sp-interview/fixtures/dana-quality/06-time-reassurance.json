@@ -1,0 +1,33 @@
+{
+  "id": "time-reassurance",
+  "title": "Answering Dana’s question about time",
+  "synthetic": true,
+  "tags": [
+    "reassurance"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "No this won't take long at all",
+  "expectations": {
+    "should": [
+      "Recognize that the learner is answering Dana’s own question.",
+      "Respond with a brief acknowledgement and remain in the conversation."
+    ],
+    "mustNot": [
+      "Do not ask the learner what this means.",
+      "Do not mistake the time estimate for a claim that all symptoms will resolve."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}
