@@ -12,6 +12,14 @@ It has two modes. `DANA_QA_MODE=automatic` (the default) is the hands-free proof
 
 Neither mode is microphone evidence: both replace `SpeechRecognition`, and both assert and record `nativeRecognition: false`. Only a human walkthrough in a supported browser can close that gap. See `ACCEPTANCE.md` for what has and has not been verified.
 
+## The student station
+
+`dist` publishes five files: `index.html`, `app.js`, `styles.css`, `station.js` and `station-content.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends.
+
+It is a projection of the controller snapshot and nothing more. It holds no reference to `send()`, makes no network request, and reads and writes no browser storage — `build.test.mjs` fails the build if `fetch(`, `localStorage`, `sessionStorage`, `indexedDB` or `XMLHttpRequest` appears in either station file. Marked moments quote only what was actually heard: a reply that did not finish playing is quoted at its completed segments, and a moment with nothing confirmed heard says so rather than showing an empty quotation. `station-content.js` carries learner-facing content only; the participant `portrayal` guidance is actor direction and stays server-side.
+
+**Known limitation.** Chart-request cards ship client-side, as they do in the local prototype. "Request available chart information" is therefore a teaching affordance, not an information barrier: a learner who opens developer tools can read cards they did not request. Serving them through the authenticated endpoint would be a protocol change and belongs in a later slice. The content is fictional teaching material and nothing gated by the safety overlay is involved.
+
 ## Hosting configuration
 
 Use a separate Netlify preview site with this directory as its base. Keep its provider key and access credentials separate from learner/faculty console credentials. Required Function environment variables:
