@@ -214,6 +214,36 @@ prototype's device mode only**, where the manifest must carry all 77 entries bef
 recorded playback will load. Generating those two lines is a separate, deliberate
 act against the existing manifest tooling; nothing here does it implicitly.
 
+## One-moment retry (slice 1B)
+
+A learner can re-ask one earlier moment of a finished encounter and hear Dana's
+alternative reply. What it does, and what it deliberately does not:
+
+- It is a **child session**, not a replayed receipt. The client presents its
+  latest, unconsumed receipt plus a `turnId`; the server truncates the stored
+  history, mints a fresh `sid`, and runs the ordinary turn path.
+- **The anti-replay control is untouched.** Re-presenting a consumed turn receipt
+  still fails as `preview_operation_duplicate`, and a test pins that it does — it
+  is the control the whole design was shaped around rather than through.
+- **Only what was heard reaches the actor.** The parent's history already records
+  the heard prefix and `omittedTail`, so truncation carries the guarantee. A test
+  asserts the prompt contains the earlier question and the alternative wording,
+  and contains neither the retried question nor the reply it produced.
+- **One alternative per encounter**, sealed into the receipt as `retried:true`, so
+  a page reload cannot restore it. A second attempt is refused with
+  `preview_encounter_finished` before any provider call.
+- **Three budget units**, the same as a turn. A full encounter with its
+  alternative reserves 34 of the 72-per-half-hour and 120-per-deployment ceilings.
+- An alternative that loses its receipt asks for a restart and explains why. It is
+  never resent automatically.
+- The client reports no playback for a retry and cannot: those counts describe the
+  reply it last heard at the end of the encounter, not the moment being returned
+  to. The server synthesizes them from the child's own settled state.
+
+Not yet verified against the live preview — the retry action lives in the Function
+and does not exist on the current deploy. A hosted check would cost three paid
+units and needs a redeploy first.
+
 ## Material limits and next release work
 
 This hosted slice is Dana only. The full station UI, Morgan, Marcus, Ray, the

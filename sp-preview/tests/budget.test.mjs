@@ -218,3 +218,14 @@ test('clock errors and backward clock movement do not reopen a window', async ()
     await rejects(budget.reserve(request('clock-test')), 503, 'preview_budget_unavailable');
   }
 });
+
+test('an encounter with one alternative reserves 34 units, inside the window ceiling', async () => {
+  const f = fixture();
+  await f.budget.reserve(request('session:opening', 1));
+  for (let turn = 1; turn <= 10; turn++) await f.budget.reserve(request('session:turn-' + turn, 3));
+  // A retry costs the same three units a turn does: actor plus up to two segments.
+  const afterRetry = await f.budget.reserve(request('session:retry-2', 3));
+  assert.equal(afterRetry.chargedUnits, 34);
+  assert.equal(afterRetry.windowChargedUnits <= 72, true, 'a full encounter with its alternative fits the rolling window');
+  assert.equal(afterRetry.remainingUnits, 86);
+});

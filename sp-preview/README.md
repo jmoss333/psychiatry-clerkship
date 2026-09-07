@@ -45,7 +45,7 @@ The browser sends questions in an authenticated same-origin POST. Browser speech
 
 The server validates the complete actor reply before publishing any speculative first-sentence audio. Each complete MP3 segment carries an encrypted receipt containing server-authored dialogue. The next request can acknowledge only issued, generation-complete segments; interruption never treats an unheard tail as communicated. Receipts expire after 30 minutes and are invalid on another deployment/origin or after key/access rotation.
 
-The ledger stores hashes, timestamps, and counts only. Each opening reserves one paid attempt; each question conservatively reserves three (actor plus up to two speech segments), even if fewer are used. Limit: 72 attempts per rolling 30 minutes, 120 per deployment. Failures/cancellations remain reserved. These are operation limits, **not dollar billing or a guarantee against charges outside this preview**. Redeploying creates a new allowance and must be intentional.
+The ledger stores hashes, timestamps, and counts only. Each opening reserves one paid attempt; each question conservatively reserves three (actor plus up to two speech segments), even if fewer are used, and the one spoken alternative reserves three on the same basis. A full encounter with its alternative therefore reserves 34 units. Limit: 72 attempts per rolling 30 minutes, 120 per deployment. Failures/cancellations remain reserved. These are operation limits, **not dollar billing or a guarantee against charges outside this preview**. Redeploying creates a new allowance and must be intentional.
 
 ## Acceptance before sharing
 
