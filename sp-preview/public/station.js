@@ -110,6 +110,23 @@
 
   var STYLE='.sp-station [hidden]{display:none!important}.sp-station{min-width:0}.sp-station .station-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}.sp-station .station-inset{padding:16px;border:1px solid var(--line,#ded6ca);border-radius:12px;margin-block:14px}.sp-station textarea{display:block;width:100%;box-sizing:border-box;min-height:100px;margin-block:8px 16px;font:inherit}.sp-station blockquote{margin:14px 0;padding:12px 16px;border-left:3px solid #2d726c;overflow-wrap:anywhere}.sp-station .station-small{font-size:.9rem;line-height:1.5}.sp-station summary{cursor:pointer;padding:8px 0;min-height:28px}.sp-station button,.sp-station select{min-height:44px;max-width:100%}.sp-station .station-cue{border-left:4px solid #847359;padding-left:16px}.sp-station li{margin-block:6px}';
 
+  function retryMoments(snapshot){
+    var moments=[],turnId=0,pending=null;
+    (snapshot.transcript||[]).forEach(function(entry){
+      if(entry.who==='me'){turnId++;pending={turnId:turnId,question:entry.text};}
+      else if(pending){
+        // Only a completed exchange can be returned to, and it is described by
+        // what was heard, never by the generated tail.
+        var moment={turnId:pending.turnId,question:pending.question,reply:entry.text,playbackStatus:entry.playbackStatus};
+        if(entry.heardText)moment.heardText=entry.heardText;
+        if(entry.playbackStatus!=='pending')moments.push(moment);
+        pending=null;
+      }
+    });
+    var played=moments.filter(function(m){return m.playbackStatus==='played';});
+    return played.concat(moments.filter(function(m){return m.playbackStatus!=='played';}));
+  }
+
   // The station is a projection of the snapshot. It never calls fetch, never
   // touches the controller, and never reads or writes browser storage.
   function createStation(env,host,options){
@@ -168,6 +185,27 @@
     handoff.addEventListener('input',function(){presentation=String(handoff.value||'').slice(0,4000);});
     el('p',profile.reflectionQuestion,closing,{class:'fine'});
 
+    var retryBox=el('div',null,closing,{'data-station':'retry'});
+    el('h3','Try one moment again',retryBox);
+    el('p','Ask one earlier moment a different way. Dana starts from just before your original question and knows only what you had heard by then. This is not a score and does not replace your first conversation.',retryBox,{class:'fine'});
+    var retrySelect=el('select',null,retryBox,{'aria-label':'Moment to try again'});
+    var retryOriginal=el('blockquote','',retryBox);
+    var retryText=el('textarea','',retryBox,{maxlength:'1200','aria-label':'Your alternative question'});
+    var retryButton=el('button','Ask this moment again',retryBox,{type:'button'});
+    var retryNote=el('p','',retryBox,{class:'fine',role:'status'});
+    function showMoment(){
+      var moments=latest?retryMoments(latest):[],chosen=moments[Number(retrySelect.value)||0];
+      retryOriginal.textContent=chosen?'You: '+chosen.question+'  Dana: '+(chosen.heardText||(chosen.playbackStatus==='played'?chosen.reply:'nothing confirmed heard')):'';
+    }
+    retrySelect.addEventListener('change',showMoment);
+    retryButton.addEventListener('click',function(){
+      var moments=latest?retryMoments(latest):[],chosen=moments[Number(retrySelect.value)||0];
+      if(!chosen)return;
+      retryButton.hidden=true;retryNote.textContent='Asking that moment again…';
+      Promise.resolve(typeof options.onRetry==='function'?options.onRetry(chosen.turnId,String(retryText.value||'')):false)
+        .then(function(accepted){retryNote.textContent=accepted?'Your alternative was asked. Compare the two in supervision.':'That alternative could not be asked. It will not be sent again.';if(!accepted)retryButton.hidden=false;});
+    });
+
     var latest=null;
     function draw(){
       markList.replaceChildren();
@@ -189,10 +227,17 @@
       if(next!==lastCue){lastCue=next;cue.textContent=next;}
       markButton.hidden=!store.candidate(latest);
       closing.hidden=latest.phase!=='ended';
+      if(latest.phase==='ended'&&!retrySelect.children.length){
+        retryMoments(latest).forEach(function(moment,index){el('option','Turn '+moment.turnId+' — '+moment.question.slice(0,80),retrySelect,{value:String(index)});});
+        showMoment();
+      }
+      retryBox.hidden=!!hostedSnapshot.retryUsed;
       draw();
     }
     update({phase:'gate',messages:[]});
     return {update:update,
+      getRetryMoments:function(){return latest?retryMoments(latest):[];},
+      requestRetry:function(turnId,text){return typeof options.onRetry==='function'?options.onRetry(turnId,text):false;},
       dispose:function(){disposed=true;},
       getPresentation:function(){return presentation;},
       getReflections:function(){return Object.assign({},notes);},

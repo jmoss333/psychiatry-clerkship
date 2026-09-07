@@ -123,10 +123,10 @@
   }
 
   function createController(env,options){
-    options=options||{};var phase='gate',key='',receipt=null,turn=0,messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false;
+    options=options||{};var phase='gate',key='',receipt=null,turn=0,messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false,retryUsed=false;
     var previousPlayback='interrupted',previousCompletedSegments=0,generation=0;
     var tally={startRequests:0,turnRequests:0,automaticSubmissions:0,explicitSubmissions:0};
-    function snapshot(){return {phase:phase,turn:turn,messages:messages.map(function(message){var copy=Object.assign({},message);if(copy.segments)copy.segments=copy.segments.slice();return copy;}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired};}
+    function snapshot(){return {phase:phase,turn:turn,messages:messages.map(function(message){var copy=Object.assign({},message);if(copy.segments)copy.segments=copy.segments.slice();return copy;}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired,retryUsed:retryUsed};}
     function publish(){if(!disposed&&typeof options.onChange==='function')options.onChange(snapshot());}
     var capture=createCapture(env,{hasDraft:function(){return !!draft.trim();},onReady:function(){if(!task&&!disposed&&!ended){phase='listening';publish();}},onConnecting:function(info){if(!task&&!disposed&&!ended){phase=info&&info.resuming&&!info.delayed&&phase==='listening'?'listening':'connecting';publish();}},onFinal:function(text){if(task||disposed)return;draft=(draft.trim()+' '+text).trim();if(problem&&(phase==='listening'||phase==='connecting'))problem='';if(draft.length>1200){capture.stop();phase='paused';problem=safeMessage('text_too_long');}publish();},onInterim:function(text){interim=text;publish();},onSubmit:function(){send(undefined,true);},onNotice:function(error){if(disposed||ended||task)return;problem=safeMessage(error.code);publish();},onError:function(error){if(disposed)return;phase='paused';problem=safeMessage(error.code);publish();}});
     function stopPlayer(){if(player){player.stop();player=null;}}
@@ -148,16 +148,17 @@
     }
     function ready(){if(disposed||ended||restartRequired||task)return;if(turn>=10){ended=true;phase='ended';publish();return;}if(voice&&!env.document.hidden){phase='connecting';publish();capture.start();}else{phase='ready';publish();}}
     async function request(body,learner){
-      if(task||disposed||restartRequired||ended)return false;capture.stop();problem='';interim='';
+      // A retry is the one request that legitimately follows the end of an encounter.
+      if(task||disposed||restartRequired||(ended&&body.action!=='retry'))return false;capture.stop();problem='';interim='';
       if(body.action==='start')tally.startRequests++;else tally.turnRequests++;
       var operation={id:++generation,abort:new AbortController(),receivedState:false,completed:0,reply:null,error:null,cancelled:false,learner:learner};task=operation;phase='responding';publish();
       var timeout=env.setTimeout(function(){operation.error=issue('timeout');operation.abort.abort();if(task===operation)stopPlayer();},90000),queue=Promise.resolve();
       try{
         var response=await env.fetch('/api/dana-preview',{method:'POST',headers:{'Content-Type':'application/json','x-preview-key':key},body:JSON.stringify(body),signal:operation.abort.signal,credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer'});
         await readResponse(response,{
-          expectedTurn:body.action==='start'?0:turn+1,
+          expectedTurn:body.action==='start'?0:body.action==='retry'?body.turnId:turn+1,
           onState:function(state){if(disposed||task!==operation||operation.abort.signal.aborted)throw cancelled();receipt=state;operation.receivedState=true;previousPlayback='interrupted';previousCompletedSegments=operation.completed;},
-          onReply:function(event){turn=event.turn;operation.reply={role:'dana',text:event.reply,status:'preparing',completedSegments:0,totalSegments:event.segments.length,segments:event.segments.map(function(segment){return segment.text;})};messages.push(operation.reply);if(learner)learner.status='submitted';publish();},
+          onReply:function(event){if(body.action!=='retry')turn=event.turn;operation.reply={role:'dana',text:event.reply,status:'preparing',completedSegments:0,totalSegments:event.segments.length,segments:event.segments.map(function(segment){return segment.text;})};messages.push(operation.reply);if(learner)learner.status='submitted';publish();},
           onAudio:function(event){queue=queue.then(function(){return play(event,operation);});queue.catch(function(error){if(!operation.error)operation.error=error;operation.abort.abort();if(task===operation)stopPlayer();});}
         },operation.abort.signal);
         await queue;if(operation.error)throw operation.error;if(operation.abort.signal.aborted)throw cancelled();
@@ -168,7 +169,9 @@
         error=operation.error||error;previousPlayback='interrupted';previousCompletedSegments=operation.completed;
         if(operation.reply){operation.reply.status='interrupted';operation.reply.completedSegments=operation.completed;}
         if(!operation.receivedState){restartRequired=true;if(learner)learner.status='unconfirmed';}
-        if(!disposed&&!ended){phase=restartRequired?'restart':'paused';problem=operation.cancelled?'':safeMessage(error.code);if(restartRequired)problem+=(problem?' ':'')+'The last request stopped before its updated conversation receipt arrived. Its outcome is unknown. Clear and restart; it will not be sent again automatically.';}
+        // A failed retry happens with ended already true; without this it would set
+        // restartRequired and show the learner no reason for it.
+        if(!disposed&&(!ended||body.action==='retry')){phase=restartRequired?'restart':ended?'ended':'paused';problem=operation.cancelled?'':safeMessage(error.code);if(restartRequired)problem+=(problem?' ':'')+'The last request stopped before its updated conversation receipt arrived. Its outcome is unknown. Clear and restart; it will not be sent again automatically.';}
         if(body.action==='start'&&['access_denied','preview_forbidden'].includes(error.code)){key='';receipt=null;restartRequired=false;phase='gate';problem=safeMessage('access_denied');}
         operation.failed=true;
       }finally{
@@ -191,13 +194,25 @@
       var learner={role:'you',text:value,status:'pending'};messages.push(learner);draft='';
       return request({action:'turn',state:receipt,text:value,previousPlayback:previousPlayback,previousCompletedSegments:previousCompletedSegments},learner);
     }
+    // One spoken alternative from a finished encounter. It presents the latest,
+    // unconsumed receipt: an earlier one is what the server's ledger refuses.
+    async function retry(turnId,text){
+      if(task||disposed||restartRequired||retryUsed||!ended||!receipt)return false;
+      if(!Number.isInteger(turnId)||turnId<1||turnId>turn)return false;
+      var value=normalized(text);
+      if(!value||value.length>1200||/[\u0000-\u001f\u007f]/.test(value)){problem=safeMessage(!value?'no_words':value.length>1200?'text_too_long':'input_invalid');publish();return false;}
+      var learner={role:'you',text:value,status:'pending'};messages.push(learner);
+      var accepted=await request({action:'retry',state:receipt,turnId:turnId,text:value},learner);
+      if(accepted)retryUsed=true;
+      return accepted;
+    }
     function pause(){capture.stop();if(task){task.cancelled=true;task.abort.abort();stopPlayer();}else if(!ended&&!restartRequired&&phase!=='gate')phase='paused';publish();}
     function end(){ended=true;capture.stop();if(task){task.cancelled=true;task.abort.abort();}stopPlayer();phase='ended';publish();}
     function resume(){if(disposed||env.document.hidden||task||ended||restartRequired||!receipt)return false;voice=true;problem='';phase='connecting';publish();capture.start();return true;}
     function setDraft(text){if(task||ended||restartRequired||disposed)return;draft=String(text).slice(0,1200);interim='';if(capture.isActive()){capture.stop();phase='paused';}problem='';publish();}
     function clear(){generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';publish();}
     function dispose(){if(disposed)return;disposed=true;end();clear();}
-    return {start:start,send:send,pause:pause,interrupt:pause,end:end,resume:resume,setDraft:setDraft,clear:clear,dispose:dispose,getSnapshot:snapshot,
+    return {start:start,send:send,retry:retry,pause:pause,interrupt:pause,end:end,resume:resume,setDraft:setDraft,clear:clear,dispose:dispose,getSnapshot:snapshot,
       getDiagnostics:function(){return Object.assign({},tally,capture.diagnostics());},
       setThinking:function(value){thinking=!!value;capture.setThinking(thinking);publish();},setHold:function(value){hold=!!value;capture.setHold(hold);publish();}};
   }
@@ -209,7 +224,7 @@
     if(!recognitionAvailable)el('voice-support').textContent='This browser does not offer speech recognition. Dana still speaks, and you can type each question.';
     var controller=createController(env,{onChange:render});
     // The station is a projection of the snapshot: it never calls the controller.
-    var station=env.DanaStation&&env.DanaStationContent&&el('station-root')?env.DanaStation.createStation(env,el('station-root'),{caseId:'sp_depression_gated_si_001',content:env.DanaStationContent}):null;
+    var station=env.DanaStation&&env.DanaStationContent&&el('station-root')?env.DanaStation.createStation(env,el('station-root'),{caseId:'sp_depression_gated_si_001',content:env.DanaStationContent,onRetry:function(turnId,text){return controller.retry(turnId,text);}}):null;
     function render(snapshot){
       var active=snapshot.phase!=='gate',canSend=active&&!snapshot.busy&&!snapshot.restartRequired&&snapshot.phase!=='ended';
       el('access-panel').hidden=active;el('start').disabled=snapshot.busy;el('encounter-panel').hidden=!active;el('conversation-panel').hidden=!snapshot.messages.length;
