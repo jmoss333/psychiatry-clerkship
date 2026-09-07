@@ -1,6 +1,6 @@
 import {randomBytes,timingSafeEqual} from 'node:crypto';
 import {createContext,validateReply} from '../../_prototypes/sp-interview/dana-live-context.mjs';
-import {dana,caseBinding} from './case.mjs';
+import {getCase} from './case.mjs';
 import {hash,problem,createStateCodec,initialState,nextHistory,issuedState,retryState} from './state.mjs';
 
 const HEADERS={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
@@ -20,27 +20,34 @@ const validAudio=bytes=>Buffer.isBuffer(bytes)&&bytes.length>=100&&bytes.length<
 
 export function createHandler({env=process.env,provider,budget,now=Date.now,deadlineMs=50000}={}) {
  return async function handler(request){
-  let state,history,action,codec;
+  let state,history,action,codec,caseDef;
   try{
    const secret=env.DANA_PREVIEW_PASSCODE;
    if(env.DANA_PREVIEW_ENABLED!=='true'||typeof secret!=='string'||secret.length<16||!env.DEPLOY_ID||!provider?.configured||!budget)throw problem(503,'preview_unavailable');
    const origin=request.headers.get('origin'),allowed=[env.DEPLOY_URL,env.URL,env.DANA_PREVIEW_ORIGIN].filter(Boolean);
    if(!origin||!allowed.includes(origin)||new URL(request.url).origin!==origin||!same(request.headers.get('x-preview-key')||'',secret))throw problem(403,'preview_forbidden');
    if(request.method!=='POST')throw problem(405,'preview_input_invalid');
-   codec=createStateCodec({key:env.DANA_PREVIEW_STATE_KEY,binding:`hosted-dana-v1:${caseBinding}:${env.DEPLOY_ID}:${origin}:${hash(secret)}`,now});
    const body=await inputBody(request);action=body?.action;
+   // The case is resolved before the codec exists, because the codec is bound to it.
+   const entry=getCase(body?.caseId);
+   if(!entry)throw problem(400,'preview_input_invalid');
+   let caseBinding;({caseDef,binding:caseBinding}=entry);
+   codec=createStateCodec({key:env.DANA_PREVIEW_STATE_KEY,binding:`hosted-sp-v2:${caseDef.id}:${caseBinding}:${env.DEPLOY_ID}:${origin}:${hash(secret)}`,now});
    let operationId;
    if(action==='start'){
-    if(!exact(body,['action','requestId'])||typeof body.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(body.requestId))throw problem(400,'preview_input_invalid');
-    state=initialState(dana.persona.opening,now);operationId=`start:${body.requestId}`;
+    if(!exact(body,['action','caseId','requestId'])||typeof body.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(body.requestId))throw problem(400,'preview_input_invalid');
+    state=initialState(caseDef.persona.opening,now,caseDef.id);operationId=`start:${body.requestId}`;
    }else if(action==='turn'){
-    if(!exact(body,['action','state','text','previousPlayback','previousCompletedSegments']))throw problem(400,'preview_input_invalid');
-    state=codec.open(body.state);history=nextHistory(state,body);operationId=`turn:${state.sid}:${state.nonce}`;
+    if(!exact(body,['action','caseId','state','text','previousPlayback','previousCompletedSegments']))throw problem(400,'preview_input_invalid');
+    state=codec.open(body.state);
+    if(state.caseId!==caseDef.id)throw problem(400,'preview_state_invalid');
+    history=nextHistory(state,body);operationId=`turn:${state.sid}:${state.nonce}`;
    }else if(action==='retry'){
-    if(!exact(body,['action','state','turnId','text']))throw problem(400,'preview_input_invalid');
+    if(!exact(body,['action','caseId','state','turnId','text']))throw problem(400,'preview_input_invalid');
     // The receipt presented here is the LATEST, unconsumed one. An earlier receipt
     // would be refused by the ledger, and that refusal is the control being kept.
     const parent=codec.open(body.state);
+    if(parent.caseId!==caseDef.id)throw problem(400,'preview_state_invalid');
     state=retryState(parent,body.turnId,randomBytes(16).toString('hex'));
     // The client reports no playback for a retry, and must not: its counts describe
     // the reply it last heard, at the END of the encounter, not the moment being
@@ -65,7 +72,7 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
     const send=value=>{if(abort.signal.aborted||closed)throw problem(409,'preview_cancelled');controller.enqueue(new TextEncoder().encode(JSON.stringify(value)+'\n'));};
     async function speak(text){
      if(abort.signal.aborted)throw problem(409,'preview_cancelled');
-     const bytes=await provider.speak({text,caseId:dana.id,signal:abort.signal});
+     const bytes=await provider.speak({text,caseId:caseDef.id,signal:abort.signal});
      if(abort.signal.aborted)throw problem(409,'preview_cancelled');
      if(!validAudio(bytes))throw problem(502,'preview_provider_unavailable');
      return bytes;
@@ -75,9 +82,9 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
      const begin=text=>{const job=speak(text);job.catch(()=>{});pending.push(job);return job;};
      try{
       let reply,segments,jobs;
-      if(action==='start'){reply=dana.persona.opening;segments=[reply];jobs=[begin(reply)];}
+      if(action==='start'){reply=caseDef.persona.opening;segments=[reply];jobs=[begin(reply)];}
       else {
-       const context=createContext(dana,history.filter(entry=>entry.who==='me').map(entry=>entry.text),history);
+       const context=createContext(caseDef,history.filter(entry=>entry.who==='me').map(entry=>entry.text),history);
        let lead=null,leadJob=null,acceptingLead=true;
        const onLead=text=>{
         if(!acceptingLead||abort.signal.aborted)return;

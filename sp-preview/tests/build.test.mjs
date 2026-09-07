@@ -28,7 +28,7 @@ test('the modern function bundles with its private grounding and no Python runti
  const dir=await mkdtemp(path.join(tmpdir(),'dana-hosted-bundle-'));
  try{
   const result=await build({entryPoints:[path.join(root,'netlify/functions/dana-preview.mjs')],outfile:path.join(dir,'dana.mjs'),bundle:true,platform:'node',target:'node22',format:'esm',write:false,metafile:true,external:['@netlify/blobs'],logLevel:'silent'});
-  assert.equal(result.errors.length,0);assert.ok(result.outputFiles[0].text.includes('hosted-dana-v1'));
+  assert.equal(result.errors.length,0);assert.ok(result.outputFiles[0].text.includes('hosted-sp-v2'));
   assert.ok(!Object.keys(result.metafile.inputs).some(file=>file.includes('dana-openai-worker.py')||file.includes('dana-live-server.mjs')));
  }finally{await rm(dir,{recursive:true,force:true});}
  const entry=await readFile(path.join(root,'netlify/functions/dana-preview.mjs'),'utf8');
