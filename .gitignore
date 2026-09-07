@@ -87,9 +87,15 @@ node_modules/
 # Regenerable PDF-review screenshots.
 tmp/
 
+# Local-only prerecorded Dana voice library; generated from the canonical case.
+/output/speech/dana-marin-v1/
+
 # ---- Evidence Inbox: general drop folder for studies/documents awaiting triage ----
 # Same posture as the OpenEvidence inbox: raw sources are staged here and processed into
 # curated pages + span-verified annotations; they are never committed from here.
 # The README is tracked so the folder and its procedure survive a fresh clone.
 /Evidence Inbox/*
 !/Evidence Inbox/README.md
+
+# Local-only Marcus and Ray opening recordings for the voice-case preview.
+/output/speech/voice-cases-v1/

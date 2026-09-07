@@ -1,0 +1,43 @@
+{
+  "id": "repeat-sleep-question",
+  "title": "A repeated question within the same interview",
+  "synthetic": true,
+  "tags": [
+    "repeated_question"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    },
+    {
+      "who": "me",
+      "text": "How has your sleep been?"
+    },
+    {
+      "who": "pt",
+      "text": "I fall asleep okay because I'm exhausted, but I'm wide awake at three or four every morning. That's the worst part of the day. Just me and the ceiling.",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "How has your sleep been?",
+  "expectations": {
+    "should": [
+      "Answer consistently with the previously stated sleep pattern.",
+      "A natural brief restatement is acceptable; the learner may need clarification."
+    ],
+    "mustNot": [
+      "Do not scold the learner for repeating a question.",
+      "Do not change the sleep history or invent exact hours slept."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "responses.sleep.open.0"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

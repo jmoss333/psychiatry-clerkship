@@ -128,24 +128,45 @@ export function branchSyncNotice(branchSync) {
   }
   const ahead = Number(branchSync.aheadBy) || 0;
   const behind = Number(branchSync.behindBy) || 0;
-  const parts = [
-    `${ahead} unmerged attestation${ahead === 1 ? '' : 's'} `
-      + `${ahead === 1 ? 'is' : 'are'} waiting on the attestation branch.`,
-  ];
-  if (branchSync.reasons.includes('stranded-no-pr')) {
-    parts.push('No rolling pull request is open — they have no route to main.');
-  }
+  const branch = text(branchSync.branch) || 'the attestation branch';
+  const baseBranch = text(branchSync.baseBranch) || 'main';
+  // A stranded branch has no pull request to link or to merge, so it gets its own
+  // sentence and its own repair: the Reopen button beside this notice, which asks the
+  // server to open the rolling request. Saying "merge the rolling pull request" to
+  // someone who has none is what made the 2026-09 stranding survive being noticed.
+  const stranded = branchSync.reasons.includes('stranded-no-pr');
+  const parts = [stranded
+    ? `${ahead} attestation${ahead === 1 ? '' : 's'} ${ahead === 1 ? 'is' : 'are'} on `
+      + `\`${branch}\` with no open review request — press Reopen review request.`
+    : `${ahead} unmerged attestation${ahead === 1 ? '' : 's'} `
+      + `${ahead === 1 ? 'is' : 'are'} waiting on \`${branch}\`.`];
   if (branchSync.reasons.includes('base-lag')) {
-    parts.push(`Its base is ${behind} commit${behind === 1 ? '' : 's'} behind main, `
+    parts.push(`Its base is ${behind} commit${behind === 1 ? '' : 's'} behind ${baseBranch}, `
       + 'so the queue below may be stale.');
   }
-  parts.push('Merge the rolling pull request (merge commit, not squash) before attesting further.');
+  parts.push(stranded
+    ? 'Reopen it, then merge it (merge commit, not squash) before attesting further.'
+    : 'Merge the rolling pull request (merge commit, not squash) before attesting further.');
   let href = null;
   try {
     const url = new URL(String(branchSync.rollingPr));
     if (url.protocol === 'https:') href = url.href;
   } catch { /* no link */ }
-  return { tone: 'alert', href, message: parts.join(' ') };
+  return { tone: 'alert', href, action: stranded ? 'ensure-pr' : null, message: parts.join(' ') };
+}
+
+// The derived review queue (shipped_pages.json) is read from the base branch whenever
+// the attestation branch does not carry it — a lagging branch costs this one line
+// instead of the whole console (2026-09-04). Pure and exported for the same reason as
+// branchSyncNotice: the wire field and the sentence faculty read stay pinned together.
+export function shippedPagesNotice(server) {
+  if (!server || typeof server !== 'object' || server.shippedPagesSource !== 'base') return null;
+  const baseBranch = text(server.shippedPagesBranch) || 'main';
+  return {
+    tone: 'muted',
+    message: `Review queue derived from \`${baseBranch}\`; the attestation branch is missing `
+      + 'shipped_pages.json — merge the rolling review request.',
+  };
 }
 
 function parseDelimited(value) {
@@ -1015,6 +1036,51 @@ export function startFacultyConsole({
       } else {
         renderLoadError(message);
       }
+      return false;
+    }
+  }
+
+  // The repair the stranded-branch alarm names. One POST asks the server to open (or
+  // to find) the rolling review request; the silent reload that follows clears the
+  // alarm from the refreshed probe rather than from local optimism. No file is written
+  // here, so there is no draft to protect and no conflict to resolve — a failure is
+  // announced and the notice stays exactly as it was.
+  async function reopenReviewRequest() {
+    if (state.pending) return false;
+    state.pending = true;
+    renderShell();
+    try {
+      const response = await fetchImpl(API, {
+        method: 'POST',
+        headers: apiHeaders(true),
+        body: JSON.stringify({ action: 'branch.ensure-pr' }),
+      });
+      const payload = await responseJson(response);
+      if (response.status === 401) {
+        clearKey();
+        state.pending = false;
+        renderLogin('Key not accepted. Enter the faculty key and try again.');
+        return false;
+      }
+      if (!response.ok) {
+        state.pending = false;
+        announce(stableResponseMessage(payload, 'The review request was not reopened.'));
+        renderShell();
+        return false;
+      }
+      const reloaded = await load({ silent: true });
+      if (reloaded) {
+        announce(text(payload.pullRequest)
+          ? 'Review request reopened. The attestations on the attestation branch now have a route to the base branch.'
+          : 'Review request confirmed open.');
+      }
+      return reloaded;
+    } catch (error) {
+      state.pending = false;
+      announce(error instanceof Error
+        ? `network_error: ${error.message}`
+        : 'network_error: The review request was not reopened.');
+      renderShell();
       return false;
     }
   }
@@ -2229,7 +2295,22 @@ export function startFacultyConsole({
             target: '_blank',
             rel: 'noopener noreferrer',
           }, ['Open the rolling pull request']) : null,
+          syncNotice.action === 'ensure-pr' ? el('button', {
+            id: 'reopen-review-request',
+            class: 'quiet',
+            type: 'button',
+            disabled: state.pending === true,
+            onClick: () => void reopenReviewRequest(),
+          }, ['Reopen review request']) : null,
         ]);
+      })(),
+      (() => {
+        const shippedNotice = shippedPagesNotice(state.server);
+        if (!shippedNotice) return null;
+        return el('div', {
+          id: 'shipped-pages-notice',
+          class: `session-notice branch-sync ${shippedNotice.tone}`,
+        }, [el('p', {}, [shippedNotice.message])]);
       })(),
       el('section', { class: 'reviewer-strip', 'aria-label': 'Reviewer context' }, [
         el('div', { class: 'field' }, [

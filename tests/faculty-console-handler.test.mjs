@@ -675,7 +675,109 @@ test('a malformed or missing shipped_pages.json fails closed, never a short queu
   const mock = createGithubMock({ files: missing });
   const response = await handlerWith(mock)(apiRequest('GET'));
   assert.equal(response.ok, false);
-  assert.notEqual(response.status, 200);
+  await expectError(response, { status: 502, code: 'repository_file_missing' });
+});
+
+/* Branch lag (2026-09-04 → 2026-09-07). shipped_pages.json landed on `main` while
+   `attest/pending` sat five attestations ahead, so every console GET 404'd reading the
+   derived listing from the attestation branch, GitHub's 404 became "The repository
+   request failed. Try again later.", and the console was dark for three days. The
+   listing is derived and never written here, so GET reads it from the base branch when
+   the attestation branch does not carry it and says which branch it used. The ledger
+   (reviewed.json) and the bank stay pinned to the attestation branch: reading those
+   from anywhere else is how a merge silently reverts an attestation. */
+
+const ATTEST_BRANCH = 'attest/pending';
+const BASE_BRANCH = 'main';
+const ISOLATED_ENV = Object.freeze({
+  GIT_BRANCH: ATTEST_BRANCH,
+  GIT_BASE_BRANCH: BASE_BRANCH,
+});
+
+// The harness above is hardcoded to `main` — exactly the configuration these tests do
+// not use — so this answers the branch-sync traffic it does not know about and decides
+// which refs carry which file. Everything else falls through to the shared mock.
+function isolatedBranch({ shippedOn = [BASE_BRANCH], reviewedOn = null } = {}) {
+  return async ({ url, method, git, path }) => {
+    if (method === 'GET' && git === `ref/heads/${ATTEST_BRANCH}`) {
+      return jsonResponse(200, { object: { type: 'commit', sha: BRANCH_HEAD_SHA } });
+    }
+    if (method === 'GET' && url.includes('/compare/')) {
+      return jsonResponse(200, { ahead_by: 0, behind_by: 0 });
+    }
+    if (url.includes('/pulls')) {
+      return method === 'GET'
+        ? jsonResponse(200, [])
+        : jsonResponse(201, { html_url: 'https://github.example/pull/1' });
+    }
+    const ref = method === 'GET' && path ? new URL(url).searchParams.get('ref') : null;
+    if (path === SHIPPED_PAGES_PATH && ref && !shippedOn.includes(ref)) {
+      return jsonResponse(404, { message: 'Synthetic file not found.' });
+    }
+    if (path === REVIEWED_PATH && reviewedOn && ref && !reviewedOn.includes(ref)) {
+      return jsonResponse(404, { message: 'Synthetic file not found.' });
+    }
+    return null;
+  };
+}
+
+function refsFor(mock, path) {
+  return [...new Set(mock.calls
+    .filter(call => call.method === 'GET' && call.path === path)
+    .map(call => new URL(call.url).searchParams.get('ref')))];
+}
+
+test('GET derives the queue from the base branch when the attestation branch lacks the listing', async () => {
+  const mock = createGithubMock({ beforeRequest: isolatedBranch({ shippedOn: [BASE_BRANCH] }) });
+  const response = await handlerWith(mock, ISOLATED_ENV)(apiRequest('GET'));
+  assert.equal(response.status, 200, 'a lagging branch costs a notice, not the console');
+  const payload = await response.json();
+  assert.equal(payload.shippedPagesSource, 'base');
+  assert.equal(payload.shippedPagesBranch, BASE_BRANCH);
+  assert.deepEqual(payload.items.map(item => item.slug).sort(), ['mse-tool', 't_mood.md']);
+  assert.equal(payload.counts.pagesTotal, 2, 'the queue is populated, not short');
+  // The ledger must never follow the listing off the attestation branch.
+  assert.deepEqual(refsFor(mock, REVIEWED_PATH), [ATTEST_BRANCH]);
+  assert.deepEqual(refsFor(mock, QBANK_PATH), [ATTEST_BRANCH]);
+  assert.deepEqual(refsFor(mock, SHIPPED_PAGES_PATH), [ATTEST_BRANCH, BASE_BRANCH],
+    'the branch is tried first; the base is the fallback');
+});
+
+test('GET reports the ordinary case as branch-sourced with the branch revision', async () => {
+  const mock = createGithubMock({
+    beforeRequest: isolatedBranch({ shippedOn: [ATTEST_BRANCH, BASE_BRANCH] }),
+  });
+  const payload = await (await handlerWith(mock, ISOLATED_ENV)(apiRequest('GET'))).json();
+  assert.equal(payload.shippedPagesSource, 'branch');
+  assert.equal(payload.shippedPagesBranch, ATTEST_BRANCH);
+  assert.equal(payload.shippedPagesRevision, SHIPPED_SHA);
+  assert.deepEqual(refsFor(mock, SHIPPED_PAGES_PATH), [ATTEST_BRANCH], 'no needless fallback read');
+});
+
+test('a listing on neither branch names the file, the branch, and the fix', async () => {
+  const mock = createGithubMock({ beforeRequest: isolatedBranch({ shippedOn: [] }) });
+  const payload = await expectError(await handlerWith(mock, ISOLATED_ENV)(apiRequest('GET')), {
+    status: 502,
+    code: 'repository_file_missing',
+  });
+  assert.match(payload.error.message, /shipped_pages\.json/);
+  assert.match(payload.error.message, new RegExp(ATTEST_BRANCH.replace('/', '\\/')));
+  assert.match(payload.error.message, /merge the rolling review request/i);
+  assert.doesNotMatch(payload.error.message, /try again later/i,
+    'a missing file is not a transport failure faculty should wait out');
+});
+
+test('a missing ledger is actionable too, and never falls back to another branch', async () => {
+  const mock = createGithubMock({
+    beforeRequest: isolatedBranch({ shippedOn: [ATTEST_BRANCH], reviewedOn: [BASE_BRANCH] }),
+  });
+  const payload = await expectError(await handlerWith(mock, ISOLATED_ENV)(apiRequest('GET')), {
+    status: 502,
+    code: 'repository_file_missing',
+  });
+  assert.match(payload.error.message, /reviewed\.json/);
+  assert.deepEqual(refsFor(mock, REVIEWED_PATH), [ATTEST_BRANCH],
+    'the ledger is read from the attestation branch or not at all');
 });
 
 test('exports the Netlify v2 route and per-IP/domain rate limit', () => {

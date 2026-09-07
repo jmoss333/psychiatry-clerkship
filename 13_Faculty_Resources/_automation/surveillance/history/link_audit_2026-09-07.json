@@ -1,0 +1,86 @@
+[
+  {
+    "finding_id": "link:www.admsep.org::broken-link::378d5c25815a68ca",
+    "fingerprint": "link:www.admsep.org::broken-link::378d5c25815a68ca",
+    "job": "link-source-monitor",
+    "source_id": "link:www.admsep.org",
+    "source_name": "www.admsep.org",
+    "source_url": "https://www.admsep.org/csi-emodules.php",
+    "source_type": "html",
+    "detected_at": "2026-09-07T06:36:09+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/csi-emodules.php",
+    "evidence": {
+      "http_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged"
+  },
+  {
+    "finding_id": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+    "fingerprint": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+    "job": "link-source-monitor",
+    "source_id": "link:www.fda.gov",
+    "source_name": "www.fda.gov",
+    "source_url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+    "source_type": "html",
+    "detected_at": "2026-09-07T06:36:09+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+    "evidence": {
+      "http_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged"
+  },
+  {
+    "finding_id": "link:www.admsep.org::broken-link::56951baa3f00270a",
+    "fingerprint": "link:www.admsep.org::broken-link::56951baa3f00270a",
+    "job": "link-source-monitor",
+    "source_id": "link:www.admsep.org",
+    "source_name": "www.admsep.org",
+    "source_url": "https://www.admsep.org/Educational-Objectives-for-a-Junior-Psychiatry-Clerkship.php",
+    "source_type": "html",
+    "detected_at": "2026-09-07T06:36:09+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/Educational-Objectives-for-a-Junior-Psychiatry-Clerkship.php",
+    "evidence": {
+      "http_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged"
+  },
+  {
+    "finding_id": "link:www.fda.gov::broken-link::7415e355b41cccda",
+    "fingerprint": "link:www.fda.gov::broken-link::7415e355b41cccda",
+    "job": "link-source-monitor",
+    "source_id": "link:www.fda.gov",
+    "source_name": "www.fda.gov",
+    "source_url": "https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications",
+    "source_type": "html",
+    "detected_at": "2026-09-07T06:36:09+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on docs/curriculum-review/ms3/A4_EVIDENCE_BASE.md: https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications",
+    "evidence": {
+      "http_status": 404
+    },
+    "affects": [
+      "docs/curriculum-review/ms3/A4_EVIDENCE_BASE.md"
+    ],
+    "recommended_action": "Fix or replace the link in `docs/curriculum-review/ms3/A4_EVIDENCE_BASE.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged"
+  }
+]

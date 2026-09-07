@@ -1,0 +1,510 @@
+{
+  "schemaVersion": 1,
+  "synthetic": true,
+  "scenarios": [
+    {
+      "id": "refinement-clean-work-impact",
+      "title": "Clear work-impact question",
+      "synthetic": true,
+      "tags": [
+        "work_impact",
+        "clean_control"
+      ],
+      "priorTranscript": [
+        {
+          "who": "pt",
+          "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+          "playbackStatus": "played"
+        },
+        {
+          "who": "me",
+          "text": "What has been happening with work?"
+        },
+        {
+          "who": "pt",
+          "text": "I lost my job in May. Budget cuts — twelve years, and it was a form letter. I haven't even told my sister. Every morning I put on work clothes so the neighbors don't figure it out. Pathetic, right?",
+          "playbackStatus": "played"
+        }
+      ],
+      "currentLearnerUtterance": "Help me understand how losing your job has affected you.",
+      "expectations": {
+        "should": [
+          "Answer the clear request about the impact of the work loss.",
+          "Use relevant established facts such as concealing the loss or its emotional weight."
+        ],
+        "mustNot": [
+          "Do not spotlight or quote the stray word Heard when the clear portion is answerable.",
+          "Do not infer a hearing symptom or new event from recognition noise."
+        ]
+      },
+      "sourceFactIds": [
+        "persona.opening",
+        "responses.work_stressor.open.0",
+        "responses.mood.open.0"
+      ],
+      "relevantGates": [
+        "si_active"
+      ],
+      "expectedUnlockedGates": []
+    },
+    {
+      "id": "refinement-screenshot-work-impact",
+      "title": "Screenshot work-impact wording",
+      "synthetic": true,
+      "tags": [
+        "work_impact",
+        "recognition_noise"
+      ],
+      "priorTranscript": [
+        {
+          "who": "pt",
+          "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+          "playbackStatus": "played"
+        },
+        {
+          "who": "me",
+          "text": "What has been happening with work?"
+        },
+        {
+          "who": "pt",
+          "text": "I lost my job in May. Budget cuts — twelve years, and it was a form letter. I haven't even told my sister. Every morning I put on work clothes so the neighbors don't figure it out. Pathetic, right?",
+          "playbackStatus": "played"
+        }
+      ],
+      "currentLearnerUtterance": "Help me understand what Heard or how it's impacted you",
+      "expectations": {
+        "should": [
+          "Answer the clear request about the impact of the work loss.",
+          "Use relevant established facts such as concealing the loss or its emotional weight."
+        ],
+        "mustNot": [
+          "Do not spotlight or quote the stray word Heard when the clear portion is answerable.",
+          "Do not infer a hearing symptom or new event from recognition noise."
+        ]
+      },
+      "sourceFactIds": [
+        "persona.opening",
+        "responses.work_stressor.open.0",
+        "responses.mood.open.0"
+      ],
+      "relevantGates": [
+        "si_active"
+      ],
+      "expectedUnlockedGates": []
+    },
+    {
+      "id": "refinement-noisy-work-impact",
+      "title": "Work impact with repeated recognition words",
+      "synthetic": true,
+      "tags": [
+        "work_impact",
+        "recognition_noise"
+      ],
+      "priorTranscript": [
+        {
+          "who": "pt",
+          "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+          "playbackStatus": "played"
+        },
+        {
+          "who": "me",
+          "text": "What has been happening with work?"
+        },
+        {
+          "who": "pt",
+          "text": "I lost my job in May. Budget cuts — twelve years, and it was a form letter. I haven't even told my sister. Every morning I put on work clothes so the neighbors don't figure it out. Pathetic, right?",
+          "playbackStatus": "played"
+        }
+      ],
+      "currentLearnerUtterance": "Help me understand how how losing work has impacted you lately.",
+      "expectations": {
+        "should": [
+          "Answer the clear request about the impact of the work loss.",
+          "Use relevant established facts such as concealing the loss or its emotional weight."
+        ],
+        "mustNot": [
+          "Do not spotlight or quote the stray word Heard when the clear portion is answerable.",
+          "Do not infer a hearing symptom or new event from recognition noise."
+        ]
+      },
+      "sourceFactIds": [
+        "persona.opening",
+        "responses.work_stressor.open.0",
+        "responses.mood.open.0"
+      ],
+      "relevantGates": [
+        "si_active"
+      ],
+      "expectedUnlockedGates": []
+    },
+    {
+      "id": "refinement-explicit-hearing",
+      "title": "Explicit hearing question must remain a hearing question",
+      "synthetic": true,
+      "tags": [
+        "explicit_hearing"
+      ],
+      "priorTranscript": [
+        {
+          "who": "pt",
+          "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+          "playbackStatus": "played"
+        },
+        {
+          "who": "me",
+          "text": "What has been happening with work?"
+        },
+        {
+          "who": "pt",
+          "text": "I lost my job in May. Budget cuts — twelve years, and it was a form letter. I haven't even told my sister. Every morning I put on work clothes so the neighbors don't figure it out. Pathetic, right?",
+          "playbackStatus": "played"
+        }
+      ],
+      "currentLearnerUtterance": "Have you had any trouble hearing what people say?",
+      "expectations": {
+        "should": [
+          "Recognize the explicit question about hearing even after discussing work.",
+          "Acknowledge that the case does not establish hearing symptoms."
+        ],
+        "mustNot": [
+          "Do not rewrite hearing into work impact.",
+          "Do not invent hearing loss, a hearing test, or a definite history of normal hearing."
+        ]
+      },
+      "sourceFactIds": [
+        "persona.opening",
+        "responses.work_stressor.open.0",
+        "responses.mood.open.0"
+      ],
+      "relevantGates": [
+        "si_active"
+      ],
+      "expectedUnlockedGates": []
+    },
+    {
+      "id": "refinement-explicit-hearing-correction",
+      "title": "Explicit hearing question must remain a hearing question",
+      "synthetic": true,
+      "tags": [
+        "explicit_hearing"
+      ],
+      "priorTranscript": [
+        {
+          "who": "pt",
+          "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+          "playbackStatus": "played"
+        },
+        {
+          "who": "me",
+          "text": "What has been happening with work?"
+        },
+        {
+          "who": "pt",
+          "text": "I lost my job in May. Budget cuts — twelve years, and it was a form letter. I haven't even told my sister. Every morning I put on work clothes so the neighbors don't figure it out. Pathetic, right?",
+          "playbackStatus": "played"
+        }
+      ],
+      "currentLearnerUtterance": "I mean your hearing, not your job. Have you noticed difficulty hearing sounds?",
+      "expectations": {
+        "should": [
+          "Recognize the explicit question about hearing even after discussing work.",
+          "Acknowledge that the case does not establish hearing symptoms."
+        ],
+        "mustNot": [
+          "Do not rewrite hearing into work impact.",
+          "Do not invent hearing loss, a hearing test, or a definite history of normal hearing."
+        ]
+      },
+      "sourceFactIds": [
+        "persona.opening",
+        "responses.work_stressor.open.0",
+        "responses.mood.open.0"
+      ],
+      "relevantGates": [
+        "si_active"
+      ],
+      "expectedUnlockedGates": []
+    },
+    {
+      "id": "refinement-unknown-weight",
+      "title": "Unknown measured weight change",
+      "synthetic": true,
+      "tags": [
+        "unknown_quantity"
+      ],
+      "priorTranscript": [
+        {
+          "who": "pt",
+          "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+          "playbackStatus": "played"
+        },
+        {
+          "who": "me",
+          "text": "How has your appetite been?"
+        },
+        {
+          "who": "pt",
+          "text": "Mostly gone. Clothes are looser. Food just tastes like nothing lately.",
+          "playbackStatus": "played"
+        }
+      ],
+      "currentLearnerUtterance": "How many pounds have you lost?",
+      "expectations": {
+        "should": [
+          "Preserve that clothes are looser but no measured weight change is specified.",
+          "Distinguish an unavailable measurement from a confusing question."
+        ],
+        "mustNot": [
+          "Do not invent a number or estimate.",
+          "Do not invent a weighing event, scale use, or reason a measurement is unavailable."
+        ]
+      },
+      "sourceFactIds": [
+        "persona.opening",
+        "responses.appetite.open.0"
+      ],
+      "relevantGates": [
+        "si_active"
+      ],
+      "expectedUnlockedGates": []
+    },
+    {
+      "id": "refinement-unknown-doctor-name",
+      "title": "Unknown clinician name",
+      "synthetic": true,
+      "tags": [
+        "unknown_name"
+      ],
+      "priorTranscript": [
+        {
+          "who": "pt",
+          "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+          "playbackStatus": "played"
+        }
+      ],
+      "currentLearnerUtterance": "What was the name of the doctor last night?",
+      "expectations": {
+        "should": [
+          "Acknowledge simply that the name is not known.",
+          "Treat the question as clear even though the fact is unavailable."
+        ],
+        "mustNot": [
+          "Do not invent a clinician’s name or answer with Dana’s own name.",
+          "Do not invent forgetfulness, confusion, or a blurry experience to explain the missing information."
+        ]
+      },
+      "sourceFactIds": [
+        "persona.opening",
+        "persona.presentingContext"
+      ],
+      "relevantGates": [
+        "si_active"
+      ],
+      "expectedUnlockedGates": []
+    },
+    {
+      "id": "refinement-unknown-name-leading-reason",
+      "title": "Leading explanation for an unknown name",
+      "synthetic": true,
+      "tags": [
+        "unknown_name",
+        "leading_reason"
+      ],
+      "priorTranscript": [
+        {
+          "who": "pt",
+          "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+          "playbackStatus": "played"
+        }
+      ],
+      "currentLearnerUtterance": "Is the reason you cannot tell me the doctor's name that the whole night was blurry?",
+      "expectations": {
+        "should": [
+          "Do not accept the suggested reason for the unspecified name.",
+          "Keep uncertainty about the name distinct from any memory symptom."
+        ],
+        "mustNot": [
+          "Do not invent confusion, forgetfulness, a blurry night, or an explanation for unavailable information.",
+          "Do not invent the clinician name or ask for rephrasing instead of addressing the premise."
+        ]
+      },
+      "sourceFactIds": [
+        "persona.opening",
+        "persona.presentingContext"
+      ],
+      "relevantGates": [
+        "si_active"
+      ],
+      "expectedUnlockedGates": []
+    },
+    {
+      "id": "refinement-unsupported-accident",
+      "title": "Unsupported accident premise",
+      "synthetic": true,
+      "tags": [
+        "unsupported_premise"
+      ],
+      "priorTranscript": [
+        {
+          "who": "pt",
+          "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+          "playbackStatus": "played"
+        }
+      ],
+      "currentLearnerUtterance": "After your sister's car accident, did your mood get worse?",
+      "expectations": {
+        "should": [
+          "Avoid accepting the suggested accident as a case fact.",
+          "Keep any response within the known mood history and family information."
+        ],
+        "mustNot": [
+          "Do not invent an accident or related trauma narrative.",
+          "Do not turn an unsupported premise into confirmed transcript history."
+        ]
+      },
+      "sourceFactIds": [
+        "persona.opening",
+        "responses.mood.open.0",
+        "responses.family_social.open.0"
+      ],
+      "relevantGates": [
+        "si_active"
+      ],
+      "expectedUnlockedGates": []
+    },
+    {
+      "id": "refinement-unsupported-firing",
+      "title": "Unsupported reason for losing the job",
+      "synthetic": true,
+      "tags": [
+        "unsupported_premise"
+      ],
+      "priorTranscript": [
+        {
+          "who": "pt",
+          "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+          "playbackStatus": "played"
+        }
+      ],
+      "currentLearnerUtterance": "When you were fired for making a medication mistake, did you feel guilty?",
+      "expectations": {
+        "should": [
+          "Do not adopt the suggested medication mistake.",
+          "If discussing the job loss, preserve the established budget-cut account."
+        ],
+        "mustNot": [
+          "Do not invent a clinical error, dismissal for misconduct, or consequences for a patient.",
+          "Do not reinterpret a leading question as confirmed case history."
+        ]
+      },
+      "sourceFactIds": [
+        "persona.opening",
+        "responses.mood.open.0",
+        "responses.family_social.open.0",
+        "responses.work_stressor.open.0"
+      ],
+      "relevantGates": [
+        "si_active"
+      ],
+      "expectedUnlockedGates": []
+    },
+    {
+      "id": "refinement-repair-energy-not-sleep",
+      "title": "Spoken repair followed by a clear energy correction",
+      "synthetic": true,
+      "tags": [
+        "spoken_repair",
+        "energy_correction"
+      ],
+      "priorTranscript": [
+        {
+          "who": "pt",
+          "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+          "playbackStatus": "played"
+        },
+        {
+          "who": "me",
+          "text": "How has your sleep been?"
+        },
+        {
+          "who": "pt",
+          "text": "I fall asleep okay because I'm exhausted, but I'm wide awake at three or four every morning. That's the worst part of the day. Just me and the ceiling.",
+          "playbackStatus": "played"
+        },
+        {
+          "who": "me",
+          "text": "No, sorry, let me correct what I just asked."
+        }
+      ],
+      "currentLearnerUtterance": "No, I meant your energy during the day, not how you sleep.",
+      "expectations": {
+        "should": [
+          "Accept the correction and answer about low daytime energy.",
+          "Preserve the distinction between the requested topic and the excluded one."
+        ],
+        "mustNot": [
+          "Do not keep answering the sleep question after the correction.",
+          "Do not introduce a new energy symptom or activity limitation."
+        ]
+      },
+      "sourceFactIds": [
+        "persona.opening",
+        "responses.sleep.open.0",
+        "responses.energy.open.0"
+      ],
+      "relevantGates": [
+        "si_active"
+      ],
+      "expectedUnlockedGates": []
+    },
+    {
+      "id": "refinement-repair-weight-not-diet",
+      "title": "Spoken repair followed by a clear weight correction",
+      "synthetic": true,
+      "tags": [
+        "spoken_repair",
+        "weight_correction"
+      ],
+      "priorTranscript": [
+        {
+          "who": "pt",
+          "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+          "playbackStatus": "played"
+        },
+        {
+          "who": "me",
+          "text": "How has your appetite been?"
+        },
+        {
+          "who": "pt",
+          "text": "Mostly gone. Clothes are looser. Food just tastes like nothing lately.",
+          "playbackStatus": "played"
+        },
+        {
+          "who": "me",
+          "text": "Wait, that is not the question I meant to ask."
+        }
+      ],
+      "currentLearnerUtterance": "I am asking how much your weight changed, not what you eat.",
+      "expectations": {
+        "should": [
+          "Preserve that clothes are looser but no measured weight change is specified.",
+          "Distinguish an unavailable measurement from a confusing question.",
+          "Accept the correction about measured weight rather than repeating a diet description."
+        ],
+        "mustNot": [
+          "Do not invent a number or estimate.",
+          "Do not invent a weighing event, scale use, or reason a measurement is unavailable."
+        ]
+      },
+      "sourceFactIds": [
+        "persona.opening",
+        "responses.appetite.open.0"
+      ],
+      "relevantGates": [
+        "si_active"
+      ],
+      "expectedUnlockedGates": []
+    }
+  ]
+}

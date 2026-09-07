@@ -1,6 +1,6 @@
 # Surveillance status
 
-_Generated 2026-09-03T18:38:59+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
+_Generated 2026-09-07T07:21:30+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
 _Issue truth: **live**._
 
 ## Summary
@@ -9,7 +9,7 @@ _Issue truth: **live**._
 - **Pages needing re-review:** 29
 - **Stale sources:** 1
 
-- **Citation checks:** 646 DOI/PMID IDs tracked  •  latest check 2026-09-03  •  0 stale
+- **Citation checks:** 646 DOI/PMID IDs tracked  •  latest check 2026-09-07  •  0 stale
 
 - **Citation P1s:** 733 total  •  233 touch live teaching pages  •  500 archive/import-only
 
@@ -24,16 +24,16 @@ _Issue truth: **live**._
   - affects: `13_Faculty_Resources/APA_Downloads_2026-06-29/APA_SURFACE_CARDS.md`
 - **[link:mmc-psychiatry-residents-sanford.netlify.app]** Broken link (no response) on 13_Faculty_Resources/Handoffs/library_review_2026-07-01.md: https://mmc-psychiatry-residents-sanford.netlify.app/  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/434))
   - affects: `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md`
-- **[link:www.admsep.org]** Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/csi-emodules.php  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/422))
-  - affects: `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`
-- **[link:www.admsep.org]** Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/Educational-Objectives-for-a-Junior-Psychiatry-Clerkship.php  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/423))
-  - affects: `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`
 - **[link:mental-health-education-library.netlify.app]** Broken link (no response) on 13_Faculty_Resources/Outreach/alex-tour/index.html: https://mental-health-education-library.netlify.app/  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/435))
   - affects: `13_Faculty_Resources/Outreach/alex-tour/index.html`
 - **[link:www.aacom.org]** Broken link (405) on 03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md: https://www.aacom.org/become-a-doctor/about-osteopathic-medicine/omm-explained  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/436))
   - affects: `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md`
 - **[link:www.aacom.org]** Broken link (405) on 03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md: https://www.aacom.org/medical-education/teaching-and-learning/competency-curriculum-resources  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/437))
   - affects: `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md`
+- **[link:www.admsep.org]** Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/csi-emodules.php  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/422))
+  - affects: `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`
+- **[link:www.admsep.org]** Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/Educational-Objectives-for-a-Junior-Psychiatry-Clerkship.php  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/423))
+  - affects: `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`
 
 ## Citation triage
 
@@ -82,7 +82,7 @@ _Issue truth: **live**._
 | `13_Faculty_Resources/APA_Downloads_2026-06-29/APA_SURFACE_CARDS.md` | 2026-08-31 | — never attested — |
 | `13_Faculty_Resources/APA_Downloads_2026-06-29/catalog.html` | 2026-08-31 | — never attested — |
 | `13_Faculty_Resources/APA_membership_resource_scan_2026-06-29.md` | 2026-08-31 | — never attested — |
-| `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md` | 2026-08-31 | — never attested — |
+| `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md` | 2026-09-07 | — never attested — |
 | `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md` | 2026-08-31 | — never attested — |
 | `13_Faculty_Resources/Outreach/alex-tour/index.html` | 2026-08-31 | — never attested — |
 | `13_Faculty_Resources/README.md` | 2026-08-31 | — never attested — |
@@ -94,15 +94,15 @@ _Issue truth: **live**._
 
 | Source | Last checked | Age (days) | Status |
 |---|---|---|---|
-| `aacap-parameters` | 2026-09-03 | 0 | ok |
-| `apa-practice-guidelines` | 2026-09-03 | 0 | ok |
-| `clozapine-rems` | 2026-09-03 | 0 | ok |
-| `dsm-5-tr` | 2026-09-01 | 2 | ok |
-| `fda-drug-safety` | 2026-09-03 | 0 | ok |
-| `link-monitor` | 2026-08-31 | 3 | ok |
-| `link:www.samhsa.gov` | 2026-07-13 | 52 | ⚠ stale |
-| `samhsa-guidelines` | 2026-09-03 | 0 | ok |
-| `spravato-rems` | 2026-09-03 | 0 | ok |
-| `uspstf-mental-health` | 2026-09-03 | 0 | ok |
+| `aacap-parameters` | 2026-09-07 | 0 | ok |
+| `apa-practice-guidelines` | 2026-09-07 | 0 | ok |
+| `clozapine-rems` | 2026-09-07 | 0 | ok |
+| `dsm-5-tr` | 2026-09-01 | 6 | ok |
+| `fda-drug-safety` | 2026-09-07 | 0 | ok |
+| `link-monitor` | 2026-09-07 | 0 | ok |
+| `link:www.samhsa.gov` | 2026-07-13 | 56 | ⚠ stale |
+| `samhsa-guidelines` | 2026-09-07 | 0 | ok |
+| `spravato-rems` | 2026-09-07 | 0 | ok |
+| `uspstf-mental-health` | 2026-09-07 | 0 | ok |
 
 DOI/PMID freshness is summarized above so this table stays focused on authoritative source-registry targets.

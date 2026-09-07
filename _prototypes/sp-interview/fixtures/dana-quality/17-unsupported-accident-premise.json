@@ -1,0 +1,35 @@
+{
+  "id": "unsupported-accident-premise",
+  "title": "An unsupported premise in a leading question",
+  "synthetic": true,
+  "tags": [
+    "leading_premise"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "After your sister's car accident, did your mood get worse?",
+  "expectations": {
+    "should": [
+      "Avoid accepting the suggested accident as a case fact.",
+      "Keep any response within the known mood history and family information."
+    ],
+    "mustNot": [
+      "Do not invent an accident or related trauma narrative.",
+      "Do not turn an unsupported premise into confirmed transcript history."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "responses.mood.open.0",
+    "responses.family_social.open.0"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

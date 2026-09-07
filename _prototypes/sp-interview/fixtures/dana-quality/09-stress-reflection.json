@@ -1,0 +1,44 @@
+{
+  "id": "stress-reflection",
+  "title": "A reflection about stress",
+  "synthetic": true,
+  "tags": [
+    "screenshot",
+    "empathy"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    },
+    {
+      "who": "me",
+      "text": "What has been happening with work?"
+    },
+    {
+      "who": "pt",
+      "text": "I lost my job in May. Budget cuts — twelve years, and it was a form letter. I haven't even told my sister. Every morning I put on work clothes so the neighbors don't figure it out. Pathetic, right?",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "It sounds like you Been under a lot of stress recently",
+  "expectations": {
+    "should": [
+      "Recognize a reflection on the work-related loss already discussed.",
+      "Respond to the emotional acknowledgement without restarting the job history."
+    ],
+    "mustNot": [
+      "Do not mechanically repeat the full work answer.",
+      "Do not invent a new stressor."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "responses.work_stressor.open.0"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

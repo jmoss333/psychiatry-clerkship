@@ -1,0 +1,45 @@
+{
+  "id": "correct-the-topic",
+  "title": "A learner corrects the intended topic",
+  "synthetic": true,
+  "tags": [
+    "correction",
+    "negation"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    },
+    {
+      "who": "me",
+      "text": "How has your sleep been?"
+    },
+    {
+      "who": "pt",
+      "text": "I fall asleep okay because I'm exhausted, but I'm wide awake at three or four every morning. That's the worst part of the day. Just me and the ceiling.",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "No, I meant your energy during the day, not how you sleep.",
+  "expectations": {
+    "should": [
+      "Accept the correction and answer about low daytime energy.",
+      "Preserve the distinction between the requested topic and the excluded one."
+    ],
+    "mustNot": [
+      "Do not keep answering the sleep question after the correction.",
+      "Do not introduce a new energy symptom or activity limitation."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "responses.sleep.open.0",
+    "responses.energy.open.0"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

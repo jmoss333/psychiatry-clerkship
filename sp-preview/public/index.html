@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Protected fictional patient conversation for faculty preview.">
+  <title>Meet Dana · The Interview Room</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./station-content.js" defer></script>
+  <script src="./station.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+<main class="shell" id="preview-root">
+  <header class="masthead"><p class="eyebrow">THE INTERVIEW ROOM <span>Faculty preview</span></p><h1>Meet Dana.</h1><p class="lede">A conversation to practice listening, asking, and understanding.</p></header>
+  <section class="panel door" aria-labelledby="door-title"><div class="section-label">Before you enter</div><h2 id="door-title">Begin with her story.</h2><p>You are a medical student meeting Dana on an adult inpatient psychiatry service. Introduce yourself and your role, explain the purpose of the conversation, and invite her account. Close with a summary she can correct.</p><p class="fine">Fictional MD/DO communication practice for faculty review. This preview does not assess competence or readiness, and does not grade speaking speed, fluency, or pauses.</p></section>
+  <section class="panel access" id="access-panel" aria-labelledby="access-title"><h2 id="access-title">Enter the preview</h2><p>This invitation opens a private practice encounter with Dana. Up to ten questions, at your pace.</p><form id="access-form"><label for="preview-key">Preview passcode</label><div class="access-row"><input id="preview-key" name="preview-key" type="password" autocomplete="off" required maxlength="200" aria-describedby="privacy-note"><button class="primary" type="submit" id="start">Start encounter</button></div><label class="check"><input id="voice-mode" type="checkbox" checked> Continue by voice after Dana’s opening</label><p class="fine" id="voice-support">You can type at any time. No microphone starts until you choose Start with voice enabled, or Resume microphone.</p></form></section>
+  <details class="panel disclosure"><summary>About the voice and your information</summary><p id="privacy-note">Dana’s voice is AI-generated. Recognized words and conversation context are sent to OpenAI to generate replies and speech. Your browser may send microphone audio to its speech-recognition service. Use fictional information only; never enter real-patient information.</p><p class="fine">This page keeps the passcode and conversation only in memory. It does not save learner audio, write browser storage, or offer transcript export. Clearing or leaving removes the page’s copy. Provider processing and retention follow the configured provider’s policies. The preview uses API credits.</p></details>
+  <section class="panel controls" id="encounter-panel" hidden aria-labelledby="encounter-title"><div class="control-head"><div><div class="section-label">In the room</div><h2 id="encounter-title">Dana <span class="voice-tag">Marin · AI voice</span></h2></div><span class="turn-count" id="turn-count">0 of 10 questions</span></div><div class="status-row"><span class="status-dot" aria-hidden="true"></span><strong id="status" role="status" aria-live="polite">Ready</strong></div><p id="hint">Take your time.</p><div class="actions"><button id="done" class="primary" hidden>Done speaking <kbd>Space</kbd></button><button id="pause" hidden>Pause microphone</button><button id="resume" hidden>Resume microphone</button><button id="interrupt" hidden>Interrupt Dana <kbd>Esc</kbd></button><button id="end" class="quiet">End encounter</button></div><div class="options"><label class="check"><input id="thinking-time" type="checkbox"> Give me more thinking time</label><label class="check"><input id="hold-turn" type="checkbox"> Hold my turn</label></div><p class="fine">Speak normally — your question sends itself 4.5 seconds after your last words, or 8 seconds with more thinking time. You never need to click. Hold keeps your turn open until you choose Done speaking; Space sends sooner, outside a button or text field.</p><div class="draft" id="spoken-draft" hidden><span class="section-label">Your words</span><p id="draft-text"></p><p id="interim-text" class="interim"></p></div><form id="composer-form" class="composer"><label for="composer">Or type your next question</label><textarea id="composer" rows="3" maxlength="1200" placeholder="Use your own words…"></textarea><div class="composer-bottom"><span class="fine">Typing is an equal way to practice.</span><button id="send" type="submit">Send question</button></div></form></section>
+  <div id="station-root"></div>
+  <div id="error" class="error" role="alert" hidden></div>
+  <section class="panel conversation" id="conversation-panel" hidden aria-labelledby="conversation-title"><div class="section-label">What was said</div><h2 id="conversation-title">Conversation</h2><div id="transcript" role="log" aria-live="off" aria-label="Conversation transcript"></div></section>
+  <section class="panel closing" id="closing-panel" hidden><h2>Take a moment to reflect.</h2><p>What did Dana want you to understand? Where would you check your understanding? What remains uncertain and should be discussed with your supervisor?</p><p class="fine">This is formative practice. A convincing conversation is not evidence of clinical readiness.</p></section>
+  <div class="restart-row"><button id="clear" class="quiet" hidden>Clear and begin again</button><p class="fine" id="clear-note" hidden>This removes this page’s conversation and passcode. A new encounter starts from Dana’s opening.</p></div>
+  <footer>Fictional patient · supervised learning · faculty preview</footer>
+</main>
+</body>
+</html>
