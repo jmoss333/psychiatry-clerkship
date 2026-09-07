@@ -75,7 +75,7 @@ test('opening plays lead before next segment and next turn submits only complete
   assert.equal(h.calls[0].options.headers['x-preview-key'],'private-passcode');assert.equal(JSON.stringify(controller.getSnapshot()).includes('private-passcode'),false);
   await finishAudio(h,0);await finishAudio(h,1);assert.equal(await opening,true);assert.equal(controller.getSnapshot().phase,'ready');
   const next=controller.send('What has been hardest?');await until(()=>h.calls.length===2);
-  assert.deepEqual(h.calls[1].body,{action:'turn',state:'complete-0',text:'What has been hardest?',previousPlayback:'played',previousCompletedSegments:2});
+  assert.deepEqual(h.calls[1].body,{action:'turn',caseId:'sp_depression_gated_si_001',state:'complete-0',text:'What has been hardest?',previousPlayback:'played',previousCompletedSegments:2});
   assert.equal(await controller.send('Duplicate'),false);assert.equal(h.calls.length,2);
   await finishAudio(h,2);await finishAudio(h,3);await next;assert.equal(controller.getSnapshot().turn,1);assert.equal(h.revoked.length,4);
 });
@@ -289,7 +289,7 @@ test('an alternative can be asked once, only after the encounter ends, and never
   const before=h.calls.length;
   const alternative=controller.retry(3,'A different way of asking');
   await until(()=>h.calls.length===before+1);
-  assert.deepEqual(Object.keys(h.calls.at(-1).body).sort(),['action','state','text','turnId']);
+  assert.deepEqual(Object.keys(h.calls.at(-1).body).sort(),['action','caseId','state','text','turnId']);
   assert.equal(h.calls.at(-1).body.action,'retry');
   assert.equal(h.calls.at(-1).body.turnId,3);
   await finishAudio(h,11);await alternative;
@@ -312,4 +312,30 @@ test('an alternative that fails before its receipt does not resend and asks for 
   const count=h.calls.length;
   assert.equal(await controller.retry(2,'Again'),false);
   assert.equal(h.calls.length,count,'an uncertain alternative is never repeated automatically');
+});
+
+test('the chosen case travels on every request and cannot change mid-encounter',async()=>{
+  const h=environment((path,options,number)=>Promise.resolve(response(frames(number-1,['A reply.']),options.signal))),
+    controller=createController(h.env);
+  let work=controller.start('key',false,'sp_mania_redirect_001');await finishAudio(h,0);await work;
+  assert.equal(controller.getSnapshot().caseId,'sp_mania_redirect_001');
+  assert.equal(h.calls[0].body.caseId,'sp_mania_redirect_001');
+  work=controller.send('A question');await finishAudio(h,1);await work;
+  assert.equal(h.calls[1].body.caseId,'sp_mania_redirect_001','a turn carries the same case');
+  assert.equal(h.calls.every(call=>call.body.caseId==='sp_mania_redirect_001'),true);
+});
+
+test('an encounter refuses to start without a registered case',async()=>{
+  const h=environment(),controller=createController(h.env);
+  assert.equal(await controller.start('key',false,'not_a_case'),false);
+  assert.equal(await controller.start('key',false,'sp_alcohol_ambivalence_001'),false,'Morgan is not registered');
+  assert.equal(h.calls.length,0,'no request is made for an unregistered case');
+});
+
+test('an encounter with no case named defaults to Dana, so existing callers are unchanged',async()=>{
+  const h=environment(),controller=createController(h.env);
+  // The default fixture opening has two segments; both must finish.
+  const work=controller.start('key',false);await finishAudio(h,0);await finishAudio(h,1);await work;
+  assert.equal(h.calls[0].body.caseId,'sp_depression_gated_si_001');
+  assert.equal(controller.getSnapshot().caseId,'sp_depression_gated_si_001');
 });

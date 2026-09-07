@@ -122,11 +122,14 @@
       diagnostics:function(){return {nativeRecognition:nativeRecognition,sessions:serial,counts:Object.assign({},counts),events:trace.slice()};}};
   }
 
+  // The cases the hosted preview carries. Morgan is deliberately absent: it is
+  // draft-pending-attestation and the server registry refuses it too.
+  var CASE_IDS=['sp_depression_gated_si_001','sp_mania_redirect_001','sp_psychosis_paranoid_001'];
   function createController(env,options){
-    options=options||{};var phase='gate',key='',receipt=null,turn=0,messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false,retryUsed=false;
+    options=options||{};var phase='gate',key='',receipt=null,turn=0,caseId=CASE_IDS[0],messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false,retryUsed=false;
     var previousPlayback='interrupted',previousCompletedSegments=0,generation=0;
     var tally={startRequests:0,turnRequests:0,automaticSubmissions:0,explicitSubmissions:0};
-    function snapshot(){return {phase:phase,turn:turn,messages:messages.map(function(message){var copy=Object.assign({},message);if(copy.segments)copy.segments=copy.segments.slice();return copy;}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired,retryUsed:retryUsed};}
+    function snapshot(){return {phase:phase,turn:turn,messages:messages.map(function(message){var copy=Object.assign({},message);if(copy.segments)copy.segments=copy.segments.slice();return copy;}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired,retryUsed:retryUsed,caseId:caseId};}
     function publish(){if(!disposed&&typeof options.onChange==='function')options.onChange(snapshot());}
     var capture=createCapture(env,{hasDraft:function(){return !!draft.trim();},onReady:function(){if(!task&&!disposed&&!ended){phase='listening';publish();}},onConnecting:function(info){if(!task&&!disposed&&!ended){phase=info&&info.resuming&&!info.delayed&&phase==='listening'?'listening':'connecting';publish();}},onFinal:function(text){if(task||disposed)return;draft=(draft.trim()+' '+text).trim();if(problem&&(phase==='listening'||phase==='connecting'))problem='';if(draft.length>1200){capture.stop();phase='paused';problem=safeMessage('text_too_long');}publish();},onInterim:function(text){interim=text;publish();},onSubmit:function(){send(undefined,true);},onNotice:function(error){if(disposed||ended||task)return;problem=safeMessage(error.code);publish();},onError:function(error){if(disposed)return;phase='paused';problem=safeMessage(error.code);publish();}});
     function stopPlayer(){if(player){player.stop();player=null;}}
@@ -180,10 +183,11 @@
       }
       return !operation.failed;
     }
-    async function start(passcode,useVoice){
-      if(task||disposed||phase!=='gate')return false;key=String(passcode||'').trim();if(!key||key.length>200){problem=safeMessage('access_denied');publish();return false;}
+    async function start(passcode,useVoice,chosenCase){
+      if(task||disposed||phase!=='gate')return false;
+      if(chosenCase!==undefined){if(CASE_IDS.indexOf(chosenCase)<0)return false;caseId=chosenCase;}key=String(passcode||'').trim();if(!key||key.length>200){problem=safeMessage('access_denied');publish();return false;}
       voice=!!useVoice&&!!(env.SpeechRecognition||env.webkitSpeechRecognition);problem='';receipt=null;messages=[];turn=0;ended=false;restartRequired=false;
-      return request({action:'start',requestId:env.crypto.randomUUID()},null);
+      return request({action:'start',caseId:caseId,requestId:env.crypto.randomUUID()},null);
     }
     async function send(text,automatic){
       if(task||disposed||ended||restartRequired||!receipt)return false;
@@ -192,7 +196,7 @@
       var value=normalized(draft);if(!value||value.length>1200||/[\u0000-\u001f\u007f]/.test(value)){problem=safeMessage(!value?'no_words':value.length>1200?'text_too_long':'input_invalid');publish();return false;}
       if(automatic)tally.automaticSubmissions++;else tally.explicitSubmissions++;
       var learner={role:'you',text:value,status:'pending'};messages.push(learner);draft='';
-      return request({action:'turn',state:receipt,text:value,previousPlayback:previousPlayback,previousCompletedSegments:previousCompletedSegments},learner);
+      return request({action:'turn',caseId:caseId,state:receipt,text:value,previousPlayback:previousPlayback,previousCompletedSegments:previousCompletedSegments},learner);
     }
     // One spoken alternative from a finished encounter. It presents the latest,
     // unconsumed receipt: an earlier one is what the server's ledger refuses.
@@ -202,7 +206,7 @@
       var value=normalized(text);
       if(!value||value.length>1200||/[\u0000-\u001f\u007f]/.test(value)){problem=safeMessage(!value?'no_words':value.length>1200?'text_too_long':'input_invalid');publish();return false;}
       var learner={role:'you',text:value,status:'pending'};messages.push(learner);
-      var accepted=await request({action:'retry',state:receipt,turnId:turnId,text:value},learner);
+      var accepted=await request({action:'retry',caseId:caseId,state:receipt,turnId:turnId,text:value},learner);
       if(accepted)retryUsed=true;
       return accepted;
     }
@@ -224,10 +228,16 @@
     if(!recognitionAvailable)el('voice-support').textContent='This browser does not offer speech recognition. Dana still speaks, and you can type each question.';
     var controller=createController(env,{onChange:render});
     // The station is a projection of the snapshot: it never calls the controller.
-    var station=env.DanaStation&&env.DanaStationContent&&el('station-root')?env.DanaStation.createStation(env,el('station-root'),{caseId:'sp_depression_gated_si_001',content:env.DanaStationContent,onRetry:function(turnId,text){return controller.retry(turnId,text);}}):null;
+    var station=null;
+    function mountStation(caseId){
+      if(station){station.dispose();station=null;}
+      if(!env.DanaStation||!env.DanaStationContent||!el('station-root'))return;
+      el('station-root').replaceChildren();
+      station=env.DanaStation.createStation(env,el('station-root'),{caseId:caseId,content:env.DanaStationContent,onRetry:function(turnId,text){return controller.retry(turnId,text);}});
+    }
     function render(snapshot){
       var active=snapshot.phase!=='gate',canSend=active&&!snapshot.busy&&!snapshot.restartRequired&&snapshot.phase!=='ended';
-      el('access-panel').hidden=active;el('start').disabled=snapshot.busy;el('encounter-panel').hidden=!active;el('conversation-panel').hidden=!snapshot.messages.length;
+      el('access-panel').hidden=active;el('case-choice').disabled=active;el('start').disabled=snapshot.busy;el('encounter-panel').hidden=!active;el('conversation-panel').hidden=!snapshot.messages.length;
       el('closing-panel').hidden=snapshot.phase!=='ended';el('clear').hidden=el('clear-note').hidden=!active;el('clear').disabled=snapshot.busy;
       el('turn-count').textContent=snapshot.turn+' of 10 questions';
       el('status').textContent={gate:'Ready',ready:'Your turn — type your question',connecting:'Connecting microphone…',responding:'Dana is preparing her reply…',speaking:'Dana is speaking',listening:'Listening — I’ll send when you finish',paused:'Paused — microphone off',restart:'Restart needed — microphone off',ended:'Encounter ended — microphone off'}[snapshot.phase]||'Ready';
@@ -246,7 +256,7 @@
       if(station)station.update(snapshot);
       lastPhase=snapshot.phase;
     }
-    el('access-form').addEventListener('submit',function(event){event.preventDefault();var passcode=el('preview-key').value;el('preview-key').value='';controller.start(passcode,el('voice-mode').checked);});
+    el('access-form').addEventListener('submit',function(event){event.preventDefault();var passcode=el('preview-key').value;el('preview-key').value='';var chosen=el('case-choice').value;mountStation(chosen);controller.start(passcode,el('voice-mode').checked,chosen);});
     el('composer-form').addEventListener('submit',function(event){event.preventDefault();controller.send(el('composer').value);});
     el('composer').addEventListener('input',function(){controller.setDraft(this.value);});el('done').addEventListener('click',function(){controller.send();});
     el('pause').addEventListener('click',controller.pause);el('resume').addEventListener('click',controller.resume);el('interrupt').addEventListener('click',controller.interrupt);el('end').addEventListener('click',controller.end);
