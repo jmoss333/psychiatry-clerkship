@@ -240,9 +240,32 @@ alternative reply. What it does, and what it deliberately does not:
   reply it last heard at the end of the encounter, not the moment being returned
   to. The server synthesizes them from the child's own settled state.
 
-Not yet verified against the live preview — the retry action lives in the Function
-and does not exist on the current deploy. A hosted check would cost three paid
-units and needs a redeploy first.
+### Verified against the live preview — 2026-09-07
+
+Deploy `6a9ed10fd85e0ef5a2ddbe4c`, alias `dana`. `npm --prefix sp-preview run
+test:hosted-retry`, a harness capped at four paid requests: one opening, two
+turns, one alternative — **10 reserved units** of the 72-per-half-hour ceiling.
+
+| Check | Result |
+| --- | --- |
+| Opening and two turns through the real Function and provider | 200, 200, 200 |
+| Alternative asked at turn 2 | 200, reply `turn: 2`, two segments |
+| Second alternative | refused `preview_encounter_finished`, no provider call |
+| Reusing the receipt the alternative was asked from | refused `preview_operation_mismatch` |
+
+**The first run of this harness found a real defect, which is the argument for
+having made it.** The retry reserved `retry:sid:nonce:turnId` — a different ledger
+slot from the `turn:sid:nonce` a turn consumes — so the receipt a retry was asked
+from stayed live. A turn from it would branch without the `retried` flag, and a
+second alternative could be asked from the branch. The one-alternative cap was
+bypassable by anyone holding the pre-retry receipt, which is every client, since
+the cap exists precisely to survive the client forgetting. A retry now consumes
+the same slot a turn does: one continuation per receipt, whatever kind.
+
+Two paid runs, 20 units total, both inside the window. What this run does **not**
+prove is the truncation property — that the actor sees nothing from the retried
+turn onward is unobservable from outside and is pinned by the node handler tests
+instead.
 
 ## Material limits and next release work
 
