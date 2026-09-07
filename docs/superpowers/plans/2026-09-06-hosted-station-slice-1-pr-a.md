@@ -367,11 +367,7 @@ Render the same surfaces the local station renders, keeping the `data-station` a
 
 Append to `sp-preview/tests/station.test.mjs`:
 
-```js
-import {JSDOM} from 'node:test' /* placeholder-free note: no jsdom dependency is added; see Step 3 */;
-```
-
-Do not add a DOM dependency. Instead assert against a minimal document stub, matching how `client.test.mjs` stubs `env`. Append:
+No DOM dependency is added. Assert against a minimal document stub, the same way `client.test.mjs` stubs `env`. Append to `sp-preview/tests/station.test.mjs`:
 
 ```js
 const {createStation}=stationModule.exports;
@@ -419,8 +415,6 @@ test('an unknown case id yields no station rather than a partly rendered one',()
 });
 ```
 
-Remove the placeholder import line written above before running; it exists only to state that no DOM dependency is introduced.
-
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `node --test sp-preview/tests/station.test.mjs`
@@ -449,7 +443,7 @@ Wire it up. In `sp-preview/public/index.html`, add the two scripts before `app.j
 In `sp-preview/public/app.js` `mount()`, create the station once and update it from `render`:
 
 ```js
-var station=root.DanaStation&&root.DanaStation.createStation(env,el('station-root'),{caseId:'sp_depression_gated_si_001',content:root.DanaStationContent});
+var station=env.DanaStation&&env.DanaStation.createStation(env,el('station-root'),{caseId:'sp_depression_gated_si_001',content:env.DanaStationContent});
 ```
 
 and inside `render(snapshot)`, as the last statement before `lastPhase=snapshot.phase;`:
@@ -458,7 +452,7 @@ and inside `render(snapshot)`, as the last statement before `lastPhase=snapshot.
 if(station)station.update(snapshot);
 ```
 
-`mount` receives `env`, so reference `env.DanaStation` and `env.DanaStationContent` rather than a bare global.
+`mount` already receives `env`, so both lookups go through it rather than a bare global — that is what keeps the file testable under `node:vm`.
 
 - [ ] **Step 4: Run tests to verify they pass**
 
