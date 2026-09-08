@@ -80,9 +80,19 @@ Use Chrome for this — the Cowork Netlify integration is authenticated to a dif
 **Do not put the passcode on the command line.** It lands in your shell history and is visible in
 `ps` to every process on the machine. It is a live student credential.
 
-**If you run Tier 2 from inside an AI coding session, the passcode ends up in that session's
-transcript and in its on-disk log.** The Netlify path above exists specifically so the value never
-appears anywhere — prefer it. If a passcode does get into a transcript, treat it as exposed:
+**What matters is where you type it, not whether an assistant is running.** The script's prompt
+uses `stty -echo`: a value pasted there is not echoed, does not enter your shell history, and does
+not reach an assistant's transcript. Running Tier 2 with an AI coding session open in the same
+repository is fine.
+
+What does expose it: passing it as the second argument, exporting it inside a command you ask an
+assistant to run, or pasting it into a chat message. Those land in the session transcript and its
+on-disk log, and an assistant should decline to print it back for the same reason.
+
+(The Netlify readback cannot substitute for the prompt: `SP_STUDENT_PASSCODE` is a secret variable
+and reads back as a placeholder in every context except `dev` — see Step 1b.)
+
+If a passcode does reach a transcript, treat it as exposed:
 
 **As of 2026-08-31 the passcode is fixed and does not rotate** (see *Passcode policy* in
 `sp-proxy/README.md`). There is therefore no block boundary at which an exposed passcode expires
