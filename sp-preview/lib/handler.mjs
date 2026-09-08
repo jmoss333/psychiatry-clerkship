@@ -70,9 +70,18 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
   const stream=new ReadableStream({
    start(controller){
     const send=value=>{if(abort.signal.aborted||closed)throw problem(409,'preview_cancelled');controller.enqueue(new TextEncoder().encode(JSON.stringify(value)+'\n'));};
+    // The repo's canonical spoken-text transform, used by the recordings catalog,
+    // the local prototype and the voice module. A visual stage direction is for the
+    // learner to read; the voice instructions in this same request say not to speak
+    // one, so it must not be in the text we hand over.
+    const spokenText=value=>String(value).replace(/\*[^*]*\*/g,' ').replace(/\[[^\]]*\]/g,' ').replace(/\s+/g,' ').trim();
     async function speak(text){
      if(abort.signal.aborted)throw problem(409,'preview_cancelled');
-     const bytes=await provider.speak({text,caseId:caseDef.id,signal:abort.signal});
+     const say=spokenText(text);
+     // A segment that is ONLY staging has nothing to speak; that is an authoring
+     // error, not something to paper over with silent audio.
+     if(!say)throw problem(500,'preview_provider_unavailable');
+     const bytes=await provider.speak({text:say,caseId:caseDef.id,signal:abort.signal});
      if(abort.signal.aborted)throw problem(409,'preview_cancelled');
      if(!validAudio(bytes))throw problem(502,'preview_provider_unavailable');
      return bytes;

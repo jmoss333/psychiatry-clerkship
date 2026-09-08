@@ -344,3 +344,23 @@ test('a retry after a zero-heard reply sends the actor nothing of that reply —
  assert.equal(prompt.includes('Reply 1'),true,'while the reply that WAS heard is still available');
  assert.equal(unheard,3,'the fixture generated three replies, one of which was never heard');
 });
+
+test('a visual stage direction is not sent to speech synthesis — R6',async()=>{
+ const spoken=[];
+ const s=setup({provider:{speak:async job=>{spoken.push(job.text);return mp3;}}});
+ // Ray's authored opening begins with an asterisk-delimited visual direction.
+ const out=await events(await s.handler()(request({action:'start',caseId:'sp_psychosis_paranoid_001',requestId:crypto.randomUUID()})));
+ const reply=out.find(e=>e.type==='reply');
+ assert.match(reply.reply,/^\*doesn't look up right away\*/,'the learner still reads the visual cue');
+ assert.equal(spoken.length,1);
+ assert.equal(spoken[0].includes('*'),false,'no asterisk-delimited direction reaches TTS');
+ assert.equal(spoken[0].includes('look up right away'),false,'and neither does its text');
+ assert.match(spoken[0],/You're another one/,'the words that should be spoken still are');
+});
+
+test('openings without a stage direction are spoken unchanged — R6 regression guard',async()=>{
+ const spoken=[];
+ const s=setup({provider:{speak:async job=>{spoken.push(job.text);return mp3;}}});
+ const out=await events(await s.handler()(request({action:'start',caseId:DANA,requestId:crypto.randomUUID()})));
+ assert.equal(spoken[0],out.find(e=>e.type==='reply').reply,'Dana speaks exactly her authored opening');
+});
