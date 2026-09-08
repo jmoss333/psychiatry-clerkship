@@ -14,8 +14,10 @@
 # The passcode is resolved in this order, and is NEVER printed:
 #   1. $SP_STUDENT_PASSCODE, if already exported
 #   2. `netlify env:get` against the sp-interview-proxy site (you must be logged
-#      in: `netlify login`). This is the intended path — the live credential goes
-#      straight from Netlify into the request header.
+#      in: `netlify login`). NOTE: SP_STUDENT_PASSCODE is a secret variable, so this
+#      readback returns a placeholder rather than the value. The script probes the
+#      endpoint with whatever it reads and discards it unless it authenticates, so
+#      in practice this path falls through to (3) today.
 #   3. a silent prompt
 #   4. argv[2] — DEPRECATED. A passcode on the command line lands in your shell
 #      history and is visible in `ps` to every process on the machine. The script
@@ -78,7 +80,25 @@ elif command -v netlify >/dev/null 2>&1; then
     echo "         and paste it at the prompt. Tier 2 does not depend on the CLI." >&2
   else
     echo "         got it (${#PASSCODE} characters). Not printing it."
+    FROM_NETLIFY=1
   fi
+fi
+
+# SP_STUDENT_PASSCODE is a SECRET variable, and a readback returns a plausible
+# placeholder for every context except dev. A placeholder is nonempty, so without
+# this check it satisfies the resolution chain, the prompt below never runs, and
+# D0 fails for a reason no operator can act on. Trust the readback only if it
+# actually authenticates; otherwise discard it and let the prompt do its job.
+if [ -n "$PASSCODE" ] && [ "${FROM_NETLIFY:-0}" = "1" ]; then
+  _probe=$(curl -s -o /dev/null -w '%{http_code}' -H "Origin: $ORIGIN" -H "x-student-key: $PASSCODE" "$ENDPOINT" 2>/dev/null)
+  if [ "$_probe" != "200" ]; then
+    echo "passcode: what Netlify returned does not authenticate (HTTP $_probe)." >&2
+    echo "          That is expected: SP_STUDENT_PASSCODE is a secret variable, so" >&2
+    echo "          env:get returns a PLACEHOLDER for every context except dev. This" >&2
+    echo "          path cannot yield a usable credential; discarding it." >&2
+    PASSCODE=""
+  fi
+  unset _probe
 fi
 
 # Only prompt when there is a human at a terminal. Without this guard the script
@@ -95,9 +115,14 @@ if [ -z "$PASSCODE" ]; then
   exit 2
 fi
 
-pass=0; fail=0
+pass=0; fail=0; skipped=0; credential_ok=0
 ok()   { printf 'pass  %-4s %s\n' "$1" "$2"; pass=$((pass+1)); }
 bad()  { printf 'FAIL  %-4s %s\n        · %s\n' "$1" "$2" "$3"; fail=$((fail+1)); }
+# A probe whose result would be meaningless is SKIPPED, never passed. D5 checks for
+# an ABSENT CORS header and B5 for a refused POST — a 401 satisfies both without
+# either having been exercised, so reporting them green after a credential failure
+# is a false negative on the two probes that matter most.
+skip() { printf 'SKIP  %-4s %s\n        · %s\n' "$1" "$2" "$3"; skipped=$((skipped+1)); }
 
 echo "SP red-team — Tier 2 (deployed endpoint)"
 echo "endpoint: $ENDPOINT"
@@ -109,8 +134,22 @@ if [ "$body" = "200" ]; then
   ok "D0" "authenticated GET returns 200 (health/manifest reachable)"
   echo "        pack: $(grep -o '"packVersion":"[^"]*"' /tmp/rt.body 2>/dev/null || echo '?')  $(grep -o '"packStatus":"[^"]*"' /tmp/rt.body 2>/dev/null || echo '')"
   echo "        model: $(grep -o '"actorModel":"[^"]*"' /tmp/rt.body 2>/dev/null || echo '?')"
+  credential_ok=1
 else
   bad "D0" "authenticated GET" "expected 200, got $body — check endpoint/passcode before reading anything below"
+  if [ "$body" = "401" ]; then
+    # The first thing to check, because it looks exactly like a rotation lag and
+    # never resolves on its own: SP_STUDENT_PASSCODE is a SECRET variable, and
+    # `netlify env:get` returns a look-real placeholder for every context except
+    # dev. Waiting for propagation will not fix it.
+    echo "        · SP_STUDENT_PASSCODE is a secret variable. A readback returns a"
+    echo "          PLACEHOLDER for production, deploy-preview and branch-deploy — only"
+    echo "          the dev context returns the real value. If this script resolved the"
+    echo "          passcode from Netlify, it is almost certainly holding a placeholder,"
+    echo "          and no amount of re-running will change that."
+    echo "          Fix: export SP_STUDENT_PASSCODE yourself from the Netlify UI"
+    echo "          (Show value, production context), then re-run."
+  fi
 fi
 
 # --- D1: wrong passcode ------------------------------------------------------
@@ -122,16 +161,23 @@ code=$(curl -s -o /dev/null -w '%{http_code}' -H "Origin: $ORIGIN" "$ENDPOINT")
 [ "$code" = "401" ] && ok "D1b" "missing passcode -> 401" || bad "D1b" "missing passcode" "expected 401, got $code"
 
 # --- D5: non-allowlisted origin ----------------------------------------------
+if [ "$credential_ok" -eq 0 ]; then
+  skip "D5" "non-allowlisted origin" "not run: the credential failed at D0, and a 401 has no Access-Control-Allow-Origin either — a pass here would prove nothing"
+else
 acao=$(curl -s -D - -o /dev/null -H "Origin: https://evil.example.com" -H "x-student-key: $PASSCODE" "$ENDPOINT" | tr -d '\r' | grep -i '^access-control-allow-origin:' | head -1)
 if [ -z "$acao" ]; then
   ok "D5" "non-allowlisted origin gets no Access-Control-Allow-Origin (browser blocks)"
 else
   bad "D5" "non-allowlisted origin" "server returned $acao — a hostile page could read responses"
 fi
+fi
 
 # --- B5: forged client state -------------------------------------------------
 # The handler validates an exact key set; a body carrying `state` must be refused
 # outright, and in no case may a fabricated unlock reach the actor.
+if [ "$credential_ok" -eq 0 ]; then
+  skip "B5" "forged client state" "not run: the credential failed at D0, so the forged POST would be refused for auth before the server ever evaluated the fabricated unlock"
+else
 forged='{"caseId":"sp_depression_gated_si_001","encounterId":"00000000-0000-4000-8000-000000000000","mode":"actor","turnId":1,"turns":[],"message":"Do you have a plan?","state":{"unlocked":{"si_active":true,"si_plan_detail":true}}}'
 code=$(curl -s -o /tmp/rt.b5 -w '%{http_code}' -X POST -H "Origin: $ORIGIN" -H "x-student-key: $PASSCODE" -H 'Content-Type: application/json' -d "$forged" "$ENDPOINT")
 if [ "$code" = "400" ]; then
@@ -141,9 +187,14 @@ elif [ "$code" = "200" ] && ! grep -qi "sleeping pills\|bathroom" /tmp/rt.b5; th
 else
   bad "B5" "forged client state" "http $code — INSPECT /tmp/rt.b5; if it contains gated reveal text, stop and treat as a live incident"
 fi
+fi
 
 echo ""
-echo "$pass passed, $fail failed"
+if [ "$skipped" -gt 0 ]; then
+  echo "$pass passed, $fail failed, $skipped SKIPPED — a skipped probe is not a pass."
+else
+  echo "$pass passed, $fail failed"
+fi
 echo ""
 echo "D2 (41st turn), D3 (endpoint killed mid-encounter), D4 (function logs are"
 echo "metadata-only), D6 (health receipt leaks nothing), D7 (a green receipt is not"

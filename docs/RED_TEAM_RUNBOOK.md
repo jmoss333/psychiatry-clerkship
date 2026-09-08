@@ -30,7 +30,7 @@ reachability evidence, not release evidence.
 
 - [ ] Repo up to date: `git fetch origin && git status -sb` shows no divergence
 - [ ] Node installed (`node --version` — anything ≥ 20)
-- [ ] The **current rotation passcode**. You should never have to type or paste it — see below.
+- [ ] The **current rotation passcode**, from the Netlify dashboard (*Show value*, production context). You will paste it once at a hidden prompt — see below for why the automatic path cannot supply it.
 - [ ] The endpoint URL — normally `https://sp-interview-proxy.netlify.app/api/sp`
 - [ ] Chrome, for the Netlify dashboard (the Cowork Netlify MCP is authed to a different account and 404s these sites)
 - [ ] ~45 minutes. Tiers 1 and 2 take two minutes; Tier 3 is the real work.
@@ -57,9 +57,13 @@ and what leaked. A Tier 1 failure is a code or pack bug, not a model behaviour q
 
 ### Step 1b — one-time: link sp-proxy to Netlify
 
-The passcode is `SP_STUDENT_PASSCODE` on the `sp-interview-proxy` Netlify project. You do not
-need to look at it, copy it, or paste it anywhere — the script reads it straight from Netlify
-into the request header. That takes one setup command, once per clone:
+The passcode is `SP_STUDENT_PASSCODE` on the `sp-interview-proxy` Netlify project.
+
+**It is a secret variable, so `netlify env:get` returns a placeholder rather than the value —
+for every context except `dev`.** The script still attempts the readback, probes the endpoint
+with whatever it gets, and discards it unless it actually authenticates; today that means it
+falls through to a hidden prompt where you paste the value once. Linking the project is still
+worth doing for the other CLI steps, and costs one command per clone:
 
 ```
 cd sp-proxy && netlify link --id 455d2740-4020-4d9c-b9f8-82f72f4b2897 && cd ..
@@ -107,8 +111,19 @@ above) → a hidden prompt. It never prints the value.
 missing passcode → 401), **D5** (a non-allowlisted origin gets no `Access-Control-Allow-Origin`,
 so the browser blocks it), and **B5** (a POST carrying a forged `state.unlocked` is refused).
 
-**If D0 fails with 401:** the passcode is wrong or has been rotated. Everything below D0 is
-meaningless until D0 is green — fix it first.
+**If D0 fails with 401, check this first:** `SP_STUDENT_PASSCODE` is a **secret** variable, and
+a Netlify readback returns a look-real placeholder for the production, deploy-preview and
+branch-deploy contexts — only `dev` returns the real value. If the script resolved the passcode
+from Netlify rather than from your exported `$SP_STUDENT_PASSCODE`, it is almost certainly
+holding a placeholder. This looks exactly like a rotation that has not propagated, and it never
+resolves on its own. Export the value yourself from the Netlify UI (*Show value*, production
+context) and re-run.
+
+Everything below D0 is meaningless until D0 is green, and since 2026-09-07 the script enforces
+that rather than trusting you to remember it: **D5 and B5 report SKIP, not pass, when the
+credential failed.** Both would otherwise have gone green for the wrong reason — a 401 carries no
+`Access-Control-Allow-Origin` either, and a forged POST is refused for auth before the server
+ever evaluates the fabricated unlock.
 
 **If B5 returns 200 and the reply contains gated reveal text** (Dana's sleeping-pills passage):
 stop, treat it as a live incident, and pull the passcode. That is the one failure in this whole
@@ -230,7 +245,7 @@ If anything failed: `--state failed`, then fix, then re-run the whole checklist.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Tier 1 probe fails right after a pack edit | The pack changed a gate or a pattern | Read the probe's message — it names the gate. Compare against the matrix: `node --test sp-proxy/tests/sp-safety-scoring-uniformity.test.mjs` |
-| D0 returns 401 with the right passcode | Passcode was rotated in Netlify | Re-run — the script re-reads it from Netlify each time. If it still 401s, the rotation has not propagated to the production context yet. |
+| D0 returns 401 with the right passcode | Usually **not** a rotation: `SP_STUDENT_PASSCODE` is a secret variable, and `netlify env:get` returns a placeholder for every context except `dev` | Export the real value from the Netlify UI (*Show value*, production) into `$SP_STUDENT_PASSCODE` and re-run. Re-running alone will not help — the placeholder is what the API returns by design, not a propagation lag. |
 | "couldn't read it. Most likely sp-proxy is not linked yet" | The CLI resolves env vars against a linked project folder; `--site` alone is not enough | Run the `netlify link` command in Step 1b |
 | "Test connection" fails in the tool but curl works | Origin not in `SP_ALLOWED_ORIGINS` | Add the origin you are serving from (include `http://localhost:8888` while testing) |
 | A judgmental probe seems not to flag | **Your phrasing is not in that case's flag vocabulary** | Dana flags on `you should`, `at least`, `snap out`, `look on the bright side`. "Calm down" is *Marcus's*. Use a phrase the pack actually recognises, or you are testing nothing. |
