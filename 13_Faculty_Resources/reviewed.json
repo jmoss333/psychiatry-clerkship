@@ -40,14 +40,13 @@
     "by": "Pending faculty review"
   },
   "cotw_20260827_bpd_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-08-27",
-    "by": "Pending faculty review"
+    "at": "2026-09-08",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260827_bpd_res.md": {
     "status": "pending",
