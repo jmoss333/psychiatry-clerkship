@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
 import {createHandler} from '../lib/handler.mjs';
+import {createPreviewBudget} from '../lib/budget.mjs';
 import {createStateCodec, initialState, nextHistory,issuedState,retryState} from '../lib/state.mjs';
 const origin='https://preview.example.test';
 const DANA='sp_depression_gated_si_001';
@@ -375,4 +376,57 @@ test('openings without a stage direction are spoken unchanged — R6 regression 
  const s=setup({provider:{speak:async job=>{spoken.push(job.text);return mp3;}}});
  const out=await events(await s.handler()(request({action:'start',caseId:DANA,requestId:crypto.randomUUID()})));
  assert.equal(spoken[0],out.find(e=>e.type==='reply').reply,'Dana speaks exactly her authored opening');
+});
+
+test('only openings reserve one unit; questions and alternatives reserve three',async()=>{
+ const s=setup();
+ const state=await runEncounter(s,2);
+ await events(await s.handler()(request({action:'retry',caseId:DANA,state,turnId:1,text:'An alternative question'})));
+ assert.deepEqual(s.calls.map(claim=>claim.units),[1,3,3,3]);
+});
+
+test('the daily start limit is returned clearly before provider work',async()=>{
+ let providerCalls=0;
+ const handler=createHandler({env,provider:{configured:true,speak:async()=>{providerCalls++;}},budget:{reserve:async()=>{
+  throw Object.assign(new Error('private details'),{status:429,code:'preview_daily_starts_exhausted'});
+ }}});
+ const response=await handler(request({action:'start',caseId:DANA,requestId:crypto.randomUUID()}));
+ assert.equal(response.status,429);
+ assert.deepEqual(await response.json(),{error:'preview_daily_starts_exhausted'});
+ assert.equal(providerCalls,0);
+});
+
+test('an early-turn alternative is terminal at the server and cannot extend the 34-unit encounter',async()=>{
+ let record=null,etag=0,actorCalls=0,audioCalls=0,writes=0;
+ const store={
+  getWithMetadata:async()=>record?{data:structuredClone(record),etag:String(etag)}:null,
+  set:async(_key,value,condition)=>{
+   if(condition.onlyIfNew&&record||condition.onlyIfMatch&&condition.onlyIfMatch!==String(etag))return{modified:false};
+   record=JSON.parse(value);writes++;return{modified:true,etag:String(++etag)};
+  }
+ };
+ const budget=createPreviewBudget({store,namespace:'terminal-alternative-fixture'});
+ const provider={configured:true,replyStream:async()=>{actorCalls++;return 'It has been a difficult month.';},speak:async()=>{audioCalls++;return mp3;}};
+ const handler=()=>createHandler({env,provider,budget});
+ let output=await start({handler}),state=output.at(-1).state;
+ for(let turn=1;turn<=10;turn++){
+  output=await events(await handler()(request({action:'turn',caseId:DANA,state,text:'Could you tell me more?',previousPlayback:'played',previousCompletedSegments:1})));
+  state=output.at(-1).state;
+ }
+ const alternative=await events(await handler()(request({action:'retry',caseId:DANA,state,turnId:1,text:'An alternative first question.'})));
+ assert.equal(alternative[0].turn,1,'the alternative still replays the selected early moment');
+ assert.equal(Object.values(record.operations).reduce((sum,op)=>sum+op.units,0),34);
+ assert.equal(actorCalls,11);assert.equal(audioCalls,12);assert.equal(writes,12);
+ // Neither a generation receipt nor a completed-audio receipt can reopen the
+ // encounter; a direct API caller has the same terminal boundary as the UI.
+ for(const [receipt,completed] of [[alternative[0].state,0],[alternative.at(-1).state,1]]){
+  const response=await handler()(request({action:'turn',caseId:DANA,state:receipt,text:'Keep going past the alternative.',previousPlayback:'played',previousCompletedSegments:completed}));
+  const body=await response.text();
+  assert.equal(response.status,409);
+  assert.deepEqual(JSON.parse(body),{error:'preview_encounter_finished'});
+ }
+ assert.equal(writes,12,'refused continuations reserve nothing');
+ assert.equal(actorCalls,11,'refused continuations generate no reply');
+ assert.equal(audioCalls,12,'refused continuations generate no speech');
+ assert.equal(Object.values(record.operations).reduce((sum,op)=>sum+op.units,0),34);
 });

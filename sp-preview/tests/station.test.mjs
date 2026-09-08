@@ -105,12 +105,14 @@ vm.runInThisContext('(function(module,exports){'+fs.readFileSync(new URL('../pub
 // stub, the same way client.test.mjs stubs env.
 function documentStub(){
   function node(tag){
+    const listeners=Object.create(null);
     return {tagName:tag,children:[],attributes:{},textContent:'',hidden:false,value:'',
       classList:{add(){},remove(){}},
       appendChild(child){this.children.push(child);return child;},
       setAttribute(name,value){this.attributes[name]=value;},
       getAttribute(name){return this.attributes[name];},
-      addEventListener(){},removeEventListener(){},
+      addEventListener(name,listener){(listeners[name]||(listeners[name]=[])).push(listener);},removeEventListener(){},
+      dispatchEvent(event){for(const listener of listeners[event.type]||[])listener.call(this,event);},
       replaceChildren(){this.children=[];}};
   }
   return {createElement:node,createTextNode(text){return {textContent:text,children:[]};},addEventListener(){},removeEventListener(){},hidden:false};
@@ -139,6 +141,39 @@ test('the station exposes bookmarks and reflections without any network or stora
   assert.deepEqual(station.getBookmarks(),[]);
   assert.deepEqual(station.getReflections(),{});
   assert.equal(station.getPresentation(),'');
+  station.dispose();
+});
+
+test('marked-moment editors stay mounted while speech and heard quotes update',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  const station=createStation({document:doc},host,{caseId:'sp_depression_gated_si_001',content:contentModule.exports});
+  const first=[you('What has been hardest?'),dana('The nights. I cannot sleep.','preparing',['The nights.',' I cannot sleep.'],0)];
+  station.update(hosted(first,'speaking'));
+  byStation(host,'mark').dispatchEvent({type:'click'});
+  const marks=byStation(host,'bookmarks');
+  const editor=flat(marks).find(n=>n.attributes['aria-label']==='Reflection on moment 1');
+  assert.ok(editor,'marking an exchange creates an editable reflection');
+  editor.value='Ask what makes the nights difficult.';
+  editor.dispatchEvent({type:'input'});
+
+  station.update(hosted(first,'listening',{interim:'Help me understand'}));
+  assert.equal(flat(marks).find(n=>n.attributes['aria-label']==='Reflection on moment 1'),editor,
+    'an interim result must not replace the focused editor');
+  assert.equal(editor.value,'Ask what makes the nights difficult.');
+
+  const interrupted=[you('What has been hardest?'),dana('The nights. I cannot sleep.','interrupted',['The nights.',' I cannot sleep.'],1)];
+  station.update(hosted(interrupted,'listening'));
+  const quote=flat(marks).find(n=>n.tagName==='blockquote'&&!n.hidden);
+  assert.equal(quote.textContent,'Dana: The nights.','the heard prefix updates without rebuilding the note');
+  assert.equal(allText(marks).includes('I cannot sleep.'),false,'the unplayed tail is never quoted');
+  assert.equal(flat(marks).find(n=>n.attributes['aria-label']==='Reflection on moment 1'),editor);
+  assert.deepEqual(station.getReflections(),{'1':'Ask what makes the nights difficult.'});
+
+  station.update(hosted([...interrupted,you('How can we help?'),dana('I want some rest.','played',['I want some rest.'],1)],'listening'));
+  byStation(host,'mark').dispatchEvent({type:'click'});
+  assert.equal(flat(marks).filter(n=>n.tagName==='textarea').length,2,'a later mark adds one editor');
+  assert.equal(flat(marks).find(n=>n.attributes['aria-label']==='Reflection on moment 1'),editor,
+    'adding another mark must leave the first editor mounted');
   station.dispose();
 });
 
