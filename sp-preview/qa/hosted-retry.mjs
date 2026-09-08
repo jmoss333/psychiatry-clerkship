@@ -36,7 +36,7 @@ async function call(body,{paidRequest=true}={}){
 }
 
 try{
-  verify(!!passcode&&passcode.length>=16,'access_file');
+  verify(!!passcode&&passcode.length>=15,'access_file');
   report.stage='start';
   const opening=await call({action:'start',requestId:crypto.randomUUID()});
   verify(opening.status===200&&opening.reply.turn===0,'start');

@@ -22,6 +22,18 @@ test('rejects authorization, origin, and disabled configuration before reservati
  assert.equal(s.calls.length,0);
  assert.equal((await createHandler({env:{...env,DANA_PREVIEW_ENABLED:'false'}})(request({action:'start',caseId:DANA}))).status,503);
 });
+test('a 15-character access phrase works; shorter configuration fails before paid work',async()=>{
+ const provider={configured:true,speak:async()=>mp3};let reservations=0;
+ const budget={reserve:async()=>{reservations++;}};
+ for(const length of [14,15]){
+  const secret='x'.repeat(length);
+  const handler=createHandler({env:{...env,DANA_PREVIEW_PASSCODE:secret},provider,budget});
+  const response=await handler(request({action:'start',caseId:DANA,requestId:crypto.randomUUID()},{'x-preview-key':secret}));
+  assert.equal(response.status,length===15?200:503);
+  await response.text();
+ }
+ assert.equal(reservations,1);
+});
 test('ten turns continue across fresh handlers with no process session memory',async()=>{
  const s=setup();let output=await start(s),state=output.at(-1).state;
  assert.deepEqual(output.map(x=>x.type),['reply','audio','complete']);

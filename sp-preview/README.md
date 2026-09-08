@@ -1,10 +1,10 @@
-# Protected hosted Dana preview
+# Protected spoken Interview Room
 
-An isolated engineering/faculty proof of ten spoken turns. This directory does not alter either learner site's navigation or the production SP proxy. Dana's disclosure overlay and conversational portrayal remain drafts pending faculty review.
+A protected pilot of ten spoken turns with Dana, Marcus, or Ray, hosted separately from the learner sites. The learner sites' Interview Room links here through a top-level navigation, so microphone and media permissions belong to this origin. The original Interview Room and its production SP proxy continue to work. Dana's disclosure overlay and conversational portrayal retain their recorded review status.
 
 ## Local verification
 
-Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Both also run in `ci.yml`'s `build-test-validate` job and in `bin/verify.sh`, so a change here reddens a pull request rather than surfacing only when someone remembers the commands. Run the full root and prototype suites sequentially. The `dist` folder contains only `index.html`, `app.js`, and `styles.css`; never publish the repository root, `_prototypes`, or `sp-preview` itself.
+Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Both also run in `ci.yml`'s `build-test-validate` job and in `bin/verify.sh`, so a change here reddens a pull request rather than surfacing only when someone remembers the commands. Run the full root and prototype suites sequentially. The `dist` folder contains only the five browser assets listed below; never publish the repository root, `_prototypes`, or `sp-preview` itself.
 
 The opt-in `npm run test:hosted` also requires the `tests/smoke` Playwright dependencies, explicit `DANA_QA_URL` and `DANA_QA_ACCESS_FILE` environment variables, and an authorized preview passcode file. It makes one paid opening and ten paid conversation requests, with synthetic recognition and native muted audio at 2x. It never runs as part of `npm test` or in CI; reports contain counts/timings, not dialogue, keys, or state receipts.
 
@@ -49,13 +49,15 @@ Use a separate Netlify preview site with this directory as its base. Keep its pr
 | Name | Meaning |
 | --- | --- |
 | `DANA_PREVIEW_ENABLED` | Exactly `true` to permit this engineering preview. Missing/false fails closed. |
-| `DANA_PREVIEW_PASSCODE` | Preview-only access phrase, at least 16 characters. Held only in browser memory. |
+| `DANA_PREVIEW_PASSCODE` | Access phrase, at least 15 characters. Configured server-side; held only in browser memory during an encounter. |
 | `DANA_PREVIEW_STATE_KEY` | Random 32-byte key encoded as 43 base64url characters. Server only. |
 | `OPENAI_API_KEY` | Existing user-authorized Psychiatherapy key. Server only; never public assets. |
 | Deployment identity | Supplied by trusted Function `context.deploy.id`; state and budget bind to that deployment. Do not rely on build-only `DEPLOY_ID`. |
 | `DANA_PREVIEW_ORIGIN` | Optional explicit exact origin for a local test or assigned preview alias. |
 
-Draft deployment only. The learner production sites and `sp-interview-proxy` production deployment are outside this change's activation scope. Set no canonical `speechEngine` enabled flag or faculty attestation during deployment.
+The September 8 integration authorizes the stable protected pilot at `https://interview-room-faculty-preview.netlify.app`, linked from the learner sites. Deploy this configuration only to its separate site; never to either learner site's site ID or to `sp-interview-proxy`. Keep the passcode and provider key in Function environment variables. This integration does not enable the canonical `speechEngine` flag or change faculty attestation.
+
+The pilot still has a shared, finite allowance: 120 operation units per deployment and 72 per rolling 30 minutes. An opening costs one unit and each question costs three, so a full encounter consumes 31 units. This is roughly three full encounters, less any verification or failed attempts. It is not a classroom-capacity or dollar-billing plan. Do not redeploy simply to reset usage; set an explicitly reviewed capacity policy before expanding the pilot.
 
 Use `netlify deploy --context deploy-preview` with the complete build for the first upload. Verify the function bundle as well as static assets. Routing uses the explicit TOML rewrite to the default function endpoint. Do not also export `config.path`: modern custom paths disable the default endpoint, making that combination return 404. See [Netlify function configuration](https://docs.netlify.com/build/functions/configuration/).
 

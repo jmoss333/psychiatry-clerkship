@@ -326,6 +326,30 @@ test('Marcus and Ray locked disclosures stay absent until canonical state unlock
   for(const gate of ray.gated.filter(g=>g.id!=='g_command'))assert.ok(!rayResult.system.includes(gate.reveal));
 });
 
+test('short-first-sentence pacing reaches every hosted case without altering disclosures or dialogue',async()=>{
+  const {createContext}=await api();
+  const scenarios=[
+    {caseDef:dana,questions:['Tell me about what brought you here.','Have you had thoughts of killing yourself?'],gateId:'si_active'},
+    {caseDef:marcus,questions:['My name is Alex.','Tell me what has been happening.','It sounds like your mind is moving very fast.','Can we take one thing at a time?','Are your thoughts racing?'],gateId:'g_fear_passenger'},
+    {caseDef:ray,questions:['My name is Alex and this is not being recorded.','Share only what you want. We can stop any time.','That sounds frightening.','Do the voices tell you to do anything?'],gateId:'g_command'},
+  ];
+  for(const {caseDef,questions,gateId} of scenarios){
+    const before=JSON.stringify(caseDef);
+    for(const turns of [[],questions]){
+      const history=transcriptFor(caseDef,turns),result=createContext(caseDef,turns,history);
+      assert.match(result.system,/begin with one short complete sentence of about 6 to 12 words that answers the learner/);
+      assert.match(result.system,/Do not use a filler sentence just to start speaking/);
+      assert.match(result.system,/Preserve every required disclosure verbatim; that requirement takes priority over this pacing suggestion/);
+      assert.deepEqual(result.messages,history.map(entry=>({role:entry.who==='me'?'user':'assistant',content:entry.text})));
+      assert.deepEqual(Object.keys(result.state.unlocked),turns.length?[gateId]:[]);
+      const disclosures=factsFrom(result.system).unlockedDisclosures;
+      assert.deepEqual(disclosures,turns.length?caseDef.gated.filter(g=>g.id===gateId).map(g=>({id:g.id,facts:g.reveal,furtherContext:g.repeatAsk||null})):[]);
+      for(const gate of caseDef.gated.filter(g=>!turns.length||g.id!==gateId))assert.ok(!result.system.includes(gate.reveal));
+    }
+    assert.equal(JSON.stringify(caseDef),before);
+  }
+});
+
 test('Marcus and Ray facts fail closed on persona, response, gate, or tone drift',async()=>{
   const {createContext}=await api();
   for(const caseDef of [marcus,ray]){
@@ -367,6 +391,36 @@ test('Ray psychiatrist history does not become a blanket denial of therapy or al
   assert.doesNotMatch(facts.ordinaryFacts.medical,/no prior psychiatric care|no prior mental.health care/i);
   assert.match(facts.ordinaryFacts.medical,/never seen a psychiatrist/i);
   assert.equal(facts.informationLimits.priorCare.therapyOrOtherMentalHealthCare,'unknown');
+});
+
+test('Ray current onset cannot become a lifetime negative even after an unsupported patient reply',async()=>{
+  const {createContext}=await api(),questions=['Has this happened before?','Tell me more about before this.'];
+  const history=[{who:'pt',text:ray.persona.opening,playbackStatus:'played'},
+    {who:'me',text:questions[0]},{who:'pt',text:'No. Not before this.',playbackStatus:'played'},
+    {who:'me',text:questions[1]}];
+  const result=createContext(ray,questions,history),facts=factsFrom(result.system);
+  assert.equal(facts.informationLimits.priorEpisodes?.similarExperiencesBeforeCurrentCourse,'unknown');
+  assert.equal(facts.informationLimits.priorEpisodes?.priorEpisodesOrRemissions,'unknown');
+  assert.match(facts.informationLimits.priorEpisodes.distinction,/do not answer.*negative/i);
+  assert.match(facts.informationLimits.priorEpisodes.distinction,/not like this/i);
+  assert.match(facts.informationLimits.priorEpisodes.distinction,/unsure about earlier similar experiences/i);
+  assert.match(facts.ordinaryFacts.course,/about six weeks ago/);
+  assert.match(facts.ordinaryFacts.medical,/never seen a psychiatrist/);
+  assert.doesNotMatch(JSON.stringify(facts.ordinaryFacts),/never.*(?:similar experiences|episode)|no prior episodes/i);
+  assert.equal(result.messages[2].content,'No. Not before this.','history stays accurate without becoming a new fact source');
+  assert.deepEqual(Object.keys(result.state.unlocked),[]);
+});
+
+test('Ray fear of dismissal does not establish prior clinician explanations or quoted conversations',async()=>{
+  const {createContext}=await api(),questions=['What did people say when you told them?'];
+  const result=createContext(ray,questions,transcriptFor(ray,questions)),facts=factsFrom(result.system);
+  assert.equal(facts.informationLimits.priorConversations?.whatOthersSaidAboutHisExperiences,'unknown');
+  assert.equal(facts.informationLimits.priorConversations?.clinicianExplanationsOrDiagnoses,'unknown');
+  assert.match(facts.informationLimits.priorConversations.distinction,/whether he previously discussed.*unknown/i);
+  assert.doesNotMatch(JSON.stringify(facts.ordinaryFacts),/they (?:said|told)|doctor.*(?:said|told)/i);
+  assert.equal(result.messages.at(-1).content,questions[0]);
+  assert.deepEqual(Object.keys(result.state.unlocked),[]);
+  for(const gate of ray.gated)assert.ok(!result.system.includes(gate.reveal));
 });
 
 test('locked gate identifiers do not hint at unrevealed facts in any actor prompt',async()=>{
