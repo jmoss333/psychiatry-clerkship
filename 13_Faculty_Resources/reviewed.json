@@ -213,14 +213,13 @@
     "by": "Joshua Moss, MD"
   },
   "cotw_20260720_bipolar_res.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-07-23",
-    "by": "Pending faculty review"
+    "at": "2026-09-08",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260720_mdd_res.md": {
     "status": "pending",
