@@ -19,3 +19,7 @@ Unit and provider-contract tests cover registration, public projection, addresse
 The family meeting practices early relational interviewing and does not simulate an entire course of family therapy. There is no private check-in in the hosted slice. Interrupt/Escape remains immediate; true spoken interruption needs a separate capture/echo/cancellation design. Faculty-only portrayal auditions are a useful next experiment: compare the same facts across different degrees of speech pressure while retaining learner control and avoiding diagnostic stereotypes.
 
 Technical reference: OpenAI's [speech guide](https://developers.openai.com/api/docs/guides/text-to-speech) documents instructions for emotional range, intonation, speed, and tone. Instructions are expressive controls, not a validated mental-status examination simulator.
+
+## Recorded implementation refinement
+
+The first real-voice sample confirmed complete MP3 generation and case-grounded dialogue but did not consistently separate Marcus's tempo from other voices. The hosted profile now requests synthesis speed 1.12 for Marcus alone; the API fallback remains 1.0 and the browser never changes playback rate. This complements the pressured phrasing and redirection behavior; speech rate alone is not a diagnostic marker or evidence of clinical fidelity.

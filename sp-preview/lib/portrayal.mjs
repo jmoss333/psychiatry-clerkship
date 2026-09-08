@@ -13,7 +13,10 @@ const EXACT_WORDS='Speak only the supplied dialogue, exactly. Preserve every neg
 export function hostedSpeechProfile(caseId){
   const original=speechProfile(caseId);
   if(!Object.hasOwn(DELIVERY,caseId))return original;
-  return Object.freeze({...original,instructions:original.instructions+'\nHOSTED CONVERSATION DELIVERY: These more specific delivery directions take precedence over the general delivery style above.\n'+DELIVERY[caseId]+'\n'+EXACT_WORDS});
+  // A bounded synthesis setting for this authored portrayal, not a diagnostic
+  // threshold or a learner speech metric. Browser playback remains at 1.0.
+  const speed=caseId==='sp_mania_redirect_001'?1.12:1;
+  return Object.freeze({...original,speed,instructions:original.instructions+'\nHOSTED CONVERSATION DELIVERY: These more specific delivery directions take precedence over the general delivery style above.\n'+DELIVERY[caseId]+'\n'+EXACT_WORDS});
 }
 
 const MARCUS_TURN_STYLE=`

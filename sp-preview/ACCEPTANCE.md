@@ -1,3 +1,17 @@
+# September 8 — family, MI, and portrayal extension
+
+The protected preview adds the existing Morgan MI draft and a public-only Morgan/Maya family meeting. This does not attest either case or transplant the local private-check-in workflow. One family respondent speaks per learner turn. The same twenty-start daily policy and 34-unit full-encounter envelope apply.
+
+Verification on this extension: 198 unit checks; 21 real-browser checks under deployed CSP with fake recognition/audio; full root verify and both audience builds; independent ten-alternating-family-turn plus one-alternative ledger probe at 34 units. The probe also refuses private-channel keys, changed targets on consumed receipts, cross-case state, and alternative continuation before additional spend. Review found and fixed third-person names switching the respondent and a late speaker label being voiced by the wrong participant.
+
+The staged real-provider run used three starts and ten questions (33 operation units). All 23 MP3 files decoded successfully. Morgan explored benefits/costs/choice; Maya held her no-nightly-monitoring limit; the public actor refused an invented private check-in; Marcus followed the sleep redirect. Dialogue review noted one minor unsupported causal phrase from Morgan ("wasn't moving well" as a reason for canceled plans); it is not an observed motor finding. Keep generated dialogue subject to faculty review.
+
+First-audio times for the ten staged questions were 1.929–3.444 seconds after dispatch. The initial Marcus audition did not consistently separate tempo from the other voices, so a modest 1.12 speech-synthesis setting was added for Marcus only; browser playback remains normal. A further listening comparison is recorded with the local release artifacts. Acoustic authenticity, pronunciation, and physical-microphone behavior remain human judgments; these tests do not establish them. Existing Dana voice and clinical gates are unchanged.
+
+The following sections are historical receipts for earlier slices; their case counts and former exclusions describe those earlier states.
+
+---
+
 # Hosted Dana acceptance record
 
 Engineering preview, not faculty approval or learner activation.

@@ -61,7 +61,7 @@ function actorInput(system,messages,stream,actorReasoning) {
 function speechInput(text,caseId) {
   if(typeof text!=='string'||!text.trim()||text.length>MAX_REPLY||CONTROL.test(text))throw fail('invalid_reply','validation');
   let profile;try{profile=speechProfile(caseId);}catch{throw fail('invalid_reply','validation');}
-  return {model:SPEECH_MODEL,voice:profile.voice,input:text,instructions:profile.instructions,response_format:'mp3',speed:1.0};
+  return {model:SPEECH_MODEL,voice:profile.voice,input:text,instructions:profile.instructions,response_format:'mp3',speed:profile.speed??1.0};
 }
 
 function providerUsage(value) {

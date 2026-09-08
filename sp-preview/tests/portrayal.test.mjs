@@ -91,7 +91,7 @@ test('Marcus actor refinement keeps facts, state, and heard history while guidin
   }
 });
 
-test('buffered and streamed speech send the hosted portrayal with exact words and native speed',async()=>{
+test('buffered and streamed speech preserve exact words and apply only the authored case synthesis speed',async()=>{
   const requests=[];
   const provider=createOpenAIProvider({env:{OPENAI_API_KEY:'test-only-key'},fetchImpl:async(_url,options)=>{
     requests.push(JSON.parse(options.body));
@@ -99,10 +99,10 @@ test('buffered and streamed speech send the hosted portrayal with exact words an
     return new Response(bytes,{headers:{'Content-Type':'audio/mpeg'}});
   }});
   const fixtures=[
-    {caseId:'sp_mania_redirect_001',voice:'cedar',style:/urgent, continuous forward momentum/,text:'Yes, sleep. Two or three hours, and I am not tired.'},
-    {caseId:'sp_psychosis_paranoid_001',voice:'cedar',style:/uneven, cautious phrasing/,text:'I do not know what is happening.'},
-    {caseId:MORGAN,voice:'marin',style:/mixed feelings be audible/,text:'I am not promising to stop forever.'},
-    {caseId:'family_maya_001',voice:'cedar',style:/steady and caring at the same time/,text:'I care about you, and I cannot check every night.'},
+    {caseId:'sp_mania_redirect_001',voice:'cedar',speed:1.12,style:/urgent, continuous forward momentum/,text:'Yes, sleep. Two or three hours, and I am not tired.'},
+    {caseId:'sp_psychosis_paranoid_001',voice:'cedar',speed:1,style:/uneven, cautious phrasing/,text:'I do not know what is happening.'},
+    {caseId:MORGAN,voice:'marin',speed:1,style:/mixed feelings be audible/,text:'I am not promising to stop forever.'},
+    {caseId:'family_maya_001',voice:'cedar',speed:1,style:/steady and caring at the same time/,text:'I care about you, and I cannot check every night.'},
   ];
   for(const fixture of fixtures){
     for(const streaming of [false,true]){
@@ -111,7 +111,7 @@ test('buffered and streamed speech send the hosted portrayal with exact words an
       const request=requests.at(-1);
       assert.equal(request.voice,fixture.voice);
       assert.equal(request.input,fixture.text,'style must never rewrite the spoken content');
-      assert.equal(request.speed,1);
+      assert.equal(request.speed,fixture.speed);
       assert.match(request.instructions,fixture.style);
       assert.match(request.instructions,/Preserve every negation, uncertainty, and required disclosure/);
     }
