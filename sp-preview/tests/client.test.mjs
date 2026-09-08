@@ -157,21 +157,41 @@ test('interim words block sending, and an unfinished ending keeps the words, rec
   assert.equal(t.draft(),'I wanted to ask and what matters to you');
 });
 
-test('voice activity that never becomes words cannot suppress the turn forever',()=>{
-  // 'the real question' finalises 800 ms in, so the learner deadline is 5300 ms.
-  const t=spoken();t.capture.start();t.h.speaks('the real question');
-  t.h.advance(1000);t.h.live().speechStart();     // a fan, a hallway voice: the VAD trips
-  t.h.advance(2000);assert.equal(t.submissions(),0,'a possible speaker is given a full grace period');
-  t.h.advance(1499);assert.equal(t.submissions(),0,'the original quiet window is honoured, not restarted');
-  t.h.advance(1);assert.equal(t.submissions(),1,'and it still sends at the learner own deadline');
-  assert.equal(t.capture.isActive(),true);
-
-  // Noise that keeps re-tripping the detector must not compound into a stall.
-  const noisy=spoken();noisy.capture.start();noisy.h.speaks('a second question');
-  for(let burst=0;burst<40&&noisy.submissions()===0;burst++){noisy.h.live().speechStart();noisy.h.advance(500);}
-  assert.equal(noisy.submissions(),1,'repeated wordless trips end at most one grace past the deadline');
+test('speech the recognizer has not yet reported is never overwritten by an earlier draft — R2',()=>{
+  // A finalized draft exists; the learner starts speaking again; no interim or final
+  // has arrived. Grace expiry is not evidence of silence — the Web Speech contract
+  // gives no delivery deadline — so it must not send the earlier draft.
+  const t=spoken();t.capture.start();t.h.speaks('the earlier question');
+  t.h.advance(1000);t.h.live().speechStart();
+  t.h.advance(60000);
+  assert.equal(t.submissions(),0,'nothing is sent while speech is open and unreported');
+  assert.deepEqual(t.notices,['unfinished_speech'],'the learner is told once that it stalled');
+  assert.equal(t.draft(),'the earlier question','the completed words are kept');
+  assert.equal(t.capture.isActive(),true,'and the microphone stays available');
 });
 
+test('a wordless burst that the detector ends still sends at the original deadline — R2',()=>{
+  // speechend is the honest signal that a burst finished. Noise produces it; a
+  // learner mid-sentence does not.
+  const t=spoken();t.capture.start();t.h.speaks('the real question');
+  t.h.advance(1000);
+  const recognition=t.h.live();recognition.speechStart();
+  t.h.advance(500);recognition.speechEnd();
+  t.h.advance(3000);
+  assert.equal(t.submissions(),1,'the learner original quiet window is honoured');
+  assert.deepEqual(t.notices,[],'and nothing needed explaining');
+});
+
+test('words arriving after a stall clear it without an explicit action — R2',()=>{
+  const t=spoken();t.capture.start();t.h.speaks('the earlier question');
+  t.h.advance(1000);t.h.live().speechStart();
+  t.h.advance(60000);
+  assert.equal(t.submissions(),0);
+  t.h.speaks('and the rest of it');
+  t.h.advance(4500);
+  assert.equal(t.submissions(),1,'late speech resumes automatic sending');
+  assert.equal(t.draft(),'the earlier question and the rest of it');
+});
 test('ordinary silence cycles restart the microphone indefinitely; only a true restart storm stops with an explicit error',()=>{
   const healthy=spoken();healthy.capture.start();healthy.h.speaks('a question I am still weighing');
   for(let cycle=0;cycle<30;cycle++){healthy.h.advance(3000);const recognition=healthy.h.live();if(recognition)recognition.noSpeech();healthy.h.advance(0);}

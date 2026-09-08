@@ -62,7 +62,9 @@
     // voice-activity trip that never produces words (noise), HEALTHY_RUN marks a
     // session that lived long enough to be an ordinary silence cycle rather than a
     // failure, and MAX_FRUITLESS bounds a genuine restart storm.
-    var VOICE_GRACE=2000,HEALTHY_RUN=1000,MAX_FRUITLESS=8,TRACE_LIMIT=200,trace=[],counts=Object.create(null);
+    // How long speech may be open with nothing reported before we stop guessing.
+    // Expiry means "we do not know", never "the learner has finished".
+    var VOICE_STALL=8000,HEALTHY_RUN=1000,MAX_FRUITLESS=8,TRACE_LIMIT=200,trace=[],counts=Object.create(null);
     var nativeRecognition=!!Constructor&&/\[native code\]/.test(String(Constructor));
     function clock(){return typeof env.now==='function'?env.now():env.performance&&typeof env.performance.now==='function'?env.performance.now():Date.now();}
     function note(code){counts[code]=(counts[code]||0)+1;trace.push({at:Math.round(clock()),code:code});if(trace.length>TRACE_LIMIT)trace.shift();}
@@ -85,11 +87,16 @@
       recognition.onstart=function(){if(active&&current===recognition){note('ready');emit('onReady');}};
       // Voice activity suppresses the quiet deadline only while it might still become
       // words. Held open indefinitely it is the difference between hands-free and not.
+      // speechend is the honest signal that a burst finished; a learner mid-sentence
+      // does not produce one. While speech is open we do not arm — and if nothing is
+      // ever reported we say so rather than sending an earlier draft over the top of
+      // words the service has not delivered yet.
       recognition.onspeechstart=function(){if(!active||current!==recognition)return;note('voice_start');clear();releaseVoice();
-        // Repeated wordless trips cannot compound: suppression ends at most one grace
-        // period past the learner's own deadline.
-        var budget=quietSince===null?VOICE_GRACE:Math.max(0,quietSince+quiet()+VOICE_GRACE-clock());
-        voice=env.setTimeout(function(){voice=null;note('voice_wordless');arm();},Math.min(VOICE_GRACE,budget));};
+        voice=env.setTimeout(function(){
+          voice=null;note('voice_stalled');
+          if(!active||interim||suspended)return;
+          suspended=true;clear();emit('onNotice',issue('unfinished_speech'));
+        },VOICE_STALL);};
       recognition.onspeechend=function(){if(!active||current!==recognition)return;note('voice_end');releaseVoice();arm();};
       recognition.onresult=function(event){
         if(!active||current!==recognition)return;var words=[],heard=false,finalArrived=false;
