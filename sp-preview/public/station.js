@@ -243,7 +243,14 @@
     return {update:update,
       getRetryMoments:function(){return latest?retryMoments(latest):[];},
       requestRetry:function(turnId,text){return typeof options.onRetry==='function'?options.onRetry(turnId,text):false;},
-      dispose:function(){disposed=true;},
+      dispose:function(){
+        disposed=true;
+        store.clear();notes=Object.create(null);presentation='';requested=Object.create(null);latest=null;lastCue='';
+        if(handoff)handoff.value='';
+        if(retryText)retryText.value='';
+        host.replaceChildren();
+        if(host.classList&&host.classList.remove)host.classList.remove('sp-station');
+      },
       getPresentation:function(){return presentation;},
       getReflections:function(){return Object.assign({},notes);},
       getBookmarks:function(){return store.entries();},

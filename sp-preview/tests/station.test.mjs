@@ -244,3 +244,26 @@ test('an interruption cue appears only after an actual interruption — R9',()=>
   assert.equal(byStation(host,'cue').textContent,profile.cues.interrupted);
   station.dispose();
 });
+
+test('disposing the station removes its content from the page, not just a flag — R4',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  const station=createStation({document:doc},host,{caseId:'sp_depression_gated_si_001',content:contentModule.exports});
+  station.update(hosted([you('A question I asked'),dana('A reply I heard.','played',['A reply I heard.'],1)],'ended'));
+  assert.ok(allText(host).includes('A question I asked'),'the exchange is on the page first');
+
+  station.dispose();
+  assert.equal(host.children.length,0,'dispose removes the station DOM');
+  assert.deepEqual(station.getBookmarks(),[],'and its bookmarks');
+  assert.deepEqual(station.getReflections(),{},'and its reflections');
+  assert.equal(station.getPresentation(),'','and the attending presentation');
+  assert.equal(allText(host).includes('A question I asked'),false,'no dialogue remains rendered');
+});
+
+test('a disposed station ignores further updates rather than re-rendering — R4',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  const station=createStation({document:doc},host,{caseId:'sp_depression_gated_si_001',content:contentModule.exports});
+  station.dispose();
+  station.update(hosted([you('After disposal'),dana('Reply.','played',['Reply.'],1)],'ended'));
+  assert.equal(host.children.length,0,'a disposed station stays empty');
+  assert.equal(allText(host).includes('After disposal'),false);
+});
