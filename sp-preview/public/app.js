@@ -240,6 +240,7 @@
     var name=profile&&profile.displayName||'the patient',voice=profile&&profile.voice||'AI';
     doc.title=(profile&&profile.title||name)+' · The Interview Room';
     var set=function(id,text){var node=doc.getElementById(id);if(node)node.textContent=text;};
+    set('door-title','Begin with '+name+'\u2019s story.');
     set('patient-name',name);
     set('voice-tag',voice+' · AI voice');
     set('door-lede','You are a medical student meeting '+name+' on an adult inpatient psychiatry service. Introduce yourself and your role, explain the purpose of the conversation, and invite an account. Close with a summary that can be corrected.');
