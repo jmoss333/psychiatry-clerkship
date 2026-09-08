@@ -62,10 +62,12 @@ The nightly job says out loud that it did not check it.
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
@@ -79,6 +81,13 @@ FIXTURE = (
     / "ruleset-main.json"
 )
 BYPASS_FIXTURE = FIXTURE.with_name("ruleset-main-bypass.json")
+# A dated, content-free attestation that a human with the necessary access actually
+# ran --check-bypass. monthly_review.py ages this against receipts.rulesetBypass
+# .maxAgeDays, so "nobody has checked the bypass list in over a month" becomes a
+# visible row in the monthly review instead of a note someone has to remember.
+BYPASS_RECEIPT = (
+    FIXTURE.parent.parent / "receipts" / "ruleset-bypass.json"
+)
 
 DEFAULT_REPOSITORY = "jmoss333/psychiatry-clerkship"
 RULESET_ID = 21202405
@@ -224,6 +233,35 @@ def load_bypass_fixture():
         raise RulesetDriftError("bypass fixture is unreadable") from exc
 
 
+def write_bypass_receipt(actors):
+    """Attest that the bypass list was verified, without restating it.
+
+    Content-free by design: a timestamp, a count, and a digest of the exact list that
+    was matched. The list itself already lives in the committed fixture; duplicating
+    it here would just be a second copy to drift.
+    """
+    payload = json.dumps(actors, sort_keys=True).encode("utf-8")
+    BYPASS_RECEIPT.parent.mkdir(parents=True, exist_ok=True)
+    BYPASS_RECEIPT.write_text(
+        json.dumps(
+            {
+                "schemaVersion": 1,
+                "state": "success",
+                "checkedAt": datetime.now(timezone.utc)
+                .replace(microsecond=0)
+                .isoformat()
+                .replace("+00:00", "Z"),
+                "actorCount": len(actors),
+                "bypassSha256": hashlib.sha256(payload).hexdigest(),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def write_bypass_fixture(actors):
     BYPASS_FIXTURE.parent.mkdir(parents=True, exist_ok=True)
     BYPASS_FIXTURE.write_text(
@@ -363,9 +401,13 @@ def main(argv=None, *, opener=None):
             return 2
         bypass_lines = diff(expected_actors, actors)
         if not bypass_lines:
+            # Only a MATCH writes the receipt. A drift deliberately leaves it to go
+            # stale, so an unresolved drift keeps showing up in the monthly review.
+            write_bypass_receipt(actors)
             print(
                 f"ruleset-drift: bypass list matches the pinned fixture "
-                f"({len(actors)} actor(s))"
+                f"({len(actors)} actor(s)); receipt written to "
+                f"{BYPASS_RECEIPT.relative_to(ROOT)}"
             )
             return 0
         print(

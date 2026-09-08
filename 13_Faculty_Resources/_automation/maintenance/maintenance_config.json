@@ -109,6 +109,10 @@
     },
     "redTeam": {
       "path": "13_Faculty_Resources/_automation/maintenance/receipts/sp-red-team.json"
+    },
+    "rulesetBypass": {
+      "path": "13_Faculty_Resources/_automation/maintenance/receipts/ruleset-bypass.json",
+      "maxAgeDays": 35
     }
   },
   "apaCrosswalk": "13_Faculty_Resources/APA_Downloads_2026-06-29/metadata/library_crosswalk.csv"

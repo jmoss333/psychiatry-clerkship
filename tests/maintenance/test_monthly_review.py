@@ -109,6 +109,10 @@ class MonthlyReviewTests(unittest.TestCase):
                     "maxAgeDays": 35,
                 },
                 "redTeam": {"path": "receipts/red-team.json"},
+                "rulesetBypass": {
+                    "path": "receipts/ruleset-bypass.json",
+                    "maxAgeDays": 35,
+                },
             },
             "apaCrosswalk": "metadata/library_crosswalk.csv",
             "evidenceGeneratedViewsValid": True,
@@ -337,6 +341,72 @@ class MonthlyReviewTests(unittest.TestCase):
         report = self.build_report()
         self.assertEqual(report["operations"]["openEvidenceReceipt"], "stale")
         self.assertEqual(report["gate"], "review")
+
+    def test_ruleset_bypass_receipt_ages_and_is_a_review_item(self):
+        """The bypass list cannot be checked from Actions -- GitHub returns
+        bypass_actors only to a caller with ruleset WRITE access. This receipt's
+        freshness is therefore the only signal that a human ran
+        `check_ruleset_drift.py --check-bypass`, so an absent or stale one must
+        surface as a review item rather than passing quietly."""
+        report = self.build_report()
+        self.assertEqual(report["operations"]["rulesetBypassReceipt"], "missing")
+        self.assertEqual(report["gate"], "review")
+
+        # Fresh: verified five days before the review runs (fixture date 2026-07-15).
+        self.write_json(
+            "receipts/ruleset-bypass.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-07-10T00:00:00+00:00",
+                "state": "success",
+                "actorCount": 1,
+                "bypassSha256": "0" * 64,
+            },
+        )
+        self.assertEqual(
+            self.build_report()["operations"]["rulesetBypassReceipt"], "current"
+        )
+
+        # Older than maxAgeDays: nobody has looked in over a month.
+        self.write_json(
+            "receipts/ruleset-bypass.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-05-01T00:00:00+00:00",
+                "state": "success",
+                "actorCount": 1,
+                "bypassSha256": "0" * 64,
+            },
+        )
+        report = self.build_report()
+        self.assertEqual(report["operations"]["rulesetBypassReceipt"], "stale")
+        self.assertEqual(report["gate"], "review")
+
+        # A receipt that did not record success is not evidence of anything.
+        self.write_json(
+            "receipts/ruleset-bypass.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-07-10T00:00:00+00:00",
+                "state": "drifted",
+            },
+        )
+        self.assertEqual(
+            self.build_report()["operations"]["rulesetBypassReceipt"], "failed"
+        )
+
+        # A receipt dated after the review is not trustworthy either.
+        self.write_json(
+            "receipts/ruleset-bypass.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-08-01T00:00:00+00:00",
+                "state": "success",
+            },
+        )
+        self.assertEqual(
+            self.build_report()["operations"]["rulesetBypassReceipt"], "invalid"
+        )
 
     def test_expected_sp_hash_changes_and_red_team_recency_use_pack_git_time(self):
         pack_hash = sha256(self.pack_bytes).hexdigest()
