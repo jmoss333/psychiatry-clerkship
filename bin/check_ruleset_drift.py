@@ -77,7 +77,22 @@ API_TIMEOUT_SECONDS = 20
 
 # Change without meaning: timestamps move on any save, node_id and _links are
 # addressing, not policy. Everything else is pinned.
-VOLATILE_KEYS = frozenset({"updated_at", "created_at", "node_id", "_links"})
+#
+# `current_user_can_bypass` is the important one, and it is here because it was
+# NOT here on 2026-09-04 and the check cried wolf five nights running. It answers
+# "may THIS CALLER bypass" -- a property of the token doing the asking, not of the
+# ruleset. It is absent for an unauthenticated read (how the fixture was seeded)
+# and "never" for the Actions GITHUB_TOKEN, so a fixture seeded by one caller can
+# never match the other. Caller-context fields must be stripped; policy fields,
+# including ones this tool has never seen, must not be. That distinction is the
+# whole correctness argument for the fail-loud default below.
+VOLATILE_KEYS = frozenset({
+    "updated_at",
+    "created_at",
+    "node_id",
+    "_links",
+    "current_user_can_bypass",
+})
 
 
 class RulesetDriftError(RuntimeError):
@@ -199,6 +214,13 @@ def _self_test():
     # An unrecognised key is drift, not something to skip.
     grown = dict(base, some_new_protection="active")
     assert diff(pinned, normalize(grown)), "new key not reported"
+    # ...but a CALLER-context field is not policy and must never read as drift.
+    # Regression: the fixture is seeded unauthenticated (field absent) and CI runs
+    # authenticated (field present), which failed the heartbeat five nights running.
+    for caller in ("never", "always", "pull_requests_only"):
+        seen = dict(base, current_user_can_bypass=caller)
+        assert diff(pinned, normalize(seen)) == [], (
+            "caller-context field counted as drift", caller)
     print("check_ruleset_drift: self-test OK")
     return 0
 
