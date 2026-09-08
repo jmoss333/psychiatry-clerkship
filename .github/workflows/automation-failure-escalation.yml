@@ -12,6 +12,7 @@ name: Automation — Failure Escalation
 on:
   workflow_run:
     workflows:
+      - "Maintenance — Autonomous Queue Runner"
       - "Maintenance — Evidence and Operations Review"
       - "Maintenance — Faculty Governance Digest"
       - "Maintenance — Interview Room Health Monitor"

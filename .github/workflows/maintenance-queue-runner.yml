@@ -1,0 +1,109 @@
+name: Maintenance — Autonomous Queue Runner
+
+on:
+  schedule:
+    - cron: "40 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: maintenance-queue-runner
+  cancel-in-progress: false
+
+jobs:
+  queue-runner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          lfs: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - name: Install — validator dependencies
+        run: pip install --quiet -r requirements.txt
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "20"
+
+      # One outstanding automated pull request at a time. The branch name carries the
+      # date, so without this the runner opens a fresh duplicate every night for as long
+      # as yesterday's draft sits unmerged: the task still measures as undone, because
+      # the base branch does not yet carry the fix.
+      - name: Skip while an automated queue pull request is still open
+        id: outstanding
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          count=$(gh pr list --state open --limit 100 --json headRefName \
+            --jq '[.[] | select(.headRefName | startswith("automation/queue-"))] | length')
+          echo "count=$count"
+          if [ "$count" != "0" ]; then
+            echo "open=true" >> "$GITHUB_OUTPUT"
+            echo "queue-runner: $count automated queue pull request(s) still open; standing down"
+          else
+            echo "open=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Selection, execution, verification and the four guards all live in the script, so
+      # they are unit-tested rather than being shell that only ever runs at 04:40 UTC.
+      - name: Run the one autonomous queue task
+        id: queue
+        if: steps.outstanding.outputs.open != 'true'
+        run: |
+          python3 bin/run_queue_task.py --out-dir "$RUNNER_TEMP/queue-runner"
+
+      - name: Validate — registry schemas and clinical contracts
+        if: steps.queue.outputs.committed == 'true'
+        run: |
+          python3 13_Faculty_Resources/_automation/validate_registry_schemas.py
+          python3 13_Faculty_Resources/_automation/validate_topic_meta.py
+          python3 13_Faculty_Resources/_automation/validate_attestation_consistency.py
+
+      - name: Validate — shipped pages are derived from current producers
+        if: steps.queue.outputs.committed == 'true'
+        run: python3 13_Faculty_Resources/_automation/site_build/shipped_pages.py --check
+
+      - name: Unit — root node regression tests (tests/*.test.mjs)
+        if: steps.queue.outputs.committed == 'true'
+        run: node --test tests/*.test.mjs
+
+      - name: Push the automation branch
+        if: steps.queue.outputs.committed == 'true'
+        env:
+          BRANCH: ${{ steps.queue.outputs.branch }}
+        run: git push --set-upstream origin "$BRANCH"
+
+      # Draft, always. The runner never marks a pull request ready and never merges;
+      # a person decides whether the change is right.
+      - name: Open the draft pull request
+        if: steps.queue.outputs.committed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.queue.outputs.branch }}
+          TITLE: ${{ steps.queue.outputs.title }}
+          BODY_FILE: ${{ steps.queue.outputs.body_file }}
+        run: |
+          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')
+          if [ -n "$existing" ]; then
+            echo "queue-runner: pull request #$existing already covers $BRANCH"
+            exit 0
+          fi
+          gh pr create --draft --base "${{ github.event.repository.default_branch }}" \
+            --head "$BRANCH" --title "$TITLE" --body-file "$BODY_FILE"
+
+      - name: Upload queue runner evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: maintenance-queue-runner-${{ github.run_id }}
+          path: ${{ runner.temp }}/queue-runner
+          if-no-files-found: warn
+          retention-days: 90
