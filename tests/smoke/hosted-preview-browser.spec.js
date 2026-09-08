@@ -222,6 +222,76 @@ test.describe('hosted preview in a real browser under its deployed headers', () 
     expect(violations).toEqual([]);
   });
 
+  test('mobile keyboard order reaches Patient directly after the skip link', async ({page}) => {
+    await page.setViewportSize({width: 320, height: 844});
+    await openPreview(page);
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('link', {name: 'Skip to the encounter'})).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#case-choice')).toBeFocused();
+    await expect(page.locator('#case-choice')).toBeInViewport({ratio: 1});
+    expect(await page.evaluate(() => scrollY)).toBe(0);
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#preview-key')).toBeFocused();
+    await expect(page.locator('#start')).toBeInViewport({ratio: 1});
+  });
+
+  test('enabled field boundaries have at least 3 to 1 contrast against adjacent backgrounds', async ({page}) => {
+    await openPreview(page);
+    async function checkBoundary(selector) {
+      const values = await page.locator(selector).evaluate(element => {
+        const style = getComputedStyle(element);
+        let parent = element.parentElement;
+        while (parent && getComputedStyle(parent).backgroundColor === 'rgba(0, 0, 0, 0)') parent = parent.parentElement;
+        return {border: style.borderTopColor, inside: style.backgroundColor, outside: parent ? getComputedStyle(parent).backgroundColor : 'rgb(255, 255, 255)', width: parseFloat(style.borderTopWidth), disabled: element.disabled};
+      });
+      function luminance(color) {
+        const components = color.match(/[\d.]+/g).map(Number);
+        expect(components.length === 3 || components[3] === 1, `${selector}: opaque measured color`).toBe(true);
+        return components.slice(0, 3).map(value => value / 255).map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4)
+          .reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0);
+      }
+      expect(values.disabled).toBe(false);
+      expect(values.width).toBeGreaterThan(0);
+      for (const background of [values.inside, values.outside]) {
+        const levels = [luminance(values.border), luminance(background)].sort((a, b) => b - a);
+        expect((levels[0] + 0.05) / (levels[1] + 0.05), `${selector}: visible field boundary`).toBeGreaterThanOrEqual(3);
+      }
+    }
+    await checkBoundary('#case-choice');
+    await checkBoundary('#preview-key');
+    await startEncounter(page, CASES[0].id);
+    await expect(page.locator('#composer')).toBeEditable();
+    await checkBoundary('#composer');
+  });
+
+  test('chart disclosures preserve keyboard focus and expose their expanded state', async ({page}) => {
+    const {requests} = await openPreview(page);
+    await startEncounter(page, CASES[0].id);
+    const chart = page.locator('[data-station="chart"]');
+    await chart.locator('summary').focus();
+    await page.keyboard.press('Enter');
+    const control = chart.getByRole('button', {name: 'Admission context', exact: true});
+    await control.focus();
+    await expect(control).toHaveAttribute('aria-expanded', 'false');
+    const contentId = await control.getAttribute('aria-controls');
+    expect(contentId).toBeTruthy();
+    const content = page.locator(`[id="${contentId}"]`);
+    await expect(content).toBeHidden();
+    await page.keyboard.press('Enter');
+    await expect(control).toBeFocused();
+    await expect(control).toHaveAttribute('aria-expanded', 'true');
+    await expect(content).toBeVisible();
+    await expect(content).not.toHaveText('');
+    const order = await control.evaluate((button, id) => !!(button.compareDocumentPosition(document.getElementById(id)) & Node.DOCUMENT_POSITION_FOLLOWING), contentId);
+    expect(order, 'expanded content follows its control in reading order').toBe(true);
+    await page.keyboard.press('Enter');
+    await expect(control).toBeFocused();
+    await expect(control).toHaveAttribute('aria-expanded', 'false');
+    await expect(content).toBeHidden();
+    expect(requests, 'chart disclosure is local and must not ask the actor').toHaveLength(1);
+  });
+
   test('choosing another case after Clear does not leave the previous patient on the entrance', async ({page}) => {
     await openPreview(page);
     await startEncounter(page, CASES[0].id);

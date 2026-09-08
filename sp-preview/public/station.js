@@ -157,9 +157,10 @@
     var chartItems=el('div',null,chart,{class:'station-grid'});
     profile.chartCards.forEach(function(card){
       var box=el('div',null,chartItems,{class:'station-inset'});
-      var body=el('p','',box,{hidden:''});
-      var open=el('button',card.title,box,{type:'button'});
-      open.addEventListener('click',function(){requested[card.id]=true;body.textContent=card.source+' — '+card.text;body.hidden=false;open.hidden=true;});
+      var chartId='chart-'+profile.caseId+'-'+card.id;
+      var open=el('button',card.title,box,{type:'button','aria-expanded':'false','aria-controls':chartId});
+      var body=el('p','',box,{id:chartId,hidden:''});
+      open.addEventListener('click',function(){requested[card.id]=true;body.textContent=card.source+' — '+card.text;body.hidden=!body.hidden;open.setAttribute('aria-expanded',String(!body.hidden));});
     });
 
     var priorities=el('section',null,host,{class:'panel'});
