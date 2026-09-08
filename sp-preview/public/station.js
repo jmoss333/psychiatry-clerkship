@@ -108,7 +108,6 @@
     return {sync:sync,candidate:candidate,add:add,entries:entries,setReflection:setReflection,remove:remove,clear:clear};
   }
 
-  var STYLE='.sp-station [hidden]{display:none!important}.sp-station{min-width:0}.sp-station .station-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}.sp-station .station-inset{padding:16px;border:1px solid var(--line,#ded6ca);border-radius:12px;margin-block:14px}.sp-station textarea{display:block;width:100%;box-sizing:border-box;min-height:100px;margin-block:8px 16px;font:inherit}.sp-station blockquote{margin:14px 0;padding:12px 16px;border-left:3px solid #2d726c;overflow-wrap:anywhere}.sp-station .station-small{font-size:.9rem;line-height:1.5}.sp-station summary{cursor:pointer;padding:8px 0;min-height:28px}.sp-station button,.sp-station select{min-height:44px;max-width:100%}.sp-station .station-cue{border-left:4px solid #847359;padding-left:16px}.sp-station li{margin-block:6px}';
 
   function retryMoments(snapshot){
     var moments=[],turnId=0,pending=null;
@@ -141,7 +140,6 @@
       if(parent)parent.appendChild(node);return node;
     }
     if(host.classList&&host.classList.add)host.classList.add('sp-station');
-    el('style',STYLE,host);
 
     var before=el('section',null,host,{class:'panel'});
     el('p','YOUR STANDARDIZED-PATIENT STATION',before,{class:'section-label'});
@@ -223,7 +221,12 @@
       if(disposed)return;
       latest=stationSnapshot(hostedSnapshot);
       store.sync(latest);
-      var next=latest.phase==='speaking'?profile.cues.interrupted:latest.phase==='ended'?profile.cues.closing:profile.cues.opening;
+      // An interruption cue is a behavioural claim about the patient. It belongs to an
+      // actual interruption, not to every moment of normal speech.
+      var lastPatient=null;
+      (latest.transcript||[]).forEach(function(entry){if(entry.who==='pt')lastPatient=entry;});
+      var interrupted=!!lastPatient&&lastPatient.playbackStatus==='interrupted';
+      var next=latest.phase==='ended'?profile.cues.closing:interrupted?profile.cues.interrupted:profile.cues.opening;
       if(next!==lastCue){lastCue=next;cue.textContent=next;}
       markButton.hidden=!store.candidate(latest);
       closing.hidden=latest.phase!=='ended';
@@ -238,7 +241,14 @@
     return {update:update,
       getRetryMoments:function(){return latest?retryMoments(latest):[];},
       requestRetry:function(turnId,text){return typeof options.onRetry==='function'?options.onRetry(turnId,text):false;},
-      dispose:function(){disposed=true;},
+      dispose:function(){
+        disposed=true;
+        store.clear();notes=Object.create(null);presentation='';requested=Object.create(null);latest=null;lastCue='';
+        if(handoff)handoff.value='';
+        if(retryText)retryText.value='';
+        host.replaceChildren();
+        if(host.classList&&host.classList.remove)host.classList.remove('sp-station');
+      },
       getPresentation:function(){return presentation;},
       getReflections:function(){return Object.assign({},notes);},
       getBookmarks:function(){return store.entries();},

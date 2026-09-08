@@ -28,9 +28,21 @@ test('the modern function bundles with its private grounding and no Python runti
  const dir=await mkdtemp(path.join(tmpdir(),'dana-hosted-bundle-'));
  try{
   const result=await build({entryPoints:[path.join(root,'netlify/functions/dana-preview.mjs')],outfile:path.join(dir,'dana.mjs'),bundle:true,platform:'node',target:'node22',format:'esm',write:false,metafile:true,external:['@netlify/blobs'],logLevel:'silent'});
-  assert.equal(result.errors.length,0);assert.ok(result.outputFiles[0].text.includes('hosted-dana-v1'));
+  assert.equal(result.errors.length,0);assert.ok(result.outputFiles[0].text.includes('hosted-sp-v2'));
   assert.ok(!Object.keys(result.metafile.inputs).some(file=>file.includes('dana-openai-worker.py')||file.includes('dana-live-server.mjs')));
  }finally{await rm(dir,{recursive:true,force:true});}
  const entry=await readFile(path.join(root,'netlify/functions/dana-preview.mjs'),'utf8');
  assert.doesNotMatch(entry,/export\s+const\s+config\s*=\s*\{[^}]*path\s*:/);
+});
+
+test('station styling ships in a stylesheet, not an inline element the CSP blocks — R8',async()=>{
+ const station=await readFile(path.join(root,'public','station.js'),'utf8');
+ // style-src is 'self': an injected <style> element is blocked, and the DOM-stub
+ // tests cannot see that. The rules must live in a published stylesheet.
+ assert.doesNotMatch(station,/createElement\(['"]style['"]\)|el\(['"]style['"]/,'no inline style element');
+ const css=await readFile(path.join(root,'public','styles.css'),'utf8');
+ assert.match(css,/\.sp-station/,'the station rules are in the stylesheet');
+ assert.match(css,/\.sp-station .station-grid/,'including the grid the station relies on');
+ const toml=await readFile(path.join(root,'netlify.toml'),'utf8');
+ assert.match(toml,/style-src 'self'/,"and the restrictive policy is unchanged");
 });

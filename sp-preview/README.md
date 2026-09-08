@@ -12,6 +12,28 @@ It has two modes. `DANA_QA_MODE=automatic` (the default) is the hands-free proof
 
 Neither mode is microphone evidence: both replace `SpeechRecognition`, and both assert and record `nativeRecognition: false`. Only a human walkthrough in a supported browser can close that gap. See `ACCEPTANCE.md` for what has and has not been verified.
 
+## Cases
+
+The preview carries three faculty-reviewed cases: Dana (admission interview),
+Marcus (a focused interview) and Ray (establishing a working conversation). The
+learner picks one at the door and it is fixed for that encounter.
+
+Each encounter is bound to its case twice over. The state codec's binding embeds
+the case id and a hash of the case definition, so a receipt sealed for one case
+fails to open under another and dies as `preview_state_invalid` before any
+reservation. The case id also travels inside the sealed state and is cross-checked
+against every request. The second check is deliberate redundancy: the first is
+emergent from a template string, and an edit that dropped the case hash from the
+binding would otherwise go unnoticed.
+
+Morgan (`sp_alcohol_ambivalence_001`) is deliberately absent. It is
+`draft-pending-attestation` and lives outside the pack; the server registry, the
+client's case list and the station content all refuse it, and tests pin that
+absence so adding it stays a decision.
+
+Only Dana receives the direct-suicide-question overlay. It is reviewed for her
+alone and is never applied to another case.
+
 ## The student station
 
 `dist` publishes five files: `index.html`, `app.js`, `styles.css`, `station.js` and `station-content.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends.

@@ -267,6 +267,29 @@ prove is the truncation property — that the actor sees nothing from the retrie
 turn onward is unobservable from outside and is pinned by the node handler tests
 instead.
 
+## Slice 2 — multi-case transport (Marcus and Ray)
+
+Verified by test:
+
+- A receipt sealed for one case does not open under another. This is the
+  load-bearing property of the slice.
+- A request whose `caseId` disagrees with its sealed receipt is refused before any
+  reservation, as is an unknown or unregistered case.
+- Each case's opening is spoken with its own case id, and speech now refuses a
+  missing case rather than defaulting to Dana's voice — with three cases that
+  default would have spoken a reply in the wrong patient's voice, silently.
+- Every registered case carries learner-facing station content and no actor
+  direction, and rendering one case leaks no other case's door note.
+- The startup grounding-drift check runs for every registered case, so a drift in
+  any of them throws at module load before a paid request is accepted.
+
+Not verified: **no live hosted run has exercised Marcus or Ray.** Everything above
+is mocked. A hosted check would cost paid units and needs a redeploy first.
+
+Also not covered: Marcus and Ray have gated content of their own (4 and 3 gates)
+running on the same engine as Dana's. This slice adds no gate logic and no
+deterministic red-team probes for them; their gate coverage is tracked separately.
+
 ## Material limits and next release work
 
 This hosted slice is Dana only. The full station UI, Morgan, Marcus, Ray, the

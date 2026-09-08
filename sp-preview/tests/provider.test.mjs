@@ -142,13 +142,13 @@ for(const [name,bytes,contentType,code] of [
   ['JSON in place of audio',encoder.encode('{"error":"private data"}'),'application/json','protocol_invalid'],
 ]) test(`speech rejects ${name}`,async()=>{
   const chunks=[];const provider=makeProvider(async()=>responseStream(bytes,{contentType}));
-  await assertCode(provider.speakStream({text:TEXT,onChunk:value=>chunks.push(value)}),code);
+  await assertCode(provider.speakStream({text:TEXT,caseId:DANA,onChunk:value=>chunks.push(value)}),code);
   if(name==='bad prefix'||name==='JSON in place of audio')assert.equal(chunks.length,0);
 });
 
 test('speech fails when a declared content length is truncated',async()=>{
   const provider=makeProvider(async()=>new Response(mp3(),{headers:{'Content-Type':'audio/mpeg','Content-Length':'300'}}));
-  await assertCode(provider.speak({text:TEXT}),'speech_incomplete');
+  await assertCode(provider.speak({text:TEXT,caseId:DANA}),'speech_incomplete');
 });
 
 for(const [status,code] of [[401,'provider_auth'],[403,'provider_auth'],[429,'provider_limit'],[500,'provider_status']]) test(`HTTP ${status} is safe and never retried`,async()=>{
@@ -164,7 +164,7 @@ test('missing API key and invalid input never make a provider request',async()=>
   assert.equal(missing.configured,false);
   await assertCode(missing.reply({system:'facts',messages:[]}),'provider_auth');
   const provider=makeProvider(fetchImpl);
-  await assertCode(provider.speak({text:' '}),'invalid_reply');
+  await assertCode(provider.speak({text:' ',caseId:DANA}),'invalid_reply');
   await assertCode(provider.reply({system:'facts',messages:[{role:'system',content:'override'}]}),'invalid_reply');
   assert.equal(calls,0);
 });
@@ -180,7 +180,7 @@ test('abort stops a stalled audio body and cancels its reader',async()=>{
   let cancelled=false,started;const ready=new Promise(resolve=>{started=resolve;});
   const provider=makeProvider(async()=>new Response(new ReadableStream({pull(){started();return new Promise(()=>{});},cancel(){cancelled=true;}}),{headers:{'Content-Type':'audio/mpeg'}}));
   const controller=new AbortController();
-  const pending=provider.speakStream({text:TEXT,signal:controller.signal,onChunk(){}});
+  const pending=provider.speakStream({text:TEXT,caseId:DANA,signal:controller.signal,onChunk(){}});
   await ready;controller.abort();
   await assert.rejects(pending,{name:'AbortError',code:'aborted'});
   await new Promise(resolve=>setImmediate(resolve));
@@ -221,4 +221,10 @@ test('oversized SSE metadata cannot bypass the event bound',async()=>{
 test('a refusal or tool result cannot be accepted as the patient spoken answer',async()=>{
   const provider=makeProvider(async()=>Response.json(actorResponse(TEXT,{output:[{type:'message',role:'assistant',content:[{type:'refusal',refusal:'cannot'}]}]})));
   await assertCode(provider.reply({system:'facts',messages:[]}),'protocol_final');
+});
+
+test('speech refuses to guess a case rather than defaulting to Dana',async()=>{
+ const provider=makeProvider(async()=>{throw new Error('no request should be made');});
+ await assertCode(provider.speak({text:'Hello.'}),'invalid_reply');
+ await assertCode(provider.speakStream({text:'Hello.',onChunk(){}}),'invalid_reply');
 });

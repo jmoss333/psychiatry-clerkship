@@ -37,6 +37,9 @@ function environment(fetcher){
       speechEnd(){this.onspeechend?.();}
       noSpeech(){this.onerror?.({error:'no-speech'});this.active=false;this.onend?.();}
       serviceEnd(){this.active=false;this.onend?.();}
+      // The spec allows a result list to shrink: an interim may be withdrawn
+      // without ever being replaced by a final.
+      withdraw(){this.results.length=this.cursor;this.fire();}
       emit(text,final=true){this.speechStart();if(final)this.final(text);else this.interim(text);this.speechEnd();}}
   };
   function advance(ms){now+=ms;let due;while((due=[...timers].filter(([,timer])=>timer.at<=now).sort((a,b)=>a[1].at-b[1].at)[0])){timers.delete(due[0]);due[1].callback();}}
@@ -75,7 +78,7 @@ test('opening plays lead before next segment and next turn submits only complete
   assert.equal(h.calls[0].options.headers['x-preview-key'],'private-passcode');assert.equal(JSON.stringify(controller.getSnapshot()).includes('private-passcode'),false);
   await finishAudio(h,0);await finishAudio(h,1);assert.equal(await opening,true);assert.equal(controller.getSnapshot().phase,'ready');
   const next=controller.send('What has been hardest?');await until(()=>h.calls.length===2);
-  assert.deepEqual(h.calls[1].body,{action:'turn',state:'complete-0',text:'What has been hardest?',previousPlayback:'played',previousCompletedSegments:2});
+  assert.deepEqual(h.calls[1].body,{action:'turn',caseId:'sp_depression_gated_si_001',state:'complete-0',text:'What has been hardest?',previousPlayback:'played',previousCompletedSegments:2});
   assert.equal(await controller.send('Duplicate'),false);assert.equal(h.calls.length,2);
   await finishAudio(h,2);await finishAudio(h,3);await next;assert.equal(controller.getSnapshot().turn,1);assert.equal(h.revoked.length,4);
 });
@@ -154,21 +157,41 @@ test('interim words block sending, and an unfinished ending keeps the words, rec
   assert.equal(t.draft(),'I wanted to ask and what matters to you');
 });
 
-test('voice activity that never becomes words cannot suppress the turn forever',()=>{
-  // 'the real question' finalises 800 ms in, so the learner deadline is 5300 ms.
-  const t=spoken();t.capture.start();t.h.speaks('the real question');
-  t.h.advance(1000);t.h.live().speechStart();     // a fan, a hallway voice: the VAD trips
-  t.h.advance(2000);assert.equal(t.submissions(),0,'a possible speaker is given a full grace period');
-  t.h.advance(1499);assert.equal(t.submissions(),0,'the original quiet window is honoured, not restarted');
-  t.h.advance(1);assert.equal(t.submissions(),1,'and it still sends at the learner own deadline');
-  assert.equal(t.capture.isActive(),true);
-
-  // Noise that keeps re-tripping the detector must not compound into a stall.
-  const noisy=spoken();noisy.capture.start();noisy.h.speaks('a second question');
-  for(let burst=0;burst<40&&noisy.submissions()===0;burst++){noisy.h.live().speechStart();noisy.h.advance(500);}
-  assert.equal(noisy.submissions(),1,'repeated wordless trips end at most one grace past the deadline');
+test('speech the recognizer has not yet reported is never overwritten by an earlier draft — R2',()=>{
+  // A finalized draft exists; the learner starts speaking again; no interim or final
+  // has arrived. Grace expiry is not evidence of silence — the Web Speech contract
+  // gives no delivery deadline — so it must not send the earlier draft.
+  const t=spoken();t.capture.start();t.h.speaks('the earlier question');
+  t.h.advance(1000);t.h.live().speechStart();
+  t.h.advance(60000);
+  assert.equal(t.submissions(),0,'nothing is sent while speech is open and unreported');
+  assert.deepEqual(t.notices,['unfinished_speech'],'the learner is told once that it stalled');
+  assert.equal(t.draft(),'the earlier question','the completed words are kept');
+  assert.equal(t.capture.isActive(),true,'and the microphone stays available');
 });
 
+test('a wordless burst that the detector ends still sends at the original deadline — R2',()=>{
+  // speechend is the honest signal that a burst finished. Noise produces it; a
+  // learner mid-sentence does not.
+  const t=spoken();t.capture.start();t.h.speaks('the real question');
+  t.h.advance(1000);
+  const recognition=t.h.live();recognition.speechStart();
+  t.h.advance(500);recognition.speechEnd();
+  t.h.advance(3000);
+  assert.equal(t.submissions(),1,'the learner original quiet window is honoured');
+  assert.deepEqual(t.notices,[],'and nothing needed explaining');
+});
+
+test('words arriving after a stall clear it without an explicit action — R2',()=>{
+  const t=spoken();t.capture.start();t.h.speaks('the earlier question');
+  t.h.advance(1000);t.h.live().speechStart();
+  t.h.advance(60000);
+  assert.equal(t.submissions(),0);
+  t.h.speaks('and the rest of it');
+  t.h.advance(4500);
+  assert.equal(t.submissions(),1,'late speech resumes automatic sending');
+  assert.equal(t.draft(),'the earlier question and the rest of it');
+});
 test('ordinary silence cycles restart the microphone indefinitely; only a true restart storm stops with an explicit error',()=>{
   const healthy=spoken();healthy.capture.start();healthy.h.speaks('a question I am still weighing');
   for(let cycle=0;cycle<30;cycle++){healthy.h.advance(3000);const recognition=healthy.h.live();if(recognition)recognition.noSpeech();healthy.h.advance(0);}
@@ -289,7 +312,7 @@ test('an alternative can be asked once, only after the encounter ends, and never
   const before=h.calls.length;
   const alternative=controller.retry(3,'A different way of asking');
   await until(()=>h.calls.length===before+1);
-  assert.deepEqual(Object.keys(h.calls.at(-1).body).sort(),['action','state','text','turnId']);
+  assert.deepEqual(Object.keys(h.calls.at(-1).body).sort(),['action','caseId','state','text','turnId']);
   assert.equal(h.calls.at(-1).body.action,'retry');
   assert.equal(h.calls.at(-1).body.turnId,3);
   await finishAudio(h,11);await alternative;
@@ -312,4 +335,100 @@ test('an alternative that fails before its receipt does not resend and asks for 
   const count=h.calls.length;
   assert.equal(await controller.retry(2,'Again'),false);
   assert.equal(h.calls.length,count,'an uncertain alternative is never repeated automatically');
+});
+
+test('the chosen case travels on every request and cannot change mid-encounter',async()=>{
+  const h=environment((path,options,number)=>Promise.resolve(response(frames(number-1,['A reply.']),options.signal))),
+    controller=createController(h.env);
+  let work=controller.start('key',false,'sp_mania_redirect_001');await finishAudio(h,0);await work;
+  assert.equal(controller.getSnapshot().caseId,'sp_mania_redirect_001');
+  assert.equal(h.calls[0].body.caseId,'sp_mania_redirect_001');
+  work=controller.send('A question');await finishAudio(h,1);await work;
+  assert.equal(h.calls[1].body.caseId,'sp_mania_redirect_001','a turn carries the same case');
+  assert.equal(h.calls.every(call=>call.body.caseId==='sp_mania_redirect_001'),true);
+});
+
+test('an encounter refuses to start without a registered case',async()=>{
+  const h=environment(),controller=createController(h.env);
+  assert.equal(await controller.start('key',false,'not_a_case'),false);
+  assert.equal(await controller.start('key',false,'sp_alcohol_ambivalence_001'),false,'Morgan is not registered');
+  assert.equal(h.calls.length,0,'no request is made for an unregistered case');
+});
+
+test('an encounter with no case named defaults to Dana, so existing callers are unchanged',async()=>{
+  const h=environment(),controller=createController(h.env);
+  // The default fixture opening has two segments; both must finish.
+  const work=controller.start('key',false);await finishAudio(h,0);await finishAudio(h,1);await work;
+  assert.equal(h.calls[0].body.caseId,'sp_depression_gated_si_001');
+  assert.equal(controller.getSnapshot().caseId,'sp_depression_gated_si_001');
+});
+
+test('a new encounter after Clear gets its own alternative — R7',async()=>{
+  // Turn numbering restarts with each encounter, so track it from the action.
+  let turnNo=0;
+  const h=environment((path,options)=>{const body=JSON.parse(options.body);
+    const turn=body.action==='start'?(turnNo=0):body.action==='retry'?body.turnId:++turnNo;
+    return Promise.resolve(response(frames(turn,['One completed reply.']),options.signal));}),
+    controller=createController(h.env);
+  let work=controller.start('key',false);await finishAudio(h,0);await work;
+  for(let turn=1;turn<=10;turn++){work=controller.send('Question '+turn);await finishAudio(h,turn);await work;}
+  const alternative=controller.retry(3,'An alternative');await finishAudio(h,11);await alternative;
+  assert.equal(controller.getSnapshot().retryUsed,true);
+
+  controller.clear();
+  assert.equal(controller.getSnapshot().retryUsed,false,'Clear must return the alternative to a fresh encounter');
+  work=controller.start('key',false);await finishAudio(h,12);await work;
+  assert.equal(controller.getSnapshot().retryUsed,false,'and the new encounter still has it');
+});
+
+test('a withdrawn interim never lets the earlier final be sent as the whole question — R3',()=>{
+  const t=spoken();t.capture.start();
+  t.h.speaks('I wanted to ask');
+  const recognition=t.h.live();
+  recognition.speechStart();recognition.interim('about your sleep');
+  t.h.advance(300);
+  recognition.withdraw();                       // interim vanishes, no final replaces it
+  t.h.advance(60000);
+  assert.equal(t.submissions(),0,'the earlier final is not the whole question');
+  assert.deepEqual(t.notices,['unfinished_speech'],'the learner is told, once');
+  assert.equal(t.draft(),'I wanted to ask','completed words are kept');
+  assert.equal(t.capture.isActive(),true,'and the microphone stays available');
+});
+
+test('after a withdrawn interim, new speech resumes normally — R3',()=>{
+  const t=spoken();t.capture.start();
+  t.h.speaks('I wanted to ask');
+  const recognition=t.h.live();
+  recognition.speechStart();recognition.interim('about your sleep');
+  t.h.advance(300);recognition.withdraw();t.h.advance(10000);
+  assert.equal(t.submissions(),0);
+  t.h.speaks('about your sleep');
+  t.h.advance(4500);
+  assert.equal(t.submissions(),1,'repeating the lost words restores automatic sending');
+  assert.equal(t.draft(),'I wanted to ask about your sleep');
+});
+
+test('the page identifies the patient actually chosen — R5',()=>{
+  const {applyIdentity}=clientModule.exports;
+  const nodes={};
+  const doc={getElementById:id=>nodes[id]||(nodes[id]={textContent:''}),title:''};
+  applyIdentity(doc,{displayName:'Marcus',voice:'Cedar',title:'Marcus — A focused interview'});
+  assert.match(doc.title,/Marcus/,'the tab names Marcus');
+  assert.equal(doc.title.includes('Dana'),false);
+  assert.match(nodes['patient-name'].textContent,/Marcus/);
+  assert.match(nodes['voice-tag'].textContent,/Cedar/,'his voice, not Marin');
+  assert.equal(nodes['voice-tag'].textContent.includes('Marin'),false);
+
+  applyIdentity(doc,{displayName:'Dana',voice:'Marin',title:'Dana — Admission interview'});
+  assert.match(nodes['patient-name'].textContent,/Dana/,'and switches back');
+  assert.match(nodes['voice-tag'].textContent,/Marin/);
+});
+
+test('status and transcript labels name the chosen patient — R5',()=>{
+  const {statusLine,speakerLabel}=clientModule.exports;
+  assert.equal(speakerLabel('you','Marcus'),'You');
+  assert.equal(speakerLabel('dana','Marcus'),'Marcus','a patient row is labelled by name, not by role');
+  assert.match(statusLine('responding','Marcus'),/Marcus/);
+  assert.match(statusLine('speaking','Ray'),/Ray/);
+  assert.equal(statusLine('responding','Marcus').includes('Dana'),false);
 });

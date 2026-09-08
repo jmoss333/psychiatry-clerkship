@@ -24,6 +24,9 @@ export function createStateCodec({key, binding, now=Date.now}) {
       ||!Number.isSafeInteger(value.expires)||!Number.isInteger(value.turn)||value.turn<0||value.turn>10
       ||!Array.isArray(value.history)||value.history.length!==value.turn*2+1||!Array.isArray(value.segments)||value.segments.length<1||value.segments.length>2
       ||!Number.isInteger(value.completed)||value.completed<0||value.completed>value.segments.length
+      // The encounter's case, authoritative and authenticated. The codec binding
+      // already separates cases; this makes that invariant explicit and testable.
+      ||typeof value.caseId!=='string'||!value.caseId||value.caseId.length>64
       // One alternative per encounter, carried in the sealed state so a reload
       // cannot restore it. Present means spent; any value but true is a forgery.
       ||(Object.hasOwn(value,'retried')&&value.retried!==true))throw bad();
@@ -33,8 +36,8 @@ export function createStateCodec({key, binding, now=Date.now}) {
   return {seal,open};
 }
 
-export function initialState(opening,now=Date.now) {
-  return {v:1,sid:randomBytes(16).toString('hex'),nonce:randomBytes(16).toString('hex'),expires:now()+1800000,turn:0,
+export function initialState(opening,now=Date.now,caseId) {
+  return {v:1,caseId,sid:randomBytes(16).toString('hex'),nonce:randomBytes(16).toString('hex'),expires:now()+1800000,turn:0,
     history:[{who:'pt',text:opening,playbackStatus:'pending'}],segments:[opening],completed:0};
 }
 export function nextHistory(state,{text,previousPlayback,previousCompletedSegments}) {
@@ -62,7 +65,13 @@ export function retryState(state,turnId,sid) {
   if(!Number.isInteger(turnId)||turnId<1||turnId>state.turn)throw problem(400,'preview_input_invalid');
   const history=structuredClone(state.history).slice(0,turnId*2-1);
   const tail=history.at(-1);
-  const child={...state,sid,nonce:randomBytes(16).toString('hex'),turn:turnId-1,history,segments:[tail.text],completed:1};
+  // The tail's own playback status decides whether it was heard. nextHistory only
+  // rewrites an entry's TEXT to the heard prefix when at least one segment played;
+  // a zero-heard reply keeps its full generated text and is marked interrupted.
+  // Claiming completed:1 unconditionally would launder that unheard text into heard
+  // history and hand it to the actor.
+  const heard=tail.playbackStatus==='played'?1:0;
+  const child={...state,sid,nonce:randomBytes(16).toString('hex'),turn:turnId-1,history,segments:[tail.text],completed:heard};
   // DELETED, not set to undefined: codec.open uses Object.hasOwn, and a sealed
   // `undefined` would not survive the JSON round trip as an absent key.
   delete child.retried;
