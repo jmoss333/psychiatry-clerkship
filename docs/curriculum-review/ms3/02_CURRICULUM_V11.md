@@ -499,7 +499,7 @@ The translation for the wards: *a referral is not a treatment.* Every ED or inpa
 
 - **Slug:** `cotw_20260726_etohwd_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
 - **Length:** 2,601 words
 
 <!-- topic_meta overlay -->

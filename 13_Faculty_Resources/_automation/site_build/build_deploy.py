@@ -316,6 +316,10 @@ _CRISIS_REQUIRED_TOOLS={
     # FRST one-pager: the learner screens imminent-violence warning signs, and its sibling
     # page violence.md already carries the block (MS3V05-F005).
     "violence.html",
+    # MSE teaching module: its Safety stage rehearses the suicide, violence and vulnerability
+    # elicitation ladders verbatim, the same ladders as its sibling pg_interview.md
+    # (MS3V01-F005; author's scope call, 2026-09-07).
+    "mse.html",
 }
 _CRISIS_REQUIRED_MD={
     # direct risk assessment & acute safety

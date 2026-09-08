@@ -29,7 +29,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Emergency services — 911. 24/7. For imminent danger to life.
 - Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
 
-**Authored clinical strings (274):**
+**Authored clinical strings (278):**
 
 - The live patient request was cancelled.
 - The live patient returned an invalid response.
@@ -237,6 +237,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ;return controls&&controls.zeroRetentionEntitled===true?
 - )), (S.pack.speechEngine.privacyReview.policyUrls||[])[0]?e(
 - ))):null); /* ---------- select ---------- */ if(S.screen===
+- ,null,header, danaConversationPreviewEntry(window.location,previewConfig), e(
 - }, eligibleCases(S.pack).map(function(cd){ var P=paceFor(cd), tp=cd.title.split(
 - ), managedCaseUnavailable=voiceMode===
 - &&!managedEligible(cd); return e(
@@ -305,6 +306,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Download transcript for supervision
 - Re-run — Realistic (blank room)
 - Re-run — Supported (with the door)
+- Try ten spoken turns with Dana’s recorded Marin voice. Opens a separate practice encounter.
+- Loading the local Dana conversation prototype…
+- The local conversation prototype could not load. Remove the preview query to use the usual Interview Room.
 
 **Content pack (`sp-interview.pack.json`) — the tool's authored clinical script:**
 
