@@ -174,6 +174,25 @@ three more hard-coded "Dana" labels in the station's quotes and retry copy. The
 identity work in slice 2 covered the heading and voice tag and stopped short of
 these. Fixed, with a test that fails on any gendered pronoun in the shared chrome.
 
+### Browser journeys under the deployed CSP — 2026-09-08
+
+`tests/smoke/hosted-preview-browser.spec.js`, project `hosted-preview`, running in
+Chromium in CI on every pull request. The spec serves `sp-preview/dist` itself with
+the response headers read from the preview's own `netlify.toml`, so it cannot drift
+from the policy the preview deploys with, and it makes no paid call — the endpoint
+is mocked and audio is stubbed.
+
+Five journeys: each of the three cases named correctly with its own voice, door note
+and title and no other case's content or an assumed pronoun; the station grid
+computing as `grid` under `style-src 'self'`; and Clear removing the marked
+exchange, the reflection and the attending presentation from the rendered page.
+
+This suite exists because the preview's node tests drive a DOM stub, and a stub
+cannot see a CSP violation, a computed style, or what is left on the page after
+Clear. Three defects reached the deployed preview through that gap — R8, R4, and
+the gendered heading the author's own microphone run caught. Verified with teeth:
+reintroducing R8 and R4 fails all five.
+
 ### Still not verified
 
 A physical microphone in a supported browser. Both QA modes replace
