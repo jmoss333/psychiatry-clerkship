@@ -339,3 +339,21 @@ test('an encounter with no case named defaults to Dana, so existing callers are 
   assert.equal(h.calls[0].body.caseId,'sp_depression_gated_si_001');
   assert.equal(controller.getSnapshot().caseId,'sp_depression_gated_si_001');
 });
+
+test('a new encounter after Clear gets its own alternative — R7',async()=>{
+  // Turn numbering restarts with each encounter, so track it from the action.
+  let turnNo=0;
+  const h=environment((path,options)=>{const body=JSON.parse(options.body);
+    const turn=body.action==='start'?(turnNo=0):body.action==='retry'?body.turnId:++turnNo;
+    return Promise.resolve(response(frames(turn,['One completed reply.']),options.signal));}),
+    controller=createController(h.env);
+  let work=controller.start('key',false);await finishAudio(h,0);await work;
+  for(let turn=1;turn<=10;turn++){work=controller.send('Question '+turn);await finishAudio(h,turn);await work;}
+  const alternative=controller.retry(3,'An alternative');await finishAudio(h,11);await alternative;
+  assert.equal(controller.getSnapshot().retryUsed,true);
+
+  controller.clear();
+  assert.equal(controller.getSnapshot().retryUsed,false,'Clear must return the alternative to a fresh encounter');
+  work=controller.start('key',false);await finishAudio(h,12);await work;
+  assert.equal(controller.getSnapshot().retryUsed,false,'and the new encounter still has it');
+});
