@@ -141,18 +141,18 @@
     }
     if(host.classList&&host.classList.add)host.classList.add('sp-station');
 
-    var before=el('section',null,host,{class:'panel'});
-    el('p','YOUR STANDARDIZED-PATIENT STATION',before,{class:'section-label'});
-    el('h2','Before you enter',before);
-    el('p','Fictional practice for MD and DO learners. This station provides practice, not a readiness judgment.',before,{class:'fine'});
+    var before=el('details',null,host,{class:'panel station-brief',open:''});
+    el('summary','Case brief',before);
     var door=el('div',null,before,{class:'station-inset','data-station':'door-note'});
-    el('h3','Door note',door);el('p',profile.doorNote,door);
+    el('p',profile.doorNote,door);
     el('p',profile.task,door);
-    var goals=el('ul',null,door);
+    var goalDetails=el('details',null,door,{class:'station-goals'});
+    el('summary','Practice objectives',goalDetails);
+    var goals=el('ul',null,goalDetails);
     profile.objectives.forEach(function(objective){el('li',objective,goals);});
 
     var chart=el('details',null,before,{'data-station':'chart'});
-    el('summary','Request available chart information',chart);
+    el('summary','Available chart information',chart);
     el('p','Open only what you want to review. Unavailable information stays unknown; you can identify what you would seek from the clinical team.',chart,{class:'fine'});
     var chartItems=el('div',null,chart,{class:'station-grid'});
     profile.chartCards.forEach(function(card){
@@ -163,8 +163,9 @@
     });
 
     var priorities=el('section',null,host,{class:'panel'});
-    el('h2','What matters to this patient',priorities);
-    var list=el('ul',null,priorities);
+    var priorityDetails=el('details',null,priorities);
+    el('summary','What matters to this patient',priorityDetails);
+    var list=el('ul',null,priorityDetails);
     profile.priorities.forEach(function(item){el('li',item,list);});
     var cue=el('p','',priorities,{class:'station-cue','data-station':'cue','aria-live':'polite'});
 
@@ -206,15 +207,24 @@
 
     var latest=null;
     function draw(){
-      markList.replaceChildren();
       store.entries().forEach(function(entry){
-        var box=el('div',null,markList,{class:'station-inset'});
-        el('p','You: '+entry.learnerText,box);
-        if(entry.danaText)el('blockquote',profile.displayName+': '+entry.danaText,box);
-        else el('p',entry.playbackStatus==='cancelled'?'No reply was confirmed heard for this moment.':'Nothing has been confirmed heard for this moment yet.',box,{class:'fine'});
-        var note=el('textarea',null,box,{maxlength:'1200','aria-label':'Reflection on moment '+entry.id});
-        note.value=notes[entry.id]||'';
-        note.addEventListener('input',function(){notes[entry.id]=String(note.value||'').slice(0,1200);store.setReflection(entry.id,notes[entry.id]);});
+        var box=Array.prototype.find.call(markList.children,function(row){return row.getAttribute('data-moment')===String(entry.id);});
+        // Speech snapshots arrive while learners are editing notes. Keep the
+        // editor mounted and its value untouched so focus and selection survive.
+        if(!box){
+          box=el('div',null,markList,{class:'station-inset','data-moment':String(entry.id)});
+          el('p','You: '+entry.learnerText,box);
+          el('blockquote','',box);
+          el('p','',box,{class:'fine'});
+          var note=el('textarea',null,box,{maxlength:'1200','aria-label':'Reflection on moment '+entry.id});
+          note.value=notes[entry.id]||'';
+          note.addEventListener('input',function(){notes[entry.id]=String(note.value||'').slice(0,1200);store.setReflection(entry.id,notes[entry.id]);});
+        }
+        var quote=box.children[1],status=box.children[2];
+        quote.textContent=entry.danaText?profile.displayName+': '+entry.danaText:'';
+        quote.hidden=!entry.danaText;
+        status.textContent=entry.danaText?'':entry.playbackStatus==='cancelled'?'No reply was confirmed heard for this moment.':'Nothing has been confirmed heard for this moment yet.';
+        status.hidden=!!entry.danaText;
       });
     }
     function update(hostedSnapshot){

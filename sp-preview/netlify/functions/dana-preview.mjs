@@ -10,12 +10,17 @@ export function runtimeEnvironment(environment,context) {
  // trusted invocation context supplies the actual deploy identity.
  return {...environment,DEPLOY_ID:context?.deploy?.id,URL:context?.site?.url||environment.URL};
 }
+export function runtimeBudget(store,environment) {
+ // Set once to the original production ledger. A deploy ID fallback would
+ // silently reopen the allowance every time the room is updated.
+ return createPreviewBudget({store,namespace:environment.DANA_PREVIEW_BUDGET_NAMESPACE,limit:680,windowLimit:340,startLimit:20});
+}
 export default async function handler(request,context) {
  try{
   const env=runtimeEnvironment(process.env,context);
   if(!env.DEPLOY_ID||env.DANA_PREVIEW_ENABLED!=='true')return Response.json({error:'preview_unavailable'},{status:503,headers:{'Cache-Control':'no-store'}});
   const store=getStore({name:'dana-preview-attempts',consistency:'strong'});
-  const budget=createPreviewBudget({store,namespace:env.DEPLOY_ID,limit:120,windowLimit:72});
+  const budget=runtimeBudget(store,env);
   const provider=createOpenAIProvider({env,timeoutMs:30000});
   return await createHandler({env,provider,budget})(request);
  }catch{return Response.json({error:'preview_unavailable'},{status:503,headers:{'Cache-Control':'no-store'}});}

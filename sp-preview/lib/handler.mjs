@@ -4,7 +4,7 @@ import {getCase} from './case.mjs';
 import {hash,problem,createStateCodec,initialState,nextHistory,issuedState,retryState} from './state.mjs';
 
 const HEADERS={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
-const safeCodes=new Set(['preview_unavailable','preview_forbidden','preview_input_invalid','preview_state_invalid','preview_session_expired','preview_encounter_finished','preview_operation_duplicate','preview_operation_mismatch','preview_budget_exhausted','preview_window_exhausted','preview_budget_unavailable','preview_budget_contention','preview_provider_unavailable','preview_cancelled']);
+const safeCodes=new Set(['preview_unavailable','preview_forbidden','preview_input_invalid','preview_state_invalid','preview_session_expired','preview_encounter_finished','preview_operation_duplicate','preview_operation_mismatch','preview_daily_starts_exhausted','preview_budget_exhausted','preview_window_exhausted','preview_budget_unavailable','preview_budget_contention','preview_provider_unavailable','preview_cancelled']);
 function safeError(error){return safeCodes.has(error?.code)?error.code:'preview_provider_unavailable';}
 function same(a,b){return timingSafeEqual(Buffer.from(hash(a)),Buffer.from(hash(b)));}
 const object=value=>value&&typeof value==='object'&&!Array.isArray(value);

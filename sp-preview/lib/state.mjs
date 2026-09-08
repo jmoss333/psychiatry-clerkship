@@ -41,7 +41,10 @@ export function initialState(opening,now=Date.now,caseId) {
     history:[{who:'pt',text:opening,playbackStatus:'pending'}],segments:[opening],completed:0};
 }
 export function nextHistory(state,{text,previousPlayback,previousCompletedSegments}) {
-  if(state.turn>=10)throw problem(409,'preview_encounter_finished');
+  // The optional alternative is a single response, not a new interview branch.
+  // Its turn number may be early in the original encounter, so turn>=10 alone
+  // would permit extra paid questions through direct API requests.
+  if(state.turn>=10||state.retried===true)throw problem(409,'preview_encounter_finished');
   if(typeof text!=='string'||!text.trim()||text.length>1200||/[\u0000-\u001f\u007f]/.test(text)
     ||!['played','interrupted'].includes(previousPlayback)||!Number.isInteger(previousCompletedSegments)||previousCompletedSegments<0||previousCompletedSegments>state.completed)throw problem(400,'preview_input_invalid');
   const history=structuredClone(state.history), previous=history.at(-1);
