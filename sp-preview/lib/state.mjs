@@ -65,7 +65,13 @@ export function retryState(state,turnId,sid) {
   if(!Number.isInteger(turnId)||turnId<1||turnId>state.turn)throw problem(400,'preview_input_invalid');
   const history=structuredClone(state.history).slice(0,turnId*2-1);
   const tail=history.at(-1);
-  const child={...state,sid,nonce:randomBytes(16).toString('hex'),turn:turnId-1,history,segments:[tail.text],completed:1};
+  // The tail's own playback status decides whether it was heard. nextHistory only
+  // rewrites an entry's TEXT to the heard prefix when at least one segment played;
+  // a zero-heard reply keeps its full generated text and is marked interrupted.
+  // Claiming completed:1 unconditionally would launder that unheard text into heard
+  // history and hand it to the actor.
+  const heard=tail.playbackStatus==='played'?1:0;
+  const child={...state,sid,nonce:randomBytes(16).toString('hex'),turn:turnId-1,history,segments:[tail.text],completed:heard};
   // DELETED, not set to undefined: codec.open uses Object.hasOwn, and a sealed
   // `undefined` would not survive the JSON round trip as an absent key.
   delete child.retried;

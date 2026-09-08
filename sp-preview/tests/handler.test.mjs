@@ -274,3 +274,73 @@ test('each case speaks its opening in its own voice',async()=>{
   await events(await s.handler()(request({action:'start',caseId,requestId:crypto.randomUUID()})));
  assert.deepEqual(spoken,['sp_mania_redirect_001','sp_psychosis_paranoid_001']);
 });
+
+test('a retry never presents an unheard reply as heard — R1',()=>{
+ // A reply that was interrupted before ANY segment played keeps its full generated
+ // text in history; only playbackStatus marks it unheard. Truncation must carry that
+ // status, or the tail is laundered into heard history and reaches the actor.
+ let state={...initialState('Opening line.',Date.now,DANA),completed:1};
+ let history=nextHistory(state,{text:'Q1',previousPlayback:'played',previousCompletedSegments:1});
+ state=issuedState(state,history,'R1 never heard.',['R1 never heard.']);
+ state={...state,completed:0};                                  // nothing played
+ history=nextHistory(state,{text:'Q2',previousPlayback:'interrupted',previousCompletedSegments:0});
+ state=issuedState(state,history,'R2.',['R2.']);
+ state={...state,completed:1};
+
+ const child=retryState(state,2,'a'.repeat(32));
+ const tail=child.history.at(-1);
+ assert.equal(tail.text,'R1 never heard.','the entry is still there');
+ assert.equal(tail.playbackStatus,'interrupted','and is still marked unheard');
+ assert.equal(child.completed,0,'a retry must not claim an unheard reply was heard');
+});
+
+test('a retry of the first question after an unheard opening does not present it as heard — R1',()=>{
+ let state=initialState('Opening never heard.',Date.now,DANA);   // completed stays 0
+ let history=nextHistory(state,{text:'Q1',previousPlayback:'interrupted',previousCompletedSegments:0});
+ state=issuedState(state,history,'R1.',['R1.']);
+ state={...state,completed:1};
+ const child=retryState(state,1,'b'.repeat(32));
+ assert.equal(child.history.at(-1).playbackStatus,'interrupted');
+ assert.equal(child.completed,0,'an unheard opening must not become heard by retrying turn 1');
+});
+
+test('a retry of a heard reply still presents it as heard — R1 regression guard',()=>{
+ let state={...initialState('Opening line.',Date.now,DANA),completed:1};
+ let history=nextHistory(state,{text:'Q1',previousPlayback:'played',previousCompletedSegments:1});
+ state=issuedState(state,history,'R1 heard.',['R1 heard.']);
+ state={...state,completed:1};
+ history=nextHistory(state,{text:'Q2',previousPlayback:'played',previousCompletedSegments:1});
+ state=issuedState(state,history,'R2.',['R2.']);
+ state={...state,completed:1};
+ const child=retryState(state,2,'c'.repeat(32));
+ assert.equal(child.history.at(-1).playbackStatus,'played');
+ assert.equal(child.completed,1,'a genuinely heard reply is still available to the actor');
+});
+
+test('a retry after a zero-heard reply sends the actor nothing of that reply — R1 end to end',async()=>{
+ // Distinct text per reply, or a heard reply and an unheard one are indistinguishable.
+ // Overriding replyStream replaces setup's own capture, so capture here instead.
+ let n=0;const seen=[];
+ const s=setup({provider:{replyStream:async job=>{seen.push(job);n++;const lead='Reply '+n+' lead.';job.onLead(lead);return lead+' Reply '+n+' tail.';}}});
+ let state=(await start(s)).at(-1).state;
+ // Turn 1 is heard; turn 2's reply is interrupted before any segment plays.
+ let out=await events(await s.handler()(request({action:'turn',caseId:DANA,state,text:'Q1',previousPlayback:'played',previousCompletedSegments:1})));
+ state=out.at(-1).state;
+ out=await events(await s.handler()(request({action:'turn',caseId:DANA,state,text:'Q2',previousPlayback:'played',previousCompletedSegments:2})));
+ state=out.at(-1).state;
+ // Acknowledge that NOTHING of the turn-2 reply played.
+ out=await events(await s.handler()(request({action:'turn',caseId:DANA,state,text:'Q3',previousPlayback:'interrupted',previousCompletedSegments:0})));
+ state=out.at(-1).state;
+ const unheard=seen.length;   // three replies were generated
+
+ const before=seen.length;
+ await events(await s.handler()(request({action:'retry',caseId:DANA,state,turnId:3,text:'Asking turn 3 a different way'})));
+ assert.equal(seen.length,before+1);
+ const prompt=JSON.stringify(seen.at(-1).messages);
+ assert.equal(prompt.includes('Q3'),false,'the retried question is absent');
+ // start does not call replyStream, so Reply N answers QN. Reply 2 is the one the
+ // learner acknowledged hearing none of.
+ assert.equal(prompt.includes('Reply 2'),false,'the never-heard reply must not reach the actor on a retry');
+ assert.equal(prompt.includes('Reply 1'),true,'while the reply that WAS heard is still available');
+ assert.equal(unheard,3,'the fixture generated three replies, one of which was never heard');
+});
