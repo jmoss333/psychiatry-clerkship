@@ -223,6 +223,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Check 3: visual regression — resident site"),
             ("name", "Check 4: offline shell — service worker"),
             ("name", "Check 5: prototype contract — file:// with the network blocked"),
+            ("name", "Check 6: hosted preview in a browser under its deployed CSP"),
             ("uses", "actions/upload-artifact"),
         ),
     },
@@ -381,7 +382,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "7090155fdbda3f4a9bda687841552bffb2b88e344895009241aaf17d6beb5d6f"
     ),
-    "ci.yml": "71b7e03f3e4b88c51cfe6cef29c74d17a38cdd7ef8ac7467fe544a4b9bbea987",
+    "ci.yml": "50af09b6bb737a31b42abd03c87a739baabb18efc56fe1b3e0ac32cb9b89a408",
     "maintenance-governance-digest.yml": (
         "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
     ),

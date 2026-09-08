@@ -368,6 +368,15 @@ jobs:
           cd tests/smoke
           npx playwright test --project=prototypes
 
+      # Needs no server: the spec serves sp-preview/dist itself under the response
+      # headers from the preview's own netlify.toml. It exists because the preview's
+      # node tests drive a DOM stub, which cannot see a CSP violation, a computed
+      # style, or what Clear leaves on the page — the gap R4 and R8 came through.
+      - name: "Check 6: hosted preview in a browser under its deployed CSP"
+        run: |
+          cd tests/smoke
+          npx playwright test --project=hosted-preview
+
       - name: Upload smoke test artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
