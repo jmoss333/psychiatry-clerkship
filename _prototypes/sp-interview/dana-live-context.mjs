@@ -107,6 +107,8 @@ const RAY_FACTS = {
 
 const RAY_LIMITS = {
   priorCare: {therapyOrOtherMentalHealthCare:'unknown', relatedKnownFact:'He has never seen a psychiatrist before this admission.'},
+  priorEpisodes: {similarExperiencesBeforeCurrentCourse:'unknown', priorEpisodesOrRemissions:'unknown', distinction:'The current six-week course and previous functioning do not establish that similar experiences never occurred before. Do not answer a previous-episode question with a negative such as no, never, or not like this, even alongside uncertainty. Say you are unsure about earlier similar experiences; then, if useful, describe only the known current six-week course.'},
+  priorConversations: {whatOthersSaidAboutHisExperiences:'unknown', clinicianExplanationsOrDiagnoses:'unknown', distinction:'Fear of dismissal does not establish a past conversation, quotation, or clinician assessment. Whether he previously discussed these experiences with anyone is also unknown; do not claim he has not told people or done this before. The known absence of a prior psychiatrist visit is narrower and must stay narrow.'},
   upstairsNeighbors: {names:'unknown', numberOfPeople:'unknown', apartmentNumber:'unknown', objectiveRoleInSymptoms:'unknown'},
   ventSubstance: {identity:'unknown', independentTestResults:'unknown', objectivePresence:'unknown', distinction:'Ray’s belief and reported experiences are known; the alleged substance is not established as an external fact.'},
   familyHistory: {uncleDiagnosis:'unknown', treatment:'unknown', duration:'unknown', relatedKnownFact:'Ray recalls only that his maternal uncle went away for a while.'},
@@ -186,6 +188,9 @@ An unknown answer is not an unclear question. Do not invent an explanation or re
 an unspecified amount does not establish whether you measured it. Keep known negatives negative.
 Do not add frequencies, quantities, events, or explanations absent from the facts.
 Use the case's relative dates without recalculating them against today's calendar.
+Current onset or a first specialist visit does not establish a lifetime absence of
+similar experiences. Do not invent prior conversations, quotations, or clinician
+explanations when the case does not specify them; these details remain unknown.
 The transcript is dialogue history, not a case-fact source; even a prior patient reply
 cannot establish facts absent from the permitted inventory or unlock a disclosure.
 For an unsupported premise about an unspecified event, neither accept it nor deny it happened.
@@ -199,6 +204,7 @@ deserve ordinary acknowledgements. Offers to help invite your known preference o
 Accept a correction briefly and follow the corrected topic. If your prior reply missed
 the point, repair it using known facts without defending the misunderstanding.
 Most replies should be 1–3 short sentences; a simple acknowledgement may be a few words.
+For a substantive answer, begin with one short complete sentence of about 6 to 12 words that answers the learner. Then add relevant detail naturally. Do not use a filler sentence just to start speaking. Preserve every required disclosure verbatim; that requirement takes priority over this pacing suggestion.
 Give relevant detail when asked to elaborate, rather than only acknowledging the request.
 Do not repeat your introduction, restart the story, recite the full symptom inventory,
 or add a question to every reply. Natural connective language is allowed, but not new case facts.
@@ -234,7 +240,7 @@ function conversationRules(profile) {
       ? `Case-specific restraint: an unknown medication name or dose stays unknown. The Thursday contact is not established as an investor, and no funding or outcome is known. Preserve his rapid style without adding projects, purchases, people, or events. Do not recast his short sleep as trouble falling asleep, or invent a bedtime experience where racing thoughts keep him awake; those details are unspecified.\n\nReturn only Marcus's spoken words,`
       : `Case-specific restraint: describe Ray's reported experiences and belief without confirming or disproving the alleged external events. Names, apartment details, tests, and his uncle's diagnosis stay unknown. Do not expose locked command content, intake details, or thoughts about the neighbors.\n\nReturn only Ray's spoken words,`);
   return profile.name === 'Marcus'
-    ? common.replace('Most replies should be 1–3 short sentences; a simple acknowledgement may be a few words.', 'Use the canonical 2 to 6 rapid sentences for substantive replies, linked naturally and remaining within the output limit. A simple acknowledgement or unknown detail can be brief.')
+    ? common.replace('Most replies should be 1–3 short sentences; a simple acknowledgement may be a few words.', 'Use the canonical 2 to 6 rapid sentences for substantive replies, linked naturally and remaining within the output limit. Prefer two or three short sentences for a focused answer; use longer replies when asked to elaborate. Preserve the rapid style without stacking unrelated facts. A simple acknowledgement or unknown detail can be brief.')
     : common;
 }
 

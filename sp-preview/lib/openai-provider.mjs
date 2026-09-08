@@ -47,13 +47,13 @@ export function firstSubstantiveSentence(value) {
   return null;
 }
 
-function actorInput(system,messages,stream) {
+function actorInput(system,messages,stream,actorReasoning) {
   if(typeof system!=='string'||!system.trim()||CONTROL.test(system)||!Array.isArray(messages)||messages.length>21)throw fail('invalid_reply','validation');
   for(const message of messages) {
     if(!message||Array.isArray(message)||Object.keys(message).length!==2||!Object.hasOwn(message,'role')||!Object.hasOwn(message,'content')
       ||!['user','assistant'].includes(message.role)||typeof message.content!=='string'||!message.content.trim()||message.content.length>MAX_ACTOR_TEXT||CONTROL.test(message.content))throw fail('invalid_reply','validation');
   }
-  const value={model:ACTOR_MODEL,instructions:system,input:messages,store:false,max_output_tokens:768,reasoning:{effort:'low'},...(stream?{stream:true}:{})};
+  const value={model:ACTOR_MODEL,instructions:system,input:messages,store:false,max_output_tokens:768,reasoning:{effort:actorReasoning},...(stream?{stream:true}:{})};
   if(Buffer.byteLength(JSON.stringify(value))>200_000)throw fail('invalid_reply','validation');
   return value;
 }
@@ -214,8 +214,10 @@ async function readSpeech(response,signal,onChunk) {
   if(!verified||bytes<100)throw fail('speech_incomplete','speech_output');
 }
 
-export function createOpenAIProvider({env=process.env,fetchImpl=globalThis.fetch,timeoutMs=30_000}={}) {
+export function createOpenAIProvider({env=process.env,fetchImpl=globalThis.fetch,timeoutMs=30_000,actorReasoning='low'}={}) {
   if(typeof fetchImpl!=='function'||!Number.isInteger(timeoutMs)||timeoutMs<1||timeoutMs>45_000)throw fail('invalid_reply','validation');
+  // Explicit experiment only; the deployed default remains the reviewed setting.
+  if(actorReasoning!=='low'&&actorReasoning!=='none')throw fail('invalid_reply','validation');
   const configured=typeof env?.OPENAI_API_KEY==='string'&&env.OPENAI_API_KEY.trim().length>0;
   const usage=createUsageCounter();
   const diagnostics={counts:{actor:{},speech:{}},lastFailures:[]};
@@ -256,12 +258,12 @@ export function createOpenAIProvider({env=process.env,fetchImpl=globalThis.fetch
     getUsage:()=>usage.snapshot(),
     getDiagnostics:()=>structuredClone(diagnostics),
     async reply({system,messages,signal}={}) {
-      const input=actorInput(system,messages,false);
+      const input=actorInput(system,messages,false,actorReasoning);
       return request('actor','/responses',input,signal,async(response,signal,setUsage)=>{const value=await readJson(response,signal);setUsage(providerUsage(value?.usage));return finalActorText(value).trim();});
     },
     async replyStream({system,messages,signal,onLead}={}) {
       if(typeof onLead!=='function')throw fail('invalid_reply','validation');
-      const input=actorInput(system,messages,true);
+      const input=actorInput(system,messages,true,actorReasoning);
       return request('actor','/responses',input,signal,(response,signal,setUsage)=>readActorStream(response,signal,onLead,setUsage));
     },
     async speak({text,signal,caseId}={}) {

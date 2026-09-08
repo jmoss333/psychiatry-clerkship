@@ -14,7 +14,7 @@
     invalid_state:'This encounter can no longer continue. Clear and start a new encounter.',state_expired:'This encounter has expired. Clear and start again.',expired_state:'This encounter has expired. Clear and start again.',
     rate_limited:'The preview is receiving too many requests. Wait a moment before starting again.',budget_exceeded:'This preview has reached its usage limit. Please contact the person who shared it.',
     unavailable:'This faculty preview is unavailable right now. Please check with the person who shared it.',encounter_finished:'This encounter has reached ten questions. Clear and start again for a new conversation.',operation_duplicate:'That request already started and cannot be safely repeated. Clear and start a new encounter.',
-    provider_error:'Dana’s reply could not be completed. No question was sent again automatically.',timeout:'The response took too long. No question was sent again automatically.',
+    provider_error:'The patient’s reply could not be completed. No question was sent again automatically.',timeout:'The response took too long. No question was sent again automatically.',
     audio_failed:'The voice could not finish playing. The unfinished part will not count as heard.',playback_blocked:'Your browser blocked voice playback. The unfinished part will not count as heard.',
     microphone_denied:'The microphone was not allowed. You can type, or allow microphone access and choose Resume microphone.',microphone_unavailable:'The microphone is unavailable. Type your question, or check your input device.',
     recognition_failed:'Speech recognition stopped. Your completed words remain below; check them before sending or resume the microphone.',
@@ -58,8 +58,7 @@
 
   function createCapture(env,callbacks){
     var Constructor=env.SpeechRecognition||env.webkitSpeechRecognition,current=null,active=false,timer=null,restart=null,serial=0,fruitless=0,interim='',thinking=false,hold=false,quietSince=null,voice=null,suspended=false;
-    // Recognition sessions end and restart on their own. VOICE_GRACE bounds a
-    // voice-activity trip that never produces words (noise), HEALTHY_RUN marks a
+    // Recognition sessions end and restart on their own. HEALTHY_RUN marks a
     // session that lived long enough to be an ordinary silence cycle rather than a
     // failure, and MAX_FRUITLESS bounds a genuine restart storm.
     // How long speech may be open with nothing reported before we stop guessing.
@@ -73,8 +72,8 @@
     function releaseVoice(){env.clearTimeout(voice);voice=null;}
     function quiet(){return thinking?8000:4500;}
     function blocked(){return !active?'inactive':hold?'hold':interim?'interim':suspended?'unfinished':voice?'voice':callbacks.hasDraft()?'':'nodraft';}
-    // The deadline is absolute from the last recognized words, so a restart or a
-    // noise burst resumes the learner's original quiet window instead of extending it.
+    // The deadline follows the latest recognized words or speech ending. A service
+    // restart alone does not extend it; newly finished speech must get its own pause.
     function arm(){clear();var why=blocked();if(why){note('wait_'+why);return;}
       if(quietSince===null)quietSince=clock();
       note('armed');timer=env.setTimeout(function(){timer=null;if(blocked())return;note('submit');quietSince=null;emit('onSubmit');},Math.max(0,quietSince+quiet()-clock()));}
@@ -97,7 +96,7 @@
           if(!active||interim||suspended)return;
           suspended=true;clear();emit('onNotice',issue('unfinished_speech'));
         },VOICE_STALL);};
-      recognition.onspeechend=function(){if(!active||current!==recognition)return;note('voice_end');releaseVoice();arm();};
+      recognition.onspeechend=function(){if(!active||current!==recognition)return;note('voice_end');releaseVoice();quietSince=clock();arm();};
       recognition.onresult=function(event){
         if(!active||current!==recognition)return;var words=[],heard=false,finalArrived=false;
         for(var index=0;index<event.results.length;index++){
@@ -261,7 +260,7 @@
     var doc=env.document,el=function(id){return doc.getElementById(id);},lastTranscript='',lastPhase='gate';
     var recognitionAvailable=!!(env.SpeechRecognition||env.webkitSpeechRecognition);
     el('voice-mode').checked=recognitionAvailable;el('voice-mode').disabled=!recognitionAvailable;
-    if(!recognitionAvailable)el('voice-support').textContent='This browser does not offer speech recognition. Dana still speaks, and you can type each question.';
+    if(!recognitionAvailable)el('voice-support').textContent='This browser does not offer speech recognition. The patient still speaks, and you can type each question.';
     var patientName='the patient';
     var controller=createController(env,{onChange:render});
     // The station is a projection of the snapshot: it never calls the controller.

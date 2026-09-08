@@ -53,6 +53,9 @@
   .btn:disabled{opacity:.45;cursor:not-allowed}
   .microlabel{margin:0 0 6px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-light)}
   /* case select */
+  .spoken-entry{background:var(--accent-light);border-color:var(--accent)}
+  .spoken-entry h2{font-size:1.5rem;color:var(--accent-dark)}
+  .spoken-entry .btn{text-decoration:none}
   .casegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:var(--sp3);margin-top:var(--sp3);align-items:stretch}
   .case{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:12px;margin:0}
   .case h2{font-size:1.5rem;color:var(--primary-dark);margin:0;line-height:1.2}
@@ -874,6 +877,12 @@ function App(){
         managedAvailable()?e('option',{value:'managed'},'Managed voice'):null)),
     e('p',{className:'lede'},'Interview a fictional standardized patient. Free text — say what you would actually say.'),
     e(Ribbon,{line:ribbonLine}),
+    S.screen==='select'?e('section',{className:'card spoken-entry','aria-labelledby':'spoken-entry-title'},
+        e('p',{className:'microlabel'},'Protected fictional practice'),
+        e('h2',{id:'spoken-entry-title'},'Spoken interviews'),
+        e('p',{className:'lede'},'Practice a natural conversation with Dana, Marcus, or Ray. Your words send automatically after you finish speaking, and typing is always available.'),
+        e('p',{className:'lede'},'Use the passcode from Dr. Moss to enter.'),
+        e('div',{className:'actions'},e('a',{className:'btn primary',href:'https://interview-room-faculty-preview.netlify.app',target:'_top',referrerPolicy:'no-referrer'},'Start a spoken interview'))):null,
     (showSettings&&cfg)?e('div',{className:'card'},
       e('h2',null,'Live mode setup'),
       e('p',{style:{fontSize:'.82rem',color:'var(--text-mid)',marginTop:0}},'Paste the sp-proxy endpoint URL and the passcode from Dr. Moss. The endpoint is saved in this browser. The passcode is kept only for this browser tab. The API key never leaves the server.'),

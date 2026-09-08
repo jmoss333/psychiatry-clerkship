@@ -170,17 +170,38 @@ test('speech the recognizer has not yet reported is never overwritten by an earl
   assert.equal(t.capture.isActive(),true,'and the microphone stays available');
 });
 
-test('a wordless burst that the detector ends still sends at the original deadline — R2',()=>{
-  // speechend is the honest signal that a burst finished. Noise produces it; a
-  // learner mid-sentence does not.
+test('new speech ending starts a fresh quiet window even before its words arrive',()=>{
+  // speechend reports the end of speech, not the arrival of its final words.
+  // Reusing the older draft's deadline could send before that result arrives.
   const t=spoken();t.capture.start();t.h.speaks('the real question');
   t.h.advance(1000);
   const recognition=t.h.live();recognition.speechStart();
   t.h.advance(500);recognition.speechEnd();
-  t.h.advance(3000);
-  assert.equal(t.submissions(),1,'the learner original quiet window is honoured');
+  t.h.advance(4499);
+  assert.equal(t.submissions(),0,'the quiet window begins after the latest speech ends');
+  t.h.advance(1);
+  assert.equal(t.submissions(),1);
   assert.deepEqual(t.notices,[],'and nothing needed explaining');
 });
+
+for(const [thinking,wait] of [[false,4500],[true,8000]]){
+  test('a delayed final after resumed speech is included before automatic sending ('+wait+' ms)',async()=>{
+    const h=environment((path,options,number)=>Promise.resolve(response(frames(number-1,['A completed reply.']),options.signal))),
+      controller=createController(h.env);
+    const opening=controller.start('key',true);await finishAudio(h,0);await opening;
+    controller.setThinking(thinking);
+    const recognition=h.live();recognition.final('Could you explain');h.advance(wait-500);
+    recognition.speechStart();h.advance(1000);recognition.speechEnd();h.advance(0);
+    assert.equal(h.calls.length,1,'speechend must not immediately send the old question prefix');
+    h.advance(400);recognition.final('how you slept last night');
+    h.advance(wait-1);assert.equal(h.calls.length,1,'the complete question gets its full quiet window');
+    h.advance(1);await until(()=>h.calls.length===2);
+    assert.equal(h.calls[1].body.text,'Could you explain how you slept last night');
+    assert.equal(controller.getDiagnostics().automaticSubmissions,1);
+    assert.equal(controller.getDiagnostics().explicitSubmissions,0);
+    await finishAudio(h,1);controller.dispose();
+  });
+}
 
 test('words arriving after a stall clear it without an explicit action — R2',()=>{
   const t=spoken();t.capture.start();t.h.speaks('the earlier question');
@@ -431,6 +452,18 @@ test('status and transcript labels name the chosen patient — R5',()=>{
   assert.match(statusLine('responding','Marcus'),/Marcus/);
   assert.match(statusLine('speaking','Ray'),/Ray/);
   assert.equal(statusLine('responding','Marcus').includes('Dana'),false);
+});
+
+test('a failed Marcus request does not identify its patient as Dana',async()=>{
+  const h=environment(()=>Promise.resolve(Response.json({error:'preview_provider_unavailable'},{status:503}))),
+    controller=createController(h.env);
+  assert.equal(await controller.start('key',false,'sp_mania_redirect_001'),false);
+  const snapshot=controller.getSnapshot();
+  assert.equal(snapshot.caseId,'sp_mania_redirect_001');
+  assert.equal(snapshot.error.includes('Dana'),false,'a shared failure message must not introduce another patient');
+  assert.match(snapshot.error,/reply could not be completed/i);
+  assert.equal(h.calls.length,1,'the failed request is not sent again');
+  controller.dispose();
 });
 test('the shared chrome carries no gendered pronoun — the case set is mixed',()=>{
   const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');

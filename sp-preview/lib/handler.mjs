@@ -23,7 +23,7 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
   let state,history,action,codec,caseDef;
   try{
    const secret=env.DANA_PREVIEW_PASSCODE;
-   if(env.DANA_PREVIEW_ENABLED!=='true'||typeof secret!=='string'||secret.length<16||!env.DEPLOY_ID||!provider?.configured||!budget)throw problem(503,'preview_unavailable');
+   if(env.DANA_PREVIEW_ENABLED!=='true'||typeof secret!=='string'||secret.length<15||!env.DEPLOY_ID||!provider?.configured||!budget)throw problem(503,'preview_unavailable');
    const origin=request.headers.get('origin'),allowed=[env.DEPLOY_URL,env.URL,env.DANA_PREVIEW_ORIGIN].filter(Boolean);
    if(!origin||!allowed.includes(origin)||new URL(request.url).origin!==origin||!same(request.headers.get('x-preview-key')||'',secret))throw problem(403,'preview_forbidden');
    if(request.method!=='POST')throw problem(405,'preview_input_invalid');

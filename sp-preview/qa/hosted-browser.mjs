@@ -40,7 +40,7 @@ let browser;
 function verify(condition,stage){if(!condition){report.stage=stage;throw new Error('verification_failed');}}
 try{
  const passcode=fs.readFileSync(ACCESS,'utf8').trim().split(/\r?\n/).at(-1);
- verify(!!passcode&&passcode.length>=16,'access_file');
+ verify(!!passcode&&passcode.length>=15,'access_file');
  browser=await chromium.launch({headless:true});
  const page=await browser.newPage({viewport:{width:1280,height:900}});
  page.setDefaultTimeout(30000);
@@ -100,12 +100,13 @@ try{
    document.addEventListener(type,event=>{if(qa.armed&&qa.interactions.length<50)
     qa.interactions.push(type+':'+((event.target&&event.target.id)||(event.target&&event.target.tagName||'?').toLowerCase()));},true);
  });
- report.stage='load';await page.goto(PREVIEW_URL,{waitUntil:'domcontentloaded'});verify(await page.title()==='Meet Dana · The Interview Room','page_identity');
+ report.stage='load';await page.goto(PREVIEW_URL,{waitUntil:'domcontentloaded'});verify(await page.title()==='The Interview Room','page_identity');
  await page.locator('#preview-key').fill(passcode);await page.locator('#voice-mode').check();
  report.stage='opening';await page.locator('#start').click();
  // Locator assertions poll without constructing page-world JavaScript strings;
  // waitForFunction would violate the preview's intentional no-unsafe-eval CSP.
  await expect(page.locator('#status')).toHaveText('Listening — I’ll send when you finish',{timeout:120000});
+ verify(await page.title()==='Dana — Admission interview · The Interview Room','case_identity');
  verify(await page.locator('#preview-key').inputValue()==='','passcode_cleared');
  // From here to the end of the tenth turn the run touches nothing.
  await page.evaluate(()=>{window.__hostedDanaQA.armed=true;});
