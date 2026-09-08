@@ -205,6 +205,23 @@ cd tests/smoke && npm ci && npx playwright test
   from the ReConnect crisis dataset and independently re-verified — refresh with
   `_automation/sync_crisis_from_reconnect.py --reconnect <path>` (dev-only, report-only; never
   runs on Netlify).
+  **Opting a surface in has two non-obvious consequences, each of which has cost a cycle.**
+  (1) **The Reader stops collapsing that page.** `makeCollapsible()` in `spa_index.html` returns
+  early on any body containing `.crisis-block-hook`, so the contacts can never be stranded inside
+  a `display:none` section body — in the DOM, absent from what a learner reads, unreachable by
+  in-page find or print. A markdown page therefore gains contacts and loses its `.sec-c` wrappers
+  in the same commit. `bin/verify.sh` cannot see it (the smoke suite is a separate CI job), and it
+  turned #562 red — `front-door.spec.js` pinned `pg_interview.md`'s collapsible table section.
+  Tools never reach `makeCollapsible`, so `<!-- crisis-block-html -->` is exempt.
+  (2) **It does NOT reopen attestation.** The block is build-injected from `crisis_resources.json`,
+  centrally governed and byte-identical across every surface, so it is not authored content on the
+  page it lands on. `cd1ae13` opted six surfaces in at once, author-approved, without touching
+  `reviewed.json`, and nearly every crisis surface still carries a `reviewed` row dated before its
+  block (27 of 32 on 2026-09-08). Move a ledger row to pending when you change **authored** clinical
+  content instead — which is what WP-5m did to `sp-interview.html` (new intent, new gated reveal,
+  rewritten feedback cards), and that contrast is the line. A review bot reads the badge and files
+  this as a P1 (#571): it is convention, not an oversight. Changing it is a policy call over the
+  whole set, and the author's to make.
 - **No PHI.** Clinical content is synthetic / de-identified only; never commit patient identifiers to
   git-tracked files, memory, or scratch outputs.
 - **Every claim the library makes about a paper needs that paper's own words.**
