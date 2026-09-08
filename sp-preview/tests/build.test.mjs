@@ -34,3 +34,15 @@ test('the modern function bundles with its private grounding and no Python runti
  const entry=await readFile(path.join(root,'netlify/functions/dana-preview.mjs'),'utf8');
  assert.doesNotMatch(entry,/export\s+const\s+config\s*=\s*\{[^}]*path\s*:/);
 });
+
+test('station styling ships in a stylesheet, not an inline element the CSP blocks — R8',async()=>{
+ const station=await readFile(path.join(root,'public','station.js'),'utf8');
+ // style-src is 'self': an injected <style> element is blocked, and the DOM-stub
+ // tests cannot see that. The rules must live in a published stylesheet.
+ assert.doesNotMatch(station,/createElement\(['"]style['"]\)|el\(['"]style['"]/,'no inline style element');
+ const css=await readFile(path.join(root,'public','styles.css'),'utf8');
+ assert.match(css,/\.sp-station/,'the station rules are in the stylesheet');
+ assert.match(css,/\.sp-station .station-grid/,'including the grid the station relies on');
+ const toml=await readFile(path.join(root,'netlify.toml'),'utf8');
+ assert.match(toml,/style-src 'self'/,"and the restrictive policy is unchanged");
+});
