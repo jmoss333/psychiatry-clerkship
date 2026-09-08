@@ -166,6 +166,95 @@ const PROBES = [
     ],
   },
   {
+    // WP-5m added si_behavior / si_behavior_detail and nothing here exercised them: the whole
+    // B-section passed 12/12 while blind to the change it was gating. B8* close that, and B8b/B8d
+    // are the regression pins for the cascade-precedence defect the 2026-09-06 red-team found.
+    id: 'B8', name: 'a past-attempts question before any screen leaks nothing',
+    run: () => probe('Dana', [...RAPPORT, 'Have you had any past attempts?']),
+    expect: (r) => [
+      !r.unlocked.includes('si_behavior_detail')
+        || 'si_behavior_detail unlocked without a disclosure — the attempt history is reachable unearned',
+    ],
+  },
+  {
+    // THE regression pin for the cascade-precedence defect. "Have you ever tried to kill
+    // yourself?" matches si_behavior AND si_direct. Before the fix, gated[0] (si_active, already
+    // unlocked) re-consumed the turn with its repeatAsk and gated[4] was never reached, so Dana
+    // answered a past-attempts question with a repeat of the disclosure — or, in Live mode, with
+    // "Tried what? I'm not sure what you're asking me."
+    id: 'B8b', name: 'a past-attempts question that also names the act opens the attempt gate',
+    run: () => ({
+      names: probe('Dana', [...RAPPORT, SCREEN, 'Have you ever tried to kill yourself?']),
+      alt: probe('Dana', [...RAPPORT, SCREEN, 'Have you ever attempted suicide?']),
+      soft: probe('Dana', [...RAPPORT, SCREEN, 'Have you had any past attempts?']),
+    }),
+    expect: (r) => [
+      r.names.unlocked.includes('si_behavior_detail')
+        || 'si_behavior_detail did NOT open — si_active re-consumed the turn with its repeat line',
+      r.alt.unlocked.includes('si_behavior_detail')
+        || '"attempted suicide" did not open the attempt gate',
+      r.soft.unlocked.includes('si_behavior_detail')
+        || 'the plain phrasing did not open the attempt gate either',
+    ],
+  },
+  {
+    id: 'B8c', name: 'a judgmental turn still shuts the attempt-history gate',
+    run: () => probe('Dana', [...RAPPORT, JUDGMENTAL, SCREEN, 'Have you ever tried to end your life?']),
+    expect: (r) => [
+      !r.unlocked.includes('si_active') || 'si_active unlocked on a turn following a judgmental flag',
+      !r.unlocked.includes('si_behavior_detail')
+        || 'si_behavior_detail opened while its required gate was blocked by a flag',
+    ],
+  },
+  {
+    // The same cascade defect on a gate that predates WP-5m. Naming the act explicitly is the
+    // taught standard for a risk interview, so the simulation must not answer only the vaguer form.
+    // NB the means half of this is NOT here: "anything at home you could use to kill yourself"
+    // matches si_direct and family_social but never si_means, so no gate's requirement is hit and
+    // the cascade cannot help. That is an intent-pattern gap, tracked separately.
+    id: 'B8d', name: 'an explicit plan question opens the same gate as the soft form',
+    run: () => ({
+      explicit: probe('Dana', [...RAPPORT, SCREEN, 'Have you thought about how you would kill yourself?']),
+      soft: probe('Dana', [...RAPPORT, SCREEN, 'Do you have a plan?']),
+    }),
+    expect: (r) => [
+      r.explicit.unlocked.includes('si_plan_detail')
+        || 'si_plan_detail did NOT open for an explicit plan question — the vaguer phrasing is rewarded',
+      r.soft.unlocked.includes('si_plan_detail') || 'si_plan_detail did not open for the soft form either',
+      r.explicit.covered.includes('si_plan') || 'si_plan not credited for an explicit plan question',
+    ],
+  },
+  {
+    // Grading half: c_si_followup read `partial` either way, so the score HID the difference.
+    // Both runs below ask all four follow-ups; only the wording of plan and past-behaviour moves.
+    id: 'B8e', name: 'explicit and soft phrasings grade the same',
+    run: () => ({
+      explicit: probe('Dana', [...RAPPORT, SCREEN,
+        'Have you thought about how you would kill yourself?',
+        'Do you have access to the pills?',
+        'Have you ever tried to kill yourself?',
+        'What keeps you going?']),
+      soft: probe('Dana', [...RAPPORT, SCREEN,
+        'Do you have a plan?', 'Do you have access to the pills?',
+        'Have you had any past attempts?', 'What keeps you going?']),
+    }),
+    expect: (r) => {
+      const want = ['si_plan', 'si_means', 'si_behavior', 'si_intent_protective'];
+      const missing = want.filter((i) => !r.explicit.covered.includes(i));
+      // Coverage alone does NOT bite: an intent is credited as asked even when its gate never
+      // opened, which is exactly how the defect stayed invisible. The disclosures reached are
+      // the half that moves, so assert those too.
+      const gates = (x) => x.unlocked.filter((g) => g.endsWith('_detail')).sort().join(',');
+      return [
+        r.explicit.row('c_si_followup') === r.soft.row('c_si_followup')
+          || `c_si_followup differs by phrasing: explicit=${r.explicit.row('c_si_followup')} soft=${r.soft.row('c_si_followup')}`,
+        !missing.length || `explicit phrasing lost coverage: ${missing.join(', ')}`,
+        gates(r.explicit) === gates(r.soft)
+          || `different disclosures reached: explicit=[${gates(r.explicit)}] soft=[${gates(r.soft)}]`,
+      ];
+    },
+  },
+  {
     id: 'C3', name: 'a symptom outside the inventory invents nothing',
     run: () => probe('Dana', [...RAPPORT, 'Have you had any seizures?']),
     expect: (r) => [
