@@ -223,7 +223,12 @@
       if(disposed)return;
       latest=stationSnapshot(hostedSnapshot);
       store.sync(latest);
-      var next=latest.phase==='speaking'?profile.cues.interrupted:latest.phase==='ended'?profile.cues.closing:profile.cues.opening;
+      // An interruption cue is a behavioural claim about the patient. It belongs to an
+      // actual interruption, not to every moment of normal speech.
+      var lastPatient=null;
+      (latest.transcript||[]).forEach(function(entry){if(entry.who==='pt')lastPatient=entry;});
+      var interrupted=!!lastPatient&&lastPatient.playbackStatus==='interrupted';
+      var next=latest.phase==='ended'?profile.cues.closing:interrupted?profile.cues.interrupted:profile.cues.opening;
       if(next!==lastCue){lastCue=next;cue.textContent=next;}
       markButton.hidden=!store.candidate(latest);
       closing.hidden=latest.phase!=='ended';

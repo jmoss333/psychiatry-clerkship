@@ -224,3 +224,23 @@ test('the station renders each registered case without leaking another case cont
     station.dispose();
   }
 });
+
+test('a normally speaking patient does not show an interruption cue — R9',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  const station=createStation({document:doc},host,{caseId:'sp_mania_redirect_001',content:contentModule.exports});
+  const profile=contentModule.exports.getProfile('sp_mania_redirect_001');
+  station.update(hosted([you('Q1'),dana('Speaking now.','preparing',['Speaking now.'],0)],'speaking'));
+  const cue=byStation(host,'cue');
+  assert.notEqual(cue.textContent,profile.cues.interrupted,'normal playback is not an interruption');
+  assert.equal(cue.textContent,profile.cues.opening,'a neutral cue is shown instead');
+  station.dispose();
+});
+
+test('an interruption cue appears only after an actual interruption — R9',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  const station=createStation({document:doc},host,{caseId:'sp_mania_redirect_001',content:contentModule.exports});
+  const profile=contentModule.exports.getProfile('sp_mania_redirect_001');
+  station.update(hosted([you('Q1'),dana('Cut short.','interrupted',['Cut short.'],0)],'paused'));
+  assert.equal(byStation(host,'cue').textContent,profile.cues.interrupted);
+  station.dispose();
+});
