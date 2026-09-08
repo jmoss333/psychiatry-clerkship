@@ -407,3 +407,28 @@ test('after a withdrawn interim, new speech resumes normally — R3',()=>{
   assert.equal(t.submissions(),1,'repeating the lost words restores automatic sending');
   assert.equal(t.draft(),'I wanted to ask about your sleep');
 });
+
+test('the page identifies the patient actually chosen — R5',()=>{
+  const {applyIdentity}=clientModule.exports;
+  const nodes={};
+  const doc={getElementById:id=>nodes[id]||(nodes[id]={textContent:''}),title:''};
+  applyIdentity(doc,{displayName:'Marcus',voice:'Cedar',title:'Marcus — A focused interview'});
+  assert.match(doc.title,/Marcus/,'the tab names Marcus');
+  assert.equal(doc.title.includes('Dana'),false);
+  assert.match(nodes['patient-name'].textContent,/Marcus/);
+  assert.match(nodes['voice-tag'].textContent,/Cedar/,'his voice, not Marin');
+  assert.equal(nodes['voice-tag'].textContent.includes('Marin'),false);
+
+  applyIdentity(doc,{displayName:'Dana',voice:'Marin',title:'Dana — Admission interview'});
+  assert.match(nodes['patient-name'].textContent,/Dana/,'and switches back');
+  assert.match(nodes['voice-tag'].textContent,/Marin/);
+});
+
+test('status and transcript labels name the chosen patient — R5',()=>{
+  const {statusLine,speakerLabel}=clientModule.exports;
+  assert.equal(speakerLabel('you','Marcus'),'You');
+  assert.equal(speakerLabel('dana','Marcus'),'Marcus','a patient row is labelled by name, not by role');
+  assert.match(statusLine('responding','Marcus'),/Marcus/);
+  assert.match(statusLine('speaking','Ray'),/Ray/);
+  assert.equal(statusLine('responding','Marcus').includes('Dana'),false);
+});

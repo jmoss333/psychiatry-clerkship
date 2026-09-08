@@ -12,7 +12,7 @@
     text:'No examination findings, vital signs, medication list, laboratory results, or test reports are supplied in this encounter. Ask the patient what they know and identify what you would need to verify with the clinical team. Missing information is not a normal result.'};
   var PROFILES={
     sp_depression_gated_si_001:{
-      caseId:'sp_depression_gated_si_001',title:'Dana — Admission interview',
+      caseId:'sp_depression_gated_si_001',displayName:'Dana',voice:'Marin',title:'Dana — Admission interview',
       task:'Meet Dana, establish a shared agenda, explore her account and safety concerns, and close with a summary she can correct before presenting to your supervisor.',
       doorNote:'Dana is in her 30s, admitted voluntarily to adult inpatient psychiatry last night after her husband became concerned about things she was saying. This is the first full interview after admission.',
       objectives:['Introduce your student role and negotiate the purpose of another interview.','Explore Dana’s account and ask direct, understandable safety questions with appropriate follow-up.','Invite corrections to your summary and identify what still needs discussion with the team.'],
@@ -26,7 +26,7 @@
       reflectionQuestion:'Where does your wording leave room for Dana to correct you or explain what she needs from another interview?'
     },
     sp_mania_redirect_001:{
-      caseId:'sp_mania_redirect_001',title:'Marcus — A focused interview',
+      caseId:'sp_mania_redirect_001',displayName:'Marcus',voice:'Cedar',title:'Marcus — A focused interview',
       task:'Establish a shared agenda with Marcus, gather his account while redirecting respectfully, and summarize both his priorities and the questions you need to bring to the team.',
       doorNote:'Marcus is a college junior in his 20s on adult inpatient psychiatry after an overnight admission. His roommate called campus security after finding him redesigning the quad irrigation system with a shovel at 4 a.m.',
       objectives:['Explain your student role and establish a manageable shared agenda.','Use warm redirection while exploring the history, functioning, and safety concerns within the case.','Check Marcus’s understanding of your summary and clearly separate his priorities from unresolved team decisions.'],
@@ -40,7 +40,7 @@
       reflectionQuestion:'How does your wording acknowledge Marcus’s agenda while making the next topic clear?'
     },
     sp_psychosis_paranoid_001:{
-      caseId:'sp_psychosis_paranoid_001',title:'Ray — Establishing a working conversation',
+      caseId:'sp_psychosis_paranoid_001',displayName:'Ray',voice:'Cedar',title:'Ray — Establishing a working conversation',
       task:'Introduce yourself honestly, address Ray’s question about recording, explore his account without confirming or dismissing its explanation, and bring unresolved concerns to your supervisor.',
       doorNote:'Ray is a young adult in his 20s on day two of an adult inpatient psychiatry admission. An older sibling brought him in after weeks of not leaving his apartment, covering vents, and stopping meals. This is the first sit-down interview.',
       objectives:['Explain your role and the actual information-handling arrangements without promises you cannot make.','Give Ray time to describe his experiences and ask direct, understandable follow-up questions about safety.','Distinguish observed behavior and reported experience from interpretation when summarizing and handing over.'],

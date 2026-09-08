@@ -234,11 +234,34 @@
       setThinking:function(value){thinking=!!value;capture.setThinking(thinking);publish();},setHold:function(value){hold=!!value;capture.setHold(hold);publish();}};
   }
 
+  // The patient's identity is one fact used in several places. Deriving it here
+  // stops the page saying Dana while the server is talking to Marcus.
+  function applyIdentity(doc,profile){
+    var name=profile&&profile.displayName||'the patient',voice=profile&&profile.voice||'AI';
+    doc.title=(profile&&profile.title||name)+' · The Interview Room';
+    var set=function(id,text){var node=doc.getElementById(id);if(node)node.textContent=text;};
+    set('patient-name',name);
+    set('voice-tag',voice+' · AI voice');
+    set('door-lede','You are a medical student meeting '+name+' on an adult inpatient psychiatry service. Introduce yourself and your role, explain the purpose of the conversation, and invite an account. Close with a summary that can be corrected.');
+    set('access-lede','This invitation opens a private practice encounter with '+name+'. Up to ten questions, at your pace.');
+    set('voice-note',voice+'\u2019s voice is AI-generated. Recognized words and conversation context are sent to OpenAI to generate replies and speech. Your browser may send microphone audio to its speech-recognition service. Use fictional information only; never enter real-patient information.');
+    set('interrupt-label','Interrupt '+name);
+    set('closing-prompt','What did '+name+' want you to understand? Where would you check your understanding? What remains uncertain and should be discussed with your supervisor?');
+  }
+  function statusLine(phase,name){
+    return {gate:'Ready',ready:'Your turn — type your question',connecting:'Connecting microphone…',
+      responding:name+' is preparing a reply…',speaking:name+' is speaking',
+      listening:'Listening — I\u2019ll send when you finish',paused:'Paused — microphone off',
+      restart:'Restart needed — microphone off',ended:'Encounter ended — microphone off'}[phase]||'Ready';
+  }
+  function speakerLabel(role,name){return role==='you'?'You':name;}
+
   function mount(env){
     var doc=env.document,el=function(id){return doc.getElementById(id);},lastTranscript='',lastPhase='gate';
     var recognitionAvailable=!!(env.SpeechRecognition||env.webkitSpeechRecognition);
     el('voice-mode').checked=recognitionAvailable;el('voice-mode').disabled=!recognitionAvailable;
     if(!recognitionAvailable)el('voice-support').textContent='This browser does not offer speech recognition. Dana still speaks, and you can type each question.';
+    var patientName='the patient';
     var controller=createController(env,{onChange:render});
     // The station is a projection of the snapshot: it never calls the controller.
     var station=null;
@@ -253,9 +276,9 @@
       el('access-panel').hidden=active;el('case-choice').disabled=active;el('start').disabled=snapshot.busy;el('encounter-panel').hidden=!active;el('conversation-panel').hidden=!snapshot.messages.length;
       el('closing-panel').hidden=snapshot.phase!=='ended';el('clear').hidden=el('clear-note').hidden=!active;el('clear').disabled=snapshot.busy;
       el('turn-count').textContent=snapshot.turn+' of 10 questions';
-      el('status').textContent={gate:'Ready',ready:'Your turn — type your question',connecting:'Connecting microphone…',responding:'Dana is preparing her reply…',speaking:'Dana is speaking',listening:'Listening — I’ll send when you finish',paused:'Paused — microphone off',restart:'Restart needed — microphone off',ended:'Encounter ended — microphone off'}[snapshot.phase]||'Ready';
+      el('status').textContent=statusLine(snapshot.phase,patientName);
       if(snapshot.phase==='listening'&&snapshot.hold)el('status').textContent='Listening — your turn is held';
-      el('hint').textContent=snapshot.restartRequired?'The last request has an uncertain outcome. Clear and restart to continue.':snapshot.phase==='speaking'||snapshot.phase==='responding'?'Choose Interrupt Dana or press Escape to continue your thought. Completed audio segments are remembered.':snapshot.phase==='ended'?'Bring what you learned and what remains uncertain to your supervisor.':snapshot.hold?'Your turn is held. Keep speaking or thinking, then choose Done speaking when ready.':snapshot.phase==='listening'?'Just speak. Your question sends itself once you stop — no click needed. Space sends it sooner.':'Take your time. You can speak, pause, or type.';
+      el('hint').textContent=snapshot.restartRequired?'The last request has an uncertain outcome. Clear and restart to continue.':snapshot.phase==='speaking'||snapshot.phase==='responding'?'Choose Interrupt or press Escape to continue your thought. Completed audio segments are remembered.':snapshot.phase==='ended'?'Bring what you learned and what remains uncertain to your supervisor.':snapshot.hold?'Your turn is held. Keep speaking or thinking, then choose Done speaking when ready.':snapshot.phase==='listening'?'Just speak. Your question sends itself once you stop — no click needed. Space sends it sooner.':'Take your time. You can speak, pause, or type.';
       el('done').hidden=snapshot.phase!=='listening';el('done').disabled=!!snapshot.interim||!snapshot.draft.trim();
       el('pause').hidden=!['listening','connecting'].includes(snapshot.phase);el('resume').hidden=!recognitionAvailable||!['paused','ready'].includes(snapshot.phase)||snapshot.restartRequired;el('resume').disabled=snapshot.busy;
       el('interrupt').hidden=!snapshot.busy;el('end').hidden=snapshot.phase==='ended'||snapshot.phase==='restart';
@@ -264,12 +287,12 @@
       if(el('composer').value!==snapshot.draft)el('composer').value=snapshot.draft;
       el('spoken-draft').hidden=!(snapshot.draft||snapshot.interim);el('draft-text').textContent=snapshot.draft;el('interim-text').textContent=snapshot.interim;
       el('error').hidden=!snapshot.error;el('error').textContent=snapshot.error;
-      var serialized=JSON.stringify(snapshot.messages);if(serialized!==lastTranscript){lastTranscript=serialized;el('transcript').replaceChildren();snapshot.messages.forEach(function(message){var row=doc.createElement('article');row.className='message '+message.role;var name=doc.createElement('span');name.className='name';name.textContent=message.role==='you'?'You':'Dana';row.appendChild(name);row.appendChild(doc.createTextNode(message.text));var delivery=doc.createElement('span');delivery.className='delivery';delivery.textContent=message.role==='you'?(message.status==='pending'?'Request in progress':message.status==='unconfirmed'?'Request outcome unknown — not sent again':'Submitted'):message.status==='played'?'Voice completed':message.status==='interrupted'?(message.completedSegments?message.completedSegments+' completed audio segment(s) remembered; the remaining text did not finish playing.':'Voice interrupted; no complete audio segment was confirmed heard.'):'Voice being prepared / played';row.appendChild(delivery);el('transcript').appendChild(row);});}
+      var serialized=JSON.stringify(snapshot.messages);if(serialized!==lastTranscript){lastTranscript=serialized;el('transcript').replaceChildren();snapshot.messages.forEach(function(message){var row=doc.createElement('article');row.className='message '+message.role;var name=doc.createElement('span');name.className='name';name.textContent=speakerLabel(message.role,patientName);row.appendChild(name);row.appendChild(doc.createTextNode(message.text));var delivery=doc.createElement('span');delivery.className='delivery';delivery.textContent=message.role==='you'?(message.status==='pending'?'Request in progress':message.status==='unconfirmed'?'Request outcome unknown — not sent again':'Submitted'):message.status==='played'?'Voice completed':message.status==='interrupted'?(message.completedSegments?message.completedSegments+' completed audio segment(s) remembered; the remaining text did not finish playing.':'Voice interrupted; no complete audio segment was confirmed heard.'):'Voice being prepared / played';row.appendChild(delivery);el('transcript').appendChild(row);});}
       if(snapshot.phase!==lastPhase&&(snapshot.phase==='restart'||snapshot.phase==='ended'))el('clear').focus();
       if(station)station.update(snapshot);
       lastPhase=snapshot.phase;
     }
-    el('access-form').addEventListener('submit',function(event){event.preventDefault();var passcode=el('preview-key').value;el('preview-key').value='';var chosen=el('case-choice').value;mountStation(chosen);controller.start(passcode,el('voice-mode').checked,chosen);});
+    el('access-form').addEventListener('submit',function(event){event.preventDefault();var passcode=el('preview-key').value;el('preview-key').value='';var chosen=el('case-choice').value;var profile=env.DanaStationContent&&env.DanaStationContent.getProfile(chosen);if(profile){patientName=profile.displayName;applyIdentity(doc,profile);}mountStation(chosen);controller.start(passcode,el('voice-mode').checked,chosen);});
     el('composer-form').addEventListener('submit',function(event){event.preventDefault();controller.send(el('composer').value);});
     el('composer').addEventListener('input',function(){controller.setDraft(this.value);});el('done').addEventListener('click',function(){controller.send();});
     el('pause').addEventListener('click',controller.pause);el('resume').addEventListener('click',controller.resume);el('interrupt').addEventListener('click',controller.interrupt);el('end').addEventListener('click',controller.end);
@@ -278,5 +301,5 @@
     doc.addEventListener('keydown',function(event){if(event.defaultPrevented||event.repeat||event.isComposing||event.ctrlKey||event.metaKey||event.altKey)return;var snapshot=controller.getSnapshot();if(event.code==='Escape'&&snapshot.busy){event.preventDefault();controller.interrupt();return;}if(event.code==='Space'&&snapshot.phase==='listening'&&!(event.target&&event.target.closest('input,textarea,button,select,a,summary,[contenteditable]'))){event.preventDefault();controller.send();}});
     doc.addEventListener('visibilitychange',function(){if(doc.hidden)controller.pause();});env.addEventListener('pagehide',function(){controller.dispose();if(station){station.dispose();station=null;}});render(controller.getSnapshot());return controller;
   }
-  return {createParser:createParser,readResponse:readResponse,createCapture:createCapture,createController:createController,safeMessage:safeMessage,mount:mount};
+  return {createParser:createParser,readResponse:readResponse,createCapture:createCapture,createController:createController,safeMessage:safeMessage,mount:mount,applyIdentity:applyIdentity,statusLine:statusLine,speakerLabel:speakerLabel};
 }));

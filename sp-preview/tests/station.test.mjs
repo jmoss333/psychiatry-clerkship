@@ -267,3 +267,12 @@ test('a disposed station ignores further updates rather than re-rendering — R4
   assert.equal(host.children.length,0,'a disposed station stays empty');
   assert.equal(allText(host).includes('After disposal'),false);
 });
+
+test('every registered case declares its own display name and voice — R5',()=>{
+  const expected={sp_depression_gated_si_001:['Dana','Marin'],sp_mania_redirect_001:['Marcus','Cedar'],sp_psychosis_paranoid_001:['Ray','Cedar']};
+  for(const [caseId,[name,voice]] of Object.entries(expected)){
+    const profile=contentModule.exports.getProfile(caseId);
+    assert.equal(profile.displayName,name,caseId+' names itself');
+    assert.equal(profile.voice,voice,caseId+' names its voice');
+  }
+});
