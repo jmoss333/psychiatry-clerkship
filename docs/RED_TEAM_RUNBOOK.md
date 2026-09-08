@@ -107,8 +107,19 @@ above) → a hidden prompt. It never prints the value.
 missing passcode → 401), **D5** (a non-allowlisted origin gets no `Access-Control-Allow-Origin`,
 so the browser blocks it), and **B5** (a POST carrying a forged `state.unlocked` is refused).
 
-**If D0 fails with 401:** the passcode is wrong or has been rotated. Everything below D0 is
-meaningless until D0 is green — fix it first.
+**If D0 fails with 401, check this first:** `SP_STUDENT_PASSCODE` is a **secret** variable, and
+a Netlify readback returns a look-real placeholder for the production, deploy-preview and
+branch-deploy contexts — only `dev` returns the real value. If the script resolved the passcode
+from Netlify rather than from your exported `$SP_STUDENT_PASSCODE`, it is almost certainly
+holding a placeholder. This looks exactly like a rotation that has not propagated, and it never
+resolves on its own. Export the value yourself from the Netlify UI (*Show value*, production
+context) and re-run.
+
+Everything below D0 is meaningless until D0 is green, and since 2026-09-07 the script enforces
+that rather than trusting you to remember it: **D5 and B5 report SKIP, not pass, when the
+credential failed.** Both would otherwise have gone green for the wrong reason — a 401 carries no
+`Access-Control-Allow-Origin` either, and a forged POST is refused for auth before the server
+ever evaluates the fabricated unlock.
 
 **If B5 returns 200 and the reply contains gated reveal text** (Dana's sleeping-pills passage):
 stop, treat it as a live incident, and pull the passcode. That is the one failure in this whole
@@ -230,7 +241,7 @@ If anything failed: `--state failed`, then fix, then re-run the whole checklist.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Tier 1 probe fails right after a pack edit | The pack changed a gate or a pattern | Read the probe's message — it names the gate. Compare against the matrix: `node --test sp-proxy/tests/sp-safety-scoring-uniformity.test.mjs` |
-| D0 returns 401 with the right passcode | Passcode was rotated in Netlify | Re-run — the script re-reads it from Netlify each time. If it still 401s, the rotation has not propagated to the production context yet. |
+| D0 returns 401 with the right passcode | Usually **not** a rotation: `SP_STUDENT_PASSCODE` is a secret variable, and `netlify env:get` returns a placeholder for every context except `dev` | Export the real value from the Netlify UI (*Show value*, production) into `$SP_STUDENT_PASSCODE` and re-run. Re-running alone will not help — the placeholder is what the API returns by design, not a propagation lag. |
 | "couldn't read it. Most likely sp-proxy is not linked yet" | The CLI resolves env vars against a linked project folder; `--site` alone is not enough | Run the `netlify link` command in Step 1b |
 | "Test connection" fails in the tool but curl works | Origin not in `SP_ALLOWED_ORIGINS` | Add the origin you are serving from (include `http://localhost:8888` while testing) |
 | A judgmental probe seems not to flag | **Your phrasing is not in that case's flag vocabulary** | Dana flags on `you should`, `at least`, `snap out`, `look on the bright side`. "Calm down" is *Marcus's*. Use a phrase the pack actually recognises, or you are testing nothing. |
