@@ -1,15 +1,39 @@
 # Autonomous queue runner — the runbook
 
-A scheduled Claude session follows this file, nightly. It exists so that work the repository
-can prove is finishable gets finished without anyone scheduling it by hand.
+Work the repository can prove is finishable gets finished nightly, without anyone scheduling it
+by hand.
 
 **The contract in one line:** the runner may only do work that a deterministic script performs
 and a second command proves, and it may only ever open a **draft** pull request.
 
-This file is the whole instruction set. The Routine's prompt says "read
-`13_Faculty_Resources/_automation/AUTONOMOUS_QUEUE_RUNNER.md` and follow it", so the guardrails
-live in version control where they can be reviewed and changed like anything else — not buried
-in a scheduled trigger nobody can see.
+---
+
+## 0. Where it runs, and why it moved
+
+It runs as a GitHub Actions workflow: **`.github/workflows/maintenance-queue-runner.yml`**,
+daily at 04:40 UTC, plus `workflow_dispatch` for a manual run. The whole decision procedure lives
+in **`bin/run_queue_task.py`**, which is unit-tested by `tests/run-queue-task.test.mjs`.
+
+It did not start there. The first version was a scheduled Claude session pointed at this file.
+Its first firing (2026-09-08 04:08 UTC) reported **SUCCEEDED** and produced nothing at all — no
+branch, no pull request — with 51 books of work still outstanding. The fired session had:
+
+```
+sources                 []     ← the repository was never cloned
+mcp_servers             []     ← no GitHub tools
+allowed_push_branches   []     ← no push target
+```
+
+Every step after "read the runbook" had nothing to act on, and even the degraded *push the branch
+anyway* path was unreachable. A session that cannot see the repository also cannot notice that it
+cannot see the repository, so no better prompt fixes this.
+
+The fix follows from how autonomy is defined here. A task is eligible **only** because it carries
+a deterministic `run` and a `verify` that can fail — which is exactly the property that makes a
+model unnecessary to execute it. So the deterministic half moved to a runner that starts from a
+checkout and holds a push credential, and the judgement half stayed with the human who reads the
+draft. `create_trigger` exposes no `sources` parameter, so a Routine could not have been repaired
+in place; this is not a workaround for that, it is the right shape.
 
 ---
 
@@ -22,8 +46,7 @@ python3 bin/what_can_i_do_today.py --next-autonomous
 This prints **one** task as JSON, or **nothing**.
 
 Nothing is the normal answer and it is a success, not a failure. The queue measures its own work
-against the repository, so a task disappears the moment it is done. **If the output is empty:
-stop. Do not look for something else to do. Do not report anything. End the session.**
+against the repository, so a task disappears the moment it is done. Empty output ends the run.
 
 A task is offered only if it is `ready` in this environment *and* autonomous. Autonomy is
 derived, never declared — `is_autonomous()` in `bin/what_can_i_do_today.py` requires the task to
@@ -39,70 +62,73 @@ needing judgement therefore fails the test by construction:
 **Do not add `run`/`verify` to a task to make it eligible.** Widening the autonomy set is a
 governance decision for Dr. Moss, and it belongs in a reviewed PR of its own.
 
----
-
-## 2. The run
-
-1. **Start from a fresh base.** `git fetch origin main && git checkout -B claude/auto-<key>-<date> origin/main`.
-   A new branch per run: last night's branch may still be open and unmerged.
-2. **Stop if the work is already proposed.** Check for an open PR whose branch starts with
-   `claude/auto-<key>-`. If one exists, end the session — the previous night's proposal is still
-   waiting on a human, and a second copy helps nobody.
-3. **Run the task's own `run` command.** Never hand-edit the files it owns. The diff must come
-   from reviewable code, which is the entire reason this task qualified.
-4. **Run the task's own `verify` command.** Non-zero means stop and change nothing further.
-5. **Run what CI runs**, and do not push unless all of it is clean:
-   ```bash
-   node --test tests/*.test.mjs
-   python3 13_Faculty_Resources/_automation/validate_registry_schemas.py
-   python3 13_Faculty_Resources/_automation/validate_topic_meta.py
-   python3 13_Faculty_Resources/_automation/validate_attestation_consistency.py
-   python3 13_Faculty_Resources/_automation/site_build/shipped_pages.py --check
-   diff -q CLAUDE.md AGENTS.md
-   ```
-6. **Confirm the task retired.** Re-run `--next-autonomous`. It must now print nothing for this
-   task. If it still offers the same task, the measurement does not track the work — **stop, push
-   nothing, and open an issue instead.** That exact defect shipped once: the task was measured by
-   a number the work could not move, and the runner would have opened an empty pull request every
-   night for the rest of time.
-7. **Stage by name.** `git add <the specific files>` — **never `git add -A`, never `git add .`**.
-   Without git-lfs installed, about 106 media files show as modified; they are the missing smudge
-   filter, not a change, and committing the pointer stubs fails the deploy.
-   `.claude/hooks/lfs_guard.py` denies bulk staging, but do not rely on a hook to save you.
-8. **Push and open a DRAFT pull request.** Never mark it ready. Never merge. Never approve.
-
-   **If your session has no GitHub PR tool**, push the branch anyway and say so. A scheduled
-   session may fire without connectors, in which case `git push` still works — the credentials
-   are environment-level — but `mcp__github__*` is absent. A pushed branch is still a visible,
-   reviewable artifact and GitHub offers a "Compare & pull request" banner on it. What is not
-   acceptable is leaving finished work only on disk in a container that is about to be reclaimed.
-   Push, then report the branch name and the one-line command a human needs to open the PR.
+Selection is never reimplemented. `run_queue_task.py` shells out to
+`what_can_i_do_today.py --next-autonomous` rather than re-ranking the tasks itself: two rankings
+that agree today and drift tomorrow would have the runner execute a task the queue did not offer.
 
 ---
 
-## 3. What the pull request must say
+## 2. The run, and the four guards
 
-The body is the only place the provenance can live, and it **must** carry all of:
+The workflow stands down before doing anything if **any** branch matching `automation/queue-*`
+still has an open pull request. The branch name carries the date, so without that check an
+unmerged draft would be duplicated every 24 hours — the task still measures as undone, because
+the base branch does not yet carry the fix.
 
-- that a scheduled runner produced it, and which script generated the diff;
-- the `verify` command a reviewer can run to check every line mechanically;
-- **any faculty attestation the change makes stale.**
+Then `bin/run_queue_task.py`:
 
-That last one is not optional and is easy to miss. `13_Faculty_Resources/reviewed.json` records
-`book_library.md` as `reviewed` by a named physician. An automated edit to that page leaves the
-record byte-identical, so the page goes on asserting a human review of content a bot wrote.
-`.claude/hooks/post_edit_validate.py` does detect exactly this — but it matches `Edit|Write|
-MultiEdit` only, and these scripts write through Bash, **so the hook never fires here**. The
-runner is the only thing that can raise it, and it raises it in the PR body.
+1. Refuses a **dirty tree** or an `--out-dir` inside the checkout, so nothing unrelated — and no
+   evidence file — can ride along in the commit.
+2. Runs the task's own **`run`**. Never a hand edit: the diff must come from reviewable code,
+   which is the entire reason the task qualified.
+3. Runs the task's own **`verify`**. Non-zero ends the run.
+4. Applies four guards, each with its own exit code so a red run names itself without the log:
 
-Say it plainly, for example:
+| # | exit | refusal | the defect it exists for |
+|---|---|---|---|
+| G1 | 3 | the run changed no file | the queue offered work and produced an empty pull request |
+| G2 | 4 | the count did not move (or cannot be measured) | the measurement does not track the work, so the task can never retire and the runner reopens the same PR forever — the `isbn-derive` defect, caught days before the first firing |
+| G3 | 5 | a changed path is the attestation ledger, a clinical registry, Git-LFS media, or escapes the root | an unattended process editing a faculty signature |
+| G4 | — | (reports, does not refuse) an attested page changed | an automated edit leaves the ledger byte-identical, so nothing else says the attestation went stale |
 
-> `book_library.md` is recorded as reviewed by Joshua Moss, MD on 2026-07-03. This change edits
-> that page, so the attestation is now stale and needs re-attesting in the faculty console.
+   G2 treats an **unmeasurable** task as a failure, never as a finished one. Zero means done, and
+   reading a broken measurement as zero would retire real work silently.
+
+   G4 reads `site_build/shipped_pages.json` — the one derived listing — not `site_manifest.json`.
+   A page that ships from `cotw_registry.json` or `site_extras.py` is just as attestable, and
+   reading a single producer is the exact defect ADR-002 exists to end.
+5. Creates `automation/queue-<key>-<YYYY-MM-DD>` and **stages by name** — never `git add -A`,
+   never `git add .`. Without git-lfs installed about 106 media files show as modified; that is
+   the missing smudge filter, not a change, and committing the pointer stubs fails the deploy.
+
+The workflow then runs the registry validators, the shipped-pages derivation check and the root
+node suite, and only on a clean sweep pushes the branch and opens a **draft** pull request. It
+never marks one ready, never merges, never approves, and never edits the attestation ledger.
+
+---
+
+## 3. What the pull request says
+
+`render_pr_body()` composes it, so the provenance cannot be forgotten under time pressure. It
+carries the task and the script that generated the diff, the `verify` a reviewer can re-run, the
+measurement before and after, the files changed, and **any faculty attestation the change makes
+stale**.
+
+That last one is the one that would otherwise be missed. `13_Faculty_Resources/reviewed.json`
+records `book_library.md` as `reviewed` by a named physician; an automated edit to that page
+leaves the record byte-identical, so the page goes on asserting a human review of content a bot
+wrote. `.claude/hooks/post_edit_validate.py` does detect exactly this — but it matches
+`Edit|Write|MultiEdit` only, and these scripts write through Bash, **so the hook never fires
+here**. The pull-request body is the only thing that can raise it.
+
+The body also states plainly that GitHub does not start `ci.yml` on a pull request opened with
+`GITHUB_TOKEN`. The workflow ran the validators and the node suite before pushing and the log is
+the evidence, but a reviewer should know that the green checkmark they are used to is absent by
+construction, not by luck.
 
 **Never write provenance into the page itself.** A banner in the first eight lines matching
 `pending.*review`, `pending.*attestation` or `AI-drafted` **hard-fails the build**. Provenance
-belongs in the PR; the page stays clean.
+belongs in the pull request; the page stays clean.
 
 **Never edit `reviewed.json`.** The runner does not attest, un-attest, or re-date anything. Only
 faculty do that.
@@ -111,17 +137,35 @@ faculty do that.
 
 ## 4. When something goes wrong
 
-Follow the house pattern rather than inventing a channel: automation here reports failure by
-upserting one rolling, marker-owned issue, never by closing anything
-(`13_Faculty_Resources/_automation/maintenance/maintenance_issue.py`). If the runner cannot
-complete cleanly, it leaves the repository untouched and says so in one issue.
+The workflow is named `Maintenance — Autonomous Queue Runner` and is watched by
+`.github/workflows/automation-failure-escalation.yml`, the deadman that upserts one rolling
+marker-owned issue when a scheduled job goes red. A silently failing runner therefore surfaces
+the same way every other steward here does, instead of going unnoticed for weeks.
 
-A red CI on a branch the runner pushed is the runner's to fix on its next wake, under the same
-rules — it may not widen the change to get green, and it may never skip or disable a test.
+A red run leaves the repository untouched: every guard fires **before** the commit. Read the exit
+code first — it names which guard refused, and G2 in particular means *fix the measurement, not
+the task*.
+
+Because the workflow is enrolled in `validate_scheduled_workflows.py`, editing it means
+recomputing its contract digest with the validator's own `_load`/`_contract_digest`. See
+CLAUDE.md, "Adding a step to `ci.yml` trips three separate contracts".
 
 ---
 
-## 5. Why this is the shape it is
+## 5. Running it by hand
+
+```bash
+python3 bin/run_queue_task.py --dry-run                 # what would it pick?
+python3 bin/run_queue_task.py --no-commit --out-dir /tmp/qr   # run and verify, stage nothing
+```
+
+`--no-commit` leaves the change in the working tree so you can read the diff before deciding.
+`--out-dir` must be outside the checkout. The workflow itself can be started from the Actions tab
+via `workflow_dispatch`.
+
+---
+
+## 6. Why this is the shape it is
 
 Three sessions in a row picked a task, worked it for an hour, and only then discovered the
 environment could not do it. `bin/probe_egress.py` answered *what can this machine reach*;
@@ -129,5 +173,6 @@ environment could not do it. `bin/probe_egress.py` answered *what can this machi
 runner is the third step: the queue stops being a report and starts being a worker.
 
 It is deliberately the smallest possible version of that. One task is eligible today. Everything
-that needs judgement is excluded by a rule rather than by a reviewer's memory, and the only thing
-the runner can produce is a draft PR that a human still has to read.
+that needs judgement is excluded by a rule rather than by a reviewer's memory, the refusals are
+tested rather than described, and the only thing the runner can produce is a draft pull request
+that a human still has to read.

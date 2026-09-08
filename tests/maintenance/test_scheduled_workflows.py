@@ -25,6 +25,7 @@ EXPECTED = {
     "surveillance-link-monitor.yml": "0 6 * * 1",
     "surveillance-citations.yml": "0 7 * * 1",
     "surveillance-guideline.yml": "0 6 1 * *",
+    "maintenance-queue-runner.yml": "40 4 * * *",
     "maintenance-sp-health-monitor.yml": "15 */12 * * *",
     "maintenance-production-canary.yml": "20 9 * * *",
     "maintenance-heartbeat.yml": "45 10 * * *",

@@ -21,6 +21,7 @@ EXPECTED_CRONS = {
     "surveillance-link-monitor.yml": "0 6 * * 1",
     "surveillance-citations.yml": "0 7 * * 1",
     "surveillance-guideline.yml": "0 6 1 * *",
+    "maintenance-queue-runner.yml": "40 4 * * *",
     "maintenance-sp-health-monitor.yml": "15 */12 * * *",
     "maintenance-production-canary.yml": "20 9 * * *",
     "maintenance-heartbeat.yml": "45 10 * * *",
@@ -62,6 +63,10 @@ SCOPED_FILES = set(EXPECTED_CRONS) | {
 }
 EXPECTED_PERMISSIONS = {
     "ci.yml": {"contents": "read"},
+    "maintenance-queue-runner.yml": {
+        "contents": "write",
+        "pull-requests": "write",
+    },
     "maintenance-sp-health-monitor.yml": {"contents": "read"},
     "maintenance-production-canary.yml": {"contents": "read"},
     "maintenance-heartbeat.yml": {
@@ -107,6 +112,10 @@ EXPECTED_CONCURRENCY = {
         "group": "maintenance-governance",
         "cancel-in-progress": False,
     },
+    "maintenance-queue-runner.yml": {
+        "group": "maintenance-queue-runner",
+        "cancel-in-progress": False,
+    },
     "maintenance-monthly-review.yml": {
         "group": "maintenance-monthly",
         "cancel-in-progress": False,
@@ -129,6 +138,7 @@ EXPECTED_CONCURRENCY = {
 }
 EXPECTED_JOB_IDS = {
     "ci.yml": {"build-test-validate", "smoke-tests"},
+    "maintenance-queue-runner.yml": {"queue-runner"},
     "maintenance-sp-health-monitor.yml": {"monitor"},
     "maintenance-production-canary.yml": {"production-canary"},
     "maintenance-heartbeat.yml": {"heartbeat"},
@@ -272,6 +282,22 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Translate rotation routing result"),
         ),
     },
+    "maintenance-queue-runner.yml": {
+        "queue-runner": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Install — validator dependencies"),
+            ("uses", "actions/setup-node"),
+            ("name", "Skip while an automated queue pull request is still open"),
+            ("name", "Run the one autonomous queue task"),
+            ("name", "Validate — registry schemas and clinical contracts"),
+            ("name", "Validate — shipped pages are derived from current producers"),
+            ("name", "Unit — root node regression tests (tests/*.test.mjs)"),
+            ("name", "Push the automation branch"),
+            ("name", "Open the draft pull request"),
+            ("uses", "actions/upload-artifact"),
+        ),
+    },
     "maintenance-sp-health-monitor.yml": {
         "monitor": (
             ("uses", "actions/checkout"),
@@ -353,7 +379,7 @@ EXPECTED_STEP_INVENTORIES = {
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
-        "97cce854ae22f6fcbf24a87d220582ea4f125d8136d4c8d306deb9492bcdf5be"
+        "7090155fdbda3f4a9bda687841552bffb2b88e344895009241aaf17d6beb5d6f"
     ),
     "ci.yml": "71b7e03f3e4b88c51cfe6cef29c74d17a38cdd7ef8ac7467fe544a4b9bbea987",
     "maintenance-governance-digest.yml": (
@@ -364,6 +390,9 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ),
     "maintenance-monthly-review.yml": (
         "acd1fe78364baf65ac9842ffb62a5abacaa8c70110a254106166130985fc9689"
+    ),
+    "maintenance-queue-runner.yml": (
+        "9a69d9629641bfa9478956003a99c989a633aad8cf710be9d0f0a4294b98dcd2"
     ),
     "maintenance-production-canary.yml": (
         "a7be8923488ec6d1d824fcdfc2fc59feefe258ac937bb9cf42ee1127485e94e7"

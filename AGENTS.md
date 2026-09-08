@@ -107,6 +107,14 @@ cd tests/smoke && npm ci && npx playwright test
   content. The inference does not carry to a preview — `check_lfs_media.py`'s `is_soft_context()`
   is true on `deploy-preview`, so a preview reaches `ready` with pointer stubs in it. Run it from a
   machine with real egress when you need the content half.
+- `.mcp.json` — the project MCP servers a Claude Code / Codex session picks up in this repo.
+  Today that is **GitHub** (remote HTTP), which is what gives a session `mcp__github__*` — reading
+  and opening PRs, reading CI, posting review replies. It reads
+  `${GITHUB_PERSONAL_ACCESS_TOKEN}` from the environment and **no token is stored in the repo**;
+  without that variable the server simply fails to connect and everything else still works.
+  Nothing in the build, CI, or the nightly runner depends on it: the queue runner deliberately
+  uses `secrets.GITHUB_TOKEN` inside Actions instead, because a scheduled session's MCP list is
+  not something the repository controls — that is precisely how the first runner failed.
 - `.claude/settings.json` + `.claude/hooks/` — session hooks that enforce the rules below at edit
   time: crisis contacts, dose literals, localStorage namespaces, machine paths (deny); PHI and
   instrument item text (ask); LFS phantoms on `git add` (deny); registry validators, workflow
@@ -155,18 +163,25 @@ cd tests/smoke && npm ci && npx playwright test
   reasoning about it — including the step people skip, reverting the fix to prove the fix is
   what made the difference. Only §D2 is mechanised (`bin/check_vacuity.py`); the rest is
   judgment, which is why it is written down.
-- **A nightly runner acts on that queue.** `_automation/AUTONOMOUS_QUEUE_RUNNER.md` is the
-  runbook a scheduled session follows: it takes `what_can_i_do_today.py --next-autonomous` — one
-  task or nothing — runs that task's own script, proves it with that task's own verify command,
-  and opens a **draft** PR. It never merges, never marks ready, and never edits `reviewed.json`.
-  Autonomy is derived, not declared: a task qualifies only by carrying both a deterministic `run`
-  and a `verify` that can fail, so curation and attestation are excluded by construction rather
-  than by a reviewer remembering. Two traps are written down there because both are silent: the
-  measurement must track the work (a task measured by a number the work cannot move makes the
-  runner open an empty PR every night — it happened), and an automated edit to an attested page
-  leaves `reviewed.json` byte-identical, so the PR body must say the attestation went stale —
-  `post_edit_validate.py` catches that only for Edit/Write/MultiEdit, and these scripts write
-  through Bash.
+- **A nightly runner acts on that queue — as a workflow, not as a session.**
+  `.github/workflows/maintenance-queue-runner.yml` (04:40 UTC daily, plus `workflow_dispatch`)
+  runs `bin/run_queue_task.py`: one task from `--next-autonomous` or nothing, that task's own
+  `run`, that task's own `verify`, then a **draft** PR. It never merges, never marks ready, and
+  never edits `reviewed.json`. **It was a scheduled Claude session and that could not work**: the
+  fired Routine had `sources: []`, so the repository was never cloned — the first firing reported
+  SUCCEEDED and produced nothing, and even the runbook's degraded "push the branch anyway" path
+  was unreachable. Autonomy is derived, not declared (`is_autonomous()` = a deterministic `run`
+  **and** a `verify` that can fail), which is exactly why no model is needed to execute it;
+  curation and attestation are excluded by construction rather than by a reviewer remembering.
+  Four guards, each with its own exit code and each pinned by `tests/run-queue-task.test.mjs`:
+  the run must change a file (3), the task's own count must **move** (4 — a task measured by a
+  number the work cannot move reopens the same empty PR every night; it happened), no changed
+  path may be the attestation ledger, a clinical registry or LFS media (5), and an edit to an
+  attested page must be announced in the PR body — the ledger stays byte-identical, and
+  `post_edit_validate.py` catches that only for Edit/Write/MultiEdit while these scripts write
+  through Bash. Read `_automation/AUTONOMOUS_QUEUE_RUNNER.md` before changing any of it; the
+  workflow is enrolled in `validate_scheduled_workflows.py`, so editing it means recomputing its
+  contract digest.
 - `docs/curriculum-review/findings/` — the review→remediation loop. `export_curriculum_review.py`
   produces the transcripts, a review pass writes `findings.json` (id · verbatim `quote` ·
   ready-to-paste `replacement` · `verification`), and remediation lands as small per-work-package
