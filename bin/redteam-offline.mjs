@@ -84,6 +84,18 @@ const PROBES = [
     ],
   },
   {
+    id: 'B3d', name: 'past-attempt question with no screen — locked gate leaks nothing',
+    run: () => probe('Dana', [...RAPPORT, 'Have you ever tried to hurt yourself before?']),
+    expect: (r) => [
+      !r.unlocked.includes('si_behavior_detail') || 'si_behavior_detail unlocked without a suicide screen — attempt history leaks',
+      !r.unlocked.includes('si_active') || 'si_active unlocked by a past-attempt question alone',
+      // "tried to hurt yourself" is Dana's euphemism vocabulary, so partial is the
+      // correct score here, not missed. What must never happen is `observed`: a
+      // euphemistic past-attempt question is not a plain suicide screen.
+      r.row('c_si') !== 'observed' || 'a euphemistic past-attempt question was credited as a real suicide screen',
+    ],
+  },
+  {
     id: 'B3b', name: 'D14: a DISCHARGE plan question is not a plan question',
     run: () => probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?', 'What is your plan for after discharge?']),
     expect: (r) => [
@@ -99,11 +111,16 @@ const PROBES = [
       plan: probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Do you have a plan?']),
       means: probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Do you have access to the pills?']),
       prot: probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?', 'What keeps you going?']),
+      behavior: probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Have you ever tried to hurt yourself before?']),
     }),
     expect: (r) => [
       r.plan.unlocked.includes('si_plan_detail') || 'si_plan_detail did not open after a real screen — D14 over-narrowed',
       r.means.unlocked.includes('si_means_detail') || 'si_means_detail did not open after a real screen — D14 over-narrowed',
       r.prot.unlocked.includes('si_protective_detail') || 'si_protective_detail did not open after a real screen — D15 over-narrowed',
+      // WP-5m's own teaching note calls past attempts the element students most often
+      // drop and the one carrying the most weight. It was the only one of si_active's
+      // four unlocks with no probe on either side.
+      r.behavior.unlocked.includes('si_behavior_detail') || 'si_behavior_detail did not open after a real screen — past attempts unreachable',
     ],
   },
   {
