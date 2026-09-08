@@ -432,3 +432,20 @@ test('status and transcript labels name the chosen patient — R5',()=>{
   assert.match(statusLine('speaking','Ray'),/Ray/);
   assert.equal(statusLine('responding','Marcus').includes('Dana'),false);
 });
+test('the shared chrome carries no gendered pronoun — the case set is mixed',()=>{
+  const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
+  // Dana is she/her; Marcus and Ray are he/him. Anything in the shared page that
+  // assumes a pronoun is wrong for two of the three patients.
+  const chrome=html.replace(/<option[^>]*>[^<]*<\/option>/g,'');
+  const found=chrome.match(/\b(her|hers|his|she|he)\b/gi)||[];
+  assert.deepEqual(found,[],'shared chrome must not assume a pronoun: '+found.join(', '));
+});
+
+test('applyIdentity names the patient in the door heading too — R5 follow-up',()=>{
+  const {applyIdentity}=clientModule.exports;
+  const nodes={};
+  const doc={getElementById:id=>nodes[id]||(nodes[id]={textContent:''}),title:''};
+  applyIdentity(doc,{displayName:'Marcus',voice:'Cedar',title:'Marcus — A focused interview'});
+  assert.match(nodes['door-title'].textContent,/Marcus/,'the door heading names Marcus');
+  assert.equal(/\b(her|his|she|he)\b/i.test(nodes['door-title'].textContent),false,'and assumes no pronoun');
+});

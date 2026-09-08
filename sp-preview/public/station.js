@@ -185,7 +185,7 @@
 
     var retryBox=el('div',null,closing,{'data-station':'retry'});
     el('h3','Try one moment again',retryBox);
-    el('p','Ask one earlier moment a different way. Dana starts from just before your original question and knows only what you had heard by then. This is not a score and does not replace your first conversation.',retryBox,{class:'fine'});
+    el('p','Ask one earlier moment a different way. '+profile.displayName+' starts from just before your original question and knows only what you had heard by then. This is not a score and does not replace your first conversation.',retryBox,{class:'fine'});
     var retrySelect=el('select',null,retryBox,{'aria-label':'Moment to try again'});
     var retryOriginal=el('blockquote','',retryBox);
     var retryText=el('textarea','',retryBox,{maxlength:'1200','aria-label':'Your alternative question'});
@@ -193,7 +193,7 @@
     var retryNote=el('p','',retryBox,{class:'fine',role:'status'});
     function showMoment(){
       var moments=latest?retryMoments(latest):[],chosen=moments[Number(retrySelect.value)||0];
-      retryOriginal.textContent=chosen?'You: '+chosen.question+'  Dana: '+(chosen.heardText||(chosen.playbackStatus==='played'?chosen.reply:'nothing confirmed heard')):'';
+      retryOriginal.textContent=chosen?'You: '+chosen.question+' \u2014 '+profile.displayName+': '+(chosen.heardText||(chosen.playbackStatus==='played'?chosen.reply:'nothing confirmed heard')):'';
     }
     retrySelect.addEventListener('change',showMoment);
     retryButton.addEventListener('click',function(){
@@ -210,7 +210,7 @@
       store.entries().forEach(function(entry){
         var box=el('div',null,markList,{class:'station-inset'});
         el('p','You: '+entry.learnerText,box);
-        if(entry.danaText)el('blockquote','Dana: '+entry.danaText,box);
+        if(entry.danaText)el('blockquote',profile.displayName+': '+entry.danaText,box);
         else el('p',entry.playbackStatus==='cancelled'?'No reply was confirmed heard for this moment.':'Nothing has been confirmed heard for this moment yet.',box,{class:'fine'});
         var note=el('textarea',null,box,{maxlength:'1200','aria-label':'Reflection on moment '+entry.id});
         note.value=notes[entry.id]||'';

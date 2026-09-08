@@ -276,3 +276,18 @@ test('every registered case declares its own display name and voice — R5',()=>
     assert.equal(profile.voice,voice,caseId+' names its voice');
   }
 });
+
+test('quoted moments are labelled with the patient, not always Dana — R5 follow-up',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  const station=createStation({document:doc},host,{caseId:'sp_mania_redirect_001',content:contentModule.exports});
+  station.update(hosted([you('A question'),dana('A reply heard in full.','played',['A reply heard in full.'],1)],'ended'));
+  station.update(hosted([you('A question'),dana('A reply heard in full.','played',['A reply heard in full.'],1)],'ended'));
+  const marks=byStation(host,'bookmarks');
+  // Mark the moment, then read the rendered quote.
+  const before=allText(host);
+  assert.equal(before.includes('Dana:'),false,'no Dana label on a Marcus encounter');
+  const retry=byStation(host,'retry');
+  assert.ok(retry,'the retry panel is present at the end of an encounter');
+  assert.equal(allText(retry).includes('Dana'),false,'nor in the retry quote');
+  station.dispose();
+});

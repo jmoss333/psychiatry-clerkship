@@ -15,7 +15,7 @@ focus change or composer edit on any normal turn.
 | A spoken turn sends itself after 4.5 s (8 s with more thinking time) | Verified, synthetic recognition |
 | Ten consecutive turns with no interaction after Start | Verified, synthetic recognition |
 | The same, through the hosted service and native audio | *(recorded below once run)* |
-| A physical microphone in a supported browser | **Not verified — pending human check** |
+| A physical microphone in a supported browser | **Verified 2026-09-08** — see below |
 
 Synthetic recognition replaces `SpeechRecognition` with a scripted object. It can
 prove the application's turn lifecycle; it cannot prove that a real microphone,
@@ -146,6 +146,33 @@ report names what happened instead of leaving it to be inferred. Both runs
 together reserved 62 conservative operation units against the 72-per-half-hour
 and 120-per-deployment ceilings. The redeploy was a single intentional one to
 ship the repair, not a budget reset.
+
+### Physical microphone — verified 2026-09-08
+
+A real spoken encounter with Dana on the deployed preview, run by the author. Five
+turns before ending early, and the page's own record is the evidence rather than a
+report of one:
+
+- Every learner turn reads **Submitted**; every patient reply reads **Voice
+  completed**, except one that reads *"1 completed audio segment(s) remembered;
+  the remaining text did not finish playing"* — a genuine mid-reply interruption,
+  reported accurately rather than silently.
+- Long utterances survived intact, including a 17-word question spoken as one
+  breath. Nothing was truncated, which is the class of failure R2 and R3 fixed.
+- The retry panel offered the moment and quoted it as heard.
+- The closing cue read *"Dana looks toward you and waits"* — the closing cue, not
+  the interruption cue, confirming the R9 fix under real playback.
+
+What this does **not** establish: it is one encounter, one browser, one voice, one
+room. It says the lifecycle works, not that it works for every speaker or in every
+acoustic environment. Diagnostics counts were not captured, so how often the
+stall or withdrawn-interim paths fire in real use remains unmeasured.
+
+**The run also found a defect no test had.** The shared page carried "Begin with
+her story." — hard-coded and gendered, wrong for two of the three patients — and
+three more hard-coded "Dana" labels in the station's quotes and retry copy. The
+identity work in slice 2 covered the heading and voice tag and stopped short of
+these. Fixed, with a test that fails on any gendered pronoun in the shared chrome.
 
 ### Still not verified
 
