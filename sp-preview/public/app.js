@@ -92,15 +92,21 @@
         voice=env.setTimeout(function(){voice=null;note('voice_wordless');arm();},Math.min(VOICE_GRACE,budget));};
       recognition.onspeechend=function(){if(!active||current!==recognition)return;note('voice_end');releaseVoice();arm();};
       recognition.onresult=function(event){
-        if(!active||current!==recognition)return;var words=[],heard=false;
+        if(!active||current!==recognition)return;var words=[],heard=false,finalArrived=false;
         for(var index=0;index<event.results.length;index++){
           var result=event.results[index],text=result[0]&&result[0].transcript||'';
-          if(result.isFinal){if(!finals[index]){finals[index]=true;if(text.trim()){madeProgress=true;heard=true;note('words_final');emit('onFinal',text.trim());}}}
+          if(result.isFinal){if(!finals[index]){finals[index]=true;if(text.trim()){madeProgress=true;heard=true;finalArrived=true;note('words_final');emit('onFinal',text.trim());}}}
           else{if(text.trim())heard=true;words.push(text);}
           if(!active||current!==recognition)return;
         }
         if(heard){suspended=false;releaseVoice();quietSince=clock();}
-        interim=words.join(' ').trim();emit('onInterim',interim);if(interim){note('words_interim');clear();}else arm();
+        // A result list may SHRINK: the service can withdraw an interim without ever
+        // replacing it with a final. Treating that as "nothing pending" would let the
+        // earlier final be sent as if it were the whole question.
+        var withdrawn=!!interim&&!words.join(' ').trim()&&!finalArrived;
+        interim=words.join(' ').trim();emit('onInterim',interim);
+        if(withdrawn){suspended=true;clear();note('withdrawn');emit('onNotice',issue('unfinished_speech'));return;}
+        if(interim){note('words_interim');clear();}else arm();
       };
       function reconnect(){
         if(!active||current!==recognition)return;

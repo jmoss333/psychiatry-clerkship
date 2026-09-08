@@ -37,6 +37,9 @@ function environment(fetcher){
       speechEnd(){this.onspeechend?.();}
       noSpeech(){this.onerror?.({error:'no-speech'});this.active=false;this.onend?.();}
       serviceEnd(){this.active=false;this.onend?.();}
+      // The spec allows a result list to shrink: an interim may be withdrawn
+      // without ever being replaced by a final.
+      withdraw(){this.results.length=this.cursor;this.fire();}
       emit(text,final=true){this.speechStart();if(final)this.final(text);else this.interim(text);this.speechEnd();}}
   };
   function advance(ms){now+=ms;let due;while((due=[...timers].filter(([,timer])=>timer.at<=now).sort((a,b)=>a[1].at-b[1].at)[0])){timers.delete(due[0]);due[1].callback();}}
@@ -356,4 +359,31 @@ test('a new encounter after Clear gets its own alternative — R7',async()=>{
   assert.equal(controller.getSnapshot().retryUsed,false,'Clear must return the alternative to a fresh encounter');
   work=controller.start('key',false);await finishAudio(h,12);await work;
   assert.equal(controller.getSnapshot().retryUsed,false,'and the new encounter still has it');
+});
+
+test('a withdrawn interim never lets the earlier final be sent as the whole question — R3',()=>{
+  const t=spoken();t.capture.start();
+  t.h.speaks('I wanted to ask');
+  const recognition=t.h.live();
+  recognition.speechStart();recognition.interim('about your sleep');
+  t.h.advance(300);
+  recognition.withdraw();                       // interim vanishes, no final replaces it
+  t.h.advance(60000);
+  assert.equal(t.submissions(),0,'the earlier final is not the whole question');
+  assert.deepEqual(t.notices,['unfinished_speech'],'the learner is told, once');
+  assert.equal(t.draft(),'I wanted to ask','completed words are kept');
+  assert.equal(t.capture.isActive(),true,'and the microphone stays available');
+});
+
+test('after a withdrawn interim, new speech resumes normally — R3',()=>{
+  const t=spoken();t.capture.start();
+  t.h.speaks('I wanted to ask');
+  const recognition=t.h.live();
+  recognition.speechStart();recognition.interim('about your sleep');
+  t.h.advance(300);recognition.withdraw();t.h.advance(10000);
+  assert.equal(t.submissions(),0);
+  t.h.speaks('about your sleep');
+  t.h.advance(4500);
+  assert.equal(t.submissions(),1,'repeating the lost words restores automatic sending');
+  assert.equal(t.draft(),'I wanted to ask about your sleep');
 });
