@@ -1,4 +1,4 @@
-import {speechProfile} from '../../_prototypes/sp-interview/conversation-speech-profiles.mjs';
+import {hostedSpeechProfile as speechProfile} from './portrayal.mjs';
 import {createUsageCounter, normalizeUsage} from '../../_prototypes/sp-interview/dana-provider-usage.mjs';
 
 const BASE_URL = 'https://api.openai.com/v1';

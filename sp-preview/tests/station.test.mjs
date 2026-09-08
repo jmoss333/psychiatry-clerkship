@@ -10,6 +10,8 @@ const {stationSnapshot}=stationModule.exports;
 const hosted=(messages,phase='listening',extra={})=>({phase,turn:messages.filter(m=>m.role==='you').length,messages,draft:'',interim:'',error:'',voice:true,thinking:false,hold:false,busy:false,restartRequired:false,...extra});
 const dana=(text,status,segments,completedSegments)=>({role:'dana',text,status,segments,completedSegments,totalSegments:segments.length});
 const you=(text,status='submitted')=>({role:'you',text,status});
+const familyYou=(text,targetRoleId)=>({...you(text),targetRoleId});
+const familyReply=(text,speakerId,status='played',segments=[text],completedSegments=segments.length)=>({...dana(text,status,segments,completedSegments),speakerId});
 
 test('phases map onto the station vocabulary exhaustively',()=>{
   const pairs=[['gate','idle'],['ready','paused'],['connecting','starting'],['listening','listening'],['responding','awaiting_patient'],['speaking','speaking'],['paused','paused'],['restart','error'],['ended','ended']];
@@ -43,6 +45,20 @@ test('an unconfirmed learner request is reported as failed, not silently submitt
   const snapshot=stationSnapshot(hosted([you('A question','unconfirmed')],'restart',{restartRequired:true}));
   assert.equal(snapshot.transcript[0].responseStatus,'failed');
   assert.equal(snapshot.phase,'error');
+});
+
+test('family speaker attribution is separate from unchanged speech and heard-prefix text',()=>{
+  const snapshot=stationSnapshot(hosted([
+    familyYou('What support works for you?','maya'),
+    {...familyReply('A weekly call. Not every night.','maya','interrupted',['A weekly call.',' Not every night.'],1),speakerName:'Morgan'}
+  ]));
+  assert.equal(snapshot.transcript[0].targetRoleId,'maya');
+  assert.equal(snapshot.transcript[0].targetName,'Maya');
+  assert.equal(snapshot.transcript[0].text,'What support works for you?');
+  assert.equal(snapshot.transcript[1].speakerId,'maya');
+  assert.equal(snapshot.transcript[1].speakerName,'Maya','names derive from the fixed role identity, not supplied labels');
+  assert.equal(snapshot.transcript[1].text,'A weekly call. Not every night.');
+  assert.equal(snapshot.transcript[1].heardText,'A weekly call.');
 });
 
 const {createBookmarkStore}=stationModule.exports;
@@ -95,6 +111,17 @@ test('an unanswered question left pending at the end reads as cancelled',()=>{
   store.add(live);
   store.sync(stationSnapshot(hosted([you('A question','pending')],'ended')));
   assert.equal(store.entries()[0].playbackStatus,'cancelled');
+});
+
+test('a family bookmark keeps its speaker and refuses the same words addressed to someone else',()=>{
+  const store=createBookmarkStore();
+  store.add(stationSnapshot(hosted([familyYou('What would help?','maya'),familyReply('A weekly call.','maya')])));
+  const original=store.entries()[0];
+  assert.equal(original.targetName,'Maya');
+  assert.equal(original.speakerName,'Maya');
+  assert.equal(original.danaText,'A weekly call.');
+  store.sync(stationSnapshot(hosted([familyYou('What would help?','morgan'),familyReply('Having a say.','morgan')])));
+  assert.deepEqual(store.entries()[0],original,'a matching turn number and question cannot reattribute another person’s reply');
 });
 
 const {createStation}=stationModule.exports;
@@ -231,7 +258,7 @@ test('the station asks for a retry through a callback, never through a controlle
   station.dispose();
 });
 
-const REGISTERED=['sp_depression_gated_si_001','sp_mania_redirect_001','sp_psychosis_paranoid_001'];
+const REGISTERED=['sp_depression_gated_si_001','sp_mania_redirect_001','sp_psychosis_paranoid_001','sp_alcohol_ambivalence_001','family_morgan_maya_001'];
 
 test('every registered case has learner-facing station content and no actor direction',()=>{
   for(const caseId of REGISTERED){
@@ -242,7 +269,6 @@ test('every registered case has learner-facing station content and no actor dire
       assert.ok(profile[key],caseId+' is missing '+key);
     assert.equal(JSON.stringify(profile).includes('portrayal'),false,caseId+' must not carry actor direction');
   }
-  assert.equal(contentModule.exports.getProfile('sp_alcohol_ambivalence_001'),null,'Morgan is out of scope');
   assert.equal(contentModule.exports.getProfile('not_a_case'),null);
 });
 
@@ -304,7 +330,7 @@ test('a disposed station ignores further updates rather than re-rendering — R4
 });
 
 test('every registered case declares its own display name and voice — R5',()=>{
-  const expected={sp_depression_gated_si_001:['Dana','Marin'],sp_mania_redirect_001:['Marcus','Cedar'],sp_psychosis_paranoid_001:['Ray','Cedar']};
+  const expected={sp_depression_gated_si_001:['Dana','Marin'],sp_mania_redirect_001:['Marcus','Cedar'],sp_psychosis_paranoid_001:['Ray','Cedar'],sp_alcohol_ambivalence_001:['Morgan','Marin'],family_morgan_maya_001:['Morgan and Maya','Marin and Cedar']};
   for(const [caseId,[name,voice]] of Object.entries(expected)){
     const profile=contentModule.exports.getProfile(caseId);
     assert.equal(profile.displayName,name,caseId+' names itself');
@@ -325,4 +351,43 @@ test('quoted moments are labelled with the patient, not always Dana — R5 follo
   assert.ok(retry,'the retry panel is present at the end of an encounter');
   assert.equal(allText(retry).includes('Dana'),false,'nor in the retry quote');
   station.dispose();
+});
+
+test('family bookmarks and retries quote the actual respondent and keep unplayed words out',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  const station=createStation({document:doc},host,{caseId:'family_morgan_maya_001',content:contentModule.exports});
+  station.update(hosted([
+    familyYou('What support could work?','maya'),
+    familyReply('A weekly call. Not nightly monitoring.','maya','interrupted',['A weekly call.',' Not nightly monitoring.'],1)
+  ],'ended'));
+  byStation(host,'mark').dispatchEvent({type:'click'});
+  const marks=byStation(host,'bookmarks'),retry=byStation(host,'retry');
+  assert.ok(allText(marks).includes('You, to Maya: What support could work?'));
+  assert.ok(allText(marks).includes('Maya: A weekly call.'));
+  assert.ok(allText(retry).includes('Maya: A weekly call.'));
+  assert.equal(allText(marks).includes('Not nightly monitoring.'),false);
+  assert.equal(allText(retry).includes('Not nightly monitoring.'),false);
+  assert.equal(allText(marks).includes('Morgan and Maya:'),false,'a reply never becomes a joint quotation');
+  const moment=station.getRetryMoments()[0];
+  assert.equal(moment.speakerId,'maya');
+  assert.equal(moment.targetRoleId,'maya');
+  assert.equal(moment.speakerName,'Maya');
+  assert.equal(moment.heardText,'A weekly call.');
+  station.dispose();
+});
+
+test('new draft profiles expose shared entry information without private inventories or portrayal',()=>{
+  for(const caseId of ['sp_alcohol_ambivalence_001','family_morgan_maya_001']){
+    const profile=contentModule.exports.getProfile(caseId);
+    assert.equal(profile.reviewStatus,'draft-pending-faculty-review');
+    assert.equal(profile.reviewLabel,'Faculty-review draft');
+    const text=JSON.stringify(profile);
+    for(const privatePhrase of ['four to six beers','three weeks','saying no to a monitoring role will be heard as not caring','privateFacts','portrayal'])
+      assert.equal(text.includes(privatePhrase),false,caseId+' exposes '+privatePhrase);
+  }
+  const participants=contentModule.exports.getProfile('family_morgan_maya_001').participants;
+  assert.deepEqual(participants.map(({id,displayName,voice,pronouns})=>({id,displayName,voice,pronouns})),[
+    {id:'morgan',displayName:'Morgan',voice:'Marin',pronouns:'they/them'},
+    {id:'maya',displayName:'Maya',voice:'Cedar',pronouns:'she/her'}
+  ]);
 });

@@ -1,6 +1,6 @@
 # Protected spoken Interview Room
 
-A protected pilot of ten spoken turns with Dana, Marcus, or Ray, hosted separately from the learner sites. The learner sites' Interview Room links here through a top-level navigation, so microphone and media permissions belong to this origin. The original Interview Room and its production SP proxy continue to work. Dana's disclosure overlay and conversational portrayal retain their recorded review status.
+A protected pilot of ten spoken turns with Dana, Marcus, Ray, Morgan, or Morgan and Maya, hosted separately from the learner sites. The learner sites' Interview Room links here through a top-level navigation, so microphone and media permissions belong to this origin. The original Interview Room and its production SP proxy continue to work. Dana's disclosure overlay and conversational portrayal retain their recorded review status.
 
 ## Local verification
 
@@ -14,9 +14,7 @@ Neither mode is microphone evidence: both replace `SpeechRecognition`, and both 
 
 ## Cases
 
-The preview carries three faculty-reviewed cases: Dana (admission interview),
-Marcus (a focused interview) and Ray (establishing a working conversation). The
-learner picks one at the door and it is fixed for that encounter.
+The preview carries Dana (admission interview), Marcus (a focused interview), Ray (establishing a working conversation), Morgan (motivational interviewing), and Morgan and Maya (a shared family meeting). The learner picks one at the door and it is fixed for that encounter. Morgan and the family meeting retain their authored pending faculty-review status and are visibly labeled drafts.
 
 Each encounter is bound to its case twice over. The state codec's binding embeds
 the case id and a hash of the case definition, so a receipt sealed for one case
@@ -26,10 +24,11 @@ against every request. The second check is deliberate redundancy: the first is
 emergent from a template string, and an edit that dropped the case hash from the
 binding would otherwise go unnoticed.
 
-Morgan (`sp_alcohol_ambivalence_001`) is deliberately absent. It is
-`draft-pending-attestation` and lives outside the pack; the server registry, the
-client's case list and the station content all refuse it, and tests pin that
-absence so adding it stays a decision.
+Morgan reuses the existing local alcohol-ambivalence case without introducing new history or a required abstinence ending. The family case uses only the existing public Morgan/Maya projection. Each learner turn has one named respondent, selected from the speaker control or a direct address at the beginning ("Maya, ..."). Mentioning a person later in a sentence does not switch the respondent. The transcript, voice, marked moments, and alternative retain that person's identity. The alternative restores the original addressee from authenticated history, regardless of who spoke last.
+
+The hosted family case has no private channel or private check-in operation. Its prompt receives no authored private inventory; the local prototype's private workflow is not transplanted into this stateless endpoint. In this version, asking both participants means inviting each perspective on successive turns. Each response still uses one actor request and at most two speech requests, so the existing conservative allowance remains sufficient.
+
+Hosted delivery instructions live in `lib/portrayal.mjs`, separate from the archived recordings and other prototypes. Marcus uses continuous urgent phrasing and compressed pauses; a clear redirect changes topic without instantly changing his underlying presentation. Morgan, Maya, and Ray receive subtle case-specific emotional delivery. Dana's accepted voice remains unchanged. No playback acceleration, extra provider call, or speaking-speed/fluency grading is added. Natural spoken barge-in is not implemented: Interrupt/Escape stops playback; microphone capture resumes when the learner chooses Resume.
 
 Only Dana receives the direct-suicide-question overlay. It is reviewed for her
 alone and is never applied to another case.
@@ -58,7 +57,7 @@ Use a separate Netlify preview site with this directory as its base. Keep its pr
 
 The September 8 integration authorizes the stable protected pilot at `https://interview-room-faculty-preview.netlify.app`, linked from the learner sites. Deploy this configuration only to its separate site; never to either learner site's site ID or to `sp-interview-proxy`. Keep the passcode and provider key in Function environment variables. This integration does not enable the canonical `speechEngine` flag or change faculty attestation.
 
-The owner-approved small pilot allows **20 encounter start attempts per UTC calendar day**, shared across all three cases, users, and deployment contexts on this Netlify site. A separate allowance permits **680 operation units per UTC day and 340 per rolling 30 minutes**. An opening costs one unit and each question or alternative costs three. Twenty ten-question encounters plus one alternative each therefore fit the daily unit allowance; up to ten such encounters fit a thirty-minute window. Starts and daily units renew at **00:00 UTC**. Reaching twenty starts does not prevent an already admitted encounter from continuing within the remaining unit allowance. Verification attempts and failed/cancelled work count, so this is a limit on attempts, not a promise of twenty successful completions or a dollar-billing plan.
+The owner-approved small pilot allows **20 encounter start attempts per UTC calendar day**, shared across all five cases, users, and deployment contexts on this Netlify site. A separate allowance permits **680 operation units per UTC day and 340 per rolling 30 minutes**. An opening costs one unit and each question or alternative costs three. Twenty ten-question encounters plus one alternative each therefore fit the daily unit allowance; up to ten such encounters fit a thirty-minute window. Starts and daily units renew at **00:00 UTC**. Reaching twenty starts does not prevent an already admitted encounter from continuing within the remaining unit allowance. Verification attempts and failed/cancelled work count, so this is a limit on attempts, not a promise of twenty successful completions or a dollar-billing plan.
 
 Before the first capacity-upgrade deployment, set `DANA_PREVIEW_BUDGET_NAMESPACE` in all Function deployment contexts to the existing production ledger's namespace (the previous production deployment ID). The first successful reservation atomically upgrades that same `paid-operations-v1` key to stored schema v2, preserving today's charges and starts and all still-retained operation hashes. A missing namespace, malformed ledger, changed policy, failed read, or ambiguous conditional write fails closed. Do not delete the record, choose a fresh namespace, or change the namespace after this migration. The old deployment then refuses the upgraded record rather than overwriting it. Publish the assigned preview alias with the same namespace before using it for paid verification; old aliases using their own legacy ledger do not participate in the new policy.
 
@@ -88,4 +87,4 @@ The ledger stores operation hashes, binding hashes, timestamps, and unit counts 
 
 `DanaPreview.session.getDiagnostics()` returns fixed state codes, counts and timings only — no speech, no transcript, no draft text — and is the intended way to establish what happened on a physical microphone without recording anything. `nativeRecognition` distinguishes the browser's own recognition from a synthetic replacement; `automaticSubmissions` and `explicitSubmissions` distinguish turns that sent themselves from turns sent by Space, Done or the composer; `counts.voice_wordless`, `counts.unfinished` and `counts.reconnect` name the three lifecycle paths that previously ended hands-free operation.
 
-Retry/reflection, Morgan, and family information replay are preserved in the packaged local prototype. They are subsequent hosted slices, not implied by this first proof.
+Retry/reflection, Morgan, and the shared family meeting are now hosted. Private family check-ins and the per-person information replay remain in the packaged local prototype; they are not implied by the public-only hosted meeting.

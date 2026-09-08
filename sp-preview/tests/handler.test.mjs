@@ -225,10 +225,9 @@ test('the receipt a retry was asked from cannot then be reused, or the one-alter
  assert.equal(['preview_operation_duplicate','preview_operation_mismatch'].includes((await reused.json()).error),true);
 });
 
-test('the registry carries exactly the reviewed cases, each with its own binding',async()=>{
+test('the registry carries the five authorized preview cases, each with its own binding',async()=>{
  const {CASES,caseIds,getCase}=await import('../lib/case.mjs');
- assert.deepEqual([...caseIds].sort(),['sp_depression_gated_si_001','sp_mania_redirect_001','sp_psychosis_paranoid_001']);
- assert.equal(caseIds.includes('sp_alcohol_ambivalence_001'),false,'Morgan is out of scope for this slice');
+ assert.deepEqual([...caseIds].sort(),['family_morgan_maya_001','sp_alcohol_ambivalence_001','sp_depression_gated_si_001','sp_mania_redirect_001','sp_psychosis_paranoid_001']);
  const bindings=caseIds.map(id=>CASES[id].binding);
  assert.equal(new Set(bindings).size,bindings.length,'each case must have a distinct binding');
  for(const id of caseIds)assert.equal(CASES[id].caseDef.id,id);
@@ -266,7 +265,7 @@ test('a start names its case, and an unknown case is refused before any reservat
  const good=await events(await s.handler()(request({action:'start',caseId:'sp_mania_redirect_001',requestId:crypto.randomUUID()})));
  assert.equal(good[0].type,'reply');
  const before=s.calls.length;
- for(const caseId of ['sp_alcohol_ambivalence_001','not_a_case','',null])
+ for(const caseId of ['not_a_case','',null])
   assert.equal((await s.handler()(request({action:'start',caseId,requestId:crypto.randomUUID()}))).status,400,String(caseId));
  assert.equal(s.calls.length,before,'nothing was reserved for an unknown case');
 });
@@ -429,4 +428,67 @@ test('an early-turn alternative is terminal at the server and cannot extend the 
  assert.equal(actorCalls,11,'refused continuations generate no reply');
  assert.equal(audioCalls,12,'refused continuations generate no speech');
  assert.equal(Object.values(record.operations).reduce((sum,op)=>sum+op.units,0),34);
+});
+
+const FAMILY='family_morgan_maya_001';
+async function familyStart(s){return events(await s.handler()(request({action:'start',caseId:FAMILY,requestId:crypto.randomUUID()})));}
+test('family speakers retain distinct voices and public heard histories across turns',async()=>{
+ const spoken=[],s=setup({provider:{speak:async job=>{spoken.push(job);return mp3;}}});
+ let output=await familyStart(s),state=output.at(-1).state;
+ assert.equal(output[0].speakerId,'morgan');assert.equal(spoken[0].caseId,'sp_alcohol_ambivalence_001');
+ output=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId:'maya',state,text:'Maya, what support can you offer?',previousPlayback:'played',previousCompletedSegments:1})));
+ assert.equal(output[0].speakerId,'maya');assert.equal(spoken.at(-1).caseId,'family_maya_001');
+ assert.match(s.contexts[0].system,/You are Maya/);
+ assert.equal(s.contexts[0].messages.find(m=>m.content===output[0].reply),undefined);
+ state=output.at(-1).state;
+ output=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId:'morgan',state,text:'Morgan, what do you think?',previousPlayback:'interrupted',previousCompletedSegments:1})));
+ const context=s.contexts.at(-1);
+ assert.match(context.system,/You are Morgan/);
+ assert.equal(context.messages.some(m=>m.role==='assistant'&&m.content==='I have been feeling empty.'),false,'Maya speech is not Morgan speech');
+ assert.equal(context.messages.some(m=>m.content.includes('It has been hard.')),false,'unheard Maya tail is omitted');
+ assert.equal(output[0].speakerId,'morgan');assert.deepEqual(s.calls.map(c=>c.units),[1,3,3]);
+});
+test('family refuses invalid targets and private-channel requests before spending',async()=>{
+ const s=setup(),state=(await familyStart(s)).at(-1).state,before=s.calls.length;
+ const base={action:'turn',caseId:FAMILY,state,text:'Question',previousPlayback:'played',previousCompletedSegments:1};
+ for(const targetRoleId of [undefined,'both','dana','morgan-private',null]){
+  const body={...base,...(targetRoleId===undefined?{}:{targetRoleId})};
+  assert.equal((await s.handler()(request(body))).status,400);
+ }
+ assert.equal((await s.handler()(request({...base,targetRoleId:'maya',channel:'maya-private'}))).status,400);
+ assert.equal(s.calls.length,before);
+});
+test('family retry keeps the original addressee even after switching speakers',async()=>{
+ const s=setup();let state=(await familyStart(s)).at(-1).state;
+ for(const [i,targetRoleId] of ['maya','morgan'].entries()){
+  const out=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId,state,text:'What matters to you?',previousPlayback:'played',previousCompletedSegments:i===0?1:2})));state=out.at(-1).state;
+ }
+ const out=await events(await s.handler()(request({action:'retry',caseId:FAMILY,state,turnId:1,text:'Let me ask that differently.'})));
+ assert.equal(out[0].speakerId,'maya');assert.match(s.contexts.at(-1).system,/You are Maya/);
+ assert.equal((await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId:'morgan',state:out.at(-1).state,text:'More?',previousPlayback:'played',previousCompletedSegments:2}))).status,409);
+});
+test('Morgan and family receipts cannot be exchanged although one voice is shared',async()=>{
+ const s=setup(),state=(await familyStart(s)).at(-1).state,before=s.calls.length;
+ assert.equal((await s.handler()(request({action:'turn',caseId:'sp_alcohol_ambivalence_001',state,text:'Question',previousPlayback:'played',previousCompletedSegments:1}))).status,400);
+ assert.equal(s.calls.length,before);
+});
+
+test('family speaker labels are refused before speech prefetch or final publication',async()=>{
+ for(const label of ['Maya: I can offer a call.','Morgan: I want a say.']){
+  let speechCalls=0;
+  const s=setup({provider:{speak:async()=>{speechCalls++;return mp3;},replyStream:async job=>{job.onLead(label);return label;}}});
+  const state=(await familyStart(s)).at(-1).state;
+  const out=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId:'maya',state,text:'What support?',previousPlayback:'played',previousCompletedSegments:1})));
+  assert.deepEqual(out,[{type:'error',code:'preview_provider_unavailable'}]);assert.equal(speechCalls,1,'only opening audio is generated');
+ }
+});
+
+test('family refuses a second speaker label hidden in a later sentence',async()=>{
+ let speechCalls=0;
+ const lead='I can offer a weekly call.';
+ const s=setup({provider:{speak:async()=>{speechCalls++;return mp3;},replyStream:async job=>{job.onLead(lead);return lead+'\nMorgan: I agree to that plan.';}}});
+ const state=(await familyStart(s)).at(-1).state;
+ const out=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId:'maya',state,text:'What support?',previousPlayback:'played',previousCompletedSegments:1})));
+ assert.deepEqual(out,[{type:'error',code:'preview_provider_unavailable'}]);
+ assert.equal(speechCalls,2,'opening and private speculative lead only; no mislabeled remainder');
 });
