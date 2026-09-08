@@ -1,5 +1,4 @@
 {
-  "bypassActors": null,
   "conditions": {
     "ref_name": {
       "exclude": [],
