@@ -37,17 +37,28 @@ Report-only, like check_decision_drift.py. Not in ci.yml (a step there trips thr
 separate contracts -- see CLAUDE.md); it runs from the nightly heartbeat, where a
 red row is a prompt to look rather than a merge blocker.
 
-    python3 bin/check_ruleset_drift.py             # check (exit 2 on drift)
-    python3 bin/check_ruleset_drift.py --list      # the pinned ruleset, readably
-    python3 bin/check_ruleset_drift.py --update    # re-pin after an INTENTIONAL change
+    python3 bin/check_ruleset_drift.py                  # check (exit 2 on drift)
+    python3 bin/check_ruleset_drift.py --list           # the pinned ruleset, readably
+    python3 bin/check_ruleset_drift.py --update         # re-pin an INTENTIONAL change
+    python3 bin/check_ruleset_drift.py --check-bypass   # needs ruleset WRITE access
+    python3 bin/check_ruleset_drift.py --update-bypass  # re-pin the bypass list
     python3 bin/check_ruleset_drift.py --self-test
 
-NOTE ON SEEDING: `bypass_actors` is only returned to a caller with
-`administration: read`. The fixture committed alongside this tool was seeded from an
-unauthenticated read and therefore records `bypassActors: null` -- meaning "not yet
-observed", not "empty". The first authenticated run will report drift naming the real
-bypass list; that first diff is informative (it shows you who can bypass main), and
-`--update` after reading it is the intended response.
+THE BYPASS LIST IS A SEPARATE, OPT-IN CHECK. `bypass_actors` is returned only to a
+caller with **write** access to the ruleset -- not read. (GitHub: "To prevent leaking
+sensitive information, the bypass_actors property is only returned if the user making
+the API request has write access to the ruleset.") There is no GITHUB_TOKEN permission
+that grants it: `administration` is not a workflow `permissions:` scope at all, and
+reading the ruleset itself needs only Metadata:read. Putting a ruleset-WRITE credential
+into a scheduled workflow so it can read one field would hand the guard the keys to the
+thing it guards, so this tool does not do that.
+
+Instead the default check is caller-invariant BY CONSTRUCTION: every caller-dependent
+field is stripped, so anonymous, GITHUB_TOKEN and an owner PAT all normalize to the
+same bytes. The bypass list is pinned separately in its own fixture and verified by
+`--check-bypass`, which you run locally with a credential that already has the access.
+The nightly job says out loud that it did not check it.
+
 """
 
 import argparse
@@ -67,6 +78,7 @@ FIXTURE = (
     / "fixtures"
     / "ruleset-main.json"
 )
+BYPASS_FIXTURE = FIXTURE.with_name("ruleset-main-bypass.json")
 
 DEFAULT_REPOSITORY = "jmoss333/psychiatry-clerkship"
 RULESET_ID = 21202405
@@ -91,7 +103,10 @@ VOLATILE_KEYS = frozenset({
     "created_at",
     "node_id",
     "_links",
+    # Caller-dependent. Stripping these is what makes the default check identical for
+    # every caller; `_self_test` asserts that parity across all three caller classes.
     "current_user_can_bypass",
+    "bypass_actors",
 })
 
 
@@ -109,11 +124,25 @@ def normalize(raw):
     if not isinstance(raw, dict):
         raise RulesetDriftError("ruleset payload is not an object")
     pinned = {k: v for k, v in raw.items() if k not in VOLATILE_KEYS}
-    # bypass_actors is absent for unauthenticated callers. Record the distinction
-    # explicitly: null means "not observed", [] would mean "observed, and empty".
-    pinned["bypassActors"] = raw.get("bypass_actors")
-    pinned.pop("bypass_actors", None)
     return json.loads(json.dumps(pinned, sort_keys=True))
+
+
+def normalize_bypass(raw):
+    """Return the bypass list, or None if this caller was not shown it.
+
+    None means "this caller lacks ruleset write access", never "empty" -- an empty
+    bypass list is `[]` and is a meaningfully different fact. The earlier version of
+    this tool recorded the two identically as `null`, which reads like an answer and
+    is not one.
+    """
+    if not isinstance(raw, dict):
+        raise RulesetDriftError("ruleset payload is not an object")
+    actors = raw.get("bypass_actors")
+    if actors is None:
+        return None
+    if not isinstance(actors, list):
+        raise RulesetDriftError("bypass_actors is malformed")
+    return json.loads(json.dumps(actors, sort_keys=True))
 
 
 def fetch_ruleset(repository, ruleset_id, *, token=None, opener=None):
@@ -165,8 +194,10 @@ def diff(expected, actual):
                 walk(f"{path}[{index}]", w, g)
             return
         if want != got:
+            # The bypass fixture is a top-level list, so a whole-list change has no
+            # path. Name it rather than printing a bare colon.
             lines.append(
-                f"  {path}: {json.dumps(want, sort_keys=True)}"
+                f"  {path or '<whole list>'}: {json.dumps(want, sort_keys=True)}"
                 f" -> {json.dumps(got, sort_keys=True)}"
             )
 
@@ -181,6 +212,23 @@ def load_fixture():
         raise RulesetDriftError("fixture is missing; seed it with --update") from exc
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise RulesetDriftError("fixture is unreadable") from exc
+
+
+def load_bypass_fixture():
+    try:
+        return json.loads(BYPASS_FIXTURE.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise RulesetDriftError(
+            "bypass fixture is missing; seed it with --update-bypass") from exc
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RulesetDriftError("bypass fixture is unreadable") from exc
+
+
+def write_bypass_fixture(actors):
+    BYPASS_FIXTURE.parent.mkdir(parents=True, exist_ok=True)
+    BYPASS_FIXTURE.write_text(
+        json.dumps(actors, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
 
 def write_fixture(pinned):
@@ -198,7 +246,6 @@ def _self_test():
     }
     pinned = normalize(base)
     assert "updated_at" not in pinned, "volatile field survived normalization"
-    assert pinned["bypassActors"] is None, "unobserved bypass list must be null"
     # A timestamp-only change is not drift.
     moved = dict(base, updated_at="2026-09-04T00:43:06Z")
     assert diff(pinned, normalize(moved)) == [], "timestamp counted as drift"
@@ -221,6 +268,32 @@ def _self_test():
         seen = dict(base, current_user_can_bypass=caller)
         assert diff(pinned, normalize(seen)) == [], (
             "caller-context field counted as drift", caller)
+    # CALLER PARITY -- the property this tool got wrong twice.
+    # The same ruleset, seen by the three callers that actually exist, must normalize
+    # to identical bytes. Anonymous sees neither extra field; the Actions GITHUB_TOKEN
+    # sees current_user_can_bypass but never bypass_actors (no workflow permission
+    # grants it); an owner PAT with ruleset write sees both. If a future GitHub field
+    # is caller-dependent and we forget to strip it, this fails here -- on a laptop,
+    # with no token and no CI round-trip -- instead of after five red nights.
+    anonymous = dict(base)
+    actions_token = dict(base, current_user_can_bypass="never")
+    owner_pat = dict(
+        base,
+        current_user_can_bypass="always",
+        bypass_actors=[{"actor_id": 5, "actor_type": "RepositoryRole",
+                        "bypass_mode": "always"}],
+    )
+    shapes = {"anonymous": anonymous, "actions": actions_token, "owner": owner_pat}
+    rendered = {k: json.dumps(normalize(v), sort_keys=True) for k, v in shapes.items()}
+    assert len(set(rendered.values())) == 1, ("callers disagree", rendered)
+
+    # ...and the bypass list is read ONLY by the opt-in path, where absent (this caller
+    # was not shown it) stays distinguishable from [] (shown, and empty).
+    assert normalize_bypass(anonymous) is None, "absent bypass must be None"
+    assert normalize_bypass(actions_token) is None, "Actions token must not see bypass"
+    assert normalize_bypass(owner_pat) == owner_pat["bypass_actors"], "owner sees it"
+    assert normalize_bypass(dict(base, bypass_actors=[])) == [], "empty is not absent"
+
     print("check_ruleset_drift: self-test OK")
     return 0
 
@@ -229,6 +302,8 @@ def main(argv=None, *, opener=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--list", action="store_true")
     parser.add_argument("--update", action="store_true")
+    parser.add_argument("--check-bypass", action="store_true")
+    parser.add_argument("--update-bypass", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--repository", default=os.environ.get(
         "GITHUB_REPOSITORY") or DEFAULT_REPOSITORY)
@@ -247,9 +322,10 @@ def main(argv=None, *, opener=None):
         return 0
 
     try:
-        live = normalize(fetch_ruleset(
+        raw_live = fetch_ruleset(
             args.repository, args.ruleset_id,
-            token=os.environ.get("GITHUB_TOKEN"), opener=opener))
+            token=os.environ.get("GITHUB_TOKEN"), opener=opener)
+        live = normalize(raw_live)
     except RulesetDriftError as exc:
         # Unavailable is not healthy. A pin that cannot be read must not report OK.
         print(f"ruleset-drift failed: {exc}", file=sys.stderr)
@@ -260,6 +336,53 @@ def main(argv=None, *, opener=None):
         print(f"ruleset-drift: fixture re-pinned ({FIXTURE.relative_to(ROOT)})")
         return 0
 
+    if args.check_bypass or args.update_bypass:
+        actors = normalize_bypass(raw_live)
+        if actors is None:
+            # Failing here is the point: silently "passing" because this caller was
+            # never shown the field is exactly the false reassurance this tool exists
+            # to avoid.
+            print(
+                "ruleset-drift failed: this caller was not shown bypass_actors. "
+                "GitHub returns it only with WRITE access to the ruleset -- run this "
+                "locally with an owner credential (gh auth), not from Actions.",
+                file=sys.stderr,
+            )
+            return 2
+        if args.update_bypass:
+            write_bypass_fixture(actors)
+            print(
+                "ruleset-drift: bypass list re-pinned "
+                f"({BYPASS_FIXTURE.relative_to(ROOT)}, {len(actors)} actor(s))"
+            )
+            return 0
+        try:
+            expected_actors = load_bypass_fixture()
+        except RulesetDriftError as exc:
+            print(f"ruleset-drift failed: {exc}", file=sys.stderr)
+            return 2
+        bypass_lines = diff(expected_actors, actors)
+        if not bypass_lines:
+            print(
+                f"ruleset-drift: bypass list matches the pinned fixture "
+                f"({len(actors)} actor(s))"
+            )
+            return 0
+        print(
+            "ruleset-drift failed: the bypass list has drifted from the pinned "
+            f"fixture ({len(bypass_lines)} field(s))",
+            file=sys.stderr,
+        )
+        for line in bypass_lines:
+            print(line, file=sys.stderr)
+        print(
+            "  -> anyone on this list is exempt from EVERY rule in the ruleset. "
+            "If intentional, re-pin with: "
+            "python3 bin/check_ruleset_drift.py --update-bypass",
+            file=sys.stderr,
+        )
+        return 2
+
     try:
         expected = load_fixture()
     except RulesetDriftError as exc:
@@ -268,7 +391,11 @@ def main(argv=None, *, opener=None):
 
     lines = diff(expected, live)
     if not lines:
-        print(f"ruleset-drift: ruleset {args.ruleset_id} matches the pinned fixture")
+        print(
+            f"ruleset-drift: ruleset {args.ruleset_id} matches the pinned fixture "
+            "(bypass list NOT checked -- needs ruleset write access; "
+            "run --check-bypass locally)"
+        )
         return 0
     print(
         f"ruleset-drift failed: ruleset {args.ruleset_id} has drifted from the "
