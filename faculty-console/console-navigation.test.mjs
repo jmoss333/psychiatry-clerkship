@@ -168,12 +168,12 @@ test('parseDeepLink returns null for anything that is not a loaded key', () => {
 
 test('parseDeepLink addresses every one of the 124 real items and nothing else', () => {
   const items = realItems();
-  // 124 = 69 shared pages + 22 shared tools + 1 MS3-only tool + 22 Case-of-the-Week
+  // 126 = 69 shared pages + 22 shared tools + 1 MS3-only tool + 24 Case-of-the-Week
   // twins + 6 resident-only pages + 4 resident-only tools (123 until rp-post-event-huddle.html
-  // shipped on 2026-09-04). It was 113 before ADR-002,
-  // which is the count of what the manifest and the case registry could see between
+  // shipped on 2026-09-04; 124 until the FEP week shipped 2026-09-07). It was 113 before
+  // ADR-002, which is the count of what the manifest and the case registry could see between
   // them; the extra 10 are what the resident build ships and nothing enumerated.
-  assert.equal(items.length, 124);
+  assert.equal(items.length, 126);
   for (const item of items) {
     assert.equal(parseDeepLink(`?item=${encodeURIComponent(item.key)}`, items)?.key, item.key);
   }
@@ -202,10 +202,10 @@ test('buildDeepLink carries the item key and structurally nothing else', () => {
 
 /* ----------------------------------------------------------------------- twins --- */
 
-test('twinOf pairs all 22 real Case-of-the-Week pages and nothing else', () => {
+test('twinOf pairs all 24 real Case-of-the-Week pages and nothing else', () => {
   const items = realItems();
   const cotw = items.filter(item => /^cotw_\d{8}_[a-z0-9-]+_(ms3|res)\.md$/.test(item.identity));
-  assert.equal(cotw.length, 22);
+  assert.equal(cotw.length, 24);
   for (const item of cotw) {
     const twin = twinOf(item, items);
     assert.ok(twin, item.identity);

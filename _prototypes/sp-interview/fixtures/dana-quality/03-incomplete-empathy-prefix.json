@@ -1,0 +1,34 @@
+{
+  "id": "incomplete-empathy-prefix",
+  "title": "An incomplete empathy phrase",
+  "synthetic": true,
+  "tags": [
+    "screenshot",
+    "empathy"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "I'm sorry that you had to",
+  "expectations": {
+    "should": [
+      "Treat the phrase as incomplete without filling in a new event.",
+      "A short acknowledgement or one gentle request to continue is reasonable."
+    ],
+    "mustNot": [
+      "Do not fabricate what Dana supposedly had to do.",
+      "Do not launch an unrelated symptom or risk disclosure."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

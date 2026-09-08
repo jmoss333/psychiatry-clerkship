@@ -177,6 +177,46 @@ test('T12a: the triage card offers Review only for quiz-bearing pages', () => {
     + 'navigate without marking the capture triaged');
 });
 
+// A capture exists to be reviewed later, and topicHasQuiz gates the whole "Review this topic"
+// action (fd_due.js). Case-of-the-Week pages are NOT in TOPIC_META, so a case page named for the
+// same topic outranks the topic page in search and the affordance vanishes without a word — seen
+// live on 2026-09-07 when "first-episode psychosis" displaced t_psychosis.md for a "psychosis"
+// capture. Executes the real fdCaptureRows against a stubbed index rather than pinning its text.
+function makeCaptureRows(results, quizzed) {
+  // eslint-disable-next-line no-new-func
+  const factory = new Function('items', 'results', 'quizzed', `
+    var SI = true;
+    function capRead(){ return { items: items }; }
+    function runSearch(){ return results; }
+    function topicHasQuiz(f){ return quizzed.indexOf(f) >= 0; }
+    ${slice(shell, 'function fdCaptureRows(', 'function fdTodayLive(')}
+    return fdCaptureRows();
+  `);
+  return factory([{ id: 'c1', text: 'psychosis', triaged: false }], results, quizzed);
+}
+
+test('T12c: the capture match prefers a reviewable hit over a better-ranked quizless one', () => {
+  const rows = makeCaptureRows(
+    [{ d: { f: 'cotw_20260907_fep_ms3.md', t: 'First-episode psychosis' } },
+      { d: { f: 't_psychosis.md', t: 'Psychosis' } }],
+    ['t_psychosis.md'],
+  );
+  assert.equal(rows[0].match.ref, 't_psychosis.md',
+    'a quizless Case-of-the-Week page outranking the topic page must not steal the capture');
+  assert.equal(rows[0].match.hasQuiz, true, 'the Review action must survive the collision');
+});
+
+test('T12d: it still routes somewhere when nothing in the results has a quiz', () => {
+  const rows = makeCaptureRows(
+    [{ d: { f: 'cotw_20260907_fep_ms3.md', t: 'First-episode psychosis' } },
+      { d: { f: 'pg_suicide.md', t: 'Suicide' } }],
+    [],
+  );
+  assert.equal(rows[0].match.ref, 'cotw_20260907_fep_ms3.md',
+    'with no reviewable hit the top result still wins — a capture must never lose its match');
+  assert.equal(rows[0].match.hasQuiz, false);
+});
+
 test('T12b: unavailable matching preserves untriaged captures and safe actions', () => {
   const rows = slice(shell, 'function fdCaptureRows(', 'function fdTodayLive(');
   assert.match(rows, /results=SI\?runSearch\(item\.text\):\[\]/,

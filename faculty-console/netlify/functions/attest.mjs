@@ -68,6 +68,9 @@ const ERROR_MESSAGES = Object.freeze({
   github_unavailable: 'The repository is temporarily unavailable. Try again later.',
   github_response_invalid: 'The repository returned an invalid response.',
   repository_file_invalid: 'A required repository file is invalid.',
+  // Present so the code is registered beside its siblings; the thrown error always
+  // carries the specific per-file message built by repositoryFileMissing() below.
+  repository_file_missing: 'A required repository file is missing from the attestation branch.',
 });
 
 class HttpError extends Error {
@@ -590,7 +593,8 @@ function createRepositoryGateway({ settings, fetchImpl }) {
       // No branch yet: the next write creates it from the base. Nothing to alarm.
       return {
         isolated: true, branchMissing: true, aheadBy: 0, behindBy: 0,
-        rollingPr: null, threshold, reasons: [], alarmed: false,
+        rollingPr: null, rollingPrChecked: false, threshold, reasons: [], alarmed: false,
+        branch: settings.branch, baseBranch: settings.baseBranch,
       };
     }
 
@@ -615,13 +619,18 @@ function createRepositoryGateway({ settings, fetchImpl }) {
     // the next write. Two alarm signatures, both requiring unmerged attestations:
     // no route to main at all, or a base lag deep enough that the queue below is
     // meaningfully stale (#380's failure mode).
-    const rollingPr = aheadBy > 0 ? await findRollingPullRequest() : null;
+    // One list call, and only when something could actually be stranded: an
+    // ahead_by of 0 has nothing waiting for a route to the base. rollingPrChecked
+    // keeps "looked, found none" distinguishable from "never looked".
+    const rollingPrChecked = aheadBy > 0;
+    const rollingPr = rollingPrChecked ? await findRollingPullRequest() : null;
     const reasons = [];
     if (aheadBy > 0 && !rollingPr) reasons.push('stranded-no-pr');
     if (aheadBy > 0 && behindBy >= threshold) reasons.push('base-lag');
     return {
-      isolated: true, aheadBy, behindBy, rollingPr, threshold,
+      isolated: true, aheadBy, behindBy, rollingPr, rollingPrChecked, threshold,
       reasons, alarmed: reasons.length > 0,
+      branch: settings.branch, baseBranch: settings.baseBranch,
     };
   }
 
@@ -789,6 +798,65 @@ function invalidRepositoryFile() {
   throw new GithubError('repository_file_invalid', 502);
 }
 
+/**
+ * A required file that is simply not on the branch is not a transport failure.
+ *
+ * 2026-09-04: shipped_pages.json landed on `main` while `attest/pending` sat five
+ * attestations ahead, so every console load 404'd reading it from the attestation
+ * branch. GitHub's 404 became `github_request_failed` — "The repository request
+ * failed. Try again later." — and the console was dark for three days while the
+ * only true statement was that a file was missing from one branch and a merge
+ * would fix it. `github_request_failed` stays for genuine transport failures;
+ * this names the file, the branch, and the move that ends it.
+ */
+function repositoryFileMissing(path, branch) {
+  return new HttpError(
+    'repository_file_missing',
+    502,
+    `\`${path}\` is not on branch \`${branch}\`. `
+      + 'Update or merge the rolling review request, then retry.',
+  );
+}
+
+// Reclassify only a genuine notFound; every other failure keeps its own code.
+function missingIfNotFound(error, path, branch) {
+  return error instanceof GithubError && error.notFound
+    ? repositoryFileMissing(path, branch)
+    : error;
+}
+
+async function readRequired(repository, path, branch, options = {}) {
+  try {
+    return await repository.read(path, options);
+  } catch (error) {
+    throw missingIfNotFound(error, path, options.ref || branch);
+  }
+}
+
+/**
+ * The one file GET may read from somewhere other than the attestation branch.
+ *
+ * shipped_pages.json is a DERIVED listing — the console never writes it, and the
+ * build regenerates it from every producer (ADR-002). Reading it from the base
+ * branch when the attestation branch has not caught up yields exactly the queue
+ * the next merge would produce, so a lagging branch costs a notice rather than
+ * the whole console. reviewed.json and question_bank.json are deliberately NOT
+ * given this treatment: they are the ledger and its conflict keys, and reading
+ * them from anywhere but the branch the writes land on is how a merge silently
+ * reverts an attestation.
+ */
+async function readShippedPages(repository, settings) {
+  try {
+    return { file: await repository.read(SHIPPED_PAGES_PATH), source: 'branch' };
+  } catch (error) {
+    if (!settings.isolated || !(error instanceof GithubError && error.notFound)) throw error;
+  }
+  return {
+    file: await repository.read(SHIPPED_PAGES_PATH, { ref: settings.baseBranch }),
+    source: 'base',
+  };
+}
+
 function requireManifest(manifest) {
   if (!isRecord(manifest)) invalidRepositoryFile();
   const markdown = manifest.md ?? [];
@@ -904,11 +972,20 @@ function buildContentItems(reviewed, shipped) {
   });
 }
 
-async function buildState(repository, { student, resident, attester }) {
-  const reviewedFile = await repository.read(REVIEWED_PATH);
-  const manifestFile = await repository.read(MANIFEST_PATH);
-  const shippedFile = await repository.read(SHIPPED_PAGES_PATH);
-  const qbankFile = await repository.read(QBANK_PATH, { maxBytes: MAX_BANK_BYTES });
+async function buildState(repository, settings) {
+  const { student, resident, attester, branch, baseBranch } = settings;
+  const reviewedFile = await readRequired(repository, REVIEWED_PATH, branch);
+  const manifestFile = await readRequired(repository, MANIFEST_PATH, branch);
+  let shipped;
+  try {
+    shipped = await readShippedPages(repository, settings);
+  } catch (error) {
+    throw missingIfNotFound(error, SHIPPED_PAGES_PATH, branch);
+  }
+  const shippedFile = shipped.file;
+  const qbankFile = await readRequired(repository, QBANK_PATH, branch, {
+    maxBytes: MAX_BANK_BYTES,
+  });
   const items = buildContentItems(reviewedFile.json, shippedFile.json);
   // The qbank half still needs the manifest itself: requireManifest both validates it and
   // yields manifestPages, the list a question may anchor to.
@@ -923,9 +1000,13 @@ async function buildState(repository, { student, resident, attester }) {
     // keep tracking the file that gates question anchors.
     manifestRevision: manifestFile.sha,
     // The revision of the listing the review queue was built from, replacing the old
-    // registryRevision. Nothing in app.mjs consumes it; it is here so a support question
-    // about a stale queue can be answered from the payload alone.
+    // registryRevision. It is the blob sha ON shippedPagesBranch — which is the
+    // attestation branch normally and the base branch after a fallback, never a blend
+    // of the two — so a support question about a stale queue can be answered from the
+    // payload alone. shippedPagesSource says which of the two it was.
     shippedPagesRevision: shippedFile.sha,
+    shippedPagesSource: shipped.source,
+    shippedPagesBranch: shipped.source === 'base' ? baseBranch : branch,
     items,
     ...qbankPayload,
     counts: {
@@ -1251,6 +1332,16 @@ async function handlePost({ repository, body, attester }) {
     );
   }
 
+  // Reopening the rolling review request on demand. The console's own housekeeping
+  // is best-effort and silent by design (an attestation that committed must not be
+  // reported as failed because a PR call hiccuped) — which is how five attestations
+  // reached 2026-09-04 with no route to main and nothing saying so. This is the
+  // deliberate, faculty-pressed repair for exactly that state: no file is written,
+  // so there is nothing to freshen first and nothing to lose if it fails.
+  if (body.action === 'branch.ensure-pr') {
+    return { ok: true, pullRequest: await repository.ensureRollingPullRequest() };
+  }
+
   let mutate;
   if (body.target === 'content') {
     mutate = () => commitContentMutation({ repository, body, attester });
@@ -1309,6 +1400,20 @@ export function createHandler({ env = process.env, fetchImpl = globalThis.fetch 
       const repository = createRepositoryGateway({ settings, fetchImpl });
       switch (request.method.toUpperCase()) {
         case 'GET': {
+          // Freshen before reading, exactly where it is safe to: a branch that is
+          // only BEHIND fast-forwards here, so the queue below is read from a branch
+          // that already carries everything on the base — which is the state the
+          // 2026-09-04 outage needed and never got, because only POST freshened.
+          // A branch that is AHEAD is left alone ('pending'), same rule as the write
+          // path. Advisory like the probe: freshening is an improvement to the read,
+          // never a precondition for it, so a GitHub hiccup here must not turn a
+          // working console into a failed load.
+          let branchFresh;
+          try {
+            branchFresh = await repository.ensureBranchFresh();
+          } catch {
+            branchFresh = { action: 'error' };
+          }
           const state = await buildState(repository, settings);
           // The alarm is advisory; the queue is the payload. A GitHub hiccup on
           // the probe must never turn a working console into a failed load.
@@ -1318,7 +1423,7 @@ export function createHandler({ env = process.env, fetchImpl = globalThis.fetch 
           } catch {
             branchSync = { error: true };
           }
-          return jsonResponse(context, 200, { ...state, branchSync });
+          return jsonResponse(context, 200, { ...state, branchSync, branchFresh });
         }
         case 'POST': {
           const body = await readPostBody(request);

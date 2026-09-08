@@ -190,6 +190,64 @@ unmerged attestations and is left alone — merging the rolling PR is what recon
 Setting `GIT_BRANCH` equal to `GIT_BASE_BRANCH` restores direct writes and skips both the sync and
 the pull request. That only works if the target branch is unprotected.
 
+### Branch lag
+
+**What the console reads, and from where.** Loading the console reads four files:
+
+| File | Branch | Why |
+| --- | --- | --- |
+| `13_Faculty_Resources/reviewed.json` | `GIT_BRANCH` | the attestation **ledger** — the file the console writes |
+| `question_bank.json` | `GIT_BRANCH` | written here too, and its blob sha is the question-bank conflict key |
+| `13_Faculty_Resources/_automation/site_build/site_manifest.json` | `GIT_BRANCH` | gates which page a question may anchor to; its sha is the qbank conflict key |
+| `13_Faculty_Resources/_automation/site_build/shipped_pages.json` | `GIT_BRANCH`, else `GIT_BASE_BRANCH` | the **derived** listing the review queue comes from (ADR-002) |
+
+**Why the derived listing falls back.** On 2026-09-04 five attestations put `attest/pending` five
+commits ahead of `main`; later that day a pull request created `shipped_pages.json` on `main`. The
+file therefore existed on the base and not on the attestation branch, every console load 404'd
+reading it from `attest/pending`, and the console showed *"The console could not load / The
+repository request failed. Try again later."* for three days — including the base-lag alarm that
+would have named the problem, which nobody could see because nothing loaded.
+
+`shipped_pages.json` is derived: the build regenerates it from every producer, and the console never
+writes it. Reading it from the base branch when the attestation branch has not caught up yields
+exactly the queue the next merge would produce, so a lagging branch now costs a one-line notice
+(*"Review queue derived from `main`; the attestation branch is missing shipped_pages.json — merge
+the rolling review request"*) instead of the whole console. The payload says which branch was used
+(`shippedPagesSource`, `shippedPagesBranch`) and `shippedPagesRevision` is the blob sha **on that
+branch**. `reviewed.json` and `question_bank.json` deliberately do **not** fall back: they are the
+ledger and its conflict keys, and reading them from anywhere but the branch the writes land on is
+how a merge silently reverts an attestation.
+
+Loading also **fast-forwards the attestation branch when it is only behind**, under the same rule
+the write path uses — a branch that is ahead is left alone. Both the freshen and the branch-sync
+probe are advisory: if GitHub refuses either, the queue still loads.
+
+**The new error.** A required file that is simply not on the branch now returns `502`
+`repository_file_missing` — *"`<path>` is not on branch `<branch>`. Update or merge the rolling
+review request, then retry."* — instead of `github_request_failed` / *"try again later"*, which
+stays for genuine transport failures.
+
+**Manual recovery.** If the notice or the error appears, or the console reports attestations with no
+open review request:
+
+```bash
+# Preferred: update the rolling PR's branch from the base (no local clone needed).
+gh pr list --repo jmoss333/psychiatry-clerkship --head attest/pending --state open
+gh pr update-branch <number> --repo jmoss333/psychiatry-clerkship
+
+# If no rolling PR exists, press "Reopen review request" in the console banner, or:
+gh pr create --repo jmoss333/psychiatry-clerkship --base main --head attest/pending \
+  --title 'attest: faculty review from the attestation console'
+
+# Or merge the base into the attestation branch locally (merge commit, never squash —
+# squashing rewrites the branch and orphans the attestations on it).
+git fetch origin
+git switch attest/pending && git merge origin/main && git push
+```
+
+Merge the rolling pull request with a **merge commit, not a squash**: the console fast-forwards
+`GIT_BRANCH` from the base after a merge, and a squash leaves the branch permanently divergent.
+
 > **Do not** put the token or password in the repo, in `netlify.toml`, or in the HTML. Keep both required secrets only in Netlify environment variables.
 
 ## Security notes

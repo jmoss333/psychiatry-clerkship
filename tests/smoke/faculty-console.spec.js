@@ -398,6 +398,10 @@ async function fulfillJson(route, status, payload) {
 async function installRepositoryApi(page, initialBank, {
   missingDeployedIds = [],
   contentState: suppliedContentState = null,
+  // Extra top-level GET state fields (branch-sync probe, derived-listing source). The
+  // server adds these advisory fields beside the queue; a test that needs one supplies
+  // it here rather than reshaping buildGetPayload for every caller.
+  stateExtras = null,
 } = {}) {
   let bank = structuredClone(initialBank);
   const contentState = suppliedContentState
@@ -430,7 +434,7 @@ async function installRepositoryApi(page, initialBank, {
     }
 
     if (method === 'GET') {
-      const payload = buildGetPayload(bank, contentState);
+      const payload = { ...buildGetPayload(bank, contentState), ...(stateExtras || {}) };
       gets.push(structuredClone(payload));
       await fulfillJson(route, 200, payload);
       return;
@@ -1273,6 +1277,34 @@ test.describe('learner preview protocol', () => {
       expectedLearnerPreviewStatus('question', 'question:qb_moo_902', 'ready'),
     ]);
   });
+});
+
+/* Branch lag (2026-09-04 → 2026-09-07). shipped_pages.json landed on `main` while the
+   attestation branch sat five attestations ahead, so every console load 404'd reading
+   the derived listing from that branch and showed "The console could not load / The
+   repository request failed. Try again later." for three days. The listing is derived
+   and never written by the console, so GET now reads it from the base branch when the
+   attestation branch does not carry it: the queue loads in full and one line says
+   where it came from. */
+test('a derived listing missing from the attestation branch shows a notice, not a dead console', async ({ page }) => {
+  await installRepositoryApi(page, workflowBank(), {
+    stateExtras: {
+      shippedPagesSource: 'base',
+      shippedPagesBranch: 'main',
+      shippedPagesRevision: 'a'.repeat(40),
+    },
+  });
+  await unlock(page);
+
+  const notice = page.locator('#shipped-pages-notice');
+  await expect(notice).toBeVisible();
+  await expect(notice).toContainText('Review queue derived from `main`');
+  await expect(notice).toContainText('missing shipped_pages.json');
+  await expect(notice).toContainText('merge the rolling review request');
+
+  // The whole point of the fallback: the queue is still there, in full.
+  await expect(page.locator('#review-item-selector').locator('option')).toHaveCount(6);
+  await expect(page.getByRole('heading', { name: 'The console could not load' })).toHaveCount(0);
 });
 
 test.describe.serial('faculty unified attestation workspace', () => {

@@ -1,0 +1,46 @@
+{
+  "id": "garbled-impact-request",
+  "title": "A clear impact request with recognition noise",
+  "synthetic": true,
+  "tags": [
+    "screenshot",
+    "recognition_noise",
+    "topic_follow_up"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    },
+    {
+      "who": "me",
+      "text": "What has been happening with work?"
+    },
+    {
+      "who": "pt",
+      "text": "I lost my job in May. Budget cuts — twelve years, and it was a form letter. I haven't even told my sister. Every morning I put on work clothes so the neighbors don't figure it out. Pathetic, right?",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "Help me understand what Heard or how it's impacted you",
+  "expectations": {
+    "should": [
+      "Answer the clear request about the impact of the work loss.",
+      "Use relevant established facts such as concealing the loss or its emotional weight."
+    ],
+    "mustNot": [
+      "Do not spotlight or quote the stray word Heard when the clear portion is answerable.",
+      "Do not infer a hearing symptom or new event from recognition noise."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "responses.work_stressor.open.0",
+    "responses.mood.open.0"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}
