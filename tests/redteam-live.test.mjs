@@ -58,3 +58,35 @@ test('with a working credential the dependent probes still run', async () => {
   assert.match(out.stdout, /pass\s+B5/);
   assert.doesNotMatch(out.stdout, /SKIP/, 'nothing is skipped when the credential works');
 });
+
+import {mkdtempSync, writeFileSync, chmodSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+
+// A stand-in `netlify` CLI that returns what a secret variable actually reads back:
+// a plausible 20-character placeholder, not the credential.
+function fakeNetlify(value) {
+  const dir = mkdtempSync(path.join(tmpdir(), 'fake-netlify-'));
+  const bin = path.join(dir, 'netlify');
+  writeFileSync(bin, `#!/bin/sh\n[ "$1" = "env:get" ] && echo '${value}'\nexit 0\n`);
+  chmodSync(bin, 0o755);
+  return dir;
+}
+
+test('a Netlify readback that cannot authenticate is discarded, not used', async () => {
+  const dir = fakeNetlify('PLACEHOLDER1234ABCD');
+  const out = await withEndpoint((req, res) => {
+    if ((req.headers['x-student-key'] || '') === 'the-real-passcode') { res.writeHead(200); res.end('{}'); return; }
+    res.writeHead(401); res.end('{}');
+  }, url => new Promise(resolve => {
+    execFile('bash', [script, url], {timeout: 60000,
+      // No SP_STUDENT_PASSCODE, and stdin is not a TTY, so the prompt cannot run.
+      env: {...process.env, SP_STUDENT_PASSCODE: '', PATH: `${dir}:${process.env.PATH}`}},
+      (error, stdout, stderr) => resolve({code: error?.code ?? 0, stdout, stderr}));
+  }));
+
+  const all = out.stdout + out.stderr;
+  assert.match(all, /does not authenticate|placeholder/i, 'the unusable readback is named as such');
+  assert.doesNotMatch(out.stdout, /pass\s+D[015]/, 'no probe reports a pass on a credential that never worked');
+  assert.doesNotMatch(out.stdout, /pass\s+B5/);
+  assert.notEqual(out.code, 0);
+});

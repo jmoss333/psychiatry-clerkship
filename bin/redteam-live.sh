@@ -14,8 +14,10 @@
 # The passcode is resolved in this order, and is NEVER printed:
 #   1. $SP_STUDENT_PASSCODE, if already exported
 #   2. `netlify env:get` against the sp-interview-proxy site (you must be logged
-#      in: `netlify login`). This is the intended path — the live credential goes
-#      straight from Netlify into the request header.
+#      in: `netlify login`). NOTE: SP_STUDENT_PASSCODE is a secret variable, so this
+#      readback returns a placeholder rather than the value. The script probes the
+#      endpoint with whatever it reads and discards it unless it authenticates, so
+#      in practice this path falls through to (3) today.
 #   3. a silent prompt
 #   4. argv[2] — DEPRECATED. A passcode on the command line lands in your shell
 #      history and is visible in `ps` to every process on the machine. The script
@@ -78,7 +80,25 @@ elif command -v netlify >/dev/null 2>&1; then
     echo "         and paste it at the prompt. Tier 2 does not depend on the CLI." >&2
   else
     echo "         got it (${#PASSCODE} characters). Not printing it."
+    FROM_NETLIFY=1
   fi
+fi
+
+# SP_STUDENT_PASSCODE is a SECRET variable, and a readback returns a plausible
+# placeholder for every context except dev. A placeholder is nonempty, so without
+# this check it satisfies the resolution chain, the prompt below never runs, and
+# D0 fails for a reason no operator can act on. Trust the readback only if it
+# actually authenticates; otherwise discard it and let the prompt do its job.
+if [ -n "$PASSCODE" ] && [ "${FROM_NETLIFY:-0}" = "1" ]; then
+  _probe=$(curl -s -o /dev/null -w '%{http_code}' -H "Origin: $ORIGIN" -H "x-student-key: $PASSCODE" "$ENDPOINT" 2>/dev/null)
+  if [ "$_probe" != "200" ]; then
+    echo "passcode: what Netlify returned does not authenticate (HTTP $_probe)." >&2
+    echo "          That is expected: SP_STUDENT_PASSCODE is a secret variable, so" >&2
+    echo "          env:get returns a PLACEHOLDER for every context except dev. This" >&2
+    echo "          path cannot yield a usable credential; discarding it." >&2
+    PASSCODE=""
+  fi
+  unset _probe
 fi
 
 # Only prompt when there is a human at a terminal. Without this guard the script

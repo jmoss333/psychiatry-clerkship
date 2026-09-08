@@ -30,7 +30,7 @@ reachability evidence, not release evidence.
 
 - [ ] Repo up to date: `git fetch origin && git status -sb` shows no divergence
 - [ ] Node installed (`node --version` — anything ≥ 20)
-- [ ] The **current rotation passcode**. You should never have to type or paste it — see below.
+- [ ] The **current rotation passcode**, from the Netlify dashboard (*Show value*, production context). You will paste it once at a hidden prompt — see below for why the automatic path cannot supply it.
 - [ ] The endpoint URL — normally `https://sp-interview-proxy.netlify.app/api/sp`
 - [ ] Chrome, for the Netlify dashboard (the Cowork Netlify MCP is authed to a different account and 404s these sites)
 - [ ] ~45 minutes. Tiers 1 and 2 take two minutes; Tier 3 is the real work.
@@ -57,9 +57,13 @@ and what leaked. A Tier 1 failure is a code or pack bug, not a model behaviour q
 
 ### Step 1b — one-time: link sp-proxy to Netlify
 
-The passcode is `SP_STUDENT_PASSCODE` on the `sp-interview-proxy` Netlify project. You do not
-need to look at it, copy it, or paste it anywhere — the script reads it straight from Netlify
-into the request header. That takes one setup command, once per clone:
+The passcode is `SP_STUDENT_PASSCODE` on the `sp-interview-proxy` Netlify project.
+
+**It is a secret variable, so `netlify env:get` returns a placeholder rather than the value —
+for every context except `dev`.** The script still attempts the readback, probes the endpoint
+with whatever it gets, and discards it unless it actually authenticates; today that means it
+falls through to a hidden prompt where you paste the value once. Linking the project is still
+worth doing for the other CLI steps, and costs one command per clone:
 
 ```
 cd sp-proxy && netlify link --id 455d2740-4020-4d9c-b9f8-82f72f4b2897 && cd ..
