@@ -74,11 +74,12 @@ plus the healthy and the merely-not-yet-fresh (`DEFERRED_ROW_STATES`), and the
 steward exits non-zero on whatever is left. Anything unrecognised counts as its
 own, so a state added later goes red rather than passing in silence.
 
-- **Workflow heartbeat** delegates `failed` to `automation-failure-escalation.yml`.
-  A watched workflow that fired exactly on schedule and then failed is that
-  escalation's rolling issue, not a heartbeat failure — the heartbeat's subject is
-  whether the schedule still fires at all. When it defers, it says so on stderr and
-  names where the rows are tracked, so a green run is never a silent one.
+- **Workflow heartbeat** delegates `failed` to `automation-failure-escalation.yml`,
+  **but only for the workflows that escalation actually watches**. A watched
+  workflow that fired exactly on schedule and then failed is that escalation's
+  rolling issue, not a heartbeat failure — the heartbeat's subject is whether the
+  schedule still fires at all. When it defers, it says so on stderr and names where
+  the rows are tracked, so a green run is never a silent one.
 - **Interview Room monitor** and **stranded-PR monitor** delegate nothing
   (`frozenset()`): nothing else watches the proxy or auto-merge, so everything they
   see is theirs. The empty set is a deliberate declaration, not an omission.
@@ -87,6 +88,28 @@ Operator consequence: when triaging a red steward, read its **first stderr line*
 which names the rows that actually stopped it. Do not infer the exit code from
 `gate` in the artifact — for the heartbeat the two legitimately differ, and its
 receipt records the distinction in an additional `pulse` field.
+
+### A delegation is a claim, and claims get checked
+
+Naming a watcher does not make it watch. The escalation's `workflow_run` trigger
+covers every `maintenance-*` and `surveillance-*` workflow **and nothing else**,
+while the heartbeat also watches `ci.yml` for the Sunday clean-room release
+rehearsal. From #531 until 2026-09-09 a scheduled CI run that fired on time and
+failed was handed to a watcher that had never been listening: heartbeat green,
+escalation silent, failing release rehearsal visible nowhere.
+
+So `classify` takes a second restriction — which **rows** may be handed off, not
+just which states — and `ci.yml` failures stay the heartbeat's own. The pairing is
+re-derived from both YAML files by `DelegationHandoffTests`, which resolves each
+watched filename to the `name:` the escalation matches on and checks it **both
+ways**: narrowing the escalation's list fails the test, and so does widening it
+past what the heartbeat still keeps.
+
+Operator consequence: a red heartbeat naming `ci.yml:failed` is correct and is
+nobody else's. If you ever want that row escalated instead, the escalation must
+first learn to watch CI — and because `ci.yml` also runs on every pull request,
+that needs a `github.event.workflow_run.event == 'schedule'` guard or the rolling
+issue fills with ordinary red PRs.
 
 ## Local operator checks
 
