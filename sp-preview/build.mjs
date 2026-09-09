@@ -2,7 +2,7 @@ import {mkdir,rm,copyFile,readdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 const here=path.dirname(fileURLToPath(import.meta.url));
-const allowed=['index.html','app.js','styles.css','station.js','station-content.js'];
+const allowed=['index.html','app.js','styles.css','station.js','station-content.js','moment-content.js','moment-station.js'];
 const publicFiles=(await readdir(path.join(here,'public'))).sort();
 if(JSON.stringify(publicFiles)!==JSON.stringify([...allowed].sort()))throw new Error('Preview public directory differs from the explicit allowlist.');
 await rm(path.join(here,'dist'),{recursive:true,force:true});
