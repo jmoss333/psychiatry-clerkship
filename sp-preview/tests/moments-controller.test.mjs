@@ -87,3 +87,16 @@ test('review parser is separate strict bounded and ordered',()=>{
 test('Clear during review suppresses late report and all new state',async()=>{
  const {h,c}=momentHarness();await complete(h,c.start('fixture',false,momentId));await complete(h,c.send('Hello'));c.end();let release;h.env.fetch=()=>new Promise(r=>{release=r;});const review=c.requestMomentReview();c.clear();release(new Response('',{status:503}));await review;assert.equal(c.getSnapshot().phase,'gate');assert.equal(c.getSnapshot().review,null);assert.equal(c.getSnapshot().error,'');assert.equal(c.getSnapshot().closedReceiptAvailable,false);
 });
+
+test('late failed alternative cannot mark a freshly started moment completed',async()=>{
+ const {h,c}=momentHarness();await complete(h,c.start('fixture',false,momentId));await complete(h,c.send('Hello'));c.end();await c.requestMomentReview();
+ const originalFetch=h.env.fetch;let release;h.env.fetch=()=>new Promise(resolve=>{release=resolve;});
+ const oldRetry=c.retry(1,'Alternative');c.clear();h.env.fetch=originalFetch;
+ await complete(h,c.start('fixture',false,momentId));assert.equal(c.getSnapshot().momentStage,'dialogue');
+ release(new Response('',{status:503}));await oldRetry;
+ assert.equal(c.getSnapshot().momentStage,'dialogue');assert.equal(c.getSnapshot().phase,'ready');
+});
+test('submitted summary and preserved evidence source have identical text',async()=>{
+ const {h,c}=momentHarness();await complete(h,c.start('fixture',false,momentId));await complete(h,c.send('Hello'));c.end();c.setTeamFormulation('  Priya wants help.  ');await c.requestMomentReview();
+ assert.equal(c.getSnapshot().teamFormulation,h.calls.at(-1).body.outputs.teamFormulation);
+});

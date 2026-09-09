@@ -261,7 +261,8 @@
       learner.alternative=true;messages.push(learner);
       var body={action:'retry',state:receipt,turnId:turnId,text:value};body[mode==='moment'?'scenarioId':'caseId']=caseId;
       if(mode==='moment')retryUsed=true;
-      var accepted=await request(body,learner);
+      var expectedGeneration=generation+1;var accepted=await request(body,learner);
+      if(disposed||generation!==expectedGeneration)return false;
       if(accepted)retryUsed=true;if(mode==='moment'){momentStage='alternative_done';closedReceiptAvailable=false;publish();}
       return accepted;
     }
@@ -280,7 +281,7 @@
     function recordAlternative(turnId){if(mode!=='moment'||!closedReceiptAvailable||retryUsed||task||disposed||reflectionOpen||restartRequired||!Number.isInteger(turnId)||turnId<1||turnId>turn)return false;capture.stop();alternativeTurnId=turnId;captureTarget='alternative';draft='';interim='';phase='connecting';publish();capture.start();return true;}
     async function requestMomentReview(){
       if(mode!=='moment'||!ended||!turn||reviewAttempted||task||disposed||restartRequired||!receipt||reflectionOpen)return false;
-      capture.stop();captureTarget='patient';draft='';interim='';reviewAttempted=true;momentStage='reviewing';review=null;
+      capture.stop();captureTarget='patient';draft='';interim='';teamFormulation=normalized(teamFormulation);reviewAttempted=true;momentStage='reviewing';review=null;
       var operation={id:++generation,abort:new AbortController(),cancelled:false};task=operation;phase='reviewing';problem='';publish();
       var timeout=env.setTimeout(function(){operation.abort.abort();},60000);
       try{

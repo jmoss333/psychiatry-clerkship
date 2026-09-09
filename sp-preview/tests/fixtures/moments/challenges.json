@@ -2655,17 +2655,10 @@
       "expected": [
         {
           "criterionId": "P_ATTRIBUTION",
-          "status": "observed",
-          "observationId": "unestablished_effect_asserted",
-          "evidence": [
-            {
-              "sourceId": "team-summary",
-              "start": 0,
-              "end": 66,
-              "quote": "There is no mental-health problem; this is only a workplace issue."
-            }
-          ],
-          "uncertaintyId": "insufficient_evidence",
+          "status": "not_assessable",
+          "observationId": "not_assessable",
+          "evidence": [],
+          "uncertaintyId": "broader_context_unknown",
           "nextAttemptId": "reflect"
         }
       ],
@@ -2678,7 +2671,7 @@
         "A specific diagnosis is established.",
         "The learner should agree with every patient interpretation."
       ],
-      "rationale": "The team assertion rules out a mental-health concern unsupportedly and loses established low mood/function reports; no diagnosis follows.",
+      "rationale": "The team assertion rules out a mental-health concern unsupportedly and loses established low mood/function reports; no diagnosis follows. Independent educational review: the authored effect/cause template does not describe unsupported narrowing. Withhold this criterion pending faculty wording; this fixture does not prove semantic detection of narrowing.",
       "canaries": [
         {
           "value": "PRIVATE_REVIEW_CANARY_P08",

@@ -1,3 +1,13 @@
+# Practice a Moment (faculty-review drafts)
+
+The protected room now includes Elena, Priya and Luis moments alongside all five full encounters. Read [the requirement audit and faculty audition packet](PRACTICE_MOMENT_ACCEPTANCE.md) for evidence and remaining decisions. The mode uses `/api/practice-moment` and requires both `DANA_PREVIEW_ENABLED=true` and `DANA_MOMENTS_ENABLED=true`. The latter is non-secret and defaults off unless explicitly configured. Staging enablement does not enable production.
+
+Each moment allows four patient-facing responses, one three-unit review and one three-unit terminal alternative: at most 19 reserved operation units and one start. It shares the existing budget namespace and 20/680/340 policy. Review consumes the current continuation before evaluation; unavailable feedback stays closed and falls back to authored reflection prompts. Transfers require a fresh normally budgeted start.
+
+Private reflection and the existing attending presentation stay in page memory. The separate optional Priya **Team formulation — included in AI feedback** goes to review only after explicit submission. No transcripts/audio are persisted, no dialogue is logged, and no analytics or faculty attestation is added. Actor facts/rubrics stay in the function bundle; seven explicit browser assets ship. Disabling only `DANA_MOMENTS_ENABLED` contains the new mode without changing full encounters or the ledger.
+
+---
+
 # Protected spoken Interview Room
 
 A protected pilot of ten spoken turns with Dana, Marcus, Ray, Morgan, or Morgan and Maya, hosted separately from the learner sites. The learner sites' Interview Room links here through a top-level navigation, so microphone and media permissions belong to this origin. The original Interview Room and its production SP proxy continue to work. Dana's disclosure overlay and conversational portrayal retain their recorded review status.

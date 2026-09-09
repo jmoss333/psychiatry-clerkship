@@ -30,7 +30,7 @@ test('literal public projection has exact keys and leaks no private canary at an
  assert.equal(getMoment(momentIds[0]).learner.summaryPrompt,'');assert.equal(getMoment(momentIds[2]).learner.summaryPrompt,'');
 });
 test('public module bytes deterministic and checked by generator',async()=>{
- assert.equal(renderContent(),renderContent());const result=spawnSync(process.execPath,['sp-preview/bin/generate-moment-content.mjs','--check'],{encoding:'utf8'});assert.equal(result.status,0,result.stderr||result.stdout);
+ assert.equal(renderContent(),renderContent());const result=spawnSync(process.execPath,[new URL('../bin/generate-moment-content.mjs',import.meta.url).pathname,'--check'],{encoding:'utf8'});assert.equal(result.status,0,result.stderr||result.stdout);
  const text=await readFile(new URL('../public/moment-content.js',import.meta.url),'utf8');assert.equal(text,renderContent());
  const context=vm.createContext({});vm.runInContext(text,context);assert.deepEqual([...context.MomentContent.ids()], [...momentIds].sort());assert.equal(context.MomentContent.getProfile('unknown'),undefined);assert.equal(context.MomentContent.getProfile('__proto__'),undefined);assert.equal(context.MomentContent.getProfile('toString'),undefined);assert.equal(context.MomentContent.getProfile([momentIds[0]]),undefined);
  for(const id of momentIds){assert.equal(JSON.stringify(context.MomentContent.getProfile(id)),JSON.stringify(publicProjection(getMoment(id))));assertFrozen(context.MomentContent.getProfile(id));}
