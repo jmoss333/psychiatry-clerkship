@@ -1,3 +1,4 @@
+import {validateReviewSources,isReviewSchema,validateProviderReview} from './moments/evidence.mjs';
 import {hostedSpeechProfile as speechProfile} from './portrayal.mjs';
 import {createUsageCounter, normalizeUsage} from '../../_prototypes/sp-interview/dana-provider-usage.mjs';
 
@@ -257,6 +258,22 @@ export function createOpenAIProvider({env=process.env,fetchImpl=globalThis.fetch
     configured,
     getUsage:()=>usage.snapshot(),
     getDiagnostics:()=>structuredClone(diagnostics),
+    async evaluateMoment({system,sources,schema,signal}={}) {
+      if(typeof system!=='string'||!system.trim()||system.length>24000||CONTROL.test(system))throw fail('invalid_reply','validation');
+      try{validateReviewSources(sources);if(!isReviewSchema(schema)||Buffer.byteLength(JSON.stringify(schema))>32768)throw Error();}catch{throw fail('invalid_reply','validation');}
+      const input={model:ACTOR_MODEL,instructions:system,input:[{role:'user',content:JSON.stringify(sources)}],store:false,reasoning:{effort:'low'},max_output_tokens:1800,text:{format:{type:'json_schema',name:'moment_review',strict:true,schema}}};
+      if(Buffer.byteLength(JSON.stringify(input))>200000)throw fail('invalid_reply','validation');
+      return request('actor','/responses',input,signal,async(response,signal,setUsage)=>{
+        const value=await readJson(response,signal);setUsage(providerUsage(value?.usage));
+        if(value?.status!=='completed'||!Array.isArray(value.output))throw fail('actor_incomplete','actor_output');
+        const messages=value.output.filter(item=>item?.type!=='reasoning');
+        if(messages.length!==1||messages[0]?.type!=='message'||messages[0].role!=='assistant'||!Array.isArray(messages[0].content)||messages[0].content.length!==1)throw fail('protocol_final','final');
+        const part=messages[0].content[0];
+        if(part?.type!=='output_text'||typeof part.text!=='string'||Buffer.byteLength(part.text)>16384||CONTROL.test(part.text))throw fail('protocol_final','final');
+        const parsed=json(part.text);if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw fail('protocol_final','final');
+        try{return validateProviderReview(parsed,sources,schema);}catch{throw fail('protocol_final','final');}
+      });
+    },
     async reply({system,messages,signal}={}) {
       const input=actorInput(system,messages,false,actorReasoning);
       return request('actor','/responses',input,signal,async(response,signal,setUsage)=>{const value=await readJson(response,signal);setUsage(providerUsage(value?.usage));return finalActorText(value).trim();});

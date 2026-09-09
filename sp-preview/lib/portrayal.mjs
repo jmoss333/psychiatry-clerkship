@@ -1,3 +1,4 @@
+import {getMoment} from './moments/catalog.mjs';
 import {speechProfile} from '../../_prototypes/sp-interview/conversation-speech-profiles.mjs';
 
 // Hosted audition refinements stay separate from the original recorded library.
@@ -11,6 +12,8 @@ const DELIVERY=Object.freeze({
 const EXACT_WORDS='Speak only the supplied dialogue, exactly. Preserve every negation, uncertainty, and required disclosure. Never add fillers, laughter, sighs, stage directions, or sound effects. Shape the voice during synthesis; use normal playback speed.';
 
 export function hostedSpeechProfile(caseId){
+  const moment=getMoment(caseId);
+  if(moment)return Object.freeze({...moment.speechProfile,instructions:moment.speechProfile.instructions+'\n'+EXACT_WORDS,speed:1});
   const original=speechProfile(caseId);
   if(!Object.hasOwn(DELIVERY,caseId))return original;
   // A bounded synthesis setting for this authored portrayal, not a diagnostic

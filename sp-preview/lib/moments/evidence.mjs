@@ -2,6 +2,7 @@
 const SHARED=['not_assessable','transcription_uncertain','simulation_drift','specific_opportunity_unanswered'];
 const STATUSES=['observed','opportunity_not_taken','unclear','not_assessable'];
 const trustedSchemas=new WeakSet();
+const schemaDefinitions=new WeakMap();
 const invalid=()=>new Error('moment_review_invalid');
 const exact=(value,keys)=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.hasOwn(value,key));
 const text=(value,max)=>typeof value==='string'&&value.trim().length>0&&value.length<=max&&!/[\u0000-\u001f\u007f]/u.test(value)&&wellFormed(value);
@@ -59,7 +60,7 @@ export function reviewSchema(definition){
   const criteria=definition.criteria.map(c=>c.id);
   const observationIds=[...new Set([...definition.criteria.flatMap(c=>c.observationIds),...SHARED])];
   const schema=object({schemaVersion:{type:'integer',const:1},scenarioId:{type:'string',const:definition.id},findings:{type:'array',minItems:1,maxItems:3,items:object({criterionId:{type:'string',enum:criteria},status:{type:'string',enum:STATUSES},observationId:{type:'string',enum:observationIds},evidence:{type:'array',minItems:0,maxItems:4,items:object({sourceId:{type:'string',enum:['setup','p0','l1','p1','l2','p2','l3','p3','l4','p4','team-summary']},start:{type:'integer',minimum:0,maximum:1999},end:{type:'integer',minimum:1,maximum:2000},quote:{type:'string',minLength:1,maxLength:300}})},uncertaintyId:{type:'string',enum:[...new Set([...definition.allowedUncertaintyIds,'simulation_fact_uncertain'])]},nextAttemptId:{type:'string',enum:definition.allowedNextAttemptIds}})}});
-  freeze(schema);trustedSchemas.add(schema);return schema;
+  freeze(schema);trustedSchemas.add(schema);schemaDefinitions.set(schema,definition);return schema;
 }
 export const isReviewSchema=schema=>!!schema&&typeof schema==='object'&&trustedSchemas.has(schema);
 function requiredEvidence(id,ss){
@@ -123,4 +124,10 @@ export function validateDebrief(report,sources,definition,{endReason}={}){
   });
   if(totalQuote>1200)throw invalid();
   return {schemaVersion:1,scenarioId:definition.id,findings};
+}
+
+export function validateProviderReview(report,sources,schema){
+  if(!isReviewSchema(schema))throw invalid();
+  validateDebrief(report,sources,schemaDefinitions.get(schema));
+  return report;
 }
