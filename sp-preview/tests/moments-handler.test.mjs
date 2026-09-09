@@ -1,0 +1,40 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {makeMomentHarness} from './fixtures/moments/runtime.mjs';
+import {getMoment} from '../lib/moments/catalog.mjs';
+import {createMomentCodec} from '../lib/moments/state.mjs';
+const id='moment_elena_rupture_001',fullId='sp_depression_gated_si_001';
+const turn=state=>({action:'turn',scenarioId:id,state,text:'What matters?',previousPlayback:'played',previousCompletedSegments:1});
+const review=state=>({action:'debrief',scenarioId:id,state,previousPlayback:'played',previousCompletedSegments:1,outputs:{teamFormulation:'',summaryUncertain:false},uncertainTurnIds:[],endReason:'learner_end'});
+test('four turns, review and alternative bounded to one start and 19 units',async()=>{
+ const h=makeMomentHarness();let s=await h.start(id);for(let i=0;i<4;i++)s=await h.turn(s,'What matters?');
+ assert.equal((await h.raw(turn(s))).status,409);const closed=await h.debrief(s);const alt=await h.retry(closed,1,'What should I understand?');
+ assert.equal(h.reservations.reduce((n,r)=>n+r.units,0),19);assert.equal(h.reservations.filter(r=>r.units===1).length,1);assert.deepEqual(h.counts,{actor:5,review:1,speech:6});
+ for(const body of [turn(s),review(s),review(closed),turn(closed),turn(alt),{action:'retry',scenarioId:id,state:alt,turnId:1,text:'Again'}])assert.notEqual((await h.raw(body)).status,200);
+ assert.equal(h.reservations.length,7);
+});
+test('invalid shape, zero-turn review, playback, flags and summary fail before reservation',async()=>{
+ const h=makeMomentHarness(),s=await h.start(id);const count=h.reservations.length;
+ for(const b of [review(s),{...turn(s),reflection:'PRIVATE'},{...turn(s),previousCompletedSegments:2},{...turn(s),scenarioId:fullId},{...review(s),outputs:{teamFormulation:'x',summaryUncertain:false}},{...review(s),uncertainTurnIds:[1,1]}])assert.notEqual((await h.raw(b)).status,200);
+ assert.equal(h.reservations.length,count);assert.equal(h.counts.actor+h.counts.review,0);
+});
+test('concurrent turn and review compete across fresh handlers and real CAS',async()=>{
+ const h=makeMomentHarness();let s=await h.start(id);s=await h.turn(s,'Hello');const results=await Promise.all([h.raw(turn(s)),h.raw(review(s))]);assert.equal(results.filter(r=>r.status===200).length,1);assert.equal(h.reservations.length,3);assert.equal(h.counts.actor+h.counts.review,2);
+});
+test('review failure closes once; encrypted representations cannot buy two alternatives',async()=>{
+ const h=makeMomentHarness();let s=await h.start(id);s=await h.turn(s,'Hello');const r=await h.raw(review(s));assert.deepEqual(r.events.map(e=>e.type),['review-start','review-unavailable','review-complete']);assert.equal(r.events[0].state,r.state);
+ const codec=createMomentCodec({definition:getMoment(id),env:h.env,origin:h.env.URL,now:()=>Date.UTC(2026,8,9,12)}),other=codec.seal(codec.open(r.state));
+ const results=await Promise.all([h.raw({action:'retry',scenarioId:id,state:r.state,turnId:1,text:'Hello again'}),h.raw({action:'retry',scenarioId:id,state:other,turnId:1,text:'Different'})]);assert.equal(results.filter(r=>r.status===200).length,1);assert.equal(h.counts.review,1);
+});
+test('full and moment share start operation IDs, budget and endpoint binding',async()=>{
+ const h=makeMomentHarness(),requestId=randomUUID();const a=await h.raw({action:'start',scenarioId:id,requestId});assert.equal(a.status,200);
+ assert.equal((await h.raw({action:'start',caseId:fullId,requestId},{full:true})).status,409);
+ assert.equal((await h.raw({action:'turn',caseId:fullId,state:a.state,text:'Hello',previousPlayback:'played',previousCompletedSegments:1},{full:true})).status,400);
+ for(let i=1;i<20;i++){const r=i%2?await h.raw({action:'start',caseId:fullId,requestId:randomUUID()},{full:true}):await h.raw({action:'start',scenarioId:id,requestId:randomUUID()});assert.equal(r.status,200);}
+ assert.equal((await h.raw({action:'start',scenarioId:id,requestId:randomUUID()})).error,'preview_daily_starts_exhausted');assert.equal(h.read().schemaVersion,2);assert.equal(h.read().limit,680);assert.equal(h.read().windowLimit,340);assert.equal(h.read().startLimit,20);
+});
+test('disabled, unauthorized and cross-deploy requests spend nothing',async()=>{
+ const h=makeMomentHarness(),body={action:'start',scenarioId:id,requestId:randomUUID()};assert.equal((await h.raw(body,{envPatch:{DANA_MOMENTS_ENABLED:'false'}})).status,503);assert.equal((await h.raw(body,{headers:{'x-preview-key':'wrong'}})).status,403);assert.equal(h.reservations.length,0);
+ const s=await h.start();assert.equal((await h.raw(turn(s),{envPatch:{DEPLOY_ID:'new'}})).status,400);assert.equal(h.reservations.length,1);
+});
