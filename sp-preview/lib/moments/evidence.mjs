@@ -68,7 +68,8 @@ function requiredEvidence(id,ss){
     case 'earlier_miss_addressed':return chain(ss,s=>setup(s)&&s.speaker==='previous_student',learner);
     case 'positive_reframe_repeated':return chain(ss,s=>setup(s)||patient(s),learner);
     case 'rent_meaning_explored':return chain(ss,learner,patient)||chain(ss,patient,learner);
-    case 'pause_respected':case 'questioning_after_pause':case 'concern_retained':case 'concern_distorted':case 'misunderstanding_addressed':case 'barrier_recognized':case 'barrier_answered_with_repetition':return chain(ss,patient,learner);
+    case 'pause_respected':case 'questioning_after_pause':case 'misunderstanding_addressed':case 'barrier_recognized':case 'barrier_answered_with_repetition':return chain(ss,patient,learner);
+    case 'concern_retained':case 'concern_distorted':return chain(ss,patient,formulation);
     case 'correction_carried_forward':case 'correction_not_carried':return chain(ss,learner,patient,formulation);
     case 'accurate_account_retained':return chain(ss,learner,patient,s=>s.kind==='team_formulation');
     case 'fear_kept_as_fear':return chain(ss,patient,formulation);

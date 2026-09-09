@@ -14,7 +14,7 @@ A protected pilot of ten spoken turns with Dana, Marcus, Ray, Morgan, or Morgan 
 
 ## Local verification
 
-Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Both also run in `ci.yml`'s `build-test-validate` job and in `bin/verify.sh`, so a change here reddens a pull request rather than surfacing only when someone remembers the commands. Run the full root and prototype suites sequentially. The `dist` folder contains only the five browser assets listed below; never publish the repository root, `_prototypes`, or `sp-preview` itself.
+Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Both also run in `ci.yml`'s `build-test-validate` job and in `bin/verify.sh`, so a change here reddens a pull request rather than surfacing only when someone remembers the commands. Run the full root and prototype suites sequentially. The `dist` folder contains only the seven browser assets listed below; never publish the repository root, `_prototypes`, or `sp-preview` itself.
 
 The opt-in `npm run test:hosted` also requires the `tests/smoke` Playwright dependencies, explicit `DANA_QA_URL` and `DANA_QA_ACCESS_FILE` environment variables, and an authorized preview passcode file. It makes one paid opening and ten paid conversation requests, with synthetic recognition and native muted audio at 2x. It never runs as part of `npm test` or in CI; reports contain counts/timings, not dialogue, keys, or state receipts.
 
@@ -45,7 +45,7 @@ alone and is never applied to another case.
 
 ## The student station
 
-`dist` publishes five files: `index.html`, `app.js`, `styles.css`, `station.js` and `station-content.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends.
+`dist` publishes seven files: `index.html`, `app.js`, `styles.css`, `station.js`, `station-content.js`, `moment-content.js` and `moment-station.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends.
 
 It is a projection of the controller snapshot and nothing more. It holds no reference to `send()`, makes no network request, and reads and writes no browser storage — `build.test.mjs` fails the build if `fetch(`, `localStorage`, `sessionStorage`, `indexedDB` or `XMLHttpRequest` appears in either station file. Marked moments quote only what was actually heard: a reply that did not finish playing is quoted at its completed segments, and a moment with nothing confirmed heard says so rather than showing an empty quotation. `station-content.js` carries learner-facing content only; the participant `portrayal` guidance is actor direction and stays server-side.
 

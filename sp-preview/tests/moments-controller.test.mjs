@@ -100,3 +100,58 @@ test('submitted summary and preserved evidence source have identical text',async
  const {h,c}=momentHarness();await complete(h,c.start('fixture',false,momentId));await complete(h,c.send('Hello'));c.end();c.setTeamFormulation('  Priya wants help.  ');await c.requestMomentReview();
  assert.equal(c.getSnapshot().teamFormulation,h.calls.at(-1).body.outputs.teamFormulation);
 });
+
+async function startAuxiliaryCapture(target){
+ const {h,c}=momentHarness();
+ await complete(h,c.start('fixture',true,momentId));
+ await complete(h,c.send('I want to understand.'));c.end();
+ if(target==='alternative')await c.requestMomentReview();
+ assert.equal(target==='team_formulation'?c.recordTeamFormulation():c.recordAlternative(1),true);
+ return {h,c};
+}
+for(const target of ['team_formulation','alternative']){
+ for(const initialWords of ['', 'Some captured words.'])test(`${target}: repeated pause preserves ${initialWords?'spoken':'empty'} draft and resumes only on request`,async()=>{
+  const {h,c}=await startAuxiliaryCapture(target);
+  if(initialWords)h.speaks(initialWords);
+  const callsBefore=h.calls.length;
+  c.pause();c.pause();h.advance(10000);
+  assert.equal(c.getSnapshot().phase,'paused');assert.equal(c.getSnapshot().captureTarget,target);
+  assert.equal(c.getSnapshot().draft,initialWords);assert.equal(h.live(),undefined);assert.equal(h.calls.length,callsBefore);
+  assert.equal(c.resume(),true);assert.equal(c.getSnapshot().phase,'listening');assert.equal(c.getSnapshot().draft,initialWords);
+  h.speaks('More words.');h.advance(4500);await flush();
+  const expected=initialWords?initialWords+' More words.':'More words.';
+  if(target==='team_formulation'){
+   assert.equal(c.getSnapshot().teamFormulation,expected);assert.equal(h.calls.length,callsBefore);
+  }else{
+   await until(()=>h.audios.at(-1)?.onended);h.audios.at(-1).onended();await until(()=>!c.getSnapshot().busy);
+   assert.equal(h.calls.at(-1).body.action,'retry');assert.equal(h.calls.at(-1).body.text,expected);assert.equal(h.calls.length,callsBefore+1);
+  }
+  assert.equal(c.getSnapshot().captureTarget,'patient');assert.equal(c.resume(),false);
+  assert.equal(await c.send('Continue the ended patient conversation.'),false);assert.equal(h.live(),undefined);
+ });
+ test(`${target}: hidden page stays paused until visible and deliberately resumed`,async()=>{
+  const {h,c}=await startAuxiliaryCapture(target);h.speaks('Keep these words.');
+  h.env.document.hidden=true;c.pause();h.advance(10000);
+  assert.equal(c.getSnapshot().phase,'paused');assert.equal(c.resume(),false);assert.equal(h.live(),undefined);
+  h.env.document.hidden=false;h.advance(10000);assert.equal(h.live(),undefined);
+  assert.equal(c.resume(),true);assert.equal(c.getSnapshot().draft,'Keep these words.');
+  c.pause();c.clear();h.advance(10000);
+  assert.equal(c.resume(),false);assert.equal(h.live(),undefined);assert.equal(c.getSnapshot().captureTarget,'patient');assert.equal(c.getSnapshot().draft,'');
+ });
+ test(`${target}: closing private reflection leaves a resumable paused draft`,async()=>{
+  const {h,c}=await startAuxiliaryCapture(target);h.speaks('Keep this draft.');
+  c.openPrivateReflection();assert.equal(c.resume(),false);c.closePrivateReflection();h.advance(10000);
+  assert.equal(c.getSnapshot().phase,'paused');assert.equal(c.getSnapshot().draft,'Keep this draft.');assert.equal(h.live(),undefined);
+  assert.equal(c.resume(),true);assert.equal(c.getSnapshot().captureTarget,target);assert.equal(c.getSnapshot().draft,'Keep this draft.');
+  c.clear();
+ });
+}
+test('auxiliary resume cannot reopen zero-turn, reviewed, or cleared patient dialogue',async()=>{
+ const {h,c}=momentHarness();await complete(h,c.start('fixture',true,momentId));c.end();
+ assert.equal(c.recordTeamFormulation(),false);assert.equal(c.recordAlternative(1),false);assert.equal(c.resume(),false);
+ c.clear();await complete(h,c.start('fixture',true,momentId));await complete(h,c.send('Hello.'));c.end();
+ assert.equal(c.recordAlternative(1),false);assert.equal(c.resume(),false);
+ await c.requestMomentReview();assert.equal(c.recordTeamFormulation(),false);assert.equal(c.resume(),false);
+ assert.equal(c.recordAlternative(1),true);c.pause();c.clear();
+ assert.equal(c.recordAlternative(1),false);assert.equal(c.resume(),false);
+});

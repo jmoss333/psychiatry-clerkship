@@ -113,7 +113,11 @@ export function createMomentHandler({env=process.env,provider,budget,now=Date.no
        try{reply=validateReply(await provider.replyStream({system:context.system,messages:context.messages,signal:abort.signal,onLead}));}
        finally{acceptingLead=false;}
        if(lead!==null&&!reply.startsWith(lead))throw problem(502,'preview_provider_unavailable');
+       // Validate the original format and speculative prefix first, then publish
+       // the same whitespace TTS speaks so receipts and evidence offsets agree.
+       reply=reply.replace(/\s+/g,' ').trim();
        if(leadJob){
+        lead=lead.replace(/\s+/g,' ').trim();
         segments=[lead];jobs=[leadJob];const remainder=reply.slice(lead.length);
         if(remainder.trim()){segments.push(remainder);jobs.push(begin(remainder));}
         else if(remainder.length)throw problem(502,'preview_provider_unavailable');

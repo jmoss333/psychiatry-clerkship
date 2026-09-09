@@ -529,6 +529,47 @@ test('moment private reflection focus and explicitly submitted spoken team formu
  await page.fill('#composer','I want to check your concern.');await page.click('#send');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');await page.click('#end');await page.locator('[data-moment="record-summary"]').click();await page.evaluate(()=>window.__previewRecognition.emit('SUMMARY_CANARY wants help.'));await expect(page.locator('[data-moment="summary-capture"]')).toContainText('SUMMARY_CANARY');await page.locator('#status').click();await page.keyboard.press('Space');await expect(page.locator('#moment-team-formulation')).toHaveValue('SUMMARY_CANARY wants help.');expect(JSON.stringify(requests)).not.toContain('SUMMARY_CANARY');
  await page.locator('[data-moment="review"]').click();await expect(page.locator('[data-moment="review-fallback"]')).toBeVisible();expect(requests.at(-1).outputs.teamFormulation).toBe('SUMMARY_CANARY wants help.');expect(JSON.stringify(requests)).not.toContain('PRIVATE_REFLECTION_CANARY');await page.click('#clear');await expect(page.locator('#station-root')).toBeEmpty();expect(await page.evaluate(()=>[localStorage.length,sessionStorage.length])).toEqual([0,0]);expect(errors).toEqual([]);expect(violations).toEqual([]);
 });
+for(const target of ['team_formulation','alternative'])test(`moment ${target} recording resumes after Pause and visibility loss`,async({page})=>{
+ const {requests,errors,violations}=await openMoment(page,1,'available');
+ await page.evaluate(()=>window.__previewRecognition.emit('I want to understand.'));
+ await page.locator('#status').click();await page.keyboard.press('Space');
+ await expect(page.locator('.message.you')).toHaveCount(1);await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');await page.click('#end');
+ if(target==='alternative'){
+  await page.locator('[data-moment="review"]').click();await expect(page.locator('[data-moment="review-fallback"]')).toBeVisible();
+ }
+ await page.locator(`[data-moment="${target==='team_formulation'?'record-summary':'record-alternative'}"]`).click();
+ await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+ const before=requests.length;
+ await page.click('#pause');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
+ await expect(page.locator('#resume')).toBeVisible();await expect(page.locator('#status')).toContainText('Microphone paused');
+ expect(await page.evaluate(()=>window.__previewRecognition.instances.some(r=>r.active))).toBe(false);
+ await page.click('#resume');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+ await page.evaluate(()=>{
+  window.__previewRecognition.emit('Keep these words.');
+  Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});
+  document.dispatchEvent(new Event('visibilitychange'));
+ });
+ await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
+ await expect(page.locator('#draft-text')).toHaveText('Keep these words.');
+ await page.click('#resume');expect(await page.evaluate(()=>window.__previewRecognition.instances.some(r=>r.active))).toBe(false);
+ await page.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));});
+ await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');expect(requests).toHaveLength(before);
+ await page.click('#resume');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+ await page.locator('[data-moment="reflect-open"]').click();await page.keyboard.press('Escape');
+ await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');await expect(page.locator('#draft-text')).toHaveText('Keep these words.');
+ expect(await page.evaluate(()=>window.__previewRecognition.instances.some(r=>r.active))).toBe(false);
+ await page.click('#resume');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+ await page.evaluate(()=>window.__previewRecognition.emit('And these too.'));
+ await page.locator('#status').click();await page.keyboard.press('Space');
+ await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','ended');
+ if(target==='team_formulation'){
+  await expect(page.locator('#moment-team-formulation')).toHaveValue('Keep these words. And these too.');expect(requests).toHaveLength(before);
+ }else{
+  expect(requests.at(-1).action).toBe('retry');expect(requests.at(-1).text).toBe('Keep these words. And these too.');expect(requests).toHaveLength(before+1);
+ }
+ await expect(page.locator('#resume')).toBeHidden();expect(await page.evaluate(()=>window.__previewRecognition.instances.some(r=>r.active))).toBe(false);
+ await page.click('#clear');await expect(page.locator('#station-root')).toBeEmpty();expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
 test('moment 320px layout and zero-turn static ending',async({page})=>{
  await page.setViewportSize({width:320,height:740});const {requests,errors,violations}=await openMoment(page,2);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.click('#end');await expect(page.locator('[data-moment="zero-turn"]')).toBeVisible();await expect(page.locator('[data-moment="review"]')).toBeHidden();expect(requests).toHaveLength(1);expect(errors).toEqual([]);expect(violations).toEqual([]);
 });

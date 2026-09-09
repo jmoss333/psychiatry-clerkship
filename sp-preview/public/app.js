@@ -274,7 +274,7 @@
       if(captureTarget==='alternative'){if(interim)return false;capture.stop();var value=draft;draft='';captureTarget='patient';return retry(alternativeTurnId,value);}
       return send(undefined,true);
     }
-    function openPrivateReflection(){if(mode!=='moment'||task||disposed)return false;capture.stop();reflectionOpen=true;phase=ended?'ended':'paused';publish();return true;}
+    function openPrivateReflection(){if(mode!=='moment'||task||disposed)return false;capture.stop();reflectionOpen=true;phase=ended&&!auxiliaryCaptureEligible()?'ended':'paused';publish();return true;}
     function closePrivateReflection(){reflectionOpen=false;publish();}
     function setTeamFormulation(text){if(mode!=='moment'||caseId!=='moment_priya_formulation_001'||!ended||reviewAttempted||disposed)return;capture.stop();captureTarget='patient';phase='ended';teamFormulation=String(text).slice(0,1200);if(!teamFormulation.trim())summaryUncertain=false;publish();}
     function recordTeamFormulation(){if(mode!=='moment'||caseId!=='moment_priya_formulation_001'||!ended||reviewAttempted||task||disposed||reflectionOpen||!turn)return false;capture.stop();captureTarget='team_formulation';draft=teamFormulation;interim='';phase='connecting';publish();capture.start();return true;}
@@ -295,9 +295,16 @@
       return !!review;
     }
 
-    function pause(){capture.stop();if(task){task.cancelled=true;task.abort.abort();stopPlayer();}else if(!ended&&!restartRequired&&phase!=='gate')phase='paused';publish();}
+    // These capture destinations deliberately outlive patient dialogue. Resuming
+    // them keeps the same draft and destination; it never reopens the encounter.
+    function auxiliaryCaptureEligible(){
+      if(mode!=='moment'||!ended)return false;
+      if(captureTarget==='team_formulation')return caseId==='moment_priya_formulation_001'&&turn>0&&!reviewAttempted&&momentStage==='ending';
+      return captureTarget==='alternative'&&closedReceiptAvailable&&!retryUsed&&Number.isInteger(alternativeTurnId)&&alternativeTurnId>=1&&alternativeTurnId<=turn&&(momentStage==='reviewed'||momentStage==='review_unavailable');
+    }
+    function pause(){capture.stop();if(task){task.cancelled=true;task.abort.abort();stopPlayer();}else if((!ended||auxiliaryCaptureEligible())&&!restartRequired&&phase!=='gate')phase='paused';publish();}
     function end(){if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=task?'technical_interruption':turn>=maxTurns?'turn_limit':'learner_end';if(!turn)receipt=null;}ended=true;capture.stop();if(task){task.cancelled=true;task.abort.abort();}stopPlayer();phase='ended';publish();}
-    function resume(){if(disposed||env.document.hidden||task||ended||restartRequired||!receipt||reflectionOpen)return false;voice=true;problem='';phase='connecting';publish();capture.start();return true;}
+    function resume(){if(disposed||env.document.hidden||task||(ended&&!auxiliaryCaptureEligible())||restartRequired||!receipt||reflectionOpen)return false;voice=true;problem='';phase='connecting';publish();capture.start();return true;}
     function setDraft(text){if(task||(ended&&captureTarget==='patient')||restartRequired||disposed||reflectionOpen)return;draft=String(text).slice(0,1200);interim='';if(capture.isActive()){capture.stop();phase='paused';}problem='';publish();}
     function clear(){generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;retryUsed=false;targetRoleId='morgan';previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';mode='full';maxTurns=10;endpoint='/api/dana-preview';momentStage='dialogue';captureTarget='patient';reflectionOpen=false;review=null;teamFormulation='';summaryUncertain=false;uncertainTurnIds=[];reviewAttempted=false;closedReceiptAvailable=false;alternativeTurnId=null;endReason='learner_end';publish();}
     function dispose(){if(disposed)return;disposed=true;end();clear();}

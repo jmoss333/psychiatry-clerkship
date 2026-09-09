@@ -10,7 +10,7 @@ The isolated branch started from `f533e2c` (current main at task start), contain
 
 Existing baseline: 198 preview tests passed. The first root run encountered unmaterialized LFS media; 106 objects already cached locally were checked out without a download. The full repository gate subsequently passed, including both sequential audience builds. During implementation, runs that overlapped unfinished modules are not counted as a clean baseline.
 
-Latest focused verification: **272 preview tests pass** and **27 hosted-preview browser journeys pass**. Automated verification includes the full preview suite, the hosted-preview Playwright project with real CSP/layout and synthetic speech/audio, and `bash bin/verify.sh`. The full smoke project's visual-baseline/nav/faculty checks are separate CI evidence. Local logs and screenshots live only in ignored `output/practice-moment/`. Browser validation used the existing Playwright suite (the separate Browser skill/plugin is not available); screenshots were visually inspected on desktop and at 320px. The completed review expands to the page width. The root span audit reports 38 clean, 11 truncated/edited rows, zero REWORDED sentences and zero uncached; its passing exit is not a clean bill for those unrelated 11 rows. Qbank coherence reports 189 live items and zero pairs to read.
+Latest repair verification: **296 preview tests pass** and **29 hosted-preview browser journeys pass**. Automated verification includes the full preview suite, the hosted-preview Playwright project with real CSP/layout and synthetic speech/audio, and `bash bin/verify.sh`. The full smoke project's visual-baseline/nav/faculty checks are separate CI evidence. Local logs and screenshots live only in ignored `output/practice-moment/`. Browser validation used the existing Playwright suite (the separate Browser skill/plugin is not available); screenshots were visually inspected on desktop and at 320px. The completed review expands to the page width. The root span audit reports 38 clean, 11 truncated/edited rows, zero REWORDED sentences and zero uncached; its passing exit is not a clean bill for those unrelated 11 rows. Qbank coherence reports 189 live items and zero pairs to read.
 
 Independent protocol review found no blocking server defect and exercised two-segment 19-unit accounting, failed requests across midnight, competing continuations, two encryptions of a closed nonce, malformed/no-spend review inputs, 340/680 exhaustion, and cancellation. The final UI review also found and verified fixes for a late alternative mutating a new moment after Clear, submitted-summary whitespace breaking citations, and the audition accepting the production root. All three reproductions now pass. Those eight server probes are tracked in `moments-protocol-adversarial.test.mjs`.
 
@@ -18,7 +18,15 @@ Independent educational review inspected 39 authored challenges plus two paired 
 
 Review fixes: P08's unsupported narrowing is now withheld instead of being mislabeled as effect/causation. The current approved template set has no specific narrowing observation. P11 retains independently supported invitation wording and marks unclarified history not assessable; no new Priya boundary rubric was invented. Permanent tests now include both paired variants.
 
-No paid provider run, physical microphone audition, production publication, merge, learner-site promotion, or faculty attestation occurred in this implementation task. Netlify's saved CLI session initially reported expired; authenticated staging publication and its new non-secret flag require restored access. A public asset build or local fixture response does not prove a working deployed provider.
+No paid provider run, physical microphone audition, production publication, merge, learner-site promotion, or faculty attestation occurred in this implementation task. The initial implementation reported expired Netlify authentication. During the repair pass, the saved CLI session was verified valid with the stale environment token omitted; no new login or credential was needed. Protected staging verification is recorded separately in the repair receipt. A public asset build or local fixture response does not prove a working deployed provider.
+
+## September 9 repair pass
+
+An independent follow-up review identified three behavior defects. Accepted patient replies now normalize speech whitespace consistently after strict format/prefix validation, so newline or tab formatting cannot strand a continuation receipt. Priya's concern observations can cite the separately submitted team formulation while retaining source ordering and uncertainty rules. Optional summary and alternative recordings now preserve their destination and draft through Pause, visibility loss and private reflection; resuming them does not reopen ended patient dialogue.
+
+The repair adds failing-before/passing-after server, controller and browser coverage. Independent re-review found no remaining blocker in that scope. Root hook tests now mutate an isolated registry fixture instead of the shared checkout. A subsequent full-gate run exposed an existing LFS warm-cache test double that rewrote a cached object; the fixture now preserves it and asserts its modification time remains unchanged, retaining the strict zero-download check. This does not change the production LFS script or download media.
+
+The final full-gate, exact-commit CI, protected deployment, numeric usage comparison and provider audition outcomes belong in the repair task receipt. Automated browser tests use synthetic recognition and cannot establish physical microphone behavior or clinically correct AI interpretation.
 
 ## Requirement audit
 
@@ -54,7 +62,7 @@ Review the companion cases/specification, the 39 challenge expectations and both
 
 Physical microphone checklist: four turns without composer interaction; long pause with thinking time; Space to finish; Hold; reflection preventing capture; explicit local summary recording and edit; spoken alternative; mobile controls; Clear during response/review. Record native recognition, device and browser. No item is marked passed by synthetic recognition.
 
-Next best check: restore authenticated staging, verify served hashes/routing/flag/no-spend refusal, then authorize the exact three-start provider audition. A future idea is a faculty-authored comparison of two equally appropriate responses, aimed at testing feedback restraint without creating a score.
+Next best check: verify protected staging hashes, routing, the moment flag and no-spend refusals before the bounded three-start provider audition. A future idea is a faculty-authored comparison of two equally appropriate responses, aimed at testing feedback restraint without creating a score.
 
 ## Reviewable implementation commits
 
