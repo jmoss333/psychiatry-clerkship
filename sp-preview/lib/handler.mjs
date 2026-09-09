@@ -2,7 +2,7 @@ import {randomBytes,timingSafeEqual} from 'node:crypto';
 import {createContext,validateReply} from '../../_prototypes/sp-interview/dana-live-context.mjs';
 import {getCase} from './case.mjs';
 import {FAMILY_CASE_ID,familyContext,roleSpeechCaseId} from './family.mjs';
-import {refineActorContext} from './portrayal.mjs';
+import {refineActorContext,isDeliveryIntensity} from './portrayal.mjs';
 import {hash,problem,createStateCodec,initialState,nextHistory,issuedState,retryState} from './state.mjs';
 
 const HEADERS={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
@@ -35,12 +35,14 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
    if(!entry)throw problem(400,'preview_input_invalid');
    let caseBinding;({caseDef,binding:caseBinding}=entry);
    const isFamily=caseDef.id===FAMILY_CASE_ID;
-   codec=createStateCodec({key:env.DANA_PREVIEW_STATE_KEY,binding:`hosted-sp-v2:${caseDef.id}:${caseBinding}:${env.DEPLOY_ID}:${origin}:${hash(secret)}`,now});
+   codec=createStateCodec({key:env.DANA_PREVIEW_STATE_KEY,binding:`hosted-sp-v2:${caseDef.id}:${caseBinding}:${env.DEPLOY_ID}:${origin}:${hash(secret)}`,now,withDeliveryIntensity:true});
    let operationId;
    if(action==='start'){
-    if(!exact(body,['action','caseId','requestId'])||typeof body.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(body.requestId))throw problem(400,'preview_input_invalid');
+    const intensityPresent=Object.hasOwn(body,'deliveryIntensity');
+    if(!exact(body,['action','caseId','requestId',...(intensityPresent?['deliveryIntensity']:[])])||typeof body.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(body.requestId)
+      ||intensityPresent&&!isDeliveryIntensity(body.deliveryIntensity))throw problem(400,'preview_input_invalid');
     roleId=isFamily?'morgan':undefined;
-    state=initialState(caseDef.persona.opening,now,caseDef.id,roleId);operationId=`start:${body.requestId}`;
+    state=initialState(caseDef.persona.opening,now,caseDef.id,roleId,intensityPresent?body.deliveryIntensity:'standard');operationId=`start:${body.requestId}`;
    }else if(action==='turn'){
     if(!exact(body,['action','caseId','state','text','previousPlayback','previousCompletedSegments',...(isFamily?['targetRoleId']:[])]))throw problem(400,'preview_input_invalid');
     if(isFamily){if(!['morgan','maya'].includes(body.targetRoleId))throw problem(400,'preview_input_invalid');roleId=body.targetRoleId;}
@@ -89,7 +91,7 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
      // A segment that is ONLY staging has nothing to speak; that is an authoring
      // error, not something to paper over with silent audio.
      if(!say)throw problem(500,'preview_provider_unavailable');
-     const bytes=await provider.speak({text:say,caseId:roleId?roleSpeechCaseId(roleId):caseDef.id,signal:abort.signal});
+     const bytes=await provider.speak({text:say,caseId:roleId?roleSpeechCaseId(roleId):caseDef.id,deliveryIntensity:state.deliveryIntensity,signal:abort.signal});
      if(abort.signal.aborted)throw problem(409,'preview_cancelled');
      if(!validAudio(bytes))throw problem(502,'preview_provider_unavailable');
      return bytes;

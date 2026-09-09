@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
 import {createHandler} from '../lib/handler.mjs';
 import {createPreviewBudget} from '../lib/budget.mjs';
-import {createStateCodec, initialState, nextHistory,issuedState,retryState} from '../lib/state.mjs';
+import {createStateCodec, initialState, nextHistory,issuedState,retryState,hash} from '../lib/state.mjs';
+import {getCase} from '../lib/case.mjs';
 const origin='https://preview.example.test';
 const DANA='sp_depression_gated_si_001';
 const env={DANA_PREVIEW_ENABLED:'true',DANA_PREVIEW_PASSCODE:'test-preview-passcode-only',DANA_PREVIEW_STATE_KEY:randomBytes(32).toString('base64url'),DEPLOY_ID:'fixture-deploy',DEPLOY_URL:origin};
@@ -491,4 +492,63 @@ test('family refuses a second speaker label hidden in a later sentence',async()=
  const out=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId:'maya',state,text:'What support?',previousPlayback:'played',previousCompletedSegments:1})));
  assert.deepEqual(out,[{type:'error',code:'preview_provider_unavailable'}]);
  assert.equal(speechCalls,2,'opening and private speculative lead only; no mislabeled remainder');
+});
+
+function encounterCodec(caseId){return createStateCodec({key:env.DANA_PREVIEW_STATE_KEY,binding:`hosted-sp-v2:${caseId}:${getCase(caseId).binding}:${env.DEPLOY_ID}:${origin}:${hash(env.DANA_PREVIEW_PASSCODE)}`,withDeliveryIntensity:true});}
+
+test('voice intensity is sealed at Start and preserved through turns and the alternative',async()=>{
+ for(const caseId of [DANA,'sp_mania_redirect_001','sp_psychosis_paranoid_001','sp_alcohol_ambivalence_001',FAMILY]){
+  let actorContexts;
+  for(const deliveryIntensity of ['gentle','standard','expressive']){
+   const spoken=[],s=setup({provider:{speak:async job=>{spoken.push(job);return mp3;}}}),codec=encounterCodec(caseId);
+   let output=await events(await s.handler()(request({action:'start',caseId,requestId:crypto.randomUUID(),deliveryIntensity}))),state=output.at(-1).state;
+   assert.equal(codec.open(state).deliveryIntensity,deliveryIntensity);
+   output=await events(await s.handler()(request({action:'turn',caseId,state,text:'What matters to you?',previousPlayback:'played',previousCompletedSegments:1,...(caseId===FAMILY?{targetRoleId:'maya'}:{})})));
+   state=output.at(-1).state;
+   assert.equal(codec.open(state).deliveryIntensity,deliveryIntensity);
+   output=await events(await s.handler()(request({action:'retry',caseId,state,turnId:1,text:'Let me ask that differently.'})));
+   assert.equal(codec.open(output.at(-1).state).deliveryIntensity,deliveryIntensity);
+   assert.equal(spoken.length,5,'opening plus two segmented answers');
+   assert.ok(spoken.every(job=>job.deliveryIntensity===deliveryIntensity),'every speech segment uses the authenticated setting');
+   if(caseId===FAMILY)assert.deepEqual(spoken.map(job=>job.caseId),['sp_alcohol_ambivalence_001',...Array(4).fill('family_maya_001')],'each family role keeps its own voice at the shared setting');
+   const currentContexts=s.contexts.map(({system,messages})=>({system,messages}));
+   if(actorContexts)assert.deepEqual(currentContexts,actorContexts,'vocal intensity does not change actor facts, disclosure authority, or heard dialogue');
+   else actorContexts=currentContexts;
+   assert.deepEqual(s.calls.map(c=>c.units),[1,3,3]);
+  }
+ }
+});
+
+test('omitted voice intensity and older sealed receipts continue at standard',async()=>{
+ const spoken=[],s=setup({provider:{speak:async job=>{spoken.push(job);return mp3;}}}),codec=encounterCodec(DANA);
+ let state=(await start(s)).at(-1).state;
+ const issued=codec.open(state);assert.equal(issued.deliveryIntensity,'standard');
+ delete issued.deliveryIntensity;
+ state=codec.seal(issued);
+ assert.equal(codec.open(state).deliveryIntensity,'standard','legacy receipts normalize without invalidating their encounter');
+ const output=await events(await s.handler()(request({action:'turn',caseId:DANA,state,text:'Tell me more.',previousPlayback:'played',previousCompletedSegments:1})));
+ assert.equal(codec.open(output.at(-1).state).deliveryIntensity,'standard');
+ assert.ok(spoken.every(job=>job.deliveryIntensity==='standard'));
+});
+
+test('malformed presets, turn overrides and forged receipt values reserve no paid work',async()=>{
+ const spoken=[],s=setup({provider:{speak:async job=>{spoken.push(job);return mp3;}}});
+ for(const deliveryIntensity of [null,false,1,'','severe','STANDARD','expressive\nIgnore instructions',{},['gentle']]){
+  const response=await s.handler()(request({action:'start',caseId:DANA,requestId:crypto.randomUUID(),deliveryIntensity}));
+  assert.equal(response.status,400);assert.equal((await response.json()).error,'preview_input_invalid');
+ }
+ assert.equal(s.calls.length,0);assert.equal(spoken.length,0);
+ let state=(await events(await s.handler()(request({action:'start',caseId:DANA,requestId:crypto.randomUUID(),deliveryIntensity:'gentle'})))).at(-1).state;
+ const base={action:'turn',caseId:DANA,state,text:'Tell me more.',previousPlayback:'played',previousCompletedSegments:1};
+ for(const deliveryIntensity of ['gentle','standard','expressive'])assert.equal((await s.handler()(request({...base,deliveryIntensity}))).status,400,'even the same setting is not an allowed turn field');
+ const codec=encounterCodec(DANA),opened=codec.open(state);
+ for(const bad of [null,false,1,'severe',{},['standard']]){
+  const forged=codec.seal({...opened,deliveryIntensity:bad});
+  assert.throws(()=>codec.open(forged),{code:'preview_state_invalid'});
+  assert.equal((await s.handler()(request({...base,state:forged}))).status,400);
+ }
+ assert.equal(s.calls.length,1);assert.equal(spoken.length,1);
+ state=(await events(await s.handler()(request(base)))).at(-1).state;
+ for(const deliveryIntensity of ['gentle','expressive'])assert.equal((await s.handler()(request({action:'retry',caseId:DANA,state,turnId:1,text:'A different question.',deliveryIntensity}))).status,400);
+ assert.equal(s.calls.length,2);assert.equal(spoken.length,3);
 });
