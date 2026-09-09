@@ -180,28 +180,46 @@
     function publish(){if(!disposed&&typeof options.onChange==='function')options.onChange(snapshot());}
     var capture=createCapture(env,{hasDraft:function(){return !!draft.trim();},onReady:function(){if(!task&&!disposed&&(!ended||captureTarget!=='patient')){phase='listening';publish();}},onConnecting:function(info){if(!task&&!disposed&&(!ended||captureTarget!=='patient')){phase=info&&info.resuming&&!info.delayed&&phase==='listening'?'listening':'connecting';publish();}},onFinal:function(text){if(task||disposed)return;draft=(draft.trim()+' '+text).trim();if(problem&&(phase==='listening'||phase==='connecting'))problem='';if(caseId===FAMILY_CASE_ID)targetRoleId=addressedFamilyRole(draft)||targetRoleId;if(draft.length>1200){capture.stop();phase='paused';problem=safeMessage('text_too_long');}publish();},onInterim:function(text){interim=text;publish();},onSubmit:submitCapture,onNotice:function(error){if(disposed||ended||task)return;problem=safeMessage(error.code);publish();},onError:function(error){if(disposed)return;phase='paused';problem=safeMessage(error.code);publish();}});
     function stopPlayer(){if(player){player.stop();player=null;}}
-    function play(event,operation){
-      return new Promise(function(resolve,reject){
-        if(disposed||task!==operation||operation.abort.signal.aborted)return reject(cancelled());
-        var raw;try{raw=env.atob(event.data);}catch(_){return reject(issue('protocol_error'));}
-        var bytes=new Uint8Array(raw.length);for(var index=0;index<raw.length;index++)bytes[index]=raw.charCodeAt(index);
-        var url=env.URL.createObjectURL(new env.Blob([bytes],{type:'audio/mpeg'})),audio=new env.Audio(url),settled=false,audioTimer;
-        function finish(error){if(settled)return;settled=true;env.clearTimeout(audioTimer);operation.abort.signal.removeEventListener('abort',abort);audio.onended=audio.onerror=null;
-          try{audio.pause();audio.removeAttribute&&audio.removeAttribute('src');audio.load&&audio.load();}catch(_){}env.URL.revokeObjectURL(url);if(player&&player.audio===audio)player=null;
-          if(error)reject(error);else{operation.completed++;previousCompletedSegments=operation.completed;resolve();}
-        }
-        function abort(){finish(cancelled());}
-        player={audio:audio,stop:abort};operation.abort.signal.addEventListener('abort',abort,{once:true});audio.onended=function(){finish();};audio.onerror=function(){finish(issue('audio_failed'));};
-        audioTimer=env.setTimeout(function(){finish(issue('audio_failed'));},65000);phase='speaking';publish();
-        try{var started=audio.play();if(started&&started.catch)started.catch(function(){finish(issue('playback_blocked'));});}catch(_){finish(issue('playback_blocked'));}
-      });
+    // Prepare each validated recording on arrival so loading does not wait for the
+    // previous voice to finish. Preparation never counts as hearing or starts sound.
+    // Every recording belongs to its request, including ones still waiting to play.
+    function prepareAudio(event,operation){
+      if(disposed||task!==operation||operation.abort.signal.aborted)throw cancelled();
+      var raw;try{raw=env.atob(event.data);}catch(_){throw issue('protocol_error');}
+      var bytes=new Uint8Array(raw.length);for(var index=0;index<raw.length;index++)bytes[index]=raw.charCodeAt(index);
+      var url=env.URL.createObjectURL(new env.Blob([bytes],{type:'audio/mpeg'})),audio;
+      try{audio=new env.Audio();}catch(_){env.URL.revokeObjectURL(url);throw issue('audio_failed');}
+      var settled=false,started=false,failure=null,resolvePlay=null,rejectPlay=null,audioTimer;
+      function finish(error){
+        if(settled)return;settled=true;failure=error||null;env.clearTimeout(audioTimer);operation.abort.signal.removeEventListener('abort',abort);audio.onended=audio.onerror=null;
+        try{audio.pause();audio.removeAttribute&&audio.removeAttribute('src');audio.load&&audio.load();}catch(_){}env.URL.revokeObjectURL(url);if(player&&player.audio===audio)player=null;
+        if(started){if(error)rejectPlay(error);else{operation.completed++;previousCompletedSegments=operation.completed;resolvePlay();}}
+      }
+      function abort(){finish(cancelled());}
+      var prepared={audio:audio,stop:abort,play:function(){
+        return new Promise(function(resolve,reject){
+          if(disposed||task!==operation||operation.abort.signal.aborted){abort();return reject(cancelled());}
+          if(settled)return reject(failure||cancelled());
+          started=true;resolvePlay=resolve;rejectPlay=reject;player=prepared;
+          audioTimer=env.setTimeout(function(){finish(issue('audio_failed'));},65000);phase='speaking';publish();
+          if(settled||disposed||task!==operation||operation.abort.signal.aborted){abort();return;}
+          try{var playing=audio.play();if(playing&&playing.catch)playing.catch(function(){finish(issue('playback_blocked'));});}catch(_){finish(issue('playback_blocked'));}
+        });
+      }};
+      operation.prepared.push(prepared);operation.abort.signal.addEventListener('abort',abort,{once:true});
+      audio.onended=function(){if(started)finish();};
+      // A failed queued load is remembered until its playback turn; it must not
+      // cut off a recording that is still playing successfully ahead of it.
+      audio.onerror=function(){finish(issue('audio_failed'));};
+      try{audio.preload='auto';audio.src=url;audio.load&&audio.load();}catch(_){finish(issue('audio_failed'));}
+      return prepared;
     }
     function ready(){if(disposed||ended||restartRequired||task||reflectionOpen)return;if(turn>=maxTurns){ended=true;phase='ended';publish();return;}if(voice&&!env.document.hidden){phase='connecting';publish();capture.start();}else{phase='ready';publish();}}
     async function request(body,learner){
       // A retry is the one request that legitimately follows the end of an encounter.
       if(task||disposed||restartRequired||(ended&&body.action!=='retry'))return false;capture.stop();problem='';interim='';
       if(body.action==='start')tally.startRequests++;else tally.turnRequests++;
-      var operation={id:++generation,abort:new AbortController(),receivedState:false,completed:0,reply:null,error:null,cancelled:false,learner:learner};task=operation;phase='responding';publish();
+      var operation={id:++generation,abort:new AbortController(),receivedState:false,completed:0,prepared:[],reply:null,error:null,cancelled:false,learner:learner};task=operation;phase='responding';publish();
       var timeout=env.setTimeout(function(){operation.error=issue('timeout');operation.abort.abort();if(task===operation)stopPlayer();},90000),queue=Promise.resolve();
       try{
         var response=await env.fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-preview-key':key},body:JSON.stringify(body),signal:operation.abort.signal,credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer'});
@@ -210,11 +228,15 @@
           expectedSpeakerId:caseId===FAMILY_CASE_ID?(body.action==='start'?'morgan':learner.targetRoleId):undefined,
           onState:function(state){if(disposed||task!==operation||operation.abort.signal.aborted)throw cancelled();receipt=state;operation.receivedState=true;previousPlayback='interrupted';previousCompletedSegments=operation.completed;},
           onReply:function(event){if(body.action!=='retry')turn=event.turn;operation.reply={role:'dana',text:event.reply,status:'preparing',completedSegments:0,totalSegments:event.segments.length,segments:event.segments.map(function(segment){return segment.text;})};if(body.action==='retry')operation.reply.alternative=true;if(event.speakerId)operation.reply.speakerId=event.speakerId;messages.push(operation.reply);if(learner)learner.status='submitted';publish();},
-          onAudio:function(event){queue=queue.then(function(){return play(event,operation);});queue.catch(function(error){if(!operation.error)operation.error=error;operation.abort.abort();if(task===operation)stopPlayer();});}
+          onAudio:function(event){var prepared=prepareAudio(event,operation);queue=queue.then(function(){return prepared.play();});queue.catch(function(error){if(!operation.error)operation.error=error;operation.abort.abort();if(task===operation)stopPlayer();});}
         },operation.abort.signal);
         await queue;if(operation.error)throw operation.error;if(operation.abort.signal.aborted)throw cancelled();
         previousPlayback='played';previousCompletedSegments=operation.completed;if(operation.reply){operation.reply.status='played';operation.reply.completedSegments=operation.completed;}
       }catch(error){
+        // Cancelling queued playback also rejects its promise. Retain the failure
+        // that caused cleanup instead of replacing it with that cancellation.
+        if(!operation.error)operation.error=error;
+        operation.abort.abort();
         if(task!==operation||disposed){operation.failed=true;return false;}
         stopPlayer();try{await queue;}catch(_){}
         error=operation.error||error;previousPlayback='interrupted';previousCompletedSegments=operation.completed;
@@ -226,7 +248,7 @@
         if(body.action==='start'&&['access_denied','preview_forbidden'].includes(error.code)){key='';receipt=null;restartRequired=false;phase='gate';problem=safeMessage('access_denied');}
         operation.failed=true;
       }finally{
-        env.clearTimeout(timeout);var ownsTask=task===operation;if(ownsTask)task=null;
+        env.clearTimeout(timeout);operation.prepared.forEach(function(prepared){prepared.stop();});var ownsTask=task===operation;if(ownsTask)task=null;
         if(!disposed&&ownsTask){if(ended||turn>=maxTurns){ended=true;phase='ended';if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=turn>=maxTurns?'turn_limit':endReason;}}publish();if(!operation.failed&&!operation.cancelled&&!ended)ready();}
       }
       return !operation.failed;
@@ -384,7 +406,7 @@
       if(el('family-speaker-controls')){el('family-speaker-controls').hidden=!active||!family;el('family-speaker-choice').disabled=!canSend;el('family-speaker-choice').value=snapshot.targetRoleId;}
       if(family){el('patient-name').textContent='Morgan and Maya';el('interrupt-label').textContent='Interrupt '+respondent;}
       if(snapshot.phase==='listening'&&snapshot.hold)el('status').textContent='Listening — your turn is held';
-      el('hint').textContent=snapshot.restartRequired?'The last request has an uncertain outcome. Clear and restart to continue.':snapshot.phase==='speaking'||snapshot.phase==='responding'?'Choose Interrupt or press Escape to continue your thought. Completed audio segments are remembered.':snapshot.phase==='ended'?'Bring what you learned and what remains uncertain to your supervisor.':snapshot.hold?'Your turn is held. Keep speaking or thinking, then choose Done speaking when ready.':snapshot.phase==='listening'?'Just speak. Your question sends itself once you stop — no click needed. Space sends it sooner.':'Take your time. You can speak, pause, or type.';
+      el('hint').textContent=snapshot.restartRequired?'The last request has an uncertain outcome. Clear and restart to continue.':snapshot.phase==='speaking'||snapshot.phase==='responding'?'Interrupt or press Escape to stop the voice. Then resume the microphone or type to continue.':snapshot.phase==='ended'?'Bring what you learned and what remains uncertain to your supervisor.':snapshot.hold?'Your turn is held. Keep speaking or thinking, then choose Done speaking when ready.':snapshot.phase==='listening'?'Just speak. Your question sends itself once you stop — no click needed. Space sends it sooner.':'Take your time. You can speak, pause, or type.';
       el('done').hidden=snapshot.phase!=='listening';el('done').disabled=!!snapshot.interim||!snapshot.draft.trim();
       el('pause').hidden=!['listening','connecting'].includes(snapshot.phase);el('resume').hidden=!recognitionAvailable||!['paused','ready'].includes(snapshot.phase)||snapshot.restartRequired;el('resume').disabled=snapshot.busy||snapshot.reflectionOpen;
       el('interrupt').hidden=!snapshot.busy;el('end').hidden=snapshot.phase==='ended'||snapshot.phase==='restart'||snapshot.phase==='reviewing'||snapshot.captureTarget!=='patient';
