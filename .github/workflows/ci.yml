@@ -14,9 +14,15 @@ on:
 permissions:
   contents: read
 
+# Cancel only PR runs. A new push to a PR makes the old run irrelevant, so
+# superseding it saves minutes. A push to main is different: each run validates a
+# distinct, permanent commit, and with the up-to-date requirement off it is the ONLY
+# post-merge validation main gets. Cancelling it discarded that backstop on 19 of 40
+# main runs (48%) between 2026-09-04 and 09-09. schedule and workflow_dispatch are
+# deliberate runs and are likewise never cancelled.
 concurrency:
   group: ci-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build-test-validate:
