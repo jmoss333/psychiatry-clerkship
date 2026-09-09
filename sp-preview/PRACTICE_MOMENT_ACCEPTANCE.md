@@ -10,9 +10,9 @@ The isolated branch started from `f533e2c` (current main at task start), contain
 
 Existing baseline: 198 preview tests passed. The first root run encountered unmaterialized LFS media; 106 objects already cached locally were checked out without a download. The full repository gate subsequently passed, including both sequential audience builds. During implementation, runs that overlapped unfinished modules are not counted as a clean baseline.
 
-Automated verification includes the full preview suite, the hosted-preview Playwright project with real CSP/layout and synthetic speech/audio, and `bash bin/verify.sh`. The full smoke project's visual-baseline/nav/faculty checks are separate CI evidence. Local logs and screenshots live only in ignored `output/practice-moment/`.
+Latest focused verification: **272 preview tests pass** and **27 hosted-preview browser journeys pass**. Automated verification includes the full preview suite, the hosted-preview Playwright project with real CSP/layout and synthetic speech/audio, and `bash bin/verify.sh`. The full smoke project's visual-baseline/nav/faculty checks are separate CI evidence. Local logs and screenshots live only in ignored `output/practice-moment/`. Browser validation used the existing Playwright suite (the separate Browser skill/plugin is not available); screenshots were visually inspected on desktop and at 320px. The completed review expands to the page width. The root span audit reports 38 clean, 11 truncated/edited rows, zero REWORDED sentences and zero uncached; its passing exit is not a clean bill for those unrelated 11 rows. Qbank coherence reports 189 live items and zero pairs to read.
 
-Independent protocol review found no blocking server defect and exercised two-segment 19-unit accounting, failed requests across midnight, competing continuations, two encryptions of a closed nonce, malformed/no-spend review inputs, 340/680 exhaustion, and cancellation. Those eight probes are tracked in `moments-protocol-adversarial.test.mjs`.
+Independent protocol review found no blocking server defect and exercised two-segment 19-unit accounting, failed requests across midnight, competing continuations, two encryptions of a closed nonce, malformed/no-spend review inputs, 340/680 exhaustion, and cancellation. The final UI review also found and verified fixes for a late alternative mutating a new moment after Clear, submitted-summary whitespace breaking citations, and the audition accepting the production root. All three reproductions now pass. Those eight server probes are tracked in `moments-protocol-adversarial.test.mjs`.
 
 Independent educational review inspected 39 authored challenges plus two paired variants, 58 expected findings. These demonstrate the expected examples are structurally representable and their quotations attributable. **They are not 39 successful live AI evaluations.** Four intentionally incorrect interpretations can still have valid exact quotations: an accurate first account labeled an uncorrected mistake; an actor invention attributed to the learner; an accepted pause labeled an unanswered opportunity; and a yes/no acknowledgment called demonstrated understanding. Semantic interpretation remains a model hypothesis requiring faculty challenge review.
 
@@ -55,3 +55,18 @@ Review the companion cases/specification, the 39 challenge expectations and both
 Physical microphone checklist: four turns without composer interaction; long pause with thinking time; Space to finish; Hold; reflection preventing capture; explicit local summary recording and edit; spoken alternative; mobile controls; Clear during response/review. Record native recognition, device and browser. No item is marked passed by synthetic recognition.
 
 Next best check: restore authenticated staging, verify served hashes/routing/flag/no-spend refusal, then authorize the exact three-start provider audition. A future idea is a faculty-authored comparison of two equally appropriate responses, aimed at testing feedback restraint without creating a score.
+
+## Reviewable implementation commits
+
+| Commit | Change |
+|---|---|
+| `08773fd` | Approved packet, all three authored catalogs, public projection and 39 challenges. |
+| `82bfea8` | Attributed evidence and strict review validation. |
+| `7915fa8` | Bounded actor/review contexts, voices and structured provider request. |
+| `c7c88a7` | Moment state, endpoint, shared budget and adversarial protocol tests. |
+| `a7feeeb` | Speech controller destinations, review lifecycle and terminal alternative. |
+| `1a22daa` | Accessible station, both entry choices, Luis and opt-in transfer. |
+| `da85afa` | Independent-review fixes, paired fixtures and bounded audition packet. |
+| `db3a271` | Browser-verified full-width completed review. |
+
+Execution decisions: preserved the platform-provided isolated worktree instead of creating a nested one; kept the integrating agent on shared runtime files while independent workers owned content, evidence and station projection; withheld the mismatched P08 observation rather than authoring an unapproved rubric; used the staging-only audition guard because no production authorization was inherited. These decisions do not grant clinical approval.
