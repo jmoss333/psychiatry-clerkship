@@ -196,3 +196,50 @@ test('buffered and streamed speech preserve exact words and apply only the autho
     }
   }
 });
+
+test('standard intensity preserves the selected voice profile and bounded variants affect delivery only',async()=>{
+ const profiles=[['sp_depression_gated_si_001',/tired|reserved/],['sp_mania_redirect_001',/urgency|pressured/],['sp_psychosis_paranoid_001',/guarded|cautious/],[MORGAN,/ambivalence|mixed feelings/],['family_maya_001',/care|boundary/]];
+ const requests=[],provider=createOpenAIProvider({env:{OPENAI_API_KEY:'test-only-key'},fetchImpl:async(_url,options)=>{
+  requests.push(JSON.parse(options.body));const bytes=new Uint8Array(160);bytes.set([73,68,51]);return new Response(bytes,{headers:{'Content-Type':'audio/mpeg'}});
+ }});
+ const text='I am not sure. I would like to explain what matters to me.';
+ for(const [caseId,portrayal] of profiles){
+  const standard=hostedSpeechProfile(caseId),before=JSON.stringify(standard);
+  assert.deepEqual(hostedSpeechProfile(caseId,'standard'),standard);
+  for(const deliveryIntensity of ['gentle','expressive']){
+   const chosen=hostedSpeechProfile(caseId,deliveryIntensity);
+   assert.equal(chosen.voice,standard.voice);
+   assert.equal(chosen.speed??1,standard.speed??1,'the intensity selector is not a speech-rate or illness-severity dial');
+   assert.ok(chosen.instructions.startsWith(standard.instructions));
+   assert.notEqual(chosen.instructions,standard.instructions);
+   assert.match(chosen.instructions,portrayal);
+   for(const streaming of [false,true]){
+    const input={caseId,text,deliveryIntensity};
+    if(streaming)await provider.speakStream({...input,onChunk(){}});else await provider.speak(input);
+    const sent=requests.at(-1);
+    assert.equal(sent.voice,standard.voice);assert.equal(sent.speed,standard.speed??1);
+    assert.equal(sent.input,text,'the preset must never rewrite dialogue');
+    assert.equal(sent.instructions,chosen.instructions);
+   }
+  }
+  assert.equal(JSON.stringify(hostedSpeechProfile(caseId)),before,'using a preset cannot mutate the selected baseline');
+ }
+});
+
+test('speech rejects malformed presets and nonstandard moment delivery before any provider request',async()=>{
+ let calls=0;
+ const provider=createOpenAIProvider({env:{OPENAI_API_KEY:'test-only-key'},fetchImpl:async()=>{calls++;throw Error('must not request');}});
+ for(const deliveryIntensity of [null,false,1,'','severe',{},['gentle']]){
+  assert.throws(()=>hostedSpeechProfile(MARCUS,deliveryIntensity));
+  await assert.rejects(provider.speak({text:'I have plenty of energy.',caseId:MARCUS,deliveryIntensity}),{code:'invalid_reply'});
+  await assert.rejects(provider.speakStream({text:'I have plenty of energy.',caseId:MARCUS,deliveryIntensity,onChunk(){}}),{code:'invalid_reply'});
+ }
+ for(const caseId of ['moment_elena_rupture_001','moment_priya_formulation_001','moment_luis_teachback_001']){
+  assert.deepEqual(hostedSpeechProfile(caseId,'standard'),hostedSpeechProfile(caseId));
+  for(const deliveryIntensity of ['gentle','expressive']){
+   assert.throws(()=>hostedSpeechProfile(caseId,deliveryIntensity));
+   await assert.rejects(provider.speak({text:'I am not sure.',caseId,deliveryIntensity}),{code:'invalid_reply'});
+  }
+ }
+ assert.equal(calls,0);
+});
