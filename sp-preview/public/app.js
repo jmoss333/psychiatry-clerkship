@@ -366,7 +366,7 @@
     }
     function render(snapshot){
       var active=snapshot.phase!=='gate',canSend=active&&!snapshot.busy&&!snapshot.restartRequired&&!snapshot.reflectionOpen&&snapshot.phase!=='ended'&&snapshot.phase!=='reviewing';
-      el('preview-root').setAttribute('data-phase',snapshot.phase);el('entrance').hidden=active;el('room-layout').hidden=!active;
+      el('preview-root').setAttribute('data-phase',snapshot.phase);el('preview-root').setAttribute('data-mode',snapshot.mode);el('preview-root').setAttribute('data-moment-stage',snapshot.momentStage);el('entrance').hidden=active;el('room-layout').hidden=!active;
       if(!active)el('typing-panel').open=false;
       else if(snapshot.phase!==lastPhase&&(['ready','paused'].includes(snapshot.phase)||snapshot.error))el('typing-panel').open=true;
       el('access-panel').hidden=active;el('case-choice').disabled=active;el('start').disabled=snapshot.busy;el('encounter-panel').hidden=!active;el('conversation-panel').hidden=!snapshot.messages.length;

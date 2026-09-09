@@ -540,5 +540,7 @@ test('moment review renders cited original context with a separate uncertainty',
   await route.fulfill({status:200,contentType:'application/x-ndjson',body:[{type:'review-start',state:'closed'},{type:'review',report},{type:'review-complete',state:'closed'}].map(e=>JSON.stringify(e)+'\n').join('')});
  });
  await page.locator('[data-moment="review"]').click();await expect(page.locator('[data-moment="report"]')).toContainText('This exchange does not establish whether trust was restored.');await page.locator('[data-moment="quote-context"] > summary').click();await expect(page.locator('[data-moment="quote-context"] p')).toHaveText('Hello Elena.');expect(errors).toEqual([]);expect(violations).toEqual([]);
+ await expect(page.locator('#station-root')).toHaveCSS('display','grid');expect((await page.locator('#station-root').boundingBox()).width).toBeGreaterThan(900);
  await page.screenshot({path:path.join(ROOT,'output/practice-moment/review-desktop.png'),fullPage:true});
+ await page.setViewportSize({width:320,height:740});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:path.join(ROOT,'output/practice-moment/review-mobile.png'),fullPage:true});
 });
