@@ -372,7 +372,6 @@ test('the chosen case travels on every request and cannot change mid-encounter',
 test('an encounter refuses to start without a registered case',async()=>{
   const h=environment(),controller=createController(h.env);
   assert.equal(await controller.start('key',false,'not_a_case'),false);
-  assert.equal(await controller.start('key',false,'sp_alcohol_ambivalence_001'),false,'Morgan is not registered');
   assert.equal(h.calls.length,0,'no request is made for an unregistered case');
 });
 
@@ -481,4 +480,42 @@ test('applyIdentity names the patient in the door heading too — R5 follow-up',
   applyIdentity(doc,{displayName:'Marcus',voice:'Cedar',title:'Marcus — A focused interview'});
   assert.match(nodes['door-title'].textContent,/Marcus/,'the door heading names Marcus');
   assert.equal(/\b(her|his|she|he)\b/i.test(nodes['door-title'].textContent),false,'and assumes no pronoun');
+});
+
+test('family name-first routing distinguishes direct address from mentioning a person',()=>{
+ const route=clientModule.exports.addressedFamilyRole;
+ for(const text of ['Maya, how do you see it?','Maya what could you offer?','Okay, Morgan, what matters most?'])assert.equal(route(text),/maya/i.test(text)?'maya':'morgan');
+ for(const text of ['Maya is willing to call once a week. How do you feel about that?','Morgan would like to choose. What is your perspective?','Morgan can help. What do you think?','Maya said she would call.','Morgan told me something.','What did Maya say?','Can I ask both of you?'])assert.equal(route(text),null,text);
+});
+function familyEnvironment(){return environment((path,options)=>{
+ const body=JSON.parse(options.body),turn=body.action==='start'?0:body.action==='retry'?body.turnId:Number(body.state.split('-').at(-1))+1;
+ const output=frames(turn,['A completed reply.']);output[0].speakerId=body.action==='start'?'morgan':body.action==='retry'?'maya':body.targetRoleId;
+ return Promise.resolve(response(output,options.signal));
+});}
+test('family automatic turns switch named respondent without a selector click',async()=>{
+ const h=familyEnvironment(),controller=createController(h.env);
+ let work=controller.start('key',true,'family_morgan_maya_001');await finishAudio(h,0);await work;
+ h.speaks('Maya, what support could you offer?');h.advance(4500);await finishAudio(h,1);await flush();
+ assert.equal(h.calls[1].body.targetRoleId,'maya');assert.equal(controller.getSnapshot().messages.at(-1).speakerId,'maya');
+ assert.equal(controller.getDiagnostics().automaticSubmissions,1);
+ assert.equal(controller.setTargetRole('morgan'),true);
+ work=controller.send('How would that feel?');await finishAudio(h,2);await work;
+ assert.equal(h.calls[2].body.targetRoleId,'morgan');
+ controller.end();controller.clear();assert.equal(controller.getSnapshot().targetRoleId,'morgan');
+});
+test('family retry keeps its original participant and does not transmit a replacement target',async()=>{
+ const h=familyEnvironment(),controller=createController(h.env);
+ let work=controller.start('key',false,'family_morgan_maya_001');await finishAudio(h,0);await work;
+ work=controller.send('Maya, what matters?');await finishAudio(h,1);await work;
+ work=controller.send('Morgan, what matters?');await finishAudio(h,2);await work;
+ controller.end();work=controller.retry(1,'Could you say more?');await finishAudio(h,3);assert.equal(await work,true);
+ assert.equal(h.calls[3].body.targetRoleId,undefined,'server restores original authenticated target');
+ assert.equal(controller.getSnapshot().messages.at(-2).targetRoleId,'maya');
+ assert.equal(controller.getSnapshot().messages.at(-1).speakerId,'maya');
+});
+test('family parser refuses a reply attributed to a different or unknown participant',()=>{
+ for(const speakerId of ['morgan','dana',undefined]){
+  const output=frames(1);if(speakerId)output[0].speakerId=speakerId;
+  assert.throws(()=>{const parser=createParser({expectedTurn:1,expectedSpeakerId:'maya'});parser.push(output.map(e=>JSON.stringify(e)).join('\n'));parser.finish();},{code:'protocol_error'});
+ }
 });

@@ -39,14 +39,17 @@ const CASES = [
   {id: 'sp_depression_gated_si_001', name: 'Dana',   voice: 'Marin', doorNeedle: 'admitted voluntarily to adult inpatient psychiatry'},
   {id: 'sp_mania_redirect_001',      name: 'Marcus', voice: 'Cedar', doorNeedle: 'quad irrigation system'},
   {id: 'sp_psychosis_paranoid_001',  name: 'Ray',    voice: 'Cedar', doorNeedle: 'covering vents'},
+  {id: 'sp_alcohol_ambivalence_001', name: 'Morgan', voice: 'Marin', doorNeedle: 'addiction-medicine consultation', draft: true},
+  {id: 'family_morgan_maya_001', name: 'Morgan and Maya', voice: 'Marin and Cedar', doorNeedle: 'Maya, their adult daughter', draft: true},
 ];
+const FAMILY_ID = 'family_morgan_maya_001';
 
 // One reply, two segments, shaped exactly as the NDJSON parser requires.
-function ndjson(turn) {
+function ndjson(turn, speakerId) {
   const parts = ['A first sentence.', ' A second sentence.'];
   const audio = Buffer.alloc(150, 7).toString('base64');
   const events = [
-    {type: 'reply', reply: parts.join(''), segments: parts.map(text => ({text})), state: `state-${turn}-r`, turn},
+    {type: 'reply', reply: parts.join(''), segments: parts.map(text => ({text})), state: `state-${turn}-r`, turn, ...(speakerId ? {speakerId} : {})},
     ...parts.map((_, index) => ({type: 'audio', index, data: audio, state: `state-${turn}-a${index}`})),
     {type: 'complete', state: `state-${turn}-c`},
   ];
@@ -82,12 +85,16 @@ async function openPreview(page, {recognition = 'unavailable'} = {}) {
   page.on('pageerror', error => errors.push(String(error && error.message)));
 
   let turn = 0;
+  let familyTargets = {};
   const requests = [];
   await page.route('**/api/dana-preview', async route => {
     const body = route.request().postDataJSON() || {};
     requests.push(body);
     const at = body.action === 'start' ? (turn = 0) : body.action === 'retry' ? body.turnId : ++turn;
-    await route.fulfill({status: 200, contentType: 'application/x-ndjson; charset=utf-8', body: ndjson(at)});
+    if (body.action === 'start') familyTargets = {};
+    if (body.action === 'turn' && body.caseId === FAMILY_ID) familyTargets[at] = body.targetRoleId;
+    const speakerId = body.caseId === FAMILY_ID ? body.action === 'start' ? 'morgan' : body.action === 'retry' ? familyTargets[body.turnId] : body.targetRoleId : undefined;
+    await route.fulfill({status: 200, contentType: 'application/x-ndjson; charset=utf-8', body: ndjson(at, speakerId)});
   });
   // Audio never really plays in a headless run; the encounter must still advance.
   await page.addInitScript(({recognition}) => {
@@ -387,6 +394,89 @@ test.describe('hosted preview in a real browser under its deployed headers', () 
     await expect(page.locator('.message.you')).toHaveCount(2);
     await expect(page.locator('#preview-root')).toHaveAttribute('data-phase', 'listening');
     expect(requests).toHaveLength(3);
+  });
+
+  for (const patient of CASES.filter(item => item.draft)) {
+    test(`${patient.name}: draft review status and the new case fit a narrow mobile screen`, async ({page}) => {
+      await page.setViewportSize({width: 320, height: 844});
+      const {errors, violations} = await openPreview(page);
+      await page.selectOption('#case-choice', patient.id);
+      await expect(page.locator('#case-review-note')).toBeVisible();
+      await expect(page.locator('#case-review-note')).toContainText('Faculty-review draft');
+      await expect(page.locator('#start')).toBeInViewport({ratio: 1});
+      await startEncounter(page, patient.id);
+      await expect(page.locator('#preview-root')).toHaveAttribute('data-phase', 'ready');
+      await expect(page.locator('#encounter-review-note')).toBeVisible();
+      await expect(page.locator('#encounter-review-note')).toContainText('Faculty-review draft');
+      await expect(page.locator('#patient-name')).toHaveText(patient.name);
+      if (patient.id === FAMILY_ID) await expect(page.locator('#family-speaker-controls')).toBeVisible();
+      else await expect(page.locator('#family-speaker-controls')).toBeHidden();
+      await askTyped(page, 'What would make this conversation useful to you?');
+      await expect(page.locator('.message.you')).toHaveCount(1);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      expect(errors).toEqual([]);
+      expect(violations).toEqual([]);
+    });
+  }
+
+  test('family selector and spoken names route distinct respondents, preserve quotes, and clear together', async ({page}) => {
+    const {requests, errors, violations} = await openPreview(page, {recognition: 'available'});
+    await startEncounter(page, FAMILY_ID);
+    await expect(page.locator('#preview-root')).toHaveAttribute('data-phase', 'listening');
+    await expect(page.locator('#family-speaker-choice')).toHaveValue('morgan');
+    await expect(page.locator('.message.dana .name').last()).toHaveText('Morgan');
+    expect(await page.evaluate(() => window.DanaStationContent.getProfile('family_morgan_maya_001').participants.map(({id,voice}) => ({id,voice})))).toEqual([{id: 'morgan', voice: 'Marin'}, {id: 'maya', voice: 'Cedar'}]);
+    await page.locator('.speaking-options summary').click();
+    await page.locator('#hold-turn').check();
+
+    await page.selectOption('#family-speaker-choice', 'maya');
+    await page.evaluate(() => window.__previewRecognition.emit('What support could work for you?'));
+    await page.locator('#transcript').focus();
+    await page.keyboard.press('Space');
+    await expect(page.locator('#preview-root')).toHaveAttribute('data-phase', 'listening');
+    await expect(page.locator('.message.you .name').last()).toHaveText('You, to Maya');
+    await expect(page.locator('.message.dana .name').last()).toHaveText('Maya');
+    expect(requests.at(-1).targetRoleId).toBe('maya');
+    await page.locator('[data-station="mark"]').click();
+    await expect(page.locator('[data-station="bookmarks"] blockquote')).toHaveText('Maya: A first sentence. A second sentence.');
+    await page.locator('[aria-label="Reflection on moment 1"]').fill('Ask Maya what support she can sustain.');
+
+    await page.evaluate(() => window.__previewRecognition.emit('Morgan, what matters most to you?'));
+    await expect(page.locator('#family-speaker-choice')).toHaveValue('morgan');
+    await page.locator('#transcript').focus();
+    await page.keyboard.press('Space');
+    await expect(page.locator('.message.you')).toHaveCount(2);
+    await expect(page.locator('#preview-root')).toHaveAttribute('data-phase', 'listening');
+    await expect(page.locator('.message.you .name').last()).toHaveText('You, to Morgan');
+    await expect(page.locator('.message.dana .name').last()).toHaveText('Morgan');
+    expect(requests.at(-1).targetRoleId).toBe('morgan');
+    await expect(page.locator('[data-station="bookmarks"] blockquote')).toHaveText('Maya: A first sentence. A second sentence.');
+
+    await page.locator('#end').click();
+    await expect(page.locator('[data-station="retry"] blockquote')).toContainText('You, to Maya:');
+    await expect(page.locator('[data-station="retry"] blockquote')).toContainText('Maya: A first sentence.');
+    await page.getByRole('textbox', {name: 'Your alternative question', exact: true}).fill('What would a weekly call involve?');
+    await page.getByRole('button', {name: 'Ask this moment again', exact: true}).click();
+    await expect(page.locator('.message.you')).toHaveCount(3);
+    await expect(page.locator('#preview-root')).toHaveAttribute('data-phase', 'ended');
+    await expect(page.locator('.message.dana .name').last()).toHaveText('Maya');
+    expect(requests.at(-1).action).toBe('retry');
+    expect(requests.at(-1).turnId).toBe(1);
+
+    await page.locator('#clear').click();
+    await expect(page.locator('#family-speaker-controls')).toBeHidden();
+    await expect(page.locator('#family-speaker-choice')).toHaveValue('morgan');
+    await expect(page.locator('#station-root')).toBeEmpty();
+    await expect(page.locator('#transcript')).toBeEmpty();
+    await expect(page.locator('#preview-key')).toHaveValue('');
+    expect(await page.evaluate(() => window.__previewRecognition.instances.some(instance => instance.active))).toBe(false);
+    await page.selectOption('#case-choice', CASES[0].id);
+    await expect(page.locator('#case-review-note')).toBeHidden();
+    await startEncounter(page, CASES[0].id);
+    await expect(page.locator('#encounter-review-note')).toBeHidden();
+    await expect(page.locator('#family-speaker-controls')).toBeHidden();
+    expect(errors).toEqual([]);
+    expect(violations).toEqual([]);
   });
 
   test('new replies follow the bottom but preserve reading position until Latest message', async ({page}) => {

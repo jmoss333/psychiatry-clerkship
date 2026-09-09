@@ -1,6 +1,8 @@
 import {randomBytes,timingSafeEqual} from 'node:crypto';
 import {createContext,validateReply} from '../../_prototypes/sp-interview/dana-live-context.mjs';
 import {getCase} from './case.mjs';
+import {FAMILY_CASE_ID,familyContext,roleSpeechCaseId} from './family.mjs';
+import {refineActorContext} from './portrayal.mjs';
 import {hash,problem,createStateCodec,initialState,nextHistory,issuedState,retryState} from './state.mjs';
 
 const HEADERS={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
@@ -20,7 +22,7 @@ const validAudio=bytes=>Buffer.isBuffer(bytes)&&bytes.length>=100&&bytes.length<
 
 export function createHandler({env=process.env,provider,budget,now=Date.now,deadlineMs=50000}={}) {
  return async function handler(request){
-  let state,history,action,codec,caseDef;
+  let state,history,action,codec,caseDef,roleId;
   try{
    const secret=env.DANA_PREVIEW_PASSCODE;
    if(env.DANA_PREVIEW_ENABLED!=='true'||typeof secret!=='string'||secret.length<15||!env.DEPLOY_ID||!provider?.configured||!budget)throw problem(503,'preview_unavailable');
@@ -32,13 +34,16 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
    const entry=getCase(body?.caseId);
    if(!entry)throw problem(400,'preview_input_invalid');
    let caseBinding;({caseDef,binding:caseBinding}=entry);
+   const isFamily=caseDef.id===FAMILY_CASE_ID;
    codec=createStateCodec({key:env.DANA_PREVIEW_STATE_KEY,binding:`hosted-sp-v2:${caseDef.id}:${caseBinding}:${env.DEPLOY_ID}:${origin}:${hash(secret)}`,now});
    let operationId;
    if(action==='start'){
     if(!exact(body,['action','caseId','requestId'])||typeof body.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(body.requestId))throw problem(400,'preview_input_invalid');
-    state=initialState(caseDef.persona.opening,now,caseDef.id);operationId=`start:${body.requestId}`;
+    roleId=isFamily?'morgan':undefined;
+    state=initialState(caseDef.persona.opening,now,caseDef.id,roleId);operationId=`start:${body.requestId}`;
    }else if(action==='turn'){
-    if(!exact(body,['action','caseId','state','text','previousPlayback','previousCompletedSegments']))throw problem(400,'preview_input_invalid');
+    if(!exact(body,['action','caseId','state','text','previousPlayback','previousCompletedSegments',...(isFamily?['targetRoleId']:[])]))throw problem(400,'preview_input_invalid');
+    if(isFamily){if(!['morgan','maya'].includes(body.targetRoleId))throw problem(400,'preview_input_invalid');roleId=body.targetRoleId;}
     state=codec.open(body.state);
     if(state.caseId!==caseDef.id)throw problem(400,'preview_state_invalid');
     history=nextHistory(state,body);operationId=`turn:${state.sid}:${state.nonce}`;
@@ -49,10 +54,13 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
     const parent=codec.open(body.state);
     if(parent.caseId!==caseDef.id)throw problem(400,'preview_state_invalid');
     state=retryState(parent,body.turnId,randomBytes(16).toString('hex'));
+    // An alternative revisits the same person, even if the last turn addressed
+    // someone else. The original addressee is authenticated inside the receipt.
+    if(isFamily){roleId=parent.history[body.turnId*2-1]?.targetRoleId;if(!['morgan','maya'].includes(roleId))throw problem(400,'preview_state_invalid');}
     // The client reports no playback for a retry, and must not: its counts describe
     // the reply it last heard, at the END of the encounter, not the moment being
     // returned to. The truncated history already records what was heard there.
-    history=nextHistory(state,{text:body.text,previousPlayback:'played',previousCompletedSegments:state.completed});
+    history=nextHistory(state,{text:body.text,previousPlayback:'played',previousCompletedSegments:state.completed,...(isFamily?{targetRoleId:roleId}:{})});
     // The SAME ledger slot a turn would consume, deliberately. A receipt gets one
     // continuation, whatever its kind: otherwise the receipt a retry was asked from
     // stays live, a turn from it branches without the retried flag, and the
@@ -81,7 +89,7 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
      // A segment that is ONLY staging has nothing to speak; that is an authoring
      // error, not something to paper over with silent audio.
      if(!say)throw problem(500,'preview_provider_unavailable');
-     const bytes=await provider.speak({text:say,caseId:caseDef.id,signal:abort.signal});
+     const bytes=await provider.speak({text:say,caseId:roleId?roleSpeechCaseId(roleId):caseDef.id,signal:abort.signal});
      if(abort.signal.aborted)throw problem(409,'preview_cancelled');
      if(!validAudio(bytes))throw problem(502,'preview_provider_unavailable');
      return bytes;
@@ -93,25 +101,26 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
       let reply,segments,jobs;
       if(action==='start'){reply=caseDef.persona.opening;segments=[reply];jobs=[begin(reply)];}
       else {
-       const context=createContext(caseDef,history.filter(entry=>entry.who==='me').map(entry=>entry.text),history);
+       const context=roleId?familyContext(history,roleId):refineActorContext(createContext(caseDef,history.filter(entry=>entry.who==='me').map(entry=>entry.text),history),caseDef.id);
        let lead=null,leadJob=null,acceptingLead=true;
        const onLead=text=>{
         if(!acceptingLead||abort.signal.aborted)return;
-        if(lead!==null||validateReply(text,{fragment:true})!==text)throw problem(502,'preview_provider_unavailable');
+        if(lead!==null||roleId&&/\b(?:Maya|Morgan)\s*:/i.test(text.trim())||validateReply(text,{fragment:true})!==text)throw problem(502,'preview_provider_unavailable');
         lead=text;if(!/^(?:"[\s\S]*"|“[\s\S]*”)$/.test(text))leadJob=begin(text);
        };
        try{reply=validateReply(await provider.replyStream({system:context.system,messages:context.messages,signal:abort.signal,onLead}));}
        finally{acceptingLead=false;}
+       if(roleId&&/\b(?:Maya|Morgan)\s*:/i.test(reply.trim()))throw problem(502,'preview_provider_unavailable');
        if(lead!==null&&!reply.startsWith(lead))throw problem(502,'preview_provider_unavailable');
        if(leadJob){
         segments=[lead];jobs=[leadJob];const remainder=reply.slice(lead.length);
         if(remainder.trim()){segments.push(remainder);jobs.push(begin(remainder));}
         else if(remainder.length)throw problem(502,'preview_provider_unavailable');
        }else{segments=[reply];jobs=[begin(reply)];}
-       state=issuedState(state,history,reply,segments);
+       state=issuedState(state,history,reply,segments,roleId);
        if(action==='retry')state={...state,retried:true};
       }
-      send({type:'reply',reply,segments:segments.map(text=>({text})),state:codec.seal(state),turn:state.turn});
+      send({type:'reply',reply,segments:segments.map(text=>({text})),state:codec.seal(state),turn:state.turn,...(roleId?{speakerId:roleId}:{})});
       for(let index=0;index<jobs.length;index++){
        const bytes=await jobs[index];state={...state,completed:index+1};
        send({type:'audio',index,data:bytes.toString('base64'),state:codec.seal(state)});

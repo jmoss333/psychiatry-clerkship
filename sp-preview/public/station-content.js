@@ -52,6 +52,40 @@
       priorities:['Understand what is being recorded or shared and who is listening.','Describe his experience at his own pace without having its explanation immediately dismissed or confirmed.'],
       cues:{opening:'Ray sits angled toward the door, with his arms crossed.',interrupted:'Ray stops speaking and looks toward the door.',repair:'Ray pauses and turns his gaze back toward you.',closing:'Ray glances toward the door, then toward you.'},
       reflectionQuestion:'Does your wording explain what you can honestly offer while leaving Ray room to describe his experience?'
+    },
+    sp_alcohol_ambivalence_001:{
+      caseId:'sp_alcohol_ambivalence_001',displayName:'Morgan',voice:'Marin',title:'Morgan — Exploring mixed feelings about alcohol',
+      reviewStatus:'draft-pending-faculty-review',reviewLabel:'Faculty-review draft',
+      task:'Explore what alcohol gives and takes in Morgan’s life, understand what matters to them, and invite their own next step without requiring a commitment to abstinence.',
+      doorNote:'Morgan is in their 40s and uses they/them pronouns. They voluntarily accepted an addiction-medicine consultation on an inpatient medical service after stabilization following an alcohol-related fall.',
+      objectives:['Ask Morgan what they want from the consultation and explore both sides of their ambivalence.','Use reflections and questions to understand their priorities while preserving their choice.','Invite Morgan to correct your summary and identify a possible next step while leaving medical decisions with the treating team.'],
+      chartCards:[
+        {id:'consult-request',title:'Consult request',source:'Authored referral information',text:'Morgan voluntarily accepted an addiction-medicine consultation after an alcohol-related fall. The medical team has stabilized them.'},
+        {id:'opening-context',title:'Opening context',source:'Authored case opening',text:'Morgan is willing to talk. They have not agreed that quitting alcohol forever is the only acceptable goal for the consultation.'},
+        chartLimit
+      ],
+      priorities:['Keep a say in what changes and what the conversation is trying to accomplish.','Consider both useful and unwanted effects of alcohol without being required to choose a side immediately.'],
+      cues:{opening:'Morgan is in the conversation.',interrupted:'The reply was interrupted.',repair:'The conversation can continue.',closing:'The conversation has ended.'},
+      reflectionQuestion:'Where does your wording leave Morgan room to keep mixed feelings and choose a next step?'
+    },
+    family_morgan_maya_001:{
+      caseId:'family_morgan_maya_001',displayName:'Morgan and Maya',voice:'Marin and Cedar',title:'Morgan and Maya — A family visit',
+      reviewStatus:'draft-pending-faculty-review',reviewLabel:'Faculty-review draft',
+      participants:[
+        {id:'morgan',displayName:'Morgan',voice:'Marin',pronouns:'they/them',relationship:'Maya’s parent'},
+        {id:'maya',displayName:'Maya',voice:'Cedar',pronouns:'she/her',relationship:'Morgan’s adult daughter'}
+      ],
+      task:'Hear Morgan and Maya in turn during the shared meeting, make room for different priorities, and close with a realistic next step without requiring agreement or assigning a monitoring role.',
+      doorNote:'Morgan, an inpatient in their 40s who uses they/them pronouns, and Maya, their adult daughter who uses she/her pronouns, have voluntarily accepted a family meeting after Morgan was medically stabilized following an alcohol-related fall. Morgan lives alone; Maya does not live with them.',
+      objectives:['Explain your student role, establish the purpose of the meeting, and invite each person’s priorities.','Explore support, limits, and differing views while keeping clear whose account you are hearing in the shared meeting.','Summarize each account, check what is and is not agreed, and bring unresolved clinical questions to the team.'],
+      chartCards:[
+        {id:'meeting-context',title:'Meeting context',source:'Authored shared family context',text:'Morgan voluntarily accepted this meeting after medical stabilization following an alcohol-related fall. Maya is Morgan’s adult daughter.'},
+        {id:'household-context',title:'Known shared context',source:'Authored shared family context',text:'Morgan lives alone. Maya does not live with Morgan and is not their monitor. Morgan values keeping Sunday breakfast with Maya. No prior household monitoring arrangement is established.'},
+        {id:'family-chart-limits',title:'Information not supplied',source:'Authored family information boundary',text:'What Maya personally observed before the fall is not established. Individual clinical details and decisions about discharge remain with the treating team. All replies in this version belong to the shared meeting.'}
+      ],
+      priorities:['Morgan: keep a say in what changes without an all-or-nothing demand, while keeping a connection with Maya.','Maya: keep a caring relationship and offer sustainable support without being assigned responsibility for Morgan’s choices.'],
+      cues:{opening:'Morgan and Maya are both in the shared meeting.',interrupted:'The current reply was interrupted; both participants remain in the shared meeting.',repair:'The shared conversation can continue.',closing:'The shared meeting has ended.'},
+      reflectionQuestion:'Did you distinguish Morgan’s choices from Maya’s limits, identify whose account each statement came from, and check what each person actually agreed to?'
     }
   };
   function getProfile(caseId){var profile=PROFILES[caseId];return profile?JSON.parse(JSON.stringify(profile)):null;}

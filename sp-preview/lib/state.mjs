@@ -36,11 +36,11 @@ export function createStateCodec({key, binding, now=Date.now}) {
   return {seal,open};
 }
 
-export function initialState(opening,now=Date.now,caseId) {
+export function initialState(opening,now=Date.now,caseId,speakerId) {
   return {v:1,caseId,sid:randomBytes(16).toString('hex'),nonce:randomBytes(16).toString('hex'),expires:now()+1800000,turn:0,
-    history:[{who:'pt',text:opening,playbackStatus:'pending'}],segments:[opening],completed:0};
+    history:[{who:'pt',text:opening,playbackStatus:'pending',...(speakerId?{speakerId}:{})}],segments:[opening],completed:0};
 }
-export function nextHistory(state,{text,previousPlayback,previousCompletedSegments}) {
+export function nextHistory(state,{text,previousPlayback,previousCompletedSegments,targetRoleId}) {
   // The optional alternative is a single response, not a new interview branch.
   // Its turn number may be early in the original encounter, so turn>=10 alone
   // would permit extra paid questions through direct API requests.
@@ -51,11 +51,11 @@ export function nextHistory(state,{text,previousPlayback,previousCompletedSegmen
   const heard=state.segments.slice(0,previousCompletedSegments);
   if(heard.length){previous.text=heard.join('');previous.playbackStatus='played';if(heard.length<state.segments.length)previous.omittedTail=true;}
   else previous.playbackStatus='interrupted';
-  history.push({who:'me',text:text.trim()});
+  history.push({who:'me',text:text.trim(),...(targetRoleId?{targetRoleId}:{})});
   return history;
 }
-export function issuedState(previous,history,reply,segments) {
-  return {...previous,nonce:randomBytes(16).toString('hex'),turn:previous.turn+1,history:[...history,{who:'pt',text:reply,playbackStatus:'pending'}],segments,completed:0};
+export function issuedState(previous,history,reply,segments,speakerId) {
+  return {...previous,nonce:randomBytes(16).toString('hex'),turn:previous.turn+1,history:[...history,{who:'pt',text:reply,playbackStatus:'pending',...(speakerId?{speakerId}:{})}],segments,completed:0};
 }
 // A retry is a child session, not a replayed receipt: re-presenting an earlier
 // receipt is what the budget ledger refuses, and that refusal is a control worth
