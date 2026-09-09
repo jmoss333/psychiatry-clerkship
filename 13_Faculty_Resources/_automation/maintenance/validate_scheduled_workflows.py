@@ -106,7 +106,7 @@ RES_URL = "https://mmc-psychiatry-residents-sanford.netlify.app"
 EXPECTED_CONCURRENCY = {
     "ci.yml": {
         "group": "ci-${{ github.event_name }}-${{ github.ref }}",
-        "cancel-in-progress": "${{ github.event_name != 'schedule' }}",
+        "cancel-in-progress": "${{ github.event_name == 'pull_request' }}",
     },
     "maintenance-governance-digest.yml": {
         "group": "maintenance-governance",
@@ -382,7 +382,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "7090155fdbda3f4a9bda687841552bffb2b88e344895009241aaf17d6beb5d6f"
     ),
-    "ci.yml": "50af09b6bb737a31b42abd03c87a739baabb18efc56fe1b3e0ac32cb9b89a408",
+    "ci.yml": "0fa2a1c6d68104f3f8766b3b6fccb4b190dd849ed51fa07bd8c9797c942adf64",
     "maintenance-governance-digest.yml": (
         "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
     ),
