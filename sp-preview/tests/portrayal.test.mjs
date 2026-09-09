@@ -94,6 +94,38 @@ test('Marcus actor refinement keeps facts, state, and heard history while guidin
   }
 });
 
+// These exercise the real context-to-provider boundary. They pin which authored
+// constraints reach the model, not whether a generated reply will obey them.
+for(const [description,required] of [
+  ['selects relevant details without a new brevity limit',/Select relevant known details for the current invitation rather than automatically enumerating the whole inventory/],
+  ['keeps connective scenes and reported reactions grounded',/Do not invent routines, scenes, or other people's reactions/],
+  ['expresses unknown sleep details without inventing an explanation',/For an unknown sleep mechanism, express ordinary uncertainty without inventing an explanation/],
+])test('Marcus provider request '+description,async()=>{
+  const caseDef=getCase(MARCUS).caseDef;
+  const question='When you try to sleep, is it hard to fall asleep, or is something else happening?';
+  const originalProfile=JSON.stringify(hostedSpeechProfile(MARCUS));
+  const source=createContext(caseDef,[question],[
+    {who:'pt',text:caseDef.persona.opening,playbackStatus:'played'},
+    {who:'me',text:question},
+  ]),before=structuredClone(source);
+  let sent;
+  const provider=createOpenAIProvider({env:{OPENAI_API_KEY:'test-only-key'},fetchImpl:async(_url,options)=>{
+    sent=JSON.parse(options.body);
+    return Response.json({status:'completed',output:[{type:'message',role:'assistant',content:[{type:'output_text',text:'I am not sure about that.'}]}]});
+  }});
+  await provider.reply(refineActorContext(source,MARCUS));
+  assert.ok(required.test(sent.instructions),'provider-bound instructions must contain the selected grounding constraint');
+  const authorityEnd=source.system.indexOf('\nLOCAL CONVERSATION DELIVERY:');
+  assert.ok(authorityEnd>0);
+  assert.equal(sent.instructions.slice(0,authorityEnd),source.system.slice(0,authorityEnd),'authoritative facts and disclosure permissions must reach the provider unchanged');
+  assert.deepEqual(sent.input,source.messages,'style may not rewrite heard history or the current question');
+  assert.match(sent.instructions,/2 to 6 rapid sentences/);
+  assert.match(sent.instructions,/900-character maximum/);
+  assert.match(sent.instructions,/only the dialogue confirmed heard/);
+  assert.deepEqual(source,before,'the shared context remains unchanged');
+  assert.equal(JSON.stringify(hostedSpeechProfile(MARCUS)),originalProfile,'actor refinement preserves the selected refined-cadence voice');
+});
+
 for(const [description,conflict] of [
   ['a compulsory tidy opening',/begin with one short complete sentence of about 6 to 12 words/],
   ['an automatic short-answer preference',/Prefer two or three short sentences for a focused answer/],
