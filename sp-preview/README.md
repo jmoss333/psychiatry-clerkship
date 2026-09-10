@@ -47,6 +47,18 @@ Faculty can choose **Gentler expression / Current portrayal / More pronounced ex
 
 See the [case-by-case research](../docs/superpowers/specs/2026-09-09-sp-voice-evidence.md) and [spoken interruption pilot design and trial sequence](../docs/superpowers/specs/2026-09-09-spoken-interruption-pilot.md). No production activation or clinical attestation follows from automated checks.
 
+## Conversation realism
+
+Full encounters carry forward each patient's expressed concern or boundary without an automatic emotional reset. Patient clarification is reserved for material ambiguity; an unknown answer or a simple acknowledgement should not trigger a generic rephrase request. These are provider directions, not measured emotional states or grades.
+
+In the shared family meeting, the selected person answers first. Occasionally the other person asks, “Could I add something?” in their own voice. Say “go ahead,” address them by name, or use the optional invitation control. Continuing with the original speaker defers the request. At most one bid per person is offered; it uses the second existing speech slot and keeps the three-unit turn budget. Bid turns wait for the full primary answer before synthesis, so first-sentence prefetch does not apply on those turns. Transcripts and marked moments attribute only completed audio to each person.
+
+Faculty can introduce one brief knock or hallway chime during a full encounter. The control pauses patient playback and the microphone, retains completed speech and the draft, and presents the same event in text. Resume or type when ready. Its next-turn cue ID is allowlisted and sealed by the server; the event cannot add a visitor, danger, diagnosis or disclosure permission.
+
+`/api/preview-capabilities` exposes only a boolean availability flag and reads the same `DANA_PREVIEW_ENABLED` setting as the merged Moments implementation. It does not restore the retired Moments-only flag. Categorized unavailable-feedback responses accept only the five server-defined categories and preserve the existing single alternative.
+
+See the [realism specification](../docs/superpowers/specs/2026-09-09-sp-encounter-realism.md). These software checks and sampled generated replies do not replace faculty listening or physical microphone trials.
+
 ## The student station
 
 `dist` publishes seven files: `index.html`, `app.js`, `styles.css`, `station.js`, `station-content.js`, `moment-content.js` and `moment-station.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends.

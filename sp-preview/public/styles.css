@@ -29,3 +29,5 @@ button,input,textarea,select{font:inherit}button,input[type=password],textarea,s
 
 /* Optional headphone experiment and bounded faculty delivery settings. */
 .voice-experiment{border-left:3px solid var(--line);padding:0 12px 14px;margin-bottom:14px}.voice-experiment .check{align-items:flex-start}.voice-experiment input{margin-top:5px}.faculty-options{border-top:1px solid var(--line);padding:4px 0 16px;font-size:.85rem}.faculty-options>label{display:block;margin:8px 0;font-weight:600}.faculty-options>p{margin-top:10px}.faculty-options>select{max-width:100%}
+
+.family-bid-offer,.room-cue-notice{padding:1rem;border:1px solid var(--line,#d8cebf);border-radius:.75rem;background:var(--paper,#fffaf1);margin:.75rem 0}.family-bid-offer button,.faculty-options button{margin:.25rem .35rem .25rem 0}.family-bid{border-left:3px solid var(--accent,#1f716a)}

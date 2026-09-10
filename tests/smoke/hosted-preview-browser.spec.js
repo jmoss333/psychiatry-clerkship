@@ -45,11 +45,12 @@ const CASES = [
 const FAMILY_ID = 'family_morgan_maya_001';
 
 // One reply, two segments, shaped exactly as the NDJSON parser requires.
-function ndjson(turn, speakerId) {
-  const parts = ['A first sentence.', ' A second sentence.'];
+function ndjson(turn, speakerId, familyBid = false) {
+  const bid = familyBid ? {speakerId: speakerId === 'morgan' ? 'maya' : 'morgan', text: 'Could I add something?'} : null;
+  const parts = bid ? ['A first sentence. A second sentence.', ' ' + bid.text] : ['A first sentence.', ' A second sentence.'];
   const audio = Buffer.alloc(150, 7).toString('base64');
   const events = [
-    {type: 'reply', reply: parts.join(''), segments: parts.map(text => ({text})), state: `state-${turn}-r`, turn, ...(speakerId ? {speakerId} : {})},
+    {type: 'reply', reply: parts.join(''), segments: parts.map(text => ({text})), state: `state-${turn}-r`, turn, ...(speakerId ? {speakerId} : {}), ...(bid ? {familyBid: bid} : {})},
     ...parts.map((_, index) => ({type: 'audio', index, data: audio, state: `state-${turn}-a${index}`})),
     {type: 'complete', state: `state-${turn}-c`},
   ];
@@ -76,7 +77,7 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => { if (server) await new Promise(resolve => server.close(resolve)); });
 
-async function openPreview(page, {recognition = 'unavailable', manualAudio = false} = {}) {
+async function openPreview(page, {recognition = 'unavailable', manualAudio = false, momentsEnabled = false, capabilityResponse, capabilityStatus = 200, holdCapabilities = false, familyBidTurn = null, stubCueAudio = false} = {}) {
   const violations = [], errors = [];
   page.on('console', message => {
     const text = message.text();
@@ -86,7 +87,13 @@ async function openPreview(page, {recognition = 'unavailable', manualAudio = fal
 
   let turn = 0;
   let familyTargets = {};
-  const requests = [];
+  let capabilityRoute;
+  const requests = [], capabilityRequests = [];
+  const fulfillCapabilities = route => route.fulfill({status: capabilityStatus, contentType: 'application/json', body: JSON.stringify(capabilityResponse === undefined ? {momentsEnabled} : capabilityResponse)});
+  await page.route('**/api/preview-capabilities', async route => {
+    capabilityRoute = route;capabilityRequests.push(route.request().method());
+    if (!holdCapabilities) await fulfillCapabilities(route);
+  });
   await page.route('**/api/dana-preview', async route => {
     const body = route.request().postDataJSON() || {};
     requests.push(body);
@@ -94,10 +101,10 @@ async function openPreview(page, {recognition = 'unavailable', manualAudio = fal
     if (body.action === 'start') familyTargets = {};
     if (body.action === 'turn' && body.caseId === FAMILY_ID) familyTargets[at] = body.targetRoleId;
     const speakerId = body.caseId === FAMILY_ID ? body.action === 'start' ? 'morgan' : body.action === 'retry' ? familyTargets[body.turnId] : body.targetRoleId : undefined;
-    await route.fulfill({status: 200, contentType: 'application/x-ndjson; charset=utf-8', body: ndjson(at, speakerId)});
+    await route.fulfill({status: 200, contentType: 'application/x-ndjson; charset=utf-8', body: ndjson(at, speakerId, speakerId && body.action === 'turn' && at === familyBidTurn)});
   });
   // Audio never really plays in a headless run; the encounter must still advance.
-  await page.addInitScript(({recognition, manualAudio}) => {
+  await page.addInitScript(({recognition, manualAudio, stubCueAudio}) => {
     // Capability is deliberate: Chromium advertises recognition even when the
     // headless environment cannot provide a usable microphone service.
     window.__previewRecognition = {instances: [], emit(text, isFinal = true) {
@@ -115,6 +122,16 @@ async function openPreview(page, {recognition = 'unavailable', manualAudio = fal
     } : undefined;
     window.webkitSpeechRecognition = undefined;
     window.__previewAudio=[];
+    window.__previewCueAudio=[];
+    if(stubCueAudio){
+      window.AudioContext=class{
+        constructor(){this.currentTime=0;this.closed=0;this.destination={};window.__previewCueAudio.push(this);}
+        createOscillator(){return {frequency:{value:0},connect(){},start(){},stop(){}};}
+        createGain(){return {gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){}};}
+        close(){this.closed++;return Promise.resolve();}
+      };
+      window.webkitAudioContext=undefined;
+    }
     window.Audio = function () {
       const listeners = {};
       const audio = {
@@ -127,9 +144,19 @@ async function openPreview(page, {recognition = 'unavailable', manualAudio = fal
       window.__previewAudio.push(audio);
       return audio;
     };
-  }, {recognition, manualAudio});
+  }, {recognition, manualAudio, stubCueAudio});
   await page.goto(base, {waitUntil: 'domcontentloaded'});
-  return {violations, errors, requests};
+  return {violations, errors, requests, capabilityRequests, releaseCapabilities:async()=>{await expect.poll(()=>!!capabilityRoute).toBe(true);await fulfillCapabilities(capabilityRoute);}};
+}
+
+async function finishAudio(page,index){
+  await expect.poll(()=>page.evaluate(index=>window.__previewAudio[index]?.plays,index)).toBe(1);
+  await page.evaluate(index=>window.__previewAudio[index].onended?.(),index);
+}
+
+async function completeReply(page,startIndex,phase='listening'){
+  await finishAudio(page,startIndex);await finishAudio(page,startIndex+1);
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase',phase);
 }
 
 async function startEncounter(page, caseId) {
@@ -173,8 +200,134 @@ for(const width of [1440,360])test(`spoken interruption and faculty controls at 
 });
 
 test('moment format hides full-encounter experimental settings',async({page})=>{
-  await openPreview(page,{recognition:'available'});await page.selectOption('#experience-choice','moment');
+  await openPreview(page,{recognition:'available',momentsEnabled:true});await page.selectOption('#experience-choice','moment');
   await expect(page.locator('#voice-experiment-options')).toBeHidden();await expect(page.locator('#faculty-voice-options')).toBeHidden();
+});
+
+test('capability discovery offers no moments until the runtime explicitly enables them',async({page})=>{
+  const {requests,capabilityRequests,releaseCapabilities,errors,violations}=await openPreview(page,{momentsEnabled:true,holdCapabilities:true});
+  const option=page.locator('#experience-choice option[value="moment"]');
+  await expect(option).toHaveJSProperty('hidden',true);await expect(option).toBeDisabled();
+  await expect(page.locator('#case-choice option')).toHaveCount(5);expect(requests).toHaveLength(0);
+  await releaseCapabilities();await expect(option).not.toBeDisabled();await expect(option).toHaveJSProperty('hidden',false);
+  await page.selectOption('#experience-choice','moment');await expect(page.locator('#case-choice option')).toHaveCount(3);
+  expect(capabilityRequests).toEqual(['GET']);expect(requests).toHaveLength(0);expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
+
+for(const capability of [
+  {label:'room runtime disabled',capabilityResponse:{momentsEnabled:false}},
+  {label:'unavailable discovery',capabilityStatus:503,capabilityResponse:{momentsEnabled:false}},
+  {label:'malformed discovery',capabilityResponse:{momentsEnabled:'true'}},
+])test(`capability ${capability.label} keeps the working full encounters available`,async({page})=>{
+  const {requests,capabilityRequests,errors,violations}=await openPreview(page,capability);
+  await expect.poll(()=>capabilityRequests.length).toBe(1);
+  await expect(page.locator('#experience-choice option[value="moment"]')).toBeDisabled();
+  await expect(page.locator('#experience-choice option[value="moment"]')).toHaveJSProperty('hidden',true);
+  await page.evaluate(()=>{const format=document.getElementById('experience-choice');format.value='moment';format.dispatchEvent(new Event('change'));});
+  await expect(page.locator('#experience-choice')).toHaveValue('full');await expect(page.locator('#case-choice option')).toHaveCount(5);
+  await startEncounter(page,CASES[0].id);await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','ready');
+  expect(requests).toHaveLength(1);expect(requests[0].caseId).toBe(CASES[0].id);expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
+
+test('a family spoken bid owns its audio and quotation, ignores its echo, and accepts a spoken invitation',async({page})=>{
+  const {requests,errors,violations}=await openPreview(page,{recognition:'available',manualAudio:true,familyBidTurn:2});
+  await page.locator('#spoken-interrupt-entry').check();await startEncounter(page,FAMILY_ID);await completeReply(page,0);
+  for(let turn=1;turn<=2;turn++){
+    await page.evaluate(text=>window.__previewRecognition.emit(text),'What support would feel useful '+turn+'?');
+    await page.locator('#status').click();await page.keyboard.press('Space');
+    await expect(page.locator('#status')).toContainText('Morgan is speaking');
+    if(turn===1)await completeReply(page,2);
+  }
+  await expect(page.locator('#family-bid-offer')).toBeHidden();await finishAudio(page,4);
+  await expect(page.locator('#status')).toContainText('Maya is speaking');
+  await expect(page.locator('.family-bid .name')).toHaveText('Maya');
+  await expect(page.locator('.message.dana:not(.family-bid)').last()).not.toContainText('Could I add something?');
+  await page.evaluate(()=>window.__previewRecognition.emit('Could I add something?'));
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','speaking');
+  expect(await page.evaluate(()=>window.__previewAudio[5].pauses)).toBe(0);
+  await finishAudio(page,5);await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+  await expect(page.locator('#family-bid-name')).toHaveText('Maya asked to add something.');
+  await expect(page.locator('.family-bid .delivery')).toHaveText('Voice completed');
+  await page.locator('[data-station="mark"]').click();
+  await expect(page.locator('[data-station="bookmarks"] blockquote')).toHaveText([
+    'Morgan: A first sentence. A second sentence.',
+    'Maya: Could I add something?',
+  ]);
+  await page.evaluate(()=>window.__previewRecognition.emit('Go ahead'));await page.locator('#status').click();await page.keyboard.press('Space');
+  await expect.poll(()=>requests.length).toBe(4);expect(requests[3].targetRoleId).toBe('maya');expect(requests[3].previousCompletedSegments).toBe(2);
+  await expect(page.locator('#family-bid-offer')).toBeHidden();await completeReply(page,6);await page.click('#end');
+  expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
+
+for(const decision of ['invite','defer'])test(`family bid ${decision} keeps the learner draft and waits for their next turn`,async({page})=>{
+  const {requests,errors,violations}=await openPreview(page,{familyBidTurn:1});await startEncounter(page,FAMILY_ID);
+  await askTyped(page,'What support would feel useful?');await expect(page.locator('#family-bid-offer')).toBeVisible();
+  await page.fill('#composer','Tell me what matters to you.');await page.click('#family-bid-'+decision);
+  await expect(page.locator('#family-bid-offer')).toBeHidden();await expect(page.locator('#composer')).toHaveValue('Tell me what matters to you.');
+  await expect(page.locator('#family-speaker-choice')).toHaveValue(decision==='invite'?'maya':'morgan');expect(requests).toHaveLength(2);
+  await page.click('#send');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','ready');
+  expect(requests[2].targetRoleId).toBe(decision==='invite'?'maya':'morgan');expect(requests[2].text).toBe('Tell me what matters to you.');
+  expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
+
+test('an interrupted family bid is not offered or quoted as heard',async({page})=>{
+  const {requests,errors,violations}=await openPreview(page,{manualAudio:true,familyBidTurn:1});await startEncounter(page,FAMILY_ID);await completeReply(page,0,'ready');
+  await page.fill('#composer','What support would feel useful?');await page.click('#send');await finishAudio(page,2);
+  await expect(page.locator('#status')).toContainText('Maya is speaking');await page.keyboard.press('Escape');
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');await expect(page.locator('#family-bid-offer')).toBeHidden();
+  await expect(page.locator('.family-bid .delivery')).toContainText('not remembered as heard');
+  await page.locator('[data-station="mark"]').click();
+  await expect(page.locator('[data-station="bookmarks"] blockquote')).toHaveText(['Morgan: A first sentence. A second sentence.', '']);
+  await expect(page.locator('[data-station="bookmarks"] blockquote').nth(1)).toBeHidden();
+  expect(requests).toHaveLength(2);expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
+
+test('faculty cue at rest preserves a spoken draft and is included once at320px',async({page})=>{
+  await page.setViewportSize({width:320,height:844});const {requests,errors,violations}=await openPreview(page,{recognition:'available',stubCueAudio:true});
+  await startEncounter(page,CASES[1].id);await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+  await page.evaluate(()=>window.__previewRecognition.emit('Let us return to sleep.'));
+  await page.locator('#faculty-room-controls summary').click();await page.click('#cue-knock');
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');await expect(page.locator('#draft-text')).toHaveText('Let us return to sleep.');
+  await expect(page.locator('#room-cue-notice')).toContainText('A brief knock at the closed door. No one enters.');
+  await expect(page.locator('#cue-knock')).toBeDisabled();await expect(page.locator('#cue-chime')).toBeDisabled();
+  expect(await page.evaluate(()=>window.__previewRecognition.instances.some(r=>r.active))).toBe(false);expect(requests).toHaveLength(1);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.click('#send');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+  expect(requests[1].text).toBe('Let us return to sleep.');expect(requests[1].roomCueId).toBe('door_knock');
+  await page.fill('#composer','Tell me more about that.');await page.click('#send');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+  expect(requests[2].roomCueId).toBeUndefined();await page.click('#end');expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
+
+test('faculty cue during patient audio cancels queued speech and End stops its sound',async({page})=>{
+  const {requests,errors,violations}=await openPreview(page,{recognition:'available',manualAudio:true,stubCueAudio:true});
+  await page.locator('#spoken-interrupt-entry').check();await startEncounter(page,CASES[1].id);await expect(page.locator('#status')).toContainText('Marcus is speaking');
+  await page.locator('#faculty-room-controls summary').click();await page.click('#cue-chime');
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
+  expect(await page.evaluate(()=>window.__previewAudio[0].pauses)).toBe(1);expect(await page.evaluate(()=>window.__previewAudio[1].plays)).toBe(0);
+  expect(await page.evaluate(()=>window.__previewRecognition.instances.some(r=>r.active))).toBe(false);
+  await expect(page.locator('#room-cue-notice')).toContainText('A short chime sounds in the hallway and stops.');
+  await page.click('#end');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','ended');
+  expect(await page.evaluate(()=>window.__previewCueAudio[0].closed)).toBe(1);expect(requests).toHaveLength(1);
+  await page.click('#clear');await expect(page.locator('#room-cue-notice')).toBeHidden();expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
+
+test('faculty cue preserves unfinished recognized words separately and waits for an explicit next turn',async({page})=>{
+  const {requests,errors,violations}=await openPreview(page,{recognition:'available',stubCueAudio:true});
+  await startEncounter(page,CASES[1].id);await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+  await page.clock.install();
+  await page.evaluate(()=>{window.__previewRecognition.emit('Let us');window.__previewRecognition.emit('focus on sleep',false);});
+  await expect(page.locator('#draft-text')).toHaveText('Let us');await expect(page.locator('#interim-text')).toHaveText('focus on sleep');
+  await page.locator('#faculty-room-controls summary').click();await page.click('#cue-knock');
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
+  await expect(page.locator('#draft-text')).toHaveText('Let us');await expect(page.locator('#composer')).toHaveValue('Let us');
+  await expect(page.locator('#room-cue-notice')).toContainText('focus on sleep');
+  expect(await page.evaluate(()=>window.__previewRecognition.instances.some(r=>r.active))).toBe(false);
+  await page.clock.fastForward(9000);expect(requests).toHaveLength(1);
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
+  await page.fill('#composer','Let us focus on sleep.');await page.click('#send');
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+  expect(requests[1].text).toBe('Let us focus on sleep.');expect(requests[1].roomCueId).toBe('door_knock');
+  await page.click('#end');expect(errors).toEqual([]);expect(violations).toEqual([]);
 });
 
 test.describe('hosted preview in a real browser under its deployed headers', () => {
@@ -473,7 +626,7 @@ test.describe('hosted preview in a real browser under its deployed headers', () 
     await expect(page.locator('.message.dana .name').last()).toHaveText('Maya');
     expect(requests.at(-1).targetRoleId).toBe('maya');
     await page.locator('[data-station="mark"]').click();
-    await expect(page.locator('[data-station="bookmarks"] blockquote')).toHaveText('Maya: A first sentence. A second sentence.');
+    await expect(page.locator('[data-station="bookmarks"] blockquote')).toHaveText(['Maya: A first sentence. A second sentence.', '']);
     await page.locator('[aria-label="Reflection on moment 1"]').fill('Ask Maya what support she can sustain.');
 
     await page.evaluate(() => window.__previewRecognition.emit('Morgan, what matters most to you?'));
@@ -485,11 +638,14 @@ test.describe('hosted preview in a real browser under its deployed headers', () 
     await expect(page.locator('.message.you .name').last()).toHaveText('You, to Morgan');
     await expect(page.locator('.message.dana .name').last()).toHaveText('Morgan');
     expect(requests.at(-1).targetRoleId).toBe('morgan');
-    await expect(page.locator('[data-station="bookmarks"] blockquote')).toHaveText('Maya: A first sentence. A second sentence.');
+    await expect(page.locator('[data-station="bookmarks"] blockquote')).toHaveText(['Maya: A first sentence. A second sentence.', '']);
 
     await page.locator('#end').click();
-    await expect(page.locator('[data-station="retry"] blockquote')).toContainText('You, to Maya:');
-    await expect(page.locator('[data-station="retry"] blockquote')).toContainText('Maya: A first sentence.');
+    await expect(page.locator('[data-station="retry"] blockquote')).toHaveText([
+      'You, to Maya: What support could work for you? — Maya: A first sentence. A second sentence.',
+      '',
+    ]);
+    await expect(page.locator('[data-station="retry"] blockquote').nth(1)).toBeHidden();
     await page.getByRole('textbox', {name: 'Your alternative question', exact: true}).fill('What would a weekly call involve?');
     await page.getByRole('button', {name: 'Ask this moment again', exact: true}).click();
     await expect(page.locator('.message.you')).toHaveCount(3);
@@ -542,7 +698,7 @@ test.describe('hosted preview in a real browser under its deployed headers', () 
 
 const MOMENTS=['moment_elena_rupture_001','moment_priya_formulation_001','moment_luis_teachback_001'];
 async function openMoment(page,index=0,recognition='unavailable'){
- const result=await openPreview(page,{recognition});let turn=0;
+ const result=await openPreview(page,{recognition,momentsEnabled:true});let turn=0;
  await page.route('**/api/practice-moment',async route=>{
   const b=route.request().postDataJSON();result.requests.push(b);
   const events=[{type:'review-start',state:'closed'},{type:'review-unavailable',code:'preview_review_unavailable'},{type:'review-complete',state:'closed'}];

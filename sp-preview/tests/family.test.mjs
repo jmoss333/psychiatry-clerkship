@@ -102,3 +102,11 @@ test('history validation refuses forged roles, private channels, and unsupported
   assert.throws(()=>familyContext([me('Wrong recipient.','maya')],'morgan'),invalid);
   assert.throws(()=>familyContext(Array.from({length:22},()=>me('Too many.')),'morgan'),invalid);
 });
+
+
+test('valid patient paragraph whitespace survives the next shared context without relaxing learner input',()=>{
+ const dialogue='I care.\n\nI also have limits.';
+ const context=familyContext([pt(dialogue,'maya'),me('What limits matter?','maya')],'maya');
+ assert.equal(context.messages[0].content,dialogue);
+ assert.throws(()=>familyContext([me('bad\ncontrol','maya')],'maya'),invalid);
+});

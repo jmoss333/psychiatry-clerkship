@@ -14,23 +14,48 @@
     if(Object.prototype.hasOwnProperty.call(FAMILY_NAMES,source.speakerId)){value.speakerId=source.speakerId;value.speakerName=FAMILY_NAMES[source.speakerId];}
     return value;
   }
+  function heardBid(row){
+    return row&&row.familyBid===true&&row.playbackStatus==='played'&&typeof row.text==='string'&&
+      Object.prototype.hasOwnProperty.call(FAMILY_NAMES,row.speakerId)?attributed({text:row.text},row):null;
+  }
+  function withBid(value,bid){
+    if(bid)value.familyBid=attributed({text:bid.text},bid);
+    return value;
+  }
 
   // The station and bookmark logic use the local prototype's shape. Family
   // identity travels as metadata; raw speech and heard prefixes stay unchanged.
   function stationSnapshot(hosted){
     hosted=hosted||{};
     var phase=PHASES[hosted.phase]||'idle';
-    var transcript=(hosted.messages||[]).map(function(message){
+    var transcript=[];
+    (hosted.messages||[]).forEach(function(message){
       if(message.role==='you'){
         var learner={who:'me',text:message.text},status=LEARNER[message.status];
         if(status)learner.responseStatus=status;
-        return attributed(learner,message);
+        transcript.push(attributed(learner,message));return;
       }
       var entry={who:'pt',text:message.text,playbackStatus:message.status==='preparing'?'pending':message.status};
       // Only whole completed segments were heard; the tail is never quoted.
       var segments=message.segments||[],completed=message.completedSegments||0;
+      if(message.familyBid){
+        // A family bid is a second speaker, not the primary respondent's tail.
+        // Completion counts identify what actually played even while the overall
+        // two-part reply still has a pending or speaking status.
+        var primaryHeard=Number.isInteger(completed)&&completed>=1&&completed<=2&&segments[0]===message.text;
+        if(primaryHeard)entry.playbackStatus='played';
+        else if(entry.playbackStatus==='played')entry.playbackStatus='pending';
+        transcript.push(attributed(entry,message));
+        var bid=message.familyBid;
+        if(primaryHeard&&completed===2&&segments.length===2&&typeof bid.text==='string'&&bid.text.trim()&&
+          segments[1]===' '+bid.text&&Object.prototype.hasOwnProperty.call(FAMILY_NAMES,message.speakerId)&&
+          Object.prototype.hasOwnProperty.call(FAMILY_NAMES,bid.speakerId)&&bid.speakerId!==message.speakerId){
+          transcript.push(attributed({who:'pt',text:bid.text,playbackStatus:'played',familyBid:true},bid));
+        }
+        return;
+      }
       if(entry.playbackStatus!=='played'&&completed>0)entry.heardText=segments.slice(0,completed).join('');
-      return attributed(entry,message);
+      transcript.push(attributed(entry,message));
     });
     return {phase:phase,state:phase,transcript:transcript,draft:hosted.draft||'',interim:hosted.interim||'',turn:hosted.turn||0,ended:phase==='ended'};
   }
@@ -43,7 +68,7 @@
   // patient text only when it played in full, otherwise a genuine heard prefix.
   function validId(id){return Number.isInteger(id)&&id>=1&&id<=10;}
   function copy(entry){
-    return attributed({id:entry.id,learnerText:entry.learnerText,danaText:entry.danaText,playbackStatus:entry.playbackStatus,reflection:entry.reflection},entry);
+    return withBid(attributed({id:entry.id,learnerText:entry.learnerText,danaText:entry.danaText,playbackStatus:entry.playbackStatus,reflection:entry.reflection},entry),entry.familyBid);
   }
   function submitted(snapshot){
     var transcript=snapshot&&Array.isArray(snapshot.transcript)?snapshot.transcript:[];
@@ -55,7 +80,7 @@
       if(!validId(id)||typeof row.text!=='string'||!row.text.trim())return;
       var next=transcript[index+1];
       latest=attributed({id:id,learnerText:row.text},row);
-      indexed[id]={learner:row,patient:next&&next.who==='pt'?next:null};
+      indexed[id]={learner:row,patient:next&&next.who==='pt'&&!next.familyBid?next:null,bid:heardBid(transcript[index+2])};
     });
     return {latest:latest,indexed:indexed};
   }
@@ -71,7 +96,7 @@
       if(status==='played')text=patient.text;
       else if(typeof patient.heardText==='string'&&patient.heardText&&patient.text.indexOf(patient.heardText)===0)text=patient.heardText;
     }
-    return attributed({danaText:text,playbackStatus:status},patient||{});
+    return withBid(attributed({danaText:text,playbackStatus:status},patient||{}),status==='played'&&text?moment.bid:null);
   }
   function createBookmarkStore(){
     var marked=Object.create(null);
@@ -89,6 +114,8 @@
         entry.danaText=heard.danaText;
         entry.playbackStatus=heard.playbackStatus;
         entry.speakerId=heard.speakerId;entry.speakerName=heard.speakerName;
+        if(heard.familyBid)entry.familyBid=heard.familyBid;
+        else delete entry.familyBid;
       });
       return entries();
     }
@@ -118,13 +145,14 @@
 
   function retryMoments(snapshot){
     var moments=[],turnId=0,pending=null;
-    (snapshot.transcript||[]).forEach(function(entry){
+    (snapshot.transcript||[]).forEach(function(entry,index,transcript){
       if(entry.who==='me'){turnId++;pending=attributed({turnId:turnId,question:entry.text},entry);}
-      else if(pending){
+      else if(pending&&!entry.familyBid){
         // Only a completed exchange can be returned to, and it is described by
         // what was heard, never by the generated tail.
         var moment=attributed(attributed({turnId:pending.turnId,question:pending.question,reply:entry.text,playbackStatus:entry.playbackStatus},pending),entry);
         if(entry.heardText)moment.heardText=entry.heardText;
+        if(entry.playbackStatus==='played')withBid(moment,heardBid(transcript[index+1]));
         if(entry.playbackStatus!=='pending')moments.push(moment);
         pending=null;
       }
@@ -200,12 +228,15 @@
     el('p','Ask one earlier moment a different way. The original respondent answers again from just before your question, using only what you had heard by then. This is not a score and does not replace your first conversation.',retryBox,{class:'fine'});
     var retrySelect=el('select',null,retryBox,{'aria-label':'Moment to try again'});
     var retryOriginal=el('blockquote','',retryBox);
+    var retryBid=el('blockquote','',retryBox,{hidden:''});
     var retryText=el('textarea','',retryBox,{maxlength:'1200','aria-label':'Your alternative question'});
     var retryButton=el('button','Ask this moment again',retryBox,{type:'button'});
     var retryNote=el('p','',retryBox,{class:'fine',role:'status'});
     function showMoment(){
       var moments=latest?retryMoments(latest):[],chosen=moments[Number(retrySelect.value)||0];
       retryOriginal.textContent=chosen?learnerName(chosen)+': '+chosen.question+' \u2014 '+respondentName(chosen)+': '+(chosen.heardText||(chosen.playbackStatus==='played'?chosen.reply:'nothing confirmed heard')):'';
+      retryBid.textContent=chosen&&chosen.familyBid?chosen.familyBid.speakerName+': '+chosen.familyBid.text:'';
+      retryBid.hidden=!retryBid.textContent;
     }
     retrySelect.addEventListener('change',showMoment);
     retryButton.addEventListener('click',function(){
@@ -227,15 +258,18 @@
           el('p',learnerName(entry)+': '+entry.learnerText,box);
           el('blockquote','',box);
           el('p','',box,{class:'fine'});
+          el('blockquote','',box,{hidden:''});
           var note=el('textarea',null,box,{maxlength:'1200','aria-label':'Reflection on moment '+entry.id});
           note.value=notes[entry.id]||'';
           note.addEventListener('input',function(){notes[entry.id]=String(note.value||'').slice(0,1200);store.setReflection(entry.id,notes[entry.id]);});
         }
-        var quote=box.children[1],status=box.children[2];
+        var quote=box.children[1],status=box.children[2],bidQuote=box.children[3];
         quote.textContent=entry.danaText?respondentName(entry)+': '+entry.danaText:'';
         quote.hidden=!entry.danaText;
         status.textContent=entry.danaText?'':entry.playbackStatus==='cancelled'?'No reply was confirmed heard for this moment.':'Nothing has been confirmed heard for this moment yet.';
         status.hidden=!!entry.danaText;
+        bidQuote.textContent=entry.familyBid?entry.familyBid.speakerName+': '+entry.familyBid.text:'';
+        bidQuote.hidden=!bidQuote.textContent;
       });
     }
     function update(hostedSnapshot){
