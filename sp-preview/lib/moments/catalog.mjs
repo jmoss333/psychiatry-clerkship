@@ -12,7 +12,9 @@ const definitions = deepFreeze([
     "schemaVersion": 1,
     "id": "moment_elena_rupture_001",
     "revision": 1,
-    "reviewStatus": "draft-pending-faculty-review",
+    "reviewStatus": "reviewed",
+    "reviewer": "Joshua Moss, MD",
+    "reviewedAt": "2026-09-09",
     "stage": "A",
     "maxTurns": 4,
     "learner": {
@@ -23,7 +25,6 @@ const definitions = deepFreeze([
       "setup": "You are taking over a conversation with Elena after this exchange. Elena has just described losing her job.  Previous student — scripted: “At least now you have some time to focus on yourself.”  Respond to Elena as the student joining now. You can acknowledge the earlier response without claiming you said it. Your task is to understand what matters to her and offer a respectful next step.",
       "setupAttribution": "Previous student — scripted",
       "durationLabel": "About 3–5 minutes",
-      "reviewLabel": "Faculty-review draft",
       "summaryPrompt": "",
       "reflectionPrompts": [
         "What am I pulled to do?",
@@ -176,7 +177,9 @@ const definitions = deepFreeze([
     "schemaVersion": 1,
     "id": "moment_priya_formulation_001",
     "revision": 1,
-    "reviewStatus": "draft-pending-faculty-review",
+    "reviewStatus": "reviewed",
+    "reviewer": "Joshua Moss, MD",
+    "reviewedAt": "2026-09-09",
     "stage": "A",
     "maxTurns": 4,
     "learner": {
@@ -187,7 +190,6 @@ const definitions = deepFreeze([
       "setup": "Priya has described feeling low and finding everyday activities harder than usual. She wants help but is worried about being slowed down at work.  First, tell Priya how you understand her concern and give her room to correct you. After a few exchanges, you can optionally give a brief summary for the team: what she described, what she wants, and what still needs clarification.",
       "setupAttribution": "",
       "durationLabel": "About 3–5 minutes",
-      "reviewLabel": "Faculty-review draft",
       "summaryPrompt": "Optional: give a brief summary for the team. Priya won't hear this part. What did she describe, what does she want, and what still needs clarification? Submit it only when you choose Review this moment.",
       "reflectionPrompts": [
         "What am I pulled to do?",
@@ -352,7 +354,9 @@ const definitions = deepFreeze([
     "schemaVersion": 1,
     "id": "moment_luis_teachback_001",
     "revision": 1,
-    "reviewStatus": "draft-pending-faculty-review",
+    "reviewStatus": "reviewed",
+    "reviewer": "Joshua Moss, MD",
+    "reviewedAt": "2026-09-09",
     "stage": "B",
     "maxTurns": 4,
     "learner": {
@@ -363,7 +367,6 @@ const definitions = deepFreeze([
       "setup": "The current fictional plan is: a referral has been submitted; no appointment is confirmed; the social worker is checking availability.  Explain what is arranged and what remains pending. Invite Luis to describe his understanding, then respond to what he tells you. Do not invent an appointment or promise an arrangement the card does not establish.",
       "setupAttribution": "",
       "durationLabel": "About 3–5 minutes",
-      "reviewLabel": "Faculty-review draft",
       "summaryPrompt": "",
       "reflectionPrompts": [
         "What am I pulled to do?",

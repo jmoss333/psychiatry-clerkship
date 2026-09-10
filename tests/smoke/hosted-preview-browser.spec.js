@@ -515,10 +515,10 @@ async function openMoment(page,index=0,recognition='unavailable'){
   const events=[{type:'review-start',state:'closed'},{type:'review-unavailable',code:'preview_review_unavailable'},{type:'review-complete',state:'closed'}];
   await route.fulfill({status:200,contentType:'application/x-ndjson',body:b.action==='debrief'?events.map(e=>JSON.stringify(e)+'\n').join(''):ndjson(b.action==='start'?(turn=0):b.action==='retry'?b.turnId:++turn)});
  });
- await page.selectOption('#experience-choice','moment');await page.selectOption('#case-choice',MOMENTS[index]);await page.fill('#preview-key','mock-preview-passcode');await page.click('#start');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase',recognition==='available'?'listening':'ready');return result;
+ await page.selectOption('#experience-choice','moment');await page.selectOption('#case-choice',MOMENTS[index]);await expect(page.locator('#case-review-note')).toBeHidden();await page.fill('#preview-key','mock-preview-passcode');await page.click('#start');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase',recognition==='available'?'listening':'ready');await expect(page.locator('#encounter-review-note')).toBeHidden();return result;
 }
 for(const [index,id] of MOMENTS.entries())test(`${id}: four responses, fallback, alternative and fresh transfer`,async({page})=>{
- const {requests,errors,violations}=await openMoment(page,index);await expect(page.locator('[data-moment="draft-label"]')).toHaveText('Faculty-review draft');
+ const {requests,errors,violations}=await openMoment(page,index);await expect(page.locator('[data-moment="draft-label"]')).toBeHidden();
  for(let i=0;i<4;i++){await page.fill('#composer','What matters to you?');await page.click('#send');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase',i===3?'ended':'ready');}
  await expect(page.locator('#turn-count')).toHaveText('4 of 4 responses');await page.locator('[data-moment="review"]').click();await expect(page.locator('[data-moment="review-fallback"]')).toBeVisible();expect(requests.filter(r=>r.action==='debrief')).toHaveLength(1);
  await page.locator('#moment-alternative-text').fill('Let me check what you mean.');await page.locator('[data-moment="submit-alternative"]').click();await expect(page.locator('[data-moment="alternative-result"]')).toBeVisible();await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','ended');expect(requests.filter(r=>r.action==='retry')).toHaveLength(1);

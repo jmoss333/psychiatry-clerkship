@@ -1,8 +1,12 @@
 # Practice a Moment — implementation evidence
 
-September 9, 2026. All three fictional moments remain **faculty-review drafts**. This is an engineering implementation record, not clinical approval or evidence of learner competence.
+September 9, 2026. This is an engineering implementation record, not evidence of learner competence.
 
 Students can choose a full encounter or a short moment with Elena, Priya or Luis. Moments allow up to four responses, private reflection, one explicitly requested evidence-linked review, and one terminal spoken alternative. Priya has a separate optional team formulation submitted only to review. Transfers require a fresh Start and carry no dialogue or reflection.
+
+## Content attestation — 2026-09-09
+
+Joshua Moss, MD, attested the three moments' authored content — case setup, facts, review criteria, uncertainty and next-attempt templates — as reviewed. The catalog's `reviewStatus` moves from `draft-pending-faculty-review` to `reviewed` (with `reviewer` and `reviewedAt` recorded next to it), and the learner-facing "Faculty-review draft" label is removed from the public projection and the station UI. This is separate from the "Faculty audition record" below, which tracks a live AI-review and physical-microphone pass and remains **unreviewed** — content attestation does not stand in for that verification.
 
 ## Evidence and publication state
 
