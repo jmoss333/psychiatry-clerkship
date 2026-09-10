@@ -144,7 +144,9 @@
       diagnostics:function(){return {nativeRecognition:nativeRecognition,sessions:serial,counts:Object.assign({},counts),events:trace.slice()};}};
   }
 
-  // New cases remain labeled faculty-review drafts; registration is not attestation.
+  // Registration alone is not attestation. Morgan and the family meeting were
+  // attested by Joshua Moss, MD on 2026-09-09; every case listed here now carries
+  // faculty-attested content.
   var CASE_IDS=['sp_depression_gated_si_001','sp_mania_redirect_001','sp_psychosis_paranoid_001','sp_alcohol_ambivalence_001',FAMILY_CASE_ID];
   function createController(env,options){
     options=options||{};var phase='gate',key='',receipt=null,turn=0,caseId=CASE_IDS[0],messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false,retryUsed=false;
