@@ -340,8 +340,9 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-06-30",
-    "by": "Joshua Moss, MD"
+    "at": "2026-09-10",
+    "by": "Joshua Moss, MD",
+    "note": "Re-attested 2026-09-10 after decision `cows-anchors-retired`. What changed: the 45 published COWS anchor strings were replaced with abbreviated descriptors written in-house; item names, legal score values, the tally, gauge and severity bands are unchanged; the page's own text now says the descriptors are ours and neither instrument is reproduced. Reviewed and authorized by Dr. Moss in session on 2026-09-10 against the full 11-item descriptor table; recorded by agent on his explicit instruction. Prior attestation 2026-06-30 covered the version that carried the published anchors."
   },
   "decision-aids.html": {
     "status": "reviewed",
