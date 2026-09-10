@@ -68,12 +68,17 @@ const SURFACES = ['fd-bg', 'fd-surface', 'fd-surface-warm', 'fd-selected', 'fd-c
 const PAIRS = [
   ...['fd-text', 'fd-text-mid', 'fd-text-dim'].flatMap((t) => SURFACES.map((b) => [t, b, 4.5])),
   ['fd-text', 'fd-danger-wash', 4.5],
-  ['fd-terracotta', 'fd-bg', 4.5], ['fd-terracotta', 'fd-surface', 4.5], ['fd-terracotta', 'fd-surface-warm', 4.5],
+  // 2026-09-10 ROLE SPLIT: --fd-terracotta and --fd-olive are FILL/BORDER tokens and are
+  // gated below at the 3:1 non-text bar. Every `color:` call site moved to the -dark / -deep
+  // ink token, which is what these 4.5 rows now cover. frontdoor.css's ROLE RULE header and
+  // bin/check_design_drift.py keep them from being painted as text again.
+  ['fd-terracotta-dark', 'fd-bg', 4.5], ['fd-terracotta-dark', 'fd-chip', 4.5],
   ['fd-terracotta-dark', 'fd-selected', 4.5], ['fd-terracotta-dark', 'fd-surface', 4.5], ['fd-terracotta-dark', 'fd-surface-warm', 4.5],
   ['fd-teal-deep', 'fd-surface', 4.5], ['fd-teal-deep', 'fd-surface-warm', 4.5],
   ['fd-teal-deep', 'fd-teal-wash', 4.5], ['fd-teal-deep', 'fd-danger-wash', 4.5], ['fd-teal-deep', 'fd-bg', 4.5],
+  ['fd-teal-deep', 'fd-callout', 4.5],
   ['fd-danger', 'fd-surface', 4.5], ['fd-danger', 'fd-danger-wash', 4.5], ['fd-danger', 'fd-surface-warm', 4.5],
-  ['fd-olive', 'fd-surface', 4.5], ['fd-olive', 'fd-bg', 4.5], ['fd-olive', 'fd-surface-warm', 4.5],
+  ['fd-olive-deep', 'fd-bg', 4.5], ['fd-olive-deep', 'fd-surface', 4.5], ['fd-olive-deep', 'fd-surface-warm', 4.5],
   ['fd-olive-deep', 'fd-olive-wash', 4.5],
   ['fd-on-accent', 'fd-terracotta', 4.5], ['fd-on-accent', 'fd-terracotta-dark', 4.5],
   ['fd-on-accent', 'fd-danger', 4.5], ['fd-on-accent', 'fd-danger-dark', 4.5],
@@ -82,6 +87,8 @@ const PAIRS = [
   ['fd-teal', 'fd-teal-wash', 3], ['fd-teal', 'fd-ring-track', 3],
   ['fd-success', 'fd-surface', 3], ['fd-success', 'fd-bg', 3],
   ['fd-danger', 'fd-bg', 3], ['fd-terracotta', 'fd-selected', 3],
+  ['fd-terracotta', 'fd-bg', 3], ['fd-terracotta', 'fd-surface', 3], ['fd-terracotta', 'fd-surface-warm', 3],
+  ['fd-olive', 'fd-bg', 3], ['fd-olive', 'fd-surface', 3], ['fd-olive', 'fd-surface-warm', 3],
   ['fd-focus', 'fd-surface', 3], ['fd-focus', 'fd-bg', 3], ['fd-focus', 'fd-surface-warm', 3],
 ];
 
@@ -89,13 +96,15 @@ const PAIRS = [
 // deliberate acceptance, not an oversight -- changing any of them is a palette-owner decision.
 // (--fd-line / --fd-line-strong are absent from PAIRS entirely: a 1px hairline cannot reach 3:1
 // in either theme without ceasing to be a hairline, and :focus-visible carries a11y instead.)
-const LIGHT_DEBT = new Set([
-  'fd-text-dim on fd-bg', 'fd-text-dim on fd-surface', 'fd-text-dim on fd-surface-warm',
-  'fd-text-dim on fd-selected', 'fd-text-dim on fd-chip', 'fd-text-dim on fd-callout',
-  'fd-terracotta on fd-bg', 'fd-terracotta on fd-surface', 'fd-terracotta on fd-surface-warm',
-  'fd-olive on fd-bg',
-  'fd-on-accent on fd-terracotta',
-]);
+// EMPTY as of 2026-09-10. All eleven inherited exceptions were paid off in one pass:
+//   6x --fd-text-dim  -> token darkened #87786a -> #76695d (worst ground 3.62 -> 4.51)
+//   1x --fd-on-accent on --fd-terracotta -> fill darkened #b0674e -> #a9634b (4.29 -> 4.59)
+//   4x --fd-terracotta / --fd-olive as text -> role split; those call sites now use the
+//      -dark / -deep ink tokens and the fill tokens are gated at 3:1 above.
+// See clinical-warm.css "CONTRAST DECISIONS" for the palette-owner rationale.
+// Keep this set EMPTY. The loop below fails the run if a listed key starts passing, so a new
+// entry can only ever be a deliberate, reviewed acceptance -- never a quiet regression.
+const LIGHT_DEBT = new Set([]);
 
 function run(label, P, debt) {
   const problems = [];

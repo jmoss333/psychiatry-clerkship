@@ -247,6 +247,15 @@ fi
 step "unit — crisis surfaces checker"       python3 bin/check_crisis_surfaces.py --self-test
 step "crisis contacts in the built sites"   python3 bin/check_crisis_surfaces.py
 
+# Design-system drift. Its C4 check reads the BUILT pages, not the sources, because the
+# dark-mode stylesheet is injected at build time (common.py) — a tool source can look
+# self-consistently light, pass every source-level test, and still ship a page whose ground
+# flips to dark while its own ink stays near-black. That is exactly what shipped on five tool
+# pages until 2026-09-10 (family-systems.html measured 1.06:1 on production). Placed here,
+# after both builds, for the same reason check_crisis_surfaces.py is.
+step "unit — design drift checker"          python3 bin/check_design_drift.py --self-test
+step "design system drift"                  python3 bin/check_design_drift.py
+
 echo "─────────────────────────────────────────────────────────────────────"
 if [ ${#FAILED[@]} -eq 0 ]; then
   [ $QUICK -eq 1 ] && { echo "QUICK PASS — builds skipped, not a gate run"; exit 0; }

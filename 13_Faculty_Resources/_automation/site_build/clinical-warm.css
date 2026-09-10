@@ -33,8 +33,8 @@
   --fd-line-hover:#c8baa7;        /* hover border */
   --fd-text:#3b332c;              /* body text */
   --fd-text-mid:#64574b;          /* secondary */
-  --fd-text-dim:#87786a;          /* tertiary / done */
-  --fd-terracotta:#b0674e;        /* primary action */
+  --fd-text-dim:#76695d;          /* tertiary / done — darkened 2026-09-10, see CONTRAST DECISIONS */
+  --fd-terracotta:#a9634b;        /* primary action FILL — darkened 2026-09-10, see CONTRAST DECISIONS */
   --fd-terracotta-dark:#96523b;   /* primary hover */
   --fd-teal:#3a7d6e;              /* accent */
   --fd-teal-deep:#2c6356;         /* accent text */
@@ -64,6 +64,85 @@
   --fd-shadow-lift:0 2px 6px rgba(59,51,44,.07),0 14px 32px rgba(59,51,44,.06);
   --fd-shadow-over:0 6px 18px rgba(59,51,44,.10),0 24px 56px rgba(59,51,44,.12);
   --fd-shadow-bar:0 -4px 16px rgba(59,51,44,.08);
+
+  /* ── Dimension layer (theme-invariant) ─────────────────────────────────────
+   * Added 2026-09-10. The colour layer above has had a single source of truth
+   * since #100; every other visual dimension did not, and frontdoor.css alone
+   * carried 26 distinct font-sizes, 16 radii, 22 gaps and 69 padding values.
+   * These scales are DERIVED from that distribution (each step is the modal
+   * value of an observed cluster), so adopting them is a snap, not a redesign.
+   *
+   * Nothing consumes these yet — landing the vocabulary is deliberately
+   * separate from migrating call sites. bin/check_design_drift.py reports the
+   * remaining raw values against a pinned baseline and ratchets it down.
+   * These are theme-invariant by contract: they must NOT be redeclared in the
+   * dark block. check_design_drift.py enforces that.
+   */
+
+  /* Type — 9 steps, replacing 26 ad-hoc sizes. 11px is the floor: nothing
+   * learner-facing may be smaller (16 declarations at 9–10.5px are pinned debt
+   * in the checker baseline).
+   *
+   * NAMESPACE RULE: --fd-text-* is COLOUR (--fd-text, --fd-text-mid, --fd-text-dim);
+   * font SIZE is --fd-font-*. They were briefly the same namespace and the drift
+   * checker immediately flagged --fd-text-dim as a "dimension token with a dark
+   * value" — a collision worth keeping out of the vocabulary permanently. */
+  --fd-font-2xs:11px;   /* chips, kbd, uppercase micro-labels */
+  --fd-font-xs:12px;    /* section heads, metadata */
+  --fd-font-sm:13px;    /* dense UI, secondary controls */
+  --fd-font-md:14px;    /* buttons, standard UI text */
+  --fd-font-base:15px;  /* body */
+  --fd-font-lg:17px;    /* lead paragraph, card title */
+  --fd-font-xl:21px;    /* block title */
+  --fd-font-2xl:26px;   /* section title */
+  --fd-font-3xl:30px;   /* page title (.fd-h1) */
+
+  /* Line height — paired with the type scale, not chosen per rule. */
+  --fd-leading-tight:1.2;   /* display sizes */
+  --fd-leading-snug:1.35;   /* titles */
+  --fd-leading-normal:1.55; /* UI text — the shell default */
+  --fd-leading-relaxed:1.7; /* long-form reading */
+
+  /* Space — 2px-granular at the low end because a dense clinical UI genuinely
+   * uses it (gap:10px is the single most common declaration in frontdoor.css). */
+  --fd-space-1:2px;
+  --fd-space-2:4px;
+  --fd-space-3:6px;
+  --fd-space-4:8px;
+  --fd-space-5:10px;
+  --fd-space-6:12px;
+  --fd-space-7:16px;
+  --fd-space-8:20px;
+  --fd-space-9:24px;
+  --fd-space-10:28px;
+
+  /* Radius */
+  --fd-radius-xs:6px;
+  --fd-radius-sm:8px;
+  --fd-radius-md:10px;
+  --fd-radius-lg:12px;
+  --fd-radius-xl:16px;
+  --fd-radius-pill:999px;
+  --fd-radius-circle:50%;
+
+  /* Motion. The reduced-motion block at the foot of frontdoor.css zeroes these
+   * at the property level; do not hand-write durations past it. */
+  --fd-dur-fast:.12s;    /* hover / border colour */
+  --fd-dur-base:.28s;    /* enter transitions */
+  --fd-dur-slow:.3s;     /* celebratory pops */
+  --fd-ease-standard:cubic-bezier(.2,.8,.2,1);
+  --fd-ease-spring:cubic-bezier(.34,1.56,.64,1);
+
+  /* Target sizes. WCAG 2.2 SC 2.5.8 is 24px; touch convention is 44px. The
+   * .fd-check pattern (22px visual mark + a transparent ::after that grows the
+   * hit area) is the reference implementation — see frontdoor.css. */
+  --fd-target-min:24px;
+  --fd-target-touch:44px;
+
+  /* Breakpoints cannot be custom properties in @media, so they are pinned here
+   * as documentation and asserted by bin/check_design_drift.py:
+   *   sm 430px   md 640px   lg 1000px
+   * The stray 390px query is pinned debt; fold it into sm. */
 }
 
 /* ── Front door: dark palette ───────────────────────────────────────────────
@@ -76,14 +155,29 @@
  * Verified with tests/fd-contrast.mjs: all 53 painted pairs clear 4.5:1 (text) / 3:1
  * (non-text), which is a stricter result than the light palette achieves.
  *
- * KNOWN CONTRAST DEBT (light palette, inherited from the design, NOT introduced here):
- *   --fd-text-dim on every surface   3.62–4.26:1  (needs #746758 to clear 4.5:1)
- *   --fd-terracotta as text          3.88–4.29:1  (--fd-terracotta-dark is 5.89:1)
- *   --fd-on-accent on --fd-terracotta     4.29:1
- *   --fd-olive on --fd-bg                 4.23:1
- *   --fd-line / --fd-line-strong never reach 3:1 in EITHER theme — a hairline aesthetic
- *   cannot; :focus-visible carries the a11y weight instead.
- * Changing these is a design decision for the palette owner, not an implementation one.
+ * CONTRAST DECISIONS (2026-09-10) — the light debt below is now PAID. The four entries
+ * that used to sit here were measured live against the production MS3 build: 23 of the 24
+ * failing text elements on the front door came from ONE token, --fd-text-dim, and the 24th
+ * from white ink on --fd-terracotta. The palette owner (J. Moss) accepted the following:
+ *
+ *   1. --fd-text-dim  #87786a -> #76695d.  Minimal hue-preserving darkening; worst ground
+ *      (--fd-selected) goes 3.62 -> 4.51. Clears every painted ground. Was 6 debt entries.
+ *   2. --fd-terracotta #b0674e -> #a9634b. Darkened only enough that --fd-on-accent (#fff)
+ *      on the FILL clears 4.5 (4.29 -> 4.59). The hover step to --fd-terracotta-dark stays
+ *      perceptible (1.37 -> 1.28 relative). Was 1 debt entry.
+ *   3. ROLE SPLIT, not a repaint, for the two accents that were being used as both fill and
+ *      ink. --fd-teal/--fd-teal-deep already model this correctly; --fd-terracotta and
+ *      --fd-olive did not. Their four text call-sites each in frontdoor.css now use
+ *      --fd-terracotta-dark (5.00-5.89) and --fd-olive-deep (5.46-6.44). The base tokens are
+ *      FILL/BORDER ONLY and are gated at the 3:1 non-text bar. Was 4 debt entries.
+ *
+ * LIGHT_DEBT in tests/fd-contrast.test.mjs is now EMPTY. It is a ratchet: that test fails if
+ * a pinned exception starts passing, so the list cannot silently absorb a new regression.
+ *
+ * STILL ACCEPTED, in both themes:
+ *   --fd-line / --fd-line-strong never reach 3:1 — a hairline aesthetic cannot, and they
+ *   carry no meaning alone; :focus-visible (--fd-focus) carries the a11y weight instead.
+ *   These are deliberately absent from the PAIRS list, not allowlisted.
  */
 [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--bg2:#211d1a;--surface:#2a2520;--surface2:#332e28;--hover:#3d3630;--border:#3d3630;--border2:#2f2a25;--text:#e8e2da;--text-mid:#b3a596;--mid:#b3a596;--text-light:#8a7c6e;--light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-d:#dd9277;--primary-light:rgba(212,137,110,.16);--primary-l:rgba(212,137,110,.16);--primary-ink:#e6a98f;--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-d:#6cbcaa;--accent-light:rgba(90,173,154,.16);--accent-l:rgba(90,173,154,.16);--accent-border:rgba(90,173,154,.38);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--success-l:rgba(90,173,142,.16);--good:#5aad8e;--good-bg:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--warning-l:rgba(196,164,92,.16);--warn:#c4a45c;--warn-bg:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--danger-l:rgba(212,104,88,.16);--bad:#d46858;--bad-bg:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--info-l:rgba(122,158,196,.16);--on-brand:#211d1a;--focus:#7aa2ff;--shadow:0 1px 3px rgba(0,0,0,.35);--shadow-sm:0 1px 3px rgba(0,0,0,.35);--shadow-md:0 2px 10px rgba(0,0,0,.4);--shadow-lg:0 8px 28px rgba(0,0,0,.45);
   --fd-bg:#211d1a;
@@ -119,4 +213,50 @@
   --fd-shadow-lift:0 2px 6px rgba(0,0,0,.42),0 14px 32px rgba(0,0,0,.38);
   --fd-shadow-over:0 6px 18px rgba(0,0,0,.45),0 24px 56px rgba(0,0,0,.5);
   --fd-shadow-bar:0 -4px 16px rgba(0,0,0,.4);
+}
+
+/* ── Legacy per-page palettes: dark values ──────────────────────────────────
+ * Added 2026-09-10 to close a P0 found by auditing the SHIPPED build rather than the
+ * source: five tool pages declare a PRIVATE light palette under names this file's dark
+ * block never overrode (--ink, --muted, --line, --soft, --terracotta, --gold, ...), while
+ * the same pages DO link this file and DO flip --bg / --surface. The result in dark mode
+ * was near-black ink on a near-black ground:
+ *
+ *   family-systems.html        56 text elements below AA, worst 1.06:1 (whole nav column)
+ *   one-patient-six-weeks.html 31 text elements below AA, worst 1.06:1 (every week heading)
+ *   rotation-curator.html      21 text elements below AA, worst 1.57:1 (every field label)
+ *
+ * Verified live on https://une-ms3-psychiatry.netlify.app before and after.
+ *
+ * These names are page-private but semantically identical across the pages that use them
+ * (--ink is always primary body text, --line always a hairline, and so on), which is why one
+ * central override is correct rather than five inline blocks. Values are the dark ROLE
+ * equivalents already proven in the --fd-* block above, so the two halves cannot drift.
+ *
+ * This is a REMEDIATION layer, not a pattern to extend. New pages use --fd-* tokens; the
+ * long-term fix is to migrate these five pages onto them and delete this block. Adding a new
+ * name here is a signal that a page has invented private colour vocabulary — which is what
+ * bin/check_design_drift.py now fails the build on.
+ */
+[data-theme="dark"]{
+  --ink:#ece5db;              /* was #2f2924 / #28332f / #3b332c — primary body text */
+  --muted:#bcb0a2;            /* was #5f554b / #61564c / #5d6964 — secondary text */
+  --soft:#a2968a;             /* was #74685d / #776a5e — tertiary text */
+  --line:#3a332c;             /* was #ded3c5 / #ddd2c5 / #d6cec1 — hairline */
+  --surface-2:#2f2a25;        /* was #faf7f1 — raised surface */
+  --paper:#2a2521;            /* was #fffdf8 — card ground (rotation-curator) */
+  --terracotta:#d08a6f;       /* was #bd5537 / #9f3f2a — accent fill */
+  --terra:#d08a6f;            /* alias used by one-patient-six-weeks */
+  --terracotta-dark:#e0a184;  /* was #9e412b — accent hover (lighter in dark, by role) */
+  --terracotta-soft:#3a2b24;  /* was #f5e8e2 / #f5ddd5 — accent wash */
+  --terra-soft:#3a2b24;       /* alias used by one-patient-six-weeks */
+  --teal:#5fa392;             /* was #2b7568 — secondary accent fill */
+  --teal-dark:#7fc0ae;        /* was #1f574d — secondary accent ink */
+  --teal-soft:#1d332e;        /* was #e7f1ee — secondary accent wash */
+  --evergreen:#5fa392;        /* rotation-curator's name for the same role as --teal */
+  --evergreen-soft:#1d332e;
+  --gold:#c0a06a;             /* was #806232 / #b77731 — tertiary accent */
+  --gold-soft:#332a1c;        /* was #f7efe0 */
+  --danger-bg:#3a231f;        /* was a light wash (screeners.html) */
+  --shadow-card:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.3);  /* interview-circle */
 }
