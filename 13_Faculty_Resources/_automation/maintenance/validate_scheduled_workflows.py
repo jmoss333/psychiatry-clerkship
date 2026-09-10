@@ -270,6 +270,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Install Playwright and Chromium"),
             ("name", "Crawl both public learner sites"),
             ("name", "Build content-free release twin"),
+            ("name", "Read Netlify production deploy health"),
             ("uses", "actions/upload-artifact"),
         ),
     },
@@ -396,7 +397,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "9a69d9629641bfa9478956003a99c989a633aad8cf710be9d0f0a4294b98dcd2"
     ),
     "maintenance-production-canary.yml": (
-        "a7be8923488ec6d1d824fcdfc2fc59feefe258ac937bb9cf42ee1127485e94e7"
+        "4ee13d7a3eaa2a8d839b596265a25e0f0b78a8cad69c384d81784f5334c8ccfc"
     ),
     "maintenance-rotation-readiness.yml": (
         "655504ee205ce4f27ddc63dc2a819dc1d1eb7987f56bbacbbfc452d1cc48476a"
