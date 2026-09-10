@@ -215,7 +215,7 @@
  *   carry no meaning alone; :focus-visible (--fd-focus) carries the a11y weight instead.
  *   These are deliberately absent from the PAIRS list, not allowlisted.
  */
-[data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--bg2:#211d1a;--surface:#2a2520;--surface2:#332e28;--hover:#3d3630;--border:#3d3630;--border2:#2f2a25;--text:#e8e2da;--text-mid:#b3a596;--mid:#b3a596;--text-light:#8a7c6e;--light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-d:#dd9277;--primary-light:rgba(212,137,110,.16);--primary-l:rgba(212,137,110,.16);--primary-ink:#e6a98f;--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-d:#6cbcaa;--accent-light:rgba(90,173,154,.16);--accent-l:rgba(90,173,154,.16);--accent-border:rgba(90,173,154,.38);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--success-l:rgba(90,173,142,.16);--good:#5aad8e;--good-bg:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--warning-l:rgba(196,164,92,.16);--warn:#c4a45c;--warn-bg:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--danger-l:rgba(212,104,88,.16);--bad:#d46858;--bad-bg:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--info-l:rgba(122,158,196,.16);--on-brand:#211d1a;--focus:#7aa2ff;--shadow:0 1px 3px rgba(0,0,0,.35);--shadow-sm:0 1px 3px rgba(0,0,0,.35);--shadow-md:0 2px 10px rgba(0,0,0,.4);--shadow-lg:0 8px 28px rgba(0,0,0,.45);
+[data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--bg2:#211d1a;--surface:#2a2520;--surface2:#332e28;--hover:#3d3630;--border:#3d3630;--border2:#2f2a25;--text:#e8e2da;--text-mid:#b3a596;--mid:#b3a596;--text-light:#a09488;--light:#a09488;--primary:#d4896e;--primary-dark:#dd9277;--primary-d:#dd9277;--primary-light:rgba(212,137,110,.16);--primary-l:rgba(212,137,110,.16);--primary-ink:#e6a98f;--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-d:#6cbcaa;--accent-light:rgba(90,173,154,.16);--accent-l:rgba(90,173,154,.16);--accent-border:rgba(90,173,154,.38);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--success-l:rgba(90,173,142,.16);--good:#5aad8e;--good-bg:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--warning-l:rgba(196,164,92,.16);--warn:#c4a45c;--warn-bg:rgba(196,164,92,.16);--danger:#da7c6e;--danger-light:rgba(212,104,88,.16);--danger-l:rgba(212,104,88,.16);--bad:#da7c6e;--bad-bg:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--info-l:rgba(122,158,196,.16);--on-brand:#211d1a;--focus:#7aa2ff;--shadow:0 1px 3px rgba(0,0,0,.35);--shadow-sm:0 1px 3px rgba(0,0,0,.35);--shadow-md:0 2px 10px rgba(0,0,0,.4);--shadow-lg:0 8px 28px rgba(0,0,0,.45);
   --fd-bg:#211d1a;
   --fd-surface:#2a2521;
   --fd-surface-warm:#2f2a25;
@@ -249,6 +249,20 @@
   --fd-shadow-lift:0 2px 6px rgba(0,0,0,.42),0 14px 32px rgba(0,0,0,.38);
   --fd-shadow-over:0 6px 18px rgba(0,0,0,.45),0 24px 56px rgba(0,0,0,.5);
   --fd-shadow-bar:0 -4px 16px rgba(0,0,0,.4);
+
+  /* Practice-panel washes. .minitree and .workflow-step are correctly tokenised at their base;
+   * spa_index.html overrides them INSIDE .practice-panel, and those overrides were hardcoded
+   * light values, so the panel stayed a light island here. contrast.spec.js measured 42 elements
+   * below AA on ?page=suicide.md, worst 1.23:1 — dark ink on a 247,250,249 wash. Light halves
+   * are declared in spa_index.html's :root, verbatim as they shipped. 2026-09-10. */
+  --panel-wash-a:rgba(29,51,46,.92);    /* teal end, from --fd-teal-wash dark */
+  --panel-wash-b:rgba(47,42,37,.96);    /* warm end */
+  --panel-line:#3a4b47;
+  --panel-step-bg:rgba(47,42,37,.86);   /* --text 11.48:1 over --bg */
+  --panel-tree-bg:rgba(42,37,32,.72);   /* --text 12.39:1 over --bg */
+  --panel-sheer:rgba(42,37,32,.55);
+  --panel-solid:rgba(42,37,32,.86);
+  --panel-warm:#2b2620;
 
   /* Injected crisis block — see the light block for why this namespace exists. */
   --cw-surface:#2b2620;   /* 11.99:1 under --cw-text */
