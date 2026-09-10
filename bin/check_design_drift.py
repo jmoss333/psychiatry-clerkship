@@ -495,8 +495,18 @@ def measure_css(css: str) -> dict:
             raw += 1
             if prop == "font-size":
                 sizes.add(value)
-                px = re.fullmatch(r"([\d.]+)px", value)
-                if px and float(px.group(1)) < TYPE_FLOOR_PX:
+                # rem counts too. It did not until 2026-09-10, and the omission hid ~22
+                # sub-floor declarations in spa_index.html behind a reported count of ZERO:
+                # the shell writes its type in rem, the floor check only matched px, and a
+                # gate that cannot see a value cannot ratchet it. rem resolves against the
+                # ROOT element, which neither stylesheet restyles, so 16 is the real divisor
+                # (body's 17px affects em and inheritance, not rem).
+                as_px = None
+                if (m_px := re.fullmatch(r"([\d.]+)px", value)):
+                    as_px = float(m_px.group(1))
+                elif (m_rem := re.fullmatch(r"([\d.]+)rem", value)):
+                    as_px = float(m_rem.group(1)) * 16
+                if as_px is not None and as_px < TYPE_FLOOR_PX:
                     tiny.append(value)
     # Only @media preludes. A bare `min-width:20px` inside a rule is a control size, not a
     # breakpoint; scanning the whole sheet for it produced 13 phantom "breakpoints" on the

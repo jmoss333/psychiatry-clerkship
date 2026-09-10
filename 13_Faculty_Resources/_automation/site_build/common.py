@@ -475,6 +475,24 @@ THEME_INIT = (
     "document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>"
 )
 
+# ?theme-audit — a LOADER, not the tool. Every colour defect this library shipped in 2026-09 was
+# the same thing: a colour that does not flip. The gate in bin/check_design_drift.py catches the
+# four shapes it has been taught, on the routes someone encoded; this makes the whole family
+# visible on ANY page, in five seconds, to a person. theme_audit.js is ~11 KB and would be dead
+# weight on 30 pages, so what ships is this: ~200 bytes that fetch nothing unless the URL asks.
+# rotation-curator.html is offline BY CONTRACT. check-static-site.mjs hard-fails on any network
+# transport API in it — fetch, XHR, WebSocket, and `createElement("script")` among them — because
+# the faculty edition builder must not be able to reach the network at all. A debug hook is not a
+# reason to weaken that, so it is the one page that does not get the loader below. Found the hard
+# way: the first build with the loader failed with "network transport API in rotation-curator.html".
+NO_NETWORK_PAGES = frozenset({"rotation-curator.html"})
+
+THEME_AUDIT_LOADER = (
+    "<script>(function(){if(!/[?&]theme-audit\\b/.test(location.search))return;"
+    "var s=document.createElement('script');s.src='/theme-audit.js';s.defer=true;"
+    "document.head.appendChild(s);})();</script>"
+)
+
 MOTION_CSS = (
     "@media(prefers-reduced-motion:no-preference){"
     "@keyframes ccRise{from{transform:translateY(10px)}to{transform:none}}"
@@ -661,6 +679,10 @@ def apply_dark_mode(path, is_index=False, cache_bust=None, page_slug=None, injec
 
     if "cw_theme" not in t and "<head>" in t:
         t = t.replace("<head>", "<head>\n" + THEME_INIT, 1)
+
+    if (os.path.basename(path) not in NO_NETWORK_PAGES
+            and "theme-audit.js" not in t and "</head>" in t):
+        t = t.replace("</head>", THEME_AUDIT_LOADER + "\n</head>", 1)
 
     # Dark tokens come from the linked stylesheet — one file, not N inline copies.
     #
