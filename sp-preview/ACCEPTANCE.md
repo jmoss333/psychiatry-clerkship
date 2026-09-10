@@ -1,3 +1,17 @@
+# September 9 — Morgan and the family meeting attested
+
+Joshua Moss, MD attested the hosted spoken portrayals of Morgan
+(`sp_alcohol_ambivalence_001`) and the Morgan/Maya family meeting
+(`family_morgan_maya_001`) on 2026-09-09, per his instruction in session. This
+flips `facultyReview`/`review` status from pending/draft to `reviewed` (reviewer
+`Joshua Moss, MD`, date `2026-09-09`) on the local case, its speech profile, the
+portrayal/station layer shared by all five encounters, and the label on Dana's
+direct-suicide-question overlay; the hosted station's "(draft)" case-picker
+labels and "Faculty-review draft" review notes no longer appear for these two
+cases. This is a labels-and-status change only — no case facts, gates, prompts,
+or voices changed. The hosted site is not git-linked, so nothing here reaches
+learners until the owner runs a CLI deploy of `sp-preview`.
+
 # September 8 — family, MI, and portrayal extension
 
 The protected preview adds the existing Morgan MI draft and a public-only Morgan/Maya family meeting. This does not attest either case or transplant the local private-check-in workflow. One family respondent speaks per learner turn. The same twenty-start daily policy and 34-unit full-encounter envelope apply.

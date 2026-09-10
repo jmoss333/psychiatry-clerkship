@@ -24,7 +24,7 @@ test('hosted Morgan uses the authored MI inventory without introducing diagnosis
   assert.ok(registered,'Morgan is available to start in the hosted room');
   assert.equal(registered.caseDef,localCases.cases[0],'hosting must not fork the authored case');
   assert.equal(registered.caseDef.persona.pronouns,'they/them');
-  assert.equal(registered.caseDef.facultyReview.status,'draft-pending-attestation');
+  assert.equal(registered.caseDef.facultyReview.status,'reviewed');
   assert.deepEqual(registered.caseDef.gated,[]);
   const questions=['What does drinking do for you, and what concerns you about it?'];
   const result=createContext(registered.caseDef,questions,[
