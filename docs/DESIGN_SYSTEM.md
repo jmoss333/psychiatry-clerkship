@@ -223,8 +223,46 @@ themeAuditRequests:0`. `rotation-curator.html` is in `NO_NETWORK_PAGES` and gets
 because that page's offline contract is hard-enforced at build time and a `createElement('script')`
 violates it.
 
-This is a **lamp, not a gate**: it finds; it does not block. When it finds a class of defect worth
-pinning, that class becomes a check — which is exactly how C8 got written.
+It began as a **lamp, not a gate** — and then it found three more defects that way (§3.3), so the
+measurement is now a gate too. `theme_scan.js` holds the walk; `theme_audit.js` renders it for a
+person; `tests/smoke/frozen-colour.spec.js` runs it over everything. **One implementation on
+purpose**: if the gate re-measured, the two would drift, and the drift would be silent.
+
+### 3.3 The ratchet — the lamp, run over everything, every push
+
+Three consecutive PRs shipped a fix whose defect was found by a person running a probe, never by a
+gate:
+
+| Found | Defect | Measured |
+|---|---|---|
+| #616 | `--on-brand` had no **light** half, so the build's own `color:#fff` → `var(--on-brand)` rewrite resolved to nothing and filled buttons fell back to body ink | **2.56:1**, light |
+| #616 | five practice-family hairlines stayed at their light values in dark mode | no ratio to fail |
+| #617 | white on the brand fill across 21 shipped sources | **4.36:1** |
+
+Every file-reading gate was green for all three, and could not have been otherwise. C4 walks
+*declared-and-used* tokens; these were an **undeclared** token, a **raw literal**, and a token whose
+value was simply **wrong**. §3.1's probe gets closer — it measures rendered text — but it walks four
+routes and scores only text, so borders and every unvisited page are outside it by construction.
+
+`frozen-colour.spec.js` walks **every built page on both sites**, flips the theme in memory, and
+counts what did not move plus what fails AA in either theme, against `frozen_baseline.json`.
+
+**Why a ratchet and not zero.** The honest starting position is **183 frozen colours and 381 AA
+failures** across the two sites, concentrated in pages this work has not reached — `decision-aids`,
+`orientation-video`, `sp-interview`, `rp-canon-quiz`, `withdrawal`. A gate that fails on day one
+teaches everyone to bypass it. This fails only on the commit that makes a page *worse*, which is the
+commit that can still fix it cheaply. A page **absent** from the baseline must measure clean —
+arriving pre-broken is exactly how the five private-palette tools got in.
+
+It is a `nav-*` spec only, deliberately **not** in `CANARY_SHARED_SPECS`: ~51 navigations against
+Netlify's edge would blow the canary's 30-round-trip budget many times over, and nothing it checks
+needs production to be true — it is a property of the build.
+
+**Falsifying a gate whose measurement needs a browser.** The measurement and the verdict are
+separate files. `frozen-ratchet.mjs` decides; it is pure, and `tests/theme-scan.test.mjs` proves it
+in milliseconds on every push — both directions of the ratchet, the WCAG bar including the
+large-text exception, and the contrast maths against reference values. That is what stops the gate
+going quietly vacuous between CI runs.
 
 ---
 
