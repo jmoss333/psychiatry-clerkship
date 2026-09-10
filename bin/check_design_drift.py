@@ -19,6 +19,13 @@ actually shipped to learners:
   C2 NO RAW COLOUR      frontdoor.css keeps its zero-literal property.
   C3 THEME-INVARIANCE   A dimension token must never be redeclared in a dark block. Spacing does
                         not have a dark value; a "dark" one means someone smuggled colour in.
+  C8 SHADOWED TOKEN     A property set to var(--token) in a base rule and then OVERRIDDEN with
+                        a raw colour in a NARROWER selector. The token is used, so C2/C4/C6 all
+                        see a healthy file; the override simply wins wherever it applies. That is
+                        what made .practice-panel a light island — .minitree and .workflow-step
+                        are correctly var(--surface) / var(--bg-alt) at their base and were
+                        re-painted with rgba(255,255,255,.72) inside the panel. 42 elements below
+                        AA on ?page=suicide.md, worst 1.23:1, with every other check green.
   C6 DEAD FALLBACK      A `var(--token, <colour>)` whose token is defined NOWHERE always
                         resolves to its fallback, so that literal is pinned in BOTH themes.
                         On 2026-09-10 the injected crisis block styled itself entirely with
@@ -358,6 +365,96 @@ def c6_dead_fallbacks(fails: list[str], notes: list[str]) -> None:
         )
 
 
+# Properties whose value decides what a learner sees through. `border` is included because the
+# shorthand carries a colour; `box-shadow` is not, because a shadow that does not flip is a
+# cosmetic flaw rather than a legibility one, and including it produced only noise.
+SHADOWABLE = ("background", "background-color", "color", "border", "border-color",
+              "border-top-color", "border-bottom-color", "border-left-color",
+              "border-right-color", "outline-color")
+RULE_RE = re.compile(r"([^{}]+)\{([^{}]*)\}")
+CLASS_RE = re.compile(r"\.(-?[_a-zA-Z][\w-]*)")
+
+
+def _compound(selector: str) -> tuple[frozenset, int]:
+    """(classes in the final compound, ancestor depth) for a selector's last alternative.
+
+    The pair is what makes two rules comparable. Matching on the LAST CLASS alone is not enough
+    and was wrong on its first run: `.tab.on` and `.seg button.impaired.on` both end in `.on`, a
+    shared state modifier on two unrelated components, and got reported as one shadowing the
+    other. A rule only shadows another when its final compound CONTAINS the other's — which is
+    exactly the real shape, `.minitree` re-painted by `.practice-panel .minitree`.
+    """
+    alt = selector.split(",")[-1].strip()
+    parts = alt.split()
+    last = parts[-1] if parts else ""
+    return frozenset(CLASS_RE.findall(last)), len(parts)
+
+
+def shadowed_tokens(css: str) -> list[tuple[str, str, str, str]]:
+    """(target, property, base selector, overriding selector) for each shadowed token."""
+    tokenised: dict[tuple[frozenset, str], tuple[str, int]] = {}
+    literals: list[tuple[frozenset, str, str, int]] = []
+    dark_bodies = set(blocks(css, DARK_OPEN)) | set(blocks(css, SCHEME_OPEN))
+    for m in RULE_RE.finditer(css):
+        selector, body = m.group(1).strip(), m.group(2)
+        if not selector or selector.startswith("@") or selector.startswith("["):
+            continue
+        # A literal inside a dark block is the override doing its job, not shadowing.
+        if any(body in d for d in dark_bodies):
+            continue
+        classes, depth = _compound(selector)
+        if not classes:
+            continue
+        for prop in SHADOWABLE:
+            for decl in re.finditer(r"(?<![\w-])" + prop + r"\s*:\s*([^;}]+)", body):
+                value = decl.group(1).strip()
+                key = (classes, prop)
+                if "var(--" in value:
+                    if key not in tokenised or depth < tokenised[key][1]:
+                        tokenised[key] = (selector, depth)
+                elif LITERAL_RE.search(value):
+                    literals.append((classes, prop, selector, depth))
+    out = []
+    for classes, prop, selector, depth in literals:
+        for (base_classes, base_prop), (base_sel, base_depth) in tokenised.items():
+            if base_prop != prop or not base_classes <= classes:
+                continue
+            # Strictly narrower: more ancestors, or the same ancestry plus extra classes.
+            if depth > base_depth or (depth == base_depth and classes > base_classes):
+                out.append((",".join(sorted(classes)), prop, base_sel, selector))
+                break
+    return sorted(set(out))
+
+
+def c8_shadowed_tokens(fails: list[str], notes: list[str], pinned: set[str]) -> None:
+    """Reads SHIPPED pages, not sources — the same reason C4 and C6 do.
+
+    common.py rewrites `color:#fff` to `var(--on-brand)` and `background:#fff` to
+    `var(--surface)` on the way out, so a source-level run of this check reports 15 findings
+    that do not exist in the build. What the rewrite does NOT touch is a translucent wash —
+    `rgba(255,255,255,.72)` is not `#fff` — and that is precisely the form the real defect took.
+    """
+    pages = shipped()
+    if not pages:
+        return
+    seen: set[tuple[str, str, str]] = set()
+    for label, path in pages:
+        site = label.split(":", 1)[0]
+        for target, prop, base, override in shadowed_tokens(css_of(read(path), path)):
+            if (site, override, prop) in seen:
+                continue
+            seen.add((site, override, prop))
+            key = f"{label}|{override}|{prop}"
+            if key in pinned:
+                continue
+            fails.append(
+                f"C8 SHADOWED TOKEN  {label}: `{override}` re-paints `{prop}` with a raw colour, "
+                f"shadowing `{base}` which correctly uses a token. The token is still 'used', so "
+                f"nothing else here can see this. Point the override at a token too, or pin it in "
+                f"design_drift_baseline.json under shadowed_token_exceptions with a reason."
+            )
+
+
 def c5_contrast_allowlist_empty(fails: list[str]) -> None:
     """The colour gate lives in tests/fd-contrast.test.mjs. Assert only that its inherited-debt
     allowlist has not been re-opened; the ratios themselves are that test's job."""
@@ -533,6 +630,27 @@ def self_test() -> int:
            dead_fallbacks('<style>:root{--local:#fff}</style>'
                           '<div style="color:var(--local,#000)">x</div>', set()) == [])
 
+    # C8 — the shadowed-token shape, and the two false positives it produced before the
+    # compound-containment rule replaced last-class matching.
+    SHADOW = ".minitree{background:var(--surface)}.practice-panel .minitree{background:#fff}"
+    expect("C8 catches a narrower selector re-painting a tokenised property",
+           [(p, o) for _, p, _, o in shadowed_tokens(SHADOW)]
+           == [("background", ".practice-panel .minitree")])
+    expect("C8 catches a translucent wash, which the build's #fff rewrite does not touch",
+           shadowed_tokens(".minitree{background:var(--surface)}"
+                           ".practice-panel .minitree{background:rgba(255,255,255,.72)}") != [])
+    expect("C8 does NOT pair two components sharing a state class",
+           shadowed_tokens(".tab.on{color:var(--on-brand)}"
+                           ".seg button.impaired.on{color:#fff}") == [])
+    expect("C8 does NOT pair a base with FEWER classes than the token rule",
+           shadowed_tokens(".status.done{color:var(--text)}"
+                           ".weekbtn.current .done{color:#fff}") == [])
+    expect("C8 ignores a literal inside a dark block — that is the override doing its job",
+           shadowed_tokens('.card{background:var(--surface)}'
+                           '[data-theme="dark"]{--x:1}') == [])
+    expect("C8 ignores a literal with no tokenised base to shadow",
+           shadowed_tokens(".loner{background:#fff}") == [])
+
     # Ratchet measurement.
     m = measure_css(".a{font-size:14px;border-radius:10px}.b{font-size:9px}.c{font-size:var(--fd-font-md)}")
     expect("R counts raw dimension declarations, not tokenised ones",
@@ -573,16 +691,25 @@ def main() -> int:
     c3_theme_invariance(fails)
     c4_dark_orphans(fails, notes)
     c6_dead_fallbacks(fails, notes)
+    c8_shadowed_tokens(fails, notes,
+                       set(baseline.get("shadowed_token_exceptions", {})))
     c5_contrast_allowlist_empty(fails)
     current = ratchets(fails, notes, baseline.get("files", {}))
 
     if args.update_baseline:
         with open(BASELINE, "w", encoding="utf-8") as fh:
-            json.dump({
+            # Carry any C8 pins through. --update-baseline exists to lock in a RATCHET gain;
+            # silently dropping a reviewed exception while doing so would turn a routine
+            # regeneration into an unreviewed loosening of a different gate.
+            payload = {
                 "_note": "Pinned by bin/check_design_drift.py. Counts may fall, never rise. "
                          "Regenerate with --update-baseline as part of a reviewed reduction.",
                 "files": current,
-            }, fh, indent=2, sort_keys=True)
+            }
+            exceptions = baseline.get("shadowed_token_exceptions")
+            if exceptions:
+                payload["shadowed_token_exceptions"] = exceptions
+            json.dump(payload, fh, indent=2, sort_keys=True)
             fh.write("\n")
         print(f"baseline written to {os.path.relpath(BASELINE, ROOT)}")
 

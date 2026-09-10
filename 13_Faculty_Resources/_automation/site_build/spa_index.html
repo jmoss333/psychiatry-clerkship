@@ -31,6 +31,12 @@
   --panel-sheer:rgba(255,255,255,.55);
   --panel-solid:rgba(255,255,255,.86);
   --panel-warm:#fffaf0;
+  /* The three practice-action chips each carry a hairline tinted toward their own accent.
+   * Light values verbatim; the dark halves keep the tint and lift off the ground instead of
+   * sinking into it. C8 found these — they are borders, not text, so nothing measured them. */
+  --chip-line-safety:#bdd5d1;
+  --chip-line-case:#d5c9bc;
+  --chip-line-drill:#d9c597;
 
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
     --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
@@ -199,13 +205,13 @@
   .practice-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
   .practice-action{display:inline-flex;align-items:center;text-decoration:none;font-size:.84rem;font-weight:700;line-height:1.2;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--accent-border);border-radius:999px;padding:8px 12px}
   .practice-action:hover{background:var(--surface);border-color:var(--accent)}
-  .practice-action.is-safety{color:var(--primary-dark);background:var(--primary-light);border-color:#bdd5d1}
-  .practice-action.is-case{color:var(--primary-dark);background:var(--surface);border-color:#d5c9bc}
+  .practice-action.is-safety{color:var(--primary-dark);background:var(--primary-light);border-color:var(--chip-line-safety)}
+  .practice-action.is-case{color:var(--primary-dark);background:var(--surface);border-color:var(--chip-line-case)}
   .practice-drills{border:1px solid #d9c597;background:var(--panel-warm);border-radius:12px;padding:11px 12px;margin:0 0 12px}
   .practice-drill-head{font-size:.68rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--warning);margin:0 0 4px}
   .practice-drill-note{font-size:.88rem;color:var(--text-mid);margin:0}
   .practice-drill-actions{margin-top:9px}
-  .practice-action.is-drill{align-items:flex-start;flex-direction:column;gap:2px;min-width:178px;color:var(--warning);background:var(--surface);border-color:#d9c597;border-radius:10px;padding:9px 11px}
+  .practice-action.is-drill{align-items:flex-start;flex-direction:column;gap:2px;min-width:178px;color:var(--warning);background:var(--surface);border-color:var(--chip-line-drill);border-radius:10px;padding:9px 11px}
   .practice-action.is-drill:hover{background:var(--bg-alt);border-color:var(--warning)}
   .practice-action-kicker{font-size:.62rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--warning)}
   .practice-action-main{font-weight:800;color:var(--text)}

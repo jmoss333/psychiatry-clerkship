@@ -153,6 +153,10 @@
   --fd-space-10:28px;
 
   /* Radius */
+  --fd-radius-2xs:4px;  /* focus-ring corner, inline code chip — a deliberately tight corner.
+                         * Snapping these three to 6px was the largest proportional move in the
+                         * radius pass, and two of them round the FOCUS RING, so the step earns
+                         * its place rather than the call sites bending to the scale. */
   --fd-radius-xs:6px;
   --fd-radius-sm:8px;
   --fd-radius-md:10px;
@@ -263,6 +267,9 @@
   --panel-sheer:rgba(42,37,32,.55);
   --panel-solid:rgba(42,37,32,.86);
   --panel-warm:#2b2620;
+  --chip-line-safety:#3a4b47;   /* teal-tinted hairline */
+  --chip-line-case:#4a4139;     /* warm hairline */
+  --chip-line-drill:#4d4130;    /* gold-tinted hairline */
 
   /* Injected crisis block — see the light block for why this namespace exists. */
   --cw-surface:#2b2620;   /* 11.99:1 under --cw-text */
