@@ -49,8 +49,25 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
    `site_build/netlify_ignore_scoped.sh <their dir>` and skip a *production* build whose
    diff misses their directory. The ROOT `netlify.toml` still sets `ignore = "/bin/false"`
    on purpose: it governs the two learner sites, which are built from the whole repo.
-   **`sp-preview/netlify.toml` still sets no `ignore` key** — it takes Netlify's default
-   skip-if-unchanged and logs it as an error. So: a Canceled entry on a satellite means the
+   **`sp-preview/netlify.toml` sets no `ignore` key and does not need one** — corrected
+   2026-09-10. An earlier version of this line said it "takes Netlify's default
+   skip-if-unchanged and logs it as an error". It does not. `sp-preview` maps to the project
+   `interview-room-faculty-preview` (`f2d991ee-f5e5-43b6-88ab-933fb0cd3c0f`, pinned in
+   `sp-preview/.netlify/state.json`), and that project is **CLI-deployed, not git-linked** —
+   see `sp-preview/README.md`, and its current production deploy, which reports
+   `deploy_source: "cli"`, **`build_id: null`**, `commit_ref: null`, `branch: null`. An
+   `ignore` command runs inside Netlify's BUILD pipeline; no build runs here, so the key
+   would never be consulted. Adding it changes nothing, omitting it costs nothing.
+   **A `netlify.toml` in this repo does NOT imply a git-linked site.** `metrics/netlify.toml`
+   is the same class — it has no Netlify project at all. Exactly five projects are git-linked
+   to this repo: the two learner sites, `sp-interview-proxy`, `clerkship-faculty-attest`,
+   `psychiatry-workforce-tour`. To tell them apart without guessing: a git-linked project's
+   `branchVersionOfSite` is `main--<site>.netlify.app`, a CLI-only one's is
+   `<deploy-id>--<site>.netlify.app`; or read `deploy_source`/`build_id` from the deploy API.
+   The cost lever on a CLI site is `--prod` discipline — every `netlify deploy --prod` bills
+   ~$0.10 even when the deploy reports "All files already uploaded by a previous deploy";
+   drafts (`netlify deploy`, no `--prod`) are free, so iterate on drafts and publish once.
+   So: a Canceled entry on a satellite means the
    rule worked; a Canceled entry on `une-ms3-psychiatry` or `mmc-psychiatry-residents-sanford`
    means someone scoped a site that must not be scoped. "Failed" still means read the log.
    Netlify's own "Skipped" (superseded commit) entries are also recorded as errors and
