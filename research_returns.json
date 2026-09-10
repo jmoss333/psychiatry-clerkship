@@ -8,7 +8,8 @@
       "title": "What standards spine should govern the resident site?",
       "primaryTool": "chatgpt-deep-research",
       "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-1",
-      "status": "open"
+      "status": "open",
+      "note": "Asked 2026-09-10; the return (rq-1-2026-09-10) delivered a crosswalk mechanism with a PLACEHOLDER framework and answered no part of the question. RQ-1 remains OPEN and must be re-asked. Re-use the prompt as written — it was specific; the tool built a container instead of doing the inventory."
     },
     {
       "id": "RQ-2",
@@ -87,13 +88,13 @@
       "findings": [
         {
           "id": "f1",
-          "claim": "The only COWS permission language located \u2014 \"This version may be copied and used clinically\" (Wesson & Ling 2003) \u2014 licenses clinical copying and does not on its face authorise public educational web display, so the 45 verbatim anchors are not covered.",
+          "claim": "The only COWS permission language located — \"This version may be copied and used clinically\" (Wesson & Ling 2003) — licenses clinical copying and does not on its face authorise public educational web display, so the 45 verbatim anchors are not covered.",
           "disposition": "needs-primary",
           "primary": {
             "citation": "Wesson DR, Ling W. The Clinical Opiate Withdrawal Scale (COWS). J Psychoactive Drugs. 2003;35(2):253-259.",
             "doi": "10.1080/02791072.2003.10400007"
           },
-          "note": "This is the direct answer to RQ-10 and it closes the interim waiver AGAINST keeping the anchors. Verify by retrieving the 2003 article itself and reading the template legend verbatim \u2014 the return quotes it via the PubMed abstract, which is secondary. If it holds, cows moves flagged-interim -> retired/restricted in instrument_rights.json with a new decisionRef, and the 45 anchors in withdrawal.html come out on the CIWA-Ar pattern. Blocked on f3: a withdrawal must leave a route. || CORROBORATED 2026-09-10: the NIDA-hosted form (https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf, retrieved 2026-09-10) carries the identical clinical-scoped permission line on an artifact independent of both the model and the paywalled article. That is a second witness to the LANGUAGE, not to the SCOPE analysis, so this stays needs-primary until the 2003 template legend is read directly. Note this finding's best evidence is a PDF with no DOI \u2014 the case that motivated the primary.url + retrievedAt + archivedCopy variant added in this change."
+          "note": "This is the direct answer to RQ-10 and it closes the interim waiver AGAINST keeping the anchors. Verify by retrieving the 2003 article itself and reading the template legend verbatim — the return quotes it via the PubMed abstract, which is secondary. If it holds, cows moves flagged-interim -> retired/restricted in instrument_rights.json with a new decisionRef, and the 45 anchors in withdrawal.html come out on the CIWA-Ar pattern. Blocked on f3: a withdrawal must leave a route. || CORROBORATED 2026-09-10: the NIDA-hosted form (https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf, retrieved 2026-09-10) carries the identical clinical-scoped permission line on an artifact independent of both the model and the paywalled article. That is a second witness to the LANGUAGE, not to the SCOPE analysis, so this stays needs-primary until the 2003 template legend is read directly. Note this finding's best evidence is a PDF with no DOI — the case that motivated the primary.url + retrievedAt + archivedCopy variant added in this change."
         },
         {
           "id": "f2",
@@ -109,7 +110,7 @@
           "id": "f3",
           "claim": "No current custodian-hosted canonical COWS form was found; the 2003 article's list of PDF hosts (ASAM, CSAM, UCLA ISAP, AlcoholMD) is historical, leaving the paywalled article DOI as the only defensible canonical link.",
           "disposition": "reject",
-          "note": "FALSIFIED 2026-09-10 by direct retrieval, not by search. NIDA hosts a complete, current COWS form at https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf \u2014 all 11 items and severity anchors, source-attributed to Wesson & Ling 2003, carrying the same 'This version may be copied and used clinically' line. ASAM hosts a second copy (cows_induction_flow_sheet.pdf) but strips the copyright and permission line, so NIDA is the better citation. The claimed operational blocker does not exist: a retirement CAN leave a route and satisfy INV-IR2. The error is worse than a search miss \u2014 line 107 of the return names NIDA, ASAM and SAMHSA among the hosts it searched and dismisses them because the 2003 ARTICLE's host list is historical. It inherited staleness from a cited document and projected it onto the live web. Proposed failureMode vocabulary entry: source-date-contamination. One question remains and it is governance, not research: NIDA is a federal agency hosting a copy, not the rightsholder, so whether it satisfies the 'custodian URL, not a copy hosted here' wording of INV-IR2 is Josh's call."
+          "note": "FALSIFIED 2026-09-10 by direct retrieval, not by search. NIDA hosts a complete, current COWS form at https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf — all 11 items and severity anchors, source-attributed to Wesson & Ling 2003, carrying the same 'This version may be copied and used clinically' line. ASAM hosts a second copy (cows_induction_flow_sheet.pdf) but strips the copyright and permission line, so NIDA is the better citation. The claimed operational blocker does not exist: a retirement CAN leave a route and satisfy INV-IR2. The error is worse than a search miss — line 107 of the return names NIDA, ASAM and SAMHSA among the hosts it searched and dismisses them because the 2003 ARTICLE's host list is historical. It inherited staleness from a cited document and projected it onto the live web. Proposed failureMode vocabulary entry: source-date-contamination. One question remains and it is governance, not research: NIDA is a federal agency hosting a copy, not the rightsholder, so whether it satisfies the 'custodian URL, not a copy hosted here' wording of INV-IR2 is Josh's call."
         },
         {
           "id": "f4",
@@ -119,11 +120,11 @@
             "citation": "PHQ Screeners (Pfizer Inc.), current permission statement, select-screener page.",
             "url": "https://www.phqscreeners.com/select-screener"
           },
-          "note": "Would move phq9-gad7 from provisional -> cleared. Verify by fetching the live page, not by trusting this quote, and archive a dated PDF/screenshot into the permissions file \u2014 the whole permission is a web sentence that can change without notice. Corroborated independently by the LOINC record for PHQ-9 and GAD-7."
+          "note": "Would move phq9-gad7 from provisional -> cleared. Verify by fetching the live page, not by trusting this quote, and archive a dated PDF/screenshot into the permissions file — the whole permission is a web sentence that can change without notice. Corroborated independently by the LOINC record for PHQ-9 and GAD-7."
         },
         {
           "id": "f5",
-          "claim": "The PHQ/GAD permission names reproduce, translate, display and distribute but not modify, adapt or create derivative works, while Pfizer's generic site terms restrict derivative works \u2014 so a faithful verbatim render is supported and an altered or restructured version is not.",
+          "claim": "The PHQ/GAD permission names reproduce, translate, display and distribute but not modify, adapt or create derivative works, while Pfizer's generic site terms restrict derivative works — so a faithful verbatim render is supported and an altered or restructured version is not.",
           "disposition": "needs-primary",
           "note": "Sets the boundary for any programmed PHQ-9/GAD-7 form: unchanged wording, response options, ordering, time frame and instructions are inside the permission; changing any of them is not. Worth recording on the instrument entry even if the status stays provisional, because it is the constraint a future tool build would trip over."
         },
@@ -144,6 +145,49 @@
           "note": "Confirms the retired posture, but corrects a factual detail in the cssrs decisionRef, which records the scale as \"copyrighted and licensed by the Columbia Lighthouse Project\": the copyright holder printed on the forms is RFMH, with Columbia as the distributing project. If it verifies, that is a decisionRef wording fix, not a status change."
         }
       ]
+    },
+    {
+      "id": "rq-1-2026-09-10",
+      "question": "RQ-1",
+      "tool": "chatgpt-deep-research",
+      "askedOn": "2026-09-10",
+      "returnedOn": "2026-09-10",
+      "returnFile": "Evidence Inbox/_research-returns/rq-1-2026-09-10.md",
+      "sourceKind": "secondary",
+      "status": "triage",
+      "findings": [
+        {
+          "id": "f1",
+          "claim": "The return does not answer RQ-1: frameworks[] holds one entry, EXAMPLE_FRAMEWORK, name 'PLACEHOLDER - replace with your actual standards framework', authority UNSET.",
+          "disposition": "no-action",
+          "note": "Not a defect in the artifact, a scope miss. No framework was inventoried, none recommended, and all three entries[] carry _fixture:true. RQ-1's actual question — which of ACGME Milestones 2.0 / Program Requirements / ABPN blueprint / AAMC EPAs should be the spine, with versions, identifier schemes, unit counts and redistribution terms — is untouched. RQ-1 stays OPEN and must be re-asked. Keep the prompt as written; it was specific, and the tool answered a different question."
+        },
+        {
+          "id": "f2",
+          "claim": "The zero-coverage rule family (V-20..V-26) enumerates seven distinct ways a crosswalk can claim coverage while delivering none, and is a stronger design than the single non-zero-exit check the agenda specified.",
+          "disposition": "needs-primary",
+          "note": "The best thing in the return and the reason to keep it. The seven: no mappings; placeholder codes; duplicate padding; dangling codes; all mapped assets retired; all mappings merely tangential; and V-26 ZERO REACHABLE COVERAGE — mapped content that is scheduled in no rotation week. V-26 is the same defect shape as this repo's own hidden-not-indexed bug: content exists and is unreachable. Verified on receipt: the validator exits 1 on its own fixtures. Adopt the RULE FAMILY as a design input for check_standards_coverage.py; it needs no external primary source because it is a design idea, not a factual claim — promote when the spine exists to apply it to."
+        },
+        {
+          "id": "f3",
+          "claim": "source_rights[] is a SECOND rights register that already contradicts instrument_rights.json on three of five entries.",
+          "disposition": "reject",
+          "note": "DO NOT IMPORT. instrument_rights.json is the single source of truth for instrument dispositions and is gated by instrument-rights-gate.mjs; a parallel register is the exact drift the decisions registry exists to prevent. The contradictions, checked 2026-09-10: (a) phq9 and gad7 marked redistribution_status 'verbatim_cleared' with rightsholder_established true and source_checked 2026-09-10 — but our register has phq9-gad7 as PROVISIONAL, phqscreeners.com blocks automated fetch (robots.txt), and RQ-10 finding f4 is still needs-primary awaiting a human visit plus a dated capture. The file asserts as cleared precisely what is unverified, and its own V-41 rule fires on it for a null evidence_snapshot_ref. (b) cows marked 'pending_permission' with rightsholder_established false — superseded hours earlier by decision cows-anchors-retired (PR #608): cows is RETIRED, waiver closed. (c) cssrs rightsholder_established true — RQ-10 f7 indicates the attribution is RFMH 2008 with Columbia as distributor, so 'established' overstates what is known. Same failure mode as RQ-10 f3: the model reasoned about our governance rules without reading our governance data."
+        },
+        {
+          "id": "f4",
+          "claim": "The rights/text coupling rules (V-16..V-19) encode the de-expression principle independently: verbatim unit text may be stored only when the governing source is verbatim_cleared, otherwise the entry must use reference mode.",
+          "disposition": "needs-primary",
+          "note": "Convergent design evidence, arrived at without knowledge of PR #608. V-17 blocks storing verbatim text against a non-cleared source; V-19 forces review.state to needs_rights_review when the source is pending. This is the same rule this project shipped today for COWS, expressed as a validator constraint. Worth citing in the proposed DE_EXPRESSION_PLAYBOOK as an independent restatement. Not promotable as a factual claim; it is a design convergence."
+        },
+        {
+          "id": "f5",
+          "claim": "The validator requires the jsonschema package, which is not currently a repo dependency.",
+          "disposition": "no-action",
+          "note": "Adoption cost, recorded so it is not rediscovered. Tier 1 is Draft 2020-12 via jsonschema; without it V-00 errors and Tier 2 is skipped. This repo's house style is stdlib-only for bin/ tools, so any adaptation should either add the dependency deliberately or reimplement Tier 1 against the existing validate_registry_schemas.py path, which already solves this problem here."
+        }
+      ],
+      "note": "Arrived as three files, not prose: a crosswalk registry, its schema, and a two-tier validator. Files preserved verbatim in rq-1-2026-09-10.files/ beside the return note. Zero invisible characters on intake."
     }
   ]
 }
