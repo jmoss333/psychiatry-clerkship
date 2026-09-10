@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "reviewStatus": "pending-faculty-review",
+  "governanceAsOf": "2026-09-04",
+  "purpose": "Synthetic, local, formative-feedback benchmark. Proposed labels are review hypotheses, not faculty decisions or a release gate.",
+  "decisionReference": "docs/superpowers/plans/2026-08-31-faculty-decisions-410.md",
+  "setups": {
+    "warm": [
+      "Hi, my name is Alex, I'm the medical student on the team. Before we start, what would you most want us to understand today?",
+      "Tell me more about what's been going on, in your own words.",
+      "It sounds like this has been really hard."
+    ],
+    "cold": []
+  },
+  "scenarios": [
+    {
+      "id": "plain-screen", "group": "positive-control", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "existing-decision", "reference": "D12-D13: plain question", "reviewStatus": "pending-faculty-review",
+      "turns": ["Have you had thoughts of killing yourself?"],
+      "rationale": "Positive control: the recorded faculty vocabulary decision credits a plain screen.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "observed"}, {"kind": "gate", "key": "si_active", "expected": true, "forCase": "Dana"}, {"kind": "gate", "key": "g_si_mixed", "expected": true, "forCase": "Marcus"}]
+    },
+    {
+      "id": "euphemism", "group": "vague-language", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "existing-decision", "reference": "D12: euphemism earns partial credit", "reviewStatus": "pending-faculty-review",
+      "turns": ["Have you thought about hurting yourself?"],
+      "rationale": "Retain the reviewed partial-credit distinction across personas.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "partial"}, {"kind": "intent", "key": "si_direct", "expected": false}, {"kind": "gate", "key": "si_active", "expected": false, "forCase": "Dana"}, {"kind": "gate", "key": "g_si_mixed", "expected": false, "forCase": "Marcus"}]
+    },
+    {
+      "id": "reflection", "group": "reflection", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "existing-decision", "reference": "D12: bare reflected point", "reviewStatus": "pending-faculty-review",
+      "turns": ["You said what's the point — can you tell me more?"],
+      "rationale": "A reflected phrase earns the established partial credit, without becoming a plain screen.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "partial"}, {"kind": "gate", "key": "si_active", "expected": false, "forCase": "Dana"}, {"kind": "gate", "key": "g_si_mixed", "expected": false, "forCase": "Marcus"}]
+    },
+    {
+      "id": "protective-only", "group": "incomplete-followup", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "existing-decision", "reference": "D15: protective factors do not credit c_si", "reviewStatus": "pending-faculty-review",
+      "turns": ["Do you have things in your life worth living for?"],
+      "rationale": "Do not infer a direct screen from a question about reasons for living.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "missed"}]
+    },
+    {
+      "id": "ordinary-discharge-plan", "group": "context-shift", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "existing-decision", "reference": "D14: ordinary plan must decline", "reviewStatus": "pending-faculty-review",
+      "turns": ["What is your plan for after discharge?"],
+      "rationale": "Preserve the existing boundary around an ordinary discharge question.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "missed"}, {"kind": "intent", "key": "si_plan", "expected": false, "forCase": "Dana"}]
+    },
+    {
+      "id": "ordinary-plan-after-disclosure", "group": "context-shift", "cases": ["Dana"], "setup": "warm",
+      "basis": "existing-decision", "reference": "D14: ordinary discharge plan must not reveal suicide-plan detail", "reviewStatus": "pending-faculty-review",
+      "turns": ["Have you had thoughts of killing yourself?", "What is your plan for after discharge?"],
+      "rationale": "Check the actual D14 failure mechanism after disclosure: neither the plan intent nor its patient reveal should fire for this ordinary question.",
+      "checks": [{"kind": "intent", "key": "si_plan", "expected": false}, {"kind": "gate", "key": "si_plan_detail", "expected": false}]
+    },
+    {
+      "id": "learner-assertion", "group": "statement", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "proposed", "reference": "Speech-act distinction: assertion versus question", "reviewStatus": "pending-faculty-review",
+      "turns": ["You have had thoughts of killing yourself."],
+      "rationale": "Proposed: a learner assertion does not establish that the learner asked a patient-directed question.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "missed"}]
+    },
+    {
+      "id": "chart-quotation", "group": "quotation", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "proposed", "reference": "Source distinction: quoted chart versus current question", "reviewStatus": "pending-faculty-review",
+      "turns": ["The chart says you have had thoughts of killing yourself."],
+      "rationale": "Proposed: reading a quoted assertion aloud should not be treated as a new screen.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "missed"}]
+    },
+    {
+      "id": "third-person", "group": "target", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "accepted-limitation", "reference": "D16 Known costs: third-person want-to-die forms explicitly accepted", "reviewStatus": "pending-faculty-review",
+      "turns": ["Did he want to die?"],
+      "rationale": "Semantic comparator only. D16 explicitly accepts this limitation; a mismatch does not reopen or overrule that decision.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "missed"}]
+    },
+    {
+      "id": "historical-question-quotation", "group": "quotation", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "proposed", "reference": "Temporal and quotation distinction", "reviewStatus": "pending-faculty-review",
+      "turns": ["Earlier I asked, 'Have you had thoughts of killing yourself?' I am describing yesterday's conversation, not asking now."],
+      "rationale": "Proposed: a quotation about a different encounter does not establish a question in this encounter.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "missed"}]
+    },
+    {
+      "id": "leading-negative", "group": "leading", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "proposed", "reference": "Faculty decision needed: credit for a leading safety question", "reviewStatus": "pending-faculty-review",
+      "turns": ["You are not thinking about killing yourself, are you?"],
+      "rationale": "Proposed partial credit acknowledges a safety question while distinguishing its leading form. Faculty may choose a different label.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "partial"}]
+    },
+    {
+      "id": "negated-discussion", "group": "statement", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "proposed", "reference": "Speech-act and negation distinction", "reviewStatus": "pending-faculty-review",
+      "turns": ["We are not discussing thoughts of killing yourself today."],
+      "rationale": "Proposed: explicitly declining to discuss a domain is not asking about it.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "missed"}]
+    },
+    {
+      "id": "unfamiliar-plain-question", "group": "unfamiliar-language", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "proposed", "reference": "Faculty decision needed: unfamiliar paraphrase", "reviewStatus": "pending-faculty-review",
+      "turns": ["Have you been considering deliberately bringing your own life to an end?"],
+      "rationale": "Candidate plain question outside the existing examples; assess meaning before deciding whether to extend vocabulary.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "observed"}]
+    },
+    {
+      "id": "rephrase-after-miss", "group": "recovery", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "existing-decision", "reference": "D12-D13: subsequent explicit question still earns credit", "reviewStatus": "pending-faculty-review",
+      "turns": ["Have you been considering deliberately bringing your own life to an end?", "Have you had thoughts of killing yourself?"],
+      "rationale": "An unrecognized first attempt must not stop a later recognized question from receiving credit.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "observed", "step": 2}]
+    },
+    {
+      "id": "cold-screen-narrative", "group": "deflection", "cases": ["Dana"], "setup": "cold",
+      "basis": "proposed", "reference": "Feedback must be supported by the generated patient reply", "reviewStatus": "pending-faculty-review",
+      "turns": ["Have you had thoughts of killing yourself?"],
+      "rationale": "Credit for asking may remain observed. The proposed check targets only the narrative's claim that a disclosure occurred when the gate stayed locked.",
+      "checks": [{"kind": "gate", "key": "si_active", "expected": false}, {"kind": "narrativeContains", "key": "told you the truth", "expected": false}]
+    },
+    {
+      "id": "reassurance-and-screen", "group": "reassurance", "cases": ["Dana"], "setup": "warm",
+      "basis": "proposed", "reference": "Flag response versus disclosure evidence", "reviewStatus": "pending-faculty-review",
+      "turns": ["Everything will be fine. Have you had thoughts of killing yourself?"],
+      "rationale": "A flag-consumed turn should not produce a narrative claiming that the patient disclosed. The actual reply is retained for inspection.",
+      "checks": [{"kind": "gate", "key": "si_active", "expected": false}, {"kind": "narrativeContains", "key": "told you the truth", "expected": false}]
+    },
+    {
+      "id": "compound-one-reply", "group": "compound", "cases": ["Dana"], "setup": "warm",
+      "basis": "proposed", "reference": "One reply versus several credited follow-up domains", "reviewStatus": "pending-faculty-review",
+      "turns": ["Have you had thoughts of killing yourself?", "Do you have a plan, do you have access to the pills, and what keeps you going?"],
+      "rationale": "Proposed: all follow-up domains should not be described as observed when only the plan response was delivered. Faculty must decide whether coverage means words attempted or information obtained.",
+      "checks": [{"kind": "coverage", "key": "c_si_followup", "expected": "partial"}, {"kind": "gate", "key": "si_means_detail", "expected": false}, {"kind": "gate", "key": "si_protective_detail", "expected": false}]
+    },
+    {
+      "id": "sequential-followup", "group": "positive-control", "cases": ["Dana"], "setup": "warm",
+      "basis": "existing-decision", "reference": "D14-D15: explicit follow-up chain", "reviewStatus": "pending-faculty-review",
+      "turns": ["Have you had thoughts of killing yourself?", "Do you have a plan?", "Do you have access to the pills?", "What keeps you going?", "Have you ever tried to hurt yourself before, or made any preparations?"],
+      "rationale": "Positive control using the existing follow-up vocabulary, with a separate patient response after each question.",
+      "notes": "WP-5m (f94f987, 2026-09-05) added a fourth c_si_followup intent, si_behavior (past attempts / preparatory acts), so the checklist row now requires all four intents — plan, means, protective, behavior — to read 'observed'. With only the original three turns this positive control drifted to 'partial'. Added a fifth turn asking plainly about past attempts, matching the pack's si_behavior regex patterns, so the control legitimately reaches all four intents and 'observed' again. Re-adjudicated 2026-09-09 while porting the benchmark harness to the repo root; see the ported findings doc.",
+      "checks": [{"kind": "coverage", "key": "c_si_followup", "expected": "observed"}, {"kind": "gate", "key": "si_plan_detail", "expected": true}, {"kind": "gate", "key": "si_means_detail", "expected": true}, {"kind": "gate", "key": "si_protective_detail", "expected": true}, {"kind": "gate", "key": "si_behavior_detail", "expected": true}]
+    },
+    {
+      "id": "pre-disclosure-followup", "group": "sequence", "cases": ["Dana"], "setup": "warm",
+      "basis": "existing-decision", "reference": "Pack requiresGate and checklist dependsOnGate contracts", "reviewStatus": "pending-faculty-review",
+      "turns": ["Do you have a plan?", "Do you have access to the pills?"],
+      "rationale": "The reviewed gate dependency must keep disclosure-dependent follow-up unavailable.",
+      "checks": [{"kind": "coverage", "key": "c_si_followup", "expected": "na"}, {"kind": "gate", "key": "si_plan_detail", "expected": false}, {"kind": "gate", "key": "si_means_detail", "expected": false}]
+    },
+    {
+      "id": "preasked-followup-carried-forward", "group": "sequence", "cases": ["Dana"], "setup": "warm",
+      "basis": "proposed", "reference": "Whether earlier deflected follow-up should count after a later disclosure", "reviewStatus": "pending-faculty-review",
+      "turns": ["Do you have a plan?", "Do you have access to the pills?", "What keeps you going?", "Have you had thoughts of killing yourself?"],
+      "rationale": "Proposed: later disclosure does not retroactively supply missing answers to earlier deflected questions.",
+      "checks": [{"kind": "coverage", "key": "c_si_followup", "expected": "missed"}]
+    },
+    {
+      "id": "discharge-context-then-pronoun", "group": "context-shift", "cases": ["Dana"], "setup": "warm",
+      "basis": "proposed", "reference": "Faculty decision needed: context-bound pronoun reference", "reviewStatus": "pending-faculty-review",
+      "turns": ["Have you had thoughts of killing yourself?", "Let's switch to getting your groceries after discharge.", "How would you do it?"],
+      "rationale": "The pronoun refers to groceries in this synthetic conversation. Proposed: it should not trigger a suicide-plan reveal.",
+      "checks": [{"kind": "gate", "key": "si_plan_detail", "expected": false}]
+    },
+    {
+      "id": "ray-self-harm-is-not-violence", "group": "target", "cases": ["Ray"], "setup": "warm",
+      "basis": "existing-decision", "reference": "D13(B): self-harm euphemism must not trigger g_target", "reviewStatus": "pending-faculty-review",
+      "turns": ["Do the voices tell you to do anything?", "Have you thought about hurting yourself?"],
+      "rationale": "Preserve the repaired distinction between self-harm and harm toward others.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "partial"}, {"kind": "coverage", "key": "c_violence", "expected": "missed"}, {"kind": "gate", "key": "g_target", "expected": false}]
+    },
+    {
+      "id": "ray-cold-command", "group": "deflection", "cases": ["Ray"], "setup": "cold",
+      "basis": "proposed", "reference": "Separate asking from the patient providing command content", "reviewStatus": "pending-faculty-review",
+      "turns": ["Do the voices tell you to do anything?"],
+      "rationale": "The checklist explicitly says screened, so observed asking is allowed here. This row preserves the locked gate as separate evidence rather than treating observed as disclosure.",
+      "checks": [{"kind": "coverage", "key": "c_command", "expected": "observed"}, {"kind": "gate", "key": "g_command", "expected": false}]
+    }
+  ],
+  "responsePairs": [
+    {"id": "answer-versus-refusal", "case": "Dana", "question": "Have you had thoughts of killing yourself?", "patients": ["Yes, those thoughts have been present.", "I do not want to answer that question."], "questionForFaculty": "How should the display distinguish a question asked from a substantive answer obtained?"},
+    {"id": "plan-answer-versus-deflection", "case": "Dana", "question": "Do you have a plan?", "patients": ["I have not made a plan.", "I would rather talk about something else."], "questionForFaculty": "Should a refused follow-up remain attempted or be marked unresolved?"},
+    {"id": "command-answer-versus-interruption", "case": "Ray", "question": "Do the voices tell you to do anything?", "patients": ["The voices do not give me instructions.", "Can we pause? I cannot continue this conversation right now."], "questionForFaculty": "How should an interrupted response be represented without penalizing the learner?"}
+  ]
+}

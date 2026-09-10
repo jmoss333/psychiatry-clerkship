@@ -16,6 +16,13 @@
   status = 200
   force = true
 
+
+[[redirects]]
+  from = "/api/practice-moment"
+  to = "/.netlify/functions/practice-moment"
+  status = 200
+  force = true
+
 [[headers]]
   for = "/*"
   [headers.values]

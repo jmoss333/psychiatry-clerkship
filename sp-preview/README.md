@@ -1,10 +1,20 @@
+# Practice a Moment
+
+The protected room now includes Elena, Priya and Luis moments alongside all five full encounters. Read [the requirement audit and faculty audition packet](PRACTICE_MOMENT_ACCEPTANCE.md) for evidence and remaining decisions. The mode uses `/api/practice-moment` and requires `DANA_PREVIEW_ENABLED=true`, the same gate as every other mode in this room; there is no separate moments-only flag. Staging enablement does not enable production. Joshua Moss, MD, attested Elena, Priya and Luis's authored content (case setup, facts, review criteria and templates) on 2026-09-09 — `reviewStatus` in the catalog is `reviewed` and the learner-facing draft label is gone from all three. That attestation covers the exercises' content; it does not itself establish a live AI-review or physical-microphone pass — see "Still not verified" below and the requirement audit's remaining external evidence.
+
+Each moment allows four patient-facing responses, one three-unit review and one three-unit terminal alternative: at most 19 reserved operation units and one start. It shares the existing budget namespace and 20/680/340 policy. Review consumes the current continuation before evaluation; unavailable feedback stays closed and falls back to authored reflection prompts. Transfers require a fresh normally budgeted start.
+
+Private reflection and the existing attending presentation stay in page memory. The separate optional Priya **Team formulation — included in AI feedback** goes to review only after explicit submission. No transcripts/audio are persisted, no dialogue is logged, and no analytics are added. Actor facts/rubrics stay in the function bundle; seven explicit browser assets ship.
+
+---
+
 # Protected spoken Interview Room
 
 A protected pilot of ten spoken turns with Dana, Marcus, Ray, Morgan, or Morgan and Maya, hosted separately from the learner sites. The learner sites' Interview Room links here through a top-level navigation, so microphone and media permissions belong to this origin. The original Interview Room and its production SP proxy continue to work. Dana's disclosure overlay and conversational portrayal retain their recorded review status.
 
 ## Local verification
 
-Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Both also run in `ci.yml`'s `build-test-validate` job and in `bin/verify.sh`, so a change here reddens a pull request rather than surfacing only when someone remembers the commands. Run the full root and prototype suites sequentially. The `dist` folder contains only the five browser assets listed below; never publish the repository root, `_prototypes`, or `sp-preview` itself.
+Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Both also run in `ci.yml`'s `build-test-validate` job and in `bin/verify.sh`, so a change here reddens a pull request rather than surfacing only when someone remembers the commands. Run the full root and prototype suites sequentially. The `dist` folder contains only the seven browser assets listed below; never publish the repository root, `_prototypes`, or `sp-preview` itself.
 
 The opt-in `npm run test:hosted` also requires the `tests/smoke` Playwright dependencies, explicit `DANA_QA_URL` and `DANA_QA_ACCESS_FILE` environment variables, and an authorized preview passcode file. It makes one paid opening and ten paid conversation requests, with synthetic recognition and native muted audio at 2x. It never runs as part of `npm test` or in CI; reports contain counts/timings, not dialogue, keys, or state receipts.
 
@@ -14,7 +24,7 @@ Neither mode is microphone evidence: both replace `SpeechRecognition`, and both 
 
 ## Cases
 
-The preview carries Dana (admission interview), Marcus (a focused interview), Ray (establishing a working conversation), Morgan (motivational interviewing), and Morgan and Maya (a shared family meeting). The learner picks one at the door and it is fixed for that encounter. Morgan and the family meeting retain their authored pending faculty-review status and are visibly labeled drafts.
+The preview carries Dana (admission interview), Marcus (a focused interview), Ray (establishing a working conversation), Morgan (motivational interviewing), and Morgan and Maya (a shared family meeting). The learner picks one at the door and it is fixed for that encounter. Morgan and the family meeting were attested by Joshua Moss, MD on 2026-09-09 and no longer carry a draft label; all five encounters now ship faculty-attested content.
 
 Each encounter is bound to its case twice over. The state codec's binding embeds
 the case id and a hash of the case definition, so a receipt sealed for one case
@@ -28,14 +38,18 @@ Morgan reuses the existing local alcohol-ambivalence case without introducing ne
 
 The hosted family case has no private channel or private check-in operation. Its prompt receives no authored private inventory; the local prototype's private workflow is not transplanted into this stateless endpoint. In this version, asking both participants means inviting each perspective on successive turns. Each response still uses one actor request and at most two speech requests, so the existing conservative allowance remains sufficient.
 
-Hosted delivery instructions live in `lib/portrayal.mjs`, separate from the archived recordings and other prototypes. Marcus uses continuous urgent phrasing and compressed pauses; a clear redirect changes topic without instantly changing his underlying presentation. Morgan, Maya, and Ray receive subtle case-specific emotional delivery. Dana's accepted voice remains unchanged. Marcus uses a modest 1.12 speech-synthesis setting after the first audition; the other cases retain 1.0 and browser playback remains 1.0. This is an authored portrayal setting, not a diagnostic speech-rate threshold. No extra provider call or speaking-speed/fluency grading is added. Natural spoken barge-in is not implemented: Interrupt/Escape stops playback; microphone capture resumes when the learner chooses Resume.
+Hosted delivery instructions live in `lib/portrayal.mjs`, separate from the archived recordings and other prototypes. Marcus uses continuous urgent phrasing and compressed pauses; a clear redirect changes topic without instantly changing his underlying presentation. Morgan, Maya, and Ray receive subtle case-specific emotional delivery. Dana's accepted voice remains unchanged. Marcus uses a modest 1.12 speech-synthesis setting after the first audition; the other cases retain 1.0 and browser playback remains 1.0. This is an authored portrayal setting, not a diagnostic speech-rate threshold. No extra provider call or speaking-speed/fluency grading is added. Full encounters now offer an opt-in **Interrupt by speaking** headphone experiment. Recognition stays available during eligible playback; distinct recognized words cancel active/queued audio and remain in the next draft. Exact echo checks and a short tail limit self-capture; they are not acoustic speaker separation. Brief acknowledgments can let the patient continue. Recognition latency, missed interruptions and speaker echo still require physical trials. Default mode retains explicit Interrupt/Escape and Resume. The final allowed reply and terminal alternative do not reopen another turn.
 
 Only Dana receives the direct-suicide-question overlay. It is reviewed for her
 alone and is never applied to another case.
 
+Faculty can choose **Gentler expression / Current portrayal / More pronounced expression** before a full encounter. Only the expression of the existing dialogue changes; the server binds this allowlisted setting for the whole encounter, including family speakers and an alternative. Standard preserves the accepted profiles exactly. Presets do not change numeric speed, facts, symptoms, disclosure rules, actor instructions, learner feedback, or interruption controls. Practice a Moment retains Standard and its existing capture flow. Actual nonstandard voices are drafts for listening review.
+
+See the [case-by-case research](../docs/superpowers/specs/2026-09-09-sp-voice-evidence.md) and [spoken interruption pilot design and trial sequence](../docs/superpowers/specs/2026-09-09-spoken-interruption-pilot.md). No production activation or clinical attestation follows from automated checks.
+
 ## The student station
 
-`dist` publishes five files: `index.html`, `app.js`, `styles.css`, `station.js` and `station-content.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends.
+`dist` publishes seven files: `index.html`, `app.js`, `styles.css`, `station.js`, `station-content.js`, `moment-content.js` and `moment-station.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends.
 
 It is a projection of the controller snapshot and nothing more. It holds no reference to `send()`, makes no network request, and reads and writes no browser storage — `build.test.mjs` fails the build if `fetch(`, `localStorage`, `sessionStorage`, `indexedDB` or `XMLHttpRequest` appears in either station file. Marked moments quote only what was actually heard: a reply that did not finish playing is quoted at its completed segments, and a moment with nothing confirmed heard says so rather than showing an empty quotation. `station-content.js` carries learner-facing content only; the participant `portrayal` guidance is actor direction and stays server-side.
 

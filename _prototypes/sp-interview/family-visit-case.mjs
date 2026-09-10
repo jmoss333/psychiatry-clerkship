@@ -12,7 +12,7 @@ const authoredCase = {
   id: 'family_morgan_maya_001',
   version: 2,
   title: 'Morgan and Maya — What happens after discharge?',
-  status: 'draft-pending-faculty-review',
+  status: 'reviewed',
   setting: 'A voluntary family meeting on an inpatient medical service after Morgan was medically stabilized following an alcohol-related fall.',
   learnerGoal: 'Hear Morgan and Maya separately and together, protect each person’s autonomy and limits, and close with a realistic next step without requiring agreement.',
   maxTurns: 10,
@@ -96,7 +96,7 @@ const authoredCase = {
     'Did the learner check a possible next step rather than announce agreement?'
   ],
   linkedPages: ['family_meeting_playbook_90min.md','collateral_micro_workflow.md','family-systems-practice.html'],
-  review: {status: 'draft-pending-faculty-review', reviewer: null, reviewedAt: null},
+  review: {status: 'reviewed', reviewer: 'Joshua Moss, MD', reviewedAt: '2026-09-09'},
   provenance: {fictional: true, noPhi: true, sourceCaseId: 'sp_alcohol_ambivalence_001'}
 };
 

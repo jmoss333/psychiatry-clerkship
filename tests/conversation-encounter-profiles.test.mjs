@@ -14,7 +14,7 @@ test('all five current encounters have a complete MD/DO student encounter brief'
     const profile = profiles.getProfile(id);
     assert.equal(profile.caseId, id);
     assert.match(profile.studentRole, /MD.*DO/);
-    assert.equal(profile.reviewStatus, 'draft-pending-faculty-review');
+    assert.equal(profile.reviewStatus, 'reviewed');
     assert.ok(profile.doorNote && profile.task);
     assert.equal(profile.objectives.length, 3);
     assert.ok(profile.chartCards.length >= 2);

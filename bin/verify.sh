@@ -228,6 +228,11 @@ step "hosted Dana preview public build"     npm --prefix sp-preview run build
 # It is NOT a red-team pass — sections A, C1/C4/C5, D and E are human/live checks.
 # See docs/RED_TEAM_RUNBOOK.md.
 step "red-team tier 1 (gate integrity)"     node bin/redteam-offline.mjs
+# Report-only, same idiom as "path coverage (report-only)" above: the script itself always
+# exits 0 (see the SHOW_COVERAGE comment in bin/redteam-offline.mjs), so this cannot fail the
+# gate. It exists so a gate added to the pack with no probe is visible in every verify.sh run
+# rather than only when someone remembers to run --coverage by hand.
+step "red-team gate coverage (report-only)" node bin/redteam-offline.mjs --coverage
 
 # --- build + static QA gate, both sites ---
 if [ $QUICK -eq 0 ]; then
@@ -246,6 +251,15 @@ fi
 # from an earlier run if one is current, and says why it checked nothing if not.
 step "unit — crisis surfaces checker"       python3 bin/check_crisis_surfaces.py --self-test
 step "crisis contacts in the built sites"   python3 bin/check_crisis_surfaces.py
+
+# Design-system drift. Its C4 check reads the BUILT pages, not the sources, because the
+# dark-mode stylesheet is injected at build time (common.py) — a tool source can look
+# self-consistently light, pass every source-level test, and still ship a page whose ground
+# flips to dark while its own ink stays near-black. That is exactly what shipped on five tool
+# pages until 2026-09-10 (family-systems.html measured 1.06:1 on production). Placed here,
+# after both builds, for the same reason check_crisis_surfaces.py is.
+step "unit — design drift checker"          python3 bin/check_design_drift.py --self-test
+step "design system drift"                  python3 bin/check_design_drift.py
 
 echo "─────────────────────────────────────────────────────────────────────"
 if [ ${#FAILED[@]} -eq 0 ]; then

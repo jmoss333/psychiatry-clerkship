@@ -55,7 +55,7 @@
     },
     sp_alcohol_ambivalence_001:{
       caseId:'sp_alcohol_ambivalence_001',displayName:'Morgan',voice:'Marin',title:'Morgan — Exploring mixed feelings about alcohol',
-      reviewStatus:'draft-pending-faculty-review',reviewLabel:'Faculty-review draft',
+      reviewStatus:'reviewed',
       task:'Explore what alcohol gives and takes in Morgan’s life, understand what matters to them, and invite their own next step without requiring a commitment to abstinence.',
       doorNote:'Morgan is in their 40s and uses they/them pronouns. They voluntarily accepted an addiction-medicine consultation on an inpatient medical service after stabilization following an alcohol-related fall.',
       objectives:['Ask Morgan what they want from the consultation and explore both sides of their ambivalence.','Use reflections and questions to understand their priorities while preserving their choice.','Invite Morgan to correct your summary and identify a possible next step while leaving medical decisions with the treating team.'],
@@ -70,7 +70,7 @@
     },
     family_morgan_maya_001:{
       caseId:'family_morgan_maya_001',displayName:'Morgan and Maya',voice:'Marin and Cedar',title:'Morgan and Maya — A family visit',
-      reviewStatus:'draft-pending-faculty-review',reviewLabel:'Faculty-review draft',
+      reviewStatus:'reviewed',
       participants:[
         {id:'morgan',displayName:'Morgan',voice:'Marin',pronouns:'they/them',relationship:'Maya’s parent'},
         {id:'maya',displayName:'Maya',voice:'Cedar',pronouns:'she/her',relationship:'Morgan’s adult daughter'}

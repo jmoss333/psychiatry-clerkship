@@ -25,7 +25,7 @@ function environment(fetcher){
     setTimeout(callback,delay){const key=++id;timers.set(key,{callback,at:now+delay});return key;},clearTimeout(key){timers.delete(key);},
     URL:{createObjectURL(){const value='blob:preview-'+urls.length;urls.push(value);return value;},revokeObjectURL(value){revoked.push(value);}},
     fetch(path,options){calls.push({path,options,body:JSON.parse(options.body)});return fetcher?fetcher(path,options,calls.length):Promise.resolve(response(frames(calls.length-1),options.signal));},
-    Audio:class{constructor(src){this.src=src;this.pauses=0;audios.push(this);}play(){return Promise.resolve();}pause(){this.pauses++;}removeAttribute(){this.src='';}load(){}},
+    Audio:class{constructor(src){this.src=src;this.pauses=0;this.plays=0;this.loads=0;audios.push(this);}play(){this.plays++;return Promise.resolve();}pause(){this.pauses++;}removeAttribute(){this.src='';}load(){this.loads++;}},
     SpeechRecognition:class{
       constructor(){this.results=[];this.cursor=0;this.active=false;recognizers.push(this);}
       start(){this.active=true;this.onstart?.();}
@@ -53,7 +53,171 @@ function environment(fetcher){
       for(let count=1;count<parts.length;count++){recognition.interim(parts.slice(0,count).join(' '));advance(200);}
       recognition.speechEnd();advance(400);recognition.final(words);return recognition;}};
 }
-async function finishAudio(harness,index){await until(()=>harness.audios[index]);harness.audios[index].onended?.();await flush();}
+async function finishAudio(harness,index){await until(()=>harness.audios[index]?.plays===1);harness.audios[index].onended?.();await flush();}
+
+test('optional spoken interruption keeps first words and the same microphone, then sends after quiet',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await until(()=>h.audios[0]?.plays===1);await flush();const mic=h.live();assert.ok(mic);
+  mic.interim('Let me ask about sleep');
+  assert.equal(h.audios[0].pauses,1);assert.equal(h.audios[1].plays,0);assert.equal(h.live(),mic);
+  mic.final('Let me ask about sleep');await work;
+  assert.equal(c.getSnapshot().draft,'Let me ask about sleep');assert.equal(c.getSnapshot().phase,'listening');
+  h.advance(4499);assert.equal(h.calls.length,1);h.advance(1);await until(()=>h.calls.length===2);
+  assert.equal(h.calls[1].body.text,'Let me ask about sleep');assert.equal(h.calls[1].body.previousCompletedSegments,0);
+  assert.equal(h.calls[1].body.previousPlayback,'interrupted');c.end();await flush();
+});
+
+test('patient echo, sound alone and short backchannels do not seize the floor or create a draft',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await until(()=>h.audios[0]?.plays===1);const mic=h.live();assert.ok(mic);
+  mic.speechStart();mic.speechEnd();mic.interim('What would you');mic.final('What would you like to discuss?');mic.final('Okay');
+  h.advance(9000);assert.equal(h.audios[0].pauses,0);assert.equal(c.getSnapshot().draft,'');assert.equal(h.calls.length,1);
+  await finishAudio(h,0);await finishAudio(h,1);await work;
+  mic.final('Hello. What would you like to discuss?');h.advance(9000);
+  assert.equal(h.calls.length,1);assert.equal(c.getSnapshot().draft,'');
+  mic.final('Tell me about your sleep');h.advance(4500);await until(()=>h.calls.length===2);c.end();await flush();
+});
+
+test('an echoed prefix is removed while genuine redirection is retained exactly once',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await until(()=>h.audios[0]?.plays===1);const mic=h.live();assert.ok(mic);
+  mic.interim('What would you like to discuss let me ask about sleep');mic.final('What would you like to discuss let me ask about sleep');mic.fire();await work;
+  assert.equal(c.getSnapshot().draft,'let me ask about sleep');assert.equal(h.calls.length,1);c.end();
+});
+
+for(const action of ['pause','end','clear','dispose'])test(`explicit ${action} overrides spoken interruption handoff`,async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await until(()=>h.audios[0]?.plays===1);const mic=h.live();assert.ok(mic);mic.final('Let me ask about sleep');c[action]();await work;h.advance(9000);
+  assert.equal(h.calls.length,1);assert.equal(h.live(),undefined);assert.notEqual(c.getSnapshot().phase,'listening');
+});
+
+test('speaking during the second segment remembers only the completed first segment',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await finishAudio(h,0);await until(()=>h.audios[1]?.plays===1);const mic=h.live();assert.ok(mic);mic.final('Wait');await work;
+  assert.equal(c.getSnapshot().messages[0].completedSegments,1);c.send();await until(()=>h.calls.length===2);
+  assert.equal(h.calls[1].body.previousCompletedSegments,1);c.end();await flush();
+});
+
+test('recognition failure during playback leaves patient audio running and disables spoken interruption',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await until(()=>h.audios[0]?.plays===1);const mic=h.live();assert.ok(mic);mic.onerror({error:'not-allowed'});
+  assert.equal(h.audios[0].pauses,0);assert.equal(c.getSnapshot().phase,'speaking');assert.equal(c.getSnapshot().spokenInterrupt,false);
+  await finishAudio(h,0);await finishAudio(h,1);await work;assert.equal(h.live(),undefined);assert.match(c.getSnapshot().error,/microphone/i);
+});
+
+test('turning spoken interruption off during playback closes only its microphone',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await until(()=>h.audios[0]?.plays===1);assert.ok(h.live());c.setSpokenInterrupt(false);assert.equal(h.live(),undefined);assert.equal(h.audios[0].pauses,0);
+  await finishAudio(h,0);await finishAudio(h,1);await work;assert.ok(h.live());c.end();
+});
+
+test('a withdrawn interruption interim is not submitted as a completed turn',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await until(()=>h.audios[0]?.plays===1);const mic=h.live();assert.ok(mic);mic.interim('Let me ask');await work;mic.withdraw();h.advance(20000);
+  assert.equal(h.calls.length,1);assert.match(c.getSnapshot().error,/finish|unfinished/i);c.end();
+});
+
+test('a genuine interruption interim later revised to patient echo is not submitted as learner speech',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await until(()=>h.audios[0]?.plays===1);const mic=h.live();
+  mic.interim('Let me stop you');await work;
+  mic.final('What would you like to discuss?');h.advance(9000);await flush();
+  assert.equal(h.calls.length,1,'revised playback echo must not create a paid learner turn');
+  assert.equal(c.getSnapshot().draft,'');c.end();
+});
+
+test('late patient echo in another result cannot contaminate an accepted interruption',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await until(()=>h.audios[0]?.plays===1);const mic=h.live();
+  mic.final('Let me ask about sleep');await work;
+  mic.final('What would you like to discuss?');
+  assert.equal(c.getSnapshot().draft,'Let me ask about sleep','a delayed patient result is not part of the learner question');
+  h.advance(4500);await until(()=>h.calls.length===2);
+  assert.equal(h.calls[1].body.text,'Let me ask about sleep');c.end();await flush();
+});
+
+test('turning spoken interruption off removes echo filtering from the following ordinary learner turn',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await until(()=>h.audios[0]?.plays===1);c.setSpokenInterrupt(false);
+  await finishAudio(h,0);await finishAudio(h,1);await work;
+  h.live().final('Hello');
+  assert.equal(c.getSnapshot().draft,'Hello','disabled experiment must not suppress ordinary recognized speech');
+  h.advance(4500);await until(()=>h.calls.length===2);c.end();await flush();
+});
+
+test('enabling spoken interruption during a current reply immediately listens for the learner',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true);
+  await until(()=>h.audios[0]?.plays===1);assert.equal(h.live(),undefined);
+  c.setSpokenInterrupt(true);assert.ok(h.live(),'the live toggle must activate the microphone for the reply already playing');
+  h.live().final('Let me ask about sleep');await work;
+  assert.equal(h.audios[0].pauses,1);assert.equal(c.getSnapshot().draft,'Let me ask about sleep');c.end();
+});
+
+test('after the playback echo tail expires ordinary learner repetition is not suppressed',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await finishAudio(h,0);await finishAudio(h,1);await work;h.advance(30000);
+  h.live().final('Hello');
+  assert.equal(c.getSnapshot().draft,'Hello','a new result long after playback must not be compared with the patient forever');
+  h.advance(4500);await until(()=>h.calls.length===2);c.end();await flush();
+});
+
+test('a distinct reflection is not rejected merely because its vocabulary matches the patient',async()=>{
+  const h=environment((path,options)=>Promise.resolve(response(frames(0,['I feel great, and you keep asking about sleep.','I have been sleeping two or three hours every night.']),options.signal))),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await until(()=>h.audios[0]?.plays===1);const question='You feel great and I keep asking about sleep?';
+  h.live().final(question);
+  assert.equal(h.audios[0].pauses,1,'reordered words can express a genuine learner reflection');
+  await work;assert.equal(c.getSnapshot().draft,question);c.end();
+});
+
+test('a hidden page between spoken interruption and cleanup cannot resume or submit the microphone',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await until(()=>h.audios[0]?.plays===1);const mic=h.live();mic.final('Let me ask about sleep');
+  h.env.document.hidden=true;await work;h.advance(9000);await flush();
+  assert.equal(h.live(),undefined);assert.equal(h.calls.length,1);assert.notEqual(c.getSnapshot().phase,'listening');c.end();
+});
+
+test('spoken interruption cannot open an eleventh learner turn after the full encounter limit',async()=>{
+  const h=environment(),c=createController(h.env),opening=c.start('key',true,undefined,{spokenInterrupt:true});
+  await finishAudio(h,0);await finishAudio(h,1);await opening;
+  for(let turn=1;turn<=10;turn++){
+    const work=c.send('Tell me about your sleep');
+    await until(()=>h.audios[turn*2]?.plays===1);
+    if(turn===10){assert.equal(h.live(),undefined);c.setSpokenInterrupt(true);assert.equal(h.live(),undefined);}
+    await finishAudio(h,turn*2);await finishAudio(h,turn*2+1);await work;
+  }
+  assert.equal(c.getSnapshot().phase,'ended');assert.equal(h.live(),undefined);h.advance(9000);
+  assert.equal(h.calls.length,11);assert.equal(await c.send('An extra question'),false);c.end();
+});
+
+test('interruption keeps listening through a long unfinished interim and sends only the final completion',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
+  await until(()=>h.audios[0]?.plays===1);const mic=h.live();
+  mic.interim('Let me ask about');await work;h.advance(12000);
+  assert.equal(h.calls.length,1);assert.equal(h.live(),mic);
+  mic.interim('Let me ask about how you have been sleeping');h.advance(6000);
+  assert.equal(h.calls.length,1);
+  mic.final('Let me ask about how you have been sleeping');h.advance(4500);await until(()=>h.calls.length===2);
+  assert.equal(h.calls[1].body.text,'Let me ask about how you have been sleeping');c.end();await flush();
+});
+
+test('faculty settings travel only with the start and are not applied to moment starts',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',false,undefined,{deliveryIntensity:'expressive'});await until(()=>h.calls.length===1);
+  assert.equal(h.calls[0].body.deliveryIntensity,'expressive');await finishAudio(h,0);await finishAudio(h,1);await work;
+  c.send('Tell me more');await until(()=>h.calls.length===2);assert.equal(Object.hasOwn(h.calls[1].body,'deliveryIntensity'),false);c.end();await flush();
+});
+
+test('moment starts ignore full-encounter voice settings and spoken team formulation remains separate',async()=>{
+  const h=environment(),scenarioId='moment_priya_formulation_001',c=createController(h.env,{getMomentProfile:id=>id===scenarioId?{}:null});
+  const opening=c.start('key',true,scenarioId,{spokenInterrupt:true,deliveryIntensity:'expressive'});
+  await until(()=>h.audios[0]?.plays===1);
+  assert.equal(c.getSnapshot().spokenInterrupt,false);assert.equal(c.getSnapshot().deliveryIntensity,'standard');assert.equal(h.live(),undefined);
+  assert.equal(h.calls[0].body.scenarioId,scenarioId);assert.equal(Object.hasOwn(h.calls[0].body,'deliveryIntensity'),false);
+  await finishAudio(h,0);await finishAudio(h,1);await opening;
+  const question=c.send('Tell me what I have misunderstood.');await finishAudio(h,2);await finishAudio(h,3);await question;c.end();
+  assert.equal(c.recordTeamFormulation(),true);h.live().final('Hello. What would you like to discuss?');h.advance(4500);await flush();
+  assert.equal(c.getSnapshot().teamFormulation,'Hello. What would you like to discuss?');assert.equal(c.getSnapshot().captureTarget,'patient');
+  assert.equal(c.getSnapshot().phase,'ended');assert.equal(h.calls.length,2);assert.equal(h.live(),undefined);c.end();
+});
 
 test('NDJSON parser delivers each ordered full audio segment and latest receipt across split lines',()=>{
   const delivered=[],states=[];const parser=createParser({expectedTurn:0,onState:value=>states.push(value),onAudio:event=>delivered.push(event.index)});
@@ -73,7 +237,7 @@ test('parser rejects wrong turns, mismatched segments, duplicate audio, missing 
 
 test('opening plays lead before next segment and next turn submits only completed-segment receipt',async()=>{
   const h=environment(),controller=createController(h.env);
-  const opening=controller.start('private-passcode',false);await until(()=>h.audios.length===1);
+  const opening=controller.start('private-passcode',false);await until(()=>h.audios[0]?.plays===1);
   assert.equal(controller.getSnapshot().phase,'speaking');assert.equal(h.calls.length,1);
   assert.equal(h.calls[0].options.headers['x-preview-key'],'private-passcode');assert.equal(JSON.stringify(controller.getSnapshot()).includes('private-passcode'),false);
   await finishAudio(h,0);await finishAudio(h,1);assert.equal(await opening,true);assert.equal(controller.getSnapshot().phase,'ready');
@@ -85,12 +249,125 @@ test('opening plays lead before next segment and next turn submits only complete
 
 test('interrupting second segment keeps first completed segment and original question',async()=>{
   const h=environment(),controller=createController(h.env);const opening=controller.start('key',false);
-  await finishAudio(h,0);await until(()=>h.audios.length===2);controller.interrupt();await opening;
+  await finishAudio(h,0);await until(()=>h.audios[1]?.plays===1);controller.interrupt();await opening;
   assert.equal(controller.getSnapshot().restartRequired,false);assert.equal(controller.getSnapshot().phase,'paused');
   const next=controller.send('Let me check what I heard.');await until(()=>h.calls.length===2);
   assert.equal(h.calls[1].body.state,'complete-0');assert.equal(h.calls[1].body.previousPlayback,'interrupted');assert.equal(h.calls[1].body.previousCompletedSegments,1);
   await finishAudio(h,2);await finishAudio(h,3);await next;
   assert.equal(controller.getSnapshot().messages[1].text,'Let me check what I heard.');assert.equal(h.revoked.length,4);
+});
+
+test('the next recording loads while the first plays, but cannot play or count as heard early',async()=>{
+  const h=environment(),controller=createController(h.env),work=controller.start('key',false);
+  await until(()=>h.audios[0]?.plays===1);await flush();
+  assert.equal(h.audios.length,2);assert.equal(h.audios[1].preload,'auto');assert.equal(h.audios[1].loads,1);
+  assert.equal(h.audios[1].plays,0);assert.equal(h.audios[0].pauses,0);
+  h.audios[1].onended?.();await flush();
+  assert.equal(h.audios[1].plays,0);assert.equal(h.revoked.length,0);
+  await finishAudio(h,0);assert.equal(h.audios[1].plays,1);
+  await finishAudio(h,1);assert.equal(await work,true);
+  assert.equal(controller.getSnapshot().messages[0].completedSegments,2);assert.equal(h.revoked.length,2);
+});
+
+test('interrupting the first recording immediately releases prepared audio and sends no unheard segment receipt',async()=>{
+  const h=environment((path,options,number)=>Promise.resolve(response(number===1?frames():frames(1,['A fresh reply.']),options.signal))),controller=createController(h.env);
+  const work=controller.start('key',true);await until(()=>h.audios[0]?.plays===1);await flush();
+  assert.equal(h.audios.length,2);const staleFirst=h.audios[0].onended,staleQueued=h.audios[1].onended;
+  controller.interrupt();assert.equal(h.audios[0].pauses,1);assert.equal(h.audios[1].pauses,1);assert.equal(h.revoked.length,2);
+  assert.equal(await work,false);staleFirst?.();staleQueued?.();await flush();
+  assert.equal(h.audios[1].plays,0);assert.equal(h.revoked.length,2);assert.equal(controller.getSnapshot().phase,'paused');
+  assert.equal(h.recognizers.some(item=>item.active),false);
+  const next=controller.send('Let me ask about sleep.');await until(()=>h.calls.length===2);
+  assert.equal(h.calls[1].body.previousCompletedSegments,0);assert.equal(h.calls[1].body.previousPlayback,'interrupted');
+  await finishAudio(h,2);assert.equal(await next,true);
+});
+
+test('a queued loading failure preserves the playing segment and never counts or plays the failed recording',async()=>{
+  const h=environment(),controller=createController(h.env),work=controller.start('key',false);
+  await until(()=>h.audios[0]?.plays===1);await flush();assert.equal(h.audios.length,2);
+  h.audios[1].onerror();await flush();
+  assert.equal(h.audios[0].pauses,0);assert.equal(h.audios[1].plays,0);assert.equal(h.revoked.length,1);
+  await finishAudio(h,0);assert.equal(await work,false);
+  const snapshot=controller.getSnapshot();assert.equal(snapshot.phase,'paused');assert.match(snapshot.error,/voice could not finish/i);
+  assert.equal(snapshot.messages[0].completedSegments,1);assert.equal(h.revoked.length,2);
+  const next=controller.send('What did you mean?');await until(()=>h.calls.length===2);
+  assert.equal(h.calls[1].body.previousCompletedSegments,1);assert.equal(h.calls[1].body.previousPlayback,'interrupted');
+  await finishAudio(h,2);await finishAudio(h,3);assert.equal(await next,true);
+});
+
+test('cleared prepared recordings cannot complete or stop a new encounter when old callbacks arrive',async()=>{
+  const h=environment((path,options)=>Promise.resolve(response(frames(),options.signal))),controller=createController(h.env);
+  const old=controller.start('old-key',false);await until(()=>h.audios[0]?.plays===1);await flush();
+  assert.equal(h.audios.length,2);const staleFirst=h.audios[0].onended,staleQueued=h.audios[1].onended;
+  controller.clear();const fresh=controller.start('new-key',false);await until(()=>h.audios[2]?.plays===1);
+  staleFirst?.();staleQueued?.();assert.equal(await old,false);await flush();
+  assert.equal(controller.getSnapshot().phase,'speaking');assert.equal(h.audios[1].plays,0);assert.equal(h.audios[2].pauses,0);
+  assert.equal(h.revoked.length,2);assert.equal(new Set(h.revoked).size,2);
+  await finishAudio(h,2);await finishAudio(h,3);assert.equal(await fresh,true);
+  assert.equal(controller.getSnapshot().messages[0].completedSegments,2);assert.equal(h.revoked.length,4);
+});
+
+for(const action of ['pause','end'])test(`${action} immediately releases both playing and prepared recordings`,async()=>{
+  const h=environment(),controller=createController(h.env),work=controller.start('key',true);
+  await until(()=>h.audios[0]?.plays===1);await flush();assert.equal(h.audios.length,2);
+  controller[action]();assert.equal(h.revoked.length,2);assert.equal(h.audios[0].pauses,1);assert.equal(h.audios[1].pauses,1);
+  assert.equal(await work,false);assert.equal(h.audios[1].plays,0);assert.equal(h.revoked.length,2);
+  assert.equal(controller.getSnapshot().messages[0].completedSegments,0);assert.equal(h.recognizers.some(item=>item.active),false);
+});
+
+test('an active playback error releases queued audio without playing it',async()=>{
+  const h=environment(),controller=createController(h.env),work=controller.start('key',false);
+  await until(()=>h.audios[0]?.plays===1);await flush();assert.equal(h.audios.length,2);
+  h.audios[0].onerror();assert.equal(await work,false);
+  assert.equal(h.revoked.length,2);assert.equal(h.audios[1].plays,0);assert.equal(controller.getSnapshot().messages[0].completedSegments,0);
+});
+
+test('a stalled playing recording times out and releases the prepared recording without starting it',async()=>{
+  const h=environment(),controller=createController(h.env),work=controller.start('key',false);
+  await until(()=>h.audios[0]?.plays===1);await flush();assert.equal(h.audios.length,2);
+  h.advance(65000);assert.equal(await work,false);
+  assert.equal(h.revoked.length,2);assert.equal(h.audios[1].plays,0);assert.equal(h.timers.size,0);
+  assert.equal(controller.getSnapshot().messages[0].completedSegments,0);assert.equal(controller.getSnapshot().phase,'paused');
+});
+
+test('a pause during the speaking update prevents late play after resources were released',async()=>{
+  const h=environment();let paused=false;
+  const controller=createController(h.env,{onChange(snapshot){if(snapshot.phase==='speaking'&&!paused){paused=true;controller.pause();}}});
+  assert.equal(await controller.start('key',false),false);
+  assert.equal(h.audios.length,1);assert.equal(h.audios[0].plays,0);assert.deepEqual(h.revoked,h.urls);
+  assert.equal(controller.getSnapshot().messages[0].completedSegments,0);
+});
+
+test('an audio constructor failure revokes its URL and leaves a recoverable unheard reply',async()=>{
+  const h=environment(),controller=createController(h.env);h.env.Audio=class{constructor(){throw new Error('Unavailable output device');}};
+  assert.equal(await controller.start('key',false),false);
+  assert.equal(h.urls.length,1);assert.deepEqual(h.revoked,h.urls);assert.equal(controller.getSnapshot().messages[0].completedSegments,0);
+  assert.equal(controller.getSnapshot().phase,'paused');assert.equal(controller.getSnapshot().restartRequired,false);
+});
+
+for(const [name,failure,expected] of [
+  ['provider',{type:'error',code:'preview_provider_unavailable'},/patient’s reply could not be completed/i],
+  ['protocol',{type:'audio',index:0,data:audio,state:'duplicate-audio'},/response could not be verified/i],
+])test(`a partial-stream ${name} failure keeps its real error while cancelling active and prepared audio`,async()=>{
+  let append;
+  const h=environment(()=>Promise.resolve(new Response(new ReadableStream({start(stream){
+    append=event=>stream.enqueue(new TextEncoder().encode(JSON.stringify(event)+'\n'));
+    frames().slice(0,3).forEach(append);
+  },cancel(){}}),{headers:{'content-type':'application/x-ndjson; charset=utf-8'}}))),controller=createController(h.env);
+  const work=controller.start('key',false);await until(()=>h.audios[0]?.plays===1);await flush();
+  assert.equal(h.audios.length,2);assert.equal(h.audios[1].plays,0);append(failure);
+  assert.equal(await work,false);assert.match(controller.getSnapshot().error,expected);
+  assert.equal(h.revoked.length,2);assert.equal(new Set(h.revoked).size,2);assert.equal(h.audios[0].pauses,1);assert.equal(h.audios[1].plays,0);
+  assert.equal(controller.getSnapshot().messages[0].completedSegments,0);assert.equal(controller.getSnapshot().restartRequired,false);
+});
+
+test('a second audio constructor failure keeps its audio error when cancelling the first recording',async()=>{
+  const h=environment(),Audio=h.env.Audio;let constructions=0;
+  h.env.Audio=class extends Audio{constructor(){if(++constructions===2)throw new Error('Unavailable output device');super();}};
+  const controller=createController(h.env);assert.equal(await controller.start('key',false),false);
+  assert.equal(h.audios[0].plays,1);assert.match(controller.getSnapshot().error,/voice could not finish playing/i);
+  assert.equal(h.urls.length,2);assert.equal(h.revoked.length,2);assert.equal(new Set(h.revoked).size,2);assert.equal(h.audios[0].pauses,1);
+  assert.equal(controller.getSnapshot().messages[0].completedSegments,0);assert.equal(controller.getSnapshot().restartRequired,false);
 });
 
 test('cancellation before reply requires explicit restart and never automatically repeats an uncertain request',async()=>{
@@ -112,7 +389,7 @@ test('reply receipt survives cancellation before audio or final event and allows
 
 test('a cleared request cannot overwrite a new encounter or stop its audio when it resolves late',async()=>{
   let resolveOld;const h=environment((path,options,number)=>number===1?new Promise(resolve=>resolveOld=resolve):Promise.resolve(response(frames(),options.signal))),controller=createController(h.env);
-  const old=controller.start('old-key',false);controller.clear();const fresh=controller.start('new-key',false);await until(()=>h.audios.length===1);
+  const old=controller.start('old-key',false);controller.clear();const fresh=controller.start('new-key',false);await until(()=>h.audios[0]?.plays===1);
   resolveOld(response(frames(),h.calls[0].options.signal));await old;assert.equal(controller.getSnapshot().phase,'speaking');assert.equal(h.audios[0].pauses,0);
   await finishAudio(h,0);await finishAudio(h,1);await fresh;assert.equal(controller.getSnapshot().messages.length,1);assert.equal(controller.getSnapshot().phase,'ready');
 });
@@ -281,8 +558,8 @@ test('a manual composer edit still pauses automatic sending until voice is expli
 });
 
 test('page disposal closes audio, revokes its URL, drops draft and cannot resume microphone',async()=>{
-  const h=environment(),controller=createController(h.env);const work=controller.start('key',true);await until(()=>h.audios.length===1);controller.dispose();await work;
-  assert.equal(h.revoked.length,1);assert.equal(h.audios[0].pauses,1);assert.equal(controller.resume(),false);assert.equal(controller.getSnapshot().draft,'');assert.deepEqual(controller.getSnapshot().messages,[]);
+  const h=environment(),controller=createController(h.env);const work=controller.start('key',true);await until(()=>h.audios[0]?.plays===1);controller.dispose();await work;
+  assert.equal(h.revoked.length,2);assert.equal(h.audios[0].pauses,1);assert.equal(h.audios[1].plays,0);assert.equal(controller.resume(),false);assert.equal(controller.getSnapshot().draft,'');assert.deepEqual(controller.getSnapshot().messages,[]);
 });
 
 test('typing pauses active capture and cannot send an edited question on the speech silence timer',async()=>{
@@ -303,7 +580,7 @@ test('a dana message carries its segment texts so the heard prefix can be quoted
   assert.equal(first.segments.slice(0,first.completedSegments).join(''),first.text);
 
   // An interrupted reply must expose only what actually played.
-  const next=controller.send('And after that?');await until(()=>h.audios.length===3);
+  const next=controller.send('And after that?');await until(()=>h.audios[2]?.plays===1);
   await finishAudio(h,2);controller.interrupt();await next;
   const second=controller.getSnapshot().messages.at(-1);
   assert.equal(second.status,'interrupted');
