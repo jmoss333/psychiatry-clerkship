@@ -24,7 +24,12 @@ const ORIGIN = 'https://learn.example.test';
 const STUDENT_KEY = 'student-secret';
 const OPERATIONS_KEY = 'operations-secret';
 const MODEL = 'claude-haiku-4-5-20251001';
-const NOW_MS = Date.parse('2026-07-15T12:00:00.000Z');
+// The harness clock must sit at or after every `facultyReview.lastReviewed` in the shipped
+// pack: sp-governance treats a review dated after `now` as not yet in force, so a clock that
+// lags the pack silently drops cases from the reviewed set. Before 2026-09-10 this was
+// 2026-07-15, which excluded Marcus and Ray (reviewed 2026-08-31) without any test noticing;
+// Dana's 2026-09-09 re-attestation then emptied the set and failed 21 tests.
+const NOW_MS = Date.parse('2026-09-10T12:00:00.000Z');
 const PACK_HASH = 'ab'.repeat(32);
 const TICKET_SECRET = '0123456789abcdef0123456789abcdef';
 const ENCOUNTER_ID = Buffer.from(
@@ -516,10 +521,14 @@ test('GET exposes exact reviewed summaries while opening is canonical and provid
     // real case, not a hypothetical: the D12/D13 safety-scoring wave rewrote 70
     // lines and left packVersion at 0.1.0.
     packSha256: PACK_HASH,
-    cases: [{
-      id: 'sp_depression_gated_si_001',
-      title: 'Dana — Day 1 Admission Interview',
-    }],
+    // Every shipped case whose facultyReview predates the harness clock. Until 2026-09-10
+    // this listed Dana alone -- not by design, but because NOW_MS lagged Marcus's and
+    // Ray's 2026-08-31 attestations.
+    cases: [
+      { id: 'sp_depression_gated_si_001', title: 'Dana — Day 1 Admission Interview' },
+      { id: 'sp_mania_redirect_001', title: 'Marcus — Day 1 After a Sleepless Week' },
+      { id: 'sp_psychosis_paranoid_001', title: 'Ray — First Days, Guarded and Afraid' },
+    ],
   });
 
   const openResponse = await harness.handler(learnerRequest({ body: openBody() }));
