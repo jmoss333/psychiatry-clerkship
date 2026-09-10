@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "research_returns.json — the research-return dock",
+  "type": "object",
+  "required": ["schemaVersion", "questions", "returns"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "_note": { "type": "string" },
+    "graceDays": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "How long a return may sit in triage with unrouted findings before bin/research-dock.py --strict fails."
+    },
+    "questions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/question" }
+    },
+    "returns": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/return" }
+    }
+  },
+  "$defs": {
+    "question": {
+      "type": "object",
+      "required": ["id", "title", "primaryTool", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^RQ-[0-9]+$" },
+        "title": { "type": "string", "minLength": 10 },
+        "primaryTool": { "enum": ["openevidence", "chatgpt-deep-research", "claude", "other"] },
+        "promptRef": { "type": "string" },
+        "status": { "enum": ["open", "asked", "answered", "retired"] },
+        "note": { "type": "string" }
+      }
+    },
+    "return": {
+      "type": "object",
+      "required": ["id", "question", "tool", "returnedOn", "returnFile", "sourceKind", "status", "findings"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^rq-[0-9]+-[0-9]{4}-[0-9]{2}-[0-9]{2}(-[a-z0-9]+)?$" },
+        "question": { "type": "string", "pattern": "^RQ-[0-9]+$" },
+        "tool": { "enum": ["openevidence", "chatgpt-deep-research", "claude", "other"] },
+        "askedOn": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "returnedOn": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "returnFile": {
+          "type": "string",
+          "description": "Repo-relative path to the saved verbatim return. Lives under Evidence Inbox/_research-returns/ so the OpenEvidence scanner (os.listdir, non-recursive) does not treat it as a candidate source."
+        },
+        "sourceKind": {
+          "const": "secondary",
+          "description": "A model synthesis is ALWAYS secondary. It licenses nothing on its own. This is a constant, not a choice — the checker enforces it."
+        },
+        "status": { "enum": ["triage", "closed"] },
+        "closedOn": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "note": { "type": "string" },
+        "findings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/finding" }
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": ["id", "claim", "disposition"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^f[0-9]+$" },
+        "claim": {
+          "type": "string",
+          "minLength": 15,
+          "description": "One sentence: what the return asserts. Written so a reader can judge it without opening the return."
+        },
+        "disposition": {
+          "enum": ["needs-primary", "adopt", "cite", "supersedes", "reject", "no-action"],
+          "description": "needs-primary is the only unrouted state and is what the grace-period check counts."
+        },
+        "primary": { "$ref": "#/$defs/primary" },
+        "landedIn": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Where the finding actually changed the library — an evidence_registry.json source id, a page path, a decisions.json id."
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "primary": {
+      "type": "object",
+      "required": ["citation"],
+      "additionalProperties": false,
+      "properties": {
+        "citation": { "type": "string", "minLength": 10 },
+        "pmid": { "type": "string", "pattern": "^[0-9]{1,9}$" },
+        "doi": { "type": "string", "minLength": 5 },
+        "url": { "type": "string" }
+      }
+    }
+  }
+}

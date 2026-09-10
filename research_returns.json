@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "_note": "The research-return dock. A deep-research answer is a SECONDARY source: it licenses nothing on its own. This registry records the question that was asked, the answer that came back, and the routing decision for every finding inside it, so an answer either becomes governed content (via evidence_registry.json + evidence_annotations.json, per EVIDENCE_INBOX_RUNBOOK.md step 5) or a recorded decision not to use it. Nothing is allowed to stay undecided. Run: python3 bin/research-dock.py status | check | new. Runbook: docs/RESEARCH_RETURN_DOCK.md.",
+  "graceDays": 21,
+  "questions": [
+    {
+      "id": "RQ-1",
+      "title": "What standards spine should govern the resident site?",
+      "primaryTool": "chatgpt-deep-research",
+      "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-1",
+      "status": "open"
+    },
+    {
+      "id": "RQ-2",
+      "title": "What is the minimum defensible QI and patient-safety curriculum for inpatient psychiatry?",
+      "primaryTool": "chatgpt-deep-research",
+      "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-2",
+      "status": "open"
+    },
+    {
+      "id": "RQ-3",
+      "title": "Is our suicide-risk teaching aligned with 2024-2026 consensus?",
+      "primaryTool": "openevidence",
+      "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-3",
+      "status": "open"
+    },
+    {
+      "id": "RQ-4",
+      "title": "AI standardized patients: evidence, harm profile, and disclosure posture",
+      "primaryTool": "chatgpt-deep-research",
+      "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-4",
+      "status": "open"
+    },
+    {
+      "id": "RQ-5",
+      "title": "What evaluation design survives aggregate-only analytics?",
+      "primaryTool": "claude",
+      "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-5",
+      "status": "open"
+    },
+    {
+      "id": "RQ-6",
+      "title": "Landscape scan: where is the defensible contribution?",
+      "primaryTool": "chatgpt-deep-research",
+      "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-6",
+      "status": "open"
+    },
+    {
+      "id": "RQ-7",
+      "title": "What is a defensible attestation decay and re-attestation policy?",
+      "primaryTool": "claude",
+      "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-7",
+      "status": "open"
+    },
+    {
+      "id": "RQ-8",
+      "title": "What can we claim about 192 locally authored question-bank items?",
+      "primaryTool": "claude",
+      "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-8",
+      "status": "open"
+    },
+    {
+      "id": "RQ-9",
+      "title": "Which learner tracks are defensible, and at what cost?",
+      "primaryTool": "chatgpt-deep-research",
+      "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-9",
+      "status": "open"
+    },
+    {
+      "id": "RQ-10",
+      "title": "Instrument rights: can the COWS interim waiver be closed?",
+      "primaryTool": "chatgpt-deep-research",
+      "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-10",
+      "status": "open"
+    }
+  ],
+  "returns": []
+}
