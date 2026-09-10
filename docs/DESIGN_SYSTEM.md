@@ -168,6 +168,25 @@ parses the shipped CSS rather than asserting literals, and fails when a pinned e
 *passing* so the allowlist cannot absorb a regression. Two sources of truth for one number is worse
 than one.
 
+### 3.1 The one thing no file-reading check can do
+
+Every colour guard above reads a **file**. Twice on 2026-09-10 a defect shipped that all of them
+were structurally unable to see, because the wrong colour only exists once a browser has resolved
+the cascade — §4 (a private palette whose ground flipped and whose ink did not) and §4.1 (an
+injected block styled through a namespace defined nowhere). Both were found by hand, in a browser,
+against production.
+
+`tests/smoke/contrast.spec.js` is that probe, kept. It loads four routes — one representative per
+surface class — in **both themes**, walks every element carrying its own text, resolves the nearest
+opaque background behind it, and fails on anything below AA. It runs in two places:
+
+- the **nav-ms3 / nav-res** projects, against a local build, on every PR;
+- the **daily production canary**, against the live Netlify sites.
+
+The canary's scope is pinned by `tests/canary-scope.test.mjs`, precisely so a monitor cannot
+inherit a suite by accident. That file's round-trip budget now carries a note that its metric
+counts call sites and therefore under-reports a spec that loops.
+
 ---
 
 ## 4. C4, and why source-level tests could not see the defect
