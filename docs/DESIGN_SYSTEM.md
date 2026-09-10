@@ -252,13 +252,28 @@ Measured live on `une-ms3-psychiatry.netlify.app`, 2026-09-10, in dark mode:
 36 orphaned tokens, on two sites, in front of learners. Every unit test was green; both contrast
 gates were green. They read the `--fd-*` palette, which was fine.
 
-The remediation block at the foot of `clinical-warm.css` gives those page-private names dark values
-centrally — the names are page-private but semantically identical across the pages that use them
-(`--ink` is always primary body text, `--line` always a hairline), and their values are the dark
-*role* equivalents already proven in the `--fd-*` block, so the two halves cannot drift.
+The first fix was a remediation block at the foot of `clinical-warm.css` giving those page-private
+names dark values centrally — the names were page-private but semantically identical across the
+pages that used them (`--ink` was always primary body text, `--line` always a hairline), so one
+central override was correct rather than five inline blocks.
 
-**That block is remediation, not a pattern.** New pages use `--fd-*`. Adding a name to it is the
-signal that a page has invented private colour vocabulary — which is what C4 now fails on.
+**That block was remediation, not a pattern, and it is now gone** — deleted by migration step 6
+(§5), which moved all five pages onto `--fd-*` directly. C4 is what holds the line in its place:
+a page that invents private colour vocabulary fails the build rather than earning a new row in a
+block someone has to remember to maintain. New pages use `--fd-*`.
+
+Two things the migration taught, both worth keeping:
+
+- **Aliasing would have been worse than useless.** `--terracotta: var(--fd-terracotta)` looks like
+  the cheap way to retire a name, but four of the legacy tokens (`--terracotta`, `--terra`,
+  `--teal`, `--gold`) were used *both* as ink and as fill. An alias would have carried
+  `color:var(--terracotta)` across intact **and hidden it from C1**, which matches on the `--fd-*`
+  name. The migration had to be property-aware: 11 ink uses moved to the `-dark`/`-deep` ink
+  tokens. Retiring the names fixed a C1 defect class as a side effect; aliasing them would have
+  entrenched it behind a green gate.
+- **Two of the seven pages never needed the block.** `interaction-cards.html` and
+  `sp-interview.html` declare both halves of their own `--surface-2` / `--ink`. They collided on
+  *names* only. Scope a migration by what actually fails, not by what greps.
 
 ### 4.1 The second finding, and why C4 could not see it either
 
@@ -300,8 +315,8 @@ Ratcheted, not big-bang. Each step is independently shippable and lowers a numbe
 | 2 | *(done 2026-09-10)* `frontdoor.css` type → `--fd-font-*` / `--fd-glyph-*` | **26 → 1** raw sizes; sub-floor **16 → 0**; 517 → 365 raw dimensions |
 | 3 | *(done 2026-09-10)* `frontdoor.css` `border-radius` and `gap` → tokens, + **C8** | 194 of 196 declarations tokenised; `raw_dimension_declarations` 365 → **196** |
 | 4 | *(done 2026-09-10)* `spa_index.html` rem type → the same px scale, + `?theme-audit` | 129 declarations moved; distinct sizes **37 → 1**; sub-floor **22 → 0**; raw dimensions 435 → **305** |
+| 6 | *(done 2026-09-10)* Five private-palette pages → `--fd-*`; raw literals tokenised | §4's remediation block **deleted**; those pages **0 frozen, 0 below AA** in both themes |
 | 5 | Fold the 9 non-standard breakpoints into sm 430 / md 640 / lg 1000 | breakpoint debt → 0 |
-| 6 | Migrate the five private-palette tool pages to `--fd-*` | delete §4's remediation block |
 
 Do **2 before 3**: type is where the sub-11px accessibility debt lives, and it is the only ratchet
 with a learner-visible floor. *(Done — what it cost: 88 of 153 declarations did not move at all,
@@ -331,11 +346,42 @@ have jumped a full step, which is a very convincing false alarm. **Read the valu
 `clinical-warm.css`; never retype them.** §2.2's table is now gate-enforced against that file
 (check **C9**) precisely so it cannot become the stale copy someone audits against.
 
-**Steps 5 and 6 are the two that are left, and they are not equal.** Step 5 (breakpoints) is
-cosmetic-risk: folding 560/620/680/760/820/821 into md 640 changes where layouts break, which is
-learner-visible and needs eyes on it at each width. Step 6 (private palettes) is the one that
-deletes §4's remediation block — the highest-value remaining move, because that block is a
-standing invitation to invent more private colour vocabulary. Do **6 before 5**.
+**Step 6 went before step 5**, because it deleted §4's remediation block — a standing invitation to
+invent private colour vocabulary — whereas step 5 changes where layouts break and needs eyes on it
+at each width. Step 5 is now the only one left.
+
+**What step 6 cost.** 237 `var()` uses across five pages, plus 30 raw colour literals on
+`rotation-curator.html` alone. Two new central tokens (`--fd-terracotta-wash`, and the light half
+of `--on-brand` — see below). Measured on the built pages, both themes, service worker cleared:
+
+| Page | Frozen colours | Below AA (dark) | Below AA (light) |
+|---|---:|---:|---:|
+| `rotation-curator.html` | 58 → **0** | 12 → **0** | 0 → **0** |
+| `one-patient-six-weeks.html` | 7 → **0** | 1 → **0** | 3 → **0** |
+| `family-systems.html` | 0 → **0** | 0 → **0** | 0 → **0** |
+| `screeners.html` | 0 → **0** | 0 → **0** | 0 → **0** |
+| `interview-circle.html` | 0 → **0** | 0 → **0** | 1 → 1 *(see `--primary`, below)* |
+
+**The `--on-brand` hole, found on the way.** `common.py` rewrites every authored `color:#fff` to
+`color:var(--on-brand)` at build time, and injects the light `--on-brand` by string-replacing
+`--surface:#ffffff;` in the page. A page that spelled that `--surface:#fff` got **no light value at
+all** — so the build's own rewrite resolved to nothing and every filled button fell back to body
+ink. Measured: 2.56:1 on `--fd-teal`, 3.0:1 on `--primary`, in **light** mode, on pages nobody
+suspected. The dark half had been in `clinical-warm.css` all along; only the light half depended on
+how a page happened to spell white. It is now declared centrally alongside `--fd-on-accent`, so the
+token is whole for every page whatever it calls its surface.
+
+That fix raised several pages and left one systemic near-miss visible: **white on `--primary`
+(`#c25a3c`) is 4.36:1**, just under AA, on `interview-circle.html`, `decision-aids.html` and
+others. Darkening `--primary` is a palette-owner decision affecting many surfaces, so it belongs in
+its own reviewed change with a CONTRAST DECISIONS entry — not folded into a migration.
+
+**The sweep is the other output.** Probing all 23 built tool pages in both themes (the same walk
+`?theme-audit` does, run over every page) found 12 clean and 11 carrying frozen colours or AA
+failures — including `orientation-video.html` at **159** dark-mode failures and
+`decision-aids.html` at **53**, none of which any gate can see, because they are raw literals
+rather than tokens. That is the backlog step 6 makes visible; it is not step 6's scope, and §3.2's
+closing note applies — when a lamp finds a class worth pinning, the class becomes a check.
 
 ---
 

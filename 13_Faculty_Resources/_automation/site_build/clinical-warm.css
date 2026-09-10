@@ -39,6 +39,11 @@
   --fd-teal:#3a7d6e;              /* accent */
   --fd-teal-deep:#2c6356;         /* accent text */
   --fd-teal-wash:#edf4f2;         /* accent background */
+  --fd-terracotta-wash:#f5e8e2;   /* primary-accent background — completes the -wash family
+                                   * (teal / danger / olive already had one). Added 2026-09-10
+                                   * for migration step 6; value is the light --terracotta-soft
+                                   * the five private-palette pages already shipped, so their
+                                   * light rendering is unchanged. */
   --fd-success:#357160;           /* done state */
   --fd-danger:#a34132;            /* safety */
   --fd-danger-dark:#8f372a;       /* safety hover */
@@ -51,6 +56,15 @@
   /* Derived — not in the design's 22, but required because frontdoor.css may carry no raw
    * colour of its own and because each of these has to invert for dark mode. */
   --fd-on-accent:#ffffff;         /* ink on a filled terracotta/teal/danger/success surface */
+  --on-brand:#ffffff;             /* legacy name for the same role. The dark block has always
+                                   * carried it; the LIGHT half was left to common.py, which
+                                   * injects it by string-replacing "--surface:#ffffff;" in the
+                                   * page. A page spelling that "--surface:#fff" got no light
+                                   * value at all, so the build's own color:#fff -> var(--on-brand)
+                                   * rewrite resolved to nothing and filled buttons fell back to
+                                   * body ink — 2.56:1 on --fd-teal, in LIGHT mode. Declaring it
+                                   * here makes the token whole for every page, whatever it calls
+                                   * its surface. Found 2026-09-10 by the ?theme-audit probe. */
   --fd-olive-wash:#f7f0e2;        /* "Document:" callout background — prototype value */
   --fd-olive-deep:#725b35;        /* "Document:" callout text — prototype value; 5.67:1 on the
                                    * wash above. A separate token because the callout is the one
@@ -234,6 +248,7 @@
   --fd-teal:#5fa392;
   --fd-teal-deep:#7fc0ae;
   --fd-teal-wash:#1d332e;
+  --fd-terracotta-wash:#3a2b24;
   --fd-success:#5aa48f;
   --fd-danger:#d97a68;
   --fd-danger-dark:#e8917f;
@@ -281,48 +296,3 @@
   --cw-accent:#e0a184;    /* 6.85:1 on the ground, non-text */
 }
 
-/* ── Legacy per-page palettes: dark values ──────────────────────────────────
- * Added 2026-09-10 to close a P0 found by auditing the SHIPPED build rather than the
- * source: five tool pages declare a PRIVATE light palette under names this file's dark
- * block never overrode (--ink, --muted, --line, --soft, --terracotta, --gold, ...), while
- * the same pages DO link this file and DO flip --bg / --surface. The result in dark mode
- * was near-black ink on a near-black ground:
- *
- *   family-systems.html        56 text elements below AA, worst 1.06:1 (whole nav column)
- *   one-patient-six-weeks.html 31 text elements below AA, worst 1.06:1 (every week heading)
- *   rotation-curator.html      21 text elements below AA, worst 1.57:1 (every field label)
- *
- * Verified live on https://une-ms3-psychiatry.netlify.app before and after.
- *
- * These names are page-private but semantically identical across the pages that use them
- * (--ink is always primary body text, --line always a hairline, and so on), which is why one
- * central override is correct rather than five inline blocks. Values are the dark ROLE
- * equivalents already proven in the --fd-* block above, so the two halves cannot drift.
- *
- * This is a REMEDIATION layer, not a pattern to extend. New pages use --fd-* tokens; the
- * long-term fix is to migrate these five pages onto them and delete this block. Adding a new
- * name here is a signal that a page has invented private colour vocabulary — which is what
- * bin/check_design_drift.py now fails the build on.
- */
-[data-theme="dark"]{
-  --ink:#ece5db;              /* was #2f2924 / #28332f / #3b332c — primary body text */
-  --muted:#bcb0a2;            /* was #5f554b / #61564c / #5d6964 — secondary text */
-  --soft:#a2968a;             /* was #74685d / #776a5e — tertiary text */
-  --line:#3a332c;             /* was #ded3c5 / #ddd2c5 / #d6cec1 — hairline */
-  --surface-2:#2f2a25;        /* was #faf7f1 — raised surface */
-  --paper:#2a2521;            /* was #fffdf8 — card ground (rotation-curator) */
-  --terracotta:#d08a6f;       /* was #bd5537 / #9f3f2a — accent fill */
-  --terra:#d08a6f;            /* alias used by one-patient-six-weeks */
-  --terracotta-dark:#e0a184;  /* was #9e412b — accent hover (lighter in dark, by role) */
-  --terracotta-soft:#3a2b24;  /* was #f5e8e2 / #f5ddd5 — accent wash */
-  --terra-soft:#3a2b24;       /* alias used by one-patient-six-weeks */
-  --teal:#5fa392;             /* was #2b7568 — secondary accent fill */
-  --teal-dark:#7fc0ae;        /* was #1f574d — secondary accent ink */
-  --teal-soft:#1d332e;        /* was #e7f1ee — secondary accent wash */
-  --evergreen:#5fa392;        /* rotation-curator's name for the same role as --teal */
-  --evergreen-soft:#1d332e;
-  --gold:#c0a06a;             /* was #806232 / #b77731 — tertiary accent */
-  --gold-soft:#332a1c;        /* was #f7efe0 */
-  --danger-bg:#3a231f;        /* was a light wash (screeners.html) */
-  --shadow-card:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.3);  /* interview-circle */
-}
