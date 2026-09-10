@@ -150,7 +150,7 @@ Gate check C3.
 ## 3. The rules the gate enforces
 
 `python3 bin/check_design_drift.py` — exit 0 clean, 1 on any finding. `--self-test` proves each
-check can fail (21 assertions, per the house rule that a guard ships with a paired falsification).
+check can fail (38 assertions, per the house rule that a guard ships with a paired falsification).
 `--update-baseline` re-pins the ratchets after a reviewed reduction.
 
 | ID | Rule | Why it is a hard failure |
@@ -161,7 +161,14 @@ check can fail (21 assertions, per the house rule that a guard ships with a pair
 | **C4** | No colour token is declared, used, and left without a dark value | **The reason this file exists.** See §4. |
 | **C6** | No `var(--token, <colour>)` whose token is defined nowhere | A fallback that always wins pins one theme's literal into both. See §4.1. Scans inline `style=""` too. |
 | **C5** | `LIGHT_DEBT` in `fd-contrast.test.mjs` stays empty | Re-opening it is a palette-owner decision, recorded in `clinical-warm.css`, not a quiet edit. |
+| **C8** | No scoped rule redeclares a themed token with a one-theme value | A `.practice-panel { --panel-wash-a:#eef5f3 }` outranks `[data-theme="dark"]` on specificity, so the dark half never lands. 42 elements at **1.23:1** shipped this way. Runs on the **built** pages, because `common.py` rewrites `#fff` at build time and a source-level version reports 15 phantoms. Selector matching is by *compound containment*, not last-class — `.tab.on` must not pair with `.seg button.impaired.on`; both shapes are pinned in `--self-test`. |
+| **C9** | §2.2 and §2.2.1's tables match `clinical-warm.css` row for row | The step names are counter-intuitive by design — `--fd-font-md` is **14px** and `--fd-font-lg` is **17px**, not the middle of the range. A migration is audited by comparing each old value against the token it now points at, and this doc is where those get looked up. One stale row makes a correct migration read as though every declaration jumped a full step: a false alarm convincing enough to cost hours and to tempt someone into "fixing" a healthy file. So the doc is pinned to the stylesheet rather than trusted. |
 | **R1–R4** | Raw dimension counts, distinct type sizes, sub-floor type, non-standard breakpoints | Ratchets against `design_drift_baseline.json`. Down freely; up fails. |
+
+**R3's blind spot, now closed.** The sub-floor check originally compared `px` values only, so
+`font-size:.62rem` — 9.9px, below the 11px floor — read as clean. It now normalises `rem` at
+16px before comparing. That single line moved `spa_index.html` from a claimed 0 sub-floor sizes
+to a real 22, all of which step 4 then paid off.
 
 Contrast **ratios** are deliberately *not* computed here. `tests/fd-contrast.test.mjs` owns them,
 parses the shipped CSS rather than asserting literals, and fails when a pinned exception starts
@@ -186,6 +193,38 @@ opaque background behind it, and fails on anything below AA. It runs in two plac
 The canary's scope is pinned by `tests/canary-scope.test.mjs`, precisely so a monitor cannot
 inherit a suite by accident. That file's round-trip budget now carries a note that its metric
 counts call sites and therefore under-reports a spec that loops.
+
+### 3.2 `?theme-audit` — the lamp for the class the probe still cannot reach
+
+`contrast.spec.js` measures **text**. It is silent on the borders, hairlines, outlines and empty
+grounds that carry no text, and those were the residue after §4, §4.1 and C8: five practice-family
+hairlines that stayed at their light values in dark mode, invisible to every gate and to a
+contrast probe alike, because a 1px line has no ratio to fail.
+
+Append `?theme-audit` to any page on either site — production, deploy preview, or a local build —
+and a small panel appears bottom-right listing **every painted colour that does not change when
+the theme flips**.
+
+How it works, and why each choice matters:
+
+| Choice | Reason |
+|---|---|
+| Reads computed style, not CSS | It measures what the browser painted, which is the whole point of §3.1. |
+| Flips `documentElement.dataset.theme`, forces reflow, re-reads, restores | Two measurements of the same element, one variable changed. Nothing is left mutated. |
+| `color` only where the element owns text; `border-*-color` / `outline-color` only where width > 0 **and** `outlineStyle !== 'none'` | `outline-width` computes to a real number even when the outline is `none`, which otherwise reports every unfocused button as having a frozen black outline. |
+| Groups by `label + property + value` with counts | 42 identical findings are one line, not 42. |
+| `&contrast` adds a WCAG AA pass | Same maths as the spec, on demand, without a test runner. |
+| The panel itself is all literal colours, and is the one element the scan skips | It must render identically in both themes — it is the instrument, not the specimen. |
+| Loads at `load` + 400ms | The SPA reader paints asynchronously; an earlier read measures an empty shell. |
+
+The loader is a **6-line inline guard** injected by `common.py::apply_dark_mode` that does nothing
+unless the query string is present — verified inert: `auditRan:false, panel:false,
+themeAuditRequests:0`. `rotation-curator.html` is in `NO_NETWORK_PAGES` and gets no loader at all,
+because that page's offline contract is hard-enforced at build time and a `createElement('script')`
+violates it.
+
+This is a **lamp, not a gate**: it finds; it does not block. When it finds a class of defect worth
+pinning, that class becomes a check — which is exactly how C8 got written.
 
 ---
 
@@ -259,9 +298,9 @@ Ratcheted, not big-bang. Each step is independently shippable and lowers a numbe
 | 1 | *(done 2026-09-10)* Token layer, role split, contrast fixes, C1–C5 + ratchets | `LIGHT_DEBT` empty; 36 dark orphans closed |
 | 1b | *(done 2026-09-10)* `--cw-*` namespace + C6 (§4.1) | crisis block flips; 18 surfaces fixed |
 | 2 | *(done 2026-09-10)* `frontdoor.css` type → `--fd-font-*` / `--fd-glyph-*` | **26 → 1** raw sizes; sub-floor **16 → 0**; 517 → 365 raw dimensions |
-| 3 | Migrate `frontdoor.css` `border-radius` and `gap` | `raw_dimension_declarations` 517 → ~330 |
-| 4 | Convert `spa_index.html`'s rem type to the same px scale | one type convention; 37 → 9 |
-| 5 | Fold the 9 non-standard breakpoints into sm/md/lg | breakpoint debt → 0 |
+| 3 | *(done 2026-09-10)* `frontdoor.css` `border-radius` and `gap` → tokens, + **C8** | 194 of 196 declarations tokenised; `raw_dimension_declarations` 365 → **196** |
+| 4 | *(done 2026-09-10)* `spa_index.html` rem type → the same px scale, + `?theme-audit` | 129 declarations moved; distinct sizes **37 → 1**; sub-floor **22 → 0**; raw dimensions 435 → **305** |
+| 5 | Fold the 9 non-standard breakpoints into sm 430 / md 640 / lg 1000 | breakpoint debt → 0 |
 | 6 | Migrate the five private-palette tool pages to `--fd-*` | delete §4's remediation block |
 
 Do **2 before 3**: type is where the sub-11px accessibility debt lives, and it is the only ratchet
@@ -271,8 +310,32 @@ with a learner-visible floor. *(Done — what it cost: 88 of 153 declarations di
 1.09 / 1.33 / 1.21, and an h3 only 1.5px above its body text is not a heading. It is now
 17 / 21 / 26 / 30 — 1.24 / 1.24 / 1.15.)*
 
-Step 3 is now the cheap one: the same rule-walking migration applied to `border-radius` and `gap`,
-with no judgement calls at the display end, because radius and gap have no reading ladder.
+**What step 4 cost, measured the same way.** 131 declarations moved, **every one of them to its
+nearest step** (0 exceptions). Max move **2.00px**, median **0.28px**, mean 0.42px; 107 of 131
+landed within 0.5px and 5 were exact. Only 12 moved more than 1px, and all 12 are deliberate:
+8 were sub-floor lifts (9.6–9.92px → the 11px floor), and 4 came *down* onto the scale
+(`.md-body h2` and `.hm-tile .v` 22.4 → 21; `.md-body h1` and `.st h1` 32 → 30).
+
+The shell was already on a rem ladder sitting almost exactly on the px scale — `.92rem` is 14.72px
+against a `--fd-font-base` of 15px, `1.05rem` is 16.8px against `--fd-font-lg`'s 17px, and
+`body{font-size:17px}` was already `--fd-font-lg` to the pixel. So the shell does not change
+visibly; what changes is that 37 arbitrary sizes became one token reference each, and the 22
+sub-floor sizes the rem blind spot had been hiding are gone. Two rules that both point at
+`--fd-font-base` cannot drift apart; `.92rem` and `.9rem` in two places always eventually do.
+
+**A warning for whoever audits step 5 or 6.** Verifying this migration by hand means comparing
+each old value against the token it now points at — and the step *names* are not what a reader
+guesses. The scale runs `2xs xs sm md base lg xl 2xl 3xl`, so `--fd-font-md` is **14px, not the
+middle of the range**, and `--fd-font-lg` is 17. Assume otherwise and every declaration appears to
+have jumped a full step, which is a very convincing false alarm. **Read the values out of
+`clinical-warm.css`; never retype them.** §2.2's table is now gate-enforced against that file
+(check **C9**) precisely so it cannot become the stale copy someone audits against.
+
+**Steps 5 and 6 are the two that are left, and they are not equal.** Step 5 (breakpoints) is
+cosmetic-risk: folding 560/620/680/760/820/821 into md 640 changes where layouts break, which is
+learner-visible and needs eyes on it at each width. Step 6 (private palettes) is the one that
+deletes §4's remediation block — the highest-value remaining move, because that block is a
+standing invitation to invent more private colour vocabulary. Do **6 before 5**.
 
 ---
 

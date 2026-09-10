@@ -270,6 +270,9 @@
   --chip-line-safety:#3a4b47;   /* teal-tinted hairline */
   --chip-line-case:#4a4139;     /* warm hairline */
   --chip-line-drill:#4d4130;    /* gold-tinted hairline */
+  --panel-line-soft:#33403c;    /* practice section / mode note */
+  --panel-line-open:#2f3a37;    /* open practice summary underline */
+  --panel-line-warm:#463d33;    /* practice hint pill */
 
   /* Injected crisis block — see the light block for why this namespace exists. */
   --cw-surface:#2b2620;   /* 11.99:1 under --cw-text */

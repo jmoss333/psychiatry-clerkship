@@ -11,7 +11,7 @@
       "sub_floor_font_sizes": 0
     },
     "spa_index.html": {
-      "distinct_font_sizes": 37,
+      "distinct_font_sizes": 1,
       "nonstandard_breakpoints": [
         560,
         620,
@@ -21,7 +21,7 @@
         821,
         999
       ],
-      "raw_dimension_declarations": 435,
+      "raw_dimension_declarations": 305,
       "sub_floor_font_sizes": 0
     }
   }
