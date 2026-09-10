@@ -142,6 +142,8 @@ step "validate_claim_anchors"               python3 $A/validate_claim_anchors.py
 step "unit — evidence annotations"          python3 $A/validate_evidence_annotations.py --self-test
 step "validate_evidence_annotations"        python3 $A/validate_evidence_annotations.py
 step "span audit (verbatim vs paper)"       python3 bin/verify_spans.py
+step "unit — research dock"                 python3 bin/research-dock.py --self-test
+step "research return dock"                 python3 bin/research-dock.py check
 step "unit — qbank coherence"              python3 bin/check_qbank_coherence.py --self-test
 # Four tools shipped a --self-test that NO gate invoked — found by bin/check_vacuity.py after
 # Codex pointed out it was inventorying only test FILES, not the --self-test modes its own
