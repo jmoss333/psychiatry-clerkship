@@ -106,7 +106,7 @@
     function clear(){env.clearTimeout(timer);timer=null;}
     function releaseVoice(){env.clearTimeout(voice);voice=null;}
     function quiet(){return thinking?8000:4500;}
-    function blocked(){return !active?'inactive':hold?'hold':interim?'interim':suspended?'unfinished':voice?'voice':callbacks.hasDraft()?'':'nodraft';}
+    function blocked(){return !active?'inactive':callbacks.canSubmit&& !callbacks.canSubmit()?'playback':hold?'hold':interim?'interim':suspended?'unfinished':voice?'voice':callbacks.hasDraft()?'':'nodraft';}
     // The deadline follows the latest recognized words or speech ending. A service
     // restart alone does not extend it; newly finished speech must get its own pause.
     function arm(){clear();var why=blocked();if(why){note('wait_'+why);return;}
@@ -136,6 +136,12 @@
         if(!active||current!==recognition)return;var words=[],heard=false,finalArrived=false;
         for(var index=0;index<event.results.length;index++){
           var result=event.results[index],text=result[0]&&result[0].transcript||'';
+          if(finals[index])continue;
+          // The controller can quarantine playback echo before words enter a draft.
+          // Keep the recognizer alive when genuine speech takes the floor, so the
+          // interim that interrupted and its eventual final share one result index.
+          if(callbacks.filterResult)text=callbacks.filterResult(text,{final:!!result.isFinal,id:id+':'+index});
+          if(!active||current!==recognition)return;
           if(result.isFinal){if(!finals[index]){finals[index]=true;if(text.trim()){madeProgress=true;heard=true;finalArrived=true;note('words_final');emit('onFinal',text.trim());}}}
           else{if(text.trim())heard=true;words.push(text);}
           if(!active||current!==recognition)return;
@@ -165,7 +171,7 @@
     }
     return {start:function(){if(active)return;if(!Constructor){emit('onError',issue('microphone_unavailable'));return;}active=true;fruitless=0;suspended=false;quietSince=null;note('start');try{connect();}catch(_){fail('microphone_unavailable');}},stop:stop,
       setThinking:function(value){thinking=!!value;arm();},setHold:function(value){var released=hold&&!value;hold=!!value;note(hold?'hold_on':'hold_off');if(released)quietSince=clock();arm();},
-      edited:function(){interim='';suspended=false;quietSince=clock();note('edited');emit('onInterim','');arm();},isActive:function(){return active;},
+      edited:function(){interim='';suspended=false;quietSince=clock();note('edited');emit('onInterim','');arm();},refresh:arm,isActive:function(){return active;},
       diagnostics:function(){return {nativeRecognition:nativeRecognition,sessions:serial,counts:Object.assign({},counts),events:trace.slice()};}};
   }
 
@@ -176,11 +182,50 @@
   function createController(env,options){
     options=options||{};var phase='gate',key='',receipt=null,turn=0,caseId=CASE_IDS[0],messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false,retryUsed=false;
     var mode='full',maxTurns=10,endpoint='/api/dana-preview',momentStage='dialogue',captureTarget='patient',reflectionOpen=false,review=null,teamFormulation='',summaryUncertain=false,uncertainTurnIds=[],reviewAttempted=false,closedReceiptAvailable=false,alternativeTurnId=null,endReason='learner_end';
-    var previousPlayback='interrupted',previousCompletedSegments=0,generation=0,targetRoleId='morgan';
-    var tally={startRequests:0,turnRequests:0,automaticSubmissions:0,explicitSubmissions:0};
-    function snapshot(){return {mode:mode,maxTurns:maxTurns,momentStage:momentStage,captureTarget:captureTarget,reflectionOpen:reflectionOpen,review:review?JSON.parse(JSON.stringify(review)):null,teamFormulation:teamFormulation,summaryUncertain:summaryUncertain,uncertainTurnIds:uncertainTurnIds.slice(),reviewAttempted:reviewAttempted,closedReceiptAvailable:closedReceiptAvailable,phase:phase,turn:turn,messages:messages.map(function(message){var copy=Object.assign({},message);if(copy.segments)copy.segments=copy.segments.slice();return copy;}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired,retryUsed:retryUsed,caseId:caseId,targetRoleId:targetRoleId};}
+    var previousPlayback='interrupted',previousCompletedSegments=0,generation=0,targetRoleId='morgan',spokenInterrupt=false,deliveryIntensity='standard',echoReference='',echoUntil=0,echoResults=new Map();
+    var tally={startRequests:0,turnRequests:0,automaticSubmissions:0,explicitSubmissions:0,spokenInterruptions:0,echoResultsIgnored:0};
+    function snapshot(){return {spokenInterrupt:spokenInterrupt,deliveryIntensity:deliveryIntensity,mode:mode,maxTurns:maxTurns,momentStage:momentStage,captureTarget:captureTarget,reflectionOpen:reflectionOpen,review:review?JSON.parse(JSON.stringify(review)):null,teamFormulation:teamFormulation,summaryUncertain:summaryUncertain,uncertainTurnIds:uncertainTurnIds.slice(),reviewAttempted:reviewAttempted,closedReceiptAvailable:closedReceiptAvailable,phase:phase,turn:turn,messages:messages.map(function(message){var copy=Object.assign({},message);if(copy.segments)copy.segments=copy.segments.slice();return copy;}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired,retryUsed:retryUsed,caseId:caseId,targetRoleId:targetRoleId};}
     function publish(){if(!disposed&&typeof options.onChange==='function')options.onChange(snapshot());}
-    var capture=createCapture(env,{hasDraft:function(){return !!draft.trim();},onReady:function(){if(!task&&!disposed&&(!ended||captureTarget!=='patient')){phase='listening';publish();}},onConnecting:function(info){if(!task&&!disposed&&(!ended||captureTarget!=='patient')){phase=info&&info.resuming&&!info.delayed&&phase==='listening'?'listening':'connecting';publish();}},onFinal:function(text){if(task||disposed)return;draft=(draft.trim()+' '+text).trim();if(problem&&(phase==='listening'||phase==='connecting'))problem='';if(caseId===FAMILY_CASE_ID)targetRoleId=addressedFamilyRole(draft)||targetRoleId;if(draft.length>1200){capture.stop();phase='paused';problem=safeMessage('text_too_long');}publish();},onInterim:function(text){interim=text;publish();},onSubmit:submitCapture,onNotice:function(error){if(disposed||ended||task)return;problem=safeMessage(error.code);publish();},onError:function(error){if(disposed)return;phase='paused';problem=safeMessage(error.code);publish();}});
+    function interruptionEligible(){return spokenInterrupt&&voice&&mode==='full'&&!disposed&&!ended&&!restartRequired&&!reflectionOpen&&!env.document.hidden&&turn<maxTurns;}
+    function speechWords(text){return String(text).toLowerCase().replace(/[’']/g,'').match(/[a-z0-9]+/g)||[];}
+    function captureClock(){return typeof env.now==='function'?env.now():env.performance&&env.performance.now?env.performance.now():Date.now();}
+    function clearEcho(){echoReference='';echoUntil=0;echoResults.clear();}
+    function filterResult(text,info){
+      if(disposed||restartRequired)return '';
+      if(captureTarget!=='patient'&&!task)return text;
+      if(ended)return '';
+      if(task&&task.abort.signal.aborted&&!task.barged)return '';
+      var monitoring=task&&task.monitoring&&!task.barged,tailReference=captureClock()<=echoUntil?echoReference:'',guarded=!!tailReference||echoResults.has(info.id);
+      if(task&&!monitoring&&!task.barged)return '';
+      if(!guarded&&!monitoring)return text;
+      if(tailReference)echoResults.set(info.id,tailReference);
+      var words=speechWords(text),reference=speechWords(echoResults.get(info.id)||tailReference),joined=' '+reference.join(' ')+' ',clean=text;
+      var echo=words.length&&joined.includes(' '+words.join(' ')+' ');
+      // A recognizer can join the tail of the patient and the learner's opening.
+      // Remove only an identifiable prefix of at least three words, never an
+      // arbitrary shared word such as "sleep" from the learner's question.
+      if(!echo){for(var count=words.length-1;count>=3;count--){if(joined.includes(' '+words.slice(0,count).join(' ')+' ')){
+        var tokens=Array.from(String(text).matchAll(/[A-Za-z0-9]+(?:['’][A-Za-z0-9]+)*/g));
+        if(tokens[count])clean=String(text).slice(tokens[count].index);break;
+      }}}
+      var candidate=speechWords(clean),backchannel=/^(?:m+h+m*|mm hmm|uh huh|okay|ok|yes|yeah|right|sure|i see)$/.test(candidate.join(' '));
+      // Shared vocabulary does not establish echo: reflective questions often
+      // reuse the patient's words in a different order or with a different meaning.
+      if(echo||(monitoring&&backchannel)||candidate.length===0){echoResults.set(info.id,echoResults.get(info.id)||echoReference);tally.echoResultsIgnored++;return '';}
+      if(monitoring&&candidate.length<2&&!/^(?:wait|stop)$/.test(candidate[0]))return '';
+      if(monitoring){
+        if(!interruptionEligible()||!task.receivedState)return '';
+        echoUntil=captureClock()+2000;task.barged=true;task.cancelled=true;tally.spokenInterruptions++;task.abort.abort();stopPlayer();phase='listening';publish();
+      }
+      // Delayed results keep the reference from their first partial. New result
+      // IDs stop being compared after a short tail, so later reflective repetition
+      // remains possible. This heuristic does not identify speakers acoustically.
+      return clean;
+    }
+    var capture=createCapture(env,{hasDraft:function(){return !!draft.trim();},canSubmit:function(){return !task&&!disposed&&(!ended||auxiliaryCaptureEligible())&&!restartRequired&&!reflectionOpen;},filterResult:filterResult,
+      onReady:function(){if(!task&&!disposed&&(!ended||captureTarget!=='patient')){phase='listening';publish();}},onConnecting:function(info){if(!task&&!disposed&&(!ended||captureTarget!=='patient')){phase=info&&info.resuming&&!info.delayed&&phase==='listening'?'listening':'connecting';publish();}},
+      onFinal:function(text){if(task&&!task.barged||disposed)return;draft=(draft.trim()+' '+text).trim();if(problem&&(phase==='listening'||phase==='connecting'))problem='';if(caseId===FAMILY_CASE_ID)targetRoleId=addressedFamilyRole(draft)||targetRoleId;if(draft.length>1200){pause();problem=safeMessage('text_too_long');}publish();},onInterim:function(text){interim=text;publish();},onSubmit:submitCapture,
+      onNotice:function(error){if(disposed||ended||task&&!task.barged)return;problem=safeMessage(error.code);publish();},onError:function(error){if(disposed)return;problem=safeMessage(error.code);voice=false;spokenInterrupt=false;if(task){task.barged=false;task.monitoring=false;}else phase='paused';publish();}});
     function stopPlayer(){if(player){player.stop();player=null;}}
     // Prepare each validated recording on arrival so loading does not wait for the
     // previous voice to finish. Preparation never counts as hearing or starts sound.
@@ -205,6 +250,7 @@
           started=true;resolvePlay=resolve;rejectPlay=reject;player=prepared;
           audioTimer=env.setTimeout(function(){finish(issue('audio_failed'));},65000);phase='speaking';publish();
           if(settled||disposed||task!==operation||operation.abort.signal.aborted){abort();return;}
+          if(interruptionEligible()){operation.monitoring=true;echoReference=operation.reply.text;echoUntil=Infinity;capture.start();}
           try{var playing=audio.play();if(playing&&playing.catch)playing.catch(function(){finish(issue('playback_blocked'));});}catch(_){finish(issue('playback_blocked'));}
         });
       }};
@@ -219,7 +265,7 @@
     function ready(){if(disposed||ended||restartRequired||task||reflectionOpen)return;if(turn>=maxTurns){ended=true;phase='ended';publish();return;}if(voice&&!env.document.hidden){phase='connecting';publish();capture.start();}else{phase='ready';publish();}}
     async function request(body,learner){
       // A retry is the one request that legitimately follows the end of an encounter.
-      if(task||disposed||restartRequired||(ended&&body.action!=='retry'))return false;capture.stop();problem='';interim='';
+      if(task||disposed||restartRequired||(ended&&body.action!=='retry'))return false;capture.stop();clearEcho();problem='';interim='';
       if(body.action==='start')tally.startRequests++;else tally.turnRequests++;
       var operation={id:++generation,abort:new AbortController(),receivedState:false,completed:0,prepared:[],reply:null,error:null,cancelled:false,learner:learner};task=operation;phase='responding';publish();
       var timeout=env.setTimeout(function(){operation.error=issue('timeout');operation.abort.abort();if(task===operation)stopPlayer();},90000),queue=Promise.resolve();
@@ -250,17 +296,20 @@
         if(body.action==='start'&&['access_denied','preview_forbidden'].includes(error.code)){key='';receipt=null;restartRequired=false;phase='gate';problem=safeMessage('access_denied');}
         operation.failed=true;
       }finally{
-        env.clearTimeout(timeout);operation.prepared.forEach(function(prepared){prepared.stop();});var ownsTask=task===operation;if(ownsTask)task=null;
-        if(!disposed&&ownsTask){if(ended||turn>=maxTurns){ended=true;phase='ended';if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=turn>=maxTurns?'turn_limit':endReason;}}publish();if(!operation.failed&&!operation.cancelled&&!ended)ready();}
+        env.clearTimeout(timeout);if(!operation.barged&&operation.monitoring)echoUntil=captureClock()+2000;operation.prepared.forEach(function(prepared){prepared.stop();});var ownsTask=task===operation;if(ownsTask)task=null;
+        if(!disposed&&ownsTask){if(ended||turn>=maxTurns){ended=true;capture.stop();phase='ended';if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=turn>=maxTurns?'turn_limit':endReason;}}
+          if(operation.barged&&interruptionEligible()&&capture.isActive()){phase='listening';capture.refresh();}
+          else if(operation.failed||operation.cancelled)capture.stop();
+          publish();if(!operation.failed&&!operation.cancelled&&!ended){if(capture.isActive()){phase='listening';capture.refresh();publish();}else ready();}}
       }
       return !operation.failed;
     }
-    async function start(passcode,useVoice,chosenCase){
+    async function start(passcode,useVoice,chosenCase,settings){
       if(task||disposed||phase!=='gate')return false;
       if(chosenCase!==undefined){var profile=options.getMomentProfile&&options.getMomentProfile(chosenCase);if(!profile&&CASE_IDS.indexOf(chosenCase)<0)return false;caseId=chosenCase;mode=profile?'moment':'full';maxTurns=profile?4:10;endpoint=profile?'/api/practice-moment':'/api/dana-preview';}key=String(passcode||'').trim();if(!key||key.length>200){problem=safeMessage('access_denied');publish();return false;}
       voice=!!useVoice&&!!(env.SpeechRecognition||env.webkitSpeechRecognition);problem='';receipt=null;messages=[];turn=0;ended=false;restartRequired=false;
-      targetRoleId='morgan';
-      var body={action:'start',requestId:env.crypto.randomUUID()};body[mode==='moment'?'scenarioId':'caseId']=caseId;return request(body,null);
+      settings=settings||{};targetRoleId='morgan';spokenInterrupt=mode==='full'&&voice&&settings.spokenInterrupt===true;deliveryIntensity=mode==='full'&&['gentle','standard','expressive'].includes(settings.deliveryIntensity)?settings.deliveryIntensity:'standard';
+      var body={action:'start',requestId:env.crypto.randomUUID()};body[mode==='moment'?'scenarioId':'caseId']=caseId;if(mode==='full'&&deliveryIntensity!=='standard')body.deliveryIntensity=deliveryIntensity;return request(body,null);
     }
     async function send(text,automatic){
       if(captureTarget!=='patient'){if(text!==undefined)draft=String(text);return submitCapture();}if(task||disposed||ended||restartRequired||!receipt||reflectionOpen)return false;
@@ -326,16 +375,17 @@
       if(captureTarget==='team_formulation')return caseId==='moment_priya_formulation_001'&&turn>0&&!reviewAttempted&&momentStage==='ending';
       return captureTarget==='alternative'&&closedReceiptAvailable&&!retryUsed&&Number.isInteger(alternativeTurnId)&&alternativeTurnId>=1&&alternativeTurnId<=turn&&(momentStage==='reviewed'||momentStage==='review_unavailable');
     }
-    function pause(){capture.stop();if(task){task.cancelled=true;task.abort.abort();stopPlayer();}else if((!ended||auxiliaryCaptureEligible())&&!restartRequired&&phase!=='gate')phase='paused';publish();}
+    function pause(){capture.stop();clearEcho();if(task){task.barged=false;task.cancelled=true;task.abort.abort();stopPlayer();}else if((!ended||auxiliaryCaptureEligible())&&!restartRequired&&phase!=='gate')phase='paused';publish();}
     function end(){if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=task?'technical_interruption':turn>=maxTurns?'turn_limit':'learner_end';if(!turn)receipt=null;}ended=true;capture.stop();if(task){task.cancelled=true;task.abort.abort();}stopPlayer();phase='ended';publish();}
     function resume(){if(disposed||env.document.hidden||task||(ended&&!auxiliaryCaptureEligible())||restartRequired||!receipt||reflectionOpen)return false;voice=true;problem='';phase='connecting';publish();capture.start();return true;}
     function setDraft(text){if(task||(ended&&captureTarget==='patient')||restartRequired||disposed||reflectionOpen)return;draft=String(text).slice(0,1200);interim='';if(capture.isActive()){capture.stop();phase='paused';}problem='';publish();}
-    function clear(){generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;retryUsed=false;targetRoleId='morgan';previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';mode='full';maxTurns=10;endpoint='/api/dana-preview';momentStage='dialogue';captureTarget='patient';reflectionOpen=false;review=null;teamFormulation='';summaryUncertain=false;uncertainTurnIds=[];reviewAttempted=false;closedReceiptAvailable=false;alternativeTurnId=null;endReason='learner_end';publish();}
+    function clear(){clearEcho();spokenInterrupt=false;deliveryIntensity='standard';generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;retryUsed=false;targetRoleId='morgan';previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';mode='full';maxTurns=10;endpoint='/api/dana-preview';momentStage='dialogue';captureTarget='patient';reflectionOpen=false;review=null;teamFormulation='';summaryUncertain=false;uncertainTurnIds=[];reviewAttempted=false;closedReceiptAvailable=false;alternativeTurnId=null;endReason='learner_end';publish();}
     function dispose(){if(disposed)return;disposed=true;end();clear();}
     return {openPrivateReflection:openPrivateReflection,closePrivateReflection:closePrivateReflection,setTeamFormulation:setTeamFormulation,recordTeamFormulation:recordTeamFormulation,recordAlternative:recordAlternative,requestMomentReview:requestMomentReview,
       setSummaryUncertain:function(value){if(!reviewAttempted&&teamFormulation.trim()){summaryUncertain=!!value;publish();}},
       setUncertainTurn:function(id,value){if(reviewAttempted||!Number.isInteger(id)||id<1||id>turn)return;uncertainTurnIds=uncertainTurnIds.filter(function(v){return v!==id;});if(value)uncertainTurnIds.push(id);uncertainTurnIds.sort(function(a,b){return a-b;});publish();},
       start:start,send:send,retry:retry,pause:pause,interrupt:pause,end:end,resume:resume,setDraft:setDraft,clear:clear,dispose:dispose,getSnapshot:snapshot,
+      setSpokenInterrupt:function(value){spokenInterrupt=!!value&&mode==='full'&&voice;if(!spokenInterrupt){clearEcho();if(task&&task.monitoring){task.monitoring=false;if(task.barged)pause();else capture.stop();}}else if(task&&player&&phase==='speaking'&&interruptionEligible()&&!task.abort.signal.aborted){task.monitoring=true;echoReference=task.reply.text;echoUntil=Infinity;capture.start();}publish();},
       setTargetRole:function(value){if(caseId!==FAMILY_CASE_ID||!Object.hasOwn(FAMILY_NAMES,value)||task||ended||restartRequired||disposed)return false;targetRoleId=value;publish();return true;},
       getDiagnostics:function(){return Object.assign({},tally,capture.diagnostics());},
       setThinking:function(value){thinking=!!value;capture.setThinking(thinking);publish();},setHold:function(value){hold=!!value;capture.setHold(hold);publish();}};
@@ -368,13 +418,13 @@
     var doc=env.document,el=function(id){return doc.getElementById(id);},lastTranscript='',lastPhase='gate';
     var recognitionAvailable=!!(env.SpeechRecognition||env.webkitSpeechRecognition);
     el('voice-mode').checked=recognitionAvailable;el('voice-mode').disabled=!recognitionAvailable;
-    el('voice-entry-tip').hidden=!recognitionAvailable;el('voice-mode').addEventListener('change',function(){el('voice-entry-tip').hidden=!this.checked;});
+    el('voice-entry-tip').hidden=!recognitionAvailable;el('spoken-interrupt-entry').disabled=!recognitionAvailable;el('voice-mode').addEventListener('change',function(){el('voice-entry-tip').hidden=!this.checked;el('spoken-interrupt-entry').disabled=!this.checked||!recognitionAvailable;});
     if(!recognitionAvailable)el('voice-support').textContent='This browser does not offer speech recognition. The patient still speaks, and you can type each question.';
     var patientName='the patient';
     var visitedMomentIds=new Set(),fullChoices=Array.from(el('case-choice').options).map(function(o){return {value:o.value,text:o.textContent};});
     function momentProfile(id){return env.MomentContent&&env.MomentContent.getProfile(id);}
     function selectedProfile(){return momentProfile(el('case-choice').value)||(env.DanaStationContent&&env.DanaStationContent.getProfile(el('case-choice').value));}
-    function previewCase(){var profile=selectedProfile();if(!profile)return;var moment=!!momentProfile(profile.id||el('case-choice').value);el('door-title').textContent=moment?profile.title:'Begin with '+profile.displayName+'’s story.';el('door-lede').textContent=moment?profile.task:'Introduce yourself and your role, invite the patient’s account, and close with a summary they can correct.';el('access-lede').textContent=moment?'Up to four responses. About 3–5 minutes; you can end early.':'Up to ten questions, at your pace.';el('case-preview-note').textContent=moment?profile.setup:profile.doorNote;el('case-preview-task').textContent=profile.task;if(el('case-review-note')){el('case-review-note').hidden=!profile.reviewLabel;el('case-review-note').textContent=profile.reviewLabel||'';}el('start').textContent=moment?'Start moment':'Start encounter';}
+    function previewCase(){var profile=selectedProfile();if(!profile)return;var moment=!!momentProfile(profile.id||el('case-choice').value);el('door-title').textContent=moment?profile.title:'Begin with '+profile.displayName+'’s story.';el('door-lede').textContent=moment?profile.task:'Introduce yourself and your role, invite the patient’s account, and close with a summary they can correct.';el('access-lede').textContent=moment?'Up to four responses. About 3–5 minutes; you can end early.':'Up to ten questions, at your pace.';el('case-preview-note').textContent=moment?profile.setup:profile.doorNote;el('case-preview-task').textContent=profile.task;if(el('case-review-note')){el('case-review-note').hidden=!profile.reviewLabel;el('case-review-note').textContent=profile.reviewLabel||'';}el('start').textContent=moment?'Start moment':'Start encounter';el('voice-experiment-options').hidden=el('faculty-voice-options').hidden=moment;}
     function chooseFormat(){var moment=el('experience-choice').value==='moment';el('case-choice').replaceChildren();var choices=moment&&env.MomentContent?env.MomentContent.ids().map(function(id){var p=momentProfile(id);return {value:id,text:p.displayName+' — '+p.title+(p.reviewLabel?' ('+p.reviewLabel.toLowerCase()+')':'')};}):fullChoices;choices.forEach(function(c){var o=doc.createElement('option');o.value=c.value;o.textContent=c.text;el('case-choice').appendChild(o);});previewCase();}
     previewCase();el('case-choice').addEventListener('change',previewCase);el('experience-choice').addEventListener('change',chooseFormat);
     var followTranscript=true;
@@ -404,15 +454,15 @@
       el('closing-panel').hidden=snapshot.phase!=='ended'||snapshot.mode==='moment';el('clear').hidden=el('clear-note').hidden=!active;el('clear').disabled=false;el('experience-choice').disabled=active;
       el('turn-count').textContent=snapshot.turn+' of '+snapshot.maxTurns+(snapshot.mode==='moment'?' responses':' questions');el('end').textContent=snapshot.mode==='moment'?'End this moment':'End encounter';
       var family=snapshot.caseId===FAMILY_CASE_ID,lastReply=snapshot.messages.filter(function(m){return m.role!=='you';}).at(-1),respondent=family?(FAMILY_NAMES[snapshot.phase==='speaking'&&lastReply?lastReply.speakerId:snapshot.targetRoleId]||'Morgan'):patientName;
-      el('status').textContent=statusLine(snapshot.phase,respondent);if(snapshot.mode==='moment'&&snapshot.captureTarget!=='patient')el('status').textContent=(snapshot.captureTarget==='team_formulation'?'Recording team formulation — patient conversation ended':'Recording one alternative response')+' · '+(snapshot.phase==='listening'?'Listening':'Microphone paused');
+      el('status').textContent=statusLine(snapshot.phase,respondent);if(snapshot.phase==='speaking'&&snapshot.spokenInterrupt&&snapshot.turn<snapshot.maxTurns)el('status').textContent=respondent+' is speaking · microphone available';if(snapshot.mode==='moment'&&snapshot.captureTarget!=='patient')el('status').textContent=(snapshot.captureTarget==='team_formulation'?'Recording team formulation — patient conversation ended':'Recording one alternative response')+' · '+(snapshot.phase==='listening'?'Listening':'Microphone paused');
       if(el('family-speaker-controls')){el('family-speaker-controls').hidden=!active||!family;el('family-speaker-choice').disabled=!canSend;el('family-speaker-choice').value=snapshot.targetRoleId;}
       if(family){el('patient-name').textContent='Morgan and Maya';el('interrupt-label').textContent='Interrupt '+respondent;}
       if(snapshot.phase==='listening'&&snapshot.hold)el('status').textContent='Listening — your turn is held';
-      el('hint').textContent=snapshot.restartRequired?'The last request has an uncertain outcome. Clear and restart to continue.':snapshot.phase==='speaking'||snapshot.phase==='responding'?'Interrupt or press Escape to stop the voice. Then resume the microphone or type to continue.':snapshot.phase==='ended'?'Bring what you learned and what remains uncertain to your supervisor.':snapshot.hold?'Your turn is held. Keep speaking or thinking, then choose Done speaking when ready.':snapshot.phase==='listening'?'Just speak. Your question sends itself once you stop — no click needed. Space sends it sooner.':'Take your time. You can speak, pause, or type.';
-      el('done').hidden=snapshot.phase!=='listening';el('done').disabled=!!snapshot.interim||!snapshot.draft.trim();
+      el('hint').textContent=snapshot.restartRequired?'The last request has an uncertain outcome. Clear and restart to continue.':snapshot.phase==='speaking'||snapshot.phase==='responding'?(snapshot.phase==='speaking'&&snapshot.spokenInterrupt&&snapshot.turn<snapshot.maxTurns?'Speak to take the floor. A brief acknowledgment lets the patient continue. Interrupt or Escape also stops the voice.':'Interrupt or press Escape to stop the voice. Then resume the microphone or type to continue.'):snapshot.phase==='ended'?'Bring what you learned and what remains uncertain to your supervisor.':snapshot.hold?'Your turn is held. Keep speaking or thinking, then choose Done speaking when ready.':snapshot.phase==='listening'?'Just speak. Your question sends itself once you stop — no click needed. Space sends it sooner.':'Take your time. You can speak, pause, or type.';
+      el('done').hidden=snapshot.phase!=='listening';el('done').disabled=snapshot.busy||!!snapshot.interim||!snapshot.draft.trim();
       el('pause').hidden=!['listening','connecting'].includes(snapshot.phase);el('resume').hidden=!recognitionAvailable||!['paused','ready'].includes(snapshot.phase)||snapshot.restartRequired;el('resume').disabled=snapshot.busy||snapshot.reflectionOpen;
       el('interrupt').hidden=!snapshot.busy;el('end').hidden=snapshot.phase==='ended'||snapshot.phase==='restart'||snapshot.phase==='reviewing'||snapshot.captureTarget!=='patient';
-      el('thinking-time').disabled=el('hold-turn').disabled=snapshot.phase==='ended'||snapshot.restartRequired;
+      el('thinking-time').disabled=el('hold-turn').disabled=snapshot.phase==='ended'||snapshot.restartRequired;el('spoken-interrupt-option').hidden=el('spoken-interrupt-room-help').hidden=snapshot.mode==='moment';el('spoken-interrupt').checked=snapshot.spokenInterrupt;el('spoken-interrupt').disabled=!recognitionAvailable||!snapshot.voice||snapshot.phase==='ended'||snapshot.restartRequired;
       el('send').disabled=!canSend||!snapshot.draft.trim()||!!snapshot.interim;el('composer').disabled=!canSend;
       if(el('composer').value!==snapshot.draft)el('composer').value=snapshot.draft;
       el('spoken-draft').hidden=!(snapshot.draft||snapshot.interim);el('draft-text').textContent=snapshot.draft;el('interim-text').textContent=snapshot.interim;
@@ -423,11 +473,12 @@
       if(active&&lastPhase==='gate'){el('encounter-title').setAttribute('tabindex','-1');el('encounter-title').focus();}
       lastPhase=snapshot.phase;
     }
-    el('access-form').addEventListener('submit',function(event){event.preventDefault();var passcode=el('preview-key').value;el('preview-key').value='';var chosen=el('case-choice').value;var profile=selectedProfile();if(profile){patientName=profile.displayName;applyIdentity(doc,profile);}mountStation(chosen);controller.start(passcode,el('voice-mode').checked,chosen);});
+    el('access-form').addEventListener('submit',function(event){event.preventDefault();var passcode=el('preview-key').value;el('preview-key').value='';var chosen=el('case-choice').value;var profile=selectedProfile();if(profile){patientName=profile.displayName;applyIdentity(doc,profile);}mountStation(chosen);controller.start(passcode,el('voice-mode').checked,chosen,{spokenInterrupt:el('spoken-interrupt-entry').checked,deliveryIntensity:el('delivery-intensity').value});});
     if(el('family-speaker-choice'))el('family-speaker-choice').addEventListener('change',function(){controller.setTargetRole(this.value);});
     el('composer-form').addEventListener('submit',function(event){event.preventDefault();controller.send(el('composer').value);});
     el('composer').addEventListener('input',function(){controller.setDraft(this.value);});el('done').addEventListener('click',function(){controller.send();});
     el('pause').addEventListener('click',controller.pause);el('resume').addEventListener('click',controller.resume);el('interrupt').addEventListener('click',controller.interrupt);el('end').addEventListener('click',controller.end);
+    el('spoken-interrupt').addEventListener('change',function(){controller.setSpokenInterrupt(this.checked);});
     el('thinking-time').addEventListener('change',function(){controller.setThinking(this.checked);});el('hold-turn').addEventListener('change',function(){controller.setHold(this.checked);});
     el('clear').addEventListener('click',function(){visitedMomentIds.clear();controller.clear();if(station){station.dispose();station=null;}el('preview-key').value='';doc.title='The Interview Room';previewCase();el('preview-key').focus();});
     doc.addEventListener('keydown',function(event){if(event.defaultPrevented||event.repeat||event.isComposing||event.ctrlKey||event.metaKey||event.altKey)return;var snapshot=controller.getSnapshot();if(event.code==='Escape'&&snapshot.busy){event.preventDefault();controller.interrupt();return;}if(event.code==='Space'&&snapshot.phase==='listening'&&!(event.target&&event.target.closest('input,textarea,button,select,a,summary,[contenteditable]'))){event.preventDefault();controller.send();}});

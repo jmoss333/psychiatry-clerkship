@@ -1,10 +1,11 @@
 import {createCipheriv, createDecipheriv, createHash, randomBytes} from 'node:crypto';
+import {isDeliveryIntensity} from './portrayal.mjs';
 
 export const hash = value => createHash('sha256').update(value).digest('hex');
 export const problem = (status, code) => Object.assign(new Error(code), {status, code});
 const bad = () => problem(400, 'preview_state_invalid');
-export function createStateCodec({key, binding, now=Date.now}) {
-  if (typeof key !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(key) || Buffer.from(key,'base64url').length!==32 || !binding) throw problem(503,'preview_unavailable');
+export function createStateCodec({key, binding, now=Date.now,withDeliveryIntensity=false}) {
+  if (typeof key !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(key) || Buffer.from(key,'base64url').length!==32 || !binding || typeof withDeliveryIntensity!=='boolean') throw problem(503,'preview_unavailable');
   const bytes=Buffer.from(key,'base64url'), aad=Buffer.from(binding);
   function seal(value) {
     const iv=randomBytes(12), cipher=createCipheriv('aes-256-gcm',bytes,iv);
@@ -27,17 +28,22 @@ export function createStateCodec({key, binding, now=Date.now}) {
       // The encounter's case, authoritative and authenticated. The codec binding
       // already separates cases; this makes that invariant explicit and testable.
       ||typeof value.caseId!=='string'||!value.caseId||value.caseId.length>64
+      // Chosen once at Start. An old receipt without the field means standard;
+      // an authenticated but invalid value is not silently repaired.
+      ||(Object.hasOwn(value,'deliveryIntensity')&&!isDeliveryIntensity(value.deliveryIntensity))
       // One alternative per encounter, carried in the sealed state so a reload
       // cannot restore it. Present means spent; any value but true is a forgery.
       ||(Object.hasOwn(value,'retried')&&value.retried!==true))throw bad();
     if(now()>=value.expires)throw problem(410,'preview_session_expired');
-    return value;
+    // Full encounters opt in; Moment receipts retain their exact existing shape.
+    return withDeliveryIntensity?{...value,deliveryIntensity:Object.hasOwn(value,'deliveryIntensity')?value.deliveryIntensity:'standard'}:value;
   }
   return {seal,open};
 }
 
-export function initialState(opening,now=Date.now,caseId,speakerId) {
-  return {v:1,caseId,sid:randomBytes(16).toString('hex'),nonce:randomBytes(16).toString('hex'),expires:now()+1800000,turn:0,
+export function initialState(opening,now=Date.now,caseId,speakerId,deliveryIntensity) {
+  if(deliveryIntensity!==undefined&&!isDeliveryIntensity(deliveryIntensity))throw problem(400,'preview_input_invalid');
+  return {v:1,caseId,...(deliveryIntensity!==undefined?{deliveryIntensity}:{}),sid:randomBytes(16).toString('hex'),nonce:randomBytes(16).toString('hex'),expires:now()+1800000,turn:0,
     history:[{who:'pt',text:opening,playbackStatus:'pending',...(speakerId?{speakerId}:{})}],segments:[opening],completed:0};
 }
 export function nextHistory(state,{text,previousPlayback,previousCompletedSegments,targetRoleId}) {
