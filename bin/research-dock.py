@@ -23,6 +23,7 @@ Usage:
     python3 bin/research-dock.py check                  # report defects, exit 0
     python3 bin/research-dock.py check --strict         # exit 1 on any defect  (gate mode)
     python3 bin/research-dock.py new RQ-10 --tool chatgpt-deep-research
+    python3 bin/research-dock.py clean rq-10-2026-09-10  # strip invisible characters
     python3 bin/research-dock.py --self-test            # built-in fixtures
 
 Exit codes: 0 clean · 1 defects found (--strict only) · 2 usage or data error.
@@ -85,6 +86,27 @@ def _rel(path):
 
 def _today():
     return _dt.date.today().isoformat()
+
+
+def _is_invisible(ch):
+    """Private-use area, zero-width, or BOM.
+
+    RQ-10's first return arrived with 378 of these: U+E200/E201/E202, the delimiters a
+    deep-research tool wraps its citation markers in. They are invisible in every editor,
+    they make the markers ungreppable, and none of the citations they wrap resolve. In a
+    repo that verifies verbatim sourceSpans character-for-character, a span carrying one
+    would match nothing and no human could see why.
+    """
+    o = ord(ch)
+    return (0xE000 <= o <= 0xF8FF) or ch in "\u200b\u200c\u200d\u2060\ufeff"
+
+
+def _count_invisibles(path):
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return sum(1 for ch in fh.read() if _is_invisible(ch))
+    except (OSError, UnicodeDecodeError):
+        return 0
 
 
 def _days_since(datestr, today=None):
@@ -150,6 +172,12 @@ def check(doc, today=None, root=ROOT):
             d.append("%s: returnFile is required — the verbatim answer must be saved" % rid)
         elif not os.path.isfile(os.path.join(root, rf)):
             d.append("%s: returnFile does not exist on disk: %s" % (rid, rf))
+        else:
+            n = _count_invisibles(os.path.join(root, rf))
+            if n:
+                d.append("%s: returnFile contains %d invisible character(s) — private-use or "
+                         "zero-width. Strip them before any text from it reaches a sourceSpan: "
+                         "python3 bin/research-dock.py clean %s" % (rid, n, rid))
 
         fids = set()
         unrouted = 0
@@ -177,8 +205,21 @@ def check(doc, today=None, root=ROOT):
                 if not p.get("citation"):
                     d.append("%s: disposition %r requires primary.citation — you may not "
                              "cite the model" % (label, disp))
-                if not (p.get("pmid") or p.get("doi")):
-                    d.append("%s: disposition %r requires a primary pmid or doi" % (label, disp))
+                # Two ways to satisfy "point at something that is not the model".
+                published = bool(p.get("pmid") or p.get("doi"))
+                web = bool(p.get("url") and p.get("retrievedAt") and p.get("archivedCopy"))
+                if not (published or web):
+                    if p.get("url"):
+                        missing = [k for k in ("retrievedAt", "archivedCopy") if not p.get(k)]
+                        d.append("%s: disposition %r has a primary url but is missing %s — a web "
+                                 "source needs a read date and a dated local capture, because the "
+                                 "page can change silently" % (label, disp, " and ".join(missing)))
+                    else:
+                        d.append("%s: disposition %r requires either a primary pmid/doi or a "
+                                 "custodian url + retrievedAt + archivedCopy" % (label, disp))
+                if web and not os.path.isfile(os.path.join(root, p["archivedCopy"])):
+                    d.append("%s: primary.archivedCopy does not exist on disk: %s"
+                             % (label, p["archivedCopy"]))
                 if not f.get("landedIn"):
                     d.append("%s: disposition %r requires landedIn once the change is made "
                              "(page path or evidence_registry source id)" % (label, disp))
@@ -317,6 +358,34 @@ def cmd_new(doc, qid, tool, today=None):
     print("  3. Then check:        python3 bin/research-dock.py check")
 
 
+def cmd_clean(doc, rid, root=ROOT):
+    """Strip invisible characters from a return file, in place, reporting what went."""
+    rec = next((r for r in doc.get("returns", []) if r.get("id") == rid), None)
+    if rec is None:
+        die("unknown return %s. Known: %s"
+            % (rid, ", ".join(r.get("id", "?") for r in doc.get("returns", []))))
+    path = os.path.join(root, rec["returnFile"])
+    if not os.path.isfile(path):
+        die("returnFile does not exist: %s" % rec["returnFile"])
+    with open(path, encoding="utf-8") as fh:
+        before = fh.read()
+    counts = {}
+    for ch in before:
+        if _is_invisible(ch):
+            counts[hex(ord(ch))] = counts.get(hex(ord(ch)), 0) + 1
+    if not counts:
+        print("research-dock: %s is already clean." % rid)
+        return
+    after = "".join(ch for ch in before if not _is_invisible(ch))
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(after)
+    print("research-dock: stripped %d invisible character(s) from %s"
+          % (sum(counts.values()), rec["returnFile"]))
+    for code, n in sorted(counts.items()):
+        print("  %s x%d" % (code, n))
+    print("The visible text is unchanged; only the invisible characters are gone.")
+
+
 # ---------------------------------------------------------------- self-test
 
 def _self_test():
@@ -357,7 +426,7 @@ def _self_test():
                                 "disposition": "adopt",
                                 "primary": {"citation": "Someone et al. 2025"},
                                 "landedIn": ["x.md"]}]), today="2026-09-02"),
-           "primary pmid or doi")
+           "requires either a primary pmid/doi or a custodian url")
     expect("adopt with pmid passes",
            check(one(findings=[{"id": "f1", "claim": "Some claim worth checking here.",
                                 "disposition": "adopt",
@@ -376,11 +445,48 @@ def _self_test():
            check(one(findings=[{"id": "f1", "claim": "Some claim worth checking here.",
                                 "disposition": "needs-primary"}]), today="2026-09-10"),
            "STALE", want=False)
+    expect("web primary without capture fails",
+           check(one(findings=[{"id": "f1", "claim": "Some claim worth checking here.",
+                                "disposition": "cite",
+                                "primary": {"citation": "Custodian permission page.",
+                                            "url": "https://example.org/permissions"},
+                                "landedIn": ["instrument_rights.json#x"]}]), today="2026-09-02"),
+           "read date and a dated local capture")
+    expect("web primary with url+date+capture passes",
+           check(one(findings=[{"id": "f1", "claim": "Some claim worth checking here.",
+                                "disposition": "cite",
+                                "primary": {"citation": "Custodian permission page.",
+                                            "url": "https://example.org/permissions",
+                                            "retrievedAt": "2026-09-01",
+                                            "archivedCopy": "research_returns.json"},
+                                "landedIn": ["instrument_rights.json#x"]}]), today="2026-09-02"),
+           "primary", want=False)
+    expect("web primary with a missing capture file fails",
+           check(one(findings=[{"id": "f1", "claim": "Some claim worth checking here.",
+                                "disposition": "cite",
+                                "primary": {"citation": "Custodian permission page.",
+                                            "url": "https://example.org/permissions",
+                                            "retrievedAt": "2026-09-01",
+                                            "archivedCopy": "nope/missing.pdf"},
+                                "landedIn": ["instrument_rights.json#x"]}]), today="2026-09-02"),
+           "archivedCopy does not exist")
     expect("closed with unrouted finding fails",
            check(one(status="closed", closedOn="2026-09-05",
                      findings=[{"id": "f1", "claim": "Some claim worth checking here.",
                                 "disposition": "needs-primary"}]), today="2026-09-06"),
            "still needs-primary")
+    import tempfile as _tf
+    _tmp = _tf.mkdtemp()
+    with open(os.path.join(_tmp, "dirty.md"), "w", encoding="utf-8") as _fh:
+        _fh.write("visible text \ue202turn1view0 more text")
+    with open(os.path.join(_tmp, "research_returns.json"), "w", encoding="utf-8") as _fh:
+        _fh.write("{}")
+    expect("invisible characters in a return file are caught",
+           check(one(returnFile="dirty.md"), today="2026-09-02", root=_tmp),
+           "invisible character")
+    expect("a clean return file is not flagged",
+           check(one(returnFile="research_returns.json"), today="2026-09-02", root=_tmp),
+           "invisible character", want=False)
     expect("missing return file is caught",
            check(one(returnFile="Evidence Inbox/_research-returns/nope.md"), today="2026-09-02"),
            "does not exist on disk")
@@ -394,8 +500,8 @@ def _self_test():
 def main(argv=None):
     p = argparse.ArgumentParser(description="The research-return dock.")
     p.add_argument("command", nargs="?", default="check",
-                   choices=["check", "status", "new"])
-    p.add_argument("question", nargs="?", help="RQ-n, for `new`")
+                   choices=["check", "status", "new", "clean"])
+    p.add_argument("question", nargs="?", help="RQ-n for `new`; a return id for `clean`")
     p.add_argument("--tool", choices=list(TOOLS), default=None)
     p.add_argument("--strict", action="store_true", help="exit 1 on any defect")
     p.add_argument("--today", default=None, help="override today's date (testing)")
@@ -409,6 +515,12 @@ def main(argv=None):
 
     if args.command == "status":
         cmd_status(doc, today=args.today)
+        return 0
+
+    if args.command == "clean":
+        if not args.question:
+            die("usage: research-dock.py clean rq-10-2026-09-10")
+        cmd_clean(doc, args.question)
         return 0
 
     if args.command == "new":

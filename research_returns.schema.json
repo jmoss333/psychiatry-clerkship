@@ -90,11 +90,26 @@
       "type": "object",
       "required": ["citation"],
       "additionalProperties": false,
+      "description": "An artifact that exists independently of the model. Two kinds qualify, and the checker requires one or the other before a finding may be adopted/cited/superseded: a PUBLISHED source identified by pmid or doi, or a CUSTODIAN WEB SOURCE identified by url + retrievedAt + archivedCopy. The web variant exists because most of this project's standing questions point at organizational documents — ACGME, ABPN, AAMC, CSWE, INACSL, CMS, instrument custodians — that carry no DOI at all. A DOI is stable; a web sentence is not, so the web variant demands a dated local capture in exchange.",
       "properties": {
         "citation": { "type": "string", "minLength": 10 },
         "pmid": { "type": "string", "pattern": "^[0-9]{1,9}$" },
         "doi": { "type": "string", "minLength": 5 },
-        "url": { "type": "string" }
+        "url": {
+          "type": "string",
+          "pattern": "^https://",
+          "description": "Absolute https URL of the custodian-hosted artifact. Required for the web variant."
+        },
+        "retrievedAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "The date the url was actually read. Required for the web variant — an undated web claim is a rumour."
+        },
+        "archivedCopy": {
+          "type": "string",
+          "minLength": 3,
+          "description": "Repo-relative path to a dated local capture (PDF or screenshot) of what the url said on retrievedAt. Required for the web variant. This is what makes a web source as checkable as a DOI: the page can change silently, the capture cannot."
+        }
       }
     }
   }

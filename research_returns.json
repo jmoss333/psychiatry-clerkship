@@ -71,8 +71,79 @@
       "title": "Instrument rights: can the COWS interim waiver be closed?",
       "primaryTool": "chatgpt-deep-research",
       "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-10",
-      "status": "open"
+      "status": "asked"
     }
   ],
-  "returns": []
+  "returns": [
+    {
+      "id": "rq-10-2026-09-10",
+      "question": "RQ-10",
+      "tool": "chatgpt-deep-research",
+      "askedOn": "2026-09-10",
+      "returnedOn": "2026-09-10",
+      "returnFile": "Evidence Inbox/_research-returns/rq-10-2026-09-10.md",
+      "sourceKind": "secondary",
+      "status": "triage",
+      "findings": [
+        {
+          "id": "f1",
+          "claim": "The only COWS permission language located \u2014 \"This version may be copied and used clinically\" (Wesson & Ling 2003) \u2014 licenses clinical copying and does not on its face authorise public educational web display, so the 45 verbatim anchors are not covered.",
+          "disposition": "needs-primary",
+          "primary": {
+            "citation": "Wesson DR, Ling W. The Clinical Opiate Withdrawal Scale (COWS). J Psychoactive Drugs. 2003;35(2):253-259.",
+            "doi": "10.1080/02791072.2003.10400007"
+          },
+          "note": "This is the direct answer to RQ-10 and it closes the interim waiver AGAINST keeping the anchors. Verify by retrieving the 2003 article itself and reading the template legend verbatim \u2014 the return quotes it via the PubMed abstract, which is secondary. If it holds, cows moves flagged-interim -> retired/restricted in instrument_rights.json with a new decisionRef, and the 45 anchors in withdrawal.html come out on the CIWA-Ar pattern. Blocked on f3: a withdrawal must leave a route. || CORROBORATED 2026-09-10: the NIDA-hosted form (https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf, retrieved 2026-09-10) carries the identical clinical-scoped permission line on an artifact independent of both the model and the paywalled article. That is a second witness to the LANGUAGE, not to the SCOPE analysis, so this stays needs-primary until the 2003 template legend is read directly. Note this finding's best evidence is a PDF with no DOI \u2014 the case that motivated the primary.url + retrievedAt + archivedCopy variant added in this change."
+        },
+        {
+          "id": "f2",
+          "claim": "No scale-specific chain of title for the COWS instrument text could be established publicly; Taylor & Francis administers permissions for the journal article but is not shown to control the instrument wording.",
+          "disposition": "needs-primary",
+          "primary": {
+            "citation": "Taylor & Francis permissions guidance for psychometric scales and questionnaires (publisher policy page).",
+            "url": "https://taylorandfrancis.com/corporate-solutions/licensing/journals/"
+          },
+          "note": "Practical consequence: a RightsLink purchase would not by itself clear the instrument. Any request must ask T&F to confirm it controls the COWS wording or name who does. Return estimates 6-8 weeks for a manual request, no published fee for nonprofit public-web educational reuse."
+        },
+        {
+          "id": "f3",
+          "claim": "No current custodian-hosted canonical COWS form was found; the 2003 article's list of PDF hosts (ASAM, CSAM, UCLA ISAP, AlcoholMD) is historical, leaving the paywalled article DOI as the only defensible canonical link.",
+          "disposition": "reject",
+          "note": "FALSIFIED 2026-09-10 by direct retrieval, not by search. NIDA hosts a complete, current COWS form at https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf \u2014 all 11 items and severity anchors, source-attributed to Wesson & Ling 2003, carrying the same 'This version may be copied and used clinically' line. ASAM hosts a second copy (cows_induction_flow_sheet.pdf) but strips the copyright and permission line, so NIDA is the better citation. The claimed operational blocker does not exist: a retirement CAN leave a route and satisfy INV-IR2. The error is worse than a search miss \u2014 line 107 of the return names NIDA, ASAM and SAMHSA among the hosts it searched and dismisses them because the 2003 ARTICLE's host list is historical. It inherited staleness from a cited document and projected it onto the live web. Proposed failureMode vocabulary entry: source-date-contamination. One question remains and it is governance, not research: NIDA is a federal agency hosting a copy, not the rightsholder, so whether it satisfies the 'custodian URL, not a copy hosted here' wording of INV-IR2 is Josh's call."
+        },
+        {
+          "id": "f4",
+          "claim": "The current PHQ Screeners site (Pfizer) states that no permission is required to reproduce, translate, display or distribute the PHQ and GAD-7 screeners, which is the express public-web permission WP-02c was left open to verify.",
+          "disposition": "needs-primary",
+          "primary": {
+            "citation": "PHQ Screeners (Pfizer Inc.), current permission statement, select-screener page.",
+            "url": "https://www.phqscreeners.com/select-screener"
+          },
+          "note": "Would move phq9-gad7 from provisional -> cleared. Verify by fetching the live page, not by trusting this quote, and archive a dated PDF/screenshot into the permissions file \u2014 the whole permission is a web sentence that can change without notice. Corroborated independently by the LOINC record for PHQ-9 and GAD-7."
+        },
+        {
+          "id": "f5",
+          "claim": "The PHQ/GAD permission names reproduce, translate, display and distribute but not modify, adapt or create derivative works, while Pfizer's generic site terms restrict derivative works \u2014 so a faithful verbatim render is supported and an altered or restructured version is not.",
+          "disposition": "needs-primary",
+          "note": "Sets the boundary for any programmed PHQ-9/GAD-7 form: unchanged wording, response options, ordering, time frame and instructions are inside the permission; changing any of them is not. Worth recording on the instrument entry even if the status stays provisional, because it is the constraint a future tool build would trip over."
+        },
+        {
+          "id": "f6",
+          "claim": "No third-party reproduction licence for the BFCRS was found on the URMC resources page or in its training manual, and URMC is the scale's public custodian rather than an established rightsholder.",
+          "disposition": "needs-primary",
+          "note": "Confirms the existing restricted status rather than changing it; the added detail is that manual searches for copyright/permission/reproduce/license returned nothing, so the current decisionRef's reliance on URMC site-wide Web Terms is the strongest basis available. Named permission route: Mark Oldham (URMC), with Andrew Francis, covering verbatim items, anchor ladders and any fillable implementation, and asking which entity actually holds title after the 1996 Munksgaard publication."
+        },
+        {
+          "id": "f7",
+          "claim": "Official C-SSRS forms carry \"(c) 2008 The Research Foundation for Mental Hygiene, Inc.\" and route reprints to Kelly Posner, so the project's free-use language covers use and not republication.",
+          "disposition": "needs-primary",
+          "primary": {
+            "citation": "Columbia-Suicide Severity Rating Scale, official form copyright line and reprints contact (RFMH, 2008).",
+            "url": "https://cssrs.columbia.edu/"
+          },
+          "note": "Confirms the retired posture, but corrects a factual detail in the cssrs decisionRef, which records the scale as \"copyrighted and licensed by the Columbia Lighthouse Project\": the copyright holder printed on the forms is RFMH, with Columbia as the distributing project. If it verifies, that is a decisionRef wording fix, not a status change."
+        }
+      ]
+    }
+  ]
 }

@@ -47,17 +47,21 @@ exits non-zero on any of them.
 1. **`sourceKind` is always `secondary`.** Hardcoded, not a field anyone chooses. A model
    synthesis licenses nothing on its own — the same rule the Evidence Inbox runbook applies to
    reviews, guidelines and OpenEvidence summaries. The dock makes it unwritable.
-2. **`adopt` / `cite` / `supersedes` require `primary.citation` AND a `pmid` or `doi`.** You may
-   not cite the model. This is the invariant that would have caught the August 2026
+2. **`adopt` / `cite` / `supersedes` require `primary.citation` AND an independent identifier** —
+   either a `pmid`/`doi`, **or** a custodian `url` + `retrievedAt` + `archivedCopy`. You may not
+   cite the model. This is the invariant that would have caught the August 2026
    `modini-large-2026` failure, where a viewpoint was cited for a time-course statistic at four
-   call sites including a quiz answer.
+   call sites including a quiz answer. See "Two kinds of primary" below for why the web variant
+   exists and what it costs.
 3. **`adopt` / `cite` / `supersedes` require `landedIn`** once the change is made — the page path
    or the `evidence_registry.json` source id. A finding marked adopted that never landed anywhere
    is a lie the registry can detect.
 4. **`reject` / `no-action` require a note.** A rejection without a reason is indistinguishable
    from neglect, and it means the next person re-litigates it.
-5. **`returnFile` must exist on disk.** A registry row pointing at a missing answer is worse than
-   no row.
+5. **`returnFile` must exist on disk, and must carry no invisible characters.** A registry row
+   pointing at a missing answer is worse than no row — and a return full of private-use or
+   zero-width characters is a trap in a repo that verifies verbatim spans. See "Invisible
+   characters" below.
 6. **A `triage` return older than `graceDays` (21) with unrouted findings is STALE**, and so is one
    with no findings at all. This is the anti-rot rule and the only one that fires on the passage
    of time.
@@ -130,6 +134,49 @@ stays local. If a specific return ever needs to be shareable, copy it to a track
 
 Note also that `docs/_planning/` is excluded in `.git/info/exclude`, so the prompts and agenda files
 are local too. `promptRef` in the registry points at a path that exists on this machine only.
+
+## Two kinds of primary
+
+`adopt` / `cite` / `supersedes` need an artifact that exists **independently of the model**. There
+are two shapes, and the checker accepts either:
+
+| | Required fields | Why it is trustworthy |
+|---|---|---|
+| **Published source** | `citation` + `pmid` or `doi` | The identifier is stable and resolves forever |
+| **Custodian web source** | `citation` + `url` + `retrievedAt` + `archivedCopy` | A dated local capture of what the page said |
+
+The web variant was added after RQ-10, and not as a rights special case. Count what this project's
+standing questions actually point at: ACGME Milestones and Program Requirements, the ABPN content
+outline, AAMC Core EPAs, CLER Pathways, CMS Conditions of Participation, CSWE EPAS, APNA/ANA
+competencies, INACSL simulation standards, instrument custodian permission pages. **None of them
+carry a DOI.** Five or six of the ten standing questions have no DOI-bearing primary source at all.
+A pmid-or-doi-only rule would have forced most of the agenda into `no-action` — a mis-calibration
+produced by a journal-shaped mental model, surfaced by the first return that ran.
+
+The web variant is not a loophole. A DOI is stable; a web sentence is not — the PHQ Screeners
+permission is one sentence on one page that can change without notice. So the web variant demands
+what a DOI gets for free: a read date and a dated capture, checked to exist on disk. In exchange it
+is arguably *more* checkable than a DOI, because the capture records what the source said on the
+day the claim was made.
+
+`landedIn` for a web-sourced finding points where the change actually landed — commonly an
+`instrument_rights.json` entry or a `decisions.json` id rather than an `evidence_registry.json`
+source, since a rights or standards fact is governance, not evidence.
+
+## Invisible characters
+
+RQ-10's first return arrived carrying **378 invisible characters** — U+E200 x99, U+E201 x99,
+U+E202 x180 — the private-use delimiters a deep-research tool wraps its citation markers in. They
+render as nothing, they make `citeturn39view0` ungreppable as the string `citeturn`, and none of
+the 56 unique citations they wrap resolve to anything.
+
+In most repos that is cosmetic. Here it is a live hazard: `bin/verify_spans.py` checks
+`sourceSpan` text character-for-character against the paper. A span copied out of an uncleaned
+return would carry an invisible character, match nothing, and give no visible reason why.
+
+So `check` counts them and reports; `python3 bin/research-dock.py clean <return-id>` strips them
+in place and prints exactly what it removed, by codepoint. The visible text is never altered.
+Run it on every return before quoting anything out of it.
 
 ## Procedure
 
