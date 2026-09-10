@@ -338,6 +338,42 @@ schedule through review, deploy, confirm a fresh six-hour invocation and receipt
 the required success/failure log check plus red-team checklist. Never delete or invalidate
 a credential merely to simulate a pause.
 
+## Netlify production deploy health
+
+`bin/check_netlify_deploy_health.py` runs inside the daily production canary and is the
+alarm for a deploy FREEZE — the failure mode a liveness crawl cannot see, because a site
+whose builds are all failing keeps serving its last good publish. That is what happened on
+2026-08-31, when the GitHub-LFS budget was exhausted and every production deploy failed for
+a day and a half with both learner sites still up.
+
+Netlify's own alarm for this is a per-site "Deploy failed" email, and it stopped being
+usable the moment any site used a build-ignore rule: Netlify records a SKIP as a failed
+deploy, state `error`, message `Canceled build due to no content change`. From 2026-09-03
+the repository resolved that by never skipping (`ignore = "/bin/false"` everywhere), which
+kept the email honest and cost about $110/month, because a Netlify production deploy is 15
+credits (~$0.10) flat while build minutes, deploy previews, branch deploys and cancelled
+deploys are not metered at all. Since 2026-09-10 the satellites skip no-op builds again
+(`site_build/netlify_ignore_scoped.sh`) and this tool carries the alarm.
+
+Reading the result:
+
+| Receipt `status` | Meaning | Action |
+| --- | --- | --- |
+| `success` | No non-benign production failure in the lookback window | none |
+| `failed` | A real failed production deploy, or a deploy state this tool does not recognise | read `findings`, open the deploy in Netlify |
+| `skipped` | `NETLIFY_AUTH_TOKEN` is not set, so nothing was read | add the repository secret; **the alarm is not armed until you do** |
+| `undetermined` | The API was unreachable or unparseable (exit 2) | re-run; if it persists, treat it as an outage, not a pass |
+
+`skipped` exits 0 by design — a daily steward that goes red for a missing secret trains
+everyone to ignore it — so `skipped` is what to look for when asking "is this actually
+watching anything?". An unrecognised deploy state is a FINDING rather than silence, so
+Netlify adding a state surfaces as noise rather than as a quiet gap in coverage.
+
+Per-site notification settings that must match this arrangement: keep "Deploy failed" ON
+for `une-ms3-psychiatry` and `mmc-psychiatry-residents-sanford` (they still always build,
+so the email never fires on a no-op); turn it OFF for `sp-interview-proxy`,
+`clerkship-faculty-attest` and `psychiatry-workforce-tour`.
+
 ## Operator response
 
 When a gate fails, preserve the artifact, identify whether the evidence is repository,

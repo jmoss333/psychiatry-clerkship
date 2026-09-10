@@ -163,6 +163,13 @@ step "unit — offrunner findings"            python3 bin/verify_findings_offrun
 # a --self-test that no gate ran, because #548's branch was cut before the tool existed. Same
 # defect, one merge later — which is the argument for the mechanical check, not against it.
 step "unit — twin parity"                   python3 bin/check_twin_parity.py --self-test
+# Only the SELF-TEST runs here, for the same reason as the two above: the real check reads
+# production deploy state from the Netlify API and needs a NETLIFY_AUTH_TOKEN that only the
+# owner holds. The daily steward is maintenance-production-canary.yml; this proves the
+# classifier can still fail -- that a real build failure is a finding, that a
+# no-content-change cancel is not, and that an unrecognised deploy state is a finding rather
+# than a pass. Without that last one the alarm would quietly match nothing.
+step "unit — netlify deploy health"         python3 bin/check_netlify_deploy_health.py --self-test
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
 step "twin parity (audience copies)"        python3 bin/check_twin_parity.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py
