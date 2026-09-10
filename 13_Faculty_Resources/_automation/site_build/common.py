@@ -370,6 +370,16 @@ SKIP_LINK_CSS = (
 )
 FAVICON_LINK = '<link rel="icon" href="/favicon.svg">'
 CLINICAL_CSS_LINK = '<link rel="stylesheet" href="/clinical-warm.css">'
+_CLINICAL_CSS_LINK_RE = re.compile(r"<link[^>]+clinical-warm\.css", re.IGNORECASE)
+
+
+def _links_clinical_css(text):
+    """True only when the shared dark-token stylesheet is linked as an ELEMENT.
+
+    Deliberately not `"clinical-warm.css" in text`: that is what let a comment naming the file
+    disable dark mode for a whole page (2026-09-10, the SPA shell).
+    """
+    return bool(_CLINICAL_CSS_LINK_RE.search(text))
 # Usage analytics. CW_SITE tells the emitter which site it is on; CW_PAGE (when
 # known at build time) tells it which page. The emitter sends only allowlisted
 # keys and never an identifier. See
@@ -653,7 +663,14 @@ def apply_dark_mode(path, is_index=False, cache_bust=None, page_slug=None, injec
         t = t.replace("<head>", "<head>\n" + THEME_INIT, 1)
 
     # Dark tokens come from the linked stylesheet — one file, not N inline copies.
-    if '[data-theme="dark"]' not in t and "clinical-warm.css" not in t and "</head>" in t:
+    #
+    # _links_clinical_css matches the <link> ELEMENT, not the bare filename. A substring test
+    # here shipped the entire SPA shell with NO dark palette on 2026-09-10: a source comment in
+    # spa_index.html happened to name the file, the guard read that as "already linked", and
+    # skipped the injection. Nothing failed — the shell simply stayed light with data-theme="dark"
+    # stamped on <html>. Same fix applied to the missing-asset check below, which was fooled
+    # identically and so could not report it.
+    if '[data-theme="dark"]' not in t and not _links_clinical_css(t) and "</head>" in t:
         t = t.replace("</head>", CLINICAL_CSS_LINK + "\n</head>", 1)
 
     # Usage analytics. Injected here so every polished page carries it from one
@@ -833,7 +850,7 @@ def page_contract_failures(out_dir):
             missing.append('#root anchor for the skip link')
         if "cw_theme" not in t:
             missing.append("pre-paint theme init (cw_theme)")
-        if "clinical-warm.css" not in t and '[data-theme="dark"]' not in t:
+        if not _links_clinical_css(t) and '[data-theme="dark"]' not in t:
             missing.append("dark-mode tokens (clinical-warm.css link or inline block)")
         if 'rel="icon"' not in t:
             missing.append("favicon link")
