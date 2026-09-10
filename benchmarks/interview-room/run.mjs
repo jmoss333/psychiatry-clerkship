@@ -72,6 +72,20 @@ export function validateCorpus(corpus, pack) {
   assert.equal(corpus.reviewStatus, REVIEW, 'Benchmark labels cannot self-attest');
   assert.match(corpus.governanceAsOf, /^\d{4}-\d{2}-\d{2}$/);
   assert.equal(new Date(`${corpus.governanceAsOf}T12:00:00Z`).toISOString().slice(0, 10), corpus.governanceAsOf);
+  // The governance clock is handed to the real handler as `now`, and sp-governance treats a
+  // facultyReview dated after `now` as not yet in force. A clock that lags the measured pack
+  // therefore makes the evaluation leg 403 `case_not_reviewed` deep inside the tests instead
+  // of failing here with a reason. Every re-attestation must move this date forward
+  // (2026-09-09 Dana re-attestation; same trap as NOW_MS in sp-proxy/tests/sp-handler.test.mjs).
+  const clockMs = Date.parse(`${corpus.governanceAsOf}T12:00:00Z`);
+  for (const caseDef of pack.cases) {
+    const reviewedAt = caseDef.facultyReview?.lastReviewed ?? caseDef.facultyReview?.reviewedAt;
+    if (!reviewedAt) continue;
+    assert.ok(
+      Date.parse(`${reviewedAt}T00:00:00Z`) <= clockMs,
+      `governanceAsOf ${corpus.governanceAsOf} predates ${caseDef.id}'s facultyReview (${reviewedAt}); move the clock forward`,
+    );
+  }
   assert.ok(Array.isArray(corpus.scenarios) && corpus.scenarios.length > 0);
   const byName = Object.fromEntries(pack.cases.map(c => [c.persona.displayName, c]));
   const ids = new Set();
