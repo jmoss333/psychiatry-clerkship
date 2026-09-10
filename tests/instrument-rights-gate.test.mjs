@@ -375,12 +375,15 @@ test('the CIWA-Ar route is honest about being a third-party posting', () => {
 test('recording a route did not disturb any disposition', () => {
   // Routes are wayfinding and get refreshed freely; statuses move only with a decisionRef.
   // Pinned so a future link fix cannot ride a status change in with it.
+  // Updated 2026-09-10: cows flagged-interim -> retired, decision `cows-anchors-retired`. The
+  // sentinel worked exactly as intended — it caught the status move and forced it to be declared
+  // here rather than slip through with the page edit that carried it.
   const rights = JSON.parse(fs.readFileSync(REGISTRY, 'utf8'));
   const statuses = Object.fromEntries(rights.instruments.map((i) => [i.id, i.status]));
   assert.deepEqual(statuses, {
     cssrs: 'retired',
     bfcrs: 'restricted',
-    cows: 'flagged-interim',
+    cows: 'retired',
     'ciwa-ar': 'retired',
     'phq9-gad7': 'provisional',
     'stanley-brown': 'restricted',

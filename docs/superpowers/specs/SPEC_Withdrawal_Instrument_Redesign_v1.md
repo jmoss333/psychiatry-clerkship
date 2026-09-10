@@ -1,5 +1,16 @@
 # Withdrawal Instrument Redesign — Drop-In Content Spec v1
 
+> **Amended 2026-09-10 — decision `cows-anchors-retired`.** Section 2.2 originally carried the
+> COWS anchor ladders at their published wording, and the tool was generated from them. That
+> reproduction was retired on 2026-09-10 when the interim waiver closed: the permission located
+> for the COWS covers clinical copying, not publication on a teaching site, and this repository is
+> public, so leaving the ladders here would have republished what came down from the page they
+> specified. The score values are unchanged — they are the scale. The descriptor wording is now
+> ours, written short for teaching. The design intent of this spec is otherwise untouched, and
+> `gen_cows_from_spec.py` still generates the tool from this table, so the provenance chain holds.
+> The authors' wording is at the NIDA form:
+> https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf
+
 **For:** `03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html`
 **Companion to:** `Clinical_and_Instrument_Review_2026-08-20.md`
 **Status:** authoring spec — every anchor below must be **verified against the primary instrument** before it ships (see §0.3). Nothing here is a dose.
@@ -295,16 +306,16 @@ Maximum total = **48**.
 | # | Item | Tag | Elicitation / window | Legal values and anchors |
 |---|---|---|---|---|
 | 1 | **Resting pulse rate** | OBSERVED | Measured **after the patient has been sitting or lying for one minute** | **0** ≤80 · **1** 81–100 · **2** 101–120 · **4** >120 |
-| 2 | **Sweating** | OBSERVED | Over the **past ½ hour**, **not** accounted for by room temperature or patient activity | **0** no report of chills or flushing · **1** subjective report of chills or flushing · **2** flushed or observable moistness on face · **3** beads of sweat on brow or face · **4** sweat streaming off face |
-| 3 | **Restlessness** | OBSERVED | Observation during assessment | **0** able to sit still · **1** reports difficulty sitting still, but is able to do so · **3** frequent shifting or extraneous movements of legs/arms · **5** unable to sit still for more than a few seconds |
-| 4 | **Pupil size** | OBSERVED | — | **0** pupils pinned **or normal size for room light** · **1** pupils possibly larger than normal for room light · **2** pupils moderately dilated · **5** pupils so dilated that only the rim of the iris is visible |
-| 5 | **Bone or joint aches** | ASKED | If the patient had pain previously, **only the additional component attributed to opioid withdrawal is scored** | **0** not present · **1** mild diffuse discomfort · **2** patient reports severe diffuse aching of joints/muscles · **4** patient is **rubbing joints or muscles and unable to sit still** because of discomfort |
-| 6 | **Runny nose or tearing** | OBSERVED | **Not** accounted for by cold symptoms or allergies | **0** not present · **1** nasal stuffiness or unusually moist eyes · **2** nose running or tearing · **4** nose constantly running or tears streaming down cheeks |
-| 7 | **GI upset** | ASKED | Over the **last ½ hour** | **0** no GI symptoms · **1** stomach cramps · **2** nausea or loose stool · **3** vomiting or diarrhea · **5** multiple episodes of diarrhea or vomiting |
-| 8 | **Tremor** | OBSERVED | **Observation of outstretched hands** | **0** no tremor · **1** tremor can be felt, but not observed · **2** slight tremor observable · **4** gross tremor or muscle twitching |
-| 9 | **Yawning** | OBSERVED | Observation **during assessment** | **0** no yawning · **1** yawning once or twice during assessment · **2** yawning three or more times during assessment · **4** yawning several times per minute |
-| 10 | **Anxiety or irritability** | ASKED/OBSERVED | — | **0** none · **1** patient reports increasing irritability or anxiousness · **2** patient obviously irritable or anxious · **4** patient so irritable or anxious that participation in the assessment is difficult |
-| 11 | **Gooseflesh skin** | OBSERVED | — | **0** skin is smooth · **3** piloerection can be felt or hairs standing up on arms · **5** prominent piloerection |
+| 2 | **Sweating** | OBSERVED | Over the **past ½ hour**, **not** accounted for by room temperature or patient activity | **0** none reported · **1** chills or flushing, reported only · **2** visibly flushed or damp · **3** droplets visible on the face · **4** sweat running off the face |
+| 3 | **Restlessness** | OBSERVED | Observation during assessment | **0** sits still · **1** restless but stays seated · **3** shifts position often; fidgets · **5** cannot stay seated |
+| 4 | **Pupil size** | OBSERVED | — | **0** normal or pinpoint for the light · **1** borderline enlarged · **2** clearly dilated · **5** maximally dilated; iris barely visible |
+| 5 | **Bone or joint aches** | ASKED | If the patient had pain previously, **only the additional component attributed to opioid withdrawal is scored** | **0** not present · **1** mild, diffuse · **2** severe, diffuse · **4** severe, with rubbing or guarding |
+| 6 | **Runny nose or tearing** | OBSERVED | **Not** accounted for by cold symptoms or allergies | **0** not present · **1** stuffy nose or glassy eyes · **2** frank rhinorrhea or tearing · **4** continuous |
+| 7 | **GI upset** | ASKED | Over the **last ½ hour** | **0** none · **1** cramping only · **2** nausea or loose stool · **3** one episode of vomiting or diarrhea · **5** repeated episodes |
+| 8 | **Tremor** | OBSERVED | **Observation of outstretched hands** | **0** none · **1** palpable, not visible · **2** visible, fine · **4** coarse, or muscle twitching |
+| 9 | **Yawning** | OBSERVED | Observation **during assessment** | **0** none · **1** once or twice · **2** three or more · **4** several per minute |
+| 10 | **Anxiety or irritability** | ASKED/OBSERVED | — | **0** none · **1** reported only · **2** evident on observation · **4** interferes with the interview |
+| 11 | **Gooseflesh skin** | OBSERVED | — | **0** smooth · **3** piloerection detectable · **5** prominent piloerection |
 
 **Score bands (currently collapsed — restore all four):**
 

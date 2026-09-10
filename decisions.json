@@ -78,12 +78,13 @@
     {
       "id": "cows-interim-waiver",
       "title": "COWS' 45 verbatim anchors stay published under a recorded interim waiver pending the Taylor & Francis letter",
-      "status": "active-interim",
+      "status": "superseded",
       "decided": "2026-08-23",
       "decidedBy": "Joshua Moss, MD (clinical author-of-record)",
       "rationaleRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — WP-02d",
       "note": "This waiver is the one thing still blocking Wave 4. An agent must not narrow or lift it.",
-      "governs": []
+      "governs": [],
+      "supersededBy": "cows-anchors-retired"
     },
     {
       "id": "pairings-block-collapsible",
@@ -121,6 +122,22 @@
       "note": "Cohorts are 4-10 learners, so aggregate data can still identify. Free text in an event key is the path by which PHI or a re-identifying detail would reach the counter store. Deriving the allowlist from shipped_pages.json makes what can be measured and what ships the same set by construction.",
       "governs": [
         "13_Faculty_Resources/_automation/site_build/check-static-site.mjs"
+      ]
+    },
+    {
+      "id": "cows-anchors-retired",
+      "title": "The COWS anchor text is withdrawn; the scale's items and score values stay",
+      "status": "active",
+      "decided": "2026-09-10",
+      "decidedBy": "Joshua Moss, MD",
+      "supersedes": [
+        "cows-interim-waiver"
+      ],
+      "rationaleRef": "instrument_rights.json — cows.decisionRef; evidence: research return rq-10-2026-09-10 in research_returns.json",
+      "note": "Closes the interim waiver Josh granted himself 2026-08-23. The permission that exists for the COWS covers clinical copying, not publication on a teaching site, and the waiver's exit condition may never fire. Item names and legal score values are facts and remain; the 45 published anchor strings are replaced with in-house descriptors, the same posture the CIWA-Ar took on this page 2026-08-28. A T&F permission request runs in parallel; a license would move cows to cleared. Governs the generator rather than the generated card: check_decision_drift.py scans code and data suffixes only, so a claim on the .html could never be verified.",
+      "governs": [
+        "instrument_rights.json",
+        "13_Faculty_Resources/_automation/gen_cows_from_spec.py"
       ]
     }
   ]
