@@ -42,6 +42,16 @@ actually shipped to learners:
                         one-patient-six-weeks.html 31 at 1.06:1, rotation-curator.html 21 at
                         1.57:1. Nothing in CI could see it, because every unit test and both
                         contrast gates read the --fd-* palette, which was fine.
+  C9 DOC DRIFT          docs/DESIGN_SYSTEM.md's type and glyph tables must match this stylesheet
+                        row for row. The step names are deliberately counter-intuitive — the
+                        scale is 2xs xs sm md base lg xl 2xl 3xl, so --fd-font-md is 14px and
+                        --fd-font-lg is 17px, not the middle and upper-middle of the range. A
+                        migration is audited by comparing each old value against the token it now
+                        points at, and the doc is where those values get looked up. One drifted
+                        row makes a correct migration read as though every declaration jumped a
+                        full step. That false alarm is convincing enough to cost hours and to
+                        tempt someone into "fixing" a healthy file, so the doc is pinned to the
+                        stylesheet rather than trusted.
 
 WHAT IT DELIBERATELY DOES NOT DO
 --------------------------------
@@ -75,6 +85,7 @@ FRONTDOOR = os.path.join(BUILD, "frontdoor", "frontdoor.css")
 SPA = os.path.join(BUILD, "spa_index.html")
 BASELINE = os.path.join(BUILD, "design_drift_baseline.json")
 CONTRAST_TEST = os.path.join(ROOT, "tests", "fd-contrast.test.mjs")
+DESIGN_DOC = os.path.join(ROOT, "docs", "DESIGN_SYSTEM.md")
 
 # Fill/border tokens. Their ink counterparts are the -dark / -deep variants.
 FILL_ONLY = ("fd-terracotta", "fd-teal", "fd-olive")
@@ -476,6 +487,60 @@ def c5_contrast_allowlist_empty(fails: list[str]) -> None:
         )
 
 
+def doc_scale_table(markdown: str) -> dict[str, float]:
+    """Every `--fd-font-*` / `--fd-glyph-*` the design doc states a px value for.
+
+    Matches both shapes the doc uses: a table row (`| `--fd-font-lg` | 17 | ... |`) and the
+    inline prose list in 2.2.1 (``--fd-glyph-xs` 9px (marks in ...)`)."""
+    found: dict[str, float] = {}
+    for m in re.finditer(r"`--(fd-(?:font|glyph)-[a-z0-9]+)`\s*(?:\|\s*)?(\d+(?:\.\d+)?)\s*(?:px)?",
+                         markdown):
+        found[m.group(1)] = float(m.group(2))
+    return found
+
+
+def css_scale_table(css: str) -> dict[str, float]:
+    """The same tokens as clinical-warm.css actually declares them."""
+    return {m.group(1): float(m.group(2))
+            for m in re.finditer(r"--(fd-(?:font|glyph)-[a-z0-9]+)\s*:\s*(\d+(?:\.\d+)?)px", css)}
+
+
+def scale_doc_drift(markdown: str, css: str) -> list[str]:
+    doc, real = doc_scale_table(markdown), css_scale_table(css)
+    out = []
+    for token, px in sorted(doc.items()):
+        if token not in real:
+            out.append(f"--{token} is documented at {px:g}px but is not declared in clinical-warm.css")
+        elif real[token] != px:
+            out.append(f"--{token} is documented at {px:g}px but declared {real[token]:g}px")
+    for token in sorted(set(real) - set(doc)):
+        out.append(f"--{token} ({real[token]:g}px) is declared but absent from the doc's scale table")
+    return out
+
+
+def c9_doc_matches_css(fails: list[str]) -> None:
+    """C9 — docs/DESIGN_SYSTEM.md's type/glyph tables must match clinical-warm.css exactly.
+
+    Not pedantry about documentation. The step names are counter-intuitive on purpose (the scale
+    runs 2xs xs sm md base lg xl 2xl 3xl, so --fd-font-md is 14px and --fd-font-lg is 17px, NOT
+    the middle and upper-middle of the range a reader assumes). Anyone verifying a migration
+    compares old values against the token each declaration now points at, and the doc's table is
+    the natural place to look those up. If that table drifts from the stylesheet by even one row,
+    a correct migration reads as though every declaration jumped a full step — a false alarm
+    convincing enough to cost hours and tempting enough to "fix" a healthy file over. Pinning the
+    two together makes the doc safe to audit against, which is the only reason to write it down.
+    """
+    if not os.path.exists(DESIGN_DOC):
+        fails.append("C9 DOC DRIFT  docs/DESIGN_SYSTEM.md is missing — the scale has no stated source.")
+        return
+    drift = scale_doc_drift(read(DESIGN_DOC), read(WARM))
+    for item in drift:
+        fails.append(
+            f"C9 DOC DRIFT  {item}. docs/DESIGN_SYSTEM.md 2.2/2.2.1 and clinical-warm.css must "
+            f"agree; the doc is what a migration gets audited against."
+        )
+
+
 # ---------------------------------------------------------------- ratchets
 
 DIMENSION_PROPS = ("font-size", "border-radius", "gap", "padding", "margin")
@@ -661,6 +726,30 @@ def self_test() -> int:
     expect("C8 ignores a literal with no tokenised base to shadow",
            shadowed_tokens(".loner{background:#fff}") == [])
 
+    # C9 — the doc's scale table against the stylesheet's. The good case is the real pair of
+    # files, so the self-test also proves the shipped doc is currently in agreement.
+    expect("C9 is silent when the doc matches the CSS",
+           scale_doc_drift("| `--fd-font-lg` | 17 | absorbs | use |",
+                           ":root{--fd-font-lg:17px}") == [])
+    expect("C9 catches a doc row that drifted from the CSS value",
+           scale_doc_drift("| `--fd-font-lg` | 18 | absorbs | use |",
+                           ":root{--fd-font-lg:17px}") ==
+           ["--fd-font-lg is documented at 18px but declared 17px"])
+    expect("C9 catches a token the CSS declares and the doc never lists",
+           scale_doc_drift("| `--fd-font-lg` | 17 |",
+                           ":root{--fd-font-lg:17px;--fd-font-xl:21px}") ==
+           ["--fd-font-xl (21px) is declared but absent from the doc's scale table"])
+    expect("C9 catches a token the doc invents and the CSS does not declare",
+           scale_doc_drift("| `--fd-font-4xl` | 40 |", ":root{}") ==
+           ["--fd-font-4xl is documented at 40px but is not declared in clinical-warm.css"])
+    expect("C9 reads 2.2.1's inline prose form, not just table rows",
+           doc_scale_table("`--fd-glyph-xs` 9px (marks in 16-20px circles)") ==
+           {"fd-glyph-xs": 9.0})
+    expect("C9 does not mistake a px value elsewhere in the prose for a scale row",
+           doc_scale_table("the article ladder was 16.5 / 18 / 24 / 29") == {})
+    expect("C9 passes against the real doc and the real stylesheet",
+           scale_doc_drift(read(DESIGN_DOC), read(WARM)) == [])
+
     # Ratchet measurement.
     m = measure_css(".a{font-size:14px;border-radius:10px}.b{font-size:9px}.c{font-size:var(--fd-font-md)}")
     expect("R counts raw dimension declarations, not tokenised ones",
@@ -704,6 +793,7 @@ def main() -> int:
     c8_shadowed_tokens(fails, notes,
                        set(baseline.get("shadowed_token_exceptions", {})))
     c5_contrast_allowlist_empty(fails)
+    c9_doc_matches_css(fails)
     current = ratchets(fails, notes, baseline.get("files", {}))
 
     if args.update_baseline:
