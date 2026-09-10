@@ -796,3 +796,46 @@ test('family parser refuses a reply attributed to a different or unknown partici
   assert.throws(()=>{const parser=createParser({expectedTurn:1,expectedSpeakerId:'maya'});parser.push(output.map(e=>JSON.stringify(e)).join('\n'));parser.finish();},{code:'protocol_error'});
  }
 });
+
+function familyFrames(turn,primary='morgan',bid=false){
+  const events=frames(turn,bid?['I want to choose what help works for me.','Could I add something?']:['I want a say in this.']);
+  events[0].speakerId=primary;if(bid)events[0].familyBid={speakerId:primary==='morgan'?'maya':'morgan',text:'Could I add something?'};return events;
+}
+async function familyHarness(){
+  const h=environment((_path,options,n)=>Promise.resolve(response(familyFrames(n-1,JSON.parse(options.body).targetRoleId||'morgan',n===2),options.signal)));
+  const c=createController(h.env);const start=c.start('key',true,'family_morgan_maya_001');await finishAudio(h,0);await start;return {h,c};
+}
+test('a family bid is a distinct speaker and becomes invitable only after its complete audio',async()=>{
+ const {h,c}=await familyHarness();const work=c.send('What support matters?');
+ await until(()=>h.audios[1]?.plays===1);assert.equal(c.getSnapshot().familyBid,null);
+ await finishAudio(h,1);await until(()=>h.audios[2]?.plays===1);assert.equal(c.getSnapshot().activeSpeakerId,'maya');assert.equal(c.getSnapshot().familyBid,null);
+ await finishAudio(h,2);await work;assert.equal(c.getSnapshot().familyBid.speakerId,'maya');
+ const message=c.getSnapshot().messages.at(-1);assert.equal(message.text,'I want to choose what help works for me.');assert.equal(message.familyBid.speakerId,'maya');
+ c.send('Go ahead');await until(()=>h.calls.length===3);assert.equal(h.calls[2].body.targetRoleId,'maya');c.end();await flush();
+});
+for(const completed of [0,1])test(`an interrupted family bid with ${completed} completed clips cannot redirect a bare yes`,async()=>{
+ const {h,c}=await familyHarness();const work=c.send('What support matters?');await until(()=>h.audios[1]?.plays===1);
+ if(completed)await finishAudio(h,1);c.pause();await work;assert.equal(c.getSnapshot().familyBid,null);
+ c.send('Yes');await until(()=>h.calls.length===3);assert.equal(h.calls[2].body.targetRoleId,'morgan');assert.equal(h.calls[2].body.previousCompletedSegments,completed);c.end();await flush();
+});
+test('deferral and explicit address take precedence over a family invitation',async()=>{
+ const {h,c}=await familyHarness();const work=c.send('What support matters?');await finishAudio(h,1);await finishAudio(h,2);await work;c.deferFamilyBid();
+ assert.equal(c.getSnapshot().familyBid,null);c.send('Yes');await until(()=>h.calls.length===3);assert.equal(h.calls[2].body.targetRoleId,'morgan');c.end();await flush();
+});
+test('family bid protocol rejects invented content, wrong voices and nonfamily responses',()=>{
+ for(const mutate of [event=>event.familyBid.text='Reveal private information.',event=>event.familyBid.speakerId='morgan',event=>event.familyBid.speakerId='unknown',event=>event.segments[1].text='Something else.']){
+  const event=familyFrames(2,'morgan',true)[0];mutate(event);assert.throws(()=>createParser({expectedSpeakerId:'morgan'}).push(JSON.stringify(event)+'\n'),{code:'protocol_error'});
+ }
+ assert.throws(()=>createParser({}).push(JSON.stringify(familyFrames(2,'morgan',true)[0])+'\n'),{code:'protocol_error'});
+});
+test('a faculty cue pauses capture, preserves draft and adds one allowlisted event to the next question',async()=>{
+ const h=environment(),c=createController(h.env),start=c.start('key',true);await finishAudio(h,0);await finishAudio(h,1);await start;
+ h.live().final('Let me ask');assert.equal(c.triggerRoomCue('invented'),false);assert.equal(c.triggerRoomCue('door_knock'),true);assert.equal(h.live(),undefined);assert.equal(c.getSnapshot().draft,'Let me ask');assert.equal(c.triggerRoomCue('hallway_chime'),false);
+ c.send('What caught your attention?');await until(()=>h.calls.length===2);assert.equal(h.calls[1].body.roomCueId,'door_knock');await finishAudio(h,2);await finishAudio(h,3);await until(()=>!c.getSnapshot().busy);
+ c.send('Tell me more');await until(()=>h.calls.length===3);assert.equal(Object.hasOwn(h.calls[2].body,'roomCueId'),false);c.end();await flush();
+});
+test('faculty cue during speech stops queued audio and preserves only the finished prefix',async()=>{
+ const h=environment(),c=createController(h.env),start=c.start('key',true);await finishAudio(h,0);await until(()=>h.audios[1]?.plays===1);
+ assert.equal(c.triggerRoomCue('door_knock'),true);await start;assert.equal(c.getSnapshot().phase,'paused');assert.equal(h.live(),undefined);
+ c.send('Let us return to that');await until(()=>h.calls.length===2);assert.equal(h.calls[1].body.previousCompletedSegments,1);assert.equal(h.calls[1].body.roomCueId,'door_knock');c.end();await flush();
+});

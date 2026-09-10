@@ -105,3 +105,6 @@ tmp/
 
 # Local Practice a Moment verification artifacts.
 /output/practice-moment/
+
+# Local synthetic voice auditions and release verification receipts.
+/output/sp-realism-release/

@@ -12,6 +12,10 @@ const dana=(text,status,segments,completedSegments)=>({role:'dana',text,status,s
 const you=(text,status='submitted')=>({role:'you',text,status});
 const familyYou=(text,targetRoleId)=>({...you(text),targetRoleId});
 const familyReply=(text,speakerId,status='played',segments=[text],completedSegments=segments.length)=>({...dana(text,status,segments,completedSegments),speakerId});
+const familyBidReply=(speakerId,completedSegments,status='pending')=>({
+  ...familyReply('A weekly call would help.',speakerId,status,['A weekly call would help.',' Could I add something?'],completedSegments),
+  familyBid:{speakerId:speakerId==='morgan'?'maya':'morgan',text:'Could I add something?'}
+});
 
 test('phases map onto the station vocabulary exhaustively',()=>{
   const pairs=[['gate','idle'],['ready','paused'],['connecting','starting'],['listening','listening'],['responding','awaiting_patient'],['speaking','speaking'],['paused','paused'],['restart','error'],['ended','ended']];
@@ -390,4 +394,113 @@ test('new draft profiles expose shared entry information without private invento
     {id:'morgan',displayName:'Morgan',voice:'Marin',pronouns:'they/them'},
     {id:'maya',displayName:'Maya',voice:'Cedar',pronouns:'she/her'}
   ]);
+});
+
+test('family bid projection separates completed speakers without adding a learner turn',()=>{
+  for(const primaryRole of ['morgan','maya']){
+    const bidRole=primaryRole==='morgan'?'maya':'morgan';
+    for(const status of ['pending','speaking','interrupted','played']){
+      for(const completed of [0,1,2]){
+        const messages=[familyYou('What would help?',primaryRole),familyBidReply(primaryRole,completed,status)];
+        const before=JSON.stringify(messages);
+        const snapshot=stationSnapshot(hosted(messages));
+        assert.equal(snapshot.turn,1,'a bid does not consume another turn');
+        assert.equal(snapshot.transcript.length,completed===2?3:2);
+        const primary=snapshot.transcript[1];
+        assert.equal(primary.speakerId,primaryRole);
+        assert.equal(primary.text,'A weekly call would help.');
+        assert.equal(primary.heardText,undefined,'the other speaker is never a primary heard prefix');
+        assert.equal(primary.playbackStatus==='played',completed>=1);
+        if(completed===2){
+          const bid=snapshot.transcript[2];
+          assert.deepEqual(bid,{who:'pt',text:'Could I add something?',playbackStatus:'played',familyBid:true,
+            speakerId:bidRole,speakerName:bidRole==='maya'?'Maya':'Morgan'});
+        }
+        assert.equal(JSON.stringify(messages),before,'projection never rewrites controller history');
+      }
+    }
+  }
+});
+
+test('family bid projection rejects inconsistent completion or identity metadata',()=>{
+  for(const override of [
+    {completedSegments:3},{completedSegments:'2'},
+    {familyBid:{speakerId:'morgan',text:'Could I add something?'}},
+    {familyBid:{speakerId:'unknown',text:'Could I add something?'}},
+    {familyBid:{speakerId:'maya',text:'Words that were never played.'}},
+    {segments:['An unrelated primary.',' Could I add something?']}
+  ]){
+    const snapshot=stationSnapshot(hosted([familyYou('What would help?','morgan'),{...familyBidReply('morgan',2,'played'),...override}]));
+    assert.equal(snapshot.transcript.length,2,'no bid is invented from inconsistent metadata');
+    assert.equal(snapshot.transcript[1].heardText,undefined,'a bid never becomes Morgan’s speech');
+  }
+});
+
+test('a bookmark learns the completed family bid separately and returns defensive copies',()=>{
+  const store=createBookmarkStore();
+  const snapshot=completed=>stationSnapshot(hosted([familyYou('What would help?','morgan'),familyBidReply('morgan',completed)]));
+  store.add(snapshot(0));
+  assert.equal(store.entries()[0].danaText,'');
+  assert.equal(store.entries()[0].familyBid,undefined);
+  store.sync(snapshot(1));
+  assert.equal(store.entries()[0].danaText,'A weekly call would help.');
+  assert.equal(store.entries()[0].familyBid,undefined,'a generated but unheard bid is excluded');
+  store.sync(snapshot(2));
+  const entry=store.entries()[0];
+  assert.equal(store.entries().length,1,'the bid is part of the same marked moment');
+  assert.equal(entry.speakerId,'morgan');
+  assert.equal(entry.danaText,'A weekly call would help.');
+  assert.deepEqual(entry.familyBid,{text:'Could I add something?',speakerId:'maya',speakerName:'Maya'});
+  entry.familyBid.text='Changed by a caller';
+  assert.equal(store.entries()[0].familyBid.text,'Could I add something?');
+});
+
+test('family bid bookmarks and retry choices quote heard speakers independently',()=>{
+  for(const primaryRole of ['morgan','maya']){
+    for(const completed of [0,1,2]){
+      const doc=documentStub(),host=doc.createElement('div'),asked=[];
+      const station=createStation({document:doc},host,{caseId:'family_morgan_maya_001',content:contentModule.exports,
+        onRetry:(id,text)=>{asked.push([id,text]);return true;}});
+      const messages=[familyYou('What would help?',primaryRole),familyBidReply(primaryRole,completed)];
+      station.update(hosted(messages,'ended'));
+      byStation(host,'mark').dispatchEvent({type:'click'});
+      const moments=station.getRetryMoments();
+      assert.equal(moments.length,completed?1:0,'an unanswered pending reply cannot create a retry');
+      if(completed){
+        assert.equal(moments[0].turnId,1);
+        assert.equal(moments[0].speakerId,primaryRole,'the original respondent remains the retry target');
+        assert.equal(moments[0].targetRoleId,primaryRole);
+        assert.equal(moments[0].reply,'A weekly call would help.');
+      }
+      const bidRole=primaryRole==='morgan'?'Maya':'Morgan';
+      for(const surface of [byStation(host,'bookmarks'),byStation(host,'retry')]){
+        const quotes=flat(surface).filter(n=>n.tagName==='blockquote'&&!n.hidden).map(n=>n.textContent);
+        assert.equal(quotes.some(text=>text===bidRole+': Could I add something?'),completed===2);
+        assert.equal(quotes.some(text=>text.includes('A weekly call would help.')&&text.includes('Could I add something?')),false,
+          'primary and bid may not become a joint quotation');
+        if(completed<2)assert.equal(allText(surface).includes('Could I add something?'),false,'unheard bids stay out of the DOM');
+      }
+      station.dispose();
+    }
+  }
+});
+
+test('a family bid does not shift later retry turn numbers or replace the reflection editor',()=>{
+  const doc=documentStub(),host=doc.createElement('div');
+  const station=createStation({document:doc},host,{caseId:'family_morgan_maya_001',content:contentModule.exports});
+  station.update(hosted([familyYou('What would help?','morgan'),familyBidReply('morgan',1)],'speaking'));
+  byStation(host,'mark').dispatchEvent({type:'click'});
+  const marks=byStation(host,'bookmarks');
+  const editor=flat(marks).find(n=>n.attributes['aria-label']==='Reflection on moment 1');
+  editor.value='Remember to offer Maya the floor.';editor.dispatchEvent({type:'input'});
+  station.update(hosted([
+    familyYou('What would help?','morgan'),familyBidReply('morgan',2),
+    familyYou('Maya, what would you like to add?','maya'),familyReply('I care about them.','maya')
+  ],'ended'));
+  assert.deepEqual(station.getRetryMoments().map(m=>[m.turnId,m.speakerId]),[[1,'morgan'],[2,'maya']]);
+  assert.equal(flat(marks).find(n=>n.attributes['aria-label']==='Reflection on moment 1'),editor);
+  assert.equal(editor.value,'Remember to offer Maya the floor.');
+  assert.equal(flat(marks).filter(n=>n.tagName==='textarea').length,1);
+  assert.ok(allText(marks).includes('Maya: Could I add something?'));
+  station.dispose();
 });

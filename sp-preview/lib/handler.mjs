@@ -3,6 +3,9 @@ import {createContext,validateReply} from '../../_prototypes/sp-interview/dana-l
 import {getCase} from './case.mjs';
 import {FAMILY_CASE_ID,familyContext,roleSpeechCaseId} from './family.mjs';
 import {refineActorContext,isDeliveryIntensity} from './portrayal.mjs';
+import {applyInteractionGuidance} from './interaction-guidance.mjs';
+import {recommendFamilyBid} from './family-bids.mjs';
+import {roomCue,withRoomCue} from './room-cues.mjs';
 import {hash,problem,createStateCodec,initialState,nextHistory,issuedState,retryState} from './state.mjs';
 
 const HEADERS={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
@@ -44,11 +47,13 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
     roleId=isFamily?'morgan':undefined;
     state=initialState(caseDef.persona.opening,now,caseDef.id,roleId,intensityPresent?body.deliveryIntensity:'standard');operationId=`start:${body.requestId}`;
    }else if(action==='turn'){
-    if(!exact(body,['action','caseId','state','text','previousPlayback','previousCompletedSegments',...(isFamily?['targetRoleId']:[])]))throw problem(400,'preview_input_invalid');
+    const cuePresent=Object.hasOwn(body,'roomCueId');
+    if(!exact(body,['action','caseId','state','text','previousPlayback','previousCompletedSegments',...(isFamily?['targetRoleId']:[]),...(cuePresent?['roomCueId']:[])]))throw problem(400,'preview_input_invalid');
     if(isFamily){if(!['morgan','maya'].includes(body.targetRoleId))throw problem(400,'preview_input_invalid');roleId=body.targetRoleId;}
     state=codec.open(body.state);
     if(state.caseId!==caseDef.id)throw problem(400,'preview_state_invalid');
     history=nextHistory(state,body);operationId=`turn:${state.sid}:${state.nonce}`;
+    if(cuePresent){roomCue(body.roomCueId);if(state.roomCue)throw problem(400,'preview_input_invalid');state={...state,roomCue:{id:body.roomCueId,turn:state.turn+1}};}
    }else if(action==='retry'){
     if(!exact(body,['action','caseId','state','turnId','text']))throw problem(400,'preview_input_invalid');
     // The receipt presented here is the LATEST, unconsumed one. An earlier receipt
@@ -85,44 +90,55 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
     // learner to read; the voice instructions in this same request say not to speak
     // one, so it must not be in the text we hand over.
     const spokenText=value=>String(value).replace(/\*[^*]*\*/g,' ').replace(/\[[^\]]*\]/g,' ').replace(/\s+/g,' ').trim();
-    async function speak(text){
+    async function speak(text,speaker=roleId){
      if(abort.signal.aborted)throw problem(409,'preview_cancelled');
      const say=spokenText(text);
      // A segment that is ONLY staging has nothing to speak; that is an authoring
      // error, not something to paper over with silent audio.
      if(!say)throw problem(500,'preview_provider_unavailable');
-     const bytes=await provider.speak({text:say,caseId:roleId?roleSpeechCaseId(roleId):caseDef.id,deliveryIntensity:state.deliveryIntensity,signal:abort.signal});
+     const bytes=await provider.speak({text:say,caseId:speaker?roleSpeechCaseId(speaker):caseDef.id,deliveryIntensity:state.deliveryIntensity,signal:abort.signal});
      if(abort.signal.aborted)throw problem(409,'preview_cancelled');
      if(!validAudio(bytes))throw problem(502,'preview_provider_unavailable');
      return bytes;
     }
     (async()=>{
      const pending=[];
-     const begin=text=>{const job=speak(text);job.catch(()=>{});pending.push(job);return job;};
+     const begin=(text,speaker)=>{const job=speak(text,speaker);job.catch(()=>{});pending.push(job);return job;};
      try{
-      let reply,segments,jobs;
+      let reply,segments,jobs,familyBid;
       if(action==='start'){reply=caseDef.persona.opening;segments=[reply];jobs=[begin(reply)];}
       else {
-       const context=roleId?familyContext(history,roleId):refineActorContext(createContext(caseDef,history.filter(entry=>entry.who==='me').map(entry=>entry.text),history),caseDef.id);
+       const baseContext=roleId?familyContext(history,roleId):refineActorContext(createContext(caseDef,history.filter(entry=>entry.who==='me').map(entry=>entry.text),history),caseDef.id);
+       const context=withRoomCue(applyInteractionGuidance(baseContext,caseDef.id,roleId?{roleId}:{}),state.roomCue);
+       // An occasional family bid uses the second existing speech slot. No
+       // additional model call, budget reservation, or simultaneous speakers.
+       familyBid=roleId&&action==='turn'&&state.roomCue?.turn!==state.turn+1?recommendFamilyBid(history,roleId):null;
        let lead=null,leadJob=null,acceptingLead=true;
        const onLead=text=>{
         if(!acceptingLead||abort.signal.aborted)return;
         if(lead!==null||roleId&&/\b(?:Maya|Morgan)\s*:/i.test(text.trim())||validateReply(text,{fragment:true})!==text)throw problem(502,'preview_provider_unavailable');
-        lead=text;if(!/^(?:"[\s\S]*"|“[\s\S]*”)$/.test(text))leadJob=begin(text);
+        lead=text;if(!familyBid&&!/^(?:"[\s\S]*"|“[\s\S]*”)$/.test(text))leadJob=begin(text);
        };
        try{reply=validateReply(await provider.replyStream({system:context.system,messages:context.messages,signal:abort.signal,onLead}));}
        finally{acceptingLead=false;}
        if(roleId&&/\b(?:Maya|Morgan)\s*:/i.test(reply.trim()))throw problem(502,'preview_provider_unavailable');
        if(lead!==null&&!reply.startsWith(lead))throw problem(502,'preview_provider_unavailable');
-       if(leadJob){
+       if(familyBid){
+        // Reserve room for the authored request without truncating any actor
+        // text or required disclosure. A full-size answer simply gets no bid.
+        if(reply.length+familyBid.text.length+1>900)familyBid=null;
+       }
+       if(familyBid){segments=[reply,' '+familyBid.text];jobs=[begin(reply),begin(familyBid.text,familyBid.speakerId)];}
+       else if(leadJob){
         segments=[lead];jobs=[leadJob];const remainder=reply.slice(lead.length);
         if(remainder.trim()){segments.push(remainder);jobs.push(begin(remainder));}
         else if(remainder.length)throw problem(502,'preview_provider_unavailable');
        }else{segments=[reply];jobs=[begin(reply)];}
        state=issuedState(state,history,reply,segments,roleId);
+       if(familyBid){state.history.at(-1).familyBid={...familyBid,playbackStatus:'pending'};reply=segments.join('');}
        if(action==='retry')state={...state,retried:true};
       }
-      send({type:'reply',reply,segments:segments.map(text=>({text})),state:codec.seal(state),turn:state.turn,...(roleId?{speakerId:roleId}:{})});
+      send({type:'reply',reply,segments:segments.map(text=>({text})),state:codec.seal(state),turn:state.turn,...(roleId?{speakerId:roleId}:{}),...(familyBid?{familyBid}:{})});
       for(let index=0;index<jobs.length;index++){
        const bytes=await jobs[index];state={...state,completed:index+1};
        send({type:'audio',index,data:bytes.toString('base64'),state:codec.seal(state)});

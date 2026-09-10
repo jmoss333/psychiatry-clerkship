@@ -49,7 +49,7 @@ export function firstSubstantiveSentence(value) {
 }
 
 function actorInput(system,messages,stream,actorReasoning) {
-  if(typeof system!=='string'||!system.trim()||CONTROL.test(system)||!Array.isArray(messages)||messages.length>21)throw fail('invalid_reply','validation');
+  if(typeof system!=='string'||!system.trim()||CONTROL.test(system)||!Array.isArray(messages)||messages.length>23)throw fail('invalid_reply','validation');
   for(const message of messages) {
     if(!message||Array.isArray(message)||Object.keys(message).length!==2||!Object.hasOwn(message,'role')||!Object.hasOwn(message,'content')
       ||!['user','assistant'].includes(message.role)||typeof message.content!=='string'||!message.content.trim()||message.content.length>MAX_ACTOR_TEXT||CONTROL.test(message.content))throw fail('invalid_reply','validation');

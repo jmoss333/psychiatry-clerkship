@@ -42,11 +42,15 @@ export const familyBinding=hash(JSON.stringify({caseHash,caseDef:familyCaseDef,c
 function checkedEntry(entry){
   if(!entry||typeof entry!=='object'||Array.isArray(entry)||!['me','pt'].includes(entry.who)
     ||typeof entry.text!=='string'||!entry.text.trim()||entry.text.length>1200||CONTROL.test(entry.text))throw INVALID();
-  const allowed=entry.who==='me'?['who','text','targetRoleId']:['who','text','speakerId','playbackStatus','omittedTail'];
+  const allowed=entry.who==='me'?['who','text','targetRoleId']:['who','text','speakerId','playbackStatus','omittedTail','familyBid'];
   if(Object.keys(entry).some(key=>!allowed.includes(key)))throw INVALID();
   familyRole(entry.who==='me'?entry.targetRoleId:entry.speakerId);
   if(entry.who==='pt'&&(!['played','pending','interrupted'].includes(entry.playbackStatus)
     ||Object.hasOwn(entry,'omittedTail')&&(entry.omittedTail!==true||entry.playbackStatus!=='played')))throw INVALID();
+  if(Object.hasOwn(entry,'familyBid')){
+    const bid=entry.familyBid;
+    if(!bid||Object.keys(bid).sort().join(',')!=='playbackStatus,speakerId,text'||!isFamilyRole(bid.speakerId)||bid.speakerId===entry.speakerId||bid.text!=='Could I add something?'||!['played','pending','interrupted'].includes(bid.playbackStatus)||bid.playbackStatus==='played'&&entry.playbackStatus!=='played')throw INVALID();
+  }
   return entry;
 }
 
@@ -64,6 +68,11 @@ export function familyContext(history,roleId){
     messages.push({role:entry.who==='pt'&&entry.speakerId===roleId?'assistant':'user',content:entry.text});
     const identity=entry.who==='me'?`student addressing ${familyRole(entry.targetRoleId).name}`:`${familyRole(entry.speakerId).name} speaking in the shared meeting`;
     records.push(`Input ${messages.length}: ${identity}.${entry.omittedTail?' This contains only its included completed prefix; the remaining words are unavailable.':''}`);
+    if(entry.familyBid?.playbackStatus==='played'){
+      const bid=entry.familyBid;
+      messages.push({role:bid.speakerId===roleId?'assistant':'user',content:bid.text});
+      records.push(`Input ${messages.length}: ${familyRole(bid.speakerId).name} asking for the floor in the shared meeting. This request is not a substantive disclosure or agreement. The learner may invite or defer it.`);
+    }
   }
   return {system:[PUBLIC_SYSTEMS[roleId],HOSTED_RULES,'INPUT RECORD MAP:',...records,...delivery].join('\n'),messages};
 }
