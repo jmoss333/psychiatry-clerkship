@@ -13,7 +13,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, chmodSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, chmodSync, statSync, utimesSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -75,7 +75,8 @@ case "\${1:-}" in
   pull)
     shift; printf '%s\\n' "$@" > "\${LFS_SHIM_LOG:?}"
     if [ -n "\${LFS_SHIM_FAIL:-}" ]; then echo "\${LFS_SHIM_FAIL}" >&2; exit 2; fi
-    store="$(git config lfs.storage)"; mkdir -p "$store/objects"; head -c 2097152 /dev/zero > "$store/objects/obj"
+    store="$(git config lfs.storage)"; mkdir -p "$store/objects"
+    if [ ! -f "$store/objects/obj" ]; then head -c 2097152 /dev/zero > "$store/objects/obj"; fi
     for f in $(git ls-files -- '*.m4a'); do printf 'REALBYTES' > "$f"; done;;
   *) exit 0;;
 esac
@@ -159,11 +160,16 @@ test('a second build with a warm cache downloads nothing', () => {
   const log = join(cache, 'shim.log');
   const env = scrubbedEnv({ NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, LFS_SHIM_LOG: log, PATH: `${makeShim()}:${process.env.PATH}` });
   assert.equal(run(env, repo).status, 0);
+  // A cache hit must reuse the object, not truncate/rewrite it and change its disk allocation.
+  const object = join(cache, 'git-lfs', 'objects', 'obj');
+  const cachedAt = new Date('2000-01-01T00:00:00Z');
+  utimesSync(object, cachedAt, cachedAt);
   // Next build = fresh clone: the tree is pointer stubs again, the cache dir survives.
   writeFileSync(join(repo, 'audio', 'a.m4a'), POINTER);
   writeFileSync(join(repo, 'audio', 'b.m4a'), POINTER);
   const r = run(env, repo);
   assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.equal(statSync(object).mtimeMs, cachedAt.getTime(), 'a cache hit must not rewrite the existing LFS object');
   assert.match(r.stdout, /~0 MB downloaded from GitHub this build, store now [23] MB/);
 });
 

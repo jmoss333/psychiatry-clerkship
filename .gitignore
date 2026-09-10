@@ -99,3 +99,9 @@ tmp/
 
 # Local-only Marcus and Ray opening recordings for the voice-case preview.
 /output/speech/voice-cases-v1/
+
+# Local Marcus delivery comparison; generated audio is not a shipped case asset.
+/output/speech/marcus-portrayal-v2/
+
+# Local Practice a Moment verification artifacts.
+/output/practice-moment/

@@ -1,10 +1,20 @@
+# Practice a Moment
+
+The protected room now includes Elena, Priya and Luis moments alongside all five full encounters. Read [the requirement audit and faculty audition packet](PRACTICE_MOMENT_ACCEPTANCE.md) for evidence and remaining decisions. The mode uses `/api/practice-moment` and requires `DANA_PREVIEW_ENABLED=true`, the same gate as every other mode in this room; there is no separate moments-only flag. Staging enablement does not enable production. Joshua Moss, MD, attested Elena, Priya and Luis's authored content (case setup, facts, review criteria and templates) on 2026-09-09 — `reviewStatus` in the catalog is `reviewed` and the learner-facing draft label is gone from all three. That attestation covers the exercises' content; it does not itself establish a live AI-review or physical-microphone pass — see "Still not verified" below and the requirement audit's remaining external evidence.
+
+Each moment allows four patient-facing responses, one three-unit review and one three-unit terminal alternative: at most 19 reserved operation units and one start. It shares the existing budget namespace and 20/680/340 policy. Review consumes the current continuation before evaluation; unavailable feedback stays closed and falls back to authored reflection prompts. Transfers require a fresh normally budgeted start.
+
+Private reflection and the existing attending presentation stay in page memory. The separate optional Priya **Team formulation — included in AI feedback** goes to review only after explicit submission. No transcripts/audio are persisted, no dialogue is logged, and no analytics are added. Actor facts/rubrics stay in the function bundle; seven explicit browser assets ship.
+
+---
+
 # Protected spoken Interview Room
 
 A protected pilot of ten spoken turns with Dana, Marcus, Ray, Morgan, or Morgan and Maya, hosted separately from the learner sites. The learner sites' Interview Room links here through a top-level navigation, so microphone and media permissions belong to this origin. The original Interview Room and its production SP proxy continue to work. Dana's disclosure overlay and conversational portrayal retain their recorded review status.
 
 ## Local verification
 
-Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Both also run in `ci.yml`'s `build-test-validate` job and in `bin/verify.sh`, so a change here reddens a pull request rather than surfacing only when someone remembers the commands. Run the full root and prototype suites sequentially. The `dist` folder contains only the five browser assets listed below; never publish the repository root, `_prototypes`, or `sp-preview` itself.
+Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Both also run in `ci.yml`'s `build-test-validate` job and in `bin/verify.sh`, so a change here reddens a pull request rather than surfacing only when someone remembers the commands. Run the full root and prototype suites sequentially. The `dist` folder contains only the seven browser assets listed below; never publish the repository root, `_prototypes`, or `sp-preview` itself.
 
 The opt-in `npm run test:hosted` also requires the `tests/smoke` Playwright dependencies, explicit `DANA_QA_URL` and `DANA_QA_ACCESS_FILE` environment variables, and an authorized preview passcode file. It makes one paid opening and ten paid conversation requests, with synthetic recognition and native muted audio at 2x. It never runs as part of `npm test` or in CI; reports contain counts/timings, not dialogue, keys, or state receipts.
 
@@ -35,7 +45,7 @@ alone and is never applied to another case.
 
 ## The student station
 
-`dist` publishes five files: `index.html`, `app.js`, `styles.css`, `station.js` and `station-content.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends.
+`dist` publishes seven files: `index.html`, `app.js`, `styles.css`, `station.js`, `station-content.js`, `moment-content.js` and `moment-station.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends.
 
 It is a projection of the controller snapshot and nothing more. It holds no reference to `send()`, makes no network request, and reads and writes no browser storage — `build.test.mjs` fails the build if `fetch(`, `localStorage`, `sessionStorage`, `indexedDB` or `XMLHttpRequest` appears in either station file. Marked moments quote only what was actually heard: a reply that did not finish playing is quoted at its completed segments, and a moment with nothing confirmed heard says so rather than showing an empty quotation. `station-content.js` carries learner-facing content only; the participant `portrayal` guidance is actor direction and stays server-side.
 

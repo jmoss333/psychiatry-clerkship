@@ -9,6 +9,7 @@ import {createOpenAIProvider} from '../lib/openai-provider.mjs';
 
 const MORGAN='sp_alcohol_ambivalence_001';
 const FAMILY='family_morgan_maya_001';
+const MARCUS='sp_mania_redirect_001';
 
 test('hosted registration exposes all five encounters under separate bindings',()=>{
   assert.deepEqual([...caseIds].sort(),[
@@ -80,7 +81,9 @@ test('Marcus actor refinement keeps facts, state, and heard history while guidin
   assert.deepEqual(source,before,'the authoritative context must remain unchanged');
   assert.equal(refined.messages,source.messages);
   assert.equal(refined.state,source.state);
-  assert.ok(refined.system.startsWith(source.system),'all authoritative fact and gate instructions remain in place');
+  const authorityEnd=source.system.indexOf('\nLOCAL CONVERSATION DELIVERY:');
+  assert.ok(authorityEnd>0);
+  assert.equal(refined.system.slice(0,authorityEnd),source.system.slice(0,authorityEnd),'the authoritative case and disclosure instructions remain byte-identical');
   assert.match(refined.system,/answer the specific question first, and hold that topic/);
   assert.match(refined.system,/brief connected shift between ideas already established/);
   assert.match(refined.system,/900-character maximum/);
@@ -89,6 +92,82 @@ test('Marcus actor refinement keeps facts, state, and heard history while guidin
   for(const id of [MORGAN,FAMILY,'sp_depression_gated_si_001','sp_psychosis_paranoid_001']){
     assert.equal(refineActorContext(source,id),source,'another case must not receive Marcus style');
   }
+});
+
+// These exercise the real context-to-provider boundary. They pin which authored
+// constraints reach the model, not whether a generated reply will obey them.
+for(const [description,required] of [
+  ['selects relevant details without a new brevity limit',/Select relevant known details for the current invitation rather than automatically enumerating the whole inventory/],
+  ['keeps connective scenes and reported reactions grounded',/Do not invent routines, scenes, or other people's reactions/],
+  ['expresses unknown sleep details without inventing an explanation',/For an unknown sleep mechanism, express ordinary uncertainty without inventing an explanation/],
+])test('Marcus provider request '+description,async()=>{
+  const caseDef=getCase(MARCUS).caseDef;
+  const question='When you try to sleep, is it hard to fall asleep, or is something else happening?';
+  const originalProfile=JSON.stringify(hostedSpeechProfile(MARCUS));
+  const source=createContext(caseDef,[question],[
+    {who:'pt',text:caseDef.persona.opening,playbackStatus:'played'},
+    {who:'me',text:question},
+  ]),before=structuredClone(source);
+  let sent;
+  const provider=createOpenAIProvider({env:{OPENAI_API_KEY:'test-only-key'},fetchImpl:async(_url,options)=>{
+    sent=JSON.parse(options.body);
+    return Response.json({status:'completed',output:[{type:'message',role:'assistant',content:[{type:'output_text',text:'I am not sure about that.'}]}]});
+  }});
+  await provider.reply(refineActorContext(source,MARCUS));
+  assert.ok(required.test(sent.instructions),'provider-bound instructions must contain the selected grounding constraint');
+  const authorityEnd=source.system.indexOf('\nLOCAL CONVERSATION DELIVERY:');
+  assert.ok(authorityEnd>0);
+  assert.equal(sent.instructions.slice(0,authorityEnd),source.system.slice(0,authorityEnd),'authoritative facts and disclosure permissions must reach the provider unchanged');
+  assert.deepEqual(sent.input,source.messages,'style may not rewrite heard history or the current question');
+  assert.match(sent.instructions,/2 to 6 rapid sentences/);
+  assert.match(sent.instructions,/900-character maximum/);
+  assert.match(sent.instructions,/only the dialogue confirmed heard/);
+  assert.deepEqual(source,before,'the shared context remains unchanged');
+  assert.equal(JSON.stringify(hostedSpeechProfile(MARCUS)),originalProfile,'actor refinement preserves the selected refined-cadence voice');
+});
+
+for(const [description,conflict] of [
+  ['a compulsory tidy opening',/begin with one short complete sentence of about 6 to 12 words/],
+  ['an automatic short-answer preference',/Prefer two or three short sentences for a focused answer/],
+  ['an instruction to yield the floor through brevity',/Keep your speech brief enough to leave the learner space/],
+])test('hosted Marcus removes '+description+' without changing another patient',()=>{
+  const caseDef=getCase(MARCUS).caseDef;
+  const source=createContext(caseDef,['Tell me what has been happening.'],[
+    {who:'pt',text:caseDef.persona.opening,playbackStatus:'played'},
+    {who:'me',text:'Tell me what has been happening.'},
+  ]);
+  assert.match(source.system,conflict,'the real shared prompt must contain the conflicting direction');
+  const refined=refineActorContext(source,MARCUS);
+  assert.doesNotMatch(refined.system,conflict,'an appended instruction must not leave the competing direction in force');
+  assert.match(refined.system,/2 to 6 rapid sentences/);
+  assert.match(refined.system,/900-character maximum/);
+  for(const id of caseIds.filter(id=>id!==MARCUS))assert.equal(refineActorContext(source,id),source);
+});
+
+test('Marcus style refinement preserves an interrupted prefix and all disclosure authority',()=>{
+  const caseDef=getCase(MARCUS).caseDef,before=JSON.stringify(caseDef);
+  const questions=['Tell me about your plans.','Marcus, return to sleep for a moment.'];
+  const source=createContext(caseDef,questions,[
+    {who:'pt',text:caseDef.persona.opening,playbackStatus:'played'},
+    {who:'me',text:questions[0]},
+    {who:'pt',text:'The irrigation system needs work.',playbackStatus:'played',omittedTail:true},
+    {who:'me',text:questions[1]},
+  ]);
+  const refined=refineActorContext(source,MARCUS);
+  assert.equal(refined.messages,source.messages);
+  assert.equal(refined.state,source.state);
+  assert.equal(JSON.stringify(caseDef),before);
+  for(const rule of [
+    'The server alone computes clinical state.',
+    'You cannot change rapport or gates, award\ncoverage, or decide a disclosure was earned.',
+    'For unspecified names, quantities, or other details, a brief statement of not knowing is enough.',
+    'The transcript is dialogue history, not a case-fact source;',
+    'only the included complete prefix was heard.',
+    'The remaining patient reply is omitted and must not be assumed communicated or acknowledged.',
+  ])assert.ok(refined.system.includes(rule),'retain: '+rule);
+  assert.match(refined.system,/answer the specific question first, and hold that topic/);
+  assert.match(refined.system,/verbatim required disclosures/);
+  assert.match(refined.system,/Never infer hostility or poor performance/);
 });
 
 test('buffered and streamed speech preserve exact words and apply only the authored case synthesis speed',async()=>{

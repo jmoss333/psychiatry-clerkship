@@ -12,6 +12,14 @@ cases. This is a labels-and-status change only — no case facts, gates, prompts
 or voices changed. The hosted site is not git-linked, so nothing here reaches
 learners until the owner runs a CLI deploy of `sp-preview`.
 
+---
+
+# Practice a Moment — September 9
+
+See [the current requirement audit and faculty packet](PRACTICE_MOMENT_ACCEPTANCE.md). Earlier receipts below describe full encounters and do not establish provider or microphone validation for the new moments.
+
+---
+
 # September 8 — family, MI, and portrayal extension
 
 The protected preview adds the existing Morgan MI draft and a public-only Morgan/Maya family meeting. This does not attest either case or transplant the local private-check-in workflow. One family respondent speaks per learner turn. The same twenty-start daily policy and 34-unit full-encounter envelope apply.

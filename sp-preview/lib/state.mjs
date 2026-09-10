@@ -47,11 +47,16 @@ export function nextHistory(state,{text,previousPlayback,previousCompletedSegmen
   if(state.turn>=10||state.retried===true)throw problem(409,'preview_encounter_finished');
   if(typeof text!=='string'||!text.trim()||text.length>1200||/[\u0000-\u001f\u007f]/.test(text)
     ||!['played','interrupted'].includes(previousPlayback)||!Number.isInteger(previousCompletedSegments)||previousCompletedSegments<0||previousCompletedSegments>state.completed)throw problem(400,'preview_input_invalid');
+  const history=finalizePlayback(state,{previousPlayback,previousCompletedSegments});
+  history.push({who:'me',text:text.trim(),...(targetRoleId?{targetRoleId}:{})});
+  return history;
+}
+export function finalizePlayback(state,{previousPlayback,previousCompletedSegments}) {
+  if(!['played','interrupted'].includes(previousPlayback)||!Number.isInteger(previousCompletedSegments)||previousCompletedSegments<0||previousCompletedSegments>state.completed)throw problem(400,'preview_input_invalid');
   const history=structuredClone(state.history), previous=history.at(-1);
   const heard=state.segments.slice(0,previousCompletedSegments);
   if(heard.length){previous.text=heard.join('');previous.playbackStatus='played';if(heard.length<state.segments.length)previous.omittedTail=true;}
   else previous.playbackStatus='interrupted';
-  history.push({who:'me',text:text.trim(),...(targetRoleId?{targetRoleId}:{})});
   return history;
 }
 export function issuedState(previous,history,reply,segments,speakerId) {
