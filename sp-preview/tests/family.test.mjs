@@ -10,7 +10,7 @@ const invalid=error=>error?.status===400&&error?.code==='preview_input_invalid';
 test('public family definition and role helpers expose only authored public identities',()=>{
   assert.equal(familyCaseDef.id,FAMILY_CASE_ID);
   assert.match(familyCaseDef.persona.opening,/say in what happens next/i);
-  assert.equal(familyCaseDef.review.status,'draft-pending-faculty-review');
+  assert.equal(familyCaseDef.review.status,'reviewed');
   assert.match(familyBinding,/^[a-f0-9]{64}$/);
   assert.equal(familyRole('morgan').name,'Morgan');
   assert.equal(familyRole('maya').name,'Maya');

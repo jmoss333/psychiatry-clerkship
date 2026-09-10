@@ -20,8 +20,7 @@
     "setupAttribution": "Previous student — scripted",
     "durationLabel": "About 3–5 minutes",
     "maxTurns": 4,
-    "reviewStatus": "draft-pending-faculty-review",
-    "reviewLabel": "Faculty-review draft",
+    "reviewStatus": "reviewed",
     "summaryPrompt": "",
     "reflectionPrompts": [
       "What am I pulled to do?",
@@ -45,8 +44,7 @@
     "setupAttribution": "",
     "durationLabel": "About 3–5 minutes",
     "maxTurns": 4,
-    "reviewStatus": "draft-pending-faculty-review",
-    "reviewLabel": "Faculty-review draft",
+    "reviewStatus": "reviewed",
     "summaryPrompt": "",
     "reflectionPrompts": [
       "What am I pulled to do?",
@@ -70,8 +68,7 @@
     "setupAttribution": "",
     "durationLabel": "About 3–5 minutes",
     "maxTurns": 4,
-    "reviewStatus": "draft-pending-faculty-review",
-    "reviewLabel": "Faculty-review draft",
+    "reviewStatus": "reviewed",
     "summaryPrompt": "Optional: give a brief summary for the team. Priya won't hear this part. What did she describe, what does she want, and what still needs clarification? Submit it only when you choose Review this moment.",
     "reflectionPrompts": [
       "What am I pulled to do?",

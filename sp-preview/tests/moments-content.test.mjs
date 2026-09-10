@@ -10,10 +10,10 @@ import {renderContent,checkGenerated} from '../bin/generate-moment-content.mjs';
 const projectionKeys=['id','revision','title','displayName','skill','task','setup','setupAttribution','durationLabel','maxTurns','reviewStatus','reviewLabel','summaryPrompt','reflectionPrompts','transferTargets','voiceLabel'].sort();
 const shared=['not_assessable','transcription_uncertain','simulation_drift','specific_opportunity_unanswered'];
 function assertFrozen(value){if(value&&typeof value==='object'){assert.ok(Object.isFrozen(value));for(const child of Object.values(value))assertFrozen(child);}}
-test('three complete draft definitions are deeply frozen and exclude unknown moments',()=>{
+test('three complete reviewed definitions are deeply frozen and exclude unknown moments',()=>{
  assert.equal(momentIds.length,3); assert.equal(getMoment('unknown'),undefined); assert.equal(getMoment('__proto__'),undefined); assert.equal(getMoment('toString'),undefined);
  assertFrozen(momentIds);
- for(const id of momentIds){const d=getMoment(id);assert.equal(d.schemaVersion,1);assert.equal(d.revision,1);assert.equal(d.maxTurns,4);assert.equal(d.reviewStatus,'draft-pending-faculty-review');assertFrozen(d);assert.ok(d.facts.length&&d.criteria.length&&d.actorDirections.length);assert.equal(d.speechProfile.speed,1);assert.ok(['marin','cedar'].includes(d.speechProfile.voice));
+ for(const id of momentIds){const d=getMoment(id);assert.equal(d.schemaVersion,1);assert.equal(d.revision,1);assert.equal(d.maxTurns,4);assert.equal(d.reviewStatus,'reviewed');assert.equal(d.reviewer,'Joshua Moss, MD');assert.equal(d.reviewedAt,'2026-09-09');assertFrozen(d);assert.ok(d.facts.length&&d.criteria.length&&d.actorDirections.length);assert.equal(d.speechProfile.speed,1);assert.ok(['marin','cedar'].includes(d.speechProfile.voice));
   const factIds=d.facts.map(f=>f.id);assert.equal(new Set(factIds).size,factIds.length);
   for(const criterion of d.criteria){for(const observation of [...criterion.observationIds,...shared])assert.ok(d.templates.observations[observation]);}
   for(const key of d.allowedUncertaintyIds)assert.ok(d.templates.uncertainties[key]);for(const key of d.allowedNextAttemptIds)assert.ok(d.templates.nextAttempts[key]);
@@ -23,7 +23,7 @@ test('three complete draft definitions are deeply frozen and exclude unknown mom
 test('literal public projection has exact keys and leaks no private canary at any level',()=>{
  for(const id of momentIds){const d=getMoment(id);const canary='PRIVATE_CANARY_DO_NOT_PUBLISH';const projected=publicProjection({...d,privateCanary:canary,facts:[{id:canary,text:canary}],criteria:[canary],actorDirections:[canary],templates:{observations:{secret:canary}},learner:{...d.learner,privateCanary:canary}});
  assert.deepEqual(Object.keys(projected).sort(),projectionKeys);assert.ok(!JSON.stringify(projected).includes(canary));assert.ok(projected.transferTargets.every(t=>momentIds.includes(t)&&t!==id));
- assert.equal(projected.reviewLabel,'Faculty-review draft');assert.ok(projected.reflectionPrompts.length);assert.equal(typeof projected.setupAttribution,'string');assert.ok(!/[\u0000-\u001f\u007f]/.test(projected.setup));assert.deepEqual(projected.transferTargets,[momentIds[(momentIds.indexOf(id)+1)%3],momentIds[(momentIds.indexOf(id)+2)%3]]);
+ assert.equal(projected.reviewLabel,undefined);assert.ok(projected.reflectionPrompts.length);assert.equal(typeof projected.setupAttribution,'string');assert.ok(!/[\u0000-\u001f\u007f]/.test(projected.setup));assert.deepEqual(projected.transferTargets,[momentIds[(momentIds.indexOf(id)+1)%3],momentIds[(momentIds.indexOf(id)+2)%3]]);
  }
  const elena=publicProjection(getMoment(momentIds[0]));assert.match(elena.setup,/Previous student/);assert.match(elena.setup,/At least now/);assert.ok(!elena.setup.includes('pay rent'));
  const priya=getMoment(momentIds[1]);assert.match(priya.facts.map(f=>f.text).join(' '),/not established.*previously took a medication/);assert.match(priya.learner.summaryPrompt,/Priya won't hear/);

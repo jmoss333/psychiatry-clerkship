@@ -39,8 +39,8 @@ const CASES = [
   {id: 'sp_depression_gated_si_001', name: 'Dana',   voice: 'Marin', doorNeedle: 'admitted voluntarily to adult inpatient psychiatry'},
   {id: 'sp_mania_redirect_001',      name: 'Marcus', voice: 'Cedar', doorNeedle: 'quad irrigation system'},
   {id: 'sp_psychosis_paranoid_001',  name: 'Ray',    voice: 'Cedar', doorNeedle: 'covering vents'},
-  {id: 'sp_alcohol_ambivalence_001', name: 'Morgan', voice: 'Marin', doorNeedle: 'addiction-medicine consultation', draft: true},
-  {id: 'family_morgan_maya_001', name: 'Morgan and Maya', voice: 'Marin and Cedar', doorNeedle: 'Maya, their adult daughter', draft: true},
+  {id: 'sp_alcohol_ambivalence_001', name: 'Morgan', voice: 'Marin', doorNeedle: 'addiction-medicine consultation', addedInExtension: true},
+  {id: 'family_morgan_maya_001', name: 'Morgan and Maya', voice: 'Marin and Cedar', doorNeedle: 'Maya, their adult daughter', addedInExtension: true},
 ];
 const FAMILY_ID = 'family_morgan_maya_001';
 
@@ -567,18 +567,16 @@ test.describe('hosted preview in a real browser under its deployed headers', () 
     expect(requests).toHaveLength(3);
   });
 
-  for (const patient of CASES.filter(item => item.draft)) {
-    test(`${patient.name}: draft review status and the new case fit a narrow mobile screen`, async ({page}) => {
+  for (const patient of CASES.filter(item => item.addedInExtension)) {
+    test(`${patient.name}: review note stays hidden now that faculty attested this case, and it fits a narrow mobile screen`, async ({page}) => {
       await page.setViewportSize({width: 320, height: 844});
       const {errors, violations} = await openPreview(page);
       await page.selectOption('#case-choice', patient.id);
-      await expect(page.locator('#case-review-note')).toBeVisible();
-      await expect(page.locator('#case-review-note')).toContainText('Faculty-review draft');
+      await expect(page.locator('#case-review-note')).toBeHidden();
       await expect(page.locator('#start')).toBeInViewport({ratio: 1});
       await startEncounter(page, patient.id);
       await expect(page.locator('#preview-root')).toHaveAttribute('data-phase', 'ready');
-      await expect(page.locator('#encounter-review-note')).toBeVisible();
-      await expect(page.locator('#encounter-review-note')).toContainText('Faculty-review draft');
+      await expect(page.locator('#encounter-review-note')).toBeHidden();
       await expect(page.locator('#patient-name')).toHaveText(patient.name);
       if (patient.id === FAMILY_ID) await expect(page.locator('#family-speaker-controls')).toBeVisible();
       else await expect(page.locator('#family-speaker-controls')).toBeHidden();
@@ -684,10 +682,10 @@ async function openMoment(page,index=0,recognition='unavailable'){
   const events=[{type:'review-start',state:'closed'},{type:'review-unavailable',code:'preview_review_unavailable'},{type:'review-complete',state:'closed'}];
   await route.fulfill({status:200,contentType:'application/x-ndjson',body:b.action==='debrief'?events.map(e=>JSON.stringify(e)+'\n').join(''):ndjson(b.action==='start'?(turn=0):b.action==='retry'?b.turnId:++turn)});
  });
- await page.selectOption('#experience-choice','moment');await page.selectOption('#case-choice',MOMENTS[index]);await page.fill('#preview-key','mock-preview-passcode');await page.click('#start');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase',recognition==='available'?'listening':'ready');return result;
+ await page.selectOption('#experience-choice','moment');await page.selectOption('#case-choice',MOMENTS[index]);await expect(page.locator('#case-review-note')).toBeHidden();await page.fill('#preview-key','mock-preview-passcode');await page.click('#start');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase',recognition==='available'?'listening':'ready');await expect(page.locator('#encounter-review-note')).toBeHidden();return result;
 }
 for(const [index,id] of MOMENTS.entries())test(`${id}: four responses, fallback, alternative and fresh transfer`,async({page})=>{
- const {requests,errors,violations}=await openMoment(page,index);await expect(page.locator('[data-moment="draft-label"]')).toHaveText('Faculty-review draft');
+ const {requests,errors,violations}=await openMoment(page,index);await expect(page.locator('[data-moment="draft-label"]')).toBeHidden();
  for(let i=0;i<4;i++){await page.fill('#composer','What matters to you?');await page.click('#send');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase',i===3?'ended':'ready');}
  await expect(page.locator('#turn-count')).toHaveText('4 of 4 responses');await page.locator('[data-moment="review"]').click();await expect(page.locator('[data-moment="review-fallback"]')).toBeVisible();expect(requests.filter(r=>r.action==='debrief')).toHaveLength(1);
  await page.locator('#moment-alternative-text').fill('Let me check what you mean.');await page.locator('[data-moment="submit-alternative"]').click();await expect(page.locator('[data-moment="alternative-result"]')).toBeVisible();await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','ended');expect(requests.filter(r=>r.action==='retry')).toHaveLength(1);

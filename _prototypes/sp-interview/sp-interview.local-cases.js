@@ -144,12 +144,12 @@
       evaluator: 'Give formative communication feedback for a fictional motivational-interviewing practice conversation. Use only the deterministic coverage map and quoted transcript. Do not diagnose, score readiness, or give medication or withdrawal-management advice. Return the required JSON schema.'
     },
     speechProfile: {
-      id:'morgan-marin-local-v1',status:'draft-pending-attestation',profileVersion:1,
+      id:'morgan-marin-local-v1',status:'reviewed',profileVersion:1,
       provider:null,providerModel:null,voiceId:'marin',voiceProvenance:'local prototype selection',
       cadence:'conversational-reflective',speakingRate:0.98,adapterMappingVersion:null,providerSettings:null,
-      stageDirections:'visual-only',facultyReview:{status:'pending',reviewer:null,reviewedAt:null,auditionId:null,profileHash:null}
+      stageDirections:'visual-only',facultyReview:{status:'reviewed',reviewer:'Joshua Moss, MD',reviewedAt:'2026-09-09',auditionId:null,profileHash:null}
     },
-    facultyReview:{status:'draft-pending-attestation',reviewer:null,lastReviewed:null}
+    facultyReview:{status:'reviewed',reviewer:'Joshua Moss, MD',lastReviewed:'2026-09-09'}
   };
 
   return {

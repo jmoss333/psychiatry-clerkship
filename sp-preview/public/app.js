@@ -177,7 +177,9 @@
       diagnostics:function(){return {nativeRecognition:nativeRecognition,sessions:serial,counts:Object.assign({},counts),events:trace.slice()};}};
   }
 
-  // New cases remain labeled faculty-review drafts; registration is not attestation.
+  // Registration alone is not attestation. Morgan and the family meeting were
+  // attested by Joshua Moss, MD on 2026-09-09; every case listed here now carries
+  // faculty-attested content.
   var CASE_IDS=['sp_depression_gated_si_001','sp_mania_redirect_001','sp_psychosis_paranoid_001','sp_alcohol_ambivalence_001',FAMILY_CASE_ID];
   function createController(env,options){
     options=options||{};var phase='gate',key='',receipt=null,turn=0,caseId=CASE_IDS[0],messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false,retryUsed=false;
@@ -442,7 +444,7 @@
     function momentProfile(id){return env.MomentContent&&env.MomentContent.getProfile(id);}
     function selectedProfile(){return momentProfile(el('case-choice').value)||(env.DanaStationContent&&env.DanaStationContent.getProfile(el('case-choice').value));}
     function previewCase(){var profile=selectedProfile();if(!profile)return;var moment=!!momentProfile(profile.id||el('case-choice').value);el('door-title').textContent=moment?profile.title:'Begin with '+profile.displayName+'’s story.';el('door-lede').textContent=moment?profile.task:'Introduce yourself and your role, invite the patient’s account, and close with a summary they can correct.';el('access-lede').textContent=moment?'Up to four responses. About 3–5 minutes; you can end early.':'Up to ten questions, at your pace.';el('case-preview-note').textContent=moment?profile.setup:profile.doorNote;el('case-preview-task').textContent=profile.task;if(el('case-review-note')){el('case-review-note').hidden=!profile.reviewLabel;el('case-review-note').textContent=profile.reviewLabel||'';}el('start').textContent=moment?'Start moment':'Start encounter';el('voice-experiment-options').hidden=el('faculty-voice-options').hidden=moment;}
-    function chooseFormat(){var moment=momentsEnabled&&el('experience-choice').value==='moment';if(!moment)el('experience-choice').value='full';el('case-choice').replaceChildren();var choices=moment&&env.MomentContent?env.MomentContent.ids().map(function(id){var p=momentProfile(id);return {value:id,text:p.displayName+' — '+p.title+' (faculty-review draft)'};}):fullChoices;choices.forEach(function(c){var o=doc.createElement('option');o.value=c.value;o.textContent=c.text;el('case-choice').appendChild(o);});previewCase();}
+    function chooseFormat(){var moment=momentsEnabled&&el('experience-choice').value==='moment';if(!moment)el('experience-choice').value='full';el('case-choice').replaceChildren();var choices=moment&&env.MomentContent?env.MomentContent.ids().map(function(id){var p=momentProfile(id);return {value:id,text:p.displayName+' — '+p.title+(p.reviewLabel?' ('+p.reviewLabel.toLowerCase()+')':'')};}):fullChoices;choices.forEach(function(c){var o=doc.createElement('option');o.value=c.value;o.textContent=c.text;el('case-choice').appendChild(o);});previewCase();}
     previewCase();el('case-choice').addEventListener('change',previewCase);el('experience-choice').addEventListener('change',chooseFormat);
     var followTranscript=true;
     function followLatest(){var log=el('transcript');followTranscript=log.scrollHeight-log.scrollTop-log.clientHeight<80;el('latest-message').hidden=followTranscript;}

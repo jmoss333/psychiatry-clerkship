@@ -4,6 +4,7 @@ import {randomUUID} from 'node:crypto';
 import {makeMomentHarness} from './fixtures/moments/runtime.mjs';
 import {getMoment} from '../lib/moments/catalog.mjs';
 import {createMomentCodec} from '../lib/moments/state.mjs';
+import {createMomentHandler} from '../lib/moments/handler.mjs';
 const id='moment_elena_rupture_001',fullId='sp_depression_gated_si_001';
 const turn=state=>({action:'turn',scenarioId:id,state,text:'What matters?',previousPlayback:'played',previousCompletedSegments:1});
 const review=state=>({action:'debrief',scenarioId:id,state,previousPlayback:'played',previousCompletedSegments:1,outputs:{teamFormulation:'',summaryUncertain:false},uncertainTurnIds:[],endReason:'learner_end'});
@@ -27,6 +28,38 @@ test('review failure closes once; encrypted representations cannot buy two alter
  const codec=createMomentCodec({definition:getMoment(id),env:h.env,origin:h.env.URL,now:()=>Date.UTC(2026,8,9,12)}),other=codec.seal(codec.open(r.state));
  const results=await Promise.all([h.raw({action:'retry',scenarioId:id,state:r.state,turnId:1,text:'Hello again'}),h.raw({action:'retry',scenarioId:id,state:other,turnId:1,text:'Different'})]);assert.equal(results.filter(r=>r.status===200).length,1);assert.equal(h.counts.review,1);
 });
+test('review failures are sorted into a bounded category, counted in diagnostics, and never leak provider text',async()=>{
+ let mode='provider_timeout';
+ const secret={provider_timeout:'LEAK_TIMEOUT_DETAIL',provider_invalid:'LEAK_PROTOCOL_DETAIL',citation_invalid:'LEAK_CITATION_DETAIL',budget:'LEAK_BUDGET_DETAIL',unknown:'LEAK_UNKNOWN_DETAIL'};
+ const evaluateMoment=async()=>{
+  if(mode==='citation_invalid')return {schemaVersion:1,scenarioId:'not-this-scenario',findings:[],leak:secret.citation_invalid};
+  if(mode==='provider_timeout')throw Object.assign(new Error(secret.provider_timeout),{code:'provider_timeout',category:'api'});
+  if(mode==='provider_invalid')throw Object.assign(new Error(secret.provider_invalid),{code:'protocol_final',category:'protocol'});
+  if(mode==='budget')throw Object.assign(new Error(secret.budget),{code:'preview_budget_exhausted'});
+  throw new Error(secret.unknown);
+ };
+ const h=makeMomentHarness({providerOverrides:{evaluateMoment}});
+ const handler=createMomentHandler({env:h.env,provider:h.provider,budget:h.budget(),now:()=>Date.UTC(2026,8,9,12)});
+ async function send(body){
+  const response=await handler(new Request(h.env.URL+'/api/practice-moment',{method:'POST',headers:{origin:h.env.URL,'x-preview-key':h.env.DANA_PREVIEW_PASSCODE,'content-type':'application/json'},body:JSON.stringify(body)}));
+  const text=await response.text();const events=response.ok?text.trim().split('\n').filter(Boolean).map(JSON.parse):[];
+  return {status:response.status,events,state:events.filter(e=>e.state).at(-1)?.state};
+ }
+ const expected={provider_timeout:0,provider_invalid:0,citation_invalid:0,budget:0,unknown:0};
+ for(const category of Object.keys(expected)){
+  mode=category;
+  const start=await send({action:'start',scenarioId:id,requestId:randomUUID()});assert.equal(start.status,200);
+  const turnResult=await send({action:'turn',scenarioId:id,state:start.state,text:'Hello',previousPlayback:'played',previousCompletedSegments:1});assert.equal(turnResult.status,200);
+  const r=await send({action:'debrief',scenarioId:id,state:turnResult.state,previousPlayback:'played',previousCompletedSegments:1,outputs:{teamFormulation:'',summaryUncertain:false},uncertainTurnIds:[],endReason:'learner_end'});
+  assert.equal(r.status,200);
+  const unavailable=r.events.find(e=>e.type==='review-unavailable');
+  assert.equal(unavailable.code,'preview_review_unavailable');
+  assert.equal(unavailable.category,category);
+  assert.equal(JSON.stringify(r.events).includes(secret[category]),false);
+  expected[category]++;
+  assert.deepEqual(handler.getDiagnostics(),expected);
+ }
+});
 test('full and moment share start operation IDs, budget and endpoint binding',async()=>{
  const h=makeMomentHarness(),requestId=randomUUID();const a=await h.raw({action:'start',scenarioId:id,requestId});assert.equal(a.status,200);
  assert.equal((await h.raw({action:'start',caseId:fullId,requestId},{full:true})).status,409);
@@ -35,6 +68,6 @@ test('full and moment share start operation IDs, budget and endpoint binding',as
  assert.equal((await h.raw({action:'start',scenarioId:id,requestId:randomUUID()})).error,'preview_daily_starts_exhausted');assert.equal(h.read().schemaVersion,2);assert.equal(h.read().limit,680);assert.equal(h.read().windowLimit,340);assert.equal(h.read().startLimit,20);
 });
 test('disabled, unauthorized and cross-deploy requests spend nothing',async()=>{
- const h=makeMomentHarness(),body={action:'start',scenarioId:id,requestId:randomUUID()};assert.equal((await h.raw(body,{envPatch:{DANA_MOMENTS_ENABLED:'false'}})).status,503);assert.equal((await h.raw(body,{headers:{'x-preview-key':'wrong'}})).status,403);assert.equal(h.reservations.length,0);
+ const h=makeMomentHarness(),body={action:'start',scenarioId:id,requestId:randomUUID()};assert.equal((await h.raw(body,{envPatch:{DANA_PREVIEW_ENABLED:'false'}})).status,503);assert.equal((await h.raw(body,{headers:{'x-preview-key':'wrong'}})).status,403);assert.equal(h.reservations.length,0);
  const s=await h.start();assert.equal((await h.raw(turn(s),{envPatch:{DEPLOY_ID:'new'}})).status,400);assert.equal(h.reservations.length,1);
 });

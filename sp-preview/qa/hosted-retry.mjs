@@ -11,6 +11,7 @@
 import fs from 'node:fs';
 const PREVIEW_URL=process.env.DANA_QA_URL;
 const ACCESS=process.env.DANA_QA_ACCESS_FILE;
+const CASE_ID=process.env.DANA_QA_CASE||'sp_depression_gated_si_001';
 if(!PREVIEW_URL||!ACCESS)throw new Error('Explicit DANA_QA_URL and DANA_QA_ACCESS_FILE are required; this proof makes paid API requests.');
 const output=process.env.DANA_QA_OUTPUT_DIR||new URL('../test-results/',import.meta.url).pathname;
 fs.mkdirSync(output,{recursive:true});
@@ -38,20 +39,20 @@ async function call(body,{paidRequest=true}={}){
 try{
   verify(!!passcode&&passcode.length>=15,'access_file');
   report.stage='start';
-  const opening=await call({action:'start',requestId:crypto.randomUUID()});
+  const opening=await call({action:'start',caseId:CASE_ID,requestId:crypto.randomUUID()});
   verify(opening.status===200&&opening.reply.turn===0,'start');
   let state=opening.state;
 
   report.stage='turns';
   for(const [n,text] of [[1,'Could you tell me what led to coming to the hospital?'],[2,'What has that been like for you?']]){
-    const turn=await call({action:'turn',state,text,previousPlayback:'played',previousCompletedSegments:n===1?1:2});
+    const turn=await call({action:'turn',caseId:CASE_ID,state,text,previousPlayback:'played',previousCompletedSegments:n===1?1:2});
     verify(turn.status===200&&turn.reply.turn===n,'turn_'+n);
     report.turns.push({turn:n,segments:turn.reply.segments.length});
     state=turn.state;
   }
 
   report.stage='retry';
-  const retry=await call({action:'retry',state,turnId:2,text:'Let me ask that a different way — what mattered most to you about coming in?'});
+  const retry=await call({action:'retry',caseId:CASE_ID,state,turnId:2,text:'Let me ask that a different way — what mattered most to you about coming in?'});
   verify(retry.status===200,'retry_status');
   // The alternative answers the turn it returned to, not a new one at the end.
   verify(retry.reply.turn===2,'retry_turn');
@@ -59,7 +60,7 @@ try{
   report.retrySegments=retry.reply.segments.length;
 
   report.stage='second_retry_refused';
-  const second=await call({action:'retry',state:retry.state,turnId:1,text:'A second alternative'},{paidRequest:false});
+  const second=await call({action:'retry',caseId:CASE_ID,state:retry.state,turnId:1,text:'A second alternative'},{paidRequest:false});
   verify(second.status===409&&second.error==='preview_encounter_finished','second_retry_refused');
   report.secondRetryError=second.error;
 
@@ -67,7 +68,7 @@ try{
   // continuation, or a turn from it would branch without the retried flag and a
   // second alternative could be asked. This check found exactly that on 2026-09-07.
   report.stage='pre_retry_receipt_refused';
-  const replay=await call({action:'turn',state,text:'Continuing from before the alternative',previousPlayback:'played',previousCompletedSegments:2},{paidRequest:false});
+  const replay=await call({action:'turn',caseId:CASE_ID,state,text:'Continuing from before the alternative',previousPlayback:'played',previousCompletedSegments:2},{paidRequest:false});
   verify(replay.status>=400,'pre_retry_receipt_refused');
   report.preRetryReceiptError=replay.error;
 

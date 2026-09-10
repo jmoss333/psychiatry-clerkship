@@ -45,7 +45,7 @@
     function section(title,key){var node=el('section',null,host,key);node.setAttribute('class','panel moment-panel');el('h2',title,node);return node;}
     if(host.classList)host.classList.add('moment-station');
     var brief=section(profile.title,'brief');
-    el('p',profile.reviewLabel,brief,'draft-label').setAttribute('class','moment-draft-label');
+    var draftLabel=el('p',profile.reviewLabel,brief,'draft-label');draftLabel.setAttribute('class','moment-draft-label');draftLabel.hidden=!profile.reviewLabel;
     el('p',profile.task,brief);el('p',profile.durationLabel+' · Up to '+profile.maxTurns+' responses. The estimate is not a cutoff.',brief);
     var setup=el('details',null,brief);setup.setAttribute('open','');el('summary',profile.setupAttribution||'Scripted setup',setup);el('p',profile.setup,setup);
     var status=el('p','',brief,'status');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
