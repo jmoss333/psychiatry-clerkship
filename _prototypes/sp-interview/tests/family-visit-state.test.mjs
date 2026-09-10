@@ -77,11 +77,11 @@ for(const roleId of ['morgan','maya'])test(roleId+' current private speech is pl
   assert.doesNotMatch(JSON.stringify(createActorContext(child,other)),/PRIVATE_LEARNER_SENTINEL|OWN_PRIVATE_SENTINEL|HEARD_PRIVATE_SENTINEL|UNHEARD_PRIVATE_SENTINEL/);
 });
 
-test('case is a hash-bound local draft preserving Morgan baseline and separately authored Maya limits',()=>{
+test('case is a hash-bound local case preserving Morgan baseline and separately authored Maya limits',()=>{
   assert.equal(familyCase.id,'family_morgan_maya_001');
   assert.match(caseHash,/^[a-f0-9]{64}$/);
-  assert.equal(familyCase.review.status,'draft-pending-faculty-review');
-  assert.equal(familyCase.review.reviewer,null);
+  assert.equal(familyCase.review.status,'reviewed');
+  assert.equal(familyCase.review.reviewer,'Joshua Moss, MD');
   assert.equal(familyCase.participants.morgan.pronouns,'they/them');
   assert.equal(familyCase.participants.maya.relationship,'adult daughter');
   assert.match(familyCase.sharedFacts.living,/Morgan lives alone/i);

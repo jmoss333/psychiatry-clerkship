@@ -39,8 +39,8 @@ const CASES = [
   {id: 'sp_depression_gated_si_001', name: 'Dana',   voice: 'Marin', doorNeedle: 'admitted voluntarily to adult inpatient psychiatry'},
   {id: 'sp_mania_redirect_001',      name: 'Marcus', voice: 'Cedar', doorNeedle: 'quad irrigation system'},
   {id: 'sp_psychosis_paranoid_001',  name: 'Ray',    voice: 'Cedar', doorNeedle: 'covering vents'},
-  {id: 'sp_alcohol_ambivalence_001', name: 'Morgan', voice: 'Marin', doorNeedle: 'addiction-medicine consultation', draft: true},
-  {id: 'family_morgan_maya_001', name: 'Morgan and Maya', voice: 'Marin and Cedar', doorNeedle: 'Maya, their adult daughter', draft: true},
+  {id: 'sp_alcohol_ambivalence_001', name: 'Morgan', voice: 'Marin', doorNeedle: 'addiction-medicine consultation', addedInExtension: true},
+  {id: 'family_morgan_maya_001', name: 'Morgan and Maya', voice: 'Marin and Cedar', doorNeedle: 'Maya, their adult daughter', addedInExtension: true},
 ];
 const FAMILY_ID = 'family_morgan_maya_001';
 
@@ -433,18 +433,16 @@ test.describe('hosted preview in a real browser under its deployed headers', () 
     expect(requests).toHaveLength(3);
   });
 
-  for (const patient of CASES.filter(item => item.draft)) {
-    test(`${patient.name}: draft review status and the new case fit a narrow mobile screen`, async ({page}) => {
+  for (const patient of CASES.filter(item => item.addedInExtension)) {
+    test(`${patient.name}: review note stays hidden now that faculty attested this case, and it fits a narrow mobile screen`, async ({page}) => {
       await page.setViewportSize({width: 320, height: 844});
       const {errors, violations} = await openPreview(page);
       await page.selectOption('#case-choice', patient.id);
-      await expect(page.locator('#case-review-note')).toBeVisible();
-      await expect(page.locator('#case-review-note')).toContainText('Faculty-review draft');
+      await expect(page.locator('#case-review-note')).toBeHidden();
       await expect(page.locator('#start')).toBeInViewport({ratio: 1});
       await startEncounter(page, patient.id);
       await expect(page.locator('#preview-root')).toHaveAttribute('data-phase', 'ready');
-      await expect(page.locator('#encounter-review-note')).toBeVisible();
-      await expect(page.locator('#encounter-review-note')).toContainText('Faculty-review draft');
+      await expect(page.locator('#encounter-review-note')).toBeHidden();
       await expect(page.locator('#patient-name')).toHaveText(patient.name);
       if (patient.id === FAMILY_ID) await expect(page.locator('#family-speaker-controls')).toBeVisible();
       else await expect(page.locator('#family-speaker-controls')).toBeHidden();

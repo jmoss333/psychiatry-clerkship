@@ -24,7 +24,7 @@ Neither mode is microphone evidence: both replace `SpeechRecognition`, and both 
 
 ## Cases
 
-The preview carries Dana (admission interview), Marcus (a focused interview), Ray (establishing a working conversation), Morgan (motivational interviewing), and Morgan and Maya (a shared family meeting). The learner picks one at the door and it is fixed for that encounter. Morgan and the family meeting retain their authored pending faculty-review status and are visibly labeled drafts.
+The preview carries Dana (admission interview), Marcus (a focused interview), Ray (establishing a working conversation), Morgan (motivational interviewing), and Morgan and Maya (a shared family meeting). The learner picks one at the door and it is fixed for that encounter. Morgan and the family meeting were attested by Joshua Moss, MD on 2026-09-09 and no longer carry a draft label; all five encounters now ship faculty-attested content.
 
 Each encounter is bound to its case twice over. The state codec's binding embeds
 the case id and a hash of the case definition, so a receipt sealed for one case

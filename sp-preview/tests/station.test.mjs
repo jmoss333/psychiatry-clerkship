@@ -376,11 +376,11 @@ test('family bookmarks and retries quote the actual respondent and keep unplayed
   station.dispose();
 });
 
-test('new draft profiles expose shared entry information without private inventories or portrayal',()=>{
+test('newly hosted profiles expose shared entry information without private inventories or portrayal',()=>{
   for(const caseId of ['sp_alcohol_ambivalence_001','family_morgan_maya_001']){
     const profile=contentModule.exports.getProfile(caseId);
-    assert.equal(profile.reviewStatus,'draft-pending-faculty-review');
-    assert.equal(profile.reviewLabel,'Faculty-review draft');
+    assert.equal(profile.reviewStatus,'reviewed');
+    assert.equal(profile.reviewLabel,undefined);
     const text=JSON.stringify(profile);
     for(const privatePhrase of ['four to six beers','three weeks','saying no to a monitoring role will be heard as not caring','privateFacts','portrayal'])
       assert.equal(text.includes(privatePhrase),false,caseId+' exposes '+privatePhrase);
