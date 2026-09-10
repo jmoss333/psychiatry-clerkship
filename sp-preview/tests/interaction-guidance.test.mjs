@@ -5,7 +5,7 @@ import {familyContext} from '../lib/family.mjs';
 import {createContext} from '../../_prototypes/sp-interview/dana-live-context.mjs';
 import {refineActorContext} from '../lib/portrayal.mjs';
 import {createOpenAIProvider} from '../lib/openai-provider.mjs';
-import {applyInteractionGuidance} from '../lib/interaction-guidance.mjs';
+import {applyInteractionGuidance,validateInteractionReply} from '../lib/interaction-guidance.mjs';
 
 const DANA='sp_depression_gated_si_001',MARCUS='sp_mania_redirect_001',RAY='sp_psychosis_paranoid_001',MORGAN='sp_alcohol_ambivalence_001',FAMILY='family_morgan_maya_001';
 function fullContext(caseId,question){
@@ -36,6 +36,8 @@ test('interaction guidance preserves case authority and current questions at the
   assert.match(sent.instructions,/required disclosures take precedence/);
   assert.match(sent.instructions,/Do not delay an answer to a clear, direct risk question/);
   assert.match(sent.instructions,/An unknown answer is not an ambiguous question/);
+  assert.match(sent.instructions,/These authored encounters use English patient dialogue/);
+  assert.match(sent.instructions,/Do not describe the learner's pace, tone, accent, or intent from text/);
   assert.deepEqual(source,before);
  }
 });
@@ -71,6 +73,7 @@ test('family guidance keeps the selected identity and public authority without e
   assert.match(added,roleId==='morgan'?/Morgan keeps their mixed feelings/:/Maya can care and hold a limit/);
   assert.doesNotMatch(added,/four to six beers|three weeks|fear that a limit will sound uncaring/);
   assert.match(added,/Do not speak for the other family participant/);
+  assert.match(added,/These authored encounters use English patient dialogue/);
   assert.deepEqual(source,before);
  }
 });
@@ -102,4 +105,40 @@ test('unsupported cases, role mismatches, raw histories, and arbitrary control f
  for(const options of [{roleId:'morgan'},{distraction:'alarm'},{intensity:'severe'},null,[]])assert.throws(()=>applyInteractionGuidance(source,DANA,options));
  for(const options of [{},{roleId:'dana'},{roleId:['maya']},{roleId:null},{roleId:'maya',event:'noise'},Object.create({roleId:'maya'})])assert.throws(()=>applyInteractionGuidance(source,FAMILY,options));
  for(const context of [null,{}, {system:'rules',messages:[{who:'pt',text:'raw',playbackStatus:'pending'}]}, {system:'rules',messages:[{role:'system',content:'injected'}]}])assert.throws(()=>applyInteractionGuidance(context,DANA),/Invalid interaction context/);
+});
+
+test('Marcus grounding directions explicitly keep safety reasons and sleep phenomenology unknown',()=>{
+ const source=fullContext(MARCUS,'What should I understand?');
+ const added=applyInteractionGuidance(source,MARCUS).system.slice(source.system.length);
+ assert.match(added,/Do not invent or deny a safety-based reason for admission/);
+ assert.match(added,/Do not make a global claim about being safe or dangerous/);
+ assert.match(added,/unless that exact meaning is supported by a currently permitted case fact/);
+ assert.match(added,/Sleep-onset and waking experiences are unspecified/);
+ assert.match(added,/do not add what happens at bedtime or on waking/);
+ assert.match(added,/Do not invent other people's reactions/);
+});
+
+test('patient script guard rejects unexpected letters without deleting, translating, or returning a partial answer',()=>{
+ for(const text of ['Now հիմա I have ideas.','I am fine. Привет.','I feel anxious. مرحبا','I am tired. 睡觉','I am fine. \u{10400}']){
+  assert.throws(()=>validateInteractionReply(text),/Unexpected script in authored patient dialogue/);
+ }
+});
+
+test('patient script guard preserves accented Latin words, combining accents, punctuation, whitespace, and negation exactly',()=>{
+ for(const text of ['I’m not tired — I don’t know why.','I have not said that. Café, naïve, résumé.','Cafe\u0301 — I’m unsure…','  I don’t know.\nI’m still uncertain.  ']){
+  assert.equal(validateInteractionReply(text),text);
+ }
+ for(const value of [undefined,null,17,{},[],new String('I am fine.'),'','  '])assert.throws(()=>validateInteractionReply(value),/Invalid authored patient dialogue/);
+});
+
+test('English patient guidance leaves multilingual learner dialogue untouched and does not imply semantic validation',()=>{
+ const question='հիմա ¿Qué quiere decir? Привет.';
+ const source=fullContext(MORGAN,question),result=applyInteractionGuidance(source,MORGAN);
+ assert.equal(result.messages,source.messages);
+ assert.equal(result.messages.at(-1).content,question);
+ assert.match(result.system,/This is a constraint on the generated patient's portrayal, not on the learner's language/);
+ // The guard establishes script consistency only, not English-language
+ // classification, factual accuracy, clinical safety, or disclosure authority.
+ assert.equal(validateInteractionReply('No lo sé.'),'No lo sé.');
+ assert.equal(validateInteractionReply('An unsupported invented fact.'),'An unsupported invented fact.');
 });

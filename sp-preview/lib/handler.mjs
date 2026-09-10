@@ -3,7 +3,7 @@ import {createContext,validateReply} from '../../_prototypes/sp-interview/dana-l
 import {getCase} from './case.mjs';
 import {FAMILY_CASE_ID,familyContext,roleSpeechCaseId} from './family.mjs';
 import {refineActorContext,isDeliveryIntensity} from './portrayal.mjs';
-import {applyInteractionGuidance} from './interaction-guidance.mjs';
+import {applyInteractionGuidance,validateInteractionReply} from './interaction-guidance.mjs';
 import {recommendFamilyBid} from './family-bids.mjs';
 import {roomCue,withRoomCue} from './room-cues.mjs';
 import {hash,problem,createStateCodec,initialState,nextHistory,issuedState,retryState} from './state.mjs';
@@ -116,10 +116,10 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
        let lead=null,leadJob=null,acceptingLead=true;
        const onLead=text=>{
         if(!acceptingLead||abort.signal.aborted)return;
-        if(lead!==null||roleId&&/\b(?:Maya|Morgan)\s*:/i.test(text.trim())||validateReply(text,{fragment:true})!==text)throw problem(502,'preview_provider_unavailable');
+        if(lead!==null||roleId&&/\b(?:Maya|Morgan)\s*:/i.test(text.trim())||validateInteractionReply(validateReply(text,{fragment:true}))!==text)throw problem(502,'preview_provider_unavailable');
         lead=text;if(!familyBid&&!/^(?:"[\s\S]*"|“[\s\S]*”)$/.test(text))leadJob=begin(text);
        };
-       try{reply=validateReply(await provider.replyStream({system:context.system,messages:context.messages,signal:abort.signal,onLead}));}
+       try{reply=validateInteractionReply(validateReply(await provider.replyStream({system:context.system,messages:context.messages,signal:abort.signal,onLead})));}
        finally{acceptingLead=false;}
        if(roleId&&/\b(?:Maya|Morgan)\s*:/i.test(reply.trim()))throw problem(502,'preview_provider_unavailable');
        if(lead!==null&&!reply.startsWith(lead))throw problem(502,'preview_provider_unavailable');

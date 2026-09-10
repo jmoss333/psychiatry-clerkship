@@ -74,10 +74,15 @@
   }
   function createReviewParser(options){
     var pending='',bytes=0,stage=0,closedState=null;
+    function unavailable(event){
+      // Accept the older two-field frame and the current bounded diagnostic
+      // category. Provider text and unknown fields never enter this fallback.
+      return (exact(event,['type','code'])||exact(event,['type','code','category'])&&['provider_timeout','provider_invalid','citation_invalid','budget','unknown'].includes(event.category))&&event.type==='review-unavailable'&&event.code==='preview_review_unavailable';
+    }
     function line(value){if(!value.trim())return;if(new TextEncoder().encode(value).length>32768)throw issue('protocol_error');var event;try{event=JSON.parse(value);}catch(_){throw issue('protocol_error');}
       if(stage===0&&exact(event,['type','state'])&&event.type==='review-start'&&token(event.state)){closedState=event.state;stage=1;options.onState&&options.onState(closedState);}
       else if(stage===1&&exact(event,['type','report'])&&event.type==='review'){var report=validateDisplayReview(event.report,options.scenarioId);stage=2;options.onReview&&options.onReview(report);}
-      else if(stage===1&&exact(event,['type','code'])&&event.type==='review-unavailable'&&event.code==='preview_review_unavailable'){stage=2;options.onUnavailable&&options.onUnavailable();}
+      else if(stage===1&&unavailable(event)){stage=2;options.onUnavailable&&options.onUnavailable();}
       else if(stage===2&&exact(event,['type','state'])&&event.type==='review-complete'&&event.state===closedState){stage=3;}
       else throw issue('protocol_error');
     }
@@ -389,7 +394,7 @@
       if(mode!=='full'||!Object.hasOwn(ROOM_CUES,id)||roomCue||phase==='gate'||ended||disposed||restartRequired||!receipt||turn>=maxTurns)return false;
       // The cue takes the floor under the same cancellation rules as Pause.
       // Text remains available even if this browser cannot play the short sound.
-      pause();roomCue={id:id,text:ROOM_CUES[id],turn:turn+1};cuePending=true;
+      var unfinished=interim;pause();roomCue={id:id,text:ROOM_CUES[id],turn:turn+1,unfinishedText:unfinished};cuePending=true;
       var AudioContext=env.AudioContext||env.webkitAudioContext;
       if(AudioContext)try{var ctx=new AudioContext();cueSound=ctx;var startAt=ctx.currentTime;
         for(var i=0;i<(id==='door_knock'?2:1);i++){var oscillator=ctx.createOscillator(),gain=ctx.createGain();oscillator.type=id==='door_knock'?'triangle':'sine';oscillator.frequency.value=id==='door_knock'?140:660;gain.gain.setValueAtTime(0,startAt+i*0.2);gain.gain.linearRampToValueAtTime(0.06,startAt+i*0.2+0.008);gain.gain.exponentialRampToValueAtTime(0.0001,startAt+i*0.2+0.12);oscillator.connect(gain);gain.connect(ctx.destination);oscillator.start(startAt+i*0.2);oscillator.stop(startAt+i*0.2+0.13);}
@@ -476,7 +481,7 @@
       el('status').textContent=statusLine(snapshot.phase,respondent);if(snapshot.phase==='speaking'&&snapshot.spokenInterrupt&&snapshot.turn<snapshot.maxTurns)el('status').textContent=respondent+' is speaking · microphone available';if(snapshot.mode==='moment'&&snapshot.captureTarget!=='patient')el('status').textContent=(snapshot.captureTarget==='team_formulation'?'Recording team formulation — patient conversation ended':'Recording one alternative response')+' · '+(snapshot.phase==='listening'?'Listening':'Microphone paused');
       if(el('family-speaker-controls')){el('family-speaker-controls').hidden=!active||!family;el('family-speaker-choice').disabled=!canSend;el('family-speaker-choice').value=snapshot.targetRoleId;}
       el('family-bid-offer').hidden=!family||!snapshot.familyBid||!canSend;el('family-bid-name').textContent=snapshot.familyBid?FAMILY_NAMES[snapshot.familyBid.speakerId]+' asked to add something.':'';
-      el('faculty-room-controls').hidden=!active||snapshot.mode!=='full';el('cue-knock').disabled=el('cue-chime').disabled=!!snapshot.roomCue||snapshot.phase==='ended'||snapshot.restartRequired||snapshot.turn>=snapshot.maxTurns;el('room-cue-notice').hidden=!snapshot.roomCue;el('room-cue-notice').textContent=snapshot.roomCue?'Faculty cue: '+snapshot.roomCue.text+' Resume the microphone or type when ready.':'';
+      el('faculty-room-controls').hidden=!active||snapshot.mode!=='full';el('cue-knock').disabled=el('cue-chime').disabled=!!snapshot.roomCue||snapshot.phase==='ended'||snapshot.restartRequired||snapshot.turn>=snapshot.maxTurns;el('room-cue-notice').hidden=!snapshot.roomCue;el('room-cue-notice').textContent=snapshot.roomCue?'Faculty cue: '+snapshot.roomCue.text+(snapshot.roomCue.unfinishedText?' Unfinished words: “'+snapshot.roomCue.unfinishedText+'”. These were not sent; repeat or copy them when ready.':'')+' Resume the microphone or type when ready.':'';
       if(family){el('patient-name').textContent='Morgan and Maya';el('interrupt-label').textContent='Interrupt '+respondent;}
       if(snapshot.phase==='listening'&&snapshot.hold)el('status').textContent='Listening — your turn is held';
       el('hint').textContent=snapshot.restartRequired?'The last request has an uncertain outcome. Clear and restart to continue.':snapshot.phase==='speaking'||snapshot.phase==='responding'?(snapshot.phase==='speaking'&&snapshot.spokenInterrupt&&snapshot.turn<snapshot.maxTurns?'Speak to take the floor. A brief acknowledgment lets the patient continue. Interrupt or Escape also stops the voice.':'Interrupt or press Escape to stop the voice. Then resume the microphone or type to continue.'):snapshot.phase==='ended'?'Bring what you learned and what remains uncertain to your supervisor.':snapshot.hold?'Your turn is held. Keep speaking or thinking, then choose Done speaking when ready.':snapshot.phase==='listening'?'Just speak. Your question sends itself once you stop — no click needed. Space sends it sooner.':'Take your time. You can speak, pause, or type.';

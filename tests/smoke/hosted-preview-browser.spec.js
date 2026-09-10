@@ -215,7 +215,7 @@ test('capability discovery offers no moments until the runtime explicitly enable
 });
 
 for(const capability of [
-  {label:'production flag off',capabilityResponse:{momentsEnabled:false}},
+  {label:'room runtime disabled',capabilityResponse:{momentsEnabled:false}},
   {label:'unavailable discovery',capabilityStatus:503,capabilityResponse:{momentsEnabled:false}},
   {label:'malformed discovery',capabilityResponse:{momentsEnabled:'true'}},
 ])test(`capability ${capability.label} keeps the working full encounters available`,async({page})=>{
@@ -309,6 +309,25 @@ test('faculty cue during patient audio cancels queued speech and End stops its s
   await page.click('#end');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','ended');
   expect(await page.evaluate(()=>window.__previewCueAudio[0].closed)).toBe(1);expect(requests).toHaveLength(1);
   await page.click('#clear');await expect(page.locator('#room-cue-notice')).toBeHidden();expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
+
+test('faculty cue preserves unfinished recognized words separately and waits for an explicit next turn',async({page})=>{
+  const {requests,errors,violations}=await openPreview(page,{recognition:'available',stubCueAudio:true});
+  await startEncounter(page,CASES[1].id);await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+  await page.clock.install();
+  await page.evaluate(()=>{window.__previewRecognition.emit('Let us');window.__previewRecognition.emit('focus on sleep',false);});
+  await expect(page.locator('#draft-text')).toHaveText('Let us');await expect(page.locator('#interim-text')).toHaveText('focus on sleep');
+  await page.locator('#faculty-room-controls summary').click();await page.click('#cue-knock');
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
+  await expect(page.locator('#draft-text')).toHaveText('Let us');await expect(page.locator('#composer')).toHaveValue('Let us');
+  await expect(page.locator('#room-cue-notice')).toContainText('focus on sleep');
+  expect(await page.evaluate(()=>window.__previewRecognition.instances.some(r=>r.active))).toBe(false);
+  await page.clock.fastForward(9000);expect(requests).toHaveLength(1);
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
+  await page.fill('#composer','Let us focus on sleep.');await page.click('#send');
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+  expect(requests[1].text).toBe('Let us focus on sleep.');expect(requests[1].roomCueId).toBe('door_knock');
+  await page.click('#end');expect(errors).toEqual([]);expect(violations).toEqual([]);
 });
 
 test.describe('hosted preview in a real browser under its deployed headers', () => {
@@ -607,7 +626,7 @@ test.describe('hosted preview in a real browser under its deployed headers', () 
     await expect(page.locator('.message.dana .name').last()).toHaveText('Maya');
     expect(requests.at(-1).targetRoleId).toBe('maya');
     await page.locator('[data-station="mark"]').click();
-    await expect(page.locator('[data-station="bookmarks"] blockquote')).toHaveText('Maya: A first sentence. A second sentence.');
+    await expect(page.locator('[data-station="bookmarks"] blockquote')).toHaveText(['Maya: A first sentence. A second sentence.', '']);
     await page.locator('[aria-label="Reflection on moment 1"]').fill('Ask Maya what support she can sustain.');
 
     await page.evaluate(() => window.__previewRecognition.emit('Morgan, what matters most to you?'));
@@ -619,11 +638,14 @@ test.describe('hosted preview in a real browser under its deployed headers', () 
     await expect(page.locator('.message.you .name').last()).toHaveText('You, to Morgan');
     await expect(page.locator('.message.dana .name').last()).toHaveText('Morgan');
     expect(requests.at(-1).targetRoleId).toBe('morgan');
-    await expect(page.locator('[data-station="bookmarks"] blockquote')).toHaveText('Maya: A first sentence. A second sentence.');
+    await expect(page.locator('[data-station="bookmarks"] blockquote')).toHaveText(['Maya: A first sentence. A second sentence.', '']);
 
     await page.locator('#end').click();
-    await expect(page.locator('[data-station="retry"] blockquote')).toContainText('You, to Maya:');
-    await expect(page.locator('[data-station="retry"] blockquote')).toContainText('Maya: A first sentence.');
+    await expect(page.locator('[data-station="retry"] blockquote')).toHaveText([
+      'You, to Maya: What support could work for you? — Maya: A first sentence. A second sentence.',
+      '',
+    ]);
+    await expect(page.locator('[data-station="retry"] blockquote').nth(1)).toBeHidden();
     await page.getByRole('textbox', {name: 'Your alternative question', exact: true}).fill('What would a weekly call involve?');
     await page.getByRole('button', {name: 'Ask this moment again', exact: true}).click();
     await expect(page.locator('.message.you')).toHaveCount(3);

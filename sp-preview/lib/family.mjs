@@ -5,6 +5,7 @@ import {hash,problem} from './state.mjs';
 export const FAMILY_CASE_ID=familyCase.id;
 const INVALID=()=>problem(400,'preview_input_invalid');
 const CONTROL=/[\u0000-\u001f\u007f]/;
+const SPOKEN_CONTROL=/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const ROLES=Object.freeze(Object.fromEntries(Object.values(familyCase.participants).map(person=>[
   person.id,Object.freeze({id:person.id,name:person.displayName,displayName:person.displayName,pronouns:person.pronouns,voice:person.voice,speechCaseId:person.speechCaseId})
 ])));
@@ -41,7 +42,7 @@ export const familyBinding=hash(JSON.stringify({caseHash,caseDef:familyCaseDef,c
 
 function checkedEntry(entry){
   if(!entry||typeof entry!=='object'||Array.isArray(entry)||!['me','pt'].includes(entry.who)
-    ||typeof entry.text!=='string'||!entry.text.trim()||entry.text.length>1200||CONTROL.test(entry.text))throw INVALID();
+    ||typeof entry.text!=='string'||!entry.text.trim()||entry.text.length>1200||(entry.who==='pt'?SPOKEN_CONTROL:CONTROL).test(entry.text))throw INVALID();
   const allowed=entry.who==='me'?['who','text','targetRoleId']:['who','text','speakerId','playbackStatus','omittedTail','familyBid'];
   if(Object.keys(entry).some(key=>!allowed.includes(key)))throw INVALID();
   familyRole(entry.who==='me'?entry.targetRoleId:entry.speakerId);

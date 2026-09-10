@@ -552,3 +552,15 @@ test('malformed presets, turn overrides and forged receipt values reserve no pai
  for(const deliveryIntensity of ['gentle','expressive'])assert.equal((await s.handler()(request({action:'retry',caseId:DANA,state,turnId:1,text:'A different question.',deliveryIntensity}))).status,400);
  assert.equal(s.calls.length,2);assert.equal(spoken.length,3);
 });
+
+test('unexpected patient script in a lead or final reply is never published; learner script is not inspected',async()=>{
+ for(const badLead of [false,true]){
+  const s=setup({provider:{replyStream:async job=>{job.onLead(badLead?'հիմա I feel fine.':'I have been feeling empty.');return 'I have been feeling empty. հիմա I feel fine.';}}});
+  const state=(await start(s)).at(-1).state;
+  const output=await events(await s.handler()(request({action:'turn',caseId:DANA,state,text:'Tell me more.',previousPlayback:'played',previousCompletedSegments:1})));
+  assert.deepEqual(output,[{type:'error',code:'preview_provider_unavailable'}]);
+ }
+ const s=setup();const state=(await start(s)).at(-1).state;
+ const output=await events(await s.handler()(request({action:'turn',caseId:DANA,state,text:'Բարեւ',previousPlayback:'played',previousCompletedSegments:1})));
+ assert.equal(output.at(-1).type,'complete');assert.equal(s.contexts[0].messages.at(-1).content,'Բարեւ');
+});

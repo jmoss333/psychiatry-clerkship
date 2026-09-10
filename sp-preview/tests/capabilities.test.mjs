@@ -1,15 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import path from 'node:path';
 import {readFile} from 'node:fs/promises';
 import {build} from 'esbuild';
 import {previewCapabilities,capabilitiesResponse} from '../lib/capabilities.mjs';
 import handler from '../netlify/functions/preview-capabilities.mjs';
 
 const context={deploy:{id:'actual-runtime-deploy'}};
-const enabled={DANA_PREVIEW_ENABLED:'true',DANA_MOMENTS_ENABLED:'true'};
+const enabled={DANA_PREVIEW_ENABLED:'true'};
 const request=method=>new Request('https://preview.test/api/preview-capabilities',{method});
 
-test('moment availability requires both exact runtime flags and a trusted invocation deployment',()=>{
+test('moment availability requires the exact room runtime flag and a trusted invocation deployment',()=>{
  assert.deepEqual(previewCapabilities(enabled,context),{momentsEnabled:true});
  for(const key of Object.keys(enabled))for(const value of [undefined,'false','TRUE','1',true]){
   assert.deepEqual(previewCapabilities({...enabled,[key]:value},context),{momentsEnabled:false});
@@ -36,12 +37,12 @@ test('capability reader refuses non-GET methods without inspecting configuration
  }
 });
 
-test('runtime function reads exactly the two flags and fails closed if configuration is unavailable',async()=>{
+test('runtime function reads only the room flag and fails closed if configuration is unavailable',async()=>{
  const saved=Object.getOwnPropertyDescriptor(globalThis,'Netlify');const reads=[];
  try{
   globalThis.Netlify={env:{get(key){reads.push(key);assert.ok(Object.hasOwn(enabled,key));return enabled[key];}}};
   assert.deepEqual(await handler(request('GET'),context).json(),{momentsEnabled:true});
-  assert.deepEqual(reads,['DANA_PREVIEW_ENABLED','DANA_MOMENTS_ENABLED']);reads.length=0;
+  assert.deepEqual(reads,['DANA_PREVIEW_ENABLED']);reads.length=0;
   assert.equal(handler(request('POST'),context).status,405);assert.deepEqual(reads,[]);
   globalThis.Netlify={env:{get(){throw new Error('unavailable');}}};
   assert.deepEqual(await handler(request('GET'),context).json(),{momentsEnabled:false});
@@ -52,7 +53,7 @@ test('capability function bundles only its pure reader and uses the explicit sam
  const entry=new URL('../netlify/functions/preview-capabilities.mjs',import.meta.url);
  const result=await build({entryPoints:[entry.pathname],bundle:true,platform:'node',target:'node22',format:'esm',write:false,metafile:true,logLevel:'silent'});
  const inputs=Object.keys(result.metafile.inputs);
- assert.equal(inputs.length,2);assert.ok(inputs.every(file=>file.endsWith('/lib/capabilities.mjs')||file.endsWith('/netlify/functions/preview-capabilities.mjs')));
+ assert.deepEqual(inputs.map(file=>path.resolve(file)).sort(),[new URL('../lib/capabilities.mjs',import.meta.url).pathname,entry.pathname].sort());
  const config=await readFile(new URL('../netlify.toml',import.meta.url),'utf8');
  assert.match(config,/from = "\/api\/preview-capabilities"\s+to = "\/\.netlify\/functions\/preview-capabilities"\s+status = 200\s+force = true/);
  assert.doesNotMatch(await readFile(entry,'utf8'),/export\s+const\s+config\s*=\s*\{[^}]*path\s*:/);

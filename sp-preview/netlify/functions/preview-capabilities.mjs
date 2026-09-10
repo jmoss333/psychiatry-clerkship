@@ -5,7 +5,6 @@ export default function handler(request,context){
  try{
   return capabilitiesResponse(request,{
    DANA_PREVIEW_ENABLED:Netlify.env.get('DANA_PREVIEW_ENABLED'),
-   DANA_MOMENTS_ENABLED:Netlify.env.get('DANA_MOMENTS_ENABLED'),
   },context);
  }catch{
   // Unknown availability never offers a mode whose endpoint may be disabled.

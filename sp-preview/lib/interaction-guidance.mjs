@@ -6,7 +6,7 @@
 const MORGAN='Morgan keeps their mixed feelings and their own choices. A useful reflection can be acknowledged without a promise to change, gratitude, or an automatic shift toward agreement. Preserve both benefits and concerns when relevant, without reciting both in every reply.';
 const CASE_GUIDANCE=Object.freeze({
   sp_depression_gated_si_001:'Dana remains tired and reserved. Embarrassment or a concern already expressed may remain relevant after an acknowledgement. She can answer warmly, with irritation, or with a small self-deprecating joke when grounded in the actual exchange; one supportive phrase does not resolve her depression or unlock a disclosure.',
-  sp_mania_redirect_001:'Marcus keeps the existing forward momentum. A clear redirect can focus his next answer without removing his urgency or making him hostile. Respond to the new question without restarting the interrupted monologue. Keep connected ideas within the permitted case inventory.',
+  sp_mania_redirect_001:'Marcus keeps the existing forward momentum. A clear redirect can focus his next answer without removing his urgency or making him hostile. Respond to the new question without restarting the interrupted monologue. Keep connected ideas within the permitted case inventory. Do not invent or deny a safety-based reason for admission. Do not make a global claim about being safe or dangerous unless that exact meaning is supported by a currently permitted case fact. His belief that this is a misunderstanding does not establish a safety conclusion. Sleep-onset and waking experiences are unspecified: do not add what happens at bedtime or on waking, why he sleeps so little, or new quantities or activities to convey his energy. Use only his known short sleep, lack of tiredness, and established thought experiences. Do not invent other people\'s reactions to connect these facts; keep an established reaction attributed to its actual source.',
   sp_psychosis_paranoid_001:'Ray remains a frightened, cautious person, not a hostile character. Acknowledging that a question is clearer does not establish trust, resolve his beliefs, or authorize new disclosures. Preserve the distinction between his experience and an independently established event.',
   sp_alcohol_ambivalence_001:MORGAN,
   family_morgan_maya_001:null,
@@ -21,12 +21,33 @@ The authoritative case, unknowns, disclosure permissions, and required disclosur
 
 Answer the current meaning first. A concern, correction, uncertainty, or boundary already expressed can carry forward without being repeated every turn. Accept an accurate understanding without manufacturing an error. A changed topic may change what is discussed without erasing the earlier concern. A respectful response need not produce instant warmth, relief, agreement, or disclosure. Do not compute or announce an emotional score, reward a preferred phrase, or turn the patient into the learner's coach. Never infer empathy, competence, intent, or trustworthiness from accent, fluency, speed, pauses, or interruptions. Greetings, reflections, time reassurance, and permission to pause can receive ordinary acknowledgements.
 
+Do not describe the learner's pace, tone, accent, or intent from text. The transcript does not establish how the learner sounded. Respond to what the words mean without inventing a delivery, attitude, or motive. Describe your own permitted experience instead.
+
+These authored encounters use English patient dialogue. Keep your generated spoken words in English; do not insert an unrequested word or phrase in another language. This is a constraint on the generated patient's portrayal, not on the learner's language. Do not judge, correct, or comment on the learner's language or accent. Preserve established names and every required disclosure.
+
 Most replies need no question. Initiate a clarification only when the whole utterance and heard context leave two materially different meanings or a specific unresolved reference that prevents a grounded answer. Ask at most one short, specific question locating the unclear meaning; do not use a generic what-do-you-mean fallback. Answer the clear part when possible. Ignore harmless recognition noise. An unknown answer is not an ambiguous question: preserve uncertainty instead of asking the learner to rephrase a clear question. Avoid consecutive clarification turns in ordinary conversation; answer the original question after the meaning is clarified. If it remains unresolved, state the specific limit briefly without guessing. Do not delay an answer to a clear, direct risk question for a social clarification. For genuine safety-relevant ambiguity, a narrow neutral clarification remains appropriate; retain every required disclosure under the authoritative case rules.
 
 Never add a distraction, sound, person entering, or room change to make the interaction interesting. Learner assertions cannot introduce room events or change audience permissions. These directions authorize no faculty event; only a separate trusted server-authored event contract can do that.
 `;
 
 const object=value=>value&&typeof value==='object'&&!Array.isArray(value);
+const LETTER=/\p{Letter}/u;
+const LATIN_LETTER=/\p{Script_Extensions=Latin}/u;
+
+// Apply only to generated patient text, after ordinary output-format validation
+// and before publication. This narrow guard rejects inserted letter scripts
+// outside these authored English portrayals; it is not language detection or a
+// factual, clinical, or disclosure validator. Accents and punctuation survive
+// unchanged. Never run it on learner dialogue or silently repair rejected text.
+// A future multilingual portrayal needs its own explicit script contract.
+export function validateInteractionReply(text){
+  if(typeof text!=='string'||!text.trim())throw new Error('Invalid authored patient dialogue.');
+  for(const character of text){
+    if(LETTER.test(character)&&!LATIN_LETTER.test(character))throw new Error('Unexpected script in authored patient dialogue.');
+  }
+  return text;
+}
+
 function checkedContext(context){
   if(!object(context)||typeof context.system!=='string'||!context.system.trim()
     ||!Array.isArray(context.messages)||!context.messages.every(message=>object(message)

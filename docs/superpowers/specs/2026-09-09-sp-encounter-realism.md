@@ -1,6 +1,6 @@
 # Spoken encounter realism: continuity, clarification, family bids and room cues
 
-The user authorized building these four features and publishing them to the existing protected live Interview Room. This is a bounded extension of the current five full encounters. It preserves accepted voice identities, faculty expression presets, optional spoken interruption, manual/text access, thinking time and the shared usage ledger. It does not attest clinical readiness or enable Practice a Moment in production.
+The user authorized building these four features and publishing them to the existing protected live Interview Room. This is a bounded extension of the current five full encounters. It preserves accepted voice identities, faculty expression presets, optional spoken interruption, manual/text access, thinking time and the shared usage ledger. It does not itself attest clinical readiness. The September 10 integration preserves the separate case attestations and single room-enablement setting already merged by Claude.
 
 1. **Emotional continuity.** Append case-specific guidance after canonical facts and heard-dialogue projection. Acknowledgement can change the immediate exchange without erasing depression, pressure, guardedness, ambivalence or a family boundary. No hidden sentiment/rapport score, learner fluency judgment or new clinical fact is introduced.
 2. **Patient clarification.** Ask one specific question only when meaning is materially ambiguous. Greetings, accurate reflections and a clear question with an unknown answer do not need clarification. Avoid consecutive clarification loops; clear risk questions and required disclosures retain priority.
@@ -11,7 +11,7 @@ The user authorized building these four features and publishing them to the exis
 
 No additional dependencies or public assets. No stored learner transcripts/audio. No changes to clinical facts, disclosure gates, passcode, ledger namespace, 20 daily starts, 680 daily units or 340 rolling units. Stop/Pause/Escape override simulated pressure or cue playback. Browser-generated room sounds require no provider call; text is available if sound cannot play.
 
-The production capability endpoint exposes only whether Moments is enabled. Failure hides that format; it never enables the endpoint. Production retains its existing disabled Moments flag. Build and deploy only the standalone Interview Room site, first staging then production, and verify the exact served assets and access refusals.
+The production capability endpoint exposes only whether Moments is enabled. Failure hides that format; it never enables the endpoint. Following merged PR #592, availability derives from DANA_PREVIEW_ENABLED; the retired DANA_MOMENTS_ENABLED setting is not read or restored. Build and deploy only the standalone Interview Room site, first staging then production, and verify the exact served assets and access refusals.
 
 ## Evidence required
 
