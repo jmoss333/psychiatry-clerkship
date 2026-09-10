@@ -32,7 +32,11 @@ const REMOTE = [MS3_URL, RES_URL, FACULTY_URL, SP_INTERVIEW_URL].some(isRemoteTa
 //
 // Keep this list small and production-truthful. Its composition is pinned by
 // tests/canary-scope.test.mjs — widen it deliberately, never as a side effect of a feature PR.
-const CANARY_SHARED_SPECS = ['nav-crawl.spec.js', 'governance-warnings.spec.js'];
+// contrast.spec.js earns its place by the rule above — production CAN be wrong about it in a
+// way a local build cannot. Every other colour guard in this repo reads a FILE; a resolved
+// cascade only exists in a browser, and that is where both 2026-09-10 defects lived (a private
+// palette that never flipped, and an injected block styled through an undefined namespace).
+const CANARY_SHARED_SPECS = ['nav-crawl.spec.js', 'governance-warnings.spec.js', 'contrast.spec.js'];
 const CANARY_MS3_SPECS = [...CANARY_SHARED_SPECS, 'qbank-retired.spec.js'];
 const CANARY_RES_SPECS = [...CANARY_SHARED_SPECS];
 
@@ -82,12 +86,12 @@ export default defineConfig({
   projects: [
     {
       name: 'nav-ms3',
-      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'qbank-retired.spec.js', 'aria-live.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
+      testMatch: ['nav-crawl.spec.js', 'contrast.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'qbank-retired.spec.js', 'aria-live.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: MS3_URL },
     },
     {
       name: 'nav-res',
-      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'communication-practice.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
+      testMatch: ['nav-crawl.spec.js', 'contrast.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'communication-practice.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: RES_URL },
     },
     // Production-only. See CANARY_SHARED_SPECS above for why these are narrower than nav-*.

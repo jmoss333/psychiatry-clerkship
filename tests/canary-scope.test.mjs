@@ -30,8 +30,11 @@ const config = fs.readFileSync(configPath, 'utf8');
 // the nav inventory matching what was deployed, and the governance/attestation surfaces actually
 // rendering to a learner. Client-side behaviour is byte-identical in the build CI already tests.
 const EXPECTED = {
-  'canary-ms3': ['nav-crawl.spec.js', 'governance-warnings.spec.js', 'qbank-retired.spec.js'],
-  'canary-res': ['nav-crawl.spec.js', 'governance-warnings.spec.js'],
+  'canary-ms3': [
+    'nav-crawl.spec.js', 'governance-warnings.spec.js', 'qbank-retired.spec.js',
+    'contrast.spec.js',
+  ],
+  'canary-res': ['nav-crawl.spec.js', 'governance-warnings.spec.js', 'contrast.spec.js'],
 };
 
 // A canary spec must be CHEAP, because every operation crosses the public internet to Netlify's
@@ -43,6 +46,11 @@ const EXPECTED = {
 //   in  : nav-crawl 4 · qbank-retired 5 · governance-warnings 8          (ceiling is ~4x the max)
 //   out : rotation-curator 35 · front-door 38 · communication-practice 50
 //         rotation-edition-v2 86 · frontdoor-runtime 220
+//
+// KNOWN LIMIT OF THIS METRIC, stated rather than worked around: it counts CALL SITES, so a spec
+// that loops under-reports. contrast.spec.js scores 2 and actually makes ~16 (4 routes x 2 themes,
+// one navigation and one evaluation each) — still inside the budget, and its header says so. If a
+// future canary spec loops harder, count what it RUNS, not what it reads.
 const ROUND_TRIP_BUDGET = 30;
 
 function readArray(name) {
