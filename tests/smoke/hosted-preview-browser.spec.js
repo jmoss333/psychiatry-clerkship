@@ -76,7 +76,7 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => { if (server) await new Promise(resolve => server.close(resolve)); });
 
-async function openPreview(page, {recognition = 'unavailable', manualAudio = false} = {}) {
+async function openPreview(page, {recognition = 'unavailable'} = {}) {
   const violations = [], errors = [];
   page.on('console', message => {
     const text = message.text();
@@ -97,7 +97,7 @@ async function openPreview(page, {recognition = 'unavailable', manualAudio = fal
     await route.fulfill({status: 200, contentType: 'application/x-ndjson; charset=utf-8', body: ndjson(at, speakerId)});
   });
   // Audio never really plays in a headless run; the encounter must still advance.
-  await page.addInitScript(({recognition, manualAudio}) => {
+  await page.addInitScript(({recognition}) => {
     // Capability is deliberate: Chromium advertises recognition even when the
     // headless environment cannot provide a usable microphone service.
     window.__previewRecognition = {instances: [], emit(text, isFinal = true) {
@@ -105,8 +105,7 @@ async function openPreview(page, {recognition = 'unavailable', manualAudio = fal
       if (!current) throw new Error('No active recognition session');
       const result = [{transcript: text}];
       result.isFinal = isFinal;
-      current.results ||= [];current.cursor ||= 0;current.results[current.cursor]=result;
-      if(isFinal)current.cursor++;current.onresult?.({results: current.results});
+      current.onresult?.({results: [result]});
     }};
     window.SpeechRecognition = recognition === 'available' ? class {
       constructor() { this.active = false; window.__previewRecognition.instances.push(this); }
@@ -114,20 +113,17 @@ async function openPreview(page, {recognition = 'unavailable', manualAudio = fal
       abort() { this.active = false; }
     } : undefined;
     window.webkitSpeechRecognition = undefined;
-    window.__previewAudio=[];
     window.Audio = function () {
       const listeners = {};
       const audio = {
         muted: true, playbackRate: 1,
         addEventListener(name, fn) { (listeners[name] ||= []).push(fn); },
-        pauses:0,plays:0,
-        removeEventListener() {}, pause() {audio.pauses++;}, removeAttribute() {}, load() {},
-        play() { audio.plays++;if(!manualAudio)setTimeout(() => { if (audio.onended) audio.onended(); (listeners.ended || []).forEach(fn => fn()); }, 0); return Promise.resolve(); },
+        removeEventListener() {}, pause() {}, removeAttribute() {}, load() {},
+        play() { setTimeout(() => { if (audio.onended) audio.onended(); (listeners.ended || []).forEach(fn => fn()); }, 0); return Promise.resolve(); },
       };
-      window.__previewAudio.push(audio);
       return audio;
     };
-  }, {recognition, manualAudio});
+  }, {recognition});
   await page.goto(base, {waitUntil: 'domcontentloaded'});
   return {violations, errors, requests};
 }
@@ -145,37 +141,6 @@ async function askTyped(page, text) {
   await page.locator('#send').click();
   await expect(page.locator('#preview-root')).toHaveAttribute('data-phase', 'ready');
 }
-
-for(const width of [1440,360])test(`spoken interruption and faculty controls at ${width}px`,async({page})=>{
-  await page.setViewportSize({width,height:900});const {violations,errors,requests}=await openPreview(page,{recognition:'available',manualAudio:true});
-  await expect(page.locator('#spoken-interrupt-entry')).not.toBeChecked();
-  await page.locator('#faculty-voice-options summary').click();await page.selectOption('#delivery-intensity','expressive');
-  await page.locator('#spoken-interrupt-entry').check();
-  await page.screenshot({path:`/tmp/sp-voice-entry-${width}.png`,fullPage:true});
-  await startEncounter(page,'sp_mania_redirect_001');await expect(page.locator('#status')).toContainText('microphone available');
-  expect(requests[0].deliveryIntensity).toBe('expressive');
-  await page.evaluate(()=>window.__previewRecognition.emit('A first sentence.'));
-  await expect(page.locator('#spoken-draft')).toBeHidden();await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','speaking');
-  await page.evaluate(()=>window.__previewRecognition.emit('Let us focus on sleep',false));
-  await expect(page.locator('#interim-text')).toHaveText('Let us focus on sleep');
-  await expect.poll(()=>page.evaluate(()=>window.__previewAudio[0].pauses)).toBe(1);
-  await page.evaluate(()=>window.__previewRecognition.emit('Let us focus on sleep'));
-  await expect(page.locator('#draft-text')).toHaveText('Let us focus on sleep');
-  await page.screenshot({path:`/tmp/sp-voice-interruption-${width}.png`,fullPage:true});
-  await expect.poll(()=>requests.length,{timeout:8000}).toBe(2);
-  expect(requests[1].text).toBe('Let us focus on sleep');expect(requests[1].previousCompletedSegments).toBe(0);
-  expect(requests[1].previousPlayback).toBe('interrupted');expect(requests[1].deliveryIntensity).toBeUndefined();
-  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','speaking');
-  await page.keyboard.press('Escape');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
-  expect(await page.evaluate(()=>window.__previewRecognition.instances.some(r=>r.active))).toBe(false);
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  expect(violations).toEqual([]);expect(errors).toEqual([]);
-});
-
-test('moment format hides full-encounter experimental settings',async({page})=>{
-  await openPreview(page,{recognition:'available'});await page.selectOption('#experience-choice','moment');
-  await expect(page.locator('#voice-experiment-options')).toBeHidden();await expect(page.locator('#faculty-voice-options')).toBeHidden();
-});
 
 test.describe('hosted preview in a real browser under its deployed headers', () => {
   for (const patient of CASES) {

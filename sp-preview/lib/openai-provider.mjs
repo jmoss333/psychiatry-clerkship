@@ -59,9 +59,9 @@ function actorInput(system,messages,stream,actorReasoning) {
   return value;
 }
 
-function speechInput(text,caseId,deliveryIntensity) {
+function speechInput(text,caseId) {
   if(typeof text!=='string'||!text.trim()||text.length>MAX_REPLY||CONTROL.test(text))throw fail('invalid_reply','validation');
-  let profile;try{profile=speechProfile(caseId,deliveryIntensity);}catch{throw fail('invalid_reply','validation');}
+  let profile;try{profile=speechProfile(caseId);}catch{throw fail('invalid_reply','validation');}
   return {model:SPEECH_MODEL,voice:profile.voice,input:text,instructions:profile.instructions,response_format:'mp3',speed:profile.speed??1.0};
 }
 
@@ -283,17 +283,17 @@ export function createOpenAIProvider({env=process.env,fetchImpl=globalThis.fetch
       const input=actorInput(system,messages,true,actorReasoning);
       return request('actor','/responses',input,signal,(response,signal,setUsage)=>readActorStream(response,signal,onLead,setUsage));
     },
-    async speak({text,signal,caseId,deliveryIntensity}={}) {
+    async speak({text,signal,caseId}={}) {
       // No default: an omitted case would speak a reply in the wrong patient's voice.
       if(typeof caseId!=='string'||!caseId)throw fail('invalid_reply','validation');
       const chunks=[];
-      await request('speech','/audio/speech',speechInput(text,caseId,deliveryIntensity),signal,(response,signal)=>readSpeech(response,signal,chunk=>chunks.push(chunk)));
+      await request('speech','/audio/speech',speechInput(text,caseId),signal,(response,signal)=>readSpeech(response,signal,chunk=>chunks.push(chunk)));
       return Buffer.concat(chunks);
     },
-    async speakStream({text,signal,onChunk,caseId,deliveryIntensity}={}) {
+    async speakStream({text,signal,onChunk,caseId}={}) {
       if(typeof caseId!=='string'||!caseId)throw fail('invalid_reply','validation');
       if(typeof onChunk!=='function')throw fail('invalid_reply','validation');
-      return request('speech','/audio/speech',speechInput(text,caseId,deliveryIntensity),signal,(response,signal)=>readSpeech(response,signal,onChunk));
+      return request('speech','/audio/speech',speechInput(text,caseId),signal,(response,signal)=>readSpeech(response,signal,onChunk));
     },
   };
 }
