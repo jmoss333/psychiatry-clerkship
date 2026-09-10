@@ -24,9 +24,17 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
    hooks run. If deployed audio is stale or 404s, a normal redeploy won't fix it — use
    **"Deploy without cache"** (Deploys → Trigger deploy → *Clear cache and deploy site*),
    which exists **only in the Netlify dashboard UI**. Drive it via claude-in-chrome.
-3. **Do NOT use the Cowork Netlify MCP** (server `493cbbb2…`) for these sites — it is
-   authenticated to a different account and 404s them (found 2026-07-03). Dashboard via
-   claude-in-chrome is the working path for env vars and deploys.
+3. **The Cowork Netlify MCP DOES reach these sites** — re-verified 2026-09-10. An older
+   version of this trap said it was authenticated to a different account and 404'd them
+   (2026-07-03); that has not been true for some time. `get-projects` returns
+   `une-ms3-psychiatry` (`94717a39-679b-4c78-ae02-7b19e809592e`) and
+   `mmc-psychiatry-residents-sanford` (`af64d5d4-e0b5-4f03-9857-be40e3b48329`), both on
+   team `698be853…`, plan `nf_team_pro`. **Prefer the MCP for reads** — project state,
+   deploy status, env vars — it is far cheaper than driving the dashboard. The dashboard
+   via claude-in-chrome is still the only path for trap 2's clear-cache deploy and for
+   rollback. Lesson: a stale *negative* assertion in a skill is self-sealing — it tells
+   every future session not to test the thing, so it can never correct itself. Re-verify
+   any "do NOT use X" line here before obeying it.
 4. **Nothing in this repo may cancel a Netlify build.** Netlify records an ignore-command
    cancel as a *failed* deploy (`state: error`, "Canceled build due to no content change")
    and the sites' "Deploy failed" email fires on it, so the old build-ignore hook
