@@ -9,6 +9,23 @@ import {hash,problem,nextHistory,issuedState} from '../state.mjs';
 const HEADERS={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
 const safeCodes=new Set(['preview_unavailable','preview_forbidden','preview_input_invalid','preview_state_invalid','preview_session_expired','preview_encounter_finished','preview_operation_duplicate','preview_operation_mismatch','preview_daily_starts_exhausted','preview_budget_exhausted','preview_window_exhausted','preview_budget_unavailable','preview_budget_contention','preview_provider_unavailable','preview_cancelled']);
 function safeError(error){return safeCodes.has(error?.code)?error.code:'preview_provider_unavailable';}
+// Bounded review-failure categories: the debrief path (~line 100) never sends the
+// caller free text or a provider error message, only one of these enum values.
+// evidence.mjs's validateDebrief/validateReviewSources signal a malformed or
+// miscited AI review with a bare `moment_review_invalid` message and no `.code`;
+// the OpenAI provider's own ProviderError carries `.code`/`.category` (see
+// openai-provider.mjs's CATEGORIES map) for everything from a slow response to a
+// malformed provider payload. `budget` is included for completeness/future-proofing
+// even though today's budget reservation happens before this stream starts.
+const REVIEW_FAILURE_CATEGORIES=['provider_timeout','provider_invalid','citation_invalid','budget','unknown'];
+const reviewBudgetCodes=new Set(['preview_budget_exhausted','preview_budget_contention','preview_budget_unavailable','preview_window_exhausted','preview_daily_starts_exhausted']);
+function reviewFailureCategory(error){
+ if(error?.message==='moment_review_invalid')return 'citation_invalid';
+ if(reviewBudgetCodes.has(error?.code))return 'budget';
+ if(error?.code==='provider_timeout')return 'provider_timeout';
+ if(['api','protocol','output','validation'].includes(error?.category))return 'provider_invalid';
+ return 'unknown';
+}
 function same(a,b){return timingSafeEqual(Buffer.from(hash(a)),Buffer.from(hash(b)));}
 const object=value=>value&&typeof value==='object'&&!Array.isArray(value);
 const exact=(value,keys)=>object(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.hasOwn(value,key));
@@ -22,11 +39,15 @@ async function inputBody(request){
 const validAudio=bytes=>Buffer.isBuffer(bytes)&&bytes.length>=100&&bytes.length<=4000000&&(bytes.subarray(0,3).toString()==='ID3'||bytes[0]===255&&(bytes[1]&224)===224);
 
 export function createMomentHandler({env=process.env,provider,budget,now=Date.now,deadlineMs=50000}={}) {
- return async function handler(request){
+ // getDiagnostics()-style counts, scoped to this handler instance (a fresh one
+ // per invocation in production, same as the provider's own getDiagnostics()).
+ // Never records free text: only one of REVIEW_FAILURE_CATEGORIES per failure.
+ const reviewFailureCounts=Object.fromEntries(REVIEW_FAILURE_CATEGORIES.map(category=>[category,0]));
+ const handler=async function handler(request){
   let state,history,action,codec,definition,reviewBody;
   try{
    const secret=env.DANA_PREVIEW_PASSCODE;
-   if(env.DANA_MOMENTS_ENABLED!=='true'||env.DANA_PREVIEW_ENABLED!=='true'||typeof secret!=='string'||secret.length<15||!env.DEPLOY_ID||!provider?.configured||!budget)throw problem(503,'preview_unavailable');
+   if(env.DANA_PREVIEW_ENABLED!=='true'||typeof secret!=='string'||secret.length<15||!env.DEPLOY_ID||!provider?.configured||!budget)throw problem(503,'preview_unavailable');
    const origin=request.headers.get('origin'),allowed=[env.DEPLOY_URL,env.URL,env.DANA_PREVIEW_ORIGIN].filter(Boolean);
    if(!origin||!allowed.includes(origin)||new URL(request.url).origin!==origin||!same(request.headers.get('x-preview-key')||'',secret))throw problem(403,'preview_forbidden');
    if(request.method!=='POST')throw problem(405,'preview_input_invalid');
@@ -97,7 +118,7 @@ export function createMomentHandler({env=process.env,provider,budget,now=Date.no
         const raw=await provider.evaluateMoment({...context,signal:abort.signal});
         const report=validateDebrief(raw,reviewBody.sources,definition,{endReason:reviewBody.endReason});
         send({type:'review',report});
-       }catch(error){if(abort.signal.aborted)throw error;send({type:'review-unavailable',code:'preview_review_unavailable'});}
+       }catch(error){if(abort.signal.aborted)throw error;const category=reviewFailureCategory(error);reviewFailureCounts[category]++;send({type:'review-unavailable',code:'preview_review_unavailable',category});}
        send({type:'review-complete',state:closedReceipt});return;
       }
       let reply,segments,jobs;
@@ -146,4 +167,6 @@ export function createMomentHandler({env=process.env,provider,budget,now=Date.no
   });
   return new Response(stream,{status:200,headers:{...HEADERS,'Content-Type':'application/x-ndjson; charset=utf-8'}});
  };
+ handler.getDiagnostics=()=>({...reviewFailureCounts});
+ return handler;
 }

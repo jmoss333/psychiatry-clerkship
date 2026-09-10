@@ -6,7 +6,7 @@ import {createPreviewBudget} from '../../../lib/budget.mjs';
 export function makeMomentHarness({now,providerOverrides={}}={}){
  let time=Date.UTC(2026,8,9,12),record=null,etag=0;now=now||(()=>time);
  const counts={actor:0,review:0,speech:0},reservations=[],contexts=[];
- const env={DANA_PREVIEW_ENABLED:'true',DANA_MOMENTS_ENABLED:'true',DANA_PREVIEW_PASSCODE:'fictional-test-passcode',DANA_PREVIEW_STATE_KEY:Buffer.alloc(32,4).toString('base64url'),DEPLOY_ID:'fixture-deploy',URL:'https://fixture.test',DANA_PREVIEW_BUDGET_NAMESPACE:'shared-fixture'};
+ const env={DANA_PREVIEW_ENABLED:'true',DANA_PREVIEW_PASSCODE:'fictional-test-passcode',DANA_PREVIEW_STATE_KEY:Buffer.alloc(32,4).toString('base64url'),DEPLOY_ID:'fixture-deploy',URL:'https://fixture.test',DANA_PREVIEW_BUDGET_NAMESPACE:'shared-fixture'};
  const store={async getWithMetadata(){return record?{data:structuredClone(record),etag:String(etag)}:null;},async set(key,value,opts){await Promise.resolve();if(opts.onlyIfNew&&record||opts.onlyIfMatch!==undefined&&opts.onlyIfMatch!==String(etag))return {modified:false};record=JSON.parse(value);return {modified:true,etag:String(++etag)};}};
  const provider={configured:true,async speak(){counts.speech++;return Buffer.concat([Buffer.from('ID3'),Buffer.alloc(157)]);},async replyStream(context){counts.actor++;contexts.push(context);return 'What matters to me is being understood.';},async evaluateMoment(context){counts.review++;contexts.push(context);throw Error('fixture evaluator unavailable');},...providerOverrides};
  function budget(){const real=createPreviewBudget({store,namespace:env.DANA_PREVIEW_BUDGET_NAMESPACE,now});return {async reserve(r){const result=await real.reserve(r);reservations.push(r);return result;}};}

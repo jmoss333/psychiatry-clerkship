@@ -1,10 +1,10 @@
-# Practice a Moment (faculty-review drafts)
+# Practice a Moment
 
-The protected room now includes Elena, Priya and Luis moments alongside all five full encounters. Read [the requirement audit and faculty audition packet](PRACTICE_MOMENT_ACCEPTANCE.md) for evidence and remaining decisions. The mode uses `/api/practice-moment` and requires both `DANA_PREVIEW_ENABLED=true` and `DANA_MOMENTS_ENABLED=true`. The latter is non-secret and defaults off unless explicitly configured. Staging enablement does not enable production.
+The protected room now includes Elena, Priya and Luis moments alongside all five full encounters. Read [the requirement audit and faculty audition packet](PRACTICE_MOMENT_ACCEPTANCE.md) for evidence and remaining decisions. The mode uses `/api/practice-moment` and requires `DANA_PREVIEW_ENABLED=true`, the same gate as every other mode in this room; there is no separate moments-only flag. Staging enablement does not enable production. Joshua Moss, MD, attested Elena, Priya and Luis's authored content (case setup, facts, review criteria and templates) on 2026-09-09 — `reviewStatus` in the catalog is `reviewed` and the learner-facing draft label is gone from all three. That attestation covers the exercises' content; it does not itself establish a live AI-review or physical-microphone pass — see "Still not verified" below and the requirement audit's remaining external evidence.
 
 Each moment allows four patient-facing responses, one three-unit review and one three-unit terminal alternative: at most 19 reserved operation units and one start. It shares the existing budget namespace and 20/680/340 policy. Review consumes the current continuation before evaluation; unavailable feedback stays closed and falls back to authored reflection prompts. Transfers require a fresh normally budgeted start.
 
-Private reflection and the existing attending presentation stay in page memory. The separate optional Priya **Team formulation — included in AI feedback** goes to review only after explicit submission. No transcripts/audio are persisted, no dialogue is logged, and no analytics or faculty attestation is added. Actor facts/rubrics stay in the function bundle; seven explicit browser assets ship. Disabling only `DANA_MOMENTS_ENABLED` contains the new mode without changing full encounters or the ledger.
+Private reflection and the existing attending presentation stay in page memory. The separate optional Priya **Team formulation — included in AI feedback** goes to review only after explicit submission. No transcripts/audio are persisted, no dialogue is logged, and no analytics are added. Actor facts/rubrics stay in the function bundle; seven explicit browser assets ship.
 
 ---
 
