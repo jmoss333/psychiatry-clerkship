@@ -121,6 +121,18 @@
   --fd-font-2xl:26px;   /* section title */
   --fd-font-3xl:30px;   /* page title (.fd-h1) */
 
+  /* Glyph sizes. NOT the type scale: these are the em-box of a single character
+   * centred inside a fixed-size circle or square — a check mark in a 20px dot, the
+   * wordmark ψ in a 30px tile, a back arrow in a 38px button. They are metrics of
+   * the shape, not of the reading, so the 11px text floor does not apply and never
+   * should: raising a 9px check mark to 11px overflows its 16px dot.
+   * Kept as tokens anyway so the drift gate can tell the two cases apart instead of
+   * reporting eight legitimate glyphs as sub-floor text. */
+  --fd-glyph-xs:9px;    /* check / dot marks in 16-20px circles */
+  --fd-glyph-sm:16px;   /* icon buttons in 34-38px boxes */
+  --fd-glyph-md:18px;   /* header wordmark in its 30px tile */
+  --fd-glyph-lg:22px;   /* setup wordmark in its 38px tile */
+
   /* Line height — paired with the type scale, not chosen per rule. */
   --fd-leading-tight:1.2;   /* display sizes */
   --fd-leading-snug:1.35;   /* titles */

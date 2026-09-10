@@ -83,10 +83,27 @@ it is a snap, not a redesign.
 | `--fd-font-2xl` | 26 | 24, 26 | section title |
 | `--fd-font-3xl` | 30 | 29, 30, 31 | page title (`.fd-h1`) |
 
-**11px is the floor.** Nothing learner-facing goes below it. Sixteen declarations currently do
-(9–10.5px: `.fd-chip`, `.fd-kbd`, `.fd-attested`, `.fd-consistency__label`, the timeline and
-prev/next kickers) and are pinned as debt in `design_drift_baseline.json`. The count may fall; it
-may not rise.
+**11px is the floor.** Nothing learner-facing goes below it. Thirteen declarations were below it
+(`.fd-chip`, `.fd-kbd`, `.fd-attested`, `.fd-consistency__label`, the timeline and prev/next
+kickers, the edition-card labels) and all thirteen now sit at `--fd-font-2xs`. `frontdoor.css` is
+**at zero** sub-floor declarations; the ratchet holds it there.
+
+### 2.2.1 Glyph sizes are not type
+
+Three of the original sixteen "sub-floor" values were never text: a 9px check mark centred in a
+16–20px dot, and the same shape in `.fd-railnav__dot` and `.fd-block__check`. Raising those to 11px
+overflows the circle. The same is true at the other end — `.fd-logo` at 18px is a wordmark ψ inside
+a 30px tile, and `.fd-themebtn` at 16px is an icon in a 34px button.
+
+These are metrics of a **shape**, not of reading, so the text floor does not apply. They get their
+own small family so the gate can tell the two cases apart instead of reporting eight legitimate
+glyphs as accessibility debt:
+
+`--fd-glyph-xs` 9px (marks in 16–20px circles) · `--fd-glyph-sm` 16px (icon buttons in 34–38px
+boxes) · `--fd-glyph-md` 18px (header wordmark) · `--fd-glyph-lg` 22px (setup wordmark).
+
+If a value belongs to a box you sized, it is a glyph. If it belongs to something someone reads, it
+is type.
 
 Line height is paired to the scale, not chosen per rule: `--fd-leading-tight` 1.2 (display),
 `--fd-leading-snug` 1.35 (titles), `--fd-leading-normal` 1.55 (UI — the shell default),
@@ -221,14 +238,22 @@ Ratcheted, not big-bang. Each step is independently shippable and lowers a numbe
 | # | Step | Ends with |
 |---|---|---|
 | 1 | *(done 2026-09-10)* Token layer, role split, contrast fixes, C1–C5 + ratchets | `LIGHT_DEBT` empty; 36 dark orphans closed |
-| 2 | Migrate `frontdoor.css` `font-size` to `--fd-font-*` | `distinct_font_sizes` 26 → 9; sub-floor 16 → 0 |
+| 1b | *(done 2026-09-10)* `--cw-*` namespace + C6 (§4.1) | crisis block flips; 18 surfaces fixed |
+| 2 | *(done 2026-09-10)* `frontdoor.css` type → `--fd-font-*` / `--fd-glyph-*` | **26 → 1** raw sizes; sub-floor **16 → 0**; 517 → 365 raw dimensions |
 | 3 | Migrate `frontdoor.css` `border-radius` and `gap` | `raw_dimension_declarations` 517 → ~330 |
 | 4 | Convert `spa_index.html`'s rem type to the same px scale | one type convention; 37 → 9 |
 | 5 | Fold the 9 non-standard breakpoints into sm/md/lg | breakpoint debt → 0 |
 | 6 | Migrate the five private-palette tool pages to `--fd-*` | delete §4's remediation block |
 
 Do **2 before 3**: type is where the sub-11px accessibility debt lives, and it is the only ratchet
-with a learner-visible floor.
+with a learner-visible floor. *(Done — what it cost: 88 of 153 declarations did not move at all,
+59 moved by 0.5px, 4 by 1px, and exactly two moved further: `.fd-article__body h3` 18→21 and `h2`
+24→26. Those two are a deliberate improvement — the article ladder was 16.5 / 18 / 24 / 29, ratios
+1.09 / 1.33 / 1.21, and an h3 only 1.5px above its body text is not a heading. It is now
+17 / 21 / 26 / 30 — 1.24 / 1.24 / 1.15.)*
+
+Step 3 is now the cheap one: the same rule-walking migration applied to `border-radius` and `gap`,
+with no judgement calls at the display end, because radius and gap have no reading ladder.
 
 ---
 
