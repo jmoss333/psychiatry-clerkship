@@ -45,6 +45,12 @@
           {
             "context": "Smoke tests (nav crawl \u00b7 faculty console \u00b7 LFS \u00b7 visual)",
             "integration_id": 15368
+          },
+          {
+            "context": "netlify/une-ms3-psychiatry/deploy-preview"
+          },
+          {
+            "context": "netlify/mmc-psychiatry-residents-sanford/deploy-preview"
           }
         ],
         "strict_required_status_checks_policy": false
