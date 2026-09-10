@@ -23,7 +23,9 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
 2. **Stale LFS assets after deploy.** Netlify fetches LFS during clone, *before* build
    hooks run. If deployed audio is stale or 404s, a normal redeploy won't fix it — use
    **"Deploy without cache"** (Deploys → Trigger deploy → *Clear cache and deploy site*),
-   which exists **only in the Netlify dashboard UI**. Drive it via claude-in-chrome.
+   which exists **only in the Netlify dashboard UI** — re-verified 2026-09-10: the
+   Cowork Netlify MCP's only write operation is `deploy-site`, which takes a `siteId`
+   and nothing else, so it cannot clear the build cache. Drive it via claude-in-chrome.
 3. **The Cowork Netlify MCP DOES reach these sites** — re-verified 2026-09-10. An older
    version of this trap said it was authenticated to a different account and 404'd them
    (2026-07-03); that has not been true for some time. `get-projects` returns
@@ -38,8 +40,12 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
 4. **Nothing in this repo may cancel a Netlify build.** Netlify records an ignore-command
    cancel as a *failed* deploy (`state: error`, "Canceled build due to no content change")
    and the sites' "Deploy failed" email fires on it, so the old build-ignore hook
-   (`netlify-ignore.sh`) was retired on 2026-09-03 and every `netlify.toml` sets
-   `ignore = "/bin/false"` (always build). Doc-only pushes now build (~40 s, byte-identical
+   (`netlify-ignore.sh`) was retired on 2026-09-03. Re-verified 2026-09-10: no ignore
+   script is tracked anywhere, and five of the six tracked `netlify.toml` files set
+   `ignore = "/bin/false"` (always build) — root, `faculty-console/`, `metrics/`,
+   `sp-proxy/`, `13_Faculty_Resources/Outreach/alex-tour/`. **`sp-preview/netlify.toml`
+   sets no `ignore` key**, so that one site can still take Netlify's default
+   skip-if-unchanged behaviour and log it as an error. Doc-only pushes now build (~40 s, byte-identical
    output, no service-worker cache churn). A "Canceled" entry in a deploy list means
    someone re-introduced an ignore rule; "Failed" means a real failure — read the log.
    Netlify's own "Skipped" (superseded commit) entries are also recorded as errors and

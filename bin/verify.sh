@@ -152,6 +152,11 @@ step "unit — qbank coherence"              python3 bin/check_qbank_coherence.p
 # nothing wherever its guard runs.
 step "unit — decision drift"                python3 bin/check_decision_drift.py --self-test
 step "unit — ruleset drift"                 python3 bin/check_ruleset_drift.py --self-test
+# Only the SELF-TEST runs here. The real sweep needs `gh`, `npm audit --include=dev`
+# and every local worktree, so it is a monthly, human-run step whose receipt
+# monthly_review.py ages -- exactly like check_ruleset_drift.py --check-bypass. A
+# stale claim needs a person to re-verify it, not a red build.
+step "unit — stale claims"                  python3 bin/check_stale_claims.py --self-test
 step "unit — claim exposure"                python3 bin/claim_exposure.py --self-test
 step "unit — offrunner findings"            python3 bin/verify_findings_offrunner.py --self-test
 # A fifth joined that class straight away: #536 (WP-5p) shipped bin/check_twin_parity.py with
