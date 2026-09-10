@@ -225,6 +225,21 @@
  *      --fd-terracotta-dark (5.00-5.89) and --fd-olive-deep (5.46-6.44). The base tokens are
  *      FILL/BORDER ONLY and are gated at the 3:1 non-text bar. Was 4 debt entries.
  *
+ *   4. --primary #c25a3c -> #bc573a (2026-09-10, second pass). The LEGACY accent, declared
+ *      per-page in 21 shipped sources rather than here, so the earlier pass never saw it.
+ *      White on the FILL was 4.36 — under AA and invisible until the --on-brand light half
+ *      was declared centrally (step 6), which is what put real white on those buttons in the
+ *      first place. Now 4.60, matching the headroom decision 2 took for --fd-terracotta
+ *      (4.59) rather than the 4.52 a minimal darkening would have scraped. Lightness moves
+ *      1.5%; hue and saturation are untouched.
+ *
+ *      NOT changed: --primary as INK is still 4.16 on --fd-bg, under AA for normal text.
+ *      That is correct and deliberate — --primary is a FILL, and common.py's WP-03 pass
+ *      already repoints every bare `color:var(--primary)` on a tool page to
+ *      --primary-dark (5.22), with check-static-site.mjs hard-failing any that survive.
+ *      The SPA shell is exempt from that rewrite and keeps three bare uses, all 30px h1s,
+ *      which clear the 3:1 large-text bar (3.94 -> 4.16). Same fill/ink split as decision 3.
+ *
  * LIGHT_DEBT in tests/fd-contrast.test.mjs is now EMPTY. It is a ratchet: that test fails if
  * a pinned exception starts passing, so the list cannot silently absorb a new regression.
  *
