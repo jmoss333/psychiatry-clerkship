@@ -142,6 +142,7 @@ check can fail (21 assertions, per the house rule that a guard ships with a pair
 | **C2** | `frontdoor.css` holds no colour literal | The property that already worked; now it cannot quietly stop working. `color-mix()` over tokens is a derivation, not a literal, and is allowed. |
 | **C3** | No dimension token has a dark value | Catches colour smuggled into the dimension namespace. |
 | **C4** | No colour token is declared, used, and left without a dark value | **The reason this file exists.** See §4. |
+| **C6** | No `var(--token, <colour>)` whose token is defined nowhere | A fallback that always wins pins one theme's literal into both. See §4.1. Scans inline `style=""` too. |
 | **C5** | `LIGHT_DEBT` in `fd-contrast.test.mjs` stays empty | Re-opening it is a palette-owner decision, recorded in `clinical-warm.css`, not a quiet edit. |
 | **R1–R4** | Raw dimension counts, distinct type sizes, sub-floor type, non-standard breakpoints | Ratchets against `design_drift_baseline.json`. Down freely; up fails. |
 
@@ -183,6 +184,33 @@ centrally — the names are page-private but semantically identical across the p
 
 **That block is remediation, not a pattern.** New pages use `--fd-*`. Adding a name to it is the
 signal that a page has invented private colour vocabulary — which is what C4 now fails on.
+
+### 4.1 The second finding, and why C4 could not see it either
+
+Fixing §4 exposed a defect underneath it. `crisis_block.py` renders one inline-styled
+`<section class="crisis-block">` into the 9 HTML surfaces per site that carry it, and styles that
+section entirely through a `--cw-*` namespace with hardcoded light fallbacks —
+`var(--cw-surface,#faf6f1)`, `var(--cw-text,#2c2622)` — so the block would "look right whether or
+not the host tool links clinical-warm.css".
+
+**`--cw-*` was defined nowhere.** Every one of those `var()` calls fell through to its light
+literal in both themes: a cream island on a dark page, on 18 safety surfaces across the two sites.
+
+C4 could not see it, for two reasons that are both worth keeping in mind:
+
+- the block's colours are **inline `style=""` attributes**, not declarations in a `:root` block;
+- an *undefined* token is invisible to a check that walks declared-and-used tokens.
+
+It surfaced as a contrast failure only after §4 landed: the block's `<h2>` takes its colour from
+the **host page's** `h2` rule, which does flip, while the block's ground does not — so the heading
+"If someone is in crisis" rendered at **2.59:1** in dark mode on the crisis surface. Before §4 the
+heading was legible on the cream and the defect read as merely ugly.
+
+The fix is what the fallbacks were always written for: `--cw-*` is now declared in
+`clinical-warm.css` with both halves, the literals stay as the no-stylesheet path, and the block's
+heading takes `color:inherit` so no host page's `h2` accent can reach it again. **C6** is the
+generalisation — a `var()` fallback that always wins is a light value pinned into a dark theme,
+whatever namespace it belongs to.
 
 ---
 

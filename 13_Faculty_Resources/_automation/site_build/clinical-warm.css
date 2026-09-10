@@ -65,6 +65,30 @@
   --fd-shadow-over:0 6px 18px rgba(59,51,44,.10),0 24px 56px rgba(59,51,44,.12);
   --fd-shadow-bar:0 -4px 16px rgba(59,51,44,.08);
 
+  /* ── Injected crisis block (--cw-*) ────────────────────────────────────────
+   * crisis_block.py renders one inline-styled <section class="crisis-block"> into the
+   * 9 HTML surfaces per site that carry it (8 tool pages + the shell index). It styles
+   * itself as var(--cw-surface,#faf6f1) / var(--cw-text,#2c2622) etc. so the block
+   * "looks right whether or not the host tool links clinical-warm.css" — its own words.
+   * (The 24 markdown content pages get a BLOCKQUOTE variant instead, styled by the SPA's
+   * own token-driven rules, and are not affected by this namespace.)
+   *
+   * Until 2026-09-10 the --cw-* namespace was defined NOWHERE, so every one of those
+   * var() calls fell through to its light literal in BOTH themes: a cream island on a
+   * dark page, on 18 safety surfaces across the two sites. Measured on production, the
+   * block's own <h2> ("If someone is in crisis") rendered at 2.59:1 in dark mode,
+   * because the heading took its colour from the HOST page's h2 rule — which does flip
+   * — while the block's ground did not.
+   *
+   * Defining the namespace here is what the fallbacks were always written for. The
+   * literals stay as the no-stylesheet path; these values are what wins when the
+   * stylesheet is present, which is every shipped page.
+   */
+  --cw-surface:#faf6f1;   /* block ground */
+  --cw-text:#2c2622;      /* block ink — 13.87:1 on the ground */
+  --cw-border:#d8cfc4;    /* hairline */
+  --cw-accent:#8c5a3b;    /* 4px left rule — 5.36:1, non-text */
+
   /* ── Dimension layer (theme-invariant) ─────────────────────────────────────
    * Added 2026-09-10. The colour layer above has had a single source of truth
    * since #100; every other visual dimension did not, and frontdoor.css alone
@@ -213,6 +237,12 @@
   --fd-shadow-lift:0 2px 6px rgba(0,0,0,.42),0 14px 32px rgba(0,0,0,.38);
   --fd-shadow-over:0 6px 18px rgba(0,0,0,.45),0 24px 56px rgba(0,0,0,.5);
   --fd-shadow-bar:0 -4px 16px rgba(0,0,0,.4);
+
+  /* Injected crisis block — see the light block for why this namespace exists. */
+  --cw-surface:#2b2620;   /* 11.99:1 under --cw-text */
+  --cw-text:#ece5db;
+  --cw-border:#3a332c;    /* hairline, same exemption as --fd-line */
+  --cw-accent:#e0a184;    /* 6.85:1 on the ground, non-text */
 }
 
 /* ── Legacy per-page palettes: dark values ──────────────────────────────────
