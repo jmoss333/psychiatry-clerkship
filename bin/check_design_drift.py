@@ -19,6 +19,12 @@ actually shipped to learners:
   C2 NO RAW COLOUR      frontdoor.css keeps its zero-literal property.
   C3 THEME-INVARIANCE   A dimension token must never be redeclared in a dark block. Spacing does
                         not have a dark value; a "dark" one means someone smuggled colour in.
+  C6 DEAD FALLBACK      A `var(--token, <colour>)` whose token is defined NOWHERE always
+                        resolves to its fallback, so that literal is pinned in BOTH themes.
+                        On 2026-09-10 the injected crisis block styled itself entirely with
+                        an undefined --cw-* namespace: a cream island on a dark page across
+                        18 safety surfaces (9 per site), with its own heading at 2.59:1. It
+                        scans inline style="" attributes too, which is where that block lives.
   C4 DARK ORPHANS       *** the P0 this script was written for ***
                         Any colour-valued custom property a page declares in :root AND consumes
                         via var() must have a dark counterpart. On 2026-09-10 five shipped tool
@@ -275,6 +281,22 @@ def dark_orphans(page_text: str, shared_dark: set[str]) -> list[str]:
     )
 
 
+def built_markdown() -> list[tuple[str, str]]:
+    """Built content pages. They ship as markdown and are rendered by the Front Door reader,
+    so injected HTML inside them is invisible to an HTML-only scan. The crisis block reaches
+    these as a markdown blockquote rather than the inline-styled section, but a future
+    injection could land raw HTML here, and C6 is cheap."""
+    out = []
+    for site, base in BUILD_DIRS:
+        content = os.path.join(base, "content")
+        if not os.path.isdir(content):
+            continue
+        for name in sorted(os.listdir(content)):
+            if name.endswith(".md"):
+                out.append((f"{site}:content/{name}", os.path.join(content, name)))
+    return out
+
+
 def c4_dark_orphans(fails: list[str], notes: list[str]) -> None:
     warm_css = css_of(read(WARM), WARM)
     warm_dark = dark_names(warm_css)
@@ -294,6 +316,46 @@ def c4_dark_orphans(fails: list[str], notes: list[str]) -> None:
                 f"these render light-on-dark. Add dark values (clinical-warm.css) or migrate "
                 f"the page to --fd-* tokens."
             )
+
+
+# A var() whose fallback carries a colour. Group 1 = token name, group 2 = the fallback.
+VAR_FALLBACK_RE = re.compile(r"var\(\s*--([A-Za-z0-9_-]+)\s*,([^()]*?)\)")
+
+
+def dead_fallbacks(page_text: str, defined: set[str]) -> list[tuple[str, str]]:
+    """(token, fallback) for every colour-bearing var() fallback whose token is undefined.
+
+    Reads the RAW page text, not just its <style> blocks: the crisis block styles itself
+    with inline style="" attributes, which is exactly where this defect hid.
+    """
+    css = css_of(page_text, ".html")
+    local = set(re.findall(r"--([A-Za-z0-9_-]+)\s*:", css))
+    out = {}
+    for token, fallback in VAR_FALLBACK_RE.findall(page_text):
+        if token in defined or token in local:
+            continue
+        if COLOUR_RE.search(fallback):
+            out[token] = fallback.strip()
+    return sorted(out.items())
+
+
+def c6_dead_fallbacks(fails: list[str], notes: list[str]) -> None:
+    warm_css = css_of(read(WARM), WARM)
+    defined = set(re.findall(r"--([A-Za-z0-9_-]+)\s*:", warm_css))
+    pages = shipped() + built_markdown()
+    if not pages:
+        return
+    seen: dict[str, list[str]] = {}
+    for label, path in pages:
+        for token, fallback in dead_fallbacks(read(path), defined):
+            seen.setdefault(f"--{token} -> {fallback}", []).append(label)
+    for key, labels in sorted(seen.items()):
+        fails.append(
+            f"C6 DEAD FALLBACK  {key} on {len(labels)} surface(s) "
+            f"(e.g. {', '.join(labels[:3])}). The token is defined nowhere, so the literal "
+            f"wins in BOTH themes. Declare it in clinical-warm.css with a light AND a dark "
+            f"value, or replace the var() with an --fd-* token."
+        )
 
 
 def c5_contrast_allowlist_empty(fails: list[str]) -> None:
@@ -458,6 +520,19 @@ def self_test() -> int:
                         '<style>:root{--shadow-card:0 1px 2px rgba(59,51,44,.05)}'
                         '.a{box-shadow:var(--shadow-card)}</style>', set()) == ["shadow-card"])
 
+    # C6 — the crisis-block shape.
+    CRISIS = ('<section class="crisis-block" style="border:1px solid var(--cw-border,#d8cfc4);'
+              'background:var(--cw-surface,#faf6f1);color:var(--cw-text,#2c2622);">x</section>')
+    expect("C6 catches an undefined colour namespace in an inline style",
+           [t for t, _ in dead_fallbacks(CRISIS, set())] == ["cw-border", "cw-surface", "cw-text"])
+    expect("C6 is silent once the namespace is declared",
+           dead_fallbacks(CRISIS, {"cw-border", "cw-surface", "cw-text"}) == [])
+    expect("C6 ignores a non-colour fallback (theme-invariant by nature)",
+           dead_fallbacks('<div style="gap:var(--gutter,8px)">x</div>', set()) == [])
+    expect("C6 accepts a token the PAGE itself declares",
+           dead_fallbacks('<style>:root{--local:#fff}</style>'
+                          '<div style="color:var(--local,#000)">x</div>', set()) == [])
+
     # Ratchet measurement.
     m = measure_css(".a{font-size:14px;border-radius:10px}.b{font-size:9px}.c{font-size:var(--fd-font-md)}")
     expect("R counts raw dimension declarations, not tokenised ones",
@@ -497,6 +572,7 @@ def main() -> int:
     c2_no_raw_colour(fails)
     c3_theme_invariance(fails)
     c4_dark_orphans(fails, notes)
+    c6_dead_fallbacks(fails, notes)
     c5_contrast_allowlist_empty(fails)
     current = ratchets(fails, notes, baseline.get("files", {}))
 
