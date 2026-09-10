@@ -7,6 +7,12 @@
  * reinterpretation. Where a value below differs from the prototype it is because the prototype
  * expressed the same thing twice with a rounding difference, and the deviation is commented.
  *
+ * ROLE RULE (added 2026-09-10): --fd-terracotta, --fd-teal and --fd-olive are FILL/BORDER
+ * tokens, gated at the 3:1 non-text bar. Their INK counterparts are --fd-terracotta-dark,
+ * --fd-teal-deep and --fd-olive-deep, gated at 4.5:1. Never set `color:` to a fill token —
+ * bin/check_design_drift.py fails the build on it. (--fd-teal already followed this; the
+ * other two did not, which is where the light palette's contrast debt came from.)
+ *
  * COLOUR RULE: this file contains no raw colour of its own. Every colour is a var(--fd-*)
  * declared in clinical-warm.css, which carries both a light and a dark value for each. That is
  * what keeps a tool opened from the front door agreeing with the front door in both themes.
@@ -43,7 +49,7 @@
 
 .fd-h1{margin:0 0 6px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:30px;line-height:1.2;letter-spacing:.2px;color:var(--fd-text)}
 .fd-sub{margin:0 0 24px;font-size:14.5px;color:var(--fd-text-mid)}
-.fd-eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fd-terracotta)}
+.fd-eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fd-terracotta-dark)}
 .fd-sectionhead{margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--fd-text-dim)}
 
 /* Shared buttons ---------------------------------------------------------- */
@@ -89,7 +95,7 @@
 .fd-role:hover{border-color:var(--fd-terracotta);box-shadow:var(--fd-shadow-lift)}
 .fd-role__name{display:block;font-size:15.5px;font-weight:600;color:var(--fd-text)}
 .fd-role__desc{display:block;font-size:12.5px;color:var(--fd-text-dim);margin-top:1px}
-.fd-role__hint{font-size:11px;font-weight:700;color:var(--fd-terracotta);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.fd-role__hint{font-size:11px;font-weight:700;color:var(--fd-terracotta-dark);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
 
 .fd-weekgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .fd-weektile{
@@ -98,7 +104,7 @@
 }
 .fd-weektile:hover{border-color:var(--fd-terracotta)}
 .fd-weektile.is-sel{border-color:var(--fd-terracotta)}
-.fd-weektile__n{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fd-terracotta)}
+.fd-weektile__n{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fd-terracotta-dark)}
 .fd-weektile__title{display:block;font-size:13px;font-weight:600;color:var(--fd-text);margin-top:3px;line-height:1.3}
 .fd-weekgrid__browse{
   margin-top:14px;width:100%;padding:12px;background:transparent;
@@ -292,7 +298,7 @@
 }
 .fd-pick:hover{border-color:var(--fd-olive);background:var(--fd-callout)}
 .fd-pick__dot{width:8px;height:8px;border-radius:50%;background:var(--fd-olive);flex:0 0 auto}
-.fd-pick__kicker{display:block;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--fd-olive)}
+.fd-pick__kicker{display:block;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--fd-olive-deep)}
 .fd-pick__title{display:block;font-size:14px;font-weight:600;color:var(--fd-text);margin-top:1px}
 
 .fd-setupcta{
@@ -315,7 +321,7 @@
 }
 .fd-edition-card__location{font-size:13px;font-weight:700;min-width:0;overflow-wrap:anywhere}
 .fd-edition-card__edition,.fd-edition-card__local{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fd-text-dim)}
-.fd-edition-card__local{color:var(--fd-olive)}
+.fd-edition-card__local{color:var(--fd-olive-deep)}
 .fd-edition-card__fingerprint{
   grid-column:1/-1;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:11px;font-variant-numeric:tabular-nums;
   letter-spacing:.04em;color:var(--fd-text-mid);overflow-wrap:anywhere;word-break:break-word;
@@ -336,7 +342,7 @@
   margin:0 0 22px;padding:14px;background:var(--fd-callout);border:1px solid var(--fd-line);border-radius:10px;
 }
 .fd-localorientation__head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.fd-localorientation h2,.fd-localresources h3,.fd-localchecklist h3{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--fd-olive)}
+.fd-localorientation h2,.fd-localresources h3,.fd-localchecklist h3{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--fd-olive-deep)}
 .fd-localorientation__head span{font-size:10.5px;font-weight:700;color:var(--fd-text-dim)}
 .fd-localorientation dl{display:grid;gap:8px;margin:0}
 .fd-localorientation__item{display:grid;grid-template-columns:minmax(116px,.55fr) minmax(0,1.45fr);gap:10px;font-size:12.5px}
@@ -359,7 +365,7 @@
 .fd-localcheck.is-done::before{background:var(--fd-success);border-color:var(--fd-success)}
 .fd-localresources{background:var(--fd-surface-warm)}
 .fd-localresource{padding:11px 12px;background:var(--fd-surface);border:1px solid var(--fd-line);border-left:3px solid var(--fd-olive);border-radius:0 9px 9px 0}
-.fd-localresource__label{display:block;margin-top:7px;color:var(--fd-olive)}
+.fd-localresource__label{display:block;margin-top:7px;color:var(--fd-olive-deep)}
 .fd-localresource__link{display:inline-flex;align-items:center;min-height:44px;margin-top:2px;font-size:12.5px;font-weight:700}
 .fd-localresource__rationale{margin:4px 0 0;font-size:11.5px;color:var(--fd-text-mid)}
 
@@ -473,7 +479,7 @@
 .fd-library__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px 26px;align-items:start}
 
 .fd-col__name{
-  font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fd-terracotta);
+  font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fd-terracotta-dark);
   border-bottom:1.5px solid var(--fd-line);padding-bottom:6px;margin-bottom:6px;
 }
 .fd-collink{
@@ -580,7 +586,7 @@
 }
 .fd-keypoints__label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fd-teal-deep);margin-bottom:8px}
 .fd-keypoints__item{display:flex;gap:9px;padding:4px 0;font-size:14.5px;line-height:1.62;color:var(--fd-text-mid)}
-.fd-keypoints__bullet{color:var(--fd-teal);font-weight:700}
+.fd-keypoints__bullet{color:var(--fd-teal-deep);font-weight:700}
 
 .fd-trynow{
   display:flex;align-items:center;gap:12px;width:100%;text-align:left;
