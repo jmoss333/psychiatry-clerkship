@@ -35,7 +35,7 @@ test('Node selection uses the separately authored Morgan draft while the embedde
   assert.equal(selected.patient,registry.cases.find(item=>item.id===morganId));
   assert.equal(selected.patient.persona.pronouns,'they/them');
   assert.equal(selected.voice,'Marin');assert.equal(selected.localDraft,true);
-  assert.equal(selected.patient.facultyReview.status,'draft-pending-attestation');
+  assert.equal(selected.patient.facultyReview.status,'reviewed');
   assert.equal(pack.cases.length,3);assert.equal(JSON.stringify(pack),before);
 });
 

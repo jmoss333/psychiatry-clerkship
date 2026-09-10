@@ -7,7 +7,9 @@ import {FAMILY_CASE_ID,familyCaseDef,familyBinding,familyContext} from './family
 
 const DANA_ID='sp_depression_gated_si_001';
 const MORGAN_ID='sp_alcohol_ambivalence_001';
-// Hosting the authored drafts does not change their faculty-review status.
+// Hosting a case does not, by itself, change its faculty-review status. Morgan
+// and the family meeting were separately attested by Joshua Moss, MD on
+// 2026-09-09; hosting them here did not attest them.
 const REGISTERED=[DANA_ID,'sp_mania_redirect_001','sp_psychosis_paranoid_001',MORGAN_ID,FAMILY_CASE_ID];
 
 function resolve(id){

@@ -1,3 +1,19 @@
+# September 9 — Morgan and the family meeting attested
+
+Joshua Moss, MD attested the hosted spoken portrayals of Morgan
+(`sp_alcohol_ambivalence_001`) and the Morgan/Maya family meeting
+(`family_morgan_maya_001`) on 2026-09-09, per his instruction in session. This
+flips `facultyReview`/`review` status from pending/draft to `reviewed` (reviewer
+`Joshua Moss, MD`, date `2026-09-09`) on the local case, its speech profile, the
+portrayal/station layer shared by all five encounters, and the label on Dana's
+direct-suicide-question overlay; the hosted station's "(draft)" case-picker
+labels and "Faculty-review draft" review notes no longer appear for these two
+cases. This is a labels-and-status change only — no case facts, gates, prompts,
+or voices changed. The hosted site is not git-linked, so nothing here reaches
+learners until the owner runs a CLI deploy of `sp-preview`.
+
+---
+
 # Practice a Moment — September 9
 
 See [the current requirement audit and faculty packet](PRACTICE_MOMENT_ACCEPTANCE.md). Earlier receipts below describe full encounters and do not establish provider or microphone validation for the new moments.
