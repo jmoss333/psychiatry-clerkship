@@ -122,6 +122,16 @@ function crisisTemplateInitSource() {
   return shellSrc.slice(start, end);
 }
 
+// fdLiveState now resolves the stored theme through fd_shell.js's fdThemeMode -- the render half
+// of the settings panel's Appearance section. The REAL function is spliced into the boundary
+// rather than stubbed: a stub returning a constant would keep this green if live state ever
+// stopped normalising, which is the exact defect (everyone shows System) the panel would hide.
+function themeModeSource() {
+  const m = read('frontdoor/fd_shell.js').match(/function fdThemeMode\(stored\)\{[\s\S]*?\n\}/);
+  assert.ok(m, 'fdThemeMode must remain extractable from fd_shell.js');
+  return m[0];
+}
+
 function minimalTemplateDocument(templateHtml) {
   const template = { innerHTML: templateHtml };
   return {
@@ -135,7 +145,17 @@ function liveShellBoundary(index, topicMeta, templateHtml) {
   const boundary = new Function('fdSheet', 'index', 'topicMeta', 'document', `
     ${failureCopyGlobalSource()}
     var FD_INDEX=index;
+    // fdLiveState reads the build-injected role list for the settings panel's You section.
+    // A realistic one rather than [] so nothing in the boundary is degenerate; this file's
+    // subject is protocol failure copy, and no assertion here depends on its contents.
+    var FD_ROLES=[{id:'student',name:'Core rotation'}];
     var facultyPreviewRequest=null, location={search:''};
+    // The browser globals fdLiveState reads, stubbed the same way location is. An empty window
+    // is the shipped case rather than a degenerate one: analytics.js is injected only where
+    // CLERKSHIP_ANALYTICS named the site, so on today's builds there is no cwAnalytics and the
+    // settings panel's Usage section renders nothing. Omit these and the boundary throws on a
+    // global that always exists in the page this source is extracted from.
+    var window={}, navigator={};
     ${crisisTemplateInitSource()}
     function fdClone(value){var out={};for(var key in value){out[key]=value[key];}return out;}
     function progLoad(){return {};}
@@ -151,6 +171,7 @@ function liveShellBoundary(index, topicMeta, templateHtml) {
     function fdRoleName(id){return id||'';}
     function fdItemsForWeek(){return [];}
     function fdTodayProgress(){return {pct:0};}
+    ${themeModeSource()}
     ${liveStateSource()}
     return function(state){
       var live=fdLiveState(state);

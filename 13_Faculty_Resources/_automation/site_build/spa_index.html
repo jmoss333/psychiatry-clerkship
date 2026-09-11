@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>(function(){var q=null;try{q=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)'))||null;}catch(e){}function p(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=(m==='system')?((q&&q.matches)?'dark':'light'):m;try{document.documentElement.setAttribute('data-theme',a);}catch(e){}}p();if(q){try{if(q.addEventListener){q.addEventListener('change',p);}else if(q.addListener){q.addListener(p);}}catch(e){}}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inpatient Psychiatry — MS3 Clerkship</title>
@@ -1727,7 +1727,12 @@
     var pct=tot?Math.round(rev/tot*100):0;
     var h='<div class="hm" id="pgRoot"><div class="hm-top"><h1>Progress</h1></div>';
     h+='<p class="sub">From your activity on this device — pages reviewed, practice answers, and confidence. Nothing leaves the browser unless you export it below.</p>';
-    h+='<div class="hm-sec fd-examdate"><h2>Exam date</h2><div class="sub">Used only on this device to guide pacing.</div><div class="fd-examdate__row"><input id="fdExamDate" type="date" value="'+esc(LS('cw_shelf_date')||'')+'" aria-label="Exam date"><button type="button" class="hm-btn" data-progress-action="save-exam">Save date</button></div></div>';
+    /* The exam date moved to Settings (fd_sheet.js's Pacing section), and this is a signpost,
+       not a second control: one WRITABLE home for cw_shelf_date, or the two desync. It still
+       shows the stored date, because a learner who came here looking for it deserves an answer
+       rather than only a redirect -- reading the key is not a second home, writing it is. */
+    var examSet=LS('cw_shelf_date')||'';
+    h+='<div class="hm-sec"><h2>Exam date</h2><div class="sub">'+(examSet?esc(examSet)+' — change it':'Not set — add it')+' in Settings, the ⚙ in the top bar. It paces what Today suggests.</div></div>';
     var mb=masteryByBlueprint(); var mbStarted=mb.filter(function(x){return x.score!=null;});
     h+='<div class="hm-sec"><h2>Mastery by blueprint <span style="font-weight:400;color:var(--text-light)">· from your practice</span></h2>';
     if(!mbStarted.length){ h+='<div class="sub" style="margin:0 0 8px">Answer practice questions (or topic quizzes) and this fills in — one bar per exam blueprint area.</div>'; }
@@ -1782,6 +1787,12 @@
       editionFingerprint:typeof fdEditionIndexFingerprint==='function'?fdEditionIndexFingerprint(index):'',
       weekCount:weeks.length,
       generatedAt:generatedAt,
+      /* PROVENANCE ONLY -- the exam date this plan was GENERATED against, never the date pacing
+         advice is computed from. fdPlanMatches does not compare it, so fdLoadPlan returns a
+         matching plan verbatim and this field is frozen for the plan's life: anything that
+         displayed it kept asserting a date the learner had since changed or cleared. The one home
+         is cw_shelf_date, and renderPlanCards reads that. Do not reintroduce a reader of this
+         field; if it ever stops being worth recording, retire it rather than reading it. */
       shelfDate:shelfDate||'',
       weeks:weeks.map(function(w){
         var cats=(w.focusCategories||[]).slice();
@@ -1870,8 +1881,10 @@
     try{localStorage.removeItem('cw_plan_v1');}catch(_){ }
     return null;
   }
-  function shelfIntensityHtml(shelf){ if(!shelf) return '<div class="sub" style="margin:0 0 10px">Set an exam date in <button class="hm-inl" data-pt="start">Progress</button> to adjust intensity.</div>'; var days=shelfDaysUntil(shelf); if(days==null)return ''; if(days<0) return '<div class="sub" style="margin:0 0 10px">Exam date passed — use this plan for review.</div>'; var msg=days<=14?('Exam in '+days+' day'+(days===1?'':'s')+' — compress: hit each week’s focus areas and practice daily.'):('Exam in '+days+' days — steady pace through the weeks.'); return '<div class="sub" style="margin:0 0 10px">'+msg+'</div>'; }
-  function renderPlanCards(plan){ var h=shelfIntensityHtml(plan.shelfDate); plan.weeks.forEach(function(wk){ h+='<div class="wd-card" style="margin:0 0 12px"><h3 style="text-transform:none;letter-spacing:0;font-size:var(--fd-font-base);color:var(--text);margin:0 0 6px">'+esc(wk.title)+'</h3>'; if(wk.focus&&wk.focus.length){ h+='<div class="sub" style="margin:0 0 8px">Focus first: <strong>'+esc(ptLabels(wk.focus))+'</strong></div>'; wk.focus.forEach(function(c){ h+='<button class="hm-li" data-practice="'+c+'" style="border-bottom:none"><span class="t">Practice '+esc(SHELF_LABEL[c]||c)+'</span><span class="sec">→</span></button>'; }); } else { h+='<div class="sub" style="margin:0 0 4px">On track — maintain.</div>'; } h+='<button class="hm-li" data-fd-view-week="'+fdEsc(wk.week)+'" style="border-bottom:none"><span class="t">Open Week '+fdEsc(wk.week)+'</span><span class="sec">path →</span></button></div>'; }); return h; }
+  function shelfIntensityHtml(shelf){ if(!shelf) return '<div class="sub" style="margin:0 0 10px">Set an exam date in <button class="hm-inl" data-fd-settings>Settings</button> to adjust intensity.</div>'; var days=shelfDaysUntil(shelf); if(days==null)return ''; if(days<0) return '<div class="sub" style="margin:0 0 10px">Exam date passed — use this plan for review.</div>'; var msg=days<=14?('Exam in '+days+' day'+(days===1?'':'s')+' — compress: hit each week’s focus areas and practice daily.'):('Exam in '+days+' days — steady pace through the weeks.'); return '<div class="sub" style="margin:0 0 10px">'+msg+'</div>'; }
+  /* The intensity line reads the LIVE key, deliberately not plan.shelfDate -- see the provenance
+     note on that field in fdPlanFromMastery above for why reading it was wrong. */
+  function renderPlanCards(plan){ var h=shelfIntensityHtml(LS('cw_shelf_date')||''); plan.weeks.forEach(function(wk){ h+='<div class="wd-card" style="margin:0 0 12px"><h3 style="text-transform:none;letter-spacing:0;font-size:var(--fd-font-base);color:var(--text);margin:0 0 6px">'+esc(wk.title)+'</h3>'; if(wk.focus&&wk.focus.length){ h+='<div class="sub" style="margin:0 0 8px">Focus first: <strong>'+esc(ptLabels(wk.focus))+'</strong></div>'; wk.focus.forEach(function(c){ h+='<button class="hm-li" data-practice="'+c+'" style="border-bottom:none"><span class="t">Practice '+esc(SHELF_LABEL[c]||c)+'</span><span class="sec">→</span></button>'; }); } else { h+='<div class="sub" style="margin:0 0 4px">On track — maintain.</div>'; } h+='<button class="hm-li" data-fd-view-week="'+fdEsc(wk.week)+'" style="border-bottom:none"><span class="t">Open Week '+fdEsc(wk.week)+'</span><span class="sec">path →</span></button></div>'; }); return h; }
   function startPretest(){ currentItem={f:'__placement__',t:'2-minute placement',k:'special'};setLearnerTitle(currentItem);if(contentEl){ contentEl.className='fd-main'; } contentEl.innerHTML='<article class="fd-reader fd-progress-reader"><button type="button" class="fd-reader__back" data-progress-action="progress">‹ Progress</button><div class="hm" id="ptRoot"><h1>2-minute placement</h1><p class="sub">Loading…</p></div></article>'; var go=function(pool){ PRETEST_POOL=pool; ptAnswers={}; renderPretestForm(); }; if(PRETEST_POOL){ go(PRETEST_POOL); return; } fetch('pretest_pool.json').then(function(r){return r.ok?r.json():{items:[]};}).then(function(d){ go((d&&d.items)||[]); }).catch(function(){ go([]); }); }
   function renderPretestForm(){ var root=document.getElementById('ptRoot'); if(!root)return; var items=PRETEST_POOL||[]; if(!items.length){ root.innerHTML='<h1>Placement unavailable</h1><p class="sub">The question pool didn’t load — browse the library or follow the path instead.</p>'; return; } var h='<h1>2-minute placement</h1><p class="sub">One question per topic area — pick the best answer. This points you at weak spots; it’s a starting estimate, not a grade.</p>'; items.forEach(function(it,qi){ h+='<div class="pt-q" data-qi="'+qi+'"><div class="pt-stem">'+(qi+1)+'. '+esc(it.stem)+'</div>'; (it.options||[]).forEach(function(o){ h+='<button class="pt-opt" data-qi="'+qi+'" data-key="'+esc(o.key)+'"><b>'+esc(o.key)+'.</b> '+esc(o.t)+'</button>'; }); h+='</div>'; }); h+='<div style="margin-top:6px"><button class="hm-btn" data-pt="submit">See my results</button> <span id="ptCount" class="hm-empty"></span></div>'; root.innerHTML=h; updatePtCount(); }
   function updatePtCount(){ var el=document.getElementById('ptCount'); if(!el)return; var n=0,t=(PRETEST_POOL||[]).length,k; for(k in ptAnswers){ if(ptAnswers.hasOwnProperty(k))n++; } el.textContent=n+' of '+t+' answered'; }
@@ -1965,6 +1978,25 @@
     out.nowMs=Date.now();
     out.block=!facultyPreviewRequest&&new URLSearchParams(location.search).get('block')==='1'?blockLoad(out.nowMs):null;
     out.rotationStart=LS('cw_rotation_start')||'';
+    /* The MODE, not the painted attribute: the settings panel marks one of System/Light/Dark
+       active, and fdThemeMode maps an absent or junk value onto System. currentTheme() in
+       fd_wire.js resolves the same key for DISPATCH; this is the render half. */
+    out.themeMode=fdThemeMode(LS('cw_theme'));
+    /* The settings panel's Pacing field renders this and nothing else sets it. Read here rather
+       than mirrored onto controller state so the stored key stays the single home; the panel's
+       change handler writes it and the next render reads it back. */
+    out.examDate=LS('cw_shelf_date')||'';
+    /* The Usage section, and the one key on this state that is legitimately null: null means
+       CLERKSHIP_ANALYTICS left the emitter out of this build entirely, and fdSheetSettingsBody
+       then renders no section at all rather than describing collection that is not happening.
+       Read through the emitter's own enabled() rather than through its key, so the emitter stays
+       the only definition of what a stored opt-out means. enabled() is false for TWO reasons --
+       an opt-out here, or the browser's DNT/GPC -- so optedIn is meaningful only while
+       privacySignal is false, which is the only branch fdSettingsUsage reads it in. */
+    out.analytics=window.cwAnalytics
+      ?{optedIn:window.cwAnalytics.enabled(),
+        privacySignal:(navigator.doNotTrack==='1'||navigator.globalPrivacyControl===true)}
+      :null;
     /* Seven-day activity strip: derived, never stored -- see fdActivityDays. Every store is
        read defensively; a missing or malformed one simply contributes no days. */
     out.activityDays=fdActivityDays({
@@ -1993,6 +2025,14 @@
         :((FD_INDEX.weeks[0]||{}).n);
     }
     out.done=fdProgressDoneMap(raw,FD_INDEX,fdProgressWeek(out,FD_INDEX));
+    /* ORDER IS LOAD-BEARING. The next line replaces out.role with the DISPLAY NAME for every
+       renderer downstream, so the settings panel -- which marks its active chip by comparing
+       against the chip's raw data-fd-role id -- has to be handed that id first, under its own
+       key, along with the per-site list the chips are drawn from. Capture roleId after the
+       overwrite and every comparison is name-vs-id, false for all of them, and the You section
+       shows no selection at all: silent, in a control whose only feedback IS the selection. */
+    out.roleId=out.role;
+    out.roles=FD_ROLES;
     out.role=fdRoleName(out.role)||out.role;
     out.currentCoreRevision=typeof FD_CORE_REVISION==='string'?FD_CORE_REVISION:'';
     out.localProgress=FD_INDEX.edition&&FD_INDEX.edition.card
@@ -2153,10 +2193,16 @@
 
   function fdRenderTransient(state,detail){
     var d=detail||{}, surfaces=d.surfaces||{};
-    if(d.effect&&d.effect.theme){
-      document.documentElement.setAttribute('data-theme',d.effect.theme);
+    /* An effect carries a MODE; a frame boundary can only carry a painted attribute. Resolve once
+       here so the paint and what an embedded tool is told agree, and so 'system' never escapes as
+       a value no stylesheet and no tool can act on. */
+    if(d.effect&&d.effect.mode){
+      var themeAttr=fdThemeAttr(d.effect.mode,
+        !!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches));
+      document.documentElement.setAttribute('data-theme',themeAttr);
       var frame=contentEl&&contentEl.querySelector('iframe');
-      if(frame&&frame.contentWindow)try{frame.contentWindow.postMessage({type:'theme',mode:d.effect.theme},'*');}catch(_){}
+      if(frame&&frame.contentWindow)
+        try{frame.contentWindow.postMessage({type:'theme',mode:themeAttr},'*');}catch(_){}
     }
     if(surfaces.chrome&&fdChromeMount&&state.screen==='app')fdChromeMount.innerHTML=fdHeader(fdLiveState(state));
     if(d.preserveResource){
@@ -2297,9 +2343,9 @@
     el=target.closest&&target.closest('.tyo');
     if(el){event.preventDefault();if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}var wrap=el.closest('.tyourself');if(wrap&&!wrap.getAttribute('data-done')){wrap.setAttribute('data-done','1');var os=wrap.querySelectorAll('.tyo');for(var z=0;z<os.length;z++){if(os[z].getAttribute('data-c')==='1')os[z].classList.add('correct');}if(el.getAttribute('data-c')!=='1')el.classList.add('wrong');try{var qf=currentItem&&currentItem.f;if(qf){var qs=JSON.parse(localStorage.getItem('cw_quiz_v1')||'{}'),qe=qs[qf]||{seen:0,wrong:0};qe.seen++;if(el.getAttribute('data-c')!=='1')qe.wrong++;qe.last=new Date().toISOString().slice(0,10);qs[qf]=qe;localStorage.setItem('cw_quiz_v1',JSON.stringify(qs));}}catch(_){}var quizfb=wrap.querySelector('.tyfb');if(quizfb)quizfb.classList.add('show');}return;}
     el=target.closest&&target.closest('[data-progress-action]');
-    if(el){event.preventDefault();var pa=el.getAttribute('data-progress-action');if(pa==='progress')fdOpenProgress(fdController.getState(),{host:contentEl});else if(pa==='save-exam'){var date=document.getElementById('fdExamDate'),value=date&&date.value;try{if(value)localStorage.setItem('cw_shelf_date',value);else localStorage.removeItem('cw_shelf_date');}catch(_){}fdOpenProgress(fdController.getState(),{host:contentEl});}return;}
+    if(el){event.preventDefault();var pa=el.getAttribute('data-progress-action');if(pa==='progress')fdOpenProgress(fdController.getState(),{host:contentEl});return;}
     el=target.closest&&target.closest('[data-pt]');
-    if(el){event.preventDefault();var pt=el.getAttribute('data-pt');if(pt==='submit')submitPretest();else if(pt==='pretest')startPretest();else if(pt==='plan')renderStoredPlan();else if(pt==='start'){fdOpenProgress(fdController.getState(),{host:contentEl});var exam=document.getElementById('fdExamDate');if(exam)exam.focus();}return;}
+    if(el){event.preventDefault();var pt=el.getAttribute('data-pt');if(pt==='submit')submitPretest();else if(pt==='pretest')startPretest();else if(pt==='plan')renderStoredPlan();return;}
     el=target.closest&&target.closest('[data-block-minutes]');
     if(el){event.preventDefault();var bm=parseInt(el.getAttribute('data-block-minutes'),10);if(bm===5||bm===10||bm===20){fdBlockMinutes=bm;specialRefresh();}return;}
     el=target.closest&&target.closest('[data-block-start]');

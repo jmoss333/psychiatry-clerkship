@@ -159,8 +159,8 @@
   font-size:var(--fd-font-sm);font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:var(--fd-shadow-sm);
 }
 .fd-safetybtn:hover{background:var(--fd-danger-dark);border-color:var(--fd-danger-dark)}
-.fd-themebtn{width:34px;height:34px;padding:0;border-radius:var(--fd-radius-circle);background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-glyph-sm);cursor:pointer}
-.fd-themebtn:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
+.fd-settingsbtn{width:34px;height:34px;padding:0;border-radius:var(--fd-radius-circle);background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-glyph-sm);cursor:pointer}
+.fd-settingsbtn:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
 
 .fd-tabs{max-width:1200px;margin:0 auto;padding:4px 20px 0;display:flex;gap:var(--fd-space-1)}
 .fd-tab{
@@ -829,8 +829,6 @@
 .fd-capture__copy{width:100%;padding:9px 12px;margin-top:10px;color:var(--fd-teal-deep)}
 .fd-progress-reader{max-width:940px;margin:0 auto}
 .fd-progress-reader > .hm{max-width:none;padding:0}
-.fd-examdate__row{display:flex;align-items:center;gap:var(--fd-space-5);margin-top:10px;flex-wrap:wrap}
-.fd-examdate__row input{min-height:44px;padding:8px 10px;border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit}
 
 /* ═══ Desktop ════════════════════════════════════════════════════════════════
  * The design's rails appear at and above 1000px — the same threshold the prototype's
@@ -864,8 +862,8 @@
   .fd-searchbtn,.fd-actionbar .fd-btn--ghost{min-width:44px}
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-pick,.fd-setupcta{min-height:44px}
   .fd-btn,.fd-tab,.fd-setup__back,.fd-reader__back,.fd-result,.fd-searchpanel__esc,
-  .fd-sheet__back,.fd-sheet__close,.fd-nudge__go,.fd-nudge__dismiss,.fd-themebtn{min-height:44px}
-  .fd-setup__back,.fd-searchpanel__esc,.fd-sheet__close,.fd-nudge__dismiss,.fd-themebtn{min-width:44px}
+  .fd-sheet__back,.fd-sheet__close,.fd-nudge__go,.fd-nudge__dismiss,.fd-settingsbtn{min-height:44px}
+  .fd-setup__back,.fd-searchpanel__esc,.fd-sheet__close,.fd-nudge__dismiss,.fd-settingsbtn{min-width:44px}
   .fd-article{padding:24px 20px}
   .fd-weekgrid{grid-template-columns:repeat(2,1fr)}
   /* The reader's desktop primary/ghost actions -- CLASS-INVENTORY.md's Reader section always
@@ -1010,3 +1008,63 @@
 [class~="fd-curator-artifact-actions"]{display:flex;flex-wrap:wrap;gap:var(--fd-space-5)}
 .final-action #curatorGenerate:not(:disabled){border-color:var(--fd-terracotta);color:var(--fd-on-accent);background:var(--fd-terracotta);cursor:pointer}
 @media (max-width:430px){[class~="fd-curator-preview--mobile"]{width:100%}[class~="fd-curator-preview-actions"]{align-items:stretch;flex-direction:column}[class~="fd-curator-share-facts"],[class~="fd-curator-edition-card"] dl,[class~="fd-curator-revision-comparison"] [data-curator-revision-row] dl{grid-template-columns:1fr}[class~="fd-curator-provenance"] li{grid-template-columns:1fr}[class~="fd-curator-artifact-actions"]{display:grid}}
+
+/* ── Settings panel ──────────────────────────────────────────────────────────────────────────
+ * Renders inside .fd-sheet__body (fd_sheet.js's fdSheetSettingsBody). Sections are DIRECT
+ * siblings with no wrapper, spaced by the adjacent-sibling idiom the kit rows use, so a section
+ * added before or after another needs no structural change. .fd-seg is the segmented control --
+ * three-way for Appearance, two-way for Usage, and `flex:1` per segment is what makes the same
+ * rule serve both: the segments butt together and share one outer border, which is why `gap:0` is
+ * explicit -- a gap would strand the `+` border-left divider between them.
+ * :hover precedes .is-active deliberately; both are (0,2,0), so source order is what keeps the
+ * chosen segment filled while the pointer is over it. */
+.fd-set + .fd-set{margin-top:18px}
+.fd-set__h{margin:0 0 var(--fd-space-4);font-size:var(--fd-font-sm);font-weight:600;color:var(--fd-text)}
+.fd-set__note{margin:var(--fd-space-4) 0 0;font-size:var(--fd-font-xs);color:var(--fd-text-mid)}
+.fd-seg{display:flex;gap:0;border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);overflow:hidden}
+.fd-seg__btn{flex:1;padding:var(--fd-space-5) var(--fd-space-4);border:0;background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-sm);cursor:pointer}
+.fd-seg__btn + .fd-seg__btn{border-left:1.5px solid var(--fd-line-strong)}
+.fd-seg__btn:hover{background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
+.fd-seg__btn.is-active{background:var(--fd-teal);color:var(--fd-on-accent)}
+@media (pointer:coarse){.fd-seg__btn{min-height:var(--fd-target-touch)}}
+/* .fd-choices is the You section's role picker: the same single-choice control as .fd-seg and
+ * deliberately NOT the same shape. Role names are per-site prose, so the chips size to their text
+ * and wrap; three equal segments of a 390px sheet would strand them over three lines on a phone.
+ * They are also NOT .fd-chip -- that is the static type badge on result rows, with no border, no
+ * pointer, no touch target and no .is-active rule at all, so a chip set built on it would paint
+ * every role identically and leave the learner's own choice invisible.
+ * :hover precedes .is-active for the same source-order reason as the segments above. */
+.fd-choices{display:flex;flex-wrap:wrap;gap:var(--fd-space-4)}
+.fd-choices__btn{padding:var(--fd-space-4) var(--fd-space-5);border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-sm);cursor:pointer}
+.fd-choices__btn:hover{background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
+.fd-choices__btn.is-active{background:var(--fd-teal);border-color:var(--fd-teal);color:var(--fd-on-accent)}
+@media (pointer:coarse){.fd-choices__btn{min-height:var(--fd-target-touch)}}
+/* Pacing's date field. It borrows .fd-choices__btn's border, radius and surface so the panel reads
+ * as one control family, and takes the full sheet width because a native date input's intrinsic
+ * width is barely wider than its own text -- a small target for the one control here a learner
+ * has to hit precisely. `font:inherit` first, then the step, or the shorthand resets the size.
+ * The visible focus ring comes from `.fd-sheet :focus-visible`; no rule of its own is needed. */
+.fd-set__label{display:block;margin:0 0 var(--fd-space-4);font-size:var(--fd-font-sm);color:var(--fd-text-mid)}
+.fd-set__date{width:100%;padding:var(--fd-space-5) var(--fd-space-4);border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm)}
+@media (pointer:coarse){.fd-set__date{min-height:var(--fd-target-touch)}}
+/* Your data. .fd-set__link is the route to the export the Progress page already ships, so it is
+ * painted as a link rather than as a control: the teal ink is the one the sheet's own back button
+ * uses, and nothing about it should read as "this button does the export".
+ * .fd-set__danger is OUTLINED, not filled, and it is the same treatment in both states -- the
+ * calm "Clear everything on this device" and the armed "Erase everything". A filled red slab
+ * appearing under the fingertip that just armed the confirm invites the reflex second tap the
+ * two-tap pattern exists to prevent, and it would make the destructive option the loudest thing
+ * in the panel in the calm state too. Its partner "Keep my data" is .fd-btn--ghost, so the pair
+ * still reads as red-versus-neutral.
+ * Every colour here is an enforced pair in tests/fd-contrast.test.mjs: --fd-danger and
+ * --fd-teal-deep on --fd-surface-warm (the sheet's ground) at 4.5, --fd-text on
+ * --fd-danger-wash at 4.5. The hover keeps the SAME ink and changes only the ground, because
+ * --fd-danger-dark on --fd-danger-wash is not a gated pair. */
+.fd-set__link{display:flex;align-items:center;width:100%;padding:var(--fd-space-4) 0;border:0;background:none;color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-sm);font-weight:600;text-align:left;cursor:pointer}
+.fd-set__link:hover{color:color-mix(in srgb,var(--fd-teal-deep) 78%,var(--fd-text))}
+.fd-set__danger{display:block;width:100%;margin:var(--fd-space-4) 0 0;padding:var(--fd-space-5) var(--fd-space-4);border:1.5px solid var(--fd-danger);border-radius:var(--fd-radius-sm);background:none;color:var(--fd-danger);font:inherit;font-size:var(--fd-font-sm);font-weight:600;cursor:pointer}
+.fd-set__danger:hover{background:var(--fd-danger-wash)}
+.fd-set__note--warn{padding:12px 15px;border:1px solid var(--fd-danger);border-radius:var(--fd-radius-md);background:var(--fd-danger-wash);color:var(--fd-text);font-size:var(--fd-font-sm);line-height:1.55}
+.fd-set__row{display:flex;flex-wrap:wrap;gap:var(--fd-space-4);margin:var(--fd-space-4) 0 0}
+.fd-set__row .fd-btn,.fd-set__row .fd-set__danger{flex:1 1 auto;margin:0;justify-content:center;text-align:center}
+@media (pointer:coarse){.fd-set__link,.fd-set__danger{min-height:var(--fd-target-touch)}}

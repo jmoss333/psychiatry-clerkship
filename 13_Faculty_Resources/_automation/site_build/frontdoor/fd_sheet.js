@@ -51,6 +51,9 @@
      - data-fd-close-sheet       -- close. On the backdrop and the ✕, matching fd_search.js's
                                     data-fd-close-search naming.
      - data-fd-close-nudge       -- dismiss the toast, same naming family.
+     - data-fd-theme="<mode>"    -- select a colour theme. fd_wire.js has owned this action since
+                                    the header carried a theme glyph; the settings panel's
+                                    segmented control is now its only emitter.
      - data-fd-step="<index>"    -- the one new action. Toggling a step check is genuinely distinct
                                     from data-fd-toggle (which marks an ITEM done, keyed by ref and
                                     persisted): step checks are keyed by position within one
@@ -257,8 +260,229 @@ function fdSheetItemBody(item, index){
   return out;
 }
 
-/* state.sheet is 'kit', a kit ref, or 'item:<ref>'. Anything else -- absent, null, or a ref that
-   names no protocol -- renders the empty string, so a caller can concatenate the result
+/* The settings panel. Pure like every other body renderer here: everything it cannot derive --
+   the theme mode a learner picked, and in later sections the role list and the analytics posture
+   -- arrives on state, the way st.crisisHtml already does.
+
+   Copy rule applies in full: these strings ship to BOTH sites unrebranded. "Exam", never "Shelf".
+
+   Sections are emitted as direct siblings spaced by `.fd-set + .fd-set` (frontdoor.css), matching
+   the adjacent-sibling idiom the kit rows use -- no wrapper div between them. A later section can
+   therefore be inserted before or after this one by adding a line, with no restructuring. */
+/* Three toggle buttons in a labelled group, NOT role="radio" in a role="radiogroup". The radio
+   roles are a promise of a keyboard contract -- roving tabindex so the set is one tab stop, arrow
+   keys moving the selection, Home/End -- and none of it is implemented here; implementing it means
+   reaching into fdKeyAction, the shared keyboard map, for a three-item control. A role that lies
+   is worse than no role: a screen-reader user hears "radio button, 1 of 3", presses the arrow key
+   the role just told them to press, and nothing happens. As buttons the promise is one the markup
+   keeps on its own -- each is tabbable, Enter and Space activate it, and the announcement is
+   "Color theme, group, Dark, pressed". `is-active` is what the CSS fills and aria-pressed is what
+   assistive tech reads; both are set from the same `active`, and a test pins that they agree. */
+function fdSettingsSeg(mode){
+  var opts=[['system','System'],['light','Light'],['dark','Dark']];
+  var cur=fdThemeMode(mode);
+  var out='<div class="fd-seg" role="group" aria-label="Color theme">';
+  for(var i=0;i<opts.length;i++){
+    var active=(opts[i][0]===cur);
+    out+='<button type="button" class="fd-seg__btn'+(active?' is-active':'')+'" '+
+      'data-fd-theme="'+opts[i][0]+'" aria-pressed="'+(active?'true':'false')+'">'+
+      opts[i][1]+'</button>';
+  }
+  return out+'</div>';
+}
+
+function fdSettingsSection(title, body){
+  return '<section class="fd-set"><h3 class="fd-set__h">'+fdEsc(title)+'</h3>'+body+'</section>';
+}
+
+/* The role the first-run wizard asked for, made changeable. Until this existed fdResolveState
+   returned to screen:'setup-role' only when the stored role was EMPTY, so a learner who tapped the
+   wrong row on day one was stuck with it short of clearing site data.
+
+   Drawn from the per-site FD_ROLES the wizard itself uses, so no role name is ever written here;
+   `roleId` is the RAW id, which the caller must capture before it resolves out.role to the display
+   name (spa_index.html). An unknown stored id marks nothing rather than silently promoting the
+   first chip -- showing a role the learner never chose is worse than showing none.
+
+   A wrapping chip set rather than .fd-seg: role names are per-site prose ("Nursing · SW · family")
+   where the theme's are one word each, and three equal segments of a 390px sheet strand them over
+   three lines at phone width. The a11y shape is the settled one -- role="group" with aria-pressed
+   buttons, NEVER role="radio", whose roving tabindex and arrow-key contract nothing here
+   implements (see fdSettingsSeg above; 60b246b took those roles off the segments for this reason
+   and nothing about these chips differs).
+
+   Author decision, 2026-09-10: the setting ships WITHOUT EXPLANATION -- a plain label and the
+   chips, no sublabel describing what role affects. One consequence binds: role's effect is close
+   to invisible today, so selection fires no toast and no "Saved". The chip's own filled state is
+   the entire feedback, which is also why the dispatch leaves `sheet` alone and the panel stays
+   open. */
+function fdSettingsRoles(roles, roleId){
+  var list=roles||[];
+  if(!list.length) return '';
+  var out='<div class="fd-choices" role="group" aria-label="Who you are">';
+  for(var i=0;i<list.length;i++){
+    var r=list[i]||{}, active=(r.id===roleId);
+    out+='<button type="button" class="fd-choices__btn'+(active?' is-active':'')+'" '+
+      'data-fd-role="'+fdEsc(r.id)+'" aria-pressed="'+(active?'true':'false')+'">'+
+      fdEsc(r.name)+'</button>';
+  }
+  return out+'</div>';
+}
+
+/* Pacing -- the exam date. It used to live in Progress behind its own Save button and it lives
+   here now, and ONLY here. The store it writes through has a single home and this renderer names
+   no key at all -- two writable homes for one key silently desync (fd_state.js:17 records the same
+   rule for progress), and fd_sheet.js is storage-free by contract (tests/fd-sheet.test.mjs).
+
+   A native <input type="date"> rather than a text field plus a Save button: the platform picker,
+   the locale-correct display and keyboard segment editing all come free, and the value handed back
+   is already the ISO string the store wants. It is also the reason this is the one control in the
+   panel that is NOT on the delegated click path -- fd_wire.js commits it on `change`, renders
+   nothing, and moves no focus, because rebuilding the overlay would destroy the input the learner
+   is typing in. See the changeHandler comment there.
+
+   No Save confirmation, for the same reason the role chips have none: the field's own value is
+   the feedback, and a "Saved" for a change with no visible consequence promises more than it did.
+
+   Copy rule: "Exam", never "Shelf". */
+function fdSettingsPacing(examDate){
+  return '<label class="fd-set__label" for="fdSetExam">Exam date</label>'+
+    '<input id="fdSetExam" class="fd-set__date" type="date" data-fd-exam-date '+
+    'value="'+fdEsc(examDate||'')+'">'+
+    '<p class="fd-set__note">Used on this device to pace what Today suggests.</p>';
+}
+
+/* Your data -- the only section in this panel that destroys anything.
+
+   Two controls, and the first one is a ROUTE, not an action: the export lives on the Progress
+   page (its own button is the one this borrows its wording from), so this navigates there. It
+   carries the arrow the rest of the front door uses for "this takes you somewhere" -- without it
+   a button reading "Export my anonymous progress" promises a download and delivers a page
+   change, which is the same over-claim the attested-pill rules above exist to prevent.
+
+   The clear takes two taps and the second one REPLACES the first rather than appearing beside it.
+   A confirm that sits next to the button that raised it doubles the number of destructive targets
+   on screen at the moment the learner is least certain, and on a phone the two end up a thumb's
+   width apart. So the calm state has exactly one control and the armed state has exactly one
+   destructive control, never both.
+
+   The armed copy names what goes -- progress, practice answers, review cards, preferences, and
+   the Interview Room's setup -- and says it cannot be undone, because "Clear everything on this
+   device" alone does not tell a learner whether "everything" includes the week they set up or
+   only the theme.
+
+   The Interview Room is named because the erase takes every key the library owns on this device,
+   and the room keeps its endpoint and its voice consent among them: erasing those un-configures
+   it, so the next visit opens its own settings instead of a conversation. Nothing in
+   "preferences" predicts a tool you have to set up again, and the room ships on both sites.
+
+   The room's passcode is deliberately NOT named. It lives in per-tab storage this erase never
+   reaches -- measured in the built page, 2026-09-11 -- so a confirm promising the passcode goes
+   would describe something that does not happen, which is the same over-claim the export
+   control's arrow exists to prevent. Audience-neutral, like every string in this panel.
+
+   role="alert" is doing real work here rather than decorating. The panel is rebuilt on every
+   render, so the button the learner just pressed no longer exists and fd_wire.js's generic focus
+   restore has no equivalent to return to; without the live region a screen-reader user would arm
+   an irreversible erase and hear nothing at all. The warning is rendered ONLY when armed: a calm
+   panel carrying it hidden would read the irreversible-erase sentence to someone who has tapped
+   nothing, and would leave the confirm one stylesheet edit away from being live unarmed. */
+function fdSettingsData(confirming){
+  var out='<button type="button" class="fd-set__link" data-fd-progress>'+
+    'Export my anonymous progress →</button>';
+  if(!confirming){
+    return out+'<button type="button" class="fd-set__danger" data-fd-clear-ask>'+
+      'Clear everything on this device</button>';
+  }
+  return out+
+    '<p class="fd-set__note fd-set__note--warn" role="alert">This erases your progress, practice '+
+    'answers, review cards, preferences and your Interview Room setup on this device. It cannot '+
+    'be undone.</p>'+
+    '<div class="fd-set__row">'+
+    '<button type="button" class="fd-btn fd-btn--ghost" data-fd-clear-cancel>Keep my data</button>'+
+    '<button type="button" class="fd-set__danger" data-fd-clear-confirm>Erase everything</button>'+
+    '</div>';
+}
+
+/* Usage -- the only section in this panel that is usually ABSENT, and the reason it renders from
+   state rather than from a global. The usage emitter ships only when CLERKSHIP_ANALYTICS named
+   the site at build time, and that flag defaults to off, so on every build shipped today the page
+   carries no cwAnalytics at all: st.analytics arrives null and this renders nothing. A notice
+   about collection that is not happening is worse than silence.
+
+   (The emitter's own file is not named anywhere in this comment, and must not be: a shipped page
+   that merely MENTIONS it fails the build's own "ships nothing analytics-related when disabled"
+   gate, which reads the built index.html as text. Grep cwAnalytics to find it.)
+
+   TWO REASONS, NEVER CONFLATED. The emitter's enabled() is `!signalsPrivacy() && !optedOut()`, so
+   it is false both for a learner who turned counting off here and for one whose browser sends
+   DNT or GPC. The second learner did not make that choice in this panel and cannot unmake it
+   here, so they get a sentence explaining who decided -- never a control the panel could not
+   honour if they operated it. The state the caller supplies keeps the two apart; this renderer
+   reads `optedIn` ONLY in the branch where no signal is set, because under a signal the emitter
+   exposes no way to know it (tests/fd-settings.test.mjs pins that the two signalled states render
+   byte-identical output).
+
+   A PAIR OF SEGMENTS, not one button whose label flips. The panel's focus guarantee
+   (refocusInvoker in fd_wire.js) re-queries the rebuilt panel for the same attribute AND THE SAME
+   VALUE, so a single control carrying data-fd-analytics="on" that re-renders as "off" has no
+   equivalent to return to: focus falls back to the dialog's close button and a screen-reader user
+   hears nothing about the change they just made. Two segments with fixed values survive their own
+   render, announce the resulting state through aria-pressed, and make this the third instance of
+   the idiom already used by Appearance and You rather than a third interaction model. Same a11y
+   ruling as those two: role="group" with aria-pressed buttons, NEVER role="radio".
+
+   The copy states what is true of THIS DEVICE in each state. One sentence describing what the
+   counter collects, rendered unchanged over a device excluded from it, would be true about the
+   system and false about the reader -- which is the same defect as rendering the section at all
+   where no emitter shipped.
+
+   THE OPT-OUT KEY IS NOT NAMED HERE, and not anywhere else in the front door either. It belongs
+   to the usage emitter, the one definition of what a stored value and an absent one mean; a
+   second writer is how the two drift, and a grep for that key returning exactly one file is what
+   keeps the ownership checkable. The wiring delegates to cwAnalytics.optIn()/optOut() and
+   tests/fd-settings.test.mjs pins the whole directory against the literal. */
+function fdSettingsUsage(an){
+  if(an.privacySignal){
+    return '<p class="fd-set__note">Your browser asks sites not to measure usage, so this '+
+      'device is already excluded. Nothing is counted.</p>';
+  }
+  var opts=[['on','On'],['off','Off']], counted=(an.optedIn===true);
+  var out='<div class="fd-seg" role="group" aria-label="Usage counting">';
+  for(var i=0;i<opts.length;i++){
+    var active=((opts[i][0]==='on')===counted);
+    out+='<button type="button" class="fd-seg__btn'+(active?' is-active':'')+'" '+
+      'data-fd-analytics="'+opts[i][0]+'" aria-pressed="'+(active?'true':'false')+'">'+
+      opts[i][1]+'</button>';
+  }
+  return out+'</div><p class="fd-set__note">'+(counted
+    ?'This device is counted: which pages get opened, by week. No identity, no text, nothing '+
+      'you typed.'
+    :'This device is not counted. Turned on, it records which pages get opened, by week — no '+
+      'identity, no text, nothing you typed.')+'</p>';
+}
+
+function fdSheetSettingsBody(state){
+  var st=state||{};
+  var out='<p class="fd-sheet__intro">Everything here is saved on this device only.</p>';
+  var roles=fdSettingsRoles(st.roles, st.roleId);
+  if(roles) out+=fdSettingsSection('You', roles);
+  out+=fdSettingsSection('Pacing', fdSettingsPacing(st.examDate));
+  out+=fdSettingsSection('Appearance',
+    fdSettingsSeg(st.themeMode)+
+    '<p class="fd-set__note">System follows your device’s light or dark setting.</p>');
+  /* Last of the sections that ALWAYS render: a learner scrolling this panel meets every
+     reversible setting before the one that is not. */
+  out+=fdSettingsSection('Your data', fdSettingsData(st.settingsConfirmClear===true));
+  /* And Usage after it, on the builds that have one. A section present on some builds and absent
+     on most must not open a gap in the middle of the fixed order, and this one is reversible, so
+     placing it after the erase costs the rule above nothing. */
+  if(st.analytics) out+=fdSettingsSection('Usage', fdSettingsUsage(st.analytics));
+  return out;
+}
+
+/* state.sheet is 'kit', 'settings', a kit ref, or 'item:<ref>'. Anything else -- absent, null, or
+   a ref that names no protocol -- renders the empty string, so a caller can concatenate the result
    unconditionally and a stale sheet key degrades to "no sheet" rather than to an empty protocol
    shell with a title and no content. */
 function fdSheet(index, topicMeta, state){
@@ -268,7 +492,10 @@ function fdSheet(index, topicMeta, state){
   if(!sheet) return '';
 
   var title='', body='', hasBack=false;
-  if(sheet==='kit'){
+  if(sheet==='settings'){
+    title='Settings';
+    body=fdSheetSettingsBody(st);
+  } else if(sheet==='kit'){
     title='Safety kit';
     body=fdSheetKitBody(idx);
   } else if(String(sheet).indexOf(FD_SHEET_ITEM_PREFIX)===0){

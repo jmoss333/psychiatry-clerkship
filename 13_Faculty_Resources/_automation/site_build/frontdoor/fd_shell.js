@@ -54,7 +54,8 @@ function fdHeader(state){
     '<button type="button" class="fd-weekpill" data-fd-change-week title="Change week">'+
     weekLabel+' ▾</button>'+
     '<button type="button" class="fd-safetybtn" data-fd-safety>✚ Safety</button>'+
-    '<button type="button" class="fd-themebtn" data-fd-theme aria-label="Toggle color theme">◐</button>'+
+    '<button type="button" class="fd-settingsbtn" data-fd-settings '+
+    'aria-label="Settings">⚙</button>'+
     '</div>';
   out+='</div>';
   out+=fdTabs(s.tab);
@@ -149,4 +150,20 @@ function fdKeyAction(key, opts){
     return {type:'tab', tab:tabs[parseInt(key,10)-1]};
   }
   return null;
+}
+
+/* Theme has three MODES the learner picks and two ATTRIBUTES the page paints. Storage holds the
+   mode so 'system' survives a round trip and the panel can mark it active; documentElement holds
+   the resolved attribute so CSS only ever sees light/dark. Collapsing the two -- storing the
+   resolved value -- is what made "follow the OS" impossible to express before: the moment you
+   write 'dark' you have lost the fact that the learner asked for "whatever my phone says".
+   An unrecognised stored value reads as system rather than light: a device that never expressed
+   a preference should follow its OS, which is the author's 2026-09-10 decision. */
+function fdThemeMode(stored){
+  return (stored==='light'||stored==='dark'||stored==='system')?stored:'system';
+}
+
+function fdThemeAttr(mode, prefersDark){
+  if(mode==='light'||mode==='dark') return mode;
+  return prefersDark?'dark':'light';
 }

@@ -791,7 +791,13 @@ test.describe('learner exact-question review route', () => {
       window.postMessage({ type: 'theme', mode: 'light' }, location.origin);
     });
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-    await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_theme'))).toBe('light');
+    // PAINT ONLY, NEVER PERSIST -- this assertion used to read 'light' and was inverted with the
+    // behaviour it pins. The shell can push only a RESOLVED attribute into a frame, so a child
+    // that wrote what it was pushed converted a learner's 'system' choice into a pinned
+    // light/dark mode with no gesture anywhere in the chain (retired in 4970087; the page's own
+    // handler carries the reason, and tests/fd-settings.test.mjs pins it at source level). The
+    // seeded mode therefore has to survive the push.
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_theme'))).toBe('dark');
     expect(await protectedProgress(page)).toEqual(REVIEW_PROGRESS_SENTINELS);
   });
 });

@@ -140,7 +140,7 @@ test('tab focus order is stable and Path preview does not change rotation until 
   await page.keyboard.press('Tab');
   await expect(page.locator('.fd-safetybtn[data-fd-safety]')).toBeFocused();
   await page.keyboard.press('Tab');
-  await expect(page.locator('[data-fd-theme]')).toBeFocused();
+  await expect(page.locator('[data-fd-settings]')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.locator('[data-fd-tab="today"]')).toBeFocused();
 
@@ -242,9 +242,13 @@ test('Safety Kit, theme, and Progress remain usable and restore their invokers',
   await seedApp(page, testInfo);
   await page.goto('/');
 
-  await page.locator('[data-fd-theme]').click();
+  const settings = page.locator('[data-fd-settings]');
+  await settings.click();
+  await page.locator('[data-fd-theme="dark"]').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   expect(await page.evaluate(() => localStorage.getItem('cw_theme'))).toBe('dark');
+  await page.locator('.fd-sheet__close').click();
+  await expect(settings).toBeFocused();
 
   const safety = page.locator('.fd-safetybtn[data-fd-safety]');
   await safety.click();
@@ -526,7 +530,7 @@ test('390x844 reduced-motion Reader keeps fixed 44px actions during scroll witho
   expect(after.y + after.height).toBeCloseTo(PHONE.height, 0);
 
   const targets = await page.locator(
-    '.fd-actionbar .fd-btn, .fd-searchbtn, .fd-weekpill, .fd-safetybtn, .fd-themebtn',
+    '.fd-actionbar .fd-btn, .fd-searchbtn, .fd-weekpill, .fd-safetybtn, .fd-settingsbtn',
   ).evaluateAll(controls => controls.filter(control => getComputedStyle(control).display !== 'none')
     .map(control => {
       const box = control.getBoundingClientRect();
@@ -563,7 +567,7 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
 
       const geometry = await page.evaluate(() => {
         const selectors = [
-          '.fd-brand', '.fd-searchbtn', '.fd-weekpill', '.fd-safetybtn', '.fd-themebtn',
+          '.fd-brand', '.fd-searchbtn', '.fd-weekpill', '.fd-safetybtn', '.fd-settingsbtn',
         ];
         const visible = element => {
           const style = getComputedStyle(element);

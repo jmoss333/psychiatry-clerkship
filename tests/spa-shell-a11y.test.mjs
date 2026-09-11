@@ -79,7 +79,16 @@ test('the live controller restores only connected dialog invokers', () => {
   const end = fdWire.indexOf('function previewActive(', start);
   assert.ok(start > -1 && end > start, 'controller restoreInvoker must exist');
   const body = fdWire.slice(start, end);
-  assert.match(body, /el&&el\.isConnected!==false&&el\.focus/);
+  // The invariant is "never focus a detached element", not the expression that used to carry it.
+  // A disconnected invoker is now REPLACED by its live equivalent (same action attribute, same
+  // value) in the root before anything is focused -- the gear that opened the settings panel is
+  // destroyed by the header rerender a theme change causes, and skipping it outright dropped
+  // focus to <body>. Both halves are pinned: the detection, and the scope of the replacement.
+  assert.match(body, /el&&el\.isConnected===false/,
+    'a detached invoker must still be detected rather than focused');
+  assert.match(body, /equivalentControl\(el,root\)/,
+    'and replaced by the live control carrying the same action, searched from the root');
+  assert.match(body, /if\(el&&el\.focus\)/, 'focus only ever moves to a control that exists');
   assert.match(fdWire, /else if\(!afterOverlay&&beforeHadOverlay\) restoreInvoker\(\)/,
     'focus restoration occurs only on the final overlay close transition');
 });
@@ -114,7 +123,7 @@ test('mobile primary and dialog controls have 44px minimum hit targets', () => {
   for (const selector of [
     '.fd-btn', '.fd-tab', '.fd-setup__back', '.fd-reader__back', '.fd-result',
     '.fd-searchpanel__esc', '.fd-sheet__back', '.fd-sheet__close',
-    '.fd-nudge__go', '.fd-nudge__dismiss', '.fd-themebtn',
+    '.fd-nudge__go', '.fd-nudge__dismiss', '.fd-settingsbtn',
   ]) {
     const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     assert.match(mobile, new RegExp(`${escaped}[^{}]*\\{[^}]*min-height:44px`),
@@ -122,7 +131,7 @@ test('mobile primary and dialog controls have 44px minimum hit targets', () => {
   }
   for (const selector of [
     '.fd-setup__back', '.fd-searchpanel__esc', '.fd-sheet__close',
-    '.fd-nudge__dismiss', '.fd-themebtn',
+    '.fd-nudge__dismiss', '.fd-settingsbtn',
   ]) {
     const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     assert.match(mobile, new RegExp(`${escaped}[^{}]*\\{[^}]*min-width:44px`),
