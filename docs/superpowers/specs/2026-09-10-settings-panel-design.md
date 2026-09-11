@@ -161,11 +161,21 @@ This is the part most likely to fail a build, and it is not obvious from reading
 `qa-baseline.json` records the maximum count ever accepted per class per site (`computed-key` is
 ms3 7, res 10), and **a run that exceeds its baseline is promoted to a HARD failure**.
 
-A prefix-scoped clear-data loop calls `localStorage.removeItem(k)` with a computed `k`. That is +1
-on both sites, and the build fails until the baseline is deliberately re-recorded with
-`UPDATE_BASELINE=1`.
+A prefix-scoped clear-data loop calls `removeItem(k)` with a computed `k`, so it was planned as +1
+on both sites, failing the build until the baseline was deliberately re-recorded.
 
-**Decision (author, 2026-09-10): pay it, do not dodge it.** The alternative — enumerating every key as a
+**That prediction was wrong, corrected 2026-09-11 by running it.** The ratchet counts soft
+MESSAGES per class, not computed keys, and §5c raises exactly ONE `computed localStorage key(s) in
+index.html (N)` finding however large N is. The shell already raised it before this work (N was 4),
+so a computed key added to any injected `frontdoor/` module moves N and leaves `computed-key` at
+ms3 7 / res 10. `UPDATE_BASELINE=1` re-recorded against both finished builds reproduces the
+committed file byte for byte. The clear-data work therefore shipped with **no `qa-baseline.json`
+change at all**, which is a stronger result than the planned bump: no baseline debt was taken on
+and nothing else moved either.
+
+**Decision (author, 2026-09-10): pay it, do not dodge it.** Unaffected by the correction above —
+the decision is about which implementation ships, and the cheaper-than-expected price does not
+change it. The alternative — enumerating every key as a
 literal `removeItem` — is precisely the failure class `docs/SILENT_SHRINK_CHECKLIST.md` exists to
 catalogue: a check that reports success over a set smaller than the one it claims to cover. Only
 twenty-six keys are reachable as literals today; the rest hide behind helper indirection, and any
@@ -187,7 +197,7 @@ governs, and it is invisible to the very scan that would otherwise document the 
 |---|---|
 | `FD_HANDLED_ATTRS`, `FD_ACTION_SEMANTICS`, selector string | Three sites in `fd_wire.js` (:6, :14, :585) must agree |
 | `tests/fd-action-contract.test.mjs:36` | Exhaustive alphabetical list of every emitted `data-fd-*` |
-| `qa-baseline.json` | `computed-key` +1 per site, reviewed |
+| `qa-baseline.json` | **Nothing.** The +1 was predicted, not real — the ratchet counts one finding per file and the shell already had it. An empty diff here is the expected outcome; a non-empty one means something else moved. |
 | `frontdoor.css:867-868` | Coarse-pointer 44px rules name `.fd-themebtn` by class |
 | `tests/smoke/front-door.spec.js` | Header pin — a **separate CI job** `bin/verify.sh` cannot see |
 
@@ -234,7 +244,7 @@ All three resolved by the author on 2026-09-10, in the sections above:
 | # | Question | Decision |
 |---|---|---|
 | 1 | Unset theme resolves to system? | **Ship it** — unset follows the OS |
-| 2 | `computed-key` baseline +1 acceptable? | **Yes** — completeness over a rotting literal list |
+| 2 | `computed-key` baseline +1 acceptable? | **Yes** — completeness over a rotting literal list. (It turned out to cost 0, not +1; the ruling stands either way.) |
 | 3 | Does role copy explain its effect? | **No** — ships unexplained, and therefore without a save toast |
 
 Spec approved. Next step is an implementation plan.

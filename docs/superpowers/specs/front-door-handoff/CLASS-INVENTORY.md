@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(273 distinct `fd-*` selector names, 20 `is-*` state classes). Every class below has a rule in that file unless
+(277 distinct `fd-*` selector names, 20 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
@@ -453,6 +453,13 @@ independent states on the child. A current *and* done item carries both.
       .fd-seg          [role=group]
         .fd-seg__btn   <button> ×3             (.is-active + aria-pressed on the chosen one)
       .fd-set__note
+      ── Your data ──
+      .fd-set__link    <button>                (routes to the Progress page's export)
+      .fd-set__danger  <button>                (calm: one control — "Clear everything on this device")
+      .fd-set__note.fd-set__note--warn  [role=alert]   (armed only — both classes)
+      .fd-set__row                             (armed only)
+        .fd-btn.fd-btn--ghost <button>         ("Keep my data")
+        .fd-set__danger       <button>         ("Erase everything")
 
 .fd-nudge                           (fixed, z-120, bottom-centre toast)
   .fd-nudge__text
@@ -475,6 +482,10 @@ independent states on the child. A current *and* done item carries both.
 | `.fd-set__label` | Visible label for a settings field, bound by `for`. The panel's other sections are button groups named by `aria-label`; this is the one control that needs a real `<label>`. |
 | `.fd-set__date` | The Pacing section's `<input type="date">`. Borrows `.fd-choices__btn`'s border, radius and surface so the panel reads as one control family, and takes the full sheet width because a native date input's intrinsic width is barely wider than its own text. Declare `font:inherit` **before** the size step or the shorthand resets it. It is the only control in the panel outside the delegated click path — `fd_wire.js` commits it on a change event and deliberately renders nothing, because rebuilding the overlay destroys the input mid-entry. |
 | `.fd-choices__btn` | Same rules as `.fd-seg__btn`: an ordinary toggle button, never `role="radio"`, with `.is-active` and `aria-pressed` on the same one. **Not `.fd-chip`** — that is the static type badge on result rows, with no border, no pointer, no touch target and no `.is-active` rule, so a chip set built on it paints every option identically. |
+| `.fd-set__link` | The Your-data route to the export the Progress page already ships (`data-act="studyexport"`). Painted as a link, not a control, and labelled with a trailing arrow: it navigates, it does not export, and a button promising a download that delivers a page change is the same over-claim the attested-pill rules forbid. |
+| `.fd-set__danger` | The destructive control, **outlined in both states** — calm ("Clear everything on this device") and armed ("Erase everything"). Never filled: a red slab under the fingertip that just armed the confirm invites the reflex second tap the two-tap pattern exists to prevent. Its armed partner is `.fd-btn.fd-btn--ghost`, so the pair still reads red-versus-neutral. |
+| `.fd-set__note--warn` | Modifier: the armed erase warning. **Apply alongside `.fd-set__note`**, not instead of it — it overrides the base note's `--fd-text-mid` ink to `--fd-text`, which is the gated pair against `--fd-danger-wash`. Carries `role="alert"`, and is rendered ONLY when armed: the panel is rebuilt on every render, so the button the learner pressed is gone and the generic focus restore has no equivalent to return to — the live region is the only thing that announces the arming. |
+| `.fd-set__row` | The armed pair's two-button row. Wraps at phone width; both children stretch. The only place in the panel where two controls share a line. |
 
 At the mobile breakpoint, primary actions, navigation controls, dialog close/back controls, and
 icon-sized controls have a minimum 44px hit target. Icon-sized controls also have a 44px minimum

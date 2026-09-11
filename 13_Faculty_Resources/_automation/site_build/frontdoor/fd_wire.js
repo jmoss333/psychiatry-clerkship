@@ -11,6 +11,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
   'data-fd-back','data-fd-home','data-fd-search','data-fd-change-week','data-fd-progress',
   'data-fd-theme','data-fd-settings','data-fd-exam-date',
+  'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool'
 ];
@@ -34,6 +35,9 @@ var FD_ACTION_SEMANTICS={
   'data-fd-theme':'set saved color theme',
   'data-fd-settings':'open settings panel',
   'data-fd-exam-date':'set exam date',
+  'data-fd-clear-ask':'arm device data erase',
+  'data-fd-clear-cancel':'cancel device data erase',
+  'data-fd-clear-confirm':'erase device data',
   'data-fd-close-search':'close search dialog',
   'data-fd-close-sheet':'close side sheet',
   'data-fd-close-nudge':'dismiss protocol nudge',
@@ -198,11 +202,17 @@ function fdProtocolRef(sheet){
   return String(sheet);
 }
 
+/* settingsConfirmClear is reset here as well as at the panel's opening, and the two are not
+   redundant. This one is the near guarantee: it covers the ✕, the backdrop and Escape, which are
+   the routes a learner uses to back out of a confirm they did not mean to arm, and it clears the
+   flag at the moment they back out rather than at some later visit. The opening reset is the
+   complete one, because the panel can also be left by controls that patch sheet:null without
+   coming through here. */
 function fdCloseSheet(state){
   var ref=fdProtocolRef(state&&state.sheet);
   var unread=!!ref&&!((state.done||{})[ref]===true);
   return {
-    patch:{sheet:null,sheetFrom:null,stepsDone:{},nudge:unread?ref:null},
+    patch:{sheet:null,sheetFrom:null,stepsDone:{},nudge:unread?ref:null,settingsConfirmClear:false},
     route:null,
     effect:unread?{type:'nudge-timeout',delay:8000}:null
   };
@@ -407,8 +417,34 @@ function fdDispatch(attrs, context, state){
   }
   if(fdOwn(a,'data-fd-settings')){
     /* Settings is a sheet so it inherits backdrop, dialog semantics, the close button and the
-       Escape unwind from fdKeyAction. sheetFrom is not set: settings has no "back to kit" path. */
-    return {patch:{sheet:'settings',searchOpen:false},route:null,effect:null};
+       Escape unwind from fdKeyAction. sheetFrom is not set: settings has no "back to kit" path.
+
+       settingsConfirmClear:false is the COMPLETE half of the disarm guarantee, and it is here
+       rather than spread across the exits for a reason. fdCloseSheet covers the ✕, the backdrop
+       and Escape; it does not cover data-fd-progress -- the Your-data section's own export link,
+       which sits directly above the armed confirm and patches sheet:null on its own -- nor
+       data-fd-home, nor data-fd-change-week, nor a reload. Enumerating those is the shape of
+       check that reports success over a smaller set than it claims, and the list would have to be
+       re-derived every time a control learns to close the panel. This branch is the only producer
+       of sheet:'settings' in the file, and fdResolveState cannot restore the key (FD_KEYS does
+       not persist a sheet key), so resetting the flag on the way IN covers every way out that
+       exists or ever will. */
+    return {patch:{sheet:'settings',searchOpen:false,settingsConfirmClear:false},
+      route:null,effect:null};
+  }
+  /* The two-tap erase. The arming tap changes one boolean and nothing else -- no route, no
+     effect, no storage -- so the state that decides whether a destructive control is on screen is
+     the same kind of thing as the state that decides which theme segment is filled, and it is
+     testable without a DOM. The confirming tap disarms itself in the same patch it fires on, so a
+     re-render after the erase (or a reload that outruns it) can never find the panel primed. */
+  if(fdOwn(a,'data-fd-clear-ask')){
+    return {patch:{settingsConfirmClear:true},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-clear-cancel')){
+    return {patch:{settingsConfirmClear:false},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-clear-confirm')){
+    return {patch:{settingsConfirmClear:false},route:null,effect:{type:'clear-device-data'}};
   }
   if(fdOwn(a,'data-fd-theme')){
     /* The value is the MODE, not the painted attribute -- fdApplyEffect resolves it. A missing or
@@ -432,6 +468,48 @@ function fdDispatch(attrs, context, state){
     return {patch:{},route:null,effect:{type:'set-exam-date',date:examDate}};
   }
   return {patch:{},route:null,effect:null};
+}
+
+/* Erase everything this device holds for the front door, and nothing else.
+
+   COLLECTS FIRST, DELETES SECOND. removeItem() reindexes the store, so key(i) after a delete
+   returns what key(i+1) would have: deleting inside a forward walk skips every other match. On a
+   small fixture that still looks like it worked, which is why tests/fd-wire.test.mjs runs it over
+   twelve keys as well as over four.
+
+   THE PREFIX SCAN IS THE POINT, and it is not a style preference. A list of the keys reachable as
+   literals today would miss every key any feature adds next month while the panel still reported
+   "cleared" -- a privacy defect that reports success, which is the class
+   docs/SILENT_SHRINK_CHECKLIST.md exists to catalogue. The test that makes the difference real
+   seeds a cw_* key that appears in no source file. localStorage.clear() is rejected for the
+   opposite reason: it reaches past the two namespaces the storage-namespaces decision governs and
+   would take a co-hosted page's keys with it.
+
+   The store arrives as an argument so the sweep can be driven over a fake that reindexes exactly
+   as a real one does. One consequence is worth recording rather than discovering: the removal
+   below is written against the PARAMETER, so check-static-site.mjs's 5c scan -- which greps the
+   global's own name followed by a dot -- does not see this call at all, and it costs no soft
+   finding. (Nor would it cost a baseline entry if it did: that scan raises ONE finding per file
+   however many computed keys it finds, and the shell already raises it.) What replaces the scan
+   here is the source-level assertion in tests/fd-wire.test.mjs that this function names no key of
+   its own -- stricter than the grep it forgoes, because the grep counts indirection while the
+   test forbids the thing indirection could hide.
+   That comment is also why this paragraph spells no scannable call: the scan reads shipped bytes,
+   comments included, so prose naming the pattern would report an indirection that is not there.
+
+   Every failure mode is swallowed on purpose. Storage can throw on the read (a browser with site
+   data blocked) or part-way through the writes (a private window raising on quota); an exception
+   escaping into apply() would skip the reload that follows and leave the panel sitting over a
+   half-erased device, reporting nothing. */
+function fdClearDeviceData(store){
+  var doomed=[], i, k;
+  try{
+    for(i=0;i<store.length;i++){
+      k=store.key(i);
+      if(typeof k==='string'&&(k.indexOf('cw_')===0||k.indexOf('rp_')===0)) doomed.push(k);
+    }
+    for(i=0;i<doomed.length;i++) store.removeItem(doomed[i]);
+  }catch(_){ }
 }
 
 function fdResourceRequest(ref, search){
@@ -632,6 +710,7 @@ var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-f
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
   '[data-fd-theme],[data-fd-settings],'+
+  '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
   '[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
   '[data-fd-try-now],[data-fd-expand-tool]';
 
@@ -819,7 +898,11 @@ function fdWire(root, initialState, opts){
   }
   function transitionDetail(before, patch, effect, changedBase){
     var changed=[], surfaces={base:false,overlay:false,completion:false,chrome:false,layout:false};
-    var overlayKeys={searchOpen:true,query:true,sheet:true,sheetFrom:true,stepsDone:true,nudge:true};
+    /* settingsConfirmClear belongs here because arming the erase changes the PANEL and nothing
+       under it. Left out, it falls to the else branch and is classed as a base change, so every
+       arm and every cancel rebuilds contentEl.innerHTML beneath an open sheet. */
+    var overlayKeys={searchOpen:true,query:true,sheet:true,sheetFrom:true,stepsDone:true,
+      nudge:true,settingsConfirmClear:true};
     var actionKeys={done:true,justDone:true,progressRaw:true};
     for(var key in patch){
       if(fdOwn(patch,key)&&before[key]!==state[key]){
@@ -915,6 +998,15 @@ function fdWire(root, initialState, opts){
         win.matchMedia('(prefers-color-scheme: dark)').matches);
       if(doc&&doc.documentElement)
         doc.documentElement.setAttribute('data-theme',fdThemeAttr(effect.mode,prefersDark));
+    } else if(effect.type==='clear-device-data'){
+      /* The reload is half of the erase, not a courtesy. apply() has already run fdSave(state),
+         so the store is cleared with the controller's own key in it -- but the controller still
+         holds that state in memory, and the learner's next tap would fdSave it straight back,
+         restoring role, week and route with no second confirmation. Reloading is what makes the
+         page agree with the store. It follows the render deliberately: whether the browser
+         honours it or not, nothing is left on screen claiming data that is gone. */
+      fdClearDeviceData(localStorage);
+      if(win&&win.location&&win.location.reload) win.location.reload();
     } else if(effect.type==='set-exam-date'){
       /* Delegated to fd_state.js, next to fdExamCountdown which reads the same key. The key
          itself cannot be named in this file: the controller's copy rule bans its audience token
@@ -1007,7 +1099,25 @@ function fdWire(root, initialState, opts){
     focusPostTransition(before,result,changedBase);
     if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
-    else if(afterOverlay&&afterOverlay===beforeOverlay) refocusInvoker(invoker);
+    /* The fallback exists because refocusInvoker's premise -- the equivalent control is still
+       there after the render -- is true of every control in the panel except one. The two-tap
+       erase REPLACES itself: arming swaps the single "clear" button for a cancel/confirm pair, so
+       the invoker's own attribute matches nothing in the rebuilt DOM, refocusInvoker declines, and
+       focus falls to <body>. From there fdTrapFocus bails and the next Tab walks out of an
+       aria-modal dialog, behind its own backdrop -- the exact defect refocusInvoker was added to
+       fix, landing on the one control that can destroy something. Keeping focus at the dialog's
+       own entry point is not as good as landing on the successor control, and it is the most a
+       generic rule can promise about a control that no longer exists. What tells the learner the
+       erase is armed is the live region the armed copy carries, not this.
+
+       Gated on there BEING an invoker, which is not belt-and-braces. controller.dispatch() passes
+       null, and the shell dispatches that way from a tool frame's postMessage -- 'openLibrary'
+       patches no sheet key, so the overlay identity is unchanged and this branch is reached with
+       an open panel nobody touched. Focus belongs wherever the learner left it there; the
+       fallback is for the element that was destroyed under their finger. */
+    else if(afterOverlay&&afterOverlay===beforeOverlay){
+      if(!refocusInvoker(invoker)&&invoker) focusDialog();
+    }
     return state;
   }
   function context(extra){

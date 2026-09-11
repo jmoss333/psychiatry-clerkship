@@ -1046,3 +1046,24 @@
 .fd-set__label{display:block;margin:0 0 var(--fd-space-4);font-size:var(--fd-font-sm);color:var(--fd-text-mid)}
 .fd-set__date{width:100%;padding:var(--fd-space-5) var(--fd-space-4);border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm)}
 @media (pointer:coarse){.fd-set__date{min-height:var(--fd-target-touch)}}
+/* Your data. .fd-set__link is the route to the export the Progress page already ships, so it is
+ * painted as a link rather than as a control: the teal ink is the one the sheet's own back button
+ * uses, and nothing about it should read as "this button does the export".
+ * .fd-set__danger is OUTLINED, not filled, and it is the same treatment in both states -- the
+ * calm "Clear everything on this device" and the armed "Erase everything". A filled red slab
+ * appearing under the fingertip that just armed the confirm invites the reflex second tap the
+ * two-tap pattern exists to prevent, and it would make the destructive option the loudest thing
+ * in the panel in the calm state too. Its partner "Keep my data" is .fd-btn--ghost, so the pair
+ * still reads as red-versus-neutral.
+ * Every colour here is an enforced pair in tests/fd-contrast.test.mjs: --fd-danger and
+ * --fd-teal-deep on --fd-surface-warm (the sheet's ground) at 4.5, --fd-text on
+ * --fd-danger-wash at 4.5. The hover keeps the SAME ink and changes only the ground, because
+ * --fd-danger-dark on --fd-danger-wash is not a gated pair. */
+.fd-set__link{display:flex;align-items:center;width:100%;padding:var(--fd-space-4) 0;border:0;background:none;color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-sm);font-weight:600;text-align:left;cursor:pointer}
+.fd-set__link:hover{color:color-mix(in srgb,var(--fd-teal-deep) 78%,var(--fd-text))}
+.fd-set__danger{display:block;width:100%;margin:var(--fd-space-4) 0 0;padding:var(--fd-space-5) var(--fd-space-4);border:1.5px solid var(--fd-danger);border-radius:var(--fd-radius-sm);background:none;color:var(--fd-danger);font:inherit;font-size:var(--fd-font-sm);font-weight:600;cursor:pointer}
+.fd-set__danger:hover{background:var(--fd-danger-wash)}
+.fd-set__note--warn{padding:12px 15px;border:1px solid var(--fd-danger);border-radius:var(--fd-radius-md);background:var(--fd-danger-wash);color:var(--fd-text);font-size:var(--fd-font-sm);line-height:1.55}
+.fd-set__row{display:flex;flex-wrap:wrap;gap:var(--fd-space-4);margin:var(--fd-space-4) 0 0}
+.fd-set__row .fd-btn,.fd-set__row .fd-set__danger{flex:1 1 auto;margin:0;justify-content:center;text-align:center}
+@media (pointer:coarse){.fd-set__link,.fd-set__danger{min-height:var(--fd-target-touch)}}

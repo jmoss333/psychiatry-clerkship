@@ -23,11 +23,17 @@ const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${today}
   fdReader: fdReader,
   fdWire: fdWire,
   fdThemeMode: fdThemeMode,
+  fdClearDeviceData: fdClearDeviceData,
 };`);
 
+// length/key(i) are part of the real Storage interface and are what any sweep over the store has
+// to walk. A fake without them makes a sweep silently a no-op -- it finds nothing, throws nothing,
+// and reports success -- so leaving them out would have let the erase pass its own effect test.
 function memStorage(seed = {}) {
   const map = new Map(Object.entries(seed));
   return {
+    get length() { return map.size; },
+    key: (i) => (i >= 0 && i < map.size ? [...map.keys()][i] : null),
     getItem: (key) => map.has(key) ? map.get(key) : null,
     setItem: (key, value) => map.set(key, String(value)),
     removeItem: (key) => map.delete(key),
@@ -259,7 +265,12 @@ test('closing an unread protocol raises an 8-second nudge, but a read one does n
   const unread = F.fdDispatch({ 'data-fd-close-sheet': '' }, {}, {
     ...roleContext, sheet: 'risk.md', done: {},
   });
-  assert.deepEqual(unread.patch, { sheet: null, sheetFrom: null, stepsDone: {}, nudge: 'risk.md' });
+  // settingsConfirmClear rides along on every sheet close, not only the settings one: the flag
+  // has a single reset point rather than a branch that has to recognise which sheet it is
+  // closing, and a protocol close disarming an erase nobody armed costs nothing.
+  assert.deepEqual(unread.patch, {
+    sheet: null, sheetFrom: null, stepsDone: {}, nudge: 'risk.md', settingsConfirmClear: false,
+  });
   assert.deepEqual(unread.effect, { type: 'nudge-timeout', delay: 8000 });
   const read = F.fdDispatch({ 'data-fd-close-sheet': '' }, {}, {
     ...roleContext, sheet: 'risk.md', done: { 'risk.md': true },
@@ -549,7 +560,7 @@ test('fdWire reports a partial window registration failure and unwinds every ins
 function actionTarget(attrs, extra = {}) {
   return {
     tagName: 'BUTTON', isContentEditable: false, isConnected: true,
-    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
+    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
     hasAttribute(name) { return Object.hasOwn(attrs, name); },
     getAttribute(name) { return Object.hasOwn(attrs, name) ? attrs[name] : null; },
     focus() { this.focused = (this.focused || 0) + 1; },
@@ -2127,6 +2138,17 @@ test('the exam date reaches storage only as an ISO calendar date or an empty str
 // committed on a change event and is absent from FD_ACTION_SELECTOR), which would pass while
 // testing nothing. Its real contract -- persists, does not render, does not move focus, and is
 // inert on click -- is pinned in tests/fd-settings.test.mjs.
+//
+// Task 7's erase pair is the SECOND deliberate absence, and for the opposite reason to the date
+// field: it renders, but it does not survive its own render. Arming replaces the single "clear"
+// button with a cancel/confirm pair, so there IS no equivalent control to restore focus to -- the
+// premise this harness asserts is false for it. Adding a row here would not test that; the
+// harness rebuilds every listed control on every render regardless of state, so the fake would
+// supply an equivalent the real renderer never emits and the row would pass under both the
+// correct implementation and a broken one. Its real contract -- focus never leaves the open
+// dialog, by the fallback rather than by the equivalent -- is pinned in tests/fd-settings.test.mjs
+// against a panel built from the REAL renderer output, where "there was no equivalent" is a fact
+// about the markup.
 const PANEL_CONTROLS = [
   ['data-fd-role', 'staff'],
   ['data-fd-theme', 'dark'],
@@ -2206,4 +2228,227 @@ test('closing the panel still restores the invoker rather than refocusing inside
   assert.equal(h.controller.getState().sheet, null, 'and the close control closes it');
   assert.equal(gear.focused, 1, 'focus returns to the control that opened the panel');
   assert.equal(focused.length, 0, 'no panel control is focused once the panel is gone');
+});
+
+// ── Your data: the export route and the two-tap erase ─────────────────────────────────────────
+// The panel's one destructive control. Every assertion below is about a guard.
+
+test('the erase arms, disarms, and fires as three distinct actions', () => {
+  const armed = F.fdDispatch({ 'data-fd-clear-ask': '' }, {}, { sheet: 'settings' });
+  assert.equal(armed.patch.settingsConfirmClear, true);
+  assert.equal(armed.effect, null, 'the first tap must destroy nothing');
+  assert.equal(armed.route, null);
+  assert.equal(armed.patch.sheet, undefined, 'and must leave the panel open');
+
+  const kept = F.fdDispatch({ 'data-fd-clear-cancel': '' }, {},
+    { sheet: 'settings', settingsConfirmClear: true });
+  assert.equal(kept.patch.settingsConfirmClear, false);
+  assert.equal(kept.effect, null, 'cancelling must destroy nothing');
+
+  const fired = F.fdDispatch({ 'data-fd-clear-confirm': '' }, {},
+    { sheet: 'settings', settingsConfirmClear: true });
+  assert.deepEqual(fired.effect, { type: 'clear-device-data' });
+  assert.equal(fired.patch.settingsConfirmClear, false,
+    'and the confirm disarms itself, so a re-render cannot leave it primed');
+});
+
+// A destructive confirm must never survive a close and reopen -- one stray tap from a wipe the
+// learner never re-authorised. Settings has exactly one close ROUTE (the shared
+// data-fd-close-sheet the ✕ and the backdrop emit) plus Escape, and both run fdCloseSheet.
+test('closing the panel disarms the erase confirm, by either close path', () => {
+  for (const attrs of [{ 'data-fd-close-sheet': '' }, { close: true }]) {
+    const r = F.fdDispatch(attrs, { }, { sheet: 'settings', settingsConfirmClear: true });
+    assert.equal(r.patch.settingsConfirmClear, false,
+      `${JSON.stringify(attrs)}: a destructive confirm must never survive a close and reopen`);
+  }
+});
+
+// The close paths are not the only way out of the panel, which is why the guarantee cannot be a
+// list of them. data-fd-progress -- the Your-data section's OWN export link, sitting directly
+// above the armed confirm -- patches sheet:null without going through fdCloseSheet, and so do
+// data-fd-home and data-fd-change-week. Arming the erase and then tapping the export next to it
+// is an ordinary thing to do, and it left the confirm primed for the next visit.
+//
+// So the one guarantee that covers every exit, including a reload, is asserted at the OPENING:
+// the panel is disarmed whenever it opens, however it was last left. data-fd-settings is the only
+// producer of sheet:'settings' (fdResolveState cannot restore it -- FD_KEYS does not persist
+// `sheet`), so this is exhaustive rather than enumerated.
+test('the panel opens disarmed however it was last left', () => {
+  const reopened = F.fdDispatch({ 'data-fd-settings': '' }, {}, { settingsConfirmClear: true });
+  assert.equal(reopened.patch.settingsConfirmClear, false,
+    'opening settings must never present an armed erase');
+
+  // Patches are applied the way apply() applies them rather than asserted on directly, so this
+  // stays true of the END state. Pinning "the exit leaves the flag set" instead would freeze
+  // today's gap as a contract and redden if some exit later learned to clear it too.
+  for (const exit of ['data-fd-progress', 'data-fd-home', 'data-fd-change-week']) {
+    const armedPanel = { sheet: 'settings', settingsConfirmClear: true, tab: 'today' };
+    const left = F.fdDispatch({ [exit]: '' }, {}, armedPanel);
+    assert.equal(left.patch.sheet, null, `${exit} closes the panel without fdCloseSheet`);
+    const away = { ...armedPanel, ...left.patch };
+    const back = F.fdDispatch({ 'data-fd-settings': '' }, {}, away);
+    assert.equal({ ...away, ...back.patch }.settingsConfirmClear, false,
+      `${exit} then reopening must not present an armed erase`);
+  }
+});
+
+// Arming the erase changes the PANEL and nothing underneath it. transitionDetail's overlayKeys
+// decides that, and a key missing from it is classed as a base change -- which rebuilds
+// contentEl.innerHTML under an open panel on every arm and cancel. The same misclassification is
+// what made the exam-date commit owe a base render; this key genuinely owes nothing.
+test('arming the erase is an overlay change, not a base one', () => {
+  const details = [];
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', sheet: 'settings' }, {
+    F, renderTransient: (_s, d) => details.push(d), render: (_s, d) => details.push(d),
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-clear-ask': '' }), preventDefault() {} });
+  const d = details[details.length - 1];
+  assert.equal(h.controller.getState().settingsConfirmClear, true, 'the click must arm');
+  assert.equal(d.surfaces.overlay, true, 'the panel is what changed');
+  assert.equal(d.surfaces.base, false, 'nothing under the panel did');
+});
+
+// This is the test that makes "cleared" true rather than asserted. It seeds a cw_* key that
+// appears in NO source file: an implementation that enumerates known literals would pass every
+// other assertion here and still leave this one behind, which is the silent-shrink class in
+// docs/SILENT_SHRINK_CHECKLIST.md -- a check reporting success over a smaller set than it claims.
+test('clearing removes every namespaced key, including one no source file mentions', () => {
+  const store = {
+    cw_progress_v1: '{}', cw_srs_v1: '{}', rp_flags: '[]',
+    cw_a_key_invented_by_a_future_feature_v9: '1',
+    'unrelated-third-party': 'keep me',
+  };
+  const fake = {
+    get length() { return Object.keys(store).length; },
+    key: (i) => Object.keys(store)[i],
+    getItem: (k) => (k in store ? store[k] : null),
+    removeItem: (k) => { delete store[k]; },
+  };
+  F.fdClearDeviceData(fake);
+  assert.deepEqual(Object.keys(store), ['unrelated-third-party'],
+    'every cw_*/rp_* key must go, and nothing else may');
+});
+
+// The fake above is a REAL store in the one way that matters here: removeItem reindexes it, so
+// key(i) after a delete returns what key(i+1) would have. Deleting inside a forward walk
+// therefore skips every other match -- and with an even number of doomed keys it skips them in a
+// pattern that still LOOKS like it worked on a three-key fixture. Collect first, delete second.
+test('a store that reindexes on delete still loses every namespaced key', () => {
+  const store = {};
+  for (let i = 0; i < 12; i += 1) store[`cw_k${i}`] = String(i);
+  const fake = {
+    get length() { return Object.keys(store).length; },
+    key: (i) => Object.keys(store)[i],
+    getItem: (k) => (k in store ? store[k] : null),
+    removeItem: (k) => { delete store[k]; },
+  };
+  F.fdClearDeviceData(fake);
+  assert.deepEqual(Object.keys(store), [], 'a delete-as-you-walk loop leaves half of these');
+});
+
+test('clearing survives a browser that throws on storage access', () => {
+  const hostile = { get length() { throw new Error('blocked'); } };
+  assert.doesNotThrow(() => F.fdClearDeviceData(hostile));
+});
+
+// A store that throws PART WAY through -- Safari private mode raises on the write, not the read.
+// The keys collected before the throw are still gone; what must not happen is an exception
+// escaping into apply(), which would skip the reload and leave the panel over a half-erased
+// device claiming nothing happened.
+test('clearing survives a store that throws on the removal itself', () => {
+  let removed = 0;
+  const hostile = {
+    length: 2,
+    key: (i) => ['cw_a', 'cw_b'][i],
+    getItem: () => '1',
+    removeItem() { removed += 1; throw new Error('quota'); },
+  };
+  assert.doesNotThrow(() => F.fdClearDeviceData(hostile));
+  assert.equal(removed, 1, 'it must have genuinely tried');
+});
+
+// The effect half: the erase runs against the real store and then RELOADS. Without the reload the
+// controller keeps its in-memory state and fdSave writes it back on the learner's next tap --
+// resurrecting the role, week and route the erase just removed, with no second confirmation.
+test('the erase effect empties the real store and reloads the page', () => {
+  const storage = memStorage({
+    cw_frontdoor_v1: '{"role":"first-role"}', cw_progress_v1: '{}', rp_x: '1', keep_me: 'yes',
+  });
+  const LocalF = make(storage);
+  let reloads = 0;
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', sheet: 'settings' }, {
+    F: LocalF,
+    location: { href: 'https://example.test/', search: '', pathname: '/', reload() { reloads += 1; } },
+  });
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-clear-confirm': '' }), preventDefault() {},
+  });
+  assert.deepEqual(Object.keys(storage.dump()), ['keep_me'],
+    'the namespaced keys are gone and the unrelated one is not');
+  assert.equal(reloads, 1, 'and the page reloads, or the next tap re-saves what was erased');
+});
+
+// fdSave(state) runs BEFORE fdApplyEffect in apply(), so the controller writes its own state key
+// on the way past and the erase has to happen after it. Reverse the two and the panel reports a
+// successful wipe over a store that still holds the learner's role and route.
+test('the controller state written on the way past is erased too, not after', () => {
+  const storage = memStorage({ cw_progress_v1: '{}' });
+  const LocalF = make(storage);
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F: LocalF,
+    location: { href: 'https://example.test/', search: '', pathname: '/', reload() {} },
+  });
+  // Opening the panel is an ordinary apply(), so fdSave has genuinely written the controller's own
+  // key by the time the erase runs -- which is the situation this test is about. Asserting it
+  // before any apply() would only pin the fixture.
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-settings': '' }), preventDefault() {} });
+  assert.ok('cw_frontdoor_v1' in storage.dump(),
+    'the fixture must actually reach a state where fdSave has written');
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-clear-confirm': '' }), preventDefault() {},
+  });
+  assert.deepEqual(storage.dump(), {}, 'nothing survives, including what apply() just wrote');
+});
+
+// meaningfulResult() is what previewActive() consults, and it exempts exactly one effect type.
+// It is closure-private inside fdWire, so the guard is pinned at the source: a broadened
+// condition would silently let a reviewer's click erase the device they are reviewing on.
+// Asserting meaningfulResult(result) === true from outside would prove nothing -- the confirm's
+// patch is non-empty, so it returns true on the patch loop before ever reading the effect.
+test('erasing device data stays "meaningful", so faculty preview locks it', () => {
+  const guard = wire.match(/function meaningfulResult\(result\)\{[\s\S]*?\n {2}\}/);
+  assert.ok(guard, 'meaningfulResult must remain extractable');
+  const exemptions = [...guard[0].matchAll(/type!=='([a-z-]+)'/g)].map((m) => m[1]);
+  assert.deepEqual(exemptions, ['set-theme'],
+    'only painting a theme may bypass the faculty-preview lock');
+
+  let locked = 0;
+  const h = fakeHarness({ ...roleContext, screen: 'app', sheet: 'settings' }, {
+    F,
+    facultyPreview: true,
+    facultyPreviewLock: () => { locked += 1; },
+    location: { href: 'https://example.test/', search: '', pathname: '/', reload() { throw new Error('reloaded under preview'); } },
+  });
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-clear-confirm': '' }), preventDefault() {},
+  });
+  assert.equal(locked, 1, 'the lock notice is what a reviewer gets');
+  assert.equal(h.controller.getState().settingsConfirmClear, undefined,
+    'and no state change reaches the reviewed page');
+});
+
+// fdClearDeviceData is the only removal path, and it must stay computed and prefix-scoped.
+// A literal key added to it would evade the very property the completeness test buys: the
+// fixture cannot contain a key nobody has written yet.
+test('the erase names no key of its own and reaches past no namespace', () => {
+  const body = wire.match(/function fdClearDeviceData\(store\)\{[\s\S]*?\n\}/);
+  assert.ok(body, 'fdClearDeviceData must remain extractable');
+  assert.doesNotMatch(body[0], /removeItem\(\s*['"]/,
+    'a literal removeItem here is a key the completeness test can never catch');
+  // Comments are stripped: the rationale for rejecting clear() names it, and a rule that its own
+  // documentation trips would be deleted rather than kept.
+  assert.doesNotMatch(wire.replace(/\/\*[\s\S]*?\*\//g, ''), /\.clear\(\s*\)/,
+    'clear() reaches past the namespace the storage-namespaces decision governs');
+  assert.equal((body[0].match(/indexOf\('(?:cw|rp)_'\)===0/g) || []).length, 2,
+    'both sanctioned prefixes, and only those');
 });

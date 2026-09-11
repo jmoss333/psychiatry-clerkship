@@ -352,6 +352,46 @@ function fdSettingsPacing(examDate){
     '<p class="fd-set__note">Used on this device to pace what Today suggests.</p>';
 }
 
+/* Your data -- the only section in this panel that destroys anything.
+
+   Two controls, and the first one is a ROUTE, not an action: the export lives on the Progress
+   page (its own button is the one this borrows its wording from), so this navigates there. It
+   carries the arrow the rest of the front door uses for "this takes you somewhere" -- without it
+   a button reading "Export my anonymous progress" promises a download and delivers a page
+   change, which is the same over-claim the attested-pill rules above exist to prevent.
+
+   The clear takes two taps and the second one REPLACES the first rather than appearing beside it.
+   A confirm that sits next to the button that raised it doubles the number of destructive targets
+   on screen at the moment the learner is least certain, and on a phone the two end up a thumb's
+   width apart. So the calm state has exactly one control and the armed state has exactly one
+   destructive control, never both.
+
+   The armed copy names what goes -- progress, practice answers, review cards, preferences -- and
+   says it cannot be undone, because "Clear everything on this device" alone does not tell a
+   learner whether "everything" includes the week they set up or only the theme.
+
+   role="alert" is doing real work here rather than decorating. The panel is rebuilt on every
+   render, so the button the learner just pressed no longer exists and fd_wire.js's generic focus
+   restore has no equivalent to return to; without the live region a screen-reader user would arm
+   an irreversible erase and hear nothing at all. The warning is rendered ONLY when armed: a calm
+   panel carrying it hidden would read the irreversible-erase sentence to someone who has tapped
+   nothing, and would leave the confirm one stylesheet edit away from being live unarmed. */
+function fdSettingsData(confirming){
+  var out='<button type="button" class="fd-set__link" data-fd-progress>'+
+    'Export my anonymous progress →</button>';
+  if(!confirming){
+    return out+'<button type="button" class="fd-set__danger" data-fd-clear-ask>'+
+      'Clear everything on this device</button>';
+  }
+  return out+
+    '<p class="fd-set__note fd-set__note--warn" role="alert">This erases your progress, practice '+
+    'answers, review cards and preferences on this device. It cannot be undone.</p>'+
+    '<div class="fd-set__row">'+
+    '<button type="button" class="fd-btn fd-btn--ghost" data-fd-clear-cancel>Keep my data</button>'+
+    '<button type="button" class="fd-set__danger" data-fd-clear-confirm>Erase everything</button>'+
+    '</div>';
+}
+
 function fdSheetSettingsBody(state){
   var st=state||{};
   var out='<p class="fd-sheet__intro">Everything here is saved on this device only.</p>';
@@ -361,6 +401,9 @@ function fdSheetSettingsBody(state){
   out+=fdSettingsSection('Appearance',
     fdSettingsSeg(st.themeMode)+
     '<p class="fd-set__note">System follows your device’s light or dark setting.</p>');
+  /* Last on purpose: a learner scrolling this panel meets every reversible setting before the one
+     that is not. */
+  out+=fdSettingsSection('Your data', fdSettingsData(st.settingsConfirmClear===true));
   return out;
 }
 

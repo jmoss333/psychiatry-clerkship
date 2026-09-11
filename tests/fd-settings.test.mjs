@@ -879,3 +879,241 @@ test('the nudge timeout settles the base debt when it fires over an open panel',
   assert.equal(h.details[h.details.length - 1].surfaces.base, true,
     'and that render is owed the base, because the commit before it rendered nothing');
 });
+
+// ---------------------------------------------------------------------------------------------
+// The Your data section: a link to the export Progress already offers, and a clear that takes two
+// taps. This is the one control in the panel that destroys something, so every assertion below is
+// about a guard rather than about an appearance.
+
+test('clearing is two-tap: the confirm replaces the button rather than sitting beside it', () => {
+  const calm = S.fdSheetSettingsBody(withState({}));
+  assert.match(calm, /data-fd-clear-ask/);
+  assert.doesNotMatch(calm, /data-fd-clear-confirm/, 'no armed control before the first tap');
+
+  const armed = S.fdSheetSettingsBody(withState({ settingsConfirmClear: true }));
+  assert.match(armed, /data-fd-clear-confirm/);
+  assert.doesNotMatch(armed, /data-fd-clear-ask/, 'the first button must be replaced, not kept');
+  assert.match(armed, /data-fd-clear-cancel/);
+});
+
+test('the confirm names what will be destroyed', () => {
+  const armed = S.fdSheetSettingsBody(withState({ settingsConfirmClear: true }));
+  for (const word of ['progress', 'cards', 'answers']) {
+    assert.match(armed, new RegExp(word, 'i'), `the confirm must name ${word}`);
+  }
+  assert.match(armed, /cannot be undone/i, 'and must say the erase is irreversible');
+});
+
+// The calm state must not carry the warning copy. Rendering both and hiding one with CSS would
+// pass every assertion above while reading the irreversible-erase sentence to a screen-reader
+// user who has tapped nothing -- and would leave `data-fd-clear-confirm` one stylesheet edit from
+// being live in a panel nobody armed.
+test('the warning exists only in the armed state', () => {
+  const calm = S.fdSheetSettingsBody(withState({}));
+  assert.doesNotMatch(calm, /cannot be undone/i);
+  assert.doesNotMatch(calm, /data-fd-clear-cancel/);
+});
+
+// A learner who arms the erase gets no focus move they can rely on -- the button they pressed no
+// longer exists, so the panel's generic focus restore has nothing to return to. The warning is
+// therefore announced by its role, not by focus landing on it.
+test('the armed warning announces itself', () => {
+  const armed = S.fdSheetSettingsBody(withState({ settingsConfirmClear: true }));
+  assert.match(armed, /role="alert"/, 'arming a destructive control must be audible');
+});
+
+// The export control NAVIGATES to the export the Progress page already ships (data-act=
+// "studyexport"); it does not export anything itself. A button labelled "Export my anonymous
+// progress" with no navigation cue promises a download and delivers a page change -- the same
+// over-claim the attested pill rules in fd_sheet.js exist to prevent.
+test('the export control is a link to the export, not an export', () => {
+  const h = S.fdSheetSettingsBody(withState({}));
+  const button = (h.match(/<button[^>]*data-fd-progress[^>]*>[^<]*<\/button>/) || [''])[0];
+  assert.ok(button, 'Your data must offer a route to the export');
+  assert.match(button, /Export my anonymous progress/,
+    'and must use the destination page’s own words for it');
+  assert.match(button, /→/, 'an arrow marks it as navigation, not as the export itself');
+  assert.match(shell, /data-act="studyexport"/,
+    'the destination it points at must still exist on the Progress page');
+});
+
+// Section order is a contract: You -> Pacing -> Appearance -> Your data. Destructive controls sit
+// last so a learner scrolling the panel meets every reversible setting before the one that is not.
+test('Your data sits last, after Appearance', () => {
+  const h = S.fdSheetSettingsBody(withState({ roles: ROLES, roleId: 'staff', examDate: '' }));
+  const at = (title) => h.indexOf(`class="fd-set__h">${title}<`);
+  for (const title of ['You', 'Pacing', 'Appearance', 'Your data']) {
+    assert.ok(at(title) > -1, `${title} must render`);
+  }
+  assert.ok(at('Appearance') < at('Your data'), 'Your data follows Appearance');
+});
+
+// tests/fd-sheet.test.mjs runs this check over the kit, protocol and item-preview variants and
+// cannot reach the settings one: its harness has no fd_shell.js, so fdSettingsSeg's fdThemeMode
+// is undefined there. It lives here instead, where the harness already loads it. Both erase
+// states are collected -- the armed erase is a whole subtree the calm panel never emits, so a
+// calm-only sweep would report success over the smaller set.
+test('only classes that exist in frontdoor.css are emitted by the settings panel', () => {
+  const css = read('frontdoor/frontdoor.css');
+  const seen = new Set();
+  for (const settingsConfirmClear of [false, true]) {
+    const html = S.fdSheet({}, {}, withState({
+      sheet: 'settings', roles: ROLES, roleId: 'staff', examDate: '2026-10-30',
+      settingsConfirmClear,
+    }));
+    for (const m of html.matchAll(/class="([^"]+)"/g)) m[1].split(/\s+/).forEach((c) => seen.add(c));
+  }
+  assert.ok(seen.has('fd-set__danger') && seen.has('fd-set__row'),
+    'both erase states must have been rendered, or this sweep proves nothing');
+  // Word-boundary match, not a substring one: ".fd-set__ro" must not pass on ".fd-set__row".
+  for (const c of seen) {
+    const re = new RegExp(`\\.${c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z0-9_-])`);
+    assert.match(css, re, `class "${c}" has no rule in frontdoor.css -- an invented class gets no styling`);
+  }
+});
+
+// ---------------------------------------------------------------------------------------------
+// The two-tap erase and the panel's focus guarantee.
+//
+// fd_wire.js's refocusInvoker keeps focus on the control the learner activated by re-querying the
+// REBUILT panel for the same action attribute and value. Every other control in this panel
+// satisfies that premise -- a role chip, a theme segment, they all still exist after the render
+// they caused. The erase pair does not: arming REPLACES "Clear everything on this device" with
+// "Keep my data" / "Erase everything", so the invoker's own attribute matches nothing in the new
+// DOM, refocusInvoker declines, and focus falls to <body> -- where fdTrapFocus bails and the next
+// Tab walks straight out of an aria-modal dialog, behind its own backdrop. That is precisely the
+// defect refocusInvoker was added to fix, reappearing on the one control in the panel that can
+// destroy something.
+//
+// The panel here is built from the REAL renderer output rather than from a hand-kept list of
+// controls, because a fake that mints the same controls whatever the state cannot tell "focus
+// landed on the equivalent" apart from "there was no equivalent and the fake supplied one anyway".
+// tests/fd-wire.test.mjs's PANEL_CONTROLS harness is the hand-kept one, and it is why these two
+// controls are deliberately absent from that list.
+function panelControls(html, generation) {
+  return [...html.matchAll(/<button[^>]*>/g)].map((m) => {
+    const attrs = {};
+    for (const a of m[0].matchAll(/(data-fd-[a-z-]+)(?:="([^"]*)")?/g)) attrs[a[1]] = a[2] ?? '';
+    return {
+      attrs,
+      generation,
+      tagName: 'BUTTON',
+      disabled: false,
+      hasAttribute: (n) => Object.hasOwn(attrs, n),
+      getAttribute: (n) => (Object.hasOwn(attrs, n) ? attrs[n] : null),
+      focus() { this.focused = true; },
+    };
+  });
+}
+
+function erasePanelHarness(seed = {}) {
+  const map = new Map(Object.entries(seed));
+  const storage = {
+    get length() { return map.size; },
+    key: (i) => (i >= 0 && i < map.size ? [...map.keys()][i] : null),
+    getItem: (k) => (map.has(k) ? map.get(k) : null),
+    setItem: (k, v) => map.set(k, String(v)),
+    removeItem: (k) => map.delete(k),
+    dump: () => Object.fromEntries(map),
+  };
+  const W = makeWire(storage);
+  let generation = 0;
+  let controls = [];
+  const markup = [];
+  const focused = [];
+  // The ✕ in fdSheetHead is the first focusable of a real settings sheet, so the dialog stub
+  // carries one: focusDialog's fallback lands on whatever fdFocusable returns first, and a stub
+  // without it would make "focus stayed in the dialog" unfalsifiable.
+  const close = {
+    tagName: 'BUTTON', disabled: false, name: 'close',
+    hasAttribute: () => false, getAttribute: () => null,
+    focus() { focused.push('close'); },
+  };
+  const rebuild = (state) => {
+    generation += 1;
+    const html = W.fdSheetSettingsBody(state);
+    markup.push(html);
+    controls = panelControls(html, generation);
+    for (const c of controls) c.focus = function focusControl() { focused.push(this); };
+  };
+  const panel = {
+    querySelector(selector) {
+      const m = selector.match(/^\[([a-z-]+)="(.*)"\]$/);
+      if (!m) return null;
+      return controls.find((c) => c.getAttribute(m[1]) === m[2]) || null;
+    },
+    querySelectorAll: () => [close, ...controls],
+  };
+  const handlers = {};
+  const root = {
+    addEventListener(type, fn) { handlers[type] = fn; },
+    removeEventListener() {},
+    querySelector: (s) => (s === '.fd-sheet[role="dialog"]' ? panel : null),
+    matches: () => false,
+  };
+  const controller = W.fdWire(root, { role: 'r', week: 1, screen: 'app', sheet: 'settings' }, {
+    window: {
+      addEventListener() {}, removeEventListener() {},
+      location: {
+        href: 'https://example.test/', search: '', pathname: '/', reload() { focused.push('reload'); },
+      },
+    },
+    render: (s) => rebuild(s),
+    renderTransient: (s) => rebuild(s),
+    index: { byRef: {}, weeks: [{ n: 1, items: [] }] },
+    synonyms: {},
+    document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
+  });
+  controller.commitStartup();
+  rebuild(controller.getState());
+  return {
+    controller, focused, markup, storage,
+    click(attr) {
+      const target = controls.find((c) => c.hasAttribute(attr));
+      assert.ok(target, `no control carrying ${attr} is on screen`);
+      target.closest = (selector) => (selector.indexOf(`[${attr}]`) > -1 ? target : null);
+      handlers.click({ target, preventDefault() {} });
+      return target;
+    },
+  };
+}
+
+test('arming and cancelling the erase never drop focus out of the open panel', () => {
+  const h = erasePanelHarness();
+  const ask = h.click('data-fd-clear-ask');
+  assert.match(h.markup[h.markup.length - 1], /data-fd-clear-confirm/,
+    'the panel must have been rebuilt into its armed state');
+  assert.equal(ask.focused, undefined, 'the destroyed control must never be the thing focused');
+  assert.equal(h.focused.length, 1,
+    'focus must land somewhere inside the panel, not on <body> where the focus trap bails');
+
+  const cancel = h.click('data-fd-clear-cancel');
+  assert.match(h.markup[h.markup.length - 1], /data-fd-clear-ask/, 'cancelling returns the panel');
+  assert.equal(cancel.focused, undefined);
+  assert.equal(h.focused.length, 2, 'and the same on the way back');
+});
+
+// And the fallback is gated on there being an invoker at all. controller.dispatch() passes null,
+// and the shell dispatches that way from a tool frame's postMessage -- 'openLibrary' patches no
+// sheet key, so the overlay identity is unchanged and this branch is reached over a panel the
+// learner never touched. Ungated, an embedded tool could yank focus into a dialog by posting a
+// message.
+test('a programmatic dispatch over an open panel moves no focus', () => {
+  const h = erasePanelHarness();
+  h.controller.dispatch({ 'data-fd-tab': 'library' });
+  assert.equal(h.controller.getState().sheet, 'settings', 'the panel is still open');
+  assert.deepEqual(h.focused, [], 'nothing in the panel may take focus from a postMessage');
+});
+
+// The other half: a control whose equivalent DOES survive still gets it, rather than being
+// swallowed by the fallback. Theme is the standing case, and this harness renders the real panel,
+// so "the equivalent exists" is a fact about the markup rather than about the fake.
+test('a control that survives its own render still keeps focus, not the fallback', () => {
+  const h = erasePanelHarness({ cw_theme: 'light' });
+  h.click('data-fd-theme');
+  assert.equal(h.focused.length, 1);
+  const landed = h.focused[0];
+  assert.equal(typeof landed, 'object', 'the fallback must not have fired');
+  assert.equal(landed.getAttribute('data-fd-theme'), 'system',
+    'the segment the learner activated is the one refocused');
+});
