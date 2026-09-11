@@ -765,39 +765,57 @@ function fdWire(root, initialState, opts){
     var first=(d.querySelector&&d.querySelector('.fd-searchpanel__input'))||fdFocusable(d)[0]||d;
     if(first&&first.focus) try{first.focus();}catch(_){}
   }
-  /* The third overlay case, and until now the only one with no branch. focusDialog fires when the
-     overlay IDENTITY changes and restoreInvoker when it closes; a control that re-renders its own
-     overlay IN PLACE matched neither, and fdRenderOverlays replaces the whole overlay mount's
-     innerHTML on every render -- so the element the learner just activated was destroyed and focus
-     fell to <body>. From there fdTrapFocus returns false and the next Tab walks straight out of an
-     aria-modal dialog, behind its own backdrop. Worse where a control's aria-pressed IS its only
-     feedback: the settings panel ships no toast by decision, so a screen-reader user got no signal
-     at all that their own click had landed.
+  /* THE EQUIVALENT of a control that is gone: the one live element carrying the same action
+     attribute AND the same value, inside the given scope. That pairing is the whole of it -- two
+     controls with the same attribute and value do the same thing, which is why focus may move to
+     one when the other is destroyed, and why this needs no per-control special case. A value that
+     cannot go in a selector safely is skipped rather than escaped: these are ids and modes, and a
+     bail is cheaper to trust than an escaper nobody re-reads.
 
-     Deliberately generic. The equivalent control in the rebuilt DOM is whichever one carries the
-     same action attribute AND the same value the invoker carried, which is true of every control
-     this panel has or will have -- a later section inherits this without naming itself here, and
-     without a fourth focus special case. Scoped to the open dialog so it can only ever move focus
-     inside the overlay that was just repainted. A value that cannot be put in a selector safely is
-     skipped rather than escaped: these are ids and modes, and a bail is cheaper to trust than an
-     escaper nobody re-reads. */
-  function refocusInvoker(invoker){
-    var d=dialog();
-    if(!d||!d.querySelector||!invoker||!invoker.hasAttribute||!invoker.getAttribute) return false;
+     Two callers, two scopes, and the scope is the whole difference between them: refocusInvoker
+     searches the OPEN DIALOG (a control that repainted its own overlay), restoreInvoker the ROOT
+     (the invoker that opened the overlay lives outside it, and by then the dialog is gone). */
+  function equivalentControl(invoker, scope){
+    if(!scope||!scope.querySelector||!invoker||!invoker.hasAttribute||!invoker.getAttribute){
+      return null;
+    }
     for(var i=0;i<FD_HANDLED_ATTRS.length;i++){
       var name=FD_HANDLED_ATTRS[i];
       if(!invoker.hasAttribute(name)) continue;
       var value=String(invoker.getAttribute(name)||'');
       if(/["\\]/.test(value)) continue;
-      var el=d.querySelector('['+name+'="'+value+'"]');
-      if(el&&el.focus){ try{el.focus();}catch(_){} return true; }
+      var el=scope.querySelector('['+name+'="'+value+'"]');
+      if(el) return el;
     }
+    return null;
+  }
+  /* The third overlay case, and until this existed the only one with no branch. focusDialog fires
+     when the overlay IDENTITY changes and restoreInvoker when it closes; a control that re-renders
+     its own overlay IN PLACE matched neither, and fdRenderOverlays replaces the whole overlay
+     mount's innerHTML on every render -- so the element the learner just activated was destroyed
+     and focus fell to <body>. From there fdTrapFocus returns false and the next Tab walks straight
+     out of an aria-modal dialog, behind its own backdrop. Worse where a control's aria-pressed IS
+     its only feedback: the settings panel ships no toast by decision, so a screen-reader user got
+     no signal at all that their own click had landed. Scoped to the open dialog, so it can only
+     ever move focus inside the overlay that was just repainted. */
+  function refocusInvoker(invoker){
+    var el=equivalentControl(invoker,dialog());
+    if(el&&el.focus){ try{el.focus();}catch(_){} return true; }
     return false;
   }
+  /* The invoker stack holds ELEMENT references across renders, and a render can destroy the
+     element it holds. The gear is the standing case: the header is chrome, a theme change marks
+     chrome dirty, and the shell reassigns the header mount's innerHTML -- so opening the panel,
+     choosing a mode and closing it used to leave focus on <body>, where fdTrapFocus bails and the
+     next Tab restarts at the top of the document. Falling back to the equivalent control in the
+     ROOT (not the dialog -- by now it is closed, and the control lives outside it anyway) applies
+     refocusInvoker's own rule one layer out. A disconnected invoker with no equivalent still
+     falls through to the next entry on the stack, as it always did. */
   function restoreInvoker(){
     while(invokers.length){
       var el=invokers.pop();
-      if(el&&el.isConnected!==false&&el.focus){
+      if(el&&el.isConnected===false) el=equivalentControl(el,root);
+      if(el&&el.focus){
         try{el.focus();}catch(_){}
         return;
       }

@@ -2125,7 +2125,9 @@ test('the exam date reaches storage only as an ISO calendar date or an empty str
 // The guarantee is generic, and this is where it is pinned: an activation inside an open panel
 // leaves focus on the EQUIVALENT control in the rebuilt DOM -- same action attribute, same value.
 // Tasks 7-8 add two erase buttons and an analytics toggle to this same panel. Each inherits this
-// by adding one row below, not by writing a fourth focus branch.
+// without a fourth focus branch -- though neither ended up as a row here; see the two paragraphs
+// at the bottom of this comment for why the erase pair cannot be one, and the third for the
+// toggle, which could be and is pinned better elsewhere.
 //
 // Task 6's date field is the one deliberate EXCEPTION, and it is absent rather than forgotten.
 // Every row here is a control that re-renders the panel it lives in, which is the premise the
@@ -2149,6 +2151,13 @@ test('the exam date reaches storage only as an ISO calendar date or an empty str
 // dialog, by the fallback rather than by the equivalent -- is pinned in tests/fd-settings.test.mjs
 // against a panel built from the REAL renderer output, where "there was no equivalent" is a fact
 // about the markup.
+//
+// Task 8's usage toggle is the THIRD absence, and the only one that is a judgment rather than a
+// constraint. It is a pair of segments with fixed values (fdSettingsUsage), precisely so that it
+// DOES survive its own render -- so a row here would pass honestly. It is pinned in
+// tests/fd-settings.test.mjs instead, against the real renderer and the real emitter, because
+// that harness can also tell that both segments were actually emitted; this one would supply them
+// whatever the renderer did. A row here would be a weaker copy of an assertion that already runs.
 const PANEL_CONTROLS = [
   ['data-fd-role', 'staff'],
   ['data-fd-theme', 'dark'],
@@ -2228,6 +2237,59 @@ test('closing the panel still restores the invoker rather than refocusing inside
   assert.equal(h.controller.getState().sheet, null, 'and the close control closes it');
   assert.equal(gear.focused, 1, 'focus returns to the control that opened the panel');
   assert.equal(focused.length, 0, 'no panel control is focused once the panel is gone');
+});
+
+// ...and the gear is the one invoker in this panel that its OWN controls can destroy. The header
+// is chrome, a theme change marks chrome dirty (transitionDetail), and fdRenderTransient reassigns
+// fdChromeMount.innerHTML -- so by the time the learner closes the panel, the element pushed onto
+// the invoker stack is detached and `isConnected===false` skips it. Focus then falls to <body>,
+// where fdTrapFocus bails and the next Tab restarts at the top of the document: the exact defect
+// refocusInvoker exists to prevent, one layer out.
+//
+// Measured, not reasoned: driving the built MS3 site, opening the panel and closing it leaves
+// focus on the gear, while opening it, choosing Dark and closing it leaves document.activeElement
+// as BODY with the original gear reporting isConnected===false. tests/smoke/front-door.spec.js:251
+// and frontdoor-runtime.spec.js:2508 are the two specs that catch it.
+//
+// The fix is the rule refocusInvoker already uses -- the live control carrying the same action
+// attribute AND the same value is the equivalent of the one that is gone -- applied to the root
+// rather than to the dialog, because the control being replaced here lives outside the overlay.
+test('closing the panel returns focus to the gear even after a render replaced it', () => {
+  const openingGear = actionTarget({ 'data-fd-settings': '' });
+  let liveGear = openingGear;
+  let segment = null;
+  const panel = {
+    querySelector: (selector) => (selector === '[data-fd-theme="dark"]' ? segment : null),
+  };
+  const h = fakeHarness({ ...roleContext, screen: 'app' }, {
+    F,
+    querySelector: (selector) => {
+      if (selector === '.fd-sheet[role="dialog"]') return panel;
+      if (selector === '[data-fd-settings=""]') return liveGear;
+      return null;
+    },
+    renderTransient: (_next, detail) => {
+      if (detail.effect?.type === 'set-theme') {
+        // What fdRenderTransient does for real: surfaces.chrome is true, so the header -- gear
+        // included -- is rebuilt from scratch and the old element is detached.
+        openingGear.isConnected = false;
+        liveGear = actionTarget({ 'data-fd-settings': '' });
+        segment = actionTarget({ 'data-fd-theme': 'dark' });
+      }
+    },
+    document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
+  });
+
+  h.rootHandlers.click({ target: openingGear, preventDefault() {} });
+  assert.equal(h.controller.getState().sheet, 'settings', 'the gear opens the panel');
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': 'dark' }), preventDefault() {} });
+  assert.equal(openingGear.isConnected, false, 'the header render must have destroyed the gear');
+
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-close-sheet': '' }), preventDefault() {} });
+  assert.equal(h.controller.getState().sheet, null, 'the close control closes the panel');
+  assert.equal(openingGear.focused, undefined, 'the destroyed element is never focused');
+  assert.equal(liveGear.focused, 1,
+    'focus lands on the live gear, not on <body> where the next Tab restarts the document');
 });
 
 // ── Your data: the export route and the two-tap erase ─────────────────────────────────────────
