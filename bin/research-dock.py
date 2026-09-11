@@ -36,6 +36,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 REGISTRY = os.path.join(ROOT, "research_returns.json")
@@ -116,9 +117,39 @@ def _days_since(datestr, today=None):
 
 # ---------------------------------------------------------------- checking
 
+class Defect(str):
+    """A defect that knows whether it blocks a push.
+
+    Subclasses str deliberately: every existing caller — printing, joining, the self-test's
+    substring assertions — keeps working unchanged, and only the two places that care about
+    blocking have to know this type exists.
+
+    Advisory vs blocking is not a severity dial. A blocking defect is a property of the
+    tracked JSON: wrong here, wrong in CI, wrong in every checkout, and fixable in seconds.
+    An advisory one is a statement about the WORLD rather than the file — the passage of
+    time, or a file that lives only in the checkout that owns it. Blocking a push on those
+    punishes work that has nothing to do with the dock.
+    """
+
+    advisory = False
+
+    def __new__(cls, text, advisory=False):
+        obj = super().__new__(cls, text)
+        obj.advisory = advisory
+        return obj
+
+
 def check(doc, today=None, root=ROOT):
-    """Return a list of defect strings. Empty list means clean."""
+    """Return a list of Defect strings. Empty list means clean.
+
+    Defects block unless marked advisory; see Defect. `--strict` exits 1 on blocking only.
+    """
     d = []
+    # Returns are gitignored, so they exist only in the checkout that owns them. Every other
+    # worktree carries the registry (tracked) without the answers (not tracked) — a missing
+    # capability, not a broken record. Without this distinction, --strict would block every
+    # push from all ~25 other worktrees the moment they picked up the dock's verify.sh step.
+    holds_returns = os.path.isdir(os.path.join(root, "Evidence Inbox", "_research-returns"))
     if doc.get("schemaVersion") != 1:
         d.append("schemaVersion must be 1")
     grace = doc.get("graceDays", 21)
@@ -171,7 +202,12 @@ def check(doc, today=None, root=ROOT):
         if not rf:
             d.append("%s: returnFile is required — the verbatim answer must be saved" % rid)
         elif not os.path.isfile(os.path.join(root, rf)):
-            d.append("%s: returnFile does not exist on disk: %s" % (rid, rf))
+            if holds_returns:
+                d.append("%s: returnFile does not exist on disk: %s" % (rid, rf))
+            else:
+                d.append(Defect("%s: returnFile is not in this checkout: %s — returns are "
+                                "gitignored and live only in the checkout that owns them, so "
+                                "this cannot be verified here" % (rid, rf), advisory=True))
         else:
             n = _count_invisibles(os.path.join(root, rf))
             if n:
@@ -241,12 +277,15 @@ def check(doc, today=None, root=ROOT):
                 age = _days_since(ret, today)
                 if not r.get("findings"):
                     if age > grace:
-                        d.append("%s: STALE — returned %d days ago and still has no findings "
-                                 "(grace is %d days). This is the rot the dock exists to "
-                                 "catch." % (rid, age, grace))
+                        d.append(Defect(
+                            "%s: STALE — returned %d days ago and still has no findings "
+                            "(grace is %d days). This is the rot the dock exists to catch."
+                            % (rid, age, grace), advisory=True))
                 elif unrouted and age > grace:
-                    d.append("%s: STALE — returned %d days ago with %d finding(s) still "
-                             "needs-primary (grace is %d days)" % (rid, age, unrouted, grace))
+                    d.append(Defect(
+                        "%s: STALE — returned %d days ago with %d finding(s) still "
+                        "needs-primary (grace is %d days)"
+                        % (rid, age, unrouted, grace), advisory=True))
     return d
 
 
@@ -445,6 +484,31 @@ def _self_test():
            check(one(findings=[{"id": "f1", "claim": "Some claim worth checking here.",
                                 "disposition": "needs-primary"}]), today="2026-09-10"),
            "STALE", want=False)
+
+    # Advisory vs blocking. A gate that stops unrelated work gets switched off, so what
+    # blocks has to be exactly what a person can fix by editing the file in front of them.
+    def blocking_only(defects):
+        return [x for x in defects if not getattr(x, "advisory", False)]
+
+    stale = check(one(), today="2026-10-30")
+    expect("a stale return is reported", stale, "STALE")
+    expect("...but staleness never blocks", blocking_only(stale), "STALE", want=False)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        # A checkout that owns the returns: a missing answer file is a real broken record.
+        os.makedirs(os.path.join(tmp, "Evidence Inbox", "_research-returns"))
+        owns = check(one(returnFile="Evidence Inbox/_research-returns/gone.md"),
+                     today="2026-09-02", root=tmp)
+        expect("missing return file blocks where the returns live",
+               blocking_only(owns), "returnFile does not exist")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        # Any other worktree: the registry is tracked, the answers are not. Not a defect.
+        away = check(one(returnFile="Evidence Inbox/_research-returns/gone.md"),
+                     today="2026-09-02", root=tmp)
+        expect("...and is advisory in a checkout that does not", away,
+               "returnFile is not in this checkout")
+        expect("...where it must not block", blocking_only(away), "returnFile", want=False)
     expect("web primary without capture fails",
            check(one(findings=[{"id": "f1", "claim": "Some claim worth checking here.",
                                 "disposition": "cite",
@@ -487,9 +551,15 @@ def _self_test():
     expect("a clean return file is not flagged",
            check(one(returnFile="research_returns.json"), today="2026-09-02", root=_tmp),
            "invisible character", want=False)
-    expect("missing return file is caught",
-           check(one(returnFile="Evidence Inbox/_research-returns/nope.md"), today="2026-09-02"),
-           "does not exist on disk")
+    # Root-explicit on purpose. With a default root this case silently changed meaning with
+    # the checkout it ran in — blocking in the tree that owns the returns, advisory in every
+    # other worktree — which is exactly the ambiguity the advisory split exists to name.
+    with tempfile.TemporaryDirectory() as tmp:
+        os.makedirs(os.path.join(tmp, "Evidence Inbox", "_research-returns"))
+        expect("missing return file is caught",
+               check(one(returnFile="Evidence Inbox/_research-returns/nope.md"),
+                     today="2026-09-02", root=tmp),
+               "does not exist on disk")
 
     print("self-test: %s" % ("PASS" if ok else "FAIL"))
     return 0 if ok else 1
@@ -530,13 +600,27 @@ def main(argv=None):
         return 0
 
     defects = check(doc, today=args.today)
-    if not defects:
-        print("research-dock: OK — %d question(s), %d return(s), nothing undecided."
-              % (len(doc.get("questions", [])), len(doc.get("returns", []))))
+    blocking = [x for x in defects if not getattr(x, "advisory", False)]
+    advisory = [x for x in defects if getattr(x, "advisory", False)]
+    summary = ("%d question(s), %d return(s)"
+               % (len(doc.get("questions", [])), len(doc.get("returns", []))))
+
+    if blocking:
+        print("research-dock: %d defect(s)" % len(blocking))
+        for x in blocking:
+            print("  - %s" % x)
+    for x in advisory:
+        print("  ~ %s  [advisory]" % x)
+
+    # verify.sh prints the last line of a passing step, so the last line has to be the one
+    # worth reading when nothing blocks.
+    if not blocking:
+        if advisory:
+            print("research-dock: OK — %s, %d advisory (reported, never blocking)."
+                  % (summary, len(advisory)))
+        else:
+            print("research-dock: OK — %s, nothing undecided." % summary)
         return 0
-    print("research-dock: %d defect(s)" % len(defects))
-    for x in defects:
-        print("  - %s" % x)
     return 1 if args.strict else 0
 
 

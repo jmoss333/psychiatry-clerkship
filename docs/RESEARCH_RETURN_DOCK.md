@@ -88,8 +88,26 @@ exist on disk) passes here and would fail in GitHub Actions, where the file was 
 
 ```
 step "unit — research dock"                 python3 bin/research-dock.py --self-test
-step "research return dock"                 python3 bin/research-dock.py check
+step "research return dock"                 python3 bin/research-dock.py check --strict
 ```
+
+`--strict` exits 1 on a **blocking** defect and 0 on an **advisory** one. That split is the
+difference between a gate that survives and one that gets switched off:
+
+| | | |
+|---|---|---|
+| **Blocking** | Invariants 1-5, 7 | A property of the tracked JSON — wrong here, wrong in CI, wrong in every checkout, and fixable in seconds by editing the file in front of you. |
+| **Advisory** | Invariant 6 (stale), and a `returnFile` missing from a checkout that does not hold returns | A statement about the world rather than the file. Staleness clears only by doing research; a missing answer file in another worktree is a missing capability, not a broken record. |
+
+The second advisory case is not a nicety. Returns are gitignored, so `Evidence Inbox/_research-returns/`
+exists **only** in the checkout that owns them — every other worktree has the registry (tracked)
+without the answers (not tracked). Blocking there would have stopped pushes from all ~25 active
+worktrees the moment they picked up this step, for a condition none of them could fix. `check`
+detects which kind of checkout it is in by looking for that directory.
+
+Staleness stays advisory for the same reason in time rather than space: a return sitting 22 days
+means the reading queue is backed up, which is information. Holding an unrelated CSS fix hostage to
+it teaches people to push with `--no-verify`, and then nothing is gated at all.
 
 The first step **blocks**; the second **reports**. That asymmetry is deliberate — see below.
 

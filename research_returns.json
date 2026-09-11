@@ -8,7 +8,7 @@
       "title": "What standards spine should govern the resident site?",
       "primaryTool": "chatgpt-deep-research",
       "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-1",
-      "status": "open"
+      "status": "asked"
     },
     {
       "id": "RQ-2",
@@ -87,13 +87,18 @@
       "findings": [
         {
           "id": "f1",
-          "claim": "The only COWS permission language located \u2014 \"This version may be copied and used clinically\" (Wesson & Ling 2003) \u2014 licenses clinical copying and does not on its face authorise public educational web display, so the 45 verbatim anchors are not covered.",
-          "disposition": "needs-primary",
+          "claim": "The only COWS permission language located — \"This version may be copied and used clinically\" (Wesson & Ling 2003) — licenses clinical copying and does not on its face authorise public educational web display, so the 45 verbatim anchors are not covered.",
+          "disposition": "adopt",
           "primary": {
             "citation": "Wesson DR, Ling W. The Clinical Opiate Withdrawal Scale (COWS). J Psychoactive Drugs. 2003;35(2):253-259.",
             "doi": "10.1080/02791072.2003.10400007"
           },
-          "note": "This is the direct answer to RQ-10 and it closes the interim waiver AGAINST keeping the anchors. Verify by retrieving the 2003 article itself and reading the template legend verbatim \u2014 the return quotes it via the PubMed abstract, which is secondary. If it holds, cows moves flagged-interim -> retired/restricted in instrument_rights.json with a new decisionRef, and the 45 anchors in withdrawal.html come out on the CIWA-Ar pattern. Blocked on f3: a withdrawal must leave a route. || CORROBORATED 2026-09-10: the NIDA-hosted form (https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf, retrieved 2026-09-10) carries the identical clinical-scoped permission line on an artifact independent of both the model and the paywalled article. That is a second witness to the LANGUAGE, not to the SCOPE analysis, so this stays needs-primary until the 2003 template legend is read directly. Note this finding's best evidence is a PDF with no DOI \u2014 the case that motivated the primary.url + retrievedAt + archivedCopy variant added in this change."
+          "note": "This is the direct answer to RQ-10 and it closes the interim waiver AGAINST keeping the anchors. Verify by retrieving the 2003 article itself and reading the template legend verbatim — the return quotes it via the PubMed abstract, which is secondary. If it holds, cows moves flagged-interim -> retired/restricted in instrument_rights.json with a new decisionRef, and the 45 anchors in withdrawal.html come out on the CIWA-Ar pattern. Blocked on f3: a withdrawal must leave a route. || CORROBORATED 2026-09-10: the NIDA-hosted form (https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf, retrieved 2026-09-10) carries the identical clinical-scoped permission line on an artifact independent of both the model and the paywalled article. That is a second witness to the LANGUAGE, not to the SCOPE analysis, so this stays needs-primary until the 2003 template legend is read directly. Note this finding's best evidence is a PDF with no DOI — the case that motivated the primary.url + retrievedAt + archivedCopy variant added in this change. || ROUTED 2026-09-10 after the fact: the change shipped in #608 (cows flagged-interim -> retired, 45 anchors replaced with in-house descriptors, NIDA recorded as officialSource) while this finding still read needs-primary. Recording a landing is stenography, not promotion — the decision was made by merging #608. decisions.json#cows-anchors-retired already names this return, so the link is now bidirectional.",
+          "landedIn": [
+            "decisions.json#cows-anchors-retired",
+            "instrument_rights.json#cows",
+            "03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html"
+          ]
         },
         {
           "id": "f2",
@@ -109,21 +114,23 @@
           "id": "f3",
           "claim": "No current custodian-hosted canonical COWS form was found; the 2003 article's list of PDF hosts (ASAM, CSAM, UCLA ISAP, AlcoholMD) is historical, leaving the paywalled article DOI as the only defensible canonical link.",
           "disposition": "reject",
-          "note": "FALSIFIED 2026-09-10 by direct retrieval, not by search. NIDA hosts a complete, current COWS form at https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf \u2014 all 11 items and severity anchors, source-attributed to Wesson & Ling 2003, carrying the same 'This version may be copied and used clinically' line. ASAM hosts a second copy (cows_induction_flow_sheet.pdf) but strips the copyright and permission line, so NIDA is the better citation. The claimed operational blocker does not exist: a retirement CAN leave a route and satisfy INV-IR2. The error is worse than a search miss \u2014 line 107 of the return names NIDA, ASAM and SAMHSA among the hosts it searched and dismisses them because the 2003 ARTICLE's host list is historical. It inherited staleness from a cited document and projected it onto the live web. Proposed failureMode vocabulary entry: source-date-contamination. One question remains and it is governance, not research: NIDA is a federal agency hosting a copy, not the rightsholder, so whether it satisfies the 'custodian URL, not a copy hosted here' wording of INV-IR2 is Josh's call."
+          "note": "FALSIFIED 2026-09-10 by direct retrieval, not by search. NIDA hosts a complete, current COWS form at https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf — all 11 items and severity anchors, source-attributed to Wesson & Ling 2003, carrying the same 'This version may be copied and used clinically' line. ASAM hosts a second copy (cows_induction_flow_sheet.pdf) but strips the copyright and permission line, so NIDA is the better citation. The claimed operational blocker does not exist: a retirement CAN leave a route and satisfy INV-IR2. The error is worse than a search miss — line 107 of the return names NIDA, ASAM and SAMHSA among the hosts it searched and dismisses them because the 2003 ARTICLE's host list is historical. It inherited staleness from a cited document and projected it onto the live web. Proposed failureMode vocabulary entry: source-date-contamination. One question remains and it is governance, not research: NIDA is a federal agency hosting a copy, not the rightsholder, so whether it satisfies the 'custodian URL, not a copy hosted here' wording of INV-IR2 is Josh's call."
         },
         {
           "id": "f4",
           "claim": "The current PHQ Screeners site (Pfizer) states that no permission is required to reproduce, translate, display or distribute the PHQ and GAD-7 screeners, which is the express public-web permission WP-02c was left open to verify.",
           "disposition": "needs-primary",
           "primary": {
-            "citation": "PHQ Screeners (Pfizer Inc.), current permission statement, select-screener page.",
-            "url": "https://www.phqscreeners.com/select-screener"
+            "citation": "PHQ Screeners (Pfizer Inc.), permission statement on the select-screener page.",
+            "url": "https://www.phqscreeners.com/select-screener",
+            "retrievedAt": "2026-09-10",
+            "archivedCopy": "docs/permissions/phqscreeners-2026-09-10.md"
           },
-          "note": "Would move phq9-gad7 from provisional -> cleared. Verify by fetching the live page, not by trusting this quote, and archive a dated PDF/screenshot into the permissions file \u2014 the whole permission is a web sentence that can change without notice. Corroborated independently by the LOINC record for PHQ-9 and GAD-7."
+          "note": "Would move phq9-gad7 from provisional -> cleared. Verify by fetching the live page, not by trusting this quote, and archive a dated PDF/screenshot into the permissions file — the whole permission is a web sentence that can change without notice. Corroborated independently by the LOINC record for PHQ-9 and GAD-7. || VERIFIED 2026-09-10 by live retrieval in Chrome, not from the return: the sentence is present verbatim on the custodian's own page and is captured with its context in docs/permissions/phqscreeners-2026-09-10.md. The evidence half of this finding is finished and satisfies the url+retrievedAt+archivedCopy variant. It stays needs-primary because promoting it MEANS moving phq9-gad7 provisional -> cleared, and instrument_rights.json's own rule is that a status changes only with the decisionRef that recorded it, never by agent inference. One decisions.json entry away."
         },
         {
           "id": "f5",
-          "claim": "The PHQ/GAD permission names reproduce, translate, display and distribute but not modify, adapt or create derivative works, while Pfizer's generic site terms restrict derivative works \u2014 so a faithful verbatim render is supported and an altered or restructured version is not.",
+          "claim": "The PHQ/GAD permission names reproduce, translate, display and distribute but not modify, adapt or create derivative works, while Pfizer's generic site terms restrict derivative works — so a faithful verbatim render is supported and an altered or restructured version is not.",
           "disposition": "needs-primary",
           "note": "Sets the boundary for any programmed PHQ-9/GAD-7 form: unchanged wording, response options, ordering, time frame and instructions are inside the permission; changing any of them is not. Worth recording on the instrument entry even if the status stays provisional, because it is the constraint a future tool build would trip over."
         },
@@ -144,6 +151,17 @@
           "note": "Confirms the retired posture, but corrects a factual detail in the cssrs decisionRef, which records the scale as \"copyrighted and licensed by the Columbia Lighthouse Project\": the copyright holder printed on the forms is RFMH, with Columbia as the distributing project. If it verifies, that is a decisionRef wording fix, not a status change."
         }
       ]
+    },
+    {
+      "id": "rq-1-2026-09-10",
+      "question": "RQ-1",
+      "tool": "chatgpt-deep-research",
+      "askedOn": "2026-09-10",
+      "returnedOn": "2026-09-10",
+      "returnFile": "Evidence Inbox/_research-returns/rq-1-2026-09-10.md",
+      "sourceKind": "secondary",
+      "status": "triage",
+      "findings": []
     }
   ]
 }
