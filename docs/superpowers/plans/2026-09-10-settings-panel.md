@@ -1152,13 +1152,32 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
 
 Expected: PASS on both, with `computed-key` at its newly recorded baseline.
 
-- [ ] **Step 8: Run the smoke suite**
+- [ ] **Step 8: Run the smoke suite — with one exposure already named**
 
 ```bash
 cd tests/smoke && npm ci && npx playwright test
 ```
 
-Expected: PASS. This is the CI job `verify.sh` cannot see.
+Expected: PASS — **except** that `rotation-edition-v2.spec.js` may be red for a reason this plan
+already knows about, and it must not be read as unrelated flake.
+
+Task 1's review established the chain: `rotation-edition-v2.spec.js:2044-2047` opens browser
+contexts with `colorScheme:'dark'`, and `rotation-edition-fixture.js:297-311` seeds
+`cw_rotation_start`, `cw_frontdoor_v1` and `cw_progress_v1` — **not** `cw_theme`.
+`rotation-curator.html` contains no `cw_theme`, so `apply_dark_mode()` injects the new `THEME_INIT`
+into it, and since Task 1 that resolves unset through `prefers-color-scheme`. Those contexts
+therefore paint **dark** where they used to paint light, and the spec's `renderedContrast(...) >= 4.5`
+assertions at `:2148-2152`, `:2176-2180` and `:2210-2212` will measure the dark palette for the
+first time.
+
+Decide, do not guess:
+- **Seed it** — add `cw_theme: 'light'` to the dark contexts' seed, preserving what those tests
+  were actually written to measure (edition/layout behaviour, not theme), or
+- **Accept the coverage** — let them measure dark and fix any real contrast failures they find.
+
+The second is more valuable and more expensive. Note the branch's three commits before this work
+were palette edits (`f34e5e4 a11y(palette): darken --primary so white on the fill clears AA`), so
+dark-theme contrast is not a settled surface. Either way, say in the PR body which you chose.
 
 - [ ] **Step 9: Commit**
 
