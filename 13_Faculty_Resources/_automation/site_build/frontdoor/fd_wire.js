@@ -3,11 +3,14 @@
    pure; browser effects live in fdWire and fdOpenResource behind explicit options so the same
    decisions can be tested without a DOM. */
 
+/* Every attribute the controller gives a meaning to. All but one are activated by the delegated
+   click path; 'data-fd-exam-date' is an <input> committed on a change event and is deliberately
+   absent from FD_ACTION_SELECTOR below -- see changeHandler for why a click must not own it. */
 var FD_HANDLED_ATTRS=[
   'data-fd-open','data-fd-sheet','data-fd-safety','data-fd-toggle','data-fd-tab',
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
   'data-fd-back','data-fd-home','data-fd-search','data-fd-change-week','data-fd-progress',
-  'data-fd-theme','data-fd-settings',
+  'data-fd-theme','data-fd-settings','data-fd-exam-date',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool'
 ];
@@ -30,6 +33,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-progress':'open Progress and mastery',
   'data-fd-theme':'set saved color theme',
   'data-fd-settings':'open settings panel',
+  'data-fd-exam-date':'set exam date',
   'data-fd-close-search':'close search dialog',
   'data-fd-close-sheet':'close side sheet',
   'data-fd-close-nudge':'dismiss protocol nudge',
@@ -412,6 +416,20 @@ function fdDispatch(attrs, context, state){
        segmented control now: there is no "other one" to flip to. */
     return {patch:{},route:null,
       effect:{type:'set-theme',mode:fdThemeMode(String(a['data-fd-theme']||''))}};
+  }
+  if(fdOwn(a,'data-fd-exam-date')){
+    /* Patches nothing, for the same reason set-theme patches nothing: the stored key is the one
+       home, and fdLiveState re-reads it for every render. A mirrored copy on controller state
+       would be a second home that only LOOKS free, because nothing renders from it.
+
+       Only an ISO calendar date or the empty string reaches storage. The key is read by
+       phase_policy.js -- the repo's single sanctioned local-midnight parse site -- and anything
+       else there makes the date NaN, which silently disables pacing rather than failing visibly.
+       An <input type="date"> already hands back either shape; a learner with an older browser
+       that degrades it to a text box does not. */
+    var examRaw=String(a['data-fd-exam-date']||'');
+    var examDate=/^\d{4}-\d{2}-\d{2}$/.test(examRaw)?examRaw:'';
+    return {patch:{},route:null,effect:{type:'set-exam-date',date:examDate}};
   }
   return {patch:{},route:null,effect:null};
 }
@@ -844,6 +862,11 @@ function fdWire(root, initialState, opts){
         win.matchMedia('(prefers-color-scheme: dark)').matches);
       if(doc&&doc.documentElement)
         doc.documentElement.setAttribute('data-theme',fdThemeAttr(effect.mode,prefersDark));
+    } else if(effect.type==='set-exam-date'){
+      /* Delegated to fd_state.js, next to fdExamCountdown which reads the same key. The key
+         itself cannot be named in this file: the controller's copy rule bans its audience token
+         file-wide (tests/fd-action-contract.test.mjs), comments included. */
+      fdStoreExamDate(effect.date);
     } else if(effect.type==='nudge-timeout'&&setTimer){
       if(nudgeTimer&&clearTimer) clearTimer(nudgeTimer);
       nudgeTimer=setTimer(function(){
@@ -980,6 +1003,43 @@ function fdWire(root, initialState, opts){
         try{fresh.setSelectionRange(start,end,direction||'none');}catch(_){}
       }
     }
+  }
+  /* The settings panel's one non-button control, and the only action in the file that does not go
+     through apply(). Three deliberate differences from the click path, each of which is a defect
+     if it is "made consistent":
+
+     1. A change event, not a click. FD_ACTION_SELECTOR deliberately omits this attribute, so
+        clickHandler never sees the field. If it did it would preventDefault() the gesture that
+        opens the native picker, and -- the attribute being valueless in the markup -- dispatch
+        an empty value: clicking your own date input would erase the date you had.
+     2. No render. fdRenderOverlays replaces the whole overlay mount, so a render here destroys
+        the input mid-entry. A rebuilt native date input has a fresh segment cursor, so editing a
+        set date to November by typing "1" then "1" yields January twice: the second keystroke
+        starts a new month entry in a new element. Nothing else in the panel derives from this
+        value -- the field's own DOM already shows what was typed -- so the render buys nothing
+        and costs the interaction. That is also why refocusInvoker (the panel's generic focus
+        restore) must not run: there is no rebuilt equivalent to restore focus TO, and pulling
+        focus back into a field the learner is still using is worse than the bug it prevents.
+     3. No history entry and no fdSave. The result carries no route and no controller-state key;
+        fdStoreExamDate's one store is the whole of what changes. (That indirection is not style:
+        the key's own name carries an audience token this file may not contain at all, comments
+        included, so fd_state.js names it -- beside fdExamCountdown, which reads it.)
+
+     The decision about WHAT to store still belongs to fdDispatch, which is where its shape is
+     validated and where it is unit-testable without a DOM. */
+  function changeHandler(event){
+    if(destroyed) return;
+    var target=event&&event.target;
+    if(!target||!target.hasAttribute||!target.hasAttribute('data-fd-exam-date')) return;
+    /* No preventDefault() on the pre-commit bail, unlike the click and key handlers: a change
+       event is not cancelable, so calling it would only look like a guard. Dropping the write is
+       the guard, and the field keeps showing what the learner typed either way. */
+    if(!startupCommitted) return;
+    if(previewActive()){ lockPreview(); return; }
+    var result=fdDispatch(
+      {'data-fd-exam-date':String(target.value||'')},context(),state
+    );
+    fdApplyEffect(result.effect,false,navGeneration);
   }
   function keyHandler(event){
     if(!startupCommitted){
@@ -1178,6 +1238,7 @@ function fdWire(root, initialState, opts){
   }
 
   if(!listen(root,'click',clickHandler,false)||!listen(root,'input',inputHandler,false)||
+     !listen(root,'change',changeHandler,false)||
      !listen(win,'keydown',keyHandler,false)||!listen(win,'popstate',popstateHandler,false)){
       removeRegistrations();
       destroyed=true;

@@ -329,11 +329,35 @@ function fdSettingsRoles(roles, roleId){
   return out+'</div>';
 }
 
+/* Pacing -- the exam date. It used to live in Progress behind its own Save button and it lives
+   here now, and ONLY here. The store it writes through has a single home and this renderer names
+   no key at all -- two writable homes for one key silently desync (fd_state.js:17 records the same
+   rule for progress), and fd_sheet.js is storage-free by contract (tests/fd-sheet.test.mjs).
+
+   A native <input type="date"> rather than a text field plus a Save button: the platform picker,
+   the locale-correct display and keyboard segment editing all come free, and the value handed back
+   is already the ISO string the store wants. It is also the reason this is the one control in the
+   panel that is NOT on the delegated click path -- fd_wire.js commits it on `change`, renders
+   nothing, and moves no focus, because rebuilding the overlay would destroy the input the learner
+   is typing in. See the changeHandler comment there.
+
+   No Save confirmation, for the same reason the role chips have none: the field's own value is
+   the feedback, and a "Saved" for a change with no visible consequence promises more than it did.
+
+   Copy rule: "Exam", never "Shelf". */
+function fdSettingsPacing(examDate){
+  return '<label class="fd-set__label" for="fdSetExam">Exam date</label>'+
+    '<input id="fdSetExam" class="fd-set__date" type="date" data-fd-exam-date '+
+    'value="'+fdEsc(examDate||'')+'">'+
+    '<p class="fd-set__note">Used on this device to pace what Today suggests.</p>';
+}
+
 function fdSheetSettingsBody(state){
   var st=state||{};
   var out='<p class="fd-sheet__intro">Everything here is saved on this device only.</p>';
   var roles=fdSettingsRoles(st.roles, st.roleId);
   if(roles) out+=fdSettingsSection('You', roles);
+  out+=fdSettingsSection('Pacing', fdSettingsPacing(st.examDate));
   out+=fdSettingsSection('Appearance',
     fdSettingsSeg(st.themeMode)+
     '<p class="fd-set__note">System follows your device’s light or dark setting.</p>');

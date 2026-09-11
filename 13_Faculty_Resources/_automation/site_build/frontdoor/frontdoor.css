@@ -829,8 +829,6 @@
 .fd-capture__copy{width:100%;padding:9px 12px;margin-top:10px;color:var(--fd-teal-deep)}
 .fd-progress-reader{max-width:940px;margin:0 auto}
 .fd-progress-reader > .hm{max-width:none;padding:0}
-.fd-examdate__row{display:flex;align-items:center;gap:var(--fd-space-5);margin-top:10px;flex-wrap:wrap}
-.fd-examdate__row input{min-height:44px;padding:8px 10px;border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit}
 
 /* ═══ Desktop ════════════════════════════════════════════════════════════════
  * The design's rails appear at and above 1000px — the same threshold the prototype's
@@ -1040,3 +1038,11 @@
 .fd-choices__btn:hover{background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
 .fd-choices__btn.is-active{background:var(--fd-teal);border-color:var(--fd-teal);color:var(--fd-on-accent)}
 @media (pointer:coarse){.fd-choices__btn{min-height:var(--fd-target-touch)}}
+/* Pacing's date field. It borrows .fd-choices__btn's border, radius and surface so the panel reads
+ * as one control family, and takes the full sheet width because a native date input's intrinsic
+ * width is barely wider than its own text -- a small target for the one control here a learner
+ * has to hit precisely. `font:inherit` first, then the step, or the shorthand resets the size.
+ * The visible focus ring comes from `.fd-sheet :focus-visible`; no rule of its own is needed. */
+.fd-set__label{display:block;margin:0 0 var(--fd-space-4);font-size:var(--fd-font-sm);color:var(--fd-text-mid)}
+.fd-set__date{width:100%;padding:var(--fd-space-5) var(--fd-space-4);border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm)}
+@media (pointer:coarse){.fd-set__date{min-height:var(--fd-target-touch)}}

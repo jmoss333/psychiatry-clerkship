@@ -451,7 +451,7 @@ test('Tab trapping wraps at both ends of a dialog', () => {
   assert.equal(prevented, 2);
 });
 
-test('fdWire registers and destroys one delegated click/input/keydown/popstate listener for the live shell', () => {
+test('fdWire registers and destroys one delegated click/input/change/keydown/popstate listener for the live shell', () => {
   const rootCalls = [];
   const windowCalls = [];
   const rootRemoves = [];
@@ -467,7 +467,9 @@ test('fdWire registers and destroys one delegated click/input/keydown/popstate l
   };
   const controller = F.fdWire(root, { ...roleContext }, { window: fakeWindow, render: () => {} });
   assert.equal(controller.ok, true);
-  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input']);
+  // 'change' is the settings panel's date field -- the one control not on the delegated click
+  // path. Registered through listen() like the rest, so destroy() takes it down too.
+  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input', 'change']);
   assert.deepEqual(windowCalls.map(([type]) => type), ['keydown', 'popstate']);
   controller.destroy();
   assert.deepEqual(rootRemoves, rootCalls.slice().reverse());
@@ -2080,6 +2082,25 @@ test('picking a role in the wizard advances; picking one in settings does not', 
     'and the panel stays open, because the chip it just filled is the only feedback there is');
 });
 
+// The Pacing section's date field, decided in the pure layer so the shape that reaches storage is
+// testable without a DOM. Two properties, both load-bearing:
+//   - the patch stays EMPTY. The stored key is the one home and fdLiveState re-reads it for every
+//     render; a mirrored copy on controller state would be a second home that only looks free.
+//   - only an ISO calendar date or '' survives. phase_policy.js is the single sanctioned
+//     local-midnight parse site and it reads this key; anything else there makes the date NaN,
+//     which switches pacing off silently rather than failing where someone would see it.
+test('the exam date reaches storage only as an ISO calendar date or an empty string', () => {
+  const set = F.fdDispatch({ 'data-fd-exam-date': '2026-10-30' }, {}, { sheet: 'settings' });
+  assert.deepEqual(set.effect, { type: 'set-exam-date', date: '2026-10-30' });
+  assert.deepEqual(set.patch, {}, 'the stored key is the one home; state must not mirror it');
+  assert.equal(set.route, null, 'setting a date is not navigation');
+
+  for (const junk of ['banana', '2026-10-30T00:00:00', '10/30/2026', '2026-13-99x', '']) {
+    assert.deepEqual(F.fdDispatch({ 'data-fd-exam-date': junk }, {}, {}).effect,
+      { type: 'set-exam-date', date: '' }, `"${junk}" must clear rather than reach the parser`);
+  }
+});
+
 // ── The settings panel's focus guarantee ──────────────────────────────────────────────────────
 // Every control in this panel re-renders the panel it lives in, and fdRenderOverlays replaces the
 // overlay mount's innerHTML on every render -- so the element the learner just activated is gone
@@ -2092,8 +2113,20 @@ test('picking a role in the wizard advances; picking one in settings does not', 
 //
 // The guarantee is generic, and this is where it is pinned: an activation inside an open panel
 // leaves focus on the EQUIVALENT control in the rebuilt DOM -- same action attribute, same value.
-// Tasks 6-8 add a date input, two erase buttons and an analytics toggle to this same panel. Each
-// inherits this by adding one row to PANEL_CONTROLS below, not by writing a fourth focus branch.
+// Tasks 7-8 add two erase buttons and an analytics toggle to this same panel. Each inherits this
+// by adding one row below, not by writing a fourth focus branch.
+//
+// Task 6's date field is the one deliberate EXCEPTION, and it is absent rather than forgotten.
+// Every row here is a control that re-renders the panel it lives in, which is the premise the
+// harness asserts and the reason the guarantee is needed at all. The date field renders nothing:
+// fdRenderOverlays would destroy the <input> the learner is typing in, and a rebuilt native date
+// input has a fresh segment cursor, so editing a set date to November by typing "1" then "1"
+// yields January twice. With no rebuild there is no destroyed element and no equivalent to
+// restore focus to -- pulling focus back into a field still in use would be worse than the bug
+// this branch exists to fix. Adding it here would pin a click path it does not have (it is
+// committed on a change event and is absent from FD_ACTION_SELECTOR), which would pass while
+// testing nothing. Its real contract -- persists, does not render, does not move focus, and is
+// inert on click -- is pinned in tests/fd-settings.test.mjs.
 const PANEL_CONTROLS = [
   ['data-fd-role', 'staff'],
   ['data-fd-theme', 'dark'],

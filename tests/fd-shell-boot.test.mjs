@@ -331,9 +331,14 @@ test('Progress remains an internal reader view with stable delegated capture/pre
   for (const needle of ['function masteryByBlueprint()', 'function renderCalibPanel()',
     'function weakTopics()', 'function startPretest()', 'function submitPretest()',
     'function renderStoredPlan()', 'window.exportStudy=', 'data-cap-open', 'data-cap-copy',
-    'data-progress-action="save-exam"', "localStorage.setItem('cw_shelf_date'"]) {
+    'data-progress-action="progress"']) {
     assert.ok(source.includes(needle), `${needle} must remain reachable`);
   }
+  // The exam-date control moved to the settings panel. Progress keeps a read-only signpost, and
+  // the needles that used to sit in the list above were its input and its writer -- asserting
+  // they are ABSENT is what keeps that a move; tests/phase-chip.test.mjs pins the rest.
+  assert.ok(!source.includes('data-progress-action="save-exam"'),
+    'the exam-date writer belongs to the settings panel now, not to Progress');
 });
 
 test('late data hydration refreshes Progress only while its root view is still mounted', () => {

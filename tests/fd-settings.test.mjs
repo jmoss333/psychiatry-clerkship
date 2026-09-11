@@ -410,3 +410,200 @@ test('clicking a role chip marks that chip and leaves the learner in the panel',
   assert.equal(state.screen, 'app', 'a setting change must not reopen the first-run wizard');
   assert.equal(state.sheet, 'settings', 'and the panel showing the feedback must stay open');
 });
+
+// ---------------------------------------------------------------------------------------------
+// The Pacing section. The exam date used to live in Progress behind its own Save button; this is
+// a MOVE, not a copy -- fd_state.js:17 records the rule (two writable homes for one key silently
+// desync), and the "exactly one home" test below is what keeps it one.
+
+test('the exam date renders as a date input carrying the stored value', () => {
+  const h = S.fdSheetSettingsBody(withState({ examDate: '2026-10-30' }));
+  assert.match(h, /type="date"/);
+  assert.match(h, /value="2026-10-30"/);
+  assert.match(h, /data-fd-exam-date/);
+});
+
+test('an unset exam date renders an empty input, not a guess', () => {
+  assert.match(S.fdSheetSettingsBody(withState({})), /data-fd-exam-date[^>]*value=""/);
+});
+
+// Copy rule: these strings ship to both sites. "Exam", never "Shelf".
+test('pacing copy stays audience-neutral', () => {
+  const h = S.fdSheetSettingsBody(withState({ examDate: '' }));
+  assert.doesNotMatch(h, /shelf|clerkship|resident|student/i);
+});
+
+// The input's accessible name comes from a real <label for>, not from placeholder text or an
+// aria-label that a later copy edit can leave pointing at nothing.
+test('the date input is named by a label bound to its own id', () => {
+  const h = S.fdSheetSettingsBody(withState({ examDate: '' }));
+  const id = (h.match(/<input[^>]*data-fd-exam-date[^>]*>/) || [''])[0].match(/id="([^"]+)"/);
+  assert.ok(id, 'the date input needs an id for a label to bind to');
+  assert.match(h, new RegExp(`<label[^>]*for="${id[1]}"[^>]*>[^<]+</label>`),
+    'and a label carrying visible text must point at exactly that id');
+});
+
+// Section order is a contract, not an accident: You -> Pacing -> Appearance. Asserted on the
+// rendered string because that is the only place the order exists -- fdSheetSettingsBody
+// concatenates, so a section appended in the wrong place is invisible to every other assertion.
+test('Pacing sits between You and Appearance', () => {
+  const h = S.fdSheetSettingsBody(withState({ roles: ROLES, roleId: 'staff', examDate: '' }));
+  const at = (title) => h.indexOf(`class="fd-set__h">${title}<`);
+  assert.ok(at('You') > -1 && at('Pacing') > -1 && at('Appearance') > -1, 'all three must render');
+  assert.ok(at('You') < at('Pacing'), 'Pacing follows You');
+  assert.ok(at('Pacing') < at('Appearance'), 'and precedes Appearance');
+});
+
+// Two homes for one key silently desync -- fd_state.js:17 records the same rule for progress.
+// This is the assertion that keeps the move a move rather than a copy. The getElementById needle
+// is here because the Progress input had a SECOND reader: the plan's "set an exam date" shortcut
+// focused it by id, which survives deleting the markup and then silently focuses nothing.
+test('the exam date has exactly one home', () => {
+  assert.doesNotMatch(shell, /id="fdExamDate"/, 'the Progress input must be gone, not hidden');
+  assert.doesNotMatch(shell, /save-exam/, 'and its handler with it');
+  assert.doesNotMatch(shell, /fdExamDate/, 'and every reference that outlived it');
+  assert.equal(shell.split("localStorage.setItem('cw_shelf_date'").length - 1, 0,
+    'the shell must no longer WRITE the key; it reads it for the panel and nothing more');
+});
+
+// The render half, executed rather than grepped, exactly as the theme mode is above. The panel
+// renders st.examDate and nothing else sets it: drop this assignment and every learner's Pacing
+// section shows an empty field over a date they already stored, then overwrites it on the next
+// change. Nothing else in the tree notices.
+test('fdLiveState resolves the stored key into the date the panel renders', () => {
+  const start = shell.indexOf('function fdLiveState(state)');
+  const end = shell.indexOf('function fdCaptureRows()', start);
+  assert.ok(start > -1 && end > start, 'the live-state boundary must stay extractable');
+  const assignment = (shell.slice(start, end).match(/^\s*out\.examDate=.*$/m) || [])[0];
+  assert.ok(assignment, 'fdLiveState must put the exam date on the state the renderer sees');
+
+  // eslint-disable-next-line no-new-func
+  const resolve = new Function('LS', `var out={};${assignment}\nreturn out.examDate;`);
+  const keysRead = [];
+  const stored = (value) => (key) => { keysRead.push(key); return value; };
+
+  assert.equal(resolve(stored('2026-10-30')), '2026-10-30');
+  assert.deepEqual(keysRead, ['cw_shelf_date'], 'the date comes from that key and from no other');
+  assert.equal(resolve(stored(null)), '', 'an absent key renders an empty field, not "null"');
+  assert.match(S.fdSheetSettingsBody({ examDate: resolve(stored('2026-10-30')) }),
+    /data-fd-exam-date[^>]*value="2026-10-30"/,
+    'and the state that actually reaches the renderer carries the stored date');
+});
+
+// ---------------------------------------------------------------------------------------------
+// The Pacing section's control is the only one in this panel that is NOT a button, and it is
+// wired differently on purpose. Everything below is about that difference; renderer-level tests
+// structurally cannot see any of it.
+//
+// fdRenderOverlays replaces the whole overlay mount on every render, so a render here would
+// destroy the very <input> the learner is typing in. A rebuilt native date input loses its
+// segment cursor: editing a set date to November by typing "1" then "1" yields January twice,
+// because the second keystroke starts a fresh month entry in a brand-new element. So this
+// control persists and renders NOTHING -- the input's own DOM already shows what was typed, and
+// no other surface in the panel derives from the value.
+function examChangeHarness(seed) {
+  const map = new Map(Object.entries(seed));
+  const storage = {
+    getItem: (k) => (map.has(k) ? map.get(k) : null),
+    setItem: (k, v) => map.set(k, String(v)),
+    removeItem: (k) => map.delete(k),
+  };
+  const W = makeWire(storage);
+  const panels = [];
+  const focused = [];
+  const renderPanel = () => panels.push(W.fdSheetSettingsBody({
+    examDate: storage.getItem('cw_shelf_date') || '',
+  }));
+  // A REAL equivalent control in a REAL dialog, so "focus did not move" is a fact about the code
+  // rather than about a stub: if refocusInvoker ran, this is the element it would land on.
+  const rebuilt = { focus() { focused.push('rebuilt'); } };
+  const panel = {
+    querySelector: (selector) => (selector === '[data-fd-exam-date=""]' ? rebuilt : null),
+  };
+  const input = {
+    tagName: 'INPUT',
+    isContentEditable: false,
+    isConnected: true,
+    value: '',
+    // Mirrors the real DOM: the control carries the attribute but FD_ACTION_SELECTOR does not
+    // list it, so closest() on the delegated selector finds nothing. Flip that and this fixture
+    // starts matching, which is exactly the click-erases-the-date defect it exists to catch.
+    closest: (selector) => (selector.indexOf('[data-fd-exam-date]') > -1 ? input : null),
+    hasAttribute: (n) => n === 'data-fd-exam-date',
+    getAttribute: (n) => (n === 'data-fd-exam-date' ? '' : null),
+    focus() { focused.push('invoker'); },
+  };
+  const handlers = {};
+  const root = {
+    addEventListener(type, fn) { handlers[type] = fn; },
+    removeEventListener() {},
+    querySelector: (selector) => (selector === '.fd-sheet[role="dialog"]' ? panel : null),
+    matches: () => false,
+  };
+  const controller = W.fdWire(root, { role: 'first-role', week: 1, screen: 'app', sheet: 'settings' }, {
+    window: {
+      addEventListener() {}, removeEventListener() {},
+      location: { href: 'https://example.test/', search: '', pathname: '/' },
+    },
+    render: renderPanel,
+    renderTransient: renderPanel,
+    index: { byRef: {}, weeks: [{ n: 1, items: [] }] },
+    synonyms: {},
+    document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
+  });
+  controller.commitStartup();
+  return {
+    panels,
+    storage,
+    focused,
+    input,
+    controller,
+    change(value) {
+      input.value = value;
+      handlers.change({ target: input });
+    },
+    click() {
+      handlers.click({ target: input, preventDefault() {} });
+    },
+  };
+}
+
+test('committing a date persists it without re-rendering the panel or moving focus', () => {
+  const h = examChangeHarness({});
+  const before = h.panels.length;
+  h.change('2026-10-30');
+  assert.equal(h.storage.getItem('cw_shelf_date'), '2026-10-30', 'the date reaches its one home');
+  assert.equal(h.panels.length, before,
+    'no render: rebuilding the overlay would destroy the input mid-entry');
+  assert.deepEqual(h.focused, [],
+    'and nothing steals focus back into a control the learner is still using');
+});
+
+test('clearing the field removes the key rather than storing an empty string', () => {
+  const h = examChangeHarness({ cw_shelf_date: '2026-10-30' });
+  h.change('');
+  assert.equal(h.storage.getItem('cw_shelf_date'), null);
+});
+
+// phase_policy.js is the repo's single sanctioned local-midnight parse site and it is the thing
+// that reads this key. A value it cannot parse does not fail visibly -- it makes the date NaN and
+// silently switches pacing off -- so nothing but an ISO calendar date or the empty string is
+// allowed to reach storage in the first place.
+test('a value that is not an ISO calendar date clears the key instead of storing junk', () => {
+  const h = examChangeHarness({ cw_shelf_date: '2026-10-30' });
+  h.change('banana');
+  assert.equal(h.storage.getItem('cw_shelf_date'), null);
+});
+
+// The other half of "wired differently on purpose": the delegated click path must not own this
+// control. It would preventDefault() the gesture that opens the native picker, and because the
+// attribute is valueless in the markup it would dispatch an empty value -- so a learner clicking
+// their own date input to change it would erase the date they had.
+test('clicking the date input is not a controller action', () => {
+  const h = examChangeHarness({ cw_shelf_date: '2026-10-30' });
+  const before = h.panels.length;
+  h.click();
+  assert.equal(h.storage.getItem('cw_shelf_date'), '2026-10-30',
+    'a click must never write; only a committed change does');
+  assert.equal(h.panels.length, before, 'and it must not re-render the panel either');
+});
