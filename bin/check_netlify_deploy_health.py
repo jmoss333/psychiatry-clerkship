@@ -29,11 +29,18 @@ SO THE RULES ARE ASYMMETRIC.
   - An unreachable or unparseable API is exit 2 -- "the checker could not determine" -- never
     exit 0. A checker that cannot read its source must say so rather than pass over an empty
     set. (Same convention as bin/check_vacuity.py.)
-  - A missing NETLIFY_AUTH_TOKEN is "skipped", exit 0, with a loud GitHub warning
-    annotation. It CANNOT be a hard failure: the token is a repository secret only the owner
-    can add, and a daily workflow that goes red before then trains everyone to ignore it.
-    The receipt records status "skipped" so the gap is legible in the artifact rather than
-    indistinguishable from a clean run.
+  - A missing NETLIFY_AUTH_TOKEN was "skipped", exit 0, with a loud GitHub warning. That
+    was right while the secret did not exist: it is a repository secret only the owner can
+    add, and a daily workflow going red before then trains everyone to ignore it. THAT
+    WINDOW CLOSED at 2026-09-11T00:13:55Z when the secret was added, and the exemption
+    then inverted from protection into the exact hazard this file exists to prevent -- a
+    revoked or rotated token would silently return the alarm to passing while reading
+    nothing, behind a green check. A missing token is now exit 2, "could not determine".
+  - A run that examined FEWER SITES THAN IT DECLARES is exit 2. Reaching the report proves
+    the API answered for every site (transport failures raise), but an empty or short
+    site list would still print a confident "clean" over nothing. Note the assertion is on
+    SITES EXAMINED, not on deploys found: five sites with zero deploys in the window is a
+    quiet weekend, which is data, not blindness.
 
 USAGE
   python3 bin/check_netlify_deploy_health.py                # exit 1 on a real failed deploy
@@ -41,8 +48,9 @@ USAGE
   python3 bin/check_netlify_deploy_health.py --hours 48     # widen the lookback window
   python3 bin/check_netlify_deploy_health.py --self-test    # prove it can fail; no network
 
-EXIT CODES. 0 clean or skipped, 1 a real failed production deploy, 2 the checker could not
-determine (transport, HTTP status, malformed JSON).
+EXIT CODES. 0 clean, 1 a real failed production deploy, 2 the checker could not determine
+(no token, transport, HTTP status, malformed JSON, or fewer sites examined than declared).
+There is no longer an exit code that means "did not look".
 """
 from __future__ import annotations
 
@@ -59,8 +67,12 @@ from urllib.request import Request, urlopen
 REPO_ROOT = Path(__file__).resolve().parents[1]
 API_ROOT = "https://api.netlify.com/api/v1"
 TIMEOUT_SECONDS = 20
-PER_PAGE = 30
+PER_PAGE = 100
 DEFAULT_LOOKBACK_HOURS = 36
+# Page back this far before giving up. 10 x 100 = 1000 deploys per site, far past any
+# plausible 36-hour burst; reaching it means something is wrong, so it raises rather
+# than quietly reporting a truncated window.
+MAX_PAGES = 10
 
 # The one message that means "we skipped this build on purpose". Netlify wraps it as
 # "Failed during stage 'checking build content for changes': Canceled build due to no
@@ -239,8 +251,13 @@ def classify_site(slug, deploys, now, lookback_hours=DEFAULT_LOOKBACK_HOURS):
     return findings, counts
 
 
-def _fetch(site_id, token):
-    url = "%s/sites/%s/deploys?per_page=%d" % (API_ROOT, site_id, PER_PAGE)
+def _fetch_page(site_id, token, page):
+    url = "%s/sites/%s/deploys?per_page=%d&page=%d" % (
+        API_ROOT,
+        site_id,
+        PER_PAGE,
+        page,
+    )
     request = Request(url, headers={"Authorization": "Bearer %s" % token})
     try:
         with urlopen(request, timeout=TIMEOUT_SECONDS) as response:
@@ -260,11 +277,52 @@ def _fetch(site_id, token):
     return deploys
 
 
+def _fetch(site_id, token, horizon):
+    """Page back until the window is actually covered, or say it could not be.
+
+    WHY THIS PAGINATES. The first version fetched ONE page of 30 and filtered it to the
+    36-hour window. That list is not production-only -- it is every deploy including
+    deploy previews -- so on a busy day the page is eaten by previews and the window is
+    truncated without a word. Measured on psychiatry-workforce-tour, 2026-09-11:
+
+        per_page=30  -> 30 records, 13 production, oldest record 1.9h old
+        ground truth -> 31 production deploys inside the 36h window
+
+    The checker examined 13 of 31 and printed "clean over the last 36 hours". A real
+    failure three hours old was outside its data while inside its claimed window -- the
+    most dangerous shape a monitor can take, because the coverage claim was confident
+    and wrong rather than absent.
+
+    Stops when a page reaches past the horizon, when a page comes back short (the end),
+    or at MAX_PAGES. Hitting MAX_PAGES without reaching the horizon raises, because a
+    partially covered window must never be reported as a covered one.
+    """
+    collected = []
+    for page in range(1, MAX_PAGES + 1):
+        batch = _fetch_page(site_id, token, page)
+        collected.extend(batch)
+        if len(batch) < PER_PAGE:
+            return collected  # ran out of deploys: the window is fully covered
+        oldest = min(
+            (t for t in (_parse_time(d.get("created_at"))
+                         for d in batch if isinstance(d, dict)) if t is not None),
+            default=None,
+        )
+        if oldest is not None and oldest < horizon:
+            return collected
+    raise CheckerError(
+        "site %s still had deploys newer than the %s window after %d pages; "
+        "the lookback could not be covered"
+        % (site_id, horizon.isoformat(), MAX_PAGES)
+    )
+
+
 def run(token, now, lookback_hours):
     findings = []
     sites = []
+    horizon = now - timedelta(hours=lookback_hours)
     for site in SITES:
-        deploys = _fetch(site["siteId"], token)
+        deploys = _fetch(site["siteId"], token, horizon)
         site_findings, counts = classify_site(
             site["slug"], deploys, now, lookback_hours
         )
@@ -372,6 +430,118 @@ def _self_test():
     found, _ = classify_site("t", ["not-an-object"], now)
     expect("a malformed record is a finding, not a pass", len(found) == 1)
 
+    # --- COVERAGE. _fetch must page back until the window is genuinely covered. The
+    # real defect: one page of 30 mixed-context deploys left the 36h window with 1.9h
+    # of data on it, and the run still printed "clean over the last 36 hours".
+    import tempfile
+
+    horizon = now - timedelta(hours=DEFAULT_LOOKBACK_HOURS)
+
+    def _paged(pages):
+        """Fake _fetch_page over a list of pages; records how many were requested."""
+        calls = []
+
+        def fake(site_id, token, page):
+            calls.append(page)
+            return pages[page - 1] if page - 1 < len(pages) else []
+
+        return fake, calls
+
+    def _rec(hours_ago):
+        stamp = now - timedelta(hours=hours_ago)
+        return {"id": "x", "context": "production", "state": "ready",
+                "created_at": stamp.isoformat().replace("+00:00", "Z")}
+
+    real_page = sys.modules[__name__]._fetch_page
+    try:
+        # A full page that never reaches the horizon must pull the NEXT page.
+        near = [_rec(1)] * PER_PAGE
+        far = [_rec(90)] * PER_PAGE
+        fake, calls = _paged([near, far])
+        sys.modules[__name__]._fetch_page = fake
+        got = _fetch("s", "t", horizon)
+        expect("a page that stops short of the horizon pages again", calls == [1, 2])
+        expect("paged results are concatenated", len(got) == 2 * PER_PAGE)
+
+        # One page that already reaches past the horizon stops immediately.
+        fake, calls = _paged([far, far])
+        sys.modules[__name__]._fetch_page = fake
+        _fetch("s", "t", horizon)
+        expect("a page reaching past the horizon stops at one call", calls == [1])
+
+        # A short page means the end of the list -- covered, stop.
+        fake, calls = _paged([[_rec(1)] * (PER_PAGE - 1)])
+        sys.modules[__name__]._fetch_page = fake
+        _fetch("s", "t", horizon)
+        expect("a short page ends paging without raising", calls == [1])
+
+        # Never reaching the horizon must RAISE, not return a truncated window.
+        fake, calls = _paged([near] * (MAX_PAGES + 3))
+        sys.modules[__name__]._fetch_page = fake
+        raised = False
+        try:
+            _fetch("s", "t", horizon)
+        except CheckerError:
+            raised = True
+        expect("an uncoverable window raises instead of truncating", raised)
+        expect("it gives up at MAX_PAGES", calls == list(range(1, MAX_PAGES + 1)))
+    finally:
+        sys.modules[__name__]._fetch_page = real_page
+
+    # --- NEVER INERT. These drive main() end-to-end with a fake network, because the
+    # failure they guard is "the whole run passed while reading nothing", which no
+    # amount of classify_site() coverage can catch.
+
+    def _main_with(env_token, fake_sites):
+        """Run main() with a stubbed network, return (exit code, receipt dict)."""
+        real_run, real_env = run_module.run, os.environ.get("NETLIFY_AUTH_TOKEN")
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "receipt.json"
+            try:
+                if env_token is None:
+                    os.environ.pop("NETLIFY_AUTH_TOKEN", None)
+                else:
+                    os.environ["NETLIFY_AUTH_TOKEN"] = env_token
+                run_module.run = lambda *a, **k: ([], fake_sites)
+                code = main(["--out", str(out)])
+                return code, json.loads(out.read_text(encoding="utf-8"))
+            finally:
+                run_module.run = real_run
+                if real_env is None:
+                    os.environ.pop("NETLIFY_AUTH_TOKEN", None)
+                else:
+                    os.environ["NETLIFY_AUTH_TOKEN"] = real_env
+
+    run_module = sys.modules[__name__]
+    every_site = [
+        {"slug": s["slug"], "counts": {"production": 0, "in_window": 0,
+                                       "benign_cancels": 0, "superseded_skips": 0,
+                                       "healthy": 0}}
+        for s in SITES
+    ]
+
+    code, receipt = _main_with(None, every_site)
+    expect("a missing token is exit 2, not a pass", code == 2)
+    expect("a missing token is recorded as undetermined",
+           receipt["status"] == "undetermined")
+
+    code, receipt = _main_with("t0ken", every_site[:-1])
+    expect("examining fewer sites than declared is exit 2", code == 2)
+    expect("a short run says how short it was",
+           "of %d declared sites" % len(SITES) in receipt["reason"])
+
+    code, receipt = _main_with("t0ken", [])
+    expect("examining NO sites is exit 2, not a clean pass", code == 2)
+
+    code, receipt = _main_with("t0ken", every_site)
+    expect("a full run with no findings is exit 0", code == 0)
+    expect("a clean receipt states its own coverage",
+           receipt["sitesExamined"] == len(SITES)
+           and receipt["sitesDeclared"] == len(SITES)
+           and receipt["deploysExamined"] == 0)
+    expect("zero deploys in a quiet window is still clean, not undetermined",
+           receipt["status"] == "success")
+
     expect("every declared site has an id", all(s["siteId"] for s in SITES))
     expect(
         "the two learner sites are whole-repo scoped",
@@ -402,17 +572,18 @@ def main(argv=None):
     now = datetime.now(timezone.utc)
     if not token:
         print(
-            "::warning title=Netlify deploy alarm is not armed::"
+            "::error title=Netlify deploy alarm is not armed::"
             "NETLIFY_AUTH_TOKEN is not set, so production deploy state was not read. "
-            "Add the repository secret to arm this alarm."
+            "The secret exists as of 2026-09-11; if this fires, it was removed, renamed, "
+            "revoked or expired. Nothing is watching production deploys until it is back."
         )
         _write(args.out, {
             "schemaVersion": 1,
-            "status": "skipped",
+            "status": "undetermined",
             "reason": "NETLIFY_AUTH_TOKEN is not set",
             "checkedAt": now.isoformat(),
         })
-        return 0
+        return 2
 
     try:
         findings, sites = run(token, now, args.hours)
@@ -426,12 +597,32 @@ def main(argv=None):
         })
         return 2
 
+    # Prove the run actually examined what it declares before it is allowed to report
+    # anything at all. A short site list would otherwise print a confident "clean" over
+    # a set it never read -- coverage that exists only in the exit code.
+    if len(sites) != len(SITES):
+        reason = "examined %d of %d declared sites" % (len(sites), len(SITES))
+        print("netlify-deploy-health: COULD NOT DETERMINE — %s" % reason, file=sys.stderr)
+        _write(args.out, {
+            "schemaVersion": 1,
+            "status": "undetermined",
+            "reason": reason,
+            "checkedAt": now.isoformat(),
+            "sites": sites,
+        })
+        return 2
+
     status = "failed" if findings else "success"
     _write(args.out, {
         "schemaVersion": 1,
         "status": status,
         "lookbackHours": args.hours,
         "checkedAt": now.isoformat(),
+        # What this run actually looked at, so a reader never has to infer coverage from
+        # the absence of findings.
+        "sitesDeclared": len(SITES),
+        "sitesExamined": len(sites),
+        "deploysExamined": sum(s["counts"]["in_window"] for s in sites),
         "sites": sites,
         "findings": findings,
     })
@@ -451,7 +642,17 @@ def main(argv=None):
             )
         )
     if not findings:
-        print("\nnetlify-deploy-health: clean over the last %d hours" % args.hours)
+        # State the coverage in the same breath as the verdict. "Clean" on its own is
+        # exactly what an inert check prints.
+        print(
+            "\nnetlify-deploy-health: clean over the last %d hours "
+            "(%d site(s), %d production deploy(s) examined)"
+            % (
+                args.hours,
+                len(sites),
+                sum(s["counts"]["in_window"] for s in sites),
+            )
+        )
         return 0
     print("\nnetlify-deploy-health: %d finding(s)" % len(findings), file=sys.stderr)
     for finding in findings:
