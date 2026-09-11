@@ -267,12 +267,15 @@ def _boot_census(root):
     return sorted(boots)
 
 
-# A FLOOR on the census, not a pin: 15 today -- THEME_INIT, spa_index.html, and the 13 pages that
-# carried a boot of their own until 2026-09-10. Adding a page with a boot raises the real count
-# and needs no edit here; only a DROP is a signal. Its whole job is that a parity assertion over
+# A FLOOR on the census, not a pin: 19 today -- THEME_INIT, spa_index.html, the 13 pages that
+# carried a boot of their own until 2026-09-10, and the 4 shipped pages that carried NONE until
+# 2026-09-11, whose own <body> theme code was suppressing the injection meant to give them one.
+# Adding a page with a boot raises the real count and needs no edit here; only a DROP is a
+# signal. Raise this when the real count rises, though: a floor left behind is a ratchet that
+# stopped ratcheting, and the four pages could go back to unpainted with this still green. Its whole job is that a parity assertion over
 # an empty census is green, so without it a walk that silently stops finding files would report
 # success over nothing -- docs/SILENT_SHRINK_CHECKLIST.md, which is the reason this line exists.
-MIN_THEME_BOOTS = 15
+MIN_THEME_BOOTS = 19
 
 # Drives a boot script the way a browser would: fake storage, a fake documentElement that records
 # what got painted, and a window whose matchMedia answers the scenario. Mirrors the harness in
@@ -326,6 +329,65 @@ def _shell_boot():
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spa_index.html")
     with open(path, encoding="utf-8") as fh:
         return _inline_script(fh.read())
+
+
+# The literal apply_dark_mode() uses to decide whether to inject THEME_INIT. It is a PROXY for
+# "this page already boots the theme", and a click handler in <body> satisfies it exactly as well
+# as a boot in <head> -- which is the whole defect the test below exists for. Kept as the literal
+# because this test's subject IS that literal; deriving it would measure something else.
+_SUPPRESSES_INJECTION = "cw_theme"
+
+
+def _pages_suppressing_injection_without_a_boot(root):
+    """Source pages that switch the THEME_INIT injection off and put nothing in its place.
+
+    Each one ships with NO pre-paint theme at all. The build skips the injection because the page
+    mentions cw_theme; the page's own mention is a toggle handler that runs long after first
+    paint. A learner with a stored dark mode opens it and reads a light page.
+    """
+    offenders = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS]
+        for name in filenames:
+            if not name.endswith(".html"):
+                continue
+            full = os.path.join(dirpath, name)
+            with open(full, encoding="utf-8", errors="ignore") as fh:
+                markup = fh.read()
+            if _SUPPRESSES_INJECTION not in markup:
+                continue  # the build gives this one a boot; not this test's subject
+            if _head_theme_boot(markup) is None:
+                offenders.append(os.path.relpath(full, root))
+    return sorted(offenders)
+
+
+def _storage_reads_outside_the_boot(markup):
+    """How many times this page reads cw_theme out of storage other than in its head boot."""
+    stripped = _strip_html_comments(markup)
+    boot = _head_theme_boot(markup) or ""
+    return len(_READS_THEME_KEY.findall(stripped)) - len(_READS_THEME_KEY.findall(boot))
+
+
+def _pages_re_deriving_the_theme(root):
+    """Pages that read the stored mode again after the boot already resolved it.
+
+    Storage holds the MODE (system/light/dark); data-theme holds the RESOLVED attribute
+    (light/dark). A second read gets the mode where the reader almost always wants the
+    resolution -- and a reader that then persists what it computed writes 'dark' over 'system',
+    silently converting a learner's follow-the-OS setting into a pin they never chose.
+    """
+    offenders = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS]
+        for name in filenames:
+            if not name.endswith(".html"):
+                continue
+            full = os.path.join(dirpath, name)
+            with open(full, encoding="utf-8", errors="ignore") as fh:
+                markup = fh.read()
+            if _storage_reads_outside_the_boot(markup) > 0:
+                offenders.append(os.path.relpath(full, root))
+    return sorted(offenders)
 
 
 class TestThemeInit(unittest.TestCase):
@@ -392,6 +454,49 @@ class TestThemeInit(unittest.TestCase):
             "these theme boots are not byte-identical to spa_index.html's: %s. Every copy paints "
             "before first paint and they must agree -- a copy left behind is a learner reading a "
             "dark shell and a light page. Change them all or none." % drifted,
+        )
+
+
+    def test_a_page_that_suppresses_the_injection_brings_its_own_head_boot(self):
+        """The hole the census parity check cannot see, closed from the other side.
+
+        Parity can only speak about boots that EXIST; a page with none is simply absent from the
+        census. That is how four shipped pages sat with no pre-paint theme at all while every
+        theme test was green -- the exact shape docs/SILENT_SHRINK_CHECKLIST.md is about, a check
+        reporting success over a set smaller than the one it claims to cover.
+
+        This asks the complementary question -- which pages switched the injection OFF -- and it
+        is derived, not a list: a page added tomorrow that writes cw_theme from <body> and
+        carries no boot in <head> reds here on the day it lands, with no edit to this file.
+        """
+        self.assertEqual(
+            _pages_suppressing_injection_without_a_boot(REPO_ROOT), [],
+            "these pages mention cw_theme, so apply_dark_mode() skips THEME_INIT for them, and "
+            "they carry no boot in <head> of their own -- so they ship with NO pre-paint theme "
+            "and render light for a learner whose stored mode is dark. Give each one the shell's "
+            "boot script (spa_index.html line 4, byte for byte): %s"
+            % _pages_suppressing_injection_without_a_boot(REPO_ROOT),
+        )
+
+    def test_only_the_boot_reads_the_stored_mode(self):
+        """Storage holds the MODE; data-theme holds the RESOLUTION. One reader, not two.
+
+        The boot resolves storage into an attribute before first paint, so everything after it
+        should read the attribute. A second reader of storage gets 'system' where it expects
+        'light' or 'dark', and the ones that persist what they computed write the resolved value
+        back over the mode -- turning follow-the-OS into a pin the learner never chose. That
+        bug is invisible in a two-mode world, which is why it arrives with the third mode.
+
+        WHAT THIS DOES NOT SEE: a page that reads the stored mode through an alias it built
+        elsewhere, and a page that writes without reading. The write side has no honest static
+        check; it is the reads that give the re-derivation away.
+        """
+        self.assertEqual(
+            _pages_re_deriving_the_theme(REPO_ROOT), [],
+            "these pages read cw_theme out of storage again after the head boot already resolved "
+            "it: %s. Seed from document.documentElement.getAttribute('data-theme') instead -- "
+            "review.html is the worked example -- and persist only in response to a click."
+            % _pages_re_deriving_the_theme(REPO_ROOT),
         )
 
 

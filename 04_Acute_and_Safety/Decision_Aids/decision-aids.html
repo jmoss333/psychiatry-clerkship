@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var s=localStorage.getItem('cw_theme');var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=m;if(m==='system'){a=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>
 <!-- [CLERKSHIP-META v1] tool="Algorithms & Decision Aids" version="1.0" built="2026-06-29" category="acute-safety" audience="trainee,ms3" settings="inpatient" time="scan" summary="Visual decision-support for the can't-miss inpatient syndromes: rule-out-first decision trees, the agitation escalation ladder, NMS-vs-serotonin-syndrome matrix, alcohol-withdrawal timeline, and CIWA-Ar score bands. One visual grammar: red = rule out first, teal = first move. Educational; fictional composites only; no PHI; AI-drafted, faculty-reviewed." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -135,10 +136,12 @@
 var e=React.createElement, useState=React.useState, useEffect=React.useEffect;
 
 // ---- theme (shared key with the rest of the hub) ----
+// The boot in <head> has already turned the stored MODE (system/light/dark) into the RESOLVED
+// attribute (light/dark) and painted it before first paint. Read what it painted. Reading
+// cw_theme again here would answer a different question -- it hands back "system", which is not
+// a theme -- and the round trip is what used to overwrite a learner's follow-the-OS setting.
 function initialTheme(){
-  try{var s=localStorage.getItem("cw_theme"); if(s==="dark"||s==="light")return s;}catch(_){}
-  try{ if(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches) return "dark"; }catch(_){}
-  return "light";
+  return document.documentElement.getAttribute("data-theme")==="dark"?"dark":"light";
 }
 
 // ---- content (sourced from the hub's own teaching pages; standard inpatient management) ----
@@ -275,7 +278,10 @@ function Tree(props){
 function App(){
   var th=useState(initialTheme()),theme=th[0],setTheme=th[1];
   var vw=useState("trees"),view=vw[0],setView=vw[1];
-  useEffect(function(){ try{document.documentElement.setAttribute("data-theme",theme);localStorage.setItem("cw_theme",theme);}catch(_){} },[theme]);
+  // Paints only. This effect also fires on MOUNT, so persisting here wrote the resolved value
+  // over the stored mode on every visit, silently converting "system" into a pin the learner
+  // never chose. The mode is written where the learner actually picks one: the toggle below.
+  useEffect(function(){ try{document.documentElement.setAttribute("data-theme",theme);}catch(_){} },[theme]);
 
   function body(){
     if(view==="trees") return e("div",null, TREES.map(function(t){return e(Tree,{key:t.id,t:t});}));
@@ -333,7 +339,7 @@ function App(){
           e("strong",{style:{color:"var(--accent-d)"}},"teal = first move"),".")
       ),
       e("button",{className:"tbtn","aria-label":"Toggle light/dark theme",title:"Toggle theme",
-        onClick:function(){setTheme(theme==="dark"?"light":"dark");}}, theme==="dark"?"☀":"☾")
+        onClick:function(){var nx=theme==="dark"?"light":"dark";try{localStorage.setItem("cw_theme",nx);}catch(_){} setTheme(nx);}}, theme==="dark"?"☀":"☾")
     ),
     e("span",{className:"opt-pill"},"Optional · quick reference"),
     e("div",{className:"legend"},
