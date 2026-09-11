@@ -620,7 +620,7 @@ test('clicking the date input is not a controller action', () => {
 // The fix is debt, not a render: the commit marks the BASE surface stale and the next render of
 // any kind absorbs it. That keeps the panel untouched, so the segment-cursor reasoning above
 // still holds -- what changes is only what the next render covers.
-function staleBaseHarness(seed, initial) {
+function staleBaseHarness(seed, initial, options = {}) {
   const map = new Map(Object.entries(seed));
   const storage = {
     getItem: (k) => (map.has(k) ? map.get(k) : null),
@@ -629,6 +629,7 @@ function staleBaseHarness(seed, initial) {
   };
   const W = makeWire(storage);
   const details = [];
+  const timers = [];
   const record = (_next, detail) => details.push(detail);
   const input = {
     tagName: 'INPUT', isContentEditable: false, isConnected: true, value: '',
@@ -638,39 +639,50 @@ function staleBaseHarness(seed, initial) {
     focus() {},
   };
   const handlers = {};
+  const windowHandlers = {};
+  // #pgRoot is what the Progress PAGE mounts. The plan and placement sub-views mount #planRoot
+  // and #ptRoot under the same openId, so this flag is the difference between "Progress is on
+  // screen" and "something else the controller never heard about is".
   const root = {
     addEventListener(type, fn) { handlers[type] = fn; },
     removeEventListener() {},
-    querySelector: () => null,
+    querySelector: (selector) => (
+      selector === '#pgRoot' && options.progressPageMounted ? { id: 'pgRoot' } : null),
     matches: () => false,
   };
   const controller = W.fdWire(root, initial, {
     window: {
-      addEventListener() {}, removeEventListener() {},
+      addEventListener(type, fn) { windowHandlers[type] = fn; },
+      removeEventListener() {},
       location: { href: 'https://example.test/', search: '', pathname: '/' },
     },
     render: record,
     renderTransient: record,
+    setTimer: (fn) => { timers.push(fn); return timers.length; },
+    clearTimer: () => {},
     index: { byRef: {}, weeks: [{ n: 1, items: [] }] },
     synonyms: {},
     document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
   });
   controller.commitStartup();
+  const clickAttr = (name) => {
+    const target = {
+      tagName: 'BUTTON', isContentEditable: false, isConnected: true,
+      closest: (s) => (s.indexOf(`[${name}]`) > -1 ? target : null),
+      hasAttribute: (n) => n === name,
+      getAttribute: (n) => (n === name ? '' : null),
+      focus() {},
+    };
+    handlers.click({ target, preventDefault() {} });
+  };
   return {
     details,
     storage,
     controller,
     change(value) { input.value = value; handlers.change({ target: input }); },
-    closeSheet() {
-      const target = {
-        tagName: 'BUTTON', isContentEditable: false, isConnected: true,
-        closest: (s) => (s.indexOf('[data-fd-close-sheet]') > -1 ? target : null),
-        hasAttribute: (n) => n === 'data-fd-close-sheet',
-        getAttribute: (n) => (n === 'data-fd-close-sheet' ? '' : null),
-        focus() {},
-      };
-      handlers.click({ target, preventDefault() {} });
-    },
+    closeSheet() { clickAttr('data-fd-close-sheet'); },
+    fireTimers() { while (timers.length) timers.shift()(); },
+    popstate() { windowHandlers.popstate({ state: null }); },
   };
 }
 
@@ -698,7 +710,8 @@ test('closing the panel after a commit rebuilds the base surface Today is drawn 
 // just set, with the panel gone.
 test('the Progress surface is rebuilt too, not preserved stale', () => {
   const h = staleBaseHarness({},
-    { role: 'r', week: 1, screen: 'app', sheet: 'settings', openId: '__progress__', fromTab: 'today' });
+    { role: 'r', week: 1, screen: 'app', sheet: 'settings', openId: '__progress__', fromTab: 'today' },
+    { progressPageMounted: true });
   h.change('2026-10-30');
   h.closeSheet();
   const detail = h.details[h.details.length - 1];
@@ -806,4 +819,63 @@ test('the frontdoor modules hold exactly one writer of the exam-date key', () =>
   }
   assert.deepEqual(writes.sort(), ['fd_state.js:removeItem', 'fd_state.js:setItem'],
     'the only writer is fdStoreExamDate; a second one is the desync this task exists to prevent');
+});
+
+// ---------------------------------------------------------------------------------------------
+// Forcing preserveResource=false on openId '__progress__' discards whatever is ACTUALLY mounted
+// there, and the controller does not know what that is. renderStoredPlan, startPretest,
+// renderPretestForm and renderPretestResults all write contentEl.innerHTML directly from the
+// shell's own delegated listener while state.openId stays '__progress__'. So: a learner opens the
+// 2-minute placement from Progress, answers 7 of 10, sets an exam date in the panel, closes it --
+// and the base render replaces the half-finished form with the Progress page. The only route back
+// is data-pt="pretest" -> startPretest(), which resets ptAnswers={}. Seven answers gone.
+//
+// The predicate has to be narrower than the openId: pay the debt IN PLACE when the Progress page
+// itself is mounted, and leave a directly-mounted sub-view alone. Safe because renderPlanCards now
+// reads the live key, so a sub-view re-derives correctly on next entry instead of carrying the
+// snapshot that made this task necessary.
+test('a sub-view mounted under the Progress openId is never discarded to pay the debt', () => {
+  const h = staleBaseHarness({},
+    { role: 'r', week: 1, screen: 'app', sheet: 'settings', openId: '__progress__', fromTab: 'today' },
+    { progressPageMounted: false });
+  h.change('2026-10-30');
+  h.closeSheet();
+  const detail = h.details[h.details.length - 1];
+  assert.equal(detail.preserveResource, true,
+    'the plan and placement views are mounted here without the controller knowing; '
+    + 'replacing contentEl destroys in-progress work with no way back');
+
+  // And because that render paid nothing, the debt is still owed rather than silently retired.
+  h.controller.dispatch({ 'data-fd-settings': '' });
+  assert.equal(h.details[h.details.length - 1].surfaces.base, true, 'still owed');
+});
+
+// Back/Forward renders the base directly with a literal detail object, so it settles the debt in
+// fact while leaving the flag claiming it is still owed. Not stale content -- a lying flag, which
+// costs one redundant base rebuild on the next render and misleads the next reader.
+test('a history navigation settles the base debt rather than leaving the flag lying', () => {
+  const h = staleBaseHarness({}, { role: 'r', week: 1, screen: 'app', sheet: 'settings' });
+  h.change('2026-10-30');
+  h.popstate();
+  assert.equal(h.details[h.details.length - 1].baseChanged, true, 'popstate renders the base');
+
+  h.controller.dispatch({ 'data-fd-settings': '' });
+  assert.equal(h.details[h.details.length - 1].surfaces.base, false,
+    'the debt was paid by that render, so the next overlay-only render is overlay-only');
+});
+
+// The nudge timer is the one settlement site besides apply() and history that a learner can
+// actually reach with a debt outstanding: closing an unread protocol schedules it for 8s
+// (fdCloseSheet), which is long enough to open the gear and set a date before it fires.
+test('the nudge timeout settles the base debt when it fires over an open panel', () => {
+  const h = staleBaseHarness({},
+    { role: 'r', week: 1, screen: 'app', sheet: 'delirium.md', done: {} });
+  h.closeSheet();                       // unread protocol -> schedules the nudge timeout
+  h.controller.dispatch({ 'data-fd-settings': '' });
+  h.change('2026-10-30');
+  const before = h.details.length;
+  h.fireTimers();
+  assert.ok(h.details.length > before, 'the timeout renders');
+  assert.equal(h.details[h.details.length - 1].surfaces.base, true,
+    'and that render is owed the base, because the commit before it rendered nothing');
 });

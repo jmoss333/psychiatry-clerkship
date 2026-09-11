@@ -851,19 +851,38 @@ function fdWire(root, initialState, opts){
      intensity line, Today's countdown through fdExamCountdown), and closing the sheet does not
      cover any of them, because fdCloseSheet patches only overlay keys and transitionDetail
      classes every one of them as overlay. So the commit records that the base surface is owed a
-     render and the next render of ANY kind pays it. The panel is still never rebuilt at commit
-     time, which is what the segment-cursor reasoning in changeHandler depends on.
+     render and a later render pays it. The panel is still never rebuilt at commit time, which is
+     what the segment-cursor reasoning in changeHandler depends on.
 
-     preserveResource is overridden for Progress alone. It exists to stop a transient render
-     replacing a LOADED reader with fdBaseMarkup's "Loading…" shell -- true of a page, false of
-     Progress, which fdBaseMarkup renders in full (fdProgressMarkup -> renderProgress); and
-     fdRenderTransient's preserve branch is a pure no-op there, since fdPatchCompletion returns
-     early on __progress__. A learner who sets a date from the plan view therefore lands back on
-     a freshly rendered Progress, which is exactly where the retired save-exam handler put them. */
+     THREE settlement sites, and they are exhaustive because the debt has exactly one creator.
+     Only changeHandler sets it, which means the panel is open; the panel can be left only through
+     apply() (its close control, the backdrop, Escape) or through history, and the nudge timeout
+     is the one other render a learner can reach while it is still open -- fdCloseSheet schedules
+     it for 8s, long enough to open the gear and set a date. inputHandler is deliberately NOT a
+     site: reaching it needs search open, opening search is an apply(), and the gear patches
+     searchOpen:false, so the two overlays cannot coexist. A call there would have been a line
+     that looks load-bearing and can never run.
+
+     preserveResource is overridden ONLY where the Progress PAGE is what is mounted. It exists to
+     stop a transient render replacing a LOADED reader with fdBaseMarkup's "Loading…" shell --
+     true of a page, false of the Progress page itself, which fdBaseMarkup renders in full
+     (fdProgressMarkup -> renderProgress) and whose preserve branch is a pure no-op anyway, since
+     fdPatchCompletion returns early on __progress__.
+
+     The openId alone is NOT that test, and treating it as one is data loss. The shell mounts the
+     plan, the placement form and its results straight into contentEl from its own delegated
+     listener while openId stays '__progress__', so the controller never learns they are there:
+     overriding on the openId replaces a half-answered placement with the Progress page, and the
+     only route back (startPretest) resets its answers. Leaving a sub-view alone is safe because
+     renderPlanCards reads the live key -- it re-derives on next entry rather than carrying the
+     frozen snapshot this task removed. */
+  function progressPageMounted(){
+    return !!(root&&root.querySelector&&root.querySelector('#pgRoot'));
+  }
   function absorbStaleBase(detail){
     if(!baseStale) return detail;
     detail.surfaces.base=true;
-    if(state.openId==='__progress__') detail.preserveResource=false;
+    if(state.openId==='__progress__'&&progressPageMounted()) detail.preserveResource=false;
     /* Cleared only when the render about to run will REALLY rebuild the base. A preserved reader
        render does not touch contentEl at all, so clearing there would retire the debt against a
        render that paid none of it -- the same shape of bug as a check reporting success over a
@@ -1027,9 +1046,9 @@ function fdWire(root, initialState, opts){
     var direction=target.selectionDirection;
     var before=fdClone(state);
     state.query=String(target.value||'');
-    renderTransient(state,absorbStaleBase(transitionDetail(
+    renderTransient(state,transitionDetail(
       before,{query:state.query},{type:'search-input'},false
-    )));
+    ));
     var fresh=root&&root.querySelector?root.querySelector('.fd-searchpanel__input'):null;
     if(fresh&&fresh.focus){
       try{fresh.focus();}catch(_){}
@@ -1059,7 +1078,8 @@ function fdWire(root, initialState, opts){
         THREE SURFACES OUTSIDE THE PANEL DO DERIVE FROM IT -- Progress's signpost, the plan's
         intensity line, and Today's countdown through fdExamCountdown -- and closing the sheet
         does not cover any of them on its own: fdCloseSheet patches only overlay keys. So the
-        commit marks the base surface stale (absorbStaleBase) and the NEXT render pays that debt.
+        commit marks the base surface stale and a later render pays that debt -- at one of the
+        three settlement sites absorbStaleBase enumerates, not at just any render.
         Deferring is what keeps the panel untouched; skipping it altogether is how a learner could
         set a date, close the panel, and still read "Not set" on the page underneath.
      3. No history entry and no fdSave. The result carries no route and no controller-state key;
@@ -1189,11 +1209,14 @@ function fdWire(root, initialState, opts){
     }
     navGeneration++;
     var generation=navGeneration;
-    render(state,{
+    /* This render really does rebuild the base, so it settles any outstanding debt. Routed
+       through absorbStaleBase rather than clearing the flag by hand, so one function stays the
+       only thing that knows how the debt is paid. */
+    render(state,absorbStaleBase({
       kind:'base',changed:[],
       surfaces:{base:true,overlay:true,completion:true,chrome:false},
       baseChanged:true,preserveResource:false,effect:null
-    });
+    }));
     fdSave(state);
     if(legacyResult&&legacyResult.effect){
       fdApplyEffect(legacyResult.effect,true,generation);
