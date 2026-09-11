@@ -8,7 +8,8 @@
       "title": "What standards spine should govern the resident site?",
       "primaryTool": "chatgpt-deep-research",
       "promptRef": "docs/_planning/DEEP_RESEARCH_PROMPTS_2026-09-10.md#rq-1",
-      "status": "asked"
+      "status": "asked",
+      "note": "Asked twice on 2026-09-10. rq-1-2026-09-10 (chatgpt-deep-research) returned a crosswalk MECHANISM with a PLACEHOLDER framework and answered nothing. rq-1-2026-09-10-2 (claude) ANSWERS it: seven frameworks inventoried, Milestones 2.0 recommended as the resident spine on a VERIFIED express educational grant, a real crosswalk showing 43% unmappable, and a rotation-level 11/21 subset. Not marked answered yet: the student half is unresolved (LCME is missing from the question) and the spine choice is Josh's decision. Running one question on two tools is what separated the container from the answer. || 2026-09-10: student-site audience settled as clerkship-director/content-coverage, which selects ADMSEP over Core EPAs. Resident spine (Milestones 2.0) still awaiting Josh's formal adoption decision; the grant evidence is verified and captured."
     },
     {
       "id": "RQ-2",
@@ -88,17 +89,12 @@
         {
           "id": "f1",
           "claim": "The only COWS permission language located — \"This version may be copied and used clinically\" (Wesson & Ling 2003) — licenses clinical copying and does not on its face authorise public educational web display, so the 45 verbatim anchors are not covered.",
-          "disposition": "adopt",
+          "disposition": "needs-primary",
           "primary": {
             "citation": "Wesson DR, Ling W. The Clinical Opiate Withdrawal Scale (COWS). J Psychoactive Drugs. 2003;35(2):253-259.",
             "doi": "10.1080/02791072.2003.10400007"
           },
-          "note": "This is the direct answer to RQ-10 and it closes the interim waiver AGAINST keeping the anchors. Verify by retrieving the 2003 article itself and reading the template legend verbatim — the return quotes it via the PubMed abstract, which is secondary. If it holds, cows moves flagged-interim -> retired/restricted in instrument_rights.json with a new decisionRef, and the 45 anchors in withdrawal.html come out on the CIWA-Ar pattern. Blocked on f3: a withdrawal must leave a route. || CORROBORATED 2026-09-10: the NIDA-hosted form (https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf, retrieved 2026-09-10) carries the identical clinical-scoped permission line on an artifact independent of both the model and the paywalled article. That is a second witness to the LANGUAGE, not to the SCOPE analysis, so this stays needs-primary until the 2003 template legend is read directly. Note this finding's best evidence is a PDF with no DOI — the case that motivated the primary.url + retrievedAt + archivedCopy variant added in this change. || ROUTED 2026-09-10 after the fact: the change shipped in #608 (cows flagged-interim -> retired, 45 anchors replaced with in-house descriptors, NIDA recorded as officialSource) while this finding still read needs-primary. Recording a landing is stenography, not promotion — the decision was made by merging #608. decisions.json#cows-anchors-retired already names this return, so the link is now bidirectional.",
-          "landedIn": [
-            "decisions.json#cows-anchors-retired",
-            "instrument_rights.json#cows",
-            "03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html"
-          ]
+          "note": "This is the direct answer to RQ-10 and it closes the interim waiver AGAINST keeping the anchors. Verify by retrieving the 2003 article itself and reading the template legend verbatim — the return quotes it via the PubMed abstract, which is secondary. If it holds, cows moves flagged-interim -> retired/restricted in instrument_rights.json with a new decisionRef, and the 45 anchors in withdrawal.html come out on the CIWA-Ar pattern. Blocked on f3: a withdrawal must leave a route. || CORROBORATED 2026-09-10: the NIDA-hosted form (https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf, retrieved 2026-09-10) carries the identical clinical-scoped permission line on an artifact independent of both the model and the paywalled article. That is a second witness to the LANGUAGE, not to the SCOPE analysis, so this stays needs-primary until the 2003 template legend is read directly. Note this finding's best evidence is a PDF with no DOI — the case that motivated the primary.url + retrievedAt + archivedCopy variant added in this change."
         },
         {
           "id": "f2",
@@ -161,7 +157,106 @@
       "returnFile": "Evidence Inbox/_research-returns/rq-1-2026-09-10.md",
       "sourceKind": "secondary",
       "status": "triage",
-      "findings": []
+      "findings": [
+        {
+          "id": "f1",
+          "claim": "The return does not answer RQ-1: frameworks[] holds one entry, EXAMPLE_FRAMEWORK, name 'PLACEHOLDER - replace with your actual standards framework', authority UNSET.",
+          "disposition": "no-action",
+          "note": "Not a defect in the artifact, a scope miss. No framework was inventoried, none recommended, and all three entries[] carry _fixture:true. RQ-1's actual question — which of ACGME Milestones 2.0 / Program Requirements / ABPN blueprint / AAMC EPAs should be the spine, with versions, identifier schemes, unit counts and redistribution terms — is untouched. RQ-1 stays OPEN and must be re-asked. Keep the prompt as written; it was specific, and the tool answered a different question."
+        },
+        {
+          "id": "f2",
+          "claim": "The zero-coverage rule family (V-20..V-26) enumerates seven distinct ways a crosswalk can claim coverage while delivering none, and is a stronger design than the single non-zero-exit check the agenda specified.",
+          "disposition": "needs-primary",
+          "note": "The best thing in the return and the reason to keep it. The seven: no mappings; placeholder codes; duplicate padding; dangling codes; all mapped assets retired; all mappings merely tangential; and V-26 ZERO REACHABLE COVERAGE — mapped content that is scheduled in no rotation week. V-26 is the same defect shape as this repo's own hidden-not-indexed bug: content exists and is unreachable. Verified on receipt: the validator exits 1 on its own fixtures. Adopt the RULE FAMILY as a design input for check_standards_coverage.py; it needs no external primary source because it is a design idea, not a factual claim — promote when the spine exists to apply it to."
+        },
+        {
+          "id": "f3",
+          "claim": "source_rights[] is a SECOND rights register that already contradicts instrument_rights.json on three of five entries.",
+          "disposition": "reject",
+          "note": "DO NOT IMPORT. instrument_rights.json is the single source of truth for instrument dispositions and is gated by instrument-rights-gate.mjs; a parallel register is the exact drift the decisions registry exists to prevent. The contradictions, checked 2026-09-10: (a) phq9 and gad7 marked redistribution_status 'verbatim_cleared' with rightsholder_established true and source_checked 2026-09-10 — but our register has phq9-gad7 as PROVISIONAL, phqscreeners.com blocks automated fetch (robots.txt), and RQ-10 finding f4 is still needs-primary awaiting a human visit plus a dated capture. The file asserts as cleared precisely what is unverified, and its own V-41 rule fires on it for a null evidence_snapshot_ref. (b) cows marked 'pending_permission' with rightsholder_established false — superseded hours earlier by decision cows-anchors-retired (PR #608): cows is RETIRED, waiver closed. (c) cssrs rightsholder_established true — RQ-10 f7 indicates the attribution is RFMH 2008 with Columbia as distributor, so 'established' overstates what is known. Same failure mode as RQ-10 f3: the model reasoned about our governance rules without reading our governance data."
+        },
+        {
+          "id": "f4",
+          "claim": "The rights/text coupling rules (V-16..V-19) encode the de-expression principle independently: verbatim unit text may be stored only when the governing source is verbatim_cleared, otherwise the entry must use reference mode.",
+          "disposition": "needs-primary",
+          "note": "Convergent design evidence, arrived at without knowledge of PR #608. V-17 blocks storing verbatim text against a non-cleared source; V-19 forces review.state to needs_rights_review when the source is pending. This is the same rule this project shipped today for COWS, expressed as a validator constraint. Worth citing in the proposed DE_EXPRESSION_PLAYBOOK as an independent restatement. Not promotable as a factual claim; it is a design convergence."
+        },
+        {
+          "id": "f5",
+          "claim": "The validator requires the jsonschema package, which is not currently a repo dependency.",
+          "disposition": "reject",
+          "note": "REJECTED ON INTAKE: requirements.txt already pins jsonschema==4.26.0, and existing repository validators import it. Adapting the returned validator therefore adds no dependency or reimplementation cost; the return's missing-dependency claim was factually false."
+        }
+      ],
+      "note": "Arrived as three files, not prose: a crosswalk registry, its schema, and a two-tier validator. Files preserved verbatim in rq-1-2026-09-10.files/ beside the return note. Zero invisible characters on intake."
+    },
+    {
+      "id": "rq-1-2026-09-10-2",
+      "question": "RQ-1",
+      "tool": "claude",
+      "askedOn": "2026-09-10",
+      "returnedOn": "2026-09-10",
+      "returnFile": "Evidence Inbox/_research-returns/rq-1-2026-09-10-2.md",
+      "sourceKind": "secondary",
+      "status": "triage",
+      "findings": [
+        {
+          "id": "f1",
+          "claim": "The ACGME Psychiatry Milestones carry an express third-party educational reproduction grant, which is the only affirmative grant in the whole inventory and is what makes verbatim subcompetency identifiers and titles publishable here.",
+          "disposition": "needs-primary",
+          "primary": {
+            "citation": "ACGME Psychiatry Milestones, Second Revision March 2020, implementation 1 July 2021 — page copyright line.",
+            "url": "https://www.acgme.org/globalassets/pdfs/milestones/psychiatrymilestones.pdf",
+            "retrievedAt": "2026-09-10",
+            "archivedCopy": "13_Faculty_Resources/rights-captures/acgme-milestones-copyright-2026-09-10.txt"
+          },
+          "note": "VERIFIED VERBATIM 2026-09-10 by direct fetch of the primary PDF, not a search snippet: '(c)2020 Accreditation Council for Graduate Medical Education (ACGME) All rights reserved except the copyright owners grant third parties the right to use the Psychiatry Milestones on a non-exclusive basis for educational purposes.' The return quoted it accurately. Dated capture stored at 13_Faculty_Resources/rights-captures/acgme-milestones-copyright-2026-09-10.txt. Stays needs-primary for a STRUCTURAL reason, not an evidential one: promotion to adopt requires landedIn, and nothing has landed — no spine is chosen and no page is mapped. The evidence is ready; the decision is Josh's."
+        },
+        {
+          "id": "f2",
+          "claim": "Milestones 2.0 comprises 21 subcompetencies — PC1-6, MK1-4, SBP1-3, PBLI1-2, PROF1-3, ICS1-3 — with a stable identifier scheme suitable as a crosswalk key.",
+          "disposition": "needs-primary",
+          "primary": {
+            "citation": "ACGME Psychiatry Milestones, Second Revision March 2020 — subcompetency tables.",
+            "url": "https://www.acgme.org/globalassets/pdfs/milestones/psychiatrymilestones.pdf",
+            "retrievedAt": "2026-09-10",
+            "archivedCopy": "13_Faculty_Resources/rights-captures/acgme-milestones-copyright-2026-09-10.txt"
+          },
+          "note": "Identifiers and titles verified against the primary document; they match the return exactly. The COUNT was verified by summing the enumeration (6+4+3+2+3+3=21), NOT by trusting a reported total — the retrieval summariser stated 'Total Count: 24' while enumerating 21. Recorded because it is the same class of error the dock exists to catch: a confident number beside a correct list. Trust enumerations, not totals."
+        },
+        {
+          "id": "f3",
+          "claim": "The ACGME Program Requirements carry NO third-party educational grant, only a bare copyright line — so the Milestones grant must not be assumed to extend to them.",
+          "disposition": "needs-primary",
+          "note": "TREAT WITH SUSPICION — this is an unverified NEGATIVE, the exact shape that failed in RQ-10 f3 (the 'no custodian-hosted COWS form' claim, falsified in one fetch). The return states it did not locate a grant, which is honest, but absence of a grant in the PDF body is not absence of a grant: ACGME's site terms of use were not retrieved. This matters because the PR is the recommended SECONDARY axis and its clauses (4.11.f, 4.11.k) are the ones that would be quoted most. Verify before relying on it: fetch acgme.org terms of use, and include it in the permission email. Return's own Unresolved item 1 says the same."
+        },
+        {
+          "id": "f4",
+          "claim": "The internal code `safety` collides with two different constructs — patient risk (suicide/violence, PC1) and institutional safety events (SBP1) — so mapping SBP1 to `safety` would manufacture false coverage.",
+          "disposition": "needs-primary",
+          "note": "The most immediately actionable finding and it needs no external permission from anyone. Proposed fix: split into `safety-risk` and `safety-systems`. Note this interacts with a known constraint: FOCUS_CATEGORIES and SHELF_VOCAB are the SAME twelve codes, so splitting one touches both vocabularies and the shelf blueprint. Scope that before doing it."
+        },
+        {
+          "id": "f5",
+          "claim": "9 of 21 subcompetencies (43%) are unmappable to the twelve internal codes, and the pattern is not random — it is exactly SBP1-3, PBLI1-2, PROF3, ICS3, PC6 and MK4, because the internal codes are a disorder taxonomy and the Milestones are a competency taxonomy.",
+          "disposition": "needs-primary",
+          "note": "The structural diagnosis, and it changes the remediation. Adding nine disorder-shaped codes does not fix a category mismatch; the return's recommendation is a second ORTHOGONAL axis (competency domain) so every page occupies a cell in a lattice rather than a slot in a list. That also distinguishes a real gap from a correctly-empty cell — e.g. PC6 Consultation x personality is legitimately empty because 4.11.k puts consultation on a different rotation. Directly relevant to the 61 undecided optional refs in check_path_coverage.py: a lattice cell reason is a better exemption reason than a sentence."
+        },
+        {
+          "id": "f6",
+          "claim": "Both confirmed vocabulary gaps are worse than suspected: psychotherapy occupies TWO of 21 subcompetencies (PC4 and MK4) and is a hard Program Requirement, and QI/patient safety is SBP1 plus the 4.11.q administration requirement.",
+          "disposition": "needs-primary",
+          "note": "Confirms the agenda's two suspicions and quantifies them. Feeds RQ-2 directly — the QI curriculum question now has a named subcompetency (SBP1: analyzes patient safety events / discloses them / participates in QI) and a named PR clause (4.11.q: utilization review, quality assurance, performance improvement) to discharge, rather than a generic obligation."
+        },
+        {
+          "id": "f7",
+          "claim": "For the student site, LCME — not AAMC or ADMSEP — is the accreditor that actually binds clerkship objectives, and it was absent from the framework list entirely.",
+          "disposition": "needs-primary",
+          "note": "A genuine scope gap in the QUESTION, surfaced by the return rather than asked for. If 'authoritativeness with accreditors' is a real criterion for the student site then neither candidate framework is what LCME holds the school to. This is the strongest argument for re-scoping RQ-1's student half rather than choosing between ADMSEP and Core EPAs at all. Also recorded: ADMSEP's Clinical Learning Objectives Guide is November 2007 and written to DSM-IV with five-axis and Somatoform/Dissociative topic areas — 19 years stale — while Core EPAs cannot discriminate psychiatric content because they are specialty-agnostic by design. || ANSWERED 2026-09-10 by Josh: the student site's audience is the CLERKSHIP DIRECTOR managing content coverage, not the LCME self-study. That settles the Part 2 fork in favour of ADMSEP over Core EPAs, on the stated reasoning that a spine returning the same answer for catatonia and chest pain cannot measure psychiatric content coverage. Three conditions ride with that choice and are not optional: (1) pin 'ADMSEP Clinical Learning Objectives Guide, November 2007' as a version string on every page that cites it; (2) publish the DSM-5-TR remap for the four DSM-IV-era topic areas (Somatoform; Dissociative and Amnestic; the five-axis references; Cognitive Disorders terminology) as OUR editorial layer, clearly attributed to us and never silently as ADMSEP's text — silently modernising their wording manufactures a derivative work in a rights posture that is not established; (3) ADMSEP reproduction terms remain NOT ESTABLISHED (site asserts All Rights Reserved; 'freely available to clinical educators' is availability, not a grant), so until a written answer arrives, cite Topic Area identifiers and paraphrase objectives rather than reproducing objective text. LCME is still absent from the question and should be added when the student half is re-scoped."
+        }
+      ],
+      "note": "Second RQ-1 return, different tool. This one ANSWERS the question: seven frameworks inventoried with versions and identifier schemes, a recommendation with stated trade-offs, a real crosswalk, a rotation-level subset, and a 13-item Unresolved section. Contrast rq-1-2026-09-10 (chatgpt-deep-research), which returned a placeholder crosswalk mechanism. Running one question on two tools separated a container from an answer — the habit paid on its first use. || Part 2 student fork answered by Josh 2026-09-10: audience is the clerkship director, so ADMSEP is the student spine with a pinned version, an attributed DSM-5-TR remap layer, and paraphrase-not-reproduce until rights are established."
     }
   ]
 }
