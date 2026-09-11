@@ -838,7 +838,9 @@ In `fdSheetSettingsBody`, after the You section:
     }
 ```
 
-Register `'data-fd-exam-date'` in `FD_HANDLED_ATTRS`, add `'data-fd-exam-date':'set exam date'` to `FD_ACTION_SEMANTICS`, and add it to `tests/fd-action-contract.test.mjs:36` in alphabetical position (after `data-fd-close-settings`).
+Register `'data-fd-exam-date'` in `FD_HANDLED_ATTRS`, add `'data-fd-exam-date':'set exam date'` to `FD_ACTION_SEMANTICS`, and add it to `tests/fd-action-contract.test.mjs:36` in alphabetical position. Note that array pins
+**emitted** attributes, and `data-fd-close-settings` no longer exists — Task 3 removed it as dead
+registration, so do not look for it as an anchor.
 
 - [ ] **Step 5: Add dispatch and effect**
 
