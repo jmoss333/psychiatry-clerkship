@@ -198,33 +198,81 @@ class TestPagePasses(_SiteFixture):
 # inline <script> at the top of spa_index.html -- and two copies that nothing compares are exactly
 # how these drifted: the shell learned 'system' on 2026-09-10 and THEME_INIT did not, which left a
 # learner on a dark-preferring phone reading a dark shell and light tool pages. These tests pin the
-# behaviour, pin the byte-equality that keeps the two copies honest, and keep the retired
-# two-state boot from coming back anywhere in the tree.
+# behaviour, and pin every copy in the tree to the shell's bytes so none can fall behind again.
 
 # .../13_Faculty_Resources/_automation/site_build/test_common.py -> the repository root.
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
-LEGACY_BOOT = "var t=localStorage.getItem('cw_theme')"
-
-# Pages still carrying the pre-2026-09-10 two-state boot inline, which paints 'light' for a
-# learner whose OS prefers dark. THEME_INIT cannot reach them: apply_dark_mode() injects it only
-# when 'cw_theme' is absent from the file, and each of these already had a copy of its own. There
-# were thirteen; all thirteen were retired on 2026-09-10 and this set is now EMPTY, which is the
-# strongest state it can be in -- the first assertion below then reads "the retired boot appears
-# nowhere in the tree", and that is the guard worth keeping.
-#
-# This set may only SHRINK. Read the two assertions before adding to it:
-#   found - LEGACY_BOOT_FILES  catches a page ADOPTING the retired boot. Live, and strictly
-#                              stronger now that nothing is exempted.
-#   LEGACY_BOOT_FILES - found  catches a listed page that was FIXED but never delisted, so the
-#                              list cannot rot into a lie. While the set is empty this one is
-#                              VACUOUS by construction -- the empty set minus anything is empty,
-#                              so it cannot fail. It is kept, not deleted, because it re-arms the
-#                              instant anyone adds an entry, and an entry is exactly when a stale
-#                              list becomes possible again. Do not read its green as evidence.
-LEGACY_BOOT_FILES = frozenset()
-
 _SKIP_DIRS = {".git", ".claude", "_build", "node_modules", "__pycache__", ".venv"}
+
+_SCRIPT_RX = re.compile(r"<script[^>]*>([\s\S]*?)</script>", re.I)
+# The boot is recognised by what it DOES, never by how it spells it. The predecessor of this
+# check keyed on the literal `var t=localStorage.getItem('cw_theme')`, so the identical boot with
+# its variable renamed walked straight past it.
+_READS_THEME_KEY = re.compile(r"getItem\(\s*['\"]cw_theme['\"]")
+
+
+def _strip_html_comments(markup):
+    """Drop HTML comments. A comment that names a thing is not the thing.
+
+    _TEMPLATE.html's scaffold header states the rule "Theme-init IIFE is the FIRST <script> in
+    <head>" -- with a literal <script> inside the prose -- so a scanner that does not strip
+    comments first starts matching inside that sentence and extracts 1187 bytes of documentation
+    as though it were a boot. This is the same trap that shipped the whole SPA shell with no dark
+    palette on 2026-09-10: _links_clinical_css read a source comment naming clinical-warm.css as
+    proof the stylesheet was linked. Strip first, then look.
+    """
+    return re.sub(r"<!--[\s\S]*?-->", "", markup)
+
+
+def _head_theme_boot(markup):
+    """This page's pre-paint theme boot, or None if it has none.
+
+    A boot is an inline <script> before </head> whose body reads cw_theme out of localStorage and
+    stamps data-theme. Scoping to <head> is deliberate and is the reason this does not fire on
+    every tool that owns its own light/dark toggle: decision-aids.html, review.html,
+    interview-circle.html and feedback.html all read or write cw_theme and set data-theme from
+    <body>, legitimately and as their own state. The cost of that scope is stated in the test.
+    """
+    t = _strip_html_comments(markup)
+    end = t.lower().find("</head")
+    if end == -1:
+        end = len(t)
+    for m in _SCRIPT_RX.finditer(t):
+        if m.start() >= end:
+            break
+        body = m.group(1)
+        if _READS_THEME_KEY.search(body) and "data-theme" in body:
+            return body
+    return None
+
+
+def _boot_census(root):
+    """Every pre-paint theme boot in the tree, as sorted (label, script body) pairs.
+
+    THEME_INIT is a copy like any other; it is listed explicitly only because it lives in a .py
+    file as a string constant, where a walk over <head> cannot see it.
+    """
+    boots = [("common.py:THEME_INIT", _inline_script(common.THEME_INIT))]
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS]
+        for name in filenames:
+            if not name.endswith(".html"):
+                continue
+            full = os.path.join(dirpath, name)
+            with open(full, encoding="utf-8", errors="ignore") as fh:
+                boot = _head_theme_boot(fh.read())
+            if boot is not None:
+                boots.append((os.path.relpath(full, root), boot))
+    return sorted(boots)
+
+
+# A FLOOR on the census, not a pin: 15 today -- THEME_INIT, spa_index.html, and the 13 pages that
+# carried a boot of their own until 2026-09-10. Adding a page with a boot raises the real count
+# and needs no edit here; only a DROP is a signal. Its whole job is that a parity assertion over
+# an empty census is green, so without it a walk that silently stops finding files would report
+# success over nothing -- docs/SILENT_SHRINK_CHECKLIST.md, which is the reason this line exists.
+MIN_THEME_BOOTS = 15
 
 # Drives a boot script the way a browser would: fake storage, a fake documentElement that records
 # what got painted, and a window whose matchMedia answers the scenario. Mirrors the harness in
@@ -303,29 +351,47 @@ class TestThemeInit(unittest.TestCase):
         """Byte-equality above is the guard; this proves the bytes they share are the right ones."""
         self.assertEqual(self._paint(_shell_boot()), EXPECTED_PAINT)
 
-    def test_the_legacy_two_state_boot_survives_only_where_it_is_frozen(self):
-        # This file is skipped because it DEFINES the needle; a definition is not an occurrence.
-        me = os.path.abspath(__file__)
-        found = set()
-        for dirpath, dirnames, filenames in os.walk(REPO_ROOT):
-            dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS]
-            for name in filenames:
-                if not name.endswith((".html", ".py", ".js", ".mjs")):
-                    continue
-                full = os.path.join(dirpath, name)
-                if os.path.abspath(full) == me:
-                    continue
-                with open(full, encoding="utf-8", errors="ignore") as fh:
-                    if LEGACY_BOOT in fh.read():
-                        found.add(os.path.relpath(full, REPO_ROOT))
-        self.assertEqual(
-            found - LEGACY_BOOT_FILES, set(),
-            "a new page picked up the retired two-state theme boot; use the resolved one",
+    def test_every_pre_paint_theme_boot_in_the_tree_carries_the_shell_bytes(self):
+        """One assertion for both directions of drift, because both are the same defect.
+
+        FORWARD (the unguarded one, and why this replaced its predecessor): fifteen copies of
+        this boot exist and only two of them -- THEME_INIT and spa_index.html -- were pinned to
+        each other. Teach the shell a fourth mode and the other thirteen fall silently behind,
+        which is precisely the split-brain retired on 2026-09-10, recurring with nothing red.
+
+        BACKWARD: a page that adopts the retired two-state boot is caught by the same comparison,
+        because the retired boot is not equal to the current one. It no longer matters how the
+        reintroduced copy spells its variables -- the predecessor keyed on a literal and a rename
+        defeated it.
+
+        WHAT THIS DOES NOT SEE, stated so nobody mistakes green for coverage:
+          * A theme read placed outside <head>. That is the exact shape
+            question-bank-practice.html carried until 2026-09-10 -- a deferred read at the bottom
+            of <body> -- and the literal needle this replaced did catch it. The scope is the
+            price of not firing on the four tools that legitimately own their theme from <body>;
+            a boot down there is not a pre-paint boot at all, and the build's page contract is
+            what is supposed to require one.
+          * A page with NO boot. Parity over a census cannot speak about a page that is not in
+            it, and four shipped pages are in exactly that position today -- apply_dark_mode()
+            skips THEME_INIT wherever 'cw_theme' already appears, which their own <body> theme
+            code trips. Reported with this change; remediating them is not this test's job.
+        """
+        census = _boot_census(REPO_ROOT)
+        self.assertGreaterEqual(
+            len(census), MIN_THEME_BOOTS,
+            "the theme-boot census shrank to %d (floor %d): the walk stopped finding boots it "
+            "used to find, so the parity check below is now passing over a smaller set than it "
+            "claims to check. Fix the walk, or lower the floor deliberately if pages really "
+            "went away. Found: %s" % (
+                len(census), MIN_THEME_BOOTS, [label for label, _ in census]),
         )
+        shell = _shell_boot()
+        drifted = [label for label, body in census if body != shell]
         self.assertEqual(
-            LEGACY_BOOT_FILES - found, set(),
-            "these were fixed -- drop them from LEGACY_BOOT_FILES, or the list stops meaning "
-            "anything and stops catching the next one",
+            drifted, [],
+            "these theme boots are not byte-identical to spa_index.html's: %s. Every copy paints "
+            "before first paint and they must agree -- a copy left behind is a learner reading a "
+            "dark shell and a light page. Change them all or none." % drifted,
         )
 
 
