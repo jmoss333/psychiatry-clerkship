@@ -87,9 +87,14 @@ renderers see it, so the panel cannot mark the active chip from `state.role` alo
 passes the raw id and the list — `fd_wire.js:114` already reads `src.roles`, so this is partly
 wired already.
 
-**The copy must admit what the setting does.** Today role changes the greeting and nothing else.
-A panel that implies otherwise is lying to a learner about their own data. If role later scopes
-content, the copy changes with it.
+**Decision (author, 2026-09-10): the setting ships unexplained.** A plain label and the chips, no
+sublabel describing what role currently affects. The explanation arrives when role affects
+something worth explaining.
+
+One implication follows and constrains the build: role's effect is close to invisible today, so the
+panel must not fire a confirmation toast or success state on selection. A visible "Saved" against a
+change the learner cannot see anywhere would promise more than happened — the chip's own selected
+state is the entire feedback.
 
 ### Pacing — exam date
 
@@ -138,10 +143,13 @@ changes from `'toggle saved color theme'` to `'set saved color theme'` (`fd_wire
 dispatch at `fd_wire.js:389` stops computing the opposite of the current theme.
 
 **The edge case:** a device that has never touched the toggle has no stored value and gets light
-today. Resolving unset to system changes what those learners see on their next visit. This is
-deliberate — it is what their operating system asked for — but it is a behavior change on existing
-devices, not a pure addition. Devices that *did* toggle keep their explicit choice, because the
-stored value is still literally `light` or `dark`.
+today. Resolving unset to system changes what those learners see on their next visit. It is a
+behavior change on existing devices, not a pure addition. Devices that *did* toggle keep their
+explicit choice, because the stored value is still literally `light` or `dark`.
+
+**Decision (author, 2026-09-10): ship it.** Unset resolves to system. The learner's operating
+system is a better default than this platform's guess, and the population affected is exactly the
+population that never expressed a preference here.
 
 ## The contract that will bite: the soft-finding ratchet
 
@@ -157,7 +165,7 @@ A prefix-scoped clear-data loop calls `localStorage.removeItem(k)` with a comput
 on both sites, and the build fails until the baseline is deliberately re-recorded with
 `UPDATE_BASELINE=1`.
 
-**The decision is to pay it, not to dodge it.** The alternative — enumerating every key as a
+**Decision (author, 2026-09-10): pay it, do not dodge it.** The alternative — enumerating every key as a
 literal `removeItem` — is precisely the failure class `docs/SILENT_SHRINK_CHECKLIST.md` exists to
 catalogue: a check that reports success over a set smaller than the one it claims to cover. Only
 twenty-six keys are reachable as literals today; the rest hide behind helper indirection, and any
@@ -219,11 +227,14 @@ rather than tested through the DOM.
 The clear-data completeness test is described above and is the one test in this set that is load-
 bearing rather than confirmatory.
 
-## Open for the author
+## Decisions
 
-1. **The unset-theme migration.** Resolving unset to system is a visible change for every learner
-   who never touched the toggle. Ship it, or leave unset as light and let System be opt-in?
-2. **Baseline bump.** Confirm the `computed-key` +1 is acceptable, since the alternative is an
-   enumerated list that silently rots.
-3. **Role copy.** Whether to say plainly that role currently only changes the greeting, or to leave
-   the setting unexplained until it does more.
+All three resolved by the author on 2026-09-10, in the sections above:
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | Unset theme resolves to system? | **Ship it** — unset follows the OS |
+| 2 | `computed-key` baseline +1 acceptable? | **Yes** — completeness over a rotting literal list |
+| 3 | Does role copy explain its effect? | **No** — ships unexplained, and therefore without a save toast |
+
+Spec approved. Next step is an implementation plan.
