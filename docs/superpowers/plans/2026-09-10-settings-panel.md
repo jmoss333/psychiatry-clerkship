@@ -1078,6 +1078,767 @@ test('erasing device data is blocked in faculty preview', () => {
 
 Export `meaningfulResult` from the test harness's `return {...}` if it is not already reachable; if it is module-private, assert instead that `fd_wire.js` source still reads `r.effect.type!=='set-theme'` and nothing broader.
 
+- [ ] **Step 9: Build both sites and confirm the baseline does NOT move**
+
+```bash
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+git status --porcelain 13_Faculty_Resources/_automation/site_build/qa-baseline.json
+```
+
+Expected: both `✓ PASS (hard:0)`, no ratchet line, and an **empty** `git status` for the baseline.
+
+This step originally said to expect a HARD failure naming `computed-key` and to re-record with
+`UPDATE_BASELINE=1`. That was wrong: the ratchet counts soft **messages** per class and §5c raises
+one message per file, so a fifth computed key in the shell moves that message's parenthetical from
+`(4)` to `(5)` and leaves the class count alone. If the baseline *does* move, something else
+regressed — stop and investigate rather than recording it.
+
+- [ ] **Step 10: Commit**
+
+```bash
+git add tests/fd-wire.test.mjs tests/fd-settings.test.mjs 13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js
+git commit -m "feat(theme): dispatch a selected mode instead of toggling, and focus the chosen button"
+```
+
+---
+
+### Task 3: The gear replaces the glyph
+
+**Files:**
+- Modify: `13_Faculty_Resources/_automation/site_build/frontdoor/fd_shell.js:38-62` (`fdHeader`)
+- Modify: `13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js:6-11`, `:14-36`, `:585-588`
+- Modify: `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css:162-163`, `:867`, `:868`
+- Test: `tests/fd-shell.test.mjs`, `tests/fd-action-contract.test.mjs`, `tests/spa-shell-a11y.test.mjs:117,125`, `tests/smoke/front-door.spec.js:143,245,529,566`
+
+**Interfaces:**
+- Consumes: nothing from earlier tasks.
+- Produces: a `[data-fd-settings]` button in the header; `sheet:'settings'` as the state value Task 4 renders.
+
+- [ ] **Step 1: Write the failing header test**
+
+Append to `tests/fd-shell.test.mjs`:
+
+```js
+test('the header offers settings, not a bare theme toggle', () => {
+  const h = F.fdHeader({ week: 3, tab: 'today' });
+  assert.match(h, /data-fd-settings/, 'gear must be present');
+  assert.doesNotMatch(h, /data-fd-theme/, 'theme moved inside the panel');
+  assert.match(h, /aria-label="Settings"/);
+});
+
+test('the header still carries exactly three action controls', () => {
+  const actions = F.fdHeader({ week: 3, tab: 'today' }).split('fd-header__actions')[1];
+  const buttons = actions.match(/<button/g) || [];
+  assert.equal(buttons.length, 3, 'week pill, safety, settings — a fourth costs the mobile row');
+});
+```
+
+- [ ] **Step 2: Run and watch them fail**
+
+Run: `node --test tests/fd-shell.test.mjs`
+Expected: FAIL — `data-fd-settings` absent, `data-fd-theme` present.
+
+- [ ] **Step 3: Swap the button in `fdHeader`**
+
+In `frontdoor/fd_shell.js`, replace the `fd-themebtn` line inside `fd-header__actions`:
+
+```js
+    '<button type="button" class="fd-settingsbtn" data-fd-settings '+
+    'aria-label="Settings">⚙</button>'+
+```
+
+- [ ] **Step 4: Register the action in all three places in `fd_wire.js`**
+
+In `FD_HANDLED_ATTRS` (`:6-11`) replace `'data-fd-theme'` with `'data-fd-theme','data-fd-settings','data-fd-close-settings'` — `data-fd-theme` stays, it just lives in the panel now.
+
+In `FD_ACTION_SEMANTICS` (`:14-36`) add:
+
+```js
+  'data-fd-settings':'open settings panel',
+  'data-fd-close-settings':'close settings panel',
+```
+
+In the delegated selector string (`:585-588`) add `[data-fd-settings],[data-fd-close-settings],` alongside the others.
+
+- [ ] **Step 5: Add the dispatch branches**
+
+In `fdDispatch`, before the `data-fd-theme` branch:
+
+```js
+  if(fdOwn(a,'data-fd-settings')){
+    /* Settings is a sheet so it inherits backdrop, dialog semantics, the close button and the
+       Escape unwind from fdKeyAction. sheetFrom is not set: settings has no "back to kit" path. */
+    return {patch:{sheet:'settings',searchOpen:false},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-close-settings')){
+    return {patch:{sheet:null,settingsConfirmClear:false},route:null,effect:null};
+  }
+```
+
+- [ ] **Step 6: Update the action-contract inventory**
+
+`tests/fd-action-contract.test.mjs:36` — insert into the alphabetical array, between `'data-fd-close-search'` and `'data-fd-close-sheet'`, and after `'data-fd-search'`:
+
+```js
+    'data-fd-close-settings',
+    'data-fd-settings',
+```
+
+- [ ] **Step 7: Rename the button class in CSS**
+
+`frontdoor.css:162` and `:163` — change the selector `.fd-themebtn` to `.fd-settingsbtn` (the declarations are unchanged; the gear reuses the same 34px circle).
+
+`frontdoor.css:867` and `:868` — these coarse-pointer rules name `.fd-themebtn` in a comma list and are what guarantee a 44px touch target. Replace `.fd-themebtn` with `.fd-settingsbtn` in both. **Missing these is a silent a11y regression on phones** — the button shrinks below the touch minimum with no test failure.
+
+- [ ] **Step 8: Update the a11y suite**
+
+`tests/spa-shell-a11y.test.mjs` lists `.fd-themebtn` in two selector arrays, at `:117` and `:125`.
+Replace both with `.fd-settingsbtn`. These are the focus-visible and touch-target sweeps — leaving
+the old class means the gear is simply absent from both, which passes silently.
+
+- [ ] **Step 9: Update the smoke pins — all four**
+
+`tests/smoke/front-door.spec.js` references the theme control in four places, and two of them are
+behavioural rather than cosmetic:
+
+- `:529` and `:566` — `.fd-themebtn` inside selector lists. Rename to `.fd-settingsbtn`.
+- `:143` — `await expect(page.locator('[data-fd-theme]')).toBeFocused();`. The theme control now
+  lives inside the panel, so this assertion must open the panel first:
+
+```js
+  await page.locator('[data-fd-settings]').click();
+  await expect(page.locator('[data-fd-theme="dark"]')).toBeFocused();
+```
+
+- `:245` — `await page.locator('[data-fd-theme]').click();`. Same restructuring, and note the bare
+  locator now matches **three** buttons and would throw under Playwright's strict mode. Target the
+  mode explicitly:
+
+```js
+  await page.locator('[data-fd-settings]').click();
+  await page.locator('[data-fd-theme="dark"]').click();
+```
+
+**Do not run the suite here.** Smoke verification is deferred to a single run in Task 8 (author's
+decision, 2026-09-10) — `npm ci` in `tests/smoke` is the slowest step in this plan and nothing
+between here and Task 8 changes its result. Edit the pins, then move on.
+
+- [ ] **Step 10: Run the node suites and commit**
+
+Run: `node --test tests/*.test.mjs`
+Expected: PASS.
+
+```bash
+git add tests/fd-shell.test.mjs tests/fd-action-contract.test.mjs tests/smoke/front-door.spec.js 13_Faculty_Resources/_automation/site_build/frontdoor/
+git commit -m "feat(shell): replace the theme glyph with a settings gear"
+```
+
+---
+
+### Task 4: The settings sheet and its Appearance section
+
+**Files:**
+- Modify: `13_Faculty_Resources/_automation/site_build/frontdoor/fd_sheet.js` (add `fdSheetSettingsBody`, add branch at `:271`)
+- Modify: `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css` (append)
+- Test: `tests/fd-settings.test.mjs` (create)
+
+**Interfaces:**
+- Consumes: `fdThemeMode` (Task 1); `sheet:'settings'` (Task 3).
+- Produces: `fdSheetSettingsBody(state) -> string`. Reads `st.themeMode`, and in later tasks `st.roles`, `st.roleId`, `st.examDate`, `st.analytics`, `st.settingsConfirmClear`.
+
+- [ ] **Step 1: Write the failing tests**
+
+Create `tests/fd-settings.test.mjs`:
+
+```js
+// The settings panel is a pure renderer like every other fd_sheet surface: state in, string out.
+// Tested directly rather than through the DOM, following tests/fd-sheet.test.mjs.
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import test from 'node:test';
+
+const BUILD = '../13_Faculty_Resources/_automation/site_build';
+const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf8');
+
+// eslint-disable-next-line no-new-func
+const make = new Function(`
+  ${read('frontdoor/fd_data.js')}
+  ${read('frontdoor/fd_shell.js')}
+  ${read('frontdoor/fd_sheet.js')}
+  return { fdSheetSettingsBody: fdSheetSettingsBody, fdSheet: fdSheet };
+`);
+const F = make();
+
+const base = { themeMode: 'system' };
+const s = (over) => Object.assign({}, base, over);
+
+test('appearance offers all three modes and marks the active one', () => {
+  const h = F.fdSheetSettingsBody(s({ themeMode: 'dark' }));
+  for (const m of ['system', 'light', 'dark']) {
+    assert.match(h, new RegExp(`data-fd-theme="${m}"`), `${m} must be offered`);
+  }
+  assert.match(h, /data-fd-theme="dark"[^>]*aria-checked="true"/);
+  assert.match(h, /data-fd-theme="light"[^>]*aria-checked="false"/);
+});
+
+test('system is the active mode when nothing was ever chosen', () => {
+  const h = F.fdSheetSettingsBody(s({ themeMode: undefined }));
+  assert.match(h, /data-fd-theme="system"[^>]*aria-checked="true"/);
+});
+
+test('the sheet renders settings as a dialog with a close control', () => {
+  const h = F.fdSheet({}, {}, s({ sheet: 'settings' }));
+  assert.match(h, /role="dialog"/);
+  assert.match(h, /aria-modal="true"/);
+  assert.match(h, /data-fd-close-sheet/, 'reuses the shared sheet close, not a bespoke one');
+});
+```
+
+- [ ] **Step 2: Run and watch them fail**
+
+Run: `node --test tests/fd-settings.test.mjs`
+Expected: FAIL — `fdSheetSettingsBody is not defined`.
+
+- [ ] **Step 3: Implement the body and the segmented control**
+
+Append to `frontdoor/fd_sheet.js`:
+
+```js
+/* The settings panel. Pure like every other body renderer here: everything it cannot derive --
+   the role list, the analytics posture -- arrives on state, the way st.crisisHtml already does.
+
+   Copy rule applies in full: these strings ship to BOTH sites unrebranded. "Exam", never "Shelf".
+
+   Sections are emitted as direct siblings spaced by `.fd-set + .fd-set` (frontdoor.css), matching
+   the adjacent-sibling idiom the kit rows use -- no wrapper div between them. */
+function fdSettingsSeg(mode){
+  var opts=[['system','System'],['light','Light'],['dark','Dark']];
+  var cur=fdThemeMode(mode);
+  var out='<div class="fd-seg" role="radiogroup" aria-label="Color theme">';
+  for(var i=0;i<opts.length;i++){
+    var active=(opts[i][0]===cur);
+    out+='<button type="button" role="radio" class="fd-seg__btn'+(active?' is-active':'')+'" '+
+      'data-fd-theme="'+opts[i][0]+'" aria-checked="'+(active?'true':'false')+'">'+
+      opts[i][1]+'</button>';
+  }
+  return out+'</div>';
+}
+
+function fdSettingsSection(title, body){
+  return '<section class="fd-set"><h3 class="fd-set__h">'+fdEsc(title)+'</h3>'+body+'</section>';
+}
+
+function fdSheetSettingsBody(state){
+  var st=state||{};
+  var out='<p class="fd-sheet__intro">Everything here is saved on this device only.</p>';
+  out+=fdSettingsSection('Appearance',
+    fdSettingsSeg(st.themeMode)+
+    '<p class="fd-set__note">System follows your device’s light or dark setting.</p>');
+  return out;
+}
+```
+
+- [ ] **Step 4: Add the branch in `fdSheet`**
+
+In `fdSheet`, `frontdoor/fd_sheet.js:271`, the chain becomes:
+
+```js
+  if(sheet==='settings'){
+    title='Settings';
+    body=fdSheetSettingsBody(st);
+  } else if(sheet==='kit'){
+```
+
+- [ ] **Step 5: Re-add `data-fd-theme` to the emitted-attribute inventory**
+
+`tests/fd-action-contract.test.mjs:36` pins the attributes renderers actually **emit**, not the ones
+`fd_wire.js` registers. Task 3 had to remove `'data-fd-theme'` from that array because, between the
+gear replacing the header glyph and this task, no renderer emitted it at all. `fdSettingsSeg` emits
+it again — so put it back, in alphabetical position.
+
+Run `node --test tests/fd-action-contract.test.mjs` and confirm it is green **because** of the
+re-add: it fails without it.
+
+- [ ] **Step 6: Run and watch them pass**
+
+Run: `node --test tests/fd-settings.test.mjs`
+Expected: PASS.
+
+- [ ] **Step 7: Supply `themeMode` to the renderer**
+
+The panel reads `st.themeMode`, and nothing sets it yet — `currentTheme()` from Task 2 feeds
+dispatch, not render state. In `spa_index.html`'s `fdLiveState`, beside the other additions:
+
+```js
+    out.themeMode=fdThemeMode(LS('cw_theme'));
+```
+
+Re-run `node --test tests/fd-settings.test.mjs` — without this the panel silently marks System
+active for everyone, which is the exact bug Trap A describes, just relocated.
+
+- [ ] **Step 8: Add the CSS**
+
+Append to `frontdoor/frontdoor.css`:
+
+```css
+.fd-set + .fd-set{margin-top:18px}
+.fd-set__h{margin:0 0 8px;font-size:var(--fd-text-sm);font-weight:600;color:var(--fd-text)}
+.fd-set__note{margin:8px 0 0;font-size:var(--fd-text-xs);color:var(--fd-text-mid)}
+.fd-seg{display:flex;gap:0;border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);overflow:hidden}
+.fd-seg__btn{flex:1;padding:9px 8px;border:0;background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-text-sm);cursor:pointer}
+.fd-seg__btn + .fd-seg__btn{border-left:1.5px solid var(--fd-line-strong)}
+.fd-seg__btn:hover{background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
+.fd-seg__btn.is-active{background:var(--fd-teal);color:#fff}
+@media (pointer:coarse){.fd-seg__btn{min-height:44px}}
+```
+
+- [ ] **Step 9: Verify contrast**
+
+Run: `node tests/contrast-check.mjs`
+Expected: PASS — `.fd-seg__btn.is-active` is white on `--fd-teal`, the same pairing `.fd-safetybtn` already ships, and `f34e5e4` darkened the primary specifically so white on the fill clears AA. If this reports a failure, use `--fd-teal-deep` for the active fill rather than lightening the text.
+
+- [ ] **Step 10: Commit**
+
+```bash
+git add tests/fd-settings.test.mjs tests/fd-action-contract.test.mjs 13_Faculty_Resources/_automation/site_build/frontdoor/fd_sheet.js 13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css
+git commit -m "feat(settings): add the settings sheet with a three-way appearance control"
+```
+
+---
+
+### Task 5: The You section — changing role
+
+**Files:**
+- Modify: `13_Faculty_Resources/_automation/site_build/frontdoor/fd_sheet.js` (`fdSheetSettingsBody`)
+- Modify: `13_Faculty_Resources/_automation/site_build/spa_index.html:1996` (`fdLiveState`)
+- Test: `tests/fd-settings.test.mjs`
+
+**Interfaces:**
+- Consumes: `fdSheetSettingsBody` (Task 4).
+- Produces: `st.roles` (array of `{id,name,desc,hint}`) and `st.roleId` (raw id) on live state.
+
+- [ ] **Step 1: Write the failing tests**
+
+Append to `tests/fd-settings.test.mjs`:
+
+```js
+const ROLES = [
+  { id: 'student', name: 'Core rotation', desc: 'The six-week inpatient rotation', hint: 'most common' },
+  { id: 'staff', name: 'Nursing · SW · family', desc: 'Unit staff and families', hint: '' },
+];
+
+test('role chips render from the supplied list and mark the stored id', () => {
+  const h = F.fdSheetSettingsBody(s({ roles: ROLES, roleId: 'staff' }));
+  assert.match(h, /data-fd-role="student"/);
+  assert.match(h, /data-fd-role="staff"[^>]*aria-checked="true"/);
+  assert.match(h, /data-fd-role="student"[^>]*aria-checked="false"/);
+});
+
+test('the role section is absent when the caller supplied no list', () => {
+  assert.doesNotMatch(F.fdSheetSettingsBody(s({})), /data-fd-role=/);
+});
+
+// Author decision, 2026-09-10: role ships unexplained — no sublabel describing its effect, and
+// therefore no save confirmation either. A visible "Saved" against a change the learner cannot
+// find anywhere promises more than happened; the chip's own selected state is the feedback.
+test('role offers no explanation and no save confirmation', () => {
+  const h = F.fdSheetSettingsBody(s({ roles: ROLES, roleId: 'staff' }));
+  assert.doesNotMatch(h, /greeting/i);
+  assert.doesNotMatch(h, /\bSaved\b/);
+});
+```
+
+- [ ] **Step 2: Run and watch them fail**
+
+Run: `node --test tests/fd-settings.test.mjs`
+Expected: FAIL — no `data-fd-role` in the panel.
+
+- [ ] **Step 3: Add the section**
+
+In `fdSheetSettingsBody`, before the Appearance section:
+
+```js
+  var roles=st.roles||[];
+  if(roles.length){
+    var chips='<div class="fd-chips" role="radiogroup" aria-label="Who you are">';
+    for(var i=0;i<roles.length;i++){
+      var r=roles[i]||{}, on=(r.id===st.roleId);
+      chips+='<button type="button" role="radio" class="fd-chip'+(on?' is-active':'')+'" '+
+        'data-fd-role="'+fdEsc(r.id)+'" aria-checked="'+(on?'true':'false')+'">'+
+        fdEsc(r.name)+'</button>';
+    }
+    out+=fdSettingsSection('You', chips+'</div>');
+  }
+```
+
+- [ ] **Step 4: Supply the state**
+
+`spa_index.html:1996` currently reads `out.role=fdRoleName(out.role)||out.role;`. The raw id must be captured **before** that line overwrites it:
+
+```js
+    out.roleId=out.role;
+    out.roles=FD_ROLES;
+    out.role=fdRoleName(out.role)||out.role;
+```
+
+- [ ] **Step 5: Confirm the dispatch already works**
+
+`fd_wire.js:348` already handles `data-fd-role` — but it also patches `screen:'setup-week'`, which would throw the learner into the wizard. Change it to respect where it was invoked from:
+
+```js
+  if(fdOwn(a,'data-fd-role')){
+    var picked=String(a['data-fd-role']||'');
+    /* From the panel the learner is changing a setting, not walking the wizard: stay put. The
+       wizard's own chips reach this with screen==='setup-role', and only those advance. */
+    if(s.screen==='setup-role') return {patch:{role:picked,screen:'setup-week'},route:null,effect:null};
+    return {patch:{role:picked},route:null,effect:null};
+  }
+```
+
+- [ ] **Step 6: Repair the existing assertion this breaks**
+
+`tests/fd-wire.test.mjs:186-187` asserts the patch deep-equals `{role:'second-role',
+screen:'setup-week'}` while passing `{}` as state — so `s.screen` is `undefined` and the new fork
+returns `{role:'second-role'}` alone. The old assertion was testing the wizard while describing
+neither screen, which is why it silently covered both paths. Give it the screen it means:
+
+```js
+  assert.deepEqual(F.fdDispatch({ 'data-fd-role': 'second-role' }, { screen: 'setup-role' }, roleContext).patch,
+    { role: 'second-role', screen: 'setup-week' });
+```
+
+- [ ] **Step 7: Write the regression test for that fork**
+
+Append to `tests/fd-wire.test.mjs`:
+
+```js
+test('picking a role in the wizard advances; picking one in settings does not', () => {
+  const wizard = F.fdDispatch({ 'data-fd-role': 'subi' }, { screen: 'setup-role' }, {});
+  assert.equal(wizard.patch.screen, 'setup-week');
+
+  const panel = F.fdDispatch({ 'data-fd-role': 'subi' }, { screen: 'app', sheet: 'settings' }, {});
+  assert.equal(panel.patch.role, 'subi');
+  assert.equal(panel.patch.screen, undefined, 'changing a setting must not reopen the wizard');
+});
+```
+
+- [ ] **Step 8: Run and commit**
+
+Run: `node --test tests/fd-settings.test.mjs tests/fd-wire.test.mjs`
+Expected: PASS.
+
+```bash
+git add tests/fd-settings.test.mjs tests/fd-wire.test.mjs 13_Faculty_Resources/_automation/site_build/frontdoor/ 13_Faculty_Resources/_automation/site_build/spa_index.html
+git commit -m "feat(settings): let a learner change role without clearing site data"
+```
+
+---
+
+### Task 6: The Pacing section — move the exam date out of Progress
+
+**Files:**
+- Modify: `13_Faculty_Resources/_automation/site_build/frontdoor/fd_sheet.js`
+- Modify: `13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js` (dispatch + effect)
+- Modify: `13_Faculty_Resources/_automation/site_build/spa_index.html:1730` (remove), `:2300` (handler), `fdLiveState`
+- Test: `tests/fd-settings.test.mjs`
+
+**Interfaces:**
+- Consumes: `fdSheetSettingsBody` (Task 4).
+- Produces: `st.examDate` (an ISO `YYYY-MM-DD` string or `''`); effect `{type:'set-exam-date', date:<string>}`.
+
+- [ ] **Step 1: Write the failing tests**
+
+```js
+test('the exam date renders as a date input carrying the stored value', () => {
+  const h = F.fdSheetSettingsBody(s({ examDate: '2026-10-30' }));
+  assert.match(h, /type="date"/);
+  assert.match(h, /value="2026-10-30"/);
+  assert.match(h, /data-fd-exam-date/);
+});
+
+test('an unset exam date renders an empty input, not a guess', () => {
+  assert.match(F.fdSheetSettingsBody(s({})), /data-fd-exam-date[^>]*value=""/);
+});
+
+// Copy rule: these strings ship to both sites. "Exam", never "Shelf".
+test('pacing copy stays audience-neutral', () => {
+  const h = F.fdSheetSettingsBody(s({ examDate: '' }));
+  assert.doesNotMatch(h, /shelf|clerkship|resident|student/i);
+});
+```
+
+- [ ] **Step 2: Run and watch them fail**
+
+Run: `node --test tests/fd-settings.test.mjs`
+Expected: FAIL — no `data-fd-exam-date`.
+
+- [ ] **Step 3: Add the section**
+
+In `fdSheetSettingsBody`, after the You section:
+
+```js
+  out+=fdSettingsSection('Pacing',
+    '<label class="fd-set__label" for="fdSetExam">Exam date</label>'+
+    '<input id="fdSetExam" class="fd-set__date" type="date" data-fd-exam-date '+
+    'value="'+fdEsc(st.examDate||'')+'">'+
+    '<p class="fd-set__note">Used on this device to pace what Today suggests.</p>');
+```
+
+- [ ] **Step 4: Wire the change event**
+
+`data-fd-exam-date` is an `<input>`, not a button, so it needs a `change` listener rather than the delegated click handler. In `fdWire`'s event setup, alongside the existing search-input listener:
+
+```js
+    if(root&&root.addEventListener){
+      root.addEventListener('change',function(ev){
+        var t=ev&&ev.target;
+        if(!t||!t.getAttribute||t.getAttribute('data-fd-exam-date')===null) return;
+        apply(fdDispatch({'data-fd-exam-date':String(t.value||'')},state,context()),null);
+      });
+    }
+```
+
+Register `'data-fd-exam-date'` in `FD_HANDLED_ATTRS`, add `'data-fd-exam-date':'set exam date'` to `FD_ACTION_SEMANTICS`, and add it to `tests/fd-action-contract.test.mjs:36` in alphabetical position. Note that array pins
+**emitted** attributes, and `data-fd-close-settings` no longer exists — Task 3 removed it as dead
+registration, so do not look for it as an anchor.
+
+- [ ] **Step 5: Add dispatch and effect**
+
+Dispatch:
+
+```js
+  if(fdOwn(a,'data-fd-exam-date')){
+    var raw=String(a['data-fd-exam-date']||'');
+    /* Only an ISO calendar date or the empty string reaches storage. phase_policy.js parses this
+       as the repo's single sanctioned local-midnight site; anything else would make it NaN and
+       silently disable pacing rather than failing visibly. */
+    var ok=/^\d{4}-\d{2}-\d{2}$/.test(raw)?raw:'';
+    return {patch:{examDate:ok},route:null,effect:{type:'set-exam-date',date:ok}};
+  }
+```
+
+Effect, in `fdApplyEffect`:
+
+```js
+    } else if(effect.type==='set-exam-date'){
+      try{
+        if(effect.date) localStorage.setItem('cw_shelf_date',effect.date);
+        else localStorage.removeItem('cw_shelf_date');
+      }catch(_){}
+```
+
+- [ ] **Step 6: Supply the state and remove the Progress copy**
+
+In `fdLiveState`, beside `out.roleId`:
+
+```js
+    out.examDate=LS('cw_shelf_date')||'';
+```
+
+Delete the `fd-examdate` block at `spa_index.html:1730` and replace it with a link:
+
+```js
+    h+='<div class="hm-sec"><h2>Exam date</h2><div class="sub">Set it in Settings — the gear in the top bar.</div></div>';
+```
+
+Then delete the `pa==='save-exam'` branch at `spa_index.html:2300`, leaving the `pa==='progress'` branch intact.
+
+- [ ] **Step 7: Prove the old control is gone**
+
+Append to `tests/fd-settings.test.mjs`:
+
+```js
+// Two homes for one key silently desync — fd_state.js:17 records the same rule for progress.
+// This is the assertion that keeps the move a move rather than a copy.
+test('the exam date has exactly one home', () => {
+  const shell = readFileSync(new URL(`${BUILD}/spa_index.html`, import.meta.url), 'utf8');
+  assert.doesNotMatch(shell, /id="fdExamDate"/, 'the Progress input must be gone, not hidden');
+  assert.doesNotMatch(shell, /save-exam/, 'and its handler with it');
+});
+```
+
+- [ ] **Step 8: Run and commit**
+
+Run: `node --test tests/*.test.mjs`
+Expected: PASS.
+
+```bash
+git add tests/ 13_Faculty_Resources/_automation/site_build/
+git commit -m "feat(settings): move the exam date from Progress into Settings"
+```
+
+---
+
+### Task 7: Your data — export link and a two-tap clear
+
+This is the task that costs a baseline bump. Read the spec's ratchet section before starting.
+
+**Files:**
+- Modify: `13_Faculty_Resources/_automation/site_build/frontdoor/fd_sheet.js`, `frontdoor/fd_wire.js`
+- Modify: `13_Faculty_Resources/_automation/site_build/qa-baseline.json`
+- Test: `tests/fd-settings.test.mjs`, `tests/fd-wire.test.mjs`
+
+**Interfaces:**
+- Consumes: `fdSheetSettingsBody` (Task 4).
+- Produces: `st.settingsConfirmClear` (boolean); effects `{type:'clear-device-data'}` and the confirm patch.
+
+- [ ] **Step 1: Write the failing renderer tests**
+
+```js
+test('clearing is two-tap: the confirm replaces the button rather than sitting beside it', () => {
+  const calm = F.fdSheetSettingsBody(s({}));
+  assert.match(calm, /data-fd-clear-ask/);
+  assert.doesNotMatch(calm, /data-fd-clear-confirm/, 'no armed control before the first tap');
+
+  const armed = F.fdSheetSettingsBody(s({ settingsConfirmClear: true }));
+  assert.match(armed, /data-fd-clear-confirm/);
+  assert.doesNotMatch(armed, /data-fd-clear-ask/, 'the first button must be replaced, not kept');
+  assert.match(armed, /data-fd-clear-cancel/);
+});
+
+test('the confirm names what will be destroyed', () => {
+  const armed = F.fdSheetSettingsBody(s({ settingsConfirmClear: true }));
+  for (const word of ['progress', 'cards', 'answers']) {
+    assert.match(armed, new RegExp(word, 'i'), `the confirm must name ${word}`);
+  }
+});
+```
+
+- [ ] **Step 2: Run and watch them fail**
+
+Run: `node --test tests/fd-settings.test.mjs`
+Expected: FAIL.
+
+- [ ] **Step 3: Add the section**
+
+```js
+  var danger=st.settingsConfirmClear
+    ?('<p class="fd-set__note fd-set__note--warn">This erases your progress, practice answers, '+
+      'review cards and preferences on this device. It cannot be undone.</p>'+
+      '<div class="fd-set__row">'+
+      '<button type="button" class="fd-btn--ghost" data-fd-clear-cancel>Keep my data</button>'+
+      '<button type="button" class="fd-set__danger" data-fd-clear-confirm>Erase everything</button>'+
+      '</div>')
+    :'<button type="button" class="fd-set__danger" data-fd-clear-ask>Clear everything on this device</button>';
+
+  out+=fdSettingsSection('Your data',
+    '<button type="button" class="fd-set__link" data-fd-progress>Export my anonymous progress</button>'+
+    danger);
+```
+
+- [ ] **Step 4: Register the three attributes**
+
+Add `'data-fd-clear-ask'`, `'data-fd-clear-confirm'`, `'data-fd-clear-cancel'` to `FD_HANDLED_ATTRS`, the semantics map (`'arm device data erase'`, `'erase device data'`, `'cancel device data erase'`), the delegated selector string, and `tests/fd-action-contract.test.mjs:36` in alphabetical position.
+
+- [ ] **Step 5: Add dispatch — and disarm the confirm on the ONLY close path**
+
+Task 3 established that the settings sheet has exactly one close route: the shared
+`data-fd-close-sheet`, emitted by `fdSheetHead` and by the backdrop. There is no
+`data-fd-close-settings` — Task 3 removed that registration precisely because nothing emits it.
+
+So the `data-fd-close-sheet` dispatch must also clear `settingsConfirmClear`. Without it, a learner
+arms "Erase everything", closes the panel by any route, reopens it, and finds the destructive
+confirm still armed — one stray tap from a wipe they never re-authorised. Add
+`settingsConfirmClear:false` to that branch's patch, and pin it:
+
+```js
+test('closing the panel disarms the erase confirm', () => {
+  const r = F.fdDispatch({ 'data-fd-close-sheet': '' }, { sheet: 'settings', settingsConfirmClear: true }, {});
+  assert.equal(r.patch.settingsConfirmClear, false,
+    'a destructive confirm must never survive a close and reopen');
+});
+```
+
+Then the panel's own three:
+
+```js
+  if(fdOwn(a,'data-fd-clear-ask')) return {patch:{settingsConfirmClear:true},route:null,effect:null};
+  if(fdOwn(a,'data-fd-clear-cancel')) return {patch:{settingsConfirmClear:false},route:null,effect:null};
+  if(fdOwn(a,'data-fd-clear-confirm')){
+    return {patch:{settingsConfirmClear:false},route:null,effect:{type:'clear-device-data'}};
+  }
+```
+
+- [ ] **Step 6: Write the completeness test — the load-bearing one**
+
+Append to `tests/fd-wire.test.mjs`:
+
+```js
+// This is the test that makes "cleared" true rather than asserted. It seeds a cw_* key that
+// appears in NO source file: an implementation that enumerates known literals would pass every
+// other assertion here and still leave this one behind, which is the silent-shrink class in
+// docs/SILENT_SHRINK_CHECKLIST.md — a check reporting success over a smaller set than it claims.
+test('clearing removes every namespaced key, including one no source file mentions', () => {
+  const store = {
+    cw_progress_v1: '{}', cw_srs_v1: '{}', rp_flags: '[]',
+    cw_a_key_invented_by_a_future_feature_v9: '1',
+    'unrelated-third-party': 'keep me',
+  };
+  const fake = {
+    get length() { return Object.keys(store).length; },
+    key: (i) => Object.keys(store)[i],
+    getItem: (k) => (k in store ? store[k] : null),
+    removeItem: (k) => { delete store[k]; },
+  };
+  F.fdClearDeviceData(fake);
+  assert.deepEqual(Object.keys(store), ['unrelated-third-party'],
+    'every cw_*/rp_* key must go, and nothing else may');
+});
+
+test('clearing survives a browser that throws on storage access', () => {
+  const hostile = { get length() { throw new Error('blocked'); } };
+  assert.doesNotThrow(() => F.fdClearDeviceData(hostile));
+});
+```
+
+- [ ] **Step 7: Implement the clear**
+
+In `frontdoor/fd_wire.js`, as a top-level function so the test can reach it:
+
+```js
+/* Collects first, deletes second: removeItem() reindexes the store, so deleting inside a forward
+   walk of localStorage.key(i) skips every other match.
+
+   The computed removeItem() below is deliberate and costs a qa-baseline.json bump (see
+   docs/superpowers/specs/2026-09-10-settings-panel-design.md). The alternative -- a literal list
+   of the twenty-six keys reachable as literals today -- would silently miss every key added
+   later and still report success, which is a privacy bug, not a style choice. */
+function fdClearDeviceData(store){
+  var doomed=[], i, k;
+  try{
+    for(i=0;i<store.length;i++){
+      k=store.key(i);
+      if(typeof k==='string'&&(k.indexOf('cw_')===0||k.indexOf('rp_')===0)) doomed.push(k);
+    }
+    for(i=0;i<doomed.length;i++) store.removeItem(doomed[i]);
+  }catch(_){ }
+}
+```
+
+Add the effect in `fdApplyEffect`:
+
+```js
+    } else if(effect.type==='clear-device-data'){
+      fdClearDeviceData(localStorage);
+      if(win&&win.location&&win.location.reload) win.location.reload();
+```
+
+- [ ] **Step 8: Pin the faculty-preview safety property**
+
+`meaningfulResult()` exempts only `set-theme`, so `clear-device-data` is blocked under faculty preview for free. Pin it so a future refactor cannot quietly change that:
+
+```js
+test('erasing device data is blocked in faculty preview', () => {
+  const r = F.fdDispatch({ 'data-fd-clear-confirm': '' }, {}, {});
+  assert.equal(r.effect.type, 'clear-device-data');
+  assert.equal(F.meaningfulResult(r), true,
+    'must be "meaningful" so previewActive() locks it — only set-theme is exempt');
+});
+```
+
+Export `meaningfulResult` from the test harness's `return {...}` if it is not already reachable; if it is module-private, assert instead that `fd_wire.js` source still reads `r.effect.type!=='set-theme'` and nothing broader.
+
 - [ ] **Step 9: Build, then bump the baseline deliberately**
 
 ```bash

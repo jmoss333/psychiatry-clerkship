@@ -151,45 +151,42 @@ explicit choice, because the stored value is still literally `light` or `dark`.
 system is a better default than this platform's guess, and the population affected is exactly the
 population that never expressed a preference here.
 
-## The contract that will bite: the soft-finding ratchet
+## The contract I expected to bite, and why it did not
 
-This is the part most likely to fail a build, and it is not obvious from reading the feature.
+**This section originally predicted a cost that does not exist. It is kept, corrected, because the
+reasoning that survived is the part worth having.**
 
-`check-static-site.mjs` scans the **built** `index.html` — which contains every injected
-`frontdoor/` module — for `localStorage` calls whose key argument is not a string literal
-(`check-static-site.mjs:489`). Computed keys raise a SOFT finding, and SOFT findings are ratcheted:
-`qa-baseline.json` records the maximum count ever accepted per class per site (`computed-key` is
-ms3 7, res 10), and **a run that exceeds its baseline is promoted to a HARD failure**.
+The prediction: `check-static-site.mjs` scans the built `index.html` for `localStorage` calls whose
+key argument is not a string literal (`:490`). A prefix-scoped clear loop calls `removeItem(k)` with
+a computed `k`, so the `computed-key` SOFT count would rise; `qa-baseline.json` ratchets SOFT
+findings and **promotes any class exceeding its baseline to a HARD failure**; therefore the build
+would fail until the baseline was deliberately re-recorded, +1 per site.
 
-A prefix-scoped clear-data loop calls `removeItem(k)` with a computed `k`, so it was planned as +1
-on both sites, failing the build until the baseline was deliberately re-recorded.
+**What is actually true, measured during Task 7 rather than reasoned about.** The ratchet counts
+soft **messages** per class (`:863-868`), and §5c raises exactly **one** message per file no matter
+how many computed keys it finds. The shell already raised it — it had four. Adding a fifth moves
+that message's own parenthetical from `(4)` to `(5)` and leaves the `computed-key` class count
+unchanged. Both sites build `hard:0` with no ratchet line, and `UPDATE_BASELINE=1` against finished
+builds reproduces the committed `qa-baseline.json` byte-for-byte. **No bump was needed and none was
+committed.**
 
-**That prediction was wrong, corrected 2026-09-11 by running it.** The ratchet counts soft
-MESSAGES per class, not computed keys, and §5c raises exactly ONE `computed localStorage key(s) in
-index.html (N)` finding however large N is. The shell already raised it before this work (N was 4),
-so a computed key added to any injected `frontdoor/` module moves N and leaves `computed-key` at
-ms3 7 / res 10. `UPDATE_BASELINE=1` re-recorded against both finished builds reproduces the
-committed file byte for byte. The clear-data work therefore shipped with **no `qa-baseline.json`
-change at all**, which is a stronger result than the planned bump: no baseline debt was taken on
-and nothing else moved either.
+The lesson is not about this gate. A confident, specific, wrong cost analysis sat in a spec through
+seven tasks and was corrected only because someone ran the thing instead of reading it — the same
+failure mode this document warns about everywhere else, committed by the document itself.
 
-**Decision (author, 2026-09-10): pay it, do not dodge it.** Unaffected by the correction above —
-the decision is about which implementation ships, and the cheaper-than-expected price does not
-change it. The alternative — enumerating every key as a
-literal `removeItem` — is precisely the failure class `docs/SILENT_SHRINK_CHECKLIST.md` exists to
-catalogue: a check that reports success over a set smaller than the one it claims to cover. Only
-twenty-six keys are reachable as literals today; the rest hide behind helper indirection, and any
-key added next month by any feature would be silently missed by an enumerated list while the panel
+**The decision the prediction was used to justify still stands, on its own merits.** Enumerating
+every key as a literal `removeItem` is precisely the failure class
+`docs/SILENT_SHRINK_CHECKLIST.md` catalogues: a check reporting success over a set smaller than the
+one it claims to cover. Only twenty-six keys are reachable as literals; the rest hide behind helper
+indirection, and any key added next month by any feature would be silently missed while the panel
 still said "cleared". A clear-data that quietly leaves data behind is a privacy bug that reports
-success.
+success. So: a computed loop, and a test that seeds a `cw_*` key **no source file mentions** and
+asserts it is gone. That test is what makes completeness real rather than asserted — Task 7's review
+built four separate implementations that leave data behind while reporting success, including one
+whose enumerated list contained the seeded key, and every one of them turned the suite red.
 
-So: a computed loop, a reviewed one-line baseline bump documented in the PR body, and a test that
-seeds a fake `localStorage` containing a `cw_*` key **no source file mentions** and asserts it is
-gone. That test is what makes completeness real rather than asserted; the baseline bump is the
-visible cost of buying it.
-
-`localStorage.clear()` is rejected: it reaches past the namespace the storage-namespaces decision
-governs, and it is invisible to the very scan that would otherwise document the choice.
+`localStorage.clear()` is still rejected: it reaches past the namespace the storage-namespaces
+decision governs, and it is invisible to the very scan that would otherwise document the choice.
 
 ## Contracts this touches
 
