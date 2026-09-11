@@ -468,11 +468,23 @@ def analytics_enabled_for(site, mode=None):
     return mode == "both" or mode == site
 
 
-# Pre-paint theme init: runs before first paint so dark mode never flashes.
+# Pre-paint theme init: runs before first paint so dark mode never flashes. Injected only into
+# pages that ship without their own boot (see apply_dark_mode's `"cw_theme" not in t` guard).
+#
+# This must stay BYTE-IDENTICAL to the inline <script> at the top of spa_index.html. It cannot
+# import that script -- both run before anything else loads, which is the whole point -- so the
+# duplication is structural, and test_common.py's TestThemeInit is what stops the two copies
+# drifting. They already drifted once: the shell learned the 'system' mode on 2026-09-10 and this
+# copy did not, which left a learner on a dark-preferring phone reading a dark shell and light
+# tool pages. `cw_theme` holds a MODE (system/light/dark); documentElement holds the RESOLVED
+# attribute (light/dark), so CSS only ever sees two values. An unrecognised or absent mode reads
+# as system, not light -- a device that never expressed a preference follows its OS.
 THEME_INIT = (
-    "<script>(function(){try{var t=localStorage.getItem('cw_theme');"
-    "if(t!=='dark'&&t!=='light'){t='light';}"
-    "document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>"
+    "<script>(function(){try{var s=localStorage.getItem('cw_theme');"
+    "var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=m;"
+    "if(m==='system'){a=(window.matchMedia&&"
+    "window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}"
+    "document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>"
 )
 
 # ?theme-audit — a LOADER, not the tool. Every colour defect this library shipped in 2026-09 was

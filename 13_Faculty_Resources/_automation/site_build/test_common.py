@@ -15,7 +15,9 @@ to eliminate:
 
 import json
 import os
+import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -188,6 +190,147 @@ class TestPagePasses(_SiteFixture):
             fh.write('<html><head></head><body><script>fetch("quizzes.json")</script></body></html>')
         common.apply_dark_mode(self.tool, cache_bust="123")
         self.assertIn('quizzes.json?v=123', self.read())
+
+
+# The pre-paint theme boot is the one piece of theme logic that cannot be imported: it has to run
+# in <head> before anything else loads, because its whole job is painting the right attribute
+# before first paint. So it exists as more than one copy by necessity -- THEME_INIT here, and the
+# inline <script> at the top of spa_index.html -- and two copies that nothing compares are exactly
+# how these drifted: the shell learned 'system' on 2026-09-10 and THEME_INIT did not, which left a
+# learner on a dark-preferring phone reading a dark shell and light tool pages. These tests pin the
+# behaviour, pin the byte-equality that keeps the two copies honest, and freeze the copies that are
+# still behind so a new one cannot quietly join them.
+
+# .../13_Faculty_Resources/_automation/site_build/test_common.py -> the repository root.
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+
+LEGACY_BOOT = "var t=localStorage.getItem('cw_theme')"
+
+# Pages that still carry the pre-2026-09-10 two-state boot inline, and therefore still paint
+# 'light' for a learner whose OS prefers dark. THEME_INIT does not reach them and cannot fix them:
+# apply_dark_mode() injects it only when 'cw_theme' is absent from the <head>, and every one of
+# these already has its own copy. Nine of them ship. This set may only SHRINK -- it is frozen so
+# the remaining work stays visible in the suite rather than only in a report, and so that a newly
+# authored page cannot join the stale side without turning this red.
+LEGACY_BOOT_FILES = frozenset({
+    "13_Faculty_Resources/_automation/site_build/question-bank-practice.html",
+    "_prototypes/agitation-trainer/_TEMPLATE.html",
+    "_prototypes/agitation-trainer/agitation-trainer.html",
+    "_prototypes/agitation-trainer/agitation-trainer.preview.html",
+    "_prototypes/agitation-trainer/rp-agitation.html",
+    "_prototypes/agitation-trainer/rp-agitation.preview.html",
+    "_prototypes/brief-psych/rp-brief-psych.html",
+    "_prototypes/brief-psych/rp-brief-psych.preview.html",
+    "_prototypes/canon-quiz/rp-canon-quiz.html",
+    "_prototypes/canon-quiz/rp-canon-quiz.preview.html",
+    "_prototypes/orientation-video/orientation-video.html",
+    "_prototypes/sp-interview/sp-interview.html",
+    "_prototypes/sp-interview/sp-interview.preview.html",
+})
+
+_SKIP_DIRS = {".git", ".claude", "_build", "node_modules", "__pycache__", ".venv"}
+
+# Drives a boot script the way a browser would: fake storage, a fake documentElement that records
+# what got painted, and a window whose matchMedia answers the scenario. Mirrors the harness in
+# tests/theme-boot.test.mjs so the two copies are measured identically.
+_BOOT_DRIVER = """
+const boot = process.argv[1];
+const out = {};
+for (const sc of JSON.parse(process.argv[2])) {
+  let painted = null;
+  const localStorage = { getItem: (k) => (k === 'cw_theme' ? sc.stored : null) };
+  const document = { documentElement: { setAttribute: (_, v) => { painted = v; } } };
+  const window = sc.matchMedia === false ? {}
+    : { matchMedia: (q) => ({ matches: /dark/.test(q) && sc.prefersDark }) };
+  new Function('localStorage', 'document', 'window', boot)(localStorage, document, window);
+  out[sc.name] = painted;
+}
+process.stdout.write(JSON.stringify(out));
+"""
+
+# matchMedia exists unless a scenario opts out -- only the last case is about its absence.
+_SCENARIOS = [
+    {"name": "unset_on_a_dark_os", "stored": None, "prefersDark": True},
+    {"name": "unset_on_a_light_os", "stored": None, "prefersDark": False},
+    {"name": "stored_light_on_a_dark_os", "stored": "light", "prefersDark": True},
+    {"name": "stored_dark_on_a_light_os", "stored": "dark", "prefersDark": False},
+    {"name": "stored_system_on_a_dark_os", "stored": "system", "prefersDark": True},
+    {"name": "stored_junk_on_a_dark_os", "stored": "banana", "prefersDark": True},
+    {"name": "no_matchmedia_at_all", "stored": None, "prefersDark": True, "matchMedia": False},
+]
+
+EXPECTED_PAINT = {
+    "unset_on_a_dark_os": "dark",
+    "unset_on_a_light_os": "light",
+    "stored_light_on_a_dark_os": "light",
+    "stored_dark_on_a_light_os": "dark",
+    "stored_system_on_a_dark_os": "dark",
+    "stored_junk_on_a_dark_os": "dark",
+    "no_matchmedia_at_all": "light",
+}
+
+
+def _inline_script(markup):
+    """The JS inside the first bare <script>...</script>, with the tags stripped."""
+    m = re.search(r"<script>([\s\S]*?)</script>", markup)
+    assert m, "no inline <script> found"
+    return m.group(1)
+
+
+def _shell_boot():
+    """The shell's own pre-paint boot script, read from spa_index.html."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spa_index.html")
+    with open(path, encoding="utf-8") as fh:
+        return _inline_script(fh.read())
+
+
+class TestThemeInit(unittest.TestCase):
+    def _paint(self, boot_js):
+        """What each scenario paints onto documentElement, by running the real script in node."""
+        result = subprocess.run(
+            ["node", "-e", _BOOT_DRIVER, boot_js, json.dumps(_SCENARIOS)],
+            check=True, capture_output=True, text=True,
+        )
+        return json.loads(result.stdout)
+
+    def test_theme_init_resolves_system_and_unset_through_the_media_query(self):
+        self.assertEqual(self._paint(_inline_script(common.THEME_INIT)), EXPECTED_PAINT)
+
+    def test_theme_init_is_byte_identical_to_the_shell_boot_script(self):
+        self.assertEqual(
+            _inline_script(common.THEME_INIT), _shell_boot(),
+            "THEME_INIT and spa_index.html's boot script are one behaviour in two copies; "
+            "change both or neither",
+        )
+
+    def test_the_shell_and_the_injection_agree_scenario_for_scenario(self):
+        """Byte-equality above is the guard; this proves the bytes they share are the right ones."""
+        self.assertEqual(self._paint(_shell_boot()), EXPECTED_PAINT)
+
+    def test_the_legacy_two_state_boot_survives_only_where_it_is_frozen(self):
+        # This file is skipped because it DEFINES the needle; a definition is not an occurrence.
+        me = os.path.abspath(__file__)
+        found = set()
+        for dirpath, dirnames, filenames in os.walk(REPO_ROOT):
+            dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS]
+            for name in filenames:
+                if not name.endswith((".html", ".py", ".js", ".mjs")):
+                    continue
+                full = os.path.join(dirpath, name)
+                if os.path.abspath(full) == me:
+                    continue
+                with open(full, encoding="utf-8", errors="ignore") as fh:
+                    if LEGACY_BOOT in fh.read():
+                        found.add(os.path.relpath(full, REPO_ROOT))
+        self.assertEqual(
+            found - LEGACY_BOOT_FILES, set(),
+            "a new page picked up the retired two-state theme boot; use the resolved one",
+        )
+        self.assertEqual(
+            LEGACY_BOOT_FILES - found, set(),
+            "these were fixed -- drop them from LEGACY_BOOT_FILES, or the list stops meaning "
+            "anything and stops catching the next one",
+        )
 
 
 class TestContentPasses(_SiteFixture):

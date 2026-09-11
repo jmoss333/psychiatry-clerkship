@@ -154,8 +154,8 @@ function fdKeyAction(key, opts){
 /* Theme has three MODES the learner picks and two ATTRIBUTES the page paints. Storage holds the
    mode so 'system' survives a round trip and the panel can mark it active; documentElement holds
    the resolved attribute so CSS only ever sees light/dark. Collapsing the two -- storing the
-   resolved value -- is what made "follow the OS" unexpressible before: the moment you write
-   'dark' you have lost the fact that the learner asked for "whatever my phone says".
+   resolved value -- is what made "follow the OS" impossible to express before: the moment you
+   write 'dark' you have lost the fact that the learner asked for "whatever my phone says".
    An unrecognised stored value reads as system rather than light: a device that never expressed
    a preference should follow its OS, which is the author's 2026-09-10 decision. */
 function fdThemeMode(stored){
