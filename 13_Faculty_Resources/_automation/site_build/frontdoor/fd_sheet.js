@@ -295,9 +295,45 @@ function fdSettingsSection(title, body){
   return '<section class="fd-set"><h3 class="fd-set__h">'+fdEsc(title)+'</h3>'+body+'</section>';
 }
 
+/* The role the first-run wizard asked for, made changeable. Until this existed fdResolveState
+   returned to screen:'setup-role' only when the stored role was EMPTY, so a learner who tapped the
+   wrong row on day one was stuck with it short of clearing site data.
+
+   Drawn from the per-site FD_ROLES the wizard itself uses, so no role name is ever written here;
+   `roleId` is the RAW id, which the caller must capture before it resolves out.role to the display
+   name (spa_index.html). An unknown stored id marks nothing rather than silently promoting the
+   first chip -- showing a role the learner never chose is worse than showing none.
+
+   A wrapping chip set rather than .fd-seg: role names are per-site prose ("Nursing · SW · family")
+   where the theme's are one word each, and three equal segments of a 390px sheet strand them over
+   three lines at phone width. The a11y shape is the settled one -- role="group" with aria-pressed
+   buttons, NEVER role="radio", whose roving tabindex and arrow-key contract nothing here
+   implements (see fdSettingsSeg above; 60b246b took those roles off the segments for this reason
+   and nothing about these chips differs).
+
+   Author decision, 2026-09-10: the setting ships WITHOUT EXPLANATION -- a plain label and the
+   chips, no sublabel describing what role affects. One consequence binds: role's effect is close
+   to invisible today, so selection fires no toast and no "Saved". The chip's own filled state is
+   the entire feedback, which is also why the dispatch leaves `sheet` alone and the panel stays
+   open. */
+function fdSettingsRoles(roles, roleId){
+  var list=roles||[];
+  if(!list.length) return '';
+  var out='<div class="fd-choices" role="group" aria-label="Who you are">';
+  for(var i=0;i<list.length;i++){
+    var r=list[i]||{}, active=(r.id===roleId);
+    out+='<button type="button" class="fd-choices__btn'+(active?' is-active':'')+'" '+
+      'data-fd-role="'+fdEsc(r.id)+'" aria-pressed="'+(active?'true':'false')+'">'+
+      fdEsc(r.name)+'</button>';
+  }
+  return out+'</div>';
+}
+
 function fdSheetSettingsBody(state){
   var st=state||{};
   var out='<p class="fd-sheet__intro">Everything here is saved on this device only.</p>';
+  var roles=fdSettingsRoles(st.roles, st.roleId);
+  if(roles) out+=fdSettingsSection('You', roles);
   out+=fdSettingsSection('Appearance',
     fdSettingsSeg(st.themeMode)+
     '<p class="fd-set__note">System follows your device’s light or dark setting.</p>');

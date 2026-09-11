@@ -21,7 +21,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-week':'select setup week',
   'data-fd-view-week':'preview path week',
   'data-fd-setweek':'adopt previewed week',
-  'data-fd-role':'select setup role',
+  'data-fd-role':'choose learner role',
   'data-fd-step':'toggle session protocol step',
   'data-fd-back':'return to originating tab',
   'data-fd-home':'return to Today',
@@ -354,9 +354,16 @@ function fdDispatch(attrs, context, state){
     };
   }
   if(fdOwn(a,'data-fd-role')){
-    return {
-      patch:{role:String(a['data-fd-role']||''),screen:'setup-week'},route:null,effect:null
-    };
+    /* Two emitters, two meanings. In the wizard this is step 1 of 2 and must advance; in the
+       settings panel the learner is changing a setting, and advancing would throw them out of the
+       panel and back into a first-run flow that asks again for a week they already chose. Only
+       the wizard reaches here with screen==='setup-role', so that is the fork -- and leaving the
+       rest of the state alone is what keeps the panel open on the chip it just filled. */
+    var picked=String(a['data-fd-role']||'');
+    if(s.screen==='setup-role'){
+      return {patch:{role:picked,screen:'setup-week'},route:null,effect:null};
+    }
+    return {patch:{role:picked},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-step')){
     n=fdNumberAttr(a,'data-fd-step');

@@ -253,3 +253,160 @@ test('a theme click re-renders the panel with the mode just clicked, not the pre
   assert.equal(h.storage.getItem('cw_theme'), 'dark',
     'the chosen mode is persisted, not merely painted');
 });
+
+// ---------------------------------------------------------------------------------------------
+// The You section. Role was the one choice the first-run wizard made a one-way door: fdResolveState
+// returns to screen:'setup-role' only when the stored role is EMPTY, so a learner who tapped the
+// wrong chip on day one was stuck with it short of clearing site data.
+const ROLES = [
+  { id: 'student', name: 'Core rotation', desc: 'The six-week inpatient rotation', hint: 'most common' },
+  { id: 'staff', name: 'Nursing · SW · family', desc: 'Unit staff and families', hint: '' },
+];
+
+test('role chips render from the supplied list and mark the stored id', () => {
+  const h = S.fdSheetSettingsBody(withState({ roles: ROLES, roleId: 'staff' }));
+  assert.match(h, /data-fd-role="student"/);
+  assert.match(h, /data-fd-role="staff"[^>]*aria-pressed="true"/);
+  assert.match(h, /data-fd-role="student"[^>]*aria-pressed="false"/,
+    'the stored id is marked, not simply the first chip');
+});
+
+test('the role section is absent when the caller supplied no list', () => {
+  const h = S.fdSheetSettingsBody(withState({}));
+  assert.doesNotMatch(h, /data-fd-role=/);
+  assert.doesNotMatch(h, /<h3[^>]*>You</, 'and it takes its heading with it');
+});
+
+// Author decision, 2026-09-10: role ships with no explanation -- no sublabel describing what it
+// affects, and therefore no save confirmation either. A "Saved" against a change the learner
+// cannot find anywhere promises more than happened; the chip's own selected state is the feedback.
+test('role offers no explanation and no save confirmation', () => {
+  const h = S.fdSheetSettingsBody(withState({ roles: ROLES, roleId: 'staff' }));
+  assert.doesNotMatch(h, /greeting/i);
+  assert.doesNotMatch(h, /\bSaved\b/);
+});
+
+// The same ruling 60b246b applied to the segments, applied to the section shipping beside them.
+// Nothing about the role chips implements roving tabindex, arrow-key selection or Home/End either,
+// and a panel that announced "radio button, 1 of 3" in one section and "button, pressed" in the
+// next would teach a screen-reader user two contradictory interaction models inside one dialog.
+test('the role chips claim no keyboard contract they do not implement', () => {
+  const h = S.fdSheetSettingsBody(withState({ roles: ROLES, roleId: 'staff' }));
+  assert.doesNotMatch(h, /role="radio(?:group)?"/,
+    'a radio role requires roving tabindex, arrow-key selection and Home/End');
+  assert.doesNotMatch(h, /aria-checked/,
+    'aria-checked belongs to radio and checkbox, never to a plain button');
+  assert.match(h, /class="fd-choices"[^>]*role="group"/, 'the chips are a labelled group');
+});
+
+// The .is-active / aria-pressed agreement, for the control whose selected state is its ONLY
+// feedback. Desync these and the learner sees one role filled while a screen reader announces a
+// different one as chosen, with nothing anywhere to notice.
+test('the styled chip and the announced chip are the same one', () => {
+  for (const id of ['student', 'staff']) {
+    const chips = S.fdSheetSettingsBody(withState({ roles: ROLES, roleId: id }))
+      .match(/<button[^>]*data-fd-role="[^"]*"[^>]*>/g) || [];
+    assert.equal(chips.length, ROLES.length, `${id}: every supplied role must render a chip`);
+    const styled = chips.filter((b) => /class="[^"]*\bis-active\b/.test(b));
+    const announced = chips.filter((b) => /aria-pressed="true"/.test(b));
+    assert.equal(styled.length, 1, `${id}: exactly one chip is filled`);
+    assert.equal(announced.length, 1, `${id}: exactly one chip is announced pressed`);
+    assert.equal(styled[0], announced[0], `${id}: and it must be the same chip`);
+    assert.match(styled[0], new RegExp(`data-fd-role="${id}"`), `${id}: the stored role is the one marked`);
+  }
+});
+
+// Renderer-level tests structurally cannot see this one. fdLiveState resolves out.role to the
+// DISPLAY NAME before any renderer runs, so the panel is handed the raw id under a second key.
+// Capture it AFTER that overwrite and out.roleId holds "Core rotation" where every chip's
+// data-fd-role holds "student": each comparison is false, no chip is marked, and a section whose
+// only feedback IS the mark shows none -- silently, in both the paint and the announcement. The
+// three assignments are executed here in their real source order rather than grepped, because the
+// order is the thing under test.
+test('fdLiveState captures the raw role id before it resolves the display name', () => {
+  const start = shell.indexOf('function fdLiveState(state)');
+  const end = shell.indexOf('function fdCaptureRows()', start);
+  assert.ok(start > -1 && end > start, 'the live-state boundary must stay extractable');
+  const lines = shell.slice(start, end).match(/^\s*out\.(?:roleId|roles|role)=.*$/gm) || [];
+  assert.equal(lines.length, 3, 'fdLiveState must set exactly roleId, roles and role');
+
+  // eslint-disable-next-line no-new-func
+  const live = new Function('FD_ROLES', 'fdRoleName', 'stored',
+    `var out={role:stored};\n${lines.join('\n')}\nreturn out;`)(
+    ROLES, (id) => (ROLES.filter((r) => r.id === id)[0] || {}).name, 'staff');
+
+  assert.equal(live.roleId, 'staff', 'the panel needs the id the chips carry');
+  assert.equal(live.role, 'Nursing · SW · family', 'and the rest of the shell still needs the name');
+  assert.deepEqual(live.roles, ROLES, 'the chips are drawn from the injected per-site list');
+  assert.match(S.fdSheetSettingsBody(live), /data-fd-role="staff"[^>]*aria-pressed="true"/,
+    'and the state that actually reaches the renderer marks the chip the learner chose');
+});
+
+// The click path, end to end, because the section's whole premise is that the chip's own filled
+// state is the only feedback a role change produces. Renderer tests prove the chip CAN be marked;
+// this one proves the click actually reaches it -- and, in the same run, that the fork in
+// fd_wire.js holds, since an unforked dispatch patches screen:'setup-week' and a learner adjusting
+// a setting is thrown into the first-run wizard with the panel gone. The render callback mirrors
+// fdLiveState's one load-bearing property here, that roleId is the state's RAW role; the source
+// order that guarantees it is pinned by the test above.
+function roleClickHarness() {
+  const W = makeWire({ getItem: () => null, setItem() {}, removeItem() {} });
+  const panels = [];
+  const states = [];
+  const renderPanel = (next) => {
+    states.push(next || {});
+    panels.push(W.fdSheetSettingsBody({ roles: ROLES, roleId: (next || {}).role }));
+  };
+  const handlers = {};
+  const root = {
+    addEventListener(type, fn) { handlers[type] = fn; },
+    removeEventListener() {},
+    querySelector: () => null,
+    matches: () => false,
+  };
+  const controller = W.fdWire(root, { role: 'student', week: 1, screen: 'app', sheet: 'settings' }, {
+    window: {
+      addEventListener() {}, removeEventListener() {},
+      location: { href: 'https://example.test/', search: '', pathname: '/' },
+    },
+    render: renderPanel,
+    renderTransient: renderPanel,
+    index: { byRef: {}, weeks: [{ n: 1, items: [] }] },
+    synonyms: {},
+    document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
+  });
+  controller.commitStartup();
+  return {
+    panels,
+    states,
+    controller,
+    click(id) {
+      const target = {
+        tagName: 'BUTTON', isContentEditable: false, isConnected: true,
+        closest: (selector) => (selector.indexOf('[data-fd-role]') > -1 ? target : null),
+        hasAttribute: (n) => n === 'data-fd-role',
+        getAttribute: (n) => (n === 'data-fd-role' ? id : null),
+        focus() {},
+      };
+      handlers.click({ target, preventDefault() {} });
+    },
+  };
+}
+
+test('clicking a role chip marks that chip and leaves the learner in the panel', () => {
+  const h = roleClickHarness();
+  const before = h.panels.length;
+  h.click('staff');
+  assert.ok(h.panels.length > before, 'the click must re-render the open panel');
+
+  const painted = h.panels[h.panels.length - 1];
+  assert.match(painted, /data-fd-role="staff"[^>]*aria-pressed="true"/,
+    'the chip the learner just clicked must be the one marked');
+  assert.doesNotMatch(painted, /data-fd-role="student"[^>]*aria-pressed="true"/,
+    'and the role they just left must not still claim to be chosen');
+
+  const state = h.controller.getState();
+  assert.equal(state.role, 'staff', 'the choice is on state, not merely painted');
+  assert.equal(state.screen, 'app', 'a setting change must not reopen the first-run wizard');
+  assert.equal(state.sheet, 'settings', 'and the panel showing the feedback must stay open');
+});

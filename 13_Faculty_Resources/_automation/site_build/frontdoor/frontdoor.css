@@ -1028,3 +1028,15 @@
 .fd-seg__btn:hover{background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
 .fd-seg__btn.is-active{background:var(--fd-teal);color:var(--fd-on-accent)}
 @media (pointer:coarse){.fd-seg__btn{min-height:var(--fd-target-touch)}}
+/* .fd-choices is the You section's role picker: the same single-choice control as .fd-seg and
+ * deliberately NOT the same shape. Role names are per-site prose, so the chips size to their text
+ * and wrap; three equal segments of a 390px sheet would strand them over three lines on a phone.
+ * They are also NOT .fd-chip -- that is the static type badge on result rows, with no border, no
+ * pointer, no touch target and no .is-active rule at all, so a chip set built on it would paint
+ * every role identically and leave the learner's own choice invisible.
+ * :hover precedes .is-active for the same source-order reason as the segments above. */
+.fd-choices{display:flex;flex-wrap:wrap;gap:var(--fd-space-4)}
+.fd-choices__btn{padding:var(--fd-space-4) var(--fd-space-5);border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-sm);cursor:pointer}
+.fd-choices__btn:hover{background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
+.fd-choices__btn.is-active{background:var(--fd-teal);border-color:var(--fd-teal);color:var(--fd-on-accent)}
+@media (pointer:coarse){.fd-choices__btn{min-height:var(--fd-target-touch)}}

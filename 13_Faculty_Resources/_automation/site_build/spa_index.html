@@ -1997,6 +1997,14 @@
         :((FD_INDEX.weeks[0]||{}).n);
     }
     out.done=fdProgressDoneMap(raw,FD_INDEX,fdProgressWeek(out,FD_INDEX));
+    /* ORDER IS LOAD-BEARING. The next line replaces out.role with the DISPLAY NAME for every
+       renderer downstream, so the settings panel -- which marks its active chip by comparing
+       against the chip's raw data-fd-role id -- has to be handed that id first, under its own
+       key, along with the per-site list the chips are drawn from. Capture roleId after the
+       overwrite and every comparison is name-vs-id, false for all of them, and the You section
+       shows no selection at all: silent, in a control whose only feedback IS the selection. */
+    out.roleId=out.role;
+    out.roles=FD_ROLES;
     out.role=fdRoleName(out.role)||out.role;
     out.currentCoreRevision=typeof FD_CORE_REVISION==='string'?FD_CORE_REVISION:'';
     out.localProgress=FD_INDEX.edition&&FD_INDEX.edition.card

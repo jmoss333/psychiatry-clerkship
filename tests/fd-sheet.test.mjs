@@ -145,6 +145,10 @@ function liveShellBoundary(index, topicMeta, templateHtml) {
   const boundary = new Function('fdSheet', 'index', 'topicMeta', 'document', `
     ${failureCopyGlobalSource()}
     var FD_INDEX=index;
+    // fdLiveState reads the build-injected role list for the settings panel's You section.
+    // A realistic one rather than [] so nothing in the boundary is degenerate; this file's
+    // subject is protocol failure copy, and no assertion here depends on its contents.
+    var FD_ROLES=[{id:'student',name:'Core rotation'}];
     var facultyPreviewRequest=null, location={search:''};
     ${crisisTemplateInitSource()}
     function fdClone(value){var out={};for(var key in value){out[key]=value[key];}return out;}

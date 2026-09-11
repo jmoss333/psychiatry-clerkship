@@ -184,8 +184,11 @@ test('view-week previews only; setup-week and set-week return Monday-aligned wri
 });
 
 test('role, tab, back, home, search, change-week, progress, theme, tool layout, and step are pinned', () => {
-  assert.deepEqual(F.fdDispatch({ 'data-fd-role': 'second-role' }, {}, roleContext).patch,
-    { role: 'second-role', screen: 'setup-week' });
+  // The screen is named rather than left undefined: advancing to week setup is the WIZARD's
+  // behaviour, and state -- not context -- is where fdDispatch reads it from.
+  assert.deepEqual(F.fdDispatch({ 'data-fd-role': 'second-role' }, {},
+    { ...roleContext, screen: 'setup-role' }).patch,
+  { role: 'second-role', screen: 'setup-week' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'library' }, {}, roleContext).patch,
     { tab: 'library', openId: null, searchOpen: false });
   assert.equal(F.fdDispatch({ 'data-fd-back': '' }, {}, { ...roleContext, openId: 'x.md', fromTab: 'path' }).route,
@@ -2050,4 +2053,20 @@ test('theme focus lands on the chosen mode, not the first control in the group',
   assert.equal(group.dark.focused, 1, 'the button the learner chose keeps focus');
   assert.equal(group.system.focused, undefined, 'System must not steal focus from Dark');
   assert.ok(asked.includes('[data-fd-theme="dark"]'), 'the chosen mode is asked for by value');
+});
+
+// data-fd-role has two emitters now: the wizard's step-1 rows and the settings panel's You chips.
+// Unforked, the panel's chip patched screen:'setup-week' and threw a learner who was adjusting a
+// setting into the middle of the first-run wizard -- losing the panel, and asking again for a week
+// they had already chosen. The wizard is the only caller that should advance, and it is the only
+// one whose state says setup-role.
+test('picking a role in the wizard advances; picking one in settings does not', () => {
+  const wizard = F.fdDispatch({ 'data-fd-role': 'subi' }, {}, { screen: 'setup-role' });
+  assert.equal(wizard.patch.screen, 'setup-week');
+
+  const panel = F.fdDispatch({ 'data-fd-role': 'subi' }, {}, { screen: 'app', sheet: 'settings' });
+  assert.equal(panel.patch.role, 'subi');
+  assert.equal(panel.patch.screen, undefined, 'changing a setting must not reopen the wizard');
+  assert.equal(panel.patch.sheet, undefined,
+    'and the panel stays open, because the chip it just filled is the only feedback there is');
 });
