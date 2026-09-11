@@ -28,137 +28,22 @@
   if (window.__cwThemeAudit) return;
   window.__cwThemeAudit = true;
 
-  var PANEL_ID = 'cw-theme-audit';
-  var COLOUR_PROPS = ['color', 'background-color', 'border-top-color', 'border-right-color',
-                      'border-bottom-color', 'border-left-color', 'outline-color'];
-  var WIDTH_OF = {
-    'border-top-color': 'border-top-width', 'border-right-color': 'border-right-width',
-    'border-bottom-color': 'border-bottom-width', 'border-left-color': 'border-left-width',
-    'outline-color': 'outline-width',
-  };
+  if (!window.cwThemeScan) {                       // theme_scan.js ships ahead of this file
+    console.warn('[theme-audit] theme_scan.js did not load; nothing to render.');
+    return;
+  }
+  var PANEL_ID = window.cwThemeScan.PANEL_ID;
+  var api = window.cwThemeScan.install(document, window);
 
-  function parse(value) {
-    var n = String(value).match(/[\d.]+/g);
-    if (!n) return null;
-    return { c: [+n[0], +n[1], +n[2]], a: n.length > 3 ? +n[3] : 1 };
-  }
-  function luminance(c) {
-    var f = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
-    return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]);
-  }
-  function ratio(a, b) {
-    var x = luminance(a), y = luminance(b);
-    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
-  }
-  function groundOf(el) {
-    var n = el;
-    while (n && n !== document.documentElement) {
-      var bg = parse(getComputedStyle(n).backgroundColor);
-      if (bg && bg.a > 0.5) return bg.c;
-      n = n.parentElement;
-    }
-    var root = parse(getComputedStyle(document.documentElement).backgroundColor);
-    return root && root.a > 0.5 ? root.c : [255, 255, 255];
-  }
-  function label(el) {
-    var cls = typeof el.className === 'string' && el.className
-      ? '.' + el.className.trim().split(/\s+/).slice(0, 2).join('.') : '';
-    return el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + cls;
-  }
-  function ownText(el) {
-    var out = '';
-    for (var i = 0; i < el.childNodes.length; i++) {
-      var n = el.childNodes[i];
-      if (n.nodeType === 3 && n.textContent.trim().length > 1) out += n.textContent.trim() + ' ';
-    }
-    return out.trim();
-  }
-
-  /* Elements worth reading: visible, big enough to see, not part of this overlay. */
-  function subjects() {
-    var out = [];
-    var all = document.querySelectorAll('body *');
-    for (var i = 0; i < all.length; i++) {
-      var el = all[i];
-      if (el.closest('#' + PANEL_ID)) continue;
-      var st = getComputedStyle(el);
-      if (st.display === 'none' || st.visibility === 'hidden' || +st.opacity < 0.1) continue;
-      var box = el.getBoundingClientRect();
-      if (box.width < 3 || box.height < 3) continue;
-      out.push(el);
-    }
-    return out;
-  }
-
-  /* A property is only interesting if it actually paints something a person can see. */
-  function painted(el, st, prop) {
-    var v = parse(st.getPropertyValue(prop));
-    if (!v || v.a < 0.06) return null;
-    if (prop === 'color') return ownText(el) ? v : null;
-    if (prop === 'background-color') return v;
-    // outline-width computes to a real number even when outline-style is none, which reported
-    // every unfocused button as having a frozen black outline. Style decides whether it paints.
-    if (prop === 'outline-color' && st.outlineStyle === 'none') return null;
-    var w = parseFloat(st.getPropertyValue(WIDTH_OF[prop]) || '0');
-    return w > 0 ? v : null;
-  }
-
-  function readAll(els) {
-    var rows = [];
-    for (var i = 0; i < els.length; i++) {
-      var st = getComputedStyle(els[i]);
-      var one = {};
-      for (var p = 0; p < COLOUR_PROPS.length; p++) {
-        var prop = COLOUR_PROPS[p];
-        var v = painted(els[i], st, prop);
-        if (v) one[prop] = st.getPropertyValue(prop);
-      }
-      rows.push(one);
-    }
-    return rows;
-  }
-
+  // The measurement lives in theme_scan.js so this panel and
+  // tests/smoke/frozen-colour.spec.js can never measure different things. This file is now only
+  // the human-facing half: it renders what the scan found and lets you click a row to flash it.
   function run(opts) {
-    var root = document.documentElement;
-    var before = root.dataset.theme || '';
-    var here = before === 'dark' ? 'dark' : 'light';
-    var other = here === 'dark' ? 'light' : 'dark';
-
-    var els = subjects();
-    var now = readAll(els);
-
-    root.dataset.theme = other;
-    void root.offsetHeight;              // force the recalculation before reading back
-    var flipped = readAll(els);
-
-    if (before) root.dataset.theme = before; else delete root.dataset.theme;
-    void root.offsetHeight;
-
-    var frozen = {}, low = {};
-    for (var i = 0; i < els.length; i++) {
-      for (var prop in now[i]) {
-        if (now[i][prop] && now[i][prop] === flipped[i][prop]) {
-          var k = label(els[i]) + ' — ' + prop + ': ' + now[i][prop];
-          (frozen[k] = frozen[k] || { n: 0, els: [] }).n++;
-          if (frozen[k].els.length < 40) frozen[k].els.push(els[i]);
-        }
-      }
-      if (opts.contrast) {
-        var st = getComputedStyle(els[i]);
-        var ink = parse(st.color);
-        if (ink && ink.a > 0.1 && ownText(els[i])) {
-          var size = parseFloat(st.fontSize);
-          var bar = (size >= 24 || (size >= 18.66 && parseInt(st.fontWeight, 10) >= 700)) ? 3 : 4.5;
-          var r = ratio(ink.c, groundOf(els[i]));
-          if (r < bar) {
-            var lk = label(els[i]) + ' — ' + r.toFixed(2) + ':1 (needs ' + bar + ')';
-            (low[lk] = low[lk] || { n: 0, els: [] }).n++;
-            if (low[lk].els.length < 40) low[lk].els.push(els[i]);
-          }
-        }
-      }
-    }
-    return { theme: here, scanned: els.length, frozen: frozen, low: low };
+    var r = api.scan();
+    // The scan always reports both themes. The panel shows the one you are actually looking at,
+    // because a person reading it wants the page in front of them, not a table of two.
+    return { theme: r.theme, scanned: r.scanned, frozen: r.frozen,
+             low: opts.contrast ? (r.theme === 'dark' ? r.lowDark : r.lowLight) : {} };
   }
 
   function render(result, opts) {
