@@ -516,6 +516,63 @@ THEME_INIT = (
     "else if(q.addListener){q.addListener(p);}}catch(e){}}})();</script>"
 )
 
+# Does this page already boot the theme before first paint? The build needs the answer twice --
+# to decide whether to inject THEME_INIT, and to fail the page contract when neither the page nor
+# the injection supplied one -- and both used to ask it as `"cw_theme" in t`. That is a PROXY, and
+# a toggle handler in <body> satisfies it exactly as well as a boot in <head>: the page's own theme
+# code switched off the injection meant to give it one, and four shipped pages rendered light for a
+# learner whose stored mode was dark from 2026-06 until 2026-09-11. Ask what the page DOES.
+SCRIPT_RX = re.compile(r"<script[^>]*>([\s\S]*?)</script>", re.I)
+
+# Recognised by behaviour, never by spelling. The predecessor keyed on the literal
+# `var t=localStorage.getItem('cw_theme')`, so the same boot with its variable renamed walked
+# straight past it.
+READS_THEME_KEY = re.compile(r"getItem\(\s*['\"]cw_theme['\"]")
+
+
+def strip_html_comments(markup):
+    """Drop HTML comments. A comment that names a thing is not the thing.
+
+    _TEMPLATE.html's scaffold header states the rule "Theme-init IIFE is the FIRST <script> in
+    <head>" -- with a literal <script> inside the prose -- so a scanner that does not strip
+    comments first starts matching inside that sentence and extracts 1187 bytes of documentation
+    as though it were a boot. Same trap that shipped the whole SPA shell with no dark palette on
+    2026-09-10: _links_clinical_css read a source comment naming clinical-warm.css as proof the
+    stylesheet was linked. Strip first, then look.
+    """
+    return re.sub(r"<!--[\s\S]*?-->", "", markup)
+
+
+def head_theme_boot(markup):
+    """This page's pre-paint theme boot, or None if it has none.
+
+    A boot is an inline <script> before the head ends -- at </head>, or at <body> when the
+    document closes its head implicitly -- whose body reads cw_theme out of localStorage AND
+    stamps data-theme. Both halves are required: a script that reads the key without painting is
+    not a boot, and a script that paints without reading cannot honour a stored mode.
+
+    Scoping to <head> is the whole point -- a theme read at the bottom of <body> runs long after
+    first paint, which is precisely the shape the four pages carried. It is also why this does not
+    fire on a tool's own light/dark toggle, which legitimately owns its theme from <body>.
+    """
+    t = strip_html_comments(markup)
+    low = t.lower()
+    # The boundary is the FIRST of </head> or <body>: HTML5 lets a document omit </head> and close
+    # the head implicitly at <body>, and ignoring that would drop a real boot. A document with
+    # NEITHER cannot say where its head ends -- and scanning the whole file then credits a toggle
+    # at the very bottom as a pre-paint boot. For a build gate, "cannot tell" must not read "yes".
+    bounds = [i for i in (low.find("</head"), low.find("<body")) if i != -1]
+    if not bounds:
+        return None
+    end = min(bounds)
+    for m in SCRIPT_RX.finditer(t):
+        if m.start() >= end:
+            break
+        body = m.group(1)
+        if READS_THEME_KEY.search(body) and "data-theme" in body:
+            return body
+    return None
+
 # ?theme-audit — a LOADER, not the tool. Every colour defect this library shipped in 2026-09 was
 # the same thing: a colour that does not flip. The gate in bin/check_design_drift.py catches the
 # four shapes it has been taught, on the routes someone encoded; this makes the whole family
@@ -719,7 +776,12 @@ def apply_dark_mode(path, is_index=False, cache_bust=None, page_slug=None, injec
     t = re.sub(r"(background(?:-color)?)\s*:\s*#(?:fff|ffffff)\b", r"\1:var(--surface)", t)
     t = re.sub(r"color\s*:\s*#(?:fff|ffffff)\b", "color:var(--on-brand)", t)
 
-    if "cw_theme" not in t and "<head>" in t:
+    # Not `"cw_theme" not in t`. That asked whether the page MENTIONS the key, and a toggle
+    # handler in <body> mentions it -- so the page's own theme code switched off the injection
+    # meant to give it a pre-paint boot, and four shipped pages went unpainted for three months.
+    # head_theme_boot() asks whether the page actually boots, which is the question this needs.
+    # It is the same predicate the page contract uses, so the two can no longer disagree.
+    if head_theme_boot(t) is None and "<head>" in t:
         t = t.replace("<head>", "<head>\n" + THEME_INIT, 1)
 
     if (os.path.basename(path) not in NO_NETWORK_PAGES
@@ -912,8 +974,11 @@ def page_contract_failures(out_dir):
         # The SPA shell targets #content; tools target #root.
         if not is_index and 'id="root"' not in t:
             missing.append('#root anchor for the skip link')
-        if "cw_theme" not in t:
-            missing.append("pre-paint theme init (cw_theme)")
+        # Not `"cw_theme" in t`. That substring is satisfied by a toggle handler at the bottom
+        # of <body>, which runs long after first paint -- so the contract certified four pages
+        # that shipped with no pre-paint theme at all. Ask for the boot itself.
+        if head_theme_boot(t) is None:
+            missing.append("pre-paint theme init (inline <script> in <head> reading cw_theme)")
         if not _links_clinical_css(t) and '[data-theme="dark"]' not in t:
             missing.append("dark-mode tokens (clinical-warm.css link or inline block)")
         if 'rel="icon"' not in t:

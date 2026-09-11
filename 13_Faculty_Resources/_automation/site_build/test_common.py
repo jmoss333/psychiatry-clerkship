@@ -175,6 +175,40 @@ class TestPagePasses(_SiteFixture):
         common.apply_dark_mode(self.tool, is_index=True)
         self.assertNotIn("<!--ifn-->", self.read())
 
+    def test_a_body_only_toggle_no_longer_suppresses_the_injection(self):
+        """Close the class instead of merely catching it.
+
+        The page contract now demands a head boot, so a page carrying only a <body> toggle would
+        fail the BUILD -- correct, but a poor answer for a shape that is otherwise reasonable: a
+        tool owning its own light/dark button. Asking the same honest question here means such a
+        page is simply given a boot, and the defect stops being reachable rather than becoming a
+        red build. Measured before changing it: 0 pages in the tree are affected today, so this
+        is a net for the next one, not a rewrite of the current output.
+        """
+        with open(self.tool, "w", encoding="utf-8") as fh:
+            fh.write(
+                "<html><head></head><body><div id=\"root\"></div>"
+                "<script>document.documentElement.setAttribute('data-theme',"
+                "localStorage.getItem('cw_theme'));</script></body></html>"
+            )
+        common.apply_dark_mode(self.tool)
+        self.assertIsNotNone(
+            common.head_theme_boot(self.read()),
+            "a page whose only theme code is a body toggle must still be given a pre-paint boot",
+        )
+
+    def test_a_page_with_its_own_head_boot_is_not_given_a_second(self):
+        """The other half: the guard must still skip a page that already boots properly.
+
+        Without this, 'inject when there is no head boot' is untested in the direction that
+        matters for the 17 pages that carry their own -- two boots in one <head> is not a
+        cosmetic issue, it is two copies free to disagree.
+        """
+        with open(self.tool, "w", encoding="utf-8") as fh:
+            fh.write("<html><head>" + common.THEME_INIT + "</head><body></body></html>")
+        common.apply_dark_mode(self.tool)
+        self.assertEqual(self.read().count("getItem('cw_theme')"), 1)
+
     def test_passes_are_idempotent(self):
         common.apply_page_chrome(self.tool)
         common.apply_dark_mode(self.tool)
@@ -205,46 +239,12 @@ REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", 
 
 _SKIP_DIRS = {".git", ".claude", "_build", "node_modules", "__pycache__", ".venv"}
 
-_SCRIPT_RX = re.compile(r"<script[^>]*>([\s\S]*?)</script>", re.I)
-# The boot is recognised by what it DOES, never by how it spells it. The predecessor of this
-# check keyed on the literal `var t=localStorage.getItem('cw_theme')`, so the identical boot with
-# its variable renamed walked straight past it.
-_READS_THEME_KEY = re.compile(r"getItem\(\s*['\"]cw_theme['\"]")
-
-
-def _strip_html_comments(markup):
-    """Drop HTML comments. A comment that names a thing is not the thing.
-
-    _TEMPLATE.html's scaffold header states the rule "Theme-init IIFE is the FIRST <script> in
-    <head>" -- with a literal <script> inside the prose -- so a scanner that does not strip
-    comments first starts matching inside that sentence and extracts 1187 bytes of documentation
-    as though it were a boot. This is the same trap that shipped the whole SPA shell with no dark
-    palette on 2026-09-10: _links_clinical_css read a source comment naming clinical-warm.css as
-    proof the stylesheet was linked. Strip first, then look.
-    """
-    return re.sub(r"<!--[\s\S]*?-->", "", markup)
-
-
-def _head_theme_boot(markup):
-    """This page's pre-paint theme boot, or None if it has none.
-
-    A boot is an inline <script> before </head> whose body reads cw_theme out of localStorage and
-    stamps data-theme. Scoping to <head> is deliberate and is the reason this does not fire on
-    every tool that owns its own light/dark toggle: decision-aids.html, review.html,
-    interview-circle.html and feedback.html all read or write cw_theme and set data-theme from
-    <body>, legitimately and as their own state. The cost of that scope is stated in the test.
-    """
-    t = _strip_html_comments(markup)
-    end = t.lower().find("</head")
-    if end == -1:
-        end = len(t)
-    for m in _SCRIPT_RX.finditer(t):
-        if m.start() >= end:
-            break
-        body = m.group(1)
-        if _READS_THEME_KEY.search(body) and "data-theme" in body:
-            return body
-    return None
+# The predicate lives in common.py, where the build's own page contract uses it. One definition,
+# so the gate and these tests cannot drift apart -- the split-brain this whole area exists to
+# prevent. Aliased under the old private names for the call sites below.
+_READS_THEME_KEY = common.READS_THEME_KEY
+_strip_html_comments = common.strip_html_comments
+_head_theme_boot = common.head_theme_boot
 
 
 def _boot_census(root):
@@ -472,6 +472,34 @@ class TestThemeInit(unittest.TestCase):
         )
 
 
+    def test_a_document_with_no_head_boundary_is_not_credited_with_a_boot(self):
+        """Fail closed when the document cannot say where its head ends.
+
+        The predicate answers "is this script before the end of <head>?". A document with neither
+        </head> nor <body> cannot answer, and the permissive reading -- scan the whole file --
+        credits a toggle at the very bottom as a pre-paint boot. Harmless while this was only a
+        census; as a build GATE it is a hole, and it is the same shape as every other defect in
+        this area: a check reporting success over something it cannot actually see.
+
+        74 of the tree's .html files have no </head> today (the tests/__panels__ fragments), so
+        this is not a hypothetical parse.
+        """
+        headless = ("<html><body><script>document.documentElement.setAttribute("
+                    "'data-theme',localStorage.getItem('cw_theme'));</script></body></html>")
+        self.assertIsNone(common.head_theme_boot(headless))
+
+    def test_an_implicitly_closed_head_still_yields_its_boot(self):
+        """...and do not over-correct into the opposite defect.
+
+        HTML5 lets a document omit </head> entirely; <body> closes it. Returning None whenever
+        </head> is missing would drop a perfectly good boot on such a page. The boundary is the
+        FIRST of </head> or <body>, not </head> alone.
+        """
+        implicit = ("<html><head><script>var s=localStorage.getItem('cw_theme');"
+                    "document.documentElement.setAttribute('data-theme',s);</script>"
+                    "<body><p>hi</p></html>")
+        self.assertIsNotNone(common.head_theme_boot(implicit))
+
     def test_a_page_that_suppresses_the_injection_brings_its_own_head_boot(self):
         """The hole the census parity check cannot see, closed from the other side.
 
@@ -494,17 +522,22 @@ class TestThemeInit(unittest.TestCase):
         )
 
     def test_only_the_boot_reads_the_stored_mode(self):
-        """Storage holds the MODE; data-theme holds the RESOLUTION. One reader, not two.
+        """Storage holds the MODE; data-theme holds the RESOLUTION. Nothing re-derives.
 
-        The boot resolves storage into an attribute before first paint, so everything after it
-        should read the attribute. A second reader of storage gets 'system' where it expects
-        'light' or 'dark', and the ones that persist what they computed write the resolved value
-        back over the mode -- turning follow-the-OS into a pin the learner never chose. That
-        bug is invisible in a two-mode world, which is why it arrives with the third mode.
+        The boot turns the stored mode into an attribute before first paint, so a page that wants
+        a THEME should read the attribute. A page that reads storage again is re-deriving, and it
+        gets 'system' where it expects 'light' or 'dark'; the ones that persist what they computed
+        write the resolved value back over the mode, turning follow-the-OS into a pin the learner
+        never chose. Invisible in a two-mode world, which is why it arrives with the third mode.
 
-        WHAT THIS DOES NOT SEE: a page that reads the stored mode through an alias it built
-        elsewhere, and a page that writes without reading. The write side has no honest static
-        check; it is the reads that give the re-derivation away.
+        NOT every second read is this bug. Reading the stored mode BECAUSE you want the mode is
+        correct and necessary -- the shell's settings panel does exactly that in fd_wire.js's
+        currentTheme(), since the attribute cannot tell "system that resolved to dark" from
+        "explicitly dark". This walks .html only and says nothing about the frontdoor modules;
+        an inline re-derivation on a page is the shape it is here to catch.
+
+        ALSO NOT SEEN: a page reading through an alias built elsewhere, and a page that writes
+        without reading. The write side has no honest static check; the reads give it away.
         """
         self.assertEqual(
             _pages_re_deriving_the_theme(REPO_ROOT), [],
@@ -563,6 +596,41 @@ class TestPageContract(_SiteFixture):
         failures = common.page_contract_failures(self.dir)
         self.assertEqual(len(failures), 1)
         self.assertIn("in-iframe link interceptor", failures[0][1])
+
+    def test_a_body_only_theme_read_no_longer_satisfies_the_contract(self):
+        """The four-page defect, stated as the contract's own question.
+
+        A page whose only mention of cw_theme is a toggle handler in <body> ships with no
+        pre-paint boot; under the old contract ("cw_theme appears anywhere") it passed, which is
+        how interview-circle, review, feedback and decision-aids shipped unpainted.
+
+        Deliberately NOT run through apply_full_page_pass: that pass now injects a boot into this
+        exact shape (see test_a_body_only_toggle_no_longer_suppresses_the_injection), so routing
+        the fixture through it would rescue the page and leave this asserting nothing. The
+        contract is the last line for output the pass did not produce -- a hand-authored page, a
+        future producer -- so it is tested on its own terms.
+        """
+        with open(self.tool, "w", encoding="utf-8") as fh:
+            fh.write(
+                '<html><head><link rel="icon" href="/favicon.svg">'
+                '<style>[data-theme="dark"]{--bg:#000}</style></head>'
+                '<body><a class="skip-link" href="#root">Skip</a><main id="root"></main>'
+                "<!--ifn--><script>document.documentElement.setAttribute('data-theme',"
+                "localStorage.getItem('cw_theme'));</script></body></html>"
+            )
+        built = self.read()
+        # The old contract's question -- answer yes, which is precisely the bug.
+        self.assertIn("cw_theme", built)
+        # The honest question.
+        self.assertIsNone(common.head_theme_boot(built))
+        failures = common.page_contract_failures(self.dir)
+        self.assertEqual(len(failures), 1)
+        self.assertEqual(
+            failures[0][1],
+            ["pre-paint theme init (inline <script> in <head> reading cw_theme)"],
+            "everything else on the fixture is present, so this must be the ONLY complaint -- an "
+            "extra one means the fixture drifted and the assertion is no longer about the theme",
+        )
 
     def test_assert_raises_systemexit_on_failure(self):
         with self.assertRaises(SystemExit):

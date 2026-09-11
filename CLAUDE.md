@@ -198,6 +198,18 @@ cd tests/smoke && npm ci && npx playwright test
 ## Conventions & gotchas
 - **localStorage keys must be namespaced `cw_*` (shared hub) or `rp_*` (resident).** The QA gate
   hard-fails any other prefix. Item-id collisions silently corrupt attestation (`cw_qbank_attest_v1`) and SRS state.
+- **"Does this page boot the theme?" has exactly one answer: `common.head_theme_boot()`.** Never
+  `"cw_theme" in t`. `cw_theme` holds a *mode* (`system`/`light`/`dark`); `documentElement`
+  holds the *resolved* attribute (`light`/`dark`). The substring test is a proxy that a toggle
+  handler in `<body>` satisfies as well as a boot in `<head>`, so a page's own theme code
+  switched off the injection meant to give it one — `apply_dark_mode()` and the page contract
+  both asked it, and four shipped pages rendered light for a learner with a stored dark mode
+  from 2026-06 to 2026-09-11. Both now ask the predicate, so the case is unreachable *and*
+  caught. Corollaries: a page's pre-paint boot must be **byte-identical** to `spa_index.html`
+  line 4 (`test_common.py` pins every copy in the tree and `MIN_THEME_BOOTS` floors the census —
+  raise it when you add one); and nothing after the boot may read `cw_theme` from storage again,
+  because a second reader gets `system` where it wants a theme, and one that persists what it
+  computed pins a learner's follow-the-OS setting to a value they never chose.
 - **Usage analytics store integers, never events.** `metrics/` is a separate Netlify site whose
   one function accepts an allowlisted event key and increments a counter keyed by site + ISO week.
   It stores no IP, user agent, session id, or timestamp finer than the week, and it does not log
