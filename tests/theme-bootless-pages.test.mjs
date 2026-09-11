@@ -1,8 +1,12 @@
-// Four shipped pages carry NO pre-paint boot: apply_dark_mode() skips THEME_INIT wherever
-// 'cw_theme' already appears, and decision-aids.html, review.html, interview-circle.html and
-// feedback.html all trip that with theme code of their own. test_common.py's boot census is
-// scoped to <head> for exactly that reason and says so in its own docstring, so it structurally
-// cannot speak about these four. This file is where their theme behaviour is pinned instead.
+// Four shipped pages carried NO pre-paint boot until 2026-09-11: apply_dark_mode() skipped
+// THEME_INIT wherever 'cw_theme' already appeared, and decision-aids.html, review.html,
+// interview-circle.html and feedback.html all tripped that with theme code of their own. They
+// have boots now, and the build asks head_theme_boot() rather than for the substring, so that
+// cause is closed on both sides. The FILENAME is now history, not description.
+//
+// This file still earns its place, because the census in test_common.py is scoped to <head> and
+// so can only speak about the boot -- never about what the page's own app does after it. That is
+// the half below.
 //
 // The defect it exists for: theme is now two values, not one. The MODE a learner picks lives in
 // cw_theme and may be 'system'; the ATTRIBUTE the page paints is only ever light or dark. A page
@@ -24,6 +28,18 @@ const PAGE = new URL('../04_Acute_and_Safety/Decision_Aids/decision-aids.html', 
 const html = readFileSync(PAGE, 'utf8');
 
 const TOGGLE_LABEL = 'Toggle light/dark theme';
+
+// The page's pre-paint boot: the first inline <script> in <head>. Bounded by an assertion for the
+// same reason APP_SOURCE is -- a harness aimed at the wrong script runs nothing and reports
+// success over it.
+const BOOT = (() => {
+  const m = html.match(/<script>([\s\S]*?)<\/script>/);
+  assert.ok(m, 'decision-aids.html has no inline <script> at all');
+  assert.match(m[1], /cw_theme/,
+    'the first inline script in decision-aids.html is no longer the theme boot; this harness '
+    + 'would mount an unpainted page and every assertion below would measure that instead');
+  return m[1];
+})();
 
 // The page's app module: the last inline <script>, the one that builds the React tree. Bounded by
 // an assertion rather than by a slice, because a harness aimed at the wrong script would run
@@ -67,9 +83,10 @@ function mount({ stored = null, prefersDark = false } = {}) {
     getItem: (k) => (k === 'cw_theme' ? store : null),
     setItem: (k, v) => { writes.push([k, String(v)]); if (k === 'cw_theme') store = String(v); },
   };
+  let attr = null;
   const documentElement = {
-    setAttribute: (k, v) => { if (k === 'data-theme') painted.push(v); },
-    getAttribute: (k) => (k === 'data-theme' && painted.length ? painted[painted.length - 1] : null),
+    setAttribute: (k, v) => { if (k === 'data-theme') { attr = v; painted.push(v); } },
+    getAttribute: (k) => (k === 'data-theme' ? attr : null),
   };
   const document = { getElementById: () => ({}), documentElement };
   const matchMedia = (q) => ({ matches: /dark/.test(q) && prefersDark });
@@ -116,14 +133,40 @@ function mount({ stored = null, prefersDark = false } = {}) {
     createRoot: () => ({ render: (el) => { top = () => el.type(el.props); pass(); } }),
   };
 
+  // The head boot runs FIRST, exactly as the browser runs it: it resolves the stored MODE into
+  // the RESOLVED attribute and paints it before anything else exists. initialTheme() reads that
+  // attribute rather than re-deriving, so a harness that skipped this would mount against an
+  // unpainted documentElement, conclude 'light' for every scenario, and report that as the
+  // page's behaviour. Its paint is drained off `painted` so the assertions below stay about what
+  // the APP did -- `attr` keeps it, which is what the app actually reads.
+  // eslint-disable-next-line no-new-func
+  new Function('localStorage', 'document', 'window', BOOT)(localStorage, document, window);
+  const bootPainted = painted.splice(0, painted.length);
+  assert.equal(bootPainted.length, 1,
+    'the page\'s head boot must paint exactly once before the app mounts; it painted '
+    + `${bootPainted.length} time(s), so the app is not starting from a resolved attribute`);
+
   // eslint-disable-next-line no-new-func
   new Function('React', 'ReactDOM', 'localStorage', 'document', 'window', 'matchMedia', APP_SOURCE)(
     React, ReactDOM, localStorage, document, window, matchMedia,
   );
 
   assert.ok(tree, 'the app never mounted; nothing below is measuring the page');
-  return { writes, painted, tree: () => tree, stored: () => store };
+  return { writes, painted, bootPainted, tree: () => tree, stored: () => store };
 }
+
+// What the boot buys, and the only assertion here that would notice if it went away with the
+// page otherwise intact: the correct theme is on the element BEFORE the app renders. Without it
+// the page painted light, then React corrected it — the flash — and for a stored dark mode on a
+// standalone visit it never corrected at all, because nothing read storage before the toggle.
+test('the head boot resolves the theme before the app renders', () => {
+  assert.deepEqual(mount({ stored: 'dark', prefersDark: false }).bootPainted, ['dark'],
+    'a stored dark mode must be on the element before first paint, not after React mounts');
+  assert.deepEqual(mount({ stored: 'system', prefersDark: true }).bootPainted, ['dark'],
+    'system resolves through the OS');
+  assert.deepEqual(mount({ stored: null, prefersDark: false }).bootPainted, ['light'],
+    'and unset means system, which here is light');
+});
 
 test('mounting the page paints the resolved attribute', () => {
   assert.deepEqual(mount({ stored: null, prefersDark: true }).painted, ['dark']);
