@@ -401,8 +401,8 @@ function fdDispatch(attrs, context, state){
   }
   if(fdOwn(a,'data-fd-theme')){
     /* The value is the MODE, not the painted attribute -- fdApplyEffect resolves it. A missing or
-       unknown value reads as 'system' rather than toggling, because this control is three radio
-       buttons now: there is no "other one" to flip to. */
+       unknown value reads as 'system' rather than toggling, because this control is a three-way
+       segmented control now: there is no "other one" to flip to. */
     return {patch:{},route:null,
       effect:{type:'set-theme',mode:fdThemeMode(String(a['data-fd-theme']||''))}};
   }
@@ -802,11 +802,12 @@ function fdWire(root, initialState, opts){
         });
       }
     } else if(effect.type==='set-theme'){
+      /* Paints only. The cw_theme write is hoisted above the render in apply() -- see the comment
+         there; the settings panel re-reads that key while it is open. */
       var prefersDark=!!(win&&win.matchMedia&&
         win.matchMedia('(prefers-color-scheme: dark)').matches);
       if(doc&&doc.documentElement)
         doc.documentElement.setAttribute('data-theme',fdThemeAttr(effect.mode,prefersDark));
-      try{ localStorage.setItem('cw_theme',effect.mode); }catch(_){}
     } else if(effect.type==='nudge-timeout'&&setTimer){
       if(nudgeTimer&&clearTimer) clearTimer(nudgeTimer);
       nudgeTimer=setTimer(function(){
@@ -836,8 +837,8 @@ function fdWire(root, initialState, opts){
     var effect=result&&result.effect;
     if(effect&&effect.type==='set-theme'){
       /* Focus the button that was actually chosen. With one toggle the first match WAS the
-         control; with three radio buttons it is always "System", which silently moved focus
-         away from the learner's choice on every selection. */
+         control; with the three-segment group the first match is always "System", which silently
+         moved focus away from the learner's choice on every selection. */
       var sel='[data-fd-theme="'+effect.mode+'"]';
       var themeControl=root&&root.querySelector
         ?(root.querySelector(sel)||root.querySelector('[data-fd-theme]')):null;
@@ -878,6 +879,16 @@ function fdWire(root, initialState, opts){
        remaining effects still follow render, when their fresh host exists. */
     if(result.effect&&result.effect.type==='toggle-progress'){
       try{ localStorage.setItem('cw_progress_v1',JSON.stringify(result.effect.raw)); }catch(_){}
+    }
+    /* Same shape, same reason. The settings panel's Appearance section renders from cw_theme --
+       fdLiveState re-reads it on every render -- and the panel is open by definition when this
+       fires, because fdSettingsSeg is the only thing that emits data-fd-theme. Written after the
+       render, the page painted the new theme while the panel kept the PREVIOUS segment filled and
+       aria-pressed="true", and focusPostTransition then focused the clicked button: "Dark, button,
+       not pressed", with a different segment claiming to be pressed. The PAINT stays in
+       fdApplyEffect; only the read-back is order-sensitive. */
+    if(result.effect&&result.effect.type==='set-theme'){
+      try{ localStorage.setItem('cw_theme',result.effect.mode); }catch(_){}
     }
     fdSave(state);
     if(!fromHistory){

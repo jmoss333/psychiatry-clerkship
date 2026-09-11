@@ -159,3 +159,97 @@ test('the styled segment and the announced segment are the same one', () => {
       `${mode}: the chosen mode is the one marked`);
   }
 });
+
+// ---------------------------------------------------------------------------------------------
+// Everything above is renderer-level -- state in, string out -- and renderer-level tests cannot
+// see an ORDERING defect. One lived here: fd_wire.js's apply() ran the render BEFORE
+// fdApplyEffect persisted cw_theme, so the panel was rebuilt from stale storage. Clicking "Dark"
+// with the panel open painted the page dark, re-rendered the panel with the PREVIOUS segment
+// still filled and aria-pressed="true", and then focused the Dark button -- announcing "Dark,
+// button, not pressed" while a different segment claimed to be pressed. fdSettingsSeg is the only
+// emitter of data-fd-theme, so the panel is open by definition whenever this fires.
+//
+// Nothing else in this file could have caught it: the source-executing test injects its own LS,
+// and fd-sheet.test.mjs's boundary stubs LS(){return '';}. This one drives the real apply()
+// through a render callback shaped like the shell's -- read cw_theme AT RENDER TIME, normalise,
+// render -- which is exactly what fdLiveState does.
+const WIRE_MODULES = [
+  'phase_policy.js', 'frontdoor/fd_state.js', 'frontdoor/fd_data.js', 'frontdoor/fd_today.js',
+  'frontdoor/fd_block.js', 'frontdoor/fd_reader.js', 'frontdoor/fd_shell.js',
+  'frontdoor/fd_sheet.js', 'frontdoor/fd_wire.js',
+];
+// eslint-disable-next-line no-new-func
+const makeWire = new Function('localStorage', `${WIRE_MODULES.map(read).join('\n')}
+  return { fdWire: fdWire, fdSheetSettingsBody: fdSheetSettingsBody, fdThemeMode: fdThemeMode };
+`);
+
+function themeClickHarness(seed) {
+  const map = new Map(Object.entries(seed));
+  const storage = {
+    getItem: (k) => (map.has(k) ? map.get(k) : null),
+    setItem: (k, v) => map.set(k, String(v)),
+    removeItem: (k) => map.delete(k),
+  };
+  const W = makeWire(storage);
+  const panels = [];
+  // The shell's render path in miniature. fdLiveState is what production runs here, and its one
+  // load-bearing property for this defect is that the mode is re-read from storage at render time.
+  const renderPanel = () => panels.push(W.fdSheetSettingsBody({
+    themeMode: W.fdThemeMode(storage.getItem('cw_theme')),
+  }));
+  const handlers = {};
+  const root = {
+    addEventListener(type, fn) { handlers[type] = fn; },
+    removeEventListener() {},
+    querySelector: () => null,
+    matches: () => false,
+  };
+  const initial = { role: 'first-role', week: 1, screen: 'app', sheet: 'settings' };
+  const controller = W.fdWire(root, initial, {
+    window: {
+      addEventListener() {}, removeEventListener() {},
+      location: { href: 'https://example.test/', search: '', pathname: '/' },
+    },
+    render: renderPanel,
+    renderTransient: renderPanel,
+    index: { byRef: {}, weeks: [{ n: 1, items: [] }] },
+    synonyms: {},
+    document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
+  });
+  controller.commitStartup();
+  return {
+    panels,
+    storage,
+    click(mode) {
+      const target = {
+        tagName: 'BUTTON', isContentEditable: false, isConnected: true,
+        // Matched loosely on purpose. tests/fd-wire.test.mjs:547 pins the delegated selector
+        // string exactly, and that is the right place for it -- a second verbatim copy here would
+        // be one more thing to keep in sync for a test that is about ORDERING, not delegation.
+        closest: (selector) => (selector.indexOf('[data-fd-theme]') > -1 ? target : null),
+        hasAttribute: (n) => n === 'data-fd-theme',
+        getAttribute: (n) => (n === 'data-fd-theme' ? mode : null),
+        focus() {},
+      };
+      handlers.click({ target, preventDefault() {} });
+    },
+  };
+}
+
+test('a theme click re-renders the panel with the mode just clicked, not the previous one', () => {
+  const h = themeClickHarness({ cw_theme: 'light' });
+  const before = h.panels.length;
+  h.click('dark');
+  assert.ok(h.panels.length > before, 'the click must re-render the open panel');
+
+  const painted = h.panels[h.panels.length - 1];
+  assert.match(painted, /data-fd-theme="dark"[^>]*aria-pressed="true"/,
+    'the segment the learner just clicked must be the one marked pressed');
+  assert.doesNotMatch(painted, /data-fd-theme="light"[^>]*aria-pressed="true"/,
+    'the previous mode must not still claim to be pressed');
+  // class precedes data-fd-theme in the emitted markup, so this reads left to right the other way.
+  assert.match(painted, /class="[^"]*\bis-active\b[^"]*"[^>]*data-fd-theme="dark"/,
+    'and it must be the filled one too');
+  assert.equal(h.storage.getItem('cw_theme'), 'dark',
+    'the chosen mode is persisted, not merely painted');
+});

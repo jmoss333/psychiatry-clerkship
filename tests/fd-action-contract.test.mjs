@@ -35,8 +35,8 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
   // the controller registry. An attribute fd_wire.js handles but no renderer draws does not belong
   // here (data-fd-try-now is the standing precedent, pinned by the next test instead).
   // 'data-fd-theme' left this list when the header glyph became the settings gear and returned
-  // with the settings panel's theme radio group (fd_sheet.js's fdSettingsSeg), which is now its
-  // only emitter.
+  // with the settings panel's Appearance segmented control (fd_sheet.js's fdSettingsSeg), which is
+  // now its only emitter.
   assert.deepEqual(emitted, [
     'data-fd-back', 'data-fd-change-week', 'data-fd-close-nudge',
     'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-expand-tool', 'data-fd-home', 'data-fd-local-toggle', 'data-fd-open',
