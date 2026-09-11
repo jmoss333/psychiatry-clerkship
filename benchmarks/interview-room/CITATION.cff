@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: >-
+  If you use this benchmark, please cite it as below. The harness code
+  (run.mjs, calibration.mjs, round-two.mjs, and their corpus and test files)
+  was authored by Codex and Claude agents under the direction of, and owned
+  by, Joshua Moss, MD. It is a developer/faculty-review tool, not a validated
+  clinical instrument or an accuracy estimate of a deployed system — see
+  README.md, "What this benchmark does NOT measure."
+title: "Interview Room conversation benchmark"
+type: software
+version: "2026-09-09"
+date-released: "2026-09-09"
+authors:
+  - name: "Joshua Moss, MD"
+    affiliation: "Tufts University School of Medicine"
+repository-code: "https://github.com/jmoss333/psychiatry-clerkship"

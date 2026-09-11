@@ -10,7 +10,7 @@ const invalid=error=>error?.status===400&&error?.code==='preview_input_invalid';
 test('public family definition and role helpers expose only authored public identities',()=>{
   assert.equal(familyCaseDef.id,FAMILY_CASE_ID);
   assert.match(familyCaseDef.persona.opening,/say in what happens next/i);
-  assert.equal(familyCaseDef.review.status,'draft-pending-faculty-review');
+  assert.equal(familyCaseDef.review.status,'reviewed');
   assert.match(familyBinding,/^[a-f0-9]{64}$/);
   assert.equal(familyRole('morgan').name,'Morgan');
   assert.equal(familyRole('maya').name,'Maya');
@@ -101,4 +101,12 @@ test('history validation refuses forged roles, private channels, and unsupported
   assert.throws(()=>familyContext([], 'both'),invalid);
   assert.throws(()=>familyContext([me('Wrong recipient.','maya')],'morgan'),invalid);
   assert.throws(()=>familyContext(Array.from({length:22},()=>me('Too many.')),'morgan'),invalid);
+});
+
+
+test('valid patient paragraph whitespace survives the next shared context without relaxing learner input',()=>{
+ const dialogue='I care.\n\nI also have limits.';
+ const context=familyContext([pt(dialogue,'maya'),me('What limits matter?','maya')],'maya');
+ assert.equal(context.messages[0].content,dialogue);
+ assert.throws(()=>familyContext([me('bad\ncontrol','maya')],'maya'),invalid);
 });

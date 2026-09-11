@@ -162,8 +162,12 @@ test('mobile Reader back control has a 44px minimum width as well as height', ()
 
 test('live Front Door Reader shares every existing wide-table mechanic', () => {
   const contracts = [
+    // font-size is pinned as the TOKEN, not the pixel it used to be (.92rem). The point of this
+    // contract is that the Reader's table SHARES a treatment, and two rules pointing at one
+    // token cannot drift apart — which a shared literal only promises until someone edits one
+    // of them. Same correction as the two assertions in #598.
     ['.fd-article__body table', [
-      'border-collapse:collapse', 'width:100%', 'margin:1em 0', 'font-size:.92rem',
+      'border-collapse:collapse', 'width:100%', 'margin:1em 0', 'font-size:var(--fd-font-base)',
     ]],
     ['.fd-article__body .table-scroll', ['position:relative', 'margin:1em 0']],
     ['.fd-article__body .table-scroll-viewport', [

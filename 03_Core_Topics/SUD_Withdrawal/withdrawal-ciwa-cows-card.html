@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [RC-META] tool="Withdrawal Scales — CIWA-Ar & COWS" version="1.1" built="2026-08-27" category="core-topics" subcategory="SUD/Withdrawal" audience="trainee,ms3" settings="inpatient" time="10min" summary="Teaching pocket card for opioid (COWS) withdrawal scoring plus the CIWA-Ar official-form reference: item list, interactive tally, severity bands. The CIWA-Ar is not reproduced (retired 2026-08-28); COWS anchors at their published text and legal values (recorded interim waiver, instrument_rights.json). Educational reference — NOT a dosing calculator. Fictional use only." -->
+<!-- [RC-META] tool="Withdrawal Scales — CIWA-Ar & COWS" version="1.2" built="2026-08-27" category="core-topics" subcategory="SUD/Withdrawal" audience="trainee,ms3" settings="inpatient" time="10min" summary="Teaching pocket card for opioid (COWS) withdrawal scoring plus the CIWA-Ar official-form reference: item list, interactive tally, severity bands. Neither instrument is reproduced (CIWA-Ar retired 2026-08-28; COWS anchor text retired 2026-09-10, interim waiver closed) \u2014 item names and legal score values only, descriptors ours (instrument_rights.json). Educational reference — NOT a dosing calculator. Fictional use only." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Withdrawal: COWS Tool · CIWA-Ar Official Form &amp; Training</title>
@@ -11,7 +11,7 @@
 <style>
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
-    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --primary:#bc573a; --primary-dark:#a84830; --primary-light:#f3ebe5;
     --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
     --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
     --success:#357160; --success-light:#e7f1ed;
@@ -96,7 +96,12 @@
 <script>
 var e=React.createElement; var useState=React.useState;
 
-/* Item content is GENERATED from SPEC section 2.2 by
+/* DECISION: cows-anchors-retired (2026-09-10) — the COWS interim waiver closed. The spec's
+   ladders, and therefore these anchors, are abbreviated descriptors written in-house; the item
+   names and legal score values are the scale itself and are unchanged. Do not restore the
+   published wording without a permission that covers publication, not clinical copying.
+
+   Item content is GENERATED from SPEC section 2.2 by
    13_Faculty_Resources/_automation/gen_cows_from_spec.py -- every anchor below is a
    byte-for-byte copy of its spec row, never retyped (handoff Ground Rule 1).
    Re-generate rather than hand-edit; `--check` verifies the tool still matches.
@@ -109,25 +114,25 @@ var COWS=[
   {k:'pulse',b:'Resting pulse rate',tag:'OBSERVED',ask:'Measured after the patient has been sitting or lying for one minute',
    vals:[{v:0,a:'≤80'},{v:1,a:'81–100'},{v:2,a:'101–120'},{v:4,a:'>120'}]},
   {k:'sweat',b:'Sweating',tag:'OBSERVED',ask:'Over the past ½ hour, not accounted for by room temperature or patient activity',
-   vals:[{v:0,a:'no report of chills or flushing'},{v:1,a:'subjective report of chills or flushing'},{v:2,a:'flushed or observable moistness on face'},{v:3,a:'beads of sweat on brow or face'},{v:4,a:'sweat streaming off face'}]},
+   vals:[{v:0,a:'none reported'},{v:1,a:'chills or flushing, reported only'},{v:2,a:'visibly flushed or damp'},{v:3,a:'droplets visible on the face'},{v:4,a:'sweat running off the face'}]},
   {k:'rest',b:'Restlessness',tag:'OBSERVED',ask:'Observation during assessment',
-   vals:[{v:0,a:'able to sit still'},{v:1,a:'reports difficulty sitting still, but is able to do so'},{v:3,a:'frequent shifting or extraneous movements of legs/arms'},{v:5,a:'unable to sit still for more than a few seconds'}]},
+   vals:[{v:0,a:'sits still'},{v:1,a:'restless but stays seated'},{v:3,a:'shifts position often; fidgets'},{v:5,a:'cannot stay seated'}]},
   {k:'pupil',b:'Pupil size',tag:'OBSERVED',
-   vals:[{v:0,a:'pupils pinned or normal size for room light'},{v:1,a:'pupils possibly larger than normal for room light'},{v:2,a:'pupils moderately dilated'},{v:5,a:'pupils so dilated that only the rim of the iris is visible'}]},
+   vals:[{v:0,a:'normal or pinpoint for the light'},{v:1,a:'borderline enlarged'},{v:2,a:'clearly dilated'},{v:5,a:'maximally dilated; iris barely visible'}]},
   {k:'aches',b:'Bone or joint aches',tag:'ASKED',ask:'If the patient had pain previously, only the additional component attributed to opioid withdrawal is scored',
-   vals:[{v:0,a:'not present'},{v:1,a:'mild diffuse discomfort'},{v:2,a:'patient reports severe diffuse aching of joints/muscles'},{v:4,a:'patient is rubbing joints or muscles and unable to sit still because of discomfort'}]},
+   vals:[{v:0,a:'not present'},{v:1,a:'mild, diffuse'},{v:2,a:'severe, diffuse'},{v:4,a:'severe, with rubbing or guarding'}]},
   {k:'nose',b:'Runny nose or tearing',tag:'OBSERVED',ask:'Not accounted for by cold symptoms or allergies',
-   vals:[{v:0,a:'not present'},{v:1,a:'nasal stuffiness or unusually moist eyes'},{v:2,a:'nose running or tearing'},{v:4,a:'nose constantly running or tears streaming down cheeks'}]},
+   vals:[{v:0,a:'not present'},{v:1,a:'stuffy nose or glassy eyes'},{v:2,a:'frank rhinorrhea or tearing'},{v:4,a:'continuous'}]},
   {k:'gi',b:'GI upset',tag:'ASKED',ask:'Over the last ½ hour',
-   vals:[{v:0,a:'no GI symptoms'},{v:1,a:'stomach cramps'},{v:2,a:'nausea or loose stool'},{v:3,a:'vomiting or diarrhea'},{v:5,a:'multiple episodes of diarrhea or vomiting'}]},
+   vals:[{v:0,a:'none'},{v:1,a:'cramping only'},{v:2,a:'nausea or loose stool'},{v:3,a:'one episode of vomiting or diarrhea'},{v:5,a:'repeated episodes'}]},
   {k:'tremor',b:'Tremor',tag:'OBSERVED',ask:'Observation of outstretched hands',
-   vals:[{v:0,a:'no tremor'},{v:1,a:'tremor can be felt, but not observed'},{v:2,a:'slight tremor observable'},{v:4,a:'gross tremor or muscle twitching'}]},
+   vals:[{v:0,a:'none'},{v:1,a:'palpable, not visible'},{v:2,a:'visible, fine'},{v:4,a:'coarse, or muscle twitching'}]},
   {k:'yawn',b:'Yawning',tag:'OBSERVED',ask:'Observation during assessment',
-   vals:[{v:0,a:'no yawning'},{v:1,a:'yawning once or twice during assessment'},{v:2,a:'yawning three or more times during assessment'},{v:4,a:'yawning several times per minute'}]},
+   vals:[{v:0,a:'none'},{v:1,a:'once or twice'},{v:2,a:'three or more'},{v:4,a:'several per minute'}]},
   {k:'anx',b:'Anxiety or irritability',tag:'ASKED/OBSERVED',
-   vals:[{v:0,a:'none'},{v:1,a:'patient reports increasing irritability or anxiousness'},{v:2,a:'patient obviously irritable or anxious'},{v:4,a:'patient so irritable or anxious that participation in the assessment is difficult'}]},
+   vals:[{v:0,a:'none'},{v:1,a:'reported only'},{v:2,a:'evident on observation'},{v:4,a:'interferes with the interview'}]},
   {k:'goose',b:'Gooseflesh skin',tag:'OBSERVED',
-   vals:[{v:0,a:'skin is smooth'},{v:3,a:'piloerection can be felt or hairs standing up on arms'},{v:5,a:'prominent piloerection'}]}
+   vals:[{v:0,a:'smooth'},{v:3,a:'piloerection detectable'},{v:5,a:'prominent piloerection'}]}
 ];
 /* max is derived, never hand-maintained: it drove the dense-range bug. */
 COWS.forEach(function(i){ i.max=i.vals[i.vals.length-1].v; });
@@ -252,6 +257,7 @@ function App(){
       e('div',{className:'card'},
         e('h3',{style:{marginTop:0}},'COWS — 11 items (max 48)'),
         e(Scale,{items:COWS,gauge:COWS_GAUGE}),
+        e('p',null,e('b',null,'Why these descriptors are abbreviated. '),'The item list and its score values are the scale; the wording under each score here is ours, written short for teaching. The published anchor text was withdrawn (2026-09-10): the only permission located for the COWS \u2014 \u201cthis version may be copied and used clinically\u201d \u2014 licenses clinical copying, and a public teaching page is not the act of treating a patient. Score from the official form below, where the anchors read as the authors wrote them.'),
         e('div',{className:'pearl'}, e('b',null,'Use it well: '),'buprenorphine induction generally requires objective withdrawal (often COWS ≥ ~8–12) to avoid precipitated withdrawal — follow your protocol. COWS guides supportive and agonist treatment; it does not by itself set doses.'),
         e(Route,{
           title:'Get the official form',
@@ -260,8 +266,9 @@ function App(){
           cta:'Download the COWS (PDF, NIDA)',
           cost:'Free, no registration; leaves this site for nida.nih.gov. Score at the bedside from that form or your unit’s, not from this page.'})
       ),
-    // WP-02b. This page reproduces COWS anchors verbatim (added by WP-02, PR #375) and
-    // abbreviated CIWA-Ar descriptors, and until now carried no instrument attribution at all.
+    // WP-02b, revised 2026-09-10. This page now reproduces NEITHER instrument: the CIWA-Ar
+    // descriptors went 2026-08-28, the COWS anchors went 2026-09-10 when the interim waiver
+    // closed. Item names and legal score values are facts and stay; every descriptor is ours.
     // Citations verified against PubMed 2026-08-23: PMID 2597811 and PMID 12924748.
     e('div',{className:'sources'},
       e('b',null,'Instrument sources. '),
@@ -271,8 +278,8 @@ function App(){
       '). COWS: Wesson DR, Ling W. The Clinical Opiate Withdrawal Scale (COWS). ',
       e('i',null,'J Psychoactive Drugs'),' 2003;35(2):253–9 (',
       e('a',{href:'https://pubmed.ncbi.nlm.nih.gov/12924748/',target:'_blank',rel:'noopener noreferrer'},'PMID 12924748'),
-      '). The CIWA-Ar is NOT reproduced here — its rights could not be established and its descriptors were withdrawn (2026-08-28). COWS items carry their published anchors and legal score values under a recorded interim waiver. Obtain the complete, current form from your institution and score at the bedside from that form, not from this page.'),
-    e('div',{className:'disclaimer'},'Educational teaching tool for clinical trainees. This is a reference and tally — NOT a dosing calculator or a substitute for the validated instrument, supervision, or your institution’s withdrawal protocol and orders. The CIWA-Ar is not reproduced here; COWS anchors follow the published instrument; use the full validated form at the bedside. For fictional/practice use only — no protected health information.'),
+      '). Neither instrument is reproduced here. The CIWA-Ar descriptors were withdrawn 2026-08-28 because its rights could not be established; the COWS anchor text was withdrawn 2026-09-10 because the permission that exists for it covers clinical copying, not publication on a teaching site. What remains of each scale is its item list and its legal score values \u2014 the scale itself, not the authors\u2019 words. Obtain the complete, current form from your institution or from NIDA, and score at the bedside from that form, not from this page.'),
+    e('div',{className:'disclaimer'},'Educational teaching tool for clinical trainees. This is a reference and tally — NOT a dosing calculator or a substitute for the validated instrument, supervision, or your institution’s withdrawal protocol and orders. Neither the CIWA-Ar nor the COWS is reproduced here \u2014 item names and score values only, with descriptors written by us; use the full validated form at the bedside. For fictional/practice use only — no protected health information.'),
     e('footer',null,'Withdrawal: COWS tool · CIWA-Ar official form · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')
   );
 }

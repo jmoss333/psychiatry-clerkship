@@ -370,6 +370,16 @@ SKIP_LINK_CSS = (
 )
 FAVICON_LINK = '<link rel="icon" href="/favicon.svg">'
 CLINICAL_CSS_LINK = '<link rel="stylesheet" href="/clinical-warm.css">'
+_CLINICAL_CSS_LINK_RE = re.compile(r"<link[^>]+clinical-warm\.css", re.IGNORECASE)
+
+
+def _links_clinical_css(text):
+    """True only when the shared dark-token stylesheet is linked as an ELEMENT.
+
+    Deliberately not `"clinical-warm.css" in text`: that is what let a comment naming the file
+    disable dark mode for a whole page (2026-09-10, the SPA shell).
+    """
+    return bool(_CLINICAL_CSS_LINK_RE.search(text))
 # Usage analytics. CW_SITE tells the emitter which site it is on; CW_PAGE (when
 # known at build time) tells it which page. The emitter sends only allowlisted
 # keys and never an identifier. See
@@ -463,6 +473,24 @@ THEME_INIT = (
     "<script>(function(){try{var t=localStorage.getItem('cw_theme');"
     "if(t!=='dark'&&t!=='light'){t='light';}"
     "document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>"
+)
+
+# ?theme-audit — a LOADER, not the tool. Every colour defect this library shipped in 2026-09 was
+# the same thing: a colour that does not flip. The gate in bin/check_design_drift.py catches the
+# four shapes it has been taught, on the routes someone encoded; this makes the whole family
+# visible on ANY page, in five seconds, to a person. theme_audit.js is ~11 KB and would be dead
+# weight on 30 pages, so what ships is this: ~200 bytes that fetch nothing unless the URL asks.
+# rotation-curator.html is offline BY CONTRACT. check-static-site.mjs hard-fails on any network
+# transport API in it — fetch, XHR, WebSocket, and `createElement("script")` among them — because
+# the faculty edition builder must not be able to reach the network at all. A debug hook is not a
+# reason to weaken that, so it is the one page that does not get the loader below. Found the hard
+# way: the first build with the loader failed with "network transport API in rotation-curator.html".
+NO_NETWORK_PAGES = frozenset({"rotation-curator.html"})
+
+THEME_AUDIT_LOADER = (
+    "<script>(function(){if(!/[?&]theme-audit\\b/.test(location.search))return;"
+    "var s=document.createElement('script');s.src='/theme-audit.js';s.defer=true;"
+    "document.head.appendChild(s);})();</script>"
 )
 
 MOTION_CSS = (
@@ -612,7 +640,8 @@ def apply_page_chrome(path, is_index=False):
     if ".skip-link{" not in t and "</head>" in t:
         t = t.replace("</head>", SKIP_LINK_CSS + "\n</head>", 1)
 
-    # WP-03: bare accent text (--primary #c25a3c) is ~3.9:1 on the light backgrounds and
+    # WP-03: bare accent text (--primary #bc573a, darkened from #c25a3c 2026-09-10) is
+    # ~4.2:1 on the light backgrounds and still
     # fails WCAG AA for normal-size text. Repoint to --primary-dark; the literal fallback
     # covers tools whose light :root lacks the token, and clinical-warm.css overrides
     # --primary-dark to #dd9277 in dark mode, which also passes. The closing paren in the
@@ -652,8 +681,19 @@ def apply_dark_mode(path, is_index=False, cache_bust=None, page_slug=None, injec
     if "cw_theme" not in t and "<head>" in t:
         t = t.replace("<head>", "<head>\n" + THEME_INIT, 1)
 
+    if (os.path.basename(path) not in NO_NETWORK_PAGES
+            and "theme-audit.js" not in t and "</head>" in t):
+        t = t.replace("</head>", THEME_AUDIT_LOADER + "\n</head>", 1)
+
     # Dark tokens come from the linked stylesheet — one file, not N inline copies.
-    if '[data-theme="dark"]' not in t and "clinical-warm.css" not in t and "</head>" in t:
+    #
+    # _links_clinical_css matches the <link> ELEMENT, not the bare filename. A substring test
+    # here shipped the entire SPA shell with NO dark palette on 2026-09-10: a source comment in
+    # spa_index.html happened to name the file, the guard read that as "already linked", and
+    # skipped the injection. Nothing failed — the shell simply stayed light with data-theme="dark"
+    # stamped on <html>. Same fix applied to the missing-asset check below, which was fooled
+    # identically and so could not report it.
+    if '[data-theme="dark"]' not in t and not _links_clinical_css(t) and "</head>" in t:
         t = t.replace("</head>", CLINICAL_CSS_LINK + "\n</head>", 1)
 
     # Usage analytics. Injected here so every polished page carries it from one
@@ -833,7 +873,7 @@ def page_contract_failures(out_dir):
             missing.append('#root anchor for the skip link')
         if "cw_theme" not in t:
             missing.append("pre-paint theme init (cw_theme)")
-        if "clinical-warm.css" not in t and '[data-theme="dark"]' not in t:
+        if not _links_clinical_css(t) and '[data-theme="dark"]' not in t:
             missing.append("dark-mode tokens (clinical-warm.css link or inline block)")
         if 'rel="icon"' not in t:
             missing.append("favicon link")

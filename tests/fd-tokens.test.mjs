@@ -79,6 +79,17 @@ test('frontdoor.css references tokens, never raw hex colours', () => {
     `frontdoor.css must use var(--fd-*), found raw hex: ${hex.join(', ')}`);
 });
 
+// Dimension families are theme-INVARIANT by contract: spacing, type, radius, motion and glyph
+// metrics have no dark value, and bin/check_design_drift.py (C3) fails the build if one acquires
+// one. So the "both themes" rule below applies to colour tokens, and these get the mirror-image
+// assertion — present in :root, ABSENT from the dark block. Together the two halves are stricter
+// than the original single rule, which predated the dimension layer.
+const DIMENSION_PREFIXES = [
+  '--fd-space-', '--fd-font-', '--fd-radius-', '--fd-dur-',
+  '--fd-ease-', '--fd-leading-', '--fd-target-', '--fd-glyph-',
+];
+const isDimension = (name) => DIMENSION_PREFIXES.some((p) => name.startsWith(p));
+
 test('every --fd-* frontdoor.css consumes is actually defined in both themes', () => {
   // Broader than the fixed TOKENS list above: it also covers the derived tokens this stylesheet
   // needed beyond the design's 22 (ink-on-accent, elevation, scrim, focus ring). An undefined
@@ -94,7 +105,26 @@ test('every --fd-* frontdoor.css consumes is actually defined in both themes', (
   for (const name of referenced) {
     if (declaredLocally.has(name)) continue; // scoped to a component, not a palette token
     assert.match(light, new RegExp(`${name}\\s*:`), `${name} used but absent from :root`);
-    assert.match(dark, new RegExp(`${name}\\s*:`), `${name} used but absent from the dark block`);
+    if (isDimension(name)) {
+      assert.doesNotMatch(dark, new RegExp(`${name}\\s*:`),
+        `${name} is a dimension token and must NOT be redeclared for dark mode`);
+    } else {
+      assert.match(dark, new RegExp(`${name}\\s*:`), `${name} used but absent from the dark block`);
+    }
+  }
+});
+
+test('the dimension layer is complete and theme-invariant', () => {
+  const light = block(warm, ':root');
+  const referenced = new Set(
+    [...fd.matchAll(/var\(\s*(--fd-[a-z0-9-]+)/g)].map((m) => m[1]).filter(isDimension),
+  );
+  assert.ok(referenced.size > 0, 'frontdoor.css should consume the dimension layer, not raw px');
+  for (const name of referenced) {
+    const declared = light.match(new RegExp(`${name}\\s*:\\s*([^;]+)`));
+    assert.ok(declared, `${name} is consumed but never declared`);
+    assert.doesNotMatch(declared[1], /#[0-9a-fA-F]{3,8}|rgba?\(/,
+      `${name} is a dimension token and must not carry a colour`);
   }
 });
 
@@ -114,7 +144,17 @@ test('animations are disabled under prefers-reduced-motion', () => {
 
 test('reader body gives rendered long-form content a readable token-based type scale', () => {
   const body = rule(fd, '.fd-article__body');
-  assert.match(body, /font-size:\s*16\.5px/);
+  // Pinned as a TOKEN, not a pixel. This assertion used to read /16\.5px/, which is exactly the
+  // hard-coded value the type scale exists to retire — the test's own name says "token-based".
+  // The floor below is what actually protects the reader: long-form body text stays >= 16px
+  // whatever step the token points at.
+  const bodyToken = body.match(/font-size:\s*var\((--fd-font-[a-z0-9]+)\)/);
+  assert.ok(bodyToken, `article body must take its size from the type scale, got: ${body}`);
+  const bodyPx = parseFloat(
+    (block(warm, ':root').match(new RegExp(`${bodyToken[1]}\\s*:\\s*([\\d.]+)px`)) || [])[1],
+  );
+  assert.ok(bodyPx >= 16,
+    `${bodyToken[1]} is ${bodyPx}px; long-form reading text must not drop below 16px`);
   assert.match(body, /line-height:\s*1\.72/);
   assert.match(body, /max-width:\s*62ch/);
   assert.match(body, /color:\s*var\(--fd-text\)/);

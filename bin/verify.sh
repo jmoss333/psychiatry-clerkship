@@ -142,6 +142,8 @@ step "validate_claim_anchors"               python3 $A/validate_claim_anchors.py
 step "unit — evidence annotations"          python3 $A/validate_evidence_annotations.py --self-test
 step "validate_evidence_annotations"        python3 $A/validate_evidence_annotations.py
 step "span audit (verbatim vs paper)"       python3 bin/verify_spans.py
+step "unit — research dock"                 python3 bin/research-dock.py --self-test
+step "research return dock"                 python3 bin/research-dock.py check
 step "unit — qbank coherence"              python3 bin/check_qbank_coherence.py --self-test
 # Four tools shipped a --self-test that NO gate invoked — found by bin/check_vacuity.py after
 # Codex pointed out it was inventorying only test FILES, not the --self-test modes its own
@@ -150,12 +152,24 @@ step "unit — qbank coherence"              python3 bin/check_qbank_coherence.p
 # nothing wherever its guard runs.
 step "unit — decision drift"                python3 bin/check_decision_drift.py --self-test
 step "unit — ruleset drift"                 python3 bin/check_ruleset_drift.py --self-test
+# Only the SELF-TEST runs here. The real sweep needs `gh`, `npm audit --include=dev`
+# and every local worktree, so it is a monthly, human-run step whose receipt
+# monthly_review.py ages -- exactly like check_ruleset_drift.py --check-bypass. A
+# stale claim needs a person to re-verify it, not a red build.
+step "unit — stale claims"                  python3 bin/check_stale_claims.py --self-test
 step "unit — claim exposure"                python3 bin/claim_exposure.py --self-test
 step "unit — offrunner findings"            python3 bin/verify_findings_offrunner.py --self-test
 # A fifth joined that class straight away: #536 (WP-5p) shipped bin/check_twin_parity.py with
 # a --self-test that no gate ran, because #548's branch was cut before the tool existed. Same
 # defect, one merge later — which is the argument for the mechanical check, not against it.
 step "unit — twin parity"                   python3 bin/check_twin_parity.py --self-test
+# Only the SELF-TEST runs here, for the same reason as the two above: the real check reads
+# production deploy state from the Netlify API and needs a NETLIFY_AUTH_TOKEN that only the
+# owner holds. The daily steward is maintenance-production-canary.yml; this proves the
+# classifier can still fail -- that a real build failure is a finding, that a
+# no-content-change cancel is not, and that an unrecognised deploy state is a finding rather
+# than a pass. Without that last one the alarm would quietly match nothing.
+step "unit — netlify deploy health"         python3 bin/check_netlify_deploy_health.py --self-test
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
 step "twin parity (audience copies)"        python3 bin/check_twin_parity.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py
@@ -228,6 +242,11 @@ step "hosted Dana preview public build"     npm --prefix sp-preview run build
 # It is NOT a red-team pass — sections A, C1/C4/C5, D and E are human/live checks.
 # See docs/RED_TEAM_RUNBOOK.md.
 step "red-team tier 1 (gate integrity)"     node bin/redteam-offline.mjs
+# Report-only, same idiom as "path coverage (report-only)" above: the script itself always
+# exits 0 (see the SHOW_COVERAGE comment in bin/redteam-offline.mjs), so this cannot fail the
+# gate. It exists so a gate added to the pack with no probe is visible in every verify.sh run
+# rather than only when someone remembers to run --coverage by hand.
+step "red-team gate coverage (report-only)" node bin/redteam-offline.mjs --coverage
 
 # --- build + static QA gate, both sites ---
 if [ $QUICK -eq 0 ]; then
@@ -246,6 +265,15 @@ fi
 # from an earlier run if one is current, and says why it checked nothing if not.
 step "unit — crisis surfaces checker"       python3 bin/check_crisis_surfaces.py --self-test
 step "crisis contacts in the built sites"   python3 bin/check_crisis_surfaces.py
+
+# Design-system drift. Its C4 check reads the BUILT pages, not the sources, because the
+# dark-mode stylesheet is injected at build time (common.py) — a tool source can look
+# self-consistently light, pass every source-level test, and still ship a page whose ground
+# flips to dark while its own ink stays near-black. That is exactly what shipped on five tool
+# pages until 2026-09-10 (family-systems.html measured 1.06:1 on production). Placed here,
+# after both builds, for the same reason check_crisis_surfaces.py is.
+step "unit — design drift checker"          python3 bin/check_design_drift.py --self-test
+step "design system drift"                  python3 bin/check_design_drift.py
 
 echo "─────────────────────────────────────────────────────────────────────"
 if [ ${#FAILED[@]} -eq 0 ]; then

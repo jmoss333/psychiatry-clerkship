@@ -5,6 +5,7 @@ import {hash,problem} from './state.mjs';
 export const FAMILY_CASE_ID=familyCase.id;
 const INVALID=()=>problem(400,'preview_input_invalid');
 const CONTROL=/[\u0000-\u001f\u007f]/;
+const SPOKEN_CONTROL=/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const ROLES=Object.freeze(Object.fromEntries(Object.values(familyCase.participants).map(person=>[
   person.id,Object.freeze({id:person.id,name:person.displayName,displayName:person.displayName,pronouns:person.pronouns,voice:person.voice,speechCaseId:person.speechCaseId})
 ])));
@@ -41,12 +42,16 @@ export const familyBinding=hash(JSON.stringify({caseHash,caseDef:familyCaseDef,c
 
 function checkedEntry(entry){
   if(!entry||typeof entry!=='object'||Array.isArray(entry)||!['me','pt'].includes(entry.who)
-    ||typeof entry.text!=='string'||!entry.text.trim()||entry.text.length>1200||CONTROL.test(entry.text))throw INVALID();
-  const allowed=entry.who==='me'?['who','text','targetRoleId']:['who','text','speakerId','playbackStatus','omittedTail'];
+    ||typeof entry.text!=='string'||!entry.text.trim()||entry.text.length>1200||(entry.who==='pt'?SPOKEN_CONTROL:CONTROL).test(entry.text))throw INVALID();
+  const allowed=entry.who==='me'?['who','text','targetRoleId']:['who','text','speakerId','playbackStatus','omittedTail','familyBid'];
   if(Object.keys(entry).some(key=>!allowed.includes(key)))throw INVALID();
   familyRole(entry.who==='me'?entry.targetRoleId:entry.speakerId);
   if(entry.who==='pt'&&(!['played','pending','interrupted'].includes(entry.playbackStatus)
     ||Object.hasOwn(entry,'omittedTail')&&(entry.omittedTail!==true||entry.playbackStatus!=='played')))throw INVALID();
+  if(Object.hasOwn(entry,'familyBid')){
+    const bid=entry.familyBid;
+    if(!bid||Object.keys(bid).sort().join(',')!=='playbackStatus,speakerId,text'||!isFamilyRole(bid.speakerId)||bid.speakerId===entry.speakerId||bid.text!=='Could I add something?'||!['played','pending','interrupted'].includes(bid.playbackStatus)||bid.playbackStatus==='played'&&entry.playbackStatus!=='played')throw INVALID();
+  }
   return entry;
 }
 
@@ -64,6 +69,11 @@ export function familyContext(history,roleId){
     messages.push({role:entry.who==='pt'&&entry.speakerId===roleId?'assistant':'user',content:entry.text});
     const identity=entry.who==='me'?`student addressing ${familyRole(entry.targetRoleId).name}`:`${familyRole(entry.speakerId).name} speaking in the shared meeting`;
     records.push(`Input ${messages.length}: ${identity}.${entry.omittedTail?' This contains only its included completed prefix; the remaining words are unavailable.':''}`);
+    if(entry.familyBid?.playbackStatus==='played'){
+      const bid=entry.familyBid;
+      messages.push({role:bid.speakerId===roleId?'assistant':'user',content:bid.text});
+      records.push(`Input ${messages.length}: ${familyRole(bid.speakerId).name} asking for the floor in the shared meeting. This request is not a substantive disclosure or agreement. The learner may invite or defer it.`);
+    }
   }
   return {system:[PUBLIC_SYSTEMS[roleId],HOSTED_RULES,'INPUT RECORD MAP:',...records,...delivery].join('\n'),messages};
 }

@@ -20,6 +20,7 @@ SPA=os.path.join(HERE,"spa_index.html")                   # SPA shell (co-locate
 MARKED=os.path.join(HERE,"marked.min.js")                 # vendored marked (co-located)
 MANIFEST=os.path.join(HERE,"site_manifest.json")          # content/tool build manifest
 CLINICAL_CSS=os.path.join(HERE,"clinical-warm.css")       # shared dark-mode tokens
+THEME_AUDIT=os.path.join(HERE,"theme_audit.js")           # ?theme-audit tool (loaded on demand)
 ANALYTICS_JS=os.path.join(HERE,"analytics.js")            # usage analytics emitter
 FRONTDOOR_CSS=os.path.join(HERE,"frontdoor","frontdoor.css")
 CURRICULUM=os.path.join(LIB,"curriculum.json")
@@ -489,6 +490,7 @@ _missing_req=[]
 _copy_required(SPA, OUT+"/index.html", _missing_req)
 _copy_required(MARKED, OUT+"/marked.min.js", _missing_req)  # vendored (ward-wifi: no CDN dependency)
 _copy_required(CLINICAL_CSS, OUT+"/clinical-warm.css", _missing_req)  # shared dark-mode tokens (linked into tools below)
+_copy_required(THEME_AUDIT, OUT+"/theme-audit.js", _missing_req)      # fetched only by the ?theme-audit loader
 # Usage analytics emitter -- gated behind CLERKSHIP_ANALYTICS (default off; see
 # common.analytics_enabled_for() and docs/superpowers/specs/2026-09-04-usage-
 # analytics-design.md "Rollout"). Copied only when this build's own flag
