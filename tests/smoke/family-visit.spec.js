@@ -26,7 +26,7 @@ async function openFamily(page,{holdAudio=false,failFirstTurn=false,failCancel=f
     if(url.hostname!=='127.0.0.1')return route.abort();
     if(!url.pathname.startsWith('/api/family/'))return route.continue();
     const body=request.postDataJSON();network.requests.push({path:url.pathname,method:request.method(),body});
-    if(url.pathname==='/api/family/health')return route.fulfill({json:{configured:true,caseId:CASE_ID,caseHash:CASE_HASH,title:'Morgan & Maya — What happens after discharge?',participants:[{id:'morgan',name:'Morgan',pronouns:'they/them',voice:'marin',description:'Patient'},{id:'maya',name:'Maya',pronouns:'she/her',voice:'cedar',description:'Adult daughter'}],limits:{turns:10},localOnly:true}});
+    if(url.pathname==='/api/family/health')return route.fulfill({json:{configured:true,caseId:CASE_ID,caseHash:CASE_HASH,title:'Morgan & Maya — What happens after discharge?',participants:[{id:'morgan',name:'Morgan',pronouns:'they/them',voice:'marin',description:'Patient'},{id:'maya',name:'Maya',pronouns:'she/her',voice:'coral',description:'Adult daughter'}],limits:{turns:10},localOnly:true}});
     if(url.pathname==='/api/family/session'&&request.method()==='POST'){current=room();return route.fulfill({json:current});}
     if(url.pathname==='/api/family/turn'){
       network.turnAttempts++;if(failFirstTurn&&!failed){failed=true;return route.fulfill({status:502,json:{error:'The room could not respond.'}});}
@@ -100,7 +100,7 @@ async function endVisit(page){
 test('desktop and mobile identify both people and route explicit targets in order',async({page},testInfo)=>{
   const errors=[];page.on('pageerror',problem=>errors.push(problem.message));
   const network=await openFamily(page);await expect(page.getByRole('heading',{name:/one room/i})).toBeVisible();
-  await expect(page.locator('#family-person-morgan')).toContainText(/Morgan.*they\/them.*Marin/s);await expect(page.locator('#family-person-maya')).toContainText(/Maya.*she\/her.*Cedar/s);
+  await expect(page.locator('#family-person-morgan')).toContainText(/Morgan.*they\/them.*Marin/s);await expect(page.locator('#family-person-maya')).toContainText(/Maya.*she\/her.*Coral/s);
   const morgan=await page.locator('#family-person-morgan').boundingBox(),maya=await page.locator('#family-person-maya').boundingBox();
   if(testInfo.project.name==='mobile')expect(maya.y).toBeGreaterThan(morgan.y+morgan.height-2);else expect(Math.abs(maya.y-morgan.y)).toBeLessThan(3);
   await expect(page.locator('#family-error')).toBeHidden();

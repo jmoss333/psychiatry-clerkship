@@ -36,13 +36,13 @@ test('a family bid is the other person speaking in the existing second speech sl
   {caseId:'sp_alcohol_ambivalence_001',text:REPLY},
   {caseId:'family_maya_001',text:FAMILY_BID_TEXT},
  ]);
- assert.equal(s.spoken.length,5,'opening plus two ordinary speech slots per turn');
+ assert.equal(s.spoken.length,4,'two ordinary speech slots per turn, with no patient opening');
  assert.equal(s.contexts.length,2,'the bid never creates an extra actor call');
  assert.deepEqual(s.claims.map(claim=>claim.units),[1,3,3]);
  assert.equal(issued.history.at(-1).text,REPLY,'the main speaker never owns the other person\'s words');
  assert.deepEqual(issued.history.at(-1).familyBid,{speakerId:'maya',text:FAMILY_BID_TEXT,playbackStatus:'pending'});
  assert.equal(issued.completed,2,'both clips were issued, not established heard');
- assert.equal(issued.history.length,issued.turn*2+1);
+ assert.equal(issued.history.length,issued.turn*2);
  assert.equal(pendingFamilyBid(issued.history),null);
 });
 
@@ -98,9 +98,9 @@ test('two heard bids still fit the real provider through the tenth family turn',
   out=await turn(s,out,{targetRoleId});if(out[0].familyBid)offers.push(out[0].familyBid.speakerId);
  }
  assert.deepEqual(offers,['maya','morgan']);assert.equal(out[0].turn,10);
- assert.equal(actorInputs.length,10);assert.equal(actorInputs.at(-1).input.length,22);
+ assert.equal(actorInputs.length,10);assert.equal(actorInputs.at(-1).input.length,21);
  assert.equal(actorInputs.at(-1).input.filter(message=>message.content===FAMILY_BID_TEXT).length,2);
- assert.equal(speechInputs.length,21);assert.equal(s.claims.reduce((sum,claim)=>sum+claim.units,0),31);
+ assert.equal(speechInputs.length,20);assert.equal(s.claims.reduce((sum,claim)=>sum+claim.units,0),31);
 });
 
 for(const completed of [0,1,2])test('retry boundary preserves '+completed+' heard bid clips without scheduling a new bid',async()=>{
@@ -168,7 +168,7 @@ test('a faculty distraction and a family bid do not compete in the same turn',as
  out=await turn(s,out,{extra:{roomCueId:'hallway_chime'}});
  assert.equal(out[0].familyBid,undefined);
  assert.match(s.contexts.at(-1).system,/A short chime sounds in the hallway and stops/);
- assert.equal(s.contexts.length,2);assert.equal(s.spoken.length,5);
+ assert.equal(s.contexts.length,2);assert.equal(s.spoken.length,4);
  assert.deepEqual(s.claims.map(claim=>claim.units),[1,3,3]);
 });
 
@@ -225,7 +225,7 @@ test('an authenticated history cannot carry a repeated bid from the same person'
  const before={claims:s.claims.length,actors:s.contexts.length,speech:s.spoken.length};
  // Both entries are individually well shaped, but jointly violate one offer per
  // person. The guard must cover the whole authenticated history, not just its tail.
- state.history[2].familyBid={speakerId:'maya',text:FAMILY_BID_TEXT,playbackStatus:'played'};
+ state.history[1].familyBid={speakerId:'maya',text:FAMILY_BID_TEXT,playbackStatus:'played'};
  const response=await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId:'morgan',state:codec(FAMILY).seal(state),text:'What support would help?',previousPlayback:'played',previousCompletedSegments:2}));
  assert.equal(response.status,400);assert.equal((await response.json()).error,'preview_state_invalid');
  assert.deepEqual({claims:s.claims.length,actors:s.contexts.length,speech:s.spoken.length},before);

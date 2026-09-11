@@ -764,28 +764,60 @@ test('family name-first routing distinguishes direct address from mentioning a p
  for(const text of ['Maya, how do you see it?','Maya what could you offer?','Okay, Morgan, what matters most?'])assert.equal(route(text),/maya/i.test(text)?'maya':'morgan');
  for(const text of ['Maya is willing to call once a week. How do you feel about that?','Morgan would like to choose. What is your perspective?','Morgan can help. What do you think?','Maya said she would call.','Morgan told me something.','What did Maya say?','Can I ask both of you?'])assert.equal(route(text),null,text);
 });
+function familyReadyFrames(){return [{type:'ready',caseId:'family_morgan_maya_001',turn:0,state:'complete-0'},{type:'complete',state:'complete-0'}];}
+test('family ready requires the exact family-start contract and complete before releasing its receipt',()=>{
+ const states=[],parser=createParser({expectedTurn:0,allowFamilyReady:true,onState:state=>states.push(state)}),events=familyReadyFrames();
+ parser.push(JSON.stringify(events[0])+'\n');assert.deepEqual(states,[]);
+ parser.push(JSON.stringify(events[1])+'\n');assert.deepEqual(states,[],'stream must finish before the clinician receives the floor');
+ assert.deepEqual(parser.finish(),{reply:null,audioCount:0});assert.deepEqual(states,['complete-0']);
+ const invalid=[
+  [events[0]], [events[0],events[0],events[1]], [...events,events[1]],
+  [{...events[0],caseId:'sp_depression_gated_si_001'},events[1]],
+  [{...events[0],turn:1},events[1]], [{...events[0],speakerId:'morgan'},events[1]],
+  [{...events[0],state:'bad state'},events[1]], [events[0],{...events[1],state:'different'}],
+  [events[0],{...events[1],extra:true}], [events[0],frames()[0],events[1]],
+  [events[0],frames()[1],events[1]], frames(),
+ ];
+ for(const sequence of invalid){const delivered=[],p=createParser({expectedTurn:0,allowFamilyReady:true,onState:s=>delivered.push(s)});assert.throws(()=>{p.push(sequence.map(JSON.stringify).join('\n'));p.finish();},{code:'protocol_error'});assert.deepEqual(delivered,[]);}
+ for(const options of [{expectedTurn:0},{expectedTurn:1,allowFamilyReady:true}])assert.throws(()=>{const p=createParser(options);p.push(events.map(JSON.stringify).join('\n'));p.finish();},{code:'protocol_error'});
+});
+test('family start requires acknowledgement each time and creates no opening speech or transcript',async()=>{
+ let resolve;const h=environment(()=>new Promise(done=>resolve=done)),c=createController(h.env);
+ assert.equal(await c.start('key',true,'family_morgan_maya_001'),false);assert.equal(h.calls.length,0);assert.equal(h.recognizers.length,0);
+ const work=c.start('key',true,'family_morgan_maya_001',{familyBriefAcknowledged:true});await flush();
+ assert.equal(h.calls.length,1);assert.equal(h.recognizers.length,0);assert.deepEqual(c.getSnapshot().messages,[]);
+ resolve(response(familyReadyFrames()));assert.equal(await work,true);
+ assert.equal(c.getSnapshot().phase,'listening');assert.deepEqual(c.getSnapshot().messages,[]);assert.equal(h.audios.length,0);assert.ok(h.live());
+ c.send('Maya, what would you like us to understand?');await flush();assert.equal(h.calls[1].body.previousCompletedSegments,0);assert.equal(h.calls[1].body.targetRoleId,'maya');
+ c.clear();assert.equal(await c.start('key',false,'family_morgan_maya_001'),false);assert.equal(h.calls.length,2);assert.equal(h.live(),undefined);
+});
+test('invalid family ready never starts capture or leaves a usable conversation receipt',async()=>{
+ const h=environment(()=>Promise.resolve(response([familyReadyFrames()[0],{type:'complete',state:'different'}]))),c=createController(h.env);
+ assert.equal(await c.start('key',true,'family_morgan_maya_001',{familyBriefAcknowledged:true}),false);
+ assert.equal(c.getSnapshot().phase,'restart');assert.equal(c.resume(),false);assert.equal(await c.send('Hello'),false);assert.equal(h.calls.length,1);assert.equal(h.audios.length,0);assert.equal(h.recognizers.length,0);
+});
 function familyEnvironment(){return environment((path,options)=>{
- const body=JSON.parse(options.body),turn=body.action==='start'?0:body.action==='retry'?body.turnId:Number(body.state.split('-').at(-1))+1;
+ const body=JSON.parse(options.body);if(body.action==='start')return Promise.resolve(response(familyReadyFrames(),options.signal));const turn=body.action==='start'?0:body.action==='retry'?body.turnId:Number(body.state.split('-').at(-1))+1;
  const output=frames(turn,['A completed reply.']);output[0].speakerId=body.action==='start'?'morgan':body.action==='retry'?'maya':body.targetRoleId;
  return Promise.resolve(response(output,options.signal));
 });}
 test('family automatic turns switch named respondent without a selector click',async()=>{
  const h=familyEnvironment(),controller=createController(h.env);
- let work=controller.start('key',true,'family_morgan_maya_001');await finishAudio(h,0);await work;
- h.speaks('Maya, what support could you offer?');h.advance(4500);await finishAudio(h,1);await flush();
+ let work=controller.start('key',true,'family_morgan_maya_001',{familyBriefAcknowledged:true});await work;
+ h.speaks('Maya, what support could you offer?');h.advance(4500);await finishAudio(h,0);await flush();
  assert.equal(h.calls[1].body.targetRoleId,'maya');assert.equal(controller.getSnapshot().messages.at(-1).speakerId,'maya');
  assert.equal(controller.getDiagnostics().automaticSubmissions,1);
  assert.equal(controller.setTargetRole('morgan'),true);
- work=controller.send('How would that feel?');await finishAudio(h,2);await work;
+ work=controller.send('How would that feel?');await finishAudio(h,1);await work;
  assert.equal(h.calls[2].body.targetRoleId,'morgan');
  controller.end();controller.clear();assert.equal(controller.getSnapshot().targetRoleId,'morgan');
 });
 test('family retry keeps its original participant and does not transmit a replacement target',async()=>{
  const h=familyEnvironment(),controller=createController(h.env);
- let work=controller.start('key',false,'family_morgan_maya_001');await finishAudio(h,0);await work;
- work=controller.send('Maya, what matters?');await finishAudio(h,1);await work;
- work=controller.send('Morgan, what matters?');await finishAudio(h,2);await work;
- controller.end();work=controller.retry(1,'Could you say more?');await finishAudio(h,3);assert.equal(await work,true);
+ let work=controller.start('key',false,'family_morgan_maya_001',{familyBriefAcknowledged:true});await work;
+ work=controller.send('Maya, what matters?');await finishAudio(h,0);await work;
+ work=controller.send('Morgan, what matters?');await finishAudio(h,1);await work;
+ controller.end();work=controller.retry(1,'Could you say more?');await finishAudio(h,2);assert.equal(await work,true);
  assert.equal(h.calls[3].body.targetRoleId,undefined,'server restores original authenticated target');
  assert.equal(controller.getSnapshot().messages.at(-2).targetRoleId,'maya');
  assert.equal(controller.getSnapshot().messages.at(-1).speakerId,'maya');
@@ -802,24 +834,24 @@ function familyFrames(turn,primary='morgan',bid=false){
   events[0].speakerId=primary;if(bid)events[0].familyBid={speakerId:primary==='morgan'?'maya':'morgan',text:'Could I add something?'};return events;
 }
 async function familyHarness(){
-  const h=environment((_path,options,n)=>Promise.resolve(response(familyFrames(n-1,JSON.parse(options.body).targetRoleId||'morgan',n===2),options.signal)));
-  const c=createController(h.env);const start=c.start('key',true,'family_morgan_maya_001');await finishAudio(h,0);await start;return {h,c};
+  const h=environment((_path,options,n)=>Promise.resolve(response(n===1?familyReadyFrames():familyFrames(n-1,JSON.parse(options.body).targetRoleId||'morgan',n===2),options.signal)));
+  const c=createController(h.env);await c.start('key',true,'family_morgan_maya_001',{familyBriefAcknowledged:true});return {h,c};
 }
 test('a family bid is a distinct speaker and becomes invitable only after its complete audio',async()=>{
  const {h,c}=await familyHarness();const work=c.send('What support matters?');
- await until(()=>h.audios[1]?.plays===1);assert.equal(c.getSnapshot().familyBid,null);
- await finishAudio(h,1);await until(()=>h.audios[2]?.plays===1);assert.equal(c.getSnapshot().activeSpeakerId,'maya');assert.equal(c.getSnapshot().familyBid,null);
- await finishAudio(h,2);await work;assert.equal(c.getSnapshot().familyBid.speakerId,'maya');
+ await until(()=>h.audios[0]?.plays===1);assert.equal(c.getSnapshot().familyBid,null);
+ await finishAudio(h,0);await until(()=>h.audios[1]?.plays===1);assert.equal(c.getSnapshot().activeSpeakerId,'maya');assert.equal(c.getSnapshot().familyBid,null);
+ await finishAudio(h,1);await work;assert.equal(c.getSnapshot().familyBid.speakerId,'maya');
  const message=c.getSnapshot().messages.at(-1);assert.equal(message.text,'I want to choose what help works for me.');assert.equal(message.familyBid.speakerId,'maya');
  c.send('Go ahead');await until(()=>h.calls.length===3);assert.equal(h.calls[2].body.targetRoleId,'maya');c.end();await flush();
 });
 for(const completed of [0,1])test(`an interrupted family bid with ${completed} completed clips cannot redirect a bare yes`,async()=>{
- const {h,c}=await familyHarness();const work=c.send('What support matters?');await until(()=>h.audios[1]?.plays===1);
- if(completed)await finishAudio(h,1);c.pause();await work;assert.equal(c.getSnapshot().familyBid,null);
+ const {h,c}=await familyHarness();const work=c.send('What support matters?');await until(()=>h.audios[0]?.plays===1);
+ if(completed)await finishAudio(h,0);c.pause();await work;assert.equal(c.getSnapshot().familyBid,null);
  c.send('Yes');await until(()=>h.calls.length===3);assert.equal(h.calls[2].body.targetRoleId,'morgan');assert.equal(h.calls[2].body.previousCompletedSegments,completed);c.end();await flush();
 });
 test('deferral and explicit address take precedence over a family invitation',async()=>{
- const {h,c}=await familyHarness();const work=c.send('What support matters?');await finishAudio(h,1);await finishAudio(h,2);await work;c.deferFamilyBid();
+ const {h,c}=await familyHarness();const work=c.send('What support matters?');await finishAudio(h,0);await finishAudio(h,1);await work;c.deferFamilyBid();
  assert.equal(c.getSnapshot().familyBid,null);c.send('Yes');await until(()=>h.calls.length===3);assert.equal(h.calls[2].body.targetRoleId,'morgan');c.end();await flush();
 });
 test('family bid protocol rejects invented content, wrong voices and nonfamily responses',()=>{
