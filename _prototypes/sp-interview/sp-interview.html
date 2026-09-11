@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>(function(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=m;if(m==='system'){try{a=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}catch(e){a='light';}}try{document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>
+<script>(function(){var q=null;try{q=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)'))||null;}catch(e){}function p(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=(m==='system')?((q&&q.matches)?'dark':'light'):m;try{document.documentElement.setAttribute('data-theme',a);}catch(e){}}p();if(q){try{if(q.addEventListener){q.addEventListener('change',p);}else if(q.addListener){q.addListener(p);}}catch(e){}}})();</script>
 <link rel="icon" href="/favicon.svg">
 <!-- [CLERKSHIP-META v1] tool="The Interview Room — AI Standardized Patient" version="0.2.0" built="2026-07-14" category="clinical-skills" audience="ms3,resident" settings="inpatient" time="12min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="reviewed" summary="Redesigned interface: coverage as an on-demand step-out (field notes + adaptive coach) instead of a live checklist; formative attending-voice debrief; paced voice mirror per persona; persistent-but-quiet fiction framing. Engine unchanged: gated disclosures, rapport model, deterministic coverage map, self-assessment-first debrief. Mock provider runs fully offline; live LLM provider behind the same interface. NOT clinical decision support. Fictional composites; no PHI; transcripts stay in this browser." -->
 <meta charset="UTF-8">

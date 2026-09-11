@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>(function(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=m;if(m==='system'){try{a=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}catch(e){a='light';}}try{document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>
+<script>(function(){var q=null;try{q=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)'))||null;}catch(e){}function p(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=(m==='system')?((q&&q.matches)?'dark':'light'):m;try{document.documentElement.setAttribute('data-theme',a);}catch(e){}}p();if(q){try{if(q.addEventListener){q.addEventListener('change',p);}else if(q.addListener){q.addListener(p);}}catch(e){}}})();</script>
 <link rel="icon" href="/favicon.svg">
 <!-- [RC-META] tool="Canon Quiz — 200-Paper Spine" version="0.1.0" built="2026-07-02" category="evidence-reading" audience="resident,trainee" settings="exam-prep,self-paced" time="self-paced" status="draft-pending-attestation" summary="Canon-numbered launcher over the existing quizzes.json (79 decks / 437 Q). Browse landmark papers by number, listen to the audio summary, and drill the deck with immediate feedback and local progress. Educational; surfaces existing attested question content. No PHI. No runtime CDN." -->
 <meta charset="UTF-8">
