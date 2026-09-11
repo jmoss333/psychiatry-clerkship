@@ -589,12 +589,22 @@ In `fdSheet`, `frontdoor/fd_sheet.js:271`, the chain becomes:
   } else if(sheet==='kit'){
 ```
 
-- [ ] **Step 5: Run and watch them pass**
+- [ ] **Step 5: Re-add `data-fd-theme` to the emitted-attribute inventory**
+
+`tests/fd-action-contract.test.mjs:36` pins the attributes renderers actually **emit**, not the ones
+`fd_wire.js` registers. Task 3 had to remove `'data-fd-theme'` from that array because, between the
+gear replacing the header glyph and this task, no renderer emitted it at all. `fdSettingsSeg` emits
+it again — so put it back, in alphabetical position.
+
+Run `node --test tests/fd-action-contract.test.mjs` and confirm it is green **because** of the
+re-add: it fails without it.
+
+- [ ] **Step 6: Run and watch them pass**
 
 Run: `node --test tests/fd-settings.test.mjs`
 Expected: PASS.
 
-- [ ] **Step 6: Supply `themeMode` to the renderer**
+- [ ] **Step 7: Supply `themeMode` to the renderer**
 
 The panel reads `st.themeMode`, and nothing sets it yet — `currentTheme()` from Task 2 feeds
 dispatch, not render state. In `spa_index.html`'s `fdLiveState`, beside the other additions:
@@ -606,7 +616,7 @@ dispatch, not render state. In `spa_index.html`'s `fdLiveState`, beside the othe
 Re-run `node --test tests/fd-settings.test.mjs` — without this the panel silently marks System
 active for everyone, which is the exact bug Trap A describes, just relocated.
 
-- [ ] **Step 7: Add the CSS**
+- [ ] **Step 8: Add the CSS**
 
 Append to `frontdoor/frontdoor.css`:
 
@@ -622,15 +632,15 @@ Append to `frontdoor/frontdoor.css`:
 @media (pointer:coarse){.fd-seg__btn{min-height:44px}}
 ```
 
-- [ ] **Step 8: Verify contrast**
+- [ ] **Step 9: Verify contrast**
 
 Run: `node tests/contrast-check.mjs`
 Expected: PASS — `.fd-seg__btn.is-active` is white on `--fd-teal`, the same pairing `.fd-safetybtn` already ships, and `f34e5e4` darkened the primary specifically so white on the fill clears AA. If this reports a failure, use `--fd-teal-deep` for the active fill rather than lightening the text.
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 10: Commit**
 
 ```bash
-git add tests/fd-settings.test.mjs 13_Faculty_Resources/_automation/site_build/frontdoor/fd_sheet.js 13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css
+git add tests/fd-settings.test.mjs tests/fd-action-contract.test.mjs 13_Faculty_Resources/_automation/site_build/frontdoor/fd_sheet.js 13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css
 git commit -m "feat(settings): add the settings sheet with a three-way appearance control"
 ```
 
@@ -958,7 +968,26 @@ Expected: FAIL.
 
 Add `'data-fd-clear-ask'`, `'data-fd-clear-confirm'`, `'data-fd-clear-cancel'` to `FD_HANDLED_ATTRS`, the semantics map (`'arm device data erase'`, `'erase device data'`, `'cancel device data erase'`), the delegated selector string, and `tests/fd-action-contract.test.mjs:36` in alphabetical position.
 
-- [ ] **Step 5: Add dispatch**
+- [ ] **Step 5: Add dispatch — and disarm the confirm on the ONLY close path**
+
+Task 3 established that the settings sheet has exactly one close route: the shared
+`data-fd-close-sheet`, emitted by `fdSheetHead` and by the backdrop. There is no
+`data-fd-close-settings` — Task 3 removed that registration precisely because nothing emits it.
+
+So the `data-fd-close-sheet` dispatch must also clear `settingsConfirmClear`. Without it, a learner
+arms "Erase everything", closes the panel by any route, reopens it, and finds the destructive
+confirm still armed — one stray tap from a wipe they never re-authorised. Add
+`settingsConfirmClear:false` to that branch's patch, and pin it:
+
+```js
+test('closing the panel disarms the erase confirm', () => {
+  const r = F.fdDispatch({ 'data-fd-close-sheet': '' }, { sheet: 'settings', settingsConfirmClear: true }, {});
+  assert.equal(r.patch.settingsConfirmClear, false,
+    'a destructive confirm must never survive a close and reopen');
+});
+```
+
+Then the panel's own three:
 
 ```js
   if(fdOwn(a,'data-fd-clear-ask')) return {patch:{settingsConfirmClear:true},route:null,effect:null};
