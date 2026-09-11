@@ -198,35 +198,31 @@ class TestPagePasses(_SiteFixture):
 # inline <script> at the top of spa_index.html -- and two copies that nothing compares are exactly
 # how these drifted: the shell learned 'system' on 2026-09-10 and THEME_INIT did not, which left a
 # learner on a dark-preferring phone reading a dark shell and light tool pages. These tests pin the
-# behaviour, pin the byte-equality that keeps the two copies honest, and freeze the copies that are
-# still behind so a new one cannot quietly join them.
+# behaviour, pin the byte-equality that keeps the two copies honest, and keep the retired
+# two-state boot from coming back anywhere in the tree.
 
 # .../13_Faculty_Resources/_automation/site_build/test_common.py -> the repository root.
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 LEGACY_BOOT = "var t=localStorage.getItem('cw_theme')"
 
-# Pages that still carry the pre-2026-09-10 two-state boot inline, and therefore still paint
-# 'light' for a learner whose OS prefers dark. THEME_INIT does not reach them and cannot fix them:
-# apply_dark_mode() injects it only when 'cw_theme' is absent from the <head>, and every one of
-# these already has its own copy. Nine of them ship. This set may only SHRINK -- it is frozen so
-# the remaining work stays visible in the suite rather than only in a report, and so that a newly
-# authored page cannot join the stale side without turning this red.
-LEGACY_BOOT_FILES = frozenset({
-    "13_Faculty_Resources/_automation/site_build/question-bank-practice.html",
-    "_prototypes/agitation-trainer/_TEMPLATE.html",
-    "_prototypes/agitation-trainer/agitation-trainer.html",
-    "_prototypes/agitation-trainer/agitation-trainer.preview.html",
-    "_prototypes/agitation-trainer/rp-agitation.html",
-    "_prototypes/agitation-trainer/rp-agitation.preview.html",
-    "_prototypes/brief-psych/rp-brief-psych.html",
-    "_prototypes/brief-psych/rp-brief-psych.preview.html",
-    "_prototypes/canon-quiz/rp-canon-quiz.html",
-    "_prototypes/canon-quiz/rp-canon-quiz.preview.html",
-    "_prototypes/orientation-video/orientation-video.html",
-    "_prototypes/sp-interview/sp-interview.html",
-    "_prototypes/sp-interview/sp-interview.preview.html",
-})
+# Pages still carrying the pre-2026-09-10 two-state boot inline, which paints 'light' for a
+# learner whose OS prefers dark. THEME_INIT cannot reach them: apply_dark_mode() injects it only
+# when 'cw_theme' is absent from the file, and each of these already had a copy of its own. There
+# were thirteen; all thirteen were retired on 2026-09-10 and this set is now EMPTY, which is the
+# strongest state it can be in -- the first assertion below then reads "the retired boot appears
+# nowhere in the tree", and that is the guard worth keeping.
+#
+# This set may only SHRINK. Read the two assertions before adding to it:
+#   found - LEGACY_BOOT_FILES  catches a page ADOPTING the retired boot. Live, and strictly
+#                              stronger now that nothing is exempted.
+#   LEGACY_BOOT_FILES - found  catches a listed page that was FIXED but never delisted, so the
+#                              list cannot rot into a lie. While the set is empty this one is
+#                              VACUOUS by construction -- the empty set minus anything is empty,
+#                              so it cannot fail. It is kept, not deleted, because it re-arms the
+#                              instant anyone adds an entry, and an entry is exactly when a stale
+#                              list becomes possible again. Do not read its green as evidence.
+LEGACY_BOOT_FILES = frozenset()
 
 _SKIP_DIRS = {".git", ".claude", "_build", "node_modules", "__pycache__", ".venv"}
 

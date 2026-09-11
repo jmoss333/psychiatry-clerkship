@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var s=localStorage.getItem('cw_theme');var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=m;if(m==='system'){a=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>
 <!-- [CLERKSHIP-META v1] tool="Practice Questions — MS3 Question Bank" version="1.1" built="2026-07-07" category="practice" audience="trainee,ms3" settings="self-study" time="10min" summary="Browser-local practice question bank with confidence, trap feedback, and spaced-review hooks. Educational; fictional composites only; no PHI." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1169,10 +1170,6 @@ function showSummary(){
       try{localStorage.setItem('cw_theme',d.mode);}catch(_){}
     }
   });
-  try{
-    var t=localStorage.getItem('cw_theme');
-    if(t==='dark'||t==='light') document.documentElement.setAttribute('data-theme',t);
-  }catch(_){}
 })();
 })();
 </script>

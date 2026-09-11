@@ -36,7 +36,7 @@
   ============================================================================
 -->
 <head>
-<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>(function(){try{var s=localStorage.getItem('cw_theme');var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=m;if(m==='system'){a=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>
 <link rel="icon" href="/favicon.svg">
 <!-- [RC-META] tool="TOOL NAME" version="0.1.0" built="YYYY-MM-DD" category="CATEGORY" audience="resident,trainee" settings="inpatient" time="Nmin" reviewCadenceDays="180" evidenceThrough="YYYY-MM-DD" status="draft-pending-attestation" summary="One-line summary. NOT clinical decision support. Local placeholders. Fictional composites; no PHI." -->
 <meta charset="UTF-8">
