@@ -902,6 +902,26 @@ test('the confirm names what will be destroyed', () => {
     assert.match(armed, new RegExp(word, 'i'), `the confirm must name ${word}`);
   }
   assert.match(armed, /cannot be undone/i, 'and must say the erase is irreversible');
+  // The sweep is every cw_*/rp_* key in localStorage, and the Interview Room keeps its endpoint
+  // and its voice consent there. Erasing them un-configures the room: the next visit finds no
+  // endpoint and opens its settings instead of a conversation. "preferences" does not predict a
+  // tool the learner has to set up again, and the room ships on both sites.
+  //
+  // MEASURED, not assumed (2026-09-11): the passcode is NOT in this sweep and must not be named
+  // here. The shipped page reads and writes it through sessionStorage and only ever REMOVES a
+  // legacy localStorage copy, while fdClearDeviceData is handed localStorage -- so a confirm
+  // promising the passcode goes would be describing something that does not happen.
+  assert.match(armed, /Interview Room/,
+    'the confirm must name the Interview Room setup this also destroys');
+});
+
+// Copy rule, for the one sentence in this panel a learner reads under pressure: it ships to both
+// sites, so it may not name either audience.
+test('the erase confirm stays audience-neutral', () => {
+  const armed = S.fdSheetSettingsBody(withState({ settingsConfirmClear: true }));
+  const warning = (armed.match(/<p class="fd-set__note fd-set__note--warn"[\s\S]*?<\/p>/) || [''])[0];
+  assert.ok(warning, 'the armed warning must render for this to be checking anything');
+  assert.doesNotMatch(warning, /shelf|clerkship|resident|student|MS3|UNE|MMC|Sanford/i);
 });
 
 // The calm state must not carry the warning copy. Rendering both and hiding one with CSS would
@@ -920,6 +940,41 @@ test('the warning exists only in the armed state', () => {
 test('the armed warning announces itself', () => {
   const armed = S.fdSheetSettingsBody(withState({ settingsConfirmClear: true }));
   assert.match(armed, /role="alert"/, 'arming a destructive control must be audible');
+});
+
+// The ORDER of the armed state is a safety property, and until now only a comment held it. The
+// rationale is written down twice -- frontdoor.css's "Your data" block and fdSettingsData's own
+// header -- but rationale is not a check, and either ordering could be reversed by a copy edit
+// with every other assertion in this file still green.
+//
+// (1) The warning renders BEFORE the row. Arming REPLACES the button the learner just pressed, so
+//     whatever comes first in the section lands nearest where their finger already is. What they
+//     must meet there is the sentence saying this cannot be undone, not a control that does it.
+// (2) "Keep my data" precedes "Erase everything" inside the row. .fd-set__row is a flex row with
+//     no reordering, so source order is visual order: the reversible option is the one under the
+//     fingertip, and the reflex second tap the two-tap pattern exists to prevent costs nothing.
+//
+// Each needle is proved present first. indexOf returns -1 for a needle that is gone, and -1 is
+// less than everything, so an ordering assertion over a vanished control passes while checking
+// nothing -- docs/SILENT_SHRINK_CHECKLIST.md.
+test('the armed erase puts the warning first and the safe option nearest the finger', () => {
+  const armed = S.fdSheetSettingsBody(withState({ settingsConfirmClear: true }));
+  const at = {
+    warning: armed.indexOf('fd-set__note--warn'),
+    row: armed.indexOf('class="fd-set__row"'),
+    keep: armed.indexOf('data-fd-clear-cancel'),
+    erase: armed.indexOf('data-fd-clear-confirm'),
+  };
+  for (const [what, i] of Object.entries(at)) {
+    assert.ok(i > -1, `the armed state must still render the ${what}; without it the ordering `
+      + 'assertions below compare against -1 and pass over nothing');
+  }
+  assert.ok(at.warning < at.row,
+    'the warning must precede the buttons: arming replaces the control the learner just pressed, '
+    + 'so the first thing rendered is the thing nearest their finger');
+  assert.ok(at.keep < at.erase,
+    '"Keep my data" must precede "Erase everything" in the flex row, so the option under the '
+    + 'fingertip that armed the confirm is the one that destroys nothing');
 });
 
 // The export control NAVIGATES to the export the Progress page already ships (data-act=

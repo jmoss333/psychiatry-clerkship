@@ -366,9 +366,20 @@ function fdSettingsPacing(examDate){
    width apart. So the calm state has exactly one control and the armed state has exactly one
    destructive control, never both.
 
-   The armed copy names what goes -- progress, practice answers, review cards, preferences -- and
-   says it cannot be undone, because "Clear everything on this device" alone does not tell a
-   learner whether "everything" includes the week they set up or only the theme.
+   The armed copy names what goes -- progress, practice answers, review cards, preferences, and
+   the Interview Room's setup -- and says it cannot be undone, because "Clear everything on this
+   device" alone does not tell a learner whether "everything" includes the week they set up or
+   only the theme.
+
+   The Interview Room is named because the erase takes every key the library owns on this device,
+   and the room keeps its endpoint and its voice consent among them: erasing those un-configures
+   it, so the next visit opens its own settings instead of a conversation. Nothing in
+   "preferences" predicts a tool you have to set up again, and the room ships on both sites.
+
+   The room's passcode is deliberately NOT named. It lives in per-tab storage this erase never
+   reaches -- measured in the built page, 2026-09-11 -- so a confirm promising the passcode goes
+   would describe something that does not happen, which is the same over-claim the export
+   control's arrow exists to prevent. Audience-neutral, like every string in this panel.
 
    role="alert" is doing real work here rather than decorating. The panel is rebuilt on every
    render, so the button the learner just pressed no longer exists and fd_wire.js's generic focus
@@ -385,7 +396,8 @@ function fdSettingsData(confirming){
   }
   return out+
     '<p class="fd-set__note fd-set__note--warn" role="alert">This erases your progress, practice '+
-    'answers, review cards and preferences on this device. It cannot be undone.</p>'+
+    'answers, review cards, preferences and your Interview Room setup on this device. It cannot '+
+    'be undone.</p>'+
     '<div class="fd-set__row">'+
     '<button type="button" class="fd-btn fd-btn--ghost" data-fd-clear-cancel>Keep my data</button>'+
     '<button type="button" class="fd-set__danger" data-fd-clear-confirm>Erase everything</button>'+
