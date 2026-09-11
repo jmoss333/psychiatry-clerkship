@@ -1,0 +1,265 @@
+{
+  "_note": "Pinned by tests/smoke/frozen-colour.spec.js. Counts may FALL, never rise. A page absent here must measure clean. Regenerate a reviewed reduction with UPDATE_FROZEN_BASELINE=1 npx playwright test --config tests/smoke/playwright.config.js --project nav-ms3 --project nav-res frozen-colour.spec.js",
+  "_measured": "2026-09-10, local build, Chrome, both themes, stylesheets re-fetched.",
+  "sites": {
+    "ms3": {
+      "index.html": {
+        "frozen": 12,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/bfcrs.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/capacity.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/communication-practice.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/cssrs.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/decision-aids.html": {
+        "frozen": 20,
+        "lowLight": 0,
+        "lowDark": 53
+      },
+      "tools/diagnostic-reasoning.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/family-systems.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/feedback.html": {
+        "frozen": 5,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/interaction-cards.html": {
+        "frozen": 15,
+        "lowLight": 0,
+        "lowDark": 6
+      },
+      "tools/interview-circle.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/mse.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/one-patient-six-weeks.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/oral.html": {
+        "frozen": 4,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/orientation-video.html": {
+        "frozen": 1,
+        "lowLight": 1,
+        "lowDark": 159
+      },
+      "tools/question-bank-practice.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/reflection.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/review.html": {
+        "frozen": 1,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/rotation-curator.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/screeners.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/shelf-mode.html": {
+        "frozen": 4,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/sp-interview.html": {
+        "frozen": 19,
+        "lowLight": 0,
+        "lowDark": 10
+      },
+      "tools/violence.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/withdrawal.html": {
+        "frozen": 11,
+        "lowLight": 11,
+        "lowDark": 0
+      }
+    },
+    "res": {
+      "index.html": {
+        "frozen": 12,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/bfcrs.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/capacity.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/communication-practice.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/cssrs.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/decision-aids.html": {
+        "frozen": 20,
+        "lowLight": 0,
+        "lowDark": 53
+      },
+      "tools/diagnostic-reasoning.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/family-systems.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/feedback.html": {
+        "frozen": 5,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/interaction-cards.html": {
+        "frozen": 15,
+        "lowLight": 0,
+        "lowDark": 6
+      },
+      "tools/interview-circle.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/mse.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/one-patient-six-weeks.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/oral.html": {
+        "frozen": 4,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/question-bank-practice.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/reflection.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/review.html": {
+        "frozen": 1,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/rotation-curator.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/rp-agitation.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 2
+      },
+      "tools/rp-brief-psych.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 6
+      },
+      "tools/rp-canon-quiz.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 52
+      },
+      "tools/rp-post-event-huddle.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 1
+      },
+      "tools/screeners.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/shelf-mode.html": {
+        "frozen": 4,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/sp-interview.html": {
+        "frozen": 19,
+        "lowLight": 0,
+        "lowDark": 10
+      },
+      "tools/violence.html": {
+        "frozen": 0,
+        "lowLight": 0,
+        "lowDark": 0
+      },
+      "tools/withdrawal.html": {
+        "frozen": 11,
+        "lowLight": 11,
+        "lowDark": 0
+      }
+    }
+  }
+}

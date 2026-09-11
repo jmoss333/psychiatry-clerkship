@@ -640,7 +640,8 @@ def apply_page_chrome(path, is_index=False):
     if ".skip-link{" not in t and "</head>" in t:
         t = t.replace("</head>", SKIP_LINK_CSS + "\n</head>", 1)
 
-    # WP-03: bare accent text (--primary #c25a3c) is ~3.9:1 on the light backgrounds and
+    # WP-03: bare accent text (--primary #bc573a, darkened from #c25a3c 2026-09-10) is
+    # ~4.2:1 on the light backgrounds and still
     # fails WCAG AA for normal-size text. Repoint to --primary-dark; the literal fallback
     # covers tools whose light :root lacks the token, and clinical-warm.css overrides
     # --primary-dark to #dd9277 in dark mode, which also passes. The closing paren in the

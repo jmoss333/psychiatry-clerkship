@@ -9,7 +9,7 @@
 <style>
   :root{
     --bg:#f6f3ee; --surface:#ffffff; --border:#ddd3c6;
-    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --primary:#bc573a; --primary-dark:#a84830; --primary-light:#f3ebe5;
     --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
     --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
     --good:#2a6b5e; --good-bg:#e7f1ee; --warn:#7a6234; --warn-bg:#f5efe2;
@@ -449,7 +449,7 @@ function App() {
   }
   if (error) {
     return e('div', { className: 'wrap' },
-      e('h1', { style: { fontFamily: 'Georgia,serif', color: '#c25a3c' } }, 'Question Bank Attestation'),
+      e('h1', { style: { fontFamily: 'Georgia,serif', color: '#bc573a' } }, 'Question Bank Attestation'),
       e('div', { className: 'error-box' },
         e('strong', null, 'Cannot load question_bank.json'),
         e('p', null, error),
