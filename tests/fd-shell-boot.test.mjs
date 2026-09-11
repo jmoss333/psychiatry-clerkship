@@ -354,7 +354,9 @@ test('live Reader keeps topic practice, quiz, feedback, and page enhancement beh
 
 test('theme initialization and visible control survive without changing the frozen palette', () => {
   assert.match(source, /localStorage\.getItem\('cw_theme'\)/);
-  assert.match(shellModule, /data-fd-theme/);
+  // The header control is the settings gear; the theme modes themselves are rendered inside the
+  // panel it opens. What this pins is unchanged -- the shell still offers a reachable way in.
+  assert.match(shellModule, /data-fd-settings/);
   assert.equal(count('frontdoor.css'), 1);
 });
 

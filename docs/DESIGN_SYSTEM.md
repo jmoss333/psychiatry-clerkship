@@ -93,7 +93,7 @@ kickers, the edition-card labels) and all thirteen now sit at `--fd-font-2xs`. `
 Three of the original sixteen "sub-floor" values were never text: a 9px check mark centred in a
 16–20px dot, and the same shape in `.fd-railnav__dot` and `.fd-block__check`. Raising those to 11px
 overflows the circle. The same is true at the other end — `.fd-logo` at 18px is a wordmark ψ inside
-a 30px tile, and `.fd-themebtn` at 16px is an icon in a 34px button.
+a 30px tile, and `.fd-settingsbtn` at 16px is an icon in a 34px button.
 
 These are metrics of a **shape**, not of reading, so the text floor does not apply. They get their
 own small family so the gate can tell the two cases apart instead of reporting eight legitimate

@@ -7,7 +7,8 @@ var FD_HANDLED_ATTRS=[
   'data-fd-open','data-fd-sheet','data-fd-safety','data-fd-toggle','data-fd-tab',
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
   'data-fd-back','data-fd-home','data-fd-search','data-fd-change-week','data-fd-progress',
-  'data-fd-theme','data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
+  'data-fd-theme','data-fd-settings','data-fd-close-settings',
+  'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool'
 ];
 
@@ -28,6 +29,8 @@ var FD_ACTION_SEMANTICS={
   'data-fd-change-week':'reopen week setup',
   'data-fd-progress':'open Progress and mastery',
   'data-fd-theme':'set saved color theme',
+  'data-fd-settings':'open settings panel',
+  'data-fd-close-settings':'close settings panel',
   'data-fd-close-search':'close search dialog',
   'data-fd-close-sheet':'close side sheet',
   'data-fd-close-nudge':'dismiss protocol nudge',
@@ -184,8 +187,11 @@ function fdDispatchHasWeek(context, n){
   return !!fdFindWeek(context&&context.index,n);
 }
 
+/* Which sheet values name a safety protocol page -- the only ones the unread nudge applies to.
+   'settings' is a shell surface, not curriculum: it has no ref in the index and no read state, so
+   closing it must not queue a nudge for it the way closing an unread protocol does. */
 function fdProtocolRef(sheet){
-  if(!sheet||sheet==='kit'||String(sheet).indexOf('item:')===0) return null;
+  if(!sheet||sheet==='kit'||sheet==='settings'||String(sheet).indexOf('item:')===0) return null;
   return String(sheet);
 }
 
@@ -385,6 +391,14 @@ function fdDispatch(attrs, context, state){
       patch:{openId:'__progress__',fromTab:tab,searchOpen:false,sheet:null},
       route:fdRouteForRef('__progress__',c.search),effect:{type:'open-progress'}
     };
+  }
+  if(fdOwn(a,'data-fd-settings')){
+    /* Settings is a sheet so it inherits backdrop, dialog semantics, the close button and the
+       Escape unwind from fdKeyAction. sheetFrom is not set: settings has no "back to kit" path. */
+    return {patch:{sheet:'settings',searchOpen:false},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-close-settings')){
+    return {patch:{sheet:null,settingsConfirmClear:false},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-theme')){
     /* The value is the MODE, not the painted attribute -- fdApplyEffect resolves it. A missing or
@@ -587,7 +601,8 @@ function fdTrapFocus(event, dialog){
 var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],'+
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
-  '[data-fd-theme],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
+  '[data-fd-theme],[data-fd-settings],[data-fd-close-settings],'+
+  '[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
   '[data-fd-try-now],[data-fd-expand-tool]';
 
 function fdAttrsFromTarget(target){

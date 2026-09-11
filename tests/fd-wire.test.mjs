@@ -544,7 +544,7 @@ test('fdWire reports a partial window registration failure and unwinds every ins
 function actionTarget(attrs, extra = {}) {
   return {
     tagName: 'BUTTON', isContentEditable: false, isConnected: true,
-    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
+    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-close-settings],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
     hasAttribute(name) { return Object.hasOwn(attrs, name); },
     getAttribute(name) { return Object.hasOwn(attrs, name) ? attrs[name] : null; },
     focus() { this.focused = (this.focused || 0) + 1; },
@@ -1944,6 +1944,36 @@ test('popstate Progress uses the internal Progress path and never generic resour
   });
   assert.deepEqual(progress, ['open']);
   assert.deepEqual(opened, []);
+});
+
+// The gear's whole job is to put the sheet into a state some later renderer draws, so the state
+// value is the contract -- not the markup that will eventually read it.
+test('the gear opens settings as a sheet and closes any open search first', () => {
+  const r = F.fdDispatch({ 'data-fd-settings': '' }, { }, { searchOpen: true, query: 'lithium' });
+  assert.equal(r.patch.sheet, 'settings');
+  assert.equal(r.patch.searchOpen, false, 'two stacked overlays would fight over the focus trap');
+  assert.equal(r.route, null, 'settings is not a route');
+  assert.equal(r.effect, null);
+  assert.ok(!('sheetFrom' in r.patch), 'settings has no back-to-kit path to record');
+});
+
+test('closing settings disarms the erase confirmation rather than leaving it armed', () => {
+  const r = F.fdDispatch({ 'data-fd-close-settings': '' }, { }, { sheet: 'settings' });
+  assert.equal(r.patch.sheet, null);
+  assert.equal(r.patch.settingsConfirmClear, false);
+  assert.equal(r.route, null);
+  assert.equal(r.effect, null);
+});
+
+// fdCloseSheet reads any sheet value that is not 'kit' and not an 'item:' as a protocol REF, and
+// raises the unread-protocol nudge for it. 'settings' is neither, so every ordinary close of the
+// panel -- the backdrop, the close button, Escape -- would queue a nudge for a page that does not
+// exist and arm its 8s timer. It renders as nothing today only because the index has no such ref.
+test('closing settings raises no protocol nudge -- it is not a protocol', () => {
+  const r = F.fdDispatch({ close: true }, { }, { sheet: 'settings', done: {} });
+  assert.equal(r.patch.sheet, null);
+  assert.equal(r.patch.nudge, null, 'settings is not an unread protocol page');
+  assert.equal(r.effect, null, 'and must not arm the nudge timer');
 });
 
 test('the theme action carries the mode it selects', () => {

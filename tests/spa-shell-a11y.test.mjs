@@ -114,7 +114,7 @@ test('mobile primary and dialog controls have 44px minimum hit targets', () => {
   for (const selector of [
     '.fd-btn', '.fd-tab', '.fd-setup__back', '.fd-reader__back', '.fd-result',
     '.fd-searchpanel__esc', '.fd-sheet__back', '.fd-sheet__close',
-    '.fd-nudge__go', '.fd-nudge__dismiss', '.fd-themebtn',
+    '.fd-nudge__go', '.fd-nudge__dismiss', '.fd-settingsbtn',
   ]) {
     const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     assert.match(mobile, new RegExp(`${escaped}[^{}]*\\{[^}]*min-height:44px`),
@@ -122,7 +122,7 @@ test('mobile primary and dialog controls have 44px minimum hit targets', () => {
   }
   for (const selector of [
     '.fd-setup__back', '.fd-searchpanel__esc', '.fd-sheet__close',
-    '.fd-nudge__dismiss', '.fd-themebtn',
+    '.fd-nudge__dismiss', '.fd-settingsbtn',
   ]) {
     const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     assert.match(mobile, new RegExp(`${escaped}[^{}]*\\{[^}]*min-width:44px`),

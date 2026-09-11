@@ -112,7 +112,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
     .fd-header__actions
       .fd-weekpill         <button>
       .fd-safetybtn        <button>
-      .fd-themebtn         <button>          (compact labelled theme toggle)
+      .fd-settingsbtn      <button>          (compact settings-panel gear)
   .fd-tabs                 <nav>
     .fd-tab                <button> ×3
 ```
@@ -122,7 +122,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | `.fd-header` | `position:sticky; top:0; z-index:40`. |
 | `.fd-header__bar` | The 1200px-capped flex row; at 640px and below it becomes a two-row grid so brand/search and utilities cannot collide. `.fd-header` alone has no max-width. |
 | `.fd-header__actions` | `margin-left:auto` in the flex layout; at 640px and below it spans grid row two, resets the margin, and aligns right. |
-| `.fd-themebtn` | Compact icon-only header theme toggle; `aria-label` names the action. |
+| `.fd-settingsbtn` | Compact icon-only header gear opening the settings panel; `aria-label` names the action. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
 
 ⚠ `.fd-tabs` is a **sibling** of `.fd-header__bar` inside `.fd-header`, not a child of it.

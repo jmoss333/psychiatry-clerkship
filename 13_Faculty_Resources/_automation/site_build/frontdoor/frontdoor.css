@@ -159,8 +159,8 @@
   font-size:var(--fd-font-sm);font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:var(--fd-shadow-sm);
 }
 .fd-safetybtn:hover{background:var(--fd-danger-dark);border-color:var(--fd-danger-dark)}
-.fd-themebtn{width:34px;height:34px;padding:0;border-radius:var(--fd-radius-circle);background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-glyph-sm);cursor:pointer}
-.fd-themebtn:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
+.fd-settingsbtn{width:34px;height:34px;padding:0;border-radius:var(--fd-radius-circle);background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-glyph-sm);cursor:pointer}
+.fd-settingsbtn:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
 
 .fd-tabs{max-width:1200px;margin:0 auto;padding:4px 20px 0;display:flex;gap:var(--fd-space-1)}
 .fd-tab{
@@ -864,8 +864,8 @@
   .fd-searchbtn,.fd-actionbar .fd-btn--ghost{min-width:44px}
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-pick,.fd-setupcta{min-height:44px}
   .fd-btn,.fd-tab,.fd-setup__back,.fd-reader__back,.fd-result,.fd-searchpanel__esc,
-  .fd-sheet__back,.fd-sheet__close,.fd-nudge__go,.fd-nudge__dismiss,.fd-themebtn{min-height:44px}
-  .fd-setup__back,.fd-searchpanel__esc,.fd-sheet__close,.fd-nudge__dismiss,.fd-themebtn{min-width:44px}
+  .fd-sheet__back,.fd-sheet__close,.fd-nudge__go,.fd-nudge__dismiss,.fd-settingsbtn{min-height:44px}
+  .fd-setup__back,.fd-searchpanel__esc,.fd-sheet__close,.fd-nudge__dismiss,.fd-settingsbtn{min-width:44px}
   .fd-article{padding:24px 20px}
   .fd-weekgrid{grid-template-columns:repeat(2,1fr)}
   /* The reader's desktop primary/ghost actions -- CLASS-INVENTORY.md's Reader section always
