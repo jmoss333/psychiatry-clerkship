@@ -288,15 +288,55 @@ Expected: FAIL — the effect is `{type:'set-theme', theme:'dark'}` and the valu
     }
 ```
 
-- [ ] **Step 8: Run the wire suite**
+- [ ] **Step 8: Stop a tool page from pinning a learner's System preference**
+
+Carried into this task by controller ruling — found independently by Task 1's reviewer and Task 1b's
+implementer, from different angles, and it becomes live the moment this task lands.
+
+The chain: `spa_index.html:2156-2159` sets `data-theme` from the effect and posts
+`{type:'theme',mode:...}` into the tool iframe — necessarily the **resolved** value, never
+`'system'`. `question-bank-practice.html:1166-1172` then writes that resolved value into
+`cw_theme`. So a learner who picks System and opens a tool has their preference silently pinned to
+whatever the theme happened to be at that moment. That defeats the headline setting of this plan.
+
+The asymmetry is the fix. Two directions, only one is a user gesture:
+
+- **Parent → child** (the shell telling an embedded tool what to paint): the child must **apply
+  it to the DOM and not write storage**. There is no user gesture here, and since Task 1b every one
+  of these pages has its own boot that reads `cw_theme` directly, so the write bought nothing even
+  before it started doing harm. Remove the `localStorage.setItem('cw_theme', ...)` from
+  `question-bank-practice.html`'s parent-message handler, leaving the `setAttribute`.
+- **Child → parent** (a learner clicking a tool's own light/dark button): `spa_index.html:2353`
+  persists it, gated on `'dark'||'light'`. **Leave this alone.** A learner clicking an explicit
+  light/dark control is legitimately choosing an explicit mode, and both values are valid modes
+  under the three-mode scheme.
+
+Note this step's edit is to `d.effect.theme` at `:2156-2159`, which your own change renames to
+`d.effect.mode` — make the two consistent.
+
+Write the test first, in `tests/fd-settings.test.mjs`:
+
+```js
+// A learner who picks System and opens a tool must still be on System afterwards. The shell can
+// only ever push a RESOLVED value into an iframe, so any child that persists what it is pushed
+// converts 'system' into a pinned mode — silently, with no user gesture anywhere in the chain.
+test('a tool page paints a pushed theme without persisting it', () => {
+  const tool = readFileSync(new URL(`${BUILD}/question-bank-practice.html`, import.meta.url), 'utf8');
+  const handler = tool.slice(tool.indexOf("'theme'") - 400, tool.indexOf("'theme'") + 400);
+  assert.match(handler, /setAttribute\(\s*['"]data-theme['"]/, 'it must still paint');
+  assert.doesNotMatch(handler, /setItem\(\s*['"]cw_theme['"]/, 'and must not persist what it was pushed');
+});
+```
+
+- [ ] **Step 9: Run the wire suite**
 
 Run: `node --test tests/fd-wire.test.mjs tests/fd-action-contract.test.mjs`
 Expected: PASS.
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 10: Commit**
 
 ```bash
-git add tests/fd-wire.test.mjs 13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js
+git add tests/fd-wire.test.mjs tests/fd-settings.test.mjs 13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js
 git commit -m "feat(theme): dispatch a selected mode instead of toggling, and focus the chosen button"
 ```
 
