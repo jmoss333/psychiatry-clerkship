@@ -183,8 +183,8 @@
         {
           "id": "f5",
           "claim": "The validator requires the jsonschema package, which is not currently a repo dependency.",
-          "disposition": "no-action",
-          "note": "Adoption cost, recorded so it is not rediscovered. Tier 1 is Draft 2020-12 via jsonschema; without it V-00 errors and Tier 2 is skipped. This repo's house style is stdlib-only for bin/ tools, so any adaptation should either add the dependency deliberately or reimplement Tier 1 against the existing validate_registry_schemas.py path, which already solves this problem here."
+          "disposition": "reject",
+          "note": "REJECTED ON INTAKE: requirements.txt already pins jsonschema==4.26.0, and existing repository validators import it. Adapting the returned validator therefore adds no dependency or reimplementation cost; the return's missing-dependency claim was factually false."
         }
       ],
       "note": "Arrived as three files, not prose: a crosswalk registry, its schema, and a two-tier validator. Files preserved verbatim in rq-1-2026-09-10.files/ beside the return note. Zero invisible characters on intake."

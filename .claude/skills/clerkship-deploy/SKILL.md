@@ -37,19 +37,44 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
    rollback. Lesson: a stale *negative* assertion in a skill is self-sealing — it tells
    every future session not to test the thing, so it can never correct itself. Re-verify
    any "do NOT use X" line here before obeying it.
-4. **Nothing in this repo may cancel a Netlify build.** Netlify records an ignore-command
-   cancel as a *failed* deploy (`state: error`, "Canceled build due to no content change")
-   and the sites' "Deploy failed" email fires on it, so the old build-ignore hook
-   (`netlify-ignore.sh`) was retired on 2026-09-03. Re-verified 2026-09-10: no ignore
-   script is tracked anywhere, and five of the six tracked `netlify.toml` files set
-   `ignore = "/bin/false"` (always build) — root, `faculty-console/`, `metrics/`,
-   `sp-proxy/`, `13_Faculty_Resources/Outreach/alex-tour/`. **`sp-preview/netlify.toml`
-   sets no `ignore` key**, so that one site can still take Netlify's default
-   skip-if-unchanged behaviour and log it as an error. Doc-only pushes now build (~40 s, byte-identical
-   output, no service-worker cache churn). A "Canceled" entry in a deploy list means
-   someone re-introduced an ignore rule; "Failed" means a real failure — read the log.
+4. **"Canceled" in a satellite site's deploy list is now NORMAL. In a learner site's, it
+   is not.** Re-verified 2026-09-10. Netlify records an ignore-command cancel as a *failed*
+   deploy (`state: error`, "Canceled build due to no content change"), which is why the old
+   hook (`netlify-ignore.sh`) was retired on 2026-09-03 in favour of `ignore = "/bin/false"`
+   everywhere. That was priced as "~40 s per build", correct under build-MINUTE billing and
+   wrong under credits: a production deploy is 15 credits (~$0.10) flat and build minutes
+   are free, so it charged ~$110/month for byte-identical republishes. Since 2026-09-10 the
+   four satellite tomls — `sp-proxy/`, `faculty-console/`, `metrics/`,
+   `13_Faculty_Resources/Outreach/alex-tour/` — run
+   `site_build/netlify_ignore_scoped.sh <their dir>` and skip a *production* build whose
+   diff misses their directory. The ROOT `netlify.toml` still sets `ignore = "/bin/false"`
+   on purpose: it governs the two learner sites, which are built from the whole repo.
+   **`sp-preview/netlify.toml` sets no `ignore` key and does not need one** — corrected
+   2026-09-10. An earlier version of this line said it "takes Netlify's default
+   skip-if-unchanged and logs it as an error". It does not. `sp-preview` maps to the project
+   `interview-room-faculty-preview` (`f2d991ee-f5e5-43b6-88ab-933fb0cd3c0f`, pinned in
+   `sp-preview/.netlify/state.json`), and that project is **CLI-deployed, not git-linked** —
+   see `sp-preview/README.md`, and its current production deploy, which reports
+   `deploy_source: "cli"`, **`build_id: null`**, `commit_ref: null`, `branch: null`. An
+   `ignore` command runs inside Netlify's BUILD pipeline; no build runs here, so the key
+   would never be consulted. Adding it changes nothing, omitting it costs nothing.
+   **A `netlify.toml` in this repo does NOT imply a git-linked site.** `metrics/netlify.toml`
+   is the same class — it has no Netlify project at all. Exactly five projects are git-linked
+   to this repo: the two learner sites, `sp-interview-proxy`, `clerkship-faculty-attest`,
+   `psychiatry-workforce-tour`. To tell them apart without guessing: a git-linked project's
+   `branchVersionOfSite` is `main--<site>.netlify.app`, a CLI-only one's is
+   `<deploy-id>--<site>.netlify.app`; or read `deploy_source`/`build_id` from the deploy API.
+   The cost lever on a CLI site is `--prod` discipline — every `netlify deploy --prod` bills
+   ~$0.10 even when the deploy reports "All files already uploaded by a previous deploy";
+   drafts (`netlify deploy`, no `--prod`) are free, so iterate on drafts and publish once.
+   So: a Canceled entry on a satellite means the
+   rule worked; a Canceled entry on `une-ms3-psychiatry` or `mmc-psychiatry-residents-sanford`
+   means someone scoped a site that must not be scoped. "Failed" still means read the log.
    Netlify's own "Skipped" (superseded commit) entries are also recorded as errors and
-   cannot be prevented from the repo. See `GIT_AND_DEPLOY_PLAN.md` §7.
+   cannot be prevented from the repo. The alarm that the old rule was protecting now lives
+   in `bin/check_netlify_deploy_health.py` (daily, inside `maintenance-production-canary.yml`);
+   it is INERT until the `NETLIFY_AUTH_TOKEN` repository secret exists, and says so.
+   See `GIT_AND_DEPLOY_PLAN.md` §7 and `_automation/NETLIFY_COST_REDUCTION_PLAN.md`.
 5. **"Every production deploy fails, nothing changed" = GitHub LFS bandwidth quota.**
    Signature: both sites red at `lfs-media: ERROR — 105 Git LFS pointer stub(s)` (or
    `lfs-cache: ERROR … over its data quota`), deploy previews green, CI green, and a GitHub
