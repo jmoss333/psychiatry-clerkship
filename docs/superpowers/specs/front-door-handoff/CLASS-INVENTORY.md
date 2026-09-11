@@ -450,8 +450,8 @@ independent states on the child. A current *and* done item carries both.
         .fd-choices__btn <button> ×N           (.is-active + aria-pressed on the chosen one)
       .fd-set__label   <label for>             (Pacing — names the date field)
       .fd-set__date    <input type=date>       (Pacing — the exam date)
-      .fd-seg          [role=group]
-        .fd-seg__btn   <button> ×3             (.is-active + aria-pressed on the chosen one)
+      .fd-seg          [role=group]            (Appearance — aria-label "Color theme")
+        .fd-seg__btn   <button> ×3             (System / Light / Dark; .is-active + aria-pressed on the chosen one)
       .fd-set__note
       ── Your data ──
       .fd-set__link    <button>                (routes to the Progress page's export)
@@ -460,6 +460,11 @@ independent states on the child. A current *and* done item carries both.
       .fd-set__row                             (armed only)
         .fd-btn.fd-btn--ghost <button>         ("Keep my data")
         .fd-set__danger       <button>         ("Erase everything")
+      ── Usage ──                              (whole section absent unless the usage emitter shipped)
+      .fd-seg          [role=group]            (Usage — aria-label "Usage counting"; the panel's SECOND .fd-seg)
+        .fd-seg__btn   <button> ×2             (On / Off; .is-active + aria-pressed on the chosen one)
+      .fd-set__note                            (states what is true of THIS device in each state)
+                                               (under a browser DNT/GPC signal: the note alone, no segments)
 
 .fd-nudge                           (fixed, z-120, bottom-centre toast)
   .fd-nudge__text
@@ -476,7 +481,7 @@ independent states on the child. A current *and* done item carries both.
 | `.fd-sheet__pending` | Affirmative not-yet-reviewed state for a valid 3–5-step protocol; mutually exclusive with attribution and failure. |
 | `.fd-sheet__failure` | Fail-closed alert with an owner-controlled sentence; protocol steps and documentation remain absent. |
 | `.fd-set` | One settings section. Spaced by `.fd-set + .fd-set`, so sections are direct siblings and a new one can be inserted anywhere in the order without a wrapper. |
-| `.fd-seg` | Segmented control. Segments butt together inside one border (`gap:0`); the divider is `.fd-seg__btn + .fd-seg__btn`'s `border-left`. |
+| `.fd-seg` | Segmented control. Segments butt together inside one border (`gap:0`); the divider is `.fd-seg__btn + .fd-seg__btn`'s `border-left`. The settings panel renders **two** of them and the counts differ: Appearance has three segments, Usage two. Usage is also the only section of the panel that is usually absent — it renders only where the usage emitter shipped, and under a browser DNT/GPC signal it renders an explanatory note and no segments at all, because a control the panel could not honour would misrepresent who is deciding. |
 | `.fd-seg__btn` | An ordinary toggle button, never `role="radio"` — that role promises roving tabindex and arrow-key selection, which this control does not implement. `.is-active` (what the CSS fills) and `aria-pressed` (what assistive tech reads) are set together and must stay on the same button. |
 | `.fd-choices` | Wrapping chip set for a single choice from a variable-length list (today: role). Chips size to their text and wrap, because the labels are per-site prose — equal segments strand them over three lines at phone width. |
 | `.fd-set__label` | Visible label for a settings field, bound by `for`. The panel's other sections are button groups named by `aria-label`; this is the one control that needs a real `<label>`. |
