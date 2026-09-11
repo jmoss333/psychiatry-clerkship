@@ -956,15 +956,24 @@ test('Your data sits last, after Appearance', () => {
 test('only classes that exist in frontdoor.css are emitted by the settings panel', () => {
   const css = read('frontdoor/frontdoor.css');
   const seen = new Set();
+  const swept = [];
+  // Both erase states AND all three usage postures. Each is a subtree the others never emit, so a
+  // sweep over one state reports success over a set smaller than the one it claims to check.
   for (const settingsConfirmClear of [false, true]) {
-    const html = S.fdSheet({}, {}, withState({
-      sheet: 'settings', roles: ROLES, roleId: 'staff', examDate: '2026-10-30',
-      settingsConfirmClear,
-    }));
-    for (const m of html.matchAll(/class="([^"]+)"/g)) m[1].split(/\s+/).forEach((c) => seen.add(c));
+    for (const analytics of [null, { optedIn: true, privacySignal: false },
+      { optedIn: false, privacySignal: true }]) {
+      const html = S.fdSheet({}, {}, withState({
+        sheet: 'settings', roles: ROLES, roleId: 'staff', examDate: '2026-10-30',
+        settingsConfirmClear, analytics,
+      }));
+      swept.push(html);
+      for (const m of html.matchAll(/class="([^"]+)"/g)) m[1].split(/\s+/).forEach((c) => seen.add(c));
+    }
   }
   assert.ok(seen.has('fd-set__danger') && seen.has('fd-set__row'),
     'both erase states must have been rendered, or this sweep proves nothing');
+  assert.ok(swept.some((h) => /data-fd-analytics/.test(h)),
+    'and the usage control must have been rendered, or it proves nothing about that section');
   // Word-boundary match, not a substring one: ".fd-set__ro" must not pass on ".fd-set__row".
   for (const c of seen) {
     const re = new RegExp(`\\.${c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z0-9_-])`);
@@ -1116,4 +1125,339 @@ test('a control that survives its own render still keeps focus, not the fallback
   assert.equal(typeof landed, 'object', 'the fallback must not have fired');
   assert.equal(landed.getAttribute('data-fd-theme'), 'system',
     'the segment the learner activated is the one refocused');
+});
+
+// ---------------------------------------------------------------------------------------------
+// The Usage section, and the thing that makes it unlike every other section in this panel: it is
+// usually ABSENT. analytics.js ships only when CLERKSHIP_ANALYTICS named the site at build time
+// and that flag defaults to off, so on every build shipped today window.cwAnalytics is undefined
+// and this section renders nothing at all. A notice about collection that is not happening is
+// worse than silence.
+//
+// When it does ship, enabled() is false for TWO different reasons -- the learner opted out, or the
+// browser sent DNT/GPC -- and the panel must not conflate them. A learner excluded by a signal
+// this panel did not set and cannot clear gets an explanation, never a control it cannot honour.
+const COUNTED = { optedIn: true, privacySignal: false };
+const NOT_COUNTED = { optedIn: false, privacySignal: false };
+const SIGNALLED = { optedIn: false, privacySignal: true };
+
+// Usage renders last, so it is the tail of the panel. Sliced from the last <section rather than
+// from the heading, and then CHECKED, so a reordering fails loudly here instead of silently
+// handing every assertion below some other section's copy.
+function usageSection(analytics) {
+  const html = S.fdSheetSettingsBody(withState({ analytics }));
+  const section = html.slice(html.lastIndexOf('<section'));
+  assert.match(section, /class="fd-set__h">Usage</, 'Usage must be the last section in the panel');
+  return section;
+}
+
+test('no usage section when the emitter did not ship', () => {
+  assert.doesNotMatch(S.fdSheetSettingsBody(withState({ analytics: null })), /data-fd-analytics/);
+  const absent = S.fdSheetSettingsBody(withState({}));
+  assert.doesNotMatch(absent, /data-fd-analytics/);
+  assert.doesNotMatch(absent, /usage/i,
+    'not even a heading: a panel that mentions collection which is not happening is worse than '
+    + 'one that says nothing');
+});
+
+test('a counted device says so, and offers the way out', () => {
+  const usage = usageSection(COUNTED);
+  assert.match(usage, /data-fd-analytics="on"[^>]*aria-pressed="true"/);
+  assert.match(usage, /data-fd-analytics="off"[^>]*aria-pressed="false"/);
+});
+
+test('an excluded device says so, and offers the way back', () => {
+  const usage = usageSection(NOT_COUNTED);
+  assert.match(usage, /data-fd-analytics="off"[^>]*aria-pressed="true"/);
+  assert.match(usage, /data-fd-analytics="on"[^>]*aria-pressed="false"/);
+});
+
+// The same .is-active / aria-pressed agreement the other two single-choice controls in this panel
+// are held to: desync them and a sighted learner sees one state filled while a screen reader
+// announces the other, with nothing anywhere to notice.
+test('the styled usage segment and the announced usage segment are the same one', () => {
+  for (const [analytics, chosen] of [[COUNTED, 'on'], [NOT_COUNTED, 'off']]) {
+    const buttons = usageSection(analytics)
+      .match(/<button[^>]*data-fd-analytics="[^"]*"[^>]*>/g) || [];
+    assert.equal(buttons.length, 2, `${chosen}: both segments must render`);
+    const styled = buttons.filter((b) => /class="[^"]*\bis-active\b/.test(b));
+    const announced = buttons.filter((b) => /aria-pressed="true"/.test(b));
+    assert.equal(styled.length, 1, `${chosen}: exactly one segment is filled`);
+    assert.equal(announced.length, 1, `${chosen}: exactly one segment is announced pressed`);
+    assert.equal(styled[0], announced[0], `${chosen}: and it must be the same segment`);
+    assert.match(styled[0], new RegExp(`data-fd-analytics="${chosen}"`),
+      `${chosen}: the posture the device is actually in is the one marked`);
+  }
+});
+
+// The panel's settled a11y ruling, applied to the section that ships beside the other two: three
+// groups of aria-pressed buttons, never role="radio", whose roving tabindex and arrow-key
+// contract nothing here implements.
+test('the usage segments claim no keyboard contract they do not implement', () => {
+  const usage = usageSection(COUNTED);
+  assert.doesNotMatch(usage, /role="radio(?:group)?"/);
+  assert.doesNotMatch(usage, /aria-checked/);
+  assert.match(usage, /class="fd-seg"[^>]*role="group"/, 'the segments are a labelled group');
+});
+
+test('a browser privacy signal is explained, not rendered as a control', () => {
+  const usage = usageSection(SIGNALLED);
+  assert.match(usage, /browser/i, 'must say the browser is the one deciding');
+  assert.doesNotMatch(usage, /data-fd-analytics=/, 'and must offer no control it cannot honour');
+});
+
+// st.analytics.optedIn is UNKNOWABLE while a signal is set: enabled() is false for both reasons
+// and the emitter exposes no way to ask which. So the render must not depend on it -- identical
+// output whichever value arrives, rather than a sentence about a choice the panel cannot read.
+test('under a privacy signal the panel cannot leak a claim it has no way to read', () => {
+  assert.equal(
+    S.fdSheetSettingsBody(withState({ analytics: { optedIn: false, privacySignal: true } })),
+    S.fdSheetSettingsBody(withState({ analytics: { optedIn: true, privacySignal: true } })),
+  );
+});
+
+// The copy is about THIS DEVICE in every state. A single sentence describing what the counter
+// collects, rendered unchanged over a device that is excluded from it, is the same defect as
+// rendering the section at all on a build that ships no emitter: a true statement about the
+// system, false about the reader.
+test('the note states what is true of this device, in every state', () => {
+  const note = (analytics) => (usageSection(analytics)
+    .match(/<p class="fd-set__note">([\s\S]*?)<\/p>/) || [])[1];
+  const counted = note(COUNTED);
+  const excluded = note(NOT_COUNTED);
+  const signalled = note(SIGNALLED);
+  assert.ok(counted && excluded && signalled, 'every state carries a note');
+  assert.notEqual(counted, excluded,
+    'an excluded device must not read the same sentence as a counted one');
+  assert.match(excluded, /not counted/i, 'an excluded device is told it is not counted');
+  assert.match(signalled, /nothing is counted/i);
+  for (const copy of [counted, excluded, signalled]) {
+    assert.doesNotMatch(copy, /shelf|clerkship|resident|student|MS3|UNE|MMC|Sanford/i,
+      'this copy ships to both sites unrebranded');
+  }
+});
+
+test('Usage sits last, after Your data', () => {
+  const h = S.fdSheetSettingsBody(withState({
+    roles: ROLES, roleId: 'staff', examDate: '', analytics: COUNTED,
+  }));
+  const at = (title) => h.indexOf(`class="fd-set__h">${title}<`);
+  for (const title of ['You', 'Pacing', 'Appearance', 'Your data', 'Usage']) {
+    assert.ok(at(title) > -1, `${title} must render`);
+  }
+  assert.ok(at('Your data') < at('Usage'), 'Usage follows Your data');
+});
+
+// ---------------------------------------------------------------------------------------------
+// The state half. The emitter is executed rather than faked: analytics.js owns the opt-out key's
+// shape, and a fake that no-ops optOut() would let every assertion below pass over an
+// implementation that stores nothing.
+// eslint-disable-next-line no-new-func
+const makeEmitter = new Function('window', `${read('analytics.js')}\nreturn window.cwAnalytics;`);
+
+function mapStorage(seed = {}) {
+  const map = new Map(Object.entries(seed));
+  return {
+    map,
+    get length() { return map.size; },
+    key: (i) => (i >= 0 && i < map.size ? [...map.keys()][i] : null),
+    getItem: (k) => (map.has(k) ? map.get(k) : null),
+    setItem: (k, v) => map.set(k, String(v)),
+    removeItem: (k) => map.delete(k),
+  };
+}
+
+const emitterOn = (storage, navigator) => makeEmitter({ localStorage: storage, navigator });
+
+// fdLiveState's own assignment, extracted and run -- the same treatment the theme mode and the
+// exam date get above. The renderer reads st.analytics and nothing else sets it: point this at
+// the wrong global and every learner's panel loses the section, silently, on the one build where
+// it was supposed to appear.
+// Built lazily: extracted at module scope, a missing assignment throws while the module is still
+// evaluating and takes every test below it with it -- which reports the whole section as absent
+// rather than naming the one thing that is.
+let resolveAnalyticsFn = null;
+function resolveAnalytics(win, nav) {
+  if (!resolveAnalyticsFn) {
+    const start = shell.indexOf('function fdLiveState(state)');
+    const end = shell.indexOf('function fdCaptureRows()', start);
+    assert.ok(start > -1 && end > start, 'the live-state boundary must stay extractable');
+    const line = (shell.slice(start, end).match(/^[ \t]*out\.analytics=[^;]*;$/m) || [])[0];
+    assert.ok(line, 'fdLiveState must put the analytics posture on the state the renderer sees');
+    // eslint-disable-next-line no-new-func
+    resolveAnalyticsFn = new Function('window', 'navigator',
+      `var out={};${line}\nreturn out.analytics;`);
+  }
+  return resolveAnalyticsFn(win, nav);
+}
+
+test('fdLiveState reports no posture at all when the emitter did not ship', () => {
+  assert.equal(resolveAnalytics({}, {}), null);
+  assert.doesNotMatch(S.fdSheetSettingsBody({ analytics: resolveAnalytics({}, {}) }),
+    /data-fd-analytics/, 'and the state that reaches the renderer renders no section');
+});
+
+test('fdLiveState reads the posture back through the emitter that owns the key', () => {
+  const storage = mapStorage();
+  const emitter = emitterOn(storage, {});
+  const win = { cwAnalytics: emitter };
+  assert.deepEqual(resolveAnalytics(win, {}), COUNTED,
+    'a device that never opted out is counted');
+  emitter.optOut();
+  assert.deepEqual(resolveAnalytics(win, {}), NOT_COUNTED);
+  assert.equal(storage.getItem('cw_analytics_optout_v1'), '1',
+    'and the emitter is what wrote the key');
+  emitter.optIn();
+  assert.deepEqual(resolveAnalytics(win, {}), COUNTED, 'opting back in is readable too');
+});
+
+test('fdLiveState reports a browser privacy signal from either of the signals that carry it', () => {
+  for (const nav of [{ doNotTrack: '1' }, { globalPrivacyControl: true }]) {
+    const win = { cwAnalytics: emitterOn(mapStorage(), nav) };
+    assert.deepEqual(resolveAnalytics(win, nav), { optedIn: false, privacySignal: true },
+      `${JSON.stringify(nav)} must reach the panel as a signal, not as a choice`);
+    assert.match(usageSection(resolveAnalytics(win, nav)), /browser/i);
+  }
+  const answeredNo = { doNotTrack: '0' };
+  const win = { cwAnalytics: emitterOn(mapStorage(), answeredNo) };
+  assert.deepEqual(resolveAnalytics(win, answeredNo), COUNTED,
+    'doNotTrack="0" is a device that answered no, not one that signalled');
+});
+
+// The key's one owner. analytics.js defines what '1' means and what absence means; a second
+// writer anywhere in the front door is how the two drift, and the panel would then report a
+// posture the emitter does not act on.
+test('no front-door module names the opt-out key; the emitter owns its shape', () => {
+  const dir = new URL(`${BUILD}/frontdoor/`, import.meta.url);
+  for (const name of readdirSync(dir)) {
+    if (!/^fd_.*\.js$/.test(name)) continue;
+    assert.doesNotMatch(readFileSync(new URL(name, dir), 'utf8'), /cw_analytics_optout/,
+      `${name} must delegate to cwAnalytics, not write the key itself`);
+  }
+  assert.doesNotMatch(shell, /cw_analytics_optout/,
+    'the shell reads the posture through enabled(), never through the key');
+  assert.match(read('analytics.js'), /cw_analytics_optout_v1/, 'the emitter is where it lives');
+});
+
+// ---------------------------------------------------------------------------------------------
+// Everything above is renderer-level or state-level, and neither can see the ORDERING defect this
+// section is exposed to. fd_wire.js's apply() renders BEFORE fdApplyEffect runs, and the panel is
+// rebuilt from what the emitter reports at render time -- so an opt-out written in fdApplyEffect
+// would paint the posture the learner just left. This is the same defect 8d585fc fixed for
+// cw_theme, on the one other control in this panel whose render reads live storage.
+//
+// The harness runs the REAL emitter, the REAL shell expression and the REAL renderer, so "the
+// panel shows what was stored" is a fact about the shipped code rather than about a fake.
+function usagePanelHarness(seed = {}, nav = {}) {
+  const storage = mapStorage(seed);
+  const win = {
+    addEventListener() {}, removeEventListener() {},
+    location: { href: 'https://example.test/', search: '', pathname: '/' },
+    cwAnalytics: emitterOn(storage, nav),
+  };
+  const W = makeWire(storage);
+  let generation = 0;
+  let controls = [];
+  const markup = [];
+  const focused = [];
+  const close = {
+    tagName: 'BUTTON', disabled: false, name: 'close',
+    hasAttribute: () => false, getAttribute: () => null,
+    focus() { focused.push('close'); },
+  };
+  const rebuild = (state) => {
+    generation += 1;
+    const html = W.fdSheetSettingsBody(Object.assign({}, state, {
+      analytics: resolveAnalytics(win, nav),
+    }));
+    markup.push(html);
+    controls = panelControls(html, generation);
+    for (const c of controls) c.focus = function focusControl() { focused.push(this); };
+  };
+  const panel = {
+    querySelector(selector) {
+      const m = selector.match(/^\[([a-z-]+)="(.*)"\]$/);
+      if (!m) return null;
+      return controls.find((c) => c.getAttribute(m[1]) === m[2]) || null;
+    },
+    querySelectorAll: () => [close, ...controls],
+  };
+  const handlers = {};
+  const root = {
+    addEventListener(type, fn) { handlers[type] = fn; },
+    removeEventListener() {},
+    querySelector: (s) => (s === '.fd-sheet[role="dialog"]' ? panel : null),
+    matches: () => false,
+  };
+  const controller = W.fdWire(root, { role: 'r', week: 1, screen: 'app', sheet: 'settings' }, {
+    window: win,
+    render: (s) => rebuild(s),
+    renderTransient: (s) => rebuild(s),
+    index: { byRef: {}, weeks: [{ n: 1, items: [] }] },
+    synonyms: {},
+    document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
+  });
+  controller.commitStartup();
+  rebuild(controller.getState());
+  return {
+    controller,
+    storage,
+    markup,
+    focused,
+    last: () => markup[markup.length - 1],
+    click(attr, value) {
+      const target = controls.find((c) => c.getAttribute(attr) === value);
+      assert.ok(target, `no control carrying ${attr}="${value}" is on screen`);
+      target.closest = (selector) => (selector.indexOf(`[${attr}]`) > -1 ? target : null);
+      handlers.click({ target, preventDefault() {} });
+      return target;
+    },
+  };
+}
+
+test('toggling usage rebuilds the panel from the posture just stored, not the one it replaced', () => {
+  const h = usagePanelHarness();
+  assert.match(h.last(), /data-fd-analytics="on"[^>]*aria-pressed="true"/,
+    'a device that never opted out starts counted');
+
+  h.click('data-fd-analytics', 'off');
+  assert.equal(h.storage.getItem('cw_analytics_optout_v1'), '1',
+    'the click reaches the emitter, which writes its own key');
+  assert.match(h.last(), /data-fd-analytics="off"[^>]*aria-pressed="true"/,
+    'the write must precede the render, exactly as the theme segment does');
+  assert.doesNotMatch(h.last(), /data-fd-analytics="on"[^>]*aria-pressed="true"/,
+    'the posture the learner just left must not still claim to be the current one');
+
+  h.click('data-fd-analytics', 'on');
+  assert.equal(h.storage.getItem('cw_analytics_optout_v1'), null,
+    'opting back in removes the key rather than storing a second value for "no"');
+  assert.match(h.last(), /data-fd-analytics="on"[^>]*aria-pressed="true"/);
+});
+
+// The panel's focus guarantee, on the control that would otherwise have lost it. A single button
+// whose data value flips on→off has no equivalent in the rebuilt DOM, so refocusInvoker declines
+// and focus falls back to the dialog's ✕ -- where a screen-reader user hears nothing about the
+// change they just made. Two segments with stable values survive their own render, which is the
+// reason this section is a pair rather than one button.
+test('the usage segment the learner pressed keeps focus through its own render', () => {
+  const h = usagePanelHarness();
+  const pressed = h.click('data-fd-analytics', 'off');
+  assert.equal(h.focused.length, 1, 'focus must land somewhere inside the panel');
+  const landed = h.focused[0];
+  assert.notEqual(landed, pressed, 'the destroyed element must never be the thing focused');
+  assert.equal(typeof landed, 'object', 'the dialog fallback must not have fired');
+  assert.equal(landed.getAttribute('data-fd-analytics'), 'off',
+    'focus lands on the rebuilt equivalent of the segment activated');
+  assert.equal(h.controller.getState().sheet, 'settings', 'and the panel stays open');
+});
+
+// A device the browser already excluded renders no segment at all, so there is nothing to click
+// and nothing that could write the key. Pinned end to end because the renderer half alone would
+// pass over a controller that honoured a dispatched attribute the panel never emits.
+test('a signalled device offers nothing the click path could act on', () => {
+  const h = usagePanelHarness({}, { doNotTrack: '1' });
+  assert.doesNotMatch(h.last(), /data-fd-analytics=/);
+  assert.match(h.last(), /browser/i);
+  assert.equal(h.storage.getItem('cw_analytics_optout_v1'), null,
+    'and nothing has been written on this device’s behalf');
 });

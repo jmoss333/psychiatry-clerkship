@@ -38,7 +38,7 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
   // with the settings panel's Appearance segmented control (fd_sheet.js's fdSettingsSeg), which is
   // now its only emitter.
   assert.deepEqual(emitted, [
-    'data-fd-back', 'data-fd-change-week',
+    'data-fd-analytics', 'data-fd-back', 'data-fd-change-week',
     'data-fd-clear-ask', 'data-fd-clear-cancel', 'data-fd-clear-confirm', 'data-fd-close-nudge',
     'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-exam-date', 'data-fd-expand-tool',
     'data-fd-home', 'data-fd-local-toggle', 'data-fd-open',

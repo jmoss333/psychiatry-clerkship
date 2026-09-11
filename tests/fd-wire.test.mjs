@@ -560,7 +560,7 @@ test('fdWire reports a partial window registration failure and unwinds every ins
 function actionTarget(attrs, extra = {}) {
   return {
     tagName: 'BUTTON', isContentEditable: false, isConnected: true,
-    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
+    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-analytics],[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
     hasAttribute(name) { return Object.hasOwn(attrs, name); },
     getAttribute(name) { return Object.hasOwn(attrs, name) ? attrs[name] : null; },
     focus() { this.focused = (this.focused || 0) + 1; },

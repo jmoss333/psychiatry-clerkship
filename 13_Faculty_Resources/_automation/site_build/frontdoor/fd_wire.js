@@ -10,7 +10,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-open','data-fd-sheet','data-fd-safety','data-fd-toggle','data-fd-tab',
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
   'data-fd-back','data-fd-home','data-fd-search','data-fd-change-week','data-fd-progress',
-  'data-fd-theme','data-fd-settings','data-fd-exam-date',
+  'data-fd-theme','data-fd-settings','data-fd-analytics','data-fd-exam-date',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool'
@@ -34,6 +34,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-progress':'open Progress and mastery',
   'data-fd-theme':'set saved color theme',
   'data-fd-settings':'open settings panel',
+  'data-fd-analytics':'set usage measurement',
   'data-fd-exam-date':'set exam date',
   'data-fd-clear-ask':'arm device data erase',
   'data-fd-clear-cancel':'cancel device data erase',
@@ -453,6 +454,14 @@ function fdDispatch(attrs, context, state){
     return {patch:{},route:null,
       effect:{type:'set-theme',mode:fdThemeMode(String(a['data-fd-theme']||''))}};
   }
+  if(fdOwn(a,'data-fd-analytics')){
+    /* The value is the posture the segment STANDS FOR, not a flip of the current one: the Usage
+       control is a pair of segments (see fdSettingsUsage), so each carries a fixed value and
+       pressing the already-active one re-states it rather than reversing it. Patches nothing --
+       the emitter's own key is the single home and fdLiveState re-reads it for every render. */
+    return {patch:{},route:null,
+      effect:{type:'set-analytics',on:String(a['data-fd-analytics']||'')==='on'}};
+  }
   if(fdOwn(a,'data-fd-exam-date')){
     /* Patches nothing, for the same reason set-theme patches nothing: the stored key is the one
        home, and fdLiveState re-reads it for every render. A mirrored copy on controller state
@@ -709,7 +718,7 @@ function fdTrapFocus(event, dialog){
 var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],'+
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
-  '[data-fd-theme],[data-fd-settings],'+
+  '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
   '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
   '[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
   '[data-fd-try-now],[data-fd-expand-tool]';
@@ -917,7 +926,8 @@ function fdWire(root, initialState, opts){
     var type=effect&&effect.type;
     if(type==='set-theme') surfaces.chrome=true;
     if(type==='focus-search'||type==='open-sheet'||type==='open-protocol'||
-        type==='nudge-timeout'||type==='search-input') surfaces.overlay=true;
+        type==='nudge-timeout'||type==='search-input'||
+        type==='set-analytics') surfaces.overlay=true;
     if(type==='toggle-progress') surfaces.completion=true;
     if(type==='toggle-tool-layout') surfaces.layout=true;
     if(type==='set-rotation'||type==='browse-without-rotation') surfaces.base=true;
@@ -1087,6 +1097,26 @@ function fdWire(root, initialState, opts){
        fdApplyEffect; only the read-back is order-sensitive. */
     if(result.effect&&result.effect.type==='set-theme'){
       try{ localStorage.setItem('cw_theme',result.effect.mode); }catch(_){}
+    }
+    /* Same shape and the same reason as the theme write above, one delegation further out. The
+       Usage section renders from what the emitter reports -- fdLiveState calls enabled(), which
+       re-reads its key on every render -- and the panel is open by definition when this fires,
+       because fdSettingsUsage is the only thing that emits data-fd-analytics. Run this from
+       fdApplyEffect, after the render, and the segment the learner just pressed comes back
+       unpressed with the one they left still filled and aria-pressed="true".
+
+       Delegated rather than written here, and the key is deliberately not named in this file:
+       the usage emitter is the one definition of what a stored opt-out and an absent one mean, a
+       second writer is how the two drift, and a grep for that key returning exactly one file is
+       what keeps the ownership checkable. The emitter swallows its own storage failures; the
+       catch is for the object itself, so a preference can never stop the render after it. */
+    if(result.effect&&result.effect.type==='set-analytics'){
+      try{
+        if(win&&win.cwAnalytics){
+          if(result.effect.on) win.cwAnalytics.optIn();
+          else win.cwAnalytics.optOut();
+        }
+      }catch(_){}
     }
     fdSave(state);
     if(!fromHistory){

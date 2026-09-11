@@ -1012,8 +1012,9 @@
 /* ── Settings panel ──────────────────────────────────────────────────────────────────────────
  * Renders inside .fd-sheet__body (fd_sheet.js's fdSheetSettingsBody). Sections are DIRECT
  * siblings with no wrapper, spaced by the adjacent-sibling idiom the kit rows use, so a section
- * added before or after another needs no structural change. .fd-seg is the three-way segmented
- * control: the segments butt together and share one outer border, which is why `gap:0` is
+ * added before or after another needs no structural change. .fd-seg is the segmented control --
+ * three-way for Appearance, two-way for Usage, and `flex:1` per segment is what makes the same
+ * rule serve both: the segments butt together and share one outer border, which is why `gap:0` is
  * explicit -- a gap would strand the `+` border-left divider between them.
  * :hover precedes .is-active deliberately; both are (0,2,0), so source order is what keeps the
  * chosen segment filled while the pointer is over it. */

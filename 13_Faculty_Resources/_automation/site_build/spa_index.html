@@ -1986,6 +1986,17 @@
        than mirrored onto controller state so the stored key stays the single home; the panel's
        change handler writes it and the next render reads it back. */
     out.examDate=LS('cw_shelf_date')||'';
+    /* The Usage section, and the one key on this state that is legitimately null: null means
+       CLERKSHIP_ANALYTICS left the emitter out of this build entirely, and fdSheetSettingsBody
+       then renders no section at all rather than describing collection that is not happening.
+       Read through the emitter's own enabled() rather than through its key, so the emitter stays
+       the only definition of what a stored opt-out means. enabled() is false for TWO reasons --
+       an opt-out here, or the browser's DNT/GPC -- so optedIn is meaningful only while
+       privacySignal is false, which is the only branch fdSettingsUsage reads it in. */
+    out.analytics=window.cwAnalytics
+      ?{optedIn:window.cwAnalytics.enabled(),
+        privacySignal:(navigator.doNotTrack==='1'||navigator.globalPrivacyControl===true)}
+      :null;
     /* Seven-day activity strip: derived, never stored -- see fdActivityDays. Every store is
        read defensively; a missing or malformed one simply contributes no days. */
     out.activityDays=fdActivityDays({

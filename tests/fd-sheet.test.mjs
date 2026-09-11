@@ -150,6 +150,12 @@ function liveShellBoundary(index, topicMeta, templateHtml) {
     // subject is protocol failure copy, and no assertion here depends on its contents.
     var FD_ROLES=[{id:'student',name:'Core rotation'}];
     var facultyPreviewRequest=null, location={search:''};
+    // The browser globals fdLiveState reads, stubbed the same way location is. An empty window
+    // is the shipped case rather than a degenerate one: analytics.js is injected only where
+    // CLERKSHIP_ANALYTICS named the site, so on today's builds there is no cwAnalytics and the
+    // settings panel's Usage section renders nothing. Omit these and the boundary throws on a
+    // global that always exists in the page this source is extracted from.
+    var window={}, navigator={};
     ${crisisTemplateInitSource()}
     function fdClone(value){var out={};for(var key in value){out[key]=value[key];}return out;}
     function progLoad(){return {};}

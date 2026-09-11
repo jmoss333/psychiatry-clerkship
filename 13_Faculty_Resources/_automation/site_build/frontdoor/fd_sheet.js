@@ -392,6 +392,64 @@ function fdSettingsData(confirming){
     '</div>';
 }
 
+/* Usage -- the only section in this panel that is usually ABSENT, and the reason it renders from
+   state rather than from a global. The usage emitter ships only when CLERKSHIP_ANALYTICS named
+   the site at build time, and that flag defaults to off, so on every build shipped today the page
+   carries no cwAnalytics at all: st.analytics arrives null and this renders nothing. A notice
+   about collection that is not happening is worse than silence.
+
+   (The emitter's own file is not named anywhere in this comment, and must not be: a shipped page
+   that merely MENTIONS it fails the build's own "ships nothing analytics-related when disabled"
+   gate, which reads the built index.html as text. Grep cwAnalytics to find it.)
+
+   TWO REASONS, NEVER CONFLATED. The emitter's enabled() is `!signalsPrivacy() && !optedOut()`, so
+   it is false both for a learner who turned counting off here and for one whose browser sends
+   DNT or GPC. The second learner did not make that choice in this panel and cannot unmake it
+   here, so they get a sentence explaining who decided -- never a control the panel could not
+   honour if they operated it. The state the caller supplies keeps the two apart; this renderer
+   reads `optedIn` ONLY in the branch where no signal is set, because under a signal the emitter
+   exposes no way to know it (tests/fd-settings.test.mjs pins that the two signalled states render
+   byte-identical output).
+
+   A PAIR OF SEGMENTS, not one button whose label flips. The panel's focus guarantee
+   (refocusInvoker in fd_wire.js) re-queries the rebuilt panel for the same attribute AND THE SAME
+   VALUE, so a single control carrying data-fd-analytics="on" that re-renders as "off" has no
+   equivalent to return to: focus falls back to the dialog's close button and a screen-reader user
+   hears nothing about the change they just made. Two segments with fixed values survive their own
+   render, announce the resulting state through aria-pressed, and make this the third instance of
+   the idiom already used by Appearance and You rather than a third interaction model. Same a11y
+   ruling as those two: role="group" with aria-pressed buttons, NEVER role="radio".
+
+   The copy states what is true of THIS DEVICE in each state. One sentence describing what the
+   counter collects, rendered unchanged over a device excluded from it, would be true about the
+   system and false about the reader -- which is the same defect as rendering the section at all
+   where no emitter shipped.
+
+   THE OPT-OUT KEY IS NOT NAMED HERE, and not anywhere else in the front door either. It belongs
+   to the usage emitter, the one definition of what a stored value and an absent one mean; a
+   second writer is how the two drift, and a grep for that key returning exactly one file is what
+   keeps the ownership checkable. The wiring delegates to cwAnalytics.optIn()/optOut() and
+   tests/fd-settings.test.mjs pins the whole directory against the literal. */
+function fdSettingsUsage(an){
+  if(an.privacySignal){
+    return '<p class="fd-set__note">Your browser asks sites not to measure usage, so this '+
+      'device is already excluded. Nothing is counted.</p>';
+  }
+  var opts=[['on','On'],['off','Off']], counted=(an.optedIn===true);
+  var out='<div class="fd-seg" role="group" aria-label="Usage counting">';
+  for(var i=0;i<opts.length;i++){
+    var active=((opts[i][0]==='on')===counted);
+    out+='<button type="button" class="fd-seg__btn'+(active?' is-active':'')+'" '+
+      'data-fd-analytics="'+opts[i][0]+'" aria-pressed="'+(active?'true':'false')+'">'+
+      opts[i][1]+'</button>';
+  }
+  return out+'</div><p class="fd-set__note">'+(counted
+    ?'This device is counted: which pages get opened, by week. No identity, no text, nothing '+
+      'you typed.'
+    :'This device is not counted. Turned on, it records which pages get opened, by week — no '+
+      'identity, no text, nothing you typed.')+'</p>';
+}
+
 function fdSheetSettingsBody(state){
   var st=state||{};
   var out='<p class="fd-sheet__intro">Everything here is saved on this device only.</p>';
@@ -401,9 +459,13 @@ function fdSheetSettingsBody(state){
   out+=fdSettingsSection('Appearance',
     fdSettingsSeg(st.themeMode)+
     '<p class="fd-set__note">System follows your device’s light or dark setting.</p>');
-  /* Last on purpose: a learner scrolling this panel meets every reversible setting before the one
-     that is not. */
+  /* Last of the sections that ALWAYS render: a learner scrolling this panel meets every
+     reversible setting before the one that is not. */
   out+=fdSettingsSection('Your data', fdSettingsData(st.settingsConfirmClear===true));
+  /* And Usage after it, on the builds that have one. A section present on some builds and absent
+     on most must not open a gap in the middle of the fixed order, and this one is reversible, so
+     placing it after the erase costs the rule above nothing. */
+  if(st.analytics) out+=fdSettingsSection('Usage', fdSettingsUsage(st.analytics));
   return out;
 }
 
