@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>(function(){try{var s=localStorage.getItem('cw_theme');var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=m;if(m==='system'){a=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>
+<script>(function(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=m;if(m==='system'){try{a=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}catch(e){a='light';}}try{document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inpatient Psychiatry — MS3 Clerkship</title>

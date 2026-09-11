@@ -479,12 +479,21 @@ def analytics_enabled_for(site, mode=None):
 # tool pages. `cw_theme` holds a MODE (system/light/dark); documentElement holds the RESOLVED
 # attribute (light/dark), so CSS only ever sees two values. An unrecognised or absent mode reads
 # as system, not light -- a device that never expressed a preference follows its OS.
+#
+# THREE separate try blocks, not one, and that is the whole shape of this script. A browser can
+# throw on the mere ACT of touching localStorage -- Chrome with site data blocked does -- and when
+# the OS resolution sat inside the storage try, that throw aborted the boot before matchMedia was
+# ever consulted. Nothing was painted; clinical-warm.css scopes the dark palette to
+# [data-theme="dark"], so no attribute means light, and a storage-blocked learner on a dark OS got
+# a white page with no control anywhere that could change it. Each capability is therefore guarded
+# on its own and each failure degrades to the same safe default the scenario table records.
 THEME_INIT = (
-    "<script>(function(){try{var s=localStorage.getItem('cw_theme');"
+    "<script>(function(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}"
     "var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=m;"
-    "if(m==='system'){a=(window.matchMedia&&"
+    "if(m==='system'){try{a=(window.matchMedia&&"
     "window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}"
-    "document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>"
+    "catch(e){a='light';}}"
+    "try{document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>"
 )
 
 # ?theme-audit — a LOADER, not the tool. Every colour defect this library shipped in 2026-09 was

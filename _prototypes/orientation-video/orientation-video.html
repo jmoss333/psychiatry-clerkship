@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>(function(){try{var s=localStorage.getItem('cw_theme');var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=m;if(m==='system'){a=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>
+<script>(function(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=m;if(m==='system'){try{a=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}catch(e){a='light';}}try{document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>
 <link rel="icon" href="/favicon.svg">
 <!-- [CLERKSHIP-META v1] tool="Inpatient Psych Orientation (video)" version="0.1.0" built="2026-07-02" category="orientation" audience="ms3,resident,trainee" settings="inpatient" time="8min" status="reviewed" summary="AI-generated NotebookLM orientation video with captions + synced transcript + chapters. Foundational/day-one level. Educational; no PHI; verify local specifics. Pending faculty attestation." -->
 <meta charset="UTF-8">

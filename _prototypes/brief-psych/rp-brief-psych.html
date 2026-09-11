@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>(function(){try{var s=localStorage.getItem('cw_theme');var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=m;if(m==='system'){a=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>
+<script>(function(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=m;if(m==='system'){try{a=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}catch(e){a='light';}}try{document.documentElement.setAttribute('data-theme',a);}catch(e){}})();</script>
 <link rel="icon" href="/favicon.svg">
 <!-- [CLERKSHIP-META v1] tool="Five Good Minutes — Brief Psychotherapy Coach" version="0.1.0" built="2026-07-02" category="skills-reference" audience="resident,trainee" settings="inpatient" time="5min" reviewCadenceDays="365" status="draft-pending-attestation" summary="Bedside coaching aid: match the mechanism driving today's crisis to one brief, evidence-based technique (steps, example language, evidence, caution, handoff). Routes active suicidality to the team/tools rather than coaching a script. A coaching aid, not a chart entry; no PHI; reflections stay on-device. No runtime CDN." -->
 <meta charset="UTF-8">

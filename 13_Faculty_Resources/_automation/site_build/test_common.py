@@ -282,7 +282,10 @@ const boot = process.argv[1];
 const out = {};
 for (const sc of JSON.parse(process.argv[2])) {
   let painted = null;
-  const localStorage = { getItem: (k) => (k === 'cw_theme' ? sc.stored : null) };
+  const localStorage = { getItem: (k) => {
+    if (sc.storageThrows) throw new Error('site data blocked');
+    return k === 'cw_theme' ? sc.stored : null;
+  } };
   const document = { documentElement: { setAttribute: (_, v) => { painted = v; } } };
   const window = sc.matchMedia === false ? {}
     : { matchMedia: (q) => ({ matches: /dark/.test(q) && sc.prefersDark }) };
@@ -292,7 +295,13 @@ for (const sc of JSON.parse(process.argv[2])) {
 process.stdout.write(JSON.stringify(out));
 """
 
-# matchMedia exists unless a scenario opts out -- only the last case is about its absence.
+# matchMedia exists unless a scenario opts out, and storage answers unless a scenario makes it
+# throw. The last three cases are the ones about an ABSENT capability rather than a stored value:
+# a browser with no matchMedia, and a browser that throws on any localStorage access at all
+# (Chrome with site data blocked). The OS must still be consulted in the latter -- resolving it
+# inside the storage try meant a storage-blocked learner on a dark OS got no attribute, and
+# clinical-warm.css scopes the dark palette to [data-theme="dark"], so no attribute is a white
+# page they cannot opt out of.
 _SCENARIOS = [
     {"name": "unset_on_a_dark_os", "stored": None, "prefersDark": True},
     {"name": "unset_on_a_light_os", "stored": None, "prefersDark": False},
@@ -301,6 +310,10 @@ _SCENARIOS = [
     {"name": "stored_system_on_a_dark_os", "stored": "system", "prefersDark": True},
     {"name": "stored_junk_on_a_dark_os", "stored": "banana", "prefersDark": True},
     {"name": "no_matchmedia_at_all", "stored": None, "prefersDark": True, "matchMedia": False},
+    {"name": "storage_blocked_on_a_dark_os", "stored": None, "prefersDark": True,
+     "storageThrows": True},
+    {"name": "storage_blocked_on_a_light_os", "stored": None, "prefersDark": False,
+     "storageThrows": True},
 ]
 
 EXPECTED_PAINT = {
@@ -311,6 +324,8 @@ EXPECTED_PAINT = {
     "stored_system_on_a_dark_os": "dark",
     "stored_junk_on_a_dark_os": "dark",
     "no_matchmedia_at_all": "light",
+    "storage_blocked_on_a_dark_os": "dark",
+    "storage_blocked_on_a_light_os": "light",
 }
 
 

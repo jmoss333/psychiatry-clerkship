@@ -12,9 +12,12 @@ const html = readFileSync(new URL(`${BUILD}/spa_index.html`, import.meta.url), '
 const boot = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 assert.match(boot, /cw_theme/, 'the first inline script should still be the theme boot');
 
-function run({ stored, prefersDark }) {
+function run({ stored, prefersDark, storageThrows = false }) {
   let painted = null;
-  const localStorage = { getItem: (k) => (k === 'cw_theme' ? stored : null) };
+  const localStorage = { getItem: (k) => {
+    if (storageThrows) throw new Error('site data blocked');
+    return k === 'cw_theme' ? stored : null;
+  } };
   const document = { documentElement: { setAttribute: (_, v) => { painted = v; } } };
   const window = { matchMedia: (q) => ({ matches: /dark/.test(q) && prefersDark }) };
   // eslint-disable-next-line no-new-func
@@ -34,6 +37,15 @@ test('an explicit stored mode overrides the OS', () => {
 
 test('stored system follows the OS', () => {
   assert.equal(run({ stored: 'system', prefersDark: true }), 'dark');
+});
+
+// A browser that throws on any localStorage access -- Chrome with site data blocked -- must still
+// reach the media query. Resolving the OS inside the storage try meant it did not: the throw
+// aborted the whole boot, nothing was painted, and clinical-warm.css scopes the dark palette to
+// [data-theme="dark"], so the learner got a white page on a dark OS with no way to opt out.
+test('blocked site data does not stop the OS being consulted', () => {
+  assert.equal(run({ stored: null, prefersDark: true, storageThrows: true }), 'dark');
+  assert.equal(run({ stored: null, prefersDark: false, storageThrows: true }), 'light');
 });
 
 test('a browser without matchMedia still paints something', () => {
