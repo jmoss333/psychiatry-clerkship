@@ -17,6 +17,9 @@
 - **localStorage keys must be literal `cw_*` or `rp_*`** wherever possible. This feature adds **no new key**. The one computed-key call it does add is deliberate and costed in Task 7.
 - **No hard-coded crisis numbers** and **no dose literals** — neither appears in this feature, but the hooks fire on every edit.
 - **Run `node --test tests/*.test.mjs` before any build.** `build_and_check.sh` is `set -euo pipefail` and runs the node suite *before* `build_deploy.py`, so a red test leaves `_build/` serving stale output while the script merely looks "failed".
+- **Smoke runs once, in Task 8.** Tasks 3 and 8 both edit `tests/smoke/front-door.spec.js`; only
+  Task 8 executes it. A subagent that finds itself running `npm ci` in `tests/smoke` before Task 8
+  has misread its task.
 - **`bin/verify.sh` does not run the Playwright smoke suite.** A green local gate is not evidence `tests/smoke/front-door.spec.js` passes; that is a separate CI job.
 - **`tests/fd-wire.test.mjs:544` hard-codes the entire delegated selector string** inside its DOM
   fixture's `closest()`. Every task below that adds a `data-fd-*` attribute to the selector in
@@ -416,11 +419,9 @@ behavioural rather than cosmetic:
   await page.locator('[data-fd-theme="dark"]').click();
 ```
 
-Run the suite:
-
-```bash
-cd tests/smoke && npm ci && npx playwright test front-door.spec.js
-```
+**Do not run the suite here.** Smoke verification is deferred to a single run in Task 8 (author's
+decision, 2026-09-10) — `npm ci` in `tests/smoke` is the slowest step in this plan and nothing
+between here and Task 8 changes its result. Edit the pins, then move on.
 
 - [ ] **Step 10: Run the node suites and commit**
 
