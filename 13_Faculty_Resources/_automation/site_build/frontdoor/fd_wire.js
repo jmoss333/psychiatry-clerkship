@@ -27,7 +27,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-search':'open search dialog',
   'data-fd-change-week':'reopen week setup',
   'data-fd-progress':'open Progress and mastery',
-  'data-fd-theme':'toggle saved color theme',
+  'data-fd-theme':'set saved color theme',
   'data-fd-close-search':'close search dialog',
   'data-fd-close-sheet':'close side sheet',
   'data-fd-close-nudge':'dismiss protocol nudge',
@@ -387,8 +387,11 @@ function fdDispatch(attrs, context, state){
     };
   }
   if(fdOwn(a,'data-fd-theme')){
-    var theme=c.theme==='dark'?'light':'dark';
-    return {patch:{},route:null,effect:{type:'set-theme',theme:theme}};
+    /* The value is the MODE, not the painted attribute -- fdApplyEffect resolves it. A missing or
+       unknown value reads as 'system' rather than toggling, because this control is three radio
+       buttons now: there is no "other one" to flip to. */
+    return {patch:{},route:null,
+      effect:{type:'set-theme',mode:fdThemeMode(String(a['data-fd-theme']||''))}};
   }
   return {patch:{},route:null,effect:null};
 }
@@ -698,11 +701,13 @@ function fdWire(root, initialState, opts){
     if(root&&root.matches&&root.matches('#content')) return root;
     return root&&root.querySelector?root.querySelector('#content'):null;
   }
+  /* Reports the stored MODE, not the painted attribute. Reading documentElement here (as this
+     did before the three-way control) cannot distinguish "system, resolving to dark" from
+     "explicitly dark", so the panel would never show system as active. Storage is the only place
+     the distinction survives, which is why nothing falls back to the DOM here: a browser that
+     blocks storage has no stored mode to report, and 'system' is the honest answer there. */
   function currentTheme(){
-    if(doc&&doc.documentElement&&doc.documentElement.getAttribute){
-      return doc.documentElement.getAttribute('data-theme')||'light';
-    }
-    return 'light';
+    try{ return fdThemeMode(localStorage.getItem('cw_theme')); }catch(_){ return 'system'; }
   }
   function progressRaw(){
     try{ return JSON.parse(localStorage.getItem('cw_progress_v1')||'{}')||{}; }
@@ -783,8 +788,11 @@ function fdWire(root, initialState, opts){
         });
       }
     } else if(effect.type==='set-theme'){
-      if(doc&&doc.documentElement) doc.documentElement.setAttribute('data-theme',effect.theme);
-      try{ localStorage.setItem('cw_theme',effect.theme); }catch(_){}
+      var prefersDark=!!(win&&win.matchMedia&&
+        win.matchMedia('(prefers-color-scheme: dark)').matches);
+      if(doc&&doc.documentElement)
+        doc.documentElement.setAttribute('data-theme',fdThemeAttr(effect.mode,prefersDark));
+      try{ localStorage.setItem('cw_theme',effect.mode); }catch(_){}
     } else if(effect.type==='nudge-timeout'&&setTimer){
       if(nudgeTimer&&clearTimer) clearTimer(nudgeTimer);
       nudgeTimer=setTimer(function(){
@@ -813,7 +821,12 @@ function fdWire(root, initialState, opts){
   function focusPostTransition(before, result, changedBase){
     var effect=result&&result.effect;
     if(effect&&effect.type==='set-theme'){
-      var themeControl=root&&root.querySelector?root.querySelector('[data-fd-theme]'):null;
+      /* Focus the button that was actually chosen. With one toggle the first match WAS the
+         control; with three radio buttons it is always "System", which silently moved focus
+         away from the learner's choice on every selection. */
+      var sel='[data-fd-theme="'+effect.mode+'"]';
+      var themeControl=root&&root.querySelector
+        ?(root.querySelector(sel)||root.querySelector('[data-fd-theme]')):null;
       if(themeControl&&themeControl.focus) try{themeControl.focus();}catch(_){}
       return;
     }

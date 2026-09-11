@@ -2153,10 +2153,16 @@
 
   function fdRenderTransient(state,detail){
     var d=detail||{}, surfaces=d.surfaces||{};
-    if(d.effect&&d.effect.theme){
-      document.documentElement.setAttribute('data-theme',d.effect.theme);
+    /* An effect carries a MODE; a frame boundary can only carry a painted attribute. Resolve once
+       here so the paint and what an embedded tool is told agree, and so 'system' never escapes as
+       a value no stylesheet and no tool can act on. */
+    if(d.effect&&d.effect.mode){
+      var themeAttr=fdThemeAttr(d.effect.mode,
+        !!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches));
+      document.documentElement.setAttribute('data-theme',themeAttr);
       var frame=contentEl&&contentEl.querySelector('iframe');
-      if(frame&&frame.contentWindow)try{frame.contentWindow.postMessage({type:'theme',mode:d.effect.theme},'*');}catch(_){}
+      if(frame&&frame.contentWindow)
+        try{frame.contentWindow.postMessage({type:'theme',mode:themeAttr},'*');}catch(_){}
     }
     if(surfaces.chrome&&fdChromeMount&&state.screen==='app')fdChromeMount.innerHTML=fdHeader(fdLiveState(state));
     if(d.preserveResource){

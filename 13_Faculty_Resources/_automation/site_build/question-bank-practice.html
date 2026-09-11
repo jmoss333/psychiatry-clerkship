@@ -1162,12 +1162,14 @@ function showSummary(){
       countEl.textContent=(showing===n?n:showing+' of '+n)+' question'+(n!==1?'s':'')+' match';
     }
   });
-  /* dark mode sync from parent SPA */
+  /* Theme sync from the parent SPA. Paint only -- never persist. The shell can send only a
+     RESOLVED attribute, so writing it to cw_theme would turn a learner's 'system' choice into a
+     pinned light/dark mode with no user gesture anywhere in the chain. This page's own boot
+     reads cw_theme directly, so there is nothing for the write to buy. */
   window.addEventListener('message',function(ev){
     var d=ev.data||{};
     if(d.type==='theme'&&(d.mode==='dark'||d.mode==='light')){
       document.documentElement.setAttribute('data-theme',d.mode);
-      try{localStorage.setItem('cw_theme',d.mode);}catch(_){}
     }
   });
 })();

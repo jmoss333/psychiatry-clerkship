@@ -236,7 +236,7 @@ test('fdRender guards every live surface independently', () => {
   }
   assert.match(source, /function fdRenderTransient\(state,detail\)/);
   assert.match(source, /d\.preserveResource/);
-  assert.match(source, /d\.effect&&d\.effect\.theme/);
+  assert.match(source, /d\.effect&&d\.effect\.mode/);
   assert.match(source, /hydrate=detail&&detail\.kind==='hydrate'/);
   assert.match(source, /if\(!hydrate&&fdChromeMount\)/,
     'background hydration must not replace focused header controls');

@@ -22,6 +22,7 @@ const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${today}
   fdOpenResource: fdOpenResource,
   fdReader: fdReader,
   fdWire: fdWire,
+  fdThemeMode: fdThemeMode,
 };`);
 
 function memStorage(seed = {}) {
@@ -196,8 +197,10 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     route: '/', history: 'replace', effect: null,
   });
   assert.equal(F.fdDispatch({ 'data-fd-progress': '' }, {}, roleContext).effect.type, 'open-progress');
-  assert.deepEqual(F.fdDispatch({ 'data-fd-theme': '' }, { theme: 'dark' }, roleContext).effect,
-    { type: 'set-theme', theme: 'light' });
+  assert.deepEqual(
+    F.fdDispatch({ 'data-fd-theme': 'light' }, { theme: 'dark' }, roleContext).effect,
+    { type: 'set-theme', mode: 'light' },
+    'the payload is the mode chosen, not a flip of the mode already in force');
   assert.deepEqual(F.fdDispatch({ 'data-fd-expand-tool': '' }, {}, {
     ...roleContext, openId: 'practice.html', toolExpanded: false,
   }), {
@@ -563,6 +566,7 @@ function fakeHarness(initial, options = {}) {
     removeEventListener() {},
     location: options.location || { href: 'https://example.test/', search: '', pathname: '/' },
     history: options.history,
+    matchMedia: options.matchMedia,
   };
   const controller = options.F.fdWire(root, initial, {
     window: fakeWindow,
@@ -760,7 +764,7 @@ test('opening and closing a dialog captures, focuses, and restores the connected
   assert.equal(invoker.focused, 1);
 });
 
-test('runtime theme toggling writes cw_theme and updates data-theme without reload', () => {
+test('runtime theme selection writes cw_theme and updates data-theme without reload', () => {
   const ls = memStorage();
   const LocalF = make(ls);
   let dataTheme = 'dark';
@@ -769,12 +773,37 @@ test('runtime theme toggling writes cw_theme and updates data-theme without relo
     setAttribute: (_name, value) => { dataTheme = value; },
   } };
   const h = fakeHarness({ ...roleContext }, { F: LocalF, document: doc });
-  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': '' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': 'light' }), preventDefault() {} });
   assert.equal(dataTheme, 'light');
   assert.equal(ls.dump().cw_theme, 'light');
 });
 
-test('theme rerender moves focus to the corresponding live theme control', () => {
+// The storage/paint split is the whole point of the three-value action: 'system' is what gets
+// persisted, and only the attribute is resolved against the OS. Driving matchMedia in both
+// directions is what stops 'system' -> 'light' passing for a hard-coded default.
+test('system persists as system and paints whatever the OS currently reports', () => {
+  function pick(prefersDark) {
+    const ls = memStorage();
+    const LocalF = make(ls);
+    let dataTheme = 'light';
+    const h = fakeHarness({ ...roleContext }, {
+      F: LocalF,
+      matchMedia: (q) => ({ matches: /dark/.test(q) && prefersDark }),
+      document: { documentElement: {
+        getAttribute: () => dataTheme,
+        setAttribute: (_name, value) => { dataTheme = value; },
+      } },
+    });
+    h.rootHandlers.click({
+      target: actionTarget({ 'data-fd-theme': 'system' }), preventDefault() {},
+    });
+    return { dataTheme, stored: ls.dump().cw_theme };
+  }
+  assert.deepEqual(pick(true), { dataTheme: 'dark', stored: 'system' });
+  assert.deepEqual(pick(false), { dataTheme: 'light', stored: 'system' });
+});
+
+test('theme rerender falls back to any live theme control when the chosen one is gone', () => {
   let replacement = null;
   const invoker = actionTarget({ 'data-fd-theme': '' });
   const h = fakeHarness({ ...roleContext, screen: 'app' }, {
@@ -1216,7 +1245,7 @@ test('transient chrome and completion renders preserve one live resource node wi
   const liveHost = host;
   assert.equal(openCalls.length, 1);
 
-  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': '' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': 'dark' }), preventDefault() {} });
   h.rootHandlers.click({ target: actionTarget({ 'data-fd-search': '' }), preventDefault() {} });
   searchInput.value = 'ab'; searchInput.selectionStart = 2; searchInput.selectionEnd = 2;
   h.rootHandlers.input({ target: searchInput });
@@ -1240,8 +1269,8 @@ test('transient chrome and completion renders preserve one live resource node wi
   assert.deepEqual(theme.detail.surfaces,
     { base: false, overlay: false, completion: false, chrome: true, layout: false });
   assert.equal(theme.detail.preserveResource, true);
-  assert.equal(theme.detail.effect.theme, 'dark',
-    'transient renderer consumes the requested theme instead of rereading old document state');
+  assert.equal(theme.detail.effect.mode, 'dark',
+    'transient renderer consumes the requested mode instead of rereading old document state');
   const search = transientRenders.find(({ detail }) => detail.effect?.type === 'search-input');
   assert.equal(search.detail.surfaces.overlay, true);
   assert.equal(search.detail.preserveResource, true);
@@ -1285,7 +1314,7 @@ test('the permitted faculty-preview theme transition preserves the exact governe
       replaceState() { historyWrites += 1; }, pushState() { historyWrites += 1; },
     },
   });
-  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': '' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': 'dark' }), preventDefault() {} });
   assert.equal(fullRenders, 0);
   assert.equal(transientRenders, 1);
   assert.equal(host.resource, liveNode);
@@ -1375,8 +1404,8 @@ test('faculty preview rejects controller actions before state, render, route, re
   assert.deepEqual(ls.dump(), {});
   assert.equal(locks, 8);
 
-  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': '' }), preventDefault() {} });
-  assert.equal(ls.getItem('cw_theme'), 'dark', 'legacy preview still permits its theme toggle');
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': 'dark' }), preventDefault() {} });
+  assert.equal(ls.getItem('cw_theme'), 'dark', 'legacy preview still permits its theme selection');
   assert.equal(locks, 8);
 });
 
@@ -1915,4 +1944,81 @@ test('popstate Progress uses the internal Progress path and never generic resour
   });
   assert.deepEqual(progress, ['open']);
   assert.deepEqual(opened, []);
+});
+
+test('the theme action carries the mode it selects', () => {
+  const r = F.fdDispatch({ 'data-fd-theme': 'dark' }, { }, { theme: 'light' });
+  assert.deepEqual(r.effect, { type: 'set-theme', mode: 'dark' });
+  assert.deepEqual(r.patch, {}, 'theme is storage, not state');
+  assert.equal(r.route, null, 'a theme change must not push history');
+});
+
+test('an unrecognised theme value falls back to system rather than painting garbage', () => {
+  const r = F.fdDispatch({ 'data-fd-theme': 'banana' }, { }, { theme: 'light' });
+  assert.deepEqual(r.effect, { type: 'set-theme', mode: 'system' });
+});
+
+test('selecting the already-active mode is still a valid no-op action', () => {
+  const r = F.fdDispatch({ 'data-fd-theme': 'light' }, { }, { theme: 'light' });
+  assert.deepEqual(r.effect, { type: 'set-theme', mode: 'light' });
+});
+
+// Trap A. currentTheme() feeds the dispatch context, which is what a settings panel reads to mark
+// the active choice. Since the theme boot split mode from attribute, documentElement holds only
+// the RESOLVED value -- so a learner on system would see light or dark marked active and system
+// never highlighted. Run the real function body against both sources at once: a storage saying
+// 'system' and a document painted 'dark'. The pre-split body returns 'dark' here.
+const currentThemeSrc = wire.match(/ {2}function currentTheme\(\)\{[\s\S]*?\n {2}\}/)[0];
+function runCurrentTheme(stored, painted) {
+  const localStorage = {
+    getItem: (k) => {
+      if (stored instanceof Error) throw stored;
+      return k === 'cw_theme' ? stored : null;
+    },
+  };
+  const doc = { documentElement: { getAttribute: () => painted } };
+  // eslint-disable-next-line no-new-func
+  return new Function('localStorage', 'doc', 'fdThemeMode',
+    `${currentThemeSrc}\nreturn currentTheme();`)(localStorage, doc, F.fdThemeMode);
+}
+
+test('currentTheme reports the stored mode, not the attribute the page happens to paint', () => {
+  assert.equal(runCurrentTheme('system', 'dark'), 'system',
+    'system resolving to dark must still read as system');
+  assert.equal(runCurrentTheme('dark', 'dark'), 'dark');
+  assert.equal(runCurrentTheme('light', 'dark'), 'light',
+    'the stored mode wins over a stale painted attribute');
+  assert.equal(runCurrentTheme(null, 'dark'), 'system', 'nothing stored means follow the OS');
+  assert.equal(runCurrentTheme('banana', 'dark'), 'system');
+});
+
+test('currentTheme answers system when storage is blocked rather than throwing', () => {
+  assert.equal(runCurrentTheme(new Error('blocked'), 'dark'), 'system');
+});
+
+// Trap B. With one toggle, querySelector('[data-fd-theme]') WAS the control. With a three-button
+// group the first match is always System, so every selection silently moved focus off the button
+// the learner just pressed.
+test('theme focus lands on the chosen mode, not the first control in the group', () => {
+  const group = {
+    system: actionTarget({ 'data-fd-theme': 'system' }),
+    light: actionTarget({ 'data-fd-theme': 'light' }),
+    dark: actionTarget({ 'data-fd-theme': 'dark' }),
+  };
+  const asked = [];
+  const h = fakeHarness({ ...roleContext, screen: 'app' }, {
+    F,
+    querySelector: (selector) => {
+      asked.push(selector);
+      const exact = selector.match(/^\[data-fd-theme="(\w+)"\]$/);
+      if (exact) return group[exact[1]] || null;
+      return selector === '[data-fd-theme]' ? group.system : null;
+    },
+    renderTransient: () => {},
+    document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': 'dark' }), preventDefault() {} });
+  assert.equal(group.dark.focused, 1, 'the button the learner chose keeps focus');
+  assert.equal(group.system.focused, undefined, 'System must not steal focus from Dark');
+  assert.ok(asked.includes('[data-fd-theme="dark"]'), 'the chosen mode is asked for by value');
 });
