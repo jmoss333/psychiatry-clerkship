@@ -5,6 +5,11 @@ import {isRoomCue} from './room-cues.mjs';
 export const hash = value => createHash('sha256').update(value).digest('hex');
 export const problem = (status, code) => Object.assign(new Error(code), {status, code});
 const bad = () => problem(400, 'preview_state_invalid');
+const FAMILY_CASE_ID='family_morgan_maya_001';
+const clinicianFirst=value=>value.openingMode==='clinician';
+// Legacy encounters have a patient opening at index zero; a clinician-first
+// family conversation begins directly with its first learner question.
+export const learnerHistoryIndex=(state,turnId)=>(turnId-1)*2+(clinicianFirst(state)?0:1);
 function validFamilyBids(value){
   const speakers=new Set();
   for(const entry of value.history){
@@ -39,7 +44,10 @@ export function createStateCodec({key, binding, now=Date.now,withDeliveryIntensi
     }catch{throw bad();}
     if(!value||value.v!==1||typeof value.sid!=='string'||!/^[a-f0-9]{32}$/.test(value.sid)||typeof value.nonce!=='string'||!/^[a-f0-9]{32}$/.test(value.nonce)
       ||!Number.isSafeInteger(value.expires)||!Number.isInteger(value.turn)||value.turn<0||value.turn>10
-      ||!Array.isArray(value.history)||value.history.length!==value.turn*2+1||!Array.isArray(value.segments)||value.segments.length<1||value.segments.length>2
+      ||(Object.hasOwn(value,'openingMode')&&(value.openingMode!=='clinician'||value.caseId!==FAMILY_CASE_ID))
+      ||!Array.isArray(value.history)||value.history.length!==value.turn*2+(clinicianFirst(value)?0:1)
+      ||!Array.isArray(value.segments)||value.segments.length<(clinicianFirst(value)&&value.turn===0?0:1)||value.segments.length>2
+      ||(clinicianFirst(value)&&value.turn===0&&(value.segments.length!==0||value.completed!==0))
       ||!Number.isInteger(value.completed)||value.completed<0||value.completed>value.segments.length
       // The encounter's case, authoritative and authenticated. The codec binding
       // already separates cases; this makes that invariant explicit and testable.
@@ -59,10 +67,11 @@ export function createStateCodec({key, binding, now=Date.now,withDeliveryIntensi
   return {seal,open};
 }
 
-export function initialState(opening,now=Date.now,caseId,speakerId,deliveryIntensity) {
+export function initialState(opening,now=Date.now,caseId,speakerId,deliveryIntensity,openingMode) {
   if(deliveryIntensity!==undefined&&!isDeliveryIntensity(deliveryIntensity))throw problem(400,'preview_input_invalid');
+  if(openingMode!==undefined&&(openingMode!=='clinician'||caseId!==FAMILY_CASE_ID))throw problem(400,'preview_input_invalid');
   return {v:1,caseId,...(deliveryIntensity!==undefined?{deliveryIntensity}:{}),sid:randomBytes(16).toString('hex'),nonce:randomBytes(16).toString('hex'),expires:now()+1800000,turn:0,
-    history:[{who:'pt',text:opening,playbackStatus:'pending',...(speakerId?{speakerId}:{})}],segments:[opening],completed:0};
+    ...(openingMode?{openingMode}:{}),history:openingMode?[]:[{who:'pt',text:opening,playbackStatus:'pending',...(speakerId?{speakerId}:{})}],segments:openingMode?[]:[opening],completed:0};
 }
 export function nextHistory(state,{text,previousPlayback,previousCompletedSegments,targetRoleId}) {
   // The optional alternative is a single response, not a new interview branch.
@@ -78,6 +87,7 @@ export function nextHistory(state,{text,previousPlayback,previousCompletedSegmen
 export function finalizePlayback(state,{previousPlayback,previousCompletedSegments}) {
   if(!['played','interrupted'].includes(previousPlayback)||!Number.isInteger(previousCompletedSegments)||previousCompletedSegments<0||previousCompletedSegments>state.completed)throw problem(400,'preview_input_invalid');
   const history=structuredClone(state.history), previous=history.at(-1);
+  if(clinicianFirst(state)&&state.turn===0&&history.length===0&&state.segments.length===0&&state.completed===0)return history;
   const heard=state.segments.slice(0,previousCompletedSegments);
   if(previous.familyBid){
     // A separate person's request is never folded into the primary speaker's
@@ -103,18 +113,18 @@ export function issuedState(previous,history,reply,segments,speakerId) {
 export function retryState(state,turnId,sid) {
   if(state.retried===true)throw problem(409,'preview_encounter_finished');
   if(!Number.isInteger(turnId)||turnId<1||turnId>state.turn)throw problem(400,'preview_input_invalid');
-  const history=structuredClone(state.history).slice(0,turnId*2-1);
+  const history=structuredClone(state.history).slice(0,learnerHistoryIndex(state,turnId));
   const tail=history.at(-1);
   // The tail's own playback status decides whether it was heard. nextHistory only
   // rewrites an entry's TEXT to the heard prefix when at least one segment played;
   // a zero-heard reply keeps its full generated text and is marked interrupted.
   // Claiming completed:1 unconditionally would launder that unheard text into heard
   // history and hand it to the actor.
-  const heard=tail.playbackStatus==='played'?1:0;
+  const heard=tail?.playbackStatus==='played'?1:0;
   // A prior bid may be heard independently of its primary reply. Retain both
   // segments when replaying the history boundary; never mark an unheard bid heard.
-  const segments=tail.familyBid?[tail.text,' '+tail.familyBid.text]:[tail.text];
-  const completed=tail.familyBid?.playbackStatus==='played'?2:heard;
+  const segments=tail?(tail.familyBid?[tail.text,' '+tail.familyBid.text]:[tail.text]):[];
+  const completed=tail?.familyBid?.playbackStatus==='played'?2:heard;
   const child={...state,sid,nonce:randomBytes(16).toString('hex'),turn:turnId-1,history,segments,completed};
   if(child.roomCue?.turn>turnId)delete child.roomCue;
   // DELETED, not set to undefined: codec.open uses Object.hasOwn, and a sealed

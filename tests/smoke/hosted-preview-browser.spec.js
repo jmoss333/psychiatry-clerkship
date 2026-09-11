@@ -40,7 +40,7 @@ const CASES = [
   {id: 'sp_mania_redirect_001',      name: 'Marcus', voice: 'Cedar', doorNeedle: 'quad irrigation system'},
   {id: 'sp_psychosis_paranoid_001',  name: 'Ray',    voice: 'Cedar', doorNeedle: 'covering vents'},
   {id: 'sp_alcohol_ambivalence_001', name: 'Morgan', voice: 'Marin', doorNeedle: 'addiction-medicine consultation', addedInExtension: true},
-  {id: 'family_morgan_maya_001', name: 'Morgan and Maya', voice: 'Marin and Cedar', doorNeedle: 'Maya, their adult daughter', addedInExtension: true},
+  {id: 'family_morgan_maya_001', name: 'Morgan and Maya', voice: 'Marin and Coral', doorNeedle: 'Maya, their adult daughter', addedInExtension: true},
 ];
 const FAMILY_ID = 'family_morgan_maya_001';
 
@@ -101,7 +101,7 @@ async function openPreview(page, {recognition = 'unavailable', manualAudio = fal
     if (body.action === 'start') familyTargets = {};
     if (body.action === 'turn' && body.caseId === FAMILY_ID) familyTargets[at] = body.targetRoleId;
     const speakerId = body.caseId === FAMILY_ID ? body.action === 'start' ? 'morgan' : body.action === 'retry' ? familyTargets[body.turnId] : body.targetRoleId : undefined;
-    await route.fulfill({status: 200, contentType: 'application/x-ndjson; charset=utf-8', body: ndjson(at, speakerId, speakerId && body.action === 'turn' && at === familyBidTurn)});
+    await route.fulfill({status: 200, contentType: 'application/x-ndjson; charset=utf-8', body: body.action === 'start' && body.caseId === FAMILY_ID ? [JSON.stringify({type:'ready',caseId:FAMILY_ID,turn:0,state:'state-0-ready'}),JSON.stringify({type:'complete',state:'state-0-ready'})].join('\n')+'\n' : ndjson(at, speakerId, speakerId && body.action === 'turn' && at === familyBidTurn)});
   });
   // Audio never really plays in a headless run; the encounter must still advance.
   await page.addInitScript(({recognition, manualAudio, stubCueAudio}) => {
@@ -161,6 +161,7 @@ async function completeReply(page,startIndex,phase='listening'){
 
 async function startEncounter(page, caseId) {
   await page.selectOption('#case-choice', caseId);
+  if(caseId===FAMILY_ID)await page.locator('#family-brief-ack').check();
   await page.fill('#preview-key', 'a-passcode-for-the-mock-endpoint');
   await page.locator('#start').click();
   await expect(page.locator('#encounter-panel')).toBeVisible();
@@ -204,6 +205,72 @@ test('moment format hides full-encounter experimental settings',async({page})=>{
   await expect(page.locator('#voice-experiment-options')).toBeHidden();await expect(page.locator('#faculty-voice-options')).toBeHidden();
 });
 
+for(const width of [1440,320])test(`family orientation, clinician opening, and visible speaker ownership at ${width}px`,async({page})=>{
+  await page.setViewportSize({width,height:1000});
+  const {requests,errors,violations}=await openPreview(page,{recognition:'available',manualAudio:true,familyBidTurn:2});
+  await page.selectOption('#case-choice',FAMILY_ID);
+  await expect(page.locator('#family-preflight')).toBeVisible();await expect(page.locator('#family-brief-ack')).not.toBeChecked();await expect(page.locator('#start')).toBeDisabled();
+  await expect(page.locator('#family-preflight')).toContainText('You lead the opening');
+  await expect(page.locator('#family-preflight')).toContainText('One person answers; both hear');
+  await expect(page.locator('#family-preflight')).toContainText('4.5 seconds');
+  await page.evaluate(()=>document.getElementById('access-form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
+  expect(requests).toHaveLength(0);expect(await page.evaluate(()=>window.__previewRecognition.instances.length)).toBe(0);
+  await page.screenshot({path:`/tmp/family-entry-${width}.png`,fullPage:true});
+  await page.fill('#preview-key','a-passcode-for-the-mock-endpoint');await page.locator('#family-brief-ack').check();await page.click('#start');
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');await expect(page.locator('#transcript')).toBeEmpty();
+  await expect(page.locator('#family-opening-invite')).toBeVisible();await expect(page.locator('#family-card-morgan')).toHaveAttribute('data-next','true');
+  await expect(page.locator('#family-card-morgan')).toHaveAttribute('data-speaking','false');await expect(page.locator('#family-card-maya')).toHaveAttribute('data-speaking','false');
+  expect(requests).toHaveLength(1);expect(await page.evaluate(()=>window.__previewAudio.length)).toBe(0);
+  await expect(page.locator('#family-identity-morgan')).toContainText('they/them');await expect(page.locator('#family-identity-maya')).toContainText('she/her');
+  await page.locator('#family-room-observations summary').first().click();
+  for(const role of ['morgan','maya']){
+    const expected=await page.evaluate(role=>window.DanaStationContent.getProfile('family_morgan_maya_001').participants.find(person=>person.id===role).observation,role);
+    await expect(page.locator('#family-observation-'+role)).toHaveText(expected);
+  }
+  await page.locator('#family-room-illustration summary').click();await expect(page.locator('#family-room-layout-text')).toContainText('Positions are illustrative');
+  await expect(page.locator('#transcript')).toBeEmpty();await page.screenshot({path:`/tmp/family-clinician-floor-${width}.png`,fullPage:true});
+  await page.locator('#family-room-observations summary').first().click();
+  await page.evaluate(()=>window.__previewRecognition.emit('Maya, what would you like us to understand?'));await page.locator('#status').click();await page.keyboard.press('Space');
+  await expect(page.locator('#family-card-maya')).toHaveAttribute('data-speaking','true');
+  expect(requests[1].targetRoleId).toBe('maya');expect(requests[1].previousCompletedSegments).toBe(0);
+  await expect(page.locator('.message.dana[data-family-role="maya"] .name')).toHaveText('Maya');
+  await completeReply(page,0);
+  await page.selectOption('#family-speaker-choice','morgan');
+  await page.evaluate(()=>window.__previewRecognition.emit('Morgan, what support would feel useful?'));await page.locator('#status').click();await page.keyboard.press('Space');
+  await expect(page.locator('#family-card-morgan')).toHaveAttribute('data-speaking','true');await finishAudio(page,2);
+  await expect(page.locator('#family-card-maya')).toHaveAttribute('data-speaking','true');await expect(page.locator('#family-card-morgan')).toHaveAttribute('data-next','true');
+  await expect(page.locator('#family-floor-summary')).toHaveText('Maya is speaking. Next reply: Morgan.');
+  const colors=await page.evaluate(()=>({card:getComputedStyle(document.querySelector('#family-card-maya')).getPropertyValue('--person-color'),quote:getComputedStyle(document.querySelector('.family-bid')).getPropertyValue('--person-color'),morgan:getComputedStyle(document.querySelector('#family-card-morgan')).getPropertyValue('--person-color')}));
+  expect(colors.card).toBe(colors.quote);expect(colors.card).not.toBe(colors.morgan);
+  await page.screenshot({path:`/tmp/family-speaking-bid-${width}.png`,fullPage:true});
+  await finishAudio(page,3);await expect(page.locator('#family-bid-offer')).toBeVisible();
+  await page.evaluate(()=>window.__previewRecognition.emit('Go ahead'));await page.locator('#status').click();await page.keyboard.press('Space');
+  await expect.poll(()=>requests.length).toBe(4);expect(requests[3].targetRoleId).toBe('maya');
+  await page.click('#end');await expect(page.locator('#family-card-maya')).toHaveAttribute('data-speaking','false');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
+
+test('ending immediately after family ready keeps an empty transcript and Clear requires a fresh acknowledgement',async({page})=>{
+  const {requests,errors}=await openPreview(page,{recognition:'available'});await startEncounter(page,FAMILY_ID);
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');await page.click('#end');
+  await expect(page.locator('#transcript')).toBeEmpty();await expect(page.locator('[data-station="mark"]')).toBeHidden();
+  await expect(page.locator('[data-station="retry"]')).toBeHidden();expect(requests).toHaveLength(1);
+  expect(await page.evaluate(()=>window.__previewAudio.length)).toBe(0);expect(await page.evaluate(()=>window.__previewRecognition.instances.some(r=>r.active))).toBe(false);
+  await page.click('#clear');await expect(page.locator('#family-brief-ack')).not.toBeChecked();await expect(page.locator('#start')).toBeDisabled();
+  await page.locator('#family-brief-ack').check();await page.selectOption('#case-choice',CASES[0].id);await expect(page.locator('#family-preflight')).toBeHidden();await expect(page.locator('#start')).toBeEnabled();
+  await page.selectOption('#case-choice',FAMILY_ID);await expect(page.locator('#family-brief-ack')).not.toBeChecked();await expect(page.locator('#start')).toBeDisabled();expect(errors).toEqual([]);
+});
+
+test('a rejected family passcode consumes the acknowledgement without opening a microphone',async({page})=>{
+  const {requests,errors}=await openPreview(page,{recognition:'available'});
+  await page.route('**/api/dana-preview',async route=>{requests.push(route.request().postDataJSON());await route.fulfill({status:403,json:{code:'preview_forbidden'}});});
+  await page.selectOption('#case-choice',FAMILY_ID);await page.fill('#preview-key','invalid-fixture-passcode');await page.locator('#family-brief-ack').check();await page.click('#start');
+  await expect(page.locator('#error')).toContainText('passcode was not accepted');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','gate');
+  await expect(page.locator('#family-brief-ack')).not.toBeChecked();await expect(page.locator('#start')).toBeDisabled();await expect(page.locator('#preview-key')).toHaveValue('');
+  expect(requests).toHaveLength(1);expect(await page.evaluate(()=>window.__previewRecognition.instances.length)).toBe(0);expect(await page.evaluate(()=>window.__previewAudio.length)).toBe(0);expect(errors).toEqual([]);
+});
+
 test('capability discovery offers no moments until the runtime explicitly enables them',async({page})=>{
   const {requests,capabilityRequests,releaseCapabilities,errors,violations}=await openPreview(page,{momentsEnabled:true,holdCapabilities:true});
   const option=page.locator('#experience-choice option[value="moment"]');
@@ -231,21 +298,21 @@ for(const capability of [
 
 test('a family spoken bid owns its audio and quotation, ignores its echo, and accepts a spoken invitation',async({page})=>{
   const {requests,errors,violations}=await openPreview(page,{recognition:'available',manualAudio:true,familyBidTurn:2});
-  await page.locator('#spoken-interrupt-entry').check();await startEncounter(page,FAMILY_ID);await completeReply(page,0);
+  await page.locator('#spoken-interrupt-entry').check();await startEncounter(page,FAMILY_ID);await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
   for(let turn=1;turn<=2;turn++){
     await page.evaluate(text=>window.__previewRecognition.emit(text),'What support would feel useful '+turn+'?');
     await page.locator('#status').click();await page.keyboard.press('Space');
     await expect(page.locator('#status')).toContainText('Morgan is speaking');
-    if(turn===1)await completeReply(page,2);
+    if(turn===1)await completeReply(page,0);
   }
-  await expect(page.locator('#family-bid-offer')).toBeHidden();await finishAudio(page,4);
+  await expect(page.locator('#family-bid-offer')).toBeHidden();await finishAudio(page,2);
   await expect(page.locator('#status')).toContainText('Maya is speaking');
   await expect(page.locator('.family-bid .name')).toHaveText('Maya');
   await expect(page.locator('.message.dana:not(.family-bid)').last()).not.toContainText('Could I add something?');
   await page.evaluate(()=>window.__previewRecognition.emit('Could I add something?'));
   await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','speaking');
-  expect(await page.evaluate(()=>window.__previewAudio[5].pauses)).toBe(0);
-  await finishAudio(page,5);await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+  expect(await page.evaluate(()=>window.__previewAudio[3].pauses)).toBe(0);
+  await finishAudio(page,3);await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
   await expect(page.locator('#family-bid-name')).toHaveText('Maya asked to add something.');
   await expect(page.locator('.family-bid .delivery')).toHaveText('Voice completed');
   await page.locator('[data-station="mark"]').click();
@@ -255,7 +322,7 @@ test('a family spoken bid owns its audio and quotation, ignores its echo, and ac
   ]);
   await page.evaluate(()=>window.__previewRecognition.emit('Go ahead'));await page.locator('#status').click();await page.keyboard.press('Space');
   await expect.poll(()=>requests.length).toBe(4);expect(requests[3].targetRoleId).toBe('maya');expect(requests[3].previousCompletedSegments).toBe(2);
-  await expect(page.locator('#family-bid-offer')).toBeHidden();await completeReply(page,6);await page.click('#end');
+  await expect(page.locator('#family-bid-offer')).toBeHidden();await completeReply(page,4);await page.click('#end');
   expect(errors).toEqual([]);expect(violations).toEqual([]);
 });
 
@@ -271,8 +338,8 @@ for(const decision of ['invite','defer'])test(`family bid ${decision} keeps the 
 });
 
 test('an interrupted family bid is not offered or quoted as heard',async({page})=>{
-  const {requests,errors,violations}=await openPreview(page,{manualAudio:true,familyBidTurn:1});await startEncounter(page,FAMILY_ID);await completeReply(page,0,'ready');
-  await page.fill('#composer','What support would feel useful?');await page.click('#send');await finishAudio(page,2);
+  const {requests,errors,violations}=await openPreview(page,{manualAudio:true,familyBidTurn:1});await startEncounter(page,FAMILY_ID);await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','ready');
+  await page.fill('#composer','What support would feel useful?');await page.click('#send');await finishAudio(page,0);
   await expect(page.locator('#status')).toContainText('Maya is speaking');await page.keyboard.press('Escape');
   await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');await expect(page.locator('#family-bid-offer')).toBeHidden();
   await expect(page.locator('.family-bid .delivery')).toContainText('not remembered as heard');
@@ -592,6 +659,7 @@ test.describe('hosted preview in a real browser under its deployed headers', () 
       const {errors, violations} = await openPreview(page);
       await page.selectOption('#case-choice', patient.id);
       await expect(page.locator('#case-review-note')).toBeHidden();
+      if(patient.id===FAMILY_ID){await expect(page.locator('#family-preflight')).toBeVisible();await expect(page.locator('#start')).toBeDisabled();await page.locator('#start').scrollIntoViewIfNeeded();}
       await expect(page.locator('#start')).toBeInViewport({ratio: 1});
       await startEncounter(page, patient.id);
       await expect(page.locator('#preview-root')).toHaveAttribute('data-phase', 'ready');
@@ -612,8 +680,8 @@ test.describe('hosted preview in a real browser under its deployed headers', () 
     await startEncounter(page, FAMILY_ID);
     await expect(page.locator('#preview-root')).toHaveAttribute('data-phase', 'listening');
     await expect(page.locator('#family-speaker-choice')).toHaveValue('morgan');
-    await expect(page.locator('.message.dana .name').last()).toHaveText('Morgan');
-    expect(await page.evaluate(() => window.DanaStationContent.getProfile('family_morgan_maya_001').participants.map(({id,voice}) => ({id,voice})))).toEqual([{id: 'morgan', voice: 'Marin'}, {id: 'maya', voice: 'Cedar'}]);
+    await expect(page.locator('.message.dana')).toHaveCount(0);
+    expect(await page.evaluate(() => window.DanaStationContent.getProfile('family_morgan_maya_001').participants.map(({id,voice}) => ({id,voice})))).toEqual([{id: 'morgan', voice: 'Marin'}, {id: 'maya', voice: 'Coral'}]);
     await page.locator('.speaking-options summary').click();
     await page.locator('#hold-turn').check();
 

@@ -436,8 +436,8 @@ async function familyStart(s){return events(await s.handler()(request({action:'s
 test('family speakers retain distinct voices and public heard histories across turns',async()=>{
  const spoken=[],s=setup({provider:{speak:async job=>{spoken.push(job);return mp3;}}});
  let output=await familyStart(s),state=output.at(-1).state;
- assert.equal(output[0].speakerId,'morgan');assert.equal(spoken[0].caseId,'sp_alcohol_ambivalence_001');
- output=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId:'maya',state,text:'Maya, what support can you offer?',previousPlayback:'played',previousCompletedSegments:1})));
+ assert.equal(output[0].type,'ready');assert.equal(spoken.length,0);
+ output=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId:'maya',state,text:'Maya, what support can you offer?',previousPlayback:'played',previousCompletedSegments:0})));
  assert.equal(output[0].speakerId,'maya');assert.equal(spoken.at(-1).caseId,'family_maya_001');
  assert.match(s.contexts[0].system,/You are Maya/);
  assert.equal(s.contexts[0].messages.find(m=>m.content===output[0].reply),undefined);
@@ -451,7 +451,7 @@ test('family speakers retain distinct voices and public heard histories across t
 });
 test('family refuses invalid targets and private-channel requests before spending',async()=>{
  const s=setup(),state=(await familyStart(s)).at(-1).state,before=s.calls.length;
- const base={action:'turn',caseId:FAMILY,state,text:'Question',previousPlayback:'played',previousCompletedSegments:1};
+ const base={action:'turn',caseId:FAMILY,state,text:'Question',previousPlayback:'played',previousCompletedSegments:0};
  for(const targetRoleId of [undefined,'both','dana','morgan-private',null]){
   const body={...base,...(targetRoleId===undefined?{}:{targetRoleId})};
   assert.equal((await s.handler()(request(body))).status,400);
@@ -462,7 +462,7 @@ test('family refuses invalid targets and private-channel requests before spendin
 test('family retry keeps the original addressee even after switching speakers',async()=>{
  const s=setup();let state=(await familyStart(s)).at(-1).state;
  for(const [i,targetRoleId] of ['maya','morgan'].entries()){
-  const out=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId,state,text:'What matters to you?',previousPlayback:'played',previousCompletedSegments:i===0?1:2})));state=out.at(-1).state;
+  const out=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId,state,text:'What matters to you?',previousPlayback:'played',previousCompletedSegments:i===0?0:2})));state=out.at(-1).state;
  }
  const out=await events(await s.handler()(request({action:'retry',caseId:FAMILY,state,turnId:1,text:'Let me ask that differently.'})));
  assert.equal(out[0].speakerId,'maya');assert.match(s.contexts.at(-1).system,/You are Maya/);
@@ -479,8 +479,8 @@ test('family speaker labels are refused before speech prefetch or final publicat
   let speechCalls=0;
   const s=setup({provider:{speak:async()=>{speechCalls++;return mp3;},replyStream:async job=>{job.onLead(label);return label;}}});
   const state=(await familyStart(s)).at(-1).state;
-  const out=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId:'maya',state,text:'What support?',previousPlayback:'played',previousCompletedSegments:1})));
-  assert.deepEqual(out,[{type:'error',code:'preview_provider_unavailable'}]);assert.equal(speechCalls,1,'only opening audio is generated');
+  const out=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId:'maya',state,text:'What support?',previousPlayback:'played',previousCompletedSegments:0})));
+  assert.deepEqual(out,[{type:'error',code:'preview_provider_unavailable'}]);assert.equal(speechCalls,0,'neither an opening nor rejected speaker text is synthesized');
  }
 });
 
@@ -489,9 +489,9 @@ test('family refuses a second speaker label hidden in a later sentence',async()=
  const lead='I can offer a weekly call.';
  const s=setup({provider:{speak:async()=>{speechCalls++;return mp3;},replyStream:async job=>{job.onLead(lead);return lead+'\nMorgan: I agree to that plan.';}}});
  const state=(await familyStart(s)).at(-1).state;
- const out=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId:'maya',state,text:'What support?',previousPlayback:'played',previousCompletedSegments:1})));
+ const out=await events(await s.handler()(request({action:'turn',caseId:FAMILY,targetRoleId:'maya',state,text:'What support?',previousPlayback:'played',previousCompletedSegments:0})));
  assert.deepEqual(out,[{type:'error',code:'preview_provider_unavailable'}]);
- assert.equal(speechCalls,2,'opening and private speculative lead only; no mislabeled remainder');
+ assert.equal(speechCalls,1,'private speculative lead only; no opening or mislabeled remainder');
 });
 
 function encounterCodec(caseId){return createStateCodec({key:env.DANA_PREVIEW_STATE_KEY,binding:`hosted-sp-v2:${caseId}:${getCase(caseId).binding}:${env.DEPLOY_ID}:${origin}:${hash(env.DANA_PREVIEW_PASSCODE)}`,withDeliveryIntensity:true});}
@@ -503,14 +503,14 @@ test('voice intensity is sealed at Start and preserved through turns and the alt
    const spoken=[],s=setup({provider:{speak:async job=>{spoken.push(job);return mp3;}}}),codec=encounterCodec(caseId);
    let output=await events(await s.handler()(request({action:'start',caseId,requestId:crypto.randomUUID(),deliveryIntensity}))),state=output.at(-1).state;
    assert.equal(codec.open(state).deliveryIntensity,deliveryIntensity);
-   output=await events(await s.handler()(request({action:'turn',caseId,state,text:'What matters to you?',previousPlayback:'played',previousCompletedSegments:1,...(caseId===FAMILY?{targetRoleId:'maya'}:{})})));
+   output=await events(await s.handler()(request({action:'turn',caseId,state,text:'What matters to you?',previousPlayback:'played',previousCompletedSegments:caseId===FAMILY?0:1,...(caseId===FAMILY?{targetRoleId:'maya'}:{})})));
    state=output.at(-1).state;
    assert.equal(codec.open(state).deliveryIntensity,deliveryIntensity);
    output=await events(await s.handler()(request({action:'retry',caseId,state,turnId:1,text:'Let me ask that differently.'})));
    assert.equal(codec.open(output.at(-1).state).deliveryIntensity,deliveryIntensity);
-   assert.equal(spoken.length,5,'opening plus two segmented answers');
+   assert.equal(spoken.length,caseId===FAMILY?4:5,'two segmented answers, plus an opening only in individual encounters');
    assert.ok(spoken.every(job=>job.deliveryIntensity===deliveryIntensity),'every speech segment uses the authenticated setting');
-   if(caseId===FAMILY)assert.deepEqual(spoken.map(job=>job.caseId),['sp_alcohol_ambivalence_001',...Array(4).fill('family_maya_001')],'each family role keeps its own voice at the shared setting');
+   if(caseId===FAMILY)assert.deepEqual(spoken.map(job=>job.caseId),Array(4).fill('family_maya_001'),'each family role keeps its own voice at the shared setting');
    const currentContexts=s.contexts.map(({system,messages})=>({system,messages}));
    if(actorContexts)assert.deepEqual(currentContexts,actorContexts,'vocal intensity does not change actor facts, disclosure authority, or heard dialogue');
    else actorContexts=currentContexts;

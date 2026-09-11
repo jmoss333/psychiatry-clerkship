@@ -6,7 +6,7 @@ import {refineActorContext,isDeliveryIntensity} from './portrayal.mjs';
 import {applyInteractionGuidance,validateInteractionReply} from './interaction-guidance.mjs';
 import {recommendFamilyBid} from './family-bids.mjs';
 import {roomCue,withRoomCue} from './room-cues.mjs';
-import {hash,problem,createStateCodec,initialState,nextHistory,issuedState,retryState} from './state.mjs';
+import {hash,problem,createStateCodec,initialState,nextHistory,issuedState,retryState,learnerHistoryIndex} from './state.mjs';
 
 const HEADERS={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
 const safeCodes=new Set(['preview_unavailable','preview_forbidden','preview_input_invalid','preview_state_invalid','preview_session_expired','preview_encounter_finished','preview_operation_duplicate','preview_operation_mismatch','preview_daily_starts_exhausted','preview_budget_exhausted','preview_window_exhausted','preview_budget_unavailable','preview_budget_contention','preview_provider_unavailable','preview_cancelled']);
@@ -45,7 +45,7 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
     if(!exact(body,['action','caseId','requestId',...(intensityPresent?['deliveryIntensity']:[])])||typeof body.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(body.requestId)
       ||intensityPresent&&!isDeliveryIntensity(body.deliveryIntensity))throw problem(400,'preview_input_invalid');
     roleId=isFamily?'morgan':undefined;
-    state=initialState(caseDef.persona.opening,now,caseDef.id,roleId,intensityPresent?body.deliveryIntensity:'standard');operationId=`start:${body.requestId}`;
+    state=initialState(caseDef.persona.opening,now,caseDef.id,roleId,intensityPresent?body.deliveryIntensity:'standard',isFamily?'clinician':undefined);operationId=`start:${body.requestId}`;
    }else if(action==='turn'){
     const cuePresent=Object.hasOwn(body,'roomCueId');
     if(!exact(body,['action','caseId','state','text','previousPlayback','previousCompletedSegments',...(isFamily?['targetRoleId']:[]),...(cuePresent?['roomCueId']:[])]))throw problem(400,'preview_input_invalid');
@@ -63,7 +63,7 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
     state=retryState(parent,body.turnId,randomBytes(16).toString('hex'));
     // An alternative revisits the same person, even if the last turn addressed
     // someone else. The original addressee is authenticated inside the receipt.
-    if(isFamily){roleId=parent.history[body.turnId*2-1]?.targetRoleId;if(!['morgan','maya'].includes(roleId))throw problem(400,'preview_state_invalid');}
+    if(isFamily){roleId=parent.history[learnerHistoryIndex(parent,body.turnId)]?.targetRoleId;if(!['morgan','maya'].includes(roleId))throw problem(400,'preview_state_invalid');}
     // The client reports no playback for a retry, and must not: its counts describe
     // the reply it last heard, at the END of the encounter, not the moment being
     // returned to. The truncated history already records what was heard there.
@@ -105,6 +105,11 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
      const pending=[];
      const begin=(text,speaker)=>{const job=speak(text,speaker);job.catch(()=>{});pending.push(job);return job;};
      try{
+      if(action==='start'&&state.openingMode==='clinician'){
+       const receipt=codec.seal(state);
+       send({type:'ready',caseId:caseDef.id,turn:0,state:receipt});
+       send({type:'complete',state:receipt});return;
+      }
       let reply,segments,jobs,familyBid;
       if(action==='start'){reply=caseDef.persona.opening;segments=[reply];jobs=[begin(reply)];}
       else {

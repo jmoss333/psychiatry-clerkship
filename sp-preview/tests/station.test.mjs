@@ -334,7 +334,7 @@ test('a disposed station ignores further updates rather than re-rendering — R4
 });
 
 test('every registered case declares its own display name and voice — R5',()=>{
-  const expected={sp_depression_gated_si_001:['Dana','Marin'],sp_mania_redirect_001:['Marcus','Cedar'],sp_psychosis_paranoid_001:['Ray','Cedar'],sp_alcohol_ambivalence_001:['Morgan','Marin'],family_morgan_maya_001:['Morgan and Maya','Marin and Cedar']};
+  const expected={sp_depression_gated_si_001:['Dana','Marin'],sp_mania_redirect_001:['Marcus','Cedar'],sp_psychosis_paranoid_001:['Ray','Cedar'],sp_alcohol_ambivalence_001:['Morgan','Marin'],family_morgan_maya_001:['Morgan and Maya','Marin and Coral']};
   for(const [caseId,[name,voice]] of Object.entries(expected)){
     const profile=contentModule.exports.getProfile(caseId);
     assert.equal(profile.displayName,name,caseId+' names itself');
@@ -392,7 +392,7 @@ test('newly hosted profiles expose shared entry information without private inve
   const participants=contentModule.exports.getProfile('family_morgan_maya_001').participants;
   assert.deepEqual(participants.map(({id,displayName,voice,pronouns})=>({id,displayName,voice,pronouns})),[
     {id:'morgan',displayName:'Morgan',voice:'Marin',pronouns:'they/them'},
-    {id:'maya',displayName:'Maya',voice:'Cedar',pronouns:'she/her'}
+    {id:'maya',displayName:'Maya',voice:'Coral',pronouns:'she/her'}
   ]);
 });
 

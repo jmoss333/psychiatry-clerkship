@@ -61,7 +61,7 @@ const authoredCase = {
     },
     maya: {
       id: 'maya', displayName: 'Maya', pronouns: 'she/her', relationship: 'adult daughter',
-      voice: 'cedar', speechCaseId: 'family_maya_001',
+      voice: 'coral', speechCaseId: 'family_maya_001',
       description: 'Morgan’s adult daughter; caring, direct, and clear that support does not mean monitoring.',
       publicFacts: {
         priority: 'Maya wants to keep a caring relationship with Morgan and understand what support Morgan would welcome.',

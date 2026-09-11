@@ -15,8 +15,9 @@ const HOLD_FLOOR=/\b(?:suicid\w*|self[- ]?harm|kill\w*|die|dying|dead|death|over
 
 function checkedHistory(history){
  if(!Array.isArray(history)||history.length<1||history.length>21)throw bad();
+ const patientFirst=history[0]?.who==='pt';
  for(const [index,entry] of history.entries()){
-  const patient=index%2===0;
+  const patient=index%2===(patientFirst?0:1);
   if(!entry||typeof entry!=='object'||Array.isArray(entry)||entry.who!==(patient?'pt':'me')
    ||typeof entry.text!=='string'||!entry.text.trim()||entry.text.length>1200
    ||!role(patient?entry.speakerId:entry.targetRoleId)
@@ -46,7 +47,8 @@ export function recommendFamilyBid(history,targetRoleId){
  if(previousQuestion?.who!=='me'||previousQuestion.targetRoleId!==targetRoleId)return null;
  if(!SHARED_TOPIC.test(latest.text)||HOLD_FLOOR.test(latest.text))return null;
  const speakerId=ROLES.find(id=>id!==targetRoleId);
- const offers=history.flatMap((entry,index)=>entry.familyBid?[{speakerId:entry.familyBid.speakerId,turn:index/2}]:[]);
+ let learnerTurn=0;
+ const offers=history.flatMap(entry=>{if(entry.who==='me')learnerTurn++;return entry.familyBid?[{speakerId:entry.familyBid.speakerId,turn:learnerTurn}]:[];});
  if(offers.length>=2||offers.some(offer=>offer.speakerId===speakerId))return null;
  if(offers.length&&turn-offers.at(-1).turn<2)return null;
  return Object.freeze({speakerId,text:FAMILY_BID_TEXT});
