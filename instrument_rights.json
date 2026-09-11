@@ -6,7 +6,7 @@
       "id": "cssrs",
       "instrument": "Columbia-Suicide Severity Rating Scale (C-SSRS)",
       "status": "retired",
-      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — Option A resolution (2026-08-23): C-SSRS retires, copyrighted and licensed by the Columbia Lighthouse Project (WP-06R-a); stage 1 shipped in PR #411 (2026-08-27)",
+      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — Option A resolution (2026-08-23): C-SSRS retires, copyrighted and licensed by the Columbia Lighthouse Project (WP-06R-a); stage 1 shipped in PR #411 (2026-08-27) || 2026-09-10, factual correction (research return rq-10-2026-09-10, finding f7; status UNCHANGED): this entry described the scale as \"copyrighted and licensed by the Columbia Lighthouse Project\". The copyright line printed on the official forms is The Research Foundation for Mental Hygiene, Inc. (RFMH, 2008); Columbia's Lighthouse Project is the distributing project and the training custodian, not the named rightsholder. The retired posture is unaffected — if anything it is better founded, since the forms route reprints to a named contact rather than granting republication.",
       "signatures": [
         "wished you were dead",
         "go to sleep and not wake up",
@@ -134,7 +134,7 @@
       "id": "phq9-gad7",
       "instrument": "PHQ-9 and GAD-7",
       "status": "provisional",
-      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — Option A resolution (2026-08-23): provisionally stay — Pfizer's standard form footer states no permission is required, but this must be verified against the current form before it is relied on (WP-02c, open)",
+      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — Option A resolution (2026-08-23): provisionally stay — Pfizer's standard form footer states no permission is required, but this must be verified against the current form before it is relied on (WP-02c, open) || 2026-09-10, boundary recorded (research return rq-10-2026-09-10, finding f5; status UNCHANGED pending a decision record): the custodian permission names four verbs — reproduce, translate, display, distribute — and does not name modify, adapt or derivative works, while Pfizer's generic site terms restrict derivative works. A faithful verbatim render is inside the permission; changing wording, response options, ordering, time frame or instructions is not. WP-02c's verification is complete: docs/permissions/phqscreeners-2026-09-10.md captures the live sentence read 2026-09-10.",
       "signatures": [
         "little interest or pleasure in doing things",
         "feeling down, depressed, or hopeless",

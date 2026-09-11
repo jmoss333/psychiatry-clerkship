@@ -117,10 +117,12 @@
           "claim": "The current PHQ Screeners site (Pfizer) states that no permission is required to reproduce, translate, display or distribute the PHQ and GAD-7 screeners, which is the express public-web permission WP-02c was left open to verify.",
           "disposition": "needs-primary",
           "primary": {
-            "citation": "PHQ Screeners (Pfizer Inc.), current permission statement, select-screener page.",
-            "url": "https://www.phqscreeners.com/select-screener"
+            "citation": "PHQ Screeners (Pfizer Inc.), permission statement on the select-screener page.",
+            "url": "https://www.phqscreeners.com/select-screener",
+            "retrievedAt": "2026-09-10",
+            "archivedCopy": "docs/permissions/phqscreeners-2026-09-10.md"
           },
-          "note": "Would move phq9-gad7 from provisional -> cleared. Verify by fetching the live page, not by trusting this quote, and archive a dated PDF/screenshot into the permissions file — the whole permission is a web sentence that can change without notice. Corroborated independently by the LOINC record for PHQ-9 and GAD-7."
+          "note": "Would move phq9-gad7 from provisional -> cleared. Verify by fetching the live page, not by trusting this quote, and archive a dated PDF/screenshot into the permissions file — the whole permission is a web sentence that can change without notice. Corroborated independently by the LOINC record for PHQ-9 and GAD-7. || VERIFIED 2026-09-10 by live retrieval in Chrome, not from the return: the sentence is present verbatim on the custodian's own page and is captured with its context in docs/permissions/phqscreeners-2026-09-10.md. The evidence half of this finding is finished and satisfies the url+retrievedAt+archivedCopy variant. It stays needs-primary because promoting it MEANS moving phq9-gad7 provisional -> cleared, and instrument_rights.json's own rule is that a status changes only with the decisionRef that recorded it, never by agent inference. One decisions.json entry away."
         },
         {
           "id": "f5",

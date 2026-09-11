@@ -143,11 +143,20 @@ step "unit — evidence annotations"          python3 $A/validate_evidence_annot
 step "validate_evidence_annotations"        python3 $A/validate_evidence_annotations.py
 step "span audit (verbatim vs paper)"       python3 bin/verify_spans.py
 step "unit — research dock"                 python3 bin/research-dock.py --self-test
-step "research return dock"                 python3 bin/research-dock.py check
-# Same asymmetry as the dock above and for the same reason: --self-test BLOCKS because it
-# is a real falsification and check_vacuity.py requires it; the coverage check REPORTS
-# because an undecided standards unit is a faculty decision and must never be able to
-# stop a clinical correction from being pushed. --strict exists for deliberate use.
+step "research return dock"                 python3 bin/research-dock.py check --strict
+# Two gates here, ONE principle: a gate may only block on something the person in front of
+# it can actually fix. They reach it by different routes, which is why the flags differ.
+#   - The DOCK blocks, but narrowly. `--strict` exits 1 on BLOCKING defects only -- a
+#     property of the tracked JSON, wrong in every checkout and fixable in seconds. It never
+#     exits on advisory ones: staleness, or a `returnFile` that exists only in the checkout
+#     that owns the returns (they are gitignored, so ~25 worktrees carry the registry without
+#     the answers). See `Defect` in bin/research-dock.py. Before this split the step ran
+#     WITHOUT --strict and the exit code was `1 if args.strict else 0`, so it printed defects
+#     and passed while the doc called it a gate.
+#   - STANDARDS COVERAGE reports. An undecided standards unit is a faculty decision, not a
+#     file anyone can edit, so it must never stop a clinical correction from being pushed.
+#     `--strict` exists there for deliberate use.
+# `--self-test` BLOCKS for both: it is a real falsification and check_vacuity.py requires it.
 step "unit — standards coverage"            python3 bin/check_standards_coverage.py --self-test
 step "standards spine coverage"             python3 bin/check_standards_coverage.py
 step "unit — qbank coherence"              python3 bin/check_qbank_coherence.py --self-test
