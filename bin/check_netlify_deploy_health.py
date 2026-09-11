@@ -67,6 +67,19 @@ DEFAULT_LOOKBACK_HOURS = 36
 # content change", so match the sentence, not the whole string.
 BENIGN_CANCEL = re.compile(r"canceled build due to no content change", re.IGNORECASE)
 
+# The SECOND benign shape, found the first time this alarm ever ran with a token
+# (2026-09-11): Netlify's own superseded-commit skip. When a newer commit lands while a
+# build is still queued, Netlify abandons the older one and files it as state "error"
+# with error_message "Skipped". It is not a failure and the repo cannot prevent it --
+# `clerkship-deploy` trap 4 already says so.
+#
+# Discriminated on the API's BOOLEAN `skipped`, never on the word "Skipped". The message
+# is a bare, generic word that a genuine failure could plausibly contain; the boolean is
+# set only when Netlify chose not to run the build at all, which no real failure does.
+# Matching the string here would be the same mistake as matching a log line.
+def _is_superseded_skip(deploy):
+    return deploy.get("skipped") is True
+
 HEALTHY_STATES = frozenset({"ready", "current"})
 IN_FLIGHT_STATES = frozenset(
     {
@@ -156,7 +169,13 @@ def classify_site(slug, deploys, now, lookback_hours=DEFAULT_LOOKBACK_HOURS):
     """
     horizon = now - timedelta(hours=lookback_hours)
     findings = []
-    counts = {"production": 0, "in_window": 0, "benign_cancels": 0, "healthy": 0}
+    counts = {
+        "production": 0,
+        "in_window": 0,
+        "benign_cancels": 0,
+        "superseded_skips": 0,
+        "healthy": 0,
+    }
     for deploy in deploys:
         if not isinstance(deploy, dict):
             findings.append(
@@ -194,6 +213,9 @@ def classify_site(slug, deploys, now, lookback_hours=DEFAULT_LOOKBACK_HOURS):
         if state == FAILED_STATE:
             if BENIGN_CANCEL.search(message):
                 counts["benign_cancels"] += 1
+                continue
+            if _is_superseded_skip(deploy):
+                counts["superseded_skips"] += 1
                 continue
             findings.append(
                 {
@@ -292,6 +314,36 @@ def _self_test():
     expect("benign cancels are counted", counts["benign_cancels"] == 1)
     expect("healthy deploys are counted", counts["healthy"] == 1)
 
+    # Netlify's own superseded-commit skip. Real shape, observed on
+    # psychiatry-workforce-tour the first time this alarm ran with a token:
+    # state "error", error_message "Skipped", skipped True.
+    superseded = {
+        "id": "d-superseded",
+        "context": "production",
+        "state": "error",
+        "error_message": "Skipped",
+        "skipped": True,
+        "created_at": recent,
+    }
+    found, counts = classify_site("t", [superseded], now)
+    expect("a superseded-commit skip is not a finding", found == [])
+    expect("superseded skips are counted separately",
+           counts["superseded_skips"] == 1 and counts["benign_cancels"] == 0)
+
+    # The discriminator is the BOOLEAN, not the word. A real failure whose message
+    # merely contains "Skipped" must still ring.
+    worded = dict(superseded, id="d-worded", skipped=None,
+                  error_message="Build failed: Skipped 3 tests, then exit 1")
+    found, counts = classify_site("t", [worded], now)
+    expect("a real failure is NOT excused by the word 'Skipped'", len(found) == 1)
+    expect("that failure is not miscounted as a skip",
+           counts["superseded_skips"] == 0)
+    # And skipped must be the literal True, not any truthy value smuggled in.
+    for falsey in (None, False, 0, "", "true", 1):
+        probe = dict(superseded, id="d-probe", skipped=falsey)
+        found, _ = classify_site("t", [probe], now)
+        expect("skipped=%r does not excuse a failure" % (falsey,), len(found) == 1)
+
     found, _ = classify_site("t", [real], now)
     expect("a real build failure IS a finding", len(found) == 1)
     expect(
@@ -385,13 +437,17 @@ def main(argv=None):
     })
     for site in sites:
         counts = site["counts"]
+        # Both discard reasons are printed separately. A single "skipped" column would
+        # hide which benign shape fired, and the whole point of discarding anything is
+        # that a reader can still see what was discarded and why.
         print(
-            "%-34s window=%d healthy=%d skipped=%d"
+            "%-34s window=%d healthy=%d no-content-change=%d superseded=%d"
             % (
                 site["slug"],
                 counts["in_window"],
                 counts["healthy"],
                 counts["benign_cancels"],
+                counts["superseded_skips"],
             )
         )
     if not findings:
