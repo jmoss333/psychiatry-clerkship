@@ -269,14 +269,23 @@ function fdSheetItemBody(item, index){
    Sections are emitted as direct siblings spaced by `.fd-set + .fd-set` (frontdoor.css), matching
    the adjacent-sibling idiom the kit rows use -- no wrapper div between them. A later section can
    therefore be inserted before or after this one by adding a line, with no restructuring. */
+/* Three toggle buttons in a labelled group, NOT role="radio" in a role="radiogroup". The radio
+   roles are a promise of a keyboard contract -- roving tabindex so the set is one tab stop, arrow
+   keys moving the selection, Home/End -- and none of it is implemented here; implementing it means
+   reaching into fdKeyAction, the shared keyboard map, for a three-item control. A role that lies
+   is worse than no role: a screen-reader user hears "radio button, 1 of 3", presses the arrow key
+   the role just told them to press, and nothing happens. As buttons the promise is one the markup
+   keeps on its own -- each is tabbable, Enter and Space activate it, and the announcement is
+   "Color theme, group, Dark, pressed". `is-active` is what the CSS fills and aria-pressed is what
+   assistive tech reads; both are set from the same `active`, and a test pins that they agree. */
 function fdSettingsSeg(mode){
   var opts=[['system','System'],['light','Light'],['dark','Dark']];
   var cur=fdThemeMode(mode);
-  var out='<div class="fd-seg" role="radiogroup" aria-label="Color theme">';
+  var out='<div class="fd-seg" role="group" aria-label="Color theme">';
   for(var i=0;i<opts.length;i++){
     var active=(opts[i][0]===cur);
-    out+='<button type="button" role="radio" class="fd-seg__btn'+(active?' is-active':'')+'" '+
-      'data-fd-theme="'+opts[i][0]+'" aria-checked="'+(active?'true':'false')+'">'+
+    out+='<button type="button" class="fd-seg__btn'+(active?' is-active':'')+'" '+
+      'data-fd-theme="'+opts[i][0]+'" aria-pressed="'+(active?'true':'false')+'">'+
       opts[i][1]+'</button>';
   }
   return out+'</div>';

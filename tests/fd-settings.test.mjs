@@ -77,13 +77,13 @@ test('appearance offers all three modes and marks the active one', () => {
   for (const m of ['system', 'light', 'dark']) {
     assert.match(h, new RegExp(`data-fd-theme="${m}"`), `${m} must be offered`);
   }
-  assert.match(h, /data-fd-theme="dark"[^>]*aria-checked="true"/);
-  assert.match(h, /data-fd-theme="light"[^>]*aria-checked="false"/);
+  assert.match(h, /data-fd-theme="dark"[^>]*aria-pressed="true"/);
+  assert.match(h, /data-fd-theme="light"[^>]*aria-pressed="false"/);
 });
 
 test('system is the active mode when nothing was ever chosen', () => {
   const h = S.fdSheetSettingsBody(withState({ themeMode: undefined }));
-  assert.match(h, /data-fd-theme="system"[^>]*aria-checked="true"/);
+  assert.match(h, /data-fd-theme="system"[^>]*aria-pressed="true"/);
 });
 
 test('the sheet renders settings as a dialog with a close control', () => {
@@ -95,7 +95,7 @@ test('the sheet renders settings as a dialog with a close control', () => {
   // every assertion above, and the index passed here holds no protocol for 'settings' -- so the
   // old fall-through would have returned '' and this is what tells the two apart.
   assert.match(h, /aria-label="Settings"/, 'the dialog names itself Settings');
-  assert.match(h, /class="fd-seg"[^>]*role="radiogroup"/, 'and carries the appearance control');
+  assert.match(h, /class="fd-seg"[^>]*role="group"/, 'and carries the appearance control');
 });
 
 // The wiring that puts a real mode on state, executed rather than grepped. The panel reads
@@ -122,6 +122,40 @@ test('fdLiveState resolves the stored key into the mode the panel renders', () =
     'a junk stored value normalises here rather than reaching the renderer raw');
 
   assert.match(S.fdSheetSettingsBody({ themeMode: resolve(stored('dark'), S.fdThemeMode) }),
-    /data-fd-theme="dark"[^>]*aria-checked="true"/,
+    /data-fd-theme="dark"[^>]*aria-pressed="true"/,
     'a stored dark mode must reach the panel as the active choice');
+});
+
+// role="radio" is a PROMISE of a keyboard contract: roving tabindex so the group is one tab stop,
+// arrow keys moving the selection, Home/End. None of that is implemented here, and implementing it
+// would mean reaching into fdKeyAction -- the shared keyboard map -- for a three-item control. A
+// role that lies is worse than no role: a screen-reader user hears "radio button, 1 of 3", presses
+// the arrow key the role just told them to press, and nothing happens. Three ordinary toggle
+// buttons keep only the promise they can keep. Reinstating the radio pattern is correct ONLY
+// alongside the keyboard code, so this stays red until both land together.
+test('the appearance control claims no keyboard contract it does not implement', () => {
+  const h = S.fdSheetSettingsBody(withState({ themeMode: 'dark' }));
+  assert.doesNotMatch(h, /role="radio(?:group)?"/,
+    'a radio role requires roving tabindex, arrow-key selection and Home/End');
+  assert.doesNotMatch(h, /aria-checked/,
+    'aria-checked belongs to radio and checkbox, never to a plain button');
+  assert.match(h, /class="fd-seg"[^>]*role="group"/, 'the segments are a labelled group');
+});
+
+// .is-active is what the CSS fills; aria-pressed is what a screen reader announces. Different
+// audiences read the two, so an edit that moves one and not the other shows a different segment as
+// chosen to sighted and non-sighted learners, with nothing to notice it.
+test('the styled segment and the announced segment are the same one', () => {
+  for (const mode of ['system', 'light', 'dark']) {
+    const buttons = S.fdSheetSettingsBody(withState({ themeMode: mode }))
+      .match(/<button[^>]*data-fd-theme="[^"]*"[^>]*>/g) || [];
+    assert.equal(buttons.length, 3, `${mode}: all three segments must render`);
+    const styled = buttons.filter((b) => /class="[^"]*\bis-active\b/.test(b));
+    const announced = buttons.filter((b) => /aria-pressed="true"/.test(b));
+    assert.equal(styled.length, 1, `${mode}: exactly one segment is filled`);
+    assert.equal(announced.length, 1, `${mode}: exactly one segment is announced pressed`);
+    assert.equal(styled[0], announced[0], `${mode}: and it must be the same segment`);
+    assert.match(styled[0], new RegExp(`data-fd-theme="${mode}"`),
+      `${mode}: the chosen mode is the one marked`);
+  }
 });

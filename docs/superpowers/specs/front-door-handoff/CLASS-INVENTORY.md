@@ -447,8 +447,8 @@ independent states on the child. A current *and* done item carries both.
     .fd-sheet__intro
     .fd-set  <section> ×N            (direct siblings, no wrapper)
       .fd-set__h  <h3>
-      .fd-seg          [role=radiogroup]
-        .fd-seg__btn   <button> [role=radio]   (.is-active on the chosen one)
+      .fd-seg          [role=group]
+        .fd-seg__btn   <button> ×3             (.is-active + aria-pressed on the chosen one)
       .fd-set__note
 
 .fd-nudge                           (fixed, z-120, bottom-centre toast)
@@ -467,6 +467,7 @@ independent states on the child. A current *and* done item carries both.
 | `.fd-sheet__failure` | Fail-closed alert with an owner-controlled sentence; protocol steps and documentation remain absent. |
 | `.fd-set` | One settings section. Spaced by `.fd-set + .fd-set`, so sections are direct siblings and a new one can be inserted anywhere in the order without a wrapper. |
 | `.fd-seg` | Segmented control. Segments butt together inside one border (`gap:0`); the divider is `.fd-seg__btn + .fd-seg__btn`'s `border-left`. |
+| `.fd-seg__btn` | An ordinary toggle button, never `role="radio"` — that role promises roving tabindex and arrow-key selection, which this control does not implement. `.is-active` (what the CSS fills) and `aria-pressed` (what assistive tech reads) are set together and must stay on the same button. |
 
 At the mobile breakpoint, primary actions, navigation controls, dialog close/back controls, and
 icon-sized controls have a minimum 44px hit target. Icon-sized controls also have a 44px minimum
