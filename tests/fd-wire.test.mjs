@@ -806,12 +806,18 @@ test('system persists as system and paints whatever the OS currently reports', (
   assert.deepEqual(pick(false), { dataTheme: 'light', stored: 'system' });
 });
 
-test('theme rerender falls back to any live theme control when the chosen one is gone', () => {
+// Relocated into the open panel, which is where a theme control has actually lived since the
+// header glyph became the settings gear: fdSettingsSeg is its only emitter. The contract under
+// test is unchanged -- the REBUILT control takes focus and the disconnected one does not -- but it
+// is now asked of the surface that ships, and reached through the same generic path as every other
+// control in the panel rather than through a theme-shaped branch of its own.
+test('theme rerender focuses the live replacement, not the disconnected old button', () => {
   let replacement = null;
   const invoker = actionTarget({ 'data-fd-theme': '' });
-  const h = fakeHarness({ ...roleContext, screen: 'app' }, {
+  const panel = { querySelector: (selector) => (selector === '[data-fd-theme=""]' ? replacement : null) };
+  const h = fakeHarness({ ...roleContext, screen: 'app', sheet: 'settings' }, {
     F,
-    querySelector: (selector) => selector === '[data-fd-theme]' ? replacement : null,
+    querySelector: (selector) => (selector === '.fd-sheet[role="dialog"]' ? panel : null),
     renderTransient: (_next, detail) => {
       if (detail.effect?.type === 'set-theme') {
         invoker.isConnected = false;
@@ -824,7 +830,8 @@ test('theme rerender falls back to any live theme control when the chosen one is
   });
   h.rootHandlers.click({ target: invoker, preventDefault() {} });
   assert.equal(replacement.focused, 1,
-    'the header replacement, not the disconnected old button, receives focus');
+    'the rebuilt control, not the disconnected old button, receives focus');
+  assert.equal(invoker.focused, undefined, 'and the destroyed element is never focused');
 });
 
 test('the Week control focuses the newly rendered setup heading', () => {
@@ -2038,14 +2045,16 @@ test('theme focus lands on the chosen mode, not the first control in the group',
     dark: actionTarget({ 'data-fd-theme': 'dark' }),
   };
   const asked = [];
-  const h = fakeHarness({ ...roleContext, screen: 'app' }, {
-    F,
+  const panel = {
     querySelector: (selector) => {
       asked.push(selector);
       const exact = selector.match(/^\[data-fd-theme="(\w+)"\]$/);
-      if (exact) return group[exact[1]] || null;
-      return selector === '[data-fd-theme]' ? group.system : null;
+      return exact ? (group[exact[1]] || null) : null;
     },
+  };
+  const h = fakeHarness({ ...roleContext, screen: 'app', sheet: 'settings' }, {
+    F,
+    querySelector: (selector) => (selector === '.fd-sheet[role="dialog"]' ? panel : null),
     renderTransient: () => {},
     document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
   });
@@ -2069,4 +2078,99 @@ test('picking a role in the wizard advances; picking one in settings does not', 
   assert.equal(panel.patch.screen, undefined, 'changing a setting must not reopen the wizard');
   assert.equal(panel.patch.sheet, undefined,
     'and the panel stays open, because the chip it just filled is the only feedback there is');
+});
+
+// ── The settings panel's focus guarantee ──────────────────────────────────────────────────────
+// Every control in this panel re-renders the panel it lives in, and fdRenderOverlays replaces the
+// overlay mount's innerHTML on every render -- so the element the learner just activated is gone
+// before focus could return to it. Three focus paths existed and none covered that: focusDialog
+// wants the overlay IDENTITY to change, restoreInvoker wants it CLOSED, focusPostTransition wanted
+// a set-theme effect or a setup- screen. Focus fell to <body>, where fdTrapFocus declines, so the
+// next Tab walked out of an aria-modal dialog and behind its own backdrop. And because the panel
+// ships no toast by decision, a control's aria-pressed is the entire feedback it gives: a
+// screen-reader user heard nothing at all about their own click.
+//
+// The guarantee is generic, and this is where it is pinned: an activation inside an open panel
+// leaves focus on the EQUIVALENT control in the rebuilt DOM -- same action attribute, same value.
+// Tasks 6-8 add a date input, two erase buttons and an analytics toggle to this same panel. Each
+// inherits this by adding one row to PANEL_CONTROLS below, not by writing a fourth focus branch.
+const PANEL_CONTROLS = [
+  ['data-fd-role', 'staff'],
+  ['data-fd-theme', 'dark'],
+];
+
+// The panel is really destroyed and rebuilt here, because that is the whole mechanism: every
+// render mints NEW control objects, so focusing the element that was clicked is observably
+// different from focusing its equivalent. A harness whose focus() is a stub nobody asserts on
+// cannot tell those two apart, which is exactly how this gap stayed invisible.
+function panelFocusHarness(initial) {
+  let generation = 0;
+  let controls = [];
+  const focused = [];
+  const rebuild = () => {
+    generation += 1;
+    const gen = generation;
+    controls = PANEL_CONTROLS.map(([name, value]) => ({
+      name,
+      value,
+      generation: gen,
+      hasAttribute: (n) => n === name,
+      getAttribute: (n) => (n === name ? value : null),
+      focus() { focused.push(this); },
+    }));
+  };
+  rebuild();
+  const panel = {
+    querySelector(selector) {
+      const m = selector.match(/^\[([a-z-]+)="(.*)"\]$/);
+      if (!m) return null;
+      return controls.find((c) => c.name === m[1] && c.value === m[2]) || null;
+    },
+  };
+  const h = fakeHarness(initial, {
+    F,
+    querySelector: (selector) => (selector === '.fd-sheet[role="dialog"]' ? panel : null),
+    render: rebuild,
+    renderTransient: rebuild,
+    document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
+  });
+  return { h, focused, generation: () => generation };
+}
+
+test('activating any settings-panel control leaves focus on its rebuilt equivalent', () => {
+  for (const [attr, value] of PANEL_CONTROLS) {
+    const { h, focused, generation } = panelFocusHarness({
+      ...roleContext, screen: 'app', sheet: 'settings',
+    });
+    const before = generation();
+    const invoker = actionTarget({ [attr]: value });
+    h.rootHandlers.click({ target: invoker, preventDefault() {} });
+
+    assert.ok(generation() > before, `${attr}: the click must re-render the panel`);
+    assert.equal(focused.length, 1, `${attr}: exactly one control takes focus`);
+    const landed = focused[0];
+    assert.equal(landed.generation, generation(),
+      `${attr}: focus must land in the REBUILT panel, not on the element that was destroyed`);
+    assert.equal(landed.getAttribute(attr), value,
+      `${attr}: and on the control the learner actually activated`);
+    assert.equal(invoker.focused, undefined,
+      `${attr}: the destroyed element must never be the thing focused`);
+    assert.equal(h.controller.getState().sheet, 'settings',
+      `${attr}: the panel the focus belongs to must still be open`);
+  }
+});
+
+// The other half of the same branch: it must not fire where another path already owns focus.
+// Closing the panel is restoreInvoker's job -- it returns focus to the gear that opened it -- and
+// a refocus racing that would strand focus inside a dialog that is no longer rendered.
+test('closing the panel still restores the invoker rather than refocusing inside it', () => {
+  const { h, focused } = panelFocusHarness({ ...roleContext, screen: 'app' });
+  const gear = actionTarget({ 'data-fd-settings': '' });
+  h.rootHandlers.click({ target: gear, preventDefault() {} });
+  assert.equal(h.controller.getState().sheet, 'settings', 'the gear opens the panel');
+
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-close-sheet': '' }), preventDefault() {} });
+  assert.equal(h.controller.getState().sheet, null, 'and the close control closes it');
+  assert.equal(gear.focused, 1, 'focus returns to the control that opened the panel');
+  assert.equal(focused.length, 0, 'no panel control is focused once the panel is gone');
 });

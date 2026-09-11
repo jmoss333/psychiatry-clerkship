@@ -205,7 +205,7 @@ function fdCloseSheet(state){
 }
 
 function fdDispatch(attrs, context, state){
-  var a=attrs||{}, c=context||{}, s=state||{}, ref, n, patch, done, raw, next, tab;
+  var a=attrs||{}, c=context||{}, s=state||{}, ref, n, patch, done, raw, next, tab, picked;
 
   if(fdOwn(a,'close')){
     if(s.searchOpen) return {patch:{searchOpen:false,query:''},route:null,effect:null};
@@ -359,7 +359,7 @@ function fdDispatch(attrs, context, state){
        panel and back into a first-run flow that asks again for a week they already chose. Only
        the wizard reaches here with screen==='setup-role', so that is the fork -- and leaving the
        rest of the state alone is what keeps the panel open on the chip it just filled. */
-    var picked=String(a['data-fd-role']||'');
+    picked=String(a['data-fd-role']||'');
     if(s.screen==='setup-role'){
       return {patch:{role:picked,screen:'setup-week'},route:null,effect:null};
     }
@@ -652,6 +652,35 @@ function fdWire(root, initialState, opts){
     var first=(d.querySelector&&d.querySelector('.fd-searchpanel__input'))||fdFocusable(d)[0]||d;
     if(first&&first.focus) try{first.focus();}catch(_){}
   }
+  /* The third overlay case, and until now the only one with no branch. focusDialog fires when the
+     overlay IDENTITY changes and restoreInvoker when it closes; a control that re-renders its own
+     overlay IN PLACE matched neither, and fdRenderOverlays replaces the whole overlay mount's
+     innerHTML on every render -- so the element the learner just activated was destroyed and focus
+     fell to <body>. From there fdTrapFocus returns false and the next Tab walks straight out of an
+     aria-modal dialog, behind its own backdrop. Worse where a control's aria-pressed IS its only
+     feedback: the settings panel ships no toast by decision, so a screen-reader user got no signal
+     at all that their own click had landed.
+
+     Deliberately generic. The equivalent control in the rebuilt DOM is whichever one carries the
+     same action attribute AND the same value the invoker carried, which is true of every control
+     this panel has or will have -- a later section inherits this without naming itself here, and
+     without a fourth focus special case. Scoped to the open dialog so it can only ever move focus
+     inside the overlay that was just repainted. A value that cannot be put in a selector safely is
+     skipped rather than escaped: these are ids and modes, and a bail is cheaper to trust than an
+     escaper nobody re-reads. */
+  function refocusInvoker(invoker){
+    var d=dialog();
+    if(!d||!d.querySelector||!invoker||!invoker.hasAttribute||!invoker.getAttribute) return false;
+    for(var i=0;i<FD_HANDLED_ATTRS.length;i++){
+      var name=FD_HANDLED_ATTRS[i];
+      if(!invoker.hasAttribute(name)) continue;
+      var value=String(invoker.getAttribute(name)||'');
+      if(/["\\]/.test(value)) continue;
+      var el=d.querySelector('['+name+'="'+value+'"]');
+      if(el&&el.focus){ try{el.focus();}catch(_){} return true; }
+    }
+    return false;
+  }
   function restoreInvoker(){
     while(invokers.length){
       var el=invokers.pop();
@@ -840,18 +869,12 @@ function fdWire(root, initialState, opts){
       else if(typeof navClick==='function') navClick('__progress__');
     }
   }
+  /* Theme used to have its own branch here -- query [data-fd-theme="<mode>"] and focus it -- added
+     because the earlier code focused the FIRST control in the group and so moved focus off the
+     learner's choice on every selection. refocusInvoker keeps that outcome by construction (the
+     invoker is the chosen segment, so its own attribute value is what gets re-queried) and keeps
+     it for every other control in the panel too, which a per-effect branch could not. */
   function focusPostTransition(before, result, changedBase){
-    var effect=result&&result.effect;
-    if(effect&&effect.type==='set-theme'){
-      /* Focus the button that was actually chosen. With one toggle the first match WAS the
-         control; with the three-segment group the first match is always "System", which silently
-         moved focus away from the learner's choice on every selection. */
-      var sel='[data-fd-theme="'+effect.mode+'"]';
-      var themeControl=root&&root.querySelector
-        ?(root.querySelector(sel)||root.querySelector('[data-fd-theme]')):null;
-      if(themeControl&&themeControl.focus) try{themeControl.focus();}catch(_){}
-      return;
-    }
     if(changedBase&&state.screen&&state.screen.indexOf('setup-')===0){
       var heading=root&&root.querySelector?root.querySelector('.fd-setup .fd-h1'):null;
       if(!heading) heading=freshResourceHost();
@@ -908,6 +931,7 @@ function fdWire(root, initialState, opts){
     focusPostTransition(before,result,changedBase);
     if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
+    else if(afterOverlay&&afterOverlay===beforeOverlay) refocusInvoker(invoker);
     return state;
   }
   function context(extra){
