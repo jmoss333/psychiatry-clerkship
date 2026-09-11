@@ -13,7 +13,8 @@ const make = new Function(`
   ${read('frontdoor/fd_data.js')}
   ${read('frontdoor/fd_shell.js')}
   return { fdHeader: fdHeader, fdTabs: fdTabs, fdSetupRole: fdSetupRole,
-           fdSetupWeek: fdSetupWeek, fdKeyAction: fdKeyAction };
+           fdSetupWeek: fdSetupWeek, fdKeyAction: fdKeyAction,
+           fdThemeMode: fdThemeMode, fdThemeAttr: fdThemeAttr };
 `);
 const F = make();
 
@@ -129,4 +130,22 @@ test('user-supplied text is escaped in every renderer', () => {
   const evil = '<img src=x onerror=1>';
   assert.doesNotMatch(F.fdSetupRole([{ id: 'x', name: evil, desc: evil, hint: '' }]), /<img/);
   assert.doesNotMatch(F.fdSetupWeek([{ n: 1, title: evil, theme: evil }], evil), /<img/);
+});
+
+// ---- theme modes -----------------------------------------------------------------
+
+test('stored mode round-trips; anything else is system', () => {
+  assert.equal(F.fdThemeMode('light'), 'light');
+  assert.equal(F.fdThemeMode('dark'), 'dark');
+  assert.equal(F.fdThemeMode('system'), 'system');
+  assert.equal(F.fdThemeMode(null), 'system', 'unset means system, not light');
+  assert.equal(F.fdThemeMode(''), 'system');
+  assert.equal(F.fdThemeMode('banana'), 'system');
+});
+
+test('explicit modes ignore the OS; system follows it', () => {
+  assert.equal(F.fdThemeAttr('light', true), 'light', 'explicit light wins over a dark OS');
+  assert.equal(F.fdThemeAttr('dark', false), 'dark');
+  assert.equal(F.fdThemeAttr('system', true), 'dark');
+  assert.equal(F.fdThemeAttr('system', false), 'light');
 });
