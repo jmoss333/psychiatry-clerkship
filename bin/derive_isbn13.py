@@ -107,12 +107,21 @@ def main():
     mode = ap.add_mutually_exclusive_group()
     mode.add_argument("--write", action="store_true", help="record the ISBNs")
     mode.add_argument("--check", action="store_true", help="verify; exit 1 on a mismatch")
+    # Exists so a test can exercise the real write/measure loop without touching the tracked
+    # library. Before it, the retirement test mutated the shipped file and restored it in a
+    # `finally` — which left the tracked file derived if the process died, and, worse, made the
+    # test depend on the tree being un-derived. The nightly runner does the work in the same
+    # checkout it then runs the guard suite in, so that assumption failed three nights running
+    # (2026-09-09..11). A task's own test must not require that the task has not been done.
+    ap.add_argument("--books", type=Path, default=BOOKS,
+                    help="book library to read (default: the tracked one)")
     args = ap.parse_args()
+    books = args.books
 
     try:
-        text = BOOKS.read_text(encoding="utf-8")
+        text = books.read_text(encoding="utf-8")
     except OSError as exc:
-        print("cannot read %s: %s" % (BOOKS.name, exc), file=sys.stderr)
+        print("cannot read %s: %s" % (books.name, exc), file=sys.stderr)
         return 2
     lines = text.splitlines()
 
@@ -141,8 +150,12 @@ def main():
     if not counts["add"]:
         print("nothing to do")
         return 0
-    BOOKS.write_text("\n".join(out) + ("\n" if text.endswith("\n") else ""), encoding="utf-8")
-    print("wrote %d ISBN(s) to %s" % (counts["add"], BOOKS.relative_to(ROOT)))
+    books.write_text("\n".join(out) + ("\n" if text.endswith("\n") else ""), encoding="utf-8")
+    try:
+        where = books.relative_to(ROOT)
+    except ValueError:  # a fixture outside the repo, under --books
+        where = books
+    print("wrote %d ISBN(s) to %s" % (counts["add"], where))
     print("now run: python3 bin/derive_isbn13.py --check")
     return 0
 

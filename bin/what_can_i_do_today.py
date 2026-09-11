@@ -86,8 +86,15 @@ LAST_RUN = AUTOMATION / "surveillance" / "history" / "last_run.json"
 
 # A route that is vendor-independent. Matched positively: a negative "not amazon.com"
 # test would let an amzn.to shortlink or amazon.co.uk retire an entry falsely.
-def measure_isbn_derivable():
+def measure_isbn_derivable(books=None):
     """Book entries the deriver would still change.
+
+    `books` overrides the file, so a test can drive the real write/measure loop against a
+    fixture instead of the tracked library. It is not decoration: the queue runner performs a
+    task's `run` and then runs the whole node suite in that same checkout, so any test that
+    assumed the tracked file was still un-derived broke the moment the runner did the work.
+    The invariant worth pinning is "doing the work drives this to zero", which holds on any
+    tree; "there is work left" does not.
 
     This imports bin/derive_isbn13.py's OWN notion of an unfinished line rather than
     re-deriving one. That is not tidiness — it is the difference between a task that retires
@@ -111,7 +118,8 @@ def measure_isbn_derivable():
         import derive_isbn13 as deriver
     finally:
         sys.path.remove(str(bin_dir))
-    lines = BOOKS.read_text(encoding="utf-8").splitlines()
+    lines = (BOOKS if books is None else Path(books)).read_text(
+        encoding="utf-8").splitlines()
     actions = [deriver.rewrite(ln)[1] for ln in lines]
     entries = [a for a in actions if a != "skip"]
     return actions.count("add"), len(entries)
