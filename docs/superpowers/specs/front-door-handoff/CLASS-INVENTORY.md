@@ -3,11 +3,11 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(265 distinct `fd-*` selector names, 20 `is-*` state classes). Every class below has a rule in that file unless
+(270 distinct `fd-*` selector names, 20 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-265. The remaining 226 are `__element` and `--modifier` names introduced while porting the
+270. The remaining 231 are `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -443,6 +443,13 @@ independent states on the child. A current *and* done item carries both.
     .fd-src
     .fd-btn.fd-btn--primary
     .fd-sheet__note
+    ── settings variant ──
+    .fd-sheet__intro
+    .fd-set  <section> ×N            (direct siblings, no wrapper)
+      .fd-set__h  <h3>
+      .fd-seg          [role=radiogroup]
+        .fd-seg__btn   <button> [role=radio]   (.is-active on the chosen one)
+      .fd-set__note
 
 .fd-nudge                           (fixed, z-120, bottom-centre toast)
   .fd-nudge__text
@@ -458,6 +465,8 @@ independent states on the child. A current *and* done item carries both.
 | `.fd-sheet__attribution` | "✓ From: … · faculty-attested". |
 | `.fd-sheet__pending` | Affirmative not-yet-reviewed state for a valid 3–5-step protocol; mutually exclusive with attribution and failure. |
 | `.fd-sheet__failure` | Fail-closed alert with an owner-controlled sentence; protocol steps and documentation remain absent. |
+| `.fd-set` | One settings section. Spaced by `.fd-set + .fd-set`, so sections are direct siblings and a new one can be inserted anywhere in the order without a wrapper. |
+| `.fd-seg` | Segmented control. Segments butt together inside one border (`gap:0`); the divider is `.fd-seg__btn + .fd-seg__btn`'s `border-left`. |
 
 At the mobile breakpoint, primary actions, navigation controls, dialog close/back controls, and
 icon-sized controls have a minimum 44px hit target. Icon-sized controls also have a 44px minimum
@@ -475,7 +484,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 
 | State | Applied to | Meaning |
 |---|---|---|
-| `.is-active` | `.fd-tab` | current tab |
+| `.is-active` | `.fd-tab`, `.fd-seg__btn` | current tab / chosen segment |
 | `.is-sel` | `.fd-weektile`, `.fd-timeline__row` | chosen / viewed |
 | `.is-current` | `.fd-dot`, `.fd-railnav__row` | "you are here" |
 | `.is-done` | `.fd-check`, `.fd-dot`, `.fd-row__title`, `.fd-railnav__dot`, `.fd-railnav__title` | completed |

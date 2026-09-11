@@ -34,13 +34,14 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
   // This array is the EMITTED inventory -- what renderer string literals actually contain -- not
   // the controller registry. An attribute fd_wire.js handles but no renderer draws does not belong
   // here (data-fd-try-now is the standing precedent, pinned by the next test instead).
-  // 'data-fd-theme' left this list when the header glyph became the settings gear; it returns the
-  // moment a renderer emits the theme radio group again.
+  // 'data-fd-theme' left this list when the header glyph became the settings gear and returned
+  // with the settings panel's theme radio group (fd_sheet.js's fdSettingsSeg), which is now its
+  // only emitter.
   assert.deepEqual(emitted, [
     'data-fd-back', 'data-fd-change-week', 'data-fd-close-nudge',
     'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-expand-tool', 'data-fd-home', 'data-fd-local-toggle', 'data-fd-open',
     'data-fd-progress', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-settings',
-    'data-fd-setweek', 'data-fd-step', 'data-fd-tab', 'data-fd-toggle',
+    'data-fd-setweek', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle',
     'data-fd-view-week', 'data-fd-week',
   ]);
   for (const attr of emitted) {

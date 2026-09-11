@@ -1965,6 +1965,10 @@
     out.nowMs=Date.now();
     out.block=!facultyPreviewRequest&&new URLSearchParams(location.search).get('block')==='1'?blockLoad(out.nowMs):null;
     out.rotationStart=LS('cw_rotation_start')||'';
+    /* The MODE, not the painted attribute: the settings panel marks one of System/Light/Dark
+       active, and fdThemeMode maps an absent or junk value onto System. currentTheme() in
+       fd_wire.js resolves the same key for DISPATCH; this is the render half. */
+    out.themeMode=fdThemeMode(LS('cw_theme'));
     /* Seven-day activity strip: derived, never stored -- see fdActivityDays. Every store is
        read defensively; a missing or malformed one simply contributes no days. */
     out.activityDays=fdActivityDays({

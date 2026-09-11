@@ -51,6 +51,9 @@
      - data-fd-close-sheet       -- close. On the backdrop and the ✕, matching fd_search.js's
                                     data-fd-close-search naming.
      - data-fd-close-nudge       -- dismiss the toast, same naming family.
+     - data-fd-theme="<mode>"    -- select a colour theme. fd_wire.js has owned this action since
+                                    the header carried a theme glyph; the settings panel's
+                                    segmented control is now its only emitter.
      - data-fd-step="<index>"    -- the one new action. Toggling a step check is genuinely distinct
                                     from data-fd-toggle (which marks an ITEM done, keyed by ref and
                                     persisted): step checks are keyed by position within one
@@ -257,8 +260,43 @@ function fdSheetItemBody(item, index){
   return out;
 }
 
-/* state.sheet is 'kit', a kit ref, or 'item:<ref>'. Anything else -- absent, null, or a ref that
-   names no protocol -- renders the empty string, so a caller can concatenate the result
+/* The settings panel. Pure like every other body renderer here: everything it cannot derive --
+   the theme mode a learner picked, and in later sections the role list and the analytics posture
+   -- arrives on state, the way st.crisisHtml already does.
+
+   Copy rule applies in full: these strings ship to BOTH sites unrebranded. "Exam", never "Shelf".
+
+   Sections are emitted as direct siblings spaced by `.fd-set + .fd-set` (frontdoor.css), matching
+   the adjacent-sibling idiom the kit rows use -- no wrapper div between them. A later section can
+   therefore be inserted before or after this one by adding a line, with no restructuring. */
+function fdSettingsSeg(mode){
+  var opts=[['system','System'],['light','Light'],['dark','Dark']];
+  var cur=fdThemeMode(mode);
+  var out='<div class="fd-seg" role="radiogroup" aria-label="Color theme">';
+  for(var i=0;i<opts.length;i++){
+    var active=(opts[i][0]===cur);
+    out+='<button type="button" role="radio" class="fd-seg__btn'+(active?' is-active':'')+'" '+
+      'data-fd-theme="'+opts[i][0]+'" aria-checked="'+(active?'true':'false')+'">'+
+      opts[i][1]+'</button>';
+  }
+  return out+'</div>';
+}
+
+function fdSettingsSection(title, body){
+  return '<section class="fd-set"><h3 class="fd-set__h">'+fdEsc(title)+'</h3>'+body+'</section>';
+}
+
+function fdSheetSettingsBody(state){
+  var st=state||{};
+  var out='<p class="fd-sheet__intro">Everything here is saved on this device only.</p>';
+  out+=fdSettingsSection('Appearance',
+    fdSettingsSeg(st.themeMode)+
+    '<p class="fd-set__note">System follows your device’s light or dark setting.</p>');
+  return out;
+}
+
+/* state.sheet is 'kit', 'settings', a kit ref, or 'item:<ref>'. Anything else -- absent, null, or
+   a ref that names no protocol -- renders the empty string, so a caller can concatenate the result
    unconditionally and a stale sheet key degrades to "no sheet" rather than to an empty protocol
    shell with a title and no content. */
 function fdSheet(index, topicMeta, state){
@@ -268,7 +306,10 @@ function fdSheet(index, topicMeta, state){
   if(!sheet) return '';
 
   var title='', body='', hasBack=false;
-  if(sheet==='kit'){
+  if(sheet==='settings'){
+    title='Settings';
+    body=fdSheetSettingsBody(st);
+  } else if(sheet==='kit'){
     title='Safety kit';
     body=fdSheetKitBody(idx);
   } else if(String(sheet).indexOf(FD_SHEET_ITEM_PREFIX)===0){

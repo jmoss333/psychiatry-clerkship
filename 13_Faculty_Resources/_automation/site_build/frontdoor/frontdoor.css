@@ -1010,3 +1010,21 @@
 [class~="fd-curator-artifact-actions"]{display:flex;flex-wrap:wrap;gap:var(--fd-space-5)}
 .final-action #curatorGenerate:not(:disabled){border-color:var(--fd-terracotta);color:var(--fd-on-accent);background:var(--fd-terracotta);cursor:pointer}
 @media (max-width:430px){[class~="fd-curator-preview--mobile"]{width:100%}[class~="fd-curator-preview-actions"]{align-items:stretch;flex-direction:column}[class~="fd-curator-share-facts"],[class~="fd-curator-edition-card"] dl,[class~="fd-curator-revision-comparison"] [data-curator-revision-row] dl{grid-template-columns:1fr}[class~="fd-curator-provenance"] li{grid-template-columns:1fr}[class~="fd-curator-artifact-actions"]{display:grid}}
+
+/* ── Settings panel ──────────────────────────────────────────────────────────────────────────
+ * Renders inside .fd-sheet__body (fd_sheet.js's fdSheetSettingsBody). Sections are DIRECT
+ * siblings with no wrapper, spaced by the adjacent-sibling idiom the kit rows use, so a section
+ * added before or after another needs no structural change. .fd-seg is the three-way segmented
+ * control: the segments butt together and share one outer border, which is why `gap:0` is
+ * explicit -- a gap would strand the `+` border-left divider between them.
+ * :hover precedes .is-active deliberately; both are (0,2,0), so source order is what keeps the
+ * chosen segment filled while the pointer is over it. */
+.fd-set + .fd-set{margin-top:18px}
+.fd-set__h{margin:0 0 var(--fd-space-4);font-size:var(--fd-font-sm);font-weight:600;color:var(--fd-text)}
+.fd-set__note{margin:var(--fd-space-4) 0 0;font-size:var(--fd-font-xs);color:var(--fd-text-mid)}
+.fd-seg{display:flex;gap:0;border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);overflow:hidden}
+.fd-seg__btn{flex:1;padding:var(--fd-space-5) var(--fd-space-4);border:0;background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-sm);cursor:pointer}
+.fd-seg__btn + .fd-seg__btn{border-left:1.5px solid var(--fd-line-strong)}
+.fd-seg__btn:hover{background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
+.fd-seg__btn.is-active{background:var(--fd-teal);color:var(--fd-on-accent)}
+@media (pointer:coarse){.fd-seg__btn{min-height:var(--fd-target-touch)}}

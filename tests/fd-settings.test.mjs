@@ -51,3 +51,77 @@ test('the shell resolves a mode before it paints or pushes it', () => {
     { painted: 'light', posted: [{ type: 'theme', mode: 'light' }] },
     'an explicit mode ignores the OS in both the paint and the message');
 });
+
+// ---------------------------------------------------------------------------------------------
+// The settings panel is a pure renderer like every other fd_sheet surface: state in, string out.
+// Tested directly rather than through the DOM, following tests/fd-sheet.test.mjs. fd_shell.js is
+// in the harness because fdSettingsSeg normalises through its fdThemeMode.
+const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf8');
+
+// eslint-disable-next-line no-new-func
+const makeSettings = new Function(`
+  ${read('frontdoor/fd_data.js')}
+  ${read('frontdoor/fd_shell.js')}
+  ${read('frontdoor/fd_sheet.js')}
+  return {
+    fdSheetSettingsBody: fdSheetSettingsBody, fdSheet: fdSheet, fdThemeMode: fdThemeMode,
+  };
+`);
+const S = makeSettings();
+
+const base = { themeMode: 'system' };
+const withState = (over) => Object.assign({}, base, over);
+
+test('appearance offers all three modes and marks the active one', () => {
+  const h = S.fdSheetSettingsBody(withState({ themeMode: 'dark' }));
+  for (const m of ['system', 'light', 'dark']) {
+    assert.match(h, new RegExp(`data-fd-theme="${m}"`), `${m} must be offered`);
+  }
+  assert.match(h, /data-fd-theme="dark"[^>]*aria-checked="true"/);
+  assert.match(h, /data-fd-theme="light"[^>]*aria-checked="false"/);
+});
+
+test('system is the active mode when nothing was ever chosen', () => {
+  const h = S.fdSheetSettingsBody(withState({ themeMode: undefined }));
+  assert.match(h, /data-fd-theme="system"[^>]*aria-checked="true"/);
+});
+
+test('the sheet renders settings as a dialog with a close control', () => {
+  const h = S.fdSheet({}, {}, withState({ sheet: 'settings' }));
+  assert.match(h, /role="dialog"/);
+  assert.match(h, /aria-modal="true"/);
+  assert.match(h, /data-fd-close-sheet/, 'reuses the shared sheet close, not a bespoke one');
+  // The branch must render the PANEL, not just claim the title. An empty body would satisfy
+  // every assertion above, and the index passed here holds no protocol for 'settings' -- so the
+  // old fall-through would have returned '' and this is what tells the two apart.
+  assert.match(h, /aria-label="Settings"/, 'the dialog names itself Settings');
+  assert.match(h, /class="fd-seg"[^>]*role="radiogroup"/, 'and carries the appearance control');
+});
+
+// The wiring that puts a real mode on state, executed rather than grepped. The panel reads
+// st.themeMode and nothing else sets it -- currentTheme() in fd_wire.js feeds dispatch, not render
+// state. Drop this assignment or point it at another key and every learner's panel marks System
+// active, because fdThemeMode maps an absent value to 'system'. Nothing else in the tree notices.
+test('fdLiveState resolves the stored key into the mode the panel renders', () => {
+  const start = shell.indexOf('function fdLiveState(state)');
+  const end = shell.indexOf('function fdCaptureRows()', start);
+  assert.ok(start > -1 && end > start, 'the live-state boundary must stay extractable');
+  const liveState = shell.slice(start, end);
+  const assignment = (liveState.match(/^\s*out\.themeMode=.*$/m) || [])[0];
+  assert.ok(assignment, 'fdLiveState must put a theme mode on the state the renderer sees');
+
+  // eslint-disable-next-line no-new-func
+  const resolve = new Function('LS', 'fdThemeMode',
+    `var out={};${assignment}\nreturn out.themeMode;`);
+  const keysRead = [];
+  const stored = (value) => (key) => { keysRead.push(key); return value; };
+
+  assert.equal(resolve(stored('dark'), S.fdThemeMode), 'dark');
+  assert.deepEqual(keysRead, ['cw_theme'], 'the mode comes from cw_theme and from nothing else');
+  assert.equal(resolve(stored('nonsense'), S.fdThemeMode), 'system',
+    'a junk stored value normalises here rather than reaching the renderer raw');
+
+  assert.match(S.fdSheetSettingsBody({ themeMode: resolve(stored('dark'), S.fdThemeMode) }),
+    /data-fd-theme="dark"[^>]*aria-checked="true"/,
+    'a stored dark mode must reach the panel as the active choice');
+});

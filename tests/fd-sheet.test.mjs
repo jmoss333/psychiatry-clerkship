@@ -122,6 +122,16 @@ function crisisTemplateInitSource() {
   return shellSrc.slice(start, end);
 }
 
+// fdLiveState now resolves the stored theme through fd_shell.js's fdThemeMode -- the render half
+// of the settings panel's Appearance section. The REAL function is spliced into the boundary
+// rather than stubbed: a stub returning a constant would keep this green if live state ever
+// stopped normalising, which is the exact defect (everyone shows System) the panel would hide.
+function themeModeSource() {
+  const m = read('frontdoor/fd_shell.js').match(/function fdThemeMode\(stored\)\{[\s\S]*?\n\}/);
+  assert.ok(m, 'fdThemeMode must remain extractable from fd_shell.js');
+  return m[0];
+}
+
 function minimalTemplateDocument(templateHtml) {
   const template = { innerHTML: templateHtml };
   return {
@@ -151,6 +161,7 @@ function liveShellBoundary(index, topicMeta, templateHtml) {
     function fdRoleName(id){return id||'';}
     function fdItemsForWeek(){return [];}
     function fdTodayProgress(){return {pct:0};}
+    ${themeModeSource()}
     ${liveStateSource()}
     return function(state){
       var live=fdLiveState(state);
