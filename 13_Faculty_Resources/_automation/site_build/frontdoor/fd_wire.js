@@ -622,6 +622,12 @@ function fdTrapFocus(event, dialog){
   return false;
 }
 
+/* The delegated click path's selector. It is NOT the whole of FD_HANDLED_ATTRS and must not be
+   "completed" to match it: 'data-fd-exam-date' is missing on purpose. Add it and a click on the
+   settings panel's date field starts running clickHandler, which preventDefaults the gesture that
+   opens the native picker and -- the attribute being valueless in the markup -- dispatches an
+   empty value, so a learner clicking their own date input ERASES the date they had. It is
+   committed on a change event instead; see changeHandler. */
 var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],'+
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
@@ -643,6 +649,7 @@ function fdWire(root, initialState, opts){
   var doc=o.document||(typeof document!=='undefined'?document:null);
   var state=fdClone(initialState||{}), invokers=[], nudgeTimer=null, navGeneration=0;
   var destroyed=false, registrations=[], startupPrepared=false, startupCommitted=false;
+  var baseStale=false;
   var render=o.render||function(){};
   var renderTransient=o.renderTransient||function(next,detail){
     if(!detail.preserveResource) render(next,detail);
@@ -838,6 +845,33 @@ function fdWire(root, initialState, opts){
       baseChanged:changedBase,preserveResource:preserve,effect:effect||null
     };
   }
+  /* Debt left by a commit that deliberately rendered nothing -- today only the settings panel's
+     date field. "Renders nothing" is a decision about the PANEL and must not become one about the
+     app: three surfaces outside the panel derive from that key (Progress's signpost, the plan's
+     intensity line, Today's countdown through fdExamCountdown), and closing the sheet does not
+     cover any of them, because fdCloseSheet patches only overlay keys and transitionDetail
+     classes every one of them as overlay. So the commit records that the base surface is owed a
+     render and the next render of ANY kind pays it. The panel is still never rebuilt at commit
+     time, which is what the segment-cursor reasoning in changeHandler depends on.
+
+     preserveResource is overridden for Progress alone. It exists to stop a transient render
+     replacing a LOADED reader with fdBaseMarkup's "Loading…" shell -- true of a page, false of
+     Progress, which fdBaseMarkup renders in full (fdProgressMarkup -> renderProgress); and
+     fdRenderTransient's preserve branch is a pure no-op there, since fdPatchCompletion returns
+     early on __progress__. A learner who sets a date from the plan view therefore lands back on
+     a freshly rendered Progress, which is exactly where the retired save-exam handler put them. */
+  function absorbStaleBase(detail){
+    if(!baseStale) return detail;
+    detail.surfaces.base=true;
+    if(state.openId==='__progress__') detail.preserveResource=false;
+    /* Cleared only when the render about to run will REALLY rebuild the base. A preserved reader
+       render does not touch contentEl at all, so clearing there would retire the debt against a
+       render that paid none of it -- the same shape of bug as a check reporting success over a
+       smaller set than it claims. Leaving a reader always changes openId, so the debt is paid by
+       the full render that follows. */
+    if(!detail.preserveResource) baseStale=false;
+    return detail;
+  }
   function fdApplyEffect(effect, fromHistory, generation){
     if(!effect) return;
     if(effect.type==='set-rotation'){
@@ -873,9 +907,9 @@ function fdWire(root, initialState, opts){
         if(destroyed) return;
         var before=fdClone(state);
         state.nudge=null;
-        renderTransient(state,transitionDetail(
+        renderTransient(state,absorbStaleBase(transitionDetail(
           before,{nudge:null},{type:'nudge-dismiss'},false
-        ));
+        )));
       },effect.delay);
     } else if(effect.type==='open-resource'){
       var opener=o.openResource||fdOpenResource;
@@ -920,7 +954,7 @@ function fdWire(root, initialState, opts){
     var afterOverlay=overlayIdentity(state);
     if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
     var changedBase=baseChanged(before,state);
-    var detail=transitionDetail(before,patch,result.effect,changedBase);
+    var detail=absorbStaleBase(transitionDetail(before,patch,result.effect,changedBase));
     var generation=navGeneration;
     if(changedBase||result.route||result.effect&&(result.effect.type==='open-resource'||
         result.effect.type==='open-progress'||result.effect.openRef)){
@@ -993,9 +1027,9 @@ function fdWire(root, initialState, opts){
     var direction=target.selectionDirection;
     var before=fdClone(state);
     state.query=String(target.value||'');
-    renderTransient(state,transitionDetail(
+    renderTransient(state,absorbStaleBase(transitionDetail(
       before,{query:state.query},{type:'search-input'},false
-    ));
+    )));
     var fresh=root&&root.querySelector?root.querySelector('.fd-searchpanel__input'):null;
     if(fresh&&fresh.focus){
       try{fresh.focus();}catch(_){}
@@ -1012,14 +1046,22 @@ function fdWire(root, initialState, opts){
         clickHandler never sees the field. If it did it would preventDefault() the gesture that
         opens the native picker, and -- the attribute being valueless in the markup -- dispatch
         an empty value: clicking your own date input would erase the date you had.
-     2. No render. fdRenderOverlays replaces the whole overlay mount, so a render here destroys
+     2. No render HERE -- which is a statement about this moment, not about the app. Read the
+        next paragraph before taking it as "nothing needs rendering".
+        fdRenderOverlays replaces the whole overlay mount, so a render at commit time destroys
         the input mid-entry. A rebuilt native date input has a fresh segment cursor, so editing a
         set date to November by typing "1" then "1" yields January twice: the second keystroke
-        starts a new month entry in a new element. Nothing else in the panel derives from this
-        value -- the field's own DOM already shows what was typed -- so the render buys nothing
+        starts a new month entry in a new element. Nothing in the PANEL derives from this value
+        -- the field's own DOM already shows what was typed -- so a render buys the panel nothing
         and costs the interaction. That is also why refocusInvoker (the panel's generic focus
         restore) must not run: there is no rebuilt equivalent to restore focus TO, and pulling
         focus back into a field the learner is still using is worse than the bug it prevents.
+        THREE SURFACES OUTSIDE THE PANEL DO DERIVE FROM IT -- Progress's signpost, the plan's
+        intensity line, and Today's countdown through fdExamCountdown -- and closing the sheet
+        does not cover any of them on its own: fdCloseSheet patches only overlay keys. So the
+        commit marks the base surface stale (absorbStaleBase) and the NEXT render pays that debt.
+        Deferring is what keeps the panel untouched; skipping it altogether is how a learner could
+        set a date, close the panel, and still read "Not set" on the page underneath.
      3. No history entry and no fdSave. The result carries no route and no controller-state key;
         fdStoreExamDate's one store is the whole of what changes. (That indirection is not style:
         the key's own name carries an audience token this file may not contain at all, comments
@@ -1040,6 +1082,7 @@ function fdWire(root, initialState, opts){
       {'data-fd-exam-date':String(target.value||'')},context(),state
     );
     fdApplyEffect(result.effect,false,navGeneration);
+    baseStale=true;
   }
   function keyHandler(event){
     if(!startupCommitted){

@@ -7,7 +7,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-272. The remaining 233 are `__element` and `--modifier` names introduced while porting the
+273. The remaining 234 are `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.

@@ -2,7 +2,7 @@
 // ATTRIBUTE the page paints (light/dark). Everything that crosses a frame boundary can only carry
 // the attribute, so the direction of a theme message decides whether it may be persisted.
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import test from 'node:test';
 
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
@@ -419,8 +419,8 @@ test('clicking a role chip marks that chip and leaves the learner in the panel',
 test('the exam date renders as a date input carrying the stored value', () => {
   const h = S.fdSheetSettingsBody(withState({ examDate: '2026-10-30' }));
   assert.match(h, /type="date"/);
-  assert.match(h, /value="2026-10-30"/);
-  assert.match(h, /data-fd-exam-date/);
+  assert.match(h, /data-fd-exam-date[^>]*value="2026-10-30"/,
+    'anchored to the date input: an unanchored value= would pass on any attribute in the panel');
 });
 
 test('an unset exam date renders an empty input, not a guess', () => {
@@ -606,4 +606,204 @@ test('clicking the date input is not a controller action', () => {
   assert.equal(h.storage.getItem('cw_shelf_date'), '2026-10-30',
     'a click must never write; only a committed change does');
   assert.equal(h.panels.length, before, 'and it must not re-render the panel either');
+});
+
+// ---------------------------------------------------------------------------------------------
+// "Renders nothing" was reasoned about the PANEL and is false of the app. Three surfaces outside
+// the panel derive from this key, and every one of them went stale, because closing the sheet
+// patches only overlay keys (fdCloseSheet: sheet/sheetFrom/stepsDone/nudge) -- transitionDetail
+// classes all four as overlay, so surfaces.base stays false and fdRenderTransient never reassigns
+// contentEl. Commit-without-render plus close-without-base-render = a learner sets 2026-10-30,
+// closes the panel, and Progress still says "Not set". The retired control did not have this:
+// pa==='save-exam' called fdOpenProgress() right after writing.
+//
+// The fix is debt, not a render: the commit marks the BASE surface stale and the next render of
+// any kind absorbs it. That keeps the panel untouched, so the segment-cursor reasoning above
+// still holds -- what changes is only what the next render covers.
+function staleBaseHarness(seed, initial) {
+  const map = new Map(Object.entries(seed));
+  const storage = {
+    getItem: (k) => (map.has(k) ? map.get(k) : null),
+    setItem: (k, v) => map.set(k, String(v)),
+    removeItem: (k) => map.delete(k),
+  };
+  const W = makeWire(storage);
+  const details = [];
+  const record = (_next, detail) => details.push(detail);
+  const input = {
+    tagName: 'INPUT', isContentEditable: false, isConnected: true, value: '',
+    closest: (selector) => (selector.indexOf('[data-fd-exam-date]') > -1 ? input : null),
+    hasAttribute: (n) => n === 'data-fd-exam-date',
+    getAttribute: (n) => (n === 'data-fd-exam-date' ? '' : null),
+    focus() {},
+  };
+  const handlers = {};
+  const root = {
+    addEventListener(type, fn) { handlers[type] = fn; },
+    removeEventListener() {},
+    querySelector: () => null,
+    matches: () => false,
+  };
+  const controller = W.fdWire(root, initial, {
+    window: {
+      addEventListener() {}, removeEventListener() {},
+      location: { href: 'https://example.test/', search: '', pathname: '/' },
+    },
+    render: record,
+    renderTransient: record,
+    index: { byRef: {}, weeks: [{ n: 1, items: [] }] },
+    synonyms: {},
+    document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
+  });
+  controller.commitStartup();
+  return {
+    details,
+    storage,
+    controller,
+    change(value) { input.value = value; handlers.change({ target: input }); },
+    closeSheet() {
+      const target = {
+        tagName: 'BUTTON', isContentEditable: false, isConnected: true,
+        closest: (s) => (s.indexOf('[data-fd-close-sheet]') > -1 ? target : null),
+        hasAttribute: (n) => n === 'data-fd-close-sheet',
+        getAttribute: (n) => (n === 'data-fd-close-sheet' ? '' : null),
+        focus() {},
+      };
+      handlers.click({ target, preventDefault() {} });
+    },
+  };
+}
+
+// Surface 3: Today's subtitle. fdExamCountdown reads the key live, so the countdown is correct the
+// moment the base surface is rebuilt -- and wrong until then. openId is absent here, which is the
+// plain case: the close must simply cover the base.
+test('closing the panel after a commit rebuilds the base surface Today is drawn on', () => {
+  const h = staleBaseHarness({}, { role: 'r', week: 1, screen: 'app', sheet: 'settings' });
+  h.change('2026-10-30');
+  const before = h.details.length;
+  h.closeSheet();
+  const detail = h.details[h.details.length - 1];
+  assert.ok(h.details.length > before, 'closing the sheet renders');
+  assert.equal(detail.surfaces.base, true,
+    'a commit that rendered nothing must leave the base surface owed a render');
+  assert.equal(detail.preserveResource, false);
+});
+
+// Surfaces 1 and 2: Progress and the plan view, both mounted under openId '__progress__'.
+// preserveResource exists to stop a transient render replacing a LOADED reader with
+// fdBaseMarkup's "Loading…" shell -- but fdBaseMarkup renders Progress in FULL
+// (fdProgressMarkup -> window.renderProgress), and fdRenderTransient's preserve branch is a pure
+// no-op there, since fdPatchCompletion returns early on __progress__. Leave preserve true and the
+// signpost that reads "Not set — add it in Settings" keeps saying so over a date the learner has
+// just set, with the panel gone.
+test('the Progress surface is rebuilt too, not preserved stale', () => {
+  const h = staleBaseHarness({},
+    { role: 'r', week: 1, screen: 'app', sheet: 'settings', openId: '__progress__', fromTab: 'today' });
+  h.change('2026-10-30');
+  h.closeSheet();
+  const detail = h.details[h.details.length - 1];
+  assert.equal(detail.surfaces.base, true);
+  assert.equal(detail.preserveResource, false,
+    'Progress renders in full from fdBaseMarkup, so preserving it only preserves the stale copy');
+});
+
+// A reader page is the case preserveResource is FOR, and it derives nothing from this key. The
+// debt must not turn a settings change into "your open page was replaced by a Loading… shell".
+test('an open reader page is still preserved when the base debt is settled', () => {
+  const h = staleBaseHarness({},
+    { role: 'r', week: 1, screen: 'app', sheet: 'settings', openId: 'delirium.md', fromTab: 'today' });
+  h.change('2026-10-30');
+  h.closeSheet();
+  const detail = h.details[h.details.length - 1];
+  assert.equal(detail.preserveResource, true,
+    'a loaded reader must never be swapped for fdBaseMarkup’s loading shell');
+
+  // And the debt must SURVIVE that render, because it paid none of it: a preserved render never
+  // reassigns contentEl, so retiring it there would be a check reporting success over a smaller
+  // set than it claims. Observed through a LATER overlay-only render, which marks the base only
+  // while the debt is still owed -- asserting it on the trip home proves nothing, because going
+  // home patches tab and openId and so sets surfaces.base by itself either way.
+  h.controller.dispatch({ 'data-fd-settings': '' });
+  assert.equal(h.details[h.details.length - 1].surfaces.base, true,
+    'still owed: the preserved render never touched contentEl');
+
+  h.controller.dispatch({ 'data-fd-home': '' });
+  assert.equal(h.details[h.details.length - 1].baseChanged, true,
+    'leaving the reader is a base change, and that render is what finally pays the debt');
+
+  h.controller.dispatch({ 'data-fd-settings': '' });
+  assert.equal(h.details[h.details.length - 1].surfaces.base, false,
+    'and once paid it is gone: an overlay-only render is overlay-only again');
+});
+
+// The debt is settled ONCE. A flag that never clears makes every later transient render rebuild
+// the base for no reason -- and, worse, reads as "this always happened" to the next reader.
+test('the base debt is paid once and does not persist into later renders', () => {
+  const h = staleBaseHarness({}, { role: 'r', week: 1, screen: 'app', sheet: 'settings' });
+  h.change('2026-10-30');
+  h.closeSheet();
+  h.controller.dispatch({ 'data-fd-settings': '' });
+  const detail = h.details[h.details.length - 1];
+  assert.equal(detail.surfaces.base, false,
+    'reopening the panel touches the overlay only, as it did before the debt existed');
+});
+
+// ---------------------------------------------------------------------------------------------
+// Surface 1, executed rather than asserted about: the Progress signpost's own expression, run
+// with an injected LS so "stale" and "fresh" are the same code path with different storage.
+test('the Progress signpost text is derived from the key at render time', () => {
+  const start = shell.indexOf('window.renderProgress=function()');
+  const end = shell.indexOf('function masteryByBlueprint', start);
+  const lines = shell.slice(start, end > start ? end : start + 6000);
+  const decl = (lines.match(/^\s*var examSet=.*$/m) || [])[0];
+  const emit = (lines.match(/^\s*h\+='<div class="hm-sec"><h2>Exam date<\/h2>.*$/m) || [])[0];
+  assert.ok(decl && emit, 'the signpost must stay extractable as a declaration plus an emission');
+
+  // eslint-disable-next-line no-new-func
+  const render = new Function('LS', 'esc', `var h='';${decl}\n${emit}\nreturn h;`);
+  const esc = (s) => String(s);
+  assert.match(render(() => '', esc), /Not set/, 'no stored date reads as unset');
+  assert.doesNotMatch(render(() => '2026-10-30', esc), /Not set/,
+    'a stored date must not still read as unset -- this is the sentence that lied');
+  assert.match(render(() => '2026-10-30', esc), /2026-10-30/, 'it shows the date it found');
+});
+
+// Surface 2, same treatment. shelfIntensityHtml is self-contained, so its two branches can be run
+// directly: the empty branch is the copy that pointed a learner at Settings, and it must stop
+// claiming no date is set once one is.
+test('the plan intensity copy is derived from the key, not from the plan snapshot', () => {
+  // Both helpers are single-line in the shell, so they are matched line-wise. A [\s\S]*? body
+  // match runs past the closing brace to the next two-space '}' and swallows half the file.
+  const src = (shell.match(/^ {2}function shelfIntensityHtml\(shelf\)\{.*$/m) || [])[0];
+  assert.ok(src, 'shelfIntensityHtml must stay extractable');
+  // eslint-disable-next-line no-new-func
+  const intensity = new Function('shelfDaysUntil', `${src}\nreturn shelfIntensityHtml;`)(
+    () => 9);
+  assert.match(intensity(''), /Set an exam date in/, 'the unset branch points at the setting');
+  assert.match(intensity('2026-10-30'), /Exam in 9 days/, 'a set date produces pacing advice');
+
+  // And the caller must hand it the LIVE key. cw_plan_v1.shelfDate is a snapshot taken when the
+  // plan was generated; fdLoadPlan returns a matching plan verbatim, so reading the snapshot means
+  // the copy never changes when the learner changes the date -- not on close, not on reopen.
+  const cards = (shell.match(/^ {2}function renderPlanCards\(plan\)\{.*$/m) || [])[0];
+  assert.ok(cards, 'renderPlanCards must stay extractable');
+  assert.match(cards, /shelfIntensityHtml\(LS\('cw_shelf_date'\)\|\|''\)/,
+    'the intensity line must read the one home, not plan.shelfDate');
+});
+
+// The one-home invariant, extended past the shell. Every earlier assertion of it looks only at
+// spa_index.html, so a second writer added to any frontdoor module would pass all of them -- and
+// a frontdoor module is exactly where the next task works.
+test('the frontdoor modules hold exactly one writer of the exam-date key', () => {
+  const dir = new URL(`${BUILD}/frontdoor/`, import.meta.url);
+  const writes = [];
+  for (const name of readdirSync(dir)) {
+    if (!/^fd_.*\.js$/.test(name)) continue;
+    const src = readFileSync(new URL(name, dir), 'utf8');
+    for (const m of src.matchAll(/localStorage\.(setItem|removeItem)\('cw_shelf_date'/g)) {
+      writes.push(`${name}:${m[1]}`);
+    }
+  }
+  assert.deepEqual(writes.sort(), ['fd_state.js:removeItem', 'fd_state.js:setItem'],
+    'the only writer is fdStoreExamDate; a second one is the desync this task exists to prevent');
 });
