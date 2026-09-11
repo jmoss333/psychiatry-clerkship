@@ -544,7 +544,7 @@ test('fdWire reports a partial window registration failure and unwinds every ins
 function actionTarget(attrs, extra = {}) {
   return {
     tagName: 'BUTTON', isContentEditable: false, isConnected: true,
-    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-close-settings],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
+    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
     hasAttribute(name) { return Object.hasOwn(attrs, name); },
     getAttribute(name) { return Object.hasOwn(attrs, name) ? attrs[name] : null; },
     focus() { this.focused = (this.focused || 0) + 1; },
@@ -1957,23 +1957,22 @@ test('the gear opens settings as a sheet and closes any open search first', () =
   assert.ok(!('sheetFrom' in r.patch), 'settings has no back-to-kit path to record');
 });
 
-test('closing settings disarms the erase confirmation rather than leaving it armed', () => {
-  const r = F.fdDispatch({ 'data-fd-close-settings': '' }, { }, { sheet: 'settings' });
-  assert.equal(r.patch.sheet, null);
-  assert.equal(r.patch.settingsConfirmClear, false);
-  assert.equal(r.route, null);
-  assert.equal(r.effect, null);
-});
-
-// fdCloseSheet reads any sheet value that is not 'kit' and not an 'item:' as a protocol REF, and
-// raises the unread-protocol nudge for it. 'settings' is neither, so every ordinary close of the
-// panel -- the backdrop, the close button, Escape -- would queue a nudge for a page that does not
-// exist and arm its 8s timer. It renders as nothing today only because the index has no such ref.
-test('closing settings raises no protocol nudge -- it is not a protocol', () => {
-  const r = F.fdDispatch({ close: true }, { }, { sheet: 'settings', done: {} });
-  assert.equal(r.patch.sheet, null);
-  assert.equal(r.patch.nudge, null, 'settings is not an unread protocol page');
-  assert.equal(r.effect, null, 'and must not arm the nudge timer');
+// Settings has exactly ONE close route -- the shared data-fd-close-sheet that fdSheetHead's close
+// button and the backdrop already emit -- plus the Escape unwind, which reaches the same place. A
+// second bespoke close attribute would duplicate a path that already works, so there isn't one.
+//
+// Both routes run fdCloseSheet, which reads any sheet value that is not 'kit' and not an 'item:'
+// as a protocol REF and raises the unread-protocol nudge for it. 'settings' is neither, so before
+// fdProtocolRef learned about it every ordinary close queued a nudge for a page that does not
+// exist and armed its 8s timer -- invisible only because the index has no such ref to render.
+test('settings closes by the shared sheet close and by Escape, raising no protocol nudge', () => {
+  for (const attrs of [{ 'data-fd-close-sheet': '' }, { close: true }]) {
+    const via = JSON.stringify(attrs);
+    const r = F.fdDispatch(attrs, { }, { sheet: 'settings', done: {} });
+    assert.equal(r.patch.sheet, null, `${via} must close the panel`);
+    assert.equal(r.patch.nudge, null, `${via}: settings is not an unread protocol page`);
+    assert.equal(r.effect, null, `${via} must not arm the nudge timer`);
+  }
 });
 
 test('the theme action carries the mode it selects', () => {

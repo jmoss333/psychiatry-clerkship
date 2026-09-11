@@ -7,7 +7,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-open','data-fd-sheet','data-fd-safety','data-fd-toggle','data-fd-tab',
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
   'data-fd-back','data-fd-home','data-fd-search','data-fd-change-week','data-fd-progress',
-  'data-fd-theme','data-fd-settings','data-fd-close-settings',
+  'data-fd-theme','data-fd-settings',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool'
 ];
@@ -30,7 +30,6 @@ var FD_ACTION_SEMANTICS={
   'data-fd-progress':'open Progress and mastery',
   'data-fd-theme':'set saved color theme',
   'data-fd-settings':'open settings panel',
-  'data-fd-close-settings':'close settings panel',
   'data-fd-close-search':'close search dialog',
   'data-fd-close-sheet':'close side sheet',
   'data-fd-close-nudge':'dismiss protocol nudge',
@@ -217,6 +216,9 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-close-search')){
     return {patch:{searchOpen:false,query:''},route:null,effect:null};
   }
+  /* The settings panel closes through here too -- it has no close action of its own. When that
+     panel grows a destructive confirmation, its armed flag has to be reset in fdCloseSheet, or an
+     armed "erase everything" survives the close and the panel reopens still armed. */
   if(fdOwn(a,'data-fd-close-sheet')) return fdCloseSheet(s);
   if(fdOwn(a,'data-fd-close-nudge')){
     return {patch:{nudge:null},route:null,effect:null};
@@ -396,9 +398,6 @@ function fdDispatch(attrs, context, state){
     /* Settings is a sheet so it inherits backdrop, dialog semantics, the close button and the
        Escape unwind from fdKeyAction. sheetFrom is not set: settings has no "back to kit" path. */
     return {patch:{sheet:'settings',searchOpen:false},route:null,effect:null};
-  }
-  if(fdOwn(a,'data-fd-close-settings')){
-    return {patch:{sheet:null,settingsConfirmClear:false},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-theme')){
     /* The value is the MODE, not the painted attribute -- fdApplyEffect resolves it. A missing or
@@ -601,7 +600,7 @@ function fdTrapFocus(event, dialog){
 var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],'+
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
-  '[data-fd-theme],[data-fd-settings],[data-fd-close-settings],'+
+  '[data-fd-theme],[data-fd-settings],'+
   '[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
   '[data-fd-try-now],[data-fd-expand-tool]';
 
