@@ -1,0 +1,62 @@
+ARCHIVED CAPTURE — contemporaneous record of a permission statement
+====================================================================
+Retrieved:  2026-09-10
+Source URL: https://www.acgme.org/globalassets/pdfs/milestones/psychiatrymilestones.pdf
+Document:   ACGME Psychiatry Milestones, Second Revision March 2020,
+            Implementation Date July 1, 2021
+Retrieved by: direct fetch of the primary document (not a search snippet,
+            not a third-party summary)
+
+VERBATIM COPYRIGHT / PERMISSION LINE
+------------------------------------
+"©2020 Accreditation Council for Graduate Medical Education (ACGME)
+All rights reserved except the copyright owners grant third parties the
+right to use the Psychiatry Milestones on a non-exclusive basis for
+educational purposes."
+
+WHY THIS CAPTURE EXISTS
+-----------------------
+This is an affirmative, instrument-specific, third-party, educational-purpose
+grant. It is the basis on which this project may reproduce Milestones
+subcompetency identifiers and unit titles verbatim on a public educational
+site. A web permission statement can change without notice, so this dated
+capture — not the live URL — is the record of what the source said on the
+date the claim was made. (research_returns.json invariant 2, web variant.)
+
+SUBCOMPETENCY ENUMERATION (verified same fetch)
+-----------------------------------------------
+Patient Care (6):   PC1 Psychiatric Evaluation
+                    PC2 Psychiatric Formulation and Differential Diagnosis
+                    PC3 Treatment Planning and Management
+                    PC4 Psychotherapy
+                    PC5 Somatic Therapies
+                    PC6 Clinical Consultation
+Medical Knowledge (4):
+                    MK1 Development through the Life Cycle
+                    MK2 Psychopathology
+                    MK3 Clinical Neuroscience
+                    MK4 Psychotherapy
+Systems-Based Practice (3):
+                    SBP1 Patient Safety and Quality Improvement
+                    SBP2 System Navigation for Patient-Centered Care
+                    SBP3 Physician Role in Health Care Systems
+Practice-Based Learning and Improvement (2):
+                    PBLI1 Evidence-Based and Informed Practice
+                    PBLI2 Reflective Practice and Commitment to Personal Growth
+Professionalism (3):
+                    PROF1 Professional Behavior and Ethical Principles
+                    PROF2 Accountability/Conscientiousness
+                    PROF3 Well-Being
+Interpersonal and Communication Skills (3):
+                    ICS1 Patient- and Family-Centered Communication
+                    ICS2 Interprofessional and Team Communication
+                    ICS3 Communication within Health Care Systems
+
+TOTAL: 6 + 4 + 3 + 2 + 3 + 3 = 21 subcompetencies.
+
+CAUTION RECORDED AT CAPTURE TIME
+--------------------------------
+The retrieval summariser asserted "Total Count: 24" while enumerating a list
+that sums to 21. The enumeration is authoritative; the stated total was an
+arithmetic error. Trust the enumerated identifiers, not a reported count —
+including in this file.

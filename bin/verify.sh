@@ -144,6 +144,12 @@ step "validate_evidence_annotations"        python3 $A/validate_evidence_annotat
 step "span audit (verbatim vs paper)"       python3 bin/verify_spans.py
 step "unit — research dock"                 python3 bin/research-dock.py --self-test
 step "research return dock"                 python3 bin/research-dock.py check
+# Same asymmetry as the dock above and for the same reason: --self-test BLOCKS because it
+# is a real falsification and check_vacuity.py requires it; the coverage check REPORTS
+# because an undecided standards unit is a faculty decision and must never be able to
+# stop a clinical correction from being pushed. --strict exists for deliberate use.
+step "unit — standards coverage"            python3 bin/check_standards_coverage.py --self-test
+step "standards spine coverage"             python3 bin/check_standards_coverage.py
 step "unit — qbank coherence"              python3 bin/check_qbank_coherence.py --self-test
 # Four tools shipped a --self-test that NO gate invoked — found by bin/check_vacuity.py after
 # Codex pointed out it was inventorying only test FILES, not the --self-test modes its own
