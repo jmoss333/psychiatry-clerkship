@@ -612,13 +612,15 @@
     "by": "Joshua Moss, MD"
   },
   "exp_consult.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-03",
-    "by": "Joshua Moss, MD"
+    "at": "2026-09-14",
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with evidence-based resources on capacity assessment, delirium, catatonia, withdrawal, and consult communication",
+    "note": "Added comprehensive Further Reading section covering four-abilities model (Appelbaum), NICE CG103 delirium guidelines, catatonia diagnostic criteria and BAP guidelines, ASAM withdrawal management, trauma-informed consult assessment (SAMHSA), and teaching resources (Phase 2 coverage curation)"
   },
   "psychopharm_primer.md": {
     "status": "reviewed",

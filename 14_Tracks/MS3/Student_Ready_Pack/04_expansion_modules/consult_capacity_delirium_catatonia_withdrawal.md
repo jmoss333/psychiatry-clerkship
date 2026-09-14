@@ -202,7 +202,49 @@ Use this structure:
 | Refusal of care | capacity, fear/mistrust, psychosis, delirium, values, communication failure |
 | Hallucinations | delirium, substance, psychosis, mood disorder, trauma, sensory impairment |
 
-## Faculty Review Checklist
+## Further Reading & Evidence-Based Resources
+
+**Decisional Capacity Assessment**
+- Appelbaum, P.S. (2007) — *The New England Journal of Medicine* — the four-abilities model for capacity assessment: communicating, understanding, appreciating, and reasoning. This is the standard framework used in U.S. psychiatry and medical-legal practice. Teach by asking "which ability is at risk here?" rather than by rote.
+- Kennedy, G.J. (2014) — capacity assessment in older adults: depression and cognitive impairment often undermine appreciation and reasoning. Older patients merit extra attention to medical causes (delirium, stroke, infection) before attributing decision-making impairment to depression alone.
+
+**Delirium: Recognition and Management**
+- NICE CG103 (2010) — the gold-standard guideline for delirium prevention, assessment, and care in hospitals and long-term care. APA published an updated delirium practice guideline in 2025; review the new guideline once available. CAM criteria (inattention + acute onset + fluctuation + disorganized thinking or altered consciousness) remain the core diagnostic anchor.
+- Inouye, S.K. et al. — prospective studies on delirium prevention (modifiable risk factors: sleep, immobility, sensory impairment, medications, infection). Even as a student, you can notice these and flag them to the team.
+
+**Catatonia: Diagnosis and Urgent Care**
+- British Association for Psychopharmacology (2023) — evidence-based consensus guideline for catatonia recognition and management. Bush-Francis Catatonia Rating Scale diagnostic criteria: look for repetitive movements, echolalia/echopraxia, posturing, waxy flexibility, mutism, immobility, and negativism. Do not miss the excited (agitated) form.
+- Lorazepam challenge: 1-2 mg IM or IV lorazepam is both diagnostic and therapeutic. Response within 15-30 minutes (improvement in speech, mobility, or emotional responsiveness) strongly supports catatonia and guides further treatment (ECT is definitive for malignant catatonia).
+
+**Alcohol and Benzodiazepine Withdrawal**
+- ASAM (American Society of Addiction Medicine) — clinical practice guideline on alcohol withdrawal management. Key points for students: prior withdrawal seizure or delirium tremens raises the risk category; thiamine-before-glucose prevents Wernicke encephalopathy; CIWA-Ar tool is standard in most U.S. hospitals. Know your unit's protocol.
+- McKeon, A. et al. (2016) — alcohol-related brain damage: Wernicke encephalopathy recognition, thiamine replacement, and reversibility. Early recognition and thiamine replacement can prevent permanent cognitive damage.
+
+**Opioid Withdrawal and Medication-Assisted Treatment**
+- Rudd, R.A. et al. (2016) — opioid overdose and withdrawal as a major source of morbidity. Opioid withdrawal is medically less dangerous than alcohol/benzo withdrawal but profoundly demoralizing. Medication-assisted treatment (methadone, buprenorphine) engagement dramatically improves outcomes; consult work includes facilitating that linkage.
+
+**Capacity in the Context of Psychosis, Mania, and Depression**
+- Reuland, R., Schwarzfeld, M. (2016) — mental health courts and the role of capacity assessment when a patient with a psychiatric diagnosis refuses treatment. Depression can impair appreciation and reasoning; mania can impair judgment about risk; psychosis can affect understanding. The four-abilities model helps clarify which ability is at risk.
+- Teaching focus: "Does this patient understand the information?" (understanding) vs. "Does this patient believe it applies to them?" (appreciation) vs. "Does this patient weigh pros and cons reasonably?" (reasoning). They are separate, and a patient can have one but not another.
+
+**Trauma-Informed Consult Assessment**
+- SAMHSA (Substance Abuse and Mental Health Services Administration) — trauma-informed care principles apply to consultation: ask how the patient's past trauma, medical trauma (procedures, intubation, restraint), or current fear shapes their "refusal" or apparent psychosis. A patient who refuses antibiotics may fear needles or coercion, not lack capacity.
+- Mueser, K.T., Rosenberg, S.D. — trauma prevalence in psychiatric and substance-use populations is high (50%+). Consults that name the trauma context shift how teams respond.
+
+**Communication in Consult Psychiatry**
+- Platt, F.W. — NURSE acronym (Naming, Understanding, Respecting, Supporting, Exploring) for responding to emotion. In consults, naming what the patient seems to fear or understand models collaborative reasoning and builds trust.
+- Use the four-abilities structure to teach patients why you are asking what you ask: "I'm asking about memory because capacity includes understanding the information."
+
+**Book References**
+- Kaplan & Sadock's Synopsis of Psychiatry — sections on capacity, delirium, withdrawal, and catatonia. Comprehensive, practical reference for definitions and clinical decision trees.
+- Hales, R.E., Yudofsky, S.C., Gabbard, G.O. — Textbook of Psychiatry (ISBN 9781585627661) — detailed chapters on medical and psychiatric causes of behavioral change; includes capacity assessment frameworks and withdrawal protocols.
+
+**Teaching Resources and Practice Guidance**
+- Teach by case: practice the four-abilities structure on a patient with psychosis, then on one with delirium, then on one with depression. The same patient can show intact understanding but impaired reasoning, or vice versa.
+- Consult note rehearsal: practice writing a one-paragraph consult answer (question, key findings, recommendation) before presenting to your supervising clinician.
+- Escalation checklist: know your unit's safety triggers (autonomic instability, fever, immobility complications, high-risk withdrawal signs) and the contact person to call if you see them.
+
+
 
 - Confirm local legal language for capacity and involuntary care.
 - Confirm local withdrawal protocols.
