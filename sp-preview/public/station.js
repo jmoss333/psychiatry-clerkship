@@ -289,7 +289,7 @@
         retryMoments(latest).forEach(function(moment,index){el('option','Turn '+moment.turnId+(moment.targetName?' · '+moment.targetName:'')+' — '+moment.question.slice(0,80),retrySelect,{value:String(index)});});
         showMoment();
       }
-      retryBox.hidden=!!hostedSnapshot.retryUsed;
+      retryBox.hidden=!!hostedSnapshot.retryUsed||retryMoments(latest).length===0;
       draw();
     }
     update({phase:'gate',messages:[]});
