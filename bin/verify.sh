@@ -82,6 +82,7 @@ step "gate coverage vs ci.yml"              python3 bin/check-verify-coverage.py
 # gate nobody executes looks exactly like a gate.
 step "unit — vacuity checker"               python3 bin/check_vacuity.py --self-test
 step "every falsification is on a gate"     python3 bin/check_vacuity.py
+step "unit — PR preflight"                  python3 bin/pr_preflight.py --self-test
 
 # --- python validators ---
 # This block mirrors the python half of ci.yml's build-test-validate job, step for step.
