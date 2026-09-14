@@ -650,13 +650,15 @@
     "by": "Joshua Moss, MD"
   },
   "doc_oral.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-03",
-    "by": "Joshua Moss, MD"
+    "at": "2026-09-14",
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with evidence-based resources on documentation, oral presentation, handoff communication, and clinical reasoning",
+    "note": "Added comprehensive Further Reading section covering documentation standards, structured handoffs (Solet & Frankel), formulation-driven assessment (Summers), differential diagnosis reasoning, MSE focus and tailoring, presentation skills under pressure, book references (Kaplan & Sadock, Morrison), and practice guidance (Phase 2 coverage curation)"
   },
   "exp_tx.md": {
     "status": "reviewed",

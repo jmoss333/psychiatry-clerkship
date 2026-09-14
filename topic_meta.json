@@ -3235,7 +3235,11 @@
     ],
     "communicationCases": [
       "rounds_naming_uncertainty_001"
-    ]
+    ],
+    "facultyReview": {
+      "status": "pending",
+      "lastReviewed": "2026-09-14"
+    }
   },
   "exp_tx.md": {
     "read": 4,
