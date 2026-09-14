@@ -95,3 +95,61 @@ button,input,textarea,select{font:inherit}button,input[type=password],textarea,s
 @media(max-width:900px){.room-view{padding-inline:20px}}
 @media(max-width:700px){.room-view{padding:12px 14px}.room-people{grid-template-columns:1fr 1fr}.room-mic{grid-column:1/-1;order:3}.room-view[data-seats="1"] .room-people{grid-template-columns:1fr auto}.room-view[data-seats="1"] .room-mic{grid-column:auto;order:0}.room-name{font-size:.8rem;padding:3px 9px}.room-caption{min-height:52px}.room-caption p{font-size:.86rem}}
 @media print{.room-view{background:none;border:0;padding:0 0 12px}.room-scene,.room-mic,.room-legend{display:none}}
+/* Realism 1 — time in the room. The clock is a quiet companion to the turn count,
+   never a countdown: whole minutes, muted, and no colour change as it grows. */
+#elapsed{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.78rem;margin-right:8px}
+.closing-note{font-size:.79rem;line-height:1.5;color:#695026;background:#f7f0df;border-left:3px solid #967540;padding:9px 12px;margin:10px 0 0}
+/* Coach — a private aside beside the learner. Same teal family as the "answers next" ring,
+   deliberately not a face, bubble, robot or lightbulb. No new palette entries. */
+.coach{background:#f7faf8;border:1px solid #c8dbd3;border-left:3px solid var(--green);border-radius:12px;padding:14px 16px;margin:0 26px 14px}
+.coach-head{display:flex;gap:10px;align-items:flex-start}
+.coach-mark{flex:0 0 auto;width:30px;height:30px;border-radius:50%;border:2px solid var(--green);position:relative}
+.coach-mark::after{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--green)}
+.coach-headings{min-width:0}
+.coach h3{margin:0;font-size:.92rem;color:var(--green)}
+.coach-contract{margin:3px 0 0;font-size:.78rem;color:var(--muted);line-height:1.5}
+.coach-draft{margin:10px 0 0}
+.coach-prompt{font-family:var(--serif);font-size:1.02rem;margin:12px 0 10px;color:var(--ink)}
+.coach-options{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.coach-option{display:flex;flex-direction:column;gap:3px;text-align:left;min-height:44px;padding:9px 11px;background:#fff;border:1px solid #c8dbd3;border-radius:9px;cursor:pointer}
+.coach-option:hover:not(:disabled){border-color:var(--green)}
+.coach-option[aria-pressed="true"]{background:var(--pale);border-color:var(--green)}
+.coach-option:disabled{opacity:.55;cursor:default}
+.coach-option-title{font-size:.84rem;font-weight:650;color:var(--ink)}
+.coach-option-reason{font-size:.75rem;color:var(--muted);line-height:1.45}
+.coach-note{background:#fff;border:1px solid #dbe7e2;border-radius:9px;padding:11px 13px;margin-top:10px}
+.coach-quote{margin:0;border-left:3px solid #c8dbd3;padding-left:10px}
+.coach-quote p{margin:0;font-size:.88rem;line-height:1.5;color:var(--ink)}
+.coach-quote cite{display:block;margin-top:3px;font-size:.74rem;font-style:normal;color:var(--muted)}
+.coach-quote cite:empty{display:none}
+.coach-lead{margin:0;font-size:.85rem;line-height:1.55;color:var(--ink)}
+.coach-quote+.coach-lead,.coach-quote+.coach-items,.coach-lead+.coach-items{margin-top:9px}
+.coach-items{margin:0;padding-left:20px;font-size:.85rem;line-height:1.55;color:var(--ink)}
+.coach-items li+li{margin-top:5px}
+.coach-scaffold{margin:9px 0 0;font-size:.85rem;line-height:1.55;color:var(--green);font-style:italic}
+.coach-foot{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.coach-fine{margin:8px 0 0}
+.coach-button{border-color:#a9c2bc}
+.coach-button[aria-pressed="true"]{background:var(--pale);border-color:var(--green)}
+@media(max-width:700px){.coach{margin:0 14px 12px;padding:12px 13px}.coach-options{grid-template-columns:1fr}.coach-foot button{flex:1 1 100%}}
+@media print{.coach,.coach-button{display:none}}
+.room-coach-mark{display:none}
+.room-view[data-coach="open"] .room-coach-mark{display:block}
+.room-coach-ring{fill:#f7faf8;stroke:var(--green);stroke-width:2}.room-coach-dot{fill:var(--green)}
+/* Realism 3 — the quiet window drains visibly, so the learner can see the send coming
+   rather than being surprised by it. Two fixed durations because quiet() has two values;
+   CSP style-src 'self' rules out setting a duration inline. */
+.room-quiet{display:flex;align-items:center;gap:8px;margin-top:6px}
+.room-quiet-track{flex:1 1 auto;height:3px;border-radius:2px;background:#e0e8e5;overflow:hidden}
+.room-quiet-bar{display:block;height:100%;width:100%;background:var(--green);transform-origin:left center}
+.room-quiet[data-window="4500"] .room-quiet-bar{animation:room-drain 4.5s linear forwards}
+.room-quiet[data-window="8000"] .room-quiet-bar{animation:room-drain 8s linear forwards}
+.room-quiet-label{flex:0 0 auto;font-size:.72rem;color:var(--muted)}
+/* While the window is draining the learner's own words settle back, so attention goes to the bar. */
+.room-view[data-quiet="on"] .room-caption[data-kind="you"] span{opacity:.45;transition:opacity .4s ease}
+@keyframes room-drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@media(prefers-reduced-motion:reduce){.room-quiet-bar{animation:none!important;transform:scaleX(1)}}
+@media print{.room-quiet{display:none}}
+/* Realism 4 — the opt-in room sound chip sits beside the microphone chip. */
+.room-bed{justify-self:center;align-self:center;font-size:.72rem;color:var(--green);background:var(--pale);border:1px solid #a9c2bc;border-radius:999px;padding:3px 9px;white-space:nowrap}
+@media print{.room-bed{display:none}}
