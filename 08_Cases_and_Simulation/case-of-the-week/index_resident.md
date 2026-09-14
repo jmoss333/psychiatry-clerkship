@@ -8,6 +8,7 @@
 
 **This term's line-up (most recent first):**
 
+- **Serotonin Syndrome vs. Neuroleptic Malignant Syndrome** (Sep 14) — rigidity and fever with a confounded med list: the discriminating exam and lab pattern (CK, low iron), the NMS management ladder through dantrolene and ECT, malignant catatonia, and structured rechallenge.
 - **Catatonia — Recognition, Workup & Treatment** (Aug 31) — disentangling NMS from malignant catatonia, high-dose lorazepam strategy, early ECT triggers, the serum + CSF autoimmune workup, and the catatonia–delirium overlap.
 - **Borderline Personality Disorder — Presentation & Management** (Aug 27) — the meta-analytic evidence in real numbers, deprescribing the inherited five-drug regimen, chronic vs. acute-on-chronic risk documentation, splitting and the milieu, and GPM when DBT is waitlisted.
 - **Panic Disorder — Differential Precision & Pharmacologic Optimization** (Aug 10) — the pseudopheochromocytoma phenotype, benzodiazepine interdose rebound as an iatrogenic driver, and reconciling the Cochrane and BMJ network meta-analyses.
