@@ -84,7 +84,9 @@
       "rotationRationale": "PR 4.11.g.1.a places ongoing individual psychotherapy in the longitudinal outpatient year.",
       "internalCodes": [],
       "mappingNote": "CONFIRMED VOCABULARY GAP. Psychotherapy occupies two of 21 subcompetencies and is a hard Program Requirement; the twelve internal codes cannot express it.",
-      "review": "pending"
+      "review": "pending",
+      "mappingStatus": "blocked-on-vocabulary",
+      "mappingBlockedBy": "no psychotherapy code exists in the twelve-code vocabulary"
     },
     {
       "id": "acgme-pc5",
@@ -109,8 +111,9 @@
       "rotationRequirement": "elsewhere",
       "rotationRationale": "PR 4.11.k places consultation-liaison on a separate two-month FTE rotation.",
       "internalCodes": [],
-      "mappingNote": "Correctly empty for this rotation. This is the canonical example of a gap that is not a gap.",
-      "review": "pending"
+      "mappingNote": "Correctly empty for this rotation. This is the canonical example of a gap that is not a gap. The rotation does not teach consultation at all — PR 4.11.k places it elsewhere — so silence here is the correct answer, not a missing code.",
+      "review": "pending",
+      "mappingStatus": "answered-elsewhere"
     },
     {
       "id": "acgme-mk1",
@@ -171,7 +174,9 @@
       "rotationRationale": "PR 4.11.s places the psychotherapy knowledge base in the didactic curriculum.",
       "internalCodes": [],
       "mappingNote": "Second half of the confirmed psychotherapy gap.",
-      "review": "pending"
+      "review": "pending",
+      "mappingStatus": "blocked-on-vocabulary",
+      "mappingBlockedBy": "no psychotherapy code exists in the twelve-code vocabulary"
     },
     {
       "id": "acgme-sbp1",
@@ -179,11 +184,13 @@
       "code": "SBP1",
       "title": "Patient Safety and Quality Improvement",
       "domain": "Systems-Based Practice",
-      "rotationRequirement": "undecided",
-      "rotationRationale": "DELIBERATELY UNDECIDED. PR 4.11.q and 6.3 place QI at program level, but restraint reduction and suicide-risk QI are genuinely inpatient activities that the Milestones themselves name. This is the single most defensible place for a program to disagree with the split.",
+      "rotationRequirement": "required",
+      "rotationRationale": "DECISION: sbp1-required-inpatient — DECIDED 2026-09-14 by Joshua Moss, MD: REQUIRED on this rotation. PR 4.11.q and 6.3 do place QI at program level, and that is why this was defensibly arguable either way. It is ruled required because the activities the Milestones themselves name under SBP1 — safety-event reporting, disclosure, and participation in root-cause analysis — happen on an inpatient unit, and because restraint-and-seclusion reduction and suicide-risk QI are inpatient-specific work a site visitor could point at. Ruling `elsewhere` would have asserted a negative about where learning happens, which is the shape that failed as RQ-10 f3. The obligation this creates is real and is RQ-2's job.",
       "internalCodes": [],
       "mappingNote": "MUST NOT be mapped to `safety` — that code means patient risk and this means institutional safety events. Mapping it would manufacture false coverage on the most safety-critical code in the vocabulary. Feeds RQ-2: no QI content exists on either site.",
-      "review": "pending"
+      "review": "pending",
+      "mappingStatus": "blocked-on-vocabulary",
+      "mappingBlockedBy": "`safety` must first split into `safety-risk` (patient risk) and `safety-systems` (institutional safety events, disclosure, RCA)"
     },
     {
       "id": "acgme-sbp2",
@@ -195,7 +202,9 @@
       "rotationRationale": "Transitions of care and hand-offs live on inpatient units; PR 5.1.k.2.e requires an adequate discharge summary and plan.",
       "internalCodes": [],
       "mappingNote": "VOCABULARY GAP: care coordination, transitions, discharge and population health.",
-      "review": "pending"
+      "review": "pending",
+      "mappingStatus": "blocked-on-vocabulary",
+      "mappingBlockedBy": "no code for care coordination, transitions, discharge or population health"
     },
     {
       "id": "acgme-sbp3",
@@ -207,7 +216,9 @@
       "rotationRationale": "PR 4.11.n (community psychiatry) and program-level curriculum.",
       "internalCodes": [],
       "mappingNote": "VOCABULARY GAP: health systems, financing, advocacy, transition to practice.",
-      "review": "pending"
+      "review": "pending",
+      "mappingStatus": "blocked-on-vocabulary",
+      "mappingBlockedBy": "no code for health systems, financing, advocacy or transition to practice"
     },
     {
       "id": "acgme-pbli1",
@@ -219,7 +230,9 @@
       "rotationRationale": "PR 4.11.s.2 assigns critical appraisal to journal clubs and didactics.",
       "internalCodes": [],
       "mappingNote": "VOCABULARY GAP: evidence-based practice and critical appraisal. NOTE the library already has a strong evidence apparatus; the gap is in the CODE vocabulary, not the content.",
-      "review": "pending"
+      "review": "pending",
+      "mappingStatus": "blocked-on-vocabulary",
+      "mappingBlockedBy": "no code for evidence-based practice and critical appraisal"
     },
     {
       "id": "acgme-pbli2",
@@ -231,7 +244,9 @@
       "rotationRationale": "PR 5.1.c and 5.1.d assign this to semi-annual CCC review and individualized learning plans.",
       "internalCodes": [],
       "mappingNote": "VOCABULARY GAP: reflective practice, feedback, learning plans.",
-      "review": "pending"
+      "review": "pending",
+      "mappingStatus": "blocked-on-vocabulary",
+      "mappingBlockedBy": "no code for reflective practice, feedback and learning plans"
     },
     {
       "id": "acgme-prof1",
@@ -271,7 +286,9 @@
       "rotationRationale": "PR Section 6 places well-being at institutional and program level.",
       "internalCodes": [],
       "mappingNote": "VOCABULARY GAP: physician well-being.",
-      "review": "pending"
+      "review": "pending",
+      "mappingStatus": "blocked-on-vocabulary",
+      "mappingBlockedBy": "no code for physician well-being"
     },
     {
       "id": "acgme-ics1",
@@ -311,7 +328,9 @@
       "rotationRationale": "Daily notes and the discharge summary; PR 5.1.k.2.a-e monitors clinical records on major rotations.",
       "internalCodes": [],
       "mappingNote": "VOCABULARY GAP: documentation.",
-      "review": "pending"
+      "review": "pending",
+      "mappingStatus": "blocked-on-vocabulary",
+      "mappingBlockedBy": "no code for documentation"
     }
   ]
 }
