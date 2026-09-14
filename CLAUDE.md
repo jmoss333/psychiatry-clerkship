@@ -321,3 +321,20 @@ cd tests/smoke && npm ci && npx playwright test
   pinned page drops it or points at a copy hosted here. `bin/check_instrument_links.py` re-checks
   the far end by hand; it is not a gate.
   Audit and current disposition: `docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md`.
+- **SafetyKit governance: high-risk clinical pages cannot transition to pending.** `curriculum.json`
+  defines a `safetyKit` array of page ledger keys for high-risk clinical safety surfaces. These items
+  **must maintain `facultyReview.status = 'reviewed'`** in `reviewed.json` and `topic_meta.json` —
+  they cannot be transitioned to `pending` status even when content is enhanced. Current safetyKit
+  items (2026-09-14): `pg_suicide.md`, `agitation.md`, `exp_consult.md`, `t_sud.md`, `delirium.md`.
+  **Rationale:** High-risk clinical teaching on suicide, agitation, capacity, withdrawal, and
+  delirium requires permanent faculty review attestation. These pages are not draft content — they
+  are complete teaching surfaces where learners assess and act on clinical risk. Staying `reviewed`
+  ensures the entire page (not just new additions) carries ongoing faculty accountability.
+  **When adding resources or citations to a safetyKit item:** Enhance the content freely — add
+  evidence links, media, teaching materials, media resources — but leave `facultyReview.status`
+  at `reviewed` and update `reviewed.json` and `topic_meta.json` only if you are changing the
+  review date or reviewer. This is not a gate — it is a ledger rule. `build_and_check.sh` enforces
+  it via `validate_curriculum.py`, which hard-fails the build if any safetyKit item's
+  `facultyReview.status` is not `reviewed`. If you attempt to transition a safetyKit item and the
+  build fails with "safetyKit <ledger-key>: facultyReview.status must be 'reviewed'", revert the
+  status in both ledgers and push again.
