@@ -450,15 +450,13 @@
     "by": "Joshua Moss, MD"
   },
   "agitation.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-14",
-    "by": "Pending faculty review",
-    "reason": "Curriculum content updated with evidence-based resources on de-escalation, restraint/seclusion standards, trauma-informed care, and healthcare equity in behavioral crisis management",
-    "note": "Added comprehensive Further Reading section covering Project BETA framework, CMS regulations (42 CFR §482.13), safety literature (Wilson et al. 2012), equity disparities (Singal et al. 2024, Smith et al. 2022), DBT principles, SAMHSA trauma-informed care guidance, and teaching resources (Phase 2 coverage curation)"
+    "at": "2026-07-03",
+    "by": "Joshua Moss, MD"
   },
   "catatonia.md": {
     "status": "reviewed",

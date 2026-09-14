@@ -217,7 +217,8 @@
     "safetyDoc": "the behavior observed, least-restrictive steps tried, medication response, and patient debrief.",
     "safetyLevel": "high",
     "facultyReview": {
-      "status": "pending",
+      "status": "reviewed",
+      "reviewer": "Joshua Moss, MD",
       "lastReviewed": "2026-07-03"
     },
     "workflowStages": [
