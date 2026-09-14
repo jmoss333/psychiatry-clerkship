@@ -5517,9 +5517,7 @@
       "exam"
     ],
     "facultyReview": {
-      "status": "reviewed",
-      "lastReviewed": "2026-07-09",
-      "reviewer": "Joshua Moss, MD"
+      "status": "pending"
     },
     "epa": [
       "EPA2"
@@ -5560,9 +5558,7 @@
       "treatment"
     ],
     "facultyReview": {
-      "status": "reviewed",
-      "lastReviewed": "2026-07-10",
-      "reviewer": "Joshua Moss, MD"
+      "status": "pending"
     },
     "shelfBlueprint": [
       "neurocog"
