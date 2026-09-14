@@ -267,6 +267,45 @@ enforced, not merely documented — `validate_scheduled_workflows.py` rejects an
 command in any scoped workflow, and `tests/maintenance/test_escalation_issue.py` asserts that
 no input produces a close decision.
 
+## A pushed branch with no pull request
+
+The queue runner pushes its branch and *then* asks GitHub to open the draft pull request.
+Those two operations do not share a permission. `contents: write` covers the push; opening
+a pull request is additionally gated by **Settings → Actions → General → Workflow
+permissions → Allow GitHub Actions to create and approve pull requests**, which no workflow
+file can grant itself. With that box off, `gh pr create` is refused:
+
+```
+pull request create failed: GraphQL: GitHub Actions is not permitted to
+create or approve pull requests (createPullRequest)
+```
+
+Before `queue_pr_fallback.py` the refusal simply killed the step, leaving the branch on the
+remote carrying completed, verified work with nothing anywhere saying why it had no pull
+request. Four consecutive scheduled runs failed that way (2026-09-10 … 2026-09-13); two
+orphan branches survived it and one needed its pull request opened by hand days later.
+
+The fallback folds the refusal into one marker-owned rolling issue,
+`automation: queue branch pushed without a pull request`, under
+`<!-- automation:queue-branch-without-pull-request -->`, listing each branch, its task, how
+many nights it has recurred, the verbatim refusal, and a **pre-filled compare URL** so a
+person resolves a row in one click. Filing an issue works precisely because `issues: write`
+is an ordinary workflow permission — it is not gated by the setting that just refused the
+pull request, which is the whole reason this report can exist.
+
+**It does not turn the run green.** The workflow's job is to deliver a reviewable draft pull
+request; delivering half of that is not a pass, and reporting success over the half that
+worked is the failure `docs/SILENT_SHRINK_CHECKLIST.md` is a list of. The refused step stays
+red, so the heartbeat and the escalation deadman go on seeing the truth; this issue carries
+the detail neither of them can. Classification is subtractive — a refusal the module does
+not recognise is reported verbatim as `unknown`, never dropped.
+
+`tests/maintenance/test_queue_pr_fallback.py` executes the workflow's own `run:` bodies
+against a fake `gh`, because every defect this exists for lived in a path nobody ran until
+04:40 UTC. That is how the truncation bug in the decision handoff was found: the module
+appends to `--output`, so a file that is not truncated yields `create\nupdate` and an issue
+number with a newline in it.
+
 ## Rotation configuration and manual boundary
 
 `rotation_blocks.json` accepts only an opaque ID, ISO start/end dates, and
