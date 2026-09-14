@@ -435,6 +435,63 @@
       restart:'Restart needed — microphone off',ended:'Encounter ended — microphone off'}[phase]||'Ready';
   }
   function speakerLabel(role,name){return role==='you'?'You':name;}
+  var ROOM_NEXT_PHASES=['listening','paused','ready','connecting','restart'];
+  // Derives what the room shows from a controller snapshot + the learner-facing profile
+  // (DanaStationContent.getProfile). Canonical identities only: names/pronouns come from
+  // profile.participants (family) or profile.displayName (single patient) — never from dialogue.
+  function roomView(snapshot,profile){
+    var family=snapshot.caseId===FAMILY_CASE_ID,phase=snapshot.phase,ended=phase==='ended';
+    var people=profile&&Array.isArray(profile.participants)&&profile.participants.length?profile.participants.slice(0,2).map(function(p){return {id:p.id,name:p.displayName||FAMILY_NAMES[p.id]||'',pronouns:p.pronouns||''};}):[{id:'patient',name:profile&&profile.displayName||'The patient',pronouns:''}];
+    var replies=snapshot.messages.filter(function(m){return m.role!=='you';}),last=replies[replies.length-1]||null;
+    var seatOf=function(id){return family?id:'patient';};
+    var activeId=family?(phase==='speaking'&&last?(snapshot.activeSpeakerId||last.speakerId):snapshot.targetRoleId):'patient';
+    var interruptedId=last&&last.status==='interrupted'?seatOf(last.speakerId):null;
+    var bid=family&&snapshot.familyBid&&!snapshot.busy&&!ended&&!snapshot.restartRequired?snapshot.familyBid:null;
+    var cue=snapshot.roomCue&&snapshot.turn<snapshot.roomCue.turn&&ROOM_NEXT_PHASES.indexOf(phase)>=0?snapshot.roomCue:null;
+    var name=function(id){var p=people.filter(function(x){return x.id===id;})[0];return p?p.name:(FAMILY_NAMES[id]||people[0].name);};
+    var seats=people.map(function(p){
+      var active=p.id===activeId,turn='idle',tag=family?'Listening':'';
+      if(ended){turn='ended';tag=family?'Meeting ended':'Encounter ended';}
+      else if(phase==='speaking'&&active){turn='speaking';tag='Speaking';}
+      else if(phase==='responding'&&active){turn='preparing';tag='Preparing a reply…';}
+      else if(bid&&bid.speakerId===p.id){turn='bidding';tag='“'+bid.text+'”';}
+      else if(interruptedId===p.id&&phase!=='speaking'&&phase!=='responding'){turn='interrupted';tag=active?'Interrupted · answers next':'Interrupted';}
+      else if(active&&ROOM_NEXT_PHASES.indexOf(phase)>=0){turn='next';tag=family?'Answers next':'Your turn';}
+      return {id:p.id,name:p.name,pronouns:p.pronouns,turn:turn,tag:tag};
+    });
+    var micOn=phase==='listening',mic=micOn?'Your microphone · listening'+(snapshot.hold?' — turn held':''):phase==='connecting'?'Connecting microphone…':phase==='speaking'||phase==='responding'?(snapshot.spokenInterrupt?'Your microphone · available to interrupt':'Your microphone · waiting'):ended?'Microphone off':'Microphone paused';
+    var caption={kind:'quiet',label:'Paused',text:'Microphone off. Resume the microphone or type when ready.'};
+    var yours=(snapshot.draft+' '+snapshot.interim).trim();
+    if(ended)caption={kind:'quiet',label:'Ended',text:profile&&profile.cues?profile.cues.closing:'The conversation has ended.'};
+    else if(phase==='speaking'&&last)caption={kind:'speech',label:name(activeId),text:last.text};
+    else if(phase==='responding')caption={kind:'preparing',label:name(activeId),text:'Preparing a reply…'};
+    else if(cue)caption={kind:'cue',label:'Faculty cue',text:cue.text};
+    else if(bid)caption={kind:'speech',label:name(bid.speakerId),text:bid.text};
+    else if(phase==='listening'||phase==='connecting'){caption=yours?{kind:'you',label:'You',text:yours}:interruptedId&&last?{kind:'interrupted',label:name(interruptedId)+' · interrupted',text:'The remaining words did not finish playing. Only completed audio is remembered as heard.'}:{kind:'you',label:'You',text:phase==='connecting'?'Connecting the microphone…':'Speak when ready — your words appear here.'};}
+    else if(phase==='ready')caption={kind:'quiet',label:'Your turn',text:'Type your question below.'};
+    else if(interruptedId&&last)caption={kind:'interrupted',label:name(interruptedId)+' · interrupted',text:'The remaining words did not finish playing. Only completed audio is remembered as heard.'};
+    var cues=profile&&profile.cues||{};
+    var observation=ended?cues.closing:interruptedId?cues.interrupted:cues.opening;
+    var alt=family?'Illustration of the meeting room from your seat: '+seats[0].name+' is seated on the left and '+(seats[1]?seats[1].name:'')+' on the right, across a low table from you. Names, who is speaking and who answers next are given in text below.':'Illustration of the room from your seat: '+seats[0].name+' is seated across a low table from you. The name, whether they are speaking, and the live caption are given in text below.';
+    return {seats:seats,state:phase,micOn:micOn,mic:mic,caption:caption,observation:observation||'',cue:cue?cue.id:'',alt:alt};
+  }
+  // DOM writer: touches only the room's own ids, returns early when the markup is absent
+  // (so stub-document tests and any page without the room keep working).
+  function renderRoom(doc,view){
+    var root=doc.getElementById('room-view');if(!root||!view)return;
+    var set=function(id,text){var node=doc.getElementById(id);if(node)node.textContent=text;};
+    root.setAttribute('data-seats',String(view.seats.length));root.setAttribute('data-room-state',view.state);root.setAttribute('data-cue',view.cue);
+    ['a','b'].forEach(function(key,index){
+      var seat=view.seats[index]||{name:'',pronouns:'',turn:'idle',tag:''};
+      set('room-'+key+'-name',seat.name);set('room-'+key+'-pronouns',seat.pronouns);set('room-'+key+'-tag-text',seat.tag);
+      var tag=doc.getElementById('room-'+key+'-tag');if(tag)tag.setAttribute('data-kind',seat.turn);
+      var figure=root.querySelector?root.querySelector('.room-seat[data-seat="'+key+'"]'):null;if(figure)figure.setAttribute('data-turn',seat.turn);
+    });
+    var mic=doc.getElementById('room-mic');if(mic)mic.setAttribute('data-mic',view.micOn?'on':'off');set('room-mic-text',view.mic);
+    var caption=doc.getElementById('room-caption');if(caption)caption.setAttribute('data-kind',view.caption.kind);
+    set('room-caption-label',view.caption.label);set('room-caption-text',view.caption.text);
+    set('room-observation',view.observation);set('room-alt',view.alt);
+  }
 
   function mount(env){
     var doc=env.document,el=function(id){return doc.getElementById(id);},lastTranscript='',lastPhase='gate';
@@ -443,6 +500,7 @@
     el('voice-entry-tip').hidden=!recognitionAvailable;el('spoken-interrupt-entry').disabled=!recognitionAvailable;el('voice-mode').addEventListener('change',function(){el('voice-entry-tip').hidden=!this.checked;el('spoken-interrupt-entry').disabled=!this.checked||!recognitionAvailable;});
     if(!recognitionAvailable)el('voice-support').textContent='This browser does not offer speech recognition. The patient still speaks, and you can type each question.';
     var patientName='the patient',momentsEnabled=false;
+    var roomProfile=null;
     var momentOption=el('experience-choice').querySelector('option[value="moment"]');momentOption.hidden=true;momentOption.disabled=true;
     env.fetch('/api/preview-capabilities',{credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer'}).then(function(response){if(!response.ok)throw new Error('Unavailable');return response.json();}).then(function(value){if(exact(value,['momentsEnabled'])&&value.momentsEnabled===true){momentsEnabled=true;momentOption.hidden=false;momentOption.disabled=false;}}).catch(function(){});
     var visitedMomentIds=new Set(),fullChoices=Array.from(el('case-choice').options).map(function(o){return {value:o.value,text:o.textContent};});
@@ -495,11 +553,12 @@
       el('error').hidden=!snapshot.error;el('error').textContent=snapshot.error;
       var serialized=JSON.stringify(snapshot.messages);if(serialized!==lastTranscript){var log=el('transcript'),nearBottom=log.scrollHeight-log.scrollTop-log.clientHeight<80,previousScroll=log.scrollTop;lastTranscript=serialized;el('transcript').replaceChildren();snapshot.messages.forEach(function(message){var row=doc.createElement('article');row.className='message '+message.role;var name=doc.createElement('span');name.className='name';name.textContent=(snapshot.mode==='moment'&&message.alternative?'Alternative · ':'')+(message.role==='you'?(message.targetRoleId?'You, to '+FAMILY_NAMES[message.targetRoleId]:'You'):(FAMILY_NAMES[message.speakerId]||patientName));row.appendChild(name);row.appendChild(doc.createTextNode(message.text));var delivery=doc.createElement('span');delivery.className='delivery';delivery.textContent=message.role==='you'?(message.status==='pending'?'Request in progress':message.status==='unconfirmed'?'Request outcome unknown — not sent again':'Submitted'):message.status==='played'?'Voice completed':message.status==='interrupted'?(message.completedSegments?message.completedSegments+' completed audio segment(s) remembered; the remaining text did not finish playing.':'Voice interrupted; no complete audio segment was confirmed heard.'):'Voice being prepared / played';row.appendChild(delivery);el('transcript').appendChild(row);if(message.familyBid){var bidRow=doc.createElement('article');bidRow.className='message dana family-bid';var bidName=doc.createElement('span');bidName.className='name';bidName.textContent=FAMILY_NAMES[message.familyBid.speakerId];bidRow.appendChild(bidName);bidRow.appendChild(doc.createTextNode(message.familyBid.text));var bidDelivery=doc.createElement('span');bidDelivery.className='delivery';bidDelivery.textContent=message.completedSegments===2?'Voice completed':message.status==='interrupted'?'Request did not finish playing — not remembered as heard':'Request being prepared / played';bidRow.appendChild(bidDelivery);el('transcript').appendChild(bidRow);}});log.scrollTop=nearBottom?log.scrollHeight:previousScroll;followLatest();}
       if(snapshot.phase!==lastPhase&&(snapshot.phase==='restart'||snapshot.phase==='ended'))el('clear').focus();
+      el('room-view').hidden=!active||snapshot.mode!=='full';if(active&&snapshot.mode==='full')renderRoom(doc,roomView(snapshot,roomProfile));
       if(station)station.update(snapshot);
       if(active&&lastPhase==='gate'){el('encounter-title').setAttribute('tabindex','-1');el('encounter-title').focus();}
       lastPhase=snapshot.phase;
     }
-    el('access-form').addEventListener('submit',function(event){event.preventDefault();var passcode=el('preview-key').value;el('preview-key').value='';var chosen=el('case-choice').value;var profile=selectedProfile();if(profile){patientName=profile.displayName;applyIdentity(doc,profile);}mountStation(chosen);controller.start(passcode,el('voice-mode').checked,chosen,{spokenInterrupt:el('spoken-interrupt-entry').checked,deliveryIntensity:el('delivery-intensity').value});});
+    el('access-form').addEventListener('submit',function(event){event.preventDefault();var passcode=el('preview-key').value;el('preview-key').value='';var chosen=el('case-choice').value;var profile=selectedProfile();if(profile){patientName=profile.displayName;applyIdentity(doc,profile);}roomProfile=momentProfile(chosen)?null:profile;mountStation(chosen);controller.start(passcode,el('voice-mode').checked,chosen,{spokenInterrupt:el('spoken-interrupt-entry').checked,deliveryIntensity:el('delivery-intensity').value});});
     el('cue-knock').addEventListener('click',function(){controller.triggerRoomCue('door_knock');});el('cue-chime').addEventListener('click',function(){controller.triggerRoomCue('hallway_chime');});
     el('family-bid-invite').addEventListener('click',function(){controller.inviteFamilyBid();});el('family-bid-defer').addEventListener('click',function(){controller.deferFamilyBid();});
     if(el('family-speaker-choice'))el('family-speaker-choice').addEventListener('change',function(){controller.setTargetRole(this.value);});
@@ -508,9 +567,9 @@
     el('pause').addEventListener('click',controller.pause);el('resume').addEventListener('click',controller.resume);el('interrupt').addEventListener('click',controller.interrupt);el('end').addEventListener('click',controller.end);
     el('spoken-interrupt').addEventListener('change',function(){controller.setSpokenInterrupt(this.checked);});
     el('thinking-time').addEventListener('change',function(){controller.setThinking(this.checked);});el('hold-turn').addEventListener('change',function(){controller.setHold(this.checked);});
-    el('clear').addEventListener('click',function(){visitedMomentIds.clear();controller.clear();if(station){station.dispose();station=null;}el('preview-key').value='';doc.title='The Interview Room';previewCase();el('preview-key').focus();});
+    el('clear').addEventListener('click',function(){visitedMomentIds.clear();controller.clear();roomProfile=null;if(station){station.dispose();station=null;}el('preview-key').value='';doc.title='The Interview Room';previewCase();el('preview-key').focus();});
     doc.addEventListener('keydown',function(event){if(event.defaultPrevented||event.repeat||event.isComposing||event.ctrlKey||event.metaKey||event.altKey)return;var snapshot=controller.getSnapshot();if(event.code==='Escape'&&snapshot.busy){event.preventDefault();controller.interrupt();return;}if(event.code==='Space'&&snapshot.phase==='listening'&&!(event.target&&event.target.closest('input,textarea,button,select,a,summary,[contenteditable]'))){event.preventDefault();controller.send();}});
     doc.addEventListener('visibilitychange',function(){if(doc.hidden)controller.pause();});env.addEventListener('pagehide',function(){if(transcriptSize)transcriptSize.disconnect();controller.dispose();if(station){station.dispose();station=null;}});render(controller.getSnapshot());return controller;
   }
-  return {createReviewParser:createReviewParser,validateDisplayReview:validateDisplayReview,createParser:createParser,readResponse:readResponse,createCapture:createCapture,createController:createController,safeMessage:safeMessage,mount:mount,applyIdentity:applyIdentity,statusLine:statusLine,speakerLabel:speakerLabel,addressedFamilyRole:addressedFamilyRole};
+  return {createReviewParser:createReviewParser,validateDisplayReview:validateDisplayReview,createParser:createParser,readResponse:readResponse,createCapture:createCapture,createController:createController,safeMessage:safeMessage,mount:mount,applyIdentity:applyIdentity,statusLine:statusLine,roomView:roomView,renderRoom:renderRoom,speakerLabel:speakerLabel,addressedFamilyRole:addressedFamilyRole};
 }));

@@ -61,7 +61,7 @@ See the [realism specification](../docs/superpowers/specs/2026-09-09-sp-encounte
 
 ## The student station
 
-`dist` publishes seven files: `index.html`, `app.js`, `styles.css`, `station.js`, `station-content.js`, `moment-content.js` and `moment-station.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends.
+`dist` publishes seven files: `index.html`, `app.js`, `styles.css`, `station.js`, `station-content.js`, `moment-content.js` and `moment-station.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends. The room view above the transcript is a projection of the same snapshot, like the station: it shows seating, who is speaking and who answers next, and it draws no case facts of its own.
 
 It is a projection of the controller snapshot and nothing more. It holds no reference to `send()`, makes no network request, and reads and writes no browser storage — `build.test.mjs` fails the build if `fetch(`, `localStorage`, `sessionStorage`, `indexedDB` or `XMLHttpRequest` appears in either station file. Marked moments quote only what was actually heard: a reply that did not finish playing is quoted at its completed segments, and a moment with nothing confirmed heard says so rather than showing an empty quotation. `station-content.js` carries learner-facing content only; the participant `portrayal` guidance is actor direction and stays server-side.
 
