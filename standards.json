@@ -1,0 +1,317 @@
+{
+  "schemaVersion": 1,
+  "_note": "The external competency spine. Registered so every shipped page can name the standard unit it addresses, and so coverage can be MEASURED rather than asserted. Resident spine only at v1 — the student spine (ADMSEP Clinical Learning Objectives Guide, November 2007) is a separate decision recorded on research return rq-1-2026-09-10-2 and is not registered here yet, because its reproduction terms are not established and its DSM-IV-era topic areas need an attributed DSM-5-TR remap first. Nothing here is published while review is 'pending'. rotationRequirement is THIS PROGRAM'S derivation, not an ACGME-published mapping: ACGME publishes no per-rotation milestone subset for psychiatry. Run: python3 bin/check_standards_coverage.py",
+  "frameworks": [
+    {
+      "key": "acgme-psychiatry-milestones",
+      "name": "ACGME Psychiatry Milestones",
+      "version": "2.0 (Second Revision)",
+      "versionDate": "2020-03-01",
+      "authority": "Accreditation Council for Graduate Medical Education (ACGME)",
+      "sourceUrl": "https://www.acgme.org/globalassets/pdfs/milestones/psychiatrymilestones.pdf",
+      "note": "Implementation date 1 July 2021; page footers also label the report worksheet 'Version 2.1', so both strings appear in the wild — this registry pins the Second Revision March 2020. SBP, PBLI, PROF and ICS here are the harmonized cross-specialty set. No psychiatry-specific revision located after March 2020. ACGME states the Milestones neither represent the entirety of the six domains nor are designed to be relevant in any other context — a fitness-for-purpose scope statement, not a rights restriction, but coverage claims should be worded with it in view.",
+      "rights": {
+        "status": "granted",
+        "grantText": "©2020 Accreditation Council for Graduate Medical Education (ACGME) All rights reserved except the copyright owners grant third parties the right to use the Psychiatry Milestones on a non-exclusive basis for educational purposes.",
+        "sourceUrl": "https://www.acgme.org/globalassets/pdfs/milestones/psychiatrymilestones.pdf",
+        "verifiedOn": "2026-09-10",
+        "verifiedVia": "Direct fetch of the primary PDF, not a search snippet or a third-party summary. Subcompetency identifiers and titles verified in the same fetch; the count of 21 was confirmed by summing the enumeration (6+4+3+2+3+3), not by trusting a reported total.",
+        "archivedCopy": "13_Faculty_Resources/rights-captures/acgme-milestones-copyright-2026-09-10.txt",
+        "titlesReproducible": true,
+        "pendingQuestion": "Open with ACGME (Milestones@ACGME.org, drafted 2026-09-10): (1) does the grant cover reproducing subcompetency identifiers and titles on a public non-commercial educational site; (2) does it extend to the Program Requirements, which carry a copyright line but no located third-party grant. Until (2) is answered, PR clauses are PARAPHRASED, never quoted verbatim on a shipped page. Recorded as RQ-1 finding f3, which is an unverified NEGATIVE of the shape that failed as RQ-10 f3."
+      }
+    }
+  ],
+  "units": [
+    {
+      "id": "acgme-pc1",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "PC1",
+      "title": "Psychiatric Evaluation",
+      "domain": "Patient Care",
+      "rotationRequirement": "required",
+      "rotationRationale": "The admission history and MSE is the rotation's core work; PR 4.11.f.1 assigns assessment, diagnosis and treatment to this setting.",
+      "internalCodes": [
+        "safety"
+      ],
+      "mappingNote": "Risk screening sits here. NOTE the safety-code collision recorded on RQ-1 f4: this is patient RISK, not institutional safety events (SBP1).",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-pc2",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "PC2",
+      "title": "Psychiatric Formulation and Differential Diagnosis",
+      "domain": "Patient Care",
+      "rotationRequirement": "required",
+      "rotationRationale": "Direct PR 4.11.f.1 deliverable.",
+      "internalCodes": [
+        "anxiety",
+        "childdev",
+        "mood",
+        "neurocog",
+        "otherdx",
+        "personality",
+        "psychosis",
+        "relational",
+        "substance"
+      ],
+      "mappingNote": "Maps to every diagnostic code, so it discriminates nothing. Useful as a lattice row, near-useless as a one-to-one map.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-pc3",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "PC3",
+      "title": "Treatment Planning and Management",
+      "domain": "Patient Care",
+      "rotationRequirement": "required",
+      "rotationRationale": "Acuity-driven level-of-care decisions are structurally inpatient.",
+      "internalCodes": [
+        "pharm",
+        "safety"
+      ],
+      "mappingNote": "Community resources and level-of-care selection are unmapped.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-pc4",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "PC4",
+      "title": "Psychotherapy",
+      "domain": "Patient Care",
+      "rotationRequirement": "elsewhere",
+      "rotationRationale": "PR 4.11.g.1.a places ongoing individual psychotherapy in the longitudinal outpatient year.",
+      "internalCodes": [],
+      "mappingNote": "CONFIRMED VOCABULARY GAP. Psychotherapy occupies two of 21 subcompetencies and is a hard Program Requirement; the twelve internal codes cannot express it.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-pc5",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "PC5",
+      "title": "Somatic Therapies",
+      "domain": "Patient Care",
+      "rotationRequirement": "required",
+      "rotationRationale": "Acute psychopharmacology on an acutely ill inpatient population (PR 1.7.g).",
+      "internalCodes": [
+        "pharm"
+      ],
+      "mappingNote": "Neurostimulation (ECT/TMS) is unmapped.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-pc6",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "PC6",
+      "title": "Clinical Consultation",
+      "domain": "Patient Care",
+      "rotationRequirement": "elsewhere",
+      "rotationRationale": "PR 4.11.k places consultation-liaison on a separate two-month FTE rotation.",
+      "internalCodes": [],
+      "mappingNote": "Correctly empty for this rotation. This is the canonical example of a gap that is not a gap.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-mk1",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "MK1",
+      "title": "Development through the Life Cycle",
+      "domain": "Medical Knowledge",
+      "rotationRequirement": "elsewhere",
+      "rotationRationale": "PR 4.11.h (child and adolescent) and 4.11.i (geriatrics) carry the lifespan requirement.",
+      "internalCodes": [
+        "childdev"
+      ],
+      "mappingNote": "Adult and late-life development are unmapped.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-mk2",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "MK2",
+      "title": "Psychopathology",
+      "domain": "Medical Knowledge",
+      "rotationRequirement": "required",
+      "rotationRationale": "The varied clinical spectrum requirement (PR 1.7.g) is met here.",
+      "internalCodes": [
+        "anxiety",
+        "childdev",
+        "mood",
+        "neurocog",
+        "otherdx",
+        "personality",
+        "psychosis",
+        "substance"
+      ],
+      "mappingNote": "The best-covered unit in the whole spine. The psychiatry/medicine interface is unmapped.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-mk3",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "MK3",
+      "title": "Clinical Neuroscience",
+      "domain": "Medical Knowledge",
+      "rotationRequirement": "elsewhere",
+      "rotationRationale": "PR 4.11.e assigns two months FTE of neurology.",
+      "internalCodes": [
+        "neurocog"
+      ],
+      "mappingNote": "Weak map: neurodiagnostics and neurological comorbidity are unmapped.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-mk4",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "MK4",
+      "title": "Psychotherapy",
+      "domain": "Medical Knowledge",
+      "rotationRequirement": "elsewhere",
+      "rotationRationale": "PR 4.11.s places the psychotherapy knowledge base in the didactic curriculum.",
+      "internalCodes": [],
+      "mappingNote": "Second half of the confirmed psychotherapy gap.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-sbp1",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "SBP1",
+      "title": "Patient Safety and Quality Improvement",
+      "domain": "Systems-Based Practice",
+      "rotationRequirement": "undecided",
+      "rotationRationale": "DELIBERATELY UNDECIDED. PR 4.11.q and 6.3 place QI at program level, but restraint reduction and suicide-risk QI are genuinely inpatient activities that the Milestones themselves name. This is the single most defensible place for a program to disagree with the split.",
+      "internalCodes": [],
+      "mappingNote": "MUST NOT be mapped to `safety` — that code means patient risk and this means institutional safety events. Mapping it would manufacture false coverage on the most safety-critical code in the vocabulary. Feeds RQ-2: no QI content exists on either site.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-sbp2",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "SBP2",
+      "title": "System Navigation for Patient-Centered Care",
+      "domain": "Systems-Based Practice",
+      "rotationRequirement": "required",
+      "rotationRationale": "Transitions of care and hand-offs live on inpatient units; PR 5.1.k.2.e requires an adequate discharge summary and plan.",
+      "internalCodes": [],
+      "mappingNote": "VOCABULARY GAP: care coordination, transitions, discharge and population health.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-sbp3",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "SBP3",
+      "title": "Physician Role in Health Care Systems",
+      "domain": "Systems-Based Practice",
+      "rotationRequirement": "elsewhere",
+      "rotationRationale": "PR 4.11.n (community psychiatry) and program-level curriculum.",
+      "internalCodes": [],
+      "mappingNote": "VOCABULARY GAP: health systems, financing, advocacy, transition to practice.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-pbli1",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "PBLI1",
+      "title": "Evidence-Based and Informed Practice",
+      "domain": "Practice-Based Learning and Improvement",
+      "rotationRequirement": "elsewhere",
+      "rotationRationale": "PR 4.11.s.2 assigns critical appraisal to journal clubs and didactics.",
+      "internalCodes": [],
+      "mappingNote": "VOCABULARY GAP: evidence-based practice and critical appraisal. NOTE the library already has a strong evidence apparatus; the gap is in the CODE vocabulary, not the content.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-pbli2",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "PBLI2",
+      "title": "Reflective Practice and Commitment to Personal Growth",
+      "domain": "Practice-Based Learning and Improvement",
+      "rotationRequirement": "elsewhere",
+      "rotationRationale": "PR 5.1.c and 5.1.d assign this to semi-annual CCC review and individualized learning plans.",
+      "internalCodes": [],
+      "mappingNote": "VOCABULARY GAP: reflective practice, feedback, learning plans.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-prof1",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "PROF1",
+      "title": "Professional Behavior and Ethical Principles",
+      "domain": "Professionalism",
+      "rotationRequirement": "required",
+      "rotationRationale": "Capacity, commitment and involuntary status are enacted on inpatient units; PR 4.11.l content lands here.",
+      "internalCodes": [
+        "ethics"
+      ],
+      "mappingNote": "Clean one-to-one map.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-prof2",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "PROF2",
+      "title": "Accountability/Conscientiousness",
+      "domain": "Professionalism",
+      "rotationRequirement": "required",
+      "rotationRationale": "Assessed continuously in any patient-care assignment.",
+      "internalCodes": [
+        "ethics"
+      ],
+      "mappingNote": "Partial map.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-prof3",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "PROF3",
+      "title": "Well-Being",
+      "domain": "Professionalism",
+      "rotationRequirement": "elsewhere",
+      "rotationRationale": "PR Section 6 places well-being at institutional and program level.",
+      "internalCodes": [],
+      "mappingNote": "VOCABULARY GAP: physician well-being.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-ics1",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "ICS1",
+      "title": "Patient- and Family-Centered Communication",
+      "domain": "Interpersonal and Communication Skills",
+      "rotationRequirement": "required",
+      "rotationRationale": "Family meetings, consent and shared decision-making cluster at admission and discharge.",
+      "internalCodes": [
+        "relational"
+      ],
+      "mappingNote": "Clean one-to-one map, and the closest unit to this program's family-intervention work.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-ics2",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "ICS2",
+      "title": "Interprofessional and Team Communication",
+      "domain": "Interpersonal and Communication Skills",
+      "rotationRequirement": "required",
+      "rotationRationale": "The inpatient multidisciplinary team is the canonical setting; PR 4.11.q requires interdisciplinary team leadership.",
+      "internalCodes": [
+        "relational"
+      ],
+      "mappingNote": "Partial: interprofessional and team communication are not separable from `relational` as coded.",
+      "review": "pending"
+    },
+    {
+      "id": "acgme-ics3",
+      "framework": "acgme-psychiatry-milestones",
+      "code": "ICS3",
+      "title": "Communication within Health Care Systems",
+      "domain": "Interpersonal and Communication Skills",
+      "rotationRequirement": "required",
+      "rotationRationale": "Daily notes and the discharge summary; PR 5.1.k.2.a-e monitors clinical records on major rotations.",
+      "internalCodes": [],
+      "mappingNote": "VOCABULARY GAP: documentation.",
+      "review": "pending"
+    }
+  ]
+}

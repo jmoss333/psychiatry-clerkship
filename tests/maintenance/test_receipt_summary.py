@@ -387,6 +387,103 @@ class ClassifyTests(unittest.TestCase):
         self.assertEqual(len(own), 1)
 
 
+class DelegableRowTests(unittest.TestCase):
+    """A steward may only defer what it can prove someone else is holding.
+
+    `delegated` says which STATES another watcher owns; `delegable` says which
+    ROWS that watcher actually covers. Both are needed, because the first
+    delegation shipped was true of the state and false of one row: the heartbeat
+    handed a failed `ci.yml` to automation-failure-escalation.yml, whose
+    `workflow_run` list has never included CI. Green job, silent escalation,
+    nobody watching the weekly release rehearsal.
+    """
+
+    def _receipt(self, *pairs):
+        return {
+            "gate": "blocked",
+            "workflows": [
+                {"workflowFile": name, "state": state} for name, state in pairs
+            ],
+        }
+
+    FAILED = frozenset({"failed"})
+
+    def test_a_row_outside_the_delegable_set_stays_this_steward_s(self):
+        own, elsewhere = classify(
+            self._receipt(("ci.yml", "failed")),
+            delegated=self.FAILED,
+            delegable=frozenset({"surveillance-citations.yml"}),
+        )
+        self.assertEqual(own, [("ci.yml", "failed")])
+        self.assertEqual(elsewhere, [])
+
+    def test_a_row_inside_the_delegable_set_is_still_handed_over(self):
+        own, elsewhere = classify(
+            self._receipt(("surveillance-citations.yml", "failed")),
+            delegated=self.FAILED,
+            delegable=frozenset({"surveillance-citations.yml"}),
+        )
+        self.assertEqual(own, [])
+        self.assertEqual(elsewhere, [("surveillance-citations.yml", "failed")])
+
+    def test_one_receipt_can_split_both_ways(self):
+        own, elsewhere = classify(
+            self._receipt(("ci.yml", "failed"), ("surveillance-links.yml", "failed")),
+            delegated=self.FAILED,
+            delegable=frozenset({"surveillance-links.yml"}),
+        )
+        self.assertEqual([name for name, _ in own], ["ci.yml"])
+        self.assertEqual([name for name, _ in elsewhere], ["surveillance-links.yml"])
+
+    def test_an_empty_delegable_set_delegates_nothing(self):
+        # Not the same as delegating nothing by state: the state IS delegated,
+        # but no row can prove a holder, so every row stays ours.
+        own, elsewhere = classify(
+            self._receipt(("a.yml", "failed")),
+            delegated=self.FAILED,
+            delegable=frozenset(),
+        )
+        self.assertEqual(len(own), 1)
+        self.assertEqual(elsewhere, [])
+
+    def test_omitting_delegable_keeps_the_previous_behaviour(self):
+        own, elsewhere = classify(
+            self._receipt(("anything.yml", "failed")), delegated=self.FAILED
+        )
+        self.assertEqual(own, [])
+        self.assertEqual(len(elsewhere), 1)
+
+    def test_delegable_never_promotes_a_row_that_is_not_delegated_by_state(self):
+        # Listing a row as delegable must not hand over a state nobody delegated.
+        own, elsewhere = classify(
+            self._receipt(("a.yml", "stale")),
+            delegated=self.FAILED,
+            delegable=frozenset({"a.yml"}),
+        )
+        self.assertEqual(own, [("a.yml", "stale")])
+        self.assertEqual(elsewhere, [])
+
+    def test_an_unhashable_row_id_is_not_delegable_and_does_not_raise(self):
+        own, elsewhere = classify(
+            {"workflows": [{"workflowFile": ["boom"], "state": "failed"}]},
+            delegated=self.FAILED,
+            delegable=frozenset({"a.yml"}),
+        )
+        self.assertEqual(len(own), 1)
+        self.assertEqual(elsewhere, [])
+
+    def test_a_flat_receipt_row_has_no_id_so_it_cannot_be_delegated(self):
+        # Failing toward "mine": a flat receipt names no row, so a restricted
+        # delegation cannot prove a holder for it.
+        own, elsewhere = classify(
+            {"gate": "blocked", "state": "failed"},
+            delegated=self.FAILED,
+            delegable=frozenset({"a.yml"}),
+        )
+        self.assertEqual(own, [(None, "failed")])
+        self.assertEqual(elsewhere, [])
+
+
 class RenderAndDeferralTests(unittest.TestCase):
     """A deferral must be visible, bounded, and safe — or it is just silence."""
 

@@ -20,7 +20,8 @@ SPA=os.path.join(HERE,"spa_index.html")                   # SPA shell (co-locate
 MARKED=os.path.join(HERE,"marked.min.js")                 # vendored marked (co-located)
 MANIFEST=os.path.join(HERE,"site_manifest.json")          # content/tool build manifest
 CLINICAL_CSS=os.path.join(HERE,"clinical-warm.css")       # shared dark-mode tokens
-THEME_AUDIT=os.path.join(HERE,"theme_audit.js")           # ?theme-audit tool (loaded on demand)
+THEME_SCAN=os.path.join(HERE,"theme_scan.js")             # the measurement (shared with the gate)
+THEME_AUDIT=os.path.join(HERE,"theme_audit.js")           # the panel that renders it (on demand)
 ANALYTICS_JS=os.path.join(HERE,"analytics.js")            # usage analytics emitter
 FRONTDOOR_CSS=os.path.join(HERE,"frontdoor","frontdoor.css")
 CURRICULUM=os.path.join(LIB,"curriculum.json")
@@ -490,7 +491,17 @@ _missing_req=[]
 _copy_required(SPA, OUT+"/index.html", _missing_req)
 _copy_required(MARKED, OUT+"/marked.min.js", _missing_req)  # vendored (ward-wifi: no CDN dependency)
 _copy_required(CLINICAL_CSS, OUT+"/clinical-warm.css", _missing_req)  # shared dark-mode tokens (linked into tools below)
-_copy_required(THEME_AUDIT, OUT+"/theme-audit.js", _missing_req)      # fetched only by the ?theme-audit loader
+# /theme-audit.js is theme_scan.js + theme_audit.js concatenated, in that order: the panel reads
+# window.cwThemeScan, which the scan defines. Concatenated rather than two <script> tags so the
+# loader stays ONE request on a page that only wanted a stylesheet, and so the two halves can
+# never arrive out of order. tests/smoke/frozen-colour.spec.js injects theme_scan.js by itself.
+if all(os.path.exists(p) for p in (THEME_SCAN, THEME_AUDIT)):
+    with open(OUT+"/theme-audit.js","w",encoding="utf-8") as _ta:
+        _ta.write(open(THEME_SCAN,encoding="utf-8").read())
+        _ta.write("\n")
+        _ta.write(open(THEME_AUDIT,encoding="utf-8").read())
+else:
+    _missing_req.extend(p for p in (THEME_SCAN, THEME_AUDIT) if not os.path.exists(p))
 # Usage analytics emitter -- gated behind CLERKSHIP_ANALYTICS (default off; see
 # common.analytics_enabled_for() and docs/superpowers/specs/2026-09-04-usage-
 # analytics-design.md "Rollout"). Copied only when this build's own flag

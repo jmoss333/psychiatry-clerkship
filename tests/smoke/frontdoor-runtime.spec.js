@@ -2493,10 +2493,19 @@ test('theme, Week, and capture focus obey one ordinary modal lifecycle', async (
   await seedCompleteSetup(page);
   await page.goto('/');
 
-  const theme = page.locator('[data-fd-theme]');
-  await theme.focus();
-  await theme.click();
-  await expect(page.locator('[data-fd-theme]')).toBeFocused();
+  // The theme control moved inside the settings panel, so the lifecycle under test now has two
+  // steps: the gear opens an ordinary sheet, and choosing a mode leaves focus on the mode chosen
+  // (a bare [data-fd-theme] would match all three buttons under strict mode). The sheet has to be
+  // closed again before the Week block -- its backdrop covers the header, and the dialog count
+  // asserted further down is 1.
+  const settings = page.locator('[data-fd-settings]');
+  await settings.focus();
+  await settings.click();
+  const dark = page.locator('[data-fd-theme="dark"]');
+  await dark.click();
+  await expect(dark).toBeFocused();
+  await page.locator('.fd-sheet__close').click();
+  await expect(settings).toBeFocused();
 
   await page.locator('[data-fd-change-week]').click();
   await expect(page.locator('.fd-setup .fd-h1')).toBeFocused();

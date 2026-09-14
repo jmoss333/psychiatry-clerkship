@@ -3,11 +3,11 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(265 distinct `fd-*` selector names, 20 `is-*` state classes). Every class below has a rule in that file unless
+(277 distinct `fd-*` selector names, 20 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-265. The remaining 226 are `__element` and `--modifier` names introduced while porting the
+273. The remaining 234 are `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -112,7 +112,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
     .fd-header__actions
       .fd-weekpill         <button>
       .fd-safetybtn        <button>
-      .fd-themebtn         <button>          (compact labelled theme toggle)
+      .fd-settingsbtn      <button>          (compact settings-panel gear)
   .fd-tabs                 <nav>
     .fd-tab                <button> ×3
 ```
@@ -122,7 +122,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | `.fd-header` | `position:sticky; top:0; z-index:40`. |
 | `.fd-header__bar` | The 1200px-capped flex row; at 640px and below it becomes a two-row grid so brand/search and utilities cannot collide. `.fd-header` alone has no max-width. |
 | `.fd-header__actions` | `margin-left:auto` in the flex layout; at 640px and below it spans grid row two, resets the margin, and aligns right. |
-| `.fd-themebtn` | Compact icon-only header theme toggle; `aria-label` names the action. |
+| `.fd-settingsbtn` | Compact icon-only header gear opening the settings panel; `aria-label` names the action. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
 
 ⚠ `.fd-tabs` is a **sibling** of `.fd-header__bar` inside `.fd-header`, not a child of it.
@@ -224,7 +224,6 @@ internal Progress. These are part of the same shipped class contract:
 | `.fd-capture` | Today triage section; contains `.fd-capture__head`, `.fd-capture__new`, `.fd-capture__purpose`, `.fd-capture__item`, `.fd-capture__question`, `.fd-capture__action`, and `.fd-capture__copy`. |
 | `.fd-progresscard` | Internal-Progress entry; contains `.fd-progresscard__title` and `.fd-progresscard__meta`. |
 | `.fd-progress-reader` | Reader modifier for the internal Progress surface. |
-| `.fd-examdate__row` | Device-local exam-date control row inside Progress. |
 
 ⚠ **`.fd-ring` needs `--fd-ring-pct` set inline** (e.g. `style="--fd-ring-pct:62%"`). It defaults to
 `0%`, so a ring rendered without it silently shows an empty track. This is the one custom property
@@ -443,6 +442,29 @@ independent states on the child. A current *and* done item carries both.
     .fd-src
     .fd-btn.fd-btn--primary
     .fd-sheet__note
+    ── settings variant ──
+    .fd-sheet__intro
+    .fd-set  <section> ×N            (direct siblings, no wrapper)
+      .fd-set__h  <h3>
+      .fd-choices      [role=group]            (You — role; omitted when no roles are supplied)
+        .fd-choices__btn <button> ×N           (.is-active + aria-pressed on the chosen one)
+      .fd-set__label   <label for>             (Pacing — names the date field)
+      .fd-set__date    <input type=date>       (Pacing — the exam date)
+      .fd-seg          [role=group]            (Appearance — aria-label "Color theme")
+        .fd-seg__btn   <button> ×3             (System / Light / Dark; .is-active + aria-pressed on the chosen one)
+      .fd-set__note
+      ── Your data ──
+      .fd-set__link    <button>                (routes to the Progress page's export)
+      .fd-set__danger  <button>                (calm: one control — "Clear everything on this device")
+      .fd-set__note.fd-set__note--warn  [role=alert]   (armed only — both classes)
+      .fd-set__row                             (armed only)
+        .fd-btn.fd-btn--ghost <button>         ("Keep my data")
+        .fd-set__danger       <button>         ("Erase everything")
+      ── Usage ──                              (whole section absent unless the usage emitter shipped)
+      .fd-seg          [role=group]            (Usage — aria-label "Usage counting"; the panel's SECOND .fd-seg)
+        .fd-seg__btn   <button> ×2             (On / Off; .is-active + aria-pressed on the chosen one)
+      .fd-set__note                            (states what is true of THIS device in each state)
+                                               (under a browser DNT/GPC signal: the note alone, no segments)
 
 .fd-nudge                           (fixed, z-120, bottom-centre toast)
   .fd-nudge__text
@@ -458,6 +480,17 @@ independent states on the child. A current *and* done item carries both.
 | `.fd-sheet__attribution` | "✓ From: … · faculty-attested". |
 | `.fd-sheet__pending` | Affirmative not-yet-reviewed state for a valid 3–5-step protocol; mutually exclusive with attribution and failure. |
 | `.fd-sheet__failure` | Fail-closed alert with an owner-controlled sentence; protocol steps and documentation remain absent. |
+| `.fd-set` | One settings section. Spaced by `.fd-set + .fd-set`, so sections are direct siblings and a new one can be inserted anywhere in the order without a wrapper. |
+| `.fd-seg` | Segmented control. Segments butt together inside one border (`gap:0`); the divider is `.fd-seg__btn + .fd-seg__btn`'s `border-left`. The settings panel renders **two** of them and the counts differ: Appearance has three segments, Usage two. Usage is also the only section of the panel that is usually absent — it renders only where the usage emitter shipped, and under a browser DNT/GPC signal it renders an explanatory note and no segments at all, because a control the panel could not honour would misrepresent who is deciding. |
+| `.fd-seg__btn` | An ordinary toggle button, never `role="radio"` — that role promises roving tabindex and arrow-key selection, which this control does not implement. `.is-active` (what the CSS fills) and `aria-pressed` (what assistive tech reads) are set together and must stay on the same button. |
+| `.fd-choices` | Wrapping chip set for a single choice from a variable-length list (today: role). Chips size to their text and wrap, because the labels are per-site prose — equal segments strand them over three lines at phone width. |
+| `.fd-set__label` | Visible label for a settings field, bound by `for`. The panel's other sections are button groups named by `aria-label`; this is the one control that needs a real `<label>`. |
+| `.fd-set__date` | The Pacing section's `<input type="date">`. Borrows `.fd-choices__btn`'s border, radius and surface so the panel reads as one control family, and takes the full sheet width because a native date input's intrinsic width is barely wider than its own text. Declare `font:inherit` **before** the size step or the shorthand resets it. It is the only control in the panel outside the delegated click path — `fd_wire.js` commits it on a change event and deliberately renders nothing, because rebuilding the overlay destroys the input mid-entry. |
+| `.fd-choices__btn` | Same rules as `.fd-seg__btn`: an ordinary toggle button, never `role="radio"`, with `.is-active` and `aria-pressed` on the same one. **Not `.fd-chip`** — that is the static type badge on result rows, with no border, no pointer, no touch target and no `.is-active` rule, so a chip set built on it paints every option identically. |
+| `.fd-set__link` | The Your-data route to the export the Progress page already ships (`data-act="studyexport"`). Painted as a link, not a control, and labelled with a trailing arrow: it navigates, it does not export, and a button promising a download that delivers a page change is the same over-claim the attested-pill rules forbid. |
+| `.fd-set__danger` | The destructive control, **outlined in both states** — calm ("Clear everything on this device") and armed ("Erase everything"). Never filled: a red slab under the fingertip that just armed the confirm invites the reflex second tap the two-tap pattern exists to prevent. Its armed partner is `.fd-btn.fd-btn--ghost`, so the pair still reads red-versus-neutral. |
+| `.fd-set__note--warn` | Modifier: the armed erase warning. **Apply alongside `.fd-set__note`**, not instead of it — it overrides the base note's `--fd-text-mid` ink to `--fd-text`, which is the gated pair against `--fd-danger-wash`. Carries `role="alert"`, and is rendered ONLY when armed: the panel is rebuilt on every render, so the button the learner pressed is gone and the generic focus restore has no equivalent to return to — the live region is the only thing that announces the arming. |
+| `.fd-set__row` | The armed pair's two-button row. Wraps at phone width; both children stretch. The only place in the panel where two controls share a line. |
 
 At the mobile breakpoint, primary actions, navigation controls, dialog close/back controls, and
 icon-sized controls have a minimum 44px hit target. Icon-sized controls also have a 44px minimum
@@ -475,7 +508,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 
 | State | Applied to | Meaning |
 |---|---|---|
-| `.is-active` | `.fd-tab` | current tab |
+| `.is-active` | `.fd-tab`, `.fd-seg__btn`, `.fd-choices__btn` | current tab / chosen segment / chosen chip |
 | `.is-sel` | `.fd-weektile`, `.fd-timeline__row` | chosen / viewed |
 | `.is-current` | `.fd-dot`, `.fd-railnav__row` | "you are here" |
 | `.is-done` | `.fd-check`, `.fd-dot`, `.fd-row__title`, `.fd-railnav__dot`, `.fd-railnav__title` | completed |

@@ -185,6 +185,22 @@ function fdExamCountdown(week, weeks, nowMs, rotationStart){
   return '· exam in ~'+days+' day'+(days===1?'':'s');
 }
 
+/* The write half of the key fdExamCountdown reads, and the settings panel's only persistence.
+   It lives HERE rather than in fd_wire.js's fdApplyEffect, beside its reader, because the key
+   spells an audience token the controller's copy rule bans FILE-WIDE
+   (tests/fd-action-contract.test.mjs: `assert.doesNotMatch(wire, /…|shelf|…/i)`); this module's
+   equivalent rule is scoped to the strings it RETURNS, which is why the key may be named here.
+
+   An empty date removes the key rather than storing '': phase_policy.js treats an absent key and
+   an unparseable one alike (cap 12, no countdown), but only removal leaves the store in the state
+   a learner who never set a date would have. The caller validates the shape; this only stores. */
+function fdStoreExamDate(date){
+  try{
+    if(date) localStorage.setItem('cw_shelf_date', date);
+    else localStorage.removeItem('cw_shelf_date');
+  }catch(_){ }
+}
+
 /* Deterministic per local calendar day, skipping anything already done. Candidates are
    supplied by the caller (the library-only reads) so this stays free of week membership. */
 function fdDailyPick(candidates, doneMap, nowMs){
