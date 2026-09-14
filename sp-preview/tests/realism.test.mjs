@@ -121,3 +121,42 @@ test('the aside says the wait is realism, not an information barrier',()=>{
   const src=fs.readFileSync(new URL('../public/station.js',import.meta.url),'utf8');
   assert.match(src,/the wait is realism, not an information barrier, and nothing is withheld/);
 });
+
+test('the thinking-pause rule is bounded at 1.5 s and skipped on an interrupted-resume',()=>{
+  const {thinkingPauseMs}=clientModule.exports;
+  assert.equal(thinkingPauseMs('',"turn"),600,'a bare turn still gets a human-sized beat');
+  assert.equal(thinkingPauseMs('a'.repeat(10),'turn'),690);
+  assert.equal(thinkingPauseMs('a'.repeat(100),'turn'),1500,'the bound holds');
+  assert.equal(thinkingPauseMs('a'.repeat(5000),'turn'),1500,'a long question cannot stall the reply');
+  assert.equal(thinkingPauseMs('anything','retry'),0,'a repair picks straight back up');
+  assert.equal(thinkingPauseMs(undefined,'start'),600);
+});
+test('the thinking pause is deliberately not wired into the audio queue yet',()=>{
+  const src=fs.readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
+  assert.match(src,/Realism 2 — NOT WIRED IN/,'the reason is recorded next to the rule');
+  const onAudio=src.slice(src.indexOf('onAudio:function(event)'),src.indexOf('onAudio:function(event)')+260);
+  assert.doesNotMatch(onAudio,/thinkingPauseMs/,'the audio queue is unchanged, so the 65 s guard is untouched');
+});
+
+test('room sound is off by default, opt-in, and shares one context with the cue',()=>{
+  const src=fs.readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
+  assert.match(src,/roomSoundWanted=false/,'off unless the learner turns it on');
+  assert.match(src,/ROOM_BED_GAIN=0\.035/,'the bed sits at the specified gain');
+  assert.match(src,/frequency\.value=520/,'low-passed, not raw noise');
+  assert.equal((src.match(/new AudioContext\(\)/g)||[]).length,1,'exactly one place constructs a context');
+  assert.match(src,/function audioContext\(\)/,'the cue and the bed share it');
+  assert.doesNotMatch(src,/cueSound/,'the cue no longer owns and closes its own context');
+  // the bed must follow the room rather than run free
+  assert.match(src,/ROOM_BED_PHASES=\['ready','connecting','listening','responding','speaking'\]/);
+  assert.doesNotMatch(src,/ROOM_BED_PHASES.*'paused'/,'paused is not a playing phase');
+  assert.match(src,/function publish\(\)\{syncRoomBed\(\)/,'every state change re-syncs the bed');
+  assert.match(src,/env\.document&&env\.document\.hidden/,'a hidden page mutes it');
+  assert.match(src,/function clear\(\)\{closeAudio\(\);roomSoundWanted=false;/,'Clear disposes the context and forgets the preference');
+});
+test('the room-sound control says the audio never leaves the browser',()=>{
+  const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
+  assert.match(html,/id="room-sound" type="checkbox"/);
+  assert.match(html,/generated in your browser\. It is never recorded, never sent, and off unless you turn it on\./);
+  assert.ok(html.indexOf('id="room-sound-option"')<html.indexOf('id="spoken-interrupt-option"'),'it sits in Speaking pace & shortcuts');
+  assert.match(html,/id="room-bed" hidden/,'the chip starts hidden');
+});

@@ -8,6 +8,7 @@
   function issue(code){var error=new Error(code);error.code=code;return error;}
   function cancelled(){return issue('cancelled');}
   function normalized(text){return String(text||'').replace(/\s+/g,' ').trim();}
+  var ROOM_BED_GAIN=0.035,ROOM_BED_PHASES=['ready','connecting','listening','responding','speaking'];
   var ROOM_CUES={door_knock:'A brief knock at the closed door. No one enters.',hallway_chime:'A short chime sounds in the hallway and stops.'};
   var FAMILY_CASE_ID='family_morgan_maya_001',FAMILY_NAMES={morgan:'Morgan',maya:'Maya'};
   function addressedFamilyRole(text){
@@ -188,13 +189,13 @@
   // faculty-attested content.
   var CASE_IDS=['sp_depression_gated_si_001','sp_mania_redirect_001','sp_psychosis_paranoid_001','sp_alcohol_ambivalence_001',FAMILY_CASE_ID];
   function createController(env,options){
-    options=options||{};var phase='gate',key='',receipt=null,turn=0,startedAt=null,quietSerial=0,caseId=CASE_IDS[0],messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false,retryUsed=false;
+    options=options||{};var phase='gate',key='',receipt=null,turn=0,startedAt=null,quietSerial=0,sharedAudio=null,cueNodes=null,roomBed=null,roomSoundWanted=false,caseId=CASE_IDS[0],messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false,retryUsed=false;
     var mode='full',maxTurns=10,endpoint='/api/dana-preview',momentStage='dialogue',captureTarget='patient',reflectionOpen=false,review=null,teamFormulation='',summaryUncertain=false,uncertainTurnIds=[],reviewAttempted=false,closedReceiptAvailable=false,alternativeTurnId=null,endReason='learner_end';
     var previousPlayback='interrupted',previousCompletedSegments=0,generation=0,targetRoleId='morgan',spokenInterrupt=false,deliveryIntensity='standard',echoReference='',echoUntil=0,echoResults=new Map();
-    var roomCue=null,cuePending=false,cueSound=null,familyBid=null,activeSpeakerId=null;
+    var roomCue=null,cuePending=false,familyBid=null,activeSpeakerId=null;
     var tally={startRequests:0,turnRequests:0,automaticSubmissions:0,explicitSubmissions:0,spokenInterruptions:0,echoResultsIgnored:0};
-    function snapshot(){return {startedAt:startedAt,quietSerial:quietSerial,quietMs:capture.quietWindow(),roomCue:roomCue?Object.assign({},roomCue):null,familyBid:familyBid?Object.assign({},familyBid):null,activeSpeakerId:activeSpeakerId,spokenInterrupt:spokenInterrupt,deliveryIntensity:deliveryIntensity,mode:mode,maxTurns:maxTurns,momentStage:momentStage,captureTarget:captureTarget,reflectionOpen:reflectionOpen,review:review?JSON.parse(JSON.stringify(review)):null,teamFormulation:teamFormulation,summaryUncertain:summaryUncertain,uncertainTurnIds:uncertainTurnIds.slice(),reviewAttempted:reviewAttempted,closedReceiptAvailable:closedReceiptAvailable,phase:phase,turn:turn,messages:messages.map(function(message){var copy=Object.assign({},message);if(copy.segments)copy.segments=copy.segments.slice();if(copy.familyBid)copy.familyBid=Object.assign({},copy.familyBid);return copy;}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired,retryUsed:retryUsed,caseId:caseId,targetRoleId:targetRoleId};}
-    function publish(){if(!disposed&&typeof options.onChange==='function')options.onChange(snapshot());}
+    function snapshot(){return {startedAt:startedAt,roomSound:roomSoundWanted,quietSerial:quietSerial,quietMs:capture.quietWindow(),roomCue:roomCue?Object.assign({},roomCue):null,familyBid:familyBid?Object.assign({},familyBid):null,activeSpeakerId:activeSpeakerId,spokenInterrupt:spokenInterrupt,deliveryIntensity:deliveryIntensity,mode:mode,maxTurns:maxTurns,momentStage:momentStage,captureTarget:captureTarget,reflectionOpen:reflectionOpen,review:review?JSON.parse(JSON.stringify(review)):null,teamFormulation:teamFormulation,summaryUncertain:summaryUncertain,uncertainTurnIds:uncertainTurnIds.slice(),reviewAttempted:reviewAttempted,closedReceiptAvailable:closedReceiptAvailable,phase:phase,turn:turn,messages:messages.map(function(message){var copy=Object.assign({},message);if(copy.segments)copy.segments=copy.segments.slice();if(copy.familyBid)copy.familyBid=Object.assign({},copy.familyBid);return copy;}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired,retryUsed:retryUsed,caseId:caseId,targetRoleId:targetRoleId};}
+    function publish(){syncRoomBed();if(!disposed&&typeof options.onChange==='function')options.onChange(snapshot());}
     function interruptionEligible(){return spokenInterrupt&&voice&&mode==='full'&&!disposed&&!ended&&!restartRequired&&!reflectionOpen&&!env.document.hidden&&turn<maxTurns;}
     function speechWords(text){return String(text).toLowerCase().replace(/[’']/g,'').match(/[a-z0-9]+/g)||[];}
     function captureClock(){return typeof env.now==='function'?env.now():env.performance&&env.performance.now?env.performance.now():Date.now();}
@@ -389,17 +390,62 @@
     function end(){stopCueSound();familyBid=null;if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=task?'technical_interruption':turn>=maxTurns?'turn_limit':'learner_end';if(!turn)receipt=null;}ended=true;capture.stop();if(task){task.cancelled=true;task.abort.abort();}stopPlayer();phase='ended';publish();}
     function resume(){if(disposed||env.document.hidden||task||(ended&&!auxiliaryCaptureEligible())||restartRequired||!receipt||reflectionOpen)return false;voice=true;problem='';phase='connecting';publish();capture.start();return true;}
     function setDraft(text){if(task||(ended&&captureTarget==='patient')||restartRequired||disposed||reflectionOpen)return;draft=String(text).slice(0,1200);interim='';if(capture.isActive()){capture.stop();phase='paused';}problem='';publish();}
-    function clear(){stopCueSound();roomCue=null;cuePending=false;familyBid=null;activeSpeakerId=null;clearEcho();startedAt=null;quietSerial=0;spokenInterrupt=false;deliveryIntensity='standard';generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;retryUsed=false;targetRoleId='morgan';previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';mode='full';maxTurns=10;endpoint='/api/dana-preview';momentStage='dialogue';captureTarget='patient';reflectionOpen=false;review=null;teamFormulation='';summaryUncertain=false;uncertainTurnIds=[];reviewAttempted=false;closedReceiptAvailable=false;alternativeTurnId=null;endReason='learner_end';publish();}
-    function stopCueSound(){if(cueSound){var closing=cueSound.close();if(closing&&closing.catch)closing.catch(function(){});cueSound=null;}}
+    function clear(){closeAudio();roomSoundWanted=false;roomCue=null;cuePending=false;familyBid=null;activeSpeakerId=null;clearEcho();startedAt=null;quietSerial=0;spokenInterrupt=false;deliveryIntensity='standard';generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;retryUsed=false;targetRoleId='morgan';previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';mode='full';maxTurns=10;endpoint='/api/dana-preview';momentStage='dialogue';captureTarget='patient';reflectionOpen=false;review=null;teamFormulation='';summaryUncertain=false;uncertainTurnIds=[];reviewAttempted=false;closedReceiptAvailable=false;alternativeTurnId=null;endReason='learner_end';publish();}
+    // Realism 4 — the cue sound and the ambient bed share one AudioContext. The cue used to open and
+    // close its own; closing it now would cut the bed, so the context outlives individual sounds and
+    // is closed only on Clear/dispose.
+    function audioContext(){
+      if(sharedAudio)return sharedAudio;
+      var AudioContext=env.AudioContext||env.webkitAudioContext;if(!AudioContext)return null;
+      try{sharedAudio=new AudioContext();}catch(_){sharedAudio=null;}
+      return sharedAudio;
+    }
+    function stopCueSound(){
+      if(!cueNodes)return;
+      cueNodes.forEach(function(node){try{node.stop&&node.stop();}catch(_){}try{node.disconnect&&node.disconnect();}catch(_){}});
+      cueNodes=null;
+    }
+    // A 4 s loop of low-passed noise at gain 0.035, ramped so it never clicks in or out.
+    // Off by default; the learner opts in, and it is muted whenever the room is paused or hidden.
+    function startRoomBed(){
+      if(roomBed)return;
+      var ctx=audioContext();if(!ctx||!ctx.createBufferSource||!ctx.createBiquadFilter)return;
+      try{
+        var frames=Math.floor(ctx.sampleRate*4),buffer=ctx.createBuffer(1,frames,ctx.sampleRate),data=buffer.getChannelData(0);
+        for(var i=0;i<frames;i++)data[i]=Math.random()*2-1;
+        var source=ctx.createBufferSource();source.buffer=buffer;source.loop=true;
+        var filter=ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=520;
+        var gain=ctx.createGain(),now=ctx.currentTime;
+        gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(ROOM_BED_GAIN,now+1.2);
+        source.connect(filter);filter.connect(gain);gain.connect(ctx.destination);source.start();
+        roomBed={source:source,gain:gain,ctx:ctx};
+      }catch(_){roomBed=null;}
+    }
+    function stopRoomBed(){
+      if(!roomBed)return;
+      var bed=roomBed;roomBed=null;
+      try{var now=bed.ctx.currentTime;bed.gain.gain.cancelScheduledValues(now);bed.gain.gain.setValueAtTime(bed.gain.gain.value,now);bed.gain.gain.linearRampToValueAtTime(0,now+0.4);}catch(_){}
+      try{bed.source.stop(bed.ctx.currentTime+0.5);}catch(_){try{bed.source.stop();}catch(_){}}
+      env.setTimeout(function(){try{bed.source.disconnect();bed.gain.disconnect();}catch(_){}},600);
+    }
+    // The bed follows the room: it plays only while the encounter is live, visible and not paused.
+    function syncRoomBed(){
+      var live=roomSoundWanted&&!disposed&&!(env.document&&env.document.hidden)&&ROOM_BED_PHASES.indexOf(phase)>=0;
+      if(live)startRoomBed();else stopRoomBed();
+    }
+    function closeAudio(){
+      stopCueSound();stopRoomBed();
+      if(sharedAudio){var closing=sharedAudio.close&&sharedAudio.close();if(closing&&closing.catch)closing.catch(function(){});sharedAudio=null;}
+    }
     function triggerRoomCue(id){
       if(mode!=='full'||!Object.hasOwn(ROOM_CUES,id)||roomCue||phase==='gate'||ended||disposed||restartRequired||!receipt||turn>=maxTurns)return false;
       // The cue takes the floor under the same cancellation rules as Pause.
       // Text remains available even if this browser cannot play the short sound.
       var unfinished=interim;pause();roomCue={id:id,text:ROOM_CUES[id],turn:turn+1,unfinishedText:unfinished};cuePending=true;
-      var AudioContext=env.AudioContext||env.webkitAudioContext;
-      if(AudioContext)try{var ctx=new AudioContext();cueSound=ctx;var startAt=ctx.currentTime;
+      var ctx=audioContext();
+      if(ctx)try{cueNodes=[];var startAt=ctx.currentTime;
         for(var i=0;i<(id==='door_knock'?2:1);i++){var oscillator=ctx.createOscillator(),gain=ctx.createGain();oscillator.type=id==='door_knock'?'triangle':'sine';oscillator.frequency.value=id==='door_knock'?140:660;gain.gain.setValueAtTime(0,startAt+i*0.2);gain.gain.linearRampToValueAtTime(0.06,startAt+i*0.2+0.008);gain.gain.exponentialRampToValueAtTime(0.0001,startAt+i*0.2+0.12);oscillator.connect(gain);gain.connect(ctx.destination);oscillator.start(startAt+i*0.2);oscillator.stop(startAt+i*0.2+0.13);}
-        env.setTimeout(function(){if(cueSound===ctx)stopCueSound();},650);
+        env.setTimeout(stopCueSound,650);
       }catch(_){stopCueSound();}
       publish();return true;
     }
@@ -407,7 +453,8 @@
     return {openPrivateReflection:openPrivateReflection,closePrivateReflection:closePrivateReflection,setTeamFormulation:setTeamFormulation,recordTeamFormulation:recordTeamFormulation,recordAlternative:recordAlternative,requestMomentReview:requestMomentReview,
       setSummaryUncertain:function(value){if(!reviewAttempted&&teamFormulation.trim()){summaryUncertain=!!value;publish();}},
       setUncertainTurn:function(id,value){if(reviewAttempted||!Number.isInteger(id)||id<1||id>turn)return;uncertainTurnIds=uncertainTurnIds.filter(function(v){return v!==id;});if(value)uncertainTurnIds.push(id);uncertainTurnIds.sort(function(a,b){return a-b;});publish();},
-      triggerRoomCue:triggerRoomCue,deferFamilyBid:function(){familyBid=null;publish();},inviteFamilyBid:function(){if(!familyBid||task||ended)return false;targetRoleId=familyBid.speakerId;familyBid=null;publish();return true;},start:start,send:send,retry:retry,pause:pause,interrupt:pause,end:end,resume:resume,setDraft:setDraft,clear:clear,dispose:dispose,getSnapshot:snapshot,
+      setRoomSound:function(value){roomSoundWanted=!!value;syncRoomBed();publish();return roomSoundWanted;},
+            triggerRoomCue:triggerRoomCue,deferFamilyBid:function(){familyBid=null;publish();},inviteFamilyBid:function(){if(!familyBid||task||ended)return false;targetRoleId=familyBid.speakerId;familyBid=null;publish();return true;},start:start,send:send,retry:retry,pause:pause,interrupt:pause,end:end,resume:resume,setDraft:setDraft,clear:clear,dispose:dispose,getSnapshot:snapshot,
       setSpokenInterrupt:function(value){spokenInterrupt=!!value&&mode==='full'&&voice;if(!spokenInterrupt){clearEcho();if(task&&task.monitoring){task.monitoring=false;if(task.barged)pause();else capture.stop();}}else if(task&&player&&phase==='speaking'&&interruptionEligible()&&!task.abort.signal.aborted){task.monitoring=true;echoReference=task.reply.segments.join('');echoUntil=Infinity;capture.start();}publish();},
       setTargetRole:function(value){if(caseId!==FAMILY_CASE_ID||!Object.hasOwn(FAMILY_NAMES,value)||task||ended||restartRequired||disposed)return false;targetRoleId=value;publish();return true;},
       getDiagnostics:function(){return Object.assign({},tally,capture.diagnostics());},
@@ -436,6 +483,19 @@
       restart:'Restart needed — microphone off',ended:'Encounter ended — microphone off'}[phase]||'Ready';
   }
   function speakerLabel(role,name){return role==='you'?'You':name;}
+  // Realism 2 — NOT WIRED IN. The rule is settled and tested; the placement is not.
+  // The pause belongs immediately before the first prepared.play() (so it cannot eat into the
+  // 65 s audio guard that play() starts), but the audio suite drives a virtual clock that never
+  // ticks past a new timer there, so wiring it stalls 32 existing tests. Landing it needs a
+  // decision about the test contract — see the Slice B notes on the PR.
+  // A human-sized gap before the first words. The audio is already buffered, so this is
+  // presentation only and never a provider wait. It is inserted BEFORE prepared.play() is called, so
+  // it cannot eat into the 65 s audio guard that play() starts. Skipped on an interrupted-resume:
+  // a repair should pick straight back up rather than pause again.
+  function thinkingPauseMs(learnerText,action){
+    if(action==='retry')return 0;
+    return Math.min(1500,600+String(learnerText||'').length*9);
+  }
   // Elapsed minutes in the room. Whole minutes only: a running second-hand would read as a
   // timer the learner is being scored against, which this is not.
   function elapsedLabel(startedAt,now){
@@ -671,6 +731,9 @@
       if(coachOpen)renderCoach(doc,coachView(snapshot,roomProfile),coachChoice);
       el('room-view').hidden=!active||snapshot.mode!=='full';if(active&&snapshot.mode==='full')renderRoom(doc,roomView(snapshot,roomProfile,{coachOpen:coachOpen}));
       if(coachOpen)el('status').textContent='Paused — coach open, microphone off';
+      el('room-bed').hidden=!snapshot.roomSound||!active||snapshot.mode!=='full';
+      if(el('room-sound').checked!==!!snapshot.roomSound)el('room-sound').checked=!!snapshot.roomSound;
+      el('room-sound-option').hidden=snapshot.mode==='moment';
       renderQuietWindow(snapshot);
       if(station)station.update(snapshot);
       if(active&&lastPhase==='gate'){el('encounter-title').setAttribute('tabindex','-1');el('encounter-title').focus();}
@@ -684,6 +747,7 @@
     el('composer').addEventListener('input',function(){controller.setDraft(this.value);});el('done').addEventListener('click',function(){controller.send();});
     function openCoach(){if(coachOpen)return;coachOpen=true;coachChoice='';controller.pause();render(controller.getSnapshot());el('coach-panel').focus&&el('coach-panel').focus();}
     function closeCoach(rerender){if(!coachOpen)return;coachOpen=false;coachChoice='';if(rerender!==false)render(controller.getSnapshot());}
+    el('room-sound').addEventListener('change',function(){controller.setRoomSound(this.checked);});
     el('coach-open').addEventListener('click',function(){if(coachOpen){closeCoach();el('coach-open').focus();}else openCoach();});
     el('coach-options').addEventListener('click',function(event){
       var button=event.target&&event.target.closest?event.target.closest('.coach-option'):null;
@@ -699,5 +763,5 @@
     doc.addEventListener('keydown',function(event){if(event.defaultPrevented||event.repeat||event.isComposing||event.ctrlKey||event.metaKey||event.altKey)return;var snapshot=controller.getSnapshot();if(event.code==='Escape'&&coachOpen){event.preventDefault();closeCoach();el('coach-open').focus();return;}if(event.code==='Escape'&&snapshot.busy){event.preventDefault();controller.interrupt();return;}if(event.code==='Space'&&snapshot.phase==='listening'&&!(event.target&&event.target.closest('input,textarea,button,select,a,summary,[contenteditable]'))){event.preventDefault();controller.send();}});
     doc.addEventListener('visibilitychange',function(){if(doc.hidden)controller.pause();});env.addEventListener('pagehide',function(){if(transcriptSize)transcriptSize.disconnect();controller.dispose();if(elapsedTimer){env.clearInterval(elapsedTimer);elapsedTimer=null;}if(station){station.dispose();station=null;}});render(controller.getSnapshot());return controller;
   }
-  return {createReviewParser:createReviewParser,validateDisplayReview:validateDisplayReview,createParser:createParser,readResponse:readResponse,createCapture:createCapture,createController:createController,safeMessage:safeMessage,mount:mount,applyIdentity:applyIdentity,statusLine:statusLine,roomView:roomView,renderRoom:renderRoom,elapsedLabel:elapsedLabel,elapsedIso:elapsedIso,closingNote:closingNote,coachView:coachView,renderCoach:renderCoach,speakerLabel:speakerLabel,addressedFamilyRole:addressedFamilyRole};
+  return {createReviewParser:createReviewParser,validateDisplayReview:validateDisplayReview,createParser:createParser,readResponse:readResponse,createCapture:createCapture,createController:createController,safeMessage:safeMessage,mount:mount,applyIdentity:applyIdentity,statusLine:statusLine,roomView:roomView,renderRoom:renderRoom,thinkingPauseMs:thinkingPauseMs,elapsedLabel:elapsedLabel,elapsedIso:elapsedIso,closingNote:closingNote,coachView:coachView,renderCoach:renderCoach,speakerLabel:speakerLabel,addressedFamilyRole:addressedFamilyRole};
 }));

@@ -151,3 +151,6 @@ button,input,textarea,select{font:inherit}button,input[type=password],textarea,s
 @keyframes room-drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 @media(prefers-reduced-motion:reduce){.room-quiet-bar{animation:none!important;transform:scaleX(1)}}
 @media print{.room-quiet{display:none}}
+/* Realism 4 — the opt-in room sound chip sits beside the microphone chip. */
+.room-bed{justify-self:center;align-self:center;font-size:.72rem;color:var(--green);background:var(--pale);border:1px solid #a9c2bc;border-radius:999px;padding:3px 9px;white-space:nowrap}
+@media print{.room-bed{display:none}}
