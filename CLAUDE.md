@@ -156,9 +156,12 @@ cd tests/smoke && npm ci && npx playwright test
   task is not listed. Report-only, exits 0, not a gate.
 - `docs/SILENT_SHRINK_CHECKLIST.md` — the failure mode every `bin/` tool exists for, as a
   checklist: **a check reporting success over a set smaller than the one it claims to check.**
-  Twelve entries, each earned by a defect that actually shipped here (#480, #517, #534, #539,
-  #545, #548, the 2026-08-21 annotation pass) and none of them caught by a schema or a type,
-  because each item was individually valid and the corpus was jointly wrong. Run it when you
+  Thirteen entries, each earned by a defect that actually shipped here (#480, #517, #534, #539,
+  #545, #548, #645, the 2026-08-21 annotation pass) and none of them caught by a schema or a
+  type, because each item was individually valid and the corpus was jointly wrong. §D4 is the
+  shape inverted — **no check at all rendering as coverage**: CI's unit is a pull-request head
+  or a push tip, never every commit, so `61beb3b` (pushed to `main`, not the tip of its push)
+  carries 0 check runs, turned `main` red, and read as the *next* commit's fault. Run it when you
   write or review a guard, and use §F to answer it by BREAKING the check rather than by
   reasoning about it — including the step people skip, reverting the fix to prove the fix is
   what made the difference. Only §D2 is mechanised (`bin/check_vacuity.py`); the rest is
