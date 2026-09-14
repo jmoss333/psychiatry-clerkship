@@ -52,3 +52,20 @@ test('the DOM writer tolerates a page without the room and never injects styles'
   for(const rule of ['.room-view','.room-seat[data-turn="speaking"] .room-halo','.room-view[data-seats="1"]','@keyframes room-halo'])assert.ok(css.includes(rule),rule);
   assert.match(css,/prefers-reduced-motion:reduce\)\{\.room-halo/,'reduced motion stills the halo');
 });
+test('the answers-next ring paints above the table, so a centred single seat is not occluded',()=>{
+  const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
+  const table=html.indexOf('<g class="room-table">'),layer=html.indexOf('<g class="room-next-layer">');
+  assert.ok(table>0&&layer>table,'the ring layer is painted after the table');
+  const seatA=html.slice(html.indexOf('<g class="room-seat" data-seat="a"'),html.indexOf('<g class="room-seat" data-seat="b"'));
+  assert.doesNotMatch(seatA,/room-next/,'rings no longer sit inside the seat group the table occludes');
+  const css=fs.readFileSync(new URL('../public/styles.css',import.meta.url),'utf8');
+  assert.ok(css.includes('.room-next[data-turn="next"],.room-next[data-turn="interrupted"]{display:block}'),'ring visibility hangs off the ring itself');
+  assert.ok(css.includes('.room-view[data-seats="1"] .room-next[data-seat="a"]{transform:translateX(160px)}')||css.includes('.room-view[data-seats="1"] .room-seat[data-seat="a"],.room-view[data-seats="1"] .room-next[data-seat="a"]{transform:translateX(160px)}'),'the centring translate follows the ring');
+  // renderRoom must now stamp data-turn on the ring as well as the figure
+  const nodes={},rings={};
+  const node=()=>({textContent:'',attributes:{},setAttribute(k,v){this.attributes[k]=v;}});
+  const doc={getElementById:id=>nodes[id]||(nodes[id]=Object.assign(node(),{querySelector:sel=>rings[sel]||(rings[sel]=node())}))};
+  renderRoom(doc,roomView(base,family));
+  assert.equal(rings['.room-next[data-seat="a"]'].attributes['data-turn'],'next');
+  assert.equal(rings['.room-seat[data-seat="a"]'].attributes['data-turn'],'next');
+});

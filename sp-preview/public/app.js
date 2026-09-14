@@ -486,6 +486,7 @@
       set('room-'+key+'-name',seat.name);set('room-'+key+'-pronouns',seat.pronouns);set('room-'+key+'-tag-text',seat.tag);
       var tag=doc.getElementById('room-'+key+'-tag');if(tag)tag.setAttribute('data-kind',seat.turn);
       var figure=root.querySelector?root.querySelector('.room-seat[data-seat="'+key+'"]'):null;if(figure)figure.setAttribute('data-turn',seat.turn);
+      var ring=root.querySelector?root.querySelector('.room-next[data-seat="'+key+'"]'):null;if(ring)ring.setAttribute('data-turn',seat.turn);
     });
     var mic=doc.getElementById('room-mic');if(mic)mic.setAttribute('data-mic',view.micOn?'on':'off');set('room-mic-text',view.mic);
     var caption=doc.getElementById('room-caption');if(caption)caption.setAttribute('data-kind',view.caption.kind);

@@ -43,19 +43,20 @@
                 <g class="room-plant"><ellipse cx="48" cy="104" rx="12" ry="20" transform="rotate(-28 48 104)"></ellipse><ellipse class="room-leaf-light" cx="68" cy="102" rx="12" ry="21" transform="rotate(22 68 102)"></ellipse><ellipse cx="58" cy="96" rx="10" ry="22"></ellipse><path class="room-pot" d="M40 120 h36 l-4 30 h-28 z"></path></g>
                 <g class="room-seat" data-seat="a" data-turn="idle">
                   <rect class="room-chair-back" x="118" y="88" width="84" height="70" rx="12"></rect><rect class="room-chair-seat" x="112" y="150" width="96" height="16" rx="6"></rect>
-                  <ellipse class="room-next" cx="160" cy="169" rx="58" ry="8"></ellipse>
                   <circle class="room-halo" cx="160" cy="84" r="42"></circle>
                   <circle class="room-cut" cx="160" cy="84" r="42"></circle>
                   <circle class="room-figure" cx="160" cy="84" r="19"></circle><rect class="room-figure" x="124" y="106" width="72" height="64" rx="26"></rect>
                 </g>
                 <g class="room-seat" data-seat="b" data-turn="idle">
                   <rect class="room-chair-back" x="438" y="88" width="84" height="70" rx="12"></rect><rect class="room-chair-seat" x="432" y="150" width="96" height="16" rx="6"></rect>
-                  <ellipse class="room-next" cx="480" cy="169" rx="58" ry="8"></ellipse>
                   <circle class="room-halo" cx="480" cy="84" r="42"></circle>
                   <circle class="room-cut" cx="480" cy="84" r="42"></circle>
                   <circle class="room-figure" cx="480" cy="84" r="19"></circle><rect class="room-figure" x="444" y="106" width="72" height="64" rx="26"></rect>
                 </g>
                 <g class="room-table"><rect x="202" y="178" width="236" height="22"></rect><ellipse cx="320" cy="200" rx="118" ry="20"></ellipse><ellipse class="room-table-top" cx="320" cy="178" rx="118" ry="20"></ellipse><rect class="room-cup" x="284" y="164" width="14" height="13" rx="3"></rect><rect class="room-cup" x="342" y="166" width="14" height="13" rx="3"></rect></g>
+                <!-- Floor rings paint above the table: a centred single seat sits directly behind it,
+                     so a ring inside the seat group would be fully occluded. renderRoom() sets data-turn. -->
+                <g class="room-next-layer"><ellipse class="room-next" data-seat="a" data-turn="idle" cx="160" cy="169" rx="58" ry="8"></ellipse><ellipse class="room-next" data-seat="b" data-turn="idle" cx="480" cy="169" rx="58" ry="8"></ellipse></g>
                 <path class="room-near" d="M0 230 Q320 200 640 230 Z"></path>
                 <g class="room-your-seat"><path class="room-your-arm" d="M30 230 L46 186 Q50 176 64 176 L106 176 Q118 178 118 190 L118 230 Z"></path><path class="room-your-arm" d="M610 230 L594 186 Q590 176 576 176 L534 176 Q522 178 522 190 L522 230 Z"></path><path class="room-your-arm-top" d="M48 182 Q76 170 108 176 Q122 181 116 192 L66 188 Q50 190 48 182 Z"></path><path class="room-your-arm-top" d="M592 182 Q564 170 532 176 Q518 181 524 192 L574 188 Q590 190 592 182 Z"></path><path class="room-your-front" d="M118 230 Q120 212 142 210 L498 210 Q520 212 522 230 Z"></path></g>
               </svg>
