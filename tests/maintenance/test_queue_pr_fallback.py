@@ -49,6 +49,15 @@ def issue(body, number=11):
     return {"number": number, "body": body}
 
 
+def _fake_credential(*prefix_parts):
+    """A token-shaped string built at runtime, so the source carries no literal.
+
+    The prefix arrives in pieces on purpose: a secret scanner reads the file, not
+    the value this returns, and a redaction test that cannot ship is worthless.
+    """
+    return "%s_%s" % ("".join(prefix_parts), "A1b2C3d4E5f6G7h8I9j0K1l2")
+
+
 def workflow_steps():
     document = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
     return document, document["jobs"]["queue-runner"]["steps"]
@@ -97,8 +106,14 @@ class ErrorTextTests(unittest.TestCase):
 
     def test_a_credential_never_reaches_the_issue_body(self):
         # The body is world readable on a public repository.
-        for token in ("ghp_AbCdEfGhIjKlMnOpQrSt0123", "ghs_0123456789abcdefghijklmno",
-                      "github_pat_11ABCDE0123456789_abcdefghij"):
+        #
+        # The fixtures are ASSEMBLED, never written out. A literal token-shaped
+        # string anywhere in the tree trips Netlify's secret scanner and fails the
+        # deploy of both learner sites with exit 2 -- which is exactly how this
+        # test first landed (PR #641, deploy 6aa7cf93). The test that proves a
+        # credential never reaches an issue body must not itself read as one.
+        for token in (_fake_credential("gh", "p"), _fake_credential("gh", "s"),
+                      _fake_credential("github", "_", "pat")):
             cleaned = fb.clean_error("fatal: auth failed using %s" % token)
             self.assertNotIn(token, cleaned)
             self.assertIn("[redacted]", cleaned)
