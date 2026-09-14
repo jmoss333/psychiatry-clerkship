@@ -33,15 +33,18 @@
   }[code]||'The preview could not complete that action. No question was sent again automatically.';}
 
   function createParser(options){
-    var pending='',bytes=0,reply=null,audioCount=0,complete=false;
+    var pending='',bytes=0,reply=null,readyFrame=null,readyDelivered=false,audioCount=0,complete=false;
     function state(event){if(!token(event.state))throw issue('protocol_error');if(options.onState)options.onState(event.state);}
     function line(value){
       if(!value.trim())return;if(complete)throw issue('protocol_error');var event;
       try{event=JSON.parse(value);}catch(_){throw issue('protocol_error');}
       if(!event||typeof event!=='object')throw issue('protocol_error');
       if(event.type==='error')throw issue(typeof event.code==='string'&&/^[a-z_]{1,60}$/.test(event.code)?event.code:'provider_error');
-      if(event.type==='reply'){
-        if(reply||typeof event.reply!=='string'||!event.reply.trim()||event.reply.length>900||!Number.isInteger(event.turn)||event.turn<0||event.turn>(options.maxTurns||10)||options.expectedTurn!==undefined&&event.turn!==options.expectedTurn||!Array.isArray(event.segments)||event.segments.length<1||event.segments.length>2)throw issue('protocol_error');
+      if(event.type==='ready'){
+        if(options.allowFamilyReady!==true||options.expectedTurn!==0||reply||readyFrame||!exact(event,['type','caseId','turn','state'])||event.caseId!==FAMILY_CASE_ID||event.turn!==0||!token(event.state))throw issue('protocol_error');
+        readyFrame=event;
+      }else if(event.type==='reply'){
+        if(readyFrame||options.allowFamilyReady||reply||typeof event.reply!=='string'||!event.reply.trim()||event.reply.length>900||!Number.isInteger(event.turn)||event.turn<0||event.turn>(options.maxTurns||10)||options.expectedTurn!==undefined&&event.turn!==options.expectedTurn||!Array.isArray(event.segments)||event.segments.length<1||event.segments.length>2)throw issue('protocol_error');
         if(event.segments.some(function(segment){return !segment||typeof segment.text!=='string'||!segment.text.trim()||segment.text.length>900;}))throw issue('protocol_error');
         if(event.segments.map(function(segment){return segment.text;}).join('')!==event.reply)throw issue('protocol_error');
         if(options.expectedSpeakerId!==undefined&&event.speakerId!==options.expectedSpeakerId)throw issue('protocol_error');
@@ -49,15 +52,16 @@
         if(event.familyBid!==undefined){var bid=event.familyBid;if(options.expectedSpeakerId===undefined||!exact(bid,['speakerId','text'])||!Object.hasOwn(FAMILY_NAMES,bid.speakerId)||bid.speakerId===event.speakerId||bid.text!=='Could I add something?'||event.segments.length!==2||event.segments[1].text!==' '+bid.text)throw issue('protocol_error');}
         state(event);reply=event;if(options.onReply)options.onReply(event);
       }else if(event.type==='audio'){
-        if(!reply||event.index!==audioCount||event.index>=reply.segments.length||typeof event.data!=='string'||event.data.length<136||event.data.length>Math.ceil(MAX_AUDIO/3)*4||event.data.length%4||!/^[A-Za-z0-9+/]*={0,2}$/.test(event.data))throw issue('protocol_error');
+        if(readyFrame||!reply||event.index!==audioCount||event.index>=reply.segments.length||typeof event.data!=='string'||event.data.length<136||event.data.length>Math.ceil(MAX_AUDIO/3)*4||event.data.length%4||!/^[A-Za-z0-9+/]*={0,2}$/.test(event.data))throw issue('protocol_error');
         var padding=event.data.endsWith('==')?2:event.data.endsWith('=')?1:0,size=event.data.length/4*3-padding;
         if(size<100||size>MAX_AUDIO)throw issue('protocol_error');
         state(event);audioCount++;if(options.onAudio)options.onAudio(event);
       }else if(event.type==='complete'){
-        if(!reply||audioCount!==reply.segments.length)throw issue('protocol_error');state(event);complete=true;if(options.onComplete)options.onComplete(event);
+        if(readyFrame){if(!exact(event,['type','state'])||event.state!==readyFrame.state)throw issue('protocol_error');complete=true;}
+        else{if(!reply||audioCount!==reply.segments.length)throw issue('protocol_error');state(event);complete=true;if(options.onComplete)options.onComplete(event);}
       }else throw issue('protocol_error');
     }
-    return {push:function(text){bytes+=text.length;if(bytes>13*1024*1024)throw issue('protocol_error');pending+=text;var at;while((at=pending.indexOf('\n'))>=0){var value=pending.slice(0,at);pending=pending.slice(at+1);line(value);}if(pending.length>6*1024*1024)throw issue('protocol_error');},finish:function(){if(pending.trim())line(pending);pending='';if(!complete)throw issue('protocol_error');return {reply:reply,audioCount:audioCount};}};
+    return {push:function(text){bytes+=text.length;if(bytes>13*1024*1024)throw issue('protocol_error');pending+=text;var at;while((at=pending.indexOf('\n'))>=0){var value=pending.slice(0,at);pending=pending.slice(at+1);line(value);}if(pending.length>6*1024*1024)throw issue('protocol_error');},finish:function(){if(pending.trim())line(pending);pending='';if(!complete)throw issue('protocol_error');if(readyFrame&&!readyDelivered){readyDelivered=true;state(readyFrame);if(options.onComplete)options.onComplete({type:'complete',state:readyFrame.state});}return {reply:reply,audioCount:audioCount};}};
   }
   function exact(value,keys){return value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===keys.length&&keys.every(function(key){return Object.hasOwn(value,key);});}
   function validateDisplayReview(report,scenarioId){
@@ -182,6 +186,60 @@
       diagnostics:function(){return {nativeRecognition:nativeRecognition,sessions:serial,counts:Object.assign({},counts),events:trace.slice()};}};
   }
 
+  // This optional graph only positions already generated family recordings.
+  // A routed media element cannot fall back to native playback: replace it
+  // before playback if setup fails, and interrupt if its live graph stops.
+  function createFamilyPositioning(env,onChange){
+    var selected=false,status='off',context=null,pending=false,unavailable=false,inactive=true,epoch=0,active=null,resumeTimer=null;
+    function update(silent){var next=inactive||!selected?'off':unavailable?'unavailable':pending||active&&!active.routed?'starting':context&&context.state==='running'?'on':'unavailable';if(next!==status){status=next;if(!silent)onChange();}}
+    function disconnect(node){if(node)try{node.disconnect();}catch(_){} }
+    function retireContext(){
+      epoch++;pending=false;env.clearTimeout(resumeTimer);resumeTimer=null;
+      var old=context;context=null;
+      if(old){old.onstatechange=null;try{var closing=old.close();if(closing&&closing.catch)closing.catch(function(){});}catch(_){}}
+    }
+    function close(reset){
+      inactive=true;unavailable=false;if(reset)selected=false;
+      if(active){active.release();active=null;}retireContext();
+      update();
+    }
+    function select(value,activate){
+      selected=!!value;
+      if(active&&active.routed){try{active.panner.pan.value=selected?active.pan:0;}catch(_){unavailable=true;active.fail(issue('audio_failed'));}}
+      if(!selected||!activate){update();return;}
+      inactive=false;
+      if(pending){update();return;}
+      if(context&&context.state==='closed')retireContext();
+      var current=context,version=epoch;
+      try{
+        if(!current){var Constructor=env.AudioContext||env.webkitAudioContext;if(!Constructor)throw issue('audio_failed');current=context=new Constructor();}
+        if(typeof current.createMediaElementSource!=='function'||typeof current.createStereoPanner!=='function'||typeof current.resume!=='function')throw issue('audio_failed');
+        current.onstatechange=function(){if(context!==current||version!==epoch)return;if(current.state!=='running'&&(!pending||active&&active.routed)){unavailable=true;if(active&&active.routed)active.fail(issue('audio_failed'));}update();};
+        unavailable=false;
+        if(current.state==='running'){update();return;}
+        pending=true;update();
+        resumeTimer=env.setTimeout(function(){if(context!==current||version!==epoch||!pending)return;retireContext();unavailable=true;update();},1500);
+        Promise.resolve(current.resume()).then(function(){if(context!==current||version!==epoch)return;env.clearTimeout(resumeTimer);resumeTimer=null;pending=false;unavailable=current.state!=='running';update();},function(){if(context!==current||version!==epoch)return;retireContext();unavailable=true;update();});
+      }catch(_){retireContext();unavailable=true;update();}
+    }
+    function route(audio,speaker,fail){
+      var graph=context,source=null,panner=null,attempted=false,released=false;
+      var record={routed:false,replace:false,pan:speaker==='morgan'?-0.25:speaker==='maya'?0.25:0,panner:null,fail:fail,
+        healthy:function(){if(!record.routed)return true;var healthy=context===graph&&graph.state==='running';if(!healthy){unavailable=true;update();}return healthy;},
+        release:function(){if(released)return;released=true;disconnect(source);disconnect(panner);if(active===record)active=null;update();}};
+      active=record;
+      if(selected&&!inactive&&!unavailable&&!pending&&graph&&graph.state==='running'&&Object.hasOwn(FAMILY_NAMES,speaker)){
+        try{
+          panner=graph.createStereoPanner();if(!panner.pan)throw issue('audio_failed');panner.pan.value=record.pan;panner.connect(graph.destination);
+          attempted=true;source=graph.createMediaElementSource(audio);source.connect(panner);
+          if(graph.state!=='running')throw issue('audio_failed');record.routed=true;record.panner=panner;
+        }catch(_){disconnect(source);disconnect(panner);source=panner=null;record.replace=attempted;unavailable=true;}
+      }
+      update(true);return record;
+    }
+    return {select:select,route:route,close:close,snapshot:function(){return {familyPositioning:selected,familyPositioningStatus:status};}};
+  }
+
   // Registration alone is not attestation. Morgan and the family meeting were
   // attested by Joshua Moss, MD on 2026-09-09; every case listed here now carries
   // faculty-attested content.
@@ -190,9 +248,9 @@
     options=options||{};var phase='gate',key='',receipt=null,turn=0,caseId=CASE_IDS[0],messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false,retryUsed=false;
     var mode='full',maxTurns=10,endpoint='/api/dana-preview',momentStage='dialogue',captureTarget='patient',reflectionOpen=false,review=null,teamFormulation='',summaryUncertain=false,uncertainTurnIds=[],reviewAttempted=false,closedReceiptAvailable=false,alternativeTurnId=null,endReason='learner_end';
     var previousPlayback='interrupted',previousCompletedSegments=0,generation=0,targetRoleId='morgan',spokenInterrupt=false,deliveryIntensity='standard',echoReference='',echoUntil=0,echoResults=new Map();
-    var roomCue=null,cuePending=false,cueSound=null,familyBid=null,activeSpeakerId=null;
+    var roomCue=null,cuePending=false,cueSound=null,familyBid=null,activeSpeakerId=null,positioning=createFamilyPositioning(env,publish);
     var tally={startRequests:0,turnRequests:0,automaticSubmissions:0,explicitSubmissions:0,spokenInterruptions:0,echoResultsIgnored:0};
-    function snapshot(){return {roomCue:roomCue?Object.assign({},roomCue):null,familyBid:familyBid?Object.assign({},familyBid):null,activeSpeakerId:activeSpeakerId,spokenInterrupt:spokenInterrupt,deliveryIntensity:deliveryIntensity,mode:mode,maxTurns:maxTurns,momentStage:momentStage,captureTarget:captureTarget,reflectionOpen:reflectionOpen,review:review?JSON.parse(JSON.stringify(review)):null,teamFormulation:teamFormulation,summaryUncertain:summaryUncertain,uncertainTurnIds:uncertainTurnIds.slice(),reviewAttempted:reviewAttempted,closedReceiptAvailable:closedReceiptAvailable,phase:phase,turn:turn,messages:messages.map(function(message){var copy=Object.assign({},message);if(copy.segments)copy.segments=copy.segments.slice();if(copy.familyBid)copy.familyBid=Object.assign({},copy.familyBid);return copy;}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired,retryUsed:retryUsed,caseId:caseId,targetRoleId:targetRoleId};}
+    function snapshot(){return Object.assign({roomCue:roomCue?Object.assign({},roomCue):null,familyBid:familyBid?Object.assign({},familyBid):null,activeSpeakerId:activeSpeakerId,spokenInterrupt:spokenInterrupt,deliveryIntensity:deliveryIntensity,mode:mode,maxTurns:maxTurns,momentStage:momentStage,captureTarget:captureTarget,reflectionOpen:reflectionOpen,review:review?JSON.parse(JSON.stringify(review)):null,teamFormulation:teamFormulation,summaryUncertain:summaryUncertain,uncertainTurnIds:uncertainTurnIds.slice(),reviewAttempted:reviewAttempted,closedReceiptAvailable:closedReceiptAvailable,phase:phase,turn:turn,messages:messages.map(function(message){var copy=Object.assign({},message);if(copy.segments)copy.segments=copy.segments.slice();if(copy.familyBid)copy.familyBid=Object.assign({},copy.familyBid);return copy;}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired,retryUsed:retryUsed,caseId:caseId,targetRoleId:targetRoleId},positioning.snapshot());}
     function publish(){if(!disposed&&typeof options.onChange==='function')options.onChange(snapshot());}
     function interruptionEligible(){return spokenInterrupt&&voice&&mode==='full'&&!disposed&&!ended&&!restartRequired&&!reflectionOpen&&!env.document.hidden&&turn<maxTurns;}
     function speechWords(text){return String(text).toLowerCase().replace(/[’']/g,'').match(/[a-z0-9]+/g)||[];}
@@ -244,30 +302,45 @@
       var bytes=new Uint8Array(raw.length);for(var index=0;index<raw.length;index++)bytes[index]=raw.charCodeAt(index);
       var url=env.URL.createObjectURL(new env.Blob([bytes],{type:'audio/mpeg'})),audio;
       try{audio=new env.Audio();}catch(_){env.URL.revokeObjectURL(url);throw issue('audio_failed');}
-      var settled=false,started=false,failure=null,resolvePlay=null,rejectPlay=null,audioTimer;
+      var settled=false,started=false,failure=null,resolvePlay=null,rejectPlay=null,audioTimer,positioned=null;
       function finish(error){
+        if(settled)return;
+        if(!error&&positioned&&!positioned.healthy())error=issue('audio_failed');
         if(settled)return;settled=true;failure=error||null;env.clearTimeout(audioTimer);operation.abort.signal.removeEventListener('abort',abort);audio.onended=audio.onerror=null;
         try{audio.pause();audio.removeAttribute&&audio.removeAttribute('src');audio.load&&audio.load();}catch(_){}env.URL.revokeObjectURL(url);if(player&&player.audio===audio)player=null;
+        if(positioned)positioned.release();
         if(started){if(error)rejectPlay(error);else{operation.completed++;previousCompletedSegments=operation.completed;resolvePlay();}}
       }
       function abort(){finish(cancelled());}
+      function loadAudio(){
+        audio.onended=function(){if(started)finish();};
+        // Queued load failures wait for their own playback turn.
+        audio.onerror=function(){finish(issue('audio_failed'));};
+        try{audio.preload='auto';audio.src=url;audio.load&&audio.load();}catch(_){finish(issue('audio_failed'));}
+      }
       var prepared={audio:audio,stop:abort,play:function(){
         return new Promise(function(resolve,reject){
           if(disposed||task!==operation||operation.abort.signal.aborted){abort();return reject(cancelled());}
           if(settled)return reject(failure||cancelled());
           started=true;resolvePlay=resolve;rejectPlay=reject;player=prepared;
-          audioTimer=env.setTimeout(function(){finish(issue('audio_failed'));},65000);activeSpeakerId=event.index===1&&operation.reply.familyBid?operation.reply.familyBid.speakerId:operation.reply.speakerId;phase='speaking';publish();
+          activeSpeakerId=event.index===1&&operation.reply.familyBid?operation.reply.familyBid.speakerId:operation.reply.speakerId;
+          if(caseId===FAMILY_CASE_ID){
+            positioned=positioning.route(audio,activeSpeakerId,finish);
+            if(positioned.replace){
+              // A failed source connection may have captured this media element.
+              // Only a fresh, still-unplayed element can use native sound safely.
+              audio.onended=audio.onerror=null;try{audio.pause();audio.removeAttribute&&audio.removeAttribute('src');audio.load&&audio.load();audio=new env.Audio();prepared.audio=audio;loadAudio();}catch(_){finish(issue('audio_failed'));}
+            }
+          }
+          if(settled||disposed||task!==operation||operation.abort.signal.aborted){abort();return;}
+          audioTimer=env.setTimeout(function(){finish(issue('audio_failed'));},65000);phase='speaking';publish();
           if(settled||disposed||task!==operation||operation.abort.signal.aborted){abort();return;}
           if(interruptionEligible()){operation.monitoring=true;echoReference=operation.reply.segments.join('');echoUntil=Infinity;capture.start();}
           try{var playing=audio.play();if(playing&&playing.catch)playing.catch(function(){finish(issue('playback_blocked'));});}catch(_){finish(issue('playback_blocked'));}
         });
       }};
       operation.prepared.push(prepared);operation.abort.signal.addEventListener('abort',abort,{once:true});
-      audio.onended=function(){if(started)finish();};
-      // A failed queued load is remembered until its playback turn; it must not
-      // cut off a recording that is still playing successfully ahead of it.
-      audio.onerror=function(){finish(issue('audio_failed'));};
-      try{audio.preload='auto';audio.src=url;audio.load&&audio.load();}catch(_){finish(issue('audio_failed'));}
+      loadAudio();
       return prepared;
     }
     function ready(){if(disposed||ended||restartRequired||task||reflectionOpen)return;if(turn>=maxTurns){ended=true;phase='ended';publish();return;}if(voice&&!env.document.hidden){phase='connecting';publish();capture.start();}else{phase='ready';publish();}}
@@ -281,6 +354,7 @@
         var response=await env.fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-preview-key':key},body:JSON.stringify(body),signal:operation.abort.signal,credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer'});
         await readResponse(response,{
           maxTurns:maxTurns,expectedTurn:body.action==='start'?0:body.action==='retry'?body.turnId:turn+1,
+          allowFamilyReady:caseId===FAMILY_CASE_ID&&body.action==='start',
           expectedSpeakerId:caseId===FAMILY_CASE_ID?(body.action==='start'?'morgan':learner.targetRoleId):undefined,
           onState:function(state){if(disposed||task!==operation||operation.abort.signal.aborted)throw cancelled();receipt=state;operation.receivedState=true;if(body.roomCueId)cuePending=false;previousPlayback='interrupted';previousCompletedSegments=operation.completed;},
           onReply:function(event){if(body.action!=='retry')turn=event.turn;operation.reply={role:'dana',text:event.reply,status:'preparing',completedSegments:0,totalSegments:event.segments.length,segments:event.segments.map(function(segment){return segment.text;})};if(event.familyBid){operation.reply.familyBid=Object.assign({},event.familyBid);operation.reply.text=event.segments[0].text;}if(body.action==='retry')operation.reply.alternative=true;if(event.speakerId)operation.reply.speakerId=event.speakerId;messages.push(operation.reply);if(learner)learner.status='submitted';publish();},
@@ -305,7 +379,7 @@
         operation.failed=true;
       }finally{
         env.clearTimeout(timeout);if(!operation.barged&&operation.monitoring)echoUntil=captureClock()+2000;operation.prepared.forEach(function(prepared){prepared.stop();});var ownsTask=task===operation;if(ownsTask){task=null;activeSpeakerId=null;if(operation.reply&&operation.reply.familyBid&&operation.completed===2&&!ended)familyBid=Object.assign({},operation.reply.familyBid);}
-        if(!disposed&&ownsTask){if(ended||turn>=maxTurns){ended=true;capture.stop();phase='ended';if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=turn>=maxTurns?'turn_limit':endReason;}}
+        if(!disposed&&ownsTask){if(body.action==='start'&&operation.failed)positioning.close(false);if(ended||turn>=maxTurns){ended=true;capture.stop();phase='ended';positioning.close(false);if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=turn>=maxTurns?'turn_limit':endReason;}}
           if(operation.barged&&interruptionEligible()&&capture.isActive()){phase='listening';capture.refresh();}
           else if(operation.failed||operation.cancelled)capture.stop();
           publish();if(!operation.failed&&!operation.cancelled&&!ended){if(capture.isActive()){phase='listening';capture.refresh();publish();}else ready();}}
@@ -314,9 +388,12 @@
     }
     async function start(passcode,useVoice,chosenCase,settings){
       if(task||disposed||phase!=='gate')return false;
+      settings=settings||{};
+      if((chosenCase===FAMILY_CASE_ID||chosenCase===undefined&&caseId===FAMILY_CASE_ID)&&settings.familyBriefAcknowledged!==true){problem='Review how this family session works and acknowledge it before starting.';publish();return false;}
       if(chosenCase!==undefined){var profile=options.getMomentProfile&&options.getMomentProfile(chosenCase);if(!profile&&CASE_IDS.indexOf(chosenCase)<0)return false;caseId=chosenCase;mode=profile?'moment':'full';maxTurns=profile?4:10;endpoint=profile?'/api/practice-moment':'/api/dana-preview';}key=String(passcode||'').trim();if(!key||key.length>200){problem=safeMessage('access_denied');publish();return false;}
       voice=!!useVoice&&!!(env.SpeechRecognition||env.webkitSpeechRecognition);problem='';receipt=null;messages=[];turn=0;ended=false;restartRequired=false;
       settings=settings||{};roomCue=null;cuePending=false;familyBid=null;targetRoleId='morgan';spokenInterrupt=mode==='full'&&voice&&settings.spokenInterrupt===true;deliveryIntensity=mode==='full'&&['gentle','standard','expressive'].includes(settings.deliveryIntensity)?settings.deliveryIntensity:'standard';
+      positioning.select(caseId===FAMILY_CASE_ID&&settings.familyPositioning===true,true);
       var body={action:'start',requestId:env.crypto.randomUUID()};body[mode==='moment'?'scenarioId':'caseId']=caseId;if(mode==='full'&&deliveryIntensity!=='standard')body.deliveryIntensity=deliveryIntensity;return request(body,null);
     }
     async function send(text,automatic){
@@ -340,6 +417,7 @@
       if(!value||value.length>1200||/[\u0000-\u001f\u007f]/.test(value)){problem=safeMessage(!value?'no_words':value.length>1200?'text_too_long':'input_invalid');publish();return false;}
       var learner={role:'you',text:value,status:'pending'};
       if(caseId===FAMILY_CASE_ID){var original=messages.filter(function(m){return m.role==='you';})[turnId-1];if(!original||!FAMILY_NAMES[original.targetRoleId])return false;learner.targetRoleId=original.targetRoleId;targetRoleId=original.targetRoleId;}
+      if(caseId===FAMILY_CASE_ID&&positioning.snapshot().familyPositioning)positioning.select(true,true);
       learner.alternative=true;messages.push(learner);
       var body={action:'retry',state:receipt,turnId:turnId,text:value};body[mode==='moment'?'scenarioId':'caseId']=caseId;
       if(mode==='moment')retryUsed=true;
@@ -385,10 +463,10 @@
       return captureTarget==='alternative'&&closedReceiptAvailable&&!retryUsed&&Number.isInteger(alternativeTurnId)&&alternativeTurnId>=1&&alternativeTurnId<=turn&&(momentStage==='reviewed'||momentStage==='review_unavailable');
     }
     function pause(){stopCueSound();capture.stop();clearEcho();if(task){task.barged=false;task.cancelled=true;task.abort.abort();stopPlayer();}else if((!ended||auxiliaryCaptureEligible())&&!restartRequired&&phase!=='gate')phase='paused';publish();}
-    function end(){stopCueSound();familyBid=null;if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=task?'technical_interruption':turn>=maxTurns?'turn_limit':'learner_end';if(!turn)receipt=null;}ended=true;capture.stop();if(task){task.cancelled=true;task.abort.abort();}stopPlayer();phase='ended';publish();}
+    function end(){stopCueSound();familyBid=null;if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=task?'technical_interruption':turn>=maxTurns?'turn_limit':'learner_end';if(!turn)receipt=null;}ended=true;capture.stop();if(task){task.cancelled=true;task.abort.abort();}stopPlayer();phase='ended';positioning.close(false);publish();}
     function resume(){if(disposed||env.document.hidden||task||(ended&&!auxiliaryCaptureEligible())||restartRequired||!receipt||reflectionOpen)return false;voice=true;problem='';phase='connecting';publish();capture.start();return true;}
     function setDraft(text){if(task||(ended&&captureTarget==='patient')||restartRequired||disposed||reflectionOpen)return;draft=String(text).slice(0,1200);interim='';if(capture.isActive()){capture.stop();phase='paused';}problem='';publish();}
-    function clear(){stopCueSound();roomCue=null;cuePending=false;familyBid=null;activeSpeakerId=null;clearEcho();spokenInterrupt=false;deliveryIntensity='standard';generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;retryUsed=false;targetRoleId='morgan';previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';mode='full';maxTurns=10;endpoint='/api/dana-preview';momentStage='dialogue';captureTarget='patient';reflectionOpen=false;review=null;teamFormulation='';summaryUncertain=false;uncertainTurnIds=[];reviewAttempted=false;closedReceiptAvailable=false;alternativeTurnId=null;endReason='learner_end';publish();}
+    function clear(){stopCueSound();roomCue=null;cuePending=false;familyBid=null;activeSpeakerId=null;clearEcho();spokenInterrupt=false;deliveryIntensity='standard';generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;retryUsed=false;targetRoleId='morgan';previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';mode='full';maxTurns=10;endpoint='/api/dana-preview';momentStage='dialogue';captureTarget='patient';reflectionOpen=false;review=null;teamFormulation='';summaryUncertain=false;uncertainTurnIds=[];reviewAttempted=false;closedReceiptAvailable=false;alternativeTurnId=null;endReason='learner_end';positioning.close(true);publish();}
     function stopCueSound(){if(cueSound){var closing=cueSound.close();if(closing&&closing.catch)closing.catch(function(){});cueSound=null;}}
     function triggerRoomCue(id){
       if(mode!=='full'||!Object.hasOwn(ROOM_CUES,id)||roomCue||phase==='gate'||ended||disposed||restartRequired||!receipt||turn>=maxTurns)return false;
@@ -407,6 +485,7 @@
       setSummaryUncertain:function(value){if(!reviewAttempted&&teamFormulation.trim()){summaryUncertain=!!value;publish();}},
       setUncertainTurn:function(id,value){if(reviewAttempted||!Number.isInteger(id)||id<1||id>turn)return;uncertainTurnIds=uncertainTurnIds.filter(function(v){return v!==id;});if(value)uncertainTurnIds.push(id);uncertainTurnIds.sort(function(a,b){return a-b;});publish();},
       triggerRoomCue:triggerRoomCue,deferFamilyBid:function(){familyBid=null;publish();},inviteFamilyBid:function(){if(!familyBid||task||ended)return false;targetRoleId=familyBid.speakerId;familyBid=null;publish();return true;},start:start,send:send,retry:retry,pause:pause,interrupt:pause,end:end,resume:resume,setDraft:setDraft,clear:clear,dispose:dispose,getSnapshot:snapshot,
+      setFamilyPositioning:function(value){if(disposed||caseId!==FAMILY_CASE_ID||phase==='gate')return false;var activeAlternative=task&&task.learner&&task.learner.alternative===true&&!task.cancelled&&!task.abort.signal.aborted;positioning.select(!!value,!ended||!!activeAlternative);publish();return true;},
       setSpokenInterrupt:function(value){spokenInterrupt=!!value&&mode==='full'&&voice;if(!spokenInterrupt){clearEcho();if(task&&task.monitoring){task.monitoring=false;if(task.barged)pause();else capture.stop();}}else if(task&&player&&phase==='speaking'&&interruptionEligible()&&!task.abort.signal.aborted){task.monitoring=true;echoReference=task.reply.segments.join('');echoUntil=Infinity;capture.start();}publish();},
       setTargetRole:function(value){if(caseId!==FAMILY_CASE_ID||!Object.hasOwn(FAMILY_NAMES,value)||task||ended||restartRequired||disposed)return false;targetRoleId=value;publish();return true;},
       getDiagnostics:function(){return Object.assign({},tally,capture.diagnostics());},
@@ -448,9 +527,10 @@
     var visitedMomentIds=new Set(),fullChoices=Array.from(el('case-choice').options).map(function(o){return {value:o.value,text:o.textContent};});
     function momentProfile(id){return env.MomentContent&&env.MomentContent.getProfile(id);}
     function selectedProfile(){return momentProfile(el('case-choice').value)||(env.DanaStationContent&&env.DanaStationContent.getProfile(el('case-choice').value));}
+    function familyPreflight(reset){var family=el('case-choice').value===FAMILY_CASE_ID;el('family-preflight').hidden=!family;el('family-brief-ack').disabled=!family;el('family-brief-ack').required=family;el('family-positioning-entry-option').hidden=!family;el('family-positioning-entry').disabled=!family;if(reset){el('family-brief-ack').checked=false;el('family-positioning-entry').checked=false;}el('start').disabled=family&&!el('family-brief-ack').checked;}
     function previewCase(){var profile=selectedProfile();if(!profile)return;var moment=!!momentProfile(profile.id||el('case-choice').value);el('door-title').textContent=moment?profile.title:'Begin with '+profile.displayName+'’s story.';el('door-lede').textContent=moment?profile.task:'Introduce yourself and your role, invite the patient’s account, and close with a summary they can correct.';el('access-lede').textContent=moment?'Up to four responses. About 3–5 minutes; you can end early.':'Up to ten questions, at your pace.';el('case-preview-note').textContent=moment?profile.setup:profile.doorNote;el('case-preview-task').textContent=profile.task;if(el('case-review-note')){el('case-review-note').hidden=!profile.reviewLabel;el('case-review-note').textContent=profile.reviewLabel||'';}el('start').textContent=moment?'Start moment':'Start encounter';el('voice-experiment-options').hidden=el('faculty-voice-options').hidden=moment;}
     function chooseFormat(){var moment=momentsEnabled&&el('experience-choice').value==='moment';if(!moment)el('experience-choice').value='full';el('case-choice').replaceChildren();var choices=moment&&env.MomentContent?env.MomentContent.ids().map(function(id){var p=momentProfile(id);return {value:id,text:p.displayName+' — '+p.title+(p.reviewLabel?' ('+p.reviewLabel.toLowerCase()+')':'')};}):fullChoices;choices.forEach(function(c){var o=doc.createElement('option');o.value=c.value;o.textContent=c.text;el('case-choice').appendChild(o);});previewCase();}
-    previewCase();el('case-choice').addEventListener('change',previewCase);el('experience-choice').addEventListener('change',chooseFormat);
+    previewCase();familyPreflight(true);el('case-choice').addEventListener('change',function(){previewCase();familyPreflight(true);});el('experience-choice').addEventListener('change',function(){chooseFormat();familyPreflight(true);});el('family-brief-ack').addEventListener('change',function(){familyPreflight(false);});
     var followTranscript=true;
     function followLatest(){var log=el('transcript');followTranscript=log.scrollHeight-log.scrollTop-log.clientHeight<80;el('latest-message').hidden=followTranscript;}
     var transcriptSize=env.ResizeObserver?new env.ResizeObserver(function(){if(followTranscript)el('transcript').scrollTop=el('transcript').scrollHeight;followLatest();}):null;
@@ -469,12 +549,24 @@
       el('station-root').replaceChildren();
       station=env.DanaStation.createStation(env,el('station-root'),{caseId:caseId,content:env.DanaStationContent,onRetry:function(turnId,text){return controller.retry(turnId,text);}});
     }
+    function familyRoom(snapshot){
+      var family=snapshot.caseId===FAMILY_CASE_ID,visible=family&&snapshot.phase!=='gate';el('family-room').hidden=!visible;el('family-opening-invite').hidden=!visible||snapshot.messages.length>0||!['ready','listening','paused','connecting'].includes(snapshot.phase);
+      if(!visible)return;
+      el('family-positioning').checked=!!snapshot.familyPositioning;el('family-positioning').disabled=snapshot.restartRequired;
+      var positioningStatus=snapshot.phase==='ended'&&snapshot.familyPositioning?'Headphone positioning selected; audio is stopped.':({off:'Voices are centered.',starting:'Preparing headphone positioning…',on:'Headphone positioning on: Morgan left · Maya right.',unavailable:'Headphone positioning is unavailable here. New replies use centered audio.'}[snapshot.familyPositioningStatus]||'Voices are centered.');
+      if(el('family-positioning-status').textContent!==positioningStatus)el('family-positioning-status').textContent=positioningStatus;
+      var profile=env.DanaStationContent.getProfile(FAMILY_CASE_ID),playing=snapshot.phase==='speaking'?snapshot.activeSpeakerId:null;
+      (profile.participants||[]).forEach(function(person){var card=el('family-card-'+person.id);if(!card)return;el('family-identity-'+person.id).textContent=person.relationship+' · '+person.pronouns;el('family-observation-'+person.id).textContent=person.observation||'';card.setAttribute('data-speaking',String(playing===person.id));card.setAttribute('data-next',String(snapshot.phase!=='ended'&&snapshot.targetRoleId===person.id));var status=playing===person.id?'Speaking now':snapshot.phase==='ended'?'Session ended':snapshot.targetRoleId===person.id?'Next reply':'Also in the meeting';if(playing===person.id&&snapshot.targetRoleId===person.id)status+=' · next reply';if(el('family-turn-'+person.id).textContent!==status)el('family-turn-'+person.id).textContent=status;});
+      var summary=snapshot.phase==='ended'?'Shared meeting ended.':playing?FAMILY_NAMES[playing]+' is speaking. Next reply: '+FAMILY_NAMES[snapshot.targetRoleId]+'.':snapshot.phase==='responding'&&!snapshot.messages.length?'Opening the shared meeting. You will lead.':snapshot.phase==='responding'?FAMILY_NAMES[snapshot.targetRoleId]+' is preparing a reply.':'Your turn. Next reply: '+FAMILY_NAMES[snapshot.targetRoleId]+'. Begin with a name to change who answers.';
+      if(el('family-floor-summary').textContent!==summary)el('family-floor-summary').textContent=summary;
+      el('family-room-illustration').hidden=!profile.roomLayout;if(profile.roomLayout){el('family-room-layout-label').textContent=profile.roomLayout.label;el('family-room-layout-text').textContent=profile.roomLayout.text;}
+    }
     function render(snapshot){
       var active=snapshot.phase!=='gate',canSend=active&&!snapshot.busy&&!snapshot.restartRequired&&!snapshot.reflectionOpen&&snapshot.phase!=='ended'&&snapshot.phase!=='reviewing';
       el('preview-root').setAttribute('data-phase',snapshot.phase);el('preview-root').setAttribute('data-mode',snapshot.mode);el('preview-root').setAttribute('data-moment-stage',snapshot.momentStage);el('entrance').hidden=active;el('room-layout').hidden=!active;
       if(!active)el('typing-panel').open=false;
       else if(snapshot.phase!==lastPhase&&(['ready','paused'].includes(snapshot.phase)||snapshot.error))el('typing-panel').open=true;
-      el('access-panel').hidden=active;el('case-choice').disabled=active;el('start').disabled=snapshot.busy;el('encounter-panel').hidden=!active;el('conversation-panel').hidden=!snapshot.messages.length;
+      el('access-panel').hidden=active;el('case-choice').disabled=active;el('start').disabled=snapshot.busy||el('case-choice').value===FAMILY_CASE_ID&&!el('family-brief-ack').checked;el('encounter-panel').hidden=!active;el('conversation-panel').hidden=!snapshot.messages.length;
       el('closing-panel').hidden=snapshot.phase!=='ended'||snapshot.mode==='moment';el('clear').hidden=el('clear-note').hidden=!active;el('clear').disabled=false;el('experience-choice').disabled=active;
       el('turn-count').textContent=snapshot.turn+' of '+snapshot.maxTurns+(snapshot.mode==='moment'?' responses':' questions');el('end').textContent=snapshot.mode==='moment'?'End this moment':'End encounter';
       var family=snapshot.caseId===FAMILY_CASE_ID,lastReply=snapshot.messages.filter(function(m){return m.role!=='you';}).at(-1),respondent=family?(FAMILY_NAMES[snapshot.phase==='speaking'&&lastReply?(snapshot.activeSpeakerId||lastReply.speakerId):snapshot.targetRoleId]||'Morgan'):patientName;
@@ -483,6 +575,8 @@
       el('family-bid-offer').hidden=!family||!snapshot.familyBid||!canSend;el('family-bid-name').textContent=snapshot.familyBid?FAMILY_NAMES[snapshot.familyBid.speakerId]+' asked to add something.':'';
       el('faculty-room-controls').hidden=!active||snapshot.mode!=='full';el('cue-knock').disabled=el('cue-chime').disabled=!!snapshot.roomCue||snapshot.phase==='ended'||snapshot.restartRequired||snapshot.turn>=snapshot.maxTurns;el('room-cue-notice').hidden=!snapshot.roomCue;el('room-cue-notice').textContent=snapshot.roomCue?'Faculty cue: '+snapshot.roomCue.text+(snapshot.roomCue.unfinishedText?' Unfinished words: “'+snapshot.roomCue.unfinishedText+'”. These were not sent; repeat or copy them when ready.':'')+' Resume the microphone or type when ready.':'';
       if(family){el('patient-name').textContent='Morgan and Maya';el('interrupt-label').textContent='Interrupt '+respondent;}
+      familyRoom(snapshot);el('clear-note').textContent='This removes this page’s conversation, notes, and passcode. '+(family?'A new family encounter starts with you.':'A new encounter starts from the patient’s opening.');
+      if(family&&snapshot.phase==='responding'&&!snapshot.messages.length)el('status').textContent='Opening the shared meeting…';
       if(snapshot.phase==='listening'&&snapshot.hold)el('status').textContent='Listening — your turn is held';
       el('hint').textContent=snapshot.restartRequired?'The last request has an uncertain outcome. Clear and restart to continue.':snapshot.phase==='speaking'||snapshot.phase==='responding'?(snapshot.phase==='speaking'&&snapshot.spokenInterrupt&&snapshot.turn<snapshot.maxTurns?'Speak to take the floor. A brief acknowledgment lets the patient continue. Interrupt or Escape also stops the voice.':'Interrupt or press Escape to stop the voice. Then resume the microphone or type to continue.'):snapshot.phase==='ended'?'Bring what you learned and what remains uncertain to your supervisor.':snapshot.hold?'Your turn is held. Keep speaking or thinking, then choose Done speaking when ready.':snapshot.phase==='listening'?'Just speak. Your question sends itself once you stop — no click needed. Space sends it sooner.':'Take your time. You can speak, pause, or type.';
       el('done').hidden=snapshot.phase!=='listening';el('done').disabled=snapshot.busy||!!snapshot.interim||!snapshot.draft.trim();
@@ -493,13 +587,13 @@
       if(el('composer').value!==snapshot.draft)el('composer').value=snapshot.draft;
       el('spoken-draft').hidden=!(snapshot.draft||snapshot.interim);el('draft-text').textContent=snapshot.draft;el('interim-text').textContent=snapshot.interim;
       el('error').hidden=!snapshot.error;el('error').textContent=snapshot.error;
-      var serialized=JSON.stringify(snapshot.messages);if(serialized!==lastTranscript){var log=el('transcript'),nearBottom=log.scrollHeight-log.scrollTop-log.clientHeight<80,previousScroll=log.scrollTop;lastTranscript=serialized;el('transcript').replaceChildren();snapshot.messages.forEach(function(message){var row=doc.createElement('article');row.className='message '+message.role;var name=doc.createElement('span');name.className='name';name.textContent=(snapshot.mode==='moment'&&message.alternative?'Alternative · ':'')+(message.role==='you'?(message.targetRoleId?'You, to '+FAMILY_NAMES[message.targetRoleId]:'You'):(FAMILY_NAMES[message.speakerId]||patientName));row.appendChild(name);row.appendChild(doc.createTextNode(message.text));var delivery=doc.createElement('span');delivery.className='delivery';delivery.textContent=message.role==='you'?(message.status==='pending'?'Request in progress':message.status==='unconfirmed'?'Request outcome unknown — not sent again':'Submitted'):message.status==='played'?'Voice completed':message.status==='interrupted'?(message.completedSegments?message.completedSegments+' completed audio segment(s) remembered; the remaining text did not finish playing.':'Voice interrupted; no complete audio segment was confirmed heard.'):'Voice being prepared / played';row.appendChild(delivery);el('transcript').appendChild(row);if(message.familyBid){var bidRow=doc.createElement('article');bidRow.className='message dana family-bid';var bidName=doc.createElement('span');bidName.className='name';bidName.textContent=FAMILY_NAMES[message.familyBid.speakerId];bidRow.appendChild(bidName);bidRow.appendChild(doc.createTextNode(message.familyBid.text));var bidDelivery=doc.createElement('span');bidDelivery.className='delivery';bidDelivery.textContent=message.completedSegments===2?'Voice completed':message.status==='interrupted'?'Request did not finish playing — not remembered as heard':'Request being prepared / played';bidRow.appendChild(bidDelivery);el('transcript').appendChild(bidRow);}});log.scrollTop=nearBottom?log.scrollHeight:previousScroll;followLatest();}
+      var serialized=JSON.stringify(snapshot.messages);if(serialized!==lastTranscript){var log=el('transcript'),nearBottom=log.scrollHeight-log.scrollTop-log.clientHeight<80,previousScroll=log.scrollTop;lastTranscript=serialized;el('transcript').replaceChildren();snapshot.messages.forEach(function(message){var row=doc.createElement('article');row.className='message '+message.role;if(message.speakerId)row.setAttribute('data-family-role',message.speakerId);var name=doc.createElement('span');name.className='name';name.textContent=(snapshot.mode==='moment'&&message.alternative?'Alternative · ':'')+(message.role==='you'?(message.targetRoleId?'You, to '+FAMILY_NAMES[message.targetRoleId]:'You'):(FAMILY_NAMES[message.speakerId]||patientName));row.appendChild(name);row.appendChild(doc.createTextNode(message.text));var delivery=doc.createElement('span');delivery.className='delivery';delivery.textContent=message.role==='you'?(message.status==='pending'?'Request in progress':message.status==='unconfirmed'?'Request outcome unknown — not sent again':'Submitted'):message.status==='played'?'Voice completed':message.status==='interrupted'?(message.completedSegments?message.completedSegments+' completed audio segment(s) remembered; the remaining text did not finish playing.':'Voice interrupted; no complete audio segment was confirmed heard.'):'Voice being prepared / played';row.appendChild(delivery);el('transcript').appendChild(row);if(message.familyBid){var bidRow=doc.createElement('article');bidRow.className='message dana family-bid';bidRow.setAttribute('data-family-role',message.familyBid.speakerId);var bidName=doc.createElement('span');bidName.className='name';bidName.textContent=FAMILY_NAMES[message.familyBid.speakerId];bidRow.appendChild(bidName);bidRow.appendChild(doc.createTextNode(message.familyBid.text));var bidDelivery=doc.createElement('span');bidDelivery.className='delivery';bidDelivery.textContent=message.completedSegments===2?'Voice completed':message.status==='interrupted'?'Request did not finish playing — not remembered as heard':'Request being prepared / played';bidRow.appendChild(bidDelivery);el('transcript').appendChild(bidRow);}});log.scrollTop=nearBottom?log.scrollHeight:previousScroll;followLatest();}
       if(snapshot.phase!==lastPhase&&(snapshot.phase==='restart'||snapshot.phase==='ended'))el('clear').focus();
       if(station)station.update(snapshot);
       if(active&&lastPhase==='gate'){el('encounter-title').setAttribute('tabindex','-1');el('encounter-title').focus();}
       lastPhase=snapshot.phase;
     }
-    el('access-form').addEventListener('submit',function(event){event.preventDefault();var passcode=el('preview-key').value;el('preview-key').value='';var chosen=el('case-choice').value;var profile=selectedProfile();if(profile){patientName=profile.displayName;applyIdentity(doc,profile);}mountStation(chosen);controller.start(passcode,el('voice-mode').checked,chosen,{spokenInterrupt:el('spoken-interrupt-entry').checked,deliveryIntensity:el('delivery-intensity').value});});
+    el('access-form').addEventListener('submit',function(event){event.preventDefault();var chosen=el('case-choice').value,ack=el('family-brief-ack').checked;if(chosen===FAMILY_CASE_ID&&!ack){el('family-brief-ack').focus();return;}var passcode=el('preview-key').value;el('preview-key').value='';el('family-brief-ack').checked=false;var profile=selectedProfile();if(profile){patientName=profile.displayName;applyIdentity(doc,profile);}mountStation(chosen);controller.start(passcode,el('voice-mode').checked,chosen,{spokenInterrupt:el('spoken-interrupt-entry').checked,deliveryIntensity:el('delivery-intensity').value,familyBriefAcknowledged:ack,familyPositioning:chosen===FAMILY_CASE_ID&&el('family-positioning-entry').checked});});
     el('cue-knock').addEventListener('click',function(){controller.triggerRoomCue('door_knock');});el('cue-chime').addEventListener('click',function(){controller.triggerRoomCue('hallway_chime');});
     el('family-bid-invite').addEventListener('click',function(){controller.inviteFamilyBid();});el('family-bid-defer').addEventListener('click',function(){controller.deferFamilyBid();});
     if(el('family-speaker-choice'))el('family-speaker-choice').addEventListener('change',function(){controller.setTargetRole(this.value);});
@@ -507,8 +601,9 @@
     el('composer').addEventListener('input',function(){controller.setDraft(this.value);});el('done').addEventListener('click',function(){controller.send();});
     el('pause').addEventListener('click',controller.pause);el('resume').addEventListener('click',controller.resume);el('interrupt').addEventListener('click',controller.interrupt);el('end').addEventListener('click',controller.end);
     el('spoken-interrupt').addEventListener('change',function(){controller.setSpokenInterrupt(this.checked);});
+    el('family-positioning').addEventListener('change',function(){controller.setFamilyPositioning(this.checked);});
     el('thinking-time').addEventListener('change',function(){controller.setThinking(this.checked);});el('hold-turn').addEventListener('change',function(){controller.setHold(this.checked);});
-    el('clear').addEventListener('click',function(){visitedMomentIds.clear();controller.clear();if(station){station.dispose();station=null;}el('preview-key').value='';doc.title='The Interview Room';previewCase();el('preview-key').focus();});
+    el('clear').addEventListener('click',function(){visitedMomentIds.clear();controller.clear();if(station){station.dispose();station=null;}el('preview-key').value='';doc.title='The Interview Room';previewCase();familyPreflight(true);el('preview-key').focus();});
     doc.addEventListener('keydown',function(event){if(event.defaultPrevented||event.repeat||event.isComposing||event.ctrlKey||event.metaKey||event.altKey)return;var snapshot=controller.getSnapshot();if(event.code==='Escape'&&snapshot.busy){event.preventDefault();controller.interrupt();return;}if(event.code==='Space'&&snapshot.phase==='listening'&&!(event.target&&event.target.closest('input,textarea,button,select,a,summary,[contenteditable]'))){event.preventDefault();controller.send();}});
     doc.addEventListener('visibilitychange',function(){if(doc.hidden)controller.pause();});env.addEventListener('pagehide',function(){if(transcriptSize)transcriptSize.disconnect();controller.dispose();if(station){station.dispose();station=null;}});render(controller.getSnapshot());return controller;
   }

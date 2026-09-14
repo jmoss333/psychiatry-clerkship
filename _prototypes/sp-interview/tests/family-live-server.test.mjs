@@ -111,12 +111,12 @@ async function hear(f,room,stream,status='played'){
 test('family health is public metadata and starting has no paid opening',async t=>{
   const f=await fixture(t),health=await(await fetch(f.base+'/api/family/health')).json(),room=await f.session();
   assert.equal(health.localOnly,true);assert.deepEqual(health.participants.map(p=>p.id),['morgan','maya']);
-  assert.deepEqual(health.participants.map(p=>p.voice),['marin','cedar']);
+  assert.deepEqual(health.participants.map(p=>p.voice),['marin','coral']);
   assert.ok(health.caseId&&health.caseHash);assert.equal(health.limits.turns,10);
   assert.doesNotMatch(JSON.stringify(health),/privateFacts|privateConcerns|ordinaryFacts/);
   assert.match(room.sessionId,/^[A-Za-z0-9_-]{32}$/);assert.equal(room.turnCount,0);assert.equal(room.channel,'public');
   assert.equal(f.provider.calls.reply.length,0);assert.equal(f.provider.calls.speech.length,0);
-  assert.equal(speechProfile('family_maya_001').voice,'cedar');assert.equal(speechProfile('sp_alcohol_ambivalence_001').voice,'marin');
+  assert.equal(speechProfile('family_maya_001').voice,'coral');assert.equal(speechProfile('sp_alcohol_ambivalence_001').voice,'marin');
   assert.equal(health.operations.actorUsed,0);assert.equal(health.operations.speechUsed,0);
   assert.equal(health.usage,null,'unavailable token reporting is not zero usage');
 });
