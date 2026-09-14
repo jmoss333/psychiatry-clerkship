@@ -1055,13 +1055,8 @@
     "by": "Joshua Moss, MD"
   },
   "case_formulation.md": {
-    "status": "reviewed",
-    "risk": {
-      "kind": "clinical",
-      "level": "moderate"
-    },
-    "at": "2026-07-09",
-    "by": "Joshua Moss, MD"
+    "status": "pending",
+    "note": "Added Further Reading section with formulation frameworks, books, and teaching resources (Phase 1 coverage curation)"
   },
   "medical_workup.md": {
     "status": "reviewed",
