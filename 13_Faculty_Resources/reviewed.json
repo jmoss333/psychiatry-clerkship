@@ -666,13 +666,15 @@
     "by": "Joshua Moss, MD"
   },
   "exp_family.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-03",
-    "by": "Joshua Moss, MD"
+    "at": "2026-09-14",
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with media resources",
+    "note": "Added Further Reading section with discharge planning frameworks, lethal means assessment, family involvement evidence, and teaching resources (Phase 1 coverage curation)"
   },
   "family_modalities.md": {
     "status": "reviewed",
