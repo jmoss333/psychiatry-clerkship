@@ -28,6 +28,50 @@
         <section class="panel encounter" id="encounter-panel" hidden aria-labelledby="encounter-title">
           <div class="control-head"><div><p class="section-label">In the room</p><h2 id="encounter-title"><span id="patient-name">The patient</span><span class="voice-tag" id="voice-tag">AI voice</span></h2></div><span class="turn-count" id="turn-count">0 of 10 questions</span></div>
           <p class="review-note encounter-review" id="encounter-review-note" hidden>Faculty-review draft. This case has not received faculty review.</p>
+          <!-- Room view · a projection of the controller snapshot (like the station), written by renderRoom() in app.js via data-* attributes. All presentation is in styles.css: the deployed CSP is style-src 'self', so there are no style="" attributes here. -->
+          <section class="room-view" id="room-view" role="group" aria-label="Room view" data-seats="2" data-room-state="idle" data-cue="">
+            <p class="visually-hidden" id="room-alt"></p>
+            <div class="room-frame">
+              <svg class="room-scene" viewBox="0 0 640 230" aria-hidden="true" focusable="false">
+                <defs><linearGradient id="room-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf8" stop-opacity=".7"></stop><stop offset="1" stop-color="#fffdf8" stop-opacity="0"></stop></linearGradient></defs>
+                <rect class="room-wall" x="0" y="0" width="640" height="150"></rect>
+                <rect class="room-wainscot" x="0" y="128" width="640" height="22"></rect>
+                <rect class="room-floor" x="0" y="150" width="640" height="80"></rect>
+                <polygon points="236,150 404,150 452,230 188,230" fill="url(#room-light)"></polygon>
+                <g class="room-window"><rect x="250" y="22" width="140" height="98" rx="6"></rect><line x1="320" y1="22" x2="320" y2="120"></line><line x1="250" y1="71" x2="390" y2="71"></line></g>
+                <g class="room-door"><rect x="566" y="28" width="58" height="122" rx="3"></rect><circle cx="576" cy="92" r="3"></circle><path class="room-knock" d="M556 84 a12 12 0 0 1 0 16 M548 78 a20 20 0 0 1 0 28"></path></g>
+                <g class="room-plant"><ellipse cx="48" cy="104" rx="12" ry="20" transform="rotate(-28 48 104)"></ellipse><ellipse class="room-leaf-light" cx="68" cy="102" rx="12" ry="21" transform="rotate(22 68 102)"></ellipse><ellipse cx="58" cy="96" rx="10" ry="22"></ellipse><path class="room-pot" d="M40 120 h36 l-4 30 h-28 z"></path></g>
+                <g class="room-seat" data-seat="a" data-turn="idle">
+                  <rect class="room-chair-back" x="118" y="88" width="84" height="70" rx="12"></rect><rect class="room-chair-seat" x="112" y="150" width="96" height="16" rx="6"></rect>
+                  <circle class="room-halo" cx="160" cy="84" r="42"></circle>
+                  <circle class="room-cut" cx="160" cy="84" r="42"></circle>
+                  <circle class="room-figure" cx="160" cy="84" r="19"></circle><rect class="room-figure" x="124" y="106" width="72" height="64" rx="26"></rect>
+                </g>
+                <g class="room-seat" data-seat="b" data-turn="idle">
+                  <rect class="room-chair-back" x="438" y="88" width="84" height="70" rx="12"></rect><rect class="room-chair-seat" x="432" y="150" width="96" height="16" rx="6"></rect>
+                  <circle class="room-halo" cx="480" cy="84" r="42"></circle>
+                  <circle class="room-cut" cx="480" cy="84" r="42"></circle>
+                  <circle class="room-figure" cx="480" cy="84" r="19"></circle><rect class="room-figure" x="444" y="106" width="72" height="64" rx="26"></rect>
+                </g>
+                <g class="room-table"><rect x="202" y="178" width="236" height="22"></rect><ellipse cx="320" cy="200" rx="118" ry="20"></ellipse><ellipse class="room-table-top" cx="320" cy="178" rx="118" ry="20"></ellipse><rect class="room-cup" x="284" y="164" width="14" height="13" rx="3"></rect><rect class="room-cup" x="342" y="166" width="14" height="13" rx="3"></rect></g>
+                <!-- Floor rings paint above the table: a centred single seat sits directly behind it,
+                     so a ring inside the seat group would be fully occluded. renderRoom() sets data-turn. -->
+                <g class="room-next-layer"><ellipse class="room-next" data-seat="a" data-turn="idle" cx="160" cy="169" rx="58" ry="8"></ellipse><ellipse class="room-next" data-seat="b" data-turn="idle" cx="480" cy="169" rx="58" ry="8"></ellipse></g>
+                <path class="room-near" d="M0 230 Q320 200 640 230 Z"></path>
+                <g class="room-your-seat"><path class="room-your-arm" d="M30 230 L46 186 Q50 176 64 176 L106 176 Q118 178 118 190 L118 230 Z"></path><path class="room-your-arm" d="M610 230 L594 186 Q590 176 576 176 L534 176 Q522 178 522 190 L522 230 Z"></path><path class="room-your-arm-top" d="M48 182 Q76 170 108 176 Q122 181 116 192 L66 188 Q50 190 48 182 Z"></path><path class="room-your-arm-top" d="M592 182 Q564 170 532 176 Q518 181 524 192 L574 188 Q590 190 592 182 Z"></path><path class="room-your-front" d="M118 230 Q120 212 142 210 L498 210 Q520 212 522 230 Z"></path></g>
+              </svg>
+              <div class="room-people">
+                <div class="room-person" data-seat="a"><span class="room-name"><span id="room-a-name"></span><span class="room-pronouns" id="room-a-pronouns"></span></span><span class="room-tag" id="room-a-tag" data-kind=""><span class="room-tag-dot" aria-hidden="true"></span><span id="room-a-tag-text"></span></span></div>
+                <div class="room-mic" id="room-mic" data-mic="off"><span class="room-mic-dot" aria-hidden="true"></span><span id="room-mic-text">Microphone off</span></div>
+                <div class="room-person" data-seat="b"><span class="room-name"><span id="room-b-name"></span><span class="room-pronouns" id="room-b-pronouns"></span></span><span class="room-tag" id="room-b-tag" data-kind=""><span class="room-tag-dot" aria-hidden="true"></span><span id="room-b-tag-text"></span></span></div>
+              </div>
+              <div class="room-caption" id="room-caption" data-kind="speech"><p><strong id="room-caption-label"></strong><span id="room-caption-text"></span></p></div>
+              <div class="room-foot">
+                <p class="room-note"><span class="room-note-label">Authored note ·</span> <span id="room-observation"></span></p>
+                <details class="room-legend"><summary>What’s in the view</summary><p>A window, a low table, chairs, a plant and the door are illustrative setting only — not case facts. Figures show seating and who is speaking; they do not show expression or body language. Read the people from what they say.</p></details>
+              </div>
+            </div>
+          </section>
           <section class="conversation" id="conversation-panel" hidden aria-labelledby="conversation-title"><h3 class="visually-hidden" id="conversation-title">Conversation</h3><div id="transcript" role="log" aria-live="off" aria-label="Conversation transcript" tabindex="0"></div><button class="latest-button" id="latest-message" type="button" hidden>Latest message</button></section>
           <div class="controls">
             <div class="status-row"><span class="status-dot" aria-hidden="true"></span><strong id="status" role="status" aria-live="polite">Ready</strong></div><p id="hint">Take your time.</p>
