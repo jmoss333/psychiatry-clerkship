@@ -26,7 +26,7 @@
     <div class="room-grid" id="room-layout" hidden>
       <div class="conversation-column">
         <section class="panel encounter" id="encounter-panel" hidden aria-labelledby="encounter-title">
-          <div class="control-head"><div><p class="section-label">In the room</p><h2 id="encounter-title"><span id="patient-name">The patient</span><span class="voice-tag" id="voice-tag">AI voice</span></h2></div><span class="turn-count" id="turn-count"><time id="elapsed" hidden></time><span id="turn-count-text">0 of 10 questions</span></span></div>
+          <div class="control-head"><div><p class="section-label">In the room</p><h2 id="encounter-title"><span id="patient-name">The patient</span><span class="voice-tag" id="voice-tag">AI voice</span></h2></div><time class="elapsed" id="elapsed" hidden></time><span class="turn-count" id="turn-count">0 of 10 questions</span></div>
           <p class="review-note encounter-review" id="encounter-review-note" hidden>Faculty-review draft. This case has not received faculty review.</p>
           <!-- Room view · a projection of the controller snapshot (like the station), written by renderRoom() in app.js via data-* attributes. All presentation is in styles.css: the deployed CSP is style-src 'self', so there are no style="" attributes here. -->
           <section class="room-view" id="room-view" role="group" aria-label="Room view" data-seats="2" data-room-state="idle" data-cue="">

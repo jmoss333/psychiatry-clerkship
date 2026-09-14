@@ -202,25 +202,25 @@
       var body=el('p','',box,{id:chartId,hidden:''});
       // Realism 8 — a request takes 30-40 s to come back, once per card per encounter.
       // Client-side theatre only: the text is already here, nothing is fetched or withheld.
-      var arrived=false,waiting=false,wait=el('span','',box,{class:'station-wait','aria-live':'polite',hidden:''});
+      // The disclosure still expands immediately — onto a live status rather than the text —
+      // so the button keeps its name and its focus, and aria-expanded stays honest.
+      var arrived=false,waiting=false,seconds=0,tick=null;
+      function say(){body.textContent='Requested — the nurse is looking · about '+seconds+' s';}
       function reveal(){
-        arrived=true;waiting=false;wait.hidden=true;open.disabled=false;open.textContent=card.title;
-        body.textContent=card.source+' — '+card.text;body.hidden=false;open.setAttribute('aria-expanded','true');
+        arrived=true;waiting=false;
+        if(tick){clock.clearInterval(tick);tick=null;}
+        body.textContent=card.source+' — '+card.text;
       }
       open.addEventListener('click',function(){
-        if(waiting)return;
         requested[card.id]=true;
-        if(arrived){body.hidden=!body.hidden;open.setAttribute('aria-expanded',String(!body.hidden));return;}
-        waiting=true;open.disabled=true;open.textContent=card.title+' — requested';
-        var seconds=30+Math.floor(Math.random()*11);
-        wait.hidden=false;wait.textContent='Requested — the nurse is looking · ~'+seconds+' s';
-        var tick=clock.setInterval(function(){
-          if(disposed)return;
-          seconds-=1;
-          if(seconds>0)wait.textContent='Requested — the nurse is looking · ~'+seconds+' s';
-        },1000);
-        var done=clock.setTimeout(function(){clock.clearInterval(tick);if(!disposed)reveal();},seconds*1000);
-        chartTimers.push(tick,done);
+        if(!arrived&&!waiting){
+          waiting=true;seconds=30+Math.floor(Math.random()*11);say();
+          tick=clock.setInterval(function(){if(disposed)return;seconds-=1;if(seconds>0&&!arrived)say();},1000);
+          var done=clock.setTimeout(function(){if(!disposed)reveal();},seconds*1000);
+          chartTimers.push(tick,done);
+          body.hidden=false;open.setAttribute('aria-expanded','true');return;
+        }
+        body.hidden=!body.hidden;open.setAttribute('aria-expanded',String(!body.hidden));
       });
     });
 

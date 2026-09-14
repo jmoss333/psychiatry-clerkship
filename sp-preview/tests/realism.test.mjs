@@ -33,8 +33,9 @@ test('the closing note appears at two questions left, then one, and nowhere else
 });
 test('the clock ships in the markup and is styled as a companion, not a countdown',()=>{
   const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
-  assert.match(html,/<time id="elapsed" hidden><\/time>/,'the clock is a <time> element');
-  assert.match(html,/id="turn-count-text"/,'the turn count keeps its own span so the clock can sit beside it');
+  assert.match(html,/<time class="elapsed" id="elapsed" hidden><\/time>/,'the clock is a <time> element');
+  assert.doesNotMatch(html,/id="turn-count"[^>]*>\s*<time/,'the clock sits beside #turn-count, never inside it — existing tests assert that element\'s exact text');
+  assert.match(html,/id="turn-count">0 of 10 questions</,'#turn-count still holds only the turn count');
   assert.match(html,/id="closing-note"/);
   const css=fs.readFileSync(new URL('../public/styles.css',import.meta.url),'utf8');
   assert.ok(css.includes('#elapsed{color:var(--muted)'),'the clock is muted');
@@ -99,19 +100,23 @@ test('a chart request takes 30-40 s, once per card, and cancels on Clear',()=>{
   assert.ok(body.hidden,'the card is closed before it is requested');
 
   open.dispatchEvent({type:'click'});
-  assert.equal(open.disabled,true,'the button is held while the nurse is looking');
+  assert.equal(open.disabled,false,'the button is never disabled — that would drop keyboard focus');
+  assert.equal(open.textContent,'Admission context','and never renamed — the accessible name must hold');
+  assert.equal(open.attributes['aria-expanded'],'true','the disclosure expands immediately, onto a live status');
+  assert.equal(body.hidden,false);
+  assert.match(body.textContent,/the nurse is looking/,'expanded content is never empty');
   const timeout=[...pending.values()].find(p=>p.kind==='t');
   assert.ok(timeout,'a delay is scheduled');
   assert.ok(timeout.ms>=30000&&timeout.ms<=40000,'delay '+timeout.ms+'ms is within 30-40 s');
-  assert.ok(body.hidden,'nothing arrives early');
+  assert.doesNotMatch(body.textContent,/Dana was admitted voluntarily/,'the card text does not arrive early');
 
   open.dispatchEvent({type:'click'});
-  assert.equal([...pending.values()].filter(p=>p.kind==='t').length,1,'clicking again while waiting schedules nothing new');
+  assert.equal(body.hidden,true,'a second press collapses it while the request is still out');
+  assert.equal(open.attributes['aria-expanded'],'false');
+  assert.equal([...pending.values()].filter(p=>p.kind==='t').length,1,'and schedules nothing new');
 
   timeout.fn();
-  assert.equal(body.hidden,false,'the card text arrives after the wait');
-  assert.match(body.textContent,/Dana was admitted voluntarily/);
-  assert.equal(open.disabled,false);
+  assert.match(body.textContent,/Dana was admitted voluntarily/,'the card text replaces the status when it arrives');
 
   station.dispose();
   assert.equal(pending.size,0,'Clear cancels every pending request');

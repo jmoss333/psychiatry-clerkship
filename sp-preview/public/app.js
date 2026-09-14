@@ -387,13 +387,14 @@
       return captureTarget==='alternative'&&closedReceiptAvailable&&!retryUsed&&Number.isInteger(alternativeTurnId)&&alternativeTurnId>=1&&alternativeTurnId<=turn&&(momentStage==='reviewed'||momentStage==='review_unavailable');
     }
     function pause(){stopCueSound();capture.stop();clearEcho();if(task){task.barged=false;task.cancelled=true;task.abort.abort();stopPlayer();}else if((!ended||auxiliaryCaptureEligible())&&!restartRequired&&phase!=='gate')phase='paused';publish();}
-    function end(){stopCueSound();familyBid=null;if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=task?'technical_interruption':turn>=maxTurns?'turn_limit':'learner_end';if(!turn)receipt=null;}ended=true;capture.stop();if(task){task.cancelled=true;task.abort.abort();}stopPlayer();phase='ended';publish();}
+    function end(){closeAudio();familyBid=null;if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=task?'technical_interruption':turn>=maxTurns?'turn_limit':'learner_end';if(!turn)receipt=null;}ended=true;capture.stop();if(task){task.cancelled=true;task.abort.abort();}stopPlayer();phase='ended';publish();}
     function resume(){if(disposed||env.document.hidden||task||(ended&&!auxiliaryCaptureEligible())||restartRequired||!receipt||reflectionOpen)return false;voice=true;problem='';phase='connecting';publish();capture.start();return true;}
     function setDraft(text){if(task||(ended&&captureTarget==='patient')||restartRequired||disposed||reflectionOpen)return;draft=String(text).slice(0,1200);interim='';if(capture.isActive()){capture.stop();phase='paused';}problem='';publish();}
     function clear(){closeAudio();roomSoundWanted=false;roomCue=null;cuePending=false;familyBid=null;activeSpeakerId=null;clearEcho();startedAt=null;quietSerial=0;spokenInterrupt=false;deliveryIntensity='standard';generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;retryUsed=false;targetRoleId='morgan';previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';mode='full';maxTurns=10;endpoint='/api/dana-preview';momentStage='dialogue';captureTarget='patient';reflectionOpen=false;review=null;teamFormulation='';summaryUncertain=false;uncertainTurnIds=[];reviewAttempted=false;closedReceiptAvailable=false;alternativeTurnId=null;endReason='learner_end';publish();}
     // Realism 4 — the cue sound and the ambient bed share one AudioContext. The cue used to open and
-    // close its own; closing it now would cut the bed, so the context outlives individual sounds and
-    // is closed only on Clear/dispose.
+    // close its own; closing it now would cut the bed, so the context outlives individual sounds.
+    // It is closed on End as well as Clear/dispose: ending the encounter tearing down audio is an
+    // existing contract, asserted by the hosted-preview smoke suite.
     function audioContext(){
       if(sharedAudio)return sharedAudio;
       var AudioContext=env.AudioContext||env.webkitAudioContext;if(!AudioContext)return null;
@@ -702,7 +703,7 @@
       else if(snapshot.phase!==lastPhase&&(['ready','paused'].includes(snapshot.phase)||snapshot.error))el('typing-panel').open=true;
       el('access-panel').hidden=active;el('case-choice').disabled=active;el('start').disabled=snapshot.busy;el('encounter-panel').hidden=!active;el('conversation-panel').hidden=!snapshot.messages.length;
       el('closing-panel').hidden=snapshot.phase!=='ended'||snapshot.mode==='moment';el('clear').hidden=el('clear-note').hidden=!active;el('clear').disabled=false;el('experience-choice').disabled=active;
-      el('turn-count-text').textContent=snapshot.turn+' of '+snapshot.maxTurns+(snapshot.mode==='moment'?' responses':' questions');
+      el('turn-count').textContent=snapshot.turn+' of '+snapshot.maxTurns+(snapshot.mode==='moment'?' responses':' questions');
       renderElapsed(snapshot);
       var closing=snapshot.mode==='full'?closingNote(snapshot.turn,snapshot.maxTurns,snapshot.phase):'';
       el('closing-note').hidden=!closing;el('closing-note').textContent=closing;el('end').textContent=snapshot.mode==='moment'?'End this moment':'End encounter';
