@@ -29,11 +29,19 @@ report (whatever the verdict), 2 on usage or environment failure — so a wrappe
 
 Verdicts, worst first:
   SUPERSEDED   every file the PR changes already matches origin/main. Close it.
-  DIVERGENT    the merge ref and the branch head differ, so CI and the deploy previews are
-               testing different code and may legitimately disagree. Usually
-               `gh pr update-branch <n>`, not a code change.
-  STALE        behind main, but merge ref and branch head agree on content.
+  DIVERGENT    the merge ref and the branch head differ in a way that can change THIS PR's
+               signal — a test file, or a file the PR itself touches — so CI and the deploy
+               previews may legitimately disagree. Usually `gh pr update-branch <n>`.
+  STALE        behind main, but nothing in the gap bears on this PR's signal.
   CURRENT      nothing to flag.
+
+CALIBRATION, and why DIVERGENT is narrow. The first cut fired DIVERGENT on 9 of 9 open PRs,
+because in this repo main moves fast enough that every branch is behind by something and any
+gap at all makes the two trees differ. A verdict that fires on everything carries no
+information. What actually mattered in the case this was built from was not that the trees
+differed, but WHERE: in `tests/derive-isbn13.test.mjs`, whose two versions were the whole
+disagreement. So DIVERGENT now requires the gap to touch a test file or one of the PR's own
+files; everything else is main moving ahead, which is STALE.
 """
 
 from __future__ import annotations
@@ -107,11 +115,20 @@ def analyse(pr_files, head, base, cwd):
     # build (the branch head). Every one is a place the two signals may disagree.
     divergent = [] if conflicted else changed_files(cwd, head, tree)
 
+    divergent_tests = [p for p in divergent if TEST_PATH.search(p)]
+    # A gap only threatens THIS PR's signal where it lands on a test, or on a file the PR
+    # itself changes. Anything else is main moving ahead underneath an unrelated branch.
+    divergent_pr_files = sorted(set(divergent) & set(pr_files))
+    material = divergent_tests + [p for p in divergent_pr_files if p not in divergent_tests]
+
     if pr_files and not still_needed:
         verdict = "SUPERSEDED"
-    elif divergent:
+    elif conflicted:
+        # No merge ref exists, so CI has nothing to test; that is divergence at its limit.
         verdict = "DIVERGENT"
-    elif behind:
+    elif material:
+        verdict = "DIVERGENT"
+    elif behind or divergent:
         verdict = "STALE"
     else:
         verdict = "CURRENT"
@@ -125,7 +142,9 @@ def analyse(pr_files, head, base, cwd):
         "alreadyOnBase": already_on_base,
         "stillNeeded": still_needed,
         "divergentPaths": divergent,
-        "divergentTestPaths": [p for p in divergent if TEST_PATH.search(p)],
+        "divergentTestPaths": divergent_tests,
+        "divergentPrFiles": divergent_pr_files,
+        "materialDivergence": material,
     }
 
 
@@ -157,20 +176,22 @@ def render(report, out):
         print("  %d commit(s) behind %s" % (report["commitsBehindBase"], report["base"]), file=out)
     for path in report["alreadyOnBase"]:
         print("  already on %s   %s" % (report["base"], path), file=out)
-    if report["divergentPaths"]:
-        print("  merge ref and branch head differ in %d file(s) — CI and the deploy previews"
-              % len(report["divergentPaths"]), file=out)
-        print("  are testing different code here; usually `gh pr update-branch %s`"
-              % report["number"], file=out)
-        for path in report["divergentTestPaths"][:10]:
-            print("    TEST  %s" % path, file=out)
-        shown = set(report["divergentTestPaths"][:10])
-        for path in [p for p in report["divergentPaths"] if p not in shown][:10]:
-            print("          %s" % path, file=out)
-        extra = len(report["divergentPaths"]) - len(shown) - min(
-            10, len([p for p in report["divergentPaths"] if p not in shown]))
-        if extra > 0:
-            print("          ... and %d more" % extra, file=out)
+    material = report.get("materialDivergence") or []
+    if material:
+        print("  the merge ref and the branch head differ where it can change this PR's",
+              file=out)
+        print("  signal — CI and the deploy previews may disagree. Usually "
+              "`gh pr update-branch %s`:" % report["number"], file=out)
+        tests = set(report["divergentTestPaths"])
+        for path in material[:12]:
+            print("    %s  %s" % ("TEST" if path in tests else "OWN ", path), file=out)
+        if len(material) > 12:
+            print("    ... and %d more" % (len(material) - 12), file=out)
+    other = len(report["divergentPaths"]) - len(material)
+    if other > 0:
+        print("  %d other file(s) differ between the two trees — main moving ahead, not a"
+              % other, file=out)
+        print("  signal risk for this PR", file=out)
 
 
 # --------------------------------------------------------------------------- self-test
@@ -239,6 +260,46 @@ def self_test():
         # A PR that changes nothing is not "superseded" — that verdict must need evidence.
         r = analyse([], fresh, "main", root)
         check("empty file list is not superseded", r["verdict"] == "SUPERSEDED", False)
+
+        # THE CALIBRATION. A branch that is merely behind, where the gap touches neither a
+        # test nor any file the PR changes, is STALE. Firing DIVERGENT here is what made the
+        # first cut fire on 9 of 9 open PRs and mean nothing.
+        git(["checkout", "-q", "main"], root)
+        (root / "unrelated.md").write_text("main moved on\n")
+        _commit(root, "unrelated work on main")
+        git(["checkout", "-q", "-b", "quiet", "HEAD~1"], root)
+        (root / "mine.md").write_text("my change\n")
+        quiet = _commit(root, "my unrelated change")
+        r = analyse(["mine.md"], quiet, "main", root)
+        check("behind but immaterial is STALE", r["verdict"], "STALE")
+        check("the gap is still reported", r["divergentPaths"], ["unrelated.md"])
+        check("but nothing material", r["materialDivergence"], [])
+
+        # ... and it becomes DIVERGENT the moment the gap lands on a file the PR owns,
+        # even when the merge is clean (both sides edited different lines of it).
+        git(["checkout", "-q", "main"], root)
+        (root / "shared.md").write_text("head\n" + "\n".join(str(i) for i in range(20)) + "\ntail\n")
+        _commit(root, "a file both sides will touch")
+        git(["checkout", "-q", "-b", "owns", "main"], root)
+        body = (root / "shared.md").read_text()
+        (root / "shared.md").write_text(body.replace("head\n", "PR EDIT\n", 1))
+        owns = _commit(root, "the PR edits the top")
+        git(["checkout", "-q", "main"], root)
+        body = (root / "shared.md").read_text()
+        (root / "shared.md").write_text(body.replace("\ntail\n", "\nMAIN EDIT\n", 1))
+        _commit(root, "main edits the bottom of the same file")
+        r = analyse(["shared.md"], owns, "main", root)
+        check("clean gap on the PR's own file is DIVERGENT", r["verdict"], "DIVERGENT")
+        check("and names it", r["divergentPrFiles"], ["shared.md"])
+        check("no conflict in that case", r["mergeConflicts"], False)
+
+        # A conflicting merge is DIVERGENT too: CI has no merge ref to test at all.
+        git(["checkout", "-q", "-b", "clash", "main~1"], root)
+        (root / "shared.md").write_text("totally rewritten\n")
+        clash = _commit(root, "the PR rewrites the file")
+        r = analyse(["shared.md"], clash, "main", root)
+        check("a conflicting merge is DIVERGENT", r["verdict"], "DIVERGENT")
+        check("and says so", r["mergeConflicts"], True)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
