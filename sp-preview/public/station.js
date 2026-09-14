@@ -164,13 +164,15 @@
   // The station is a projection of the snapshot. It never calls fetch, never
   // touches the controller, and never reads or writes browser storage.
   function createStation(env,host,options){
+    // Timers come from env so a test can drive them; fall back to the ambient clock.
+    var clock=env&&env.setTimeout?env:(typeof globalThis!=='undefined'?globalThis:null);
     options=options||{};
     var doc=env&&env.document,content=options.content,profile=content&&content.getProfile&&content.getProfile(options.caseId);
     if(!doc||!host||!profile)return null;
     var family=Array.isArray(profile.participants)&&profile.participants.length>1;
     function respondentName(moment){return moment.speakerName||(family?'Speaker not identified':profile.displayName);}
     function learnerName(moment){return moment.targetName?'You, to '+moment.targetName:'You';}
-    var disposed=false,store=createBookmarkStore(),notes=Object.create(null),presentation='',requested=Object.create(null),lastCue='';
+    var disposed=false,store=createBookmarkStore(),notes=Object.create(null),presentation='',requested=Object.create(null),lastCue='',chartTimers=[];
     function el(tag,text,parent,attrs){
       var node=doc.createElement(tag);
       if(text!==null&&text!==undefined)node.textContent=text;
@@ -191,14 +193,35 @@
 
     var chart=el('details',null,before,{'data-station':'chart'});
     el('summary','Available chart information',chart);
-    el('p','Open only what you want to review. Unavailable information stays unknown; you can identify what you would seek from the clinical team.',chart,{class:'fine'});
+    el('p','Open only what you want to review. Unavailable information stays unknown; you can identify what you would seek from the clinical team. A request takes a short while to come back, as it would on the unit — the wait is realism, not an information barrier, and nothing is withheld from you because of it.',chart,{class:'fine'});
     var chartItems=el('div',null,chart,{class:'station-grid'});
     profile.chartCards.forEach(function(card){
       var box=el('div',null,chartItems,{class:'station-inset'});
       var chartId='chart-'+profile.caseId+'-'+card.id;
       var open=el('button',card.title,box,{type:'button','aria-expanded':'false','aria-controls':chartId});
       var body=el('p','',box,{id:chartId,hidden:''});
-      open.addEventListener('click',function(){requested[card.id]=true;body.textContent=card.source+' — '+card.text;body.hidden=!body.hidden;open.setAttribute('aria-expanded',String(!body.hidden));});
+      // Realism 8 — a request takes 30-40 s to come back, once per card per encounter.
+      // Client-side theatre only: the text is already here, nothing is fetched or withheld.
+      var arrived=false,waiting=false,wait=el('span','',box,{class:'station-wait','aria-live':'polite',hidden:''});
+      function reveal(){
+        arrived=true;waiting=false;wait.hidden=true;open.disabled=false;open.textContent=card.title;
+        body.textContent=card.source+' — '+card.text;body.hidden=false;open.setAttribute('aria-expanded','true');
+      }
+      open.addEventListener('click',function(){
+        if(waiting)return;
+        requested[card.id]=true;
+        if(arrived){body.hidden=!body.hidden;open.setAttribute('aria-expanded',String(!body.hidden));return;}
+        waiting=true;open.disabled=true;open.textContent=card.title+' — requested';
+        var seconds=30+Math.floor(Math.random()*11);
+        wait.hidden=false;wait.textContent='Requested — the nurse is looking · ~'+seconds+' s';
+        var tick=clock.setInterval(function(){
+          if(disposed)return;
+          seconds-=1;
+          if(seconds>0)wait.textContent='Requested — the nurse is looking · ~'+seconds+' s';
+        },1000);
+        var done=clock.setTimeout(function(){clock.clearInterval(tick);if(!disposed)reveal();},seconds*1000);
+        chartTimers.push(tick,done);
+      });
     });
 
     var priorities=el('section',null,host,{class:'panel'});
@@ -298,6 +321,7 @@
       requestRetry:function(turnId,text){return typeof options.onRetry==='function'?options.onRetry(turnId,text):false;},
       dispose:function(){
         disposed=true;
+        chartTimers.forEach(function(id){clock.clearTimeout(id);clock.clearInterval(id);});chartTimers=[];
         store.clear();notes=Object.create(null);presentation='';requested=Object.create(null);latest=null;lastCue='';
         if(handoff)handoff.value='';
         if(retryText)retryText.value='';

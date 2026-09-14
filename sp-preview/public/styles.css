@@ -137,3 +137,17 @@ button,input,textarea,select{font:inherit}button,input[type=password],textarea,s
 .room-coach-mark{display:none}
 .room-view[data-coach="open"] .room-coach-mark{display:block}
 .room-coach-ring{fill:#f7faf8;stroke:var(--green);stroke-width:2}.room-coach-dot{fill:var(--green)}
+/* Realism 3 — the quiet window drains visibly, so the learner can see the send coming
+   rather than being surprised by it. Two fixed durations because quiet() has two values;
+   CSP style-src 'self' rules out setting a duration inline. */
+.room-quiet{display:flex;align-items:center;gap:8px;margin-top:6px}
+.room-quiet-track{flex:1 1 auto;height:3px;border-radius:2px;background:#e0e8e5;overflow:hidden}
+.room-quiet-bar{display:block;height:100%;width:100%;background:var(--green);transform-origin:left center}
+.room-quiet[data-window="4500"] .room-quiet-bar{animation:room-drain 4.5s linear forwards}
+.room-quiet[data-window="8000"] .room-quiet-bar{animation:room-drain 8s linear forwards}
+.room-quiet-label{flex:0 0 auto;font-size:.72rem;color:var(--muted)}
+/* While the window is draining the learner's own words settle back, so attention goes to the bar. */
+.room-view[data-quiet="on"] .room-caption[data-kind="you"] span{opacity:.45;transition:opacity .4s ease}
+@keyframes room-drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@media(prefers-reduced-motion:reduce){.room-quiet-bar{animation:none!important;transform:scaleX(1)}}
+@media print{.room-quiet{display:none}}

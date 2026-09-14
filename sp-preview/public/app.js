@@ -179,6 +179,7 @@
     return {start:function(){if(active)return;if(!Constructor){emit('onError',issue('microphone_unavailable'));return;}active=true;fruitless=0;suspended=false;quietSince=null;note('start');try{connect();}catch(_){fail('microphone_unavailable');}},stop:stop,
       setThinking:function(value){thinking=!!value;arm();},setHold:function(value){var released=hold&&!value;hold=!!value;note(hold?'hold_on':'hold_off');if(released)quietSince=clock();arm();},
       edited:function(){interim='';suspended=false;quietSince=clock();note('edited');emit('onInterim','');arm();},refresh:arm,isActive:function(){return active;},
+      quietWindow:quiet,
       diagnostics:function(){return {nativeRecognition:nativeRecognition,sessions:serial,counts:Object.assign({},counts),events:trace.slice()};}};
   }
 
@@ -187,12 +188,12 @@
   // faculty-attested content.
   var CASE_IDS=['sp_depression_gated_si_001','sp_mania_redirect_001','sp_psychosis_paranoid_001','sp_alcohol_ambivalence_001',FAMILY_CASE_ID];
   function createController(env,options){
-    options=options||{};var phase='gate',key='',receipt=null,turn=0,startedAt=null,caseId=CASE_IDS[0],messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false,retryUsed=false;
+    options=options||{};var phase='gate',key='',receipt=null,turn=0,startedAt=null,quietSerial=0,caseId=CASE_IDS[0],messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false,retryUsed=false;
     var mode='full',maxTurns=10,endpoint='/api/dana-preview',momentStage='dialogue',captureTarget='patient',reflectionOpen=false,review=null,teamFormulation='',summaryUncertain=false,uncertainTurnIds=[],reviewAttempted=false,closedReceiptAvailable=false,alternativeTurnId=null,endReason='learner_end';
     var previousPlayback='interrupted',previousCompletedSegments=0,generation=0,targetRoleId='morgan',spokenInterrupt=false,deliveryIntensity='standard',echoReference='',echoUntil=0,echoResults=new Map();
     var roomCue=null,cuePending=false,cueSound=null,familyBid=null,activeSpeakerId=null;
     var tally={startRequests:0,turnRequests:0,automaticSubmissions:0,explicitSubmissions:0,spokenInterruptions:0,echoResultsIgnored:0};
-    function snapshot(){return {startedAt:startedAt,roomCue:roomCue?Object.assign({},roomCue):null,familyBid:familyBid?Object.assign({},familyBid):null,activeSpeakerId:activeSpeakerId,spokenInterrupt:spokenInterrupt,deliveryIntensity:deliveryIntensity,mode:mode,maxTurns:maxTurns,momentStage:momentStage,captureTarget:captureTarget,reflectionOpen:reflectionOpen,review:review?JSON.parse(JSON.stringify(review)):null,teamFormulation:teamFormulation,summaryUncertain:summaryUncertain,uncertainTurnIds:uncertainTurnIds.slice(),reviewAttempted:reviewAttempted,closedReceiptAvailable:closedReceiptAvailable,phase:phase,turn:turn,messages:messages.map(function(message){var copy=Object.assign({},message);if(copy.segments)copy.segments=copy.segments.slice();if(copy.familyBid)copy.familyBid=Object.assign({},copy.familyBid);return copy;}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired,retryUsed:retryUsed,caseId:caseId,targetRoleId:targetRoleId};}
+    function snapshot(){return {startedAt:startedAt,quietSerial:quietSerial,quietMs:capture.quietWindow(),roomCue:roomCue?Object.assign({},roomCue):null,familyBid:familyBid?Object.assign({},familyBid):null,activeSpeakerId:activeSpeakerId,spokenInterrupt:spokenInterrupt,deliveryIntensity:deliveryIntensity,mode:mode,maxTurns:maxTurns,momentStage:momentStage,captureTarget:captureTarget,reflectionOpen:reflectionOpen,review:review?JSON.parse(JSON.stringify(review)):null,teamFormulation:teamFormulation,summaryUncertain:summaryUncertain,uncertainTurnIds:uncertainTurnIds.slice(),reviewAttempted:reviewAttempted,closedReceiptAvailable:closedReceiptAvailable,phase:phase,turn:turn,messages:messages.map(function(message){var copy=Object.assign({},message);if(copy.segments)copy.segments=copy.segments.slice();if(copy.familyBid)copy.familyBid=Object.assign({},copy.familyBid);return copy;}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired,retryUsed:retryUsed,caseId:caseId,targetRoleId:targetRoleId};}
     function publish(){if(!disposed&&typeof options.onChange==='function')options.onChange(snapshot());}
     function interruptionEligible(){return spokenInterrupt&&voice&&mode==='full'&&!disposed&&!ended&&!restartRequired&&!reflectionOpen&&!env.document.hidden&&turn<maxTurns;}
     function speechWords(text){return String(text).toLowerCase().replace(/[’']/g,'').match(/[a-z0-9]+/g)||[];}
@@ -232,7 +233,7 @@
     }
     var capture=createCapture(env,{hasDraft:function(){return !!draft.trim();},canSubmit:function(){return !task&&!disposed&&(!ended||auxiliaryCaptureEligible())&&!restartRequired&&!reflectionOpen;},filterResult:filterResult,
       onReady:function(){if(!task&&!disposed&&(!ended||captureTarget!=='patient')){phase='listening';publish();}},onConnecting:function(info){if(!task&&!disposed&&(!ended||captureTarget!=='patient')){phase=info&&info.resuming&&!info.delayed&&phase==='listening'?'listening':'connecting';publish();}},
-      onFinal:function(text){if(task&&!task.barged||disposed)return;draft=(draft.trim()+' '+text).trim();if(problem&&(phase==='listening'||phase==='connecting'))problem='';if(caseId===FAMILY_CASE_ID)targetRoleId=addressedFamilyRole(draft)||targetRoleId;if(draft.length>1200){pause();problem=safeMessage('text_too_long');}publish();},onInterim:function(text){interim=text;publish();},onSubmit:submitCapture,
+      onFinal:function(text){if(task&&!task.barged||disposed)return;quietSerial++;draft=(draft.trim()+' '+text).trim();if(problem&&(phase==='listening'||phase==='connecting'))problem='';if(caseId===FAMILY_CASE_ID)targetRoleId=addressedFamilyRole(draft)||targetRoleId;if(draft.length>1200){pause();problem=safeMessage('text_too_long');}publish();},onInterim:function(text){interim=text;publish();},onSubmit:submitCapture,
       onNotice:function(error){if(disposed||ended||task&&!task.barged)return;problem=safeMessage(error.code);publish();},onError:function(error){if(disposed)return;problem=safeMessage(error.code);voice=false;spokenInterrupt=false;if(task){task.barged=false;task.monitoring=false;}else phase='paused';publish();}});
     function stopPlayer(){if(player){player.stop();player=null;}}
     // Prepare each validated recording on arrival so loading does not wait for the
@@ -388,7 +389,7 @@
     function end(){stopCueSound();familyBid=null;if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=task?'technical_interruption':turn>=maxTurns?'turn_limit':'learner_end';if(!turn)receipt=null;}ended=true;capture.stop();if(task){task.cancelled=true;task.abort.abort();}stopPlayer();phase='ended';publish();}
     function resume(){if(disposed||env.document.hidden||task||(ended&&!auxiliaryCaptureEligible())||restartRequired||!receipt||reflectionOpen)return false;voice=true;problem='';phase='connecting';publish();capture.start();return true;}
     function setDraft(text){if(task||(ended&&captureTarget==='patient')||restartRequired||disposed||reflectionOpen)return;draft=String(text).slice(0,1200);interim='';if(capture.isActive()){capture.stop();phase='paused';}problem='';publish();}
-    function clear(){stopCueSound();roomCue=null;cuePending=false;familyBid=null;activeSpeakerId=null;clearEcho();startedAt=null;spokenInterrupt=false;deliveryIntensity='standard';generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;retryUsed=false;targetRoleId='morgan';previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';mode='full';maxTurns=10;endpoint='/api/dana-preview';momentStage='dialogue';captureTarget='patient';reflectionOpen=false;review=null;teamFormulation='';summaryUncertain=false;uncertainTurnIds=[];reviewAttempted=false;closedReceiptAvailable=false;alternativeTurnId=null;endReason='learner_end';publish();}
+    function clear(){stopCueSound();roomCue=null;cuePending=false;familyBid=null;activeSpeakerId=null;clearEcho();startedAt=null;quietSerial=0;spokenInterrupt=false;deliveryIntensity='standard';generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;retryUsed=false;targetRoleId='morgan';previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';mode='full';maxTurns=10;endpoint='/api/dana-preview';momentStage='dialogue';captureTarget='patient';reflectionOpen=false;review=null;teamFormulation='';summaryUncertain=false;uncertainTurnIds=[];reviewAttempted=false;closedReceiptAvailable=false;alternativeTurnId=null;endReason='learner_end';publish();}
     function stopCueSound(){if(cueSound){var closing=cueSound.close();if(closing&&closing.catch)closing.catch(function(){});cueSound=null;}}
     function triggerRoomCue(id){
       if(mode!=='full'||!Object.hasOwn(ROOM_CUES,id)||roomCue||phase==='gate'||ended||disposed||restartRequired||!receipt||turn>=maxTurns)return false;
@@ -583,6 +584,7 @@
     var roomProfile=null;
     var elapsedTimer=null,lastSnapshot=null;
     var coachOpen=false,coachChoice='';
+    var lastQuietSerial=-1;
     var momentOption=el('experience-choice').querySelector('option[value="moment"]');momentOption.hidden=true;momentOption.disabled=true;
     env.fetch('/api/preview-capabilities',{credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer'}).then(function(response){if(!response.ok)throw new Error('Unavailable');return response.json();}).then(function(value){if(exact(value,['momentsEnabled'])&&value.momentsEnabled===true){momentsEnabled=true;momentOption.hidden=false;momentOption.disabled=false;}}).catch(function(){});
     var visitedMomentIds=new Set(),fullChoices=Array.from(el('case-choice').options).map(function(o){return {value:o.value,text:o.textContent};});
@@ -616,6 +618,22 @@
       if(label)node.setAttribute('datetime',elapsedIso(snapshot.startedAt,Date.now()));else node.removeAttribute('datetime');
       if(snapshot.startedAt&&!elapsedTimer)elapsedTimer=env.setInterval(function(){if(lastSnapshot)renderElapsed(lastSnapshot);},30000);
       if(!snapshot.startedAt&&elapsedTimer){env.clearInterval(elapsedTimer);elapsedTimer=null;}
+    }
+    // Presentation only: the bar mirrors the capture's own quiet timer, it does not drive it.
+    function renderQuietWindow(snapshot){
+      var node=el('room-quiet');if(!node)return;
+      var on=snapshot.phase==='listening'&&!coachOpen&&!snapshot.hold&&!!(snapshot.draft||snapshot.interim);
+      node.hidden=!on;
+      var root=el('room-view');if(root)root.setAttribute('data-quiet',on?'on':'');
+      if(!on){lastQuietSerial=-1;return;}
+      var ms=snapshot.quietMs||4500,seconds=Math.round(ms/100)/10;
+      node.setAttribute('data-window',String(ms));
+      el('room-quiet-label').textContent='sends after '+seconds+' s of quiet';
+      if(snapshot.quietSerial!==lastQuietSerial){
+        lastQuietSerial=snapshot.quietSerial;
+        var bar=el('room-quiet-bar');
+        if(bar&&bar.parentNode&&bar.parentNode.replaceChild){var fresh=bar.cloneNode(true);bar.parentNode.replaceChild(fresh,bar);}
+      }
     }
     function render(snapshot){
       var active=snapshot.phase!=='gate',canSend=active&&!snapshot.busy&&!snapshot.restartRequired&&!snapshot.reflectionOpen&&snapshot.phase!=='ended'&&snapshot.phase!=='reviewing';
@@ -653,6 +671,7 @@
       if(coachOpen)renderCoach(doc,coachView(snapshot,roomProfile),coachChoice);
       el('room-view').hidden=!active||snapshot.mode!=='full';if(active&&snapshot.mode==='full')renderRoom(doc,roomView(snapshot,roomProfile,{coachOpen:coachOpen}));
       if(coachOpen)el('status').textContent='Paused — coach open, microphone off';
+      renderQuietWindow(snapshot);
       if(station)station.update(snapshot);
       if(active&&lastPhase==='gate'){el('encounter-title').setAttribute('tabindex','-1');el('encounter-title').focus();}
       lastPhase=snapshot.phase;
