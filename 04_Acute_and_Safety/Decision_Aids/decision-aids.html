@@ -275,7 +275,14 @@ function Tree(props){
 function App(){
   var th=useState(initialTheme()),theme=th[0],setTheme=th[1];
   var vw=useState("trees"),view=vw[0],setView=vw[1];
-  useEffect(function(){ try{document.documentElement.setAttribute("data-theme",theme);localStorage.setItem("cw_theme",theme);}catch(_){} },[theme]);
+  /* Paint only -- never persist. A dep array runs this on MOUNT, not only on the ☾ below, and
+     `theme` is a RESOLVED attribute (light/dark) while cw_theme holds a MODE that may be
+     'system'. Writing it here turned a learner's System into a mode pinned to whatever the OS
+     happened to be at that instant, with no gesture anywhere in the chain -- and since unset
+     resolves through prefers-color-scheme, System is the state of every device that never
+     touched a theme control. The ☾ handler persists, because that is the gesture. Same rule and
+     same reason as the theme message handler in question-bank-practice.html. */
+  useEffect(function(){ try{document.documentElement.setAttribute("data-theme",theme);}catch(_){} },[theme]);
 
   function body(){
     if(view==="trees") return e("div",null, TREES.map(function(t){return e(Tree,{key:t.id,t:t});}));
@@ -333,7 +340,8 @@ function App(){
           e("strong",{style:{color:"var(--accent-d)"}},"teal = first move"),".")
       ),
       e("button",{className:"tbtn","aria-label":"Toggle light/dark theme",title:"Toggle theme",
-        onClick:function(){setTheme(theme==="dark"?"light":"dark");}}, theme==="dark"?"☀":"☾")
+        onClick:function(){var nx=theme==="dark"?"light":"dark";
+          try{localStorage.setItem("cw_theme",nx);}catch(_){} setTheme(nx);}}, theme==="dark"?"☀":"☾")
     ),
     e("span",{className:"opt-pill"},"Optional · quick reference"),
     e("div",{className:"legend"},

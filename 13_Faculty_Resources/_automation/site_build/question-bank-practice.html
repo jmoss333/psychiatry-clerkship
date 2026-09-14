@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){var q=null;try{q=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)'))||null;}catch(e){}function p(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=(m==='system')?((q&&q.matches)?'dark':'light'):m;try{document.documentElement.setAttribute('data-theme',a);}catch(e){}}p();if(q){try{if(q.addEventListener){q.addEventListener('change',p);}else if(q.addListener){q.addListener(p);}}catch(e){}}})();</script>
 <!-- [CLERKSHIP-META v1] tool="Practice Questions — MS3 Question Bank" version="1.1" built="2026-07-07" category="practice" audience="trainee,ms3" settings="self-study" time="10min" summary="Browser-local practice question bank with confidence, trap feedback, and spaced-review hooks. Educational; fictional composites only; no PHI." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1161,18 +1162,16 @@ function showSummary(){
       countEl.textContent=(showing===n?n:showing+' of '+n)+' question'+(n!==1?'s':'')+' match';
     }
   });
-  /* dark mode sync from parent SPA */
+  /* Theme sync from the parent SPA. Paint only -- never persist. The shell can send only a
+     RESOLVED attribute, so writing it to cw_theme would turn a learner's 'system' choice into a
+     pinned light/dark mode with no user gesture anywhere in the chain. This page's own boot
+     reads cw_theme directly, so there is nothing for the write to buy. */
   window.addEventListener('message',function(ev){
     var d=ev.data||{};
     if(d.type==='theme'&&(d.mode==='dark'||d.mode==='light')){
       document.documentElement.setAttribute('data-theme',d.mode);
-      try{localStorage.setItem('cw_theme',d.mode);}catch(_){}
     }
   });
-  try{
-    var t=localStorage.getItem('cw_theme');
-    if(t==='dark'||t==='light') document.documentElement.setAttribute('data-theme',t);
-  }catch(_){}
 })();
 })();
 </script>

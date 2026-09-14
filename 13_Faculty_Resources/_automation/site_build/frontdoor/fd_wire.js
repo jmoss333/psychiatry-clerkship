@@ -3,11 +3,16 @@
    pure; browser effects live in fdWire and fdOpenResource behind explicit options so the same
    decisions can be tested without a DOM. */
 
+/* Every attribute the controller gives a meaning to. All but one are activated by the delegated
+   click path; 'data-fd-exam-date' is an <input> committed on a change event and is deliberately
+   absent from FD_ACTION_SELECTOR below -- see changeHandler for why a click must not own it. */
 var FD_HANDLED_ATTRS=[
   'data-fd-open','data-fd-sheet','data-fd-safety','data-fd-toggle','data-fd-tab',
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
   'data-fd-back','data-fd-home','data-fd-search','data-fd-change-week','data-fd-progress',
-  'data-fd-theme','data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
+  'data-fd-theme','data-fd-settings','data-fd-analytics','data-fd-exam-date',
+  'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
+  'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool'
 ];
 
@@ -20,14 +25,20 @@ var FD_ACTION_SEMANTICS={
   'data-fd-week':'select setup week',
   'data-fd-view-week':'preview path week',
   'data-fd-setweek':'adopt previewed week',
-  'data-fd-role':'select setup role',
+  'data-fd-role':'choose learner role',
   'data-fd-step':'toggle session protocol step',
   'data-fd-back':'return to originating tab',
   'data-fd-home':'return to Today',
   'data-fd-search':'open search dialog',
   'data-fd-change-week':'reopen week setup',
   'data-fd-progress':'open Progress and mastery',
-  'data-fd-theme':'toggle saved color theme',
+  'data-fd-theme':'set saved color theme',
+  'data-fd-settings':'open settings panel',
+  'data-fd-analytics':'set usage measurement',
+  'data-fd-exam-date':'set exam date',
+  'data-fd-clear-ask':'arm device data erase',
+  'data-fd-clear-cancel':'cancel device data erase',
+  'data-fd-clear-confirm':'erase device data',
   'data-fd-close-search':'close search dialog',
   'data-fd-close-sheet':'close side sheet',
   'data-fd-close-nudge':'dismiss protocol nudge',
@@ -184,23 +195,32 @@ function fdDispatchHasWeek(context, n){
   return !!fdFindWeek(context&&context.index,n);
 }
 
+/* Which sheet values name a safety protocol page -- the only ones the unread nudge applies to.
+   'settings' is a shell surface, not curriculum: it has no ref in the index and no read state, so
+   closing it must not queue a nudge for it the way closing an unread protocol does. */
 function fdProtocolRef(sheet){
-  if(!sheet||sheet==='kit'||String(sheet).indexOf('item:')===0) return null;
+  if(!sheet||sheet==='kit'||sheet==='settings'||String(sheet).indexOf('item:')===0) return null;
   return String(sheet);
 }
 
+/* settingsConfirmClear is reset here as well as at the panel's opening, and the two are not
+   redundant. This one is the near guarantee: it covers the ✕, the backdrop and Escape, which are
+   the routes a learner uses to back out of a confirm they did not mean to arm, and it clears the
+   flag at the moment they back out rather than at some later visit. The opening reset is the
+   complete one, because the panel can also be left by controls that patch sheet:null without
+   coming through here. */
 function fdCloseSheet(state){
   var ref=fdProtocolRef(state&&state.sheet);
   var unread=!!ref&&!((state.done||{})[ref]===true);
   return {
-    patch:{sheet:null,sheetFrom:null,stepsDone:{},nudge:unread?ref:null},
+    patch:{sheet:null,sheetFrom:null,stepsDone:{},nudge:unread?ref:null,settingsConfirmClear:false},
     route:null,
     effect:unread?{type:'nudge-timeout',delay:8000}:null
   };
 }
 
 function fdDispatch(attrs, context, state){
-  var a=attrs||{}, c=context||{}, s=state||{}, ref, n, patch, done, raw, next, tab;
+  var a=attrs||{}, c=context||{}, s=state||{}, ref, n, patch, done, raw, next, tab, picked;
 
   if(fdOwn(a,'close')){
     if(s.searchOpen) return {patch:{searchOpen:false,query:''},route:null,effect:null};
@@ -211,6 +231,9 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-close-search')){
     return {patch:{searchOpen:false,query:''},route:null,effect:null};
   }
+  /* The settings panel closes through here too -- it has no close action of its own. When that
+     panel grows a destructive confirmation, its armed flag has to be reset in fdCloseSheet, or an
+     armed "erase everything" survives the close and the panel reopens still armed. */
   if(fdOwn(a,'data-fd-close-sheet')) return fdCloseSheet(s);
   if(fdOwn(a,'data-fd-close-nudge')){
     return {patch:{nudge:null},route:null,effect:null};
@@ -346,9 +369,16 @@ function fdDispatch(attrs, context, state){
     };
   }
   if(fdOwn(a,'data-fd-role')){
-    return {
-      patch:{role:String(a['data-fd-role']||''),screen:'setup-week'},route:null,effect:null
-    };
+    /* Two emitters, two meanings. In the wizard this is step 1 of 2 and must advance; in the
+       settings panel the learner is changing a setting, and advancing would throw them out of the
+       panel and back into a first-run flow that asks again for a week they already chose. Only
+       the wizard reaches here with screen==='setup-role', so that is the fork -- and leaving the
+       rest of the state alone is what keeps the panel open on the chip it just filled. */
+    picked=String(a['data-fd-role']||'');
+    if(s.screen==='setup-role'){
+      return {patch:{role:picked,screen:'setup-week'},route:null,effect:null};
+    }
+    return {patch:{role:picked},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-step')){
     n=fdNumberAttr(a,'data-fd-step');
@@ -386,11 +416,109 @@ function fdDispatch(attrs, context, state){
       route:fdRouteForRef('__progress__',c.search),effect:{type:'open-progress'}
     };
   }
+  if(fdOwn(a,'data-fd-settings')){
+    /* Settings is a sheet so it inherits backdrop, dialog semantics, the close button and the
+       Escape unwind from fdKeyAction. sheetFrom is not set: settings has no "back to kit" path.
+
+       settingsConfirmClear:false is the COMPLETE half of the disarm guarantee, and it is here
+       rather than spread across the exits for a reason. fdCloseSheet covers the ✕, the backdrop
+       and Escape; it does not cover data-fd-progress -- the Your-data section's own export link,
+       which sits directly above the armed confirm and patches sheet:null on its own -- nor
+       data-fd-home, nor data-fd-change-week, nor a reload. Enumerating those is the shape of
+       check that reports success over a smaller set than it claims, and the list would have to be
+       re-derived every time a control learns to close the panel. This branch is the only producer
+       of sheet:'settings' in the file, and fdResolveState cannot restore the key (FD_KEYS does
+       not persist a sheet key), so resetting the flag on the way IN covers every way out that
+       exists or ever will. */
+    return {patch:{sheet:'settings',searchOpen:false,settingsConfirmClear:false},
+      route:null,effect:null};
+  }
+  /* The two-tap erase. The arming tap changes one boolean and nothing else -- no route, no
+     effect, no storage -- so the state that decides whether a destructive control is on screen is
+     the same kind of thing as the state that decides which theme segment is filled, and it is
+     testable without a DOM. The confirming tap disarms itself in the same patch it fires on, so a
+     re-render after the erase (or a reload that outruns it) can never find the panel primed. */
+  if(fdOwn(a,'data-fd-clear-ask')){
+    return {patch:{settingsConfirmClear:true},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-clear-cancel')){
+    return {patch:{settingsConfirmClear:false},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-clear-confirm')){
+    return {patch:{settingsConfirmClear:false},route:null,effect:{type:'clear-device-data'}};
+  }
   if(fdOwn(a,'data-fd-theme')){
-    var theme=c.theme==='dark'?'light':'dark';
-    return {patch:{},route:null,effect:{type:'set-theme',theme:theme}};
+    /* The value is the MODE, not the painted attribute -- fdApplyEffect resolves it. A missing or
+       unknown value reads as 'system' rather than toggling, because this control is a three-way
+       segmented control now: there is no "other one" to flip to. */
+    return {patch:{},route:null,
+      effect:{type:'set-theme',mode:fdThemeMode(String(a['data-fd-theme']||''))}};
+  }
+  if(fdOwn(a,'data-fd-analytics')){
+    /* The value is the posture the segment STANDS FOR, not a flip of the current one: the Usage
+       control is a pair of segments (see fdSettingsUsage), so each carries a fixed value and
+       pressing the already-active one re-states it rather than reversing it. Patches nothing --
+       the emitter's own key is the single home and fdLiveState re-reads it for every render. */
+    return {patch:{},route:null,
+      effect:{type:'set-analytics',on:String(a['data-fd-analytics']||'')==='on'}};
+  }
+  if(fdOwn(a,'data-fd-exam-date')){
+    /* Patches nothing, for the same reason set-theme patches nothing: the stored key is the one
+       home, and fdLiveState re-reads it for every render. A mirrored copy on controller state
+       would be a second home that only LOOKS free, because nothing renders from it.
+
+       Only an ISO calendar date or the empty string reaches storage. The key is read by
+       phase_policy.js -- the repo's single sanctioned local-midnight parse site -- and anything
+       else there makes the date NaN, which silently disables pacing rather than failing visibly.
+       An <input type="date"> already hands back either shape; a learner with an older browser
+       that degrades it to a text box does not. */
+    var examRaw=String(a['data-fd-exam-date']||'');
+    var examDate=/^\d{4}-\d{2}-\d{2}$/.test(examRaw)?examRaw:'';
+    return {patch:{},route:null,effect:{type:'set-exam-date',date:examDate}};
   }
   return {patch:{},route:null,effect:null};
+}
+
+/* Erase everything this device holds for the front door, and nothing else.
+
+   COLLECTS FIRST, DELETES SECOND. removeItem() reindexes the store, so key(i) after a delete
+   returns what key(i+1) would have: deleting inside a forward walk skips every other match. On a
+   small fixture that still looks like it worked, which is why tests/fd-wire.test.mjs runs it over
+   twelve keys as well as over four.
+
+   THE PREFIX SCAN IS THE POINT, and it is not a style preference. A list of the keys reachable as
+   literals today would miss every key any feature adds next month while the panel still reported
+   "cleared" -- a privacy defect that reports success, which is the class
+   docs/SILENT_SHRINK_CHECKLIST.md exists to catalogue. The test that makes the difference real
+   seeds a cw_* key that appears in no source file. localStorage.clear() is rejected for the
+   opposite reason: it reaches past the two namespaces the storage-namespaces decision governs and
+   would take a co-hosted page's keys with it.
+
+   The store arrives as an argument so the sweep can be driven over a fake that reindexes exactly
+   as a real one does. One consequence is worth recording rather than discovering: the removal
+   below is written against the PARAMETER, so check-static-site.mjs's 5c scan -- which greps the
+   global's own name followed by a dot -- does not see this call at all, and it costs no soft
+   finding. (Nor would it cost a baseline entry if it did: that scan raises ONE finding per file
+   however many computed keys it finds, and the shell already raises it.) What replaces the scan
+   here is the source-level assertion in tests/fd-wire.test.mjs that this function names no key of
+   its own -- stricter than the grep it forgoes, because the grep counts indirection while the
+   test forbids the thing indirection could hide.
+   That comment is also why this paragraph spells no scannable call: the scan reads shipped bytes,
+   comments included, so prose naming the pattern would report an indirection that is not there.
+
+   Every failure mode is swallowed on purpose. Storage can throw on the read (a browser with site
+   data blocked) or part-way through the writes (a private window raising on quota); an exception
+   escaping into apply() would skip the reload that follows and leave the panel sitting over a
+   half-erased device, reporting nothing. */
+function fdClearDeviceData(store){
+  var doomed=[], i, k;
+  try{
+    for(i=0;i<store.length;i++){
+      k=store.key(i);
+      if(typeof k==='string'&&(k.indexOf('cw_')===0||k.indexOf('rp_')===0)) doomed.push(k);
+    }
+    for(i=0;i<doomed.length;i++) store.removeItem(doomed[i]);
+  }catch(_){ }
 }
 
 function fdResourceRequest(ref, search){
@@ -581,10 +709,18 @@ function fdTrapFocus(event, dialog){
   return false;
 }
 
+/* The delegated click path's selector. It is NOT the whole of FD_HANDLED_ATTRS and must not be
+   "completed" to match it: 'data-fd-exam-date' is missing on purpose. Add it and a click on the
+   settings panel's date field starts running clickHandler, which preventDefaults the gesture that
+   opens the native picker and -- the attribute being valueless in the markup -- dispatches an
+   empty value, so a learner clicking their own date input ERASES the date they had. It is
+   committed on a change event instead; see changeHandler. */
 var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],'+
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
-  '[data-fd-theme],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
+  '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
+  '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
+  '[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
   '[data-fd-try-now],[data-fd-expand-tool]';
 
 function fdAttrsFromTarget(target){
@@ -601,6 +737,7 @@ function fdWire(root, initialState, opts){
   var doc=o.document||(typeof document!=='undefined'?document:null);
   var state=fdClone(initialState||{}), invokers=[], nudgeTimer=null, navGeneration=0;
   var destroyed=false, registrations=[], startupPrepared=false, startupCommitted=false;
+  var baseStale=false;
   var render=o.render||function(){};
   var renderTransient=o.renderTransient||function(next,detail){
     if(!detail.preserveResource) render(next,detail);
@@ -628,10 +765,57 @@ function fdWire(root, initialState, opts){
     var first=(d.querySelector&&d.querySelector('.fd-searchpanel__input'))||fdFocusable(d)[0]||d;
     if(first&&first.focus) try{first.focus();}catch(_){}
   }
+  /* THE EQUIVALENT of a control that is gone: the one live element carrying the same action
+     attribute AND the same value, inside the given scope. That pairing is the whole of it -- two
+     controls with the same attribute and value do the same thing, which is why focus may move to
+     one when the other is destroyed, and why this needs no per-control special case. A value that
+     cannot go in a selector safely is skipped rather than escaped: these are ids and modes, and a
+     bail is cheaper to trust than an escaper nobody re-reads.
+
+     Two callers, two scopes, and the scope is the whole difference between them: refocusInvoker
+     searches the OPEN DIALOG (a control that repainted its own overlay), restoreInvoker the ROOT
+     (the invoker that opened the overlay lives outside it, and by then the dialog is gone). */
+  function equivalentControl(invoker, scope){
+    if(!scope||!scope.querySelector||!invoker||!invoker.hasAttribute||!invoker.getAttribute){
+      return null;
+    }
+    for(var i=0;i<FD_HANDLED_ATTRS.length;i++){
+      var name=FD_HANDLED_ATTRS[i];
+      if(!invoker.hasAttribute(name)) continue;
+      var value=String(invoker.getAttribute(name)||'');
+      if(/["\\]/.test(value)) continue;
+      var el=scope.querySelector('['+name+'="'+value+'"]');
+      if(el) return el;
+    }
+    return null;
+  }
+  /* The third overlay case, and until this existed the only one with no branch. focusDialog fires
+     when the overlay IDENTITY changes and restoreInvoker when it closes; a control that re-renders
+     its own overlay IN PLACE matched neither, and fdRenderOverlays replaces the whole overlay
+     mount's innerHTML on every render -- so the element the learner just activated was destroyed
+     and focus fell to <body>. From there fdTrapFocus returns false and the next Tab walks straight
+     out of an aria-modal dialog, behind its own backdrop. Worse where a control's aria-pressed IS
+     its only feedback: the settings panel ships no toast by decision, so a screen-reader user got
+     no signal at all that their own click had landed. Scoped to the open dialog, so it can only
+     ever move focus inside the overlay that was just repainted. */
+  function refocusInvoker(invoker){
+    var el=equivalentControl(invoker,dialog());
+    if(el&&el.focus){ try{el.focus();}catch(_){} return true; }
+    return false;
+  }
+  /* The invoker stack holds ELEMENT references across renders, and a render can destroy the
+     element it holds. The gear is the standing case: the header is chrome, a theme change marks
+     chrome dirty, and the shell reassigns the header mount's innerHTML -- so opening the panel,
+     choosing a mode and closing it used to leave focus on <body>, where fdTrapFocus bails and the
+     next Tab restarts at the top of the document. Falling back to the equivalent control in the
+     ROOT (not the dialog -- by now it is closed, and the control lives outside it anyway) applies
+     refocusInvoker's own rule one layer out. A disconnected invoker with no equivalent still
+     falls through to the next entry on the stack, as it always did. */
   function restoreInvoker(){
     while(invokers.length){
       var el=invokers.pop();
-      if(el&&el.isConnected!==false&&el.focus){
+      if(el&&el.isConnected===false) el=equivalentControl(el,root);
+      if(el&&el.focus){
         try{el.focus();}catch(_){}
         return;
       }
@@ -698,11 +882,13 @@ function fdWire(root, initialState, opts){
     if(root&&root.matches&&root.matches('#content')) return root;
     return root&&root.querySelector?root.querySelector('#content'):null;
   }
+  /* Reports the stored MODE, not the painted attribute. Reading documentElement here (as this
+     did before the three-way control) cannot distinguish "system, resolving to dark" from
+     "explicitly dark", so the panel would never show system as active. Storage is the only place
+     the distinction survives, which is why nothing falls back to the DOM here: a browser that
+     blocks storage has no stored mode to report, and 'system' is the honest answer there. */
   function currentTheme(){
-    if(doc&&doc.documentElement&&doc.documentElement.getAttribute){
-      return doc.documentElement.getAttribute('data-theme')||'light';
-    }
-    return 'light';
+    try{ return fdThemeMode(localStorage.getItem('cw_theme')); }catch(_){ return 'system'; }
   }
   function progressRaw(){
     try{ return JSON.parse(localStorage.getItem('cw_progress_v1')||'{}')||{}; }
@@ -739,7 +925,11 @@ function fdWire(root, initialState, opts){
   }
   function transitionDetail(before, patch, effect, changedBase){
     var changed=[], surfaces={base:false,overlay:false,completion:false,chrome:false,layout:false};
-    var overlayKeys={searchOpen:true,query:true,sheet:true,sheetFrom:true,stepsDone:true,nudge:true};
+    /* settingsConfirmClear belongs here because arming the erase changes the PANEL and nothing
+       under it. Left out, it falls to the else branch and is classed as a base change, so every
+       arm and every cancel rebuilds contentEl.innerHTML beneath an open sheet. */
+    var overlayKeys={searchOpen:true,query:true,sheet:true,sheetFrom:true,stepsDone:true,
+      nudge:true,settingsConfirmClear:true};
     var actionKeys={done:true,justDone:true,progressRaw:true};
     for(var key in patch){
       if(fdOwn(patch,key)&&before[key]!==state[key]){
@@ -754,7 +944,8 @@ function fdWire(root, initialState, opts){
     var type=effect&&effect.type;
     if(type==='set-theme') surfaces.chrome=true;
     if(type==='focus-search'||type==='open-sheet'||type==='open-protocol'||
-        type==='nudge-timeout'||type==='search-input') surfaces.overlay=true;
+        type==='nudge-timeout'||type==='search-input'||
+        type==='set-analytics') surfaces.overlay=true;
     if(type==='toggle-progress') surfaces.completion=true;
     if(type==='toggle-tool-layout') surfaces.layout=true;
     if(type==='set-rotation'||type==='browse-without-rotation') surfaces.base=true;
@@ -764,6 +955,52 @@ function fdWire(root, initialState, opts){
       kind:changedBase?'base':'transient',changed:changed,surfaces:surfaces,
       baseChanged:changedBase,preserveResource:preserve,effect:effect||null
     };
+  }
+  /* Debt left by a commit that deliberately rendered nothing -- today only the settings panel's
+     date field. "Renders nothing" is a decision about the PANEL and must not become one about the
+     app: three surfaces outside the panel derive from that key (Progress's signpost, the plan's
+     intensity line, Today's countdown through fdExamCountdown), and closing the sheet does not
+     cover any of them, because fdCloseSheet patches only overlay keys and transitionDetail
+     classes every one of them as overlay. So the commit records that the base surface is owed a
+     render and a later render pays it. The panel is still never rebuilt at commit time, which is
+     what the segment-cursor reasoning in changeHandler depends on.
+
+     THREE settlement sites, and they are exhaustive because the debt has exactly one creator.
+     Only changeHandler sets it, which means the panel is open; the panel can be left only through
+     apply() (its close control, the backdrop, Escape) or through history, and the nudge timeout
+     is the one other render a learner can reach while it is still open -- fdCloseSheet schedules
+     it for 8s, long enough to open the gear and set a date. inputHandler is deliberately NOT a
+     site: reaching it needs search open, opening search is an apply(), and the gear patches
+     searchOpen:false, so the two overlays cannot coexist. A call there would have been a line
+     that looks load-bearing and can never run.
+
+     preserveResource is overridden ONLY where the Progress PAGE is what is mounted. It exists to
+     stop a transient render replacing a LOADED reader with fdBaseMarkup's "Loading…" shell --
+     true of a page, false of the Progress page itself, which fdBaseMarkup renders in full
+     (fdProgressMarkup -> renderProgress) and whose preserve branch is a pure no-op anyway, since
+     fdPatchCompletion returns early on __progress__.
+
+     The openId alone is NOT that test, and treating it as one is data loss. The shell mounts the
+     plan, the placement form and its results straight into contentEl from its own delegated
+     listener while openId stays '__progress__', so the controller never learns they are there:
+     overriding on the openId replaces a half-answered placement with the Progress page, and the
+     only route back (startPretest) resets its answers. Leaving a sub-view alone is safe because
+     renderPlanCards reads the live key -- it re-derives on next entry rather than carrying the
+     frozen snapshot this task removed. */
+  function progressPageMounted(){
+    return !!(root&&root.querySelector&&root.querySelector('#pgRoot'));
+  }
+  function absorbStaleBase(detail){
+    if(!baseStale) return detail;
+    detail.surfaces.base=true;
+    if(state.openId==='__progress__'&&progressPageMounted()) detail.preserveResource=false;
+    /* Cleared only when the render about to run will REALLY rebuild the base. A preserved reader
+       render does not touch contentEl at all, so clearing there would retire the debt against a
+       render that paid none of it -- the same shape of bug as a check reporting success over a
+       smaller set than it claims. Leaving a reader always changes openId, so the debt is paid by
+       the full render that follows. */
+    if(!detail.preserveResource) baseStale=false;
+    return detail;
   }
   function fdApplyEffect(effect, fromHistory, generation){
     if(!effect) return;
@@ -783,17 +1020,35 @@ function fdWire(root, initialState, opts){
         });
       }
     } else if(effect.type==='set-theme'){
-      if(doc&&doc.documentElement) doc.documentElement.setAttribute('data-theme',effect.theme);
-      try{ localStorage.setItem('cw_theme',effect.theme); }catch(_){}
+      /* Paints only. The cw_theme write is hoisted above the render in apply() -- see the comment
+         there; the settings panel re-reads that key while it is open. */
+      var prefersDark=!!(win&&win.matchMedia&&
+        win.matchMedia('(prefers-color-scheme: dark)').matches);
+      if(doc&&doc.documentElement)
+        doc.documentElement.setAttribute('data-theme',fdThemeAttr(effect.mode,prefersDark));
+    } else if(effect.type==='clear-device-data'){
+      /* The reload is half of the erase, not a courtesy. apply() has already run fdSave(state),
+         so the store is cleared with the controller's own key in it -- but the controller still
+         holds that state in memory, and the learner's next tap would fdSave it straight back,
+         restoring role, week and route with no second confirmation. Reloading is what makes the
+         page agree with the store. It follows the render deliberately: whether the browser
+         honours it or not, nothing is left on screen claiming data that is gone. */
+      fdClearDeviceData(localStorage);
+      if(win&&win.location&&win.location.reload) win.location.reload();
+    } else if(effect.type==='set-exam-date'){
+      /* Delegated to fd_state.js, next to fdExamCountdown which reads the same key. The key
+         itself cannot be named in this file: the controller's copy rule bans its audience token
+         file-wide (tests/fd-action-contract.test.mjs), comments included. */
+      fdStoreExamDate(effect.date);
     } else if(effect.type==='nudge-timeout'&&setTimer){
       if(nudgeTimer&&clearTimer) clearTimer(nudgeTimer);
       nudgeTimer=setTimer(function(){
         if(destroyed) return;
         var before=fdClone(state);
         state.nudge=null;
-        renderTransient(state,transitionDetail(
+        renderTransient(state,absorbStaleBase(transitionDetail(
           before,{nudge:null},{type:'nudge-dismiss'},false
-        ));
+        )));
       },effect.delay);
     } else if(effect.type==='open-resource'){
       var opener=o.openResource||fdOpenResource;
@@ -810,13 +1065,12 @@ function fdWire(root, initialState, opts){
       else if(typeof navClick==='function') navClick('__progress__');
     }
   }
+  /* Theme used to have its own branch here -- query [data-fd-theme="<mode>"] and focus it -- added
+     because the earlier code focused the FIRST control in the group and so moved focus off the
+     learner's choice on every selection. refocusInvoker keeps that outcome by construction (the
+     invoker is the chosen segment, so its own attribute value is what gets re-queried) and keeps
+     it for every other control in the panel too, which a per-effect branch could not. */
   function focusPostTransition(before, result, changedBase){
-    var effect=result&&result.effect;
-    if(effect&&effect.type==='set-theme'){
-      var themeControl=root&&root.querySelector?root.querySelector('[data-fd-theme]'):null;
-      if(themeControl&&themeControl.focus) try{themeControl.focus();}catch(_){}
-      return;
-    }
     if(changedBase&&state.screen&&state.screen.indexOf('setup-')===0){
       var heading=root&&root.querySelector?root.querySelector('.fd-setup .fd-h1'):null;
       if(!heading) heading=freshResourceHost();
@@ -839,7 +1093,7 @@ function fdWire(root, initialState, opts){
     var afterOverlay=overlayIdentity(state);
     if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
     var changedBase=baseChanged(before,state);
-    var detail=transitionDetail(before,patch,result.effect,changedBase);
+    var detail=absorbStaleBase(transitionDetail(before,patch,result.effect,changedBase));
     var generation=navGeneration;
     if(changedBase||result.route||result.effect&&(result.effect.type==='open-resource'||
         result.effect.type==='open-progress'||result.effect.openRef)){
@@ -852,6 +1106,36 @@ function fdWire(root, initialState, opts){
     if(result.effect&&result.effect.type==='toggle-progress'){
       try{ localStorage.setItem('cw_progress_v1',JSON.stringify(result.effect.raw)); }catch(_){}
     }
+    /* Same shape, same reason. The settings panel's Appearance section renders from cw_theme --
+       fdLiveState re-reads it on every render -- and the panel is open by definition when this
+       fires, because fdSettingsSeg is the only thing that emits data-fd-theme. Written after the
+       render, the page painted the new theme while the panel kept the PREVIOUS segment filled and
+       aria-pressed="true", and focusPostTransition then focused the clicked button: "Dark, button,
+       not pressed", with a different segment claiming to be pressed. The PAINT stays in
+       fdApplyEffect; only the read-back is order-sensitive. */
+    if(result.effect&&result.effect.type==='set-theme'){
+      try{ localStorage.setItem('cw_theme',result.effect.mode); }catch(_){}
+    }
+    /* Same shape and the same reason as the theme write above, one delegation further out. The
+       Usage section renders from what the emitter reports -- fdLiveState calls enabled(), which
+       re-reads its key on every render -- and the panel is open by definition when this fires,
+       because fdSettingsUsage is the only thing that emits data-fd-analytics. Run this from
+       fdApplyEffect, after the render, and the segment the learner just pressed comes back
+       unpressed with the one they left still filled and aria-pressed="true".
+
+       Delegated rather than written here, and the key is deliberately not named in this file:
+       the usage emitter is the one definition of what a stored opt-out and an absent one mean, a
+       second writer is how the two drift, and a grep for that key returning exactly one file is
+       what keeps the ownership checkable. The emitter swallows its own storage failures; the
+       catch is for the object itself, so a preference can never stop the render after it. */
+    if(result.effect&&result.effect.type==='set-analytics'){
+      try{
+        if(win&&win.cwAnalytics){
+          if(result.effect.on) win.cwAnalytics.optIn();
+          else win.cwAnalytics.optOut();
+        }
+      }catch(_){}
+    }
     fdSave(state);
     if(!fromHistory){
       var pushed=routeTo(result.route,result.history==='replace');
@@ -863,6 +1147,25 @@ function fdWire(root, initialState, opts){
     focusPostTransition(before,result,changedBase);
     if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
+    /* The fallback exists because refocusInvoker's premise -- the equivalent control is still
+       there after the render -- is true of every control in the panel except one. The two-tap
+       erase REPLACES itself: arming swaps the single "clear" button for a cancel/confirm pair, so
+       the invoker's own attribute matches nothing in the rebuilt DOM, refocusInvoker declines, and
+       focus falls to <body>. From there fdTrapFocus bails and the next Tab walks out of an
+       aria-modal dialog, behind its own backdrop -- the exact defect refocusInvoker was added to
+       fix, landing on the one control that can destroy something. Keeping focus at the dialog's
+       own entry point is not as good as landing on the successor control, and it is the most a
+       generic rule can promise about a control that no longer exists. What tells the learner the
+       erase is armed is the live region the armed copy carries, not this.
+
+       Gated on there BEING an invoker, which is not belt-and-braces. controller.dispatch() passes
+       null, and the shell dispatches that way from a tool frame's postMessage -- 'openLibrary'
+       patches no sheet key, so the overlay identity is unchanged and this branch is reached with
+       an open panel nobody touched. Focus belongs wherever the learner left it there; the
+       fallback is for the element that was destroyed under their finger. */
+    else if(afterOverlay&&afterOverlay===beforeOverlay){
+      if(!refocusInvoker(invoker)&&invoker) focusDialog();
+    }
     return state;
   }
   function context(extra){
@@ -911,6 +1214,53 @@ function fdWire(root, initialState, opts){
         try{fresh.setSelectionRange(start,end,direction||'none');}catch(_){}
       }
     }
+  }
+  /* The settings panel's one non-button control, and the only action in the file that does not go
+     through apply(). Three deliberate differences from the click path, each of which is a defect
+     if it is "made consistent":
+
+     1. A change event, not a click. FD_ACTION_SELECTOR deliberately omits this attribute, so
+        clickHandler never sees the field. If it did it would preventDefault() the gesture that
+        opens the native picker, and -- the attribute being valueless in the markup -- dispatch
+        an empty value: clicking your own date input would erase the date you had.
+     2. No render HERE -- which is a statement about this moment, not about the app. Read the
+        next paragraph before taking it as "nothing needs rendering".
+        fdRenderOverlays replaces the whole overlay mount, so a render at commit time destroys
+        the input mid-entry. A rebuilt native date input has a fresh segment cursor, so editing a
+        set date to November by typing "1" then "1" yields January twice: the second keystroke
+        starts a new month entry in a new element. Nothing in the PANEL derives from this value
+        -- the field's own DOM already shows what was typed -- so a render buys the panel nothing
+        and costs the interaction. That is also why refocusInvoker (the panel's generic focus
+        restore) must not run: there is no rebuilt equivalent to restore focus TO, and pulling
+        focus back into a field the learner is still using is worse than the bug it prevents.
+        THREE SURFACES OUTSIDE THE PANEL DO DERIVE FROM IT -- Progress's signpost, the plan's
+        intensity line, and Today's countdown through fdExamCountdown -- and closing the sheet
+        does not cover any of them on its own: fdCloseSheet patches only overlay keys. So the
+        commit marks the base surface stale and a later render pays that debt -- at one of the
+        three settlement sites absorbStaleBase enumerates, not at just any render.
+        Deferring is what keeps the panel untouched; skipping it altogether is how a learner could
+        set a date, close the panel, and still read "Not set" on the page underneath.
+     3. No history entry and no fdSave. The result carries no route and no controller-state key;
+        fdStoreExamDate's one store is the whole of what changes. (That indirection is not style:
+        the key's own name carries an audience token this file may not contain at all, comments
+        included, so fd_state.js names it -- beside fdExamCountdown, which reads it.)
+
+     The decision about WHAT to store still belongs to fdDispatch, which is where its shape is
+     validated and where it is unit-testable without a DOM. */
+  function changeHandler(event){
+    if(destroyed) return;
+    var target=event&&event.target;
+    if(!target||!target.hasAttribute||!target.hasAttribute('data-fd-exam-date')) return;
+    /* No preventDefault() on the pre-commit bail, unlike the click and key handlers: a change
+       event is not cancelable, so calling it would only look like a guard. Dropping the write is
+       the guard, and the field keeps showing what the learner typed either way. */
+    if(!startupCommitted) return;
+    if(previewActive()){ lockPreview(); return; }
+    var result=fdDispatch(
+      {'data-fd-exam-date':String(target.value||'')},context(),state
+    );
+    fdApplyEffect(result.effect,false,navGeneration);
+    baseStale=true;
   }
   function keyHandler(event){
     if(!startupCommitted){
@@ -1017,11 +1367,14 @@ function fdWire(root, initialState, opts){
     }
     navGeneration++;
     var generation=navGeneration;
-    render(state,{
+    /* This render really does rebuild the base, so it settles any outstanding debt. Routed
+       through absorbStaleBase rather than clearing the flag by hand, so one function stays the
+       only thing that knows how the debt is paid. */
+    render(state,absorbStaleBase({
       kind:'base',changed:[],
       surfaces:{base:true,overlay:true,completion:true,chrome:false},
       baseChanged:true,preserveResource:false,effect:null
-    });
+    }));
     fdSave(state);
     if(legacyResult&&legacyResult.effect){
       fdApplyEffect(legacyResult.effect,true,generation);
@@ -1109,6 +1462,7 @@ function fdWire(root, initialState, opts){
   }
 
   if(!listen(root,'click',clickHandler,false)||!listen(root,'input',inputHandler,false)||
+     !listen(root,'change',changeHandler,false)||
      !listen(win,'keydown',keyHandler,false)||!listen(win,'popstate',popstateHandler,false)){
       removeRegistrations();
       destroyed=true;
