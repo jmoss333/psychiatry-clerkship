@@ -12,7 +12,9 @@
  * boolean is one careless edit away from letting a bot loose on curation or on a faculty
  * attestation; a derived rule cannot be flipped by accident.
  *
- * Nothing here touches the network, and nothing here writes to the tracked book library.
+ * Nothing here touches the network. One test does write to the tracked book library, because
+ * only exercising the real task end to end catches a task that cannot retire; it restores the
+ * file in a finally. Do not run this suite against a tree another session is editing.
  */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -146,7 +148,19 @@ test('doing the work actually retires the task — the loop that would never end
   // the queue, and puts the file back.
   const books = path.join(repo, '07_Evidence_and_Reading', 'Book_Summaries', 'ms3_book_library.md');
   const original = fs.readFileSync(books, 'utf8');
+  // BUILD the precondition; never assume it. This test asserts that outstanding work exists
+  // BEFORE doing it — true of the tree that preceded the ISBNs, and false forever after the
+  // commit that records them. A test that assumes the pre-work state is therefore green in
+  // exactly one commit and red in the very PR that does the work, which is what happened
+  // here. Stripping the recorded ISBNs first proves the same property — that doing the work
+  // retires the task — from ANY starting state. RECORDED in bin/derive_isbn13.py is the
+  // authority on the recorded form; the pattern below is its inverse.
+  const RECORDED_TAIL = /[ \t]+ISBN \d{13}(?=\r?$)/gm;
+  const hadRecorded = RECORDED_TAIL.test(original);
+  RECORDED_TAIL.lastIndex = 0;
   try {
+    fs.writeFileSync(books, original.replace(RECORDED_TAIL, ''));
+
     const before = py('print(M.measure_isbn_derivable()[0])', 'what_can_i_do_today');
     assert.ok(Number(before) > 0, 'expected outstanding work to begin with');
 
@@ -156,6 +170,15 @@ test('doing the work actually retires the task — the loop that would never end
 
     const after = py('print(M.measure_isbn_derivable()[0])', 'what_can_i_do_today');
     assert.equal(after, '0', 'a completed task must measure zero, or the runner never stops');
+
+    // Deriving from a stripped tree must reproduce what is COMMITTED, byte for byte. This is
+    // the half --check cannot see: it only compares a recorded ISBN against an ISBN-10 ASIN
+    // still present on the same line, so a line whose Amazon link changed, or whose spacing
+    // drifted, satisfies it. Regenerating and comparing is what catches that.
+    if (hadRecorded) {
+      assert.equal(fs.readFileSync(books, 'utf8'), original,
+        'committed ISBN lines must be exactly what bin/derive_isbn13.py --write produces');
+    }
 
     const proc = spawnSync('python3',
       [path.join(repo, 'bin', 'what_can_i_do_today.py'), '--next-autonomous'],

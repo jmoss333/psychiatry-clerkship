@@ -119,6 +119,7 @@ step "unit — media guard"                   python3 $A/site_build/test_media_g
 step "unit — shared build logic"            python3 $A/site_build/test_common.py
 step "unit — analytics allowlist"           python3 $A/site_build/test_analytics_events.py
 step "analytics allowlist freshness"        python3 $A/site_build/analytics_events.py --check
+step "book library ISBN-13 consistency"     python3 bin/derive_isbn13.py --check
 # metrics/node_modules is gitignored (matches sp-proxy's own pattern further below);
 # ci.yml's "Install — metrics collector dependencies" step covers a fresh checkout
 # there, so mirror it here rather than let a fresh clone fail this step for a reason
