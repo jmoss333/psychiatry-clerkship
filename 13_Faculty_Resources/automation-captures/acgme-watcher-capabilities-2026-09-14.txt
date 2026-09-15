@@ -1,0 +1,81 @@
+CAPABILITY CAPTURE
+mechanism ....... trig_01CYL4zGAoU6Z4H6MiXooXSy
+name ............ "Watch ACGME Milestones permission reply"
+kind ............ scheduled task (cloud), cron "0 12 * * 1,4" = Mon + Thu 08:00 America/New_York
+purpose ......... watch Gmail thread 1a08d78d0701b218 for the ACGME reply on whether the
+                  Psychiatry Milestones third-party educational grant covers (Q1) identifiers
+                  plus titles on a public non-commercial site and (Q2) the Program Requirements
+verified on ..... 2026-09-14
+verified by ..... Joshua Moss, MD (session record)
+method .......... read back from the scheduling platform after creation; values below are the
+                  platform's own output, transcribed verbatim, not a description of it
+
+--- BINDING RESULT, verbatim, returned by create_trigger ---
+
+not bound: no_signed_approval — this task will run in the cloud only
+
+--- returned on BOTH attempts ---
+
+Attempt 1: trig_01CYL4zGAoU6Z4H6MiXooXSy   created 2026-09-14T01:53:38Z
+Attempt 2: trig_01L8QwtSRArq91A47fQPKDEc   created 2026-09-14T10:05:00Z (deleted same day)
+
+Deleting and recreating did NOT produce a signable approval card from a cloud session. Per the
+platform's own documentation a device binding can never be added to an existing task. Recorded
+here so no future session spends another attempt discovering it.
+
+--- DEVICE / FOLDER STATE, verbatim ---
+
+derived_state.folders_state = FOLDERS_STATE_NONE
+derived_state.folders       = []
+
+--- CONNECTORS AVAILABLE TO THIS TASK AT FIRE TIME, verbatim from mcp_connections ---
+
+This is the block bin/research-dock.py reads. One capability per line, spelled as the
+platform spells it. Nothing outside these two markers is parsed — prose that NAMES a
+capability in order to say it is missing must not be able to prove it is present.
+
+--- CAPABILITIES BEGIN ---
+Context7
+Bitly
+Vercel
+Linear
+PubMed
+Google_Drive
+Netlify
+Notion
+CourtListener
+Google_Calendar
+SNOMED_CT_Terminology
+Gmail
+Claude_Code_Remote
+Adobe_for_creativity
+Anthropic_Economic_Index
+ICD-10_Codes
+--- CAPABILITIES END ---
+
+--- WHAT THIS CAPTURE DOES *NOT* SHOW ---
+
+The list above contains no entry for the remote-devices server. That is the server behind
+Desktop_Commander, device_bash, device_stage_files and device_commit_files — every path from a
+cloud task to this machine. Its absence means the task has, at fire time:
+
+  NO git          NO gh           NO filesystem access to ~/Psychiatry-Clerkship-Library
+  NO Desktop_Commander            NO device_bash
+
+So this mechanism can do exactly one thing: read the Gmail thread and report. It CANNOT save a
+rights capture, edit standards.json, add a decisions.json entry, run verify.sh, or open a PR.
+Its prompt was rewritten on 2026-09-14 to match — it detects the reply, quotes the operative
+sentences verbatim, classifies Q1/Q2 as yes / no / not-addressed, and hands the repo work back
+as a checklist for a human. It deliberately does not auto-merge: a rights-posture change is a
+human review gate.
+
+A followUp block declaring requires: ["Gmail"] is proven by this capture.
+A followUp block declaring requires: ["Gmail", "remote-devices"] is NOT, and must fail the gate.
+That second case is the whole reason bin/research-dock.py grew INV-CAP.
+
+--- HOW TO RE-VERIFY ---
+
+Read the task back from the scheduling platform (list_triggers) and compare three things:
+the trigger still exists and is enabled; mcp_connections still contains every capability the
+followUp block requires; folders_state / binding is unchanged. Write a NEW capture with the new
+date. Never edit this one.

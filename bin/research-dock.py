@@ -8,6 +8,12 @@ one of two states and never a third:
   * a curriculum change backed by a verbatim span from a PRIMARY paper, or
   * a recorded decision not to use it.
 
+A finding may also say an AUTOMATION is carrying its follow-up (`followUp`). That is a
+claim about the world, so it is checked like any other: every capability the mechanism
+`requires` must literally appear in a dated capture on disk. An automation created
+without the connector it needs prints one line and then looks identical to a working one
+forever — see _check_followup.
+
 It does NOT replace the evidence gate. It is the step before it: it holds the answer,
 forces a routing decision per finding, and fails when an answer has been sitting
 undecided. Landing an adopted finding is still
@@ -48,6 +54,9 @@ R_STATUS = ("triage", "closed")
 DISPOSITIONS = ("needs-primary", "adopt", "cite", "supersedes", "reject", "no-action")
 LANDS_IN_LIBRARY = ("adopt", "cite", "supersedes")
 CLOSED_OUT = ("reject", "no-action")
+# Kinds of automation a finding may claim is carrying its follow-up. A finding with no
+# `followUp` is carried by a person, which is the default and needs no proof.
+FOLLOWUP_KINDS = ("scheduled-task", "workflow", "gate")
 
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 QID_RE = re.compile(r"^RQ-\d+$")
@@ -137,6 +146,116 @@ class Defect(str):
         obj = super().__new__(cls, text)
         obj.advisory = advisory
         return obj
+
+
+CAP_BEGIN = "--- CAPABILITIES BEGIN ---"
+CAP_END = "--- CAPABILITIES END ---"
+
+
+def _capability_lines(text):
+    """The capabilities a capture actually ENUMERATES, lowercased, or None if it has no block.
+
+    Reading prose was the first attempt and it was wrong: this capture
+
+        The list above contains no entry for the remote-devices server.
+
+    contains the substring "remote-devices" while saying the exact opposite. A capture
+    that documents an ABSENCE would have proved the presence. Found by falsifying the
+    guard against the live registry before shipping it, which is the only reason it is
+    not in main right now.
+
+    So the check reads a fenced block and nothing else. One capability per line, verbatim
+    as the platform spells it. Prose above and below is for humans.
+    """
+    if CAP_BEGIN not in text or CAP_END not in text:
+        return None
+    body = text.split(CAP_BEGIN, 1)[1].split(CAP_END, 1)[0]
+    return {ln.strip().lower() for ln in body.splitlines() if ln.strip()}
+
+
+def _check_followup(d, label, fu, root, today, grace):
+    """INV-CAP — an automation may not be claimed unless its capabilities are proven.
+
+    A finding that says "a scheduled task is watching this" is a claim about the world,
+    and it decays silently: the task can be created without the connector it needs, lose
+    a device binding, or be deleted outright, and nothing in the tracked file changes.
+    The dock already refuses to let a model's word stand as a primary source. This
+    refuses to let an automation's EXISTENCE stand as proof of its CAPABILITY.
+
+    What is checked is not that the mechanism is alive — nothing here can dial it — but
+    that someone wrote down, on a date, a capture in which every capability the mechanism
+    needs actually appears. A capture that never names what the automation requires is
+    the same defect as a citation that does not support its claim.
+
+    Written after a scheduled task was created to watch for a permission reply and record
+    it in the repo, and returned `not bound: no_signed_approval` — twice. Its connector
+    list contained Gmail and not remote-devices, so the repo half could never have run.
+    Both facts were printed and both were missed. `requires: ["Gmail","remote-devices"]`
+    against that capture fails here in a tenth of a second.
+    """
+    if not isinstance(fu, dict):
+        d.append("%s: followUp must be an object" % label)
+        return
+    if fu.get("kind") not in FOLLOWUP_KINDS:
+        d.append("%s: followUp.kind must be one of %s"
+                 % (label, ", ".join(FOLLOWUP_KINDS)))
+    if len(str(fu.get("mechanism", "")).strip()) < 3:
+        d.append("%s: followUp.mechanism must name the thing that does the work — a "
+                 "trigger id, a workflow name, a verify.sh step" % label)
+    reqs = fu.get("requires")
+    if not isinstance(reqs, list) or not reqs or not all(str(x).strip() for x in reqs):
+        d.append("%s: followUp.requires must list at least one capability the mechanism "
+                 "needs. Naming nothing is how an automation gets believed." % label)
+        reqs = []
+    ver = fu.get("verifiedOn")
+    if not ver or not DATE_RE.match(str(ver)):
+        d.append("%s: followUp.verifiedOn must be YYYY-MM-DD — an unchecked automation "
+                 "is a rumour" % label)
+        ver = None
+
+    ev = fu.get("evidence")
+    if not ev:
+        d.append("%s: followUp.evidence is required — a dated local capture of what the "
+                 "mechanism can actually reach" % label)
+    else:
+        path = os.path.join(root, str(ev))
+        if not os.path.isfile(path):
+            # Unlike returnFile, captures are TRACKED. Missing here means missing in CI
+            # and in every checkout, so this blocks rather than advises.
+            d.append("%s: followUp.evidence does not exist on disk: %s" % (label, ev))
+        else:
+            try:
+                with open(path, encoding="utf-8", errors="replace") as fh:
+                    text = fh.read()
+            except OSError as exc:
+                d.append("%s: followUp.evidence could not be read: %s" % (label, exc))
+                text = None
+            if text is not None:
+                have = _capability_lines(text)
+                if have is None:
+                    d.append("%s: followUp.evidence (%s) has no %s ... %s block — a capture "
+                             "must enumerate what the mechanism can reach, one capability "
+                             "per line, so the check reads data and not prose"
+                             % (label, ev, CAP_BEGIN, CAP_END))
+                else:
+                    absent = [str(c) for c in reqs
+                              if str(c).strip().lower() not in have]
+                    if absent:
+                        d.append("%s: followUp.evidence (%s) does not list %s among the "
+                                 "capabilities it captured — the follow-up is asserted, "
+                                 "not proven"
+                                 % (label, ev, ", ".join(repr(x) for x in absent)))
+
+    if ver:
+        age = _days_since(ver, today)
+        if age > grace:
+            # The passage of time is a fact about the world, not about the file. Same
+            # class as STALE: reported on every run, never a reason to block a push.
+            d.append(Defect(
+                "%s: followUp last verified %d days ago (grace is %d) — re-check that %s "
+                "still has what it needs"
+                % (label, age, grace, fu.get("mechanism") or "the mechanism"),
+                advisory=True))
 
 
 def check(doc, today=None, root=ROOT):
@@ -262,6 +381,12 @@ def check(doc, today=None, root=ROOT):
 
             if disp in CLOSED_OUT and not str(f.get("note", "")).strip():
                 d.append("%s: disposition %r requires a note saying why" % (label, disp))
+
+            # INV-CAP. Optional: most findings are carried by a person and need no proof.
+            # But the moment a finding claims an AUTOMATION is carrying it, that claim
+            # gets checked like any other — see _check_followup.
+            if f.get("followUp") is not None:
+                _check_followup(d, label, f.get("followUp"), root, today, grace)
 
         if r.get("status") == "closed":
             if unrouted:
@@ -560,6 +685,58 @@ def _self_test():
                check(one(returnFile="Evidence Inbox/_research-returns/nope.md"),
                      today="2026-09-02", root=tmp),
                "does not exist on disk")
+
+    # INV-CAP. An automation is a claim about the world, and claims get checked here too.
+    with tempfile.TemporaryDirectory() as tmp:
+        with open(os.path.join(tmp, "capture.txt"), "w", encoding="utf-8") as _fh:
+            _fh.write("trigger trig_01ABC — cron 0 12 * * 1,4\n"
+                      "not bound: no_signed_approval\n"
+                      "This capture contains no entry for the remote-devices server.\n"
+                      + CAP_BEGIN + "\nGmail\nPubMed\nGoogle_Drive\n" + CAP_END + "\n")
+        with open(os.path.join(tmp, "prose-only.txt"), "w", encoding="utf-8") as _fh:
+            _fh.write("connectors: Gmail, PubMed, Google_Drive\n")
+
+        def fu(**over):
+            spec = {"kind": "scheduled-task", "mechanism": "trig_01ABC",
+                    "requires": ["Gmail"], "verifiedOn": "2026-09-14",
+                    "evidence": "capture.txt"}
+            spec.update(over)
+            return check(one(findings=[{"id": "f1",
+                                        "claim": "Some claim worth checking here.",
+                                        "disposition": "needs-primary",
+                                        "followUp": spec}]),
+                         today="2026-09-15", root=tmp)
+
+        expect("a proven automation passes", fu(), "followUp", want=False)
+        expect("an automation naming no capability fails",
+               fu(requires=[]), "must list at least one capability")
+        expect("an automation with no evidence fails",
+               fu(evidence=None), "followUp.evidence is required")
+        expect("an automation whose capture is missing fails",
+               fu(evidence="nope.txt"), "does not exist on disk")
+        # The case this invariant was written for: the capture is real, the mechanism is
+        # real, and the one capability that mattered is simply not in it.
+        unproven = fu(requires=["Gmail", "remote-devices"])
+        expect("a capability the capture never captured fails", unproven, "does not list")
+        expect("...and it blocks", blocking_only(unproven), "does not list")
+        # The regression that made this a block instead of a substring search: the capture
+        # SAYS "remote-devices" — in a sentence explaining that it is absent.
+        expect("...even though the capture mentions it in prose",
+               unproven, "'remote-devices'")
+        expect("a capture with no CAPABILITIES block fails",
+               fu(evidence="prose-only.txt"), "has no --- CAPABILITIES BEGIN ---")
+        expect("an unverifiable date fails", fu(verifiedOn="soon"), "must be YYYY-MM-DD")
+        expect("an unnamed mechanism fails", fu(mechanism=""), "must name the thing")
+        expect("a made-up kind fails", fu(kind="vibes"), "followUp.kind must be one of")
+        aged = fu(verifiedOn="2026-01-01")
+        expect("a long-unverified automation is reported", aged, "last verified")
+        expect("...but staleness never blocks", blocking_only(aged), "last verified",
+               want=False)
+        expect("a finding with no followUp is asked to prove nothing",
+               check(one(findings=[{"id": "f1", "claim": "Some claim worth checking here.",
+                                    "disposition": "needs-primary"}]),
+                     today="2026-09-15", root=tmp),
+               "followUp", want=False)
 
     print("self-test: %s" % ("PASS" if ok else "FAIL"))
     return 0 if ok else 1
