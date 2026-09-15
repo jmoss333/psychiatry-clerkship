@@ -197,7 +197,15 @@ def entry_for(week, level):
         "points": [
             "~20-30 minute small-group discussion - no pre-reading required.",
             "De-identified synthetic case; each discussion question is paired with a teaching point.",
-            "%s. Facilitator notes are kept separate from the learner-facing stem." % _LEVEL_LABEL[level],
+            # This bullet used to read "Facilitator notes are kept separate from the
+            # learner-facing stem." That was not true of anything the build does: the
+            # facilitator section is part of the same markdown source and ships inside
+            # the same page on the learner site, so every reader saw the claim and the
+            # notes together (2026-09-14 attestation review). Whether the notes SHOULD be
+            # separated is a release-policy decision for faculty and is open — see
+            # docs/superpowers/plans/2026-09-15-facilitator-material-release.md. Until it
+            # is made, this line states only what is actually true.
+            "%s. Each discussion question is paired with a teaching point." % _LEVEL_LABEL[level],
         ],
         "safetyLevel": "moderate",
         "facultyReview": {

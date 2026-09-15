@@ -2924,8 +2924,8 @@ test('page and tool use the same Live Review Resolve Confirm rail and clear cont
   const harness = await startHarness({
     fetchImpl: async () => jsonResponse(serverState({
       items: [
-        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
-        { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
+        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed', sites: ['ms3'] },
+        { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed', sites: ['ms3'] },
       ],
       questions: [],
     })),
@@ -2944,7 +2944,7 @@ test('page and tool use the same Live Review Resolve Confirm rail and clear cont
   await makeCurrentContentPreviewReady(harness);
   assert.ok(document.find('label', 'I reviewed the complete item'));
   assert.ok(document.find('label',
-    'I verified that this is accurate and appropriate for a third-year student.'));
+    'I verified that this is accurate and appropriate for a third-year medical student.'));
   assert.ok(document.find('label', 'I tested the relevant links, media, or interactions.'));
   await setChecked(document, 'review-complete-item');
   assert.match(document.getElementById('rail-step-resolve').className, /current/);
@@ -3002,7 +3002,7 @@ test('a question keeps Review current until its saved-revision and learner-view 
 // This test pins the no-further-pending case, where the hold behavior still applies.
 test('content attestation submits exactly one page slug, confirms it, and holds the completed item', async () => {
   let items = [
-    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed', sites: ['ms3'] },
   ];
   let posted;
   const fetchImpl = async (url, options = {}) => {
@@ -4133,7 +4133,7 @@ test('one click attests a page: no checkboxes, all three assertions recorded', a
   // clicks may not mean asserting less: pressing the button must set the same
   // three flags the checkboxes set, and its label must say so.
   let items = [
-    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed', sites: ['ms3'] },
   ];
   let posted;
   const fetchImpl = async (url, options = {}) => {
