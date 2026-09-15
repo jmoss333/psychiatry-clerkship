@@ -129,6 +129,10 @@ moments:
 | Work/school | What role demands resume immediately? |  |  |
 | Crisis plan | What happens if symptoms return? |  |  |
 
+## Related ReConnect directory
+
+<a href="https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html" target="_blank" rel="noopener noreferrer">Open the ReConnect Resource Finder</a>. External listings can change. Confirm current details with the organization, and do not place patient-identifying information in a link.
+
 ## Family Education Handout Use
 
 Before giving a handout:

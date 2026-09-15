@@ -29,6 +29,13 @@
 
 **Disposition & discharge essentials** — Discharge is the intervention that prevents the next admission. Provide **naloxone and overdose-prevention education** to any patient at opioid risk and to their family. Arrange **linkage to medication for opioid use disorder (MOUD)** — buprenorphine or methadone — before the patient leaves, since the post-discharge window carries elevated overdose risk. Confirm follow-up, a warm handoff where possible, and continuation of any alcohol use disorder pharmacotherapy started inpatient.
 
+### Related ReConnect directories
+
+- <a href="https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html" target="_blank" rel="noopener noreferrer">Open the Recovery Meeting Calendar</a>
+- <a href="https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html" target="_blank" rel="noopener noreferrer">Open the ReConnect Resource Finder</a>
+
+External listings can change. Confirm current details with the organization, and do not place patient-identifying information in a link.
+
 **High-yield pearls**
 - Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.
 - In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not.
