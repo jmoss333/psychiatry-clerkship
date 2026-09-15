@@ -65,6 +65,10 @@ EXPECTED_PERMISSIONS = {
     "ci.yml": {"contents": "read"},
     "maintenance-queue-runner.yml": {
         "contents": "write",
+        # The fallback that records a pushed branch whose pull request GitHub
+        # refused. Filing an issue is deliberately the one report that does not
+        # depend on the setting which caused the refusal.
+        "issues": "write",
         "pull-requests": "write",
     },
     "maintenance-sp-health-monitor.yml": {"contents": "read"},
@@ -297,6 +301,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Unit — root node regression tests (tests/*.test.mjs)"),
             ("name", "Push the automation branch"),
             ("name", "Open the draft pull request"),
+            ("name", "Record the pushed branch that has no pull request"),
             ("uses", "actions/upload-artifact"),
         ),
     },
@@ -394,7 +399,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "acd1fe78364baf65ac9842ffb62a5abacaa8c70110a254106166130985fc9689"
     ),
     "maintenance-queue-runner.yml": (
-        "9a69d9629641bfa9478956003a99c989a633aad8cf710be9d0f0a4294b98dcd2"
+        "ae4482d9b23810d6866e31371bce5d011c30b7450acc0a2ff83aa4eb8b1ce814"
     ),
     "maintenance-production-canary.yml": (
         "4ee13d7a3eaa2a8d839b596265a25e0f0b78a8cad69c384d81784f5334c8ccfc"

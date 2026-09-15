@@ -19,6 +19,24 @@ updates:
       interval: "weekly"
       day: "monday"
     open-pull-requests-limit: 5
+    ignore:
+      # HOLD @netlify/blobs at 11.0.2. 11.0.3 makes a failed conditional write retry five
+      # times AND re-enter the caller's signed-URL path on each retry, so the sp-budget
+      # adapter performs SIX write attempts where it performed one, on HTTP 403, 429 and
+      # 500. Isolated on a clean origin/main worktree: 11.0.2 -> 14/14 pass; the bump alone
+      # -> 8 failures, every one `actual: 6, expected: 1`.
+      #
+      # It still FAILS CLOSED — the reserve rejects 503 with the same code, writes nothing,
+      # and 412 (CAS contention) is unaffected; those assertions run before the failing one
+      # and still pass. What breaks is the adapter's one-write-attempt invariant, and the
+      # clock: MAX_RETRY 5 x DEFAULT_RETRY_DELAY 5s is ~25s inside a deadline-bounded
+      # serverless reserve, and on a hard 403 it retries a credential that will not become
+      # valid. Upstream added 403-on-retry for expiring signed URLs, which is reasonable for
+      # them and wrong for this path; the retry policy is not configurable.
+      #
+      # Scoped to 11.0.3 only, so 11.0.4+ is still proposed and re-evaluated. Evidence: #607.
+      - dependency-name: "@netlify/blobs"
+        versions: ["11.0.3"]
     groups:
       sp-proxy-dependencies:
         patterns:

@@ -16,9 +16,19 @@ Two kinds of finding, and the distinction is the whole point:
 
 The rule this file exists to enforce: an empty internalCodes list is NOT automatically a
 gap. The internal vocabulary is a DISORDER taxonomy; the Milestones are a COMPETENCY
-taxonomy. Nine of 21 units are unmappable by construction. A unit marked `elsewhere` with
-a rationale is a coverage ANSWER — the program addresses it on another rotation and this
-one is correctly silent. Only `undecided` is unfinished.
+taxonomy. A unit marked `elsewhere` with a rationale is a coverage ANSWER — the program
+addresses it on another rotation and this one is correctly silent. Only `undecided` is
+unfinished.
+
+AND THE CORRECTION TO THAT RULE, 2026-09-14: it was being over-applied. This file used to
+report all ten unmapped units as "a category mismatch, not a content gap" — while nine of
+the ten carried a mappingNote in standards.json that began with the words VOCABULARY GAP.
+The rule was written for PC6 and quietly extended amnesty to nine units that are not PC6.
+Each unmapped unit must now declare a `mappingStatus`, and the report splits accordingly:
+`answered-elsewhere` / `category-mismatch` are correctly silent, `blocked-on-vocabulary`
+units ARE content gaps and are reported as such, each naming the code that does not exist
+yet. An unnamed gap is a gap nobody fixes; a reassuring summary over contradicting data is
+worse than no summary at all, because it is what people read instead of the data.
 
 Usage:
     python3 bin/check_standards_coverage.py            # report, exit 0
@@ -46,6 +56,26 @@ INTERNAL_CODES = {
 # patient risk — suicide and violence. Mapping one to the other manufactures false
 # coverage on the most safety-critical code in the vocabulary. RQ-1 finding f4.
 COLLISION = {"SBP1": "safety"}
+
+# DECISION: sbp1-required-inpatient — SBP1 is REQUIRED on the adult inpatient rotation
+# (2026-09-14, Joshua Moss, MD). This file is named in that decision's `governs` because
+# it is what reports the split and what refuses SBP1 -> `safety`. The ruling creates a
+# content obligation; it creates no coverage. SBP1 is now blocked-on-vocabulary below.
+
+# Why an unmapped unit is unmapped. Added 2026-09-14: the single report line this file
+# used to print said all ten unmapped units were "a category mismatch, not a content gap"
+# — while nine of those ten carried a mappingNote in standards.json that began with the
+# words "VOCABULARY GAP". The reassuring sentence was contradicted by the data it was
+# summarising, and it was the only thing a reader saw. One word per unit now decides
+# which sentence it earns.
+#
+#   answered-elsewhere     the rotation does not teach it, so silence here is the ANSWER
+#   blocked-on-vocabulary  mappable, once a NAMED code is added or split. A REAL gap.
+#   category-mismatch      genuinely inexpressible in a disorder taxonomy, for all time
+#
+# `category-mismatch` is deliberately hard to earn and currently unused. If a unit looks
+# like one, check first whether it is really blocked on a code nobody has written yet.
+MAPPING_STATUSES = ("answered-elsewhere", "blocked-on-vocabulary", "category-mismatch")
 
 
 def load(path=REGISTRY):
@@ -108,6 +138,23 @@ def check(doc, root=ROOT):
             defects.append("%s: REQUIRED on this rotation, mapped to nothing, and no mappingNote "
                            "says why — this is the real zero-coverage case" % code)
 
+        # ---- why an unmapped unit is unmapped. A prose note can say anything; this is
+        # the one word the report lines are computed from, so it is checked.
+        ms = u.get("mappingStatus")
+        if not u.get("internalCodes"):
+            if ms not in MAPPING_STATUSES:
+                defects.append("%s: maps to no internal code and declares no mappingStatus — "
+                               "say which of %s it is. Without it the unit is silently counted "
+                               "as 'not a content gap'." % (code, ", ".join(MAPPING_STATUSES)))
+            elif ms == "blocked-on-vocabulary" and not str(u.get("mappingBlockedBy", "")).strip():
+                defects.append("%s: mappingStatus 'blocked-on-vocabulary' with no "
+                               "mappingBlockedBy — name the code that does not exist yet. "
+                               "A gap nobody named is a gap nobody fixes." % code)
+        elif ms is not None:
+            defects.append("%s: has internalCodes (%s) AND a mappingStatus of %r — "
+                           "mappingStatus explains an ABSENCE and must be removed once the "
+                           "unit maps to something" % (code, ", ".join(u["internalCodes"]), ms))
+
         if u.get("review") == "approved" and not (u.get("reviewedBy") and u.get("reviewedOn")):
             defects.append("%s: review 'approved' without reviewedBy/reviewedOn" % code)
 
@@ -120,10 +167,31 @@ def check(doc, root=ROOT):
     els = [u for u in units if u.get("rotationRequirement") == "elsewhere"]
     report.append("rotation split: %d required on this rotation, %d addressed elsewhere, "
                   "%d undecided" % (len(req), len(els), len(units) - len(req) - len(els)))
-    unmapped = [u["code"] for u in units if not u.get("internalCodes")]
-    report.append("%d of %d unit(s) map to no internal code (%s) — expected: a disorder "
-                  "vocabulary cannot express a competency taxonomy, so this is a category "
-                  "mismatch, not a content gap" % (len(unmapped), len(units), ", ".join(unmapped)))
+    unmapped = [u for u in units if not u.get("internalCodes")]
+    by_status = {}
+    for u in unmapped:
+        by_status.setdefault(u.get("mappingStatus"), []).append(u)
+
+    silent = [u["code"] for s in ("answered-elsewhere", "category-mismatch")
+              for u in by_status.get(s, [])]
+    if silent:
+        report.append("%d of %d unit(s) are correctly silent here — the rotation does not "
+                      "teach them, or a disorder vocabulary cannot express them. NOT content "
+                      "gaps: %s" % (len(silent), len(units), ", ".join(sorted(silent))))
+
+    blocked = by_status.get("blocked-on-vocabulary", [])
+    if blocked:
+        # This line exists because its absence was the defect. Everything unmapped used to
+        # be reported as "not a content gap", including nine units whose own notes in
+        # standards.json said "VOCABULARY GAP". A reassuring summary over contradicting
+        # data is worse than no summary: it is the thing people read instead of the data.
+        report.append("%d of %d unit(s) are BLOCKED ON VOCABULARY — these ARE content gaps. "
+                      "Each is mappable the day a named code exists; none is mapped today, "
+                      "so the coverage they imply does not exist: %s"
+                      % (len(blocked), len(units),
+                         ", ".join(u["code"] for u in blocked)))
+        for u in blocked:
+            report.append("    %-6s needs: %s" % (u["code"], u.get("mappingBlockedBy", "?")))
     used = {c for u in units for c in u.get("internalCodes", [])}
     unused = sorted(INTERNAL_CODES - used)
     if unused:
@@ -169,7 +237,8 @@ def _self_test():
     expect("unknown internal code is caught", any("not in the vocabulary" in x for x in d), True)
     d, _ = check(one(code="SBP1", internalCodes=["safety"]), root=root)
     expect("SBP1 -> safety is REFUSED", any("REFUSED" in x for x in d), True)
-    d, _ = check(one(code="SBP1", internalCodes=[], mappingNote="n/a", rotationRequirement="elsewhere"), root=root)
+    d, _ = check(one(code="SBP1", internalCodes=[], mappingNote="n/a", rotationRequirement="elsewhere",
+                     mappingStatus="answered-elsewhere"), root=root)
     expect("SBP1 unmapped is fine", any("REFUSED" in x for x in d), False)
     d, _ = check(one(rotationRequirement="undecided"), root=root)
     expect("undecided is a defect", any("UNDECIDED" in x for x in d), True)
@@ -178,9 +247,45 @@ def _self_test():
     d, _ = check(one(internalCodes=[], mappingNote=""), root=root)
     expect("required + unmapped + unexplained is the real zero-coverage case",
            any("real zero-coverage" in x for x in d), True)
-    d, _ = check(one(internalCodes=[], mappingNote="unmappable by construction"), root=root)
+    d, _ = check(one(internalCodes=[], mappingNote="unmappable by construction",
+                     mappingStatus="category-mismatch"), root=root)
     expect("required + unmapped WITH an explanation is not a defect",
            any("real zero-coverage" in x for x in d), False)
+
+    # ---- mappingStatus. The reassuring report line was the defect; this is what fixes it.
+    d, _ = check(one(internalCodes=[], mappingNote="VOCABULARY GAP: documentation."), root=root)
+    expect("an unmapped unit that declares no mappingStatus is a defect",
+           any("declares no mappingStatus" in x for x in d), True)
+    d, _ = check(one(internalCodes=[], mappingNote="x", mappingStatus="vibes"), root=root)
+    expect("a made-up mappingStatus is a defect",
+           any("declares no mappingStatus" in x for x in d), True)
+    d, _ = check(one(internalCodes=[], mappingNote="x", mappingStatus="blocked-on-vocabulary"), root=root)
+    expect("blocked-on-vocabulary without naming the blocker is a defect",
+           any("no mappingBlockedBy" in x for x in d), True)
+    d, _ = check(one(internalCodes=[], mappingNote="x", mappingStatus="blocked-on-vocabulary",
+                     mappingBlockedBy="no code for documentation"), root=root)
+    expect("blocked-on-vocabulary that names its blocker is clean", d, [])
+    d, _ = check(one(mappingStatus="category-mismatch"), root=root)
+    expect("a MAPPED unit may not also claim a mappingStatus",
+           any("must be removed once the unit maps" in x for x in d), True)
+
+    # The report lines are the deliverable here, so they are asserted, not eyeballed.
+    blocked_unit = one(internalCodes=[], mappingNote="x", mappingStatus="blocked-on-vocabulary",
+                       mappingBlockedBy="no code for documentation")
+    _, rep = check(blocked_unit, root=root)
+    expect("a blocked unit is reported as a REAL content gap",
+           any("BLOCKED ON VOCABULARY" in x and "ARE content gaps" in x for x in rep), True)
+    expect("...and is NOT counted among the correctly silent",
+           any("NOT content gaps" in x for x in rep), False)
+    expect("...and the missing code is named in the report",
+           any("no code for documentation" in x for x in rep), True)
+    _, rep = check(one(internalCodes=[], mappingNote="x", mappingStatus="answered-elsewhere",
+                       rotationRequirement="elsewhere"), root=root)
+    expect("an answered-elsewhere unit is reported as correctly silent",
+           any("NOT content gaps" in x for x in rep), True)
+    expect("...and raises no gap alarm",
+           any("BLOCKED ON VOCABULARY" in x for x in rep), False)
+
     d, _ = check(one(review="approved"), root=root)
     expect("approved without a reviewer is a defect", any("reviewedBy" in x for x in d), True)
 
