@@ -180,7 +180,10 @@ cd tests/smoke && npm ci && npx playwright test
   the run must change a file (3), the task's own count must **move** (4 — a task measured by a
   number the work cannot move reopens the same empty PR every night; it happened), no changed
   path may be the attestation ledger, a clinical registry or LFS media (5), and an edit to an
-  attested page must be announced in the PR body — the ledger stays byte-identical, and
+  attested page must be announced in the PR body. It also writes an **`outcome`** output on
+  every exit path (`did-work` · `nothing-to-do` · `blocked` · `dry-run` · `no-commit`) —
+  **three of the five are exit 0**, so a green run does not mean it did anything; the exit code
+  says which guard refused, the outcome says what the night accomplished — the ledger stays byte-identical, and
   `post_edit_validate.py` catches that only for Edit/Write/MultiEdit while these scripts write
   through Bash. Read `_automation/AUTONOMOUS_QUEUE_RUNNER.md` before changing any of it; the
   workflow is enrolled in `validate_scheduled_workflows.py`, so editing it means recomputing its

@@ -77,6 +77,21 @@ EXIT_INERT_MEASUREMENT = 4
 EXIT_OUT_OF_SCOPE = 5
 EXIT_VERIFY_FAILED = 6
 
+# What the run ACCOMPLISHED, on a different axis from the exit code, which says which
+# guard refused. Both are needed: three of these five are exit 0, and a reader who has
+# only the exit code cannot tell a night that did work from a night with nothing to do.
+# That is the §D4 shape -- absence rendering as success -- and it is why `_execute()`
+# returns the outcome rather than leaving each `return` to remember to write one.
+OUTCOME_DID_WORK = "did-work"          # committed a branch; the PR steps follow
+OUTCOME_NOTHING_TO_DO = "nothing-to-do"  # the queue offered nothing. Success, and idle.
+OUTCOME_BLOCKED = "blocked"            # a guard refused; the exit code names which
+OUTCOME_DRY_RUN = "dry-run"            # --dry-run, local only
+OUTCOME_NO_COMMIT = "no-commit"        # --no-commit, local only
+OUTCOMES = frozenset({
+    OUTCOME_DID_WORK, OUTCOME_NOTHING_TO_DO, OUTCOME_BLOCKED,
+    OUTCOME_DRY_RUN, OUTCOME_NO_COMMIT,
+})
+
 COMMIT_NAME = "clerkship-queue-runner"
 COMMIT_EMAIL = "clerkship-queue-runner@users.noreply.github.com"
 
@@ -288,6 +303,128 @@ def write_output(path, pairs):
 
 
 # ------------------------------------------------------------------ main
+def _execute(args):
+    """The whole decision procedure. Returns `(exit_code, outcome, output_pairs)`.
+
+    Split out of `main()` so the outcome is written on EVERY exit path by construction
+    rather than by each `return` remembering to. Before this split, 4 of 16 returns wrote
+    an output and the other 12 wrote nothing -- and an absent `outcome` is indistinguishable
+    from any particular one, which is exactly the defect §D4 of the silent-shrink checklist
+    is about. `main()` is now the single writer.
+    """
+    out_dir = Path(args.out_dir).resolve() if args.out_dir else None
+    if out_dir and (out_dir == ROOT or ROOT in out_dir.parents):
+        # Evidence must not land in the commit. An out-dir inside the checkout would be
+        # picked up by the same `git status` that decides what to stage, so the plan and
+        # the pull-request body would ride along in the diff they describe.
+        print("queue-runner: --out-dir must sit outside the repository (%s)" % out_dir,
+              file=sys.stderr)
+        return EXIT_USAGE, OUTCOME_BLOCKED, []
+    if out_dir:
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Before anything is written: an already-dirty tree means someone else's edit would
+    # ride along in the commit, and the run/verify result could not be attributed.
+    dirty = changed_paths(git(["status", "--porcelain=v1", "--untracked-files=all"]).stdout)
+    if dirty:
+        print("queue-runner: refusing to run with a dirty tree: %s" % ", ".join(dirty[:8]),
+              file=sys.stderr)
+        return EXIT_USAGE, OUTCOME_BLOCKED, []
+
+    try:
+        row = select_task()
+    except (RuntimeError, ValueError) as exc:
+        print("queue-runner: %s" % exc, file=sys.stderr)
+        return EXIT_USAGE, OUTCOME_BLOCKED, []
+
+    if row is None:
+        # The normal answer on most nights. The queue retires its own work, so a runner
+        # that finds nothing has succeeded.
+        print("queue-runner: nothing autonomous to do")
+        return EXIT_OK, OUTCOME_NOTHING_TO_DO, [("task", ""), ("committed", "false")]
+
+    key = row["key"]
+    before = row["remaining"]
+    print("queue-runner: selected %s — %s (%s %s remaining)"
+          % (key, row["title"], before, row["unit"]))
+    if out_dir:
+        (out_dir / "plan.json").write_text(json.dumps(row, indent=2) + "\n", encoding="utf-8")
+
+    if args.dry_run:
+        print("queue-runner: --dry-run, nothing executed")
+        return EXIT_OK, OUTCOME_DRY_RUN, [("task", key), ("committed", "false")]
+
+    for label, command, failure in (
+        ("run", row["run"], EXIT_USAGE),
+        ("verify", row["verify"], EXIT_VERIFY_FAILED),
+    ):
+        print("queue-runner: %s -> %s" % (label, command))
+        proc = subprocess.run(command, cwd=str(ROOT), shell=True, text=True)
+        if proc.returncode != 0:
+            print("queue-runner: %s failed (exit %d)" % (label, proc.returncode),
+                  file=sys.stderr)
+            return failure, OUTCOME_BLOCKED, [("task", key), ("committed", "false")]
+
+    paths = changed_paths(git(["status", "--porcelain=v1", "--untracked-files=all"]).stdout)
+
+    # G1 -- the queue offered work and the run changed nothing.
+    if not paths:
+        print("queue-runner: %s offered %s %s of work and the run changed no file. That is "
+              "an empty pull request, so it fails here instead."
+              % (key, before, row["unit"]), file=sys.stderr)
+        return EXIT_NO_CHANGE, OUTCOME_BLOCKED, [("task", key), ("committed", "false")]
+
+    # G3 -- before anything is staged.
+    problems = scope_violations(paths)
+    if problems:
+        for problem in problems:
+            print("queue-runner: out of scope: %s" % problem, file=sys.stderr)
+        return EXIT_OUT_OF_SCOPE, OUTCOME_BLOCKED, [("task", key), ("committed", "false")]
+
+    # G2 -- the measurement has to track the work, or the task can never retire.
+    try:
+        after, _total = remeasure(key)
+    except Exception as exc:  # noqa: BLE001 -- unmeasurable is not "done"
+        print("queue-runner: cannot re-measure %s after the run (%s: %s), so the work "
+              "cannot be proven to have landed" % (key, type(exc).__name__, exc),
+              file=sys.stderr)
+        return EXIT_INERT_MEASUREMENT, OUTCOME_BLOCKED, [("task", key), ("committed", "false")]
+    if after >= before:
+        print("queue-runner: %s still reports %s of %s %s after a successful run and "
+              "verify. The measurement does not track the work, so this task can never "
+              "retire and the runner would re-open this pull request every night. Fix the "
+              "measurement before the task." % (key, after, before, row["unit"]),
+              file=sys.stderr)
+        return EXIT_INERT_MEASUREMENT, OUTCOME_BLOCKED, [("task", key), ("committed", "false")]
+    print("queue-runner: %s %s -> %s" % (row["unit"], before, after))
+
+    notices = staleness_notices(paths)
+    body = render_pr_body(row, before, after, paths, notices)
+    if out_dir:
+        (out_dir / "pr-body.md").write_text(body, encoding="utf-8")
+
+    if args.no_commit:
+        print("queue-runner: --no-commit, leaving %d changed path(s) unstaged" % len(paths))
+        return EXIT_OK, OUTCOME_NO_COMMIT, [("task", key), ("committed", "false")]
+
+    branch = branch_name(key)
+    git(["switch", "-c", branch])
+    # Stage BY NAME. `git add -A` would sweep in the Git-LFS phantoms that appear whenever
+    # git-lfs is not installed on the runner.
+    git(["add", "--", *sorted(set(paths))])
+    git(["-c", "user.name=%s" % COMMIT_NAME, "-c", "user.email=%s" % COMMIT_EMAIL,
+         "commit", "-m", commit_message(row, before, after)])
+
+    print("queue-runner: committed %d path(s) on %s" % (len(paths), branch))
+    return EXIT_OK, OUTCOME_DID_WORK, [
+        ("task", key),
+        ("branch", branch),
+        ("title", "chore(queue): %s" % row["title"]),
+        ("body_file", str((out_dir / "pr-body.md") if out_dir else "")),
+        ("committed", "true"),
+    ]
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("--out-dir", help="where to write plan.json and pr-body.md")
@@ -299,121 +436,24 @@ def main(argv=None):
                         help="file to append Actions outputs to")
     args = parser.parse_args(argv)
 
-    out_dir = Path(args.out_dir).resolve() if args.out_dir else None
-    if out_dir and (out_dir == ROOT or ROOT in out_dir.parents):
-        # Evidence must not land in the commit. An out-dir inside the checkout would be
-        # picked up by the same `git status` that decides what to stage, so the plan and
-        # the pull-request body would ride along in the diff they describe.
-        print("queue-runner: --out-dir must sit outside the repository (%s)" % out_dir,
-              file=sys.stderr)
-        return EXIT_USAGE
-    if out_dir:
-        out_dir.mkdir(parents=True, exist_ok=True)
+    code, outcome, pairs = _execute(args)
 
-    # Before anything is written: an already-dirty tree means someone else's edit would
-    # ride along in the commit, and the run/verify result could not be attributed.
-    dirty = changed_paths(git(["status", "--porcelain=v1", "--untracked-files=all"]).stdout)
-    if dirty:
-        print("queue-runner: refusing to run with a dirty tree: %s" % ", ".join(dirty[:8]),
-              file=sys.stderr)
-        return EXIT_USAGE
+    if outcome not in OUTCOMES:
+        # Announce rather than normalise: a consumer silently mis-reading an outcome it
+        # does not know is worse than a loud line here, and the value still travels intact
+        # so nothing is lost. `tests/run-queue-task.test.mjs` pins the membership, which is
+        # where this should actually be caught.
+        print("queue-runner: BUG — unrecognised outcome %r" % (outcome,), file=sys.stderr)
 
-    try:
-        row = select_task()
-    except (RuntimeError, ValueError) as exc:
-        print("queue-runner: %s" % exc, file=sys.stderr)
-        return EXIT_USAGE
-
-    if row is None:
-        # The normal answer on most nights. The queue retires its own work, so a runner
-        # that finds nothing has succeeded.
-        print("queue-runner: nothing autonomous to do")
-        write_output(args.github_output, [("task", ""), ("committed", "false")])
-        return EXIT_OK
-
-    key = row["key"]
-    before = row["remaining"]
-    print("queue-runner: selected %s — %s (%s %s remaining)"
-          % (key, row["title"], before, row["unit"]))
-    if out_dir:
-        (out_dir / "plan.json").write_text(json.dumps(row, indent=2) + "\n", encoding="utf-8")
-
-    if args.dry_run:
-        print("queue-runner: --dry-run, nothing executed")
-        write_output(args.github_output, [("task", key), ("committed", "false")])
-        return EXIT_OK
-
-    for label, command, failure in (
-        ("run", row["run"], EXIT_USAGE),
-        ("verify", row["verify"], EXIT_VERIFY_FAILED),
-    ):
-        print("queue-runner: %s -> %s" % (label, command))
-        proc = subprocess.run(command, cwd=str(ROOT), shell=True, text=True)
-        if proc.returncode != 0:
-            print("queue-runner: %s failed (exit %d)" % (label, proc.returncode),
-                  file=sys.stderr)
-            return failure
-
-    paths = changed_paths(git(["status", "--porcelain=v1", "--untracked-files=all"]).stdout)
-
-    # G1 -- the queue offered work and the run changed nothing.
-    if not paths:
-        print("queue-runner: %s offered %s %s of work and the run changed no file. That is "
-              "an empty pull request, so it fails here instead."
-              % (key, before, row["unit"]), file=sys.stderr)
-        return EXIT_NO_CHANGE
-
-    # G3 -- before anything is staged.
-    problems = scope_violations(paths)
-    if problems:
-        for problem in problems:
-            print("queue-runner: out of scope: %s" % problem, file=sys.stderr)
-        return EXIT_OUT_OF_SCOPE
-
-    # G2 -- the measurement has to track the work, or the task can never retire.
-    try:
-        after, _total = remeasure(key)
-    except Exception as exc:  # noqa: BLE001 -- unmeasurable is not "done"
-        print("queue-runner: cannot re-measure %s after the run (%s: %s), so the work "
-              "cannot be proven to have landed" % (key, type(exc).__name__, exc),
-              file=sys.stderr)
-        return EXIT_INERT_MEASUREMENT
-    if after >= before:
-        print("queue-runner: %s still reports %s of %s %s after a successful run and "
-              "verify. The measurement does not track the work, so this task can never "
-              "retire and the runner would re-open this pull request every night. Fix the "
-              "measurement before the task." % (key, after, before, row["unit"]),
-              file=sys.stderr)
-        return EXIT_INERT_MEASUREMENT
-    print("queue-runner: %s %s -> %s" % (row["unit"], before, after))
-
-    notices = staleness_notices(paths)
-    body = render_pr_body(row, before, after, paths, notices)
-    if out_dir:
-        (out_dir / "pr-body.md").write_text(body, encoding="utf-8")
-
-    if args.no_commit:
-        print("queue-runner: --no-commit, leaving %d changed path(s) unstaged" % len(paths))
-        write_output(args.github_output, [("task", key), ("committed", "false")])
-        return EXIT_OK
-
-    branch = branch_name(key)
-    git(["switch", "-c", branch])
-    # Stage BY NAME. `git add -A` would sweep in the Git-LFS phantoms that appear whenever
-    # git-lfs is not installed on the runner.
-    git(["add", "--", *sorted(set(paths))])
-    git(["-c", "user.name=%s" % COMMIT_NAME, "-c", "user.email=%s" % COMMIT_EMAIL,
-         "commit", "-m", commit_message(row, before, after)])
-
-    print("queue-runner: committed %d path(s) on %s" % (len(paths), branch))
-    write_output(args.github_output, [
-        ("task", key),
-        ("branch", branch),
-        ("title", "chore(queue): %s" % row["title"]),
-        ("body_file", str((out_dir / "pr-body.md") if out_dir else "")),
-        ("committed", "true"),
-    ])
-    return EXIT_OK
+    print("queue-runner: outcome=%s exit=%d" % (outcome, code))
+    write_output(args.github_output, [("outcome", outcome), *pairs])
+    if args.out_dir:
+        # The run log expires; the uploaded evidence does not.
+        try:
+            (Path(args.out_dir) / "outcome.txt").write_text(outcome + "\n", encoding="utf-8")
+        except OSError as exc:  # never let bookkeeping change the verdict
+            print("queue-runner: could not record outcome (%s)" % exc, file=sys.stderr)
+    return code
 
 
 if __name__ == "__main__":

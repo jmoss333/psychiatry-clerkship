@@ -88,6 +88,32 @@ function drive(dir, args = []) {
   });
 }
 
+/** Drive the runner with a GITHUB_OUTPUT file and return `{ proc, outputs }`. */
+function driveWithOutputs(dir, args = []) {
+  // OUTSIDE the fixture repo: a file written inside it makes the tree dirty, and the
+  // runner refuses a dirty tree -- correctly. (It caught this harness first.)
+  const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'queue-out-')), 'gh-output.txt');
+  fs.writeFileSync(file, '');
+  const proc = spawnSync(
+    'python3', [path.join(dir, 'bin', 'run_queue_task.py'), '--github-output', file, ...args],
+    { cwd: dir, encoding: 'utf8', timeout: 120_000 },
+  );
+  const outputs = Object.fromEntries(
+    fs.readFileSync(file, 'utf8').split('\n').filter(Boolean)
+      .map((line) => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)]),
+  );
+  return { proc, outputs };
+}
+
+/** A fixture whose stub queue offers nothing, so the runner has no autonomous task. */
+function emptyQueue(dir) {
+  fs.writeFileSync(path.join(dir, 'bin', 'what_can_i_do_today.py'), 'import sys\n');
+  execFileSync('git', ['-C', dir, 'add', '-A']);
+  execFileSync('git', ['-C', dir, '-c', 'user.email=t@example.invalid', '-c', 'user.name=T',
+    'commit', '-qm', 'empty queue']);
+  return dir;
+}
+
 // ---------------------------------------------------------------- the four guards
 
 test('G1 — a task that offers work and changes nothing fails instead of opening an empty PR', () => {
@@ -243,6 +269,92 @@ print(sorted({M.EXIT_OK, M.EXIT_USAGE, M.EXIT_NO_CHANGE, M.EXIT_INERT_MEASUREMEN
 test('rename entries stage both sides, so a rename cannot leave a duplicate behind', () => {
   assert.equal(py(`print(M.changed_paths("R  old/a.md -> new/a.md\\n M b.md\\n"))`),
     "['old/a.md', 'new/a.md', 'b.md']");
+});
+
+// ---------------------------------------------------------------- the outcome output
+//
+// Three of the five outcomes exit 0. A reader with only the exit code cannot tell a night
+// that did work from a night with nothing to do, and the run that would have shown the
+// difference is the one nobody looks at. See §D4 of docs/SILENT_SHRINK_CHECKLIST.md.
+
+test('a night that did work and a night with nothing to do are both exit 0, and distinguishable', () => {
+  const worked = driveWithOutputs(fixture({ run: 'echo changed >> seed.txt' }));
+  assert.equal(worked.proc.status, 0, worked.proc.stderr);
+  assert.equal(worked.outputs.outcome, 'did-work');
+  assert.equal(worked.outputs.committed, 'true');
+
+  const idle = driveWithOutputs(emptyQueue(fixture({ run: 'true' })));
+  assert.equal(idle.proc.status, 0, idle.proc.stderr);
+  assert.equal(idle.outputs.outcome, 'nothing-to-do');
+  assert.equal(idle.outputs.committed, 'false');
+
+  // The point of the whole output: same exit code, different answer.
+  assert.equal(worked.proc.status, idle.proc.status);
+  assert.notEqual(worked.outputs.outcome, idle.outputs.outcome);
+});
+
+test('every exit path writes an outcome — including the ones that refuse', () => {
+  // Before the _execute split, 4 of 16 returns wrote an output and 12 wrote nothing. An
+  // absent outcome is indistinguishable from any particular one, so each refusal is driven
+  // here and asserted to say so.
+  const cases = [
+    ['dirty tree', () => {
+      const dir = fixture({ run: 'echo changed >> seed.txt' });
+      fs.writeFileSync(path.join(dir, 'seed.txt'), 'somebody else was here\n');
+      return driveWithOutputs(dir);
+    }, 2],
+    ['failing verify', () =>
+      driveWithOutputs(fixture({ run: 'echo changed >> seed.txt', verify: 'false' })), 6],
+    ['G1 no change', () => driveWithOutputs(fixture({ run: 'true' })), 3],
+    ['G2 inert measurement', () =>
+      driveWithOutputs(fixture({ run: 'echo changed >> seed.txt', measure: 'return (5, 5)' })), 4],
+    ['G3 out of scope', () =>
+      driveWithOutputs(fixture({ run: 'mkdir -p 13_Faculty_Resources && echo x > 13_Faculty_Resources/reviewed.json' })), 5],
+  ];
+  for (const [label, run, expected] of cases) {
+    const { proc, outputs } = run();
+    assert.equal(proc.status, expected, `${label}: ${proc.stderr}`);
+    assert.equal(outputs.outcome, 'blocked', `${label} must still report an outcome`);
+    // The outcome says WHAT happened; the exit code still says WHICH guard refused.
+    assert.match(proc.stdout, /outcome=blocked/);
+  }
+});
+
+test('the local-only modes are their own outcomes, never silence and never did-work', () => {
+  const dry = driveWithOutputs(fixture({ run: 'echo changed >> seed.txt' }), ['--dry-run']);
+  assert.equal(dry.outputs.outcome, 'dry-run');
+  const noCommit = driveWithOutputs(fixture({ run: 'echo changed >> seed.txt' }), ['--no-commit']);
+  assert.equal(noCommit.outputs.outcome, 'no-commit');
+  for (const o of [dry.outputs.outcome, noCommit.outputs.outcome]) {
+    assert.notEqual(o, 'did-work');
+  }
+});
+
+test('every outcome _execute can return is a declared member of OUTCOMES', () => {
+  // The membership check in main() only announces; this is where a typo is caught.
+  const source = fs.readFileSync(script, 'utf8');
+  const body = source.slice(source.indexOf('def _execute('), source.indexOf('\ndef main('));
+  const returns = body.split('\n').map((l) => l.trim()).filter((l) => l.startsWith('return '));
+  assert.ok(returns.length >= 10, `expected every guard to return; saw ${returns.length}`);
+  const named = new Set();
+  for (const line of returns) {
+    const m = line.match(/OUTCOME_[A-Z_]+/);
+    assert.ok(m, `a return with no outcome: ${line}`);
+    named.add(m[0]);
+  }
+  const declared = py('print(sorted(M.OUTCOMES))');
+  assert.equal(declared, "['blocked', 'did-work', 'dry-run', 'no-commit', 'nothing-to-do']");
+  for (const constant of named) {
+    assert.equal(py(`print(M.${constant} in M.OUTCOMES)`), 'True', `${constant} is not declared`);
+  }
+});
+
+test('the outcome outlives the run log, in the uploaded evidence', () => {
+  const dir = fixture({ run: 'echo changed >> seed.txt' });
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'queue-evidence-'));
+  const proc = drive(dir, ['--out-dir', out]);
+  assert.equal(proc.status, 0, proc.stderr);
+  assert.equal(fs.readFileSync(path.join(out, 'outcome.txt'), 'utf8').trim(), 'did-work');
 });
 
 // ---------------------------------------------------------------- the workflow contract
