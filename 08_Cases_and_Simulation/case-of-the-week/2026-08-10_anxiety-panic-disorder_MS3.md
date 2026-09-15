@@ -128,7 +128,7 @@ The practical implications for this visit:
 
 Panic disorder is **among the more treatable conditions in psychiatry.** Most patients improve substantially with an SSRI, CBT, or both, and many achieve remission. Give her a concrete frame:
 
-- What she has **has a name**, is common, and is not dangerous in itself — her heart is structurally fine and the ED workup confirmed it.
+- What she has **has a name**, is common, and is not dangerous in itself. Be precise about what the workup showed: her ECG was normal, her troponins were negative, and there is nothing in her history or exam to suggest heart disease — so these episodes are not a heart attack and not a dangerous rhythm. (Strictly, an ECG and troponins assess ischaemia and conduction, not cardiac *structure*; "no evidence of heart disease" is what this evidence supports, and it is also what she needs to hear. Claiming more than the tests show is how reassurance stops working when she later reads what the tests actually measure.)
 - **Both** treatments work, they work by different mechanisms, and they can be combined.
 - Medication takes **weeks**, not days, and may feel worse before better — say this now so it doesn't derail her later.
 - The goal is not only fewer attacks; it is **getting the highway, the grocery store, and the promotion back.**
@@ -155,7 +155,7 @@ One caution worth internalizing early: a large meta-analysis of long-term CBT ou
 5. **Target the avoidance explicitly** — set a graded, specific re-approach goal at visit one.
 6. **Screen for comorbid depression and suicidal ideation; escalate and safety-plan if present** [7].
 7. **Avoid standing benzodiazepines**; beta-blockers are not supported [6].
-8. **Follow up in 2–4 weeks** to catch early activation and prevent silent discontinuation.
+8. **Follow up early and specifically — not on a generic interval.** NICE recommends that when a new medication is started for panic disorder, efficacy and side effects are "reviewed within 2 weeks of starting treatment and again at 4, 6 and 12 weeks" [9]. She is **24**, so the under-30 recommendation applies on top of that: warn her that SSRIs and SNRIs carry an increased risk of suicidal thinking and self-harm in a minority of people under 30, **see her within 1 week of first prescribing**, and **monitor for suicidal thinking and self-harm weekly for the first month** [9]. Use those contacts to catch **activation** (increased anxiety, agitation, sleeplessness), which is common early and is the usual reason a patient stops the drug without telling you.
 
 ---
 
@@ -202,6 +202,8 @@ Based on articles retrieved from PubMed.
 7. Tsai SJ, Cheng CM, Chang WH, Bai YM, Su TP, Chen TJ, Chen MH. Panic disorder and suicide. *Psychological Medicine*. 2025;55:e38. [https://doi.org/10.1017/S0033291724003441](https://doi.org/10.1017/S0033291724003441)
 
 8. van Dis EAM, van Veen SC, Hagenaars MA, Batelaan NM, Bockting CLH, van den Heuvel RM, Cuijpers P, Engelhard IM. Long-term outcomes of cognitive behavioral therapy for anxiety-related disorders: a systematic review and meta-analysis. *JAMA Psychiatry*. 2020;77(3):265–273. [https://doi.org/10.1001/jamapsychiatry.2019.3986](https://doi.org/10.1001/jamapsychiatry.2019.3986)
+
+9. National Institute for Health and Care Excellence. *Generalised anxiety disorder and panic disorder in adults: management.* NICE clinical guideline CG113 (recommendation 1.3.41 for panic pharmacotherapy review; recommendation 1.2.30 for people aged under 30 started on an SSRI or SNRI, applied to panic disorder by the cross-reference in 1.3.22–1.3.23). [Guidance](https://www.nice.org.uk/guidance/cg113/chapter/Recommendations)
 
 ---
 

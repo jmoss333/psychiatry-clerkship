@@ -38,6 +38,47 @@ function riskSearchTerms(risk) {
   return risk ? [risk.kind, risk.kind.replace(/-/g, ' '), risk.level] : [];
 }
 
+/* WHO the reviewer is attesting this item as suitable FOR.
+
+   Derived from `sites` — every deployment that publishes the item — and never from
+   `site`, which is only where the preview is fetched from. The two disagree for the 91
+   pages that ship on both deployments, and they disagree for every resident-only page.
+
+   `null` when the server sent no `sites`. That case deliberately does NOT fall back to
+   MS3: until 2026-09-14 the console asserted "appropriate for a third-year student" on
+   every item including the 22 resident-only pages, and a silent default is exactly how
+   that survived unnoticed. An unknown audience is stated as unknown, so the reviewer can
+   see that the console does not know rather than being handed a confident wrong claim. */
+export function audienceSites(value) {
+  if (!Array.isArray(value) || !value.length) return null;
+  const sites = value.map(clean);
+  if (sites.some(site => !SITES.has(site))) throw new TypeError('Invalid content review item sites.');
+  // Deduplicate and order deterministically so the wording never depends on input order.
+  return ['ms3', 'res'].filter(site => sites.includes(site));
+}
+
+const AUDIENCE_COPY = {
+  ms3: { long: 'a third-year medical student', short: 'MS3' },
+  res: { long: 'a psychiatry resident', short: 'resident' },
+  both: { long: 'both a third-year medical student and a psychiatry resident', short: 'MS3 + resident' },
+  unknown: { long: 'this item\u2019s intended audience', short: 'intended audience' },
+};
+
+function audienceKey(sites) {
+  const resolved = audienceSites(sites);
+  if (!resolved) return 'unknown';
+  if (resolved.length > 1) return 'both';
+  return resolved[0];
+}
+
+export function audienceLabel(sites) {
+  return AUDIENCE_COPY[audienceKey(sites)].long;
+}
+
+export function audienceShortLabel(sites) {
+  return AUDIENCE_COPY[audienceKey(sites)].short;
+}
+
 function completion(type, status) {
   return type === 'question'
     ? (status === 'attested' ? 'complete' : 'needs-review')
@@ -67,6 +108,8 @@ export function normalizeReviewItems(server = {}) {
     if (!SITES.has(site)) throw new TypeError('Invalid content review item site.');
     items.push({
       key: `${type}:${identity}`, type, identity, site,
+      // Audience, not preview routing — see audienceSites(). Absent stays null.
+      sites: audienceSites(record?.sites),
       title: clean(record.title) || identity,
       savedStatus: clean(record.status), completion: completion(type, record.status),
       revision: '', gate: '',
@@ -79,7 +122,7 @@ export function normalizeReviewItems(server = {}) {
     const identity = clean(record?.id);
     if (!identity) throw new TypeError('Invalid question review item.');
     items.push({
-      key: `question:${identity}`, type: 'question', identity, site: 'ms3',
+      key: `question:${identity}`, type: 'question', identity, site: 'ms3', sites: null,
       title: identity, savedStatus: clean(record.status),
       completion: completion('question', record.status),
       revision: clean(record.revision), gate: clean(record.assessment?.gate),

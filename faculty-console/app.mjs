@@ -21,6 +21,8 @@ import {
   isValidReopenReason,
   matchesPreviewStatus,
   normalizeReviewItems,
+  audienceLabel,
+  audienceShortLabel,
   normalizeStudentBase,
   parseDeepLink,
   reviewedRevisionMatches,
@@ -1869,7 +1871,7 @@ export function startFacultyConsole({
     return el('fieldset', { class: 'content-review-checks', disabled: state.pending }, [
       el('legend', {}, ['Content checks']),
       ...[
-        ['accuracy', 'review-content-accuracy', 'I verified that this is accurate and appropriate for a third-year student.'],
+        ['accuracy', 'review-content-accuracy', `I verified that this is accurate and appropriate for ${audienceLabel(item.sites)}.`],
         ['interactions', 'review-content-interactions', 'I tested the relevant links, media, or interactions.'],
       ].map(([key, id, copy]) => el('label', { for: id }, [
         el('input', {
@@ -2179,7 +2181,7 @@ export function startFacultyConsole({
           disabled: state.pending || !(oneClick ? oneClickEligibility.eligible : eligibility.eligible),
           onClick: () => void (oneClick ? attestContentInOneClick(item) : attestContentItem(item)),
         }, [oneClick
-          ? `Attest this ${item.type} — reviewed · accurate for MS3 · links tested`
+          ? `Attest this ${item.type} — reviewed · accurate for ${audienceShortLabel(item.sites)} · links tested`
           : `Attest this ${item.type}`]),
       ]),
       question ? renderBatchTray() : null,
