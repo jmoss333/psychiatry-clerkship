@@ -544,7 +544,9 @@
     var micOn=phase==='listening',mic=micOn?'Your microphone · listening'+(snapshot.hold?' — turn held':''):phase==='connecting'?'Connecting microphone…':phase==='speaking'||phase==='responding'?(snapshot.spokenInterrupt?'Your microphone · available to interrupt':'Your microphone · waiting'):ended?'Microphone off':'Microphone paused';
     var caption={kind:'quiet',label:'Paused',text:'Microphone off. Resume the microphone or type when ready.'};
     var yours=(snapshot.draft+' '+snapshot.interim).trim();
-    if(ended)caption={kind:'quiet',label:'Ended',text:profile&&profile.cues?profile.cues.closing:'The conversation has ended.'};
+    // No authored closing cue means the caption carries the state label and nothing else.
+    // Inventing a sentence here would be the same filler the station guard rejects.
+    if(ended)caption={kind:'quiet',label:'Ended',text:(profile&&profile.cues&&profile.cues.closing)||''};
     else if(phase==='speaking'&&last)caption={kind:'speech',label:name(activeId),text:last.text};
     else if(phase==='responding')caption={kind:'preparing',label:name(activeId),text:'Preparing a reply…'};
     else if(cue)caption={kind:'cue',label:'Faculty cue',text:cue.text};
@@ -553,7 +555,10 @@
     else if(phase==='ready')caption={kind:'quiet',label:'Your turn',text:'Type your question below.'};
     else if(interruptedId&&last)caption={kind:'interrupted',label:name(interruptedId)+' · interrupted',text:'The remaining words did not finish playing. Only completed audio is remembered as heard.'};
     var cues=profile&&profile.cues||{};
-    var observation=ended?cues.closing:interruptedId?cues.interrupted:cues.opening;
+    // The turn-5/turn-8 rule lives once, in station-content.js; the room borrows it.
+    var observation=ui.content&&ui.content.observationCue
+      ?ui.content.observationCue(profile,{phase:phase,interrupted:!!interruptedId,turn:snapshot.turn})
+      :(ended?cues.closing:interruptedId?cues.interrupted:cues.opening);
     // Coach open: the room is held. Figures still, rings off, and the caption says plainly that
     // the people in the room cannot hear the aside — the coach is beside the learner, not across the table.
     if(ui.coachOpen&&!ended){
@@ -632,7 +637,9 @@
     var mic=doc.getElementById('room-mic');if(mic)mic.setAttribute('data-mic',view.micOn?'on':'off');set('room-mic-text',view.mic);
     var caption=doc.getElementById('room-caption');if(caption)caption.setAttribute('data-kind',view.caption.kind);
     set('room-caption-label',view.caption.label);set('room-caption-text',view.caption.text);
-    set('room-observation',view.observation);set('room-alt',view.alt);
+    set('room-observation',view.observation);
+    var note=doc.getElementById('room-note');if(note)note.hidden=!view.observation;
+    set('room-alt',view.alt);
   }
 
   function mount(env){
@@ -730,7 +737,7 @@
       el('coach-open').setAttribute('aria-pressed',String(coachOpen));
       el('coach-panel').hidden=!coachOpen;
       if(coachOpen)renderCoach(doc,coachView(snapshot,roomProfile),coachChoice);
-      el('room-view').hidden=!active||snapshot.mode!=='full';if(active&&snapshot.mode==='full')renderRoom(doc,roomView(snapshot,roomProfile,{coachOpen:coachOpen}));
+      el('room-view').hidden=!active||snapshot.mode!=='full';if(active&&snapshot.mode==='full')renderRoom(doc,roomView(snapshot,roomProfile,{coachOpen:coachOpen,content:env.DanaStationContent}));
       if(coachOpen)el('status').textContent='Paused — coach open, microphone off';
       el('room-bed').hidden=!snapshot.roomSound||!active||snapshot.mode!=='full';
       if(el('room-sound').checked!==!!snapshot.roomSound)el('room-sound').checked=!!snapshot.roomSound;

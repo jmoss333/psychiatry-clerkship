@@ -89,5 +89,18 @@
     }
   };
   function getProfile(caseId){var profile=PROFILES[caseId];return profile?JSON.parse(JSON.stringify(profile)):null;}
-  return {getProfile:getProfile};
+  // Which authored observation the station and the room show, for one snapshot.
+  // The mid-encounter notes replace the opening note at learner turns 5 and 8 — but only
+  // when a faculty member has written them. An unwritten slot falls back to the opening
+  // note, never to filler: no slot in this file may ever render placeholder text.
+  function observationCue(profile,state){
+    var cues=profile&&profile.cues||{};
+    state=state||{};
+    if(state.phase==='ended')return cues.closing||'';
+    if(state.interrupted)return cues.interrupted||'';
+    var slot=state.turn===5?'turn5':state.turn===8?'turn8':'';
+    if(slot&&typeof cues[slot]==='string'&&cues[slot].trim())return cues[slot];
+    return cues.opening||'';
+  }
+  return {getProfile:getProfile,observationCue:observationCue};
 }));
