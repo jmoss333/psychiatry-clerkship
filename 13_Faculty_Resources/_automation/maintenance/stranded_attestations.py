@@ -96,12 +96,18 @@ CONFIG_RELATIVE = Path("13_Faculty_Resources/_automation/maintenance/maintenance
 
 # States. `success` must equal receipt_summary.HEALTHY_ROW_STATE — that module
 # lists by exception, so the healthy value is the one it skips.
+#
+# `state` is the VERDICT and nothing else, because receipt_summary.classify is
+# subtractive: every state that is not `success` and not deferred is treated as
+# this steward's failure and drives the exit code. So a state invented to carry a
+# *fact* rather than a verdict silently turns a healthy run red. That is not
+# hypothetical — the first live run after the six attestations merged printed
+# `gate=ready state=branch_missing` and exited 2, a receipt disagreeing with its
+# own exit code. Facts belong in their own fields (`branchMissing` below); only
+# verdicts belong here.
 STATE_OK = "success"
 STATE_STRANDED = "stranded_no_pr"
 STATE_BASE_LAG = "base_lag"
-# No branch yet: the next console write creates it from the base. The console
-# treats this as un-alarming and so does this module.
-STATE_NO_BRANCH = "branch_missing"
 # A monitor that could not look must never report "nothing wrong".
 STATE_UNAVAILABLE = "unavailable"
 
@@ -260,10 +266,13 @@ def evaluate(comparison, open_requests, settings, *, now):
     }
 
     if comparison is None:
+        # No branch: the next console write creates it from the base, so nothing
+        # is stranded. Healthy verdict, with the distinguishing fact alongside it.
         return {
             **base,
-            "state": STATE_NO_BRANCH,
+            "state": STATE_OK,
             "gate": "ready",
+            "branchMissing": True,
             "aheadBy": 0,
             "behindBy": 0,
             "openRequests": None,
@@ -283,6 +292,7 @@ def evaluate(comparison, open_requests, settings, *, now):
             **base,
             "state": STATE_OK,
             "gate": "ready",
+            "branchMissing": False,
             "aheadBy": ahead,
             "behindBy": behind,
             "openRequests": None,
@@ -305,6 +315,7 @@ def evaluate(comparison, open_requests, settings, *, now):
         **base,
         "state": state,
         "gate": "ready" if state == STATE_OK else "blocked",
+        "branchMissing": False,
         "aheadBy": ahead,
         "behindBy": behind,
         "openRequests": open_requests,
@@ -341,6 +352,7 @@ def main(argv=None, *, opener=None, now=_utc_now):
             "lagAlarmThreshold": None,
             "state": STATE_UNAVAILABLE,
             "gate": "blocked",
+            "branchMissing": None,
             "aheadBy": None,
             "behindBy": None,
             "openRequests": None,

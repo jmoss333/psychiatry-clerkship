@@ -29,7 +29,6 @@ from maintenance.receipt_summary import (  # noqa: E402
 from maintenance.stranded_attestations import (  # noqa: E402
     DELEGATED_STATES,
     STATE_BASE_LAG,
-    STATE_NO_BRANCH,
     STATE_OK,
     STATE_STRANDED,
     StrandedAttestationError,
@@ -123,9 +122,21 @@ class EvaluateTest(unittest.TestCase):
         self.assertEqual(receipt["state"], STATE_STRANDED)
 
     def test_a_missing_branch_is_not_an_alarm(self):
+        # The next console write recreates the branch from the base, so nothing
+        # is stranded. The VERDICT is healthy; "there was no branch" is a fact
+        # carried in its own field. Conflating the two is what made the first
+        # live post-merge run print `gate=ready` and still exit 2.
         receipt = evaluate(None, None, SETTINGS, now=NOW)
-        self.assertEqual(receipt["state"], STATE_NO_BRANCH)
+        self.assertEqual(receipt["state"], STATE_OK)
         self.assertEqual(receipt["gate"], "ready")
+        self.assertIs(receipt["branchMissing"], True)
+
+    def test_branch_missing_is_reported_on_every_receipt(self):
+        # Present and False when the branch exists, so its absence from a receipt
+        # is never mistaken for "the branch was there".
+        for comparison in (compare(ahead=0, behind=0), compare(ahead=6, behind=125)):
+            receipt = evaluate(comparison, 0, SETTINGS, now=NOW)
+            self.assertIs(receipt["branchMissing"], False)
 
     def test_looked_and_never_looked_stay_distinguishable(self):
         # openRequests is None when nothing could be stranded, 0 when the lookup
@@ -150,6 +161,39 @@ class EvaluateTest(unittest.TestCase):
         with self.assertRaises(StrandedAttestationError):
             evaluate(compare(ahead=0, behind=0), None, SETTINGS,
                      now=datetime(2026, 9, 15, 12))
+
+
+class GateExitAgreementTest(unittest.TestCase):
+    """A receipt must not disagree with its own exit code.
+
+    receipt_summary.classify is deliberately subtractive: any state that is not
+    `success` and not deferred is this steward's failure and drives the exit
+    code. So `gate` and `classify` can drift apart the moment someone adds a
+    state to carry a fact rather than a verdict — which is exactly what happened
+    on the first live run after the six attestations merged (`gate=ready
+    state=branch_missing`, exit 2). This pins the invariant over EVERY receipt
+    this module can produce, so the next such state cannot pass review."""
+
+    def _receipts(self):
+        return [
+            ("no branch", evaluate(None, None, SETTINGS, now=NOW)),
+            ("nothing ahead", evaluate(compare(ahead=0, behind=200), None, SETTINGS, now=NOW)),
+            ("ahead, routed", evaluate(compare(ahead=2, behind=1), 1, SETTINGS, now=NOW)),
+            ("ahead, no route", evaluate(compare(ahead=6, behind=125), 0, SETTINGS, now=NOW)),
+            ("ahead, base lag", evaluate(compare(ahead=2, behind=3), 1, SETTINGS, now=NOW)),
+        ]
+
+    def test_gate_ready_exactly_when_classify_owns_nothing(self):
+        for label, receipt in self._receipts():
+            own, _ = classify(receipt, delegated=DELEGATED_STATES)
+            self.assertEqual(
+                receipt["gate"] == "ready", not own,
+                f"{label}: gate={receipt['gate']} but classify owns {own}",
+            )
+
+    def test_every_gate_is_a_value_the_fleet_recognises(self):
+        for label, receipt in self._receipts():
+            self.assertIn(receipt["gate"], {"ready", "blocked"}, label)
 
 
 class ReceiptContractTest(unittest.TestCase):
@@ -181,7 +225,7 @@ class ReceiptContractTest(unittest.TestCase):
         # request title or a branch label may reach a log line or an artifact.
         receipt = evaluate(compare(ahead=6, behind=125), 0, SETTINGS, now=NOW)
         allowed_strings = {
-            STATE_OK, STATE_STRANDED, STATE_BASE_LAG, STATE_NO_BRANCH,
+            STATE_OK, STATE_STRANDED, STATE_BASE_LAG,
             "ready", "blocked", receipt["checkedAt"],
         }
         for key, value in receipt.items():
