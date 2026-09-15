@@ -22,7 +22,7 @@
         chartLimit
       ],
       priorities:['Have the reason for repeating the interview explained.','Have her own account heard without being rushed or judged.'],
-      cues:{opening:'Dana looks toward you and pauses before speaking.',interrupted:'Dana stops mid-sentence and looks toward you.',repair:'Dana pauses, then looks back toward you.',closing:'Dana looks toward you and waits.'},
+      cues:{opening:'Dana looks toward you and pauses before speaking.',interrupted:'Dana stops mid-sentence and looks toward you.',repair:'Dana pauses, then looks back toward you.',closing:'Dana looks toward you and waits.',turn5:'Dana shifts in her chair and looks toward you.',turn8:'Dana folds her hands in her lap and looks toward you.'},
       reflectionQuestion:'Where does your wording leave room for Dana to correct you or explain what she needs from another interview?'
     },
     sp_mania_redirect_001:{
@@ -36,7 +36,7 @@
         chartLimit
       ],
       priorities:['Have his ideas and his account of the admission taken seriously.','Understand who can discuss his wish to leave and his upcoming plans.'],
-      cues:{opening:'Marcus leans forward as you introduce yourself.',interrupted:'Marcus stops speaking and lifts one hand briefly.',repair:'Marcus lowers his hand and looks toward you.',closing:'Marcus shifts in his seat and looks toward you.'},
+      cues:{opening:'Marcus leans forward as you introduce yourself.',interrupted:'Marcus stops speaking and lifts one hand briefly.',repair:'Marcus lowers his hand and looks toward you.',closing:'Marcus shifts in his seat and looks toward you.',turn5:'Marcus gestures with one hand as he speaks, then looks toward you.',turn8:'Marcus rests both hands on his knees and looks toward you.'},
       reflectionQuestion:'How does your wording acknowledge Marcus’s agenda while making the next topic clear?'
     },
     sp_psychosis_paranoid_001:{
@@ -50,7 +50,7 @@
         chartLimit
       ],
       priorities:['Understand what is being recorded or shared and who is listening.','Describe his experience at his own pace without having its explanation immediately dismissed or confirmed.'],
-      cues:{opening:'Ray sits angled toward the door, with his arms crossed.',interrupted:'Ray stops speaking and looks toward the door.',repair:'Ray pauses and turns his gaze back toward you.',closing:'Ray glances toward the door, then toward you.'},
+      cues:{opening:'Ray sits angled toward the door, with his arms crossed.',interrupted:'Ray stops speaking and looks toward the door.',repair:'Ray pauses and turns his gaze back toward you.',closing:'Ray glances toward the door, then toward you.',turn5:'Ray keeps his arms crossed and watches you before answering.',turn8:'Ray shifts in his chair, angled toward the door, and glances toward you.'},
       reflectionQuestion:'Does your wording explain what you can honestly offer while leaving Ray room to describe his experience?'
     },
     sp_alcohol_ambivalence_001:{
@@ -65,7 +65,7 @@
         chartLimit
       ],
       priorities:['Keep a say in what changes and what the conversation is trying to accomplish.','Consider both useful and unwanted effects of alcohol without being required to choose a side immediately.'],
-      cues:{opening:'Morgan is in the conversation.',interrupted:'The reply was interrupted.',repair:'The conversation can continue.',closing:'The conversation has ended.'},
+      cues:{opening:'Morgan turns toward you as you come in.',interrupted:'Morgan breaks off mid-sentence and looks toward you.',repair:'Morgan pauses, then turns back toward you.',closing:'Morgan straightens in the chair and looks toward you.',turn5:'Morgan looks away for a moment, then back toward you.',turn8:'Morgan shifts in the chair and looks toward you.'},
       reflectionQuestion:'Where does your wording leave Morgan room to keep mixed feelings and choose a next step?'
     },
     family_morgan_maya_001:{
@@ -84,7 +84,7 @@
         {id:'family-chart-limits',title:'Information not supplied',source:'Authored family information boundary',text:'What Maya personally observed before the fall is not established. Individual clinical details and decisions about discharge remain with the treating team. All replies in this version belong to the shared meeting.'}
       ],
       priorities:['Morgan: keep a say in what changes without an all-or-nothing demand, while keeping a connection with Maya.','Maya: keep a caring relationship and offer sustainable support without being assigned responsibility for Morgan’s choices.'],
-      cues:{opening:'Morgan and Maya are both in the shared meeting.',interrupted:'The current reply was interrupted; both participants remain in the shared meeting.',repair:'The shared conversation can continue.',closing:'The shared meeting has ended.'},
+      cues:{opening:'Morgan and Maya are seated when you come in; both look toward you.',interrupted:'The speaker stops mid-sentence, and both Morgan and Maya look toward you.',repair:'After a pause, Morgan and Maya both look toward you.',closing:'Morgan and Maya both stay seated and look toward you as you finish.',turn5:'Both remain seated; the one who is speaking looks toward you.',turn8:'Morgan and Maya both stay in their seats and look toward you.'},
       reflectionQuestion:'Did you distinguish Morgan’s choices from Maya’s limits, identify whose account each statement came from, and check what each person actually agreed to?'
     }
   };
