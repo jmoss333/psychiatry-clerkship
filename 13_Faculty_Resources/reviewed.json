@@ -1,13 +1,12 @@
 {
   "cotw_20260907_fep_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-09-07",
-    "by": "Pending faculty review"
+    "at": "2026-09-14",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260907_fep_res.md": {
     "status": "pending",
@@ -20,44 +19,40 @@
     "by": "Pending faculty review"
   },
   "cotw_20260831_catatonia_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-08-31",
-    "by": "Pending faculty review"
+    "at": "2026-09-11",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260831_catatonia_res.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-08-31",
-    "by": "Pending faculty review"
+    "at": "2026-09-11",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260827_bpd_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-08-27",
-    "by": "Pending faculty review"
+    "at": "2026-09-08",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260827_bpd_res.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-08-27",
-    "by": "Pending faculty review"
+    "at": "2026-09-11",
+    "by": "Joshua Moss, MD"
   },
   "interaction-cards.html": {
     "status": "reviewed",
@@ -213,14 +208,13 @@
     "by": "Joshua Moss, MD"
   },
   "cotw_20260720_bipolar_res.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-07-23",
-    "by": "Pending faculty review"
+    "at": "2026-09-08",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260720_mdd_res.md": {
     "status": "pending",
