@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Behavior tests for the fourteen-registry Draft-07 schema gate."""
+"""Behavior tests for the fifteen-registry Draft-07 schema gate."""
 
 import json
 import shutil
@@ -27,6 +27,7 @@ PAIRS = (
     ("decisions.json", "decisions.schema.json"),
     ("pairings.json", "pairings.schema.json"),
     ("standards.json", "standards.schema.json"),
+    ("vocabulary.json", "vocabulary.schema.json"),
     (
         "13_Faculty_Resources/_automation/site_build/shipped_pages.json",
         "13_Faculty_Resources/_automation/site_build/shipped_pages.schema.json",
