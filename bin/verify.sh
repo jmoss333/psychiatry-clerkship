@@ -163,6 +163,13 @@ step "research return dock"                 python3 bin/research-dock.py check -
 # `--self-test` BLOCKS for both: it is a real falsification and check_vacuity.py requires it.
 step "unit — standards coverage"            python3 bin/check_standards_coverage.py --self-test
 step "standards spine coverage"             python3 bin/check_standards_coverage.py
+# The vocabulary is data now, and six literals in two languages have to agree with it. The
+# --self-test BLOCKS (check_vacuity.py requires a falsification to be on a gate, and this
+# one ends by asserting the LIVE tree agrees, so a real drift fails here). The plain run
+# REPORTS: a vocabulary gap is a curriculum decision, not a broken file, and must never be
+# able to stop a clinical correction from being pushed. Same split as standards coverage.
+step "unit — vocabulary registry"           python3 bin/check_vocabulary.py --self-test
+step "vocabulary vs code sites"             python3 bin/check_vocabulary.py
 step "unit — qbank coherence"              python3 bin/check_qbank_coherence.py --self-test
 # Four tools shipped a --self-test that NO gate invoked — found by bin/check_vacuity.py after
 # Codex pointed out it was inventorying only test FILES, not the --self-test modes its own
