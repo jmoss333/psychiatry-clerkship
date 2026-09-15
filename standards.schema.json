@@ -99,6 +99,11 @@
           "minLength": 10,
           "description": "REQUIRED when mappingStatus is 'blocked-on-vocabulary'. The code that does not exist yet, in words — e.g. 'no psychotherapy code exists in the twelve-code vocabulary'. A gap nobody named is a gap nobody fixes, so the checker will not accept the status without it."
         },
+        "blockedByCode": {
+          "type": "string",
+          "pattern": "^[a-z][a-z-]*$",
+          "description": "REQUIRED when mappingStatus is 'blocked-on-vocabulary'. The id of the PROPOSED code in vocabulary.json that would unblock this unit. Prose says what is missing; this says which queue entry delivers it, so the payoff of adding a code is computable rather than argued. bin/check_vocabulary.py verifies BOTH directions — the code must exist, must be proposed (not already active), and must list this unit in its own `unblocks`."
+        },
         "mappingNote": { "type": "string" },
         "review": {
           "enum": ["pending", "approved", "rejected"],

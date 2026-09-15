@@ -86,7 +86,8 @@
       "mappingNote": "CONFIRMED VOCABULARY GAP. Psychotherapy occupies two of 21 subcompetencies and is a hard Program Requirement; the twelve internal codes cannot express it.",
       "review": "pending",
       "mappingStatus": "blocked-on-vocabulary",
-      "mappingBlockedBy": "no psychotherapy code exists in the twelve-code vocabulary"
+      "mappingBlockedBy": "no psychotherapy code exists in the twelve-code vocabulary",
+      "blockedByCode": "psychotherapy"
     },
     {
       "id": "acgme-pc5",
@@ -176,7 +177,8 @@
       "mappingNote": "Second half of the confirmed psychotherapy gap.",
       "review": "pending",
       "mappingStatus": "blocked-on-vocabulary",
-      "mappingBlockedBy": "no psychotherapy code exists in the twelve-code vocabulary"
+      "mappingBlockedBy": "no psychotherapy code exists in the twelve-code vocabulary",
+      "blockedByCode": "psychotherapy"
     },
     {
       "id": "acgme-sbp1",
@@ -190,7 +192,8 @@
       "mappingNote": "MUST NOT be mapped to `safety` — that code means patient risk and this means institutional safety events. Mapping it would manufacture false coverage on the most safety-critical code in the vocabulary. Feeds RQ-2: no QI content exists on either site.",
       "review": "pending",
       "mappingStatus": "blocked-on-vocabulary",
-      "mappingBlockedBy": "`safety` must first split into `safety-risk` (patient risk) and `safety-systems` (institutional safety events, disclosure, RCA)"
+      "mappingBlockedBy": "`safety` must first split into `safety-risk` (patient risk) and `safety-systems` (institutional safety events, disclosure, RCA)",
+      "blockedByCode": "safety-systems"
     },
     {
       "id": "acgme-sbp2",
@@ -204,7 +207,8 @@
       "mappingNote": "VOCABULARY GAP: care coordination, transitions, discharge and population health.",
       "review": "pending",
       "mappingStatus": "blocked-on-vocabulary",
-      "mappingBlockedBy": "no code for care coordination, transitions, discharge or population health"
+      "mappingBlockedBy": "no code for care coordination, transitions, discharge or population health",
+      "blockedByCode": "care-transitions"
     },
     {
       "id": "acgme-sbp3",
@@ -218,7 +222,8 @@
       "mappingNote": "VOCABULARY GAP: health systems, financing, advocacy, transition to practice.",
       "review": "pending",
       "mappingStatus": "blocked-on-vocabulary",
-      "mappingBlockedBy": "no code for health systems, financing, advocacy or transition to practice"
+      "mappingBlockedBy": "no code for health systems, financing, advocacy or transition to practice",
+      "blockedByCode": "health-systems"
     },
     {
       "id": "acgme-pbli1",
@@ -232,7 +237,8 @@
       "mappingNote": "VOCABULARY GAP: evidence-based practice and critical appraisal. NOTE the library already has a strong evidence apparatus; the gap is in the CODE vocabulary, not the content.",
       "review": "pending",
       "mappingStatus": "blocked-on-vocabulary",
-      "mappingBlockedBy": "no code for evidence-based practice and critical appraisal"
+      "mappingBlockedBy": "no code for evidence-based practice and critical appraisal",
+      "blockedByCode": "evidence-practice"
     },
     {
       "id": "acgme-pbli2",
@@ -246,7 +252,8 @@
       "mappingNote": "VOCABULARY GAP: reflective practice, feedback, learning plans.",
       "review": "pending",
       "mappingStatus": "blocked-on-vocabulary",
-      "mappingBlockedBy": "no code for reflective practice, feedback and learning plans"
+      "mappingBlockedBy": "no code for reflective practice, feedback and learning plans",
+      "blockedByCode": "reflective-practice"
     },
     {
       "id": "acgme-prof1",
@@ -288,7 +295,8 @@
       "mappingNote": "VOCABULARY GAP: physician well-being.",
       "review": "pending",
       "mappingStatus": "blocked-on-vocabulary",
-      "mappingBlockedBy": "no code for physician well-being"
+      "mappingBlockedBy": "no code for physician well-being",
+      "blockedByCode": "wellbeing"
     },
     {
       "id": "acgme-ics1",
@@ -330,7 +338,8 @@
       "mappingNote": "VOCABULARY GAP: documentation.",
       "review": "pending",
       "mappingStatus": "blocked-on-vocabulary",
-      "mappingBlockedBy": "no code for documentation"
+      "mappingBlockedBy": "no code for documentation",
+      "blockedByCode": "documentation"
     }
   ]
 }
