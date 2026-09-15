@@ -43,6 +43,25 @@ test('buffered actor preserves the approved model, privacy and output settings',
   assert.equal(provider.getUsage().actor.tokens.cachedInputTokens,20);
 });
 
+for(const stream of [false,true]) test(`actor reasoning experiment is explicit for ${stream?'streamed':'buffered'} replies`,async()=>{
+  let request;
+  const provider=makeProvider(async(_url,options)=>{
+    request=JSON.parse(options.body);
+    return stream?responseStream(streamText([delta(TEXT),complete()])):Response.json(actorResponse());
+  },{actorReasoning:'none'});
+  const input={system:'Fictional patient facts.',messages:[{role:'user',content:'How have things been?'}]};
+  assert.equal(await (stream?provider.replyStream({...input,onLead(){}}):provider.reply(input)),TEXT);
+  assert.deepEqual(request,{model:'gpt-5.4-2026-03-05',instructions:input.system,input:input.messages,store:false,max_output_tokens:768,reasoning:{effort:'none'},...(stream?{stream:true}:{})});
+});
+
+test('actor reasoning experiment rejects options outside its bounded allowlist before a request',()=>{
+  let requests=0;
+  for(const actorReasoning of ['','medium','high','NONE',null,false,0,{},['none']]){
+    assert.throws(()=>makeProvider(async()=>{requests++;return Response.json(actorResponse());},{actorReasoning}),error=>error.code==='invalid_reply');
+  }
+  assert.equal(requests,0);
+});
+
 test('streaming actor handles fragmented UTF-8 and CRLF while issuing one exact substantive lead',async()=>{
   const text='Okay. I’m feeling very tired lately. I don’t know why.';
   const leads=[];

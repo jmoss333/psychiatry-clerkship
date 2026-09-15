@@ -298,8 +298,22 @@ test('post_edit_validate checks shipped_pages.json after a producer edit', () =>
   }
 });
 
-test('post_edit_validate blocks when a producer edit leaves shipped_pages.json stale', () => {
-  const registry = path.join(repo, '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json');
+test('post_edit_validate blocks when a producer edit leaves shipped_pages.json stale', (t) => {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'clerkship-stale-producer-'));
+  t.after(() => fs.rmSync(fixture, { recursive: true, force: true }));
+  for (const rel of [
+    '13_Faculty_Resources/_automation/site_build/shipped_pages.py',
+    '13_Faculty_Resources/_automation/site_build/site_extras.py',
+    '13_Faculty_Resources/_automation/site_build/cotw_slug.py',
+    '13_Faculty_Resources/_automation/site_build/site_manifest.json',
+    '13_Faculty_Resources/_automation/site_build/shipped_pages.json',
+    '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json',
+  ]) {
+    const target = path.join(fixture, rel);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(repo, rel), target);
+  }
+  const registry = path.join(fixture, '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json');
   const original = fs.readFileSync(registry, 'utf8');
   const document = JSON.parse(original);
   document.weeks = [...document.weeks, {
@@ -311,8 +325,14 @@ test('post_edit_validate blocks when a producer edit leaves shipped_pages.json s
   }];
   fs.writeFileSync(registry, JSON.stringify(document, null, 2) + '\n');
   try {
-    const call = { hook_event_name: 'PostToolUse', tool_name: 'Edit', cwd: repo, tool_input: { file_path: registry, old_string: 'a', new_string: 'b' }, tool_response: {} };
-    const r = runHook('post_edit_validate.py', call);
+    // Other test files run concurrently. Their real-root freshness check must
+    // stay green while this test's deliberately stale producer is present.
+    const reader = spawnSync('python3', [path.join(repo,
+      '13_Faculty_Resources/_automation/site_build/shipped_pages.py'), '--check'],
+    { cwd: repo, encoding: 'utf8', env: cleanEnv() });
+    assert.equal(reader.status, 0, `the stale fixture affected the real registry: ${reader.stdout}${reader.stderr}`);
+    const call = { hook_event_name: 'PostToolUse', tool_name: 'Edit', cwd: fixture, tool_input: { file_path: registry, old_string: 'a', new_string: 'b' }, tool_response: {} };
+    const r = runHook('post_edit_validate.py', call, { cwd: fixture });
     assert.equal(r.decision, 'block');
     assert.match(r.reason, /shipped_pages\.json is stale/);
     assert.match(r.reason, /shipped_pages\.py --write/);

@@ -186,12 +186,37 @@ def render_rows(entries):
     return shown
 
 
-def classify(receipt, *, delegated=frozenset()):
+def _may_delegate(row_id, delegable):
+    """Can this row be handed off at all? `None` means "every row can"."""
+    if delegable is None:
+        return True
+    try:
+        return row_id in delegable
+    except TypeError:
+        # An unhashable row id cannot be proven delegable, so it is not.
+        return False
+
+
+def classify(receipt, *, delegated=frozenset(), delegable=None):
     """Split a receipt's non-clean rows into `(own, delegated)`.
 
     `delegated` names the states another watcher owns; pass `frozenset()` to
     declare that everything here is this steward's. Both returned lists hold
     `(row_id, state)` pairs, in receipt order, ready for `render_rows`.
+
+    `delegable` optionally restricts *which rows* may be handed off, by row id.
+    A delegation is a claim about another watcher, and a steward may only defer
+    what it can prove that watcher is holding: a row whose state is delegated
+    but whose id is not in `delegable` stays in `own`. `None` — every row is
+    delegable — is right only when the watcher covers this steward's whole
+    subject, and is a claim worth a test either way.
+
+    This exists because the first delegation shipped was partly false.
+    `workflow_heartbeat` handed every `failed` row to
+    automation-failure-escalation.yml, whose `workflow_run` list covers
+    maintenance-* and surveillance-* and nothing else — so between #531 and this
+    change a failed scheduled `ci.yml` run left the heartbeat green and the
+    escalation silent. Nobody was watching the weekly release rehearsal.
 
     A row is **this steward's unless proven otherwise**: healthy, deferred and
     delegated states are subtracted, and whatever is left — including a state
@@ -217,7 +242,11 @@ def classify(receipt, *, delegated=frozenset()):
     for row_id, state in entries:
         if state == HEALTHY_ROW_STATE or _is_deferred(state):
             continue
-        if isinstance(state, str) and state in delegated:
+        if (
+            isinstance(state, str)
+            and state in delegated
+            and _may_delegate(row_id, delegable)
+        ):
             elsewhere.append((row_id, state))
         else:
             own.append((row_id, state))

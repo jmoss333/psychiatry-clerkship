@@ -6,9 +6,11 @@
 }(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  // Local simulation authoring. These additions have not received faculty review.
-  // The actor's authoritative case and channel projection still control every fact
-  // and disclosure. Front-door cards contain only information available at entry.
+  // Local simulation authoring, layered on top of the actor's authoritative case
+  // and channel projection, which still control every fact and disclosure.
+  // Faculty attested the spoken portrayal/station layer for all five encounters
+  // 2026-09-09 (Joshua Moss, MD); front-door cards contain only information
+  // available at entry.
   var studentRole = 'You are an MD or DO medical student working with a supervising clinician. Introduce your role accurately and bring decisions and unresolved concerns back to the team.';
   var handoffPrompts = [
     'In about one minute, describe the presenting concern and what the patient wants help with.',
@@ -137,7 +139,7 @@
   records.forEach(function (profile) {
     profile.studentRole = studentRole;
     profile.handoffPrompts = handoffPrompts;
-    profile.reviewStatus = 'draft-pending-faculty-review';
+    profile.reviewStatus = 'reviewed';
     profile.cueDisclosure = 'Authored observable behavior for this fictional encounter. A cue has no single required interpretation; explore its meaning with the patient.';
     registry[profile.caseId] = freeze(profile);
   });

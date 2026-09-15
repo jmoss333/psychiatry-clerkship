@@ -86,7 +86,11 @@ _STATUS_STYLE = (
     "color:#3d1812}"
     ".surface-governance-pending{border-bottom:2px solid #9a6b22;background:#fff8e6;"
     "color:#3f2c0d}"
-    ".surface-governance-receipt{border-bottom:1px solid #5aad8e;background:#eef7f2;"
+    # #357160 is the LIGHT success green (--fd-success); the dark block below carries #5aad8e.
+    # These two were identical until 2026-09-10, so this hairline was the one governance band
+    # whose border did not flip — its pending/pending-high siblings both do. Found by the
+    # ?theme-audit lamp, which is the only check that can see a border that stays put.
+    ".surface-governance-receipt{border-bottom:1px solid #357160;background:#eef7f2;"
     "color:#1d3b2c;font-weight:500}"
     '[data-theme="dark"] .surface-governance-pending-high{border-color:#d46858;'
     "background:#3d1f1a;color:#f5ddd6}"

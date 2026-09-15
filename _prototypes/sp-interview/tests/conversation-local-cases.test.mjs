@@ -17,7 +17,7 @@ function load(){
   return require(path);
 }
 
-test('exports one local draft Morgan case and a matching speech profile',()=>{
+test('exports one local attested Morgan case and a matching speech profile',()=>{
   const registry=load();
   assert.deepEqual(Object.keys(registry).sort(),['cases','profiles']);
   assert.equal(registry.cases.length,1);
@@ -31,9 +31,9 @@ test('exports one local draft Morgan case and a matching speech profile',()=>{
     name:'Morgan',slug:'morgan',voice:'marin',
     practice:'Explore alcohol ambivalence with reflective listening, autonomy support, and values-based questions.'
   });
-  assert.match(caseDef.facultyReview.status,/draft|pending/i);
-  assert.equal(caseDef.facultyReview.reviewer,null);
-  assert.equal(caseDef.speechProfile.facultyReview.status,'pending');
+  assert.equal(caseDef.facultyReview.status,'reviewed');
+  assert.equal(caseDef.facultyReview.reviewer,'Joshua Moss, MD');
+  assert.equal(caseDef.speechProfile.facultyReview.status,'reviewed');
   assert.ok(!canonical.cases.some(item=>item.id===id),'local case must not enter the canonical pack');
 });
 

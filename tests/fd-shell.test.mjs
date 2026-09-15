@@ -13,7 +13,8 @@ const make = new Function(`
   ${read('frontdoor/fd_data.js')}
   ${read('frontdoor/fd_shell.js')}
   return { fdHeader: fdHeader, fdTabs: fdTabs, fdSetupRole: fdSetupRole,
-           fdSetupWeek: fdSetupWeek, fdKeyAction: fdKeyAction };
+           fdSetupWeek: fdSetupWeek, fdKeyAction: fdKeyAction,
+           fdThemeMode: fdThemeMode, fdThemeAttr: fdThemeAttr };
 `);
 const F = make();
 
@@ -99,11 +100,23 @@ test('the header renders the safety button and the week pill', () => {
   assert.match(html, /Week 4/);
 });
 
-test('the compact header theme toggle has an explicit accessible name', () => {
-  const html = F.fdHeader({ tab: 'today', week: 1 });
-  assert.match(html,
-    /<button type="button" class="fd-themebtn" data-fd-theme aria-label="Toggle color theme">/,
-    'the sidebar toggle will retire, so the header replacement must be identifiable to assistive tech');
+// Supersedes 'the compact header theme toggle has an explicit accessible name': that test pinned
+// the exact themebtn markup, and the theme control is no longer a header button at all. The
+// accessible-name requirement it guarded is carried by the aria-label assertion here.
+test('the header offers settings, not a bare theme toggle', () => {
+  const h = F.fdHeader({ week: 3, tab: 'today' });
+  assert.match(h, /data-fd-settings/, 'gear must be present');
+  assert.doesNotMatch(h, /data-fd-theme/, 'theme moved inside the panel');
+  assert.match(h, /aria-label="Settings"/);
+});
+
+test('the header still carries exactly three action controls', () => {
+  // Scoped to the actions container's own markup: everything after the marker also carries the
+  // three tab buttons fdHeader appends, which reads as 6 and makes the count say nothing.
+  const actions = F.fdHeader({ week: 3, tab: 'today' })
+    .split('fd-header__actions')[1].split('</div>')[0];
+  const buttons = actions.match(/<button/g) || [];
+  assert.equal(buttons.length, 3, 'week pill, safety, settings — a fourth costs the mobile row');
 });
 
 test('the header says exam, never the site-specific word', () => {
@@ -129,4 +142,22 @@ test('user-supplied text is escaped in every renderer', () => {
   const evil = '<img src=x onerror=1>';
   assert.doesNotMatch(F.fdSetupRole([{ id: 'x', name: evil, desc: evil, hint: '' }]), /<img/);
   assert.doesNotMatch(F.fdSetupWeek([{ n: 1, title: evil, theme: evil }], evil), /<img/);
+});
+
+// ---- theme modes -----------------------------------------------------------------
+
+test('stored mode round-trips; anything else is system', () => {
+  assert.equal(F.fdThemeMode('light'), 'light');
+  assert.equal(F.fdThemeMode('dark'), 'dark');
+  assert.equal(F.fdThemeMode('system'), 'system');
+  assert.equal(F.fdThemeMode(null), 'system', 'unset means system, not light');
+  assert.equal(F.fdThemeMode(''), 'system');
+  assert.equal(F.fdThemeMode('banana'), 'system');
+});
+
+test('explicit modes ignore the OS; system follows it', () => {
+  assert.equal(F.fdThemeAttr('light', true), 'light', 'explicit light wins over a dark OS');
+  assert.equal(F.fdThemeAttr('dark', false), 'dark');
+  assert.equal(F.fdThemeAttr('system', true), 'dark');
+  assert.equal(F.fdThemeAttr('system', false), 'light');
 });

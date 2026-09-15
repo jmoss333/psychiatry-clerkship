@@ -126,7 +126,7 @@ var CW_RECEIPT_CSS='.cw-receipt{margin:0 0 18px;padding:20px 22px;background:var
   '.cw-receipt__done b{color:var(--accent-dark,#1e5248)}'+
   '.cw-receipt__actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}'+
   '.cw-receipt__btn{font:inherit;font-size:.95rem;font-weight:700;padding:11px 18px;border-radius:9px;cursor:pointer;border:1px solid var(--border,#ddd3c6);background:var(--surface,#fff);color:var(--text,#2f2924)}'+
-  '.cw-receipt__btn.is-primary{background:var(--primary,#c25a3c);border-color:var(--primary,#c25a3c);color:#fff}'+
+  '.cw-receipt__btn.is-primary{background:var(--primary,#bc573a);border-color:var(--primary,#bc573a);color:#fff}'+
   '.cw-receipt__btn.is-primary:hover{background:var(--primary-dark,#a84830)}'+
   '.cw-receipt__btn:hover{background:var(--bg-alt,#faf6f0)}'+
   '.cw-receipt__btn small{display:block;font-size:.72rem;font-weight:600;opacity:.85;margin-top:1px}'+

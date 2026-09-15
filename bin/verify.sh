@@ -82,6 +82,9 @@ step "gate coverage vs ci.yml"              python3 bin/check-verify-coverage.py
 # gate nobody executes looks exactly like a gate.
 step "unit — vacuity checker"               python3 bin/check_vacuity.py --self-test
 step "every falsification is on a gate"     python3 bin/check_vacuity.py
+step "unit — PR preflight"                  python3 bin/pr_preflight.py --self-test
+step "unit — attestation authorship"        python3 bin/check_attestation_authorship.py --self-test
+step "attestation authorship"               python3 bin/check_attestation_authorship.py
 
 # --- python validators ---
 # This block mirrors the python half of ci.yml's build-test-validate job, step for step.
@@ -119,6 +122,7 @@ step "unit — media guard"                   python3 $A/site_build/test_media_g
 step "unit — shared build logic"            python3 $A/site_build/test_common.py
 step "unit — analytics allowlist"           python3 $A/site_build/test_analytics_events.py
 step "analytics allowlist freshness"        python3 $A/site_build/analytics_events.py --check
+step "book library ISBN-13 consistency"     python3 bin/derive_isbn13.py --check
 # metrics/node_modules is gitignored (matches sp-proxy's own pattern further below);
 # ci.yml's "Install — metrics collector dependencies" step covers a fresh checkout
 # there, so mirror it here rather than let a fresh clone fail this step for a reason
@@ -142,6 +146,30 @@ step "validate_claim_anchors"               python3 $A/validate_claim_anchors.py
 step "unit — evidence annotations"          python3 $A/validate_evidence_annotations.py --self-test
 step "validate_evidence_annotations"        python3 $A/validate_evidence_annotations.py
 step "span audit (verbatim vs paper)"       python3 bin/verify_spans.py
+step "unit — research dock"                 python3 bin/research-dock.py --self-test
+step "research return dock"                 python3 bin/research-dock.py check --strict
+# Two gates here, ONE principle: a gate may only block on something the person in front of
+# it can actually fix. They reach it by different routes, which is why the flags differ.
+#   - The DOCK blocks, but narrowly. `--strict` exits 1 on BLOCKING defects only -- a
+#     property of the tracked JSON, wrong in every checkout and fixable in seconds. It never
+#     exits on advisory ones: staleness, or a `returnFile` that exists only in the checkout
+#     that owns the returns (they are gitignored, so ~25 worktrees carry the registry without
+#     the answers). See `Defect` in bin/research-dock.py. Before this split the step ran
+#     WITHOUT --strict and the exit code was `1 if args.strict else 0`, so it printed defects
+#     and passed while the doc called it a gate.
+#   - STANDARDS COVERAGE reports. An undecided standards unit is a faculty decision, not a
+#     file anyone can edit, so it must never stop a clinical correction from being pushed.
+#     `--strict` exists there for deliberate use.
+# `--self-test` BLOCKS for both: it is a real falsification and check_vacuity.py requires it.
+step "unit — standards coverage"            python3 bin/check_standards_coverage.py --self-test
+step "standards spine coverage"             python3 bin/check_standards_coverage.py
+# The vocabulary is data now, and six literals in two languages have to agree with it. The
+# --self-test BLOCKS (check_vacuity.py requires a falsification to be on a gate, and this
+# one ends by asserting the LIVE tree agrees, so a real drift fails here). The plain run
+# REPORTS: a vocabulary gap is a curriculum decision, not a broken file, and must never be
+# able to stop a clinical correction from being pushed. Same split as standards coverage.
+step "unit — vocabulary registry"           python3 bin/check_vocabulary.py --self-test
+step "vocabulary vs code sites"             python3 bin/check_vocabulary.py
 step "unit — qbank coherence"              python3 bin/check_qbank_coherence.py --self-test
 # Four tools shipped a --self-test that NO gate invoked — found by bin/check_vacuity.py after
 # Codex pointed out it was inventorying only test FILES, not the --self-test modes its own
@@ -150,12 +178,24 @@ step "unit — qbank coherence"              python3 bin/check_qbank_coherence.p
 # nothing wherever its guard runs.
 step "unit — decision drift"                python3 bin/check_decision_drift.py --self-test
 step "unit — ruleset drift"                 python3 bin/check_ruleset_drift.py --self-test
+# Only the SELF-TEST runs here. The real sweep needs `gh`, `npm audit --include=dev`
+# and every local worktree, so it is a monthly, human-run step whose receipt
+# monthly_review.py ages -- exactly like check_ruleset_drift.py --check-bypass. A
+# stale claim needs a person to re-verify it, not a red build.
+step "unit — stale claims"                  python3 bin/check_stale_claims.py --self-test
 step "unit — claim exposure"                python3 bin/claim_exposure.py --self-test
 step "unit — offrunner findings"            python3 bin/verify_findings_offrunner.py --self-test
 # A fifth joined that class straight away: #536 (WP-5p) shipped bin/check_twin_parity.py with
 # a --self-test that no gate ran, because #548's branch was cut before the tool existed. Same
 # defect, one merge later — which is the argument for the mechanical check, not against it.
 step "unit — twin parity"                   python3 bin/check_twin_parity.py --self-test
+# Only the SELF-TEST runs here, for the same reason as the two above: the real check reads
+# production deploy state from the Netlify API and needs a NETLIFY_AUTH_TOKEN that only the
+# owner holds. The daily steward is maintenance-production-canary.yml; this proves the
+# classifier can still fail -- that a real build failure is a finding, that a
+# no-content-change cancel is not, and that an unrecognised deploy state is a finding rather
+# than a pass. Without that last one the alarm would quietly match nothing.
+step "unit — netlify deploy health"         python3 bin/check_netlify_deploy_health.py --self-test
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
 step "twin parity (audience copies)"        python3 bin/check_twin_parity.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py
@@ -228,6 +268,11 @@ step "hosted Dana preview public build"     npm --prefix sp-preview run build
 # It is NOT a red-team pass — sections A, C1/C4/C5, D and E are human/live checks.
 # See docs/RED_TEAM_RUNBOOK.md.
 step "red-team tier 1 (gate integrity)"     node bin/redteam-offline.mjs
+# Report-only, same idiom as "path coverage (report-only)" above: the script itself always
+# exits 0 (see the SHOW_COVERAGE comment in bin/redteam-offline.mjs), so this cannot fail the
+# gate. It exists so a gate added to the pack with no probe is visible in every verify.sh run
+# rather than only when someone remembers to run --coverage by hand.
+step "red-team gate coverage (report-only)" node bin/redteam-offline.mjs --coverage
 
 # --- build + static QA gate, both sites ---
 if [ $QUICK -eq 0 ]; then
@@ -246,6 +291,15 @@ fi
 # from an earlier run if one is current, and says why it checked nothing if not.
 step "unit — crisis surfaces checker"       python3 bin/check_crisis_surfaces.py --self-test
 step "crisis contacts in the built sites"   python3 bin/check_crisis_surfaces.py
+
+# Design-system drift. Its C4 check reads the BUILT pages, not the sources, because the
+# dark-mode stylesheet is injected at build time (common.py) — a tool source can look
+# self-consistently light, pass every source-level test, and still ship a page whose ground
+# flips to dark while its own ink stays near-black. That is exactly what shipped on five tool
+# pages until 2026-09-10 (family-systems.html measured 1.06:1 on production). Placed here,
+# after both builds, for the same reason check_crisis_surfaces.py is.
+step "unit — design drift checker"          python3 bin/check_design_drift.py --self-test
+step "design system drift"                  python3 bin/check_design_drift.py
 
 echo "─────────────────────────────────────────────────────────────────────"
 if [ ${#FAILED[@]} -eq 0 ]; then

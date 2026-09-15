@@ -25,7 +25,7 @@ test('local overlay changes only the initial direct-disclosure policy and preser
   assert.deepEqual(variant.gated.filter(g=>g.id!=='si_active'),canonical.gated.filter(g=>g.id!=='si_active'));
   assert.equal(overlay.assertSpeechCompatible(canonical,variant),true);
   assert.equal(JSON.stringify(canonical),before);assert.equal(canonical.facultyReview.status,'reviewed');
-  assert.equal(variant.localDraftOverlay.status,'draft-pending-faculty-review');
+  assert.equal(variant.localDraftOverlay.status,'reviewed');
   assert.equal(createHash('sha256').update(JSON.stringify(sourceGate)).digest('hex'),overlay.sourceGateHash);
 });
 
@@ -51,7 +51,7 @@ test('an overlay id cannot bypass validation of the policy, source text, or draf
     value=>{value.gated.find(item=>item.id==='si_active').requiresRapport=0;},
     value=>{value.gated.find(item=>item.id==='si_active').blockedByRecentFlags=['judgmental'];},
     value=>{value.gated.find(item=>item.id==='si_active').reveal+=' altered';},
-    value=>{value.localDraftOverlay.status='reviewed';},
+    value=>{value.localDraftOverlay.status='draft-pending-faculty-review';},
     value=>{value.localDraftOverlay.sourceGateHash='tampered';},
     value=>{value.localDraftOverlay.extra=true;},
     value=>{value.localDraftOverlay.id='other-overlay';}

@@ -1,10 +1,20 @@
-# Protected hosted Dana preview
+# Practice a Moment
 
-An isolated engineering/faculty proof of ten spoken turns. This directory does not alter either learner site's navigation or the production SP proxy. Dana's disclosure overlay and conversational portrayal remain drafts pending faculty review.
+The protected room now includes Elena, Priya and Luis moments alongside all five full encounters. Read [the requirement audit and faculty audition packet](PRACTICE_MOMENT_ACCEPTANCE.md) for evidence and remaining decisions. The mode uses `/api/practice-moment` and requires `DANA_PREVIEW_ENABLED=true`, the same gate as every other mode in this room; there is no separate moments-only flag. Staging enablement does not enable production. Joshua Moss, MD, attested Elena, Priya and Luis's authored content (case setup, facts, review criteria and templates) on 2026-09-09 — `reviewStatus` in the catalog is `reviewed` and the learner-facing draft label is gone from all three. That attestation covers the exercises' content; it does not itself establish a live AI-review or physical-microphone pass — see "Still not verified" below and the requirement audit's remaining external evidence.
+
+Each moment allows four patient-facing responses, one three-unit review and one three-unit terminal alternative: at most 19 reserved operation units and one start. It shares the existing budget namespace and 20/680/340 policy. Review consumes the current continuation before evaluation; unavailable feedback stays closed and falls back to authored reflection prompts. Transfers require a fresh normally budgeted start.
+
+Private reflection and the existing attending presentation stay in page memory. The separate optional Priya **Team formulation — included in AI feedback** goes to review only after explicit submission. No transcripts/audio are persisted, no dialogue is logged, and no analytics are added. Actor facts/rubrics stay in the function bundle; seven explicit browser assets ship.
+
+---
+
+# Protected spoken Interview Room
+
+A protected pilot of ten spoken turns with Dana, Marcus, Ray, Morgan, or Morgan and Maya, hosted separately from the learner sites. The learner sites' Interview Room links here through a top-level navigation, so microphone and media permissions belong to this origin. The original Interview Room and its production SP proxy continue to work. Dana's disclosure overlay and conversational portrayal retain their recorded review status.
 
 ## Local verification
 
-Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Both also run in `ci.yml`'s `build-test-validate` job and in `bin/verify.sh`, so a change here reddens a pull request rather than surfacing only when someone remembers the commands. Run the full root and prototype suites sequentially. The `dist` folder contains only `index.html`, `app.js`, and `styles.css`; never publish the repository root, `_prototypes`, or `sp-preview` itself.
+Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Both also run in `ci.yml`'s `build-test-validate` job and in `bin/verify.sh`, so a change here reddens a pull request rather than surfacing only when someone remembers the commands. Run the full root and prototype suites sequentially. The `dist` folder contains only the seven browser assets listed below; never publish the repository root, `_prototypes`, or `sp-preview` itself.
 
 The opt-in `npm run test:hosted` also requires the `tests/smoke` Playwright dependencies, explicit `DANA_QA_URL` and `DANA_QA_ACCESS_FILE` environment variables, and an authorized preview passcode file. It makes one paid opening and ten paid conversation requests, with synthetic recognition and native muted audio at 2x. It never runs as part of `npm test` or in CI; reports contain counts/timings, not dialogue, keys, or state receipts.
 
@@ -14,9 +24,7 @@ Neither mode is microphone evidence: both replace `SpeechRecognition`, and both 
 
 ## Cases
 
-The preview carries three faculty-reviewed cases: Dana (admission interview),
-Marcus (a focused interview) and Ray (establishing a working conversation). The
-learner picks one at the door and it is fixed for that encounter.
+The preview carries Dana (admission interview), Marcus (a focused interview), Ray (establishing a working conversation), Morgan (motivational interviewing), and Morgan and Maya (a shared family meeting). The learner picks one at the door and it is fixed for that encounter. Morgan and the family meeting were attested by Joshua Moss, MD on 2026-09-09 and no longer carry a draft label; all five encounters now ship faculty-attested content.
 
 Each encounter is bound to its case twice over. The state codec's binding embeds
 the case id and a hash of the case definition, so a receipt sealed for one case
@@ -26,17 +34,34 @@ against every request. The second check is deliberate redundancy: the first is
 emergent from a template string, and an edit that dropped the case hash from the
 binding would otherwise go unnoticed.
 
-Morgan (`sp_alcohol_ambivalence_001`) is deliberately absent. It is
-`draft-pending-attestation` and lives outside the pack; the server registry, the
-client's case list and the station content all refuse it, and tests pin that
-absence so adding it stays a decision.
+Morgan reuses the existing local alcohol-ambivalence case without introducing new history or a required abstinence ending. The family case uses only the existing public Morgan/Maya projection. Each learner turn has one named respondent, selected from the speaker control or a direct address at the beginning ("Maya, ..."). Mentioning a person later in a sentence does not switch the respondent. The transcript, voice, marked moments, and alternative retain that person's identity. The alternative restores the original addressee from authenticated history, regardless of who spoke last.
+
+The hosted family case has no private channel or private check-in operation. Its prompt receives no authored private inventory; the local prototype's private workflow is not transplanted into this stateless endpoint. In this version, asking both participants means inviting each perspective on successive turns. Each response still uses one actor request and at most two speech requests, so the existing conservative allowance remains sufficient.
+
+Hosted delivery instructions live in `lib/portrayal.mjs`, separate from the archived recordings and other prototypes. Marcus uses continuous urgent phrasing and compressed pauses; a clear redirect changes topic without instantly changing his underlying presentation. Morgan, Maya, and Ray receive subtle case-specific emotional delivery. Dana's accepted voice remains unchanged. Marcus uses a modest 1.12 speech-synthesis setting after the first audition; the other cases retain 1.0 and browser playback remains 1.0. This is an authored portrayal setting, not a diagnostic speech-rate threshold. No extra provider call or speaking-speed/fluency grading is added. Full encounters now offer an opt-in **Interrupt by speaking** headphone experiment. Recognition stays available during eligible playback; distinct recognized words cancel active/queued audio and remain in the next draft. Exact echo checks and a short tail limit self-capture; they are not acoustic speaker separation. Brief acknowledgments can let the patient continue. Recognition latency, missed interruptions and speaker echo still require physical trials. Default mode retains explicit Interrupt/Escape and Resume. The final allowed reply and terminal alternative do not reopen another turn.
 
 Only Dana receives the direct-suicide-question overlay. It is reviewed for her
 alone and is never applied to another case.
 
+Faculty can choose **Gentler expression / Current portrayal / More pronounced expression** before a full encounter. Only the expression of the existing dialogue changes; the server binds this allowlisted setting for the whole encounter, including family speakers and an alternative. Standard preserves the accepted profiles exactly. Presets do not change numeric speed, facts, symptoms, disclosure rules, actor instructions, learner feedback, or interruption controls. Practice a Moment retains Standard and its existing capture flow. Actual nonstandard voices are drafts for listening review.
+
+See the [case-by-case research](../docs/superpowers/specs/2026-09-09-sp-voice-evidence.md) and [spoken interruption pilot design and trial sequence](../docs/superpowers/specs/2026-09-09-spoken-interruption-pilot.md). No production activation or clinical attestation follows from automated checks.
+
+## Conversation realism
+
+Full encounters carry forward each patient's expressed concern or boundary without an automatic emotional reset. Patient clarification is reserved for material ambiguity; an unknown answer or a simple acknowledgement should not trigger a generic rephrase request. These are provider directions, not measured emotional states or grades.
+
+In the shared family meeting, the selected person answers first. Occasionally the other person asks, “Could I add something?” in their own voice. Say “go ahead,” address them by name, or use the optional invitation control. Continuing with the original speaker defers the request. At most one bid per person is offered; it uses the second existing speech slot and keeps the three-unit turn budget. Bid turns wait for the full primary answer before synthesis, so first-sentence prefetch does not apply on those turns. Transcripts and marked moments attribute only completed audio to each person.
+
+Faculty can introduce one brief knock or hallway chime during a full encounter. The control pauses patient playback and the microphone, retains completed speech and the draft, and presents the same event in text. Resume or type when ready. Its next-turn cue ID is allowlisted and sealed by the server; the event cannot add a visitor, danger, diagnosis or disclosure permission.
+
+`/api/preview-capabilities` exposes only a boolean availability flag and reads the same `DANA_PREVIEW_ENABLED` setting as the merged Moments implementation. It does not restore the retired Moments-only flag. Categorized unavailable-feedback responses accept only the five server-defined categories and preserve the existing single alternative.
+
+See the [realism specification](../docs/superpowers/specs/2026-09-09-sp-encounter-realism.md). These software checks and sampled generated replies do not replace faculty listening or physical microphone trials.
+
 ## The student station
 
-`dist` publishes five files: `index.html`, `app.js`, `styles.css`, `station.js` and `station-content.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends.
+`dist` publishes seven files: `index.html`, `app.js`, `styles.css`, `station.js`, `station-content.js`, `moment-content.js` and `moment-station.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends. The room view above the transcript is a projection of the same snapshot, like the station: it shows seating, who is speaking and who answers next, and it draws no case facts of its own.
 
 It is a projection of the controller snapshot and nothing more. It holds no reference to `send()`, makes no network request, and reads and writes no browser storage — `build.test.mjs` fails the build if `fetch(`, `localStorage`, `sessionStorage`, `indexedDB` or `XMLHttpRequest` appears in either station file. Marked moments quote only what was actually heard: a reply that did not finish playing is quoted at its completed segments, and a moment with nothing confirmed heard says so rather than showing an empty quotation. `station-content.js` carries learner-facing content only; the participant `portrayal` guidance is actor direction and stays server-side.
 
@@ -49,13 +74,18 @@ Use a separate Netlify preview site with this directory as its base. Keep its pr
 | Name | Meaning |
 | --- | --- |
 | `DANA_PREVIEW_ENABLED` | Exactly `true` to permit this engineering preview. Missing/false fails closed. |
-| `DANA_PREVIEW_PASSCODE` | Preview-only access phrase, at least 16 characters. Held only in browser memory. |
+| `DANA_PREVIEW_PASSCODE` | Access phrase, at least 15 characters. Configured server-side; held only in browser memory during an encounter. |
 | `DANA_PREVIEW_STATE_KEY` | Random 32-byte key encoded as 43 base64url characters. Server only. |
 | `OPENAI_API_KEY` | Existing user-authorized Psychiatherapy key. Server only; never public assets. |
-| Deployment identity | Supplied by trusted Function `context.deploy.id`; state and budget bind to that deployment. Do not rely on build-only `DEPLOY_ID`. |
+| Deployment identity | Supplied by trusted Function `context.deploy.id`; encrypted encounter state binds to that deployment. Do not rely on build-only `DEPLOY_ID`. |
+| `DANA_PREVIEW_BUDGET_NAMESPACE` | Required, stable site-wide ledger namespace. Pin it once to the original production deployment's ledger and use the same value in every deployment context. Never rotate it when deploying. |
 | `DANA_PREVIEW_ORIGIN` | Optional explicit exact origin for a local test or assigned preview alias. |
 
-Draft deployment only. The learner production sites and `sp-interview-proxy` production deployment are outside this change's activation scope. Set no canonical `speechEngine` enabled flag or faculty attestation during deployment.
+The September 8 integration authorizes the stable protected pilot at `https://interview-room-faculty-preview.netlify.app`, linked from the learner sites. Deploy this configuration only to its separate site; never to either learner site's site ID or to `sp-interview-proxy`. Keep the passcode and provider key in Function environment variables. This integration does not enable the canonical `speechEngine` flag or change faculty attestation.
+
+The owner-approved small pilot allows **20 encounter start attempts per UTC calendar day**, shared across all five cases, users, and deployment contexts on this Netlify site. A separate allowance permits **680 operation units per UTC day and 340 per rolling 30 minutes**. An opening costs one unit and each question or alternative costs three. Twenty ten-question encounters plus one alternative each therefore fit the daily unit allowance; up to ten such encounters fit a thirty-minute window. Starts and daily units renew at **00:00 UTC**. Reaching twenty starts does not prevent an already admitted encounter from continuing within the remaining unit allowance. Verification attempts and failed/cancelled work count, so this is a limit on attempts, not a promise of twenty successful completions or a dollar-billing plan.
+
+Before the first capacity-upgrade deployment, set `DANA_PREVIEW_BUDGET_NAMESPACE` in all Function deployment contexts to the existing production ledger's namespace (the previous production deployment ID). The first successful reservation atomically upgrades that same `paid-operations-v1` key to stored schema v2, preserving today's charges and starts and all still-retained operation hashes. A missing namespace, malformed ledger, changed policy, failed read, or ambiguous conditional write fails closed. Do not delete the record, choose a fresh namespace, or change the namespace after this migration. The old deployment then refuses the upgraded record rather than overwriting it. Publish the assigned preview alias with the same namespace before using it for paid verification; old aliases using their own legacy ledger do not participate in the new policy.
 
 Use `netlify deploy --context deploy-preview` with the complete build for the first upload. Verify the function bundle as well as static assets. Routing uses the explicit TOML rewrite to the default function endpoint. Do not also export `config.path`: modern custom paths disable the default endpoint, making that combination return 404. See [Netlify function configuration](https://docs.netlify.com/build/functions/configuration/).
 
@@ -67,7 +97,7 @@ The browser sends questions in an authenticated same-origin POST. Browser speech
 
 The server validates the complete actor reply before publishing any speculative first-sentence audio. Each complete MP3 segment carries an encrypted receipt containing server-authored dialogue. The next request can acknowledge only issued, generation-complete segments; interruption never treats an unheard tail as communicated. Receipts expire after 30 minutes and are invalid on another deployment/origin or after key/access rotation.
 
-The ledger stores hashes, timestamps, and counts only. Each opening reserves one paid attempt; each question conservatively reserves three (actor plus up to two speech segments), even if fewer are used, and the one spoken alternative reserves three on the same basis. A full encounter with its alternative therefore reserves 34 units. Limit: 72 attempts per rolling 30 minutes, 120 per deployment. Failures/cancellations remain reserved. These are operation limits, **not dollar billing or a guarantee against charges outside this preview**. Redeploying creates a new allowance and must be intentional.
+The ledger stores operation hashes, binding hashes, timestamps, and unit counts only. Each opening reserves one paid attempt; each question conservatively reserves three (actor plus up to two speech segments), even if fewer are used, and the one spoken alternative reserves three on the same basis. A full encounter with its alternative therefore reserves 34 units. The alternative is terminal at the server even when it revisits an early question; its receipt cannot start extra questions or a second alternative. Failures/cancellations remain reserved. The current and preceding UTC day's operation hashes stay in the ledger, retaining replay protection for at least 24 hours; encounter receipts expire after 30 minutes. Daily and rolling totals derive from those operations in the same atomic conditional write, including at midnight and during the v1 upgrade. Redeploying **does not renew capacity**. These are operation limits, **not dollar billing or a guarantee against charges outside this preview**.
 
 ## Acceptance before sharing
 
@@ -83,4 +113,4 @@ The ledger stores hashes, timestamps, and counts only. Each opening reserves one
 
 `DanaPreview.session.getDiagnostics()` returns fixed state codes, counts and timings only — no speech, no transcript, no draft text — and is the intended way to establish what happened on a physical microphone without recording anything. `nativeRecognition` distinguishes the browser's own recognition from a synthetic replacement; `automaticSubmissions` and `explicitSubmissions` distinguish turns that sent themselves from turns sent by Space, Done or the composer; `counts.voice_wordless`, `counts.unfinished` and `counts.reconnect` name the three lifecycle paths that previously ended hands-free operation.
 
-Retry/reflection, Morgan, and family information replay are preserved in the packaged local prototype. They are subsequent hosted slices, not implied by this first proof.
+Retry/reflection, Morgan, and the shared family meeting are now hosted. Private family check-ins and the per-person information replay remain in the packaged local prototype; they are not implied by the public-only hosted meeting.

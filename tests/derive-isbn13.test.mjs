@@ -12,11 +12,16 @@
  * boolean is one careless edit away from letting a bot loose on curation or on a faculty
  * attestation; a derived rule cannot be flipped by accident.
  *
- * Nothing here touches the network, and nothing here writes to the tracked book library.
+ * Nothing here touches the network. One test — "no task retires on another task's output" —
+ * does write the tracked book library and restore it, because observing cross-task
+ * contamination needs the real corpus; everything else works on a fixture under os.tmpdir().
+ * No test may assume the tracked library still HAS outstanding work: the nightly queue runner
+ * performs the task and then runs this suite in the same checkout, so by then it does not.
  */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -85,14 +90,19 @@ test('non-entry lines are never touched', () => {
 });
 
 test('the dry run reports without writing', () => {
+  const books = path.join(repo, '07_Evidence_and_Reading', 'Book_Summaries', 'ms3_book_library.md');
+  // Compare the file against ITSELF across the call. The earlier version asked
+  // `git diff --name-only` whether it differed from HEAD, which answers a different question:
+  // it is equally true when the queue runner wrote the file in an earlier step of the same job.
+  // That is the same defect as the floor pinned below — inferring your own effect from tree
+  // state somebody else already changed — and it failed the runner for the same reason.
+  const before = fs.readFileSync(books);
   const proc = spawnSync('python3', [path.join(repo, 'bin', 'derive_isbn13.py')],
     { cwd: repo, encoding: 'utf8', timeout: 120_000 });
   assert.equal(proc.status, 0);
   assert.match(proc.stdout, /dry run — pass --write/);
-  const dirty = spawnSync('git', ['diff', '--name-only', '--',
-    '07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md'],
-    { cwd: repo, encoding: 'utf8' });
-  assert.equal(dirty.stdout.trim(), '', 'a dry run must not modify the book library');
+  assert.ok(fs.readFileSync(books).equals(before),
+    'a dry run must not modify the book library');
 });
 
 // ---------------------------------------------------------------- the autonomy rule
@@ -141,30 +151,98 @@ test('doing the work actually retires the task — the loop that would never end
   // than replacing it. The task reported 51/51 ready forever, so the nightly runner would have
   // opened an empty draft PR every night for the rest of time.
   //
-  // The generic mechanism tests above all passed while that was true, because they used synthetic
-  // tasks. Only exercising a REAL task end to end catches it, so this test does the work, checks
-  // the queue, and puts the file back.
-  const books = path.join(repo, '07_Evidence_and_Reading', 'Book_Summaries', 'ms3_book_library.md');
-  const original = fs.readFileSync(books, 'utf8');
+  // It runs on a FIXTURE, not the tracked library, and that is the point rather than tidiness.
+  // The earlier version measured the tracked file and opened with `assert.ok(before > 0)`. The
+  // queue runner performs a task's `run` and then runs this whole suite in the SAME checkout, so
+  // by the time the guard ran the work was already done, `before` was 0, and the runner failed —
+  // three consecutive nights from 2026-09-09, on the one task it exists to perform. A task's own
+  // test may not require that the task has not been done.
+  //
+  // The invariant that survives is the one that always mattered: doing the work drives the
+  // measure to zero. That holds on any tree, including one the runner has already worked.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'isbn-retire-'));
+  const books = path.join(dir, 'ms3_book_library.md');
   try {
-    const before = py('print(M.measure_isbn_derivable()[0])', 'what_can_i_do_today');
-    assert.ok(Number(before) > 0, 'expected outstanding work to begin with');
+    // Two derivable entries and one Amazon-only id, which must be left alone. Built here so the
+    // precondition is a property of the fixture rather than of the working tree.
+    fs.writeFileSync(books, [
+      '# Fixture',
+      '',
+      `- **[The Body Keeps the Score](https://www.amazon.com/dp/${KNOWN[0][0]})** — van der Kolk.`,
+      `- **[Man's Search for Meaning](https://www.amazon.com/dp/${KNOWN[1][0]})** — Frankl.`,
+      '- **[A Kindle original](https://www.amazon.com/dp/B00X4WHP55)** — not an ISBN.',
+      '',
+    ].join('\n'));
 
-    const wrote = spawnSync('python3', [path.join(repo, 'bin', 'derive_isbn13.py'), '--write'],
+    const measure = () =>
+      py(`print(M.measure_isbn_derivable(${JSON.stringify(books)})[0])`, 'what_can_i_do_today');
+
+    assert.equal(measure(), '2', 'the fixture must start with work the deriver can do');
+
+    const wrote = spawnSync('python3',
+      [path.join(repo, 'bin', 'derive_isbn13.py'), '--write', '--books', books],
       { cwd: repo, encoding: 'utf8', timeout: 120_000 });
     assert.equal(wrote.status, 0, wrote.stderr);
 
-    const after = py('print(M.measure_isbn_derivable()[0])', 'what_can_i_do_today');
-    assert.equal(after, '0', 'a completed task must measure zero, or the runner never stops');
+    assert.equal(measure(), '0', 'a completed task must measure zero, or the runner never stops');
 
-    const proc = spawnSync('python3',
-      [path.join(repo, 'bin', 'what_can_i_do_today.py'), '--next-autonomous'],
-      { cwd: repo, encoding: 'utf8', timeout: 120_000,
-        env: { ...process.env, CLERKSHIP_SKIP_EGRESS_PROBE: '1' } });
-    assert.equal(proc.stdout.trim(), '', 'nothing may remain for a runner once the work is done');
+    // ...and the work is idempotent, so a second run finds nothing rather than re-adding.
+    const again = spawnSync('python3',
+      [path.join(repo, 'bin', 'derive_isbn13.py'), '--write', '--books', books],
+      { cwd: repo, encoding: 'utf8', timeout: 120_000 });
+    assert.equal(again.status, 0, again.stderr);
+    assert.equal(measure(), '0');
+
+    // The ISBN recorded is the published one, and the Amazon-only id was never guessed at.
+    const written = fs.readFileSync(books, 'utf8');
+    assert.match(written, new RegExp(`ISBN ${KNOWN[0][1]}`));
+    assert.match(written, new RegExp(`ISBN ${KNOWN[1][1]}`));
+    assert.doesNotMatch(written, /B00X4WHP55\)\*\* — not an ISBN\.\s+ISBN/);
   } finally {
-    fs.writeFileSync(books, original);
+    fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test('the runner having already done the work does not break the guard suite', () => {
+  // The failure above, stated as a property rather than a story: measuring a fully-derived
+  // library is a legitimate 0, not a broken precondition. Pin it so the next person who reaches
+  // for `assert.ok(before > 0)` finds out here instead of on the third red night.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'isbn-done-'));
+  const books = path.join(dir, 'ms3_book_library.md');
+  try {
+    fs.writeFileSync(books,
+      `- **[The Body Keeps the Score](https://www.amazon.com/dp/${KNOWN[0][0]})** — v.`
+      + `  ISBN ${KNOWN[0][1]}\n`);
+    assert.equal(
+      py(`print(M.measure_isbn_derivable(${JSON.stringify(books)})[0])`, 'what_can_i_do_today'),
+      '0', 'an already-derived library measures zero without erroring');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('no test in this suite requires the tracked library to be un-derived', () => {
+  // The guard for the outage, in the only form that is actually checkable. The queue runner
+  // performs a task's `run` and then runs this suite in the same checkout, so the tracked
+  // library may legitimately arrive fully derived. A test that opens by asserting work remains
+  // is therefore asserting the runner has not run — which it always has, by then.
+  //
+  // Deliberately narrow. The suite DOES still write the tracked library, in "no task retires on
+  // another task's output" below, and that write is load-bearing: observing that one task's work
+  // leaves another task's measure alone needs the real corpus and the real TASKS table, and a
+  // fixture would make it pass vacuously. That test survives a derived tree because it compares
+  // before against after rather than against a floor. The floor is the defect, so the floor is
+  // what this pins.
+  const src = fs.readFileSync(fileURLToPath(import.meta.url), 'utf8');
+  assert.doesNotMatch(src, /assert\.ok\(\s*Number\([^;]*\)\s*>\s*0/,
+    'measure a fixture you built, or compare before against after — never assert a floor on the '
+    + 'tracked library, which the nightly runner empties before this suite runs');
+  // The same mistake in its other shape, which cost a second failing test in the same job:
+  // `git diff` reports how the tree differs from HEAD, not what THIS test just did. Read the
+  // file before and after instead.
+  assert.doesNotMatch(src, /spawnSync\('git',\s*\['diff'/,
+    'prove your own effect by reading the file either side of the call, not by asking git how '
+    + 'the tree differs from HEAD — the runner has already changed it');
 });
 
 test('the queue asks the deriver what is left, rather than deciding for itself', () => {

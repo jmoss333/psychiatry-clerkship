@@ -52,6 +52,29 @@ jobs:
           --source-sha "$GITHUB_SHA"
           --out "$RUNNER_TEMP/release-twin.json"
 
+      # THE PRODUCTION-DEPLOY ALARM. The satellite sites now SKIP no-op builds via
+      # 13_Faculty_Resources/_automation/site_build/netlify_ignore_scoped.sh, and Netlify
+      # files a skip as a FAILED deploy — so the per-site "Deploy failed" email can no longer
+      # tell a routine skip from a broken build. This reads production deploy state from the
+      # Netlify API and discards exactly the no-content-change cancel.
+      #
+      # It runs `if: always()` for the same reason the release twin does: a broken crawl and
+      # a frozen deploy are different failures and neither may hide the other. In fact this
+      # is the one that sees a deploy FREEZE at all — a site whose builds are all failing
+      # keeps serving its last good publish, so the crawl above stays green while the site
+      # silently stops updating. That is exactly what happened on 2026-08-31.
+      #
+      # Inert until the NETLIFY_AUTH_TOKEN repository secret exists: with no token the tool
+      # prints a warning annotation, records status "skipped" in the receipt, and exits 0. A
+      # daily steward that goes red for a missing secret teaches everyone to ignore it.
+      - name: Read Netlify production deploy health
+        if: always()
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: >-
+          python3 bin/check_netlify_deploy_health.py
+          --out "$RUNNER_TEMP/netlify-deploy-health.json"
+
       - name: Upload production canary evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -60,5 +83,6 @@ jobs:
           path: |
             tests/smoke/test-results/
             ${{ runner.temp }}/release-twin.json
+            ${{ runner.temp }}/netlify-deploy-health.json
           if-no-files-found: warn
           retention-days: 90

@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest import mock
 
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
@@ -1063,6 +1064,41 @@ class PulseVersusDelegatedTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertNotIn(FAILED_MARKER, stderr)
 
+    def test_a_workflow_the_escalation_does_not_watch_is_not_delegable(self):
+        self.assertNotIn("ci.yml", heartbeat_module.ESCALATED_WORKFLOWS)
+        self.assertIn(
+            "surveillance-citations.yml", heartbeat_module.ESCALATED_WORKFLOWS
+        )
+
+    def test_a_failed_ci_run_stays_this_heartbeats_own(self):
+        # The regression this closes. ci.yml's Sunday run is the clean-room
+        # release rehearsal; the escalation's workflow_run list does not cover
+        # it, so deferring it would hand the failure to nobody.
+        pulse, delegated = heartbeat_module.classify_blockers(
+            self._receipt(self._row("ci.yml", "failed"))
+        )
+        self.assertEqual([name for name, _ in pulse], ["ci.yml"])
+        self.assertEqual(delegated, [])
+
+    def test_main_exits_two_when_only_an_unwatched_workflow_failed(self):
+        code, stderr = self._run_main_with_receipt(
+            self._receipt(self._row("ci.yml", "failed"))
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(f"heartbeat {FAILED_MARKER}:", stderr)
+        # It must not claim someone else has this one.
+        self.assertNotIn("schedule is alive", stderr)
+
+    def test_a_watched_workflow_failure_is_still_deferred(self):
+        # ...and the fix must not swallow the deferral it was built for.
+        pulse, delegated = heartbeat_module.classify_blockers(
+            self._receipt(self._row("surveillance-citations.yml", "failed"))
+        )
+        self.assertEqual(pulse, [])
+        self.assertEqual(
+            [name for name, _ in delegated], ["surveillance-citations.yml"]
+        )
+
     def test_the_receipt_records_the_pulse_alongside_the_gate(self):
         # evaluate_runs must emit `pulse` so the uploaded artifact is
         # self-describing, without changing what `gate` means.
@@ -1076,6 +1112,84 @@ class PulseVersusDelegatedTests(unittest.TestCase):
         self.assertEqual(receipt["gate"], "blocked")
         self.assertEqual(receipt["pulse"], "blocked")
         self.assertIn("workflows", receipt)
+
+
+class DelegationHandoffTests(unittest.TestCase):
+    """A delegation is a claim about another workflow. Verify it.
+
+    `DELEGATED_WATCHER` is a string in a log line: on its own it asserts that
+    automation-failure-escalation.yml is holding these rows, and asserts it just
+    as confidently when that is false. It was false for `ci.yml` from #531 until
+    2026-09-09 — the heartbeat deferred a failed clean-room release rehearsal to
+    a watcher whose `workflow_run` list has never included CI, so both jobs were
+    green and nobody was looking.
+
+    So the handoff is re-derived here from the two YAML files on every run,
+    resolving each EXPECTATIONS filename to the workflow `name:` the escalation
+    actually matches on. It is checked in BOTH directions on purpose:
+
+    - narrowing the escalation's list breaks the first test, which is the drift
+      this exists to catch;
+    - widening it breaks the second, which says the exclusion is no longer
+      justified and ESCALATED_PREFIXES should widen with it.
+
+    Either way the pin fails loudly rather than leaving a monitor deferring into
+    a void.
+    """
+
+    ESCALATION = (
+        Path(__file__).resolve().parents[2]
+        / ".github"
+        / "workflows"
+        / heartbeat_module.DELEGATED_WATCHER
+    )
+
+    @classmethod
+    def setUpClass(cls):
+        document = yaml.safe_load(cls.ESCALATION.read_text(encoding="utf-8"))
+        # PyYAML parses the bare key `on` as boolean True.
+        triggers = document.get("on") or document.get(True)
+        cls.watched = set(triggers["workflow_run"]["workflows"])
+
+    def _workflow_name(self, workflow_file):
+        path = self.ESCALATION.parent / workflow_file
+        self.assertTrue(path.exists(), f"{workflow_file} is watched but absent")
+        return yaml.safe_load(path.read_text(encoding="utf-8"))["name"]
+
+    def test_the_watcher_named_in_the_deferral_line_exists(self):
+        # The line points a reader somewhere; the somewhere has to be real.
+        self.assertTrue(self.ESCALATION.exists())
+        self.assertTrue(self.watched, "the escalation watches nothing at all")
+
+    def test_every_delegable_workflow_is_actually_watched(self):
+        for workflow_file in sorted(heartbeat_module.ESCALATED_WORKFLOWS):
+            with self.subTest(workflow=workflow_file):
+                self.assertIn(
+                    self._workflow_name(workflow_file),
+                    self.watched,
+                    f"{workflow_file} is delegated to {heartbeat_module.DELEGATED_WATCHER}, "
+                    "which does not watch it — the deferral would go nowhere",
+                )
+
+    def test_every_excluded_workflow_is_excluded_because_nobody_watches_it(self):
+        unwatched = set(EXPECTATIONS) - heartbeat_module.ESCALATED_WORKFLOWS
+        for workflow_file in sorted(unwatched):
+            with self.subTest(workflow=workflow_file):
+                self.assertNotIn(
+                    self._workflow_name(workflow_file),
+                    self.watched,
+                    f"{workflow_file} IS watched now — widen ESCALATED_PREFIXES "
+                    "so its failures are deferred rather than double-reported",
+                )
+
+    def test_the_exclusion_is_not_vacuous(self):
+        # If EXPECTATIONS ever became all-maintenance/surveillance, the test
+        # above would pass over an empty set and stop meaning anything. Today
+        # ci.yml is the one row the escalation does not cover; when that stops
+        # being true this assertion is the prompt to re-read the pair.
+        self.assertEqual(
+            set(EXPECTATIONS) - heartbeat_module.ESCALATED_WORKFLOWS, {"ci.yml"}
+        )
 
 
 if __name__ == "__main__":

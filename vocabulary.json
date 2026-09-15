@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "_note": "The internal content vocabulary, as DATA. Until 2026-09-14 the twelve codes existed only as six hard-coded literals in five files (INTERNAL_CODES, FOCUS_CATEGORIES, and SHELF_VOCAB four times over), which is why nobody had ever added or split one: the edit was invisible and unverifiable. bin/check_vocabulary.py now treats this file as the source of truth and FAILS if any of those six sites disagrees with it. Codes marked `proposed` are not usable yet — they are a queue, each one derived from a standards.json unit that is blocked-on-vocabulary and that says so by id. Adding a code means shipping it to all six sites and flipping status to active, in one change.",
+  "codes": [
+    { "id": "anxiety", "label": "Anxiety and trauma-related disorders", "status": "active" },
+    { "id": "childdev", "label": "Child and developmental psychiatry", "status": "active" },
+    { "id": "ethics", "label": "Ethics, capacity and civil commitment", "status": "active" },
+    { "id": "mood", "label": "Mood disorders", "status": "active" },
+    { "id": "neurocog", "label": "Neurocognitive disorders and delirium", "status": "active" },
+    { "id": "otherdx", "label": "Other diagnoses", "status": "active" },
+    { "id": "personality", "label": "Personality disorders", "status": "active" },
+    { "id": "pharm", "label": "Psychopharmacology and somatic therapies", "status": "active" },
+    { "id": "psychosis", "label": "Psychotic disorders", "status": "active" },
+    { "id": "relational", "label": "Relational, family and interpersonal work", "status": "active" },
+    {
+      "id": "safety",
+      "label": "Safety — patient risk",
+      "status": "active",
+      "note": "Means PATIENT RISK: suicide and violence, the construct behind Milestone PC1. It does NOT mean institutional safety events, and bin/check_standards_coverage.py refuses SBP1 -> safety by name. The ambiguity in the bare word is the reason for the split proposed below."
+    },
+    { "id": "substance", "label": "Substance use disorders and withdrawal", "status": "active" },
+
+    {
+      "id": "safety-risk",
+      "label": "Safety — patient risk (suicide, violence)",
+      "status": "proposed",
+      "supersedes": ["safety"],
+      "unblocks": [],
+      "rationale": "Renames the existing `safety` code to what it actually means, so that the second half of the split can exist without ambiguity. Every current use of `safety` is this code; the migration is a rename, not a reclassification. RQ-1 finding f4."
+    },
+    {
+      "id": "safety-systems",
+      "label": "Safety — institutional events, disclosure and RCA",
+      "status": "proposed",
+      "supersedes": ["safety"],
+      "unblocks": ["SBP1"],
+      "rationale": "Institutional safety events, error disclosure, root-cause analysis and QI — the SBP1 construct. Mapping SBP1 to the existing `safety` would manufacture false coverage on the most safety-critical code in the vocabulary, so the checker refuses it by name. This code is the only route by which SBP1 can ever be mapped, and SBP1 is REQUIRED on this rotation as of DECISION: sbp1-required-inpatient."
+    },
+    {
+      "id": "psychotherapy",
+      "label": "Psychotherapy",
+      "status": "proposed",
+      "unblocks": ["PC4", "MK4"],
+      "rationale": "The largest single gap: psychotherapy occupies two of the 21 subcompetencies and is a hard Program Requirement, and the vocabulary cannot express it at all. Highest unblock count of any proposed code."
+    },
+    {
+      "id": "care-transitions",
+      "label": "Care coordination, transitions and discharge",
+      "status": "proposed",
+      "unblocks": ["SBP2"],
+      "rationale": "Care coordination, transitions of care, discharge planning and population health — SBP2, which is REQUIRED on this rotation and currently maps to nothing. Of the nine blocked units this is the one whose content most plainly already happens on an inpatient unit."
+    },
+    {
+      "id": "health-systems",
+      "label": "Health systems, financing and advocacy",
+      "status": "proposed",
+      "unblocks": ["SBP3"],
+      "rationale": "Health care systems, financing, advocacy and transition to practice — SBP3, addressed elsewhere in the program, so this code is needed for completeness of the spine rather than for this rotation's content."
+    },
+    {
+      "id": "evidence-practice",
+      "label": "Evidence-based practice and critical appraisal",
+      "status": "proposed",
+      "unblocks": ["PBLI1"],
+      "rationale": "PBLI1. Note the library already carries a strong evidence apparatus (evidence_registry.json, the annotation gate, the citation surveillance); what is missing is a CODE to tag it with, not the content."
+    },
+    {
+      "id": "reflective-practice",
+      "label": "Reflective practice, feedback and learning plans",
+      "status": "proposed",
+      "unblocks": ["PBLI2"],
+      "rationale": "PBLI2. Adjacent to the Post-Event Learning Huddle and the faculty feedback surfaces, which are shipped but untaggable."
+    },
+    {
+      "id": "wellbeing",
+      "label": "Physician well-being",
+      "status": "proposed",
+      "unblocks": ["PROF3"],
+      "rationale": "PROF3. Distinct from `relational` and from any clinical code: this is about the learner, not the patient."
+    },
+    {
+      "id": "documentation",
+      "label": "Clinical documentation",
+      "status": "proposed",
+      "unblocks": ["ICS3"],
+      "rationale": "ICS3, Communication within Health Care Systems, which is REQUIRED on this rotation and maps to nothing. Documentation is arguably the single most-performed resident activity on an inpatient unit and the vocabulary has no word for it."
+    }
+  ]
+}

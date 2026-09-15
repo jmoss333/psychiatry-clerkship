@@ -8,36 +8,67 @@
   'use strict';
   var PHASES={gate:'idle',ready:'paused',connecting:'starting',listening:'listening',responding:'awaiting_patient',speaking:'speaking',paused:'paused',restart:'error',ended:'ended'};
   var LEARNER={pending:'pending',unconfirmed:'failed'};
+  var FAMILY_NAMES={morgan:'Morgan',maya:'Maya'};
+  function attributed(value,source){
+    if(Object.prototype.hasOwnProperty.call(FAMILY_NAMES,source.targetRoleId)){value.targetRoleId=source.targetRoleId;value.targetName=FAMILY_NAMES[source.targetRoleId];}
+    if(Object.prototype.hasOwnProperty.call(FAMILY_NAMES,source.speakerId)){value.speakerId=source.speakerId;value.speakerName=FAMILY_NAMES[source.speakerId];}
+    return value;
+  }
+  function heardBid(row){
+    return row&&row.familyBid===true&&row.playbackStatus==='played'&&typeof row.text==='string'&&
+      Object.prototype.hasOwnProperty.call(FAMILY_NAMES,row.speakerId)?attributed({text:row.text},row):null;
+  }
+  function withBid(value,bid){
+    if(bid)value.familyBid=attributed({text:bid.text},bid);
+    return value;
+  }
 
-  // The ported station and bookmark logic speak the local prototype's shape.
-  // Translating once here keeps that logic, and its tests, unedited.
+  // The station and bookmark logic use the local prototype's shape. Family
+  // identity travels as metadata; raw speech and heard prefixes stay unchanged.
   function stationSnapshot(hosted){
     hosted=hosted||{};
     var phase=PHASES[hosted.phase]||'idle';
-    var transcript=(hosted.messages||[]).map(function(message){
+    var transcript=[];
+    (hosted.messages||[]).forEach(function(message){
       if(message.role==='you'){
         var learner={who:'me',text:message.text},status=LEARNER[message.status];
         if(status)learner.responseStatus=status;
-        return learner;
+        transcript.push(attributed(learner,message));return;
       }
       var entry={who:'pt',text:message.text,playbackStatus:message.status==='preparing'?'pending':message.status};
       // Only whole completed segments were heard; the tail is never quoted.
       var segments=message.segments||[],completed=message.completedSegments||0;
+      if(message.familyBid){
+        // A family bid is a second speaker, not the primary respondent's tail.
+        // Completion counts identify what actually played even while the overall
+        // two-part reply still has a pending or speaking status.
+        var primaryHeard=Number.isInteger(completed)&&completed>=1&&completed<=2&&segments[0]===message.text;
+        if(primaryHeard)entry.playbackStatus='played';
+        else if(entry.playbackStatus==='played')entry.playbackStatus='pending';
+        transcript.push(attributed(entry,message));
+        var bid=message.familyBid;
+        if(primaryHeard&&completed===2&&segments.length===2&&typeof bid.text==='string'&&bid.text.trim()&&
+          segments[1]===' '+bid.text&&Object.prototype.hasOwnProperty.call(FAMILY_NAMES,message.speakerId)&&
+          Object.prototype.hasOwnProperty.call(FAMILY_NAMES,bid.speakerId)&&bid.speakerId!==message.speakerId){
+          transcript.push(attributed({who:'pt',text:bid.text,playbackStatus:'played',familyBid:true},bid));
+        }
+        return;
+      }
       if(entry.playbackStatus!=='played'&&completed>0)entry.heardText=segments.slice(0,completed).join('');
-      return entry;
+      transcript.push(attributed(entry,message));
     });
     return {phase:phase,state:phase,transcript:transcript,draft:hosted.draft||'',interim:hosted.interim||'',turn:hosted.turn||0,ended:phase==='ended'};
   }
 
-  // Encounter-local bookmarks, ported unchanged from
-  // _prototypes/sp-interview/sp-interview.bookmarks.js. No persistence, no
+  // Encounter-local bookmarks, ported from
+  // _prototypes/sp-interview/sp-interview.bookmarks.js with family attribution. No persistence, no
   // capture controls, no provider call. The two rules that must not drift:
   // sync() refuses a moment whose learner text differs, so a turn number from
   // another encounter cannot supply a quote; and playback() uses the full
   // patient text only when it played in full, otherwise a genuine heard prefix.
   function validId(id){return Number.isInteger(id)&&id>=1&&id<=10;}
   function copy(entry){
-    return {id:entry.id,learnerText:entry.learnerText,danaText:entry.danaText,playbackStatus:entry.playbackStatus,reflection:entry.reflection};
+    return withBid(attributed({id:entry.id,learnerText:entry.learnerText,danaText:entry.danaText,playbackStatus:entry.playbackStatus,reflection:entry.reflection},entry),entry.familyBid);
   }
   function submitted(snapshot){
     var transcript=snapshot&&Array.isArray(snapshot.transcript)?snapshot.transcript:[];
@@ -48,8 +79,8 @@
       latest=null;
       if(!validId(id)||typeof row.text!=='string'||!row.text.trim())return;
       var next=transcript[index+1];
-      latest={id:id,learnerText:row.text};
-      indexed[id]={learner:row,patient:next&&next.who==='pt'?next:null};
+      latest=attributed({id:id,learnerText:row.text},row);
+      indexed[id]={learner:row,patient:next&&next.who==='pt'&&!next.familyBid?next:null,bid:heardBid(transcript[index+2])};
     });
     return {latest:latest,indexed:indexed};
   }
@@ -65,7 +96,7 @@
       if(status==='played')text=patient.text;
       else if(typeof patient.heardText==='string'&&patient.heardText&&patient.text.indexOf(patient.heardText)===0)text=patient.heardText;
     }
-    return {danaText:text,playbackStatus:status};
+    return withBid(attributed({danaText:text,playbackStatus:status},patient||{}),status==='played'&&text?moment.bid:null);
   }
   function createBookmarkStore(){
     var marked=Object.create(null);
@@ -78,10 +109,13 @@
       Object.keys(marked).forEach(function(id){
         var entry=marked[id],moment=moments[id];
         // A turn number from a different encounter must not replace this moment.
-        if(!moment||moment.learner.text!==entry.learnerText)return;
+        if(!moment||moment.learner.text!==entry.learnerText||moment.learner.targetRoleId!==entry.targetRoleId)return;
         var heard=playback(moment,snapshot);
         entry.danaText=heard.danaText;
         entry.playbackStatus=heard.playbackStatus;
+        entry.speakerId=heard.speakerId;entry.speakerName=heard.speakerName;
+        if(heard.familyBid)entry.familyBid=heard.familyBid;
+        else delete entry.familyBid;
       });
       return entries();
     }
@@ -90,7 +124,7 @@
       var latest=candidate(snapshot);
       if(!latest)return {added:false,entry:null};
       if(marked[latest.id])return {added:false,entry:copy(marked[latest.id])};
-      marked[latest.id]={id:latest.id,learnerText:latest.learnerText,danaText:'',playbackStatus:'pending',reflection:''};
+      marked[latest.id]=attributed({id:latest.id,learnerText:latest.learnerText,danaText:'',playbackStatus:'pending',reflection:''},latest);
       sync(snapshot);
       return {added:true,entry:copy(marked[latest.id])};
     }
@@ -111,13 +145,14 @@
 
   function retryMoments(snapshot){
     var moments=[],turnId=0,pending=null;
-    (snapshot.transcript||[]).forEach(function(entry){
-      if(entry.who==='me'){turnId++;pending={turnId:turnId,question:entry.text};}
-      else if(pending){
+    (snapshot.transcript||[]).forEach(function(entry,index,transcript){
+      if(entry.who==='me'){turnId++;pending=attributed({turnId:turnId,question:entry.text},entry);}
+      else if(pending&&!entry.familyBid){
         // Only a completed exchange can be returned to, and it is described by
         // what was heard, never by the generated tail.
-        var moment={turnId:pending.turnId,question:pending.question,reply:entry.text,playbackStatus:entry.playbackStatus};
+        var moment=attributed(attributed({turnId:pending.turnId,question:pending.question,reply:entry.text,playbackStatus:entry.playbackStatus},pending),entry);
         if(entry.heardText)moment.heardText=entry.heardText;
+        if(entry.playbackStatus==='played')withBid(moment,heardBid(transcript[index+1]));
         if(entry.playbackStatus!=='pending')moments.push(moment);
         pending=null;
       }
@@ -129,10 +164,15 @@
   // The station is a projection of the snapshot. It never calls fetch, never
   // touches the controller, and never reads or writes browser storage.
   function createStation(env,host,options){
+    // Timers come from env so a test can drive them; fall back to the ambient clock.
+    var clock=env&&env.setTimeout?env:(typeof globalThis!=='undefined'?globalThis:null);
     options=options||{};
     var doc=env&&env.document,content=options.content,profile=content&&content.getProfile&&content.getProfile(options.caseId);
     if(!doc||!host||!profile)return null;
-    var disposed=false,store=createBookmarkStore(),notes=Object.create(null),presentation='',requested=Object.create(null),lastCue='';
+    var family=Array.isArray(profile.participants)&&profile.participants.length>1;
+    function respondentName(moment){return moment.speakerName||(family?'Speaker not identified':profile.displayName);}
+    function learnerName(moment){return moment.targetName?'You, to '+moment.targetName:'You';}
+    var disposed=false,store=createBookmarkStore(),notes=Object.create(null),presentation='',requested=Object.create(null),lastCue='',chartTimers=[];
     function el(tag,text,parent,attrs){
       var node=doc.createElement(tag);
       if(text!==null&&text!==undefined)node.textContent=text;
@@ -141,30 +181,53 @@
     }
     if(host.classList&&host.classList.add)host.classList.add('sp-station');
 
-    var before=el('section',null,host,{class:'panel'});
-    el('p','YOUR STANDARDIZED-PATIENT STATION',before,{class:'section-label'});
-    el('h2','Before you enter',before);
-    el('p','Fictional practice for MD and DO learners. This station provides practice, not a readiness judgment.',before,{class:'fine'});
+    var before=el('details',null,host,{class:'panel station-brief',open:''});
+    el('summary','Case brief',before);
     var door=el('div',null,before,{class:'station-inset','data-station':'door-note'});
-    el('h3','Door note',door);el('p',profile.doorNote,door);
+    el('p',profile.doorNote,door);
     el('p',profile.task,door);
-    var goals=el('ul',null,door);
+    var goalDetails=el('details',null,door,{class:'station-goals'});
+    el('summary','Practice objectives',goalDetails);
+    var goals=el('ul',null,goalDetails);
     profile.objectives.forEach(function(objective){el('li',objective,goals);});
 
     var chart=el('details',null,before,{'data-station':'chart'});
-    el('summary','Request available chart information',chart);
-    el('p','Open only what you want to review. Unavailable information stays unknown; you can identify what you would seek from the clinical team.',chart,{class:'fine'});
+    el('summary','Available chart information',chart);
+    el('p','Open only what you want to review. Unavailable information stays unknown; you can identify what you would seek from the clinical team. A request takes a short while to come back, as it would on the unit — the wait is realism, not an information barrier, and nothing is withheld from you because of it.',chart,{class:'fine'});
     var chartItems=el('div',null,chart,{class:'station-grid'});
     profile.chartCards.forEach(function(card){
       var box=el('div',null,chartItems,{class:'station-inset'});
-      var body=el('p','',box,{hidden:''});
-      var open=el('button',card.title,box,{type:'button'});
-      open.addEventListener('click',function(){requested[card.id]=true;body.textContent=card.source+' — '+card.text;body.hidden=false;open.hidden=true;});
+      var chartId='chart-'+profile.caseId+'-'+card.id;
+      var open=el('button',card.title,box,{type:'button','aria-expanded':'false','aria-controls':chartId});
+      var body=el('p','',box,{id:chartId,hidden:''});
+      // Realism 8 — a request takes 30-40 s to come back, once per card per encounter.
+      // Client-side theatre only: the text is already here, nothing is fetched or withheld.
+      // The disclosure still expands immediately — onto a live status rather than the text —
+      // so the button keeps its name and its focus, and aria-expanded stays honest.
+      var arrived=false,waiting=false,seconds=0,tick=null;
+      function say(){body.textContent='Requested — the nurse is looking · about '+seconds+' s';}
+      function reveal(){
+        arrived=true;waiting=false;
+        if(tick){clock.clearInterval(tick);tick=null;}
+        body.textContent=card.source+' — '+card.text;
+      }
+      open.addEventListener('click',function(){
+        requested[card.id]=true;
+        if(!arrived&&!waiting){
+          waiting=true;seconds=30+Math.floor(Math.random()*11);say();
+          tick=clock.setInterval(function(){if(disposed)return;seconds-=1;if(seconds>0&&!arrived)say();},1000);
+          var done=clock.setTimeout(function(){if(!disposed)reveal();},seconds*1000);
+          chartTimers.push(tick,done);
+          body.hidden=false;open.setAttribute('aria-expanded','true');return;
+        }
+        body.hidden=!body.hidden;open.setAttribute('aria-expanded',String(!body.hidden));
+      });
     });
 
     var priorities=el('section',null,host,{class:'panel'});
-    el('h2','What matters to this patient',priorities);
-    var list=el('ul',null,priorities);
+    var priorityDetails=el('details',null,priorities);
+    el('summary',family?'What matters to each person':'What matters to this patient',priorityDetails);
+    var list=el('ul',null,priorityDetails);
     profile.priorities.forEach(function(item){el('li',item,list);});
     var cue=el('p','',priorities,{class:'station-cue','data-station':'cue','aria-live':'polite'});
 
@@ -177,23 +240,26 @@
 
     var closing=el('section',null,host,{class:'panel','data-station':'closing',hidden:''});
     el('h2','Present to your attending',closing);
-    el('p','Give a brief presentation in your own words: who you met and why, the patient’s priorities, key findings and uncertainties, your working formulation, and what you would ask your supervisor to help decide.',closing);
-    el('p','This presentation stays on this page. It is never sent to the patient or to any reply request.',closing,{class:'fine'});
+    el('p',family?'Give a brief presentation in your own words: who you met and why, each person’s priorities, whose account each finding came from, what remains uncertain, and what you would ask your supervisor to help decide.':'Give a brief presentation in your own words: who you met and why, the patient’s priorities, key findings and uncertainties, your working formulation, and what you would ask your supervisor to help decide.',closing);
+    el('p','This presentation stays on this page. It is never sent as part of any reply request.',closing,{class:'fine'});
     var handoff=el('textarea','',closing,{id:'station-presentation',maxlength:'4000','aria-label':'Attending presentation'});
     handoff.addEventListener('input',function(){presentation=String(handoff.value||'').slice(0,4000);});
     el('p',profile.reflectionQuestion,closing,{class:'fine'});
 
     var retryBox=el('div',null,closing,{'data-station':'retry'});
     el('h3','Try one moment again',retryBox);
-    el('p','Ask one earlier moment a different way. '+profile.displayName+' starts from just before your original question and knows only what you had heard by then. This is not a score and does not replace your first conversation.',retryBox,{class:'fine'});
+    el('p','Ask one earlier moment a different way. The original respondent answers again from just before your question, using only what you had heard by then. This is not a score and does not replace your first conversation.',retryBox,{class:'fine'});
     var retrySelect=el('select',null,retryBox,{'aria-label':'Moment to try again'});
     var retryOriginal=el('blockquote','',retryBox);
+    var retryBid=el('blockquote','',retryBox,{hidden:''});
     var retryText=el('textarea','',retryBox,{maxlength:'1200','aria-label':'Your alternative question'});
     var retryButton=el('button','Ask this moment again',retryBox,{type:'button'});
     var retryNote=el('p','',retryBox,{class:'fine',role:'status'});
     function showMoment(){
       var moments=latest?retryMoments(latest):[],chosen=moments[Number(retrySelect.value)||0];
-      retryOriginal.textContent=chosen?'You: '+chosen.question+' \u2014 '+profile.displayName+': '+(chosen.heardText||(chosen.playbackStatus==='played'?chosen.reply:'nothing confirmed heard')):'';
+      retryOriginal.textContent=chosen?learnerName(chosen)+': '+chosen.question+' \u2014 '+respondentName(chosen)+': '+(chosen.heardText||(chosen.playbackStatus==='played'?chosen.reply:'nothing confirmed heard')):'';
+      retryBid.textContent=chosen&&chosen.familyBid?chosen.familyBid.speakerName+': '+chosen.familyBid.text:'';
+      retryBid.hidden=!retryBid.textContent;
     }
     retrySelect.addEventListener('change',showMoment);
     retryButton.addEventListener('click',function(){
@@ -206,15 +272,27 @@
 
     var latest=null;
     function draw(){
-      markList.replaceChildren();
       store.entries().forEach(function(entry){
-        var box=el('div',null,markList,{class:'station-inset'});
-        el('p','You: '+entry.learnerText,box);
-        if(entry.danaText)el('blockquote',profile.displayName+': '+entry.danaText,box);
-        else el('p',entry.playbackStatus==='cancelled'?'No reply was confirmed heard for this moment.':'Nothing has been confirmed heard for this moment yet.',box,{class:'fine'});
-        var note=el('textarea',null,box,{maxlength:'1200','aria-label':'Reflection on moment '+entry.id});
-        note.value=notes[entry.id]||'';
-        note.addEventListener('input',function(){notes[entry.id]=String(note.value||'').slice(0,1200);store.setReflection(entry.id,notes[entry.id]);});
+        var box=Array.prototype.find.call(markList.children,function(row){return row.getAttribute('data-moment')===String(entry.id);});
+        // Speech snapshots arrive while learners are editing notes. Keep the
+        // editor mounted and its value untouched so focus and selection survive.
+        if(!box){
+          box=el('div',null,markList,{class:'station-inset','data-moment':String(entry.id)});
+          el('p',learnerName(entry)+': '+entry.learnerText,box);
+          el('blockquote','',box);
+          el('p','',box,{class:'fine'});
+          el('blockquote','',box,{hidden:''});
+          var note=el('textarea',null,box,{maxlength:'1200','aria-label':'Reflection on moment '+entry.id});
+          note.value=notes[entry.id]||'';
+          note.addEventListener('input',function(){notes[entry.id]=String(note.value||'').slice(0,1200);store.setReflection(entry.id,notes[entry.id]);});
+        }
+        var quote=box.children[1],status=box.children[2],bidQuote=box.children[3];
+        quote.textContent=entry.danaText?respondentName(entry)+': '+entry.danaText:'';
+        quote.hidden=!entry.danaText;
+        status.textContent=entry.danaText?'':entry.playbackStatus==='cancelled'?'No reply was confirmed heard for this moment.':'Nothing has been confirmed heard for this moment yet.';
+        status.hidden=!!entry.danaText;
+        bidQuote.textContent=entry.familyBid?entry.familyBid.speakerName+': '+entry.familyBid.text:'';
+        bidQuote.hidden=!bidQuote.textContent;
       });
     }
     function update(hostedSnapshot){
@@ -231,7 +309,7 @@
       markButton.hidden=!store.candidate(latest);
       closing.hidden=latest.phase!=='ended';
       if(latest.phase==='ended'&&!retrySelect.children.length){
-        retryMoments(latest).forEach(function(moment,index){el('option','Turn '+moment.turnId+' — '+moment.question.slice(0,80),retrySelect,{value:String(index)});});
+        retryMoments(latest).forEach(function(moment,index){el('option','Turn '+moment.turnId+(moment.targetName?' · '+moment.targetName:'')+' — '+moment.question.slice(0,80),retrySelect,{value:String(index)});});
         showMoment();
       }
       retryBox.hidden=!!hostedSnapshot.retryUsed;
@@ -243,6 +321,7 @@
       requestRetry:function(turnId,text){return typeof options.onRetry==='function'?options.onRetry(turnId,text):false;},
       dispose:function(){
         disposed=true;
+        chartTimers.forEach(function(id){clock.clearTimeout(id);clock.clearInterval(id);});chartTimers=[];
         store.clear();notes=Object.create(null);presentation='';requested=Object.create(null);latest=null;lastCue='';
         if(handoff)handoff.value='';
         if(retryText)retryText.value='';

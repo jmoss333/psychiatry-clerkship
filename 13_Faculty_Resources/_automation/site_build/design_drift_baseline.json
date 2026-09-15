@@ -1,0 +1,28 @@
+{
+  "_note": "Pinned by bin/check_design_drift.py. Counts may fall, never rise. Regenerate with --update-baseline as part of a reviewed reduction.",
+  "files": {
+    "frontdoor.css": {
+      "distinct_font_sizes": 1,
+      "nonstandard_breakpoints": [
+        390,
+        999
+      ],
+      "raw_dimension_declarations": 196,
+      "sub_floor_font_sizes": 0
+    },
+    "spa_index.html": {
+      "distinct_font_sizes": 1,
+      "nonstandard_breakpoints": [
+        560,
+        620,
+        680,
+        760,
+        820,
+        821,
+        999
+      ],
+      "raw_dimension_declarations": 305,
+      "sub_floor_font_sizes": 0
+    }
+  }
+}

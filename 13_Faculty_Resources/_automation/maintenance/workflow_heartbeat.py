@@ -71,6 +71,32 @@ DELEGATED_STATES = frozenset({"failed"})
 # reader can go look instead of assuming nobody is watching.
 DELEGATED_WATCHER = "automation-failure-escalation.yml"
 
+# ...and WHICH rows that watcher actually holds. A delegation is a claim about
+# another workflow, so it can be false, and this one was.
+#
+# The escalation's `workflow_run` trigger lists every `maintenance-*` and
+# `surveillance-*` workflow and nothing else — a coverage rule its own pin
+# (tests/maintenance/test_escalation_issue.py) enforces. EXPECTATIONS below is
+# wider than that: it also watches `ci.yml`, whose Sunday `0 8 * * 0` run is the
+# clean-room release rehearsal. So between #531 and 2026-09-09 a scheduled CI
+# run that fired on time and failed was deferred to a watcher that was not
+# watching: the heartbeat exited 0, the escalation never fired, and a failing
+# weekly release rehearsal surfaced nowhere. Before #531 the heartbeat caught it
+# by going red itself.
+#
+# Deriving the set from the same prefix rule (rather than listing exceptions)
+# means a workflow added to EXPECTATIONS is delegable only if it is the kind the
+# escalation watches. DelegationHandoffTests resolves each filename to its
+# `name:` and checks the escalation's real list both ways, so this cannot drift
+# in either direction: a narrowed escalation fails the test, and so does an
+# exclusion that is no longer justified.
+ESCALATED_PREFIXES = ("maintenance-", "surveillance-")
+ESCALATED_WORKFLOWS = frozenset(
+    workflow_file
+    for workflow_file in EXPECTATIONS
+    if workflow_file.startswith(ESCALATED_PREFIXES)
+)
+
 
 class HeartbeatError(RuntimeError):
     """A workflow run or activation record could not be trusted."""
@@ -354,8 +380,15 @@ def classify_blockers(receipt):
     This module's binding of the fleet contract in receipt_summary.classify. A
     caller decides its exit code from `pulse` alone; `delegated` is for the log
     line, so a human still sees what the escalation is carrying.
+
+    A `failed` row is only handed over when the escalation actually watches that
+    workflow; otherwise it stays ours, because a deferral to nobody is silence.
     """
-    return classify(receipt, delegated=DELEGATED_STATES)
+    return classify(
+        receipt,
+        delegated=DELEGATED_STATES,
+        delegable=ESCALATED_WORKFLOWS,
+    )
 
 
 def fetch_runs(repository, workflow_file, *, token, opener=None):

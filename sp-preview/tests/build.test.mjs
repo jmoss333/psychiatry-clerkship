@@ -13,13 +13,13 @@ test('runtime deployment binding comes from trusted invocation context, not buil
  assert.equal(env.DEPLOY_ID,'actual-deploy');assert.equal(env.URL,'https://preview.test');assert.equal(env.DANA_PREVIEW_ENABLED,'true');
  assert.equal(runtimeEnvironment({DEPLOY_ID:'build-only'},{}).DEPLOY_ID,undefined);
 });
-test('only the five explicit browser files ship; private case and keys remain outside dist',async()=>{
+test('only the seven explicit browser files ship; private case and keys remain outside dist',async()=>{
  const run=spawnSync(process.execPath,['build.mjs'],{cwd:root,encoding:'utf8'});assert.equal(run.status,0,run.stderr);
- assert.deepEqual((await readdir(path.join(root,'dist'))).sort(),['app.js','index.html','station-content.js','station.js','styles.css']);
- const published=['app.js','index.html','styles.css','station.js','station-content.js'];
+ assert.deepEqual((await readdir(path.join(root,'dist'))).sort(),['app.js','index.html','moment-content.js','moment-station.js','station-content.js','station.js','styles.css']);
+ const published=['app.js','index.html','styles.css','station.js','station-content.js','moment-content.js','moment-station.js'];
  const publicText=(await Promise.all(published.map(file=>readFile(path.join(root,'dist',file),'utf8')))).join('\n');
  for(const forbidden of ['OPENAI_API_KEY','DANA_PREVIEW_STATE_KEY','hiddenAgenda','Tom has a sleep medication','ordinaryFacts','sp-interview.pack.json'])assert.ok(!publicText.includes(forbidden),forbidden);
- const stationText=(await Promise.all(['station.js','station-content.js'].map(file=>readFile(path.join(root,'dist',file),'utf8')))).join('\n');
+ const stationText=(await Promise.all(['station.js','station-content.js','moment-station.js','moment-content.js'].map(file=>readFile(path.join(root,'dist',file),'utf8')))).join('\n');
  for(const banned of ['fetch(','localStorage','sessionStorage','indexedDB','XMLHttpRequest'])assert.ok(!stationText.includes(banned),'the station must not '+banned);
  const config=await readFile(path.join(root,'netlify.toml'),'utf8');
  assert.match(config,/publish = "dist"/);assert.match(config,/from = "\/api\/dana-preview"/);assert.match(config,/force = true/);assert.match(config,/microphone=\(self\)/);assert.match(config,/Cache-Control = "no-store"/);

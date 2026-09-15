@@ -132,12 +132,26 @@ test('the readers ADR-002 migrated stay migrated', () => {
   }
 });
 
-test('the tracked shipped_pages.json is current with its producers', () => {
-  // The same gate ci.yml, bin/verify.sh and build_and_check.sh run. Here too, so a stale
-  // file is caught by the plain `node --test tests/*.test.mjs` inner loop as well.
-  const result = execFileSync('python3', [
-    '13_Faculty_Resources/_automation/site_build/shipped_pages.py',
-    '--check',
-  ], { cwd: repo, encoding: 'utf8' });
-  assert.match(result, /shipped_pages OK/);
-});
+// DELIBERATELY NOT TESTED HERE: `shipped_pages.py --check`.
+//
+// This file used to duplicate that gate so the plain `node --test tests/*.test.mjs`
+// inner loop would also catch a stale file. It was removed on 2026-09-10 because it
+// was the single flakiest thing in the deploy pipeline.
+//
+// `node --test` runs test FILES in parallel, and this check shells out to python
+// against the LIVE repository working tree (cwd: repo) rather than a fixture. Roughly
+// twenty other suites run concurrently and several of them write to the filesystem, so
+// the check intermittently observed the tree mid-write and failed. Signature: one
+// failure out of ~1955 tests, ~20-30% of builds, the SAME commit passing on one site
+// and failing on the other, and passing on a plain retry. Confirmed by experiment on
+// 2026-09-10: preview #583 @adf53aa failed on mmc, then completed on retry, unchanged.
+//
+// Deleting it costs no coverage. The identical command still gates every build three
+// times, serially, and none of those have ever flaked:
+//   13_Faculty_Resources/_automation/site_build/build_and_check.sh:52  (~10 lines above
+//     the `node --test` call, so the deploy is already gated before the suite starts)
+//   bin/verify.sh:190                                                  (pre-push)
+//   .github/workflows/ci.yml:202                                       (CI)
+//
+// If you want it back in the inner loop, run it against a pristine `git archive` export
+// rather than the live tree -- the race is the shared working directory, not the check.

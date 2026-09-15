@@ -524,11 +524,11 @@ class ScheduledWorkflowTests(unittest.TestCase):
             load_workflow("ci.yml").get("concurrency"),
             {
                 "group": "ci-${{ github.event_name }}-${{ github.ref }}",
-                "cancel-in-progress": "${{ github.event_name != 'schedule' }}",
+                "cancel-in-progress": "${{ github.event_name == 'pull_request' }}",
             },
         )
 
-    def test_ci_concurrency_separates_events_and_preserves_normal_cancellation(self):
+    def test_ci_concurrency_separates_events_and_cancels_only_pull_requests(self):
         concurrency = load_workflow("ci.yml")["concurrency"]
         template = concurrency["group"]
 
@@ -552,11 +552,15 @@ class ScheduledWorkflowTests(unittest.TestCase):
         self.assertNotEqual(push_group, manual_group)
         self.assertEqual(
             concurrency["cancel-in-progress"],
-            "${{ github.event_name != 'schedule' }}",
+            "${{ github.event_name == 'pull_request' }}",
         )
+        # Only a pull_request run may be superseded. A push to main validates a
+        # distinct, permanent commit and, with the up-to-date requirement off, is the
+        # only post-merge validation main gets -- cancelling it discarded that
+        # backstop on 48% of main runs before this contract changed.
         self.assertEqual(
             {
-                event_name: event_name != "schedule"
+                event_name: event_name == "pull_request"
                 for event_name in (
                     "schedule",
                     "push",
@@ -566,9 +570,9 @@ class ScheduledWorkflowTests(unittest.TestCase):
             },
             {
                 "schedule": False,
-                "push": True,
+                "push": False,
                 "pull_request": True,
-                "workflow_dispatch": True,
+                "workflow_dispatch": False,
             },
         )
 
@@ -976,7 +980,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
         safe_ci = (
             "concurrency:\n"
             "  group: ci-${{ github.event_name }}-${{ github.ref }}\n"
-            "  cancel-in-progress: ${{ github.event_name != 'schedule' }}\n"
+            "  cancel-in-progress: ${{ github.event_name == 'pull_request' }}\n"
         )
         unsafe_ci = (
             "concurrency:\n"

@@ -22,11 +22,18 @@ const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${today}
   fdOpenResource: fdOpenResource,
   fdReader: fdReader,
   fdWire: fdWire,
+  fdThemeMode: fdThemeMode,
+  fdClearDeviceData: fdClearDeviceData,
 };`);
 
+// length/key(i) are part of the real Storage interface and are what any sweep over the store has
+// to walk. A fake without them makes a sweep silently a no-op -- it finds nothing, throws nothing,
+// and reports success -- so leaving them out would have let the erase pass its own effect test.
 function memStorage(seed = {}) {
   const map = new Map(Object.entries(seed));
   return {
+    get length() { return map.size; },
+    key: (i) => (i >= 0 && i < map.size ? [...map.keys()][i] : null),
     getItem: (key) => map.has(key) ? map.get(key) : null,
     setItem: (key, value) => map.set(key, String(value)),
     removeItem: (key) => map.delete(key),
@@ -183,8 +190,11 @@ test('view-week previews only; setup-week and set-week return Monday-aligned wri
 });
 
 test('role, tab, back, home, search, change-week, progress, theme, tool layout, and step are pinned', () => {
-  assert.deepEqual(F.fdDispatch({ 'data-fd-role': 'second-role' }, {}, roleContext).patch,
-    { role: 'second-role', screen: 'setup-week' });
+  // The screen is named rather than left undefined: advancing to week setup is the WIZARD's
+  // behaviour, and state -- not context -- is where fdDispatch reads it from.
+  assert.deepEqual(F.fdDispatch({ 'data-fd-role': 'second-role' }, {},
+    { ...roleContext, screen: 'setup-role' }).patch,
+  { role: 'second-role', screen: 'setup-week' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'library' }, {}, roleContext).patch,
     { tab: 'library', openId: null, searchOpen: false });
   assert.equal(F.fdDispatch({ 'data-fd-back': '' }, {}, { ...roleContext, openId: 'x.md', fromTab: 'path' }).route,
@@ -196,8 +206,10 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     route: '/', history: 'replace', effect: null,
   });
   assert.equal(F.fdDispatch({ 'data-fd-progress': '' }, {}, roleContext).effect.type, 'open-progress');
-  assert.deepEqual(F.fdDispatch({ 'data-fd-theme': '' }, { theme: 'dark' }, roleContext).effect,
-    { type: 'set-theme', theme: 'light' });
+  assert.deepEqual(
+    F.fdDispatch({ 'data-fd-theme': 'light' }, { theme: 'dark' }, roleContext).effect,
+    { type: 'set-theme', mode: 'light' },
+    'the payload is the mode chosen, not a flip of the mode already in force');
   assert.deepEqual(F.fdDispatch({ 'data-fd-expand-tool': '' }, {}, {
     ...roleContext, openId: 'practice.html', toolExpanded: false,
   }), {
@@ -253,7 +265,12 @@ test('closing an unread protocol raises an 8-second nudge, but a read one does n
   const unread = F.fdDispatch({ 'data-fd-close-sheet': '' }, {}, {
     ...roleContext, sheet: 'risk.md', done: {},
   });
-  assert.deepEqual(unread.patch, { sheet: null, sheetFrom: null, stepsDone: {}, nudge: 'risk.md' });
+  // settingsConfirmClear rides along on every sheet close, not only the settings one: the flag
+  // has a single reset point rather than a branch that has to recognise which sheet it is
+  // closing, and a protocol close disarming an erase nobody armed costs nothing.
+  assert.deepEqual(unread.patch, {
+    sheet: null, sheetFrom: null, stepsDone: {}, nudge: 'risk.md', settingsConfirmClear: false,
+  });
   assert.deepEqual(unread.effect, { type: 'nudge-timeout', delay: 8000 });
   const read = F.fdDispatch({ 'data-fd-close-sheet': '' }, {}, {
     ...roleContext, sheet: 'risk.md', done: { 'risk.md': true },
@@ -445,7 +462,7 @@ test('Tab trapping wraps at both ends of a dialog', () => {
   assert.equal(prevented, 2);
 });
 
-test('fdWire registers and destroys one delegated click/input/keydown/popstate listener for the live shell', () => {
+test('fdWire registers and destroys one delegated click/input/change/keydown/popstate listener for the live shell', () => {
   const rootCalls = [];
   const windowCalls = [];
   const rootRemoves = [];
@@ -461,7 +478,9 @@ test('fdWire registers and destroys one delegated click/input/keydown/popstate l
   };
   const controller = F.fdWire(root, { ...roleContext }, { window: fakeWindow, render: () => {} });
   assert.equal(controller.ok, true);
-  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input']);
+  // 'change' is the settings panel's date field -- the one control not on the delegated click
+  // path. Registered through listen() like the rest, so destroy() takes it down too.
+  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input', 'change']);
   assert.deepEqual(windowCalls.map(([type]) => type), ['keydown', 'popstate']);
   controller.destroy();
   assert.deepEqual(rootRemoves, rootCalls.slice().reverse());
@@ -541,7 +560,7 @@ test('fdWire reports a partial window registration failure and unwinds every ins
 function actionTarget(attrs, extra = {}) {
   return {
     tagName: 'BUTTON', isContentEditable: false, isConnected: true,
-    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
+    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-analytics],[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
     hasAttribute(name) { return Object.hasOwn(attrs, name); },
     getAttribute(name) { return Object.hasOwn(attrs, name) ? attrs[name] : null; },
     focus() { this.focused = (this.focused || 0) + 1; },
@@ -563,6 +582,7 @@ function fakeHarness(initial, options = {}) {
     removeEventListener() {},
     location: options.location || { href: 'https://example.test/', search: '', pathname: '/' },
     history: options.history,
+    matchMedia: options.matchMedia,
   };
   const controller = options.F.fdWire(root, initial, {
     window: fakeWindow,
@@ -760,7 +780,7 @@ test('opening and closing a dialog captures, focuses, and restores the connected
   assert.equal(invoker.focused, 1);
 });
 
-test('runtime theme toggling writes cw_theme and updates data-theme without reload', () => {
+test('runtime theme selection writes cw_theme and updates data-theme without reload', () => {
   const ls = memStorage();
   const LocalF = make(ls);
   let dataTheme = 'dark';
@@ -769,17 +789,48 @@ test('runtime theme toggling writes cw_theme and updates data-theme without relo
     setAttribute: (_name, value) => { dataTheme = value; },
   } };
   const h = fakeHarness({ ...roleContext }, { F: LocalF, document: doc });
-  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': '' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': 'light' }), preventDefault() {} });
   assert.equal(dataTheme, 'light');
   assert.equal(ls.dump().cw_theme, 'light');
 });
 
-test('theme rerender moves focus to the corresponding live theme control', () => {
+// The storage/paint split is the whole point of the three-value action: 'system' is what gets
+// persisted, and only the attribute is resolved against the OS. Driving matchMedia in both
+// directions is what stops 'system' -> 'light' passing for a hard-coded default.
+test('system persists as system and paints whatever the OS currently reports', () => {
+  function pick(prefersDark) {
+    const ls = memStorage();
+    const LocalF = make(ls);
+    let dataTheme = 'light';
+    const h = fakeHarness({ ...roleContext }, {
+      F: LocalF,
+      matchMedia: (q) => ({ matches: /dark/.test(q) && prefersDark }),
+      document: { documentElement: {
+        getAttribute: () => dataTheme,
+        setAttribute: (_name, value) => { dataTheme = value; },
+      } },
+    });
+    h.rootHandlers.click({
+      target: actionTarget({ 'data-fd-theme': 'system' }), preventDefault() {},
+    });
+    return { dataTheme, stored: ls.dump().cw_theme };
+  }
+  assert.deepEqual(pick(true), { dataTheme: 'dark', stored: 'system' });
+  assert.deepEqual(pick(false), { dataTheme: 'light', stored: 'system' });
+});
+
+// Relocated into the open panel, which is where a theme control has actually lived since the
+// header glyph became the settings gear: fdSettingsSeg is its only emitter. The contract under
+// test is unchanged -- the REBUILT control takes focus and the disconnected one does not -- but it
+// is now asked of the surface that ships, and reached through the same generic path as every other
+// control in the panel rather than through a theme-shaped branch of its own.
+test('theme rerender focuses the live replacement, not the disconnected old button', () => {
   let replacement = null;
   const invoker = actionTarget({ 'data-fd-theme': '' });
-  const h = fakeHarness({ ...roleContext, screen: 'app' }, {
+  const panel = { querySelector: (selector) => (selector === '[data-fd-theme=""]' ? replacement : null) };
+  const h = fakeHarness({ ...roleContext, screen: 'app', sheet: 'settings' }, {
     F,
-    querySelector: (selector) => selector === '[data-fd-theme]' ? replacement : null,
+    querySelector: (selector) => (selector === '.fd-sheet[role="dialog"]' ? panel : null),
     renderTransient: (_next, detail) => {
       if (detail.effect?.type === 'set-theme') {
         invoker.isConnected = false;
@@ -792,7 +843,8 @@ test('theme rerender moves focus to the corresponding live theme control', () =>
   });
   h.rootHandlers.click({ target: invoker, preventDefault() {} });
   assert.equal(replacement.focused, 1,
-    'the header replacement, not the disconnected old button, receives focus');
+    'the rebuilt control, not the disconnected old button, receives focus');
+  assert.equal(invoker.focused, undefined, 'and the destroyed element is never focused');
 });
 
 test('the Week control focuses the newly rendered setup heading', () => {
@@ -1216,7 +1268,7 @@ test('transient chrome and completion renders preserve one live resource node wi
   const liveHost = host;
   assert.equal(openCalls.length, 1);
 
-  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': '' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': 'dark' }), preventDefault() {} });
   h.rootHandlers.click({ target: actionTarget({ 'data-fd-search': '' }), preventDefault() {} });
   searchInput.value = 'ab'; searchInput.selectionStart = 2; searchInput.selectionEnd = 2;
   h.rootHandlers.input({ target: searchInput });
@@ -1240,8 +1292,8 @@ test('transient chrome and completion renders preserve one live resource node wi
   assert.deepEqual(theme.detail.surfaces,
     { base: false, overlay: false, completion: false, chrome: true, layout: false });
   assert.equal(theme.detail.preserveResource, true);
-  assert.equal(theme.detail.effect.theme, 'dark',
-    'transient renderer consumes the requested theme instead of rereading old document state');
+  assert.equal(theme.detail.effect.mode, 'dark',
+    'transient renderer consumes the requested mode instead of rereading old document state');
   const search = transientRenders.find(({ detail }) => detail.effect?.type === 'search-input');
   assert.equal(search.detail.surfaces.overlay, true);
   assert.equal(search.detail.preserveResource, true);
@@ -1285,7 +1337,7 @@ test('the permitted faculty-preview theme transition preserves the exact governe
       replaceState() { historyWrites += 1; }, pushState() { historyWrites += 1; },
     },
   });
-  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': '' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': 'dark' }), preventDefault() {} });
   assert.equal(fullRenders, 0);
   assert.equal(transientRenders, 1);
   assert.equal(host.resource, liveNode);
@@ -1375,8 +1427,8 @@ test('faculty preview rejects controller actions before state, render, route, re
   assert.deepEqual(ls.dump(), {});
   assert.equal(locks, 8);
 
-  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': '' }), preventDefault() {} });
-  assert.equal(ls.getItem('cw_theme'), 'dark', 'legacy preview still permits its theme toggle');
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': 'dark' }), preventDefault() {} });
+  assert.equal(ls.getItem('cw_theme'), 'dark', 'legacy preview still permits its theme selection');
   assert.equal(locks, 8);
 });
 
@@ -1915,4 +1967,550 @@ test('popstate Progress uses the internal Progress path and never generic resour
   });
   assert.deepEqual(progress, ['open']);
   assert.deepEqual(opened, []);
+});
+
+// The gear's whole job is to put the sheet into a state some later renderer draws, so the state
+// value is the contract -- not the markup that will eventually read it.
+test('the gear opens settings as a sheet and closes any open search first', () => {
+  const r = F.fdDispatch({ 'data-fd-settings': '' }, { }, { searchOpen: true, query: 'lithium' });
+  assert.equal(r.patch.sheet, 'settings');
+  assert.equal(r.patch.searchOpen, false, 'two stacked overlays would fight over the focus trap');
+  assert.equal(r.route, null, 'settings is not a route');
+  assert.equal(r.effect, null);
+  assert.ok(!('sheetFrom' in r.patch), 'settings has no back-to-kit path to record');
+});
+
+// Settings has exactly ONE close route -- the shared data-fd-close-sheet that fdSheetHead's close
+// button and the backdrop already emit -- plus the Escape unwind, which reaches the same place. A
+// second bespoke close attribute would duplicate a path that already works, so there isn't one.
+//
+// Both routes run fdCloseSheet, which reads any sheet value that is not 'kit' and not an 'item:'
+// as a protocol REF and raises the unread-protocol nudge for it. 'settings' is neither, so before
+// fdProtocolRef learned about it every ordinary close queued a nudge for a page that does not
+// exist and armed its 8s timer -- invisible only because the index has no such ref to render.
+test('settings closes by the shared sheet close and by Escape, raising no protocol nudge', () => {
+  for (const attrs of [{ 'data-fd-close-sheet': '' }, { close: true }]) {
+    const via = JSON.stringify(attrs);
+    const r = F.fdDispatch(attrs, { }, { sheet: 'settings', done: {} });
+    assert.equal(r.patch.sheet, null, `${via} must close the panel`);
+    assert.equal(r.patch.nudge, null, `${via}: settings is not an unread protocol page`);
+    assert.equal(r.effect, null, `${via} must not arm the nudge timer`);
+  }
+});
+
+test('the theme action carries the mode it selects', () => {
+  const r = F.fdDispatch({ 'data-fd-theme': 'dark' }, { }, { theme: 'light' });
+  assert.deepEqual(r.effect, { type: 'set-theme', mode: 'dark' });
+  assert.deepEqual(r.patch, {}, 'theme is storage, not state');
+  assert.equal(r.route, null, 'a theme change must not push history');
+});
+
+test('an unrecognised theme value falls back to system rather than painting garbage', () => {
+  const r = F.fdDispatch({ 'data-fd-theme': 'banana' }, { }, { theme: 'light' });
+  assert.deepEqual(r.effect, { type: 'set-theme', mode: 'system' });
+});
+
+test('selecting the already-active mode is still a valid no-op action', () => {
+  const r = F.fdDispatch({ 'data-fd-theme': 'light' }, { }, { theme: 'light' });
+  assert.deepEqual(r.effect, { type: 'set-theme', mode: 'light' });
+});
+
+// Trap A. currentTheme() feeds the dispatch context, which is what a settings panel reads to mark
+// the active choice. Since the theme boot split mode from attribute, documentElement holds only
+// the RESOLVED value -- so a learner on system would see light or dark marked active and system
+// never highlighted. Run the real function body against both sources at once: a storage saying
+// 'system' and a document painted 'dark'. The pre-split body returns 'dark' here.
+const currentThemeSrc = wire.match(/ {2}function currentTheme\(\)\{[\s\S]*?\n {2}\}/)[0];
+function runCurrentTheme(stored, painted) {
+  const localStorage = {
+    getItem: (k) => {
+      if (stored instanceof Error) throw stored;
+      return k === 'cw_theme' ? stored : null;
+    },
+  };
+  const doc = { documentElement: { getAttribute: () => painted } };
+  // eslint-disable-next-line no-new-func
+  return new Function('localStorage', 'doc', 'fdThemeMode',
+    `${currentThemeSrc}\nreturn currentTheme();`)(localStorage, doc, F.fdThemeMode);
+}
+
+test('currentTheme reports the stored mode, not the attribute the page happens to paint', () => {
+  assert.equal(runCurrentTheme('system', 'dark'), 'system',
+    'system resolving to dark must still read as system');
+  assert.equal(runCurrentTheme('dark', 'dark'), 'dark');
+  assert.equal(runCurrentTheme('light', 'dark'), 'light',
+    'the stored mode wins over a stale painted attribute');
+  assert.equal(runCurrentTheme(null, 'dark'), 'system', 'nothing stored means follow the OS');
+  assert.equal(runCurrentTheme('banana', 'dark'), 'system');
+});
+
+test('currentTheme answers system when storage is blocked rather than throwing', () => {
+  assert.equal(runCurrentTheme(new Error('blocked'), 'dark'), 'system');
+});
+
+// Trap B. With one toggle, querySelector('[data-fd-theme]') WAS the control. With a three-button
+// group the first match is always System, so every selection silently moved focus off the button
+// the learner just pressed.
+test('theme focus lands on the chosen mode, not the first control in the group', () => {
+  const group = {
+    system: actionTarget({ 'data-fd-theme': 'system' }),
+    light: actionTarget({ 'data-fd-theme': 'light' }),
+    dark: actionTarget({ 'data-fd-theme': 'dark' }),
+  };
+  const asked = [];
+  const panel = {
+    querySelector: (selector) => {
+      asked.push(selector);
+      const exact = selector.match(/^\[data-fd-theme="(\w+)"\]$/);
+      return exact ? (group[exact[1]] || null) : null;
+    },
+  };
+  const h = fakeHarness({ ...roleContext, screen: 'app', sheet: 'settings' }, {
+    F,
+    querySelector: (selector) => (selector === '.fd-sheet[role="dialog"]' ? panel : null),
+    renderTransient: () => {},
+    document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': 'dark' }), preventDefault() {} });
+  assert.equal(group.dark.focused, 1, 'the button the learner chose keeps focus');
+  assert.equal(group.system.focused, undefined, 'System must not steal focus from Dark');
+  assert.ok(asked.includes('[data-fd-theme="dark"]'), 'the chosen mode is asked for by value');
+});
+
+// data-fd-role has two emitters now: the wizard's step-1 rows and the settings panel's You chips.
+// Unforked, the panel's chip patched screen:'setup-week' and threw a learner who was adjusting a
+// setting into the middle of the first-run wizard -- losing the panel, and asking again for a week
+// they had already chosen. The wizard is the only caller that should advance, and it is the only
+// one whose state says setup-role.
+test('picking a role in the wizard advances; picking one in settings does not', () => {
+  const wizard = F.fdDispatch({ 'data-fd-role': 'subi' }, {}, { screen: 'setup-role' });
+  assert.equal(wizard.patch.screen, 'setup-week');
+
+  const panel = F.fdDispatch({ 'data-fd-role': 'subi' }, {}, { screen: 'app', sheet: 'settings' });
+  assert.equal(panel.patch.role, 'subi');
+  assert.equal(panel.patch.screen, undefined, 'changing a setting must not reopen the wizard');
+  assert.equal(panel.patch.sheet, undefined,
+    'and the panel stays open, because the chip it just filled is the only feedback there is');
+});
+
+// The Pacing section's date field, decided in the pure layer so the shape that reaches storage is
+// testable without a DOM. Two properties, both load-bearing:
+//   - the patch stays EMPTY. The stored key is the one home and fdLiveState re-reads it for every
+//     render; a mirrored copy on controller state would be a second home that only looks free.
+//   - only an ISO calendar date or '' survives. phase_policy.js is the single sanctioned
+//     local-midnight parse site and it reads this key; anything else there makes the date NaN,
+//     which switches pacing off silently rather than failing where someone would see it.
+test('the exam date reaches storage only as an ISO calendar date or an empty string', () => {
+  const set = F.fdDispatch({ 'data-fd-exam-date': '2026-10-30' }, {}, { sheet: 'settings' });
+  assert.deepEqual(set.effect, { type: 'set-exam-date', date: '2026-10-30' });
+  assert.deepEqual(set.patch, {}, 'the stored key is the one home; state must not mirror it');
+  assert.equal(set.route, null, 'setting a date is not navigation');
+
+  for (const junk of ['banana', '2026-10-30T00:00:00', '10/30/2026', '2026-13-99x', '']) {
+    assert.deepEqual(F.fdDispatch({ 'data-fd-exam-date': junk }, {}, {}).effect,
+      { type: 'set-exam-date', date: '' }, `"${junk}" must clear rather than reach the parser`);
+  }
+});
+
+// ── The settings panel's focus guarantee ──────────────────────────────────────────────────────
+// Every control in this panel re-renders the panel it lives in, and fdRenderOverlays replaces the
+// overlay mount's innerHTML on every render -- so the element the learner just activated is gone
+// before focus could return to it. Three focus paths existed and none covered that: focusDialog
+// wants the overlay IDENTITY to change, restoreInvoker wants it CLOSED, focusPostTransition wanted
+// a set-theme effect or a setup- screen. Focus fell to <body>, where fdTrapFocus declines, so the
+// next Tab walked out of an aria-modal dialog and behind its own backdrop. And because the panel
+// ships no toast by decision, a control's aria-pressed is the entire feedback it gives: a
+// screen-reader user heard nothing at all about their own click.
+//
+// The guarantee is generic, and this is where it is pinned: an activation inside an open panel
+// leaves focus on the EQUIVALENT control in the rebuilt DOM -- same action attribute, same value.
+// Tasks 7-8 add two erase buttons and an analytics toggle to this same panel. Each inherits this
+// without a fourth focus branch -- though neither ended up as a row here; see the two paragraphs
+// at the bottom of this comment for why the erase pair cannot be one, and the third for the
+// toggle, which could be and is pinned better elsewhere.
+//
+// Task 6's date field is the one deliberate EXCEPTION, and it is absent rather than forgotten.
+// Every row here is a control that re-renders the panel it lives in, which is the premise the
+// harness asserts and the reason the guarantee is needed at all. The date field renders nothing:
+// fdRenderOverlays would destroy the <input> the learner is typing in, and a rebuilt native date
+// input has a fresh segment cursor, so editing a set date to November by typing "1" then "1"
+// yields January twice. With no rebuild there is no destroyed element and no equivalent to
+// restore focus to -- pulling focus back into a field still in use would be worse than the bug
+// this branch exists to fix. Adding it here would pin a click path it does not have (it is
+// committed on a change event and is absent from FD_ACTION_SELECTOR), which would pass while
+// testing nothing. Its real contract -- persists, does not render, does not move focus, and is
+// inert on click -- is pinned in tests/fd-settings.test.mjs.
+//
+// Task 7's erase pair is the SECOND deliberate absence, and for the opposite reason to the date
+// field: it renders, but it does not survive its own render. Arming replaces the single "clear"
+// button with a cancel/confirm pair, so there IS no equivalent control to restore focus to -- the
+// premise this harness asserts is false for it. Adding a row here would not test that; the
+// harness rebuilds every listed control on every render regardless of state, so the fake would
+// supply an equivalent the real renderer never emits and the row would pass under both the
+// correct implementation and a broken one. Its real contract -- focus never leaves the open
+// dialog, by the fallback rather than by the equivalent -- is pinned in tests/fd-settings.test.mjs
+// against a panel built from the REAL renderer output, where "there was no equivalent" is a fact
+// about the markup.
+//
+// Task 8's usage toggle is the THIRD absence, and the only one that is a judgment rather than a
+// constraint. It is a pair of segments with fixed values (fdSettingsUsage), precisely so that it
+// DOES survive its own render -- so a row here would pass honestly. It is pinned in
+// tests/fd-settings.test.mjs instead, against the real renderer and the real emitter, because
+// that harness can also tell that both segments were actually emitted; this one would supply them
+// whatever the renderer did. A row here would be a weaker copy of an assertion that already runs.
+const PANEL_CONTROLS = [
+  ['data-fd-role', 'staff'],
+  ['data-fd-theme', 'dark'],
+];
+
+// The panel is really destroyed and rebuilt here, because that is the whole mechanism: every
+// render mints NEW control objects, so focusing the element that was clicked is observably
+// different from focusing its equivalent. A harness whose focus() is a stub nobody asserts on
+// cannot tell those two apart, which is exactly how this gap stayed invisible.
+function panelFocusHarness(initial) {
+  let generation = 0;
+  let controls = [];
+  const focused = [];
+  const rebuild = () => {
+    generation += 1;
+    const gen = generation;
+    controls = PANEL_CONTROLS.map(([name, value]) => ({
+      name,
+      value,
+      generation: gen,
+      hasAttribute: (n) => n === name,
+      getAttribute: (n) => (n === name ? value : null),
+      focus() { focused.push(this); },
+    }));
+  };
+  rebuild();
+  const panel = {
+    querySelector(selector) {
+      const m = selector.match(/^\[([a-z-]+)="(.*)"\]$/);
+      if (!m) return null;
+      return controls.find((c) => c.name === m[1] && c.value === m[2]) || null;
+    },
+  };
+  const h = fakeHarness(initial, {
+    F,
+    querySelector: (selector) => (selector === '.fd-sheet[role="dialog"]' ? panel : null),
+    render: rebuild,
+    renderTransient: rebuild,
+    document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
+  });
+  return { h, focused, generation: () => generation };
+}
+
+test('activating any settings-panel control leaves focus on its rebuilt equivalent', () => {
+  for (const [attr, value] of PANEL_CONTROLS) {
+    const { h, focused, generation } = panelFocusHarness({
+      ...roleContext, screen: 'app', sheet: 'settings',
+    });
+    const before = generation();
+    const invoker = actionTarget({ [attr]: value });
+    h.rootHandlers.click({ target: invoker, preventDefault() {} });
+
+    assert.ok(generation() > before, `${attr}: the click must re-render the panel`);
+    assert.equal(focused.length, 1, `${attr}: exactly one control takes focus`);
+    const landed = focused[0];
+    assert.equal(landed.generation, generation(),
+      `${attr}: focus must land in the REBUILT panel, not on the element that was destroyed`);
+    assert.equal(landed.getAttribute(attr), value,
+      `${attr}: and on the control the learner actually activated`);
+    assert.equal(invoker.focused, undefined,
+      `${attr}: the destroyed element must never be the thing focused`);
+    assert.equal(h.controller.getState().sheet, 'settings',
+      `${attr}: the panel the focus belongs to must still be open`);
+  }
+});
+
+// The other half of the same branch: it must not fire where another path already owns focus.
+// Closing the panel is restoreInvoker's job -- it returns focus to the gear that opened it -- and
+// a refocus racing that would strand focus inside a dialog that is no longer rendered.
+test('closing the panel still restores the invoker rather than refocusing inside it', () => {
+  const { h, focused } = panelFocusHarness({ ...roleContext, screen: 'app' });
+  const gear = actionTarget({ 'data-fd-settings': '' });
+  h.rootHandlers.click({ target: gear, preventDefault() {} });
+  assert.equal(h.controller.getState().sheet, 'settings', 'the gear opens the panel');
+
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-close-sheet': '' }), preventDefault() {} });
+  assert.equal(h.controller.getState().sheet, null, 'and the close control closes it');
+  assert.equal(gear.focused, 1, 'focus returns to the control that opened the panel');
+  assert.equal(focused.length, 0, 'no panel control is focused once the panel is gone');
+});
+
+// ...and the gear is the one invoker in this panel that its OWN controls can destroy. The header
+// is chrome, a theme change marks chrome dirty (transitionDetail), and fdRenderTransient reassigns
+// fdChromeMount.innerHTML -- so by the time the learner closes the panel, the element pushed onto
+// the invoker stack is detached and `isConnected===false` skips it. Focus then falls to <body>,
+// where fdTrapFocus bails and the next Tab restarts at the top of the document: the exact defect
+// refocusInvoker exists to prevent, one layer out.
+//
+// Measured, not reasoned: driving the built MS3 site, opening the panel and closing it leaves
+// focus on the gear, while opening it, choosing Dark and closing it leaves document.activeElement
+// as BODY with the original gear reporting isConnected===false. tests/smoke/front-door.spec.js:251
+// and frontdoor-runtime.spec.js:2508 are the two specs that catch it.
+//
+// The fix is the rule refocusInvoker already uses -- the live control carrying the same action
+// attribute AND the same value is the equivalent of the one that is gone -- applied to the root
+// rather than to the dialog, because the control being replaced here lives outside the overlay.
+test('closing the panel returns focus to the gear even after a render replaced it', () => {
+  const openingGear = actionTarget({ 'data-fd-settings': '' });
+  let liveGear = openingGear;
+  let segment = null;
+  const panel = {
+    querySelector: (selector) => (selector === '[data-fd-theme="dark"]' ? segment : null),
+  };
+  const h = fakeHarness({ ...roleContext, screen: 'app' }, {
+    F,
+    querySelector: (selector) => {
+      if (selector === '.fd-sheet[role="dialog"]') return panel;
+      if (selector === '[data-fd-settings=""]') return liveGear;
+      return null;
+    },
+    renderTransient: (_next, detail) => {
+      if (detail.effect?.type === 'set-theme') {
+        // What fdRenderTransient does for real: surfaces.chrome is true, so the header -- gear
+        // included -- is rebuilt from scratch and the old element is detached.
+        openingGear.isConnected = false;
+        liveGear = actionTarget({ 'data-fd-settings': '' });
+        segment = actionTarget({ 'data-fd-theme': 'dark' });
+      }
+    },
+    document: { documentElement: { getAttribute: () => 'light', setAttribute() {} } },
+  });
+
+  h.rootHandlers.click({ target: openingGear, preventDefault() {} });
+  assert.equal(h.controller.getState().sheet, 'settings', 'the gear opens the panel');
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': 'dark' }), preventDefault() {} });
+  assert.equal(openingGear.isConnected, false, 'the header render must have destroyed the gear');
+
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-close-sheet': '' }), preventDefault() {} });
+  assert.equal(h.controller.getState().sheet, null, 'the close control closes the panel');
+  assert.equal(openingGear.focused, undefined, 'the destroyed element is never focused');
+  assert.equal(liveGear.focused, 1,
+    'focus lands on the live gear, not on <body> where the next Tab restarts the document');
+});
+
+// ── Your data: the export route and the two-tap erase ─────────────────────────────────────────
+// The panel's one destructive control. Every assertion below is about a guard.
+
+test('the erase arms, disarms, and fires as three distinct actions', () => {
+  const armed = F.fdDispatch({ 'data-fd-clear-ask': '' }, {}, { sheet: 'settings' });
+  assert.equal(armed.patch.settingsConfirmClear, true);
+  assert.equal(armed.effect, null, 'the first tap must destroy nothing');
+  assert.equal(armed.route, null);
+  assert.equal(armed.patch.sheet, undefined, 'and must leave the panel open');
+
+  const kept = F.fdDispatch({ 'data-fd-clear-cancel': '' }, {},
+    { sheet: 'settings', settingsConfirmClear: true });
+  assert.equal(kept.patch.settingsConfirmClear, false);
+  assert.equal(kept.effect, null, 'cancelling must destroy nothing');
+
+  const fired = F.fdDispatch({ 'data-fd-clear-confirm': '' }, {},
+    { sheet: 'settings', settingsConfirmClear: true });
+  assert.deepEqual(fired.effect, { type: 'clear-device-data' });
+  assert.equal(fired.patch.settingsConfirmClear, false,
+    'and the confirm disarms itself, so a re-render cannot leave it primed');
+});
+
+// A destructive confirm must never survive a close and reopen -- one stray tap from a wipe the
+// learner never re-authorised. Settings has exactly one close ROUTE (the shared
+// data-fd-close-sheet the ✕ and the backdrop emit) plus Escape, and both run fdCloseSheet.
+test('closing the panel disarms the erase confirm, by either close path', () => {
+  for (const attrs of [{ 'data-fd-close-sheet': '' }, { close: true }]) {
+    const r = F.fdDispatch(attrs, { }, { sheet: 'settings', settingsConfirmClear: true });
+    assert.equal(r.patch.settingsConfirmClear, false,
+      `${JSON.stringify(attrs)}: a destructive confirm must never survive a close and reopen`);
+  }
+});
+
+// The close paths are not the only way out of the panel, which is why the guarantee cannot be a
+// list of them. data-fd-progress -- the Your-data section's OWN export link, sitting directly
+// above the armed confirm -- patches sheet:null without going through fdCloseSheet, and so do
+// data-fd-home and data-fd-change-week. Arming the erase and then tapping the export next to it
+// is an ordinary thing to do, and it left the confirm primed for the next visit.
+//
+// So the one guarantee that covers every exit, including a reload, is asserted at the OPENING:
+// the panel is disarmed whenever it opens, however it was last left. data-fd-settings is the only
+// producer of sheet:'settings' (fdResolveState cannot restore it -- FD_KEYS does not persist
+// `sheet`), so this is exhaustive rather than enumerated.
+test('the panel opens disarmed however it was last left', () => {
+  const reopened = F.fdDispatch({ 'data-fd-settings': '' }, {}, { settingsConfirmClear: true });
+  assert.equal(reopened.patch.settingsConfirmClear, false,
+    'opening settings must never present an armed erase');
+
+  // Patches are applied the way apply() applies them rather than asserted on directly, so this
+  // stays true of the END state. Pinning "the exit leaves the flag set" instead would freeze
+  // today's gap as a contract and redden if some exit later learned to clear it too.
+  for (const exit of ['data-fd-progress', 'data-fd-home', 'data-fd-change-week']) {
+    const armedPanel = { sheet: 'settings', settingsConfirmClear: true, tab: 'today' };
+    const left = F.fdDispatch({ [exit]: '' }, {}, armedPanel);
+    assert.equal(left.patch.sheet, null, `${exit} closes the panel without fdCloseSheet`);
+    const away = { ...armedPanel, ...left.patch };
+    const back = F.fdDispatch({ 'data-fd-settings': '' }, {}, away);
+    assert.equal({ ...away, ...back.patch }.settingsConfirmClear, false,
+      `${exit} then reopening must not present an armed erase`);
+  }
+});
+
+// Arming the erase changes the PANEL and nothing underneath it. transitionDetail's overlayKeys
+// decides that, and a key missing from it is classed as a base change -- which rebuilds
+// contentEl.innerHTML under an open panel on every arm and cancel. The same misclassification is
+// what made the exam-date commit owe a base render; this key genuinely owes nothing.
+test('arming the erase is an overlay change, not a base one', () => {
+  const details = [];
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', sheet: 'settings' }, {
+    F, renderTransient: (_s, d) => details.push(d), render: (_s, d) => details.push(d),
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-clear-ask': '' }), preventDefault() {} });
+  const d = details[details.length - 1];
+  assert.equal(h.controller.getState().settingsConfirmClear, true, 'the click must arm');
+  assert.equal(d.surfaces.overlay, true, 'the panel is what changed');
+  assert.equal(d.surfaces.base, false, 'nothing under the panel did');
+});
+
+// This is the test that makes "cleared" true rather than asserted. It seeds a cw_* key that
+// appears in NO source file: an implementation that enumerates known literals would pass every
+// other assertion here and still leave this one behind, which is the silent-shrink class in
+// docs/SILENT_SHRINK_CHECKLIST.md -- a check reporting success over a smaller set than it claims.
+test('clearing removes every namespaced key, including one no source file mentions', () => {
+  const store = {
+    cw_progress_v1: '{}', cw_srs_v1: '{}', rp_flags: '[]',
+    cw_a_key_invented_by_a_future_feature_v9: '1',
+    'unrelated-third-party': 'keep me',
+  };
+  const fake = {
+    get length() { return Object.keys(store).length; },
+    key: (i) => Object.keys(store)[i],
+    getItem: (k) => (k in store ? store[k] : null),
+    removeItem: (k) => { delete store[k]; },
+  };
+  F.fdClearDeviceData(fake);
+  assert.deepEqual(Object.keys(store), ['unrelated-third-party'],
+    'every cw_*/rp_* key must go, and nothing else may');
+});
+
+// The fake above is a REAL store in the one way that matters here: removeItem reindexes it, so
+// key(i) after a delete returns what key(i+1) would have. Deleting inside a forward walk
+// therefore skips every other match -- and with an even number of doomed keys it skips them in a
+// pattern that still LOOKS like it worked on a three-key fixture. Collect first, delete second.
+test('a store that reindexes on delete still loses every namespaced key', () => {
+  const store = {};
+  for (let i = 0; i < 12; i += 1) store[`cw_k${i}`] = String(i);
+  const fake = {
+    get length() { return Object.keys(store).length; },
+    key: (i) => Object.keys(store)[i],
+    getItem: (k) => (k in store ? store[k] : null),
+    removeItem: (k) => { delete store[k]; },
+  };
+  F.fdClearDeviceData(fake);
+  assert.deepEqual(Object.keys(store), [], 'a delete-as-you-walk loop leaves half of these');
+});
+
+test('clearing survives a browser that throws on storage access', () => {
+  const hostile = { get length() { throw new Error('blocked'); } };
+  assert.doesNotThrow(() => F.fdClearDeviceData(hostile));
+});
+
+// A store that throws PART WAY through -- Safari private mode raises on the write, not the read.
+// The keys collected before the throw are still gone; what must not happen is an exception
+// escaping into apply(), which would skip the reload and leave the panel over a half-erased
+// device claiming nothing happened.
+test('clearing survives a store that throws on the removal itself', () => {
+  let removed = 0;
+  const hostile = {
+    length: 2,
+    key: (i) => ['cw_a', 'cw_b'][i],
+    getItem: () => '1',
+    removeItem() { removed += 1; throw new Error('quota'); },
+  };
+  assert.doesNotThrow(() => F.fdClearDeviceData(hostile));
+  assert.equal(removed, 1, 'it must have genuinely tried');
+});
+
+// The effect half: the erase runs against the real store and then RELOADS. Without the reload the
+// controller keeps its in-memory state and fdSave writes it back on the learner's next tap --
+// resurrecting the role, week and route the erase just removed, with no second confirmation.
+test('the erase effect empties the real store and reloads the page', () => {
+  const storage = memStorage({
+    cw_frontdoor_v1: '{"role":"first-role"}', cw_progress_v1: '{}', rp_x: '1', keep_me: 'yes',
+  });
+  const LocalF = make(storage);
+  let reloads = 0;
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', sheet: 'settings' }, {
+    F: LocalF,
+    location: { href: 'https://example.test/', search: '', pathname: '/', reload() { reloads += 1; } },
+  });
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-clear-confirm': '' }), preventDefault() {},
+  });
+  assert.deepEqual(Object.keys(storage.dump()), ['keep_me'],
+    'the namespaced keys are gone and the unrelated one is not');
+  assert.equal(reloads, 1, 'and the page reloads, or the next tap re-saves what was erased');
+});
+
+// fdSave(state) runs BEFORE fdApplyEffect in apply(), so the controller writes its own state key
+// on the way past and the erase has to happen after it. Reverse the two and the panel reports a
+// successful wipe over a store that still holds the learner's role and route.
+test('the controller state written on the way past is erased too, not after', () => {
+  const storage = memStorage({ cw_progress_v1: '{}' });
+  const LocalF = make(storage);
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F: LocalF,
+    location: { href: 'https://example.test/', search: '', pathname: '/', reload() {} },
+  });
+  // Opening the panel is an ordinary apply(), so fdSave has genuinely written the controller's own
+  // key by the time the erase runs -- which is the situation this test is about. Asserting it
+  // before any apply() would only pin the fixture.
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-settings': '' }), preventDefault() {} });
+  assert.ok('cw_frontdoor_v1' in storage.dump(),
+    'the fixture must actually reach a state where fdSave has written');
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-clear-confirm': '' }), preventDefault() {},
+  });
+  assert.deepEqual(storage.dump(), {}, 'nothing survives, including what apply() just wrote');
+});
+
+// meaningfulResult() is what previewActive() consults, and it exempts exactly one effect type.
+// It is closure-private inside fdWire, so the guard is pinned at the source: a broadened
+// condition would silently let a reviewer's click erase the device they are reviewing on.
+// Asserting meaningfulResult(result) === true from outside would prove nothing -- the confirm's
+// patch is non-empty, so it returns true on the patch loop before ever reading the effect.
+test('erasing device data stays "meaningful", so faculty preview locks it', () => {
+  const guard = wire.match(/function meaningfulResult\(result\)\{[\s\S]*?\n {2}\}/);
+  assert.ok(guard, 'meaningfulResult must remain extractable');
+  const exemptions = [...guard[0].matchAll(/type!=='([a-z-]+)'/g)].map((m) => m[1]);
+  assert.deepEqual(exemptions, ['set-theme'],
+    'only painting a theme may bypass the faculty-preview lock');
+
+  let locked = 0;
+  const h = fakeHarness({ ...roleContext, screen: 'app', sheet: 'settings' }, {
+    F,
+    facultyPreview: true,
+    facultyPreviewLock: () => { locked += 1; },
+    location: { href: 'https://example.test/', search: '', pathname: '/', reload() { throw new Error('reloaded under preview'); } },
+  });
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-clear-confirm': '' }), preventDefault() {},
+  });
+  assert.equal(locked, 1, 'the lock notice is what a reviewer gets');
+  assert.equal(h.controller.getState().settingsConfirmClear, undefined,
+    'and no state change reaches the reviewed page');
+});
+
+// fdClearDeviceData is the only removal path, and it must stay computed and prefix-scoped.
+// A literal key added to it would evade the very property the completeness test buys: the
+// fixture cannot contain a key nobody has written yet.
+test('the erase names no key of its own and reaches past no namespace', () => {
+  const body = wire.match(/function fdClearDeviceData\(store\)\{[\s\S]*?\n\}/);
+  assert.ok(body, 'fdClearDeviceData must remain extractable');
+  assert.doesNotMatch(body[0], /removeItem\(\s*['"]/,
+    'a literal removeItem here is a key the completeness test can never catch');
+  // Comments are stripped: the rationale for rejecting clear() names it, and a rule that its own
+  // documentation trips would be deleted rather than kept.
+  assert.doesNotMatch(wire.replace(/\/\*[\s\S]*?\*\//g, ''), /\.clear\(\s*\)/,
+    'clear() reaches past the namespace the storage-namespaces decision governs');
+  assert.equal((body[0].match(/indexOf\('(?:cw|rp)_'\)===0/g) || []).length, 2,
+    'both sanctioned prefixes, and only those');
 });

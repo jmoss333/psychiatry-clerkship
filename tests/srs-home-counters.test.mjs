@@ -37,7 +37,8 @@ const dueCode = slice(source, 'function srsState(', '/* ---- end due breakdown -
 // RETIRED_IDS / DRAFT_IDS stand in for the build injection (the source literals stay
 // empty lists; build_deploy.py verified-replaces them).
 // eslint-disable-next-line no-new-func
-const makeSrs = new Function('localStorage', 'TOPIC_META', 'document', 'RETIRED_IDS', 'DRAFT_IDS', `
+const makeSrs = new Function('localStorage', 'TOPIC_META', 'document', 'RETIRED_IDS', 'DRAFT_IDS', 'Clock', `
+  var Date = Clock || globalThis.Date;
   var window = {};
   ${seedCode}
   ${servCode}
@@ -93,9 +94,17 @@ test('empty TOPIC_META (fetch failed) never triggers the migration', () => {
 
 test('dueBreakdown buckets by prefix; dueCount reports Daily-Review-servable only', () => {
   const ls = memStorage();
-  const past = Date.now() - 60000;
-  const twoDaysAgo = Date.now() - 86400000 * 2;
-  const future = Date.now() + 86400000;
+  // "One minute ago" must remain today: a wall-clock run just after midnight
+  // otherwise makes this card overdue and tests the fixture's timing, not routing.
+  // Freeze the fixture and the extracted implementation to the same local noon.
+  const now = new Date(2026, 8, 10, 12, 0, 0, 0).getTime();
+  class FixtureDate extends Date {
+    constructor(...args) { super(...(args.length ? args : [now])); }
+    static now() { return now; }
+  }
+  const past = now - 60000;
+  const twoDaysAgo = now - 86400000 * 2;
+  const future = now + 86400000;
   ls.setItem('cw_srs_v1', JSON.stringify({ v: 1, cards: {
     'deck#0#1': { due: past },
     'TOPIC#mse.md': { due: twoDaysAgo },
@@ -106,7 +115,7 @@ test('dueBreakdown buckets by prefix; dueCount reports Daily-Review-servable onl
     'REASON#mania_psychosis_substance_001#problem_representation': { due: twoDaysAgo },
     'REAS#case#step': { due: past },
   } }));
-  const srs = makeSrs(ls, QUIZ_META, docStub);
+  const srs = makeSrs(ls, QUIZ_META, docStub, undefined, undefined, FixtureDate);
   const b = srs.dueBreakdown();
   assert.equal(b.daily.due, 2);
   assert.equal(b.daily.overdue, 1);

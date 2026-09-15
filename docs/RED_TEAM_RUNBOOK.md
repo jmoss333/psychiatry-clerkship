@@ -46,9 +46,13 @@ cd ~/Psychiatry-Clerkship-Library
 node bin/redteam-offline.mjs
 ```
 
-**Expected result:** `12/12 deterministic probes pass`, followed by the reminder that this is not
-a pass. This runs checklist **B1–B4, B6, B7** and **C3** against the real `sp.mjs` gate logic —
-the same functions the live deploy uses.
+**Expected result:** the script prints `N/N deterministic probes pass`, followed by the reminder
+that this is not a pass — where `N` is `PROBES.length` inside `bin/redteam-offline.mjs` (18 as of
+2026-09-09). Trust the script's own printed count, not a number copied into this doc: `N` moves
+every time a probe is added, and a stale count here has already drifted once (12 vs. 18). This
+runs checklist **B1–B4, B6, B7, B8, B9** and **C3** against the real `sp.mjs` gate logic — the same
+functions the live deploy uses. Run `node bin/redteam-offline.mjs --coverage` to see which pack
+gate each probe asserts on.
 
 **If it fails:** stop. Do not deploy, do not continue to Tier 2. The failure text names the gate
 and what leaked. A Tier 1 failure is a code or pack bug, not a model behaviour question.
@@ -242,7 +246,7 @@ If anything failed: `--state failed`, then fix, then re-run the whole checklist.
 
 ## Verification
 
-- [ ] `node bin/redteam-offline.mjs` → 12/12
+- [ ] `node bin/redteam-offline.mjs` → `N/N` (N = `PROBES.length` in the script; do not hardcode a number here)
 - [ ] `./bin/redteam-live.sh …` → 5 passed, 0 failed
 - [ ] Sections A, C, D2–D6 and E walked in Live mode, with the model string and pack version written down
 - [ ] `receipts/sp-red-team.json` exists, `state: passed`, `packSha256` matches the deployed pack

@@ -25,5 +25,25 @@
 # learner re-downloads anything. Git-LFS bandwidth is unaffected on either fetch path: the
 # legacy clone-time fetch ran BEFORE the hook, and the cached-pull path reads from Netlify's
 # build cache. Exit code 1 from the ignore command means "content changed, build".
+#
+# 2026-09-10 — WHAT CHANGED AND WHAT DELIBERATELY DID NOT. The SATELLITE sites (sp-proxy,
+# faculty-console, metrics, alex-tour) no longer always build: each now runs
+# `13_Faculty_Resources/_automation/site_build/netlify_ignore_scoped.sh` and skips a
+# PRODUCTION build whose diff does not touch its own directory. Netlify bills a production
+# deploy at 15 credits (~$0.10) flat while build minutes, previews, branch deploys and
+# cancelled deploys are free, so always-build across five sites was charging about
+# $110/month for byte-identical republishes.
+#
+# THIS FILE KEEPS `/bin/false`, on purpose. It governs une-ms3-psychiatry and
+# mmc-psychiatry-residents-sanford, which are built from the WHOLE repository by
+# build_and_check.sh — there is no directory whose absence from a diff proves their output
+# is unchanged, and shipping a learner a stale page to save a dime is the wrong trade. The
+# only cost that changed here is that this file is now the exception rather than the rule.
+#
+# The alarm this rule was protecting moved too: `bin/check_netlify_deploy_health.py`, run
+# daily by maintenance-production-canary.yml, reads deploy state from the Netlify API and
+# discards exactly the "Canceled build due to no content change" cancel. Keep the "Deploy
+# failed" email ON for these two sites; turn it OFF on the satellites.
+# Numbers: 13_Faculty_Resources/_automation/NETLIFY_COST_REDUCTION_PLAN.md.
 [build]
   ignore = "/bin/false"

@@ -1,3 +1,39 @@
+# September 9 — Morgan and the family meeting attested
+
+Joshua Moss, MD attested the hosted spoken portrayals of Morgan
+(`sp_alcohol_ambivalence_001`) and the Morgan/Maya family meeting
+(`family_morgan_maya_001`) on 2026-09-09, per his instruction in session. This
+flips `facultyReview`/`review` status from pending/draft to `reviewed` (reviewer
+`Joshua Moss, MD`, date `2026-09-09`) on the local case, its speech profile, the
+portrayal/station layer shared by all five encounters, and the label on Dana's
+direct-suicide-question overlay; the hosted station's "(draft)" case-picker
+labels and "Faculty-review draft" review notes no longer appear for these two
+cases. This is a labels-and-status change only — no case facts, gates, prompts,
+or voices changed. The hosted site is not git-linked, so nothing here reaches
+learners until the owner runs a CLI deploy of `sp-preview`.
+
+---
+
+# Practice a Moment — September 9
+
+See [the current requirement audit and faculty packet](PRACTICE_MOMENT_ACCEPTANCE.md). Earlier receipts below describe full encounters and do not establish provider or microphone validation for the new moments.
+
+---
+
+# September 8 — family, MI, and portrayal extension
+
+The protected preview adds the existing Morgan MI draft and a public-only Morgan/Maya family meeting. This does not attest either case or transplant the local private-check-in workflow. One family respondent speaks per learner turn. The same twenty-start daily policy and 34-unit full-encounter envelope apply.
+
+Verification on this extension: 198 unit checks; 21 real-browser checks under deployed CSP with fake recognition/audio; full root verify and both audience builds; independent ten-alternating-family-turn plus one-alternative ledger probe at 34 units. The probe also refuses private-channel keys, changed targets on consumed receipts, cross-case state, and alternative continuation before additional spend. Review found and fixed third-person names switching the respondent and a late speaker label being voiced by the wrong participant.
+
+The staged real-provider run used three starts and ten questions (33 operation units). All 23 MP3 files decoded successfully. Morgan explored benefits/costs/choice; Maya held her no-nightly-monitoring limit; the public actor refused an invented private check-in; Marcus followed the sleep redirect. Dialogue review noted one minor unsupported causal phrase from Morgan ("wasn't moving well" as a reason for canceled plans); it is not an observed motor finding. Keep generated dialogue subject to faculty review.
+
+First-audio times for the ten staged questions were 1.929–3.444 seconds after dispatch. The initial Marcus audition did not consistently separate tempo from the other voices, so a modest 1.12 speech-synthesis setting was added for Marcus only; browser playback remains normal. A further listening comparison is recorded with the local release artifacts. Acoustic authenticity, pronunciation, and physical-microphone behavior remain human judgments; these tests do not establish them. Existing Dana voice and clinical gates are unchanged.
+
+The following sections are historical receipts for earlier slices; their case counts and former exclusions describe those earlier states.
+
+---
+
 # Hosted Dana acceptance record
 
 Engineering preview, not faculty approval or learner activation.
@@ -173,6 +209,25 @@ her story." — hard-coded and gendered, wrong for two of the three patients —
 three more hard-coded "Dana" labels in the station's quotes and retry copy. The
 identity work in slice 2 covered the heading and voice tag and stopped short of
 these. Fixed, with a test that fails on any gendered pronoun in the shared chrome.
+
+### Browser journeys under the deployed CSP — 2026-09-08
+
+`tests/smoke/hosted-preview-browser.spec.js`, project `hosted-preview`, running in
+Chromium in CI on every pull request. The spec serves `sp-preview/dist` itself with
+the response headers read from the preview's own `netlify.toml`, so it cannot drift
+from the policy the preview deploys with, and it makes no paid call — the endpoint
+is mocked and audio is stubbed.
+
+Five journeys: each of the three cases named correctly with its own voice, door note
+and title and no other case's content or an assumed pronoun; the station grid
+computing as `grid` under `style-src 'self'`; and Clear removing the marked
+exchange, the reflection and the attending presentation from the rendered page.
+
+This suite exists because the preview's node tests drive a DOM stub, and a stub
+cannot see a CSP violation, a computed style, or what is left on the page after
+Clear. Three defects reached the deployed preview through that gap — R8, R4, and
+the gendered heading the author's own microphone run caught. Verified with teeth:
+reintroducing R8 and R4 fails all five.
 
 ### Still not verified
 

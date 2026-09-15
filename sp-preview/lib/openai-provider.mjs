@@ -1,4 +1,5 @@
-import {speechProfile} from '../../_prototypes/sp-interview/conversation-speech-profiles.mjs';
+import {validateReviewSources,isReviewSchema,validateProviderReview} from './moments/evidence.mjs';
+import {hostedSpeechProfile as speechProfile} from './portrayal.mjs';
 import {createUsageCounter, normalizeUsage} from '../../_prototypes/sp-interview/dana-provider-usage.mjs';
 
 const BASE_URL = 'https://api.openai.com/v1';
@@ -47,21 +48,21 @@ export function firstSubstantiveSentence(value) {
   return null;
 }
 
-function actorInput(system,messages,stream) {
-  if(typeof system!=='string'||!system.trim()||CONTROL.test(system)||!Array.isArray(messages)||messages.length>21)throw fail('invalid_reply','validation');
+function actorInput(system,messages,stream,actorReasoning) {
+  if(typeof system!=='string'||!system.trim()||CONTROL.test(system)||!Array.isArray(messages)||messages.length>23)throw fail('invalid_reply','validation');
   for(const message of messages) {
     if(!message||Array.isArray(message)||Object.keys(message).length!==2||!Object.hasOwn(message,'role')||!Object.hasOwn(message,'content')
       ||!['user','assistant'].includes(message.role)||typeof message.content!=='string'||!message.content.trim()||message.content.length>MAX_ACTOR_TEXT||CONTROL.test(message.content))throw fail('invalid_reply','validation');
   }
-  const value={model:ACTOR_MODEL,instructions:system,input:messages,store:false,max_output_tokens:768,reasoning:{effort:'low'},...(stream?{stream:true}:{})};
+  const value={model:ACTOR_MODEL,instructions:system,input:messages,store:false,max_output_tokens:768,reasoning:{effort:actorReasoning},...(stream?{stream:true}:{})};
   if(Buffer.byteLength(JSON.stringify(value))>200_000)throw fail('invalid_reply','validation');
   return value;
 }
 
-function speechInput(text,caseId) {
+function speechInput(text,caseId,deliveryIntensity) {
   if(typeof text!=='string'||!text.trim()||text.length>MAX_REPLY||CONTROL.test(text))throw fail('invalid_reply','validation');
-  let profile;try{profile=speechProfile(caseId);}catch{throw fail('invalid_reply','validation');}
-  return {model:SPEECH_MODEL,voice:profile.voice,input:text,instructions:profile.instructions,response_format:'mp3',speed:1.0};
+  let profile;try{profile=speechProfile(caseId,deliveryIntensity);}catch{throw fail('invalid_reply','validation');}
+  return {model:SPEECH_MODEL,voice:profile.voice,input:text,instructions:profile.instructions,response_format:'mp3',speed:profile.speed??1.0};
 }
 
 function providerUsage(value) {
@@ -214,8 +215,10 @@ async function readSpeech(response,signal,onChunk) {
   if(!verified||bytes<100)throw fail('speech_incomplete','speech_output');
 }
 
-export function createOpenAIProvider({env=process.env,fetchImpl=globalThis.fetch,timeoutMs=30_000}={}) {
+export function createOpenAIProvider({env=process.env,fetchImpl=globalThis.fetch,timeoutMs=30_000,actorReasoning='low'}={}) {
   if(typeof fetchImpl!=='function'||!Number.isInteger(timeoutMs)||timeoutMs<1||timeoutMs>45_000)throw fail('invalid_reply','validation');
+  // Explicit experiment only; the deployed default remains the reviewed setting.
+  if(actorReasoning!=='low'&&actorReasoning!=='none')throw fail('invalid_reply','validation');
   const configured=typeof env?.OPENAI_API_KEY==='string'&&env.OPENAI_API_KEY.trim().length>0;
   const usage=createUsageCounter();
   const diagnostics={counts:{actor:{},speech:{}},lastFailures:[]};
@@ -255,26 +258,42 @@ export function createOpenAIProvider({env=process.env,fetchImpl=globalThis.fetch
     configured,
     getUsage:()=>usage.snapshot(),
     getDiagnostics:()=>structuredClone(diagnostics),
+    async evaluateMoment({system,sources,schema,signal}={}) {
+      if(typeof system!=='string'||!system.trim()||system.length>24000||CONTROL.test(system))throw fail('invalid_reply','validation');
+      try{validateReviewSources(sources);if(!isReviewSchema(schema)||Buffer.byteLength(JSON.stringify(schema))>32768)throw Error();}catch{throw fail('invalid_reply','validation');}
+      const input={model:ACTOR_MODEL,instructions:system,input:[{role:'user',content:JSON.stringify(sources)}],store:false,reasoning:{effort:'low'},max_output_tokens:1800,text:{format:{type:'json_schema',name:'moment_review',strict:true,schema}}};
+      if(Buffer.byteLength(JSON.stringify(input))>200000)throw fail('invalid_reply','validation');
+      return request('actor','/responses',input,signal,async(response,signal,setUsage)=>{
+        const value=await readJson(response,signal);setUsage(providerUsage(value?.usage));
+        if(value?.status!=='completed'||!Array.isArray(value.output))throw fail('actor_incomplete','actor_output');
+        const messages=value.output.filter(item=>item?.type!=='reasoning');
+        if(messages.length!==1||messages[0]?.type!=='message'||messages[0].role!=='assistant'||!Array.isArray(messages[0].content)||messages[0].content.length!==1)throw fail('protocol_final','final');
+        const part=messages[0].content[0];
+        if(part?.type!=='output_text'||typeof part.text!=='string'||Buffer.byteLength(part.text)>16384||CONTROL.test(part.text))throw fail('protocol_final','final');
+        const parsed=json(part.text);if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw fail('protocol_final','final');
+        try{return validateProviderReview(parsed,sources,schema);}catch{throw fail('protocol_final','final');}
+      });
+    },
     async reply({system,messages,signal}={}) {
-      const input=actorInput(system,messages,false);
+      const input=actorInput(system,messages,false,actorReasoning);
       return request('actor','/responses',input,signal,async(response,signal,setUsage)=>{const value=await readJson(response,signal);setUsage(providerUsage(value?.usage));return finalActorText(value).trim();});
     },
     async replyStream({system,messages,signal,onLead}={}) {
       if(typeof onLead!=='function')throw fail('invalid_reply','validation');
-      const input=actorInput(system,messages,true);
+      const input=actorInput(system,messages,true,actorReasoning);
       return request('actor','/responses',input,signal,(response,signal,setUsage)=>readActorStream(response,signal,onLead,setUsage));
     },
-    async speak({text,signal,caseId}={}) {
+    async speak({text,signal,caseId,deliveryIntensity}={}) {
       // No default: an omitted case would speak a reply in the wrong patient's voice.
       if(typeof caseId!=='string'||!caseId)throw fail('invalid_reply','validation');
       const chunks=[];
-      await request('speech','/audio/speech',speechInput(text,caseId),signal,(response,signal)=>readSpeech(response,signal,chunk=>chunks.push(chunk)));
+      await request('speech','/audio/speech',speechInput(text,caseId,deliveryIntensity),signal,(response,signal)=>readSpeech(response,signal,chunk=>chunks.push(chunk)));
       return Buffer.concat(chunks);
     },
-    async speakStream({text,signal,onChunk,caseId}={}) {
+    async speakStream({text,signal,onChunk,caseId,deliveryIntensity}={}) {
       if(typeof caseId!=='string'||!caseId)throw fail('invalid_reply','validation');
       if(typeof onChunk!=='function')throw fail('invalid_reply','validation');
-      return request('speech','/audio/speech',speechInput(text,caseId),signal,(response,signal)=>readSpeech(response,signal,onChunk));
+      return request('speech','/audio/speech',speechInput(text,caseId,deliveryIntensity),signal,(response,signal)=>readSpeech(response,signal,onChunk));
     },
   };
 }

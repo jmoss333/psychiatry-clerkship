@@ -370,6 +370,16 @@ SKIP_LINK_CSS = (
 )
 FAVICON_LINK = '<link rel="icon" href="/favicon.svg">'
 CLINICAL_CSS_LINK = '<link rel="stylesheet" href="/clinical-warm.css">'
+_CLINICAL_CSS_LINK_RE = re.compile(r"<link[^>]+clinical-warm\.css", re.IGNORECASE)
+
+
+def _links_clinical_css(text):
+    """True only when the shared dark-token stylesheet is linked as an ELEMENT.
+
+    Deliberately not `"clinical-warm.css" in text`: that is what let a comment naming the file
+    disable dark mode for a whole page (2026-09-10, the SPA shell).
+    """
+    return bool(_CLINICAL_CSS_LINK_RE.search(text))
 # Usage analytics. CW_SITE tells the emitter which site it is on; CW_PAGE (when
 # known at build time) tells it which page. The emitter sends only allowlisted
 # keys and never an identifier. See
@@ -458,11 +468,70 @@ def analytics_enabled_for(site, mode=None):
     return mode == "both" or mode == site
 
 
-# Pre-paint theme init: runs before first paint so dark mode never flashes.
+# Pre-paint theme init: runs before first paint so dark mode never flashes. Injected only into
+# pages that ship without their own boot (see apply_dark_mode's `"cw_theme" not in t` guard).
+#
+# This must stay BYTE-IDENTICAL to the inline <script> at the top of spa_index.html. It cannot
+# import that script -- both run before anything else loads, which is the whole point -- so the
+# duplication is structural, and test_common.py's TestThemeInit is what stops the two copies
+# drifting. They already drifted once: the shell learned the 'system' mode on 2026-09-10 and this
+# copy did not, which left a learner on a dark-preferring phone reading a dark shell and light
+# tool pages. `cw_theme` holds a MODE (system/light/dark); documentElement holds the RESOLVED
+# attribute (light/dark), so CSS only ever sees two values. An unrecognised or absent mode reads
+# as system, not light -- a device that never expressed a preference follows its OS.
+#
+# ONE TRY PER CAPABILITY, never one around the lot. A browser can throw on the mere ACT of
+# touching localStorage -- Chrome with site data blocked does -- and when the OS resolution sat
+# inside the storage try, that throw aborted the boot before matchMedia was ever consulted.
+# Nothing was painted; clinical-warm.css scopes the dark palette to [data-theme="dark"], so no
+# attribute means light, and a storage-blocked learner on a dark OS got a white page with no
+# control anywhere that could change it. Each capability is guarded on its own and each failure
+# degrades to the safe default its own scenario row records.
+#
+# THE LISTENER LIVES HERE, and that is a placement decision rather than a convenience. 'system'
+# resolved only at boot means "your OS as of page load", and since unset now reads as system that
+# is the default for every existing device. The subscription belongs to the one piece of theme
+# code present on EVERY themed page: the tool pages carry this boot and get no frontdoor modules
+# at all, and the shell posts a resolved theme into a tool frame only on an explicit theme CHANGE,
+# never on an OS flip -- so a controller-side listener would leave an embedded tool on the old
+# palette for as long as the learner stayed in it. A second resolver beside this one is also the
+# drift 0ed0a4c had to repair.
+#
+# The mode is re-read on every paint rather than captured, so the "only while system" gate is
+# live: a learner who picks Light in the panel stops following the OS from that moment, in this
+# tab and in any other. The listener repaints the ATTRIBUTE and nothing else -- it never writes
+# cw_theme, so the panel's active segment is untouched and no render is needed.
+#
+# Four pages own their theme from <body> and carry no boot, so they get none of this
+# (tests/theme-bootless-pages.test.mjs). A second owner repainting under their own state is a
+# desync, not a feature.
 THEME_INIT = (
-    "<script>(function(){try{var t=localStorage.getItem('cw_theme');"
-    "if(t!=='dark'&&t!=='light'){t='light';}"
-    "document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>"
+    "<script>(function(){var q=null;try{q=(window.matchMedia&&"
+    "window.matchMedia('(prefers-color-scheme: dark)'))||null;}catch(e){}"
+    "function p(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}"
+    "var m=(s==='light'||s==='dark'||s==='system')?s:'system';"
+    "var a=(m==='system')?((q&&q.matches)?'dark':'light'):m;"
+    "try{document.documentElement.setAttribute('data-theme',a);}catch(e){}}p();"
+    "if(q){try{if(q.addEventListener){q.addEventListener('change',p);}"
+    "else if(q.addListener){q.addListener(p);}}catch(e){}}})();</script>"
+)
+
+# ?theme-audit — a LOADER, not the tool. Every colour defect this library shipped in 2026-09 was
+# the same thing: a colour that does not flip. The gate in bin/check_design_drift.py catches the
+# four shapes it has been taught, on the routes someone encoded; this makes the whole family
+# visible on ANY page, in five seconds, to a person. theme_audit.js is ~11 KB and would be dead
+# weight on 30 pages, so what ships is this: ~200 bytes that fetch nothing unless the URL asks.
+# rotation-curator.html is offline BY CONTRACT. check-static-site.mjs hard-fails on any network
+# transport API in it — fetch, XHR, WebSocket, and `createElement("script")` among them — because
+# the faculty edition builder must not be able to reach the network at all. A debug hook is not a
+# reason to weaken that, so it is the one page that does not get the loader below. Found the hard
+# way: the first build with the loader failed with "network transport API in rotation-curator.html".
+NO_NETWORK_PAGES = frozenset({"rotation-curator.html"})
+
+THEME_AUDIT_LOADER = (
+    "<script>(function(){if(!/[?&]theme-audit\\b/.test(location.search))return;"
+    "var s=document.createElement('script');s.src='/theme-audit.js';s.defer=true;"
+    "document.head.appendChild(s);})();</script>"
 )
 
 MOTION_CSS = (
@@ -612,7 +681,8 @@ def apply_page_chrome(path, is_index=False):
     if ".skip-link{" not in t and "</head>" in t:
         t = t.replace("</head>", SKIP_LINK_CSS + "\n</head>", 1)
 
-    # WP-03: bare accent text (--primary #c25a3c) is ~3.9:1 on the light backgrounds and
+    # WP-03: bare accent text (--primary #bc573a, darkened from #c25a3c 2026-09-10) is
+    # ~4.2:1 on the light backgrounds and still
     # fails WCAG AA for normal-size text. Repoint to --primary-dark; the literal fallback
     # covers tools whose light :root lacks the token, and clinical-warm.css overrides
     # --primary-dark to #dd9277 in dark mode, which also passes. The closing paren in the
@@ -652,8 +722,19 @@ def apply_dark_mode(path, is_index=False, cache_bust=None, page_slug=None, injec
     if "cw_theme" not in t and "<head>" in t:
         t = t.replace("<head>", "<head>\n" + THEME_INIT, 1)
 
+    if (os.path.basename(path) not in NO_NETWORK_PAGES
+            and "theme-audit.js" not in t and "</head>" in t):
+        t = t.replace("</head>", THEME_AUDIT_LOADER + "\n</head>", 1)
+
     # Dark tokens come from the linked stylesheet — one file, not N inline copies.
-    if '[data-theme="dark"]' not in t and "clinical-warm.css" not in t and "</head>" in t:
+    #
+    # _links_clinical_css matches the <link> ELEMENT, not the bare filename. A substring test
+    # here shipped the entire SPA shell with NO dark palette on 2026-09-10: a source comment in
+    # spa_index.html happened to name the file, the guard read that as "already linked", and
+    # skipped the injection. Nothing failed — the shell simply stayed light with data-theme="dark"
+    # stamped on <html>. Same fix applied to the missing-asset check below, which was fooled
+    # identically and so could not report it.
+    if '[data-theme="dark"]' not in t and not _links_clinical_css(t) and "</head>" in t:
         t = t.replace("</head>", CLINICAL_CSS_LINK + "\n</head>", 1)
 
     # Usage analytics. Injected here so every polished page carries it from one
@@ -833,7 +914,7 @@ def page_contract_failures(out_dir):
             missing.append('#root anchor for the skip link')
         if "cw_theme" not in t:
             missing.append("pre-paint theme init (cw_theme)")
-        if "clinical-warm.css" not in t and '[data-theme="dark"]' not in t:
+        if not _links_clinical_css(t) and '[data-theme="dark"]' not in t:
             missing.append("dark-mode tokens (clinical-warm.css link or inline block)")
         if 'rel="icon"' not in t:
             missing.append("favicon link")

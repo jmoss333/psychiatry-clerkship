@@ -1,12 +1,29 @@
 # psychiatry-workforce-tour (base directory: 13_Faculty_Resources/Outreach/alex-tour).
-# `ignore = "/bin/false"` = ALWAYS BUILD, NEVER "CANCEL": with a base directory set, Netlify
-# would otherwise cancel every build whose commit did not touch this directory, and it
-# records a cancel as a FAILED deploy (state "error"), which is what a "Deploy failed"
-# notification fires on. Cost: a ~10 s no-build deploy per event. See sp-proxy/netlify.toml
-# and GIT_AND_DEPLOY_PLAN.md §7.
+# BUILD ONLY WHEN THIS SITE'S OWN DIRECTORY CHANGES. `ignore` runs
+# netlify_ignore_scoped.sh, which exits 0 ("skip, no production deploy") only when the
+# context is production AND the diff between the last built commit and this one does not
+# touch the path it is given. Deploy previews and branch deploys always build: they are
+# free and they are the PR gate. Anything unexpected -- missing refs, a path that has
+# moved, a non-git checkout -- exits non-zero and BUILDS.
+#
+# This replaced `ignore = "/bin/false"` (always build, never cancel) on 2026-09-10. That
+# rule was there for a real reason: Netlify records a skip as a FAILED deploy (state
+# "error", "Canceled build due to no content change") and this site's "Deploy failed"
+# email -- the only alarm for a genuinely broken production deploy, added after the
+# 2026-08-31 LFS outage -- fired on every one of them (~75/day observed 2026-09-02). It
+# was priced in these comments as "one ~30 s build per event", which was correct when
+# Netlify billed build MINUTES. Under credit pricing build minutes are FREE and a
+# PRODUCTION DEPLOY is 15 credits (~$0.10) flat: 513 of the 815 production deploys charged
+# across the satellite sites over 14 days were byte-identical republishes, about
+# $110/month. The alarm moved to bin/check_netlify_deploy_health.py, which reads deploy
+# state from the Netlify API, discards exactly that cancel message, and runs daily inside
+# maintenance-production-canary.yml.
+# ACTION REQUIRED IN THE NETLIFY UI: turn OFF this site's "Deploy failed" email.
+# Numbers and rollback: 13_Faculty_Resources/_automation/NETLIFY_COST_REDUCTION_PLAN.md;
+# history: GIT_AND_DEPLOY_PLAN.md section 7.
 [build]
   publish = "."
-  ignore = "/bin/false"
+  ignore = 'bash ../../_automation/site_build/netlify_ignore_scoped.sh 13_Faculty_Resources/Outreach/alex-tour'
 
 [[headers]]
   for = "/*"
