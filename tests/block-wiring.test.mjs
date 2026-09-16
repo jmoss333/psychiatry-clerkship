@@ -75,3 +75,16 @@ test('the shell picks exactly one primary, names the secondary heading once, and
   assert.match(today, /FD_TODAY_LEAD_END/, 'the marker fd_today.js emits is the splice point');
   assert.match(today, /fdTodayWhy\(\)/);
 });
+
+test('an interrupted block session checkpoints its block identity and resumes as a block session', () => {
+  const checkpoint = qbank.slice(qbank.indexOf('function checkpointSession('), qbank.indexOf('function tryResumeSession('));
+  assert.match(checkpoint, /fromBlock: SESSION\.fromBlock===true/);
+  assert.match(checkpoint, /n: SESSION\.queue\.length/);
+  assert.match(checkpoint, /cat: SESSION\.cat\|\|null/);
+  const resume = qbank.slice(qbank.indexOf('function tryResumeSession('), qbank.indexOf('function showQuestion('));
+  assert.match(resume, /SESSION\.fromBlock = cap\.fromBlock===true;/);
+  assert.match(resume, /SESSION\.cat = \(typeof cap\.cat==='string'&&CAT_LABELS\[cap\.cat\]\)\?cap\.cat:null;/);
+  assert.match(qbank, /SESSION\.cat = _blockCat==='all' \? null : _blockCat;/, 'a block start records its category on the session');
+  assert.ok(qbank.indexOf('RESUME_REQUESTED && tryResumeSession()') < qbank.indexOf('if(BLOCK_REQUEST){'),
+    'resume is tried before a fresh block start, so ?resume=1&block=1 restores rather than restarts');
+});
