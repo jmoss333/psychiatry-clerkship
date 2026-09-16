@@ -151,6 +151,28 @@ def main(argv):
     def bad(where, msg):
         errs.append("%s: %s" % (where, msg))
 
+    # Discovery vocabulary names resources, not clinical advice. Validate against ALL
+    # shipped producers (including weekly cases), independently of Library placement.
+    search_slugs = {page["slug"] for page in shipped_document["pages"]}
+    aliases = cur.get("searchAliases", {})
+    if not isinstance(aliases, dict):
+        bad("searchAliases", "must be a ref-keyed object")
+        aliases = {}
+    for ref, phrases in aliases.items():
+        if ref not in search_slugs:
+            bad("searchAliases", "unknown shipped ref %r" % ref)
+        if not isinstance(phrases, list) or not phrases:
+            bad("searchAliases", "%s needs a non-empty list" % ref)
+            continue
+        seen_phrases = set()
+        for phrase in phrases:
+            if not isinstance(phrase, str) or not re.fullmatch(r"[a-z0-9]+(?: [a-z0-9]+)*", phrase):
+                bad("searchAliases", "%s has a malformed phrase %r" % (ref, phrase))
+            elif phrase in seen_phrases:
+                bad("searchAliases", "%s repeats %r" % (ref, phrase))
+            else:
+                seen_phrases.add(phrase)
+
     # Synonym keys: a key with a space is a PHRASE, matched whole-phrase against the raw query.
     # Both forms must be lowercase and trimmed or they can never match a lowercased query — a
     # silently-inert entry is worse than a rejected one, because it looks like coverage.

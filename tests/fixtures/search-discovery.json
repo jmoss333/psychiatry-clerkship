@@ -1,0 +1,423 @@
+{
+  "description": "Frozen learner-language audit, 2026-09-15. Negative control has no acceptable calculator; related reading is not an equivalent. MI tests the motivational-interviewing sense only.",
+  "queries": [
+    {
+      "query": "prepare for rounds",
+      "acceptable": [
+        "oral.html",
+        "doc_oral.md"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": null,
+        "res": null
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "ask family for collateral",
+      "acceptable": [
+        "collateral_workflow.md",
+        "family-systems.html"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 2,
+        "res": 2
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "practice a difficult conversation",
+      "acceptable": [
+        "communication-practice.html",
+        "sp-interview.html"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 4,
+        "res": 4
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "present a patient in 60 seconds",
+      "acceptable": [
+        "oral.html",
+        "doc_oral.md"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 3,
+        "res": 3
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "hearing voices",
+      "acceptable": [
+        "t_psychosis.md",
+        "mse.html"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": null,
+        "res": null
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "not sleeping and full of energy",
+      "acceptable": [
+        "t_mood.md"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": null,
+        "res": null
+      },
+      "maxRank": 4
+    },
+    {
+      "query": "confused after surgery",
+      "acceptable": [
+        "delirium.md"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 1,
+        "res": 1
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "agitated patient",
+      "acceptable": [
+        "agitation.md"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 1,
+        "res": 1
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "SI",
+      "acceptable": [
+        "pg_suicide.md",
+        "suicide.md"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 1,
+        "res": 1
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "AMS",
+      "acceptable": [
+        "delirium.md"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 2,
+        "res": 2
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "MSE",
+      "acceptable": [
+        "mse.html",
+        "pg_interview.md"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 1,
+        "res": 1
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "MI",
+      "acceptable": [
+        "motivational_interviewing.md"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": null,
+        "res": null
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "patient wants to leave",
+      "acceptable": [
+        "exp_consult.md",
+        "capacity.html"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 2,
+        "res": 2
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "cutting",
+      "acceptable": [
+        "pg_suicide.md",
+        "suicide.md"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 1,
+        "res": 1
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "C-SSRS",
+      "acceptable": [
+        "cssrs.html"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 1,
+        "res": 1
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "Columbia suicide severity rating scale",
+      "acceptable": [
+        "cssrs.html"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 3,
+        "res": 3
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "BFCRS",
+      "acceptable": [
+        "bfcrs.html"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 1,
+        "res": 1
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "Bush Francis scale",
+      "acceptable": [
+        "bfcrs.html"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 1,
+        "res": 1
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "CIWA-Ar",
+      "acceptable": [
+        "withdrawal.html"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 1,
+        "res": 1
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "COWS",
+      "acceptable": [
+        "withdrawal.html"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 3,
+        "res": 3
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "Stanley Brown safety plan",
+      "acceptable": [
+        "suicide.md"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": 2,
+        "res": 2
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "PHQ9",
+      "acceptable": [
+        "screeners.html"
+      ],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": null,
+        "res": null
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "post event debrief",
+      "acceptable": [
+        "rp-post-event-huddle.html"
+      ],
+      "sites": [
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": null,
+        "res": 1
+      },
+      "maxRank": 3
+    },
+    {
+      "query": "clozapine myocarditis calculator",
+      "acceptable": [],
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "baselineRanks": {
+        "ms3": null,
+        "res": null
+      },
+      "maxRank": 3
+    }
+  ],
+  "holdouts": [
+    {
+      "query": "help me get ready for rounds",
+      "acceptable": [
+        "oral.html"
+      ]
+    },
+    {
+      "query": "how do I get collateral from a parent",
+      "acceptable": [
+        "collateral_workflow.md"
+      ]
+    },
+    {
+      "query": "rehearse a hard conversation",
+      "acceptable": [
+        "communication-practice.html",
+        "sp-interview.html"
+      ]
+    },
+    {
+      "query": "my patient hears voices",
+      "acceptable": [
+        "t_psychosis.md",
+        "mse.html"
+      ]
+    },
+    {
+      "query": "what does PHQ 9 mean",
+      "acceptable": [
+        "screeners.html"
+      ]
+    },
+    {
+      "query": "where is the Columbia screener",
+      "acceptable": [
+        "cssrs.html"
+      ]
+    },
+    {
+      "query": "Bush–Francis rating scale form",
+      "acceptable": [
+        "bfcrs.html"
+      ]
+    },
+    {
+      "query": "talk about change using motivational interviewing",
+      "acceptable": [
+        "motivational_interviewing.md"
+      ]
+    }
+  ]
+}

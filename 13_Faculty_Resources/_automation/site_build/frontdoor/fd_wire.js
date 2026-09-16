@@ -155,6 +155,9 @@ function fdParamsWithoutRoute(search){
   params.delete('page');
   params.delete('tool');
   params.delete('tab');
+  /* Passage context belongs to the current reading, never the next activity iframe. */
+  params.delete('guideFind');
+  params.delete('guideSection');
   return params;
 }
 
@@ -303,9 +306,13 @@ function fdDispatch(attrs, context, state){
       };
     }
     tab=fdValidTab(s.tab)?s.tab:'today';
+    var resourceRoute=fdRouteForRef(ref,c.search,c.blockNavigation);
+    if(s.searchOpen&&s.query&&!fdIsTool(ref)){
+      resourceRoute+='&guideFind='+encodeURIComponent(String(s.query).trim().slice(0,160));
+    }
     return {
       patch:{openId:ref,fromTab:tab,searchOpen:false,sheet:null},
-      route:fdRouteForRef(ref,c.search,c.blockNavigation),effect:{type:'open-resource',ref:ref}
+      route:resourceRoute,effect:{type:'open-resource',ref:ref}
     };
   }
 

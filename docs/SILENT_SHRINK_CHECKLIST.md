@@ -60,6 +60,26 @@ answered.
       *Rule:* an exemption list **may only shrink**, each entry carries a reason a reader can
       check, and a red check is never a reason to add one.
 
+- [ ] **A4. Does RESOLVING a finding shrink what the check still watches?**
+      Idempotency keys stop duplicates. Ask what they stop *forever*, and whether
+      "already seen" is quietly standing in for "no longer worth seeing".
+
+      *Earned by:* `sync_findings.py` dedup'd each finding's fingerprint against
+      GitHub issues at `state=all`, so **closing** an issue removed that URL from
+      link monitoring permanently — a set shrinking by one per closure, with the
+      monitor still reporting zero. 118 closed issues had suppressed 103 distinct
+      URLs. Two FDA drug-safety pages were failing in the 2026-09-16 run and could
+      not open an issue; both answered `200` to a direct GET, so the channel was
+      dead in both directions at once. #266/#247/#124, #290/#267/#248/#212
+      *Tell:* the dedup set is built from closed records as well as open ones, and
+      the word "dismissed" appears in a docstring without a file behind it.
+      *Fix pattern:* an OPEN record suppresses (it already tracks the condition); a
+      CLOSED one does not (it means *fixed*, so a recurrence is news); only a
+      **registered** dismissal carrying a written reason suppresses for good —
+      `config/dismissed.json`, seeded from the closures a human had already marked
+      NOT PLANNED so no existing decision was lost. Report the registered count
+      every run, so the suppressed set stays something a person can see.
+
 ---
 
 ## B — Can it fail at all?

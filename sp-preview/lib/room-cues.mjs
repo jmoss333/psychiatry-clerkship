@@ -1,7 +1,9 @@
 // Authored environmental cues. Learner dialogue cannot supply their wording.
 const CUES=Object.freeze({
   door_knock:Object.freeze({id:'door_knock',text:'A brief knock at the closed door. No one enters.'}),
-  hallway_chime:Object.freeze({id:'hallway_chime',text:'A short chime sounds in the hallway and stops.'})
+  hallway_chime:Object.freeze({id:'hallway_chime',text:'A short chime sounds in the hallway and stops.'}),
+  door_tap:Object.freeze({id:'door_tap',text:'Two quick taps at the closed door, then footsteps move away down the hallway. The door stays closed.'}),
+  overhead_page:Object.freeze({id:'overhead_page',text:'An overhead page sounds in the hallway and stops. The words do not carry into the room.'})
 });
 export const isRoomCue=id=>typeof id==='string'&&Object.hasOwn(CUES,id);
 export function roomCue(id){

@@ -643,7 +643,8 @@
       "level": "moderate"
     },
     "at": "2026-07-03",
-    "by": "Joshua Moss, MD"
+    "by": "Joshua Moss, MD",
+    "note": "safetyKit item: capacity assessment is high-risk clinical surface. Content enhanced with Further Reading resources (Phase 2) covering four-abilities model, delirium guidelines, catatonia criteria, withdrawal management, trauma-informed assessment, teaching resources — status held at 'reviewed' per safetyKit governance constraint"
   },
   "psychopharm_primer.md": {
     "status": "reviewed",
@@ -673,13 +674,15 @@
     "by": "Joshua Moss, MD"
   },
   "doc_oral.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-03",
-    "by": "Joshua Moss, MD"
+    "at": "2026-09-14",
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with evidence-based resources on documentation, oral presentation, handoff communication, and clinical reasoning",
+    "note": "Added comprehensive Further Reading section covering documentation standards, structured handoffs (Solet & Frankel), formulation-driven assessment (Summers), differential diagnosis reasoning, MSE focus and tailoring, presentation skills under pressure, book references (Kaplan & Sadock, Morrison), and practice guidance (Phase 2 coverage curation)"
   },
   "exp_tx.md": {
     "status": "reviewed",
@@ -691,13 +694,15 @@
     "by": "Joshua Moss, MD"
   },
   "exp_family.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-03",
-    "by": "Joshua Moss, MD"
+    "at": "2026-09-14",
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with media resources",
+    "note": "Added Further Reading section with discharge planning frameworks, lethal means assessment, family involvement evidence, and teaching resources (Phase 1 coverage curation)"
   },
   "family_modalities.md": {
     "status": "reviewed",
@@ -1082,22 +1087,26 @@
     "by": "Joshua Moss, MD"
   },
   "case_formulation.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
     "at": "2026-07-09",
-    "by": "Joshua Moss, MD"
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with media resources",
+    "note": "Added Further Reading section with formulation frameworks, books, and teaching resources (Phase 1 coverage curation)"
   },
   "medical_workup.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
     "at": "2026-07-10",
-    "by": "Joshua Moss, MD"
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with media resources",
+    "note": "Added Further Reading section with medical workup guidelines, medical mimics resources, and teaching resources (Phase 1 coverage curation)"
   },
   "toxidromes.md": {
     "status": "reviewed",

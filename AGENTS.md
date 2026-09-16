@@ -302,6 +302,28 @@ cd tests/smoke && npm ci && npx playwright test
   retire the contract silently. Note such assertions never run on Netlify or in CI: `node --test`
   runs before **both** `build_and_check.sh` invocations and `_build/` starts absent, so a
   build-output test is a local-only contract — do not rely on CI to catch what it pins.
+  The same rule binds the `bin/` checkers that read the built sites: `bin/_build_freshness.py`
+  is the Python twin of `tests/_build_freshness.mjs`, and each caller declares only its own
+  inputs. Both of its failure modes have shipped here. **Absent** made `check_design_drift.py`
+  iterate an empty list and print "design system clean" — a vacuous pass. **Stale** is worse and
+  cost two days: a `_build/` 13 days old produced 22 findings (10 C4, 12 C8) against pages the
+  source no longer emitted, every one fabricated, and a comparison against clean `main`
+  "confirmed" them because both sides read the same stale tree. A checker that reads `_build/`
+  must therefore report which sites it could not read and must NOT summarise as clean what it
+  never opened — `check_design_drift.py` prints `PARTIAL` and names the sites; guard on
+  freshness, not existence, and rebuild before believing any finding against a built page.
+  The sibling rule for a test that **spawns** a build (rather than reading `_build/`): guard it
+  with `lfsStubReason()` from `tests/_lfs_media.mjs` (JS) or `worktree_stub_reason()` in
+  `site_build/check_lfs_media.py` (Python). Without git-lfs installed there is no smudge filter,
+  so every LFS-tracked file checks out AS its ~133-byte pointer and `build_deploy.py` aborts in
+  `welcome_compass.require_real_files()` — "MS3 Compass required files are invalid: <an .mp4>",
+  a red no source edit can clear, which is what made three `ci-build-contract.test.mjs` cases and
+  one `evidence_registry` case fail in every sandbox. CI never saw it: `is_soft_context()` already
+  exempts the `lfs:false` checkout and deploy previews, so the guard returns null there and the
+  contracts still run. **The predicate is defined once**, next to the deploy gate that enforces it;
+  do not re-derive "is a pointer stub" in a new place. It returns null — meaning RUN — for every
+  answer except a confirmed stub in a hard context, including "cannot tell": a skip guard that
+  errs permissive retires real contracts while the suite still reads green.
 - **THE LIBRARY TEACHES ADMINISTRATION; IT DOES NOT REPRODUCE INSTRUMENTS.** Same standing as the
   dose-literal rule. Teach *how to give* an instrument — the elicitation, the confounds, what the
   score does and does not license, what a negative result fails to rule out — and link to the
@@ -327,3 +349,20 @@ cd tests/smoke && npm ci && npx playwright test
   pinned page drops it or points at a copy hosted here. `bin/check_instrument_links.py` re-checks
   the far end by hand; it is not a gate.
   Audit and current disposition: `docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md`.
+- **SafetyKit governance: high-risk clinical pages cannot transition to pending.** `curriculum.json`
+  defines a `safetyKit` array of page ledger keys for high-risk clinical safety surfaces. These items
+  **must maintain `facultyReview.status = 'reviewed'`** in `reviewed.json` and `topic_meta.json` —
+  they cannot be transitioned to `pending` status even when content is enhanced. Current safetyKit
+  items (2026-09-14): `pg_suicide.md`, `agitation.md`, `exp_consult.md`, `t_sud.md`, `delirium.md`.
+  **Rationale:** High-risk clinical teaching on suicide, agitation, capacity, withdrawal, and
+  delirium requires permanent faculty review attestation. These pages are not draft content — they
+  are complete teaching surfaces where learners assess and act on clinical risk. Staying `reviewed`
+  ensures the entire page (not just new additions) carries ongoing faculty accountability.
+  **When adding resources or citations to a safetyKit item:** Enhance the content freely — add
+  evidence links, media, teaching materials, media resources — but leave `facultyReview.status`
+  at `reviewed` and update `reviewed.json` and `topic_meta.json` only if you are changing the
+  review date or reviewer. This is not a gate — it is a ledger rule. `build_and_check.sh` enforces
+  it via `validate_curriculum.py`, which hard-fails the build if any safetyKit item's
+  `facultyReview.status` is not `reviewed`. If you attempt to transition a safetyKit item and the
+  build fails with "safetyKit <ledger-key>: facultyReview.status must be 'reviewed'", revert the
+  status in both ledgers and push again.

@@ -19,6 +19,7 @@ CONFIG = os.path.join(SURV_ROOT, "config")
 HISTORY = os.path.join(SURV_ROOT, "history")
 BASELINES = os.path.join(HISTORY, "baselines")
 CITATION_INDEX = os.path.join(CONFIG, "citation_index.json")
+DISMISSED = os.path.join(CONFIG, "dismissed.json")
 EVIDENCE_REGISTRY = Path(LIB_ROOT) / "evidence_registry.json"
 REGISTRY = EVIDENCE_REGISTRY
 
@@ -60,6 +61,29 @@ def invert_citations(index):
         for sid in meta.get("cites", []):
             inv.setdefault(sid, []).append(path)
     return {k: sorted(v) for k, v in inv.items()}
+
+def load_dismissed(path=DISMISSED):
+    """Fingerprints that must never re-file, mapped to why.
+
+    The ONLY permanent suppression. A CLOSED issue means the condition was fixed,
+    so the same fingerprint failing again is a recurrence and deserves a new issue;
+    suppressing on any closed issue silently shrinks the monitored set by one URL
+    per closure (docs/SILENT_SHRINK_CHECKLIST.md). Missing file => nothing is
+    permanently suppressed, which is the safe direction: noisier, never blinder.
+    """
+    try:
+        with open(path, encoding="utf-8") as fh:
+            document = json.load(fh)
+    except FileNotFoundError:
+        return {}
+    dismissed = document.get("dismissed")
+    if not isinstance(dismissed, dict):
+        raise ValueError("dismissed.json: 'dismissed' must be an object")
+    for fp, record in dismissed.items():
+        if not isinstance(record, dict) or not str(record.get("reason") or "").strip():
+            raise ValueError(f"dismissed.json: {fp} needs a non-empty reason")
+    return dismissed
+
 
 def load_registry(path=REGISTRY):
     tools_dir = Path(LIB_ROOT) / "tools" / "evidence_registry"

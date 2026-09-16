@@ -58,6 +58,15 @@ REBUILD = "bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh {
 sys.path.insert(0, str(SITE_BUILD))
 from shipped_pages import ShippedPagesError, load_shipped_pages  # noqa: E402
 
+# The _build/ freshness comparison itself lives in one place; this file declares only which
+# inputs staleness means FOR IT (STALE_INPUTS below).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _build_freshness import (  # noqa: E402
+    Undeterminable,
+    newer_input as _newer_input,
+    stale_reason as _stale_reason,
+)
+
 # Every file whose content changes WHAT THIS CHECKS or what a correct answer looks like.
 # shipped_pages.json belongs here because it decides which audience each required surface is
 # demanded of: regenerating it after a build (a `--quick` run, adding a producer) changes the
@@ -65,10 +74,6 @@ from shipped_pages import ShippedPagesError, load_shipped_pages  # noqa: E402
 # reports a confident OK over the wrong set (Codex P2 on #545).
 STALE_INPUTS = (CRISIS_JSON, BUILD_DEPLOY, RESIDENT_SECTION,
                 SITE_BUILD / "crisis_block.py", SHIPPED_PAGES)
-
-
-class Undeterminable(Exception):
-    """The checker cannot establish what it is supposed to check."""
 
 
 def literal_set(py_file: Path, name: str) -> set[str]:
@@ -182,33 +187,13 @@ def required_surfaces() -> dict[str, list[tuple[str, str]]]:
 
 
 def newer_input(built_at: float, inputs=STALE_INPUTS) -> Path | None:
-    """The first declared input that outran the build, or None. Pure, so it is falsifiable.
-
-    A declared path that does not exist RAISES rather than being skipped: a typo in
-    STALE_INPUTS would otherwise make the freshness check vacuously "fresh" and retire the
-    contract in silence (CLAUDE.md, staleBuildReason paragraph).
-    """
-    for src in inputs:
-        if not src.exists():
-            raise Undeterminable(f"declared input does not exist: {src}")
-        if src.stat().st_mtime > built_at:
-            return src
-    return None
+    """This checker's inputs, measured by the shared guard. See bin/_build_freshness.py."""
+    return _newer_input(built_at, inputs)
 
 
 def stale_reason(site: str, build_root: Path | None = None) -> str | None:
-    """None when _build/<site> is current enough to mean something, else why it is not.
-
-    Mirrors tests/_build_freshness.mjs: a build older than the sources under test fails such a
-    check honestly, and that red would then be blamed on content rather than on the stale tree.
-    """
-    stamp = (build_root if build_root is not None else REPO / "_build" / site) / "index.html"
-    if not stamp.exists():
-        return f"_build/{site} is not built"
-    src = newer_input(stamp.stat().st_mtime)
-    if src is None:
-        return None
-    return f"_build/{site} is stale ({src.relative_to(REPO)} is newer than the build)"
+    """None when _build/<site> is current enough to mean something, else why it is not."""
+    return _stale_reason(site, STALE_INPUTS, build_root=build_root, repo=REPO)
 
 
 def check_site(site: str, surfaces: list[tuple[str, str]],

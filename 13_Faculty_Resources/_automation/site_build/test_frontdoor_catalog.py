@@ -111,6 +111,32 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.ms3_catalog = _catalog(self.shared)
         self.resident_catalog = _catalog(self.shared + RESIDENT_EXTRAS)
 
+    def test_search_covers_shipped_cases_without_changing_library_or_assignments(self):
+        case = {"slug": "case.md", "title": "Full teaching case name", "kind": "page", "sites": ["ms3"]}
+        other = {"slug": "resident-case.md", "title": "Resident case", "kind": "page", "sites": ["res"]}
+        listing = {"pages": [case, other] + [
+            {"slug": ref, "title": "Full " + ref, "kind": "page", "sites": ["ms3"]}
+            for ref in self.shared]}
+        payload = build_frontdoor_payload("ms3", self.curriculum,
+            _catalog(self.shared + ["case.md"]), REVISION, shipped=listing)
+        self.assertIn("case.md", payload["curriculum"]["searchResources"])
+        self.assertNotIn("resident-case.md", payload["curriculum"]["searchResources"])
+        self.assertEqual(payload["curriculum"]["searchTitles"]["case.md"], "Full teaching case name")
+        self.assertEqual(payload["curriculum"]["libraryColumns"], self.curriculum["libraryColumns"])
+        self.assertNotIn("case.md", reachable_refs(payload))
+        self.assertEqual(reachable_refs(payload), set(self.shared))
+        # A missing nav record must fail, not quietly shrink the shipped universe.
+        with self.assertRaisesRegex(ValueError, "case.md"):
+            build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog, REVISION, shipped=listing)
+
+    def test_search_exclusion_cannot_hide_a_placed_resource_or_unknown_slug(self):
+        listing = {"pages": [{"slug": ref, "title": ref, "kind": "page", "sites": ["ms3"]}
+                             for ref in self.shared]}
+        for ref in (self.shared[0], "not-shipped.md"):
+            self.curriculum["searchExclude"] = [{"ref": ref, "reason": "fixture"}]
+            with self.assertRaisesRegex(ValueError, "searchExclude"):
+                build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog, REVISION, shipped=listing)
+
     def test_landing_destinations_get_reader_metadata_without_library_or_path_placement(self):
         original = copy.deepcopy(self.curriculum)
         refs = ["week%d.md" % n for n in range(1, 7)]
