@@ -1862,6 +1862,11 @@ test('hostile dialog on a real switch preserves the active edition and leaves no
     await expect(learner.page.locator('.fd-today')).toBeVisible();
     await setCanonicalLearnerWeek(learner.page, first.envelope.config.pathItems[0].week);
     const canonicalCore = await coreRenderSignature(learner.page);
+    // Today renders the learner's reading history (cw_last → "You were reading", 2026-09-16), and
+    // verifying the first edition below opens a Library page. That is learner state, not edition
+    // state, so the canonical signature is only comparable once cw_last is put back to what it
+    // was when the signature was taken.
+    const canonicalLastRead = await learner.page.evaluate(() => localStorage.getItem('cw_last'));
     await gotoFreshEditionDocument(learner.page, first.link);
     await expectLearnerEdition(learner.page, first, audience);
     const before = await storageSnapshot(learner.page, audience);
@@ -1870,6 +1875,10 @@ test('hostile dialog on a real switch preserves the active edition and leaves no
     expect(activeCore).not.toEqual(canonicalCore);
     expect(before[keys.edition]).toBe(first.backupJson);
     const channelOffsets = [consoleMessages.length, nativeDialogs.length, pageErrors.length];
+    await learner.page.evaluate((value) => {
+      if (value === null) localStorage.removeItem('cw_last');
+      else localStorage.setItem('cw_last', value);
+    }, canonicalLastRead);
     await learner.page.evaluate(() => { window.__task8ResetStorageOperations(); });
     const target = new URL(second.link);
     target.searchParams.set('task8-fault', 'dialog');
