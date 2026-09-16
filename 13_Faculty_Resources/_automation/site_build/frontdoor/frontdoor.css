@@ -1320,3 +1320,5 @@
 @media (max-width:640px){
   .fd-due,.fd-resume__link,.fd-lastread,.fd-freshset{min-height:44px}
 }
+/* Phase 2: the Resume card's block progress line ("Block · 1 of 2 done"). */
+.fd-resume__block{display:block;font-size:var(--fd-font-xs);color:var(--fd-text-dim)}

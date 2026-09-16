@@ -69,7 +69,7 @@ test('the shell picks exactly one primary, names the secondary heading once, and
   assert.match(today, /live\.primaryKind=primary\.kind;/, 'the pure renderer is told who won before it renders');
   assert.match(today, /fdBlockCard\([^;]*\{primary:primary\.kind==='block',resume:blockResume\}\)/, 'the block card is primary only when it won, and knows when its question set can be resumed');
   assert.match(today, /fdDueRow\(due,primary\.kind==='due'\)/);
-  assert.match(today, /fdResumeCard\(sess,primary\.kind==='resume'\)/);
+  assert.match(today, /fdResumeCard\(sess,primary\.kind==='resume',blockStatus\)/, 'the Resume card learns where the block stands');
   assert.match(today, /fdLastReadRow\(lastRead,primary\.kind==='read'\)/);
   assert.match(today, /'<div class="fd-primary">'/);
   assert.match(today, /FD_TODAY_LEAD_END/, 'the marker fd_today.js emits is the splice point');

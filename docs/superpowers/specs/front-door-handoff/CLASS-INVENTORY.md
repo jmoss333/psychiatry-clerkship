@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(303 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
+(304 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -222,6 +222,7 @@ internal Progress. These are part of the same shipped class contract:
 |---|---|
 | `.fd-due` | Due-review button; contains `.fd-due__label`, `.fd-due__breakdown`, and `.fd-due__action`. |
 | `.fd-resume` | Session-resume section; `.fd-resume__link` is the query-preserving link. |
+| `.fd-resume__block` | Progress line inside `.fd-resume__link` when the capsule came from a timed block ("Block · 1 of 2 done"); the link then carries `resume=1&block=1&n[&cat]` (Phase 2, 2026-09-16). |
 | `.fd-block` | Timed block card (2026-09-02, not in the prototype), spliced in with the due row and resume card by `fdTodayLive`. Planner face: `.fd-block__head` (`__kicker`, `__chips` › `__chip(.is-sel)`, `__hint`), `.fd-block__steps` › `__step` (`__dot.is-review/.is-page/.is-qb`, `__title`, `__min`), `.fd-block__actions` (a `.fd-btn--primary` carrying `data-block-start`), or `.fd-block__empty`. Live face adds `.is-live` on the card, `__count`, `__check` on each `__step(.is-done)`, and `__doneline`. Click attributes are `data-block-minutes` / `-start` / `-continue` / `-end`, owned by the shell's auxiliary click handler — deliberately outside the `data-fd-*` controller namespace. Rendered by `fdBlockCard` (`frontdoor/fd_block.js`). |
 | `.fd-primary` | Wrapper the shell puts around the ONE device-store row that won Today's primary slot (`fdTodayPrimary`, `frontdoor/fd_today.js`; composed by `fdTodayLive`). Gives the card inside a terracotta top bar and the card shadow. Absent when the lead card (`.fd-continue` / `.fd-setupcta`) is itself the primary — that card then carries no `.is-secondary`. |
 | `.fd-primary__why` | One-paragraph explanation of the rule, directly under the primary. Rendered by `fdTodayWhy`. |

@@ -41,14 +41,22 @@ function fdCapsuleLeft(capsule){
   return c.queueIds.length-c.idx;
 }
 
-function fdResumeCard(capsule, primary){
-  var left=fdCapsuleLeft(capsule), isPrimary=primary===true;
+function fdResumeCard(capsule, primary, block){
+  var left=fdCapsuleLeft(capsule), isPrimary=primary===true, c=capsule||{}, b=block||null;
   if(left<1) return '';
   var minutes=Math.max(1,Math.round(left*45/60));
+  /* A set the timed block opened resumes AS the block's step: the route carries block=1&n[&cat]
+     so the receipt can mark it, and the card says where the block stands. The route is built by
+     fdBlockResumeSearch (fd_block.js, injected after this module -- hence the typeof guard) so
+     the shell's Continue and this link can never drift apart. Without a block status, or when
+     the block's next step is not the question set, the card is exactly what it was. */
+  var resumeSearch=(c.fromBlock===true&&b&&b.next&&b.next.kind==='qb'&&typeof fdBlockResumeSearch==='function')?fdBlockResumeSearch(b.next,c):null;
+  var href=resumeSearch?resumeSearch.replace(/&/g,'&amp;'):'?tool=question-bank-practice.html&amp;resume=1';
+  var blockLine=resumeSearch?'<span class="fd-resume__block">Block · '+b.done+' of '+b.total+' done</span>':'';
   return '<section class="'+(isPrimary?'fd-resume is-primary':'fd-resume')+'">'+
     '<h2 class="fd-sectionhead">'+(isPrimary?'Pick up where you left off':'Continue where you left off')+'</h2>'+
-    '<a class="fd-resume__link" href="?tool=question-bank-practice.html&amp;resume=1">'+
-      '<span>Resume question bank — '+left+' left, ~'+minutes+' min</span>'+
+    '<a class="fd-resume__link" href="'+href+'">'+
+      '<span>Resume question bank — '+left+' left, ~'+minutes+' min'+blockLine+'</span>'+
       '<span>Resume →</span>'+
     '</a></section>';
 }

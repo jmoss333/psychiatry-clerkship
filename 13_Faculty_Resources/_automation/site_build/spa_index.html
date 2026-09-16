@@ -2114,7 +2114,7 @@
     var cards={
       block:blockHtml,
       due:fdDueRow(due,primary.kind==='due'),
-      resume:fdResumeCard(sess,primary.kind==='resume'),
+      resume:fdResumeCard(sess,primary.kind==='resume',blockStatus),
       read:fdLastReadRow(lastRead,primary.kind==='read')
     };
     var order=['block','due','resume','read'], lead='', also='';
