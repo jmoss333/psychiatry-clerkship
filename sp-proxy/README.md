@@ -102,8 +102,9 @@ manually from the Netlify UI to close that window.**
 Public `GET /api/sp/health-status` requires no credential and exposes only that bounded receipt with
 `Cache-Control: no-store`. A success becomes non-success when it is more than eight hours old or the
 recorded `nextRun` is over ten minutes late, so a missed invocation or lost Blob write cannot hide
-behind the prior success. GitHub checks this surface after each scheduled slot, and the independent
-Codex deadman supplies the separate alert path.
+behind the prior success at the time checked. GitHub polls at 00:15 and 12:15 UTC, nominally
+sampling the 00:00 and 12:00 canary slots: alternating six-hour slots, not every slot.
+The independent Codex deadman supplies the separate alert path.
 
 This check proves that the contract is intact and that the actor answered one neutral turn. It does
 **not** evaluate what the actor said, exercise the evaluator, the safety screen, voice behavior, or
@@ -273,9 +274,11 @@ silently changing modes.
 
 ## Rotation turnover
 
-For each new block, issue a new non-identifying `SP_ROTATION_ID`, learner passcode, and separate
-operations credential. Revoke the old learner and operations credentials, record the prior
-content-free final usage receipt, and retain its ledger under the approved retention schedule. Never
+For each new block, issue a new non-identifying `SP_ROTATION_ID` and rotate only the separate
+operations credential, revoking the old operations credential. The learner passcode is fixed
+and non-rotating at ordinary turnover; suspected disclosure instead requires incident response
+and emergency replacement. Record the prior content-free final usage receipt and retain its
+ledger under the approved retention schedule. Never
 derive or reuse a rotation ID from a passcode, learner, date of birth, medical record, case, or
 transcript. Do not compact an active ledger.
 
