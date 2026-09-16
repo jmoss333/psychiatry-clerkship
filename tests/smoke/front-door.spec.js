@@ -1247,7 +1247,7 @@ test.describe('Clinical field guide', () => {
     await page.emulateMedia({ media: 'screen' });
     await page.goto('/?page=doc_oral.md');
     const sections = page.locator('.fd-article__body .sec-c');
-    expect(await sections.count()).toBeGreaterThan(3);
+    await expect.poll(() => sections.count()).toBeGreaterThan(3);
     await page.locator('.sec-toolbar').getByRole('button', { name: 'Collapse all', exact: true }).click();
     await expect(sections.first().locator('.sec-b')).toBeHidden();
     await page.emulateMedia({ media: 'print' });
