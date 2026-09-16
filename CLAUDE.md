@@ -65,12 +65,18 @@ cd tests/smoke && npm ci && npx playwright test
 - `bin/verify.sh` is a **superset** of `ci.yml`, not a mirror: `bin/check-verify-coverage.py`
   enforces that every CI step has a local equivalent (or a recorded `ALLOWED` exemption), but
   verify.sh may run more. `bin/verify_spans.py` and `bin/check_qbank_coherence.py` run there and
-  not in CI — and both **exit 1 when they flag rows** (`return 1 if n_para else 0`,
-  `return 1 if out else 0`), so since verify.sh's `step` treats any non-zero as FAIL and verify.sh
-  is the pre-push hook, either one **can block a push**. They look harmless today only because
-  each currently finds nothing. Read their output; a PASS line is not "nothing found", and
-  verify_spans.py in particular prints "0 clean, 0 flagged, N uncached" and exits 0 when its cache
-  path is wrong — a silent pass, not a clean bill.
+  not in CI, and both are **ratchet gates** (`docs/RATCHETS.md`): the finding counts each one
+  reports (flagged rows, TRUNCATED and EDITED sentences, uncached rows; contradicting pairs)
+  are pinned in a committed `bin/*_baseline.json` beside the tool, a rise exits 1, a fall
+  prints a note, and "could not check" (no baseline, a baseline missing a key, nothing
+  audited) exits 2
+  — never 0. Since verify.sh's `step` treats any non-zero as FAIL and verify.sh is the pre-push
+  hook, either one **blocks a push**. Until 2026-09-16 the span audit gated REWORDED sentences
+  only, so the pott-2022 defect it was built for (a clause deleted MID-sentence classifies as
+  EDITED) exited 0, and a wrong cache path printed "0 clean, 0 flagged, 49 uncached" and passed;
+  both are red now (`sentences_edited` and `rows_uncached` are pinned). Read the flagged rows the
+  tool prints — a PASS line means "at or below baseline", not "nothing found". Lower a pin only
+  after a reviewed reduction: `python3 bin/<tool>.py --update-baseline`, JSON diff in the same PR.
 - **A local gate failing while CI is green usually means bash 3.2**, not your change: the Mac's
   `/bin/bash` is 3.2.57 and CI's is >= 4.4. Under `set -u`, bash < 4.4 treats `"${ARR[@]}"` on an
   empty array as unbound and aborts with an empty message (PR #469). Write
