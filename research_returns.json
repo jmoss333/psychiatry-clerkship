@@ -229,7 +229,15 @@
           "id": "f3",
           "claim": "The ACGME Program Requirements carry NO third-party educational grant, only a bare copyright line — so the Milestones grant must not be assumed to extend to them.",
           "disposition": "needs-primary",
-          "note": "TREAT WITH SUSPICION — this is an unverified NEGATIVE, the exact shape that failed in RQ-10 f3 (the 'no custodian-hosted COWS form' claim, falsified in one fetch). The return states it did not locate a grant, which is honest, but absence of a grant in the PDF body is not absence of a grant: ACGME's site terms of use were not retrieved. This matters because the PR is the recommended SECONDARY axis and its clauses (4.11.f, 4.11.k) are the ones that would be quoted most. Verify before relying on it: fetch acgme.org terms of use, and include it in the permission email. Return's own Unresolved item 1 says the same."
+          "note": "TREAT WITH SUSPICION — this is an unverified NEGATIVE, the exact shape that failed in RQ-10 f3 (the 'no custodian-hosted COWS form' claim, falsified in one fetch). The return states it did not locate a grant, which is honest, but absence of a grant in the PDF body is not absence of a grant: ACGME's site terms of use were not retrieved. This matters because the PR is the recommended SECONDARY axis and its clauses (4.11.f, 4.11.k) are the ones that would be quoted most. Verify before relying on it: fetch acgme.org terms of use, and include it in the permission email. Return's own Unresolved item 1 says the same. ASKED 2026-09-14: permission email sent to Milestones@acgme.org, Gmail thread 1a08d78d0701b218, Q2 puts this question directly to the custodian. Until it is answered, PR clauses are PARAPHRASED on every shipped page.",
+          "followUp": {
+            "kind": "scheduled-task",
+            "mechanism": "trig_01CYL4zGAoU6Z4H6MiXooXSy",
+            "requires": ["Gmail"],
+            "verifiedOn": "2026-09-14",
+            "evidence": "13_Faculty_Resources/automation-captures/acgme-watcher-capabilities-2026-09-14.txt",
+            "note": "Reads the thread twice weekly and reports; it CANNOT touch the repo. `requires` says Gmail and only Gmail because that is all the capture proves — the task's connector list has no remote-devices entry, so it has no git, no gh and no filesystem. Recording the repo answer stays a human step by design: a rights-posture change is a review gate. If anyone ever adds 'remote-devices' to this list to describe what they wish the task did, INV-CAP fails and says so."
+          }
         },
         {
           "id": "f4",

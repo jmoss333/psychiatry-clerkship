@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
   pull-requests: write
 
 concurrency:
@@ -84,20 +85,83 @@ jobs:
       # Draft, always. The runner never marks a pull request ready and never merges;
       # a person decides whether the change is right.
       - name: Open the draft pull request
+        id: pr
         if: steps.queue.outputs.committed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: ${{ steps.queue.outputs.branch }}
           TITLE: ${{ steps.queue.outputs.title }}
           BODY_FILE: ${{ steps.queue.outputs.body_file }}
+          EVIDENCE: ${{ runner.temp }}/queue-runner
         run: |
+          set -uo pipefail
           existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')
           if [ -n "$existing" ]; then
             echo "queue-runner: pull request #$existing already covers $BRANCH"
             exit 0
           fi
+          # The push above needed `contents: write`. This needs something no workflow
+          # file can grant itself -- the "Allow GitHub Actions to create and approve
+          # pull requests" setting -- so it can be refused while everything else
+          # succeeded. Keep the refusal rather than only dying on it: the branch is
+          # already on the remote with verified work on it, and the next step is the
+          # only thing that will ever say why it has no pull request.
           gh pr create --draft --base "${{ github.event.repository.default_branch }}" \
-            --head "$BRANCH" --title "$TITLE" --body-file "$BODY_FILE"
+            --head "$BRANCH" --title "$TITLE" --body-file "$BODY_FILE" \
+            > "$EVIDENCE/pr-create.out" 2> "$EVIDENCE/pr-create.err"
+          code=$?
+          cat "$EVIDENCE/pr-create.out" || true
+          cat "$EVIDENCE/pr-create.err" >&2 || true
+          exit $code
+
+      # Reached only when the pull request itself was refused, never when an earlier
+      # step failed. `issues: write` is an ordinary workflow permission and is NOT
+      # gated by the setting that just refused the pull request, which is precisely
+      # why this fallback can report at all.
+      #
+      # It does not rescue the run. The workflow's job is to deliver a reviewable
+      # draft pull request; delivering half of that is not a pass, so the refused
+      # step stays red and the heartbeat and escalation deadman go on seeing the
+      # truth. This issue carries the detail neither of them can.
+      - name: Record the pushed branch that has no pull request
+        if: ${{ failure() && steps.pr.conclusion == 'failure' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.queue.outputs.branch }}
+          TASK: ${{ steps.queue.outputs.task }}
+          EVIDENCE: ${{ runner.temp }}/queue-runner
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          touch "$EVIDENCE/pr-create.err"
+          : > "$EVIDENCE/fallback.env"
+          gh issue list --state open --limit 200 --json number,body \
+            > "$EVIDENCE/open-issues.json" || echo '[]' > "$EVIDENCE/open-issues.json"
+          python3 13_Faculty_Resources/_automation/maintenance/queue_pr_fallback.py \
+            --issues "$EVIDENCE/open-issues.json" \
+            --branch "$BRANCH" \
+            --task "$TASK" \
+            --repository "${{ github.repository }}" \
+            --base "${{ github.event.repository.default_branch }}" \
+            --run-url "$RUN_URL" \
+            --at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --error "$EVIDENCE/pr-create.err" \
+            --body-out "$EVIDENCE/fallback-body.md" \
+            --output "$EVIDENCE/fallback.env"
+          # The module appends, matching GITHUB_OUTPUT semantics. Truncate first and
+          # read the last entry so a file that is somehow not fresh cannot yield a
+          # two-line "create\nupdate" that silently takes the wrong branch below.
+          decision=$(sed -n 's/^decision=//p' "$EVIDENCE/fallback.env" | tail -n 1)
+          number=$(sed -n 's/^issue_number=//p' "$EVIDENCE/fallback.env" | tail -n 1)
+          # Upsert only. This automation never resolves a row; a person does, by
+          # opening the branch's pull request or deleting the branch.
+          if [ "$decision" = "create" ]; then
+            gh issue create \
+              --title "automation: queue branch pushed without a pull request" \
+              --body-file "$EVIDENCE/fallback-body.md"
+          else
+            gh issue edit "$number" --body-file "$EVIDENCE/fallback-body.md"
+          fi
 
       - name: Upload queue runner evidence
         if: always()

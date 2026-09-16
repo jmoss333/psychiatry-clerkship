@@ -139,6 +139,20 @@
         "instrument_rights.json",
         "13_Faculty_Resources/_automation/gen_cows_from_spec.py"
       ]
+    },
+    {
+      "id": "sbp1-required-inpatient",
+      "title": "SBP1 Patient Safety and Quality Improvement is REQUIRED on the adult inpatient rotation",
+      "status": "active",
+      "decided": "2026-09-14",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "standards.json#units.acgme-sbp1.rotationRationale",
+      "governs": [
+        "standards.json",
+        "bin/check_standards_coverage.py",
+        "vocabulary.json"
+      ],
+      "note": "Closes the one deliberately undecided unit in the standards spine. PR 4.11.q and 6.3 place QI at program level, which is why this was arguable either way; it is ruled required because safety-event reporting, disclosure and RCA participation happen on an inpatient unit, and restraint-and-seclusion reduction and suicide-risk QI are inpatient-specific. Ruling `elsewhere` would have asserted a negative about where learning happens — the shape that failed as RQ-10 f3. The ruling creates a real content obligation and does NOT create coverage: SBP1 remains mapped to nothing and is now reported as blocked-on-vocabulary until `safety` splits into safety-risk / safety-systems. Discharging the obligation is RQ-2. All 21 units remain review: pending; this decision is a placement, not an attestation. As of the vocabulary registry, SBP1's only route to being mapped is the proposed `safety-systems` code, which is why vocabulary.json is governed by this decision too."
     }
   ]
 }

@@ -156,9 +156,12 @@ cd tests/smoke && npm ci && npx playwright test
   task is not listed. Report-only, exits 0, not a gate.
 - `docs/SILENT_SHRINK_CHECKLIST.md` — the failure mode every `bin/` tool exists for, as a
   checklist: **a check reporting success over a set smaller than the one it claims to check.**
-  Twelve entries, each earned by a defect that actually shipped here (#480, #517, #534, #539,
-  #545, #548, the 2026-08-21 annotation pass) and none of them caught by a schema or a type,
-  because each item was individually valid and the corpus was jointly wrong. Run it when you
+  Thirteen entries, each earned by a defect that actually shipped here (#480, #517, #534, #539,
+  #545, #548, #645, the 2026-08-21 annotation pass) and none of them caught by a schema or a
+  type, because each item was individually valid and the corpus was jointly wrong. §D4 is the
+  shape inverted — **no check at all rendering as coverage**: CI's unit is a pull-request head
+  or a push tip, never every commit, so `61beb3b` (pushed to `main`, not the tip of its push)
+  carries 0 check runs, turned `main` red, and read as the *next* commit's fault. Run it when you
   write or review a guard, and use §F to answer it by BREAKING the check rather than by
   reasoning about it — including the step people skip, reverting the fix to prove the fix is
   what made the difference. Only §D2 is mechanised (`bin/check_vacuity.py`); the rest is
@@ -177,7 +180,10 @@ cd tests/smoke && npm ci && npx playwright test
   the run must change a file (3), the task's own count must **move** (4 — a task measured by a
   number the work cannot move reopens the same empty PR every night; it happened), no changed
   path may be the attestation ledger, a clinical registry or LFS media (5), and an edit to an
-  attested page must be announced in the PR body — the ledger stays byte-identical, and
+  attested page must be announced in the PR body. It also writes an **`outcome`** output on
+  every exit path (`did-work` · `nothing-to-do` · `blocked` · `dry-run` · `no-commit`) —
+  **three of the five are exit 0**, so a green run does not mean it did anything; the exit code
+  says which guard refused, the outcome says what the night accomplished — the ledger stays byte-identical, and
   `post_edit_validate.py` catches that only for Edit/Write/MultiEdit while these scripts write
   through Bash. Read `_automation/AUTONOMOUS_QUEUE_RUNNER.md` before changing any of it; the
   workflow is enrolled in `validate_scheduled_workflows.py`, so editing it means recomputing its
