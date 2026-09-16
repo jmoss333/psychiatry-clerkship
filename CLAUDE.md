@@ -302,6 +302,16 @@ cd tests/smoke && npm ci && npx playwright test
   retire the contract silently. Note such assertions never run on Netlify or in CI: `node --test`
   runs before **both** `build_and_check.sh` invocations and `_build/` starts absent, so a
   build-output test is a local-only contract — do not rely on CI to catch what it pins.
+  The same rule binds the `bin/` checkers that read the built sites: `bin/_build_freshness.py`
+  is the Python twin of `tests/_build_freshness.mjs`, and each caller declares only its own
+  inputs. Both of its failure modes have shipped here. **Absent** made `check_design_drift.py`
+  iterate an empty list and print "design system clean" — a vacuous pass. **Stale** is worse and
+  cost two days: a `_build/` 13 days old produced 22 findings (10 C4, 12 C8) against pages the
+  source no longer emitted, every one fabricated, and a comparison against clean `main`
+  "confirmed" them because both sides read the same stale tree. A checker that reads `_build/`
+  must therefore report which sites it could not read and must NOT summarise as clean what it
+  never opened — `check_design_drift.py` prints `PARTIAL` and names the sites; guard on
+  freshness, not existence, and rebuild before believing any finding against a built page.
   The sibling rule for a test that **spawns** a build (rather than reading `_build/`): guard it
   with `lfsStubReason()` from `tests/_lfs_media.mjs` (JS) or `worktree_stub_reason()` in
   `site_build/check_lfs_media.py` (Python). Without git-lfs installed there is no smudge filter,
