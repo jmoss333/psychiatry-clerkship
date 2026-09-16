@@ -17,7 +17,7 @@ const F = new Function(`
   ${read('frontdoor/fd_today.js')}
   ${read('frontdoor/fd_due.js')}
   ${blockSrc}
-  return { fdBlockPlan, fdBlockCard, fdBlockRouteForStep, fdBlockStatus, fdBlockBudget, fdBuildIndex, fdItemsForWeek, fdBlockDueTotal, FD_BLOCK_REVIEW_BUCKETS };
+  return { fdBlockPlan, fdBlockCard, fdBlockRouteForStep, fdBlockStatus, fdBlockBudget, fdBuildIndex, fdItemsForWeek, fdBlockDueTotal, FD_BLOCK_REVIEW_BUCKETS, fdBlockHandoffLabel };
 `)();
 
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
@@ -190,4 +190,61 @@ test('titles are escaped and the module touches no DOM, storage, or clock', () =
   assert.match(html, /&lt;b&gt;&amp;/);
   const body = blockSrc.replace(/\/\*[\s\S]*?\*\//g, '');
   assert.doesNotMatch(body, /document\.|localStorage|Date\.now\(|new Date\(\)/);
+});
+
+// ---- One Thing First (handoff 2026-09-16 §3b) -----------------------------------------------
+
+test('an empty plan offers a fresh set through the controller, and the old sentence is gone', () => {
+  const html = F.fdBlockCard({ steps: [], total: 0, minutes: 5 }, 5, null, {});
+  assert.match(html, /<p class="fd-block__empty">Nothing is due and this week is read through\.<\/p>/);
+  assert.match(html, /<button type="button" class="fd-btn fd-btn--accent" data-fd-open="question-bank-practice\.html">Practice a fresh set<\/button>/);
+  assert.doesNotMatch(html, /Open the question bank for a fresh set/);
+  assert.doesNotMatch(html, /data-block-start/);
+  assert.doesNotMatch(html, AUDIENCE_TOKEN_RE);
+});
+
+test('the reader’s block handoff label says what the press does first: mark done, then continue', () => {
+  assert.equal(F.fdBlockHandoffLabel(null), 'Mark done · Finish block →');
+  assert.equal(F.fdBlockHandoffLabel({ next: null }), 'Mark done · Finish block →');
+  assert.equal(F.fdBlockHandoffLabel({ next: { kind: 'qb', n: 2 } }), 'Mark done · Continue to your 2 questions →');
+  assert.equal(F.fdBlockHandoffLabel({ next: { kind: 'qb', n: 1 } }), 'Mark done · Continue to your 1 question →');
+  assert.equal(F.fdBlockHandoffLabel({ next: { kind: 'review', n: 3 } }), 'Mark done · Continue to your 3 reviews →');
+  assert.equal(F.fdBlockHandoffLabel({ next: { kind: 'page', title: 'Alpha' } }), 'Mark done · Continue: Alpha →');
+});
+
+test('the planner hint says when each step is marked done', () => {
+  const plan = F.fdBlockPlan(IDX, state(), 10, { due: due(8), weakest: WEAK });
+  const html = F.fdBlockCard(plan, 10, null, {});
+  assert.match(html, /<span class="fd-block__hint">Runs as one session\. Each step is marked done as you finish it — the page when you mark it, the questions by the receipt at the end\.<\/span>/);
+  assert.doesNotMatch(html, /the receipt at the end marks the page done for you/);
+});
+
+test('opts.primary=false demotes the card: accent buttons, and the live kicker carries the count', () => {
+  const plan = F.fdBlockPlan(IDX, state(), 10, { due: due(8), weakest: WEAK });
+  const planner = F.fdBlockCard(plan, 10, null, {}, { primary: false });
+  assert.match(planner, /<button type="button" class="fd-btn fd-btn--accent" data-block-start="10">Start the 10-minute block<\/button>/);
+  assert.doesNotMatch(planner, /fd-btn--primary/);
+  assert.equal(F.fdBlockCard(plan, 10, null, {}, {}), F.fdBlockCard(plan, 10, null, {}), 'empty opts is primary');
+  assert.equal(F.fdBlockCard(plan, 10, null, {}, { primary: true }), F.fdBlockCard(plan, 10, null, {}));
+
+  const block = { minutes: 10, steps: [
+    { kind: 'review', title: '3 reviews that are due', min: 2, done: true },
+    { kind: 'page', ref: 'a.md', title: 'Alpha', min: 5 },
+    { kind: 'qb', title: '4 practice questions', min: 3 },
+  ] };
+  const live = F.fdBlockCard(null, 10, block, {}, { primary: false });
+  assert.match(live, /<span class="fd-block__kicker" id="fdBlockTitle">Your block · 1 of 3 done<\/span><\/div>/,
+    'the kicker carries the count and the separate count span is omitted, so it is spoken once');
+  assert.doesNotMatch(live, /fd-block__count/);
+  assert.match(live, /<button type="button" class="fd-btn fd-btn--accent" data-block-continue="1">Continue: Alpha →<\/button>/);
+  assert.doesNotMatch(live, /fd-btn--primary/);
+  assert.doesNotMatch(live, AUDIENCE_TOKEN_RE);
+
+  const primaryLive = F.fdBlockCard(null, 10, block, {});
+  assert.match(primaryLive, /Your 10-minute block<\/span><span class="fd-block__count">1 of 3 done<\/span>/);
+  assert.match(primaryLive, /class="fd-btn fd-btn--primary" data-block-continue="1"/);
+
+  const completeDemoted = F.fdBlockCard(null, 5, { minutes: 5, steps: [{ kind: 'qb', title: 'q', min: 3, done: true }] }, {}, { primary: false });
+  assert.match(completeDemoted, /Block complete<\/span><span class="fd-block__count">1 of 1 done<\/span>/,
+    'a finished block keeps its count span whichever slot it sits in');
 });
