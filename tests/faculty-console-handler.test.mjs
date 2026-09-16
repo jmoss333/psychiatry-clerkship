@@ -583,6 +583,9 @@ test('GET surfaces both Case-of-the-Week twins with the site that serves each', 
     title: 'Catatonia (Aug 31) — MS3',
     kind: 'page',
     site: 'ms3',
+    // Audience, sent separately from the preview site — they disagree for every page
+    // that ships to both deployments (2026-09-14 attestation review).
+    sites: ['ms3'],
     status: 'unreviewed',
     at: '2026-08-31',
     by: 'Pending faculty review',
@@ -591,6 +594,7 @@ test('GET surfaces both Case-of-the-Week twins with the site that serves each', 
   });
   assert.equal(res.title, 'Catatonia (Aug 31) — Resident');
   assert.equal(res.site, 'res');
+  assert.deepEqual(res.sites, ['res']);
   assert.equal(res.status, 'reviewed');
   // Internal ledger fields still never cross the boundary.
   assert.equal(Object.hasOwn(ms3, 'note'), false);

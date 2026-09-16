@@ -8,6 +8,9 @@ on:
 permissions:
   contents: read
   issues: write
+  # The stranded-attestation steward asks whether a rolling review request is
+  # open for attest/pending. Read-only, and the same grant the heartbeat holds.
+  pull-requests: read
 
 concurrency:
   group: maintenance-governance
@@ -49,6 +52,28 @@ jobs:
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
           exit 0
 
+      # Saved attestations reach main through one rolling pull request, and when
+      # that request merges nothing opens the next one. Three times the queue has
+      # then accumulated with no route to main, and each time a human found it by
+      # accident. The console computes this same condition, but only while someone
+      # has it open — which is when they are adding to the pile, not acting on it.
+      # Deferred like the digest above so a finding still reaches the artifact and
+      # the routed issue; "Preserve governance gate result" re-raises both codes.
+      - name: Detect stranded faculty attestations
+        id: attestations
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/maintenance-governance"
+          set +e
+          python3 13_Faculty_Resources/_automation/maintenance/stranded_attestations.py \
+            --out "$RUNNER_TEMP/maintenance-governance/stranded-attestations.json"
+          code=$?
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
       - name: Upload faculty governance digest
         id: upload
         if: always()
@@ -77,9 +102,12 @@ jobs:
         id: enforce
         if: always()
         run: |
-          code="${{ steps.governance.outputs.exit_code }}"
-          case "$code" in
-            "0") exit 0 ;;
-            "1"|"2") exit "$code" ;;
-            *) exit 2 ;;
-          esac
+          for code in "${{ steps.governance.outputs.exit_code }}" \
+                      "${{ steps.attestations.outputs.exit_code }}"; do
+            case "$code" in
+              "0") ;;
+              "1"|"2") exit "$code" ;;
+              *) exit 2 ;;
+            esac
+          done
+          exit 0
