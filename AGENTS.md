@@ -302,6 +302,18 @@ cd tests/smoke && npm ci && npx playwright test
   retire the contract silently. Note such assertions never run on Netlify or in CI: `node --test`
   runs before **both** `build_and_check.sh` invocations and `_build/` starts absent, so a
   build-output test is a local-only contract — do not rely on CI to catch what it pins.
+  The sibling rule for a test that **spawns** a build (rather than reading `_build/`): guard it
+  with `lfsStubReason()` from `tests/_lfs_media.mjs` (JS) or `worktree_stub_reason()` in
+  `site_build/check_lfs_media.py` (Python). Without git-lfs installed there is no smudge filter,
+  so every LFS-tracked file checks out AS its ~133-byte pointer and `build_deploy.py` aborts in
+  `welcome_compass.require_real_files()` — "MS3 Compass required files are invalid: <an .mp4>",
+  a red no source edit can clear, which is what made three `ci-build-contract.test.mjs` cases and
+  one `evidence_registry` case fail in every sandbox. CI never saw it: `is_soft_context()` already
+  exempts the `lfs:false` checkout and deploy previews, so the guard returns null there and the
+  contracts still run. **The predicate is defined once**, next to the deploy gate that enforces it;
+  do not re-derive "is a pointer stub" in a new place. It returns null — meaning RUN — for every
+  answer except a confirmed stub in a hard context, including "cannot tell": a skip guard that
+  errs permissive retires real contracts while the suite still reads green.
 - **THE LIBRARY TEACHES ADMINISTRATION; IT DOES NOT REPRODUCE INSTRUMENTS.** Same standing as the
   dose-literal rule. Teach *how to give* an instrument — the elicitation, the confounds, what the
   score does and does not license, what a negative result fails to rule out — and link to the
