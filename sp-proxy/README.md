@@ -106,12 +106,12 @@ behind the prior success at the time checked. GitHub polls at 00:15 and 12:15 UT
 sampling the 00:00 and 12:00 canary slots: alternating six-hour slots, not every slot.
 The independent Codex deadman supplies the separate alert path.
 
-This check proves that the contract is intact and that the actor answered one neutral turn. It does
+A learner-ready success proves that the contract is intact and that the actor answered one neutral turn. It does
 **not** evaluate what the actor said, exercise the evaluator, the safety screen, voice behavior, or
 the coverage map; it does not authorize managed voice; and it does not replace the deploy/model/pack
 red-team checklist and external activation gates below. A green receipt still is not release
-evidence (D7) — it is now evidence that the tool can speak, which is strictly more than it proved
-before and still much less than a red-team pass.
+evidence (D7). Only a learner-ready success is evidence that the tool can speak; a green
+draft-pack receipt skips actor probing. Neither replaces a red-team pass.
 
 ## One-time setup (~10 min, Netlify dashboard)
 

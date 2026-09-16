@@ -132,6 +132,19 @@ class OperatorDocumentationTests(unittest.TestCase):
                 self.assertNotIn("after each slot", health)
                 self.assertNotIn("after each scheduled slot", health)
 
+    def test_proxy_actor_proof_requires_learner_ready_success(self):
+        health = self.section(self.proxy, "Scheduled health receipts")
+        self.assertIn(
+            "A learner-ready success proves that the contract is intact and that the actor answered one neutral turn.",
+            health,
+        )
+        self.assertIn(
+            "Only a learner-ready success is evidence that the tool can speak; a green draft-pack receipt skips actor probing.",
+            health,
+        )
+        self.assertNotIn("This check proves that", health)
+        self.assertNotIn("it is now evidence that the tool can speak", health)
+
     def test_operator_turnover_keeps_learner_passcode_fixed(self):
         for document, heading in ((self.readme, "Rotation configuration and manual boundary"),
                                   (self.proxy, "Rotation turnover")):
