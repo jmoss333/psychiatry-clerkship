@@ -476,3 +476,88 @@ test('the explanation line is one paragraph with the approved copy, audience-neu
 test('the lead-end marker is an HTML comment the shell can splice at', () => {
   assert.equal(F.FD_TODAY_LEAD_END, '<!--fd-lead-end-->');
 });
+
+// ---- fdContinue: one lead card, demotable ------------------------------------------------
+
+const WK1 = F.fdFindWeek(IDX, 1);
+const PROG = (done) => F.fdTodayProgress(F.fdItemsForWeek(IDX, 1), done);
+
+test('fdContinue: primary undefined renders exactly what primary=true renders, and opens with the pinned class', () => {
+  const a = F.fdContinue(IDX, s({}), WK1, PROG({}));
+  const b = F.fdContinue(IDX, s({}), WK1, PROG({}), true);
+  assert.equal(a, b);
+  assert.match(a, /^<button type="button" class="fd-continue" data-fd-open="a\.md">/);
+  assert.doesNotMatch(a, /is-secondary|fd-freshset/);
+});
+
+test('fdContinue: primary=false adds is-secondary and changes nothing else', () => {
+  const secondary = F.fdContinue(IDX, s({}), WK1, PROG({}), false);
+  assert.match(secondary, /^<button type="button" class="fd-continue is-secondary" data-fd-open="a\.md">/);
+  assert.equal(secondary.replace(' is-secondary', ''), F.fdContinue(IDX, s({}), WK1, PROG({})));
+});
+
+test('fdContinue names the kind of the next item with the same chip rule as the week rows', () => {
+  assert.match(F.fdContinue(IDX, s({}), WK1, PROG({})),
+    /<span class="fd-continue__title">Page A<span class="fd-chip">read<\/span> →<\/span>/);
+  assert.match(F.fdContinue(IDX, s({}), WK1, PROG({ 'a.md': true })),
+    /<span class="fd-continue__title">Tool T<span class="fd-chip is-tool">tool<\/span> →<\/span>/);
+  // A rights reference reads "reference", never "tool" (fd_data.js: rights is a presentation flag).
+  const rights = JSON.parse(JSON.stringify(IDX));
+  rights.weeks[0].items[1].rights = true;
+  assert.match(F.fdContinue(rights, s({}), F.fdFindWeek(rights, 1),
+    F.fdTodayProgress(F.fdItemsForWeek(rights, 1), { 'a.md': true })),
+    /<span class="fd-chip is-tool">reference<\/span>/);
+  // No chip on the look-ahead card — there is no next item to name.
+  assert.doesNotMatch(F.fdContinue(IDX, s({}), WK1, PROG({ 'a.md': true, 't.html': true })), /fd-chip/);
+});
+
+test('a completed week, when primary, offers a fresh set beside the look-ahead card — as a sibling, never nested', () => {
+  const done = { 'a.md': true, 't.html': true };
+  const lead = F.fdContinue(IDX, s({ done }), WK1, PROG(done));
+  assert.match(lead, /<\/button><button type="button" class="fd-btn fd-btn--ghost fd-freshset" data-fd-open="question-bank-practice\.html">Practice a fresh set →<\/button>$/);
+  assert.equal((lead.match(/<button/g) || []).length, 2);
+  assert.doesNotMatch(F.fdContinue(IDX, s({ done }), WK1, PROG(done), false), /fd-freshset/,
+    'a demoted look-ahead card keeps its footprint small');
+  assert.doesNotMatch(F.fdContinue(IDX, s({}), WK1, PROG({})), /fd-freshset/,
+    'an unfinished week never offers the fresh set from this card');
+});
+
+test('fdToday demotes its own Continue card only when a device-store row won', () => {
+  for (const kind of [undefined, 'week', 'ahead', 'setup']) {
+    assert.match(F.fdToday(IDX, s({ primaryKind: kind })), /class="fd-continue" data-fd-open/, String(kind));
+  }
+  for (const kind of ['resume', 'block', 'due', 'read']) {
+    assert.match(F.fdToday(IDX, s({ primaryKind: kind })), /class="fd-continue is-secondary" data-fd-open/, kind);
+  }
+});
+
+test('fdToday emits the lead-end marker exactly once, directly after the lead card', () => {
+  const html = F.fdToday(IDX, s({}));
+  assert.equal(html.split(F.FD_TODAY_LEAD_END).length - 1, 1);
+  const lead = html.indexOf('class="fd-continue"');
+  const mark = html.indexOf(F.FD_TODAY_LEAD_END);
+  const list = html.indexOf('<div class="fd-listhead">');
+  assert.ok(lead > -1 && lead < mark && mark < list, `lead ${lead} mark ${mark} list ${list}`);
+  const setup = F.fdToday(IDX, s({ week: null }));
+  assert.equal(setup.split(F.FD_TODAY_LEAD_END).length - 1, 1);
+  assert.ok(setup.indexOf('fd-setupcta') < setup.indexOf(F.FD_TODAY_LEAD_END));
+  const complete = F.fdToday(IDX, s({ done: { 'a.md': true, 't.html': true } }));
+  assert.ok(complete.indexOf('fd-freshset') < complete.indexOf(F.FD_TODAY_LEAD_END),
+    'the fresh-set button belongs to the lead, above the marker');
+});
+
+test('the same primary kind renders the same lead treatment for both path ids', () => {
+  for (const id of ['ms3-six-week', 'resident-four-week']) {
+    const idx = Object.assign({}, IDX, { path: { id } });
+    assert.match(F.fdToday(idx, s({ primaryKind: 'week' })), /class="fd-continue" data-fd-open/, id);
+    assert.match(F.fdToday(idx, s({ primaryKind: 'resume' })), /class="fd-continue is-secondary" data-fd-open/, id);
+  }
+});
+
+test('every new string is audience-neutral', () => {
+  const done = { 'a.md': true, 't.html': true };
+  const all = F.fdContinue(IDX, s({}), WK1, PROG({}), false)
+    + F.fdContinue(IDX, s({ done }), WK1, PROG(done))
+    + F.fdTodayWhy();
+  assert.doesNotMatch(all, AUDIENCE_TOKEN_RE);
+});

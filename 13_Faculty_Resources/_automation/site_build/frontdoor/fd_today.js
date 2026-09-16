@@ -189,16 +189,24 @@ function fdRow(it, idx, doneMap, compact){
    + data-fd-view-week rather than data-fd-open. The view attribute is intentionally distinct from
    setup-only data-fd-week, so the two actions cannot collide. The next target comes from the
    projected path: its final week reviews itself rather than inventing another. */
-function fdContinue(index, state, wk, progress){
+function fdContinue(index, state, wk, progress, primary){
+  /* primary===false demotes the card (a device-store row won Today's one primary slot);
+     undefined means primary, so every caller and test that predates the picker renders exactly
+     as before. */
+  var isPrimary=primary!==false;
   var isComplete=progress.total>0&&progress.done===progress.total;
   var suggested=index.path&&index.path.id==='ms3-six-week';
   var kickerCls=isComplete?'fd-continue__kicker is-complete':'fd-continue__kicker';
   var kickerText=isComplete?('Week '+fdEsc(state.week)+(suggested?' activities complete':' complete')):('Continue · Week '+fdEsc(state.week));
   var ringPct=(typeof state.ringPct==='number'&&!isNaN(state.ringPct))?state.ringPct:0;
-  var titleText, openAttrs;
+  var titleText, openAttrs, chip='';
   if(progress.next){
     titleText=progress.next.title;
     openAttrs=' data-fd-open="'+fdEsc(progress.next.ref)+'"';
+    /* Same chip rule as fdRow: a rights reference reads "reference", never "tool". */
+    var nx=progress.next;
+    chip='<span class="'+((nx.kind==='tool')?'fd-chip is-tool':'fd-chip')+'">'+
+      (nx.rights?'reference':((nx.kind==='tool')?'tool':'read'))+'</span>';
   } else {
     var nextWeek=fdNextWeek(index,state.week);
     var target=nextWeek?nextWeek.n:state.week;
@@ -210,19 +218,26 @@ function fdContinue(index, state, wk, progress){
     if(done[wk.items[i].ref]!==true&&typeof wk.items[i].minutes==='number') leftMin+=wk.items[i].minutes;
   }
   var leftLabel=leftMin>0?('~'+leftMin+' min left'):'';
-  return '<button type="button" class="fd-continue"'+openAttrs+'>'+
+  var out='<button type="button" class="'+(isPrimary?'fd-continue':'fd-continue is-secondary')+'"'+openAttrs+'>'+
     '<span class="fd-ring" style="--fd-ring-pct:'+ringPct+'%">'+
       '<span class="fd-ring__inner">'+ringPct+'%</span>'+
     '</span>'+
     '<span>'+
       '<span class="'+kickerCls+'">'+kickerText+'</span>'+
-      '<span class="fd-continue__title">'+fdEsc(titleText)+' →</span>'+
+      '<span class="fd-continue__title">'+fdEsc(titleText)+chip+' →</span>'+
     '</span>'+
     '<span class="fd-continue__meta">'+
       '<span class="fd-continue__count">'+progress.done+' of '+progress.total+(suggested?' activities done':' done')+'</span>'+
       '<span class="fd-continue__left">'+leftLabel+'</span>'+
     '</span>'+
   '</button>';
+  /* Week complete AND primary: the look-ahead card leads, and a learner with time left wants
+     questions, not a preview. A sibling, never nested -- a button inside a button is invalid
+     markup and the controller would see one click twice. */
+  if(isComplete&&isPrimary){
+    out+='<button type="button" class="fd-btn fd-btn--ghost fd-freshset" data-fd-open="question-bank-practice.html">Practice a fresh set →</button>';
+  }
+  return out;
 }
 
 function fdSetupCta(){
@@ -372,7 +387,13 @@ function fdToday(index, state){
   out+=fdConsistency(st.activityDays, nowMs);
   out+='<div class="fd-today__cols"><div class="fd-today__main">';
 
-  out+=hasWeek?fdContinue(idx,st, wk, progress):fdSetupCta();
+  /* One Thing First: state.primaryKind arrives from the shell's picker. The lead card is
+     primary unless a device-store row won; undefined keeps the pre-picker render. The marker
+     that follows is where the shell splices the secondary section (see FD_TODAY_LEAD_END). */
+  var pk=st.primaryKind;
+  var leadPrimary=(pk===undefined||pk==='week'||pk==='ahead'||pk==='setup');
+  out+=hasWeek?fdContinue(idx,st, wk, progress, leadPrimary):fdSetupCta();
+  out+=FD_TODAY_LEAD_END;
 
 
   if(hasWeek){
