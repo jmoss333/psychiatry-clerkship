@@ -81,7 +81,7 @@
     "facultyReview": {
       "status": "reviewed",
       "reviewer": "Joshua Moss, MD",
-      "lastReviewed": "2026-07-03"
+      "lastReviewed": "2026-09-16"
     },
     "workflowStages": [
       "diagnosis",
@@ -794,7 +794,7 @@
     "facultyReview": {
       "status": "reviewed",
       "reviewer": "Joshua Moss, MD",
-      "lastReviewed": "2026-07-01"
+      "lastReviewed": "2026-09-16"
     },
     "workflowStages": [
       "diagnosis",
