@@ -1097,6 +1097,36 @@ test.describe('Clinical field guide', () => {
     await expectHealthy(page);
   });
 
+  for (const title of ['Assessment', 'Guide to assessment', 'Guide guide to assessment']) {
+    test(`section bookmark survives practice, return, and reload: ${title}`, async ({ page }, testInfo) => {
+      // Exercise headings absent from today's corpus without modifying clinical source files.
+      // The route remains intercepted on reload, so the real reader regenerates the same ID.
+      await page.route(`**/content/${GUIDE_REF}*`, async route => {
+        const response = await routeFetchWithRetry(route);
+        await route.fulfill({ response, body: `${await response.text()}\n\n## ${title}\n\nBookmark regression fixture.\n` });
+      });
+      await openClinicalGuide(page, testInfo);
+      const link = page.getByRole('navigation', { name: 'On this page', exact: true })
+        .getByRole('link', { name: title, exact: true });
+      const id = await link.getAttribute('data-guide-section');
+      expect(id).toBe(`guide-${title.toLowerCase().replaceAll(' ', '-')}`);
+      await link.click();
+      const section = new URL(page.url()).searchParams.get('guideSection');
+      expect(section).toBe(id.slice('guide-'.length));
+      await page.locator('.fd-reader [data-fd-open$=".html"]').first().click();
+      await expect(page.locator('.fd-article__body iframe')).toBeVisible();
+      expect(new URL(page.url()).searchParams.has('guideSection')).toBe(false);
+      await page.getByRole('button', { name: 'Return to guide', exact: true }).click();
+      await expect(page.locator('.fd-reader--guide')).toBeVisible();
+      await expect.poll(() => new URL(page.url()).searchParams.get('guideSection')).toBe(section);
+      await page.reload();
+      await expect(page.locator('.fd-guide-arrival')).toContainText(`Opened at “${title}”.`);
+      await expect(page.locator(`#${id}`)).toBeFocused();
+      await expect(page.locator(`#${id}`)).toBeInViewport();
+      await expectHealthy(page);
+    });
+  }
+
   test('opens a real practice tool and restores guide focus and position through explicit return and browser Back', async ({ page }, testInfo) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await openClinicalGuide(page, testInfo, '&guideFind=Listening%20is%20not%20disclosing');

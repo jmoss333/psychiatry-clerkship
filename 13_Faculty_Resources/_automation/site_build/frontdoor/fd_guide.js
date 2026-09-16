@@ -275,7 +275,9 @@ function fdGuideMount(body,options){
       /* Ordinary navigation strips passage context. A return to this same guide restores
          it in the URL as well as the UI, so reload and copied links keep the passage. */
       var params=new URLSearchParams(bookmark.search||'');
-      replaceURL((params.get('guideSection')||'').slice(0,130),(params.get('guideFind')||'').slice(0,160));
+      var section=(params.get('guideSection')||'').slice(0,130);
+      /* The saved value is already serialized; restore the prefix that passageURL removes. */
+      replaceURL(section?'guide-'+section:'',(params.get('guideFind')||'').slice(0,160));
       each(body.querySelectorAll('.sec-c'),function(s,i){
         var open=bookmark.sections[i]!==false;s.classList.toggle('open',open);
         var b=s.querySelector('.sec-h button');if(b)b.setAttribute('aria-expanded',String(open));
