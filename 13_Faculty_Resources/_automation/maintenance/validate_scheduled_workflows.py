@@ -81,6 +81,8 @@ EXPECTED_PERMISSIONS = {
     "maintenance-governance-digest.yml": {
         "contents": "read",
         "issues": "write",
+        # Read-only listing of the rolling attestation review request.
+        "pull-requests": "read",
     },
     "maintenance-monthly-review.yml": {
         "contents": "read",
@@ -238,6 +240,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Install — governance digest dependencies"),
             ("uses", "actions/setup-node"),
             ("name", "Build faculty governance digest"),
+            ("name", "Detect stranded faculty attestations"),
             ("uses", "actions/upload-artifact"),
             ("name", "Route faculty governance review"),
             ("name", "Preserve governance gate result"),
@@ -390,7 +393,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ),
     "ci.yml": "0fa2a1c6d68104f3f8766b3b6fccb4b190dd849ed51fa07bd8c9797c942adf64",
     "maintenance-governance-digest.yml": (
-        "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
+        "b6cc2dcf41eec62131c18bca73f235b8599241234b0d26e5c406f635435b521e"
     ),
     "maintenance-heartbeat.yml": (
         "2657e218acd9d67f48e4ee39a6069c918056efaeebb3f15506693d4011163837"
@@ -710,6 +713,19 @@ exit 0""",
                 "required governance capture",
             ),
             (
+                "Detect stranded faculty attestations",
+                """mkdir -p "$RUNNER_TEMP/maintenance-governance"
+set +e
+python3 13_Faculty_Resources/_automation/maintenance/stranded_attestations.py \\
+  --out "$RUNNER_TEMP/maintenance-governance/stranded-attestations.json"
+code=$?
+set -e
+echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+exit 0""",
+                None,
+                "required stranded-attestation capture",
+            ),
+            (
                 "Route faculty governance review",
                 "python3 13_Faculty_Resources/_automation/maintenance/"
                 "maintenance_issue.py --kind governance "
@@ -721,12 +737,15 @@ exit 0""",
             ),
             (
                 "Preserve governance gate result",
-                """code="${{ steps.governance.outputs.exit_code }}"
-case "$code" in
-  "0") exit 0 ;;
-  "1"|"2") exit "$code" ;;
-  *) exit 2 ;;
-esac""",
+                """for code in "${{ steps.governance.outputs.exit_code }}" \\
+            "${{ steps.attestations.outputs.exit_code }}"; do
+  case "$code" in
+    "0") ;;
+    "1"|"2") exit "$code" ;;
+    *) exit 2 ;;
+  esac
+done
+exit 0""",
                 "always()",
                 "governance finalizer",
             ),
