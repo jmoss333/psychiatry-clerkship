@@ -48,4 +48,46 @@ External listings can change. Confirm current details with the organization, and
 
 **Pair with** — the **Withdrawal scales CIWA-Ar / COWS card** (the Withdrawal (CIWA-Ar/COWS) card), the **Benzodiazepine taper protocol** (the protocol library (benzo taper, clozapine)), and the **Differential Diagnosis scaffolds**.
 
+## Further Reading & Evidence-Based Resources
+
+**Withdrawal Assessment and Pharmacotherapy**
+- Sullivan, J.T. et al. (1989) — *American Journal of Psychiatry* — development and validation of the CIWA-Ar (Clinical Institute Withdrawal Assessment for Alcohol Scale, revised). The CIWA-Ar remains the gold-standard, bedside-administered tool for scoring alcohol withdrawal severity and guiding benzodiazepine dosing. A score >8 warrants immediate intervention; serial scoring shows trend and safety gates escalation.
+- Wesson, D.R., Ling, W. (2003) — *Journal of Clinical Psychiatry* — the COWS (Clinical Opioid Withdrawal Scale) stratifies opioid withdrawal severity and prevents premature buprenorphine induction. Initiating buprenorphine at COWS <8-12 risks precipitated withdrawal; waiting for objective signs reduces iatrogenic harm.
+- Saitz, R. et al. (1994) — *New England Journal of Medicine* — benzodiazepines remain first-line for alcohol withdrawal and seizure prevention. Lorazepam, oxazepam, and temazepam (the "LOT" drugs) are preferred in hepatic impairment because they undergo glucuronidation, a pathway preserved in cirrhosis, whereas chlordiazepoxide and diazepam depend on oxidative hepatic metabolism that fails in liver disease.
+
+**Thiamine and Wernicke Encephalopathy Prevention**
+- Zubaran, C., Fernandes, J.G., Rodnight, R. (1997) — *Drug and Alcohol Dependence* — Wernicke encephalopathy and Korsakoff syndrome result from thiamine deficiency, common in heavy alcohol use. Thiamine must precede or accompany glucose administration; giving carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy, a medical emergency with high mortality and morbidity if not caught immediately.
+- Harper, C., Matsumoto, I. (2005) — *Alcohol and Alcoholism* — neurobiologic mechanisms of thiamine deficiency in alcohol use disorders. Emphasizes the importance of empiric thiamine replacement in any patient with altered mental status and alcohol use history, regardless of apparent nutritional status.
+
+**Medication-Assisted Treatment and Opioid Use Disorder**
+- Mattick, R.P. et al. (2014) — *Cochrane Database of Systematic Reviews* — meta-analysis of buprenorphine and methadone for opioid use disorder. Both reduce illicit opioid use and improve retention; buprenorphine has lower overdose risk and abuse potential. Inpatient buprenorphine induction, when done safely (after objective withdrawal), engages patients before discharge and reduces post-discharge relapse risk.
+- Volkow, N.D., Blanco, C. (2004) — *New England Journal of Medicine* — addiction as a chronic brain disease. The dopaminergic and opioid system dysregulation in addiction justifies long-term, evidence-based pharmacotherapy. Reframing addiction as a medical condition (not moral failure) directly combats stigma and improves treatment engagement.
+
+**Alcohol Use Disorder Pharmacotherapy**
+- Litten, R.Z. et al. (2016) — *JAMA Psychiatry* — naltrexone and acamprosate as FDA-approved maintenance medications for alcohol use disorder. Naltrexone (opioid antagonist) reduces craving and heavy drinking but is contraindicated with opioids and requires hepatic function monitoring; acamprosate supports abstinence and is renally cleared (preferred in liver disease).
+- Johnson, B.A. (2010) — *Lancet* — pharmacologic and behavioral treatment of alcohol use disorder shows superior outcomes when combined. Motivational interviewing paired with pharmacotherapy improves adherence and engagement.
+
+**Motivational Interviewing and Engagement in Substance Use Treatment**
+- Miller, W.R., Rollnick, S. (2013) — *Motivational Interviewing: Helping People Change* (3rd Ed.) — core teaching that meets ambivalence with curiosity, not confrontation. In substance use patients, motivational interviewing improves treatment retention and reduces risky use patterns. Reflection and open questions (rather than advice-giving) activate intrinsic motivation for change.
+- DiClemente, C.C. (2003) — *Addiction: Comprehensive Guidebook* — the stages-of-change model (precontemplation, contemplation, preparation, action, maintenance) normalizes ambivalence and helps clinicians tailor interventions to where the patient is, not where clinicians wish they were.
+
+**Healthcare Equity and Substance Use Disorders**
+- Singal, A.G. et al. (2023) — *American Journal of Psychiatry* — disparities in opioid use disorder diagnosis and treatment. Black patients receive opioid-use-disorder diagnoses at significantly lower rates and receive medication-assisted treatment less frequently, despite equivalent or higher opioid use burden. Institutional racism and unconscious bias contribute to undertreatment.
+- Hansen, H., Netherland, J. (2016) — *Journal of Bioethical Inquiry* — the racialized war on drugs and its impact on substance use treatment access. Patients with SUD, particularly from communities of color, face systemic barriers (incarceration history, insurance gaps, treatment availability) that clinical encounters alone cannot overcome.
+
+**Trauma-Informed Care in Substance Use Disorders**
+- SAMHSA (2014) — *TIP 41: Substance Abuse Treatment: Group Therapy* — trauma exposure is common in substance use disorder populations. Trauma-informed assessment acknowledges that SUD is often a coping response to previous injury and requires parallel trauma treatment. Safety, trustworthiness, choice, collaboration, and empowerment are core principles.
+
+**Book References**
+- Schuckit, M.A. (2016) — *Drug and Alcohol Abuse: A Clinical Guide to Diagnosis and Treatment* (7th Ed.) — comprehensive medical-psychiatric approach to substance use disorders, withdrawal management, and pharmacotherapy decision trees. Covers benzodiazepine choice in liver disease and buprenorphine induction safety.
+- Kaplan & Sadock's Synopsis of Psychiatry — sections on substance-related disorders, withdrawal syndromes, medication-assisted treatment, and stigma reduction in addictions.
+
+**Teaching Resources and Practice Guidance**
+- Withdrawal scales CIWA-Ar and COWS: practice bedside administration and serial scoring during clinical rotations; track severity trends to guide medication dosing and escalation decisions.
+- Opioid overdose prevention: teach every patient at opioid risk how to recognize overdose (altered consciousness, respiratory depression, pinpoint pupils) and how to administer naloxone. Provide take-home naloxone with your patient's family before discharge and ensure they know overdose protocols.
+- Medication-assisted treatment linkage: before discharge, confirm the patient has a buprenorphine or methadone appointment scheduled and transportation arranged. The post-discharge window (48 hours to 2 weeks) carries highest overdose risk; warm handoff and continuity matter.
+- Motivational interviewing rehearsal: practice reflection responses with classmates ("So you want to quit drinking, but you're worried family events will be hard?" rather than "You should stop drinking"). The skill becomes automatic with repetition.
+
+Plain-English note: substance use on the inpatient unit is a medical emergency (withdrawal can kill), a chronic disease requiring long-term treatment engagement, and a clinical setting where stigma directly harms patients. Teaching students to manage acute withdrawal safely, to see addiction as brain disease, and to link patients to continuing care saves lives.
+
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
