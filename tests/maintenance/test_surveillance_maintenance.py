@@ -1291,5 +1291,99 @@ class LinkConfirmationTests(unittest.TestCase):
 
 
 
+class DispositionTests(unittest.TestCase):
+    """A finding CI cannot verify is classified, never silenced.
+
+    #665 and #666 filed P1s for fda.gov and healthquality.va.gov, both of which
+    serve 200 to any ordinary browser. A second probe cannot catch that: it runs
+    from the SAME address as the first, so it reproduces an IP-level block instead
+    of detecting it. Classification is the thing that helps; re-probing is not.
+    """
+
+    @staticmethod
+    def _finding(url, severity="P1"):
+        return {"source_url": url, "severity": severity, "evidence": {"http_status": None},
+                "fingerprint": "fp::broken-link::" + url[-8:], "status": "new"}
+
+    def test_a_host_this_runner_cannot_reach_is_environment_not_actionable(self):
+        hosts = {"www.fda.gov": {"reason": "404s CI", "verifiedAt": "2026-09-16"}}
+        filed, reachable = run_link_monitor.confirm(
+            [self._finding("https://www.fda.gov/drugs/x")],
+            probe=lambda url: 404, unreachable=hosts)
+        self.assertEqual(reachable, [])
+        self.assertEqual(len(filed), 1)
+        self.assertEqual(filed[0]["disposition"], "environment")
+
+    def test_an_unrecorded_host_that_still_fails_is_actionable(self):
+        filed, _ = run_link_monitor.confirm(
+            [self._finding("https://www.admsep.org/csi-emodules.php")],
+            probe=lambda url: 404, unreachable={})
+        self.assertEqual(filed[0]["disposition"], "actionable")
+
+    def test_a_candidate_that_answers_is_dropped_before_classification(self):
+        hosts = {"www.fda.gov": {"reason": "404s CI", "verifiedAt": "2026-09-16"}}
+        filed, reachable = run_link_monitor.confirm(
+            [self._finding("https://www.fda.gov/drugs/x")],
+            probe=lambda url: 200, unreachable=hosts)
+        self.assertEqual(filed, [])
+        self.assertEqual(len(reachable), 1)
+        self.assertNotIn("disposition", reachable[0])
+
+    def test_only_actionable_findings_open_issues(self):
+        # Calls the real partition, not a copy of it. The first version of this test
+        # reimplemented the filter inline and therefore passed while sync_findings was
+        # reverted to file everything -- a vacuous test of exactly the kind
+        # bin/check_vacuity.py exists to catch.
+        env = self._finding("https://www.fda.gov/drugs/x")
+        env["disposition"] = "environment"
+        act = self._finding("https://www.admsep.org/gone")
+        act["disposition"] = "actionable"
+        judged = self._finding("https://example.org/unclear", severity="P2")
+        judged["disposition"] = "needs-judgment"
+
+        issues, digest, unfiled = sync_findings.partition_by_disposition([env, act, judged])
+
+        self.assertEqual([f["source_url"] for f in issues], ["https://www.admsep.org/gone"])
+        self.assertEqual(digest, [])
+        self.assertEqual({f["source_url"] for f in unfiled},
+                         {"https://www.fda.gov/drugs/x", "https://example.org/unclear"})
+
+    def test_a_finding_with_no_disposition_still_files(self):
+        # Every producer other than the link monitor emits no disposition yet; they must
+        # keep filing rather than silently becoming unfiled.
+        plain = self._finding("https://example.org/broken")
+        issues, _, unfiled = sync_findings.partition_by_disposition([plain])
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(unfiled, [])
+
+    def test_the_registry_demands_a_reason_and_a_verification_date(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "hosts.json"
+            path.write_text(json.dumps({"hosts": {"a.example": {"verifiedAt": "2026-09-16"}}}))
+            with self.assertRaises(ValueError):
+                L.load_ci_unreachable(path)
+            path.write_text(json.dumps({"hosts": {"a.example": {"reason": "blocked"}}}))
+            with self.assertRaises(ValueError):
+                L.load_ci_unreachable(path)
+
+    def test_a_missing_registry_classifies_nothing_rather_than_everything(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(L.load_ci_unreachable(Path(tmp) / "absent.json"), {})
+
+    def test_verification_age_makes_a_rotting_entry_visible(self):
+        hosts = {"a.example": {"reason": "x", "verifiedAt": "2026-09-16"}}
+        self.assertEqual(L.oldest_verification_age(hosts, "2026-09-16"), 0)
+        self.assertEqual(L.oldest_verification_age(hosts, "2026-12-25"), 100)
+        self.assertIsNone(L.oldest_verification_age({}))
+
+    def test_the_shipped_registry_loads_and_every_host_is_accounted_for(self):
+        hosts = L.load_ci_unreachable()
+        self.assertTrue(hosts)
+        for host, record in hosts.items():
+            self.assertTrue(str(record.get("reason") or "").strip(), host)
+            self.assertTrue(str(record.get("verifiedAt") or "").strip(), host)
+
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -77,26 +77,40 @@ def probe(url, timeout=15):
         return None
 
 
-def confirm(findings, probe=probe):
-    """Split candidates into (still failing, reachable after all).
+def confirm(findings, probe=probe, unreachable=None):
+    """Classify candidates into (filed, reachable-after-all), setting `disposition`.
 
-    A finding is filed only if a second, independent request also fails. lychee
-    reports cached errors -- today's run carried `Error (cached)` for two FDA
-    drug-safety pages that answer 200 to a direct GET -- and a single probe from
-    one CI IP cannot tell a dead link from a WAF, a rate limit, or a blip. The
-    unconfirmed are not discarded silently: they are returned so the caller can
-    report the count, because a rising environment rate is itself a signal.
+    Two different things can be wrong with a candidate, and only one is a defect:
+
+      the second request SUCCEEDS  -> the first was a blip, a WAF or a cached
+        error. Not a finding at all; dropped, and returned so the caller can
+        print it, because a rising rate of these is itself a signal.
+
+      the second request FAILS from a host recorded in ci_unreachable_hosts.json
+        -> `environment`. A second probe cannot rescue this one: it runs from the
+        SAME address as the first, so it reproduces an IP-level block rather than
+        detecting it. That is why classification exists and re-probing does not
+        suffice -- fda.gov and healthquality.va.gov each filed a P1 for a URL any
+        ordinary browser serves 200.
+
+      otherwise -> `actionable`, the only disposition that opens an issue.
+
+    `environment` findings are still emitted. They are counted and reported, never
+    dropped from the crawl: reachability is a fact about the environment, not a
+    content finding, and silencing it is how a monitored set shrinks unnoticed.
     """
-    confirmed, unconfirmed = [], []
+    hosts = unreachable if unreachable is not None else {}
+    filed, reachable = [], []
     for finding in findings:
         code = probe(finding["source_url"])
-        if code in ACCEPTED_CODES:
-            finding["evidence"]["confirm_status"] = code
-            unconfirmed.append(finding)
-            continue
         finding["evidence"]["confirm_status"] = code
-        confirmed.append(finding)
-    return confirmed, unconfirmed
+        if code in ACCEPTED_CODES:
+            reachable.append(finding)
+            continue
+        host = urlparse(finding["source_url"]).netloc
+        finding["disposition"] = "environment" if host in hosts else "actionable"
+        filed.append(finding)
+    return filed, reachable
 
 
 def to_findings(report):
@@ -170,7 +184,7 @@ def main():
     findings = to_findings(report)
     unconfirmed = []
     if not args.no_confirm:
-        findings, unconfirmed = confirm(findings)
+        findings, unconfirmed = confirm(findings, unreachable=L.load_ci_unreachable())
     with open(args.out, "w", encoding="utf-8") as fh:
         json.dump(findings, fh, indent=2)
     with open(args.checked_out, "w", encoding="utf-8") as fh:
@@ -180,6 +194,12 @@ def main():
         print(f"link-monitor: {len(unconfirmed)} candidate(s) reachable on a second "
               f"request, not filed:")
         for finding in unconfirmed:
+            print(f"    {finding['evidence']['confirm_status']}  {finding['source_url']}")
+    environment = [f for f in findings if f.get("disposition") == "environment"]
+    if environment:
+        print(f"link-monitor: {len(environment)} finding(s) classified `environment` "
+              f"(this runner cannot reach the host; see config/ci_unreachable_hosts.json):")
+        for finding in environment:
             print(f"    {finding['evidence']['confirm_status']}  {finding['source_url']}")
 
 
