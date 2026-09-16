@@ -40,7 +40,7 @@ There is no rigidity of the "lead-pipe" type, no recent antipsychotic exposure, 
 3. **How would you formally support the diagnosis?** Name the validated bedside criteria and what they require.
 4. **How does this condition differ from neuroleptic malignant syndrome (NMS)?** Build a quick contrast (drug class, onset speed, muscle findings, reflexes, pupils, recovery time).
 5. **What is your initial workup?** What labs and studies would you send, and what dangerous complication are you screening for?
-6. **Outline first-line management,** from the single most important first step through supportive care and the specific antidote.
+6. **Outline first-line management,** from the single most important first step through supportive care, benzodiazepines, and the threshold for critical-care escalation — and say where adjunctive pharmacotherapy sits, and how good the evidence for it is.
 7. **What one counseling/prevention point** would you give this patient (and the prescriber) at discharge to prevent recurrence?
 
 ---
@@ -50,7 +50,7 @@ There is no rigidity of the "lead-pipe" type, no recent antipsychotic exposure, 
 *(Keep separate from the learner handout.)*
 
 ### One-line answer
-This is **serotonin syndrome (SS)** precipitated by a drug–drug interaction (fluoxetine + tramadol, two serotonergic agents), with a recent tramadol dose increase as the immediate trigger. The teaching goal is recognition, use of the Hunter criteria, first-line management (including cyproheptadine), and clean separation from NMS.
+This is **serotonin syndrome (SS)** precipitated by a drug–drug interaction (fluoxetine + tramadol, two serotonergic agents), with a recent tramadol dose increase as the immediate trigger. The teaching goal is recognition, use of the Hunter criteria, first-line management (stopping the agents, supportive care, benzodiazepines, and timely critical-care escalation — with cyproheptadine placed correctly as a limited-evidence adjunct), and clean separation from NMS.
 
 ### Teaching points by question
 
@@ -72,7 +72,7 @@ The **Hunter criteria** are the validated bedside decision rule (sensitivity ~84
 - Tremor **plus** hyperreflexia
 - Hypertonia **plus** temperature > 38 °C **plus** ocular clonus or inducible clonus
 
-This patient meets the criteria multiple ways (spontaneous ankle clonus; tremor + hyperreflexia).
+This patient meets the criteria on **tremor plus hyperreflexia**, which is independently sufficient. Note carefully what the stem does and does not say: it records clonus at both ankles, but not whether that clonus was **spontaneous** or **inducible** — and the two sit on different lines of the rule (inducible clonus qualifies only *with* agitation or diaphoresis). Do not promote an observed finding to a more specific one because it makes the criteria fit; go back and elicit it. "Was the clonus spontaneous or inducible?" is exactly the kind of question the Hunter criteria are built to make you ask.
 
 **Q4 — SS vs. NMS contrast (high-yield table).**
 
@@ -86,7 +86,7 @@ This patient meets the criteria multiple ways (spontaneous ankle clonus; tremor 
 | Bowel sounds | **Hyperactive** | Normal / decreased |
 | Mental status | Agitation, hypervigilance | Stupor, mutism, akinesis |
 | Resolution | **Rapid** (usually 24–72 h once drug stopped) | **Slow** (days–weeks) |
-| Antidote | **Cyproheptadine** | **Dantrolene** ± bromocriptine |
+| Adjunctive pharmacotherapy (beyond stopping the drug + supportive care) | **Cyproheptadine** — adjunct only; limited evidence [7] | **Dantrolene** ± bromocriptine — also limited evidence |
 
 Keep **anticholinergic toxicity** (dry, flushed skin; absent bowel sounds; normal reflexes) and **malignant hyperthermia** (anesthesia setting — succinylcholine/volatile agents) on the differential as classic Step 2 distractors [1][6].
 
@@ -97,8 +97,8 @@ SS is a **clinical diagnosis** — labs are for severity and to exclude mimics: 
 1. **Stop all serotonergic agents** — the single most important step.
 2. **Supportive care:** IV fluids, continuous monitoring, external cooling for hyperthermia.
 3. **Benzodiazepines** (e.g., lorazepam) for agitation, tremor, and myoclonus — they also blunt autonomic instability.
-4. **Cyproheptadine** — a 5-HT2A antagonist — is the **specific antidote** for moderate–severe cases [1][2].
-5. **Severe SS** (temp > 41 °C, severe hyperthermia/rigidity): ICU, sedation, and **intubation with neuromuscular paralysis** to stop muscular heat generation [2].
+4. **Escalate on severity, not on the antidote.** **Severe SS** — rapidly rising temperature (> 39–41 °C), rigidity, altered consciousness, or failure to respond to initial cooling — needs **ICU care, sedation, and intubation with neuromuscular paralysis** to stop muscular heat generation [2][7]. This is the step that saves lives, and nothing should delay it.
+5. **Cyproheptadine** — a 5-HT2A antagonist — may be **considered as an adjunct**, with toxicology guidance, on top of the measures above. Be honest about its standing: the evidence is case reports and case series, there are no controlled trials, and a recent review concludes that serotonin antagonists "lack conclusive evidence of efficacy" and that "the cornerstone of treating severe cases does not lie in 'antidote' administration or even diagnosis, but in effective early resuscitative and supportive care" [7]. It is not a definitive antidote, and it must never displace or delay resuscitation and critical care.
 - *Pearl:* **antipyretics don't work** — the hyperthermia is from muscle activity, not a raised hypothalamic set point.
 
 **Q7 — Prevention/counseling.**
@@ -113,7 +113,7 @@ Educate the patient and flag the chart: **avoid combining serotonergic drugs**, 
 
 ### Workup & management summary
 - **Diagnose clinically** (Hunter criteria); labs (CK, CMP, CBC, coags) for severity + complications; exclude mimics.
-- **Treat:** stop serotonergic agents → supportive care + cooling → benzodiazepines → **cyproheptadine** → ICU/paralysis if severe.
+- **Treat:** stop serotonergic agents → supportive care + active cooling → benzodiazepines → **escalate to ICU, sedation and paralysis as soon as severity demands it** (rising temperature, rigidity, altered consciousness). **Cyproheptadine is an adjunct considered alongside** that escalation with toxicology input — never a step that precedes or delays it [7].
 - **Disposition:** most mild–moderate cases improve within 24–72 h; admit for monitoring, longer if hyperthermic or with rhabdomyolysis.
 
 ### Safety note
@@ -130,6 +130,7 @@ If the presentation involved an **intentional overdose**, management is the same
 4. Ware MR, Feller DB, Hall KL. **Neuroleptic malignant syndrome: diagnosis and management.** *Prim Care Companion CNS Disord.* 2018;20(1):17r02185. [DOI](https://doi.org/10.4088/PCC.17r02185) · PMID 29325237
 5. Dunkley EJC, Isbister GK, Sibbritt D, Dawson AH, Whyte IM. **The Hunter Serotonin Toxicity Criteria: simple and accurate diagnostic decision rules for serotonin toxicity.** *QJM.* 2003;96(9):635–42. [DOI](https://doi.org/10.1093/qjmed/hcg109) · PMID 12925718
 6. Maitland S, Baker M. **Serotonin syndrome.** *Drug Ther Bull.* 2022;60(6):88–91. [DOI](https://doi.org/10.1136/dtb.2021.000032) · PMID 35551099
+7. Chiew AL, Isbister GK. **Management of serotonin syndrome (toxicity).** *Br J Clin Pharmacol.* 2025;91(3):654–61. [DOI](https://doi.org/10.1111/bcp.16152) · PMID 38926083
 
 ---
 *Joshua Moss, MD | Psychiatrist*

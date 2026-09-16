@@ -239,12 +239,14 @@ test('titles name the audience so the Case-of-the-Week twins sort next to each o
       title: 'Catatonia (Aug 31) — MS3',
       kind: 'page',
       site: 'ms3',
+      sites: ['ms3'],
     },
     {
       slug: 'cotw_20260831_catatonia_res.md',
       title: 'Catatonia (Aug 31) — Resident',
       kind: 'page',
       site: 'res',
+      sites: ['res'],
     },
   ]);
   // localeCompare on the shared label prefix puts "— MS3" immediately before
