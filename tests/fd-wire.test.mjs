@@ -2535,3 +2535,49 @@ test('the erase names no key of its own and reaches past no namespace', () => {
   assert.equal((body[0].match(/indexOf\('(?:cw|rp)_'\)===0/g) || []).length, 2,
     'both sanctioned prefixes, and only those');
 });
+
+// ---- Phase 3 (F4): a guest deep link renders the resource and assigns no role ----------------
+
+test('a routed page or tool with no stored role renders as a guest: app screen, guest flag, no role', () => {
+  const guest = F.fdResolveState('/?page=pg_suicide.md', {});
+  assert.equal(guest.screen, 'app');
+  assert.equal(guest.guest, true);
+  assert.equal(guest.openId, 'pg_suicide.md');
+  assert.equal(guest.fromTab, 'today');
+  assert.equal(guest.role, undefined, 'a guest is never assigned a role');
+  const tool = F.fdResolveState('/?tool=mse.html', { tab: 'library' });
+  assert.equal(tool.screen, 'app');
+  assert.equal(tool.guest, true);
+  assert.equal(tool.openId, 'mse.html');
+  assert.equal(tool.fromTab, 'library');
+  assert.equal(tool.role, undefined);
+});
+
+test('the guest flag never appears once a role exists, and aliases keep the setup gate', () => {
+  const known = F.fdResolveState('/?page=pg_suicide.md', {
+    role: 'first-role', roles: [{ id: 'first-role' }], rotationStart: '2026-08-17', week: 1,
+  });
+  assert.equal(known.screen, 'app');
+  assert.equal(known.guest, undefined);
+  assert.equal(known.role, 'first-role');
+  // A role without a week still meets the week step on a deep link — unchanged by this phase.
+  const roleNoWeek = F.fdResolveState('/?page=pg_suicide.md', { role: 'first-role', roles: [{ id: 'first-role' }] });
+  assert.equal(roleNoWeek.screen, 'setup-week');
+  assert.equal(roleNoWeek.guest, undefined);
+  for (const alias of ['__home__', '__path__', '__start__', '__progress__']) {
+    const out = F.fdResolveState(`/?page=${alias}`, {});
+    assert.equal(out.screen, 'setup-role', alias);
+    assert.equal(out.guest, undefined, alias);
+    assert.equal(out.role, undefined, alias);
+  }
+});
+
+test('the next plain visit after a guest read asks who this is for, from step 1', () => {
+  // What a guest visit leaves behind: the shell persists FD_KEYS (openId, tab, ...) but never a
+  // role, and `browsing` is not persisted at all. With no routed ref, the role gate runs first.
+  const next = F.fdResolveState('/', { openId: 'pg_suicide.md', tab: 'today', fromTab: 'today', browsing: true });
+  assert.equal(next.screen, 'setup-role');
+  assert.equal(next.role, undefined);
+  assert.equal(next.guest, undefined);
+  assert.equal(F.fdResolveState('/', {}).screen, 'setup-role');
+});
