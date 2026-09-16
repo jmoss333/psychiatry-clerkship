@@ -17,7 +17,7 @@ const F = new Function(`
   ${read('frontdoor/fd_today.js')}
   ${read('frontdoor/fd_due.js')}
   ${blockSrc}
-  return { fdBlockPlan, fdBlockCard, fdBlockRouteForStep, fdBlockStatus, fdBlockBudget, fdBuildIndex, fdItemsForWeek, fdBlockDueTotal, FD_BLOCK_REVIEW_BUCKETS, fdBlockHandoffLabel };
+  return { fdBlockPlan, fdBlockCard, fdBlockRouteForStep, fdBlockStatus, fdBlockBudget, fdBuildIndex, fdItemsForWeek, fdBlockDueTotal, FD_BLOCK_REVIEW_BUCKETS, fdBlockHandoffLabel, fdBlockResumeSearch };
 `)();
 
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
@@ -247,4 +247,31 @@ test('opts.primary=false demotes the card: accent buttons, and the live kicker c
   const completeDemoted = F.fdBlockCard(null, 5, { minutes: 5, steps: [{ kind: 'qb', title: 'q', min: 3, done: true }] }, {}, { primary: false });
   assert.match(completeDemoted, /Block complete<\/span><span class="fd-block__count">1 of 1 done<\/span>/,
     'a finished block keeps its count span whichever slot it sits in');
+});
+
+// ---- Phase 2: an interrupted block question set resumes as the block's own step -------------
+
+test('an interrupted block question step resumes its own capsule, with the block parameters the receipt reads', () => {
+  const step = { kind: 'qb', ref: 'question-bank-practice.html', n: 6, cat: 'mood' };
+  const capsule = { queueIds: ['a', 'b', 'c', 'd', 'e', 'f'], idx: 2, fromBlock: true, n: 6, cat: 'mood' };
+  assert.equal(F.fdBlockResumeSearch(step, capsule), '?tool=question-bank-practice.html&resume=1&block=1&n=6&cat=mood');
+  assert.equal(F.fdBlockResumeSearch({ kind: 'qb', n: 4, cat: null }, capsule), '?tool=question-bank-practice.html&resume=1&block=1&n=4');
+  assert.equal(F.fdBlockResumeSearch(step, Object.assign({}, capsule, { fromBlock: false })), null, 'a set the learner started on their own is not the block\'s');
+  assert.equal(F.fdBlockResumeSearch(step, Object.assign({}, capsule, { idx: 6 })), null, 'nothing left to resume');
+  assert.equal(F.fdBlockResumeSearch({ kind: 'page', ref: 'a.md' }, capsule), null);
+  assert.equal(F.fdBlockResumeSearch(step, null), null);
+  assert.equal(F.fdBlockResumeSearch(null, capsule), null);
+});
+
+test('the live card offers Resume with the remaining count when the shell passes opts.resume', () => {
+  const block = { minutes: 10, steps: [
+    { kind: 'page', ref: 'a.md', title: 'Alpha', min: 5 },
+    { kind: 'qb', title: '6 practice questions', min: 5, n: 6 },
+  ] };
+  const html = F.fdBlockCard(null, 10, block, { 'a.md': true }, { primary: false, resume: { left: 4, n: 6 } });
+  assert.match(html, /<button type="button" class="fd-btn fd-btn--accent" data-block-continue="1">Resume: 4 of 6 questions left →<\/button>/);
+  assert.match(F.fdBlockCard(null, 10, block, { 'a.md': true }, { resume: { left: 1, n: 6 } }), /class="fd-btn fd-btn--primary" data-block-continue="1">Resume: 1 of 6 questions left →/);
+  assert.match(F.fdBlockCard(null, 10, block, { 'a.md': true }), /Continue: 6 practice questions →/, 'no capsule, no resume wording');
+  assert.match(F.fdBlockCard(null, 10, block, { 'a.md': true }, { resume: null }), /Continue: 6 practice questions →/);
+  assert.doesNotMatch(html, AUDIENCE_TOKEN_RE);
 });

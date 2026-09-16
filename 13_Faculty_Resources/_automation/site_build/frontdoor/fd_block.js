@@ -114,6 +114,17 @@ function fdBlockRouteForStep(step){
   return '?page='+encodeURIComponent(String(s.ref||''))+'&block=1';
 }
 
+/* An interrupted block question step resumes its own capsule instead of starting a fresh set.
+   ?resume=1 restores the queue; block=1&n[&cat] stay exactly as the receipt matches them, so
+   finishing the resumed set still marks the step. Null means "no capsule to resume": the
+   caller falls back to fdBlockRouteForStep. fdCapsuleLeft lives in fd_due.js, injected before
+   this module on every page that carries both. */
+function fdBlockResumeSearch(step, capsule){
+  var s=step||{}, c=capsule||{};
+  if(s.kind!=='qb'||c.fromBlock!==true||fdCapsuleLeft(c)<1) return null;
+  return '?tool=question-bank-practice.html&resume=1&block=1&n='+encodeURIComponent(String(s.n||5))+(s.cat?'&cat='+encodeURIComponent(String(s.cat)):'');
+}
+
 /* The page's primary action records this reading and follows the saved block, even when the
    ordinary weekly auto-advance preference is off. A matching page is required: browsing away
    from a live block must not turn an unrelated resource into one of its steps. Derive the
@@ -183,7 +194,11 @@ function fdBlockCard(plan, minutes, block, doneMap, opts){
     }
     out+='</div><div class="fd-block__actions">';
     if(status.next){
-      out+='<button type="button" class="'+actionCls+'" data-block-continue="1">Continue: '+fdEsc(status.next.title)+' →</button>';
+      /* opts.resume={left,n}: the shell found a capsule this block wrote, so Continue reads as
+         picking the set back up rather than starting the step over. */
+      var resume=(o.resume&&typeof o.resume.left==='number'&&typeof o.resume.n==='number')?o.resume:null;
+      out+='<button type="button" class="'+actionCls+'" data-block-continue="1">'+
+        (resume?('Resume: '+resume.left+' of '+resume.n+' questions left →'):('Continue: '+fdEsc(status.next.title)+' →'))+'</button>';
     }else{
       out+='<span class="fd-block__doneline">'+(status.total===1?'The one step is done.':'All '+status.total+' steps done.')+' Tomorrow’s block will be built from tomorrow’s dues.</span>';
     }
