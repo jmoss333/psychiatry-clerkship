@@ -376,6 +376,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("uses", "actions/setup-python"),
             ("name", "Read the rolling escalation issue"),
             ("name", "Capture the first error line from the failed run"),
+            ("name", "Read the successful queue run outcome"),
             ("name", "Render the escalation decision"),
             ("name", "Upsert the rolling escalation issue"),
         ),
@@ -386,7 +387,7 @@ EXPECTED_STEP_INVENTORIES = {
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
-        "7090155fdbda3f4a9bda687841552bffb2b88e344895009241aaf17d6beb5d6f"
+        "674b60ea33bcf8545c60ce5094fc0aa64fc27c241db417e74ed26c5842670677"
     ),
     "ci.yml": "0fa2a1c6d68104f3f8766b3b6fccb4b190dd849ed51fa07bd8c9797c942adf64",
     "maintenance-governance-digest.yml": (

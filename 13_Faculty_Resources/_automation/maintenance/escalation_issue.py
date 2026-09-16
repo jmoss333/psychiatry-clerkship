@@ -27,6 +27,7 @@ STATE_BEGIN = "<!-- state:begin -->"
 STATE_END = "<!-- state:end -->"
 STATE_VERSION = 1
 MAX_ERROR_CHARS = 300
+QUEUE_WORKFLOW = "Maintenance — Autonomous Queue Runner"
 
 FAILING = "failing"
 RECOVERED = "recovered"
@@ -118,6 +119,11 @@ def apply_event(workflows, event):
         }
         return workflows
 
+    if _unverified_queue_success(event):
+        # A green no-op did not exercise the failing publication path. Keep
+        # the entire previous row, including its last real failure evidence.
+        return workflows
+
     if was_failing:
         workflows[name] = {
             "status": RECOVERED,
@@ -130,6 +136,14 @@ def apply_event(workflows, event):
         # A success on an already-green row carries no new information.
         workflows[name]["last_event_at"] = event["at"]
     return workflows
+
+
+def _unverified_queue_success(event):
+    return (
+        event["workflow"] == QUEUE_WORKFLOW
+        and event["conclusion"] == "success"
+        and event.get("outcome") != "did-work"
+    )
 
 
 def failing(workflows):
@@ -200,6 +214,8 @@ def render_body(workflows):
 
 def decide(existing, workflows, event):
     """Choose the upsert action. Never returns a close."""
+    if _unverified_queue_success(event):
+        return NONE
     if existing is None:
         return CREATE if failing(workflows) else NONE
     if event["conclusion"] == "failure":
@@ -240,7 +256,7 @@ def _read_text(path):
     try:
         with open(path, encoding="utf-8") as handle:
             return handle.read()
-    except OSError:
+    except (OSError, UnicodeError):
         return ""
 
 
@@ -252,6 +268,7 @@ def main(argv=None):
     parser.add_argument("--run-url", required=True)
     parser.add_argument("--at", required=True)
     parser.add_argument("--log", help="failure log excerpt; best effort")
+    parser.add_argument("--outcome-file", help="queue outcome artifact; best effort")
     parser.add_argument("--body-out", required=True)
     parser.add_argument("--output", help="GITHUB_OUTPUT file to append to")
     args = parser.parse_args(argv)
@@ -262,6 +279,7 @@ def main(argv=None):
         "run_url": args.run_url,
         "at": args.at,
         "error": _read_text(args.log),
+        "outcome": _read_text(args.outcome_file).removesuffix("\n"),
     }
     try:
         result = build(_read_json(args.issues, []), event)
