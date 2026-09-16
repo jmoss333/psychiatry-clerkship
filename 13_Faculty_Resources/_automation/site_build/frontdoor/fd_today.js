@@ -51,6 +51,75 @@ function fdTodayProgress(items, doneMap){
   return { done: done, total: list.length, pct: list.length?Math.round(done*100/list.length):0, next: next };
 }
 
+/* ---- One Thing First: the priority rule (2026-09-16) -------------------------------------
+   Today shows exactly one primary action. fdTodayPrimary picks it as the first true row of
+   FD_TODAY_PRIMARY_ORDER, top-down, from plain inputs the shell already derives (the question
+   bank capsule, the live timed block, the SRS due count, this week's progress, the last opened
+   item). Pure: no store, no clock -- the shell resolves every input, this file only ranks.
+
+   The order is ONE array on purpose. Assumption A1 in the handoff -- "unfinished outranks
+   reviews due" -- was approved on a preview, not answered directly; reversing it is a swap of
+   two entries here plus the expected column of the picker table in tests/fd-today.test.mjs,
+   and nothing else moves.
+
+   Kinds: resume (a capsule with questions left), block (a live block with a next step), read
+   (cw_last names an undone read in this week that is not already the Continue target), due
+   (reviews due), week (Continue the week), ahead (week complete: look ahead), setup (no week).
+   The first three are one row in the learner-facing rule ("Pick up where you left off"); they
+   stay distinct here because each renders a different card. */
+var FD_TODAY_PRIMARY_ORDER=['resume','block','read','due','week','ahead','setup'];
+
+/* The shell splices the secondary section at this marker -- directly after the lead card
+   (Continue or the setup CTA) -- so a Continue card that won stays first in the column and one
+   that lost sits below the demoted device-store rows. An HTML comment is invisible to the
+   learner and to every selector; fdTodayLive removes or replaces it. */
+var FD_TODAY_LEAD_END='<!--fd-lead-end-->';
+
+var FD_TODAY_WHY='First things first: anything you left unfinished, then reviews due, then this week. The rest is just below.';
+
+function fdTodayPrimaryHolds(kind, inp){
+  var wp=inp.weekProgress||{};
+  if(kind==='resume') return typeof inp.capsuleLeft==='number'&&inp.capsuleLeft>0;
+  if(kind==='block') return !!inp.blockNext;
+  if(kind==='read'){
+    var lr=inp.lastRead;
+    return !!lr&&lr.kind==='read'&&lr.done!==true&&lr.isContinueTarget!==true;
+  }
+  if(kind==='due') return typeof inp.dueTotal==='number'&&inp.dueTotal>0;
+  if(kind==='week') return inp.hasWeek===true&&!!wp.next;
+  if(kind==='ahead') return inp.hasWeek===true&&typeof wp.total==='number'&&wp.total>0&&wp.done===wp.total;
+  if(kind==='setup') return inp.hasWeek!==true;
+  return false;
+}
+
+function fdTodayPrimary(inputs){
+  var inp=inputs||{};
+  for(var i=0;i<FD_TODAY_PRIMARY_ORDER.length;i++){
+    if(fdTodayPrimaryHolds(FD_TODAY_PRIMARY_ORDER[i], inp)) return {kind:FD_TODAY_PRIMARY_ORDER[i]};
+  }
+  /* A week with no items: nothing is next and nothing is complete. Continue is still the honest
+     lead -- it previews the next week. */
+  return {kind:'week'};
+}
+
+/* Resolves the last opened ref against THIS week's items. Null when it is not a week item (a
+   library read, a tool from the rail, nothing opened yet): the row is about picking the week
+   back up, not a general history. done and isContinueTarget ride along so the picker's "read"
+   row and the shell's secondary list read one object. */
+function fdTodayLastRead(ref, weekItems, progress, doneMap){
+  if(typeof ref!=='string'||!ref) return null;
+  var list=weekItems||[], d=doneMap||{}, it=null;
+  for(var i=0;i<list.length;i++){ if(list[i]&&list[i].ref===ref){ it=list[i]; break; } }
+  if(!it) return null;
+  var target=(progress&&progress.next)?progress.next.ref:null;
+  return {ref:it.ref, kind:it.kind, title:it.title, minutes:it.minutes,
+    done:d[it.ref]===true, isContinueTarget:target===it.ref};
+}
+
+function fdTodayWhy(){
+  return '<p class="fd-primary__why">'+FD_TODAY_WHY+'</p>';
+}
+
 /* Shared week-item row -- CLASS-INVENTORY's Shared Components section (.fd-row, .fd-check,
    .fd-chip, ...). The checkmark glyph is ALWAYS emitted; .fd-check's CSS toggles its colour
    (transparent vs filled) rather than the markup toggling the glyph itself, so a screenshot at
