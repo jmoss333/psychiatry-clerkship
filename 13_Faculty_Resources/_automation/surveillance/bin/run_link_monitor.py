@@ -14,6 +14,8 @@ Usage:
   python3 run_link_monitor.py --lychee lychee.json --out findings.json
 """
 import os, sys, json, argparse
+import urllib.error
+import urllib.request
 from urllib.parse import urlparse
 import lib_surveillance as L
 
@@ -45,6 +47,56 @@ def _entries(report):
                 else:
                     code, text = None, str(status)
                 yield src, url, code, text
+
+
+# Mirrors lychee.toml's `accept` list: publisher/DOI 403 and auth-gated 401 are
+# bot-blocks reachable by humans, not dead links. 405/406 join them here -- a server
+# refusing this client's method is the same class, and two P1s (#436/#437) were
+# exactly that, both answering 200 to a plain GET fourteen days later.
+ACCEPTED_CODES = {200, 201, 202, 203, 204, 206, 401, 403, 405, 406, 429, 503}
+BROWSER_UA = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/126.0 Safari/537.36"
+)
+
+
+def probe(url, timeout=15):
+    """Fetch `url` once and return its status code, or None if it never answered.
+
+    Second opinion only. lychee checks thousands of links from one CI IP behind
+    caches; this asks again, directly, about the handful that failed.
+    """
+    request = urllib.request.Request(url, method="GET")
+    request.add_header("User-Agent", BROWSER_UA)
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return response.getcode()
+    except urllib.error.HTTPError as exc:
+        return exc.code
+    except Exception:
+        return None
+
+
+def confirm(findings, probe=probe):
+    """Split candidates into (still failing, reachable after all).
+
+    A finding is filed only if a second, independent request also fails. lychee
+    reports cached errors -- today's run carried `Error (cached)` for two FDA
+    drug-safety pages that answer 200 to a direct GET -- and a single probe from
+    one CI IP cannot tell a dead link from a WAF, a rate limit, or a blip. The
+    unconfirmed are not discarded silently: they are returned so the caller can
+    report the count, because a rising environment rate is itself a signal.
+    """
+    confirmed, unconfirmed = [], []
+    for finding in findings:
+        code = probe(finding["source_url"])
+        if code in ACCEPTED_CODES:
+            finding["evidence"]["confirm_status"] = code
+            unconfirmed.append(finding)
+            continue
+        finding["evidence"]["confirm_status"] = code
+        confirmed.append(finding)
+    return confirmed, unconfirmed
 
 
 def to_findings(report):
@@ -88,6 +140,8 @@ def main():
     ap.add_argument("--lychee", required=True, help="lychee --format json output file")
     ap.add_argument("--out", default="findings.json")
     ap.add_argument("--checked-out", default="checked-sources.json")
+    ap.add_argument("--no-confirm", action="store_true",
+                    help="skip the second-opinion probe (offline runs and tests)")
     args = ap.parse_args()
 
     try:
@@ -114,11 +168,19 @@ def main():
         sys.exit("ERROR: lychee report has no recognized fail_map/error_map object")
 
     findings = to_findings(report)
+    unconfirmed = []
+    if not args.no_confirm:
+        findings, unconfirmed = confirm(findings)
     with open(args.out, "w", encoding="utf-8") as fh:
         json.dump(findings, fh, indent=2)
     with open(args.checked_out, "w", encoding="utf-8") as fh:
         json.dump(L.validate_checked_sources(["link-monitor"]), fh, indent=2)
     print(f"link-monitor: {len(findings)} broken/redirect link finding(s) -> {args.out}")
+    if unconfirmed:
+        print(f"link-monitor: {len(unconfirmed)} candidate(s) reachable on a second "
+              f"request, not filed:")
+        for finding in unconfirmed:
+            print(f"    {finding['evidence']['confirm_status']}  {finding['source_url']}")
 
 
 if __name__ == "__main__":
