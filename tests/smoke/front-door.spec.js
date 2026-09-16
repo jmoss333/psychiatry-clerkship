@@ -1530,3 +1530,86 @@ test('One Thing First E: 390x844, reduced motion — the primary is above the fo
   for (const c of geometry.captureControls) expect.soft(c.h, `capture control "${c.text}" (pre-existing surface)`).toBeGreaterThanOrEqual(44);
   await expectHealthy(page);
 });
+
+// ---- One Thing First Phase 2: an interrupted block resumes as the block's own step -----------
+//
+// The block plan's question count depends on the week's first unread page, so these read `n`
+// from the planner card rather than assuming it. Driving the question bank inside the reader's
+// `.toolframe` mirrors aria-live.spec.js / qbank-retired.spec.js: confidence first, then an
+// option, then the two-tier rationale when one is shown, then Next.
+const otfFrame = (page) => page.frameLocator('.toolframe');
+
+async function otfAnswerOne(page) {
+  const frame = otfFrame(page);
+  await frame.locator('.conf-btn').first().click();
+  await frame.locator('#optsList .opt').first().click();
+  const rationale = frame.locator('#tier2Opts .opt').first();
+  if (await rationale.count()) await rationale.click();
+  await frame.locator('#nextBtn').click();
+}
+
+async function otfStartBlockFromToday(page) {
+  const planner = page.locator('.fd-block:not(.is-live)');
+  await expect(planner).toBeVisible();
+  const steps = await planner.locator('.fd-block__step .fd-block__title').allTextContents();
+  const qb = steps.find((t) => /^\d+ practice question/.test(t));
+  expect(qb, `plan has a question step: ${steps.join(' | ')}`).toBeTruthy();
+  expect(steps[0], 'first step is a page so the receipt can count two steps').not.toMatch(/^\d+ (practice|review)/);
+  const n = Number(qb.match(/^(\d+) practice/)[1]);
+  await planner.locator('[data-block-start]').click();
+  return { steps, n };
+}
+
+test('One Thing First B1–B3: an interrupted block question set resumes as the block\'s step and survives reload', async ({ page }, testInfo) => {
+  test.setTimeout(180_000);
+  await seedApp(page, testInfo, { storage: {} });
+  await page.goto('/');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const { n } = await otfStartBlockFromToday(page);
+  // Step 1 is the week's first unread page. Its primary action leads with "Mark done ·".
+  await expect(page).toHaveURL(/page=[^&]+&block=1/);
+  const marker = page.locator('.fd-article__actions [data-fd-toggle]');
+  await expect(marker).toContainText(new RegExp(`^Mark done · Continue to your ${n} questions →$`));
+  // B3 (reader): a reload keeps the same primary action label.
+  await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+  await page.reload();
+  await expect(page.locator('.fd-article__actions [data-fd-toggle]')).toContainText(/^Mark done · /);
+  await page.locator('.fd-article__actions [data-fd-toggle]').click();
+  await expect(page).toHaveURL(new RegExp(`tool=question-bank-practice\\.html&block=1&n=${n}$`));
+  await expect(otfFrame(page).locator('#progLabel')).toHaveText(`Question 1 of ${n}`);
+  await otfAnswerOne(page);
+  await otfAnswerOne(page);
+  await expect(otfFrame(page).locator('#progLabel')).toHaveText(`Question 3 of ${n}`);
+  // Interrupted: back to Today. A bare "/" would re-open the stored openId (the tool); the tab
+  // parameter is what clears it in fdResolveState, which is also what the Today tab button sends.
+  await page.goto('/?tab=today');
+  await otfExpectOnePrimary(page);
+  await expect(page.locator('.fd-primary .fd-resume.is-primary .fd-resume__block')).toHaveText('Block · 1 of 2 done');
+  await expect(page.locator('.fd-primary .fd-resume__link')).toHaveAttribute('href', `?tool=question-bank-practice.html&resume=1&block=1&n=${n}`);
+  await expect(page.locator('.fd-block.is-live [data-block-continue]')).toHaveText(`Resume: ${n - 2} of ${n} questions left →`);
+  // B3 (Today): reload keeps the same primary.
+  await page.reload();
+  await expect(page.locator('.fd-primary .fd-resume__block')).toHaveText('Block · 1 of 2 done');
+  // B2: resume continues the count, and finishing marks the block's question step.
+  await page.locator('.fd-primary .fd-resume__link').click();
+  await expect(page).toHaveURL(new RegExp(`resume=1&block=1&n=${n}`));
+  await expect(otfFrame(page).locator('#progLabel')).toHaveText(`Question 3 of ${n}`);
+  for (let i = 2; i < n; i += 1) await otfAnswerOne(page);
+  await expect(otfFrame(page).locator('.cw-receipt__blockline')).toHaveText('Block complete · 2 of 2 done');
+  expect(await page.evaluate(() => localStorage.getItem('cw_block_v1'))).toBeNull();
+  await expectHealthy(page);
+});
+
+test('One Thing First B4: a block past its TTL is pruned; the planner returns and an orphaned capsule resumes as an ordinary set', async ({ page }, testInfo) => {
+  const stale = Object.assign({}, OTF.block, { createdAt: OTF_NOW - 13 * OTF_HOUR });
+  const blockCapsule = { v: 1, sessions: { qbank: Object.assign({}, OTF.capsule.sessions.qbank, { fromBlock: true, n: 6, cat: null }) } };
+  await seedApp(page, testInfo, { storage: { cw_block_v1: stale, cw_sess_v1: blockCapsule } });
+  await page.goto('/');
+  await otfExpectOnePrimary(page);
+  await expect(page.locator('.fd-block:not(.is-live)')).toHaveCount(1);
+  await expect(page.locator('.fd-block.is-live')).toHaveCount(0);
+  await expect(page.locator('.fd-primary .fd-resume__link')).toHaveAttribute('href', '?tool=question-bank-practice.html&resume=1');
+  await expect(page.locator('.fd-resume__block')).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('cw_block_v1'))).toBeNull();
+  await expectHealthy(page);
+});

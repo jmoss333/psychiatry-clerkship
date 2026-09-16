@@ -3,11 +3,15 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
-const data = readFileSync(new URL(`${BUILD}/frontdoor/fd_data.js`, import.meta.url), 'utf8');
-const due = readFileSync(new URL(`${BUILD}/frontdoor/fd_due.js`, import.meta.url), 'utf8');
+const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf8');
+const data = read('frontdoor/fd_data.js');
+const due = read('frontdoor/fd_due.js');
 
+// Concatenated in the page's injection order. fd_block.js comes AFTER fd_due.js on the page, so
+// fdResumeCard reaches fdBlockResumeSearch only at render time, guarded by typeof — the same
+// order here keeps that guard honest.
 // eslint-disable-next-line no-new-func
-const make = new Function(`${data}\n${due}\nreturn {
+const make = new Function(`${read('phase_policy.js')}\n${read('frontdoor/fd_state.js')}\n${data}\n${read('frontdoor/fd_edition_student.js')}\n${read('frontdoor/fd_today.js')}\n${due}\n${read('frontdoor/fd_block.js')}\nreturn {
   fdDueRow: fdDueRow,
   fdResumeCard: fdResumeCard,
   fdCaptureTriage: fdCaptureTriage,
@@ -146,4 +150,24 @@ test('the primary variants are audience-neutral', () => {
   const all = F.fdDueRow(DUE_ONE, true) + F.fdResumeCard(CAPSULE, true)
     + F.fdLastReadRow({ ref: 'x.md', kind: 'read', title: 'X', minutes: 3 }, true);
   assert.doesNotMatch(all, /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i);
+});
+
+// ---- Phase 2: the Resume card resumes a block's question set with its progress line ---------
+
+test('a capsule from a block resumes with the block parameters and shows the block progress line', () => {
+  const capsule = { queueIds: ['a', 'b', 'c', 'd', 'e', 'f'], idx: 2, fromBlock: true, n: 6, cat: null };
+  const block = { done: 1, total: 2, next: { kind: 'qb', ref: 'question-bank-practice.html', n: 6, cat: null } };
+  const out = F.fdResumeCard(capsule, true, block);
+  assert.match(out, /href="\?tool=question-bank-practice\.html&amp;resume=1&amp;block=1&amp;n=6"/);
+  assert.match(out, /<span class="fd-resume__block">Block · 1 of 2 done<\/span>/);
+  assert.match(out, /4 left, ~3 min/);
+  const withCat = F.fdResumeCard(Object.assign({}, capsule, { cat: 'mood' }), false, Object.assign({}, block, { next: Object.assign({}, block.next, { cat: 'mood' }) }));
+  assert.match(withCat, /href="\?tool=question-bank-practice\.html&amp;resume=1&amp;block=1&amp;n=6&amp;cat=mood"/);
+  // Not from a block, or the block's next step is not the question set: today's markup, byte for byte.
+  const plainCapsule = Object.assign({}, capsule, { fromBlock: false });
+  assert.equal(F.fdResumeCard(plainCapsule, false, block), F.fdResumeCard(plainCapsule));
+  assert.equal(F.fdResumeCard(capsule, false, { done: 0, total: 2, next: { kind: 'page', ref: 'a.md' } }), F.fdResumeCard(capsule));
+  assert.equal(F.fdResumeCard(capsule, false, null), F.fdResumeCard(capsule));
+  assert.doesNotMatch(F.fdResumeCard(capsule), /block=1|fd-resume__block/, 'no block status passed, no block route');
+  assert.doesNotMatch(out, /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i);
 });
