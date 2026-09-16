@@ -39,7 +39,7 @@
 
 **Delirium Etiology and Systematic Workup**
 - Marcantonio, E.R. (2011) — *New England Journal of Medicine* — delirium is multifactorial in most cases; median number of precipitants is 3-4. Infection (UTI, pneumonia), metabolic derangements, hypoxia, and medications (anticholinergics, benzodiazepines, opioids) are the usual suspects. Systematic screening prevents missed contributors and enables targeted treatment.
-- Siddiqi, N. et al. (2016) — *PLoS Medicine* — systematic review of delirium interventions shows the ABCDEF bundle (Assess, manage pain; Blood pressure, Labs; Collaboration; Delirium monitoring; Early mobility; Family involvement) and the Hospital Elder Life Program (HELP) reduce delirium incidence and duration.
+- Siddiqi, N. et al. (2016) — *PLoS Medicine* — systematic review of delirium interventions shows structured non-pharmacologic bundles (the ABCDEF bundle and the Hospital Elder Life Program/HELP) reduce delirium incidence and duration.
 
 **Non-Pharmacologic Management and the HELP Bundle**
 - Inouye, S.K. et al. (1999) — *New England Journal of Medicine* — the Hospital Elder Life Program (HELP) uses trained volunteers to implement: orientation/reorientation, early mobilization, sleep hygiene, vision/hearing aids, and family presence. HELP reduced delirium incidence by 40% and reduced episode duration by 50% without medications.
