@@ -250,7 +250,9 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Install workflow parser"),
             ("name", "Evaluate scheduled workflow freshness"),
             ("name", "Detect stranded auto-merge pull requests"),
+            ("name", "Detect automation branches without open pull requests"),
             ("name", "Detect branch ruleset drift"),
+            ("uses", "actions/upload-artifact"),
             ("uses", "actions/upload-artifact"),
             ("uses", "actions/upload-artifact"),
         ),
@@ -394,7 +396,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
     ),
     "maintenance-heartbeat.yml": (
-        "2657e218acd9d67f48e4ee39a6069c918056efaeebb3f15506693d4011163837"
+        "2fd18edc8a3d3cf15ea82c4838e28fb4d075513f027fd751b995dee3ea887261"
     ),
     "maintenance-monthly-review.yml": (
         "acd1fe78364baf65ac9842ffb62a5abacaa8c70110a254106166130985fc9689"
@@ -685,6 +687,13 @@ npx playwright test --project=lfs""",
                 'stranded_prs.py --out "$RUNNER_TEMP/stranded-prs.json"',
                 "always()",
                 "required stranded pull request gate",
+            ),
+            (
+                "Detect automation branches without open pull requests",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                'automation_branch_prs.py --out "$RUNNER_TEMP/automation-branch-prs.json"',
+                "always()",
+                "required automation branch pull request gate",
             ),
             (
                 "Detect branch ruleset drift",

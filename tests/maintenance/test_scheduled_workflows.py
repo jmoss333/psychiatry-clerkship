@@ -445,6 +445,34 @@ class ScheduledWorkflowTests(unittest.TestCase):
         self.assertEqual(upload["with"]["retention-days"], "90")
         self.assertIsInstance(upload["with"]["retention-days"], str)
 
+    def test_branch_pr_detector_is_independent_with_unique_90_day_receipt(self):
+        heartbeat_steps = steps("maintenance-heartbeat.yml")
+        detector_name = "Detect automation branches without open pull requests"
+        detectors = [step for step in heartbeat_steps if step.get("name") == detector_name]
+        self.assertEqual(len(detectors), 1, "heartbeat must detect branch-only publication debris")
+        detector = detectors[0]
+        self.assertEqual(detector["if"], "always()")
+        self.assertEqual(detector["env"], {
+            "GITHUB_REPOSITORY": "${{ github.repository }}",
+            "GITHUB_TOKEN": "${{ secrets.GITHUB_TOKEN }}",
+        })
+        names = [step.get("name") for step in heartbeat_steps]
+        self.assertLess(names.index("Evaluate scheduled workflow freshness"), names.index(detector_name))
+        self.assertEqual(names.index(detector_name), names.index("Detect stranded auto-merge pull requests") + 1)
+        uploads = [step for step in heartbeat_steps if step.get("with", {}).get("name") ==
+                   "maintenance-automation-branch-prs-${{ github.run_id }}"]
+        self.assertEqual(len(uploads), 1)
+        upload = uploads[0]
+        self.assertLess(heartbeat_steps.index(detector), heartbeat_steps.index(upload))
+        self.assertEqual(upload["if"], "always()")
+        self.assertEqual(upload["uses"],
+                         "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a")
+        self.assertEqual(upload["with"], {
+            "name": "maintenance-automation-branch-prs-${{ github.run_id }}",
+            "path": "${{ runner.temp }}/automation-branch-prs.json",
+            "if-no-files-found": "warn", "retention-days": "90",
+        })
+
     def test_artifact_retention_is_bounded_and_maintenance_evidence_is_90_days(self):
         names = [
             *EXPECTED,
