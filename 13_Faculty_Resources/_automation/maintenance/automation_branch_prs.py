@@ -25,6 +25,8 @@ except ImportError:
 
 
 MAX_TRACKED_BRANCHES = 64
+# Local evidence bound: matching-refs is one nonpaginated response and may
+# contain up to this many refs. A tenth full PR page is still incomplete.
 MAX_LIST_ENTRIES = 1000
 SURVEILLANCE_BRANCH = "automation/surveillance-inbox"
 SAFE_BRANCH = re.compile(r"[A-Za-z0-9_./-]{1,255}")
@@ -92,16 +94,20 @@ def evaluate(refs, pulls, *, checked_at, repository):
     """Normalize complete raw listings and emit exception-only bounded rows."""
     timestamp = _timestamp(checked_at)
     repository = _repository(repository)
-    if any(not isinstance(items, list) or len(items) >= MAX_LIST_ENTRIES
-           for items in (refs, pulls)):
+    if (not isinstance(refs, list) or len(refs) > MAX_LIST_ENTRIES
+            or not isinstance(pulls, list) or len(pulls) >= MAX_LIST_ENTRIES):
         raise AutomationBranchPRError("listing is malformed or incomplete")
     branches = set()
+    seen_refs = set()
     for item in refs:
         branch = _ref_branch(item)
+        if branch in seen_refs:
+            raise AutomationBranchPRError("refs are ambiguous")
+        seen_refs.add(branch)
         if not _owned(branch):
             continue
-        if branch in branches or len(branches) >= MAX_TRACKED_BRANCHES:
-            raise AutomationBranchPRError("owned refs are ambiguous or over limit")
+        if len(branches) >= MAX_TRACKED_BRANCHES:
+            raise AutomationBranchPRError("owned refs are over limit")
         branches.add(branch)
     open_heads = set()
     for item in pulls:
@@ -117,46 +123,41 @@ def evaluate(refs, pulls, *, checked_at, repository):
             "gate": "blocked" if rows else "ready", "branches": rows}
 
 
-def _fetch_pages(repository, *, token, endpoint, normalize, opener):
+def _fetch_list(repository, *, token, endpoint, normalize, max_entries, opener):
     repository = _repository(repository)
     if (not isinstance(token, str) or not token or len(token) > 4096
             or any(ord(char) < 33 or ord(char) > 126 for char in token)):
         raise AutomationBranchPRError("token is unavailable or invalid")
     client = opener or build_opener(_NoRedirect())
-    result = []
-    for page in range(1, 11):
-        request = Request(
-            f"https://api.github.com/repos/{repository}/{endpoint}per_page=100&page={page}",
-            method="GET",
-            headers={"Accept": "application/vnd.github+json",
-                     "Authorization": f"Bearer {token}",
-                     "X-GitHub-Api-Version": "2022-11-28"},
-        )
+    request = Request(
+        f"https://api.github.com/repos/{repository}/{endpoint}",
+        method="GET",
+        headers={"Accept": "application/vnd.github+json",
+                 "Authorization": f"Bearer {token}",
+                 "X-GitHub-Api-Version": "2022-11-28"},
+    )
+    try:
+        response = client.open(request, timeout=API_TIMEOUT_SECONDS)
         try:
-            response = client.open(request, timeout=API_TIMEOUT_SECONDS)
-            try:
-                if getattr(response, "status", None) != 200:
-                    raise AutomationBranchPRError("API response failed")
-                raw = response.read(MAX_API_BYTES + 1)
-            finally:
-                response.close()
-        except Exception as exc:
-            raise AutomationBranchPRError("API is unavailable") from exc
-        if not isinstance(raw, bytes) or len(raw) > MAX_API_BYTES:
-            raise AutomationBranchPRError("API response is invalid or over limit")
-        try:
-            payload = json.loads(raw.decode("utf-8"), object_pairs_hook=_unique_object,
-                                 parse_constant=_reject_json_constant)
-        except (UnicodeDecodeError, ValueError, RecursionError) as exc:
-            raise AutomationBranchPRError("API response is malformed") from exc
-        if not isinstance(payload, list) or len(payload) > 100:
-            raise AutomationBranchPRError("API page is malformed or over limit")
-        for item in payload:
-            normalize(item)
-        result.extend(payload)
-        if len(payload) < 100:
-            return result
-    raise AutomationBranchPRError("API scan is incomplete")
+            if getattr(response, "status", None) != 200:
+                raise AutomationBranchPRError("API response failed")
+            raw = response.read(MAX_API_BYTES + 1)
+        finally:
+            response.close()
+    except Exception as exc:
+        raise AutomationBranchPRError("API is unavailable") from exc
+    if not isinstance(raw, bytes) or len(raw) > MAX_API_BYTES:
+        raise AutomationBranchPRError("API response is invalid or over limit")
+    try:
+        payload = json.loads(raw.decode("utf-8"), object_pairs_hook=_unique_object,
+                             parse_constant=_reject_json_constant)
+    except (UnicodeDecodeError, ValueError, RecursionError) as exc:
+        raise AutomationBranchPRError("API response is malformed") from exc
+    if not isinstance(payload, list) or len(payload) > max_entries:
+        raise AutomationBranchPRError("API list is malformed or over limit")
+    for item in payload:
+        normalize(item)
+    return payload
 
 
 def _unique_object(pairs):
@@ -173,16 +174,23 @@ def _reject_json_constant(_value):
 
 
 def fetch_automation_refs(repository, *, token, opener=None):
-    """Read all matching automation refs, or reject an incomplete listing."""
-    return _fetch_pages(repository, token=token,
-                        endpoint="git/matching-refs/heads/automation/?",
-                        normalize=_ref_branch, opener=opener)
+    """Read one nonpaginated matching-refs list, bounded to 1,000 entries."""
+    return _fetch_list(repository, token=token,
+                       endpoint="git/matching-refs/heads/automation/",
+                       normalize=_ref_branch, max_entries=MAX_LIST_ENTRIES, opener=opener)
 
 
 def fetch_open_pulls(repository, *, token, opener=None):
     """Read the PR listing without interpreting or rendering its content."""
-    return _fetch_pages(repository, token=token, endpoint="pulls?state=open&",
-                        normalize=_pull_head, opener=opener)
+    result = []
+    for page in range(1, 11):
+        payload = _fetch_list(repository, token=token,
+                              endpoint=f"pulls?state=open&per_page=100&page={page}",
+                              normalize=_pull_head, max_entries=100, opener=opener)
+        result.extend(payload)
+        if len(payload) < 100:
+            return result
+    raise AutomationBranchPRError("API scan is incomplete")
 
 
 def main(argv=None, *, opener=None, now=_utc_now):

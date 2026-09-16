@@ -77,6 +77,14 @@ class EvaluateTests(unittest.TestCase):
             with self.subTest(refs=refs), self.assertRaises(steward.AutomationBranchPRError):
                 steward.evaluate(refs, prs, checked_at=NOW, repository="owner/repo")
 
+    def test_duplicate_unknown_refs_are_unavailable_before_ownership_filtering(self):
+        refs = [ref("automation/unknown"), ref("automation/unknown")]
+        with self.assertRaises(steward.AutomationBranchPRError):
+            steward.evaluate(refs, [], checked_at=NOW, repository="owner/repo")
+        code, receipt, _log = CLITests().run_cli(Opener(Response(refs), Response([])))
+        self.assertEqual(code, 2)
+        self.assertEqual(receipt.get("state"), "unavailable")
+
     def test_64_branch_boundary_is_bounded(self):
         refs = [ref(f"automation/queue-task-{n}-2026-09-15") for n in range(65)]
         result = steward.evaluate(refs[:64], [], checked_at=NOW, repository="owner/repo")
@@ -152,36 +160,61 @@ class FetchTests(unittest.TestCase):
         self.assertTrue(callable(getattr(steward, "fetch_automation_refs", None)),
                         "bounded remote reads must be implemented")
 
-    def test_both_endpoints_paginate_get_only_and_close_responses(self):
-        for function, path, entry in [
-            (steward.fetch_automation_refs, "git/matching-refs/heads/automation/?", ref),
-            (steward.fetch_open_pulls, "pulls?state=open&", pull),
-        ]:
-            with self.subTest(path=path):
-                pages = [Response([entry(f"other-{n}") for n in range(100)]), Response([])]
-                client = Opener(*pages)
-                result = function("owner/repo", token="token", opener=client)
-                self.assertEqual(len(result), 100)
-                self.assertTrue(all(page.closed for page in pages))
-                self.assertEqual(len(client.requests), 2)
-                for page, (request, timeout) in enumerate(client.requests, 1):
-                    self.assertEqual(request.full_url, f"https://api.github.com/repos/owner/repo/{path}per_page=100&page={page}")
-                    self.assertEqual(request.get_method(), "GET")
-                    self.assertIsNone(request.data)
-                    self.assertEqual(timeout, 20)
-                    self.assertEqual(request.get_header("Authorization"), "Bearer token")
-                    self.assertEqual(request.get_header("X-github-api-version"), "2022-11-28")
+    def test_pulls_paginate_get_only_and_close_responses(self):
+        pages = [Response([pull(f"other-{n}") for n in range(100)]), Response([])]
+        client = Opener(*pages)
+        result = steward.fetch_open_pulls("owner/repo", token="token", opener=client)
+        self.assertEqual(len(result), 100)
+        self.assertTrue(all(page.closed for page in pages))
+        self.assertEqual(len(client.requests), 2)
+        for page, (request, timeout) in enumerate(client.requests, 1):
+            self.assertEqual(request.full_url, f"https://api.github.com/repos/owner/repo/pulls?state=open&per_page=100&page={page}")
+            self.assertEqual(request.get_method(), "GET")
+            self.assertIsNone(request.data)
+            self.assertEqual(timeout, 20)
+            self.assertEqual(request.get_header("Authorization"), "Bearer token")
+            self.assertEqual(request.get_header("X-github-api-version"), "2022-11-28")
+
+    def test_matching_refs_uses_one_get_without_pagination_query(self):
+        response = Response([ref("automation/unknown")])
+        client = Opener(response)
+        result = steward.fetch_automation_refs("owner/repo", token="token", opener=client)
+        self.assertEqual(result, [ref("automation/unknown")])
+        self.assertTrue(response.closed)
+        self.assertEqual(len(client.requests), 1)
+        request, timeout = client.requests[0]
+        self.assertEqual(request.full_url, "https://api.github.com/repos/owner/repo/git/matching-refs/heads/automation/")
+        self.assertEqual(request.get_method(), "GET")
+        self.assertIsNone(request.data)
+        self.assertEqual(timeout, 20)
+        self.assertEqual(request.get_header("Authorization"), "Bearer token")
+        self.assertEqual(request.get_header("X-github-api-version"), "2022-11-28")
+
+    def test_101_refs_with_one_owned_covered_branch_are_ready(self):
+        refs = [ref(f"automation/unknown-{n}") for n in range(100)] + [ref()]
+        code, receipt, _log = CLITests().run_cli(Opener(Response(refs), Response([pull()])))
+        self.assertEqual(code, 0)
+        self.assertEqual(receipt["gate"], "ready")
+        self.assertEqual(receipt["branches"], [])
+
+    def test_matching_ref_bound_accepts_1000_but_rejects_1001(self):
+        for count, expected_exit in [(1000, 0), (1001, 2)]:
+            with self.subTest(count=count):
+                refs = [ref(f"automation/unknown-{n}") for n in range(count)]
+                code, receipt, _log = CLITests().run_cli(Opener(Response(refs), Response([])))
+                self.assertEqual(code, expected_exit)
+                self.assertEqual(receipt.get("state"), None if count == 1000 else "unavailable")
 
     def test_tenth_full_page_is_unavailable_not_truncated_success(self):
-        client = Opener(*(Response([ref(f"other-{n}") for n in range(100)]) for _ in range(10)))
+        client = Opener(*(Response([pull(f"other-{n}") for n in range(100)]) for _ in range(10)))
         with self.assertRaises(steward.AutomationBranchPRError):
-            steward.fetch_automation_refs("owner/repo", token="t", opener=client)
+            steward.fetch_open_pulls("owner/repo", token="t", opener=client)
         self.assertEqual(len(client.requests), 10)
 
     def test_incomplete_second_page_aborts_whole_scan(self):
-        client = Opener(Response([ref(f"other-{n}") for n in range(100)]), OSError("INJECT"))
+        client = Opener(Response([pull(f"other-{n}") for n in range(100)]), OSError("INJECT"))
         with self.assertRaises(steward.AutomationBranchPRError):
-            steward.fetch_automation_refs("owner/repo", token="t", opener=client)
+            steward.fetch_open_pulls("owner/repo", token="t", opener=client)
 
     def test_bad_configuration_never_calls_network(self):
         for repository, token in [(None, "t"), ("not a repo", "t"), ("owner/repo", ""),
@@ -196,7 +229,7 @@ class FetchTests(unittest.TestCase):
         for response in [Response([], status=302), Response([], status=403), OSError("INJECT"),
                          Response(raw="not bytes"), Response(raw=b"x" * 2_000_001),
                          Response(raw=b"\xff"), Response(raw=b"{"), Response({}),
-                         Response([None]), Response([ref()] * 101)]:
+                         Response([None]), Response([ref(f"automation/unknown-{n}") for n in range(1001)])]:
             with self.subTest(response=response), self.assertRaises(steward.AutomationBranchPRError):
                 steward.fetch_automation_refs("owner/repo", token="t", opener=Opener(response))
 
