@@ -3,11 +3,11 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(277 distinct `fd-*` selector names, 20 `is-*` state classes). Every class below has a rule in that file unless
+(294 distinct `fd-*` selector names, 20 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
-**Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-273. The remaining 234 are `__element` and `--modifier` names introduced while porting the
+**Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
+273. The remaining 234 were `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -43,6 +43,10 @@ them and let the breakpoint decide:
 | `.fd-actionbar`, `.fd-actionbar__spacer`, `.fd-quicktools--pills` | ≥ 1000px | below 1000px |
 | `.fd-article__actions` | below 1000px | ≥ 1000px |
 | `.fd-article .fd-tip` (Reader's keyboard hint **only** — the wizard's `.fd-tip--setup` line is a different subtree and stays visible) | below 1000px | ≥ 1000px |
+
+The enhanced `.fd-reader--guide` is a scoped exception: its week `.fd-railnav` remains
+available below the article at every width. Its new `.fd-guide-margin` is sticky beside the
+article at ≥1000px and flows before the article below 1000px. See §6a.
 
 Every row above has a matching rule in `frontdoor.css`'s `@media (min-width:1000px)` /
 `@media (max-width:999px)` blocks — checked 2026-08-16 after `.fd-article__actions` and the
@@ -360,7 +364,7 @@ it; just don't expect it to paint anything.
 | `.fd-reader.is-nav-next` / `.is-nav-prev` | Slide-in direction. **Same element as `.fd-reader`.** |
 | `.fd-reader--tool.is-tool-expanded` | Tool-only wide workspace state. The same state is mirrored on `.fd-main`; neither class is applied to reads. |
 | `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
-| `.fd-article__body` | Long-form markdown typography: 16.5px, 1.72 line-height, 62ch measure. |
+| `.fd-article__body` | Base long-form markdown typography: `--fd-font-lg` (17px), 1.72 line-height, 62ch measure. Enhanced field guides use the scoped type treatment in §6a. |
 | `.fd-compass` | Six-Week Compass, build-injected into `.fd-article__body` on the six-week Welcome (`welcome_compass.py`). Children: `.fd-compass__title`, `.fd-compass__weeks` (`<ol>`, markerless card grid), `.fd-compass__week` (`<li>` card), `.fd-compass__heading` (`<h3>`), `.fd-compass__kicker` (the `Week N` span inside that heading), `.fd-compass__link` *(no rule)*. Every rule but the root is written as a two-class selector so it outranks the `.fd-article__body` element rules it sits inside. |
 | `.fd-visually-hidden` | Accessible completion suffix on done rail rows; never use `aria-pressed` for navigation. |
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |
@@ -381,6 +385,71 @@ independent states on the child. A current *and* done item carries both.
 
 ⚠ `.fd-railnav` is `display:none` below 1000px and `display:block` at/above it — do not set
 `display:flex` on it; `.fd-railnav__list` is the flex container.
+
+---
+
+## 6a. Clinical field guide
+
+Scoped enhancement of a real teaching page; never applied to an activity iframe or faculty
+preview. Full behavior and content-preservation contract:
+[`2026-09-15-clinical-field-guide-components.md`](../2026-09-15-clinical-field-guide-components.md).
+
+```
+.fd-reader.fd-reader--guide
+  .fd-reader__cols
+    .fd-guide-header                      (original identity, title and lead moved here)
+    .fd-guide-margin                      (after orientation, before teaching)
+      .fd-guide-practice                   (canonical related activity, when available)
+      .fd-guide-contents <details>
+        <summary>On this page</summary>
+        <nav> links[data-guide-section]
+      .fd-guide-find <form>
+        <label> / <input> / <button>
+      .fd-guide-results
+      <button>Print guide</button>
+    .fd-article                          (existing teaching and progress controls)
+      .fd-article__body
+        .fd-guide-arrival
+        .fd-guide-section | .sec-c        (section target)
+          h2
+          original content
+          .fd-guide-table-controls       (optional comparison/row toggles)
+          .table-scroll
+            .table-scroll-viewport       (original semantic table)
+            .fd-guide-table-rows          (derived alternative; hidden initially)
+              dl > dt + dd
+    .fd-railnav                          (week navigation after the article)
+.fd-guide-return                         (temporary return button on an activity)
+```
+
+| Class | Notes |
+|---|---|
+| `.fd-reader--guide` | Modifier on the existing reader. Removes the enclosing article card; 18px/1.75 prose, 720px maximum reading column, serif display title and section headings. Existing activity layout remains separate. |
+| `.fd-guide-header` | Original identity, H1 and lead nodes move into this semantic header. First in DOM; desktop column two/row one, centered in natural narrow-screen flow. |
+| `.fd-guide-margin` | Sticky 180–220px desktop column with bounded scrolling, spanning header/article rows. Natural document flow below 1000px. Follows `.fd-guide-header` and precedes `.fd-article` in DOM; CSS never reverses keyboard order. |
+| `.fd-guide-practice` | Full-width shortcut to the existing related activity; long canonical titles wrap. Uses the real `data-fd-open` route and carries no simulated activity. |
+| `.fd-guide-contents` | Native `<details>` containing a labeled section `<nav>`. Desktop starts expanded; narrow views start collapsed. Links expose current location with `aria-current="location"`. |
+| `.fd-guide-find` | Page-scoped finder form. The narrow desktop margin stacks its field and action; the wider mobile flow pairs them. The label spans all form columns; input shrinks safely and action remains visible. |
+| `.fd-guide-results` | Finder feedback/results. Result buttons fill their container and wrap text. |
+| `.fd-guide-section` | Wrapper preserving a non-collapsible authored heading and its following content. `.sec-c` keeps the existing explicit disclosure behavior where allowed. |
+| `.fd-guide-orientation` | Teal summary/orientation treatment applied to an authored section by a narrow heading match. |
+| `.fd-guide-caution` | Olive rule and wash for an explicitly titled caution section. Meaning remains in the original heading. |
+| `.fd-guide-example` | Teal rule and smaller supporting type for an explicitly identified example block. |
+| `.fd-guide-references` | Ruled reference region with 14px/1.7 text and long citation wrapping. |
+| `.fd-guide-match` | Temporary passage outline and wash; no completion or review meaning. Scroll margin keeps it below sticky chrome. |
+| `.fd-guide-arrival` | Visible context for passage arrival. Hidden on paper, while the passage itself remains. |
+| `.fd-guide-table-controls` | Wrapping buttons with real `aria-pressed` state. Minimum 44px height. |
+| `.fd-guide-table-rows` | Derived row reading view, one `<dl>` per original row; exact source header/cell text. The semantic table remains the print representation. |
+| `.fd-guide-return` | Temporary practice return control; deliberately styled outside the guide modifier because it appears while a real activity is open. |
+
+⚠ **Hidden means hidden.** `.fd-reader--guide [hidden]` wins on screen. Print overrides only
+the original `.table-scroll-viewport[hidden]`, hides the row alternative and controls, expands
+all teaching/disclosures, and retains safety and review notices. Native details are opened and
+restored by the print lifecycle as well as having a CSS fallback.
+
+⚠ **Purpose is presentation.** These classes never add a clinical interpretation or change
+source wording. The crisis block stays in its original context and remains outside collapsed
+content. The high-risk governance focus rule outranks passage arrival focus.
 
 ---
 

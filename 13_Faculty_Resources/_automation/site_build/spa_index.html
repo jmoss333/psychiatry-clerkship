@@ -649,6 +649,7 @@
     groups.forEach(function(g){
       var wrap=document.createElement('section'); wrap.className='sec-c open';
       var hh=document.createElement('h2'); hh.className='sec-h';
+      if(g.h2.id)hh.id=g.h2.id;
       var btn=document.createElement('button'); btn.type='button'; btn.setAttribute('aria-expanded','true');
       btn.innerHTML='<span class="sec-chev" aria-hidden="true">▸</span>';
       var tt=document.createElement('span'); tt.textContent=g.h2.textContent; btn.appendChild(tt);
@@ -1670,6 +1671,8 @@
 
   /*__FD_READER__*/
 
+  /*__FD_GUIDE__*/
+
   /*__FD_SEARCH__*/
 
   /*__FD_SHEET__*/
@@ -2149,12 +2152,18 @@
     if(control)control.setAttribute('aria-pressed',expanded?'true':'false');
   }
 
+  var fdGuideSession=null, fdGuideBookmark=null, fdGuideReturning=false;
+  function fdDisposeGuide(){
+    if(fdGuideSession)fdGuideSession.destroy();
+    fdGuideSession=null;
+  }
+
   function fdRender(state,detail){
     var app=state.screen==='app',hydrate=detail&&detail.kind==='hydrate';
     fdPrepareRoute(state,detail);
     fdAdoptSpecialContext(state);
     if(!hydrate&&fdChromeMount)fdChromeMount.innerHTML=app?fdHeader(fdLiveState(state)):'';
-    if(contentEl){ contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
+    if(contentEl){ fdDisposeGuide(); contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
     fdPatchToolLayout(state);
     fdRenderCapture(state);
     fdRenderOverlays(state);
@@ -2209,7 +2218,7 @@
       if(surfaces.completion)fdPatchCompletion(state);
     } else if(surfaces.base||surfaces.completion){
       fdAdoptSpecialContext(state);
-      if(contentEl){contentEl.className='fd-main';contentEl.innerHTML=fdBaseMarkup(state);}
+      if(contentEl){fdDisposeGuide();contentEl.className='fd-main';contentEl.innerHTML=fdBaseMarkup(state);}
     }
     if(surfaces.layout)fdPatchToolLayout(state);
     fdRenderOverlays(state);
@@ -2234,6 +2243,7 @@
 
   function fdOpenResourceLive(ref,opts){
     var options=opts||{}, item=(FD_INDEX.byRef||{})[ref]||{title:ref,kind:/\.html$/.test(ref)?'tool':'read'};
+    if(!facultyPreviewRequest)fdDisposeGuide();
     /* The audited preview path delegates to show(), which must see the previous currentItem so its
        same-tool reload guard cannot suppress the initial preflight. It also must not mutate the
        learner's bookmark. Outside preview, preserve the existing immediate route context/write. */
@@ -2272,6 +2282,44 @@
         }
         if(!facultyPreviewRequest)setLearnerTitle(currentItem);
         announceRoute(currentItem); focusGovernanceNotice({fromHistory:!!options.fromHistory});
+        if(!facultyPreviewRequest&&body&&!fdIsTool(ref)){
+          fdGuideSession=fdGuideMount(body,{
+            ref:ref,
+            isPractice:function(target){return fdIsTool(target)&&!!((FD_INDEX.byRef||{})[target]||(FD_INDEX.known||{})[target]);},
+            onPractice:function(bookmark){fdGuideBookmark=bookmark;fdGuideReturning=false;}
+          });
+          if(fdGuideSession){
+            var guide=fdGuideSession, bookmark=fdGuideBookmark;
+            var returning=bookmark&&bookmark.ref===ref&&(fdGuideReturning||options.fromHistory);
+            var arrivalSearch=options.search===undefined?location.search:options.search;
+            if(!returning)fdGuideBookmark=null;
+            /* Initial resources mount behind the edition startup gate. Their promise must
+               settle before focus/scroll can reach the now-visible DOM. Guard the next frame
+               so an abandoned load cannot steal focus from the next route. */
+            requestAnimationFrame(function(){
+              /* The initial load's isCurrent lease ends when its promise settles; identity
+                 of the live mount is the authority for this post-mount work. */
+              if(fdGuideSession!==guide||!document.documentElement.contains(body)||
+                  !currentItem||currentItem.f!==ref)return;
+              focusGovernanceNotice({fromHistory:!!options.fromHistory});
+              var canFocus=!contentEl.querySelector('.governance-notice.pending-high');
+              if(returning){guide.arrive(bookmark.search,false);guide.restore(bookmark,canFocus);}
+              else guide.arrive(arrivalSearch,canFocus);
+            });
+          }
+          fdGuideReturning=false;
+        }else if(!facultyPreviewRequest&&fdGuideBookmark&&fdIsTool(ref)){
+          var toolbar=contentEl.querySelector('.fd-reader__toolbar');
+          if(toolbar){
+            var returnGuide=document.createElement('button');returnGuide.type='button';
+            returnGuide.className='fd-guide-return fd-btn fd-btn--ghost';returnGuide.textContent='Return to guide';
+            returnGuide.onclick=function(){
+              if(!fdGuideBookmark)return;
+              fdGuideReturning=true;fdOpenRef(fdGuideBookmark.ref,fdGuideBookmark.search);
+            };
+            toolbar.insertBefore(returnGuide,toolbar.lastChild);
+          }
+        }
       }
       return ok;
     });
@@ -2628,6 +2676,7 @@
   }
   fdEditionStartupTeardowns.push(function(){
     if(fdController&&fdController.destroy)fdController.destroy();
+    fdDisposeGuide();
   });
   if(!fdEditionTrackListener(window,'resize',refreshTableScrollCues,false)||
      !fdEditionTrackListener(document,'click',fdFacultyPreviewDocumentClick,true)||

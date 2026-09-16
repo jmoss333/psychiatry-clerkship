@@ -542,7 +542,7 @@ try:
     _rotation_projection=_build_rotation_projection(_rotation_catalog,_rotation_governance,"ms3")
     _fd_payload=frontdoor_catalog.build_frontdoor_payload(
         "ms3", _curriculum, nav, _core_revision,
-        _rotation_projection)
+        _rotation_projection, shipped=frontdoor_catalog.load_search_universe(LIB))
     _frontdoor_destinations=(OUT+"/index.html", OUT+"/tools/rotation-curator.html")
     for _frontdoor_destination in _frontdoor_destinations:
         frontdoor_catalog.inject_frontdoor_payload(

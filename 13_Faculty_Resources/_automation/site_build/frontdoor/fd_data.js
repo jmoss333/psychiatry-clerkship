@@ -77,7 +77,11 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
 
   var byRef={};
   function ensure(ref, kind){
-    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex, rightsRefs[ref]===true);
+    if(!byRef[ref]){
+      byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex, rightsRefs[ref]===true);
+      byRef[ref].searchAliases=((cur.searchAliases||{})[ref]||[]).slice();
+      byRef[ref].searchTitle=(cur.searchTitles||{})[ref]||byRef[ref].title;
+    }
     return byRef[ref];
   }
 
@@ -118,6 +122,16 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   for(var l=0;l<weeks.length;l++){
     var landing=weeks[l].landingRef;
     if(landing&&!byRef[landing]) ensure(landing, 'read').readerOnly=true;
+  }
+
+  // Search covers shipped teaching resources independently of browse/assignment placement.
+  // Keep search-only pages out of daily recommendations, including week landing pages.
+  var searchRefs=cur.searchResources||[];
+  for(var sr=0;sr<searchRefs.length;sr++){
+    var prior=byRef[searchRefs[sr]];
+    var searchItem=ensure(searchRefs[sr], null);
+    if(!prior||prior.readerOnly) searchItem.searchOnly=true;
+    searchItem.readerOnly=false;
   }
 
   var sourcePath=cur.path||{};
@@ -200,7 +214,7 @@ function fdLibraryOnlyReads(index){
   var out=[];
   for(var ref in index.byRef){
     var it=index.byRef[ref];
-    if(it.kind==='read'&&!it.readerOnly&&!inWeek[ref]) out.push(it);
+    if(it.kind==='read'&&!it.readerOnly&&!it.searchOnly&&!inWeek[ref]) out.push(it);
   }
   out.sort(function(a,b){ return a.ref<b.ref?-1:(a.ref>b.ref?1:0); });
   return out;

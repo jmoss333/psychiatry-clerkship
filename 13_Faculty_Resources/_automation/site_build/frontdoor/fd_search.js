@@ -59,6 +59,21 @@
 
 var FD_SEARCH_PINNED = ['mse.html', 'withdrawal.html', 'pg_interview.md'];
 
+/* Discovery aliases never expand the safety haystack. Short ambiguous abbreviations must
+   be the entire query. Normalize punctuation so PHQ-9 / PHQ 9 and trailing ? work alike. */
+function fdSearchNormalize(q){
+  return String(q||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
+}
+
+function fdSearchAliasHit(item, query){
+  var q=fdSearchNormalize(query), aliases=item.searchAliases||[];
+  for(var i=0;i<aliases.length;i++){
+    var alias=fdSearchNormalize(aliases[i]);
+    if(alias&&(alias.length<=3?q===alias:(' '+q+' ').indexOf(' '+alias+' ')!==-1)) return true;
+  }
+  return false;
+}
+
 /* Words that carry no topic signal. Unguarded, "on" matched 70 of 83 items and "the" 59 --
    including as substrings inside other words -- so any multi-word query degenerated into a
    near-wildcard and the cap-at-8 dropped the intended page. The raw-query substring check in
@@ -82,12 +97,12 @@ function fdSearchContentWords(words){
 /* Higher is better. Title evidence outranks ref evidence outranks summary evidence, so an exact
    title match cannot be displaced by a page that merely mentions the phrase in prose. */
 function fdSearchScore(item, rawQuery, contentWords){
-  var title=String(item.title||'').toLowerCase();
+  var title=String(item.searchTitle||item.title||'').toLowerCase();
   var ref=String(item.ref||'').toLowerCase();
   var summary=String(item.summary||'').toLowerCase();
   var score=0,i,w;
   if(rawQuery){
-    if(title===rawQuery) score+=100;
+    if(fdSearchNormalize(title)===fdSearchNormalize(rawQuery)) score+=100;
     else if(title.indexOf(rawQuery)!==-1) score+=70;
     if(ref.indexOf(rawQuery)!==-1) score+=25;
     if(summary.indexOf(rawQuery)!==-1) score+=10;
@@ -244,11 +259,26 @@ function fdSearchResults(index, query, synonyms, state){
      fdSearchContentWords never returns empty, so an all-stopword query still surfaces the kit --
      fail-safe, and pinned by test. */
   var paddedQuery=' '+rawQuery+' ';
+  /* Retain original safety evidence. Punctuation may recover an explicit trigger or a
+     curated synonym expansion, never arbitrary new substring evidence ("min" in a title
+     must not match "thiamine", nor "Sep" in a date match "separate"). */
+  // Preserve compound names (CIWA-Ar, self-harm); splitting them creates noisy short tokens.
+  var normalizedQuery=rawQuery.replace(/[^a-z0-9' -]+/g,' ').trim().replace(/\s+/g,' ');
+  var safetyWords=[], safetySynonyms=synonyms||{}, normalizedPadded=' '+normalizedQuery+' ';
+  if(normalizedQuery!==rawQuery){
+    for(var safetyKey in safetySynonyms){
+      if(normalizedPadded.indexOf(' '+safetyKey+' ')!==-1){
+        safetyWords=safetyWords.concat(fdSearchContentWords(safetySynonyms[safetyKey].split(/\s+/)));
+      }
+    }
+  }
   var protoResults=[];
   for(var kk=0;kk<kit.length;kk++){
     var kitItem=kit[kk].item;
     if(fdSearchTriggerHit(kit[kk].triggers, paddedQuery)||
-       fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords)){
+       fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords)||
+       fdSearchTriggerHit(kit[kk].triggers, ' '+normalizedQuery+' ')||
+       fdSearchHits(fdSearchHaystack(kitItem), '', safetyWords)){
       protoResults.push({ item: kitItem, kind:'protocol', meta:'safety · protocol' });
       seenRefs[kitItem.ref]=true;
     }
@@ -264,10 +294,12 @@ function fdSearchResults(index, query, synonyms, state){
   for(var r=0;r<refs.length;r++){
     if(seenRefs[refs[r]]) continue;
     var it=idx.byRef[refs[r]];
-    if(fdSearchHits(fdSearchHaystack(it), rawQuery, contentWords)){
+    var aliasHit=fdSearchAliasHit(it, rawQuery);
+    var searchHay=fdSearchHaystack(it)+' '+String(it.searchTitle||'').toLowerCase();
+    if(aliasHit||fdSearchHits(searchHay, rawQuery, contentWords)){
       itemResults.push({
         item: it, kind:'item', meta: fdSearchItemMeta(it),
-        _score: fdSearchScore(it, rawQuery, contentWords)
+        _score: fdSearchScore(it, rawQuery, contentWords)+(aliasHit?120:0)
       });
     }
   }
@@ -297,7 +329,7 @@ function fdSearchResultRow(r){
     :(' data-fd-open="'+fdEsc(it.ref)+'"');
   return '<button type="button" class="fd-result"'+openAttrs+'>'+
     '<span class="'+dotCls+'"></span>'+
-    '<span class="fd-result__title">'+fdEsc(it.title)+'</span>'+
+    '<span class="fd-result__title">'+fdEsc(it.searchTitle||it.title)+'</span>'+
     governanceBadge(it.governance)+
     '<span class="fd-result__meta">'+fdEsc(r.meta)+'</span>'+
   '</button>';
@@ -315,7 +347,7 @@ function fdSearchOverlay(index, query, synonyms, state){
     'stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle>'+
     '<path d="M21 21l-4-4"></path></svg>';
   out+='<input type="text" class="fd-searchpanel__input" value="'+fdEsc(q)+'" '+
-    'placeholder="Symptom, drug, tool, or task…">';
+    'aria-label="Search resources" placeholder="Symptom, drug, tool, or task…">';
   out+='<button type="button" class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">esc</button>';
   out+='</div>';
   /* Results replace themselves on every keystroke with no visual transition a screen reader can
@@ -330,7 +362,11 @@ function fdSearchOverlay(index, query, synonyms, state){
   if(trimmed&&!results.length){
     out+='<div class="fd-searchpanel__empty">Nothing for “'+fdEsc(trimmed)+'” '+
       '— try a symptom, scale, or drug class.</div>';
+    out+='<button type="button" class="fd-btn" data-fd-tab="library">Browse Library</button>';
   } else {
+    if(/\bcalculator\b/i.test(q)&&!results.some(function(r){
+      return /\bcalculator\b/i.test(fdSearchHaystack(r.item));
+    })) out+='<p class="fd-searchpanel__empty">No matching calculator found. Related teaching resources:</p>';
     for(var i=0;i<results.length;i++){ out+=fdSearchResultRow(results[i]); }
   }
   out+='</div>';

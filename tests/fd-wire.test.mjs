@@ -49,6 +49,27 @@ const roleContext = {
   week: 2,
 };
 
+test('guide context never leaks into another resource or a practice iframe', () => {
+  const context = { search: '?page=source.md&guideFind=private+query&guideSection=one&case=c1' };
+  const out = F.fdDispatch({ 'data-fd-open': 'practice.html' }, context, roleContext);
+  const params = new URLSearchParams(out.route);
+  assert.equal(params.has('guideFind'), false);
+  assert.equal(params.has('guideSection'), false);
+  assert.equal(params.get('case'), 'c1');
+});
+
+test('opening a reading from search carries a bounded passage query only to that reading', () => {
+  const out = F.fdDispatch({ 'data-fd-open': 'therapy.md' }, {},
+    { ...roleContext, searchOpen: true, query: 'behavioral activation' });
+  assert.equal(new URLSearchParams(out.route).get('guideFind'), 'behavioral activation');
+  const tool = F.fdDispatch({ 'data-fd-open': 'practice.html' }, {},
+    { ...roleContext, searchOpen: true, query: 'behavioral activation' });
+  assert.equal(new URLSearchParams(tool.route).has('guideFind'), false);
+  const long = F.fdDispatch({ 'data-fd-open': 'therapy.md' }, {},
+    { ...roleContext, searchOpen: true, query: 'x'.repeat(300) });
+  assert.equal(new URLSearchParams(long.route).get('guideFind').length, 160);
+});
+
 test('URL page/tool/tab values beat persisted Front Door state', () => {
   const stored = {
     role: 'first-role', tab: 'library', openId: 'old.md', fromTab: 'today', week: 2,
