@@ -841,3 +841,388 @@ test('collapsible section toggle hides and restores a wide table', async ({ page
   await expect(viewport.locator('table')).toBeVisible();
   await expectHealthy(page);
 });
+
+// Clinical field guide: exercise the served teaching page, rather than a copied fixture. The
+// source assertions below derive their inventory from the fetched Markdown so a missing section,
+// reference, or table row cannot silently become the new expected count after a redesign.
+const GUIDE_REF = 'therapy_on_the_unit.md';
+const GUIDE_URL = `/?page=${GUIDE_REF}`;
+
+async function openClinicalGuide(page, testInfo, query = '') {
+  await seedApp(page, testInfo, { state: { tab: 'library' } });
+  await page.goto(`${GUIDE_URL}${query}`);
+  await expect(page.locator('.fd-reader--guide .fd-article__body')).toBeVisible();
+  // Mobile starts with a native contents disclosure; it remains available without preceding
+  // every passage with the expanded navigation inventory.
+  await expect(page.locator('nav[aria-label="On this page"]')).toHaveCount(1);
+  await expect(page.locator('.fd-reader .governance-notice.reviewed-receipt')).toBeVisible();
+}
+
+async function guideSourceInventory(page) {
+  const response = await requestGetWithRetry(page.request, `/content/${GUIDE_REF}`);
+  expect(response.ok()).toBe(true);
+  return page.evaluate(markdown => {
+    const template = document.createElement('template');
+    template.innerHTML = marked.parse(markdown);
+    const root = template.content;
+    const normalize = text => text.replace(/\s+/g, ' ').trim();
+    const text = element => normalize(element.textContent);
+    const crisis = root.querySelector('.crisis-block-hook')?.closest('blockquote');
+    const heading = [...root.querySelectorAll('h2')].find(el => text(el) === 'References');
+    let referenceList = heading && heading.nextElementSibling;
+    while (referenceList && referenceList.tagName !== 'OL' && referenceList.tagName !== 'H2') {
+      referenceList = referenceList.nextElementSibling;
+    }
+    return {
+      headings: [...root.querySelectorAll('h2')].map(text),
+      blocks: [...root.querySelectorAll('p, li')].map(text).filter(Boolean),
+      headers: [...root.querySelectorAll('table th')].map(text),
+      rows: [...root.querySelectorAll('table tbody tr')].map(row => (
+        [...row.querySelectorAll('td')].map(text)
+      )),
+      references: referenceList?.tagName === 'OL' ? [...referenceList.children].map(text) : [],
+      links: [...root.querySelectorAll('a[href]')].map(link => ({
+        text: text(link), href: link.getAttribute('href'),
+      })),
+      crisis: [...(crisis?.querySelectorAll('li') || [])].map(text),
+    };
+  }, await response.text());
+}
+
+async function guideRenderedInventory(page) {
+  return page.locator('.fd-article__body').evaluate(body => {
+    const root = body.cloneNode(true);
+    // Exclude enhancement-only controls and the alternative table view, never authored nodes.
+    root.querySelectorAll('.sec-chev, .sec-toolbar, .pgfb, .fd-guide-table-controls, .fd-guide-table-rows, .table-scroll-hint')
+      .forEach(el => el.remove());
+    const normalize = text => text.replace(/\s+/g, ' ').trim();
+    const text = element => normalize(element.textContent);
+    const crisis = root.querySelector('.crisis-block-hook')?.closest('blockquote');
+    const heading = [...root.querySelectorAll('h2')].find(el => text(el) === 'References');
+    let referenceList = heading?.closest('.sec-c')?.querySelector('.sec-b ol')
+      || heading?.nextElementSibling;
+    while (referenceList && referenceList.tagName !== 'OL' && referenceList.tagName !== 'H2') {
+      referenceList = referenceList.nextElementSibling;
+    }
+    return {
+      headings: [...root.querySelectorAll('h2')].map(text),
+      blocks: [...root.querySelectorAll('p, li')].map(text).filter(Boolean),
+      headers: [...root.querySelectorAll('table th')].map(text),
+      rows: [...root.querySelectorAll('table tbody tr')].map(row => (
+        [...row.querySelectorAll('td')].map(text)
+      )),
+      references: referenceList?.tagName === 'OL' ? [...referenceList.children].map(text) : [],
+      links: [...root.querySelectorAll('a[href]')].map(link => ({
+        text: text(link), href: link.getAttribute('href'),
+      })),
+      crisis: [...(crisis?.querySelectorAll('li') || [])].map(text),
+    };
+  });
+}
+
+test.describe('Clinical field guide', () => {
+  test('resource aliases and dated titles arrive honestly when no passage matches', async ({ page }, testInfo) => {
+    const resident = isResidentProject(testInfo.project.name);
+    const cases = [
+      ['ask family for collateral', 'collateral_workflow.md'],
+      [`First-Episode Psychosis [Sep 7] — ${resident ? 'Resident' : 'MS3'}?`, `cotw_20260907_fep_${resident ? 'res' : 'ms3'}.md`],
+    ];
+    await seedApp(page, testInfo);
+    for (const [query, ref] of cases) {
+      await page.goto('/');
+      await page.locator('[data-fd-search]').click();
+      await page.getByRole('textbox', { name: 'Search resources', exact: true }).fill(query);
+      const result = page.locator(`.fd-result[data-fd-open="${ref}"]`);
+      await expect(result).toHaveCount(1);
+      await result.press('Enter');
+      await expect(page.locator('.fd-reader--guide')).toBeVisible();
+      await expect(page.locator('.fd-src')).toHaveText(ref);
+      expect(new URL(page.url()).searchParams.get('guideFind')).toBe(query);
+      await expect(page.locator('.fd-guide-arrival')).toContainText('No matching passage in this guide.');
+      await expect(page.locator('.fd-guide-match')).toHaveCount(0);
+      await expect(page.locator('.fd-article__h1')).toBeVisible();
+      await expect(page.getByRole('navigation', { name: 'On this page', exact: true })).toBeVisible();
+      await expectHealthy(page);
+    }
+  });
+
+  test('global search hands a literal phrase to the guide and clears it for a practice tool', async ({ page }, testInfo) => {
+    await seedApp(page, testInfo);
+    await page.goto('/');
+    await page.locator('[data-fd-search]').click();
+    await page.getByRole('textbox', { name: 'Search resources', exact: true }).fill('change talk');
+    await page.locator('.fd-result[data-fd-open="motivational_interviewing.md"]').press('Enter');
+    await expect(page.locator('.fd-reader--guide')).toBeVisible();
+    const match = page.locator('.fd-guide-match');
+    await expect(match).toHaveCount(1);
+    await expect(match).toContainText(/change talk/i);
+    await expect(match).toBeFocused();
+    await expect(match).toBeInViewport();
+    await page.locator('.fd-reader [data-fd-open="communication-practice.html"]').first().click();
+    await expect(page.locator('.fd-article__body iframe')).toBeVisible();
+    const url = new URL(page.url());
+    expect(url.searchParams.has('guideFind')).toBe(false);
+    expect(url.searchParams.has('guideSection')).toBe(false);
+    await page.getByRole('button', { name: 'Return to guide', exact: true }).click();
+    await expect(page.locator('.fd-src')).toHaveText('motivational_interviewing.md');
+    await expect(page.getByLabel('Find in this guide', { exact: true })).toHaveValue('change talk');
+    expect(new URL(page.url()).searchParams.get('guideFind')).toBe('change talk');
+    await page.reload();
+    await expect(page.getByLabel('Find in this guide', { exact: true })).toHaveValue('change talk');
+    await expect(page.locator('.fd-guide-match')).toContainText(/change talk/i);
+    await expectHealthy(page);
+  });
+
+  test('preserves the served teaching text, headings, table, references, links, and crisis context', async ({ page }, testInfo) => {
+    await openClinicalGuide(page, testInfo);
+    const source = await guideSourceInventory(page);
+    const actual = await guideRenderedInventory(page);
+    expect(source.headings.length).toBeGreaterThan(5);
+    expect(source.rows.length).toBeGreaterThan(3);
+    expect(source.references.length).toBeGreaterThan(15);
+    expect(source.crisis.length).toBeGreaterThan(0);
+    expect(actual.headings).toEqual(source.headings);
+    expect(actual.headers).toEqual(source.headers);
+    expect(actual.rows).toEqual(source.rows);
+    expect(actual.references).toEqual(source.references);
+    expect(actual.crisis).toEqual(source.crisis);
+    for (const block of source.blocks) expect(actual.blocks).toContain(block);
+    for (const link of source.links) expect(actual.links).toContainEqual(link);
+    expect(await page.evaluate(() => {
+      const title = document.querySelector('.fd-article__h1');
+      const margin = document.querySelector('.fd-guide-margin');
+      return Boolean(title.compareDocumentPosition(margin) & Node.DOCUMENT_POSITION_FOLLOWING);
+    })).toBe(true);
+    await expect(page.locator('.fd-article__body .sec-c')).toHaveCount(0);
+    await expect(page.locator('.fd-article__body blockquote').filter({ has: page.locator('.crisis-block-hook') })).toBeVisible();
+    const navLinks = page.getByRole('navigation', { name: 'On this page', exact: true }).getByRole('link');
+    await expect(navLinks).toHaveCount(source.headings.length);
+    await expectHealthy(page);
+  });
+
+  test('arrives at a real passage from a query and finds another passage by keyboard', async ({ page }, testInfo) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openClinicalGuide(page, testInfo, '&guideFind=behavioral%20activation');
+    const arrival = page.locator('.fd-guide-match').first();
+    await expect(arrival).toBeVisible();
+    await expect(arrival).toContainText(/behavioral[\s-]+activation/i);
+    await expect(arrival).toBeInViewport();
+    await expect(arrival).toBeFocused();
+    const input = page.getByLabel('Find in this guide', { exact: true });
+    await input.fill('Listening is not disclosing');
+    await page.getByRole('button', { name: 'Find passages', exact: true }).click();
+    const result = page.locator('.fd-guide-results').locator('a, button').first();
+    await expect(result).toBeVisible();
+    await result.focus();
+    await result.press('Enter');
+    const match = page.locator('.fd-guide-match').filter({ hasText: 'Listening is not disclosing' }).first();
+    await expect(match).toBeVisible();
+    await expect(match).toBeInViewport();
+    expect(await page.evaluate(() => {
+      const active = document.activeElement;
+      return active.classList.contains('fd-guide-match')
+        || active.matches('h2[id^="guide-"]')
+        || Boolean(active.closest('.fd-guide-match'));
+    })).toBe(true);
+    expect(await page.locator('.fd-reader').evaluate(el => getComputedStyle(el).animationName)).toBe('none');
+    await expectHealthy(page);
+  });
+
+  test('a passage arrival keeps a pending high-risk review warning in focus', async ({ page }, testInfo) => {
+    // Synthetic transport fixture only: the actual attestation ledger is never edited. It
+    // exercises the focus priority even when every placed teaching page is currently reviewed.
+    // Serve the ledger immediately: fetching it inside the route callback would make warning
+    // focus depend on whether governance arrives before or after the startup focus guard opens.
+    const response = await requestGetWithRetry(page.request, '/governance.json');
+    const ledger = await response.json();
+    ledger.items[GUIDE_REF] = {
+      ...ledger.items[GUIDE_REF], status: 'pending', riskLevel: 'high',
+    };
+    await page.route('**/governance.json', route => route.fulfill({ json: ledger }));
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await page.goto(`${GUIDE_URL}&guideFind=behavioral%20activation`);
+    const warning = page.locator('.fd-article__body > .governance-notice.pending-high');
+    await expect(page.locator('.fd-reader--guide')).toBeVisible();
+    await expect(warning).toHaveCount(1);
+    await expect(warning).toContainText('Pending faculty review');
+    await expect(warning).toBeFocused();
+    await expect(warning).toBeInViewport();
+    await page.getByRole('button', { name: 'Go to matching passage', exact: true }).click();
+    await expect(page.locator('.fd-guide-match').first()).toBeInViewport();
+    await expect(warning).toHaveCount(1);
+    await expectHealthy(page);
+  });
+
+  test('section navigation has a stable URL, visible focus, and reveals a collapsed section', async ({ page }, testInfo) => {
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await page.goto('/?page=doc_oral.md');
+    const nav = page.getByRole('navigation', { name: 'On this page', exact: true });
+    await expect(nav).toBeVisible();
+    const section = page.locator('.fd-article__body .sec-c').filter({ has: page.locator('table') }).first();
+    const heading = section.locator('h2').first();
+    const id = await heading.getAttribute('id');
+    expect(id).toMatch(/^guide-.+/);
+    await section.locator('.sec-h button').click();
+    await expect(section.locator('.sec-h button')).toHaveAttribute('aria-expanded', 'false');
+    const link = nav.getByRole('link').filter({ hasText: (await heading.innerText()).replace(/^\s*▸\s*/, '') });
+    await expect(link).toHaveCount(1);
+    const href = await link.getAttribute('href');
+    expect(new URL(href, page.url()).searchParams.get('page')).toBe('doc_oral.md');
+    expect(new URL(href, page.url()).searchParams.get('guideSection')).toBe(id.slice('guide-'.length));
+    await link.focus();
+    // A scripted focus after the pointer-operated disclosure does not activate :focus-visible.
+    // Exercise actual keyboard modality before checking the user's focus indicator.
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Shift+Tab');
+    await expect(link).toBeFocused();
+    expect(await link.evaluate(el => {
+      const style = getComputedStyle(el);
+      return (style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0)
+        || style.boxShadow !== 'none';
+    })).toBe(true);
+    await link.press('Enter');
+    await expect(section.locator('.sec-h button')).toHaveAttribute('aria-expanded', 'true');
+    await expect(section.locator('table')).toBeVisible();
+    await expect(heading).toBeFocused();
+    await expect(heading).toBeInViewport();
+    await expect(link).toHaveAttribute('aria-current', 'location');
+    expect(new URL(page.url()).searchParams.get('guideSection')).toBe(id.slice('guide-'.length));
+    const passageRoute = page.url();
+    const tableViewport = section.locator('.table-scroll-viewport').first();
+    await tableViewport.focus();
+    await tableViewport.press('ArrowRight');
+    expect(page.url()).toBe(passageRoute);
+    await page.reload();
+    await expect(page.locator(`#${id}`)).toBeInViewport();
+    await expectHealthy(page);
+  });
+
+  test('opens a real practice tool and restores guide focus and position through explicit return and browser Back', async ({ page }, testInfo) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openClinicalGuide(page, testInfo, '&guideFind=Listening%20is%20not%20disclosing');
+    const launcher = page.locator('.fd-reader [data-fd-open$=".html"]').first();
+    await expect(launcher).toBeVisible();
+    const ref = await launcher.getAttribute('data-fd-open');
+    expect(ref).toMatch(/\.html$/);
+    await launcher.focus();
+    const before = await page.evaluate(() => ({
+      y: scrollY, progress: localStorage.getItem('cw_progress_v1'),
+    }));
+    await launcher.press('Enter');
+    const frame = page.locator('.fd-article__body iframe');
+    await expect(frame).toBeVisible();
+    const src = new URL(await frame.getAttribute('src'), page.url());
+    expect(src.pathname).toBe(`/tools/${ref}`);
+    expect(src.searchParams.has('guideFind')).toBe(false);
+    expect(src.searchParams.has('guideSection')).toBe(false);
+    await expect(page.frameLocator('.fd-article__body iframe').locator('body')).not.toBeEmpty();
+    await page.getByRole('button', { name: 'Return to guide', exact: true }).click();
+    await expect(page.locator('.fd-reader--guide')).toBeVisible();
+    const restored = page.locator(`.fd-reader [data-fd-open="${ref}"]`).first();
+    await expect(restored).toBeFocused();
+    await expect.poll(() => page.evaluate(() => scrollY)).toBeCloseTo(before.y, -1);
+    expect(await page.evaluate(() => localStorage.getItem('cw_progress_v1'))).toBe(before.progress);
+    await restored.press('Enter');
+    await expect(page.locator('.fd-article__body iframe')).toBeVisible();
+    await page.goBack();
+    await expect(page.locator('.fd-reader--guide')).toBeVisible();
+    await expect(page.locator(`.fd-reader [data-fd-open="${ref}"]`).first()).toBeFocused();
+    await expect.poll(() => page.evaluate(() => scrollY)).toBeCloseTo(before.y, -1);
+    expect(await page.evaluate(() => localStorage.getItem('cw_progress_v1'))).toBe(before.progress);
+    await expectHealthy(page);
+  });
+
+  for (const theme of ['light', 'dark']) {
+    test(`320px ${theme} table retains every source cell in comparison and row reading modes`, async ({ page }, testInfo) => {
+      await page.setViewportSize({ width: 320, height: 844 });
+      await seedApp(page, testInfo, { state: { tab: 'library' }, storage: { cw_theme: theme } });
+      await page.goto(GUIDE_URL);
+      await expect(page.locator('.fd-reader--guide')).toBeVisible();
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+      const contents = page.locator('.fd-guide-contents');
+      await contents.locator(':scope > summary').click();
+      await expect(contents).toHaveJSProperty('open', true);
+      await page.setViewportSize({ width: 320, height: 700 });
+      await expect(contents).toHaveJSProperty('open', true);
+      await contents.locator(':scope > summary').click();
+      const source = await guideSourceInventory(page);
+      const controls = page.locator('.fd-guide-table-controls').first();
+      const compare = controls.getByRole('button', { name: 'Compare columns', exact: true });
+      const byRow = controls.getByRole('button', { name: 'Read by row', exact: true });
+      await compare.click();
+      await expect(compare).toHaveAttribute('aria-pressed', 'true');
+      await expect(byRow).toHaveAttribute('aria-pressed', 'false');
+      const viewport = page.locator('.fd-article__body .table-scroll-viewport').first();
+      await expect(viewport).toBeVisible();
+      await expect(viewport).toHaveAttribute('role', 'region');
+      await expect(viewport).toHaveAttribute('tabindex', '0');
+      expect(await viewport.getAttribute('aria-label')).toBeTruthy();
+      await viewport.focus();
+      await expect(viewport).toBeFocused();
+      const scrollable = await viewport.evaluate(el => ({ width: el.clientWidth, full: el.scrollWidth }));
+      expect(scrollable.full).toBeGreaterThan(scrollable.width);
+      const tableRoute = page.url();
+      await viewport.press('ArrowRight');
+      await expect.poll(() => viewport.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);
+      expect(page.url()).toBe(tableRoute);
+      await byRow.click();
+      await expect(byRow).toHaveAttribute('aria-pressed', 'true');
+      await expect(compare).toHaveAttribute('aria-pressed', 'false');
+      const rowView = page.locator('.fd-guide-table-rows').first();
+      await expect(rowView).toBeVisible();
+      await expect(viewport).toBeHidden();
+      await expect(page.locator('.fd-article__body .table-scroll').first()).not.toHaveClass(/is-scrollable/);
+      const cards = rowView.locator('dl');
+      await expect(cards).toHaveCount(source.rows.length);
+      for (let index = 0; index < source.rows.length; index += 1) {
+        const content = (await cards.nth(index).textContent()).replace(/\s+/g, ' ').trim();
+        for (const cell of source.rows[index]) expect(content).toContain(cell);
+        for (const header of source.headers) expect(content).toContain(header);
+      }
+      const geometry = await page.evaluate(() => ({
+        width: document.documentElement.clientWidth,
+        scroll: document.documentElement.scrollWidth,
+        font: parseFloat(getComputedStyle(document.querySelector('.fd-article__body p')).fontSize),
+      }));
+      expect(geometry.scroll).toBeLessThanOrEqual(geometry.width);
+      expect(geometry.font).toBeGreaterThanOrEqual(16);
+      await compare.click();
+      await expect(viewport).toBeVisible();
+      await expect(rowView).toBeHidden();
+      await expectHealthy(page);
+    });
+  }
+
+  test('print reveals the complete guide and safety context while hiding interactive chrome', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await openClinicalGuide(page, testInfo);
+    await page.locator('.fd-guide-contents > summary').click();
+    await expect(page.getByRole('navigation', { name: 'On this page', exact: true })).toBeVisible();
+    await page.locator('.fd-guide-table-controls').first().getByRole('button', { name: 'Read by row', exact: true }).click();
+    const source = await guideSourceInventory(page);
+    await page.emulateMedia({ media: 'print' });
+    await expect(page.getByRole('navigation', { name: 'On this page', exact: true })).toBeHidden();
+    await expect(page.getByLabel('Find in this guide', { exact: true })).toBeHidden();
+    await expect(page.locator('.fd-actionbar')).toBeHidden();
+    await expect(page.locator('#fdCaptureMount')).toBeHidden();
+    await expect(page.locator('.fd-guide-table-controls')).toBeHidden();
+    await expect(page.locator('.fd-guide-table-rows')).toBeHidden();
+    await expect(page.locator('.fd-article__body .table-scroll-viewport')).toBeVisible();
+    await expect(page.locator('.fd-reader .governance-notice.reviewed-receipt')).toBeVisible();
+    await expect(page.locator('.fd-article__body blockquote').filter({ has: page.locator('.crisis-block-hook') })).toBeVisible();
+    const printed = await page.locator('.fd-article__body').innerText();
+    for (const heading of source.headings) expect(printed).toContain(heading);
+    for (const reference of source.references) expect(printed.replace(/\s+/g, ' ')).toContain(reference);
+    for (const row of source.rows) for (const cell of row) expect(printed.replace(/\s+/g, ' ')).toContain(cell);
+    await page.emulateMedia({ media: 'screen' });
+    await page.goto('/?page=doc_oral.md');
+    const sections = page.locator('.fd-article__body .sec-c');
+    expect(await sections.count()).toBeGreaterThan(3);
+    await page.locator('.sec-toolbar').getByRole('button', { name: 'Collapse all', exact: true }).click();
+    await expect(sections.first().locator('.sec-b')).toBeHidden();
+    await page.emulateMedia({ media: 'print' });
+    for (const body of await sections.locator('.sec-b').all()) await expect(body).toBeVisible();
+    await expect(page.locator('.sec-toolbar')).toBeHidden();
+    await expectHealthy(page);
+  });
+});
