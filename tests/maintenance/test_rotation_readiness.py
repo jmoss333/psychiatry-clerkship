@@ -149,6 +149,72 @@ class RotationReadinessTests(unittest.TestCase):
                 self.assertEqual(passport["daysUntilStart"], expected_days)
                 self.assertEqual(rotation_exit_code(passport), expected_exit)
 
+    def test_successor_at_seven_days_supersedes_active_block_as_due(self):
+        passport = evaluate_rotation(
+            [
+                {
+                    "id": "rot-2026-hx-a1b2c3d4e5f60718",
+                    "startsOn": "2026-06-29",
+                    "endsOn": "2026-08-09",
+                    "status": "active",
+                },
+                {
+                    "id": "rot-2026-hx-b2c3d4e5f6071829",
+                    "startsOn": "2026-08-10",
+                    "endsOn": "2026-09-20",
+                    "status": "planned",
+                },
+            ],
+            today=date(2026, 8, 3),
+        )
+        self.assertEqual(passport["state"], "due")
+        self.assertEqual(passport["blockId"], "rot-2026-hx-b2c3d4e5f6071829")
+        self.assertEqual(rotation_exit_code(passport), 10)
+
+    def test_successor_at_six_days_supersedes_active_block_as_overdue(self):
+        passport = evaluate_rotation(
+            [
+                {
+                    "id": "rot-2026-hx-a1b2c3d4e5f60718",
+                    "startsOn": "2026-06-29",
+                    "endsOn": "2026-08-09",
+                    "status": "active",
+                },
+                {
+                    "id": "rot-2026-hx-b2c3d4e5f6071829",
+                    "startsOn": "2026-08-10",
+                    "endsOn": "2026-09-20",
+                    "status": "planned",
+                },
+            ],
+            today=date(2026, 8, 4),
+        )
+        self.assertEqual(passport["state"], "overdue")
+        self.assertEqual(passport["blockId"], "rot-2026-hx-b2c3d4e5f6071829")
+        self.assertEqual(rotation_exit_code(passport), 10)
+
+    def test_successor_at_eight_days_keeps_active_block_selected(self):
+        passport = evaluate_rotation(
+            [
+                {
+                    "id": "rot-2026-hx-a1b2c3d4e5f60718",
+                    "startsOn": "2026-06-29",
+                    "endsOn": "2026-08-09",
+                    "status": "active",
+                },
+                {
+                    "id": "rot-2026-hx-b2c3d4e5f6071829",
+                    "startsOn": "2026-08-10",
+                    "endsOn": "2026-09-20",
+                    "status": "planned",
+                },
+            ],
+            today=date(2026, 8, 2),
+        )
+        self.assertEqual(passport["state"], "active")
+        self.assertEqual(passport["blockId"], "rot-2026-hx-a1b2c3d4e5f60718")
+        self.assertEqual(rotation_exit_code(passport), 0)
+
     def test_manual_checklist_is_exact_and_markdown_disclaims_automation(self):
         self.assertEqual(
             list(MANUAL_CHECKLIST),

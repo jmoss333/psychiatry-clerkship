@@ -151,11 +151,13 @@ def evaluate_rotation(blocks, today):
     if not ordered:
         return _passport("configuration_required", None, today)
 
+    active = None
     for block in ordered:
         starts = _parse_date(block["startsOn"], "startsOn")
         ends = _parse_date(block["endsOn"], "endsOn")
         if block["status"] != "completed" and starts <= today <= ends:
-            return _passport("active", block, today)
+            active = block
+            break
 
     future = [
         block
@@ -166,6 +168,8 @@ def evaluate_rotation(blocks, today):
     if future:
         block = future[0]
         days_until_start = (date.fromisoformat(block["startsOn"]) - today).days
+        if active is not None and days_until_start > 7:
+            return _passport("active", active, today)
         if days_until_start > 7:
             state = "not_due"
         elif days_until_start == 7:
@@ -173,6 +177,9 @@ def evaluate_rotation(blocks, today):
         else:
             state = "overdue"
         return _passport(state, block, today)
+
+    if active is not None:
+        return _passport("active", active, today)
 
     return _passport("complete", ordered[-1], today)
 
