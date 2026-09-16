@@ -1613,3 +1613,53 @@ test('One Thing First B4: a block past its TTL is pruned; the planner returns an
   expect(await page.evaluate(() => localStorage.getItem('cw_block_v1'))).toBeNull();
   await expectHealthy(page);
 });
+
+// ---- One Thing First Phase 3 (F4): a guest deep link ------------------------------------------
+//
+// A fresh browser that follows a link to one page reads it without the wizard and is assigned no
+// role (C1); a resource opened from the guest's Today pushes exactly one history entry and Back
+// restores the same primary (C4); the next plain visit asks "Who's this for?" (C2); and the wizard
+// from that state still lands on Today, not on the page read as a guest (C3).
+test('One Thing First C1–C4: a guest reads one linked page, keeps no role, and meets the wizard on the next plain visit', async ({ page }, testInfo) => {
+  const site = audience(testInfo);
+  await freezeTime(page);
+  // C1 — the guest read
+  await page.goto('/?page=pg_suicide.md');
+  await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+  await expect(page.getByRole('heading', { name: "Who's this for?" })).toHaveCount(0);
+  await expect(page.locator('.fd-header')).not.toContainText(/undefined/);
+  await page.locator('[data-fd-settings]').click();
+  const chips = page.locator('.fd-choices__btn[data-fd-role]');
+  await expect(chips.first()).toBeVisible();
+  const pressed = await chips.evaluateAll((els) => els.map((el) => el.getAttribute('aria-pressed')));
+  expect(pressed.length).toBeGreaterThan(0);
+  expect(pressed.every((v) => v === 'false')).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.fd-sheet')).toHaveCount(0);
+  await page.locator('.fd-reader__back').click();
+  await otfExpectOnePrimary(page);
+  await expect(page.locator('.fd-setupcta')).toHaveCount(1);
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}'));
+  expect(Object.prototype.hasOwnProperty.call(stored, 'role')).toBe(false);
+  // C4 — one history entry per navigation, same primary on Back
+  const historyBefore = await page.evaluate(() => history.length);
+  await page.locator('.fd-rail .fd-quicktool').first().click();
+  await expect(page).toHaveURL(/tool=/);
+  expect(await page.evaluate(() => history.length)).toBe(historyBefore + 1);
+  await page.goBack();
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator('.fd-setupcta')).toHaveCount(1);
+  expect(Object.prototype.hasOwnProperty.call(
+    await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}')), 'role')).toBe(false);
+  // C2 — the next plain visit asks
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: "Who's this for?" })).toBeVisible();
+  // C3 — the wizard from that state lands on Today, not on the page read as a guest
+  await page.locator(`[data-fd-role="${site.role}"]`).click();
+  await expect(page.getByRole('heading', { name: 'Where in the rotation?' })).toBeVisible();
+  await page.locator('[data-fd-week="1"]').click();
+  await expect(page.locator('.fd-today')).toBeVisible();
+  expect(new URL(page.url()).searchParams.get('page')).toBeNull();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}').role)).toBe(site.role);
+  await expectHealthy(page);
+});
