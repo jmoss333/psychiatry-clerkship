@@ -238,6 +238,85 @@ test('command-K and slash search restore focus on dismissal and open results dir
   await expectHealthy(page);
 });
 
+test('learner-language search finds tasks, safety abbreviations and complete resource names', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await page.locator('[data-fd-search]').click();
+  const input = page.getByRole('textbox', { name: 'Search resources', exact: true });
+  for (const [query, ref] of [
+    ['prepare for rounds', 'oral.html'], ['ask family for collateral', 'collateral_workflow.md'],
+    ['practice a difficult conversation', 'communication-practice.html'],
+    ['hearing voices', 't_psychosis.md'], ['PHQ9', 'screeners.html'], ['SI?', 'pg_suicide.md'],
+  ]) {
+    await input.fill(query);
+    const refs = await page.locator('.fd-result').evaluateAll(rows => rows.map(row =>
+      row.getAttribute('data-fd-open') || row.getAttribute('data-fd-safety')));
+    expect(refs.slice(0, 3)).toContain(ref);
+    expect(new Set(refs).size).toBe(refs.length);
+  }
+  await input.fill('BFCRS');
+  await expect(page.getByRole('button', {
+    name: /Bush-Francis Catatonia Scale \(BFCRS\) — Official Form & Training.*reference · not reproduced/,
+  })).toBeVisible();
+  await page.setViewportSize({ width: 320, height: 844 });
+  const title = page.locator('.fd-result__title').first();
+  await expect(title).toHaveCSS('white-space', 'normal');
+  expect(await title.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  expect(await title.evaluate(el => el.clientWidth)).toBeGreaterThan(150);
+  await input.fill('zzzzqqq');
+  await expect(page.locator('.fd-searchpanel__body')).toHaveAttribute('aria-label', '0 results');
+  await page.getByRole('button', {name:'Browse Library', exact:true}).click();
+  await expect(page.locator('.fd-library')).toBeVisible();
+  await expect(page.locator('.fd-search')).toHaveCount(0);
+  await expectHealthy(page);
+});
+
+test('Enter on a punctuated exact resource name opens that resource, not a spurious safety panel', async ({ page }, testInfo) => {
+  const resident = isResidentProject(testInfo.project.name);
+  const cases = [
+    ['One Patient, Six Weeks', 'one-patient-six-weeks.html'],
+    [`First-Episode Psychosis (Sep 7) — ${resident ? 'Resident' : 'MS3'}`, `cotw_20260907_fep_${resident ? 'res' : 'ms3'}.md`],
+    ...(resident ? [['Post-Event Learning Huddle (2 min)', 'rp-post-event-huddle.html']] : []),
+  ];
+  await seedApp(page, testInfo);
+  for (const [query, ref] of cases) {
+    await page.goto('/');
+    await page.locator('[data-fd-search]').click();
+    const input = page.getByRole('textbox', { name:'Search resources', exact:true });
+    await input.fill(query);
+    await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-open', ref);
+    await input.press('Enter');
+    await expect(page.locator('.fd-search')).toHaveCount(0);
+    await expect(page.locator('.fd-sheet')).toHaveCount(0);
+    await expect(page.locator('.fd-src')).toHaveText(ref);
+    expect(new URL(page.url()).searchParams.get(ref.endsWith('.html') ? 'tool' : 'page')).toBe(ref);
+    await expectHealthy(page);
+  }
+});
+
+test('dated title variants retain safety priority and open the first ordinary resource', async ({ page }, testInfo) => {
+  const resident = isResidentProject(testInfo.project.name);
+  const query = `Catatonia [Aug 31] — ${resident ? 'Resident' : 'MS3'}?`;
+  const ref = `cotw_20260831_catatonia_${resident ? 'res' : 'ms3'}.md`;
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await page.locator('[data-fd-search]').click();
+  const input = page.getByRole('textbox', { name:'Search resources', exact:true });
+  await input.fill(query);
+  await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'exp_consult.md');
+  await expect(page.locator('.fd-result[data-fd-open]').first()).toHaveAttribute('data-fd-open', ref);
+  await input.press('Enter');
+  await expect(page.locator('.fd-search')).toHaveCount(0);
+  await expect(page.locator('.fd-sheet')).toBeVisible();
+  await page.locator('.fd-sheet__close').click();
+  await page.locator('[data-fd-search]').click();
+  await input.fill(query);
+  await page.locator('.fd-result[data-fd-open]').first().click();
+  await expect(page.locator('.fd-src')).toHaveText(ref);
+  expect(new URL(page.url()).searchParams.get('page')).toBe(ref);
+  await expectHealthy(page);
+});
+
 test('Safety Kit, theme, and Progress remain usable and restore their invokers', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/');

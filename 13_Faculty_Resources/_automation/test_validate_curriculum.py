@@ -25,6 +25,7 @@ pages (welcome_compass.prepare_cards requires every MS3 week's landingRef to be 
 shipped MS3 Markdown page). Drop either and every "accepts" test turns red.
 """
 import json
+import copy
 import os
 import subprocess
 import sys
@@ -210,7 +211,7 @@ def _curriculum(items):
             {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
             {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
         ],
-        "libraryExclude": (
+        "libraryExclude": copy.deepcopy(
             list(EXTRA_EXCLUDES) + list(FIXTURE_SAFETY_EXCLUDES)
             + list(FIXTURE_RIGHTS_EXCLUDES) + list(FIXTURE_WEEK_EXCLUDES)
         ),
@@ -232,6 +233,20 @@ def _curriculum(items):
 
 
 class ValidateCurriculumTest(unittest.TestCase):
+    def test_search_aliases_reject_unknown_refs_empty_values_and_duplicate_vocabulary(self):
+        for aliases in ({"ghost.md": ["ghost"]}, {"mse.html": []},
+                        {"mse.html": ["mse", "mse"]}, {"mse.html": [" MSE "]}):
+            with self.subTest(aliases=aliases), tempfile.TemporaryDirectory() as tmp:
+                curriculum = _curriculum([])
+                c, root = _write(tmp, curriculum)
+                baseline = _run(c, root)
+                self.assertEqual(baseline.returncode, 0, baseline.stdout + baseline.stderr)
+                curriculum["searchAliases"] = aliases
+                c, root = _write(tmp, curriculum)
+                result = _run(c, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("searchAliases", result.stdout)
+
     def test_accepts_six_shipped_ms3_landing_refs_without_resident_landing_refs(self):
         with tempfile.TemporaryDirectory() as tmp:
             c, root = _write(tmp, _curriculum([]))

@@ -220,7 +220,7 @@ function fdQuickTools(index, weekItems){
   if(out.length<5){
     var all=[];
     for(ref in index.byRef){
-      if(index.byRef[ref].kind==='tool'&&!index.byRef[ref].rights) all.push(index.byRef[ref]);
+      if(index.byRef[ref].kind==='tool'&&!index.byRef[ref].rights&&!index.byRef[ref].searchOnly) all.push(index.byRef[ref]);
     }
     all.sort(function(a,b){ return a.ref<b.ref?-1:(a.ref>b.ref?1:0); });
     for(i=0;i<all.length&&out.length<5;i++){

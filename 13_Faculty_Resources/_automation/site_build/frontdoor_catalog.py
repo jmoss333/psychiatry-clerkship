@@ -2,6 +2,7 @@
 import copy
 import json
 import re
+from shipped_pages import load_shipped_pages as load_search_universe
 
 
 DATA_DEFAULTS = {
@@ -64,7 +65,7 @@ def _catalog_entries(catalog):
     return entries
 
 
-def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projection=None):
+def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projection=None, shipped=None):
     """Return a normalized Front Door projection after a site's nav is final.
 
     curriculum.json owns only placement.  The final site navigation owns every
@@ -194,6 +195,31 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
     manifest = {"tools": [], "md": []}
     manifest_refs = placed + [ref for ref in path_refs if ref not in placed]
     manifest_refs += [ref for ref in landing_refs if ref not in manifest_refs]
+
+    if shipped is not None:
+        # Search is independent of assignments and Library placement. Read the generated
+        # shipped universe, never reconstruct it from a subset of its producers.
+        build_site = "res" if site == "resident" else site
+        pages = {page["slug"]: page for page in shipped["pages"] if build_site in page["sites"]}
+        all_refs = {page["slug"] for page in shipped["pages"]}
+        excluded_search = set()
+        for entry in projected.get("searchExclude", []):
+            ref = entry.get("ref")
+            if (ref not in all_refs or ref in excluded_search or
+                    not isinstance(entry.get("reason"), str) or not entry["reason"].strip()):
+                raise ValueError("invalid searchExclude entry: %r" % entry)
+            if ref in placed or ref in path_refs:
+                raise ValueError("searchExclude cannot hide a placed resource: %s" % ref)
+            excluded_search.add(ref)
+        search_refs = sorted(set(pages) - excluded_search)
+        for ref in search_refs:
+            if ref not in catalog_entries:
+                raise ValueError("shipped search resource has no final catalog entry: %s" % ref)
+        projected["searchResources"] = search_refs
+        projected["searchTitles"] = {ref: pages[ref]["title"] for ref in search_refs}
+        projected["searchAliases"] = {ref: aliases for ref, aliases in
+                                      projected.get("searchAliases", {}).items() if ref in search_refs}
+        manifest_refs += [ref for ref in search_refs if ref not in manifest_refs]
     for ref in manifest_refs:
         title, kind, governance = catalog_entries[ref]
         manifest["tools" if kind == "tool" else "md"].append(["", ref, title, governance])
@@ -212,11 +238,11 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
 
 
 def reachable_refs(payload):
-    """Refs for browsing/search; unplaced week landings have reader metadata only.
+    """Browsing refs used by the separate full-text index's hidden-page policy.
 
-    All manifest entries resolve against final site navigation. Landing destinations
-    gain reader identity without becoming Library/search recommendations unless the
-    curriculum also places them in a Library column or a week's assigned items.
+    All manifest entries resolve against final site navigation.
+    The command search has its own complete searchResources inventory. Adding a
+    searchable week summary must not silently expand this older scorer's corpus.
     """
     manifest = payload.get("manifest") or {}
     refs = set()
@@ -225,6 +251,10 @@ def reachable_refs(payload):
             if isinstance(row, list) and len(row) > 1 and isinstance(row[1], str):
                 refs.add(row[1])
     curriculum = payload.get("curriculum") or {}
+    if "searchResources" in curriculum:
+        placed = {ref for column in curriculum.get("libraryColumns", []) for ref in column["refs"]}
+        placed.update(item["ref"] for week in curriculum.get("weeks", []) for item in week.get("items", []))
+        return refs & placed
     weeks = curriculum.get("weeks") or []
     landings = {week.get("landingRef") for week in weeks}
     placed = {ref for column in curriculum.get("libraryColumns", []) for ref in column["refs"]}

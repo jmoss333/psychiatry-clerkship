@@ -674,8 +674,15 @@
 .fd-result__dot{width:8px;height:8px;border-radius:var(--fd-radius-circle);flex:0 0 auto;background:var(--fd-olive)}
 .fd-result__dot.is-tool{background:var(--fd-teal)}
 .fd-result__dot.is-safety{background:var(--fd-danger)}
-.fd-result__title{flex:1;min-width:0;font-size:var(--fd-font-md);font-weight:600;color:var(--fd-text);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.fd-result__title{flex:1;min-width:0;font-size:var(--fd-font-md);font-weight:600;color:var(--fd-text);white-space:normal;overflow-wrap:anywhere}
 .fd-result__meta{font-size:var(--fd-font-xs);color:var(--fd-text-dim);white-space:nowrap}
+/* Long instrument names need the row width on phones; put status below the name. */
+@media (max-width:640px){
+  .fd-result{display:grid;grid-template-columns:8px minmax(0,1fr);row-gap:6px}
+  .fd-result__dot{grid-column:1;grid-row:1}
+  .fd-result__title,.fd-result__meta,.fd-result .governance-badge{grid-column:2}
+  .fd-result__meta,.fd-result .governance-badge{white-space:normal;max-width:100%;justify-self:start}
+}
 
 /* ═══ Side sheet + nudge ═════════════════════════════════════════════════════ */
 
