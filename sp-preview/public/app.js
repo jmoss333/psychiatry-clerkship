@@ -9,7 +9,7 @@
   function cancelled(){return issue('cancelled');}
   function normalized(text){return String(text||'').replace(/\s+/g,' ').trim();}
   var ROOM_BED_GAIN=0.035,ROOM_BED_PHASES=['ready','connecting','listening','responding','speaking'];
-  var ROOM_CUES={door_knock:'A brief knock at the closed door. No one enters.',hallway_chime:'A short chime sounds in the hallway and stops.'};
+  var ROOM_CUES={door_knock:'A brief knock at the closed door. No one enters.',hallway_chime:'A short chime sounds in the hallway and stops.',door_tap:'Two quick taps at the closed door, then footsteps move away down the hallway. The door stays closed.',overhead_page:'An overhead page sounds in the hallway and stops. The words do not carry into the room.'};
   var FAMILY_CASE_ID='family_morgan_maya_001',FAMILY_NAMES={morgan:'Morgan',maya:'Maya'};
   function addressedFamilyRole(text){
     // Only a direct address at the beginning changes the addressee. Mentioning
@@ -544,7 +544,9 @@
     var micOn=phase==='listening',mic=micOn?'Your microphone · listening'+(snapshot.hold?' — turn held':''):phase==='connecting'?'Connecting microphone…':phase==='speaking'||phase==='responding'?(snapshot.spokenInterrupt?'Your microphone · available to interrupt':'Your microphone · waiting'):ended?'Microphone off':'Microphone paused';
     var caption={kind:'quiet',label:'Paused',text:'Microphone off. Resume the microphone or type when ready.'};
     var yours=(snapshot.draft+' '+snapshot.interim).trim();
-    if(ended)caption={kind:'quiet',label:'Ended',text:profile&&profile.cues?profile.cues.closing:'The conversation has ended.'};
+    // No authored closing cue means the caption carries the state label and nothing else.
+    // Inventing a sentence here would be the same filler the station guard rejects.
+    if(ended)caption={kind:'quiet',label:'Ended',text:(profile&&profile.cues&&profile.cues.closing)||''};
     else if(phase==='speaking'&&last)caption={kind:'speech',label:name(activeId),text:last.text};
     else if(phase==='responding')caption={kind:'preparing',label:name(activeId),text:'Preparing a reply…'};
     else if(cue)caption={kind:'cue',label:'Faculty cue',text:cue.text};
@@ -553,7 +555,10 @@
     else if(phase==='ready')caption={kind:'quiet',label:'Your turn',text:'Type your question below.'};
     else if(interruptedId&&last)caption={kind:'interrupted',label:name(interruptedId)+' · interrupted',text:'The remaining words did not finish playing. Only completed audio is remembered as heard.'};
     var cues=profile&&profile.cues||{};
-    var observation=ended?cues.closing:interruptedId?cues.interrupted:cues.opening;
+    // The turn-5/turn-8 rule lives once, in station-content.js; the room borrows it.
+    var observation=ui.content&&ui.content.observationCue
+      ?ui.content.observationCue(profile,{phase:phase,interrupted:!!interruptedId,turn:snapshot.turn})
+      :(ended?cues.closing:interruptedId?cues.interrupted:cues.opening);
     // Coach open: the room is held. Figures still, rings off, and the caption says plainly that
     // the people in the room cannot hear the aside — the coach is beside the learner, not across the table.
     if(ui.coachOpen&&!ended){
@@ -632,7 +637,9 @@
     var mic=doc.getElementById('room-mic');if(mic)mic.setAttribute('data-mic',view.micOn?'on':'off');set('room-mic-text',view.mic);
     var caption=doc.getElementById('room-caption');if(caption)caption.setAttribute('data-kind',view.caption.kind);
     set('room-caption-label',view.caption.label);set('room-caption-text',view.caption.text);
-    set('room-observation',view.observation);set('room-alt',view.alt);
+    set('room-observation',view.observation);
+    var note=doc.getElementById('room-note');if(note)note.hidden=!view.observation;
+    set('room-alt',view.alt);
   }
 
   function mount(env){
@@ -711,7 +718,7 @@
       el('status').textContent=statusLine(snapshot.phase,respondent);if(snapshot.phase==='speaking'&&snapshot.spokenInterrupt&&snapshot.turn<snapshot.maxTurns)el('status').textContent=respondent+' is speaking · microphone available';if(snapshot.mode==='moment'&&snapshot.captureTarget!=='patient')el('status').textContent=(snapshot.captureTarget==='team_formulation'?'Recording team formulation — patient conversation ended':'Recording one alternative response')+' · '+(snapshot.phase==='listening'?'Listening':'Microphone paused');
       if(el('family-speaker-controls')){el('family-speaker-controls').hidden=!active||!family;el('family-speaker-choice').disabled=!canSend;el('family-speaker-choice').value=snapshot.targetRoleId;}
       el('family-bid-offer').hidden=!family||!snapshot.familyBid||!canSend;el('family-bid-name').textContent=snapshot.familyBid?FAMILY_NAMES[snapshot.familyBid.speakerId]+' asked to add something.':'';
-      el('faculty-room-controls').hidden=!active||snapshot.mode!=='full';el('cue-knock').disabled=el('cue-chime').disabled=!!snapshot.roomCue||snapshot.phase==='ended'||snapshot.restartRequired||snapshot.turn>=snapshot.maxTurns;el('room-cue-notice').hidden=!snapshot.roomCue;el('room-cue-notice').textContent=snapshot.roomCue?'Faculty cue: '+snapshot.roomCue.text+(snapshot.roomCue.unfinishedText?' Unfinished words: “'+snapshot.roomCue.unfinishedText+'”. These were not sent; repeat or copy them when ready.':'')+' Resume the microphone or type when ready.':'';
+      el('faculty-room-controls').hidden=!active||snapshot.mode!=='full';el('cue-knock').disabled=el('cue-chime').disabled=el('cue-tap').disabled=el('cue-page').disabled=!!snapshot.roomCue||snapshot.phase==='ended'||snapshot.restartRequired||snapshot.turn>=snapshot.maxTurns;el('room-cue-notice').hidden=!snapshot.roomCue;el('room-cue-notice').textContent=snapshot.roomCue?'Faculty cue: '+snapshot.roomCue.text+(snapshot.roomCue.unfinishedText?' Unfinished words: “'+snapshot.roomCue.unfinishedText+'”. These were not sent; repeat or copy them when ready.':'')+' Resume the microphone or type when ready.':'';
       if(family){el('patient-name').textContent='Morgan and Maya';el('interrupt-label').textContent='Interrupt '+respondent;}
       if(snapshot.phase==='listening'&&snapshot.hold)el('status').textContent='Listening — your turn is held';
       el('hint').textContent=snapshot.restartRequired?'The last request has an uncertain outcome. Clear and restart to continue.':snapshot.phase==='speaking'||snapshot.phase==='responding'?(snapshot.phase==='speaking'&&snapshot.spokenInterrupt&&snapshot.turn<snapshot.maxTurns?'Speak to take the floor. A brief acknowledgment lets the patient continue. Interrupt or Escape also stops the voice.':'Interrupt or press Escape to stop the voice. Then resume the microphone or type to continue.'):snapshot.phase==='ended'?'Bring what you learned and what remains uncertain to your supervisor.':snapshot.hold?'Your turn is held. Keep speaking or thinking, then choose Done speaking when ready.':snapshot.phase==='listening'?'Just speak. Your question sends itself once you stop — no click needed. Space sends it sooner.':'Take your time. You can speak, pause, or type.';
@@ -730,7 +737,7 @@
       el('coach-open').setAttribute('aria-pressed',String(coachOpen));
       el('coach-panel').hidden=!coachOpen;
       if(coachOpen)renderCoach(doc,coachView(snapshot,roomProfile),coachChoice);
-      el('room-view').hidden=!active||snapshot.mode!=='full';if(active&&snapshot.mode==='full')renderRoom(doc,roomView(snapshot,roomProfile,{coachOpen:coachOpen}));
+      el('room-view').hidden=!active||snapshot.mode!=='full';if(active&&snapshot.mode==='full')renderRoom(doc,roomView(snapshot,roomProfile,{coachOpen:coachOpen,content:env.DanaStationContent}));
       if(coachOpen)el('status').textContent='Paused — coach open, microphone off';
       el('room-bed').hidden=!snapshot.roomSound||!active||snapshot.mode!=='full';
       if(el('room-sound').checked!==!!snapshot.roomSound)el('room-sound').checked=!!snapshot.roomSound;
@@ -741,7 +748,7 @@
       lastPhase=snapshot.phase;
     }
     el('access-form').addEventListener('submit',function(event){event.preventDefault();var passcode=el('preview-key').value;el('preview-key').value='';var chosen=el('case-choice').value;var profile=selectedProfile();if(profile){patientName=profile.displayName;applyIdentity(doc,profile);}roomProfile=momentProfile(chosen)?null:profile;mountStation(chosen);controller.start(passcode,el('voice-mode').checked,chosen,{spokenInterrupt:el('spoken-interrupt-entry').checked,deliveryIntensity:el('delivery-intensity').value});});
-    el('cue-knock').addEventListener('click',function(){controller.triggerRoomCue('door_knock');});el('cue-chime').addEventListener('click',function(){controller.triggerRoomCue('hallway_chime');});
+    el('cue-knock').addEventListener('click',function(){controller.triggerRoomCue('door_knock');});el('cue-chime').addEventListener('click',function(){controller.triggerRoomCue('hallway_chime');});el('cue-tap').addEventListener('click',function(){controller.triggerRoomCue('door_tap');});el('cue-page').addEventListener('click',function(){controller.triggerRoomCue('overhead_page');});
     el('family-bid-invite').addEventListener('click',function(){controller.inviteFamilyBid();});el('family-bid-defer').addEventListener('click',function(){controller.deferFamilyBid();});
     if(el('family-speaker-choice'))el('family-speaker-choice').addEventListener('change',function(){controller.setTargetRole(this.value);});
     el('composer-form').addEventListener('submit',function(event){event.preventDefault();controller.send(el('composer').value);});
@@ -764,5 +771,5 @@
     doc.addEventListener('keydown',function(event){if(event.defaultPrevented||event.repeat||event.isComposing||event.ctrlKey||event.metaKey||event.altKey)return;var snapshot=controller.getSnapshot();if(event.code==='Escape'&&coachOpen){event.preventDefault();closeCoach();el('coach-open').focus();return;}if(event.code==='Escape'&&snapshot.busy){event.preventDefault();controller.interrupt();return;}if(event.code==='Space'&&snapshot.phase==='listening'&&!(event.target&&event.target.closest('input,textarea,button,select,a,summary,[contenteditable]'))){event.preventDefault();controller.send();}});
     doc.addEventListener('visibilitychange',function(){if(doc.hidden)controller.pause();});env.addEventListener('pagehide',function(){if(transcriptSize)transcriptSize.disconnect();controller.dispose();if(elapsedTimer){env.clearInterval(elapsedTimer);elapsedTimer=null;}if(station){station.dispose();station=null;}});render(controller.getSnapshot());return controller;
   }
-  return {createReviewParser:createReviewParser,validateDisplayReview:validateDisplayReview,createParser:createParser,readResponse:readResponse,createCapture:createCapture,createController:createController,safeMessage:safeMessage,mount:mount,applyIdentity:applyIdentity,statusLine:statusLine,roomView:roomView,renderRoom:renderRoom,thinkingPauseMs:thinkingPauseMs,elapsedLabel:elapsedLabel,elapsedIso:elapsedIso,closingNote:closingNote,coachView:coachView,renderCoach:renderCoach,speakerLabel:speakerLabel,addressedFamilyRole:addressedFamilyRole};
+  return {createReviewParser:createReviewParser,validateDisplayReview:validateDisplayReview,createParser:createParser,readResponse:readResponse,createCapture:createCapture,createController:createController,safeMessage:safeMessage,mount:mount,applyIdentity:applyIdentity,statusLine:statusLine,roomView:roomView,renderRoom:renderRoom,roomCues:ROOM_CUES,thinkingPauseMs:thinkingPauseMs,elapsedLabel:elapsedLabel,elapsedIso:elapsedIso,closingNote:closingNote,coachView:coachView,renderCoach:renderCoach,speakerLabel:speakerLabel,addressedFamilyRole:addressedFamilyRole};
 }));
