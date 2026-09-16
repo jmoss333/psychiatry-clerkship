@@ -123,6 +123,7 @@ class WorkflowHeartbeatTests(unittest.TestCase):
             {
                 "maintenance-sp-health-monitor.yml": 16,
                 "maintenance-production-canary.yml": 30,
+                "maintenance-queue-runner.yml": 30,
                 "maintenance-rotation-readiness.yml": 30,
                 "ci.yml": 8 * 24,
                 "maintenance-governance-digest.yml": 8 * 24,
@@ -131,6 +132,12 @@ class WorkflowHeartbeatTests(unittest.TestCase):
                 "maintenance-monthly-review.yml": 35 * 24,
                 "surveillance-guideline.yml": 35 * 24,
             },
+        )
+        self.assertEqual(
+            heartbeat_module._expected_cron(
+                "maintenance-queue-runner.yml"
+            ),
+            "40 4 * * *",
         )
         self.assertNotIn("maintenance-heartbeat.yml", EXPECTATIONS)
 
