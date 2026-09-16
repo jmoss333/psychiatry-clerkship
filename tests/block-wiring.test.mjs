@@ -61,3 +61,17 @@ test('a tool may name its full route through openPage, but only a short plain qu
   assert.match(shell, /data\.search\.length<=200&&\/\^\\\?\[A-Za-z0-9_\.%=&-\]\*\$\/\.test\(data\.search\)/);
   assert.match(shell, /fdOpenRef\(data\.f, searchOk\?data\.search:undefined\)/);
 });
+
+test('the shell picks exactly one primary, names the secondary heading once, and splices at the lead marker', () => {
+  const today = shell.slice(shell.indexOf('function fdTodayLive('), shell.indexOf('function fdRenderCapture('));
+  assert.equal(today.split('fdTodayPrimary(').length - 1, 1, 'one picker call');
+  assert.equal(today.split('Also today').length - 1, 1, 'one heading');
+  assert.match(today, /live\.primaryKind=primary\.kind;/, 'the pure renderer is told who won before it renders');
+  assert.match(today, /fdBlockCard\([^;]*\{primary:primary\.kind==='block'\}\)/, 'the block card is primary only when it won');
+  assert.match(today, /fdDueRow\(due,primary\.kind==='due'\)/);
+  assert.match(today, /fdResumeCard\(sess,primary\.kind==='resume'\)/);
+  assert.match(today, /fdLastReadRow\(lastRead,primary\.kind==='read'\)/);
+  assert.match(today, /'<div class="fd-primary">'/);
+  assert.match(today, /FD_TODAY_LEAD_END/, 'the marker fd_today.js emits is the splice point');
+  assert.match(today, /fdTodayWhy\(\)/);
+});

@@ -2067,18 +2067,56 @@
   }
 
   function fdTodayLive(state){
-    var html=fdToday(FD_INDEX,fdLiveState(state));
-    var sess=null;
+    var live=fdLiveState(state), sess=null;
     try{ sess=(typeof sessLoad==='function')?sessLoad('qbank'):null; }catch(_){ sess=null; }
-    var inserted=fdDueRow(dueBreakdown())+fdResumeCard(sess);
+    var due=dueBreakdown();
+    var weekN=(typeof live.week==='number'&&!isNaN(live.week))?live.week:null;
+    var wItems=weekN===null?[]:fdItemsForWeek(FD_INDEX,weekN);
+    var hasWeek=weekN!==null&&!!fdFindWeek(FD_INDEX,weekN);
+    var weekDone=fdProgressForWeek(FD_INDEX,live,live.week);
+    var progress=fdTodayProgress(wItems,weekDone);
+    var lastRead=fdTodayLastRead(LS('cw_last'),wItems,progress,weekDone);
     /* The timed block sits with the other device-store rows. In a faculty preview there is no
        learner session to plan for, so the card is omitted with the capture launcher. */
+    var liveBlock=null, blockStatus=null, blockHtml='', captureHtml='';
     if(!facultyPreviewRequest){
-      var liveForBlock=fdLiveState(state), liveBlock=blockLoad(liveForBlock.nowMs);
-      inserted+=fdBlockCard(liveBlock?null:fdBlockPlan(FD_INDEX,liveForBlock,fdBlockMinutes,fdBlockInputs()),fdBlockMinutes,liveBlock,liveForBlock.done);
+      var liveForBlock=live;
+      liveBlock=blockLoad(liveForBlock.nowMs);
+      blockStatus=liveBlock?fdBlockStatus(liveBlock,liveForBlock.done):null;
     }
-    if(!facultyPreviewRequest)inserted+=fdCaptureTriage(fdCaptureRows());
-    return html.replace('<div class="fd-today__main">','<div class="fd-today__main">'+inserted);
+    /* One Thing First: exactly one primary action, chosen by the pure picker in fd_today.js
+       from inputs this function already had. The pure renderer is told who won so it can demote
+       its own Continue card; the rows that did not win render below the secondary heading in a
+       fixed order, then the week list, daily pick, progress card and quick tools as before. */
+    var primary=fdTodayPrimary({
+      capsuleLeft:fdCapsuleLeft(sess),
+      blockNext:blockStatus?blockStatus.next:null,
+      dueTotal:fdDueCount(due),
+      weekProgress:progress,
+      hasWeek:hasWeek,
+      lastRead:lastRead
+    });
+    live.primaryKind=primary.kind;
+    var html=fdToday(FD_INDEX,live);
+    if(!facultyPreviewRequest){
+      blockHtml=fdBlockCard(liveBlock?null:fdBlockPlan(FD_INDEX,liveForBlock,fdBlockMinutes,fdBlockInputs()),fdBlockMinutes,liveBlock,liveForBlock.done,{primary:primary.kind==='block'});
+      captureHtml=fdCaptureTriage(fdCaptureRows());
+    }
+    var cards={
+      block:blockHtml,
+      due:fdDueRow(due,primary.kind==='due'),
+      resume:fdResumeCard(sess,primary.kind==='resume'),
+      read:fdLastReadRow(lastRead,primary.kind==='read')
+    };
+    var order=['block','due','resume','read'], lead='', also='';
+    for(var i=0;i<order.length;i++){
+      if(order[i]===primary.kind) lead='<div class="fd-primary">'+cards[order[i]]+'</div>';
+      else also+=cards[order[i]];
+    }
+    also+=captureHtml;
+    var rest=fdTodayWhy()+'<h2 class="fd-sectionhead fd-also">Also today</h2>'+also;
+    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+lead+rest);
+    return html.replace(FD_TODAY_LEAD_END,rest);
   }
 
   function fdRenderCapture(state){
