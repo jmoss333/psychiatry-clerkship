@@ -194,5 +194,42 @@ Use when handing off a psychiatric patient:
 - "Where did the formulation change the plan?"
 - "What would the overnight covering clinician need to know?"
 
+## Further Reading & Evidence-Based Resources
+
+**Clinical Documentation and Medical-Legal Standards**
+- Doran, K.M. et al. (2014) — *American Journal of Psychiatry* — documentation quality predicts outcomes and legal defensibility. A note that shows reasoning (formulation, differential, risk stratification, plan rationale) provides both better patient care and better protection in malpractice or regulatory review. Avoid copy-forward language; each day's note should reflect today's thinking.
+- American Psychiatric Association (2015) — Diagnostic and Statistical Manual of Mental Disorders (DSM-5) documentation standards for psychiatric conditions. Use structured language: describe observed MSE findings objectively rather than interpreting them ("patient grimacing, psychomotor retarded" rather than "catatonic"), then document your diagnostic reasoning.
+
+**Handoff and Oral Communication in Psychiatry**
+- Solet, J.M., Frankel, R.M. (2005) — *Joint Commission Journal on Quality and Patient Safety* — structured handoffs reduce medical errors. The oral handoff template (reason for admission, tonight's main risks, if-then contingencies, known de-escalation approaches, family/collateral issues) teaches the receiving clinician not just facts but decision-making context.
+- Platt, F.W., Platt, C.M. — The Evidence-Based Practice of Clinical Health Psychology — communication skill predicts both quality and patient satisfaction. Practicing the 60-90 second rounds update and the collateral summary template improves clarity under pressure.
+
+**Formulation-Driven Assessment and Plan**
+- Summers, W.K. (2016) — *Journal of Psychiatric Practice* — formulation as a teaching and clinical tool. A strong formulation integrates: (1) the biological contributors (medical, substance, medication), (2) the psychological contributors (past trauma, coping, attachment, schemas), (3) the family/social contributors (resources, barriers, dynamics), and (4) the systems contributors (hospital policies, insurance, discharge barriers). The plan then addresses these contributors in order of clinical urgency and modifiability.
+- McWilliams, N. (2011) — Psychoanalytic Diagnosis Revised Ed. — formulation is not a diagnosis; it is the personalized story that makes this patient's condition understandable to the next clinician. Teaching students to write formulations trains them to think systemically.
+
+**Differential Diagnosis and Rule-Out Reasoning**
+- Halmi, K.A. (2015) — psychiatric differential diagnosis requires considering medical mimics (infection, metabolic, neurologic), substance-induced syndromes, medication effects, and adjustment/trauma reactions before anchoring on a primary psychiatric diagnosis. Your differential should show you have thought through alternatives, not merely listed them.
+
+**Risk Assessment and Acute vs. Chronic Framing**
+- Rudd, M.D. et al. (2006) — *Suicide and Life-Threatening Behavior* — the distinction between chronic risk factors (past attempts, psychiatric diagnosis, family history) and acute risk factors (recent stressor, substance intoxication, access to means) changes the treatment and disposition. A note that lumps these together misses the opportunity to intervene on what is modifiable today.
+- Teaches students: say "chronic risk from past attempts and ongoing depression remains moderate" and "acute risk from intoxication and access to means is high today because he has a firearm at home." Then the plan follows: secure means today, sobriety work, and outpatient treatment for depression.
+
+**MSE as a Teaching Tool**
+- Trzepacz, P.T., Baker, R.W. (1993) — *Psychiatric Annals* — the mental status examination should be tailored to the clinical question, not performed as a rote checklist. If capacity is the question, focus on understanding, reasoning, and appreciation. If delirium is suspected, focus on attention and fluctuation. If psychosis is the question, focus on perceptual disturbances and thought organization. The note reflects that targeted thinking.
+
+**Presentation Skills and Concision Under Pressure**
+- Epstein, R.M., Hundert, E.M. (2002) — *JAMA* — clinical competence includes communication. Practicing the templates out loud (with peers, with faculty) builds automaticity so you can present clearly when you are nervous, sleep-deprived, or presenting a high-risk patient.
+- Teaching focus: start with the structured templates, then practice presenting without them. The template is the scaffold; the goal is to internalize the logic so it becomes second nature.
+
+**Book References**
+- Kaplan & Sadock's Synopsis of Psychiatry — sections on documentation standards and case presentation frameworks used in training programs nationwide. Comprehensive reference for note-writing and presentation expectations.
+- Morrison, J. (2014) — *Diagnosis Made Easier Revised* (ISBN 9781585629695) — teaches differential diagnosis reasoning as a clinical skill, not a checklist. Relevant to building formulations that show thinking.
+
+**Teaching Resources and Practice Guidance**
+- Treatment Team Rounding Prep tool (referenced in the guide): practice 60-90 second rounds updates and collateral summaries with feedback from faculty before presenting to the whole team.
+- Faculty feedback prompts (listed above): ask these questions of yourself or of your supervising clinician during each presentation. They train you to think about what you included, what you left out, and why.
+- Handoff rehearsal: practice the handoff template (reason, tonight's risks, if-then contingencies, de-escalation approaches, family/collateral context) with a classmate before you actually hand off to the night float or covering clinician. Clarity in handoff prevents overnight miscommunication and safety gaps.
+
 Plain-English note: this guide helps students stop writing and presenting as if
 psychiatry is a checklist. It gives them a structure that reveals their thinking.
