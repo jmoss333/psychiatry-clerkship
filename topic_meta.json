@@ -3238,9 +3238,7 @@
       "rounds_naming_uncertainty_001"
     ],
     "facultyReview": {
-      "status": "reviewed",
-      "lastReviewed": "2026-09-16",
-      "reviewer": "Joshua Moss, MD"
+      "status": "pending"
     }
   },
   "exp_tx.md": {
@@ -5525,9 +5523,7 @@
       "exam"
     ],
     "facultyReview": {
-      "status": "reviewed",
-      "lastReviewed": "2026-09-16",
-      "reviewer": "Joshua Moss, MD"
+      "status": "pending"
     },
     "epa": [
       "EPA2"
@@ -5568,9 +5564,7 @@
       "treatment"
     ],
     "facultyReview": {
-      "status": "reviewed",
-      "lastReviewed": "2026-09-16",
-      "reviewer": "Joshua Moss, MD"
+      "status": "pending"
     },
     "shelfBlueprint": [
       "neurocog"
