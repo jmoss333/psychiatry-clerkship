@@ -964,8 +964,8 @@
   .fd-shell:not(:has(.fd-actionbar)) .fd-nudge{bottom:calc(74px + env(safe-area-inset-bottom))}
   .fd-shell:has(.fd-actionbar) .fd-reader>.fd-reader__back{display:none}
   .fd-shell:has(.fd-actionbar) .fd-reader__toolbar{display:none}
-  .fd-main{padding-top:12px}
-  .fd-article{padding:18px 20px}
+  .fd-main{padding-top:8px}
+  .fd-article{padding:12px 20px}
 }
 
 /* ═══ Keyframes ══════════════════════════════════════════════════════════════
