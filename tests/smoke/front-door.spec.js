@@ -1714,10 +1714,11 @@ test('a returning learner can leave rotation mode: browse clears the rotation, s
 
 // ---- Phone chrome (2026-09-16) --------------------------------------------------------------------
 // Measured before the change on a 375×812 phone opening ?page=t_mood.md: header 154px, capture
-// bar bottom at 210px, article h1 top at 382px — 47% of the first screen was shell. The tab row
-// now docks to the bottom on phones and yields to the reader's fixed action bar, whose `‹` is
-// the same control as the top-of-page back link; and the On-the-Unit panel opens by default on a
-// handheld. tests/fd-phone-chrome.test.mjs pins the stylesheet; this measures the render.
+// bar bottom at 210px, article h1 top at 382px — 47% of the first screen was shell. On the
+// top-level screens the tab row now docks to the bottom; a reader keeps the tabs in its header
+// (they must stay reachable while reading) and instead drops its top back link, which the fixed
+// action bar's `‹` duplicates; and the On-the-Unit panel opens by default on a handheld.
+// tests/fd-phone-chrome.test.mjs pins the stylesheet; this measures the render.
 
 test('phone chrome: tabs dock to the bottom, yield to the reader action bar, and the first screen belongs to the page', async ({ page }, testInfo) => {
   await page.setViewportSize(PHONE);
@@ -1747,7 +1748,12 @@ test('phone chrome: tabs dock to the bottom, yield to the reader action bar, and
   await page.goto('/?page=t_mood.md');
   await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
   await expect(page.locator('.fd-actionbar')).toBeVisible();
-  await expect(tabs).toBeHidden();
+  // A reader keeps its tab row in the header: the action bar owns the bottom edge, and the tabs
+  // must stay reachable while reading (rotation-edition-v2's keyboard matrix switches tabs from
+  // an open reader at this width). What the reader gives up is the top back link.
+  await expect(tabs).toBeVisible();
+  const readerTabs = await tabs.boundingBox();
+  expect(readerTabs.y, 'reader tabs sit in the header row, not docked').toBeLessThan(170);
   await expect(page.locator('.fd-reader > .fd-reader__back')).toBeHidden();
   const h1 = await page.locator('.fd-article__h1').boundingBox();
   expect(h1.y, 'the topic title sits in the top third of a phone screen').toBeLessThanOrEqual(PHONE.height * 0.35);
