@@ -1106,6 +1106,31 @@ function fdWire(root, initialState, opts){
      learner's choice on every selection. refocusInvoker keeps that outcome by construction (the
      invoker is the chosen segment, so its own attribute value is what gets re-queried) and keeps
      it for every other control in the panel too, which a per-effect branch could not. */
+  function currentScrollY(){
+    var y=win?(typeof win.scrollY==='number'?win.scrollY:win.pageYOffset):0;
+    return typeof y==='number'&&y>=0?y:0;
+  }
+  function openerFor(ref){
+    if(!root||!root.querySelector||!ref) return null;
+    if(ref==='__progress__') return root.querySelector('[data-fd-progress]');
+    try{ return root.querySelector('[data-fd-open="'+String(ref).replace(/["\\]/g,'\\$&')+'"]'); }
+    catch(_){ return null; }
+  }
+  /* Returning from a resource lands the learner where they left the originating tab (#427): the
+     list scrolled back to the offset recorded when the resource opened, and focus on the control
+     that opened it, so a keyboard or screen-reader user resumes from the link they chose rather
+     than from the top of the main region. Runs AFTER the render's own focus (announceRoute puts
+     focus on the main region) and deliberately overrides it -- only when the control is really
+     there: a different tab, an open search panel or sheet, or a retired ref means there is nothing
+     to return to, and the render's focus stands. Scroll is restored even then only for the
+     originating tab, since the offset belongs to that list. */
+  function restoreOrigin(before){
+    if(state.screen!=='app'||state.tab!==before.fromTab||state.searchOpen||state.sheet) return;
+    var y=typeof before.scrollPos==='number'&&before.scrollPos>=0?before.scrollPos:0;
+    if(win&&win.scrollTo) try{ win.scrollTo(0,y); }catch(_){}
+    var el=openerFor(before.openId);
+    if(el&&el.focus){ try{ el.focus({preventScroll:true}); }catch(_){ try{ el.focus(); }catch(__){} } }
+  }
   function focusPostTransition(before, result, changedBase){
     if(changedBase&&state.screen&&state.screen.indexOf('setup-')===0){
       var heading=root&&root.querySelector?root.querySelector('.fd-setup .fd-h1'):null;
@@ -1126,6 +1151,10 @@ function fdWire(root, initialState, opts){
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
+    /* Where the learner was when they opened a resource (#427). Recorded by the controller, not
+       by fdDispatch: the scroll offset is a browser fact and dispatch stays pure. A reader that
+       opens another reader keeps the origin -- "back" still means the tab it all started from. */
+    if(!before.openId&&state.openId) state.scrollPos=currentScrollY();
     var afterOverlay=overlayIdentity(state);
     if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
     var changedBase=baseChanged(before,state);
@@ -1191,6 +1220,7 @@ function fdWire(root, initialState, opts){
     else renderTransient(state,detail);
     fdApplyEffect(result.effect,fromHistory,generation);
     focusPostTransition(before,result,changedBase);
+    if(before.openId&&!state.openId) restoreOrigin(before);
     if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
     /* The fallback exists because refocusInvoker's premise -- the equivalent control is still
@@ -1364,6 +1394,7 @@ function fdWire(root, initialState, opts){
       if(currentRoute()!==previewRouteBase) lockPreview();
       return;
     }
+    var before=fdClone(state);
     var merged=fdClone(state), snap=event&&event.state&&event.state.fd&&event.state.state;
     merged.searchOpen=false;
     merged.query='';
@@ -1422,6 +1453,8 @@ function fdWire(root, initialState, opts){
       baseChanged:true,preserveResource:false,effect:null
     }));
     fdSave(state);
+    /* Browser Back out of a resource is the same return as the in-app control (#427). */
+    if(before.openId&&!state.openId) restoreOrigin(before);
     if(legacyResult&&legacyResult.effect){
       fdApplyEffect(legacyResult.effect,true,generation);
     } else if(state.openId==='__progress__'){
