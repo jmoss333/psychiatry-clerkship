@@ -269,6 +269,12 @@ for(const width of [1440,320])test(`family orientation, clinician opening, and v
   await expect(page.locator('#family-opening-invite')).toBeVisible();await expect(page.locator('#family-card-morgan')).toHaveAttribute('data-next','true');
   await expect(page.locator('#family-card-morgan')).toHaveAttribute('data-speaking','false');await expect(page.locator('#family-card-maya')).toHaveAttribute('data-speaking','false');
   expect(requests).toHaveLength(1);expect(await page.evaluate(()=>window.__previewAudio.length)).toBe(0);
+  await expect(page.locator('#room-view')).toBeVisible();
+  await expect(page.locator('#room-a-name')).toHaveText('Morgan');await expect(page.locator('#room-b-name')).toHaveText('Maya');
+  await page.click('#coach-open');await expect(page.locator('#coach-panel')).toBeVisible();
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
+  await expect(page.locator('#room-mic-text')).toContainText('Microphone paused');expect(requests).toHaveLength(1);
+  await page.click('#coach-resume');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
   await expect(page.locator('#family-identity-morgan')).toContainText('they/them');await expect(page.locator('#family-identity-maya')).toContainText('she/her');
   await page.locator('#family-room-observations summary').first().click();
   for(const role of ['morgan','maya']){
@@ -280,6 +286,7 @@ for(const width of [1440,320])test(`family orientation, clinician opening, and v
   await page.locator('#family-room-observations summary').first().click();
   await page.evaluate(()=>window.__previewRecognition.emit('Maya, what would you like us to understand?'));await page.locator('#status').click();await page.keyboard.press('Space');
   await expect(page.locator('#family-card-maya')).toHaveAttribute('data-speaking','true');
+  await expect(page.locator('#room-b-tag-text')).toHaveText('Speaking');
   expect(requests[1].targetRoleId).toBe('maya');expect(requests[1].previousCompletedSegments).toBe(0);
   await expect(page.locator('.message.dana[data-family-role="maya"] .name')).toHaveText('Maya');
   await completeReply(page,0);

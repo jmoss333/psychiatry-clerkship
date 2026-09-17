@@ -164,13 +164,15 @@
   // The station is a projection of the snapshot. It never calls fetch, never
   // touches the controller, and never reads or writes browser storage.
   function createStation(env,host,options){
+    // Timers come from env so a test can drive them; fall back to the ambient clock.
+    var clock=env&&env.setTimeout?env:(typeof globalThis!=='undefined'?globalThis:null);
     options=options||{};
     var doc=env&&env.document,content=options.content,profile=content&&content.getProfile&&content.getProfile(options.caseId);
     if(!doc||!host||!profile)return null;
     var family=Array.isArray(profile.participants)&&profile.participants.length>1;
     function respondentName(moment){return moment.speakerName||(family?'Speaker not identified':profile.displayName);}
     function learnerName(moment){return moment.targetName?'You, to '+moment.targetName:'You';}
-    var disposed=false,store=createBookmarkStore(),notes=Object.create(null),presentation='',requested=Object.create(null),lastCue='';
+    var disposed=false,store=createBookmarkStore(),notes=Object.create(null),presentation='',requested=Object.create(null),lastCue='',chartTimers=[];
     function el(tag,text,parent,attrs){
       var node=doc.createElement(tag);
       if(text!==null&&text!==undefined)node.textContent=text;
@@ -191,14 +193,35 @@
 
     var chart=el('details',null,before,{'data-station':'chart'});
     el('summary','Available chart information',chart);
-    el('p','Open only what you want to review. Unavailable information stays unknown; you can identify what you would seek from the clinical team.',chart,{class:'fine'});
+    el('p','Open only what you want to review. Unavailable information stays unknown; you can identify what you would seek from the clinical team. A request takes a short while to come back, as it would on the unit — the wait is realism, not an information barrier, and nothing is withheld from you because of it.',chart,{class:'fine'});
     var chartItems=el('div',null,chart,{class:'station-grid'});
     profile.chartCards.forEach(function(card){
       var box=el('div',null,chartItems,{class:'station-inset'});
       var chartId='chart-'+profile.caseId+'-'+card.id;
       var open=el('button',card.title,box,{type:'button','aria-expanded':'false','aria-controls':chartId});
       var body=el('p','',box,{id:chartId,hidden:''});
-      open.addEventListener('click',function(){requested[card.id]=true;body.textContent=card.source+' — '+card.text;body.hidden=!body.hidden;open.setAttribute('aria-expanded',String(!body.hidden));});
+      // Realism 8 — a request takes 30-40 s to come back, once per card per encounter.
+      // Client-side theatre only: the text is already here, nothing is fetched or withheld.
+      // The disclosure still expands immediately — onto a live status rather than the text —
+      // so the button keeps its name and its focus, and aria-expanded stays honest.
+      var arrived=false,waiting=false,seconds=0,tick=null;
+      function say(){body.textContent='Requested — the nurse is looking · about '+seconds+' s';}
+      function reveal(){
+        arrived=true;waiting=false;
+        if(tick){clock.clearInterval(tick);tick=null;}
+        body.textContent=card.source+' — '+card.text;
+      }
+      open.addEventListener('click',function(){
+        requested[card.id]=true;
+        if(!arrived&&!waiting){
+          waiting=true;seconds=30+Math.floor(Math.random()*11);say();
+          tick=clock.setInterval(function(){if(disposed)return;seconds-=1;if(seconds>0&&!arrived)say();},1000);
+          var done=clock.setTimeout(function(){if(!disposed)reveal();},seconds*1000);
+          chartTimers.push(tick,done);
+          body.hidden=false;open.setAttribute('aria-expanded','true');return;
+        }
+        body.hidden=!body.hidden;open.setAttribute('aria-expanded',String(!body.hidden));
+      });
     });
 
     var priorities=el('section',null,host,{class:'panel'});
@@ -281,8 +304,11 @@
       var lastPatient=null;
       (latest.transcript||[]).forEach(function(entry){if(entry.who==='pt')lastPatient=entry;});
       var interrupted=!!lastPatient&&lastPatient.playbackStatus==='interrupted';
-      var next=latest.phase==='ended'?profile.cues.closing:interrupted?profile.cues.interrupted:profile.cues.opening;
+      var next=content.observationCue?content.observationCue(profile,{phase:latest.phase,interrupted:interrupted,turn:latest.turn}):
+        (latest.phase==='ended'?profile.cues.closing:interrupted?profile.cues.interrupted:profile.cues.opening);
+      next=next||'';
       if(next!==lastCue){lastCue=next;cue.textContent=next;}
+      cue.hidden=!next;
       markButton.hidden=!store.candidate(latest);
       closing.hidden=latest.phase!=='ended';
       if(latest.phase==='ended'&&!retrySelect.children.length){
@@ -298,6 +324,7 @@
       requestRetry:function(turnId,text){return typeof options.onRetry==='function'?options.onRetry(turnId,text):false;},
       dispose:function(){
         disposed=true;
+        chartTimers.forEach(function(id){clock.clearTimeout(id);clock.clearInterval(id);});chartTimers=[];
         store.clear();notes=Object.create(null);presentation='';requested=Object.create(null);latest=null;lastCue='';
         if(handoff)handoff.value='';
         if(retryText)retryText.value='';

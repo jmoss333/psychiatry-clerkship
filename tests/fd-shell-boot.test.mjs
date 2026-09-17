@@ -236,7 +236,7 @@ test('fdRender guards every live surface independently', () => {
   }
   assert.match(source, /function fdRenderTransient\(state,detail\)/);
   assert.match(source, /d\.preserveResource/);
-  assert.match(source, /d\.effect&&d\.effect\.theme/);
+  assert.match(source, /d\.effect&&d\.effect\.mode/);
   assert.match(source, /hydrate=detail&&detail\.kind==='hydrate'/);
   assert.match(source, /if\(!hydrate&&fdChromeMount\)/,
     'background hydration must not replace focused header controls');
@@ -331,9 +331,14 @@ test('Progress remains an internal reader view with stable delegated capture/pre
   for (const needle of ['function masteryByBlueprint()', 'function renderCalibPanel()',
     'function weakTopics()', 'function startPretest()', 'function submitPretest()',
     'function renderStoredPlan()', 'window.exportStudy=', 'data-cap-open', 'data-cap-copy',
-    'data-progress-action="save-exam"', "localStorage.setItem('cw_shelf_date'"]) {
+    'data-progress-action="progress"']) {
     assert.ok(source.includes(needle), `${needle} must remain reachable`);
   }
+  // The exam-date control moved to the settings panel. Progress keeps a read-only signpost, and
+  // the needles that used to sit in the list above were its input and its writer -- asserting
+  // they are ABSENT is what keeps that a move; tests/phase-chip.test.mjs pins the rest.
+  assert.ok(!source.includes('data-progress-action="save-exam"'),
+    'the exam-date writer belongs to the settings panel now, not to Progress');
 });
 
 test('late data hydration refreshes Progress only while its root view is still mounted', () => {
@@ -344,7 +349,8 @@ test('late data hydration refreshes Progress only while its root view is still m
 
 test('live Reader keeps topic practice, quiz, feedback, and page enhancement behavior delegated', () => {
   assert.match(source, /parseMarkdown:function\(markdown\)/);
-  assert.match(source, /buildTpl\(meta,ref\)/);
+  // The reader passes the handheld flag (tests/practice-panel.test.mjs pins both call sites).
+  assert.match(source, /buildTpl\(meta,ref,\{open:fdHandheld\(\)\}\)/);
   assert.match(source, /makeCollapsible\(body\)/);
   assert.match(source, /enhanceTables\(body\)/);
   for (const selector of ["closest('.tyo')", "closest('.pgfb-b')", "closest('[data-tool]')"]) {
@@ -354,7 +360,9 @@ test('live Reader keeps topic practice, quiz, feedback, and page enhancement beh
 
 test('theme initialization and visible control survive without changing the frozen palette', () => {
   assert.match(source, /localStorage\.getItem\('cw_theme'\)/);
-  assert.match(shellModule, /data-fd-theme/);
+  // The header control is the settings gear; the theme modes themselves are rendered inside the
+  // panel it opens. What this pins is unchanged -- the shell still offers a reachable way in.
+  assert.match(shellModule, /data-fd-settings/);
   assert.equal(count('frontdoor.css'), 1);
 });
 
@@ -398,4 +406,18 @@ test('the live shell carries no hand-maintained tool map, and static QA covers w
   }
   assert.doesNotMatch(staticQa, /idBlockCheck\('(?:CASE_TITLES|FAMILY_SCENARIO_TITLES)'/,
     'retired shell title maps must not remain mandatory QA inputs');
+});
+
+// ---- Phase 3 (F4): the boot never stamps a role onto a deep-link visitor --------------------
+//
+// Until 2026-09-16 a visitor following a link to one page was silently given FD_ROLES[0] so the
+// resolver would not send them to the wizard. fdResolveState now admits that visitor as a guest
+// with no role; both boot sites (the main boot and the rejected-edition prerelease path) keep
+// `browsing=true` and assign nothing, so the next plain visit runs the wizard from step 1.
+test('a deep-link visitor is a guest: the boot keeps browsing but assigns no role, on both boot paths', () => {
+  assert.doesNotMatch(source, /fdStored\.role=\(FD_ROLES\[0\]/, 'main boot must not stamp a role');
+  assert.doesNotMatch(source, /fdPrereleaseStored\.role=\(FD_ROLES\[0\]/, 'prerelease boot must not stamp a role');
+  assert.match(source, /if\(fdIncomingRef&&!fdIsLegacyRouteAlias\(fdIncomingRef\)&&!fdStored\.role\)\{\s*fdStored\.browsing=true;\s*\}/);
+  assert.match(source, /if\(fdPrereleaseRef&&!fdIsLegacyRouteAlias\(fdPrereleaseRef\)&&!fdPrereleaseStored\.role\)\{\s*fdPrereleaseStored\.browsing=true;\s*\}/);
+  assert.match(wireModule, /out\.guest=true;\s*out\.screen='app';/, 'the resolver, not the boot, owns the guest decision');
 });

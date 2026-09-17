@@ -82,6 +82,9 @@ step "gate coverage vs ci.yml"              python3 bin/check-verify-coverage.py
 # gate nobody executes looks exactly like a gate.
 step "unit — vacuity checker"               python3 bin/check_vacuity.py --self-test
 step "every falsification is on a gate"     python3 bin/check_vacuity.py
+step "unit — PR preflight"                  python3 bin/pr_preflight.py --self-test
+step "unit — attestation authorship"        python3 bin/check_attestation_authorship.py --self-test
+step "attestation authorship"               python3 bin/check_attestation_authorship.py
 
 # --- python validators ---
 # This block mirrors the python half of ci.yml's build-test-validate job, step for step.
@@ -119,6 +122,7 @@ step "unit — media guard"                   python3 $A/site_build/test_media_g
 step "unit — shared build logic"            python3 $A/site_build/test_common.py
 step "unit — analytics allowlist"           python3 $A/site_build/test_analytics_events.py
 step "analytics allowlist freshness"        python3 $A/site_build/analytics_events.py --check
+step "book library ISBN-13 consistency"     python3 bin/derive_isbn13.py --check
 # metrics/node_modules is gitignored (matches sp-proxy's own pattern further below);
 # ci.yml's "Install — metrics collector dependencies" step covers a fresh checkout
 # there, so mirror it here rather than let a fresh clone fail this step for a reason
@@ -141,6 +145,14 @@ step "test_validate_claim_anchors"          python3 $A/test_validate_claim_ancho
 step "validate_claim_anchors"               python3 $A/validate_claim_anchors.py
 step "unit — evidence annotations"          python3 $A/validate_evidence_annotations.py --self-test
 step "validate_evidence_annotations"        python3 $A/validate_evidence_annotations.py
+# Both audits below are RATCHETS (docs/RATCHETS.md): the finding counts each one reports are
+# pinned in a committed bin/*_baseline.json beside the tool, a rise fails, a fall is a note, and
+# `--update-baseline` lowers the pin as part of a reviewed reduction. Until 2026-09-16 the span
+# audit gated REWORDED sentences only, so the pott-2022 defect it was built for -- a clause
+# deleted MID-sentence classifies as EDITED -- exited 0, and a wrong cache path printed
+# "0 clean ... 49 uncached" and passed. Both are red now. The --self-test proves a synthetic
+# regression exits 1 and the live tree exits 0; check_vacuity.py requires it on a hard step.
+step "unit — span audit"                    python3 bin/verify_spans.py --self-test
 step "span audit (verbatim vs paper)"       python3 bin/verify_spans.py
 step "unit — research dock"                 python3 bin/research-dock.py --self-test
 step "research return dock"                 python3 bin/research-dock.py check --strict
@@ -159,6 +171,13 @@ step "research return dock"                 python3 bin/research-dock.py check -
 # `--self-test` BLOCKS for both: it is a real falsification and check_vacuity.py requires it.
 step "unit — standards coverage"            python3 bin/check_standards_coverage.py --self-test
 step "standards spine coverage"             python3 bin/check_standards_coverage.py
+# The vocabulary is data now, and six literals in two languages have to agree with it. The
+# --self-test BLOCKS (check_vacuity.py requires a falsification to be on a gate, and this
+# one ends by asserting the LIVE tree agrees, so a real drift fails here). The plain run
+# REPORTS: a vocabulary gap is a curriculum decision, not a broken file, and must never be
+# able to stop a clinical correction from being pushed. Same split as standards coverage.
+step "unit — vocabulary registry"           python3 bin/check_vocabulary.py --self-test
+step "vocabulary vs code sites"             python3 bin/check_vocabulary.py
 step "unit — qbank coherence"              python3 bin/check_qbank_coherence.py --self-test
 # Four tools shipped a --self-test that NO gate invoked — found by bin/check_vacuity.py after
 # Codex pointed out it was inventorying only test FILES, not the --self-test modes its own
@@ -185,6 +204,8 @@ step "unit — twin parity"                   python3 bin/check_twin_parity.py -
 # no-content-change cancel is not, and that an unrecognised deploy state is a finding rather
 # than a pass. Without that last one the alarm would quietly match nothing.
 step "unit — netlify deploy health"         python3 bin/check_netlify_deploy_health.py --self-test
+# Ratchet against bin/check_qbank_coherence_baseline.json (pairs = 0 today); the pin is what
+# the --self-test step above asserts the exit code against. See the span-audit comment above.
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
 step "twin parity (audience copies)"        python3 bin/check_twin_parity.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py

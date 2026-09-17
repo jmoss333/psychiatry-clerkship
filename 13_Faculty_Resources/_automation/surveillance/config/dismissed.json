@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "_note": "Fingerprints that must NEVER re-file, each with the reason. This is the ONLY permanent suppression. Closing a surveillance issue means 'the condition was fixed', so a recurrence re-files -- that is the point. Until 2026-09-16 any closed issue suppressed its fingerprint forever (sync_findings dedup'd against state=all), which silently shrank the monitored set by one URL per closure: two FDA drug-safety pages were erroring in the link monitor and could not raise an issue. Seeded from the 28 issues a human had closed as NOT PLANNED, so those deliberate decisions survived the change.",
+  "dismissed": {
+    "link:docs.google.com::broken-link::121e5ec6d6d258dd": {
+      "reason": "Migrated from #18, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 18
+    },
+    "link:docs.google.com::broken-link::2bbac0cfbe0f74b5": {
+      "reason": "Migrated from #19, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 19
+    },
+    "link:docs.google.com::broken-link::51a243d2a9e4e985": {
+      "reason": "Migrated from #17, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 17
+    },
+    "link:docs.google.com::broken-link::80bc6f214097afaf": {
+      "reason": "Migrated from #14, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 14
+    },
+    "link:docs.google.com::broken-link::98344248d35c1eb9": {
+      "reason": "Migrated from #15, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 15
+    },
+    "link:docs.google.com::broken-link::ece1ec151fe550e8": {
+      "reason": "Migrated from #13, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 13
+    },
+    "link:docs.google.com::broken-link::fe933ac3a2d7a0c4": {
+      "reason": "Migrated from #16, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 16
+    },
+    "link:doi.org::broken-link::04e087ee4d5b4ac1": {
+      "reason": "Migrated from #31, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 31
+    },
+    "link:doi.org::broken-link::1180f55b1ef72b47": {
+      "reason": "Migrated from #32, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 32
+    },
+    "link:doi.org::broken-link::2812e284052b9c8b": {
+      "reason": "Migrated from #26, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 26
+    },
+    "link:doi.org::broken-link::2a2997ae669c4f58": {
+      "reason": "Migrated from #36, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 36
+    },
+    "link:doi.org::broken-link::44c8bb030c3bc1ec": {
+      "reason": "Migrated from #28, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 28
+    },
+    "link:doi.org::broken-link::4cc8addb61be42c1": {
+      "reason": "Migrated from #29, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 29
+    },
+    "link:doi.org::broken-link::590d69a31b1cb7fe": {
+      "reason": "Migrated from #30, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 30
+    },
+    "link:doi.org::broken-link::8abe5bc1974d14a8": {
+      "reason": "Migrated from #24, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 24
+    },
+    "link:doi.org::broken-link::9b92507eebdad442": {
+      "reason": "Migrated from #23, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 23
+    },
+    "link:doi.org::broken-link::9bedc444cd259ded": {
+      "reason": "Migrated from #27, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 27
+    },
+    "link:doi.org::broken-link::9c7859cc8069dc3a": {
+      "reason": "Migrated from #33, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 33
+    },
+    "link:doi.org::broken-link::bb75af820bedc237": {
+      "reason": "Migrated from #20, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 20
+    },
+    "link:doi.org::broken-link::c19286c9b3d2c18c": {
+      "reason": "Migrated from #34, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 34
+    },
+    "link:doi.org::broken-link::c4a70a1d6d0e9ce8": {
+      "reason": "Migrated from #25, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 25
+    },
+    "link:doi.org::broken-link::c8dc49505f02c029": {
+      "reason": "Migrated from #22, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 22
+    },
+    "link:doi.org::broken-link::f7eb0ef1de2be01e": {
+      "reason": "Migrated from #21, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 21
+    },
+    "link:reconnectpractice.com::broken-link::660b002e81baed0a": {
+      "reason": "Migrated from #12, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 12
+    },
+    "link:unknown::broken-link::5917a7dbc2c315b7": {
+      "reason": "Migrated from #11, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 11
+    },
+    "link:www.fda.gov::broken-link::f48ddedaa541bacf": {
+      "reason": "Migrated from #10, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 10
+    },
+    "link:www.qualityreportingcenter.com::broken-link::f622b175a8a03acf": {
+      "reason": "Migrated from #9, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 9
+    },
+    "link:www.sciencedirect.com::broken-link::f879319e4151d0ce": {
+      "reason": "Migrated from #8, closed as not planned.",
+      "at": "2026-07-03",
+      "by": "migration-2026-09-16",
+      "issue": 8
+    },
+    "link:www.admsep.org::broken-link::56951baa3f00270a": {
+      "reason": "Dead page on a live host (admsep.org answers 200; this path 404s to browsers and curl alike, verified 2026-09-16). The link lives in 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md, a dated record of what was consulted on 2026-07-08 that ships to no learner site; #668 annotated it in place rather than rewriting the record. Nothing to fix.",
+      "at": "2026-09-16",
+      "by": "open-issues review 2026-09-16 (Claude, for Joshua Moss, MD)",
+      "issue": 423
+    },
+    "link:www.admsep.org::broken-link::378d5c25815a68ca": {
+      "reason": "Dead page on a live host (admsep.org answers 200; this path 404s to browsers and curl alike, verified 2026-09-16). The link lives in 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md, a dated record of what was consulted on 2026-07-08 that ships to no learner site; #668 annotated it in place rather than rewriting the record. Nothing to fix.",
+      "at": "2026-09-16",
+      "by": "open-issues review 2026-09-16 (Claude, for Joshua Moss, MD)",
+      "issue": 422
+    }
+  }
+}

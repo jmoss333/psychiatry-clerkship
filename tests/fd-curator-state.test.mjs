@@ -32,11 +32,11 @@ const PATHS = {
     ['t_mood.md', 't_psychosis.md', 'psychopharm_primer.md', 'ddx.md', 'question-bank-practice.html'],
     ['t_personality.md', 'exp_tx.md', 'brief_psychotherapy.md', 'reflection.html', 'question-bank-practice.html'],
     ['exp_family.md', 'family_modalities.md', 'family_playbook.md', 'collateral_workflow.md', 'family-systems.html', 'question-bank-practice.html'],
-    ['suicide.md', 'agitation.md', 'delirium.md', 'catatonia.md', 'cssrs.html', 'withdrawal.html', 'capacity.html', 'question-bank-practice.html'],
+    ['suicide.md', 'agitation.md', 'delirium.md', 'catatonia.md', 'withdrawal.html', 'capacity.html', 'question-bank-practice.html'],
     ['shelf.md', 'osce.md', 'cases.md', 'landmark_trials.md', 'oral.html', 'one-patient-six-weeks.html', 'question-bank-practice.html'],
   ],
   resident: [
-    ['pg_interview.md', 'mse.html', 'pg_suicide.md', 'agitation.md', 'violence.html', 'delirium.md', 'withdrawal.html', 'bfcrs.html', 'capacity.html'],
+    ['pg_interview.md', 'mse.html', 'pg_suicide.md', 'agitation.md', 'violence.html', 'delirium.md', 'withdrawal.html', 'capacity.html'],
     ['diagnostic-reasoning.html', 't_mood.md', 't_psychosis.md', 't_sud.md', 'psychopharm_primer.md', 'adv_psychopharm.md', 'med_monitoring.md', 'interaction-cards.html'],
     ['systems_medlegal.md', 'cl_reference.md', 'exp_consult.md', 'collateral_workflow.md', 'family-systems.html', 'exp_family.md', 'doc_oral.md'],
     ['case_formulation.md', 'oral.html', 'supervision_teaching.md', 'evidence_inpatient.md', 'landmark_trials.md', 'canon_200.md', 'rp-canon-quiz.html'],

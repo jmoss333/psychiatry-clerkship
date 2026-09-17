@@ -3,7 +3,7 @@
 **Owner:** Joshua Moss, MD · **Run it:** on any new or edited guard, gate, validator, audit tool
 or contract test — and on any review of one
 **Enforced by:** nothing. This is judgment. `bin/check_vacuity.py` mechanises exactly one line of it (D2).
-**Last updated:** 2026-09-06
+**Last updated:** 2026-09-14
 
 ---
 
@@ -59,6 +59,26 @@ answered.
       deploy. Two pending items that ship were marked unreviewable. ADR-002
       *Rule:* an exemption list **may only shrink**, each entry carries a reason a reader can
       check, and a red check is never a reason to add one.
+
+- [ ] **A4. Does RESOLVING a finding shrink what the check still watches?**
+      Idempotency keys stop duplicates. Ask what they stop *forever*, and whether
+      "already seen" is quietly standing in for "no longer worth seeing".
+
+      *Earned by:* `sync_findings.py` dedup'd each finding's fingerprint against
+      GitHub issues at `state=all`, so **closing** an issue removed that URL from
+      link monitoring permanently — a set shrinking by one per closure, with the
+      monitor still reporting zero. 118 closed issues had suppressed 103 distinct
+      URLs. Two FDA drug-safety pages were failing in the 2026-09-16 run and could
+      not open an issue; both answered `200` to a direct GET, so the channel was
+      dead in both directions at once. #266/#247/#124, #290/#267/#248/#212
+      *Tell:* the dedup set is built from closed records as well as open ones, and
+      the word "dismissed" appears in a docstring without a file behind it.
+      *Fix pattern:* an OPEN record suppresses (it already tracks the condition); a
+      CLOSED one does not (it means *fixed*, so a recurrence is news); only a
+      **registered** dismissal carrying a written reason suppresses for good —
+      `config/dismissed.json`, seeded from the closures a human had already marked
+      NOT PLANNED so no existing decision was lost. Report the registered count
+      every run, so the suppressed set stays something a person can see.
 
 ---
 
@@ -152,6 +172,36 @@ answered.
       that the one that protects the artifact a learner opens? Then say so out loud, because
       an unstated "local only" reads to the next person as "covered".
 
+- [ ] **D4. When the thing you depend on did not run AT ALL, can you tell that from a pass?**
+      This one is the shape inverted: not a check covering too little, but **no check at all
+      rendering as coverage**. Every surface showing a commit's status shows red marks and
+      green marks; a commit with *zero* recorded runs looks exactly like one that passed, and
+      the eye reads "nothing wrong".
+      *Earned by:* `61beb3b` ("faculty review — attest 23 pending pages") flipped
+      `welcome.md` in `reviewed.json` from `pending` to `reviewed`, which breaks
+      `front-door.spec.js:358` — `renderGovernanceNotice()` emits
+      `.governance-notice.pending-compact` **only** where `status === "pending"`. That commit
+      has **0 check runs and no associated pull request**: it was pushed straight to `main`
+      and was not the tip of its push, so neither the `pull_request` nor the `push` trigger
+      ever produced a run for it. Nothing filtered it out — `ci.yml` has no `paths:` filters
+      and runs on every pull request and every push to `main`. The failure therefore first
+      appeared on the *next* commit (`d640d78`, 2 check runs) and read as that commit's;
+      `main` and every open pull request stayed red until it was found by asking each commit
+      in turn for its check runs. #645
+      *Tell:* your evidence that something is fine is the **absence of a red mark**, and you
+      never asked whether the check ran. Two places this lives: an intermediate commit in a
+      multi-commit push, and a dependent job (`smoke-tests` `needs: build-test-validate`)
+      that never starts because its predecessor did not finish.
+      *Ask:* what unit does your CI actually check? `on: pull_request` + `push: branches:
+      [main]` makes that unit a pull-request head or a push tip — **never every commit**. A
+      commit that is neither is unchecked by construction, and `git log` cannot tell you
+      which is which. `GET /commits/{sha}/check-runs` can: `total_count: 0` is the signature.
+      *Fix pattern:* make **"not reported" a third state**, never folded into pass — the
+      subtractive move `receipt_summary.classify()` already uses, where a row is this
+      steward's *unless* recognised as healthy, deferred or delegated, so a state nobody
+      enumerated falls to the loud branch. Same rule as `what_can_i_do_today.py`'s: a
+      measurement that fails reports `unknown`, never zero.
+
 ---
 
 ## E — Is the finding the thing you actually verified?
@@ -218,6 +268,9 @@ loud.
 - `13_Faculty_Resources/_automation/site_build/ADR-002-shipped-pages-single-source.md` — the
   decision that replaced a vigilance control with a structural one
 - `bin/check_vacuity.py` — mechanises D2
+- `13_Faculty_Resources/_automation/maintenance/receipt_summary.py` — worked example of
+  D4's fix pattern: `classify()` lists rows by exception, so a state nobody enumerated is
+  reported rather than skipped
 - `bin/check_crisis_surfaces.py` — worked example of C1, C4 and D1 after two review rounds
 - `docs/RED_TEAM_RUNBOOK.md` — the sibling discipline: mechanical green is reachability
   evidence, not release evidence

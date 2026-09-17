@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){var q=null;try{q=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)'))||null;}catch(e){}function p(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=(m==='system')?((q&&q.matches)?'dark':'light'):m;try{document.documentElement.setAttribute('data-theme',a);}catch(e){}}p();if(q){try{if(q.addEventListener){q.addEventListener('change',p);}else if(q.addListener){q.addListener(p);}}catch(e){}}})();</script>
 <!-- [CLERKSHIP-META v1] tool="Practice Questions — MS3 Question Bank" version="1.1" built="2026-07-07" category="practice" audience="trainee,ms3" settings="self-study" time="10min" summary="Browser-local practice question bank with confidence, trap feedback, and spaced-review hooks. Educational; fictional composites only; no PHI." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -852,7 +853,13 @@ function checkpointSession(){
     idx: SESSION.idx,
     responses: SESSION.responses.map(function(r){
       return { id: r.item.id, correct: r.correct, confidence: r.confidence };
-    })
+    }),
+    /* Block identity (2026-09-16): a set the timed block opened resumes AS that block's step
+       (?resume=1&block=1&n[&cat]), so the receipt at the end can still mark it. Additive —
+       every reader guards the shape; a capsule without these is an ordinary resume. */
+    fromBlock: SESSION.fromBlock===true,
+    n: SESSION.queue.length,
+    cat: SESSION.cat||null
   });
 }
 
@@ -896,6 +903,13 @@ function tryResumeSession(){
     queue: queue, idx: idx, responses: responses, confidence: null, tier1Key: null,
     displayOrder: [], tier2DisplayOrder: [], state: 'conf'
   };
+  /* A capsule the timed block wrote resumes as the block's step: the receipt keys its
+     blockKind off SESSION.fromBlock, and the category label follows the block's filter. */
+  SESSION.fromBlock = cap.fromBlock===true;
+  if(SESSION.fromBlock){
+    SESSION.cat = (typeof cap.cat==='string'&&CAT_LABELS[cap.cat])?cap.cat:null;
+    SESSION.catLabel = SESSION.cat?(CAT_LABELS[SESSION.cat]||''):'';
+  }
   showQuestion();
   return true;
 }
@@ -1127,7 +1141,7 @@ function showSummary(){
       if(BLOCK_REQUEST){
         var _blockCat = (BLOCK_REQUEST.cat!=='all' && CAT_LABELS[BLOCK_REQUEST.cat]) ? BLOCK_REQUEST.cat : 'all';
         startSession(_blockCat, 'all', String(BLOCK_REQUEST.n));
-        if(SESSION){ SESSION.catLabel = _blockCat==='all' ? '' : (CAT_LABELS[_blockCat]||''); SESSION.fromBlock = true; }
+        if(SESSION){ SESSION.catLabel = _blockCat==='all' ? '' : (CAT_LABELS[_blockCat]||''); SESSION.fromBlock = true; SESSION.cat = _blockCat==='all' ? null : _blockCat; }
         return;
       }
       showSetup();
@@ -1161,18 +1175,16 @@ function showSummary(){
       countEl.textContent=(showing===n?n:showing+' of '+n)+' question'+(n!==1?'s':'')+' match';
     }
   });
-  /* dark mode sync from parent SPA */
+  /* Theme sync from the parent SPA. Paint only -- never persist. The shell can send only a
+     RESOLVED attribute, so writing it to cw_theme would turn a learner's 'system' choice into a
+     pinned light/dark mode with no user gesture anywhere in the chain. This page's own boot
+     reads cw_theme directly, so there is nothing for the write to buy. */
   window.addEventListener('message',function(ev){
     var d=ev.data||{};
     if(d.type==='theme'&&(d.mode==='dark'||d.mode==='light')){
       document.documentElement.setAttribute('data-theme',d.mode);
-      try{localStorage.setItem('cw_theme',d.mode);}catch(_){}
     }
   });
-  try{
-    var t=localStorage.getItem('cw_theme');
-    if(t==='dark'||t==='light') document.documentElement.setAttribute('data-theme',t);
-  }catch(_){}
 })();
 })();
 </script>

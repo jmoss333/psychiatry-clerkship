@@ -88,7 +88,21 @@
         "internalCodes": {
           "type": "array",
           "items": { "type": "string", "pattern": "^[a-z][a-z-]*$" },
-          "description": "Mapped internal content codes. An EMPTY array is meaningful and is not a defect on its own: the internal vocabulary is a disorder taxonomy and this is a competency taxonomy, so some units are unmappable by construction. bin/check_standards_coverage.py reports them."
+          "description": "Mapped internal content codes. An EMPTY array is meaningful and is not a defect on its own — but it is not automatically innocent either. Every unit with an empty array must declare a mappingStatus saying WHICH kind of empty it is; bin/check_standards_coverage.py refuses an unexplained one and reports the three kinds separately."
+        },
+        "mappingStatus": {
+          "enum": ["answered-elsewhere", "blocked-on-vocabulary", "category-mismatch"],
+          "description": "REQUIRED when internalCodes is empty, and FORBIDDEN when it is not. Why this unit maps to nothing. `answered-elsewhere`: the rotation does not teach it, so silence here is the answer. `blocked-on-vocabulary`: mappable the day a named code is added or split — a REAL content gap, and mappingBlockedBy must name the missing code. `category-mismatch`: genuinely inexpressible in a disorder taxonomy, for all time — deliberately hard to earn and currently unused, so check first whether the unit is really just blocked on a code nobody has written. Added 2026-09-14 because a single report line was calling all ten unmapped units 'not a content gap' while nine of them carried notes reading 'VOCABULARY GAP'."
+        },
+        "mappingBlockedBy": {
+          "type": "string",
+          "minLength": 10,
+          "description": "REQUIRED when mappingStatus is 'blocked-on-vocabulary'. The code that does not exist yet, in words — e.g. 'no psychotherapy code exists in the twelve-code vocabulary'. A gap nobody named is a gap nobody fixes, so the checker will not accept the status without it."
+        },
+        "blockedByCode": {
+          "type": "string",
+          "pattern": "^[a-z][a-z-]*$",
+          "description": "REQUIRED when mappingStatus is 'blocked-on-vocabulary'. The id of the PROPOSED code in vocabulary.json that would unblock this unit. Prose says what is missing; this says which queue entry delivers it, so the payoff of adding a code is computable rather than argued. bin/check_vocabulary.py verifies BOTH directions — the code must exist, must be proposed (not already active), and must list this unit in its own `unblocks`."
         },
         "mappingNote": { "type": "string" },
         "review": {

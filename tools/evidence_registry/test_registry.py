@@ -1481,7 +1481,37 @@ def _run_site_build(output_dir: Path, working_directory: Path) -> subprocess.Com
     )
 
 
+def _spawned_build_blocked() -> "str | None":
+    """Why a site build spawned here cannot run, or None. See site_build/check_lfs_media.py.
+
+    A tree checked out without git-lfs has no smudge filter, so every LFS-tracked media
+    file IS its pointer stub -- and build_deploy.py hard-fails those outside the CI and
+    deploy-preview contexts. That aborts the build below for a reason no source edit can
+    fix. Reporting it as a skip keeps the signal honest; any OTHER build failure still
+    hits the returncode assertions.
+
+    An import that cannot be resolved returns None on purpose: "cannot tell" must run the
+    test and fail loudly, never silence it.
+    """
+    import importlib.util
+
+    path = BUILD_DEPLOY.with_name("check_lfs_media.py")
+    spec = importlib.util.spec_from_file_location("_clerkship_lfs_guard", path)
+    if spec is None or spec.loader is None:
+        return None
+    try:
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module.worktree_stub_reason(REPO_ROOT)
+    except Exception:
+        return None
+
+
 def test_site_build_writes_deterministic_safe_public_registry():
+    blocked = _spawned_build_blocked()
+    if blocked:
+        print("test_registry: SKIP deterministic public registry — " + blocked)
+        return
     with tempfile.TemporaryDirectory() as directory:
         temporary = Path(directory)
         first_output = temporary / "first"

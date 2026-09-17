@@ -952,7 +952,7 @@ function buildContentItems(reviewed, shipped) {
   } catch {
     invalidRepositoryFile();
   }
-  return universe.map(({ slug, title, kind, site }) => {
+  return universe.map(({ slug, title, kind, site, sites }) => {
     const entry = isRecord(reviewed[slug]) ? reviewed[slug] : {};
     return {
       slug,
@@ -961,6 +961,11 @@ function buildContentItems(reviewed, shipped) {
       // Which learner deployment serves this item, so the console previews the resident
       // half of a Case-of-the-Week pair against the resident site.
       site,
+      // EVERY deployment that publishes it — the audience the reviewer is attesting it
+      // suitable for, which is not the same fact as `site` above and must be sent
+      // separately. Dropping it here is what left the browser with nothing to say but
+      // "third-year student" on all 22 resident-only pages (2026-09-14 review).
+      sites,
       status: contentApiStatus(entry),
       at: typeof entry.at === 'string' ? entry.at : '',
       by: typeof entry.by === 'string' ? entry.by : '',

@@ -83,6 +83,41 @@
           "items": { "type": "string", "minLength": 1 },
           "description": "Where the finding actually changed the library — an evidence_registry.json source id, a page path, a decisions.json id."
         },
+        "followUp": { "$ref": "#/$defs/followUp" },
+        "note": { "type": "string" }
+      }
+    },
+    "followUp": {
+      "type": "object",
+      "required": ["kind", "mechanism", "requires", "verifiedOn", "evidence"],
+      "additionalProperties": false,
+      "description": "OPTIONAL, and absent by default: a finding with no followUp is carried by a person, which needs no proof. Present, it claims an AUTOMATION is carrying the finding — and that claim is checked like any other. The dock refuses to let a model's word stand as a primary source; this refuses to let an automation's existence stand as proof of its capability. bin/research-dock.py verifies that every capability named in `requires` literally appears in the `evidence` capture, because an automation created without the connector it needs prints one line and then looks identical to a working one forever after.",
+      "properties": {
+        "kind": {
+          "enum": ["scheduled-task", "workflow", "gate"],
+          "description": "What sort of machinery this is. There is no `manual` kind: a person carrying a finding is the default and is expressed by omitting followUp entirely."
+        },
+        "mechanism": {
+          "type": "string",
+          "minLength": 3,
+          "description": "The identifier of the thing that does the work — a trigger id, a workflow name, a verify.sh step. Must be specific enough that a reader can go look at it."
+        },
+        "requires": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 2 },
+          "description": "Every capability the mechanism needs in order to do what this finding claims it does — a connector name, a tool, a device binding. Naming nothing is how an automation gets believed, so at least one is mandatory."
+        },
+        "verifiedOn": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "The date the capture was actually taken. An unchecked automation is a rumour. Past graceDays this reports (advisory, never blocking) that it is due for a re-check."
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 3,
+          "description": "Repo-relative path to a dated local capture of what the mechanism can reach — the connector list, the tool inventory, the binding result. Unlike returnFile these captures are TRACKED, so a missing one blocks."
+        },
         "note": { "type": "string" }
       }
     },

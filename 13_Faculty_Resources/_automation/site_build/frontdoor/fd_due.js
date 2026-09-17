@@ -13,8 +13,10 @@ function fdDueCount(breakdown){
   return total;
 }
 
-function fdDueRow(breakdown){
-  var b=breakdown||{}, total=fdDueCount(b), parts=[];
+/* primary===true marks the row as Today's one primary action: it gains is-primary and a
+   kicker naming the move. Anything else renders the row exactly as before. */
+function fdDueRow(breakdown, primary){
+  var b=breakdown||{}, total=fdDueCount(b), parts=[], isPrimary=primary===true;
   if(!total) return '';
   if(b.daily&&b.daily.due) parts.push(b.daily.due+' daily');
   if(b.qb&&b.qb.due) parts.push(b.qb.due+' practice');
@@ -22,25 +24,56 @@ function fdDueRow(breakdown){
   if(b.comm&&b.comm.due) parts.push(b.comm.due+' communication');
   if(b.reason&&b.reason.due) parts.push(b.reason.due+' reasoning');
   if(b.other&&b.other.due) parts.push(b.other.due+' other');
-  return '<button type="button" class="fd-due" data-fd-open="review.html">'+
+  return '<button type="button" class="'+(isPrimary?'fd-due is-primary':'fd-due')+'" data-fd-open="review.html">'+
+    (isPrimary?'<span class="fd-due__kicker">Clear what’s due</span>':'')+
     '<span class="fd-due__label">'+total+' review'+(total===1?'':'s')+' due</span>'+
     '<span class="fd-due__breakdown">'+fdEsc(parts.join(' · '))+'</span>'+
     '<span class="fd-due__action">Start review →</span>'+
   '</button>';
 }
 
-function fdResumeCard(capsule){
+/* Questions left in a capsule, or 0 for anything malformed. The shape rule lives here once so
+   the resume card and the Today picker (fd_today.js) agree on what "resumable" means. */
+function fdCapsuleLeft(capsule){
   var c=capsule||{};
   if(!Array.isArray(c.queueIds)||typeof c.idx!=='number'||c.idx%1!==0||
-      c.idx<0||c.idx>c.queueIds.length) return '';
-  var left=c.queueIds.length-c.idx;
+      c.idx<0||c.idx>c.queueIds.length) return 0;
+  return c.queueIds.length-c.idx;
+}
+
+function fdResumeCard(capsule, primary, block){
+  var left=fdCapsuleLeft(capsule), isPrimary=primary===true, c=capsule||{}, b=block||null;
   if(left<1) return '';
   var minutes=Math.max(1,Math.round(left*45/60));
-  return '<section class="fd-resume"><h2 class="fd-sectionhead">Continue where you left off</h2>'+
-    '<a class="fd-resume__link" href="?tool=question-bank-practice.html&amp;resume=1">'+
-      '<span>Resume question bank — '+left+' left, ~'+minutes+' min</span>'+
+  /* A set the timed block opened resumes AS the block's step: the route carries block=1&n[&cat]
+     so the receipt can mark it, and the card says where the block stands. The route is built by
+     fdBlockResumeSearch (fd_block.js, injected after this module -- hence the typeof guard) so
+     the shell's Continue and this link can never drift apart. Without a block status, or when
+     the block's next step is not the question set, the card is exactly what it was. */
+  var resumeSearch=(c.fromBlock===true&&b&&b.next&&b.next.kind==='qb'&&typeof fdBlockResumeSearch==='function')?fdBlockResumeSearch(b.next,c):null;
+  var href=resumeSearch?resumeSearch.replace(/&/g,'&amp;'):'?tool=question-bank-practice.html&amp;resume=1';
+  var blockLine=resumeSearch?'<span class="fd-resume__block">Block · '+b.done+' of '+b.total+' done</span>':'';
+  return '<section class="'+(isPrimary?'fd-resume is-primary':'fd-resume')+'">'+
+    '<h2 class="fd-sectionhead">'+(isPrimary?'Pick up where you left off':'Continue where you left off')+'</h2>'+
+    '<a class="fd-resume__link" href="'+href+'">'+
+      '<span>Resume question bank — '+left+' left, ~'+minutes+' min'+blockLine+'</span>'+
       '<span>Resume →</span>'+
     '</a></section>';
+}
+
+/* "You were reading" -- the last opened item when it is an undone read from this week that is
+   not already the Continue target (the shell resolves that through fdTodayLastRead). Tools
+   never render here: a tool is not reading, and a live block or a capsule already covers the
+   unfinished-practice case. */
+function fdLastReadRow(item, primary){
+  var it=item||{}, isPrimary=primary===true;
+  if(typeof it.ref!=='string'||!it.ref||it.kind!=='read') return '';
+  var min=(typeof it.minutes==='number')?(' — '+it.minutes+' min'):'';
+  return '<button type="button" class="'+(isPrimary?'fd-lastread is-primary':'fd-lastread')+'" data-fd-open="'+fdEsc(it.ref)+'">'+
+    (isPrimary?'<span class="fd-lastread__kicker">Pick up where you left off</span>':'')+
+    '<span class="fd-lastread__title">You were reading: '+fdEsc(it.title||it.ref)+fdEsc(min)+'</span>'+
+    '<span class="fd-lastread__action">Open →</span>'+
+  '</button>';
 }
 
 function fdCaptureTriage(items){

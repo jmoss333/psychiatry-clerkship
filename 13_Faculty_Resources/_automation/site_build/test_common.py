@@ -13,9 +13,12 @@ to eliminate:
      differently (the rp-* bypass).
 """
 
+import ast
 import json
 import os
+import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -188,6 +191,224 @@ class TestPagePasses(_SiteFixture):
             fh.write('<html><head></head><body><script>fetch("quizzes.json")</script></body></html>')
         common.apply_dark_mode(self.tool, cache_bust="123")
         self.assertIn('quizzes.json?v=123', self.read())
+
+
+# The pre-paint theme boot is the one piece of theme logic that cannot be imported: it has to run
+# in <head> before anything else loads, because its whole job is painting the right attribute
+# before first paint. So it exists as more than one copy by necessity -- THEME_INIT here, and the
+# inline <script> at the top of spa_index.html -- and two copies that nothing compares are exactly
+# how these drifted: the shell learned 'system' on 2026-09-10 and THEME_INIT did not, which left a
+# learner on a dark-preferring phone reading a dark shell and light tool pages. These tests pin the
+# behaviour, and pin every copy in the tree to the shell's bytes so none can fall behind again.
+
+# .../13_Faculty_Resources/_automation/site_build/test_common.py -> the repository root.
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+
+_SKIP_DIRS = {".git", ".claude", "_build", "node_modules", "__pycache__", ".venv"}
+
+_SCRIPT_RX = re.compile(r"<script[^>]*>([\s\S]*?)</script>", re.I)
+# The boot is recognised by what it DOES, never by how it spells it. The predecessor of this
+# check keyed on the literal `var t=localStorage.getItem('cw_theme')`, so the identical boot with
+# its variable renamed walked straight past it.
+_READS_THEME_KEY = re.compile(r"getItem\(\s*['\"]cw_theme['\"]")
+
+
+def _strip_html_comments(markup):
+    """Drop HTML comments. A comment that names a thing is not the thing.
+
+    _TEMPLATE.html's scaffold header states the rule "Theme-init IIFE is the FIRST <script> in
+    <head>" -- with a literal <script> inside the prose -- so a scanner that does not strip
+    comments first starts matching inside that sentence and extracts 1187 bytes of documentation
+    as though it were a boot. This is the same trap that shipped the whole SPA shell with no dark
+    palette on 2026-09-10: _links_clinical_css read a source comment naming clinical-warm.css as
+    proof the stylesheet was linked. Strip first, then look.
+    """
+    return re.sub(r"<!--[\s\S]*?-->", "", markup)
+
+
+def _head_theme_boot(markup):
+    """This page's pre-paint theme boot, or None if it has none.
+
+    A boot is an inline <script> before </head> whose body reads cw_theme out of localStorage and
+    stamps data-theme. Scoping to <head> is deliberate and is the reason this does not fire on
+    every tool that owns its own light/dark toggle: decision-aids.html, review.html,
+    interview-circle.html and feedback.html all read or write cw_theme and set data-theme from
+    <body>, legitimately and as their own state. The cost of that scope is stated in the test.
+    """
+    t = _strip_html_comments(markup)
+    end = t.lower().find("</head")
+    if end == -1:
+        end = len(t)
+    for m in _SCRIPT_RX.finditer(t):
+        if m.start() >= end:
+            break
+        body = m.group(1)
+        if _READS_THEME_KEY.search(body) and "data-theme" in body:
+            return body
+    return None
+
+
+def _boot_census(root):
+    """Every pre-paint theme boot in the tree, as sorted (label, script body) pairs.
+
+    THEME_INIT is a copy like any other; it is listed explicitly only because it lives in a .py
+    file as a string constant, where a walk over <head> cannot see it.
+    """
+    boots = [("common.py:THEME_INIT", _inline_script(common.THEME_INIT))]
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS]
+        for name in filenames:
+            if not name.endswith(".html"):
+                continue
+            full = os.path.join(dirpath, name)
+            with open(full, encoding="utf-8", errors="ignore") as fh:
+                boot = _head_theme_boot(fh.read())
+            if boot is not None:
+                boots.append((os.path.relpath(full, root), boot))
+    return sorted(boots)
+
+
+# A FLOOR on the census, not a pin: 15 today -- THEME_INIT, spa_index.html, and the 13 pages that
+# carried a boot of their own until 2026-09-10. Adding a page with a boot raises the real count
+# and needs no edit here; only a DROP is a signal. Its whole job is that a parity assertion over
+# an empty census is green, so without it a walk that silently stops finding files would report
+# success over nothing -- docs/SILENT_SHRINK_CHECKLIST.md, which is the reason this line exists.
+MIN_THEME_BOOTS = 15
+
+# Drives a boot script the way a browser would: fake storage, a fake documentElement that records
+# what got painted, and a window whose matchMedia answers the scenario. Mirrors the harness in
+# tests/theme-boot.test.mjs so the two copies are measured identically.
+_BOOT_DRIVER = """
+const boot = process.argv[1];
+const out = {};
+for (const sc of JSON.parse(process.argv[2])) {
+  let painted = null;
+  const localStorage = { getItem: (k) => {
+    if (sc.storageThrows) throw new Error('site data blocked');
+    return k === 'cw_theme' ? sc.stored : null;
+  } };
+  const document = { documentElement: { setAttribute: (_, v) => { painted = v; } } };
+  const window = sc.matchMedia === false ? {}
+    : { matchMedia: (q) => ({ matches: /dark/.test(q) && sc.prefersDark }) };
+  new Function('localStorage', 'document', 'window', boot)(localStorage, document, window);
+  out[sc.name] = painted;
+}
+process.stdout.write(JSON.stringify(out));
+"""
+
+# matchMedia exists unless a scenario opts out, and storage answers unless a scenario makes it
+# throw. The last three cases are the ones about an ABSENT capability rather than a stored value:
+# a browser with no matchMedia, and a browser that throws on any localStorage access at all
+# (Chrome with site data blocked). The OS must still be consulted in the latter -- resolving it
+# inside the storage try meant a storage-blocked learner on a dark OS got no attribute, and
+# clinical-warm.css scopes the dark palette to [data-theme="dark"], so no attribute is a white
+# page they cannot opt out of.
+_SCENARIOS = [
+    {"name": "unset_on_a_dark_os", "stored": None, "prefersDark": True},
+    {"name": "unset_on_a_light_os", "stored": None, "prefersDark": False},
+    {"name": "stored_light_on_a_dark_os", "stored": "light", "prefersDark": True},
+    {"name": "stored_dark_on_a_light_os", "stored": "dark", "prefersDark": False},
+    {"name": "stored_system_on_a_dark_os", "stored": "system", "prefersDark": True},
+    {"name": "stored_junk_on_a_dark_os", "stored": "banana", "prefersDark": True},
+    {"name": "no_matchmedia_at_all", "stored": None, "prefersDark": True, "matchMedia": False},
+    {"name": "storage_blocked_on_a_dark_os", "stored": None, "prefersDark": True,
+     "storageThrows": True},
+    {"name": "storage_blocked_on_a_light_os", "stored": None, "prefersDark": False,
+     "storageThrows": True},
+]
+
+EXPECTED_PAINT = {
+    "unset_on_a_dark_os": "dark",
+    "unset_on_a_light_os": "light",
+    "stored_light_on_a_dark_os": "light",
+    "stored_dark_on_a_light_os": "dark",
+    "stored_system_on_a_dark_os": "dark",
+    "stored_junk_on_a_dark_os": "dark",
+    "no_matchmedia_at_all": "light",
+    "storage_blocked_on_a_dark_os": "dark",
+    "storage_blocked_on_a_light_os": "light",
+}
+
+
+def _inline_script(markup):
+    """The JS inside the first bare <script>...</script>, with the tags stripped."""
+    m = re.search(r"<script>([\s\S]*?)</script>", markup)
+    assert m, "no inline <script> found"
+    return m.group(1)
+
+
+def _shell_boot():
+    """The shell's own pre-paint boot script, read from spa_index.html."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spa_index.html")
+    with open(path, encoding="utf-8") as fh:
+        return _inline_script(fh.read())
+
+
+class TestThemeInit(unittest.TestCase):
+    def _paint(self, boot_js):
+        """What each scenario paints onto documentElement, by running the real script in node."""
+        result = subprocess.run(
+            ["node", "-e", _BOOT_DRIVER, boot_js, json.dumps(_SCENARIOS)],
+            check=True, capture_output=True, text=True,
+        )
+        return json.loads(result.stdout)
+
+    def test_theme_init_resolves_system_and_unset_through_the_media_query(self):
+        self.assertEqual(self._paint(_inline_script(common.THEME_INIT)), EXPECTED_PAINT)
+
+    def test_theme_init_is_byte_identical_to_the_shell_boot_script(self):
+        self.assertEqual(
+            _inline_script(common.THEME_INIT), _shell_boot(),
+            "THEME_INIT and spa_index.html's boot script are one behaviour in two copies; "
+            "change both or neither",
+        )
+
+    def test_the_shell_and_the_injection_agree_scenario_for_scenario(self):
+        """Byte-equality above is the guard; this proves the bytes they share are the right ones."""
+        self.assertEqual(self._paint(_shell_boot()), EXPECTED_PAINT)
+
+    def test_every_pre_paint_theme_boot_in_the_tree_carries_the_shell_bytes(self):
+        """One assertion for both directions of drift, because both are the same defect.
+
+        FORWARD (the unguarded one, and why this replaced its predecessor): fifteen copies of
+        this boot exist and only two of them -- THEME_INIT and spa_index.html -- were pinned to
+        each other. Teach the shell a fourth mode and the other thirteen fall silently behind,
+        which is precisely the split-brain retired on 2026-09-10, recurring with nothing red.
+
+        BACKWARD: a page that adopts the retired two-state boot is caught by the same comparison,
+        because the retired boot is not equal to the current one. It no longer matters how the
+        reintroduced copy spells its variables -- the predecessor keyed on a literal and a rename
+        defeated it.
+
+        WHAT THIS DOES NOT SEE, stated so nobody mistakes green for coverage:
+          * A theme read placed outside <head>. That is the exact shape
+            question-bank-practice.html carried until 2026-09-10 -- a deferred read at the bottom
+            of <body> -- and the literal needle this replaced did catch it. The scope is the
+            price of not firing on the four tools that legitimately own their theme from <body>;
+            a boot down there is not a pre-paint boot at all, and the build's page contract is
+            what is supposed to require one.
+          * A page with NO boot. Parity over a census cannot speak about a page that is not in
+            it, and four shipped pages are in exactly that position today -- apply_dark_mode()
+            skips THEME_INIT wherever 'cw_theme' already appears, which their own <body> theme
+            code trips. Reported with this change; remediating them is not this test's job.
+        """
+        census = _boot_census(REPO_ROOT)
+        self.assertGreaterEqual(
+            len(census), MIN_THEME_BOOTS,
+            "the theme-boot census shrank to %d (floor %d): the walk stopped finding boots it "
+            "used to find, so the parity check below is now passing over a smaller set than it "
+            "claims to check. Fix the walk, or lower the floor deliberately if pages really "
+            "went away. Found: %s" % (
+                len(census), MIN_THEME_BOOTS, [label for label, _ in census]),
+        )
+        shell = _shell_boot()
+        drifted = [label for label, body in census if body != shell]
+        self.assertEqual(
+            drifted, [],
+            "these theme boots are not byte-identical to spa_index.html's: %s. Every copy paints "
+            "before first paint and they must agree -- a copy left behind is a learner reading a "
+            "dark shell and a light page. Change them all or none." % drifted,
+        )
 
 
 class TestContentPasses(_SiteFixture):
@@ -651,6 +872,234 @@ class TestServiceWorkerEmission(unittest.TestCase):
         )
         with self.assertRaises(AssertionError):
             common.emit_service_worker(d)
+
+
+class TestPreviewHeaders(unittest.TestCase):
+    """Deploy-preview CSP widening for the Netlify Drawer (issue #430).
+
+    Netlify injects `/.netlify/scripts/cdp` into deploy-preview HTML; its drawer
+    frames https://app.netlify.com/, which `frame-src 'self'` blocks. The fix
+    widens frame-src in the `deploy-preview` CONTEXT only. The contract these
+    tests defend is asymmetric: the preview allowance is a convenience, the
+    production CSP staying byte-identical is not.
+    """
+
+    SAMPLE = (
+        "/*\n"
+        "  X-Content-Type-Options: nosniff\n"
+        "  Content-Security-Policy: default-src 'self'; img-src 'self' data:; "
+        "script-src 'self' 'unsafe-inline'; frame-src 'self'; "
+        "frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n"
+        "/*.html\n"
+        "  Cache-Control: public, max-age=0, must-revalidate\n"
+    )
+
+    @staticmethod
+    def _write(path, text):
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(text)
+
+    @staticmethod
+    def _read(path):
+        with open(path, encoding="utf-8") as fh:
+            return fh.read()
+
+    # ---- contexts that must change nothing -------------------------------
+
+    def test_production_context_is_byte_identical(self):
+        self.assertEqual(common.preview_headers(self.SAMPLE, "production"), self.SAMPLE)
+
+    def test_empty_context_is_byte_identical(self):
+        """A local build (and any build Netlify did not label) sees CONTEXT=''."""
+        self.assertEqual(common.preview_headers(self.SAMPLE, ""), self.SAMPLE)
+
+    def test_branch_deploy_context_is_byte_identical(self):
+        self.assertEqual(common.preview_headers(self.SAMPLE, "branch-deploy"), self.SAMPLE)
+
+    def test_unknown_context_is_byte_identical(self):
+        """Fail closed on a context nobody anticipated: leave the CSP alone."""
+        self.assertEqual(common.preview_headers(self.SAMPLE, "deploy_preview"), self.SAMPLE)
+        self.assertEqual(common.preview_headers(self.SAMPLE, "DEPLOY-PREVIEW"), self.SAMPLE)
+
+    # ---- the preview rewrite ---------------------------------------------
+
+    def test_deploy_preview_widens_frame_src_only(self):
+        out = common.preview_headers(self.SAMPLE, "deploy-preview")
+        before = self.SAMPLE.split("\n")
+        after = out.split("\n")
+        self.assertEqual(len(before), len(after))
+        changed = [i for i, (b, a) in enumerate(zip(before, after)) if b != a]
+        self.assertEqual(len(changed), 1, "exactly one line may change")
+        line = after[changed[0]]
+        self.assertIn("Content-Security-Policy:", line)
+        self.assertIn("frame-src 'self' https://app.netlify.com;", line)
+        # Every other directive on that line survives untouched.
+        self.assertEqual(
+            before[changed[0]].replace(
+                "frame-src 'self';", "frame-src 'self' https://app.netlify.com;"
+            ),
+            line,
+        )
+
+    def test_deploy_preview_leaves_other_directives_alone(self):
+        out = common.preview_headers(self.SAMPLE, "deploy-preview")
+        for directive in (
+            "default-src 'self';",
+            "img-src 'self' data:;",
+            "script-src 'self' 'unsafe-inline';",
+            "frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app",
+        ):
+            self.assertIn(directive, out)
+        self.assertIn("  X-Content-Type-Options: nosniff\n", out)
+        self.assertIn("/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n", out)
+        self.assertEqual(out.count("https://app.netlify.com"), 1)
+
+    def test_only_the_csp_line_is_rewritten(self):
+        """A `frame-src 'self';` outside the CSP line must not be touched.
+
+        Netlify's _headers format allows arbitrary header names, so the literal
+        token can legitimately appear elsewhere. Scoping the rewrite to the CSP
+        line is what makes "only the frame-src directive changed" checkable
+        rather than hopeful.
+        """
+        decoy = self.SAMPLE + "  X-Note: frame-src 'self'; not a policy\n"
+        out = common.preview_headers(decoy, "deploy-preview")
+        self.assertIn("  X-Note: frame-src 'self'; not a policy\n", out)
+        self.assertEqual(out.count("https://app.netlify.com"), 1)
+
+    def test_is_idempotent(self):
+        once = common.preview_headers(self.SAMPLE, "deploy-preview")
+        twice = common.preview_headers(once, "deploy-preview")
+        self.assertEqual(once, twice)
+        self.assertEqual(twice.count("https://app.netlify.com"), 1)
+
+    # ---- drift must fail loudly, never silently no-op --------------------
+
+    def test_missing_csp_line_raises(self):
+        with self.assertRaises(ValueError):
+            common.preview_headers("/*\n  X-Content-Type-Options: nosniff\n", "deploy-preview")
+
+    def test_changed_frame_src_shape_raises(self):
+        drifted = self.SAMPLE.replace("frame-src 'self';", "frame-src 'self' https://example.org;")
+        with self.assertRaises(ValueError):
+            common.preview_headers(drifted, "deploy-preview")
+
+    def test_drift_still_cannot_affect_production(self):
+        """The loud failure above is preview-scoped; production returns early."""
+        drifted = self.SAMPLE.replace("frame-src 'self';", "frame-src 'self' https://example.org;")
+        self.assertEqual(common.preview_headers(drifted, "production"), drifted)
+
+    # ---- the REAL payload, not just a fixture ----------------------------
+
+    def _learner_headers_literal(self):
+        """The `_headers` payload as build_deploy.py actually writes it.
+
+        Extracted the same way tests/faculty-console-handler.test.mjs extracts
+        it, so this test reads the shipped string rather than a copy of it: a
+        fixture-only test would keep passing while the real CSP drifted out from
+        under the transform (docs/SILENT_SHRINK_CHECKLIST.md).
+        """
+        here = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(here, "build_deploy.py"), encoding="utf-8") as fh:
+            src = fh.read()
+        match = re.search(
+            r'open\(OUT\+"/_headers","w",encoding="utf-8"\)\.write\(("(?:\\.|[^"\\])*")\)',
+            src,
+        )
+        self.assertIsNotNone(
+            match, "the learner _headers payload must remain a statically-inspectable literal"
+        )
+        return ast.literal_eval(match.group(1))
+
+    def test_real_learner_payload_is_untouched_in_production(self):
+        payload = self._learner_headers_literal()
+        self.assertEqual(common.preview_headers(payload, "production"), payload)
+        self.assertEqual(common.preview_headers(payload, ""), payload)
+        self.assertNotIn("app.netlify.com", payload)
+
+    def test_real_learner_payload_is_widened_on_a_preview(self):
+        payload = self._learner_headers_literal()
+        out = common.preview_headers(payload, "deploy-preview")
+        self.assertNotEqual(out, payload)
+        self.assertIn("frame-src 'self' https://app.netlify.com;", out)
+        self.assertEqual(out.count("https://app.netlify.com"), 1)
+        self.assertEqual(
+            payload.replace("frame-src 'self';", "frame-src 'self' https://app.netlify.com;"),
+            out,
+        )
+
+    # ---- the file-level wrapper ------------------------------------------
+
+    def test_apply_writes_only_when_the_text_changed(self):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d)
+        path = os.path.join(d, "_headers")
+        self._write(path, self.SAMPLE)
+
+        self.assertFalse(common.apply_preview_headers(d, context="production"))
+        self.assertEqual(self._read(path), self.SAMPLE)
+
+        self.assertTrue(common.apply_preview_headers(d, context="deploy-preview"))
+        widened = self._read(path)
+        self.assertIn("frame-src 'self' https://app.netlify.com;", widened)
+
+        # Second pass over an already-widened file (the resident build's case).
+        self.assertFalse(common.apply_preview_headers(d, context="deploy-preview"))
+        self.assertEqual(self._read(path), widened)
+
+    def test_apply_reads_context_from_the_environment_by_default(self):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d)
+        path = os.path.join(d, "_headers")
+        self._write(path, self.SAMPLE)
+        previous = os.environ.get("CONTEXT")
+
+        def _restore():
+            if previous is None:
+                os.environ.pop("CONTEXT", None)
+            else:
+                os.environ["CONTEXT"] = previous
+
+        self.addCleanup(_restore)
+        os.environ["CONTEXT"] = "deploy-preview"
+        self.assertTrue(common.apply_preview_headers(d))
+        self.assertIn("app.netlify.com", self._read(path))
+
+    # ---- the wiring itself ------------------------------------------------
+
+    def test_build_deploy_applies_the_transform_after_writing_headers(self):
+        """Source-text pin: the wiring cannot be dropped and leave the unit green.
+
+        preview_headers() is pure, so every behavioural test above would still
+        pass with the call deleted from the build. This is the test that fails
+        when #430 quietly comes back.
+        """
+        here = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(here, "build_deploy.py"), encoding="utf-8") as fh:
+            src = fh.read()
+        write_at = src.find('open(OUT+"/_headers","w",encoding="utf-8").write(')
+        apply_at = src.find("common.apply_preview_headers(OUT")
+        self.assertNotEqual(write_at, -1, "build_deploy.py must still write _headers")
+        self.assertNotEqual(
+            apply_at, -1, "build_deploy.py must apply the deploy-preview CSP widening (#430)"
+        )
+        self.assertLess(write_at, apply_at, "the widening must run AFTER the _headers write")
+
+    def test_resident_build_applies_the_transform_too(self):
+        """The resident site inherits _headers through copytree; it re-applies
+        the transform anyway, so the preview allowance cannot vanish with a
+        future change to how the resident build produces the file."""
+        here = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(here, "resident_section.py"), encoding="utf-8") as fh:
+            src = fh.read()
+        copytree_at = src.find("shutil.copytree(MS3, OUT)")
+        apply_at = src.find("common.apply_preview_headers(OUT")
+        self.assertNotEqual(copytree_at, -1)
+        self.assertNotEqual(
+            apply_at, -1, "resident_section.py must apply the deploy-preview CSP widening (#430)"
+        )
+        self.assertLess(copytree_at, apply_at)
+
 
 
 if __name__ == "__main__":

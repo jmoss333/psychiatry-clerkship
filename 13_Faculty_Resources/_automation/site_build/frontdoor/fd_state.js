@@ -16,8 +16,10 @@ var FD_STORE='cw_frontdoor_v1';
 /* Persisted keys are ONLY those with no existing home. done lives in cw_progress_v1,
    streak in cw_srs_v1.stats, and the rotation week in cw_rotation_start/cw_start_week —
    copying them here would create two sources that silently desync. toolExpanded is shell layout,
-   not clinical progress or route state, so this store is its single home. */
-var FD_KEYS=['role','tab','viewWeek','openId','fromTab','scrollPos','toolExpanded'];
+   not clinical progress or route state, so this store is its single home. browsing is the
+   learner's explicit "not on rotation" choice (#425): with no rotation start left to derive a
+   week from, it is the only thing that says the app -- not week setup -- is where a reload lands. */
+var FD_KEYS=['role','tab','viewWeek','openId','fromTab','scrollPos','toolExpanded','browsing'];
 
 function fdLoad(){
   try{ return JSON.parse(localStorage.getItem(FD_STORE)||'{}')||{}; }catch(_){ return {}; }
@@ -183,6 +185,22 @@ function fdExamCountdown(week, weeks, nowMs, rotationStart){
   if(days<0) return '';
   if(days===0) return '· exam day — good luck';
   return '· exam in ~'+days+' day'+(days===1?'':'s');
+}
+
+/* The write half of the key fdExamCountdown reads, and the settings panel's only persistence.
+   It lives HERE rather than in fd_wire.js's fdApplyEffect, beside its reader, because the key
+   spells an audience token the controller's copy rule bans FILE-WIDE
+   (tests/fd-action-contract.test.mjs: `assert.doesNotMatch(wire, /…|shelf|…/i)`); this module's
+   equivalent rule is scoped to the strings it RETURNS, which is why the key may be named here.
+
+   An empty date removes the key rather than storing '': phase_policy.js treats an absent key and
+   an unparseable one alike (cap 12, no countdown), but only removal leaves the store in the state
+   a learner who never set a date would have. The caller validates the shape; this only stores. */
+function fdStoreExamDate(date){
+  try{
+    if(date) localStorage.setItem('cw_shelf_date', date);
+    else localStorage.removeItem('cw_shelf_date');
+  }catch(_){ }
 }
 
 /* Deterministic per local calendar day, skipping anything already done. Candidates are

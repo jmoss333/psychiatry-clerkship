@@ -3,14 +3,20 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
-const data = readFileSync(new URL(`${BUILD}/frontdoor/fd_data.js`, import.meta.url), 'utf8');
-const due = readFileSync(new URL(`${BUILD}/frontdoor/fd_due.js`, import.meta.url), 'utf8');
+const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf8');
+const data = read('frontdoor/fd_data.js');
+const due = read('frontdoor/fd_due.js');
 
+// Concatenated in the page's injection order. fd_block.js comes AFTER fd_due.js on the page, so
+// fdResumeCard reaches fdBlockResumeSearch only at render time, guarded by typeof — the same
+// order here keeps that guard honest.
 // eslint-disable-next-line no-new-func
-const make = new Function(`${data}\n${due}\nreturn {
+const make = new Function(`${read('phase_policy.js')}\n${read('frontdoor/fd_state.js')}\n${data}\n${read('frontdoor/fd_edition_student.js')}\n${read('frontdoor/fd_today.js')}\n${due}\n${read('frontdoor/fd_block.js')}\nreturn {
   fdDueRow: fdDueRow,
   fdResumeCard: fdResumeCard,
   fdCaptureTriage: fdCaptureTriage,
+  fdCapsuleLeft: fdCapsuleLeft,
+  fdLastReadRow: fdLastReadRow,
 };`);
 
 const F = make();
@@ -82,4 +88,86 @@ test('fd_due stays ES5, audience-neutral, and does not introduce storage', () =>
   assert.doesNotMatch(due, /\b(?:const|let)\s|=>|`/);
   assert.doesNotMatch(due, /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i);
   assert.doesNotMatch(due, /localStorage/);
+});
+
+// ---- One Thing First: primary variants of the device-store rows (handoff 2026-09-16) -------
+
+const DUE_ONE = { daily: { due: 1 }, qb: { due: 0 }, fam: { due: 0 }, other: { due: 0 } };
+const CAPSULE = { queueIds: ['a', 'b', 'c'], idx: 1 };
+
+test('fdCapsuleLeft owns the capsule shape rule once: questions left, or 0 for anything malformed', () => {
+  for (const invalid of [null, undefined, {}, { queueIds: 'bad', idx: 0 }, { queueIds: [], idx: 0 },
+    { queueIds: ['a'], idx: -1 }, { queueIds: ['a'], idx: 2 }, { queueIds: ['a'], idx: '0' },
+    { queueIds: ['a', 'b'], idx: 0.5 }]) {
+    assert.equal(F.fdCapsuleLeft(invalid), 0, JSON.stringify(invalid));
+  }
+  assert.equal(F.fdCapsuleLeft(CAPSULE), 2);
+  assert.equal(F.fdCapsuleLeft({ queueIds: ['a'], idx: 1 }), 0, 'a finished session has nothing to resume');
+});
+
+test('fdDueRow(b, true) is the primary: is-primary plus the kicker; false or undefined is today\'s markup', () => {
+  const plain = F.fdDueRow(DUE_ONE);
+  assert.equal(F.fdDueRow(DUE_ONE, false), plain);
+  assert.equal(F.fdDueRow(DUE_ONE, undefined), plain);
+  assert.doesNotMatch(plain, /is-primary|fd-due__kicker/);
+  const primary = F.fdDueRow(DUE_ONE, true);
+  assert.match(primary, /^<button type="button" class="fd-due is-primary" data-fd-open="review\.html"><span class="fd-due__kicker">Clear what’s due<\/span><span class="fd-due__label">1 review due<\/span>/);
+  assert.equal(primary.replace(' is-primary', '').replace('<span class="fd-due__kicker">Clear what’s due</span>', ''), plain);
+  assert.equal(F.fdDueRow({ daily: { due: 0 } }, true), '', 'nothing due renders nothing, primary or not');
+});
+
+test('fdResumeCard(c, true) is the primary: is-primary and the "Pick up" heading; the route is untouched', () => {
+  const plain = F.fdResumeCard(CAPSULE);
+  assert.equal(F.fdResumeCard(CAPSULE, false), plain);
+  assert.match(plain, /<section class="fd-resume"><h2 class="fd-sectionhead">Continue where you left off<\/h2>/);
+  const primary = F.fdResumeCard(CAPSULE, true);
+  assert.match(primary, /^<section class="fd-resume is-primary"><h2 class="fd-sectionhead">Pick up where you left off<\/h2>/);
+  assert.match(primary, /href="\?tool=question-bank-practice\.html&amp;resume=1"/);
+  assert.match(primary, /2 left, ~2 min/);
+  assert.equal(F.fdResumeCard({ queueIds: ['a'], idx: 1 }, true), '');
+});
+
+test('fdLastReadRow renders "You were reading" for an undone week read, escapes the title, never for a tool', () => {
+  const read = { ref: 'a&b.md', kind: 'read', title: '<Page> & Co', minutes: 6, done: false, isContinueTarget: false };
+  const plain = F.fdLastReadRow(read);
+  assert.match(plain, /^<button type="button" class="fd-lastread" data-fd-open="a&amp;b\.md">/);
+  assert.match(plain, /<span class="fd-lastread__title">You were reading: &lt;Page&gt; &amp; Co — 6 min<\/span>/);
+  assert.match(plain, /<span class="fd-lastread__action">Open →<\/span><\/button>$/);
+  assert.doesNotMatch(plain, /<Page>|fd-lastread__kicker|is-primary/);
+  assert.equal(F.fdLastReadRow(read, false), plain);
+
+  const primary = F.fdLastReadRow(read, true);
+  assert.match(primary, /^<button type="button" class="fd-lastread is-primary" data-fd-open="a&amp;b\.md"><span class="fd-lastread__kicker">Pick up where you left off<\/span><span class="fd-lastread__title">You were reading: /);
+
+  assert.equal(F.fdLastReadRow(Object.assign({}, read, { kind: 'tool' }), true), '', 'a tool is not reading');
+  assert.equal(F.fdLastReadRow(null, true), '');
+  assert.equal(F.fdLastReadRow({ ref: '', kind: 'read' }), '');
+  assert.match(F.fdLastReadRow({ ref: 'x.md', kind: 'read', title: 'X', minutes: null }), /You were reading: X<\/span>/,
+    'no minutes, no dash');
+});
+
+test('the primary variants are audience-neutral', () => {
+  const all = F.fdDueRow(DUE_ONE, true) + F.fdResumeCard(CAPSULE, true)
+    + F.fdLastReadRow({ ref: 'x.md', kind: 'read', title: 'X', minutes: 3 }, true);
+  assert.doesNotMatch(all, /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i);
+});
+
+// ---- Phase 2: the Resume card resumes a block's question set with its progress line ---------
+
+test('a capsule from a block resumes with the block parameters and shows the block progress line', () => {
+  const capsule = { queueIds: ['a', 'b', 'c', 'd', 'e', 'f'], idx: 2, fromBlock: true, n: 6, cat: null };
+  const block = { done: 1, total: 2, next: { kind: 'qb', ref: 'question-bank-practice.html', n: 6, cat: null } };
+  const out = F.fdResumeCard(capsule, true, block);
+  assert.match(out, /href="\?tool=question-bank-practice\.html&amp;resume=1&amp;block=1&amp;n=6"/);
+  assert.match(out, /<span class="fd-resume__block">Block · 1 of 2 done<\/span>/);
+  assert.match(out, /4 left, ~3 min/);
+  const withCat = F.fdResumeCard(Object.assign({}, capsule, { cat: 'mood' }), false, Object.assign({}, block, { next: Object.assign({}, block.next, { cat: 'mood' }) }));
+  assert.match(withCat, /href="\?tool=question-bank-practice\.html&amp;resume=1&amp;block=1&amp;n=6&amp;cat=mood"/);
+  // Not from a block, or the block's next step is not the question set: today's markup, byte for byte.
+  const plainCapsule = Object.assign({}, capsule, { fromBlock: false });
+  assert.equal(F.fdResumeCard(plainCapsule, false, block), F.fdResumeCard(plainCapsule));
+  assert.equal(F.fdResumeCard(capsule, false, { done: 0, total: 2, next: { kind: 'page', ref: 'a.md' } }), F.fdResumeCard(capsule));
+  assert.equal(F.fdResumeCard(capsule, false, null), F.fdResumeCard(capsule));
+  assert.doesNotMatch(F.fdResumeCard(capsule), /block=1|fd-resume__block/, 'no block status passed, no block route');
+  assert.doesNotMatch(out, /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i);
 });

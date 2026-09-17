@@ -184,7 +184,7 @@ test('GIT_LFS_FETCH_INCLUDE is honoured and files it excludes are reported, not 
   assert.match(r.stdout, /honouring GIT_LFS_FETCH_INCLUDE=\*\.mp4/);
 });
 
-test('when the clone already materialised real bytes it does nothing and says why (legacy env var)', () => {
+test('when the checkout already materialised real bytes it does nothing and reports only that', () => {
   const repo = makeRepo();
   writeFileSync(join(repo, 'audio', 'a.m4a'), 'REALBYTES');
   writeFileSync(join(repo, 'audio', 'b.m4a'), 'REALBYTES');
@@ -193,7 +193,17 @@ test('when the clone already materialised real bytes it does nothing and says wh
   const r = run(env, repo);
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /all 2 LFS-tracked file\(s\) are already real bytes -> nothing to do/);
-  assert.match(r.stdout, /Remove GIT_LFS_ENABLED and/);
+  assert.match(r.stdout, /whether or not GIT_LFS_ENABLED is set/);
+
+  // The message may not assert a CAUSE it cannot observe. The old wording claimed the
+  // clone fetched them "(GIT_LFS_ENABLED is still set on this site)" and that this cost
+  // the full bandwidth "on EVERY build"; on 2026-09-14 both sites had the var removed and
+  // still hit this branch, so the script was printing a reason that did not exist. This
+  // script sees the tree, never the site's env config or the checkout's behaviour.
+  assert.doesNotMatch(r.stdout, /GIT_LFS_ENABLED is still set/,
+    'must not assert why the bytes are real — it cannot see the site configuration');
+  assert.doesNotMatch(r.stdout, /EVERY build/,
+    'must not claim a per-build cost — a cache-reusing build downloads nothing');
 });
 
 test('a quota refusal from GitHub fails the build early and names the cause', () => {

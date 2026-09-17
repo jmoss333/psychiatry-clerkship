@@ -76,7 +76,6 @@
         { "ref": "agitation.md", "kind": "read" },
         { "ref": "delirium.md", "kind": "read" },
         { "ref": "catatonia.md", "kind": "read" },
-        { "ref": "cssrs.html", "kind": "tool" },
         { "ref": "withdrawal.html", "kind": "tool" },
         { "ref": "capacity.html", "kind": "tool" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
@@ -116,7 +115,6 @@
             { "ref": "violence.html", "kind": "tool" },
             { "ref": "delirium.md", "kind": "read" },
             { "ref": "withdrawal.html", "kind": "tool" },
-            { "ref": "bfcrs.html", "kind": "tool" },
             { "ref": "capacity.html", "kind": "tool" }
           ]
         },
@@ -270,6 +268,32 @@
   },
   "_rightsReferencesNote": "Shipped .html pages that are REFERENCES about an instrument this library does not reproduce. They must not present as interactive tools (Fresh Eyes Audit A3). Derived from instrument_rights.json — every page whose requiredDisclaimerType is 'instrument-not-reproduced' — and validate_curriculum.py fails if the two ever disagree, so this list cannot drift.",
   "rightsReferences": ["bfcrs.html", "cssrs.html"],
+  "libraryHints": {
+    "mse.html": "Domain-by-domain descriptor bank and a builder that drafts a written mental status exam.",
+    "interview-circle.html": "Gather every history domain by following the patient's openings instead of marching a checklist.",
+    "sp-interview.html": "Interview a fictional standardized patient by text and get feedback on the exchange.",
+    "communication-practice.html": "Say your first line in a hard clinical moment, then compare it with the authored options.",
+    "diagnostic-reasoning.html": "Turn bedside data into a problem representation, a differential, and a supervised next step.",
+    "family-systems.html": "Rehearse collateral calls, family meetings, discharge-role mapping, and high-emotion conversations.",
+    "one-patient-six-weeks.html": "Follow one fictional inpatient through changing information, risk questions, and the final handoff.",
+    "capacity.html": "Walk the four abilities at the bedside with sample questions, then draft a structured capacity note.",
+    "oral.html": "Gather what rounds need, then rehearse a three-minute presentation or a 60-second update.",
+    "violence.html": "Static and dynamic risk factors, an imminent warning-signs checklist, and the FRST screen.",
+    "screeners.html": "Score the PHQ-9 and GAD-7 with severity bands; a screen, not a diagnosis.",
+    "withdrawal.html": "Tally the COWS at the bedside; CIWA-Ar links to the official form and training.",
+    "decision-aids.html": "Rule-out-first trees, the agitation ladder, NMS vs serotonin syndrome, and the withdrawal timeline.",
+    "interaction-cards.html": "One action per card when a new medicine meets lithium, clozapine, or lamotrigine.",
+    "reflection.html": "Weekly reflection prompts and a professional-identity set; private, with copy and print.",
+    "shelf-mode.html": "Timed, blueprint-weighted vignette exam with per-question feedback and teaching points.",
+    "review.html": "Today's due cards from what you have read and practiced; grade yourself to schedule the next look.",
+    "question-bank-practice.html": "Practice questions by blueprint area, with explanations and a session receipt.",
+    "cssrs.html": "Official Columbia form and training; the screener itself is not reproduced here.",
+    "bfcrs.html": "Official URMC form, coding guide, and training; the scale itself is not reproduced here.",
+    "rp-agitation.html": "Reason through acute agitation on a least-restrictive ladder; local policy fields are placeholders.",
+    "rp-brief-psych.html": "Match the mechanism of today's crisis to one brief, evidence-based technique for five good minutes.",
+    "rp-canon-quiz.html": "Browse the landmark-paper spine, listen to summaries, and drill decks with immediate feedback.",
+    "rp-post-event-huddle.html": "A two-minute huddle after a unit event: one patient question, one team signal, one system condition."
+  },
   "safetyKit": [
     { "ref": "pg_suicide.md", "sub": "Screen · stratify · safety plan",
       "triggers": ["suicidal", "suicide", "kill myself", "killing myself", "kill herself",
@@ -332,5 +356,82 @@
     "mse": "mental status exam",
     "meds": "drug primer pharmacology",
     "pharm": "drug primer pharmacology"
-  }
+  } ,
+  "searchAliases": {
+    "oral.html": [
+      "rounds",
+      "rounds prep",
+      "oral presentation",
+      "present a patient"
+    ],
+    "doc_oral.md": [
+      "oral presentation",
+      "present a patient"
+    ],
+    "collateral_workflow.md": [
+      "collateral",
+      "collateral call"
+    ],
+    "communication-practice.html": [
+      "conversation",
+      "communication practice"
+    ],
+    "sp-interview.html": [
+      "difficult conversation",
+      "simulated patient interview"
+    ],
+    "t_psychosis.md": [
+      "voices",
+      "hallucinations"
+    ],
+    "t_mood.md": [
+      "not sleeping and full of energy",
+      "little sleep lots of energy"
+    ],
+    "motivational_interviewing.md": [
+      "mi",
+      "motivational interviewing"
+    ],
+    "cssrs.html": [
+      "columbia",
+      "columbia suicide severity rating scale",
+      "cssrs",
+      "c ssrs"
+    ],
+    "bfcrs.html": [
+      "bush francis",
+      "bush francis catatonia rating scale",
+      "bfcrs"
+    ],
+    "withdrawal.html": [
+      "clinical institute withdrawal assessment for alcohol",
+      "clinical opiate withdrawal scale",
+      "ciwa ar",
+      "cows"
+    ],
+    "suicide.md": [
+      "stanley brown safety plan"
+    ],
+    "screeners.html": [
+      "phq9",
+      "phq 9",
+      "gad7",
+      "gad 7",
+      "patient health questionnaire"
+    ],
+    "rp-post-event-huddle.html": [
+      "post event debrief",
+      "debrief after restraint"
+    ]
+  },
+  "searchExclude": [
+    {
+      "ref": "feedback.html",
+      "reason": "Feedback utility, available from the page footer."
+    },
+    {
+      "ref": "rotation-curator.html",
+      "reason": "Faculty curation utility, not learner teaching content."
+    }
+  ]
 }

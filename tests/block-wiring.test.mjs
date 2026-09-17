@@ -61,3 +61,37 @@ test('a tool may name its full route through openPage, but only a short plain qu
   assert.match(shell, /data\.search\.length<=200&&\/\^\\\?\[A-Za-z0-9_\.%=&-\]\*\$\/\.test\(data\.search\)/);
   assert.match(shell, /fdOpenRef\(data\.f, searchOk\?data\.search:undefined\)/);
 });
+
+test('the shell picks exactly one primary, names the secondary heading once, and splices at the lead marker', () => {
+  const today = shell.slice(shell.indexOf('function fdTodayLive('), shell.indexOf('function fdRenderCapture('));
+  assert.equal(today.split('fdTodayPrimary(').length - 1, 1, 'one picker call');
+  assert.equal(today.split('Also today').length - 1, 1, 'one heading');
+  assert.match(today, /live\.primaryKind=primary\.kind;/, 'the pure renderer is told who won before it renders');
+  assert.match(today, /fdBlockCard\([^;]*\{primary:primary\.kind==='block',resume:blockResume\}\)/, 'the block card is primary only when it won, and knows when its question set can be resumed');
+  assert.match(today, /fdDueRow\(due,primary\.kind==='due'\)/);
+  assert.match(today, /fdResumeCard\(sess,primary\.kind==='resume',blockStatus\)/, 'the Resume card learns where the block stands');
+  assert.match(today, /fdLastReadRow\(lastRead,primary\.kind==='read'\)/);
+  assert.match(today, /'<div class="fd-primary">'/);
+  assert.match(today, /FD_TODAY_LEAD_END/, 'the marker fd_today.js emits is the splice point');
+  assert.match(today, /fdTodayWhy\(\)/);
+});
+
+test('an interrupted block session checkpoints its block identity and resumes as a block session', () => {
+  const checkpoint = qbank.slice(qbank.indexOf('function checkpointSession('), qbank.indexOf('function tryResumeSession('));
+  assert.match(checkpoint, /fromBlock: SESSION\.fromBlock===true/);
+  assert.match(checkpoint, /n: SESSION\.queue\.length/);
+  assert.match(checkpoint, /cat: SESSION\.cat\|\|null/);
+  const resume = qbank.slice(qbank.indexOf('function tryResumeSession('), qbank.indexOf('function showQuestion('));
+  assert.match(resume, /SESSION\.fromBlock = cap\.fromBlock===true;/);
+  assert.match(resume, /SESSION\.cat = \(typeof cap\.cat==='string'&&CAT_LABELS\[cap\.cat\]\)\?cap\.cat:null;/);
+  assert.match(qbank, /SESSION\.cat = _blockCat==='all' \? null : _blockCat;/, 'a block start records its category on the session');
+  assert.ok(qbank.indexOf('RESUME_REQUESTED && tryResumeSession()') < qbank.indexOf('if(BLOCK_REQUEST){'),
+    'resume is tried before a fresh block start, so ?resume=1&block=1 restores rather than restarts');
+});
+
+test('Continue on a live block resumes an interrupted question set instead of starting a fresh one', () => {
+  const cont = shell.slice(shell.indexOf('function fdBlockContinue('), shell.indexOf('function fdLiveState('));
+  assert.match(cont, /fdBlockResumeSearch\(status\.next, *sess\)/);
+  assert.match(cont, /fdOpenRef\(status\.next\.ref, *resume\)/);
+  assert.match(cont, /fdOpenBlockStep\(status\.next\)/, 'the fresh-start route remains the fallback');
+});

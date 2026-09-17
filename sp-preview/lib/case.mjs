@@ -16,7 +16,8 @@ function resolve(id){
   if(id===FAMILY_CASE_ID)return familyCaseDef;
   const found=(id===MORGAN_ID?localCases.cases:pack.cases).find(item=>item.id===id);
   if(!found)throw new Error('hosted preview: unknown case '+id);
-  // The direct-suicide-question overlay is Dana's alone.
+  // Dana's direct-suicide-question policy lives in the reviewed pack since #565; applyCase is
+  // now an identity that fails closed if her reviewed gate drifts from its pinned shape.
   return id===DANA_ID?localDana.applyCase(found):found;
 }
 

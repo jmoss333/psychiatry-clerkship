@@ -107,12 +107,19 @@ test('normalizes all review surfaces with collision-proof keys', () => {
     'needs-review', 'complete', 'needs-review',
   ]);
   assert.deepEqual(Object.keys(items[0]), [
-    'key', 'type', 'identity', 'site', 'title', 'savedStatus', 'completion',
+    'key', 'type', 'identity', 'site', 'sites', 'title', 'savedStatus', 'completion',
     'revision', 'gate', 'risk', 'searchText', 'record',
   ]);
   // `site` names the learner deployment that serves the item. Absent (an older server
   // payload) means the MS3 site, where every manifest page and tool has always lived.
   assert.deepEqual(items.map(item => item.site), ['ms3', 'ms3', 'ms3']);
+  // `sites` is every deployment that publishes it, which is what the attestation wording
+  // says the reviewer is affirming the item suits. It is deliberately NOT defaulted the
+  // way `site` is: this fixture sends no sites, so the audience is unknown rather than
+  // silently MS3. Defaulting it is what made the console ask reviewers to affirm every
+  // resident page as suitable for a third-year student (2026-09-14 attestation review).
+  // Audience behaviour itself is pinned in faculty-console/attestation-audience.test.mjs.
+  assert.deepEqual(items.map(item => item.sites), [null, null, null]);
   assert.deepEqual(deriveReviewCounts(items), {
     total: 3, needsReview: 2, complete: 1, page: 1, tool: 1, question: 1,
   });
