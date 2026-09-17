@@ -355,6 +355,24 @@ class ValidateCurriculumTest(unittest.TestCase):
         self.assertIn("ms3", result.stdout)
         self.assertIn("rp-canon-quiz.html", result.stdout)
 
+    def test_rejects_a_rights_reference_as_a_path_item(self):
+        # A rights reference exists to say an instrument is NOT reproduced here. It belongs in
+        # the Library (INV-IR2 keeps the custodian route alive) but never on a learning path:
+        # a checklist step that opens a "no longer reproduced" stub is a dead end the learner
+        # is asked to tick. Both stubs sat on the shipped paths until 2026-09-16.
+        stub = RIGHTS_REFS[0]
+        for site in ("ms3", "resident"):
+            with self.subTest(site=site), tempfile.TemporaryDirectory() as tmp:
+                cur = _curriculum([])
+                cur["learningPaths"][site]["weeks"][0]["items"] = [
+                    {"ref": stub, "kind": "tool"}]
+                c, root = _write(tmp, cur)
+                result = _run(c, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn(site, result.stdout)
+            self.assertIn(stub, result.stdout)
+            self.assertIn("rights reference", result.stdout)
+
     def test_accepts_resident_only_ref_on_resident_path(self):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([])

@@ -68,9 +68,10 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
 
   /* Rights references are a property of the PAGE, not of where it happens to be linked from, so
      the lookup has to be global rather than per-call-site. ensure() memoises by ref and the first
-     caller wins: cssrs.html is a week item on ms3 but reaches the resident index only through a
-     library column -- so a per-call-site flag would leave the same page a plain tool on one site
-     and a reference on the other. The list is derived from instrument_rights.json and
+     caller wins: a page can reach the index through a week item on one site and only through a
+     library column on the other (cssrs.html did, until the stubs left the paths on 2026-09-16)
+     -- so a per-call-site flag would leave the same page a plain tool on one site and a
+     reference on the other. The list is derived from instrument_rights.json and
      validate_curriculum.py fails if the two disagree. */
   var rightsRefs={}, rr=cur.rightsReferences||[];
   for(var rq=0;rq<rr.length;rq++){ rightsRefs[rr[rq]]=true; }

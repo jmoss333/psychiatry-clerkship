@@ -256,6 +256,13 @@ def main(argv):
                 if ref in seen_refs:
                     bad(week_label, "duplicate ref '%s' within the week" % ref)
                 seen_refs.add(ref)
+                # A rights reference exists to say an instrument is NOT reproduced here. It
+                # belongs in the Library (INV-IR2 keeps the custodian route alive), never on a
+                # path: a checklist step that opens a "no longer reproduced" stub is a dead end
+                # the learner is asked to tick. Both stubs shipped as steps until 2026-09-16.
+                if ref in rights_refs:
+                    bad(week_label, "ref '%s' is a rights reference — it belongs in a Library "
+                        "column, never as a path step" % ref)
                 if ref not in site_shipped[site]:
                     bad(week_label, "ref '%s' is not shipped on %s" % (ref, site))
                     continue

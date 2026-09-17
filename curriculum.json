@@ -76,7 +76,6 @@
         { "ref": "agitation.md", "kind": "read" },
         { "ref": "delirium.md", "kind": "read" },
         { "ref": "catatonia.md", "kind": "read" },
-        { "ref": "cssrs.html", "kind": "tool" },
         { "ref": "withdrawal.html", "kind": "tool" },
         { "ref": "capacity.html", "kind": "tool" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
@@ -116,7 +115,6 @@
             { "ref": "violence.html", "kind": "tool" },
             { "ref": "delirium.md", "kind": "read" },
             { "ref": "withdrawal.html", "kind": "tool" },
-            { "ref": "bfcrs.html", "kind": "tool" },
             { "ref": "capacity.html", "kind": "tool" }
           ]
         },

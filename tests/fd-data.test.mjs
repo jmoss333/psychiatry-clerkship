@@ -237,7 +237,9 @@ test('the real curriculum joins without throwing and routes every week item', ()
       n += 1;
     }
   }
-  assert.equal(n, 40, 'expected the 40 week items curriculum.json ships');
+  // 39 = 40 minus cssrs.html, which left Week 5 on 2026-09-16: a rights reference is a Library
+  // row, not a path step (tests/path-rights-references.test.mjs).
+  assert.equal(n, 39, 'expected the 39 week items curriculum.json ships');
 });
 
 test('every real library column item resolves', () => {
