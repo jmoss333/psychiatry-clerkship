@@ -223,7 +223,7 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
   assert.equal(F.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).route, '/');
   assert.deepEqual(F.fdDispatch({ 'data-fd-search': '' }, {}, roleContext).patch, { searchOpen: true });
   assert.deepEqual(F.fdDispatch({ 'data-fd-change-week': '' }, {}, roleContext), {
-    patch: { screen: 'setup-week', tab: 'today', openId: null, searchOpen: false, sheet: null },
+    patch: { screen: 'setup-week', tab: 'today', openId: null, searchOpen: false, sheet: null, setupFrom: 'app' },
     route: '/', history: 'replace', effect: null,
   });
   assert.equal(F.fdDispatch({ 'data-fd-progress': '' }, {}, roleContext).effect.type, 'open-progress');
@@ -253,7 +253,7 @@ test('change-week uses a reader origin only while a reader is open', () => {
   });
   assert.deepEqual(reader, {
     patch: {
-      screen: 'setup-week', tab: 'path', openId: null, searchOpen: false, sheet: null,
+      screen: 'setup-week', tab: 'path', openId: null, searchOpen: false, sheet: null, setupFrom: 'app',
     },
     route: '?tab=path&case=c1', history: 'replace', effect: null,
   });
@@ -263,7 +263,7 @@ test('change-week uses a reader origin only while a reader is open', () => {
   });
   assert.deepEqual(tabOnly, {
     patch: {
-      screen: 'setup-week', tab: 'library', openId: null, searchOpen: false, sheet: null,
+      screen: 'setup-week', tab: 'library', openId: null, searchOpen: false, sheet: null, setupFrom: 'app',
     },
     route: '?tab=library&case=c1', history: 'replace', effect: null,
   });
@@ -2580,4 +2580,92 @@ test('the next plain visit after a guest read asks who this is for, from step 1'
   assert.equal(next.role, undefined);
   assert.equal(next.guest, undefined);
   assert.equal(F.fdResolveState('/', {}).screen, 'setup-role');
+});
+
+// ---- #425: leaving rotation mode is a choice that sticks --------------------------------------
+
+test('browse mode clears the rotation start, is persisted, and survives a reload on any tab (#425)', () => {
+  const nowMs = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  const ls = memStorage({ cw_rotation_start: '2026-07-20' });
+  const LocalF = make(ls);
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'today', viewWeek: 2, openId: null,
+  }, { F: LocalF });
+  h.controller.dispatch({ 'data-fd-change-week': '' });
+  assert.equal(h.controller.getState().screen, 'setup-week');
+  h.controller.dispatch({ 'data-fd-week': '0' }, { nowMs });
+  const st = h.controller.getState();
+  assert.equal(st.screen, 'app');
+  assert.equal(st.tab, 'library');
+  assert.equal(st.week, null);
+  assert.equal(st.browsing, true);
+  assert.equal(ls.getItem('cw_rotation_start'), null,
+    'the rotation start is removed, not merely ignored -- fdLiveState re-derives the week from it');
+  const stored = JSON.parse(ls.getItem('cw_frontdoor_v1'));
+  assert.equal(stored.browsing, true, 'the choice is persisted with the route state');
+
+  // A reload resolves straight to the app on ANY tab, not back to week setup.
+  for (const tab of ['today', 'path', 'library']) {
+    const resolved = LocalF.fdResolveState('https://example.test/', {
+      ...stored, tab, roles: roleContext.roles, rotationStart: '',
+    });
+    assert.equal(resolved.screen, 'app', `${tab}: browse mode survives a reload`);
+    assert.equal(resolved.browsing, true);
+    assert.equal('week' in resolved, false);
+  }
+  // Without the persisted flag the same store would have asked for a week again.
+  const legacy = LocalF.fdResolveState('https://example.test/', {
+    ...stored, browsing: undefined, tab: 'today', roles: roleContext.roles, rotationStart: '',
+  });
+  assert.equal(legacy.screen, 'setup-week');
+
+  // Choosing a week again leaves browse mode and restores a rotation start.
+  h.controller.dispatch({ 'data-fd-setweek': '3' }, { nowMs });
+  assert.equal(h.controller.getState().browsing, false);
+  assert.equal(ls.getItem('cw_rotation_start'), '2026-07-27');
+  assert.equal(JSON.parse(ls.getItem('cw_frontdoor_v1')).browsing, false);
+});
+
+test('Back from Change week cancels to the app for a returning learner; first-run Back still un-chooses the role (#425)', () => {
+  const back = F.fdDispatch({ 'data-fd-back': '' }, {},
+    { ...roleContext, screen: 'setup-week', setupFrom: 'app' });
+  assert.deepEqual(back, { patch: { screen: 'app', setupFrom: null }, route: null, effect: null });
+  const firstRun = F.fdDispatch({ 'data-fd-back': '' }, {}, { ...roleContext, screen: 'setup-week' });
+  assert.deepEqual(firstRun, { patch: { role: null, screen: 'setup-role' }, route: null, effect: null });
+
+  // End to end through the controller: role and rotation are intact after the cancel.
+  const ls = memStorage({ cw_rotation_start: '2026-07-20' });
+  const LocalF = make(ls);
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'today', viewWeek: 2, openId: null,
+  }, { F: LocalF });
+  h.controller.dispatch({ 'data-fd-change-week': '' });
+  h.controller.dispatch({ 'data-fd-back': '' });
+  const st = h.controller.getState();
+  assert.equal(st.screen, 'app');
+  assert.equal(st.role, 'first-role');
+  assert.equal(st.week, 2);
+  assert.equal(ls.getItem('cw_rotation_start'), '2026-07-20');
+  assert.equal(JSON.parse(ls.getItem('cw_frontdoor_v1')).role, 'first-role');
+  // Picking a week from the same screen also clears the origin marker, so a later first-run
+  // Back (after a device erase) cannot inherit it.
+  h.controller.dispatch({ 'data-fd-change-week': '' });
+  h.controller.dispatch({ 'data-fd-week': '1' }, { nowMs: new Date(2026, 7, 12, 9, 0, 0).getTime() });
+  assert.equal(h.controller.getState().setupFrom, null);
+});
+
+test('the rotation key is already gone when the render that paints the header runs (#425)', () => {
+  // fdLiveState re-derives the week from cw_rotation_start on every render. Removing the key
+  // AFTER the render painted "Week 1" once more for a learner who had just chosen browse.
+  const ls = memStorage({ cw_rotation_start: '2026-07-20' });
+  const LocalF = make(ls);
+  const seenAtRender = [];
+  const h = fakeHarness({
+    ...roleContext, screen: 'setup-week', tab: 'today', viewWeek: 2, openId: null, setupFrom: 'app',
+  }, { F: LocalF, render: () => seenAtRender.push(ls.getItem('cw_rotation_start')) });
+  h.controller.dispatch({ 'data-fd-week': '0' }, { nowMs: new Date(2026, 7, 12, 9, 0, 0).getTime() });
+  assert.deepEqual(seenAtRender, [null], 'the browse render must not be able to see the old start');
+  seenAtRender.length = 0;
+  h.controller.dispatch({ 'data-fd-setweek': '2' }, { nowMs: new Date(2026, 7, 12, 9, 0, 0).getTime() });
+  assert.deepEqual(seenAtRender, ['2026-08-03'], 'a chosen week is stored before its render, too');
 });
