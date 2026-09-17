@@ -2279,7 +2279,9 @@ test('Back from an interrupted resource load still focuses the restored route', 
   await page.evaluate(() => history.back());
   await expect(page).not.toHaveURL(new RegExp(`\\?page=${ref}`));
   await expect(page.locator('.fd-today')).toBeVisible();
-  await expect(page.locator('#content')).toBeFocused();
+  // #427: returning lands on the link that opened the resource, not on the main region.
+  const origin = page.locator(`.fd-today [data-fd-open="${ref}"]:visible`).first();
+  await expect(origin).toBeFocused();
 
   const staleResponseFinished = page.waitForResponse((response) => (
     new URL(response.url()).pathname.endsWith(`/content/${ref}`)
@@ -2293,7 +2295,7 @@ test('Back from an interrupted resource load still focuses the restored route', 
   await expect(page).not.toHaveURL(new RegExp(`\\?page=${ref}`));
   await expect(page.locator('.fd-today')).toBeVisible();
   await expect(page.locator('.fd-reader')).toHaveCount(0);
-  await expect(page.locator('#content')).toBeFocused();
+  await expect(origin).toBeFocused();
 });
 
 test('Today card capture restores focus to its recreated launcher after save', async ({ page }) => {

@@ -107,6 +107,10 @@ function fdResolveState(url, stored){
   out.autoAdvance=src.autoAdvance!==false;
   if(src.toolExpanded!==undefined) out.toolExpanded=src.toolExpanded===true;
   if(src.browsing===true) out.browsing=true;
+  /* The offset recorded when a resource opened (#427). Without this a reload while reading
+     persisted the offset and then dropped it here, so the one return that most needs it -- an
+     interrupted read -- scrolled to the top. */
+  if(typeof src.scrollPos==='number'&&isFinite(src.scrollPos)&&src.scrollPos>=0) out.scrollPos=src.scrollPos;
 
   var parsed, routedRef=null;
   try{ parsed=new URL(String(url||''),'https://frontdoor.invalid/'); }catch(_){ parsed=null; }
@@ -1110,11 +1114,40 @@ function fdWire(root, initialState, opts){
     var y=win?(typeof win.scrollY==='number'?win.scrollY:win.pageYOffset):0;
     return typeof y==='number'&&y>=0?y:0;
   }
+  /* Which of the duplicates the learner actually activated. Today renders Quick Tools twice (a
+     hidden pill row and the desktop rail, from the same list), and a week item can also sit in
+     the rail, so "the first [data-fd-open=ref]" is often a display:none copy -- and focusing a
+     hidden element moves nothing. Recorded at open time from the click's own target; per-boot,
+     never persisted, so a reload falls back to the first duplicate that is actually shown. */
+  var originOpener=null;
+  function openersFor(ref){
+    if(!root||!ref) return [];
+    var sel=ref==='__progress__'?'[data-fd-progress]':'[data-fd-open="'+String(ref).replace(/["\\]/g,'\\$&')+'"]';
+    try{
+      if(root.querySelectorAll){ var list=root.querySelectorAll(sel); return list?Array.prototype.slice.call(list):[]; }
+      if(root.querySelector){ var one=root.querySelector(sel); return one?[one]:[]; }
+    }catch(_){}
+    return [];
+  }
+  function isShown(el){
+    if(!el) return false;
+    if(typeof el.getClientRects==='function'){ try{ return el.getClientRects().length>0; }catch(_){} }
+    if('offsetParent' in el) return el.offsetParent!==null;
+    return true; /* no layout information (a test stub): treat as shown */
+  }
+  function rememberOpener(ref, invoker){
+    originOpener=null;
+    if(!invoker) return;
+    var dup=openersFor(ref), k=dup.indexOf(invoker);
+    if(k<0&&invoker.closest){ try{ k=dup.indexOf(invoker.closest('[data-fd-open],[data-fd-progress]')); }catch(_){ k=-1; } }
+    if(k>=0) originOpener={ref:ref,index:k};
+  }
   function openerFor(ref){
-    if(!root||!root.querySelector||!ref) return null;
-    if(ref==='__progress__') return root.querySelector('[data-fd-progress]');
-    try{ return root.querySelector('[data-fd-open="'+String(ref).replace(/["\\]/g,'\\$&')+'"]'); }
-    catch(_){ return null; }
+    var all=openersFor(ref), i;
+    if(!all.length) return null;
+    if(originOpener&&originOpener.ref===ref&&all[originOpener.index]&&isShown(all[originOpener.index])) return all[originOpener.index];
+    for(i=0;i<all.length;i++) if(isShown(all[i])) return all[i];
+    return all[0];
   }
   /* Returning from a resource lands the learner where they left the originating tab (#427): the
      list scrolled back to the offset recorded when the resource opened, and focus on the control
@@ -1154,7 +1187,7 @@ function fdWire(root, initialState, opts){
     /* Where the learner was when they opened a resource (#427). Recorded by the controller, not
        by fdDispatch: the scroll offset is a browser fact and dispatch stays pure. A reader that
        opens another reader keeps the origin -- "back" still means the tab it all started from. */
-    if(!before.openId&&state.openId) state.scrollPos=currentScrollY();
+    if(!before.openId&&state.openId){ state.scrollPos=currentScrollY(); rememberOpener(state.openId,invoker); }
     var afterOverlay=overlayIdentity(state);
     if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
     var changedBase=baseChanged(before,state);

@@ -596,6 +596,7 @@ function fakeHarness(initial, options = {}) {
     addEventListener(type, fn) { rootHandlers[type] = fn; },
     removeEventListener() {},
     querySelector: options.querySelector || (() => null),
+    ...(options.querySelectorAll ? { querySelectorAll: options.querySelectorAll } : {}),
     matches: options.matches || (() => false),
   };
   const fakeWindow = {
@@ -2686,6 +2687,7 @@ function originHarness(initial, extra = {}) {
     scrollY: () => scrollY,
     scrollTo: (x, y) => scrolls.push([x, y]),
     querySelector: (sel) => openers[sel] || null,
+    ...(extra.querySelectorAll ? { querySelectorAll: extra.querySelectorAll } : {}),
   });
   return { h, ls, scrolls, setScrollY: (y) => { scrollY = y; } };
 }
@@ -2733,6 +2735,45 @@ test('a retired or missing opener falls back to the render focus without throwin
   h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'gone.md' }), preventDefault() {} });
   h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
   assert.deepEqual(scrolls, [[0, 300]], 'the list offset is still the learner\'s');
+});
+
+test('fdResolveState carries a persisted scroll offset through startup, and drops a bad one (#427)', () => {
+  const F = make(memStorage());
+  assert.equal(F.fdResolveState('https://example.test/?page=deep.md', { role: 'ms3', tab: 'library', scrollPos: 640 }).scrollPos, 640,
+    'a reload while reading keeps the offset the open recorded');
+  assert.equal(F.fdResolveState('https://example.test/', { role: 'ms3', tab: 'library', scrollPos: -1 }).scrollPos, undefined);
+  assert.equal(F.fdResolveState('https://example.test/', { role: 'ms3', tab: 'library', scrollPos: '640' }).scrollPos, undefined);
+});
+
+test('a hidden duplicate of the opener is skipped in favour of one that is shown (#427)', () => {
+  // Today's Quick Tools pill row precedes the desktop rail in the DOM and is display:none there.
+  const hidden = { ...opener(), getClientRects: () => [] };
+  const shown = { ...opener(), getClientRects: () => [{}] };
+  const { h, setScrollY } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'today', openId: null },
+    { scrollY: 200, querySelectorAll: () => [hidden, shown] },
+  );
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'tool.html' }), preventDefault() {} });
+  setScrollY(0);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.equal(hidden.focused, 0, 'focusing a display:none element moves nothing, so it is never chosen');
+  assert.equal(shown.focused, 1);
+});
+
+test('among shown duplicates, the control the learner activated is the one that gets focus back (#427)', () => {
+  const rail = { ...opener(), getClientRects: () => [{}] };
+  const week = { ...opener(), getClientRects: () => [{}] };
+  const target = actionTarget({ 'data-fd-open': 'tool.html' });
+  Object.assign(week, target); // the click target IS the second duplicate
+  const { h, setScrollY } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'today', openId: null },
+    { scrollY: 200, querySelectorAll: () => [rail, week] },
+  );
+  h.rootHandlers.click({ target: week, preventDefault() {} });
+  setScrollY(0);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.equal(rail.focused, 0);
+  assert.equal(week.focused, 1, 'the second duplicate was the invoker, so it is the one restored');
 });
 
 test('browser Back out of a resource is the same return (#427)', () => {
