@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "_note": "Hosts that answer a human's browser but not this CI runner. A finding on one of these is classified `environment` -- reported with its evidence and counted in the digest, NEVER silenced and never removed from the crawl. Reachability is a fact about the environment, never a content finding (bin/probe_egress.py). Each entry records how and when it was verified from a real network, because an entry nobody re-checks rots into a lie: a host that genuinely dies would sit here forever wearing a reason that was true once. `verifiedAt` ages in the run summary so that rot is visible.",
+  "hosts": {
+    "www.fda.gov": {
+      "reason": "Answers 404 to the GitHub Actions IP range while serving 200 to an ordinary browser. The drug-safety index and the clozapine REMS-removal communication both reproduce this.",
+      "verifiedAt": "2026-09-16",
+      "verifiedHow": "curl -A '<Chrome UA>' from a residential network: HTTP 200 on /drugs/drug-safety-and-availability/drug-safety-communications",
+      "issues": [665]
+    },
+    "www.healthquality.va.gov": {
+      "reason": "No response from the CI runner; serves 200 to an ordinary browser. Cited from evidence_registry.json, which lychee cannot crawl directly (it reads only *.md and *.html), so the generated review transcript is the only surface this URL appears on.",
+      "verifiedAt": "2026-09-16",
+      "verifiedHow": "curl -A '<Chrome UA>' from a residential network: HTTP 200 on /guidelines/mh/srb/",
+      "issues": [666]
+    }
+  }
+}

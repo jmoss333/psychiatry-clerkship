@@ -169,6 +169,18 @@
       "at": "2026-07-03",
       "by": "migration-2026-09-16",
       "issue": 8
+    },
+    "link:www.admsep.org::broken-link::56951baa3f00270a": {
+      "reason": "Dead page on a live host (admsep.org answers 200; this path 404s to browsers and curl alike, verified 2026-09-16). The link lives in 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md, a dated record of what was consulted on 2026-07-08 that ships to no learner site; #668 annotated it in place rather than rewriting the record. Nothing to fix.",
+      "at": "2026-09-16",
+      "by": "open-issues review 2026-09-16 (Claude, for Joshua Moss, MD)",
+      "issue": 423
+    },
+    "link:www.admsep.org::broken-link::378d5c25815a68ca": {
+      "reason": "Dead page on a live host (admsep.org answers 200; this path 404s to browsers and curl alike, verified 2026-09-16). The link lives in 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md, a dated record of what was consulted on 2026-07-08 that ships to no learner site; #668 annotated it in place rather than rewriting the record. Nothing to fix.",
+      "at": "2026-09-16",
+      "by": "open-issues review 2026-09-16 (Claude, for Joshua Moss, MD)",
+      "issue": 422
     }
   }
 }

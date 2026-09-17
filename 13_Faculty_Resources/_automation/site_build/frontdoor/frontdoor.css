@@ -800,14 +800,14 @@
 }
 
 /* Task 5 governed runtime rows */
-.fd-due,.fd-resume__link,.fd-progresscard{
+.fd-due,.fd-resume__link,.fd-progresscard,.fd-lastread{
   display:flex;align-items:center;gap:var(--fd-space-6);width:100%;text-align:left;
   border:1px solid var(--fd-line);border-radius:var(--fd-radius-lg);background:var(--fd-surface);
   color:var(--fd-text);font:inherit;text-decoration:none;padding:13px 15px;
 }
-.fd-due,.fd-progresscard{cursor:pointer}
+.fd-due,.fd-progresscard,.fd-lastread{cursor:pointer}
 .fd-due{border-left:3px solid var(--fd-terracotta);margin:0 0 12px}
-.fd-due:hover,.fd-resume__link:hover,.fd-progresscard:hover{
+.fd-due:hover,.fd-resume__link:hover,.fd-progresscard:hover,.fd-lastread:hover{
   border-color:var(--fd-line-hover);background:var(--fd-callout);
 }
 .fd-due__label,.fd-progresscard__title{font-size:var(--fd-font-md);font-weight:700}
@@ -1297,4 +1297,28 @@
   .fd-reader--guide thead{display:table-header-group}
   .fd-reader--guide tr{break-inside:avoid-page;page-break-inside:avoid}
   .fd-reader--guide .fd-article__body a[href^="http"]::after{content:" (" attr(href) ")";font-size:var(--fd-font-xs);font-weight:400;overflow-wrap:anywhere}
+/* ---- One Thing First (2026-09-16): one primary slot, demoted rows under "Also today" ----------
+ * Appended after every base rule on purpose: tests/fd-tokens resolves a selector by FIRST textual
+ * match, so an override placed above the rule it overrides would be read as the base.
+ * Dimension properties (font-size / border-radius / gap / padding / margin) use the token layer
+ * only — bin/check_design_drift.py ratchets the raw count and it may not rise. */
+.fd-primary{margin:0 0 var(--fd-space-6)}
+.fd-primary .fd-due,.fd-primary .fd-lastread,.fd-primary .fd-block,.fd-primary .fd-resume__link{border-top:3px solid var(--fd-terracotta);box-shadow:var(--fd-shadow-card)}
+.fd-primary .fd-due,.fd-primary .fd-lastread,.fd-primary .fd-block,.fd-primary .fd-resume{margin:0}
+.fd-primary .fd-resume .fd-sectionhead{color:var(--fd-terracotta-dark)}
+.fd-due.is-primary,.fd-lastread.is-primary{flex-wrap:wrap}
+.fd-due__kicker,.fd-lastread__kicker{flex-basis:100%;font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fd-terracotta-dark)}
+.fd-lastread{margin:0 0 var(--fd-space-6)}
+.fd-lastread__title{font-size:var(--fd-font-md);font-weight:700;min-width:0}
+.fd-lastread__action{margin-left:auto;font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-teal-deep);white-space:nowrap}
+.fd-primary__why{margin:0 0 var(--fd-space-8);font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-mid)}
+.fd-also{margin:var(--fd-space-8) 0 var(--fd-space-5)}
+.fd-continue.is-secondary{background:var(--fd-surface);border-top:1px solid var(--fd-line);box-shadow:var(--fd-shadow-sm)}
+.fd-continue.is-secondary .fd-continue__kicker{color:var(--fd-text-dim)}
+.fd-continue__title .fd-chip{margin-left:var(--fd-space-4);vertical-align:middle}
+.fd-freshset{margin:0 0 var(--fd-space-9)}
+@media (max-width:640px){
+  .fd-due,.fd-resume__link,.fd-lastread,.fd-freshset{min-height:44px}
 }
+/* Phase 2: the Resume card's block progress line ("Block · 1 of 2 done"). */
+.fd-resume__block{display:block;font-size:var(--fd-font-xs);color:var(--fd-text-dim)}

@@ -190,3 +190,15 @@ test('the snippet only ever touches cw_-namespaced keys', () => {
   assert.ok(keys.length > 0);
   for (const k of keys) assert.match(k, /^cw_/);
 });
+
+test('a resumed block session (?resume=1&block=1&n) still marks the block step — resume is the only extra parameter', () => {
+  const ls = memStorage(); const F = withStore(ls, '?resume=1&block=1&n=4');
+  F.blockSave({ v: 1, minutes: 10, createdAt: NOW - 60000, steps: [
+    { kind: 'page', ref: 't_psychosis.md', min: 5, title: 'Psychosis' },
+    { kind: 'qb', ref: 'question-bank-practice.html', n: 4, min: 3, title: '4 practice questions' },
+  ] });
+  ls.setItem('cw_progress_v1', JSON.stringify({ 't_psychosis.md': { done: true, at: '2026-09-01' } }));
+  const r = F.cwReceipt(base());
+  assert.match(r.html, /Block complete · 2 of 2 done/, 'the resumed qb step is marked and the block reads complete');
+  assert.equal(F.blockLoad(NOW), null, 'the finished block is cleared');
+});

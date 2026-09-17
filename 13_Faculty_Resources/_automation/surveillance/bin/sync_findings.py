@@ -88,6 +88,28 @@ def fetch_issue_snapshot(repo, token):
     return normalize_issue_snapshot(raw)
 
 
+def partition_by_disposition(findings):
+    """Split findings into (opens an issue, P2 digest, deferred-with-evidence).
+
+    Only `actionable` opens an issue. `environment` is a real detection this runner
+    cannot verify and `needs-judgment` needs a person -- neither is a defect an issue
+    can chase, so both go to the digest WITH their evidence rather than as a P0/P1.
+    Neither is ever dropped: silencing them is how a monitored set shrinks unnoticed.
+
+    This is a named function rather than three comprehensions inside main() because a
+    test that reimplements the filter proves nothing -- the first version of
+    test_only_actionable_findings_open_issues did exactly that and passed while the
+    real filter was reverted.
+    """
+    def actionable(finding):
+        return finding.get("disposition", "actionable") == "actionable"
+
+    unfiled = [f for f in findings if not actionable(f)]
+    issues = [f for f in findings if actionable(f) and f["severity"] in ("P0", "P1")]
+    digest = [f for f in findings if actionable(f) and f["severity"] == "P2"]
+    return issues, digest, unfiled
+
+
 def suppressed_fingerprints(issue_snapshot, dismissed):
     """Fingerprints that must NOT open a new issue, and why each is suppressed.
 
@@ -140,8 +162,7 @@ def main():
         L.escalate(f)
         L.ensure_fingerprint(f)
 
-    issue_findings = [f for f in findings if f["severity"] in ("P0", "P1")]
-    digest_findings = [f for f in findings if f["severity"] == "P2"]
+    issue_findings, digest_findings, unfiled = partition_by_disposition(findings)
 
     dismissed = L.load_dismissed()
     token = os.environ.get("GITHUB_TOKEN")
@@ -201,7 +222,7 @@ def main():
         time.sleep(1.5)   # throttle: stay under GitHub's secondary rate limit
 
     reports = L.write_report(args.job, findings, base=args.out_dir)
-    digest = L.append_digest(digest_findings + overflow, base=args.out_dir)
+    digest = L.append_digest(digest_findings + overflow + unfiled, base=args.out_dir)
     L.update_last_run(checked_sources, base=args.out_dir)
     with open(args.issues_out, "w", encoding="utf-8") as fh:
         json.dump(
@@ -214,6 +235,18 @@ def main():
           f"{len(digest_findings)} P2 digested, {len(overflow)} overflow->digest.")
     print(f"Suppression: {len(dismissed)} registered dismissal(s) in config/dismissed.json; "
           f"a closed issue no longer suppresses its fingerprint.")
+    by_disposition = {}
+    for f in unfiled:
+        by_disposition[f["disposition"]] = by_disposition.get(f["disposition"], 0) + 1
+    if by_disposition:
+        print("Not filed as issues (reported in the digest, not silenced): "
+              + ", ".join(f"{n} {k}" for k, n in sorted(by_disposition.items())))
+    unreachable = L.load_ci_unreachable()
+    if unreachable:
+        age = L.oldest_verification_age(unreachable)
+        print(f"CI-unreachable hosts: {len(unreachable)} recorded; oldest verification "
+              f"{'unknown' if age is None else str(age) + ' day(s)'} old "
+              f"(re-verify from a real network, or an entry rots into a lie).")
     print("Reports: " + ", ".join(os.path.basename(r) for r in reports)
           + (f", {os.path.basename(digest)}" if digest else ""))
 
