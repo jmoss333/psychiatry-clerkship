@@ -53,33 +53,6 @@ Restraint and seclusion are safety interventions, never treatments. They do not 
 - Restraint and seclusion are time-limited safety measures, never treatments, and demand monitoring plus a debrief.
 - Watch yourself: stay near the door, never block the patient's exit, and call for help early.
 
-## Further Reading & Evidence-Based Resources
-
-**De-escalation frameworks**
-- Richmond et al. (2012) — *Journal of the American Psychiatric Nurses Association* — The Project BETA (Behavioral Emergency Team Approach) de-escalation protocol: respect, listening, simple boundaries, and collaborative choice-making reduce restraint use and improve safety outcomes. Read this to understand *why* the ladder works, not just that it does.
-
-**Restraint and seclusion: standards, safety, and equity**
-- **CMS Conditions of Participation (42 CFR §482.13(e))** — the binding regulatory standard for psychiatric hospitals. One-hour face-to-face evaluation, 4-hour renewal cap for adults, no PRN or standing orders. These are not suggestions; they are legal floor requirements. Know what your hospital's policy adds *above* this.
-- Wilson et al. (2012) — *Canadian Journal of Psychiatry* — sedation-related complications during restraint (respiratory depression, aspiration, sudden cardiac events). The risk is not zero and does not end when the restraint comes off.
-- Singal et al. (2024) — *Psychiatric Services* — Black patients face 1.85× adjusted odds of a restraint event on inpatient psychiatric units. This is not an observation; it is a disparity that reflects care quality. Know your own data and address it.
-- Smith et al. (2022) — *Psychiatric Services* — adjusted odds of physical and chemical restraint in ED psychiatric evaluation differ by race (~1.35× for Black patients). Restraint equity starts in the emergency department.
-
-**Behavioral management and crisis response**
-- Linehan, M.M. (1993) — *Cognitive-Behavioral Treatment of Borderline Personality Disorder*. Dialectical Behavior Therapy principles (validation + limits + commitment to change) apply far beyond BPD. The structure prevents the escalation that happens when a patient feels unheard.
-- Kaplan & Sadock's Synopsis of Psychiatry — standard reference for medication selection in agitation; see the agitation order set section. Pharmacology alone does not de-escalate; it must pair with de-escalation itself.
-
-**Trauma-informed care in behavioral crises**
-- Substance Abuse and Mental Health Services Administration (SAMHSA) — the six principles (safety, trustworthiness, choice, collaboration, empowerment, cultural competence) are not ornamental in agitation. A patient in crisis who feels trapped, blamed, or controlled re-traumatizes. Restraint and seclusion carry real psychological risk of re-traumatization; see the intervention with that lens.
-- Teaching focus: ask the team (in debrief) whether the patient's behavior was better explained by fear than by "acting out." Shift changes everything.
-
-**Book references**
-- van der Kolk, B. (2014) — *The Body Keeps the Score: Brain, Mind, and Body in the Healing of Trauma* (ISBN 9780143127741). Accessible, clinically grounded review of how trauma reshapes the nervous system and why a frightened patient needs de-escalation, not force. Relevant to understanding akathisia, fear responses, and the lasting cost of restraint.
-
-**Teaching and practice resources**
-- Search "Project BETA de-escalation" + your institution name to find training schedules. Most hospitals now offer it; many make it mandatory for psychiatric unit staff. Attend if you can — watching someone who has practiced de-escalation for years is more instructive than any page.
-- Simulation: practice the language of limit-setting and choice-offering with faculty or senior residents before you do it under pressure. Communication practice tool (links above) is designed for exactly this.
-- Post-incident debrief is part of the standard, not an extra. If a patient was restrained or secluded, the team reconvenes (usually within 24 hours) to ask: what escalated it, what could have prevented it, what did we learn? Missing this step silently repeats the same missteps.
-
 <!-- crisis-block -->
 
 ## Pair with

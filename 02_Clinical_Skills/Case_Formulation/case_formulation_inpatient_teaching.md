@@ -34,47 +34,4 @@ Cross the four P's with the biopsychosocial axis and you have a 3×4 grid; you d
 
 **Pair with** the Formulation & DDx pocket guide, the Differential Diagnosis scaffolds, the Oral Presentation tool, and the family pages.
 
----
-
-## Further Reading & Media Resources
-
-### Formulation Frameworks
-
-**DSM-5-TR Biopsychosocial Formulation**
-The fifth edition of the DSM emphasizes integrated cultural and contextual formulation. See the "Outline for Cultural Formulation" (OCF) in the DSM-5-TR appendix for a systematic approach to understanding how culture shapes presentation and formulation.
-
-**ICD-11 Clinical Case Formulation**
-The ICD-11 guidance document on case formulation emphasizes the four-factor model similar to the four P's above: predisposing factors, precipitating factors, perpetuating factors, and protective factors.
-
-**Psychodynamic Diagnostic Manual (PDM-5)**
-For students interested in depth-oriented formulation: the PDM-5 (2018) provides structured approaches to understanding unconscious conflicts, relational patterns, and defensive structures. Useful for enriching formulation beyond diagnosis alone.
-
-### Recommended Books
-
-- **[Attached: The New Science of Adult Attachment and How It Can Help You Find — and Keep — Love](https://www.amazon.com/dp/1585429139)** (ISBN 9781585429134) — Amir Levine & Rachel Heller. While written for a general audience, the attachment framework is central to understanding predisposing factors and psychological perpetuating factors in formulation.
-- **[The Body Keeps the Score: Brain, Mind, and Body in the Healing of Trauma](https://www.amazon.com/dp/0143127748)** (ISBN 9780143127741) — Bessel van der Kolk. Illuminates how trauma becomes formulated at the biological, psychological, and neurological level.
-- **[In the Realm of Hungry Ghosts: Close Encounters with Addiction](https://www.amazon.com/dp/155643880X)** (ISBN 9781556438806) — Gabor Maté. A masterclass in formulation: how attachment wounds, trauma, and meaning deprivation drive addiction. Demonstrates formulation in real cases.
-
-### Related Teaching Resources
-
-- **Formulation & Differential Diagnosis Pocket Guide** — Quick-reference version of this page; print or bookmark for rounds.
-- **Oral Presentation Tool** — Practice translating your formulation into a compelling patient story.
-- **Clinical Skills: Differential Diagnosis** — The complement to formulation; build the differential, then answer "why now?"
-- **Family & Relational Pages** — Understand how family patterns inform formulation (expressed emotion, attachment style, systemic factors).
-
-### How to Practice Formulation
-
-**Every patient, every day:**
-- Write one formulation sentence (four P's structure) before rounds
-- Read it aloud to a team member — does it make clinical sense?
-- Compare it to your assessment: does your plan flow from the formulation?
-- Revise it as new information emerges
-
-**Worked examples from the curriculum:**
-- COTW case studies include detailed formulation for each patient scenario
-- Oral presentation tool demonstrates formulation in a case presentation
-- Compare how the same diagnosis (e.g., depression) has different formulations depending on precipitants and perpetuating factors
-
----
-
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
