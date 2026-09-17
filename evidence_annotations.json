@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-09-02",
+  "updated": "2026-09-16",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -1269,6 +1269,80 @@
           "direction": "positive",
           "usedBy": [
             "exp_family"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "schnurr-2024-vadod-ptsd-cpg-synopsis",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-16",
+        "pmid": "38408360",
+        "doi": "10.7326/M23-2757",
+        "sourceSpan": "This article summarizes the 2023 clinical practice guideline (CPG) and its development process, focusing on assessments and treatments for which evidence was sufficient to support a recommendation for or against. The CPG recommends use of specific manualized psychotherapies over pharmacotherapy; prolonged exposure, cognitive processing therapy, or eye movement desensitization and reprocessing psychotherapy; paroxetine, sertraline, or venlafaxine; and secure video teleconferencing to deliver recommended psychotherapy when that therapy has been validated for use with video teleconferencing or when other options are unavailable. The CPG also recommends against use of benzodiazepines, cannabis, or cannabis-derived products."
+      },
+      "claims": [
+        {
+          "claimId": "ptsd-psychotherapy-over-pharmacotherapy",
+          "claimText": "The 2023 VA/DoD guideline recommends specific manualized psychotherapies (prolonged exposure, cognitive processing therapy, or EMDR) over pharmacotherapy for PTSD.",
+          "claimTerms": [
+            "manualized psychotherapies over pharmacotherapy",
+            "prolonged exposure",
+            "cognitive processing therapy"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "rounds_questions"
+          ]
+        },
+        {
+          "claimId": "ptsd-guideline-recommended-medications",
+          "claimText": "When medication is used, the 2023 VA/DoD guideline recommends paroxetine, sertraline, or venlafaxine.",
+          "claimTerms": [
+            "paroxetine, sertraline, or venlafaxine"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "rounds_questions"
+          ]
+        },
+        {
+          "claimId": "ptsd-benzodiazepines-recommended-against",
+          "claimText": "The 2023 VA/DoD guideline recommends against use of benzodiazepines (and cannabis or cannabis-derived products) for PTSD.",
+          "claimTerms": [
+            "recommends against use of benzodiazepines"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "rounds_questions"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "williams-2022-cochrane-ptsd-pharmacotherapy",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-16",
+        "pmid": "35234292",
+        "doi": "10.1002/14651858.CD002795.pub3",
+        "sourceSpan": "We include 66 RCTs in the review (range: 13 days to 28 weeks; 7442 participants; age range 18 to 85 years) and 54 in the meta-analysis. For the primary outcome of treatment response, we found evidence of beneficial effect for selective serotonin reuptake inhibitors (SSRIs) compared with placebo (risk ratio (RR) 0.66, 95% confidence interval (CI) 0.59 to 0.74; 8 studies, 1078 participants), which improved PTSD symptoms in 58% of SSRI participants compared with 35% of placebo participants, based on moderate-certainty evidence."
+      },
+      "claims": [
+        {
+          "claimId": "ptsd-ssri-treatment-response",
+          "claimText": "For the primary outcome of treatment response, SSRIs showed a beneficial effect compared with placebo (RR 0.66, 95% CI 0.59 to 0.74; 8 studies, 1078 participants), improving PTSD symptoms in 58% of SSRI participants compared with 35% of placebo participants, based on moderate-certainty evidence.",
+          "claimTerms": [
+            "treatment response",
+            "selective serotonin reuptake inhibitors",
+            "moderate-certainty evidence"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "rounds_questions"
           ]
         }
       ]
