@@ -2604,3 +2604,139 @@ test('corrupt saved plan without placement opens placement and preserves progres
   expect(await page.evaluate(() => localStorage.getItem('cw_plan_v1'))).toBeNull();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_progress_v1')))).toEqual(progress);
 });
+
+// ---- #426 / #428: every retained capture stays visible, named, deletable and announced --------
+// Opening or scheduling a question from Today marks it triaged. Before this fix that removed it
+// from every visible surface while cw_capture_v1 still held the text, and with no untriaged item
+// left the sheet also dropped Erase all -- the learner could no longer see or delete what the app
+// retained. The Capture sheet is now the management surface for the WHOLE store.
+
+function captureErrors(page) {
+  const runtimeErrors = [];
+  page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
+  page.on('console', (message) => {
+    if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`);
+  });
+  return runtimeErrors;
+}
+
+test('a triaged capture stays listed and deletable, each control named, 44px, and announced (#426, #428)', async ({ page }) => {
+  const runtimeErrors = captureErrors(page);
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page, {
+    storage: {
+      cw_capture_v1: {
+        v: 1,
+        items: [
+          { id: 'c_new', text: 'why lithium levels at twelve hours', at: 1, ctx: null, triaged: false },
+          { id: 'c_old', text: 'when does clozapine need a white count', at: 2, ctx: null, triaged: true },
+        ],
+      },
+    },
+  });
+  await page.goto('/');
+  // Today's triage card keeps its meaning: only the untriaged question is offered for triage.
+  const card = page.locator('.fd-capture', { hasText: 'Questions from the unit' });
+  await expect(card).toContainText('lithium');
+  await expect(card).not.toContainText('clozapine');
+
+  await page.locator(CAPTURE).click();
+  const rows = page.locator('.cap-list li');
+  await expect(rows).toHaveCount(2);
+  await expect(rows.nth(0)).toHaveAttribute('data-cap-status', 'new');
+  await expect(rows.nth(1)).toHaveAttribute('data-cap-status', 'triaged');
+  await expect(rows.nth(1)).toContainText('clozapine');
+  await expect(rows.nth(1).locator('.cap-list__status')).toHaveText('Triaged');
+
+  const names = await page.locator('[data-cap-del]').evaluateAll((els) => els.map((el) => el.getAttribute('aria-label')));
+  expect(names).toEqual([
+    'Delete question: why lithium levels at twelve hours',
+    'Delete question: when does clozapine need a white count',
+  ]);
+  const boxes = await page.locator('[data-cap-del]').evaluateAll((els) => els.map((el) => {
+    const r = el.getBoundingClientRect();
+    return { w: r.width, h: r.height };
+  }));
+  for (const box of boxes) {
+    expect(box.w).toBeGreaterThanOrEqual(44);
+    expect(box.h).toBeGreaterThanOrEqual(44);
+  }
+
+  await rows.nth(1).locator('[data-cap-del]').click();
+  await expect(rows).toHaveCount(1);
+  await expect(page.locator('#capStatus')).toHaveText('Question deleted. 1 saved question remains.');
+  await expect(page.locator('#capText')).toBeFocused();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_capture_v1')).items.map((it) => it.id)))
+    .toEqual(['c_new']);
+
+  await rows.nth(0).locator('[data-cap-del]').click();
+  await expect(rows).toHaveCount(0);
+  await expect(page.locator('#capEraseAll')).toHaveCount(0);
+  await expect(page.locator('#capStatus')).toHaveText('Question deleted. No saved questions remain.');
+  expect(await page.evaluate(() => localStorage.getItem('cw_capture_v1'))).toBeNull();
+  expect(runtimeErrors).toEqual([]);
+});
+
+test('Erase all stays available while only triaged captures remain (#426)', async ({ page }) => {
+  const runtimeErrors = captureErrors(page);
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page, {
+    storage: {
+      cw_capture_v1: {
+        v: 1,
+        items: [{ id: 'c_old', text: 'when does clozapine need a white count', at: 2, ctx: null, triaged: true }],
+      },
+    },
+  });
+  await page.goto('/');
+  await expect(page.locator('.fd-capture', { hasText: 'Questions from the unit' })).toHaveCount(0);
+  await page.locator(CAPTURE).click();
+  await expect(page.locator('.cap-list li[data-cap-status="triaged"]')).toHaveCount(1);
+  const erase = page.locator('#capEraseAll');
+  await expect(erase).toBeVisible();
+  page.once('dialog', (dialog) => dialog.accept());
+  await erase.click();
+  await expect(page.locator('.cap-list li')).toHaveCount(0);
+  await expect(page.locator('#capStatus')).toHaveText('All saved questions erased.');
+  expect(await page.evaluate(() => localStorage.getItem('cw_capture_v1'))).toBeNull();
+  expect(runtimeErrors).toEqual([]);
+});
+
+test('Capture -> Open keeps the opened question inspectable and deletable in the sheet (#426)', async ({ page }) => {
+  const runtimeErrors = captureErrors(page);
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page, {
+    storage: {
+      cw_capture_v1: {
+        v: 1,
+        items: [{ id: 'c_open', text: 'psychosis', at: 1, ctx: null, triaged: false }],
+      },
+    },
+  });
+  await page.goto('/');
+  const triage = page.locator('.fd-capture', { hasText: 'Questions from the unit' });
+  await expect(triage).toContainText('psychosis');
+  await triage.locator('[data-cap-open]').click();
+  await expect(page.locator('.fd-article')).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_capture_v1')).items[0].triaged)).toBe(true);
+
+  await page.locator(CAPTURE).click();
+  const row = page.locator('.cap-list li');
+  await expect(row).toHaveCount(1);
+  await expect(row).toHaveAttribute('data-cap-status', 'triaged');
+  await expect(row).toContainText('psychosis');
+  await expect(page.locator('#capEraseAll')).toBeVisible();
+  await row.locator('[data-cap-del]').click();
+  await expect(row).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('cw_capture_v1'))).toBeNull();
+  expect(runtimeErrors).toEqual([]);
+});
+
+test('reduced motion zeroes the skip-link transition along with the rest of the shell (#428)', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await seedCompleteSetup(page);
+  await page.goto('/');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const durations = await page.locator('.skip-link').evaluate((el) => getComputedStyle(el).transitionDuration);
+  expect(durations.split(',').map((d) => d.trim())).toEqual(['0s']);
+});
