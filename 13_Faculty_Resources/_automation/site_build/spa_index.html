@@ -132,7 +132,6 @@
   /* Reduced motion (#428): the Front Door stylesheet zeroes its own motion under this query; the
      shell's remaining transitions -- the skip link above, the legacy sidebar chrome and the
      section chevrons -- live here and were the ones an audit found still animating. */
-  @media(prefers-reduced-motion:reduce){.skip-link,.layout,.layout>aside,.modetoggle .knob,.navgroupsec .chev,.navsec .chev,.practice-chev,.md-body .sec-chev,.fd-article__body .sec-chev{transition:none}}
   .drawer-backdrop{position:fixed;inset:0;z-index:19;background:rgba(47,41,36,.40)}
   :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
   .loading{color:var(--text-mid);padding:28px 4px}
@@ -357,6 +356,9 @@
     .layout>aside.open{transform:translateX(0)}
     body.has-tlbar #content{padding-bottom:var(--mobile-bottom-clearance)}
   }
+  /* Reduced motion must be the LAST word on these transitions: the declarations it zeroes have the
+     same specificity and sit later in this sheet, so an earlier override lost the cascade (#428). */
+  @media(prefers-reduced-motion:reduce){.skip-link,.layout,.layout>aside,.modetoggle .knob,.navgroupsec .chev,.navsec .chev,.practice-chev,.md-body .sec-chev,.fd-article__body .sec-chev{transition:none}}
 </style>
 <style>
   /* ===== Tool launcher badges (from Claude Design handoff, house-tokenized) ===== */
