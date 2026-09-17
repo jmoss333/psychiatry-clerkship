@@ -181,7 +181,7 @@ test('buffered and streamed speech preserve exact words and apply only the autho
     {caseId:'sp_mania_redirect_001',voice:'cedar',speed:1.12,style:/urgent, continuous forward momentum/,text:'Yes, sleep. Two or three hours, and I am not tired.'},
     {caseId:'sp_psychosis_paranoid_001',voice:'cedar',speed:1,style:/uneven, cautious phrasing/,text:'I do not know what is happening.'},
     {caseId:MORGAN,voice:'marin',speed:1,style:/mixed feelings be audible/,text:'I am not promising to stop forever.'},
-    {caseId:'family_maya_001',voice:'cedar',speed:1,style:/steady and caring at the same time/,text:'I care about you, and I cannot check every night.'},
+    {caseId:'family_maya_001',voice:'coral',speed:1,style:/steady and caring at the same time/,text:'I care about you, and I cannot check every night.'},
   ];
   for(const fixture of fixtures){
     for(const streaming of [false,true]){

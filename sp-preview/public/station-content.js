@@ -69,12 +69,13 @@
       reflectionQuestion:'Where does your wording leave Morgan room to keep mixed feelings and choose a next step?'
     },
     family_morgan_maya_001:{
-      caseId:'family_morgan_maya_001',displayName:'Morgan and Maya',voice:'Marin and Cedar',title:'Morgan and Maya — A family visit',
+      caseId:'family_morgan_maya_001',displayName:'Morgan and Maya',voice:'Marin and Coral',title:'Morgan and Maya — A family visit',
       reviewStatus:'reviewed',
       participants:[
-        {id:'morgan',displayName:'Morgan',voice:'Marin',pronouns:'they/them',relationship:'Maya’s parent'},
-        {id:'maya',displayName:'Maya',voice:'Cedar',pronouns:'she/her',relationship:'Morgan’s adult daughter'}
+        {id:'morgan',displayName:'Morgan',voice:'Marin',pronouns:'they/them',relationship:'Maya’s parent',observation:'Morgan looks toward Maya, then toward you.'},
+        {id:'maya',displayName:'Maya',voice:'Coral',pronouns:'she/her',relationship:'Morgan’s adult daughter',observation:'Maya looks toward Morgan, then back toward you.'}
       ],
+      roomLayout:{label:'Illustrative room layout',text:'Morgan and Maya are shown in separate chairs, with your chair facing both. Positions are illustrative; they do not establish how close the family feels.'},
       task:'Hear Morgan and Maya in turn during the shared meeting, make room for different priorities, and close with a realistic next step without requiring agreement or assigning a monitoring role.',
       doorNote:'Morgan, an inpatient in their 40s who uses they/them pronouns, and Maya, their adult daughter who uses she/her pronouns, have voluntarily accepted a family meeting after Morgan was medically stabilized following an alcohol-related fall. Morgan lives alone; Maya does not live with them.',
       objectives:['Explain your student role, establish the purpose of the meeting, and invite each person’s priorities.','Explore support, limits, and differing views while keeping clear whose account you are hearing in the shared meeting.','Summarize each account, check what is and is not agreed, and bring unresolved clinical questions to the team.'],
