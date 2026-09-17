@@ -252,9 +252,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-09",
+    "at": "2026-09-17",
     "by": "Joshua Moss, MD",
-    "note": "Re-attested 2026-09-09 (recorded on the owner's instruction). Covers the WP-5m suicide-follow-up chain and the F1-F5 / D16(2) display change; Dana's pack facultyReview.lastReviewed advanced to 2026-09-09 in the same change."
+    "note": "Re-attested 2026-09-17 (recorded on the owner's approval of #565, issue comment 2026-09-17): Dana's direct suicide question discloses at any rapport and an earlier flag never blocks it; the local draft overlay that carried that policy is retired into the reviewed pack; debrief states that asking early was right. Dana's pack facultyReview.lastReviewed advanced to 2026-09-17 in the same change. Prior: 2026-09-09 (WP-5m chain, F1-F5 / D16(2))."
   },
   "welcome.md": {
     "status": "pending",

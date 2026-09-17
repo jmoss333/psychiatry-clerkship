@@ -145,6 +145,14 @@ step "test_validate_claim_anchors"          python3 $A/test_validate_claim_ancho
 step "validate_claim_anchors"               python3 $A/validate_claim_anchors.py
 step "unit — evidence annotations"          python3 $A/validate_evidence_annotations.py --self-test
 step "validate_evidence_annotations"        python3 $A/validate_evidence_annotations.py
+# Both audits below are RATCHETS (docs/RATCHETS.md): the finding counts each one reports are
+# pinned in a committed bin/*_baseline.json beside the tool, a rise fails, a fall is a note, and
+# `--update-baseline` lowers the pin as part of a reviewed reduction. Until 2026-09-16 the span
+# audit gated REWORDED sentences only, so the pott-2022 defect it was built for -- a clause
+# deleted MID-sentence classifies as EDITED -- exited 0, and a wrong cache path printed
+# "0 clean ... 49 uncached" and passed. Both are red now. The --self-test proves a synthetic
+# regression exits 1 and the live tree exits 0; check_vacuity.py requires it on a hard step.
+step "unit — span audit"                    python3 bin/verify_spans.py --self-test
 step "span audit (verbatim vs paper)"       python3 bin/verify_spans.py
 step "unit — research dock"                 python3 bin/research-dock.py --self-test
 step "research return dock"                 python3 bin/research-dock.py check --strict
@@ -196,6 +204,8 @@ step "unit — twin parity"                   python3 bin/check_twin_parity.py -
 # no-content-change cancel is not, and that an unrecognised deploy state is a finding rather
 # than a pass. Without that last one the alarm would quietly match nothing.
 step "unit — netlify deploy health"         python3 bin/check_netlify_deploy_health.py --self-test
+# Ratchet against bin/check_qbank_coherence_baseline.json (pairs = 0 today); the pin is what
+# the --self-test step above asserts the exit code against. See the span-audit comment above.
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
 step "twin parity (audience copies)"        python3 bin/check_twin_parity.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py

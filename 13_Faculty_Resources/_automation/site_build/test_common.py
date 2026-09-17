@@ -13,6 +13,7 @@ to eliminate:
      differently (the rp-* bypass).
 """
 
+import ast
 import json
 import os
 import re
@@ -871,6 +872,234 @@ class TestServiceWorkerEmission(unittest.TestCase):
         )
         with self.assertRaises(AssertionError):
             common.emit_service_worker(d)
+
+
+class TestPreviewHeaders(unittest.TestCase):
+    """Deploy-preview CSP widening for the Netlify Drawer (issue #430).
+
+    Netlify injects `/.netlify/scripts/cdp` into deploy-preview HTML; its drawer
+    frames https://app.netlify.com/, which `frame-src 'self'` blocks. The fix
+    widens frame-src in the `deploy-preview` CONTEXT only. The contract these
+    tests defend is asymmetric: the preview allowance is a convenience, the
+    production CSP staying byte-identical is not.
+    """
+
+    SAMPLE = (
+        "/*\n"
+        "  X-Content-Type-Options: nosniff\n"
+        "  Content-Security-Policy: default-src 'self'; img-src 'self' data:; "
+        "script-src 'self' 'unsafe-inline'; frame-src 'self'; "
+        "frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n"
+        "/*.html\n"
+        "  Cache-Control: public, max-age=0, must-revalidate\n"
+    )
+
+    @staticmethod
+    def _write(path, text):
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(text)
+
+    @staticmethod
+    def _read(path):
+        with open(path, encoding="utf-8") as fh:
+            return fh.read()
+
+    # ---- contexts that must change nothing -------------------------------
+
+    def test_production_context_is_byte_identical(self):
+        self.assertEqual(common.preview_headers(self.SAMPLE, "production"), self.SAMPLE)
+
+    def test_empty_context_is_byte_identical(self):
+        """A local build (and any build Netlify did not label) sees CONTEXT=''."""
+        self.assertEqual(common.preview_headers(self.SAMPLE, ""), self.SAMPLE)
+
+    def test_branch_deploy_context_is_byte_identical(self):
+        self.assertEqual(common.preview_headers(self.SAMPLE, "branch-deploy"), self.SAMPLE)
+
+    def test_unknown_context_is_byte_identical(self):
+        """Fail closed on a context nobody anticipated: leave the CSP alone."""
+        self.assertEqual(common.preview_headers(self.SAMPLE, "deploy_preview"), self.SAMPLE)
+        self.assertEqual(common.preview_headers(self.SAMPLE, "DEPLOY-PREVIEW"), self.SAMPLE)
+
+    # ---- the preview rewrite ---------------------------------------------
+
+    def test_deploy_preview_widens_frame_src_only(self):
+        out = common.preview_headers(self.SAMPLE, "deploy-preview")
+        before = self.SAMPLE.split("\n")
+        after = out.split("\n")
+        self.assertEqual(len(before), len(after))
+        changed = [i for i, (b, a) in enumerate(zip(before, after)) if b != a]
+        self.assertEqual(len(changed), 1, "exactly one line may change")
+        line = after[changed[0]]
+        self.assertIn("Content-Security-Policy:", line)
+        self.assertIn("frame-src 'self' https://app.netlify.com;", line)
+        # Every other directive on that line survives untouched.
+        self.assertEqual(
+            before[changed[0]].replace(
+                "frame-src 'self';", "frame-src 'self' https://app.netlify.com;"
+            ),
+            line,
+        )
+
+    def test_deploy_preview_leaves_other_directives_alone(self):
+        out = common.preview_headers(self.SAMPLE, "deploy-preview")
+        for directive in (
+            "default-src 'self';",
+            "img-src 'self' data:;",
+            "script-src 'self' 'unsafe-inline';",
+            "frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app",
+        ):
+            self.assertIn(directive, out)
+        self.assertIn("  X-Content-Type-Options: nosniff\n", out)
+        self.assertIn("/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n", out)
+        self.assertEqual(out.count("https://app.netlify.com"), 1)
+
+    def test_only_the_csp_line_is_rewritten(self):
+        """A `frame-src 'self';` outside the CSP line must not be touched.
+
+        Netlify's _headers format allows arbitrary header names, so the literal
+        token can legitimately appear elsewhere. Scoping the rewrite to the CSP
+        line is what makes "only the frame-src directive changed" checkable
+        rather than hopeful.
+        """
+        decoy = self.SAMPLE + "  X-Note: frame-src 'self'; not a policy\n"
+        out = common.preview_headers(decoy, "deploy-preview")
+        self.assertIn("  X-Note: frame-src 'self'; not a policy\n", out)
+        self.assertEqual(out.count("https://app.netlify.com"), 1)
+
+    def test_is_idempotent(self):
+        once = common.preview_headers(self.SAMPLE, "deploy-preview")
+        twice = common.preview_headers(once, "deploy-preview")
+        self.assertEqual(once, twice)
+        self.assertEqual(twice.count("https://app.netlify.com"), 1)
+
+    # ---- drift must fail loudly, never silently no-op --------------------
+
+    def test_missing_csp_line_raises(self):
+        with self.assertRaises(ValueError):
+            common.preview_headers("/*\n  X-Content-Type-Options: nosniff\n", "deploy-preview")
+
+    def test_changed_frame_src_shape_raises(self):
+        drifted = self.SAMPLE.replace("frame-src 'self';", "frame-src 'self' https://example.org;")
+        with self.assertRaises(ValueError):
+            common.preview_headers(drifted, "deploy-preview")
+
+    def test_drift_still_cannot_affect_production(self):
+        """The loud failure above is preview-scoped; production returns early."""
+        drifted = self.SAMPLE.replace("frame-src 'self';", "frame-src 'self' https://example.org;")
+        self.assertEqual(common.preview_headers(drifted, "production"), drifted)
+
+    # ---- the REAL payload, not just a fixture ----------------------------
+
+    def _learner_headers_literal(self):
+        """The `_headers` payload as build_deploy.py actually writes it.
+
+        Extracted the same way tests/faculty-console-handler.test.mjs extracts
+        it, so this test reads the shipped string rather than a copy of it: a
+        fixture-only test would keep passing while the real CSP drifted out from
+        under the transform (docs/SILENT_SHRINK_CHECKLIST.md).
+        """
+        here = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(here, "build_deploy.py"), encoding="utf-8") as fh:
+            src = fh.read()
+        match = re.search(
+            r'open\(OUT\+"/_headers","w",encoding="utf-8"\)\.write\(("(?:\\.|[^"\\])*")\)',
+            src,
+        )
+        self.assertIsNotNone(
+            match, "the learner _headers payload must remain a statically-inspectable literal"
+        )
+        return ast.literal_eval(match.group(1))
+
+    def test_real_learner_payload_is_untouched_in_production(self):
+        payload = self._learner_headers_literal()
+        self.assertEqual(common.preview_headers(payload, "production"), payload)
+        self.assertEqual(common.preview_headers(payload, ""), payload)
+        self.assertNotIn("app.netlify.com", payload)
+
+    def test_real_learner_payload_is_widened_on_a_preview(self):
+        payload = self._learner_headers_literal()
+        out = common.preview_headers(payload, "deploy-preview")
+        self.assertNotEqual(out, payload)
+        self.assertIn("frame-src 'self' https://app.netlify.com;", out)
+        self.assertEqual(out.count("https://app.netlify.com"), 1)
+        self.assertEqual(
+            payload.replace("frame-src 'self';", "frame-src 'self' https://app.netlify.com;"),
+            out,
+        )
+
+    # ---- the file-level wrapper ------------------------------------------
+
+    def test_apply_writes_only_when_the_text_changed(self):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d)
+        path = os.path.join(d, "_headers")
+        self._write(path, self.SAMPLE)
+
+        self.assertFalse(common.apply_preview_headers(d, context="production"))
+        self.assertEqual(self._read(path), self.SAMPLE)
+
+        self.assertTrue(common.apply_preview_headers(d, context="deploy-preview"))
+        widened = self._read(path)
+        self.assertIn("frame-src 'self' https://app.netlify.com;", widened)
+
+        # Second pass over an already-widened file (the resident build's case).
+        self.assertFalse(common.apply_preview_headers(d, context="deploy-preview"))
+        self.assertEqual(self._read(path), widened)
+
+    def test_apply_reads_context_from_the_environment_by_default(self):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d)
+        path = os.path.join(d, "_headers")
+        self._write(path, self.SAMPLE)
+        previous = os.environ.get("CONTEXT")
+
+        def _restore():
+            if previous is None:
+                os.environ.pop("CONTEXT", None)
+            else:
+                os.environ["CONTEXT"] = previous
+
+        self.addCleanup(_restore)
+        os.environ["CONTEXT"] = "deploy-preview"
+        self.assertTrue(common.apply_preview_headers(d))
+        self.assertIn("app.netlify.com", self._read(path))
+
+    # ---- the wiring itself ------------------------------------------------
+
+    def test_build_deploy_applies_the_transform_after_writing_headers(self):
+        """Source-text pin: the wiring cannot be dropped and leave the unit green.
+
+        preview_headers() is pure, so every behavioural test above would still
+        pass with the call deleted from the build. This is the test that fails
+        when #430 quietly comes back.
+        """
+        here = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(here, "build_deploy.py"), encoding="utf-8") as fh:
+            src = fh.read()
+        write_at = src.find('open(OUT+"/_headers","w",encoding="utf-8").write(')
+        apply_at = src.find("common.apply_preview_headers(OUT")
+        self.assertNotEqual(write_at, -1, "build_deploy.py must still write _headers")
+        self.assertNotEqual(
+            apply_at, -1, "build_deploy.py must apply the deploy-preview CSP widening (#430)"
+        )
+        self.assertLess(write_at, apply_at, "the widening must run AFTER the _headers write")
+
+    def test_resident_build_applies_the_transform_too(self):
+        """The resident site inherits _headers through copytree; it re-applies
+        the transform anyway, so the preview allowance cannot vanish with a
+        future change to how the resident build produces the file."""
+        here = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(here, "resident_section.py"), encoding="utf-8") as fh:
+            src = fh.read()
+        copytree_at = src.find("shutil.copytree(MS3, OUT)")
+        apply_at = src.find("common.apply_preview_headers(OUT")
+        self.assertNotEqual(copytree_at, -1)
+        self.assertNotEqual(
+            apply_at, -1, "resident_section.py must apply the deploy-preview CSP widening (#430)"
+        )
+        self.assertLess(copytree_at, apply_at)
+
 
 
 if __name__ == "__main__":

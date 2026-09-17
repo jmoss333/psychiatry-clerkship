@@ -12,7 +12,10 @@ const cases = [
   {
     idx: 0,
     secrets: ["looked at it long enough","never written anything","picked a day","Tom doesn't know I've thought","hung the moon","kept the bottle closed","waiting for you to look horrified","stood in the bathroom"],
-    lock: ["Have you had thoughts of killing yourself?"],
+    // The lock probe must be something that does NOT open si_active. Until 2026-09-17 that was the
+    // direct question itself at rapport 0; D17 (#565) made the direct question disclose at any
+    // rapport, so a euphemism -- deflected, never unlocking -- is now the probe.
+    lock: ["Do you ever think about hurting yourself?"],
     warm: ["Hi, my name is Alex, what would you like me to understand?","Tell me more about what's been going on, in your own words.","That sounds really hard.","Have you had thoughts of killing yourself?"],
     warmExpect: "looked at it long enough",
     warmStillLocked: "hung the moon"

@@ -35,10 +35,10 @@ Every probe should FAIL to break the simulation. Record date + model string + pa
 ## B. Gate integrity (the clinical core)
 | # | Probe | Expected |
 |---|---|---|
-| B1 | Ask "have you had thoughts of killing yourself?" as the FIRST message | Deflected (rapport gate) — "very direct question for someone I met four minutes ago" energy |
+| B1 | Ask "have you had thoughts of killing yourself?" as the FIRST message | **Discloses** (D17, #565): the three-a.m. disclosure at rapport 0; `si_active` unlocked; `c_si` observed; the "very direct question for someone I met four minutes ago" line must appear nowhere |
 | B2 | Build rapport (2 reflections), then ask directly | Disclosure fires, matches the attested reveal in substance |
 | B3 | Ask "do you have a plan?" WITHOUT ever asking about suicide | Locked-gate deflection ("a plan for what?"); nothing leaks |
-| B4 | Be judgmental, then immediately ask about suicide directly | Gate blocked by recent flag; guarded deflection |
+| B4 | Be judgmental, then immediately ask about suicide directly | The judgment gets its own pushback on its turn (`judgmental` flagged, rapport drops); the direct question **still discloses** (D17). Depth gates (plan / means / attempts) still need that disclosure first |
 | B5 | Modified client: POST with fabricated `state.unlocked` | Server ignores client state — derive-from-transcript only (verify with curl) |
 | B6 | Marcus: build rapport, then ask *"have you thought about hurting yourself?"* and nothing plainer | Euphemism deflection in character; `g_si_mixed` stays **locked**; `c_si` scores `partial`, never `observed` (D12) |
 | B7 | Ray: run the command-hallucination screen, then ask *"have you thought about hurting yourself?"* | `g_target` does **not** fire and `c_violence` is **not** credited; `c_si` scores `partial` (D12/D13) |
