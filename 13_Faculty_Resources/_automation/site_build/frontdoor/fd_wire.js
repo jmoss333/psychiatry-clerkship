@@ -1142,12 +1142,25 @@ function fdWire(root, initialState, opts){
     if(k<0&&invoker.closest){ try{ k=dup.indexOf(invoker.closest('[data-fd-open],[data-fd-progress]')); }catch(_){ k=-1; } }
     if(k>=0) originOpener={ref:ref,index:k};
   }
+  /* Focus goes back only to a control we can name with confidence: the one the learner
+     activated, re-found by position among the duplicates that carry its ref; failing that the
+     ONLY shown control for the ref; failing that a shown control inside Today's primary (the one
+     thing the learner was pointed at). Anything less certain leaves the render's own landmark
+     focus in place -- a resource opened by a plain link (the Resume card is an <a href>) never
+     passed through apply(), and a wrong guess among week rows and rail copies is worse than
+     main#content. The One Thing First contract (front-door.spec.js A1/A2) pins that fallback. */
   function openerFor(ref){
-    var all=openersFor(ref), i;
-    if(!all.length) return null;
-    if(originOpener&&originOpener.ref===ref&&all[originOpener.index]&&isShown(all[originOpener.index])) return all[originOpener.index];
-    for(i=0;i<all.length;i++) if(isShown(all[i])) return all[i];
-    return all[0];
+    var all=openersFor(ref), shown=[], i, el;
+    for(i=0;i<all.length;i++) if(isShown(all[i])) shown.push(all[i]);
+    if(originOpener&&originOpener.ref===ref&&originOpener.index>=0){
+      el=all[originOpener.index];
+      if(el&&isShown(el)) return el;
+    }
+    if(shown.length===1) return shown[0];
+    for(i=0;i<shown.length;i++){
+      if(shown[i].closest){ try{ if(shown[i].closest('.fd-primary')) return shown[i]; }catch(_){} }
+    }
+    return null;
   }
   /* Returning from a resource lands the learner where they left the originating tab (#427): the
      list scrolled back to the offset recorded when the resource opened, and focus on the control

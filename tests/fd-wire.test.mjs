@@ -2776,6 +2776,33 @@ test('among shown duplicates, the control the learner activated is the one that 
   assert.equal(week.focused, 1, 'the second duplicate was the invoker, so it is the one restored');
 });
 
+test('with no remembered invoker and several shown duplicates, the render focus stands unless one is the primary (#427)', () => {
+  // A resource opened by a plain link (the Resume card is an <a href>) never passes through
+  // apply(), so on Back nothing says which of the week row and the rail copy the learner used.
+  const row = { ...opener(), getClientRects: () => [{}], closest: () => null };
+  const rail = { ...opener(), getClientRects: () => [{}], closest: () => null };
+  const { h, scrolls, setScrollY } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'today', openId: null },
+    { scrollY: 150, querySelectorAll: () => [row, rail] },
+  );
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'tool.html' }), preventDefault() {} });
+  setScrollY(0);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.deepEqual(scrolls, [[0, 150]], 'the offset is still restored');
+  assert.equal(row.focused + rail.focused, 0, 'no guess: the landmark focus from the render stands');
+
+  // ...but a shown duplicate inside Today's primary IS the one thing the learner was pointed at.
+  const primary = { ...opener(), getClientRects: () => [{}], closest: (sel) => (sel === '.fd-primary' ? {} : null) };
+  const h2 = originHarness(
+    { ...roleContext, screen: 'app', tab: 'today', openId: null },
+    { scrollY: 0, querySelectorAll: () => [row, primary] },
+  ).h;
+  h2.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'tool.html' }), preventDefault() {} });
+  h2.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.equal(primary.focused, 1);
+  assert.equal(row.focused, 0);
+});
+
 test('browser Back out of a resource is the same return (#427)', () => {
   const link = opener();
   const location = { href: 'https://example.test/?tab=library', pathname: '/', search: '?tab=library' };
