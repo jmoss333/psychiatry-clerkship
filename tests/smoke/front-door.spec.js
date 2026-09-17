@@ -1794,3 +1794,46 @@ test('desktop chrome is untouched: tabs in the header, panel closed, top back li
   await expect(page.locator('.fd-actionbar')).toBeHidden();
   await expectHealthy(page);
 });
+
+// #427 — opening a resource from deep in Library and returning lost the learner's place: the list
+// came back at the top and focus went to the main region instead of the link they had chosen.
+test('returning from a Library resource restores the list position and focuses the link that opened it', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1280, height: 600 });
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=library');
+  await expect(page.locator('.fd-library')).toBeVisible();
+  const link = page.locator('.fd-collink[data-fd-open$=".md"]').last();
+  const ref = await link.getAttribute('data-fd-open');
+  await link.scrollIntoViewIfNeeded();
+  const origin = await page.evaluate(() => window.scrollY);
+  expect(origin).toBeGreaterThan(200);
+
+  // The reader paints a synchronous shell (real h1 + a loading line) and fills the body on fetch;
+  // the fetch's own announceRoute() then focuses the main region, which would steal the restored
+  // focus if Back ran mid-fetch. Wait for the body itself, not for a visible child: the resident
+  // reader collapses section bodies, so the first list may legitimately be hidden.
+  const loadedReader = async () => {
+    await expect(page.locator('.fd-article')).toBeVisible();
+    await expect(page.locator('.fd-article__body')).not.toContainText('Loading');
+    await expect(page.locator('.fd-article__body :is(p, h2, h3, ul, ol, table)').first()).toBeAttached();
+  };
+  const backAtOrigin = async () => {
+    await expect(page.locator('.fd-library')).toBeVisible();
+    await expect.poll(() => page.evaluate(() => document.activeElement && document.activeElement.getAttribute('data-fd-open'))).toBe(ref);
+    const after = await page.evaluate(() => window.scrollY);
+    expect(Math.abs(after - origin)).toBeLessThan(48);
+  };
+
+  // In-app Back.
+  await link.click();
+  await loadedReader();
+  await page.locator('.fd-reader__back[data-fd-back]').first().click();
+  await backAtOrigin();
+
+  // Keyboard only: Enter on the restored link reopens it; browser Back returns the same way.
+  await page.keyboard.press('Enter');
+  await loadedReader();
+  await page.goBack();
+  await backAtOrigin();
+  await expectHealthy(page);
+});

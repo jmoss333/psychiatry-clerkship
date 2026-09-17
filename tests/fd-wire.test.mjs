@@ -596,6 +596,7 @@ function fakeHarness(initial, options = {}) {
     addEventListener(type, fn) { rootHandlers[type] = fn; },
     removeEventListener() {},
     querySelector: options.querySelector || (() => null),
+    ...(options.querySelectorAll ? { querySelectorAll: options.querySelectorAll } : {}),
     matches: options.matches || (() => false),
   };
   const fakeWindow = {
@@ -604,6 +605,8 @@ function fakeHarness(initial, options = {}) {
     location: options.location || { href: 'https://example.test/', search: '', pathname: '/' },
     history: options.history,
     matchMedia: options.matchMedia,
+    get scrollY() { return typeof options.scrollY === 'function' ? options.scrollY() : options.scrollY; },
+    scrollTo: options.scrollTo,
   };
   const controller = options.F.fdWire(root, initial, {
     window: fakeWindow,
@@ -2668,4 +2671,156 @@ test('the rotation key is already gone when the render that paints the header ru
   seenAtRender.length = 0;
   h.controller.dispatch({ 'data-fd-setweek': '2' }, { nowMs: new Date(2026, 7, 12, 9, 0, 0).getTime() });
   assert.deepEqual(seenAtRender, ['2026-08-03'], 'a chosen week is stored before its render, too');
+});
+
+// ---- #427: returning from a resource lands where the learner left the originating tab -------
+
+function originHarness(initial, extra = {}) {
+  const ls = memStorage();
+  const LocalF = make(ls);
+  let scrollY = extra.scrollY ?? 0;
+  const scrolls = [];
+  const openers = extra.openers || {};
+  const h = fakeHarness(initial, {
+    F: LocalF,
+    openResource: () => {},
+    scrollY: () => scrollY,
+    scrollTo: (x, y) => scrolls.push([x, y]),
+    querySelector: (sel) => openers[sel] || null,
+    ...(extra.querySelectorAll ? { querySelectorAll: extra.querySelectorAll } : {}),
+  });
+  return { h, ls, scrolls, setScrollY: (y) => { scrollY = y; } };
+}
+
+function opener() { return { focused: 0, focus() { this.focused += 1; } }; }
+
+test('in-app Back restores the originating tab offset and focuses the link that opened the resource (#427)', () => {
+  const link = opener();
+  const { h, ls, scrolls, setScrollY } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'library', openId: null },
+    { scrollY: 640, openers: { '[data-fd-open="deep.md"]': link } },
+  );
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'deep.md' }), preventDefault() {} });
+  assert.equal(h.controller.getState().scrollPos, 640, 'the offset is recorded when the resource opens');
+  assert.equal(JSON.parse(ls.getItem('cw_frontdoor_v1')).scrollPos, 640, 'and persisted with the route');
+  setScrollY(0);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.deepEqual(scrolls, [[0, 640]]);
+  assert.equal(link.focused, 1);
+  assert.equal(h.controller.getState().tab, 'library');
+});
+
+test('a reader opened from another reader keeps the original origin; a different tab restores nothing (#427)', () => {
+  const link = opener();
+  const { h, scrolls, setScrollY } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'path', openId: null },
+    { scrollY: 900, openers: { '[data-fd-open="first.md"]': link } },
+  );
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'first.md' }), preventDefault() {} });
+  setScrollY(120);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'second.md' }), preventDefault() {} });
+  assert.equal(h.controller.getState().scrollPos, 900, 'reader -> reader does not move the origin');
+  // Leaving through a different tab: nothing on Today opened the resource, so no restore.
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-tab': 'today' }), preventDefault() {} });
+  assert.deepEqual(scrolls, []);
+  assert.equal(link.focused, 0);
+  assert.equal(h.controller.getState().openId, null);
+});
+
+test('a retired or missing opener falls back to the render focus without throwing (#427)', () => {
+  const { h, scrolls } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'library', openId: null },
+    { scrollY: 300, openers: {} },
+  );
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'gone.md' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.deepEqual(scrolls, [[0, 300]], 'the list offset is still the learner\'s');
+});
+
+test('fdResolveState carries a persisted scroll offset through startup, and drops a bad one (#427)', () => {
+  const F = make(memStorage());
+  assert.equal(F.fdResolveState('https://example.test/?page=deep.md', { role: 'ms3', tab: 'library', scrollPos: 640 }).scrollPos, 640,
+    'a reload while reading keeps the offset the open recorded');
+  assert.equal(F.fdResolveState('https://example.test/', { role: 'ms3', tab: 'library', scrollPos: -1 }).scrollPos, undefined);
+  assert.equal(F.fdResolveState('https://example.test/', { role: 'ms3', tab: 'library', scrollPos: '640' }).scrollPos, undefined);
+});
+
+test('a hidden duplicate of the opener is skipped in favour of one that is shown (#427)', () => {
+  // Today's Quick Tools pill row precedes the desktop rail in the DOM and is display:none there.
+  const hidden = { ...opener(), getClientRects: () => [] };
+  const shown = { ...opener(), getClientRects: () => [{}] };
+  const { h, setScrollY } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'today', openId: null },
+    { scrollY: 200, querySelectorAll: () => [hidden, shown] },
+  );
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'tool.html' }), preventDefault() {} });
+  setScrollY(0);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.equal(hidden.focused, 0, 'focusing a display:none element moves nothing, so it is never chosen');
+  assert.equal(shown.focused, 1);
+});
+
+test('among shown duplicates, the control the learner activated is the one that gets focus back (#427)', () => {
+  const rail = { ...opener(), getClientRects: () => [{}] };
+  const week = { ...opener(), getClientRects: () => [{}] };
+  const target = actionTarget({ 'data-fd-open': 'tool.html' });
+  Object.assign(week, target); // the click target IS the second duplicate
+  const { h, setScrollY } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'today', openId: null },
+    { scrollY: 200, querySelectorAll: () => [rail, week] },
+  );
+  h.rootHandlers.click({ target: week, preventDefault() {} });
+  setScrollY(0);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.equal(rail.focused, 0);
+  assert.equal(week.focused, 1, 'the second duplicate was the invoker, so it is the one restored');
+});
+
+test('with no remembered invoker and several shown duplicates, the render focus stands unless one is the primary (#427)', () => {
+  // A resource opened by a plain link (the Resume card is an <a href>) never passes through
+  // apply(), so on Back nothing says which of the week row and the rail copy the learner used.
+  const row = { ...opener(), getClientRects: () => [{}], closest: () => null };
+  const rail = { ...opener(), getClientRects: () => [{}], closest: () => null };
+  const { h, scrolls, setScrollY } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'today', openId: null },
+    { scrollY: 150, querySelectorAll: () => [row, rail] },
+  );
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'tool.html' }), preventDefault() {} });
+  setScrollY(0);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.deepEqual(scrolls, [[0, 150]], 'the offset is still restored');
+  assert.equal(row.focused + rail.focused, 0, 'no guess: the landmark focus from the render stands');
+
+  // ...but a shown duplicate inside Today's primary IS the one thing the learner was pointed at.
+  const primary = { ...opener(), getClientRects: () => [{}], closest: (sel) => (sel === '.fd-primary' ? {} : null) };
+  const h2 = originHarness(
+    { ...roleContext, screen: 'app', tab: 'today', openId: null },
+    { scrollY: 0, querySelectorAll: () => [row, primary] },
+  ).h;
+  h2.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'tool.html' }), preventDefault() {} });
+  h2.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.equal(primary.focused, 1);
+  assert.equal(row.focused, 0);
+});
+
+test('browser Back out of a resource is the same return (#427)', () => {
+  const link = opener();
+  const location = { href: 'https://example.test/?tab=library', pathname: '/', search: '?tab=library' };
+  const memory = memoryHistory(location);
+  const ls = memStorage();
+  const LocalF = make(ls);
+  let scrollY = 480;
+  const scrolls = [];
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'library', openId: null }, {
+    F: LocalF, location, history: memory.history, openResource: () => {},
+    scrollY: () => scrollY, scrollTo: (x, y) => scrolls.push([x, y]),
+    querySelector: (sel) => (sel === '[data-fd-open="deep.md"]' ? link : null),
+  });
+  memory.bind(h.windowHandlers.popstate);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'deep.md' }), preventDefault() {} });
+  scrollY = 0;
+  memory.go(-1);
+  assert.equal(h.controller.getState().openId, null);
+  assert.deepEqual(scrolls, [[0, 480]]);
+  assert.equal(link.focused, 1);
 });
