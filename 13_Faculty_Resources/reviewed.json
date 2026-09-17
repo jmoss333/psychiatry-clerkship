@@ -426,7 +426,7 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-16",
+    "at": "2026-07-01",
     "by": "Joshua Moss, MD"
   },
   "t_personality.md": {
@@ -471,7 +471,7 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-16",
+    "at": "2026-07-03",
     "by": "Joshua Moss, MD"
   },
   "agitation.md": {
@@ -642,9 +642,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-16",
+    "at": "2026-07-03",
     "by": "Joshua Moss, MD",
-    "note": "safetyKit item: capacity assessment is high-risk clinical surface. Content enhanced with Further Reading resources (Phase 2) covering four-abilities model, delirium guidelines, catatonia criteria, withdrawal management, trauma-informed assessment, teaching resources (Phase 2); equity resources on capacity assessment bias, implicit bias, neurodiversity, and cultural competence (Phase 4A) — status held at 'reviewed' per safetyKit governance constraint"
+    "note": "safetyKit item: capacity assessment is high-risk clinical surface. Content enhanced with Further Reading resources (Phase 2) covering four-abilities model, delirium guidelines, catatonia criteria, withdrawal management, trauma-informed assessment, teaching resources — status held at 'reviewed' per safetyKit governance constraint"
   },
   "psychopharm_primer.md": {
     "status": "reviewed",
@@ -674,14 +674,15 @@
     "by": "Joshua Moss, MD"
   },
   "doc_oral.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-16",
-    "by": "Joshua Moss, MD",
-    "note": "Added comprehensive Further Reading section covering documentation standards, structured handoffs (Solet & Frankel), formulation-driven assessment (Summers), differential diagnosis reasoning, MSE focus and tailoring, presentation skills under pressure, book references (Kaplan & Sadock, Morrison), practice guidance (Phase 2); equity resources on documentation bias, communication disparities, and implicit bias in note-writing (Phase 4A)"
+    "at": "2026-09-14",
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with evidence-based resources on documentation, oral presentation, handoff communication, and clinical reasoning",
+    "note": "Added comprehensive Further Reading section covering documentation standards, structured handoffs (Solet & Frankel), formulation-driven assessment (Summers), differential diagnosis reasoning, MSE focus and tailoring, presentation skills under pressure, book references (Kaplan & Sadock, Morrison), and practice guidance (Phase 2 coverage curation)"
   },
   "exp_tx.md": {
     "status": "reviewed",
@@ -866,13 +867,14 @@
     "by": "Joshua Moss, MD"
   },
   "rounds_questions.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-08-11",
-    "by": "Joshua Moss, MD"
+    "reason": "Q39 (PTSD) answer, evidence and pearl rewritten to match the stored spans from Schnurr 2024 and Williams 2022 (#441); previously reviewed 2026-08-11 by Joshua Moss, MD. Awaiting re-attestation.",
+    "at": "2026-09-16",
+    "by": "Pending faculty review"
   },
   "omm_resources.md": {
     "status": "reviewed",
@@ -1086,25 +1088,25 @@
     "by": "Joshua Moss, MD"
   },
   "case_formulation.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-16",
-    "by": "Joshua Moss, MD",
-    "note": "Phase 4A: Enhanced with equity-focused citations on structural racism in formulation, cultural competence, and systemic context",
+    "at": "2026-07-09",
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with media resources",
     "note": "Added Further Reading section with formulation frameworks, books, and teaching resources (Phase 1 coverage curation)"
   },
   "medical_workup.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-16",
-    "by": "Joshua Moss, MD",
-    "note": "Phase 4A: Enhanced with equity-focused citations on diagnostic workup disparities, health access barriers, and test interpretation bias",
+    "at": "2026-07-10",
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with media resources",
     "note": "Added Further Reading section with medical workup guidelines, medical mimics resources, and teaching resources (Phase 1 coverage curation)"
   },
   "toxidromes.md": {

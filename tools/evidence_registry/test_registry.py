@@ -209,11 +209,18 @@ CURRICULUM_REVIEW_WP5B_IDS = {
 CURRICULUM_REVIEW_WP5C_IDS = {
     "boggs-2020-lethal-means-assessment",
 }
+# Added for issue #441 (surfaced by guideline-surveillance #432): rounds_questions.md Q39 cited the
+# 2023 VA/DoD PTSD guideline synopsis and quoted a Cochrane SSRI effect size (RR 0.66) with neither
+# source in the registry, so the span gate could not see the claims at all.
+ISSUE_441_PTSD_IDS = {
+    "schnurr-2024-vadod-ptsd-cpg-synopsis",
+    "williams-2022-cochrane-ptsd-pharmacotherapy",
+}
 
 ALL_SOURCE_IDS = (
     EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS | THERAPY_WP_T2_IDS
     | POSTDISCHARGE_CORRECTION_IDS | CURRICULUM_REVIEW_WP5A_IDS | CURRICULUM_REVIEW_WP5B_IDS
-    | CURRICULUM_REVIEW_WP5C_IDS
+    | CURRICULUM_REVIEW_WP5C_IDS | ISSUE_441_PTSD_IDS
 )
 REFERENCE_FILES = (
     "topic_meta.json",

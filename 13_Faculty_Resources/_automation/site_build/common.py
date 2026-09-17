@@ -181,7 +181,16 @@ _TOOLKW_MS3 = {
     "diagnostic-reasoning.html": "diagnostic reasoning workbench differential diagnosis problem representation illness script bayesian updating diagnostic humility anchoring premature closure syndrome formulation inpatient psychiatry case practice delirium catatonia mania psychosis substance trauma personality",
     "family-systems.html": "family systems practice collateral call family meeting discharge barrier map expressed emotion psychoeducation confidentiality boundaries means safety caregiver support inpatient psychiatry",
     "one-patient-six-weeks.html": "one patient six weeks longitudinal case arc six week rotation timeline alliance interview mental status exam differential diagnosis medical rule out medication ambivalence family collateral safety suicide discharge handoff reflection",
-    "capacity.html": "decisional capacity informed consent refusal four abilities understand appreciate reason communicate",
+    # #429 — intent mapping for medication refusal, SUBMITTED FOR FACULTY REVIEW.
+    # This string is both the tool's only indexed body AND its search snippet (`snip`,
+    # the first 170 characters), so the clause that matters clinically — refusal is not
+    # by itself evidence of incapacity — is deliberately the FIRST thing in it. The rest
+    # carries the words a learner actually types on the unit (refuses / refusing /
+    # refusal / refuse / declines / declining / medication / medications / meds /
+    # treatment), because common.tok() does not stem: "refuses" cannot reach "refusal".
+    # Audience-neutral and free of patient-specific legal or clinical direction by
+    # design — it says what capacity IS assessed by, never what to do about a refusal.
+    "capacity.html": "Patient refuses medication: refusal is not by itself evidence of incapacity. Decisional capacity is judged one decision at a time, by four abilities, understand, appreciate, reason, and communicate a choice, the same four that make informed consent meaningful. A patient may refuse or decline a medication, or decline treatment outright, and still have capacity. Reach for this when a patient refuses or declines medications, when a patient is refusing medications or declining meds or treatment, and you need to tell a considered refusal from an impaired one. A patient refusing medications may be weighing side effects rather than failing to understand them. Refusal is a reason to assess, never a finding: a patient who refuses a medication may simply disagree, and a patient who accepts one may still lack capacity.",
     "oral.html": "treatment team rounding prep rounds presentation oral one liner assessment plan handoff gather present practice timer collateral update 30 second sixty 60 second micro update",
     "violence.html": "violence risk aggression frst agitation safety prediction de-escalation",
     "cssrs.html": "columbia suicide severity rating scale cssrs suicidal ideation screening safety planning",
@@ -199,7 +208,11 @@ _TOOLKW_MS3 = {
 _TOOLKW_RES = {
     "mse.html": "mental status exam appearance behavior speech mood affect thought",
     "interview-circle.html": "interview circle radial domain map intake history hpi substance family social mental status safety conversation interviewing checklist",
-    "capacity.html": "decisional capacity informed consent four abilities",
+    # #429 — the resident short form. Kept a VERBATIM PREFIX of the MS3 entry above so
+    # _merge_keywords() appends nothing and the shipped `snip` stays one readable
+    # sentence pair; a re-worded twin here would tack its punctuation-bearing words onto
+    # the end of the snippet (the merge de-dupes on raw whitespace-split words).
+    "capacity.html": "Patient refuses medication: refusal is not by itself evidence of incapacity. Decisional capacity is judged one decision at a time, by four abilities, understand, appreciate, reason, and communicate a choice, the same four that make informed consent meaningful.",
     "oral.html": "rounding presentation oral assessment plan handoff timer collateral update 30 second sixty 60 second micro update",
     "violence.html": "violence risk aggression frst de-escalation",
     "cssrs.html": "columbia suicide severity rating scale ideation safety planning",

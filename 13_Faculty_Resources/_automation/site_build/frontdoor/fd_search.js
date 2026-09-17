@@ -81,7 +81,12 @@ function fdSearchAliasHit(item, query){
 var FD_SEARCH_STOPWORDS={
   'a':1,'an':1,'and':1,'are':1,'as':1,'at':1,'be':1,'by':1,'for':1,'from':1,'has':1,'in':1,
   'is':1,'it':1,'of':1,'on':1,'or':1,'that':1,'the':1,'to':1,'was':1,'what':1,'when':1,
-  'which':1,'who':1,'with':1,'you':1,'your':1
+  'which':1,'who':1,'with':1,'you':1,'your':1,
+  /* "patient" carries no topic signal in a library where every page is about one: it sits in a
+     quarter of all haystacks and, being in delirium.md's summary, put Delirium second for
+     "patient refuses medication" (#429). Safety-kit triggers read the RAW query, so a crisis
+     phrase that starts with "patient" still routes ("patient is suicidal" -> pg_suicide.md). */
+  'patient':1,'patients':1
 };
 
 /* Drops stopwords, but never returns empty: a query made only of stopwords keeps its words so
@@ -272,14 +277,27 @@ function fdSearchResults(index, query, synonyms, state){
       }
     }
   }
-  var protoResults=[];
+  /* Two tiers of protocol row, both placed by position rather than by score. Route (1) -- the
+     explicit trigger vocabulary and the punctuation-recovered safety synonyms -- is the crisis
+     contract and always comes first. Route (2), an ordinary haystack match on a content word, is
+     discovery: still ahead of every scored item, but BELOW an item the curated search aliases
+     name for this exact phrasing. Before #429 route (2) outranked those aliases too, so "patient
+     refuses medication" listed the Consult Questions sheet (its title carries "capacity", the
+     synonym expansion of "refuses medication") above the Decisional Capacity tool that answers
+     the question. An alias is a recorded faculty statement that a phrasing means a resource; a
+     topic word in a protocol's title is not. Crisis triggers are untouched by this. */
+  var protoResults=[], hayProtocols=[];
   for(var kk=0;kk<kit.length;kk++){
     var kitItem=kit[kk].item;
-    if(fdSearchTriggerHit(kit[kk].triggers, paddedQuery)||
-       fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords)||
+    var triggered=fdSearchTriggerHit(kit[kk].triggers, paddedQuery)||
        fdSearchTriggerHit(kit[kk].triggers, ' '+normalizedQuery+' ')||
-       fdSearchHits(fdSearchHaystack(kitItem), '', safetyWords)){
+       fdSearchHits(fdSearchHaystack(kitItem), '', safetyWords);
+    var byHaystack=fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords);
+    if(triggered){
       protoResults.push({ item: kitItem, kind:'protocol', meta:'safety · protocol' });
+      seenRefs[kitItem.ref]=true;
+    } else if(byHaystack){
+      hayProtocols.push({ item: kitItem, kind:'protocol', meta:'safety · protocol' });
       seenRefs[kitItem.ref]=true;
     }
   }
@@ -299,7 +317,7 @@ function fdSearchResults(index, query, synonyms, state){
     if(aliasHit||fdSearchHits(searchHay, rawQuery, contentWords)){
       itemResults.push({
         item: it, kind:'item', meta: fdSearchItemMeta(it),
-        _score: fdSearchScore(it, rawQuery, contentWords)+(aliasHit?120:0)
+        _score: fdSearchScore(it, rawQuery, contentWords)+(aliasHit?120:0), _alias: !!aliasHit
       });
     }
   }
@@ -312,9 +330,25 @@ function fdSearchResults(index, query, synonyms, state){
     return (b._score-a._score) ||
       (a.item.ref<b.item.ref?-1:(a.item.ref>b.item.ref?1:0));
   });
-  for(var s=0;s<itemResults.length;s++){ delete itemResults[s]._score; }
+  var aliasItems=[], rest=[];
+  for(var s=0;s<itemResults.length;s++){
+    (itemResults[s]._alias?aliasItems:rest).push(itemResults[s]);
+    delete itemResults[s]._score; delete itemResults[s]._alias;
+  }
+  /* Haystack-matched protocols rank among themselves by the same score as items (with the same
+     explicit tiebreak), not by kit order: typing "delirium" should list the Delirium sheet
+     before the Consult Questions sheet whose title merely contains the word. Trigger-matched
+     protocols stay in kit order -- that block is the crisis contract and is never reordered. */
+  for(var hp=0;hp<hayProtocols.length;hp++){
+    hayProtocols[hp]._score=fdSearchScore(hayProtocols[hp].item, rawQuery, contentWords);
+  }
+  hayProtocols.sort(function(a,b){
+    return (b._score-a._score) ||
+      (a.item.ref<b.item.ref?-1:(a.item.ref>b.item.ref?1:0));
+  });
+  for(var hq=0;hq<hayProtocols.length;hq++){ delete hayProtocols[hq]._score; }
 
-  return protoResults.concat(itemResults).slice(0,8);
+  return protoResults.concat(aliasItems, hayProtocols, rest).slice(0,8);
 }
 
 /* Protocol rows keep the safety panel; ordinary results open the resource directly. */

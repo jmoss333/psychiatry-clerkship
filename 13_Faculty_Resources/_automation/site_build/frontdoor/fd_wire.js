@@ -107,6 +107,10 @@ function fdResolveState(url, stored){
   out.autoAdvance=src.autoAdvance!==false;
   if(src.toolExpanded!==undefined) out.toolExpanded=src.toolExpanded===true;
   if(src.browsing===true) out.browsing=true;
+  /* The offset recorded when a resource opened (#427). Without this a reload while reading
+     persisted the offset and then dropped it here, so the one return that most needs it -- an
+     interrupted read -- scrolled to the top. */
+  if(typeof src.scrollPos==='number'&&isFinite(src.scrollPos)&&src.scrollPos>=0) out.scrollPos=src.scrollPos;
 
   var parsed, routedRef=null;
   try{ parsed=new URL(String(url||''),'https://frontdoor.invalid/'); }catch(_){ parsed=null; }
@@ -1106,6 +1110,73 @@ function fdWire(root, initialState, opts){
      learner's choice on every selection. refocusInvoker keeps that outcome by construction (the
      invoker is the chosen segment, so its own attribute value is what gets re-queried) and keeps
      it for every other control in the panel too, which a per-effect branch could not. */
+  function currentScrollY(){
+    var y=win?(typeof win.scrollY==='number'?win.scrollY:win.pageYOffset):0;
+    return typeof y==='number'&&y>=0?y:0;
+  }
+  /* Which of the duplicates the learner actually activated. Today renders Quick Tools twice (a
+     hidden pill row and the desktop rail, from the same list), and a week item can also sit in
+     the rail, so "the first [data-fd-open=ref]" is often a display:none copy -- and focusing a
+     hidden element moves nothing. Recorded at open time from the click's own target; per-boot,
+     never persisted, so a reload falls back to the first duplicate that is actually shown. */
+  var originOpener=null;
+  function openersFor(ref){
+    if(!root||!ref) return [];
+    var sel=ref==='__progress__'?'[data-fd-progress]':'[data-fd-open="'+String(ref).replace(/["\\]/g,'\\$&')+'"]';
+    try{
+      if(root.querySelectorAll){ var list=root.querySelectorAll(sel); return list?Array.prototype.slice.call(list):[]; }
+      if(root.querySelector){ var one=root.querySelector(sel); return one?[one]:[]; }
+    }catch(_){}
+    return [];
+  }
+  function isShown(el){
+    if(!el) return false;
+    if(typeof el.getClientRects==='function'){ try{ return el.getClientRects().length>0; }catch(_){} }
+    if('offsetParent' in el) return el.offsetParent!==null;
+    return true; /* no layout information (a test stub): treat as shown */
+  }
+  function rememberOpener(ref, invoker){
+    originOpener=null;
+    if(!invoker) return;
+    var dup=openersFor(ref), k=dup.indexOf(invoker);
+    if(k<0&&invoker.closest){ try{ k=dup.indexOf(invoker.closest('[data-fd-open],[data-fd-progress]')); }catch(_){ k=-1; } }
+    if(k>=0) originOpener={ref:ref,index:k};
+  }
+  /* Focus goes back only to a control we can name with confidence: the one the learner
+     activated, re-found by position among the duplicates that carry its ref; failing that the
+     ONLY shown control for the ref; failing that a shown control inside Today's primary (the one
+     thing the learner was pointed at). Anything less certain leaves the render's own landmark
+     focus in place -- a resource opened by a plain link (the Resume card is an <a href>) never
+     passed through apply(), and a wrong guess among week rows and rail copies is worse than
+     main#content. The One Thing First contract (front-door.spec.js A1/A2) pins that fallback. */
+  function openerFor(ref){
+    var all=openersFor(ref), shown=[], i, el;
+    for(i=0;i<all.length;i++) if(isShown(all[i])) shown.push(all[i]);
+    if(originOpener&&originOpener.ref===ref&&originOpener.index>=0){
+      el=all[originOpener.index];
+      if(el&&isShown(el)) return el;
+    }
+    if(shown.length===1) return shown[0];
+    for(i=0;i<shown.length;i++){
+      if(shown[i].closest){ try{ if(shown[i].closest('.fd-primary')) return shown[i]; }catch(_){} }
+    }
+    return null;
+  }
+  /* Returning from a resource lands the learner where they left the originating tab (#427): the
+     list scrolled back to the offset recorded when the resource opened, and focus on the control
+     that opened it, so a keyboard or screen-reader user resumes from the link they chose rather
+     than from the top of the main region. Runs AFTER the render's own focus (announceRoute puts
+     focus on the main region) and deliberately overrides it -- only when the control is really
+     there: a different tab, an open search panel or sheet, or a retired ref means there is nothing
+     to return to, and the render's focus stands. Scroll is restored even then only for the
+     originating tab, since the offset belongs to that list. */
+  function restoreOrigin(before){
+    if(state.screen!=='app'||state.tab!==before.fromTab||state.searchOpen||state.sheet) return;
+    var y=typeof before.scrollPos==='number'&&before.scrollPos>=0?before.scrollPos:0;
+    if(win&&win.scrollTo) try{ win.scrollTo(0,y); }catch(_){}
+    var el=openerFor(before.openId);
+    if(el&&el.focus){ try{ el.focus({preventScroll:true}); }catch(_){ try{ el.focus(); }catch(__){} } }
+  }
   function focusPostTransition(before, result, changedBase){
     if(changedBase&&state.screen&&state.screen.indexOf('setup-')===0){
       var heading=root&&root.querySelector?root.querySelector('.fd-setup .fd-h1'):null;
@@ -1126,6 +1197,10 @@ function fdWire(root, initialState, opts){
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
+    /* Where the learner was when they opened a resource (#427). Recorded by the controller, not
+       by fdDispatch: the scroll offset is a browser fact and dispatch stays pure. A reader that
+       opens another reader keeps the origin -- "back" still means the tab it all started from. */
+    if(!before.openId&&state.openId){ state.scrollPos=currentScrollY(); rememberOpener(state.openId,invoker); }
     var afterOverlay=overlayIdentity(state);
     if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
     var changedBase=baseChanged(before,state);
@@ -1191,6 +1266,7 @@ function fdWire(root, initialState, opts){
     else renderTransient(state,detail);
     fdApplyEffect(result.effect,fromHistory,generation);
     focusPostTransition(before,result,changedBase);
+    if(before.openId&&!state.openId) restoreOrigin(before);
     if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
     /* The fallback exists because refocusInvoker's premise -- the equivalent control is still
@@ -1364,6 +1440,7 @@ function fdWire(root, initialState, opts){
       if(currentRoute()!==previewRouteBase) lockPreview();
       return;
     }
+    var before=fdClone(state);
     var merged=fdClone(state), snap=event&&event.state&&event.state.fd&&event.state.state;
     merged.searchOpen=false;
     merged.query='';
@@ -1422,6 +1499,8 @@ function fdWire(root, initialState, opts){
       baseChanged:true,preserveResource:false,effect:null
     }));
     fdSave(state);
+    /* Browser Back out of a resource is the same return as the in-app control (#427). */
+    if(before.openId&&!state.openId) restoreOrigin(before);
     if(legacyResult&&legacyResult.effect){
       fdApplyEffect(legacyResult.effect,true,generation);
     } else if(state.openId==='__progress__'){

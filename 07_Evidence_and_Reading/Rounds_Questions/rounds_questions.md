@@ -390,13 +390,13 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **39. What is the first-line treatment for PTSD?**
 
-- **Answer:** Trauma-focused psychotherapy (prolonged exposure, cognitive processing therapy, EMDR) is first-line with larger effect sizes than pharmacotherapy. Sertraline and paroxetine are the only FDA-approved medications.
+- **Answer:** Trauma-focused psychotherapy (prolonged exposure, cognitive processing therapy, EMDR) is first-line: the 2023 VA/DoD guideline recommends these manualized psychotherapies over pharmacotherapy. When medication is used, the guideline recommends paroxetine, sertraline, or venlafaxine — only sertraline and paroxetine carry FDA approval for PTSD, so venlafaxine is guideline-recommended but off-label.
 
-- **Evidence:** Cochrane review (Williams et al., 2022): SSRIs increased treatment response vs. placebo — risk of failing to respond RR 0.66 (95% CI 0.59–0.74).
+- **Evidence:** Cochrane review (Williams et al., 2022): SSRIs showed a beneficial effect vs. placebo on treatment response — the risk of failing to respond was RR 0.66 (95% CI 0.59–0.74; 8 studies, 1,078 participants), with PTSD symptoms improving in 58% of SSRI participants vs. 35% on placebo (moderate-certainty evidence).
 
 - **Key paper:** Schnurr et al., Ann Intern Med 2024 — VA/DoD PTSD guideline synopsis.
 
-- **Pearl:** **Benzodiazepines are not recommended for PTSD** — they may worsen outcomes and interfere with extinction learning during exposure therapy.
+- **Pearl:** **Benzodiazepines are not recommended for PTSD** — the 2023 VA/DoD guideline recommends against them (as it does cannabis and cannabis-derived products). The usual rationale offered is that benzodiazepines blunt the extinction learning that exposure-based therapy depends on.
 
 **40. What medication is used for PTSD-related nightmares?**
 
