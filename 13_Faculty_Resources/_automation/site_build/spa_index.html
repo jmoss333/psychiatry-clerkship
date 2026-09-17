@@ -129,6 +129,9 @@
   .pgfb-b:hover{border-color:var(--accent);color:var(--accent-dark)}
   .skip-link{position:absolute;left:12px;top:-52px;background:var(--surface);color:var(--text);border:2px solid var(--focus);border-radius:6px;padding:8px 12px;z-index:100;transition:top .15s}
   .skip-link:focus{top:12px}
+  /* Reduced motion (#428): the Front Door stylesheet zeroes its own motion under this query; the
+     shell's remaining transitions -- the skip link above, the legacy sidebar chrome and the
+     section chevrons -- live here and were the ones an audit found still animating. */
   .drawer-backdrop{position:fixed;inset:0;z-index:19;background:rgba(47,41,36,.40)}
   :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
   .loading{color:var(--text-mid);padding:28px 4px}
@@ -353,6 +356,9 @@
     .layout>aside.open{transform:translateX(0)}
     body.has-tlbar #content{padding-bottom:var(--mobile-bottom-clearance)}
   }
+  /* Reduced motion must be the LAST word on these transitions: the declarations it zeroes have the
+     same specificity and sit later in this sheet, so an earlier override lost the cascade (#428). */
+  @media(prefers-reduced-motion:reduce){.skip-link,.layout,.layout>aside,.modetoggle .knob,.navgroupsec .chev,.navsec .chev,.practice-chev,.md-body .sec-chev,.fd-article__body .sec-chev{transition:none}}
 </style>
 <style>
   /* ===== Tool launcher badges (from Claude Design handoff, house-tokenized) ===== */
@@ -441,8 +447,13 @@
   .cap-phi{margin:12px 0 0;padding:12px;background:var(--warning-light);border:1px solid var(--warning);border-radius:9px;font-size:var(--fd-font-sm);color:var(--warning)}
   .cap-phi b{display:block;margin:0 0 4px}
   .cap-list{list-style:none;margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--border)}
-  .cap-list li{display:flex;align-items:flex-start;gap:8px;margin:0 0 8px;font-size:var(--fd-font-sm);color:var(--text)}
-  .cap-list .x{flex:0 0 auto;border:none;background:transparent;color:var(--text-light);font:inherit;font-size:var(--fd-font-base);line-height:1;cursor:pointer;padding:2px 6px;min-width:28px;min-height:28px}
+  .cap-list li{display:flex;align-items:center;gap:var(--fd-space-4);margin:0 0 var(--fd-space-1);font-size:var(--fd-font-sm);color:var(--text)}
+  .cap-list__text{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+  .cap-list__status{flex:0 0 auto;font-size:var(--fd-font-2xs);font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--text-light);border:1px solid var(--border);border-radius:var(--fd-radius-pill);padding:var(--fd-space-1) var(--fd-space-3);line-height:1.4}
+  .cap-list li[data-cap-status="triaged"] .cap-list__text{color:var(--text-mid)}
+  /* Touch target (#428) without a taller list: the hit area is the button box, the glyph stays small. */
+  .cap-list .x{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--text-light);font:inherit;font-size:var(--fd-font-lg);line-height:1;cursor:pointer;padding:0;min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);border-radius:var(--fd-radius-sm)}
+  .cap-list .x:hover,.cap-list .x:focus-visible{background:var(--bg-alt);color:var(--text)}
   .cap-err{margin:10px 0 0;font-size:var(--fd-font-sm);color:var(--warning)}
   .cap-tri{margin:0 0 14px;padding:0 0 4px;border-bottom:1px solid var(--border)}
   .cap-tri:last-of-type{border-bottom:none}
@@ -1376,7 +1387,7 @@
     capEvict(d.items);
     return capWrite(d);
   }
-  function capRemove(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items.splice(i,1); break; } } capWrite(d); }
+  function capRemove(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items.splice(i,1); break; } } if(d.items.length) capWrite(d); else capEraseAll(); }
   function capMarkTriaged(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items[i].triaged=true; break; } } capWrite(d); }
   /* The supervised-draft stamp travels with the one sanctioned clipboard egress. */
   var CAP_STAMP='Questions from the unit, brought to supervision. Written by a trainee for teaching discussion — contains no patient information.';
@@ -1427,17 +1438,47 @@
     if(inv && inv.isConnected && inv.offsetParent!==null){ try{ inv.focus(); return; }catch(_){ } }
     if(contentEl){ try{ contentEl.focus({preventScroll:true}); }catch(_){ } }
   }
+  /* Attribute-context escape for learner text that lands inside an aria-label. */
+  function capAttr(t){ return String(t).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  /* One name per control (#428): "Delete this question" repeated N times gives a screen-reader
+     user N identical buttons. The label carries the question's own opening words. */
+  function capDeleteLabel(text){
+    var t=String(text||'').replace(/\s+/g,' ').trim();
+    if(t.length>60) t=t.slice(0,57)+'…';
+    return 'Delete question: '+t;
+  }
   function capListHtml(){
-    var d=capRead(), open=[];
-    for(var i=0;i<d.items.length;i++){ if(!d.items[i].triaged) open.push(d.items[i]); }
-    if(!open.length)return '';
+    /* Every retained capture is listed here, triaged ones included (#426). Opening or scheduling
+       a question marks it triaged and drops it from Today's card, but the text stays in
+       cw_capture_v1 -- and a learner must be able to see and delete anything the app still holds.
+       Untriaged first, so the working list reads as before; triaged after, labelled as such. */
+    var d=capRead(), items=[], i;
+    for(i=0;i<d.items.length;i++){ if(!d.items[i].triaged) items.push(d.items[i]); }
+    for(i=0;i<d.items.length;i++){ if(d.items[i].triaged) items.push(d.items[i]); }
+    if(!items.length)return '';
     var h='<ul class="cap-list">';
-    for(var j=0;j<open.length;j++){ h+='<li><span>'+esc(open[j].text)+'</span><button type="button" class="x" data-cap-del="'+esc(open[j].id)+'" aria-label="Delete this question">&times;</button></li>'; }
+    for(var j=0;j<items.length;j++){
+      var it=items[j];
+      h+='<li data-cap-status="'+(it.triaged?'triaged':'new')+'"><span class="cap-list__text">'+esc(it.text)+'</span>'
+        +'<span class="cap-list__status">'+(it.triaged?'Triaged':'New')+'</span>'
+        +'<button type="button" class="x" data-cap-del="'+esc(it.id)+'" aria-label="'+capAttr(capDeleteLabel(it.text))+'">&times;</button></li>';
+    }
+    /* Erase all is offered whenever the store holds ANY record, not only untriaged ones. */
     return h+'</ul><div class="cap-acts"><button type="button" class="cap-btn danger" id="capEraseAll">Erase all captures</button></div>';
   }
   function capRenderBody(){
     if(!capSheet)return;
     var body=capSheet.querySelector('#capListWrap'); if(body)body.innerHTML=capListHtml();
+  }
+  function capAnnounce(msg){
+    var el=capSheet&&capSheet.querySelector('#capStatus');
+    if(!el)return;
+    el.textContent='';
+    el.textContent=msg;
+  }
+  function capRemainingText(){
+    var n=capRead().items.length;
+    return n===0?'No saved questions remain.':(n+' saved question'+(n===1?'':'s')+' remain'+(n===1?'s':'')+'.');
   }
   function capRefreshAfterMutation(){
     capRenderBody();
@@ -1465,6 +1506,9 @@
       + '<div id="capHold"></div>'
       + '<div class="cap-acts"><button type="button" class="cap-btn primary" id="capSave">Save</button>'
       + '<button type="button" class="cap-btn" id="capCancel">Cancel</button></div>'
+      /* Stable live region (#428): mounted with the sheet, never re-rendered, so a deletion or
+         erase is announced from a node that already existed when the change happened. */
+      + '<div id="capStatus" class="vh-live" aria-live="polite" aria-atomic="true"></div>'
       + '<div id="capListWrap"></div>';
     document.body.appendChild(capBackdrop); document.body.appendChild(capSheet);
     capRenderBody();
@@ -1477,9 +1521,9 @@
       if(t.id==='capSave'){ capSave(false); return; }
       if(t.id==='capHoldEdit'){ var hold=capSheet.querySelector('#capHold'); if(hold)hold.innerHTML=''; var tx=capSheet.querySelector('#capText'); if(tx)tx.focus(); return; }
       if(t.id==='capHoldSave'){ capSave(true); return; }
-      if(t.id==='capEraseAll'){ if(window.confirm('Erase all saved questions on this device?')){ capEraseAll(); capRefreshAfterMutation(); } return; }
+      if(t.id==='capEraseAll'){ if(window.confirm('Erase all saved questions on this device?')){ capEraseAll(); capRefreshAfterMutation(); capAnnounce('All saved questions erased.'); } return; }
       var del=t.getAttribute&&t.getAttribute('data-cap-del');
-      if(del){ capRemove(del); capRefreshAfterMutation(); return; }
+      if(del){ capRemove(del); capRefreshAfterMutation(); capAnnounce('Question deleted. '+capRemainingText()); return; }
     });
   }
   function capSave(force){
@@ -1495,7 +1539,7 @@
       return;
     }
     if(hold)hold.innerHTML='';
-    if(capAdd(text)){ ta.value=''; capRefreshAfterMutation(); }
+    if(capAdd(text)){ ta.value=''; capRefreshAfterMutation(); capAnnounce('Question saved. '+capRemainingText()); }
     else { var err=document.createElement('p'); err.className='cap-err';
       err.textContent="Couldn't save on this device. Use “Ask my attending” on the home screen to copy your questions out before you close this tab.";
       if(hold)hold.appendChild(err); }
