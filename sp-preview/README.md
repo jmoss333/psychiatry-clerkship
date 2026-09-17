@@ -4,7 +4,7 @@ The protected room now includes Elena, Priya and Luis moments alongside all five
 
 Each moment allows four patient-facing responses, one three-unit review and one three-unit terminal alternative: at most 19 reserved operation units and one start. It shares the existing budget namespace and 20/680/340 policy. Review consumes the current continuation before evaluation; unavailable feedback stays closed and falls back to authored reflection prompts. Transfers require a fresh normally budgeted start.
 
-Private reflection and the existing attending presentation stay in page memory. The separate optional Priya **Team formulation — included in AI feedback** goes to review only after explicit submission. No transcripts/audio are persisted, no dialogue is logged, and no analytics are added. Actor facts/rubrics stay in the function bundle; seven explicit browser assets ship.
+Private reflection and the existing attending presentation stay in page memory. The separate optional Priya **Team formulation — included in AI feedback** goes to review only after explicit submission. No transcripts/audio are persisted, no dialogue is logged, and no analytics are added. Actor facts/rubrics stay in the function bundle; nine explicit browser assets ship.
 
 ---
 
@@ -14,7 +14,7 @@ A protected pilot of ten spoken turns with Dana, Marcus, Ray, Morgan, or Morgan 
 
 ## Local verification
 
-Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Both also run in `ci.yml`'s `build-test-validate` job and in `bin/verify.sh`, so a change here reddens a pull request rather than surfacing only when someone remembers the commands. Run the full root and prototype suites sequentially. The `dist` folder contains only the seven browser assets listed below; never publish the repository root, `_prototypes`, or `sp-preview` itself.
+Requires Node 22 or later. Install dependencies here and in `../sp-proxy`, then run `npm test` and `npm run build`. Both also run in `ci.yml`'s `build-test-validate` job and in `bin/verify.sh`, so a change here reddens a pull request rather than surfacing only when someone remembers the commands. Run the full root and prototype suites sequentially. The `dist` folder contains only the nine browser assets listed below; never publish the repository root, `_prototypes`, or `sp-preview` itself.
 
 The opt-in `npm run test:hosted` also requires the `tests/smoke` Playwright dependencies, explicit `DANA_QA_URL` and `DANA_QA_ACCESS_FILE` environment variables, and an authorized preview passcode file. It makes one paid opening and ten paid conversation requests, with synthetic recognition and native muted audio at 2x. It never runs as part of `npm test` or in CI; reports contain counts/timings, not dialogue, keys, or state receipts.
 
@@ -24,7 +24,7 @@ Neither mode is microphone evidence: both replace `SpeechRecognition`, and both 
 
 ## Cases
 
-The preview carries Dana (admission interview), Marcus (a focused interview), Ray (establishing a working conversation), Morgan (motivational interviewing), and Morgan and Maya (a shared family meeting). The learner picks one at the door and it is fixed for that encounter. Morgan and the family meeting were attested by Joshua Moss, MD on 2026-09-09 and no longer carry a draft label; all five encounters now ship faculty-attested content.
+The preview carries Dana (admission interview), Marcus (a focused interview), Ray (establishing a working conversation), Morgan (motivational interviewing), and Morgan and Maya (a shared family meeting). The learner picks one at the door and it is fixed for that encounter. Morgan and the family meeting were attested by Joshua Moss, MD on 2026-09-09 and no longer carry a draft label; all five encounters now ship faculty-attested case content. That prior attestation does not cover the newly authored practice coaching described below.
 
 Each encounter is bound to its case twice over. The state codec's binding embeds
 the case id and a hash of the case definition, so a receipt sealed for one case
@@ -46,6 +46,16 @@ alone and is never applied to another case.
 Faculty can choose **Gentler expression / Current portrayal / More pronounced expression** before a full encounter. Only the expression of the existing dialogue changes; the server binds this allowlisted setting for the whole encounter, including family speakers and an alternative. Standard preserves the accepted profiles exactly. Presets do not change numeric speed, facts, symptoms, disclosure rules, actor instructions, learner feedback, or interruption controls. Practice a Moment retains Standard and its existing capture flow. Actual nonstandard voices are drafts for listening review.
 
 See the [case-by-case research](../docs/superpowers/specs/2026-09-09-sp-voice-evidence.md) and [spoken interruption pilot design and trial sequence](../docs/superpowers/specs/2026-09-09-spoken-interruption-pilot.md). No production activation or clinical attestation follows from automated checks.
+
+## Practice goals and coaching
+
+Each full encounter offers three communication goals and student/resident coaching depths. This selection changes teaching prompts only: the actor's facts and the learner's clinical role remain as described in the case. The selected goal stays visible during the encounter and returns in a private end reflection. Practice a Moment retains its existing fixed tasks and flow.
+
+**I'm stuck** is available between replies, including a silent family opening. It stops recognition and the automatic quiet timer without sending a request. The learner first sees a reflective question, then can reveal a hint and two example approaches. Nothing is inserted into the composer or spoken to the patient. Completed draft words are retained; unfinished recognition is displayed separately and blocks automatic submission until the learner reviews the draft or supplies new finalized speech. Returning to the conversation leaves the microphone paused until explicit Resume. A pending or playing reply must finish or be interrupted through the existing control before coaching; this adds no new cancellation or receipt semantics.
+
+Goals, coaching depth, revealed prompts and reflection stay in page memory. They never enter provider requests, storage, exports, feedback or analytics. There is no score or count for help-seeking. Clear and page exit remove the learner's reflection. Two example approaches are possibilities to adapt to what was actually heard, not an answer key or a required outcome.
+
+The 15 goals and their two teaching depths are **new authored drafts awaiting faculty review**, visibly labeled in the entry, coaching and reflection UI. Read the [content rationale and review boundaries](../docs/superpowers/specs/2026-09-13-practice-coaching-content.md). Automated checks cover behavior and narrow copy regressions, not clinical validity or educational effectiveness. The static coaching adds no provider calls or API cost.
 
 ## Conversation realism
 
@@ -77,7 +87,7 @@ Both actors receive the canonical public identities in their trusted instruction
 
 The voice AudioContext is created/resumed only from a user action and is separate from faculty room-cue sound. Unsupported or failed setup is surfaced as unavailable with centered playback; an already-routed element is never mistaken for a working ordinary audio element. An unexpected context suspension during routed playback interrupts that segment, preserving only earlier completed segments as heard. End closes the voice graph; the explicitly requested alternative can recreate it. Clear and page disposal close and reset it. Native channel-energy browser tests establish the left/right signal, not headphone fit, hearing accessibility for a particular learner, or physical microphone reliability. Visual speaker names remain available with the effect off or with device mono audio enabled.
 
-`dist` publishes seven files: `index.html`, `app.js`, `styles.css`, `station.js`, `station-content.js`, `moment-content.js` and `moment-station.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends. The room view above the transcript is a projection of the same snapshot, like the station: it shows seating, who is speaking and who answers next, and it draws no case facts of its own.
+`dist` publishes nine files: `index.html`, `app.js`, `styles.css`, `station.js`, `station-content.js`, `moment-content.js`, `moment-station.js`, `practice-content.js` and `practice-coach.js`. The station renders the door note, task and objectives, the chart-request disclosure, the patient's stated priorities and observable cue, marked moments with a reflection each, and the attending presentation once the encounter ends. The room view above the transcript is a projection of the same snapshot, like the station: it shows seating, who is speaking and who answers next, and it draws no case facts of its own.
 
 It is a projection of the controller snapshot and nothing more. It holds no reference to `send()`, makes no network request, and reads and writes no browser storage — `build.test.mjs` fails the build if `fetch(`, `localStorage`, `sessionStorage`, `indexedDB` or `XMLHttpRequest` appears in either station file. Marked moments quote only what was actually heard: a reply that did not finish playing is quoted at its completed segments, and a moment with nothing confirmed heard says so rather than showing an empty quotation. `station-content.js` carries learner-facing content only; the participant `portrayal` guidance is actor direction and stays server-side.
 

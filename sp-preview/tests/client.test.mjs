@@ -55,6 +55,65 @@ function environment(fetcher){
 }
 async function finishAudio(harness,index){await until(()=>harness.audios[index]?.plays===1);harness.audios[index].onended?.();await flush();}
 
+test('coaching pauses recognition and quiet submission while preserving finalized and unfinished words separately',async()=>{
+  const h=environment(),c=createController(h.env);
+  assert.equal(c.openCoaching(),false);
+  const start=c.start('key',true);await finishAudio(h,0);await finishAudio(h,1);await start;
+  const mic=h.live();mic.final('I want to understand');mic.interim('what feels hardest');
+  const stale=mic.onresult;
+  assert.equal(c.openCoaching(),true);
+  assert.equal(c.getSnapshot().coachingOpen,true);assert.equal(c.getSnapshot().phase,'paused');
+  assert.equal(c.getSnapshot().draft,'I want to understand');assert.equal(c.getSnapshot().coachingUnfinished,'what feels hardest');
+  assert.equal(h.live(),undefined);
+  stale({results:[Object.assign([{transcript:'a stale coaching example'}],{isFinal:true})],resultIndex:0});
+  h.advance(20000);assert.equal(h.calls.length,1);
+  assert.equal(await c.send('An example that must never be sent'),false);
+  assert.equal(c.resume(),false);c.setDraft('A hint that must not replace my words');
+  assert.equal(c.getSnapshot().draft,'I want to understand');
+  c.setThinking(true);c.setHold(false);h.advance(20000);assert.equal(h.calls.length,1);
+  assert.equal(c.closeCoaching(),true);assert.equal(c.getSnapshot().phase,'paused');assert.equal(h.live(),undefined);
+  assert.match(c.getSnapshot().error,/unfinished|recogniz/i);
+  assert.equal(c.resume(),true);h.advance(20000);assert.equal(h.calls.length,1,'unfinished recognition is not silently dropped into an automatic turn');
+  c.setDraft('What feels hardest today?');const turn=c.send();await until(()=>h.calls.length===2);
+  assert.equal(h.calls[1].body.text,'What feels hardest today?');
+  assert.equal(Object.keys(h.calls[1].body).some(k=>/coach|goal|depth|reflection/i.test(k)),false);
+  await finishAudio(h,2);await finishAudio(h,3);await turn;c.dispose();
+});
+
+test('coaching neither cancels an outstanding request nor changes completed heard history',async()=>{
+  const h=environment(),c=createController(h.env),start=c.start('key',false);
+  assert.equal(c.openCoaching(),false);await until(()=>h.audios[0]?.plays===1);
+  assert.equal(c.openCoaching(),false);assert.equal(h.audios[0].pauses,0);
+  await finishAudio(h,0);await finishAudio(h,1);await start;
+  const before=c.getSnapshot().messages;assert.equal(c.openCoaching(),true);assert.equal(c.closeCoaching(),true);
+  assert.deepEqual(c.getSnapshot().messages,before);
+  const turn=c.send('What matters today?');await until(()=>h.calls.length===2);
+  assert.equal(h.calls[1].body.previousPlayback,'played');assert.equal(h.calls[1].body.previousCompletedSegments,2);
+  await finishAudio(h,2);await finishAudio(h,3);await turn;c.dispose();
+});
+
+for(const action of ['end','clear','dispose'])test(`${action} closes coaching and stale capture cannot reopen it`,async()=>{
+  const h=environment(),c=createController(h.env),start=c.start('key',true);
+  await finishAudio(h,0);await finishAudio(h,1);await start;
+  const oldReady=h.live().onstart;c.openCoaching();c[action]();oldReady?.();h.advance(20000);
+  assert.equal(c.getSnapshot().coachingOpen,false);assert.equal(c.getSnapshot().coachingUnfinished,'');
+  assert.equal(h.live(),undefined);assert.equal(c.openCoaching(),false);assert.equal(h.calls.length,1);
+});
+
+test('coaching remains unavailable after a failed request with uncertain state',async()=>{
+  const h=environment(()=>Promise.reject(new Error('network failed'))),c=createController(h.env);
+  await c.start('key',true);assert.equal(c.getSnapshot().restartRequired,true);
+  assert.equal(c.openCoaching(),false);assert.equal(c.getSnapshot().coachingOpen,false);c.dispose();
+});
+
+test('coaching pauses a silent family opening without fabricating a patient turn',async()=>{
+  const family='family_morgan_maya_001';
+  const h=environment(()=>Promise.resolve(response([{type:'ready',caseId:family,turn:0,state:'ready'},{type:'complete',state:'ready'}]))),c=createController(h.env);
+  await c.start('key',true,family,{familyBriefAcknowledged:true});
+  assert.equal(c.openCoaching(),true);assert.deepEqual(c.getSnapshot().messages,[]);assert.equal(c.getSnapshot().turn,0);
+  c.closeCoaching();assert.equal(h.live(),undefined);assert.equal(c.getSnapshot().phase,'paused');c.dispose();
+});
+
 test('optional spoken interruption keeps first words and the same microphone, then sends after quiet',async()=>{
   const h=environment(),c=createController(h.env),work=c.start('key',true,undefined,{spokenInterrupt:true});
   await until(()=>h.audios[0]?.plays===1);await flush();const mic=h.live();assert.ok(mic);

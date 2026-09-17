@@ -222,6 +222,164 @@ async function askTyped(page, text) {
   await expect(page.locator('#preview-root')).toHaveAttribute('data-phase', 'ready');
 }
 
+// Coaching is authored page-local help. These journeys use the same mocked
+// actor and recognition service as the encounter tests, while checking real
+// focus, form controls, timers, storage, and deployed CSP in Chromium.
+async function startPracticeSelection(page) {
+  if(await page.locator('#case-choice').inputValue()===FAMILY_ID)await page.locator('#family-brief-ack').check();
+  await page.fill('#preview-key','a-passcode-for-the-mock-endpoint');
+  await page.click('#start');
+  await expect(page.locator('#encounter-panel')).toBeVisible();
+}
+
+async function choosePracticeDepth(page,depth) {
+  const options=page.locator('#practice-depth-options');
+  if(await options.getAttribute('open')===null)await page.click('#practice-depth-summary');
+  await page.selectOption('#practice-depth',depth);
+  await expect(page.locator('#practice-depth-summary')).toHaveText(`${depth==='resident'?'Resident':'Student'} coaching · Change depth`);
+  await page.click('#practice-depth-summary');
+}
+
+for(const patient of CASES)test(`practice coaching: ${patient.name} offers three goals at both depths without changing actor requests`,async({page})=>{
+  const {requests,errors,violations}=await openPreview(page);
+  const renderedQuestions=[];
+  for(const depth of ['student','resident']){
+    await page.selectOption('#case-choice',patient.id);
+    const goals=await page.locator('#practice-goal option').evaluateAll(options=>options.map(option=>({id:option.value,title:option.textContent})));
+    expect(goals).toHaveLength(3);expect(new Set(goals.map(goal=>goal.id)).size).toBe(3);
+    expect(goals.every(goal=>goal.id&&goal.title.trim())).toBe(true);
+    const selected=goals[1];
+    await page.selectOption('#practice-goal',selected.id);await choosePracticeDepth(page,depth);
+    await startPracticeSelection(page);
+    await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','ready');
+    await expect(page.locator('#practice-goal-reminder')).toContainText(selected.title);
+    await page.click('#practice-open');
+    await expect(page.locator('#practice-coaching-panel')).toBeVisible();
+    await expect(page.locator('#practice-coaching-title')).toBeFocused();
+    await expect(page.locator('#practice-question')).not.toBeEmpty();
+    renderedQuestions.push(await page.locator('#practice-question').innerText());
+    await expect(page.locator('#practice-hint')).toBeHidden();await expect(page.locator('#practice-examples')).toBeHidden();
+    await expect(page.locator('#practice-show-examples')).toBeHidden();
+    await page.click('#practice-show-hint');await expect(page.locator('#practice-hint')).not.toBeEmpty();
+    await page.click('#practice-show-examples');await expect(page.locator('#practice-examples blockquote')).toHaveCount(2);
+    await expect(page.locator('#practice-coaching-panel')).toContainText(/faculty review/i);
+    await expect(page.locator('#composer')).toHaveValue('');
+    await page.click('#practice-close');await expect(page.locator('#practice-open')).toBeFocused();
+    await page.click('#end');await expect(page.locator('#practice-reflection-panel')).toBeVisible();
+    await expect(page.locator('#practice-reflection-question')).not.toBeEmpty();
+    const reflection=`PRIVATE_GOAL_${patient.id}_${depth}`;
+    await page.fill('#practice-reflection',reflection);
+    expect(JSON.stringify(requests)).not.toContain(reflection);expect(JSON.stringify(requests)).not.toContain(selected.title);
+    expect(Object.keys(requests.at(-1)).sort()).toEqual(['action','caseId','requestId']);
+    await page.click('#clear');
+    await expect(page.locator('#practice-room')).toBeHidden();await expect(page.locator('#practice-reflection')).toHaveValue('');
+    await expect(page.locator('#practice-goal')).toHaveValue(goals[0].id);await expect(page.locator('#practice-depth')).toHaveValue('student');await expect(page.locator('#practice-depth-options')).not.toHaveAttribute('open','');
+    expect(await page.locator('body').innerText()).not.toContain(reflection);
+  }
+  expect(renderedQuestions[0]).not.toBe(renderedQuestions[1]);
+  expect(requests).toHaveLength(2);
+  expect(await page.evaluate(()=>[localStorage.length,sessionStorage.length])).toEqual([0,0]);
+  expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
+
+for(const width of [1440,320])test(`practice coaching: a protected thinking pause retains spoken words and needs explicit resume at ${width}px`,async({page})=>{
+  await page.setViewportSize({width,height:900});
+  await page.addInitScript(()=>{
+    window.__coachingStorageWrites=[];
+    const write=Storage.prototype.setItem;
+    Storage.prototype.setItem=function(key,value){window.__coachingStorageWrites.push({key,value});return write.call(this,key,value);};
+  });
+  const network=[];page.on('request',request=>network.push({url:request.url(),method:request.method()}));
+  const {requests,errors,violations}=await openPreview(page,{recognition:'available'});
+  await page.selectOption('#case-choice',CASES[1].id);await choosePracticeDepth(page,'resident');
+  await page.screenshot({path:`/tmp/practice-coaching-entry-${width}.png`,fullPage:true});
+  await startPracticeSelection(page);await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+  await page.clock.install();
+  await page.evaluate(()=>{
+    const current=window.__previewRecognition.instances.findLast(instance=>instance.active);
+    window.__coachingStaleResult=current.onresult;
+    window.__coachingStaleEnd=current.onend;
+    window.__previewRecognition.emit('I want to understand');
+    window.__previewRecognition.emit('what matters most',false);
+  });
+  const beforeNetwork=network.length;
+  await page.click('#practice-open');await expect(page.locator('#practice-coaching-panel')).toBeVisible();
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
+  await expect(page.locator('#practice-coaching-title')).toBeFocused();
+  await expect(page.locator('#composer')).toHaveValue('I want to understand');
+  await expect(page.locator('#draft-text')).toHaveText('I want to understand');
+  await expect(page.locator('#practice-unfinished')).toContainText('what matters most');
+  expect(await page.evaluate(()=>window.__previewRecognition.instances.some(instance=>instance.active))).toBe(false);
+  await expect(page.locator('#send')).toBeDisabled();await expect(page.locator('#resume')).toBeDisabled();
+  await page.keyboard.press('Space');
+  await page.evaluate(()=>{
+    document.getElementById('composer-form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+    document.getElementById('resume').dispatchEvent(new MouseEvent('click',{bubbles:true}));
+    const late=[{transcript:'LATE_COACHING_CALLBACK'}];late.isFinal=true;
+    window.__coachingStaleResult?.({results:[late]});window.__coachingStaleEnd?.();
+  });
+  await page.clock.fastForward(20000);
+  await expect(page.locator('#composer')).toHaveValue('I want to understand');
+  await expect(page.locator('#practice-coaching-title')).toBeFocused();
+  expect(requests).toHaveLength(1);
+  expect(await page.evaluate(()=>window.__previewRecognition.instances.some(instance=>instance.active))).toBe(false);
+  await page.click('#practice-show-hint');await expect(page.locator('#practice-hint')).toBeVisible();
+  await page.click('#practice-show-examples');await expect(page.locator('#practice-examples blockquote')).toHaveCount(2);
+  await expect(page.locator('#composer')).toHaveValue('I want to understand');
+  expect(network).toHaveLength(beforeNetwork);
+  expect(await page.evaluate(()=>window.__coachingStorageWrites)).toEqual([]);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:`/tmp/practice-coaching-open-${width}.png`,fullPage:true});
+  await page.click('#practice-close');await expect(page.locator('#practice-open')).toBeFocused();
+  await expect(page.locator('#practice-coaching-panel')).toBeHidden();
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
+  await page.clock.fastForward(20000);expect(requests).toHaveLength(1);
+  expect(await page.evaluate(()=>window.__previewRecognition.instances.some(instance=>instance.active))).toBe(false);
+  await expect(page.locator('#resume')).toBeEnabled();await page.click('#resume');
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+  await page.evaluate(()=>window.__previewRecognition.emit('what matters most to you.'));
+  await page.locator('#transcript').focus();await page.keyboard.press('Space');
+  await expect.poll(()=>requests.length).toBe(2);
+  expect(requests[1].text).toBe('I want to understand what matters most to you.');
+  await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+  await page.click('#end');await page.fill('#practice-reflection','PRIVATE_NEXT_CONVERSATION');
+  await expect(page.locator('#practice-reflection')).toBeFocused();await page.keyboard.press('Space');
+  expect(requests).toHaveLength(2);expect(JSON.stringify(requests)).not.toContain('PRIVATE_NEXT_CONVERSATION');
+  expect(await page.evaluate(()=>window.__coachingStorageWrites)).toEqual([]);
+  await page.screenshot({path:`/tmp/practice-coaching-reflection-${width}.png`,fullPage:true});
+  await page.click('#clear');await expect(page.locator('#practice-room')).toBeHidden();await expect(page.locator('#practice-reflection')).toHaveValue('');
+  expect(await page.locator('body').innerText()).not.toContain('PRIVATE_NEXT_CONVERSATION');
+  expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
+
+test('practice coaching: case and format changes reset choices and keep moments unchanged',async({page})=>{
+  const {requests,errors,violations}=await openPreview(page,{momentsEnabled:true});
+  const defaultGoal=await page.locator('#practice-goal').inputValue();
+  const otherGoal=await page.locator('#practice-goal option').nth(2).getAttribute('value');
+  await page.selectOption('#practice-goal',otherGoal);await choosePracticeDepth(page,'resident');
+  await page.selectOption('#case-choice',CASES[1].id);await expect(page.locator('#practice-depth')).toHaveValue('student');
+  await page.selectOption('#case-choice',CASES[0].id);await expect(page.locator('#practice-goal')).toHaveValue(defaultGoal);
+  await page.selectOption('#practice-goal',otherGoal);await choosePracticeDepth(page,'resident');
+  await page.selectOption('#experience-choice','moment');await expect(page.locator('#practice-entry')).toBeHidden();await expect(page.locator('#practice-room')).toBeHidden();
+  await page.selectOption('#experience-choice','full');await expect(page.locator('#practice-entry')).toBeVisible();
+  await expect(page.locator('#practice-goal')).toHaveValue(defaultGoal);await expect(page.locator('#practice-depth')).toHaveValue('student');await expect(page.locator('#practice-depth-options')).not.toHaveAttribute('open','');
+  expect(requests).toHaveLength(0);expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
+
+test('practice coaching: patient playback must finish or be interrupted before coaching opens',async({page})=>{
+  const {requests,errors,violations}=await openPreview(page,{recognition:'available',manualAudio:true});
+  await startEncounter(page,CASES[0].id);await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','speaking');
+  await expect(page.locator('#practice-open')).toBeDisabled();
+  await page.evaluate(()=>document.getElementById('practice-open').dispatchEvent(new MouseEvent('click',{bubbles:true})));
+  await expect(page.locator('#practice-coaching-panel')).toBeHidden();expect(await page.evaluate(()=>window.__previewAudio[0].pauses)).toBe(0);
+  await page.keyboard.press('Escape');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
+  await expect(page.locator('#practice-open')).toBeEnabled();await page.click('#practice-open');
+  await expect(page.locator('#practice-coaching-panel')).toBeVisible();expect(requests).toHaveLength(1);
+  await page.click('#clear');await expect(page.locator('#practice-room')).toBeHidden();await expect(page.locator('#practice-reflection')).toHaveValue('');
+  expect(await page.evaluate(()=>window.__previewRecognition.instances.some(instance=>instance.active))).toBe(false);
+  expect(errors).toEqual([]);expect(violations).toEqual([]);
+});
+
 for(const width of [1440,360])test(`spoken interruption and faculty controls at ${width}px`,async({page})=>{
   await page.setViewportSize({width,height:900});const {violations,errors,requests}=await openPreview(page,{recognition:'available',manualAudio:true});
   await expect(page.locator('#spoken-interrupt-entry')).not.toBeChecked();
@@ -271,10 +429,12 @@ for(const width of [1440,320])test(`family orientation, clinician opening, and v
   expect(requests).toHaveLength(1);expect(await page.evaluate(()=>window.__previewAudio.length)).toBe(0);
   await expect(page.locator('#room-view')).toBeVisible();
   await expect(page.locator('#room-a-name')).toHaveText('Morgan');await expect(page.locator('#room-b-name')).toHaveText('Maya');
-  await page.click('#coach-open');await expect(page.locator('#coach-panel')).toBeVisible();
+  await expect(page.getByRole('button',{name:'I’m stuck',exact:true})).toHaveCount(1);
+  await page.click('#practice-open');await expect(page.locator('#practice-coaching-panel')).toBeVisible();
   await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
   await expect(page.locator('#room-mic-text')).toContainText('Microphone paused');expect(requests).toHaveLength(1);
-  await page.click('#coach-resume');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
+  await page.click('#practice-close');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','paused');
+  await page.click('#resume');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase','listening');
   await expect(page.locator('#family-identity-morgan')).toContainText('they/them');await expect(page.locator('#family-identity-maya')).toContainText('she/her');
   await page.locator('#family-room-observations summary').first().click();
   for(const role of ['morgan','maya']){
@@ -657,7 +817,7 @@ test.describe('hosted preview in a real browser under its deployed headers', () 
     expect(violations).toEqual([]);
   });
 
-  test('mobile keyboard order reaches format then patient after the skip link', async ({page}) => {
+  test('mobile keyboard order reaches format, patient, practice choices, then passcode after the skip link', async ({page}) => {
     await page.setViewportSize({width: 320, height: 844});
     await openPreview(page);
     await page.keyboard.press('Tab');
@@ -669,8 +829,20 @@ test.describe('hosted preview in a real browser under its deployed headers', () 
     await expect(page.locator('#case-choice')).toBeInViewport({ratio: 1});
     expect(await page.evaluate(() => scrollY)).toBe(0);
     await page.keyboard.press('Tab');
+    await expect(page.locator('#practice-goal')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#practice-depth-summary')).toBeFocused();
+    await page.keyboard.press('Tab');
     await expect(page.locator('#preview-key')).toBeFocused();
     await expect(page.locator('#start')).toBeInViewport({ratio: 1});
+    await page.keyboard.press('Shift+Tab');
+    await expect(page.locator('#practice-depth-summary')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#practice-depth-options')).toHaveAttribute('open','');
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#practice-depth')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#preview-key')).toBeFocused();
   });
 
   test('enabled field boundaries have at least 3 to 1 contrast against adjacent backgrounds', async ({page}) => {
@@ -945,7 +1117,7 @@ async function openMoment(page,index=0,recognition='unavailable'){
   const events=[{type:'review-start',state:'closed'},{type:'review-unavailable',code:'preview_review_unavailable'},{type:'review-complete',state:'closed'}];
   await route.fulfill({status:200,contentType:'application/x-ndjson',body:b.action==='debrief'?events.map(e=>JSON.stringify(e)+'\n').join(''):ndjson(b.action==='start'?(turn=0):b.action==='retry'?b.turnId:++turn)});
  });
- await page.selectOption('#experience-choice','moment');await page.selectOption('#case-choice',MOMENTS[index]);await expect(page.locator('#case-review-note')).toBeHidden();await page.fill('#preview-key','mock-preview-passcode');await page.click('#start');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase',recognition==='available'?'listening':'ready');await expect(page.locator('#encounter-review-note')).toBeHidden();return result;
+ await page.selectOption('#experience-choice','moment');await page.selectOption('#case-choice',MOMENTS[index]);await expect(page.locator('#case-review-note')).toBeHidden();await page.fill('#preview-key','mock-preview-passcode');await page.click('#start');await expect(page.locator('#preview-root')).toHaveAttribute('data-phase',recognition==='available'?'listening':'ready');await expect(page.locator('#encounter-review-note')).toBeHidden();await expect(page.locator('#practice-entry')).toBeHidden();await expect(page.locator('#practice-room')).toBeHidden();return result;
 }
 for(const [index,id] of MOMENTS.entries())test(`${id}: four responses, fallback, alternative and fresh transfer`,async({page})=>{
  const {requests,errors,violations}=await openMoment(page,index);await expect(page.locator('[data-moment="draft-label"]')).toBeHidden();
