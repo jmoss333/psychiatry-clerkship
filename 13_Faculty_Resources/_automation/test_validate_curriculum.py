@@ -216,6 +216,9 @@ def _curriculum(items):
             + list(FIXTURE_RIGHTS_EXCLUDES) + list(FIXTURE_WEEK_EXCLUDES)
         ),
         "rightsReferences": list(RIGHTS_REFS),
+        # Every column-placed tool needs its one-line Library hint (2026-09-16); the default
+        # column above places exactly one tool, so the fixture stays valid with exactly one.
+        "libraryHints": {"mse.html": "Draft a written exam from a descriptor bank."},
         # `triggers` became mandatory on 2026-08-28, when "i want to kill myself" was found to
         # reach pg_suicide.md only through the stopword "to". This fixture went without it for
         # months and every accept-case here failed — invisibly, because no gate ran the file.
@@ -354,6 +357,78 @@ class ValidateCurriculumTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("ms3", result.stdout)
         self.assertIn("rp-canon-quiz.html", result.stdout)
+
+    def test_rejects_a_rights_reference_as_a_path_item(self):
+        # A rights reference exists to say an instrument is NOT reproduced here. It belongs in
+        # the Library (INV-IR2 keeps the custodian route alive) but never on a learning path:
+        # a checklist step that opens a "no longer reproduced" stub is a dead end the learner
+        # is asked to tick. Both stubs sat on the shipped paths until 2026-09-16.
+        stub = RIGHTS_REFS[0]
+        for site in ("ms3", "resident"):
+            with self.subTest(site=site), tempfile.TemporaryDirectory() as tmp:
+                cur = _curriculum([])
+                cur["learningPaths"][site]["weeks"][0]["items"] = [
+                    {"ref": stub, "kind": "tool"}]
+                c, root = _write(tmp, cur)
+                result = _run(c, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn(site, result.stdout)
+            self.assertIn(stub, result.stdout)
+            self.assertIn("rights reference", result.stdout)
+
+    def test_library_hints_require_one_line_per_placed_tool_and_no_strays(self):
+        # A placed .html ref is a tool row in the only browse surface; without its one-line
+        # "use this when" it is a bare title. Both directions are enforced: a placed tool with
+        # no hint, and a hint for a ref no column (or site addition) places.
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["libraryColumns"][0]["refs"] = ["mse.html", "rp-canon-quiz.html"]
+            cur["libraryExclude"] = [e for e in cur["libraryExclude"]
+                                     if e["ref"] != "rp-canon-quiz.html"]
+            cur["libraryHints"] = {"mse.html": "Draft a written exam from a descriptor bank."}
+            c, root = _write(tmp, cur)
+            missing = _run(c, root)
+            self.assertEqual(missing.returncode, 1, missing.stdout + missing.stderr)
+            self.assertIn("libraryHints", missing.stdout)
+            self.assertIn("rp-canon-quiz.html", missing.stdout)
+
+            cur["libraryHints"]["rp-canon-quiz.html"] = "Drill the landmark-paper decks."
+            c, root = _write(tmp, cur)
+            complete = _run(c, root)
+            self.assertEqual(complete.returncode, 0, complete.stdout + complete.stderr)
+
+            cur["libraryHints"]["welcome.md"] = "A read is not a tool row."
+            c, root = _write(tmp, cur)
+            stray = _run(c, root)
+            self.assertEqual(stray.returncode, 1, stray.stdout + stray.stderr)
+            self.assertIn("welcome.md", stray.stdout)
+            del cur["libraryHints"]["welcome.md"]
+
+            for bad_value in ("", "   ", "x" * 111, 7):
+                cur["libraryHints"]["mse.html"] = bad_value
+                c, root = _write(tmp, cur)
+                result = _run(c, root)
+                self.assertEqual(result.returncode, 1, repr(bad_value))
+                self.assertIn("libraryHints", result.stdout)
+
+    def test_a_site_addition_tool_needs_a_hint_too(self):
+        # rp-* tools reach the resident Library through siteLibrary additions, not the shared
+        # columns; the completeness rule covers them or the resident column ships bare rows.
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["libraryHints"] = {"mse.html": "Draft a written exam from a descriptor bank."}
+            # Shaped like the real file: an rp-* tool stays in the shared libraryExclude and
+            # reaches one site's Library through that site's additions.
+            cur["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Tools", "refs": ["rp-canon-quiz.html"]}]
+            c, root = _write(tmp, cur)
+            result = _run(c, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("rp-canon-quiz.html", result.stdout)
+            cur["libraryHints"]["rp-canon-quiz.html"] = "Drill the landmark-paper decks."
+            c, root = _write(tmp, cur)
+            ok = _run(c, root)
+            self.assertEqual(ok.returncode, 0, ok.stdout + ok.stderr)
 
     def test_accepts_resident_only_ref_on_resident_path(self):
         with tempfile.TemporaryDirectory() as tmp:

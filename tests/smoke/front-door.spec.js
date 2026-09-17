@@ -1711,3 +1711,70 @@ test('a returning learner can leave rotation mode: browse clears the rotation, s
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')).browsing)).toBe(false);
   await expectHealthy(page);
 });
+
+// ---- Phone chrome (2026-09-16) --------------------------------------------------------------------
+// Measured before the change on a 375×812 phone opening ?page=t_mood.md: header 154px, capture
+// bar bottom at 210px, article h1 top at 382px — 47% of the first screen was shell. On the
+// top-level screens the tab row now docks to the bottom; a reader keeps the tabs in its header
+// (they must stay reachable while reading) and instead drops its top back link, which the fixed
+// action bar's `‹` duplicates; and the On-the-Unit panel opens by default on a handheld.
+// tests/fd-phone-chrome.test.mjs pins the stylesheet; this measures the render.
+
+test('phone chrome: tabs dock to the bottom, yield to the reader action bar, and the first screen belongs to the page', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const tabs = page.locator('.fd-tabs');
+  await expect(tabs).toBeVisible();
+  const tabsBox = await tabs.boundingBox();
+  expect(tabsBox.y + tabsBox.height).toBeCloseTo(PHONE.height, 0);
+  const headerBox = await page.locator('.fd-header').boundingBox();
+  expect(headerBox.height).toBeLessThanOrEqual(120);
+  for (const tab of ['[data-fd-tab="today"]', '[data-fd-tab="path"]', '[data-fd-tab="library"]']) {
+    const box = await page.locator(tab).boundingBox();
+    expect(box.height, `${tab} keeps its touch target`).toBeGreaterThanOrEqual(44);
+  }
+  await page.locator('[data-fd-tab="library"]').click();
+  await expect(page.locator('.fd-library')).toBeVisible();
+  // A bottom bar must not cover the last Library row once the page is scrolled to its end.
+  const lastRow = page.locator('.fd-collink').last();
+  await lastRow.scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const rowBox = await lastRow.boundingBox();
+  const barBox = await tabs.boundingBox();
+  expect(rowBox.y + rowBox.height).toBeLessThanOrEqual(barBox.y + 0.5);
+
+  await page.goto('/?page=t_mood.md');
+  await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+  await expect(page.locator('.fd-actionbar')).toBeVisible();
+  // A reader keeps its tab row in the header: the action bar owns the bottom edge, and the tabs
+  // must stay reachable while reading (rotation-edition-v2's keyboard matrix switches tabs from
+  // an open reader at this width). What the reader gives up is the top back link.
+  await expect(tabs).toBeVisible();
+  const readerTabs = await tabs.boundingBox();
+  expect(readerTabs.y, 'reader tabs sit in the header row, not docked').toBeLessThan(170);
+  await expect(page.locator('.fd-reader > .fd-reader__back')).toBeHidden();
+  const h1 = await page.locator('.fd-article__h1').boundingBox();
+  expect(h1.y, 'the topic title sits in the top third of a phone screen').toBeLessThanOrEqual(PHONE.height * 0.35);
+  expect(await page.locator('details.practice-panel').evaluate(el => el.open)).toBe(true);
+  // The Progress page renders no action bar, so its top back link is the way back and stays.
+  await page.goto('/?page=__progress__');
+  await expect(page.locator('#pgRoot')).toBeVisible();
+  await expect(page.locator('.fd-reader__back[data-fd-back]')).toBeVisible();
+  await expect(tabs).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('desktop chrome is untouched: tabs in the header, panel closed, top back link visible', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await seedApp(page, testInfo);
+  await page.goto('/?page=t_mood.md');
+  await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+  const tabsBox = await page.locator('.fd-tabs').boundingBox();
+  expect(tabsBox.y).toBeLessThan(120);
+  await expect(page.locator('.fd-reader > .fd-reader__back')).toBeVisible();
+  expect(await page.locator('details.practice-panel').evaluate(el => el.open)).toBe(false);
+  await expect(page.locator('.fd-actionbar')).toBeHidden();
+  await expectHealthy(page);
+});

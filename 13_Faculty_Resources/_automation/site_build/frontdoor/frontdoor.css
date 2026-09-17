@@ -491,6 +491,11 @@
 .fd-collink__dot{width:6px;height:6px;border-radius:var(--fd-radius-circle);flex:0 0 auto;background:var(--fd-olive)}
 .fd-collink__dot.is-tool{background:var(--fd-teal)}
 .fd-collink__label{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+/* The row's one-line "use this when…" (curriculum.libraryHints, tools only). It takes its own
+ * line under the label: the row wraps, and the hint claims the full width indented past the dot
+ * so it reads as the label's subtitle, not a second column. Reads have no hint and no wrap. */
+.fd-collink{flex-wrap:wrap}
+.fd-collink__hint{flex:0 0 100%;padding-left:calc(6px + var(--fd-space-4));font-size:var(--fd-font-xs);line-height:1.4;color:var(--fd-text-dim);white-space:normal}
 /* .governance-badge is `flex:0 0 auto` (spa_index.html) so it never yielded, while the label above
  * shrinks to nothing -- inside a library column that gave "Interaction Cards — One Action" 35px of
  * the 196px it needed, printing "Inte…" beside a full-width "Pending review · High risk". The
@@ -919,6 +924,52 @@
    * object deleted. Only the header chip is competing for width at this breakpoint. */
   .fd-searchbtn .fd-kbd{display:none}
   .fd-header__actions{grid-column:1/-1;margin-left:0;justify-content:flex-end}
+}
+
+/* ═══ Phone chrome ═══════════════════════════════════════════════════════════
+ * Measured 2026-09-16 on a 375×812 phone opening a topic page: header 154px, capture bar
+ * bottom at 210px, article h1 top at 382px — nearly half the first screen was shell. The
+ * two-row header above stays exactly as the 2026-08 audit pinned it (brand name visible,
+ * search label >= 44px, five 44×44 controls, no collisions). What moves is the tab row: on
+ * the top-level screens (Today, Path, Library) it docks to the bottom of the viewport as a tab
+ * bar, where a thumb reaches it.
+ * A reader carries the fixed action bar instead, so there the tabs KEEP their header row: two
+ * fixed bars cannot share the bottom edge, and the tabs must stay reachable while reading —
+ * rotation-edition-v2.spec.js's keyboard matrix switches tabs from an open reader at 390px,
+ * and hiding them there was the first thing that run caught. What the reader gives up is its
+ * top-of-page back link and the tool toolbar, because the action bar's `‹` is the same control.
+ * Guarded on :has(.fd-actionbar), never on .fd-reader alone: the Progress page and the
+ * not-found surface render a .fd-reader with NO action bar, and their top back link is the
+ * only way back.
+ * .fd-tabs stays a child of .fd-header in the markup (CLASS-INVENTORY's sticky contract); a
+ * position:fixed descendant of a sticky ancestor is still viewport-fixed as long as no
+ * ancestor transforms, and .fd-header has none. Overlays (search, sheets) are body-mounted
+ * at z-index 90+, above the header's own stacking context, so they still cover the bar.
+ * .fd-article keeps its 20px sides: 16px pushed the Welcome Compass from two tracks to three
+ * at 561px (front-door.spec.js's width buckets); only the vertical padding tightens.
+ * tests/fd-phone-chrome.test.mjs pins this block; tests/smoke/front-door.spec.js ("phone
+ * chrome …") measures the rendered result.
+ */
+@media (max-width:640px){
+  .fd-shell:not(:has(.fd-actionbar)) .fd-header__bar{padding-bottom:8px}
+  .fd-shell:not(:has(.fd-actionbar)) .fd-tabs{
+    position:fixed;left:0;right:0;bottom:0;z-index:50;max-width:none;margin:0;
+    padding:0 var(--fd-space-4) env(safe-area-inset-bottom);
+    background:var(--fd-surface-warm);border-top:1px solid var(--fd-line);box-shadow:var(--fd-shadow-bar);
+  }
+  .fd-shell:not(:has(.fd-actionbar)) .fd-tab{flex:1;text-align:center;padding:var(--fd-space-5) var(--fd-space-4);border-bottom:none;border-top:3px solid transparent}
+  .fd-shell:not(:has(.fd-actionbar)) .fd-tab.is-active{border-top-color:var(--fd-teal)}
+  .fd-shell:not(:has(.fd-actionbar)) .fd-main{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  /* The nudge toast is bottom-anchored too; lift it clear of the tab bar. */
+  .fd-shell:not(:has(.fd-actionbar)) .fd-nudge{bottom:calc(74px + env(safe-area-inset-bottom))}
+  .fd-shell:has(.fd-actionbar) .fd-reader>.fd-reader__back{display:none}
+  .fd-shell:has(.fd-actionbar) .fd-reader__toolbar{display:none}
+  /* A practice tool opened from a clinical field guide inserts its only `Return to guide` control
+     into this toolbar (spa_index.html's guide-bookmark branch), and the action bar's `‹` does not
+     restore that bookmark. The toolbar therefore comes back whenever that control is in it. */
+  .fd-shell:has(.fd-actionbar) .fd-reader__toolbar:has(.fd-guide-return){display:flex}
+  .fd-main{padding-top:8px}
+  .fd-article{padding:var(--fd-space-6) var(--fd-space-8)}
 }
 
 /* ═══ Keyframes ══════════════════════════════════════════════════════════════

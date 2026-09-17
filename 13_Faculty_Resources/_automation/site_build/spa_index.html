@@ -426,6 +426,9 @@
   #fdCaptureMount:empty{display:none}
   #fdCaptureMount .fd-capture-launch{width:min(230px,100%);margin:0}
   @media(max-width:999px){#fdCaptureMount .fd-capture-launch{width:min(210px,100%)}}
+  /* Phone chrome (see the front-door stylesheet's block of that name): the launcher keeps its
+     44px target and gives up only the gap above it, so the first phone screen has more page. */
+  @media(max-width:640px){#fdCaptureMount{margin-top:0}}
   .cap-disclose{font-size:var(--fd-font-xs);color:var(--text-light);margin:8px 0 0}
   .cap-acts{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 0}
   .cap-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:8px 14px;font:inherit;font-size:var(--fd-font-sm);font-weight:600;cursor:pointer}
@@ -1167,11 +1170,14 @@
     if(refs.length)html+='<div class="practice-section-title">Official forms</div><div class="practice-actions">'+refs.join('')+'</div><p class="practice-muted">Official form and training \u2014 the instrument itself is not reproduced here.</p>';
     return html;
   }
-  function buildTpl(m,file){
+  function buildTpl(m,file,opts){
     if(!hasPracticeTpl(m))return '';
     /* D-1: the summary is byte-identical to what it has always rendered -- the visual
-       baselines screenshot a collapsed panel, and everything WP-D changes is inside the body. */
-    var h='<details class="topic-tpl practice-panel">';
+       baselines screenshot a collapsed panel, and everything WP-D changes is inside the body.
+       opts.open===true is the one caller-decided exception: the reader passes it on a handheld
+       viewport (fdHandheld), where this panel IS the point-of-need content and a closed
+       disclosure hid it behind a tap on every topic page. Desktop stays closed and byte-identical. */
+    var h='<details class="topic-tpl practice-panel"'+((opts&&opts.open===true)?' open':'')+'>';
     h+='<summary class="practice-summary"><span class="practice-tab">Ward</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
     h+='<div class="practice-body">';
     h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; h+='</div>';
@@ -1197,6 +1203,12 @@
     h+='</div></div></details>'; return h;
   }
   /* ---- end practice panel ---- */
+  /* "Handheld" is the shell's own not-desktop threshold: the rails and the desktop action pair
+     appear at >=1000px (the front-door stylesheet's one desktop breakpoint), so anything
+     narrower is where the fixed action bar shows and where the practice panel opens by default.
+     matchMedia rather than innerWidth so the answer can never disagree with the stylesheet;
+     a browser with no matchMedia (or a throwing one) reads as desktop, the closed default. */
+  function fdHandheld(){ try{ return !!(window.matchMedia&&window.matchMedia('(max-width:999px)').matches); }catch(_){ return false; } }
   function pageTitle(it){ return it ? (it.t+' \u2014 MS3 Psychiatry Clerkship') : 'Inpatient Psychiatry \u2014 MS3 Clerkship'; }
   function setLearnerTitle(item){ if(!facultyPreviewRequest)document.title=pageTitle(item); }
   function fdSpecialItemForState(state){
@@ -1313,7 +1325,7 @@
       var _governance=document.createElement('div'); _governance.innerHTML=renderGovernanceNotice(item); if(_governance.firstChild) _insertAfterTitle(_governance.firstChild);
       var _ledger=document.createElement('div'); _ledger.innerHTML=buildReviewLedger(item.f); if(_ledger.firstChild) _insertAfterTitle(_ledger.firstChild);
       var _m=TOPIC_META&&TOPIC_META[item.f];
-      if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
+      if(_m){ var _html=buildTpl(_m, item.f,{open:fdHandheld()}); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
       makeCollapsible(contentEl); enhanceTables(contentEl); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
@@ -2308,7 +2320,7 @@
       signal:options.signal,
       parseMarkdown:function(markdown){
         var html=marked.parse(markdown), meta=TOPIC_META&&TOPIC_META[ref];
-        return (meta?buildTpl(meta,ref):'')+html;
+        return (meta?buildTpl(meta,ref,{open:fdHandheld()}):'')+html;
       },
       facultyPreviewMatches:facultyPreviewMatchesItem,
       facultyPreviewLock:showFacultyPreviewLockNotice,
