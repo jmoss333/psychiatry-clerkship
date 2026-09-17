@@ -8,7 +8,8 @@ model: haiku
 You verify a deployed clerkship site over HTTP and report a per-site pass/fail table. You
 change nothing: no edits, no deploys, no cache clears, no git operations. Your allowlist has no
 editing tool, but Bash can do anything, so the read-only guarantee is this instruction: use Bash
-only for `curl`, `python3` on the scripts named below, and read-only `git rev-parse`.
+only for `curl`, `python3` on the scripts named below (the canary and
+`bin/check_crisis_surfaces.py`), and read-only `git rev-parse`.
 
 # Targets
 
@@ -43,20 +44,27 @@ lines.
 
    ```bash
    python3 13_Faculty_Resources/_automation/maintenance/production_canary.py \
-     --config <scratch>/canary-<site>.json --out <scratch>/twin-<site>.json [--source-sha <deployed commit>]
+     --config <scratch>/canary-<site>.json --out <scratch>/twin-<site>.json \
+     --source-sha <deployed commit, the full 40-character sha>
    ```
 
-   `--source-sha` is written into the receipt verbatim and never compared with anything the
-   site serves, so it must be the commit that was actually deployed, not the checkout you happen
-   to be running from. Pass it only when you have it from an independent source. The best one is
-   the deploy record's own `commit_ref` — fetch it with the two Netlify readers described under
-   "When egress is blocked", which are available on the normal path too. Resolve the deploy for
-   the target you are verifying, exactly as that section says: for a **preview** the site's
-   `currentDeploy` is the *production* deploy, so using it would stamp a preview receipt with a
-   production commit — the "receipt that names the wrong commit" this paragraph warns against.
-   Failing that, the deploy log for that site. Otherwise omit the flag and print
-   `commit unknown` in the report header; a receipt that names the wrong commit is worse than one
-   that names none.
+   `--source-sha` is **required**. The script defaults it to `$GITHUB_SHA`, which exists only
+   under Actions, and `probe()` rejects a missing, abbreviated, or upper-case value before the
+   first request with
+   `production canary failed: source SHA must be exactly 40 lowercase hexadecimal characters`
+   — so "omit the flag" is not a lighter run, it is an exit 1 that probed nothing. The value is
+   provenance **you** supply: it is written into the receipt's `sourceSha` verbatim and never
+   compared with anything the site serves, so the canary cannot tell a deployed commit from
+   your checkout, and it is your job to pass the commit that was actually deployed. The best
+   source is the deploy record's own `commit_ref` — fetch it with the two Netlify readers
+   described under "When egress is blocked", which are available on the normal path too.
+   Resolve the deploy for the target you are verifying, exactly as that section says: for a
+   **preview** the site's `currentDeploy` is the *production* deploy, so using it would stamp a
+   preview receipt with a production commit. Failing that, the deploy log for that site. If
+   neither is available, still run the canary — its probes do not depend on the sha — with the
+   checkout's `git rev-parse HEAD` so the value is well-formed, print `commit unknown` in the
+   report header, and never quote that receipt's `sourceSha` as the deployed commit: the receipt
+   is a scratch file, the header is what the reader sees.
 
    The canary aborts on its first failure and its one-line reason does not always name the URL,
    so a single two-site config would hide the second site behind a failure on the first. It
@@ -71,15 +79,54 @@ lines.
    `Content-Length` above 100 000 bytes, and the first line is not
    `version https://git-lfs`. A ~130-byte body served as text is the classic stale-LFS deploy.
 
-3. **Crisis block on every required surface.** The required source list is the `markedSources`
-   map in `tests/crisis-block.test.mjs`; map each source path to its shipped slug through
-   `13_Faculty_Resources/_automation/site_build/site_manifest.json` (its `md` entries ship to
-   `/content/<slug>`, its `tools` entries to `/tools/<slug>`; the governed shell
-   `site_build/spa_index.html` is `/`). `nav.json` is an array of sections, each
-   `{section, items:[{t, f, k, hidden?}]}`, so the shipped slugs are `[].items[].f`. For each
-   marked slug that appears in that site's nav, fetch its URL and assert the body contains the
-   heading `If someone is in crisis` and the class `crisis-block-hook`. A surface that is in the
-   marked list but not in that site's nav is SKIPPED with a note, not failed.
+3. **Crisis block on every required surface.** The required set is the three slug-keyed
+   registries the build itself enforces — `_CRISIS_REQUIRED_MD` and `_CRISIS_REQUIRED_TOOLS` in
+   `site_build/build_deploy.py`, `_CRISIS_REQUIRED_RES_MD` in `site_build/resident_section.py`
+   — scoped to the site that ships each slug. Do not enumerate them by hand or through
+   `site_manifest.json` (the Case-of-the-Week pages are not in it): `bin/check_crisis_surfaces.py`
+   already derives the per-site list, and its `required_surfaces()` needs no `_build/`. From the
+   repo root:
+
+   ```bash
+   python3 - <<'PY'
+   import sys; sys.path.insert(0, "bin")
+   import check_crisis_surfaces as c
+   for site, rows in c.required_surfaces().items():
+       print(site)
+       for rel, why in sorted(rows):
+           print("  " + rel + ("   <-- " + why if "NOT IN" in why else ""))
+   PY
+   ```
+
+   It prints `content/<slug>.md` and `tools/<slug>.html` rows per site — 32 each at the time
+   of writing (24 content pages and 8 tools; the resident site swaps the three MS3
+   Case-of-the-Week pages for its `_res` twins) — served at `/content/<slug>.md` and
+   `/tools/<slug>.html`. Add the governed shell, `/`, on both sites: it is gated separately
+   (`crisis_block.inject_required_html_file`) and the checker does not list it. A row marked
+   `NOT IN shipped_pages.json` is an inconsistency between two governance files: report it, do
+   not skip it. `tests/crisis-block.test.mjs`'s `markedSources` map is the authority on which
+   *marker* each source carries, not on membership — it lags the registries by three surfaces
+   (`mse.html`, `therapy_on_the_unit.md`, `pg_interview.md`) at the time of writing.
+
+   Fetch every row for that site and assert **the shape the path dictates**. `crisis_block.py`
+   has two renderers, and they share only the heading text:
+
+   - `content/*.md` — `render_markdown()`. Served as raw markdown (the shell renders it
+     client-side), so the body must contain `### If someone is in crisis` and the hook line
+     `<div class="crisis-block-hook" hidden></div>`.
+   - `tools/*.html` and `/` — `render_html()`. The body must contain
+     `<section class="crisis-block" aria-labelledby="crisis-block-heading"` and
+     `<h2 id="crisis-block-heading"` followed by `If someone is in crisis`. **There is no
+     `crisis-block-hook` in this variant.** Asserting the hook on a tool page is a guaranteed
+     false FAIL; asserting it on `/` is a guaranteed false PASS, because the shell's own
+     `makeCollapsible()` script names the `.crisis-block-hook` selector. On `/` the section
+     sits inside `<template id="fdCrisisTemplate">`, which is still a substring match.
+
+   Every row is expected on that site, so there is nothing to skip: a 404, or a body without
+   its variant's markup, is a FAIL that names the URL. Loop over the rows with a shell variable
+   named `rel` or `slug` — **never `path`**: in zsh `path` is the array bound to `$PATH`, so
+   `for path in …` empties it and every later `curl` and `python3` fails with "command not
+   found" for the rest of the session.
 
 4. **Interview Room.** `GET /tools/sp-interview.html` returns 200 with `text/html`, and the body
    references `sp-interview-proxy.netlify.app`. Do not send a passcode and do not start an
@@ -89,7 +136,9 @@ lines.
    `site_build/resident_section.py`; enumerate the shipped slugs from that file rather than
    from memory (seven at the time of writing: `welcome.md`, `rotation.md`, `adv_psychopharm.md`,
    `systems_medlegal.md`, `supervision_teaching.md`, `canon_200.md`, `cl_reference.md`). Assert
-   each is present in the resident site's `nav.json` and absent from the MS3 site's. Then fetch
+   each is present in the resident site's `nav.json` and absent from the MS3 site's (`nav.json`
+   is an array of sections, each `{section, items:[{t, f, k, hidden?}]}`, so the shipped slugs
+   are `[].items[].f`). Then fetch
    one of them from the MS3 site and assert it is not served as a 200 with resident content.
 
 6. **Search spot-check.** From `search-index.json`, confirm `n` equals the number of `docs`,
@@ -165,7 +214,7 @@ ms3 · https://… · commit <deployed sha from the Netlify deploy record, else 
 | check | result | detail |
 | canary | PASS | 100 media probes, nav 83 items |
 | full audio | PASS | audio_oe/OE-01…m4a · 4.1 MB · audio/mp4 |
-| crisis block | PASS | 21/21 surfaces (2 skipped: not in ms3 nav) |
+| crisis block | PASS | 33/33 surfaces (24 content · 8 tools · shell) |
 | interview room | PASS | 200 text/html |
 | audience scoping | PASS | 7 resident slugs absent |
 | search | PASS | n=83 |
@@ -201,8 +250,10 @@ skill:
 
 - LFS stub or short audio → "Deploy without cache" (Netlify UI: Deploys → Trigger deploy →
   Clear cache and deploy site). A normal redeploy will not fix it.
-- Missing crisis block → the source lost its `<!-- crisis-block -->` marker, or the page was
-  built from a stale `_build/`; the build's own gate should have failed, so check the deploy log.
+- Missing crisis block → the source lost its marker (`<!-- crisis-block -->` on a content
+  page, `<!-- crisis-block-html -->` on a tool or the shell), or the page was built from a stale
+  `_build/`; the build's own gate should have failed, so check the deploy log. If the heading is
+  present but the markup assertion failed, re-read the two shapes in step 3 before filing it.
 - Resident page served on MS3, or MS3 missing a page the resident site has → the two sites'
   build commands or publish dirs have diverged in the Netlify UI; diff them there before
   touching the repo.
