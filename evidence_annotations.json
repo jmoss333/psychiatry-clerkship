@@ -1334,7 +1334,7 @@
       "claims": [
         {
           "claimId": "ptsd-ssri-treatment-response",
-          "claimText": "For the primary outcome of treatment response, SSRIs showed a beneficial effect compared with placebo (RR 0.66, 95% CI 0.59 to 0.74; 8 studies, 1078 participants), improving PTSD symptoms in 58% of SSRI participants compared with 35% of placebo participants, based on moderate-certainty evidence.",
+          "claimText": "SSRIs showed a beneficial effect on treatment response compared with placebo: the risk of failing to respond was RR 0.66 (95% CI 0.59 to 0.74; 8 studies, 1078 participants), with PTSD symptoms improving in 58% of SSRI participants compared with 35% of placebo participants, based on moderate-certainty evidence.",
           "claimTerms": [
             "treatment response",
             "selective serotonin reuptake inhibitors",

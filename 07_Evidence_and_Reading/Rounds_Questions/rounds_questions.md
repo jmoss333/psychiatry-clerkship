@@ -392,7 +392,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Trauma-focused psychotherapy (prolonged exposure, cognitive processing therapy, EMDR) is first-line: the 2023 VA/DoD guideline recommends these manualized psychotherapies over pharmacotherapy. When medication is used, the guideline recommends paroxetine, sertraline, or venlafaxine — only sertraline and paroxetine carry FDA approval for PTSD, so venlafaxine is guideline-recommended but off-label.
 
-- **Evidence:** Cochrane review (Williams et al., 2022): for treatment response, SSRIs showed a beneficial effect vs. placebo — RR 0.66 (95% CI 0.59–0.74; 8 studies, 1,078 participants), with PTSD symptoms improving in 58% of SSRI participants vs. 35% on placebo (moderate-certainty evidence).
+- **Evidence:** Cochrane review (Williams et al., 2022): SSRIs showed a beneficial effect vs. placebo on treatment response — the risk of failing to respond was RR 0.66 (95% CI 0.59–0.74; 8 studies, 1,078 participants), with PTSD symptoms improving in 58% of SSRI participants vs. 35% on placebo (moderate-certainty evidence).
 
 - **Key paper:** Schnurr et al., Ann Intern Med 2024 — VA/DoD PTSD guideline synopsis.
 
