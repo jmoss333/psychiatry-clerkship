@@ -15,7 +15,7 @@ const CONTROL = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 // banks. A hash over ALL persona/response/gate/tone sources below binds their
 // meaning to that reviewed case snapshot. Any source change requires reviewing
 // the summaries and updating the hash together; never silently use stale facts.
-const FACT_SOURCE_HASH = '610a481dd52223957da58e432aea54b2d1f61c27c06a8fc9827864e7f262ab09';
+const FACT_SOURCE_HASH = 'bfe354e3532f2e5fe0ef9e28191dca1b8a15215119e928fabb2585110589d0b3';
 const ORDINARY_FACTS = {
   // greeting_agenda.open[1]
   preference: 'Dana hopes to leave soon and wants a say in how that happens.',
