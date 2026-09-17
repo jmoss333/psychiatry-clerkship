@@ -151,7 +151,9 @@ Gate check C3.
 
 `python3 bin/check_design_drift.py` — exit 0 clean, 1 on any finding. `--self-test` proves each
 check can fail (38 assertions, per the house rule that a guard ships with a paired falsification).
-`--update-baseline` re-pins the ratchets after a reviewed reduction.
+`--update-baseline` re-pins the ratchets after a reviewed reduction. R1–R4 are one of three
+ratchet gates in the repo; `docs/RATCHETS.md` describes the shared pattern, the other two
+(`bin/verify_spans.py`, `bin/check_qbank_coherence.py`) and the lowering command for each.
 
 | ID | Rule | Why it is a hard failure |
 |---|---|---|
