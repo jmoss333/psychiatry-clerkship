@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-08-21",
+  "updated": "2026-09-16",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -7261,6 +7261,191 @@
             "date": "2026-09-02",
             "note": "Added for curriculum-review finding MS3V07-F001: three surfaces credited 'structured lethal-means counseling (CALM)' with cutting attempts/deaths 3.3%->0.83%. The exposure in this study is documented lethal-means ASSESSMENT, not CALM delivery, and the design is quasi-experimental (instrumental variable), not randomised. Annotation is AI-drafted from the abstract and awaits faculty signature.",
             "reason": "curriculum-review remediation WP-5c (finding MS3V07-F001)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "schnurr-2024-vadod-ptsd-cpg-synopsis",
+      "type": "guideline",
+      "citation": {
+        "title": "The Management of Posttraumatic Stress Disorder and Acute Stress Disorder: Synopsis of the 2023 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guideline",
+        "authors": [
+          {
+            "family": "Schnurr",
+            "given": "PP"
+          },
+          {
+            "family": "Hamblen",
+            "given": "JL"
+          },
+          {
+            "family": "Wolf",
+            "given": "J"
+          },
+          {
+            "family": "Coller",
+            "given": "R"
+          },
+          {
+            "family": "Collie",
+            "given": "C"
+          },
+          {
+            "family": "Fuller",
+            "given": "MA"
+          },
+          {
+            "family": "Holtzheimer",
+            "given": "PE"
+          },
+          {
+            "family": "Kelly",
+            "given": "U"
+          },
+          {
+            "family": "Lang",
+            "given": "AJ"
+          },
+          {
+            "family": "McGraw",
+            "given": "K"
+          },
+          {
+            "family": "Morganstein",
+            "given": "JC"
+          },
+          {
+            "family": "Norman",
+            "given": "SB"
+          },
+          {
+            "family": "Papke",
+            "given": "K"
+          },
+          {
+            "family": "Petrakis",
+            "given": "I"
+          },
+          {
+            "family": "Riggs",
+            "given": "D"
+          },
+          {
+            "family": "Sall",
+            "given": "JA"
+          },
+          {
+            "family": "Shiner",
+            "given": "B"
+          },
+          {
+            "family": "Wiechers",
+            "given": "I"
+          },
+          {
+            "family": "Kelber",
+            "given": "MS"
+          }
+        ],
+        "organization": "U.S. Department of Veterans Affairs / Department of Defense",
+        "year": 2024,
+        "journal": "Ann Intern Med",
+        "volume": "177",
+        "pages": "363-374",
+        "doi": "10.7326/M23-2757",
+        "pmid": "38408360",
+        "url": "https://doi.org/10.7326/M23-2757"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 38408360): title, all 19 authors, journal, volume, issue, pages and DOI match",
+        "verifiedAt": "2026-09-16",
+        "note": "Added for issue #441 (surfaced by guideline-surveillance #432): rounds_questions.md Q39 already cited this synopsis for first-line PTSD treatment and the benzodiazepine recommendation, but the source was in neither registry. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "clinical practice guideline (synopsis)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-16",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "ptsd",
+          "trauma",
+          "psychotherapy",
+          "benzodiazepines"
+        ],
+        "clerkshipRelevance": "The current (2023) VA/DoD PTSD guideline in one abstract: manualized trauma-focused psychotherapy (PE, CPT, EMDR) over pharmacotherapy; paroxetine, sertraline or venlafaxine when medication is used; and a recommendation against benzodiazepines, cannabis and cannabis-derived products. Supersedes the 2017 edition that the APA index dropped on 2026-08-31.",
+        "noteHistory": [
+          {
+            "date": "2026-09-16",
+            "note": "Added for issue #441 (surfaced by guideline-surveillance #432): rounds_questions.md Q39 already cited this synopsis for first-line PTSD treatment and the benzodiazepine recommendation, but the source was in neither registry. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "issue #441 remediation (PTSD claims on rounds_questions.md carried no stored span)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "williams-2022-cochrane-ptsd-pharmacotherapy",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Pharmacotherapy for post traumatic stress disorder (PTSD)",
+        "authors": [
+          {
+            "family": "Williams",
+            "given": "T"
+          },
+          {
+            "family": "Phillips",
+            "given": "NJ"
+          },
+          {
+            "family": "Stein",
+            "given": "DJ"
+          },
+          {
+            "family": "Ipser",
+            "given": "JC"
+          }
+        ],
+        "organization": "",
+        "year": 2022,
+        "journal": "Cochrane Database Syst Rev",
+        "volume": "3",
+        "pages": "CD002795",
+        "doi": "10.1002/14651858.CD002795.pub3",
+        "pmid": "35234292",
+        "url": "https://doi.org/10.1002/14651858.CD002795.pub3"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 35234292): title, all four authors, journal, volume, issue, pages, DOI and PMC id (PMC8889888) match",
+        "verifiedAt": "2026-09-16",
+        "note": "Added for issue #441: rounds_questions.md Q39 quoted an SSRI treatment-response RR of 0.66 attributed to this review (WP-3, 2026-09-02) with no stored span behind the number. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-16",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "ptsd",
+          "ssri",
+          "pharmacotherapy"
+        ],
+        "clerkshipRelevance": "The number behind 'SSRIs work for PTSD': treatment response RR 0.66 (95% CI 0.59-0.74) vs placebo across 8 trials and 1,078 participants, improvement in 58% vs 35%, moderate certainty. Also the reason mirtazapine and amitriptyline get a mention (single small trials, low certainty) and antipsychotics do not.",
+        "noteHistory": [
+          {
+            "date": "2026-09-16",
+            "note": "Added for issue #441: rounds_questions.md Q39 quoted an SSRI treatment-response RR of 0.66 attributed to this review (WP-3, 2026-09-02) with no stored span behind the number. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "issue #441 remediation (PTSD claims on rounds_questions.md carried no stored span)"
           }
         ]
       }
