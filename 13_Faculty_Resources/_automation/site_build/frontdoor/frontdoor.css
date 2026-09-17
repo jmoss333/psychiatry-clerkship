@@ -926,6 +926,42 @@
   .fd-header__actions{grid-column:1/-1;margin-left:0;justify-content:flex-end}
 }
 
+/* ═══ Phone chrome ═══════════════════════════════════════════════════════════
+ * Measured 2026-09-16 on a 375×812 phone opening a topic page: header 154px, capture bar
+ * bottom at 210px, article h1 top at 382px — nearly half the first screen was shell. The
+ * two-row header above stays exactly as the 2026-08 audit pinned it (brand name visible,
+ * search label >= 44px, five 44×44 controls, no collisions). What moves is the tab row: it
+ * docks to the bottom of the viewport as a tab bar, where a thumb reaches it, and it yields
+ * to the reader's fixed action bar — whose `‹` is the same control as the top-of-page back
+ * link, so that link (and the tool reader's toolbar, which only holds it below 1000px) hide
+ * with it. Guarded on :has(.fd-actionbar), never on .fd-reader alone: the Progress page and
+ * the not-found surface render a .fd-reader with NO action bar, and their top back link is
+ * the only way back.
+ * .fd-tabs stays a child of .fd-header in the markup (CLASS-INVENTORY's sticky contract); a
+ * position:fixed descendant of a sticky ancestor is still viewport-fixed as long as no
+ * ancestor transforms, and .fd-header has none. Overlays (search, sheets) are body-mounted
+ * at z-index 90+, above the header's own stacking context, so they still cover the bar.
+ * tests/fd-phone-chrome.test.mjs pins this block; tests/smoke/front-door.spec.js ("phone
+ * chrome …") measures the rendered result.
+ */
+@media (max-width:640px){
+  .fd-header__bar{padding-bottom:8px}
+  .fd-tabs{
+    position:fixed;left:0;right:0;bottom:0;z-index:50;max-width:none;margin:0;
+    padding:0 8px env(safe-area-inset-bottom);
+    background:var(--fd-surface-warm);border-top:1px solid var(--fd-line);box-shadow:var(--fd-shadow-bar);
+  }
+  .fd-tab{flex:1;text-align:center;padding:10px 8px;border-bottom:none;border-top:3px solid transparent}
+  .fd-tab.is-active{border-top-color:var(--fd-teal)}
+  .fd-shell:has(.fd-actionbar) .fd-tabs{display:none}
+  .fd-shell:has(.fd-actionbar) .fd-reader>.fd-reader__back{display:none}
+  .fd-shell:has(.fd-actionbar) .fd-reader__toolbar{display:none}
+  .fd-main{padding-top:12px;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  .fd-article{padding:18px 16px}
+  /* The nudge toast is bottom-anchored too; lift it clear of the tab bar. */
+  .fd-nudge{bottom:calc(74px + env(safe-area-inset-bottom))}
+}
+
 /* ═══ Keyframes ══════════════════════════════════════════════════════════════
  * Verbatim from the prototype, namespaced `fd*` so they cannot collide with the ~21 tools
  * that already ship their own animations into the same document.

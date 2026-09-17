@@ -1613,3 +1613,64 @@ test('One Thing First B4: a block past its TTL is pruned; the planner returns an
   expect(await page.evaluate(() => localStorage.getItem('cw_block_v1'))).toBeNull();
   await expectHealthy(page);
 });
+
+// ---- Phone chrome (2026-09-16) --------------------------------------------------------------------
+// Measured before the change on a 375×812 phone opening ?page=t_mood.md: header 154px, capture
+// bar bottom at 210px, article h1 top at 382px — 47% of the first screen was shell. The tab row
+// now docks to the bottom on phones and yields to the reader's fixed action bar, whose `‹` is
+// the same control as the top-of-page back link; and the On-the-Unit panel opens by default on a
+// handheld. tests/fd-phone-chrome.test.mjs pins the stylesheet; this measures the render.
+
+test('phone chrome: tabs dock to the bottom, yield to the reader action bar, and the first screen belongs to the page', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const tabs = page.locator('.fd-tabs');
+  await expect(tabs).toBeVisible();
+  const tabsBox = await tabs.boundingBox();
+  expect(tabsBox.y + tabsBox.height).toBeCloseTo(PHONE.height, 0);
+  const headerBox = await page.locator('.fd-header').boundingBox();
+  expect(headerBox.height).toBeLessThanOrEqual(120);
+  for (const tab of ['[data-fd-tab="today"]', '[data-fd-tab="path"]', '[data-fd-tab="library"]']) {
+    const box = await page.locator(tab).boundingBox();
+    expect(box.height, `${tab} keeps its touch target`).toBeGreaterThanOrEqual(44);
+  }
+  await page.locator('[data-fd-tab="library"]').click();
+  await expect(page.locator('.fd-library')).toBeVisible();
+  // A bottom bar must not cover the last Library row once the page is scrolled to its end.
+  const lastRow = page.locator('.fd-collink').last();
+  await lastRow.scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const rowBox = await lastRow.boundingBox();
+  const barBox = await tabs.boundingBox();
+  expect(rowBox.y + rowBox.height).toBeLessThanOrEqual(barBox.y + 0.5);
+
+  await page.goto('/?page=t_mood.md');
+  await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+  await expect(page.locator('.fd-actionbar')).toBeVisible();
+  await expect(tabs).toBeHidden();
+  await expect(page.locator('.fd-reader > .fd-reader__back')).toBeHidden();
+  const h1 = await page.locator('.fd-article__h1').boundingBox();
+  expect(h1.y, 'the topic title sits in the top third of a phone screen').toBeLessThanOrEqual(PHONE.height * 0.35);
+  expect(await page.locator('details.practice-panel').evaluate(el => el.open)).toBe(true);
+  // The Progress page renders no action bar, so its top back link is the way back and stays.
+  await page.goto('/?page=__progress__');
+  await expect(page.locator('#pgRoot')).toBeVisible();
+  await expect(page.locator('.fd-reader__back[data-fd-back]')).toBeVisible();
+  await expect(tabs).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('desktop chrome is untouched: tabs in the header, panel closed, top back link visible', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await seedApp(page, testInfo);
+  await page.goto('/?page=t_mood.md');
+  await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+  const tabsBox = await page.locator('.fd-tabs').boundingBox();
+  expect(tabsBox.y).toBeLessThan(120);
+  await expect(page.locator('.fd-reader > .fd-reader__back')).toBeVisible();
+  expect(await page.locator('details.practice-panel').evaluate(el => el.open)).toBe(false);
+  await expect(page.locator('.fd-actionbar')).toBeHidden();
+  await expectHealthy(page);
+});
