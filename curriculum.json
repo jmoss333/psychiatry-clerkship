@@ -282,9 +282,13 @@
         "hitting", "throwing", "restraint", "restraints", "seclusion", "escalating",
         "out of control", "swinging"] },
     { "ref": "exp_consult.md", "sub": "Choice · understand · appreciate · reason",
-      "triggers": ["capacity", "refusing", "refuses", "refused", "declining", "declines",
-        "ama", "against medical advice", "wants to leave", "leave the hospital", "consent",
-        "decisional"] },
+      "triggers": [
+        "ama",
+        "against medical advice",
+        "wants to leave",
+        "leave the hospital",
+        "consent"
+      ] },
     { "ref": "t_sud.md", "sub": "Score · thiamine · escalate",
       "triggers": ["withdrawal", "withdrawing", "dts", "delirium tremens", "detox", "shakes",
         "shaking", "tremor", "tremulous", "ciwa", "cows", "last drink", "seizure",
@@ -334,6 +338,26 @@
     "pharm": "drug primer pharmacology"
   } ,
   "searchAliases": {
+    "capacity.html": [
+      "capacity",
+      "decisional capacity",
+      "refuses medication",
+      "refuses medications",
+      "refusing medication",
+      "refusing medications",
+      "refused medication",
+      "refused medications",
+      "refuses meds",
+      "refusing meds",
+      "refused meds",
+      "declines medication",
+      "declining medication",
+      "declined medication",
+      "medication refusal",
+      "treatment refusal",
+      "refuses treatment",
+      "refusing treatment"
+    ],
     "oral.html": [
       "rounds",
       "rounds prep",

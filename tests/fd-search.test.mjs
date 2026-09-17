@@ -429,6 +429,56 @@ test('"patient refuses medication" surfaces Decisional Capacity', () => {
     `capacity.html missing: ${topRefs('patient refuses medication', 5)}`);
 });
 
+// ---- #429: a medication-refusal query ranks the Decisional Capacity tool FIRST ----------------
+// The 2026-08-31 production audit saw Consult Questions, Delirium, Decisional Capacity. Two
+// mechanisms put the two protocols ahead of the tool: exp_consult.md carried "refuses" (and
+// "capacity", "decisional") as crisis TRIGGERS, and delirium.md's summary contains "patient",
+// which promoted it positionally through the haystack pass. Neither is crisis routing. The
+// consult protocol keeps its AMA / leaving / consent triggers, "patient" is a stopword, and a
+// protocol reached only by a topic word now competes on score (still rendered as a protocol
+// row that opens the safety sheet). The intent mapping is faculty's to ratify (#429).
+
+const REAL_RES_CUR = {
+  ...REAL_CUR,
+  path: { id: 'resident', weekCount: REAL_CUR.learningPaths.resident.weeks.length },
+  weeks: REAL_CUR.learningPaths.resident.weeks,
+};
+const REAL_RES_INDEX = F.fdBuildIndex(REAL_RES_CUR, REAL_META, REAL_TOOLS, REAL_MAN);
+const refsOn = (index, q) => F.fdSearchResults(index, q, SYN, {}).map((r) => r.item.ref);
+
+for (const [label, index] of [['ms3', REAL_INDEX], ['resident', REAL_RES_INDEX]]) {
+  test(`[${label}] every medication-refusal phrasing ranks capacity.html first (#429)`, () => {
+    for (const q of ['patient refuses medication', 'refuses medication', 'patient refusing medications',
+      'refusing meds', 'patient refused medication', 'declines medication']) {
+      const refs = refsOn(index, q);
+      assert.equal(refs[0], 'capacity.html', `${JSON.stringify(q)} -> ${refs.slice(0, 4).join(', ')}`);
+    }
+  });
+
+  test(`[${label}] the consult protocol stays reachable below the tool, as a protocol row (#429)`, () => {
+    const r = F.fdSearchResults(index, 'patient refuses medication', SYN, {});
+    const consult = r.find((x) => x.item.ref === 'exp_consult.md');
+    assert.ok(consult, `exp_consult.md missing: ${r.map((x) => x.item.ref).join(', ')}`);
+    assert.equal(consult.kind, 'protocol', 'it still opens the safety sheet');
+    assert.equal(refsOn(index, 'patient refuses medication').includes('delirium.md'), false,
+      '"patient" alone no longer drags Delirium into a refusal query');
+  });
+
+  test(`[${label}] exact tool title wins; a bare "capacity" still lists the consult sheet second (#429)`, () => {
+    assert.equal(refsOn(index, 'decisional capacity')[0], 'capacity.html');
+    assert.deepEqual(refsOn(index, 'capacity').slice(0, 2), ['capacity.html', 'exp_consult.md']);
+  });
+
+  test(`[${label}] crisis routing is untouched: triggers stay positional (#429)`, () => {
+    assert.equal(F.fdSearchResults(index, 'patient is suicidal', SYN, {})[0].item.ref, 'pg_suicide.md');
+    assert.equal(F.fdSearchResults(index, 'she said she wants to die', SYN, {})[0].kind, 'protocol');
+    assert.equal(F.fdSearchResults(index, 'confused patient', SYN, {})[0].item.ref, 'delirium.md');
+    const ama = F.fdSearchResults(index, 'patient wants to leave ama', SYN, {}).map((x) => x.item.ref);
+    assert.ok(ama.includes('exp_consult.md') && ama.includes('pg_suicide.md'), ama.join(', '));
+    assert.equal(F.fdSearchResults(index, 'delirium', SYN, {})[0].item.ref, 'delirium.md');
+  });
+}
+
 // ---- the collateral a per-word synonym would have caused --------------------------------------
 
 test('"first line treatment" is untouched — the phrase never matches', () => {
