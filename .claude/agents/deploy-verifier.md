@@ -105,8 +105,9 @@ lines.
    (`crisis_block.inject_required_html_file`) and the checker does not list it. A row marked
    `NOT IN shipped_pages.json` is an inconsistency between two governance files: report it, do
    not skip it. `tests/crisis-block.test.mjs`'s `markedSources` map is the authority on which
-   *marker* each source carries, not on membership — it lags the registries by three surfaces
-   (`mse.html`, `therapy_on_the_unit.md`, `pg_interview.md`) at the time of writing.
+   *marker* each source carries; its membership is pinned to the union of the same three
+   registries (mapped through `shipped_pages.json`), so the map and the checker name the
+   same surfaces.
 
    Fetch every row for that site and assert **the shape the path dictates**. `crisis_block.py`
    has two renderers, and they share only the heading text:
