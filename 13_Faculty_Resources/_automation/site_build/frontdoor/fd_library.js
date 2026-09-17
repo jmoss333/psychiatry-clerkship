@@ -37,10 +37,16 @@ function fdCollink(item){
      the dot is the Library's "this is an interactive tool" signal, and these pages reproduce
      nothing (Fresh Eyes Audit A3). */
   var dotCls=(item.kind==='tool'&&!item.rights)?'fd-collink__dot is-tool':'fd-collink__dot';
+  /* The hint is the row's one-line "use this when…" (curriculum.libraryHints, joined by
+     fd_data.js). Emitted after the label and badge so the row's NAME still comes first for
+     assistive tech, and omitted outright -- not as an empty span -- when the item has none,
+     so a read's row renders exactly as it always has. */
+  var hint=item.hint?('<span class="fd-collink__hint">'+fdEsc(item.hint)+'</span>'):'';
   return '<button type="button" class="fd-collink" data-fd-open="'+fdEsc(item.ref)+'">'+
     '<span class="'+dotCls+'"></span>'+
     '<span class="fd-collink__label">'+fdEsc(item.title)+'</span>'+
     governanceBadge(item.governance)+
+    hint+
   '</button>';
 }
 

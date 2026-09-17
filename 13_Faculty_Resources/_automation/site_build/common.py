@@ -801,6 +801,7 @@ SNIPPET_MARKERS = {
     "/*__FD_PATH__*/": "frontdoor/fd_path.js",
     "/*__FD_LIBRARY__*/": "frontdoor/fd_library.js",
     "/*__FD_READER__*/": "frontdoor/fd_reader.js",
+    "/*__FD_GUIDE__*/": "frontdoor/fd_guide.js",
     "/*__FD_SEARCH__*/": "frontdoor/fd_search.js",
     "/*__FD_SHEET__*/": "frontdoor/fd_sheet.js",
     "/*__FD_WIRE__*/": "frontdoor/fd_wire.js",
@@ -1095,3 +1096,104 @@ def emit_service_worker(out_dir, kill=None):
         version, len(entries), total_bytes
     ))
     return version
+
+
+# ---------------------------------------------------------------------------
+# Deploy-preview CSP widening (issue #430)
+#
+# NOTE the module docstring: the `_headers` PAYLOAD stays in build_deploy.py as
+# one statically-inspectable string literal, because
+# tests/faculty-console-handler.test.mjs regex-extracts it from that source to
+# pin the learner CSP. What lives here is the audience-neutral TRANSFORM both
+# builds apply to the already-written file, never the payload itself.
+# ---------------------------------------------------------------------------
+
+PREVIEW_CONTEXT = "deploy-preview"
+
+# The production directive, and the one deploy previews get instead.
+FRAME_SRC_PRODUCTION = "frame-src 'self';"
+FRAME_SRC_PREVIEW = "frame-src 'self' https://app.netlify.com;"
+
+_CSP_LINE_RE = re.compile(r"^[ \t]*Content-Security-Policy:.*$", re.MULTILINE)
+
+
+def preview_headers(text, context):
+    """Widen `frame-src` for the Netlify Drawer, on deploy previews only (#430).
+
+    Why: on a `deploy-preview` build Netlify injects
+    `<script async src="/.netlify/scripts/cdp">` into every served HTML page.
+    The script is same-origin, so it satisfies `script-src 'self'`, but the
+    drawer it opens frames `https://app.netlify.com/`, which the site's
+    `frame-src 'self'` blocks -- every preview page logged "Framing
+    https://app.netlify.com/ violates the site's frame-src 'self' Content
+    Security Policy directive", console noise that hides real preview-only
+    failures. Production pages get no such injection and need no such
+    allowance, so the fix is scoped to the one build context that has the
+    problem.
+
+    Netlify sets `CONTEXT` to `production`, `deploy-preview` or `branch-deploy`.
+    For anything but `deploy-preview` -- including an empty/absent value, which
+    is what a local build sees -- the text is returned UNCHANGED, byte for
+    byte: the production CSP is never weakened by this function.
+
+    The rewrite touches exactly one directive on exactly one line: the first
+    `Content-Security-Policy:` line's single `frame-src 'self';`. Every other
+    directive, every other header, and the Cache-Control blocks are untouched.
+    Idempotent -- a line already carrying the widened directive is left alone,
+    so running the transform twice (the resident build re-applies it to a file
+    inherited from the MS3 build) yields the same output.
+
+    Raises ValueError on a preview build whose CSP line carries neither form.
+    A silent no-op there would quietly restore #430 the next time the
+    `_headers` literal's frame-src is edited; failing loudly in the one context
+    that is affected makes the drift impossible to miss and cannot reach
+    production.
+    """
+    if context != PREVIEW_CONTEXT:
+        return text
+
+    match = _CSP_LINE_RE.search(text)
+    if not match:
+        raise ValueError(
+            "preview_headers: no Content-Security-Policy line in the _headers "
+            "payload -- the deploy-preview frame-src widening (#430) cannot apply"
+        )
+
+    line = match.group(0)
+    if FRAME_SRC_PREVIEW in line:
+        return text                      # already widened; idempotent
+    if FRAME_SRC_PRODUCTION not in line:
+        raise ValueError(
+            "preview_headers: the Content-Security-Policy line carries neither "
+            "%r nor %r -- the _headers frame-src directive changed shape and the "
+            "deploy-preview widening (#430) needs updating with it"
+            % (FRAME_SRC_PRODUCTION, FRAME_SRC_PREVIEW)
+        )
+
+    widened = line.replace(FRAME_SRC_PRODUCTION, FRAME_SRC_PREVIEW, 1)
+    return text[: match.start()] + widened + text[match.end() :]
+
+
+def apply_preview_headers(out_dir, context=None, label=""):
+    """Run `preview_headers()` over an already-written `<out_dir>/_headers`.
+
+    Read-transform-compare-write: the file is rewritten only when the transform
+    actually changed it, so a production build leaves it byte-identical and a
+    resident build that inherited an already-widened file from the MS3 build
+    writes nothing. Returns True when the file was rewritten.
+    """
+    if context is None:
+        context = os.environ.get("CONTEXT", "")
+    path = os.path.join(out_dir, "_headers")
+    with open(path, encoding="utf-8") as fh:
+        original = fh.read()
+    updated = preview_headers(original, context)
+    if updated == original:
+        return False
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(updated)
+    print(
+        "deploy-preview: frame-src widened for the Netlify Drawer "
+        "(https://app.netlify.com)%s" % ((" - " + label) if label else "")
+    )
+    return True

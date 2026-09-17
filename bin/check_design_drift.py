@@ -77,6 +77,8 @@ import json
 import os
 import re
 import sys
+import tempfile
+from pathlib import Path
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILD = os.path.join(ROOT, "13_Faculty_Resources", "_automation", "site_build")
@@ -191,6 +193,56 @@ def surfaces() -> list[tuple[str, str]]:
 BUILD_DIRS = [("ms3", os.path.join(ROOT, "_build", "ms3")),
               ("res", os.path.join(ROOT, "_build", "res"))]
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _build_freshness import Undeterminable  # noqa: E402
+from _build_freshness import stale_reason as _stale_reason  # noqa: E402
+
+REBUILD = "bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh {site}"
+
+
+def stale_inputs() -> list[Path]:
+    """Everything whose edit invalidates a reading of the BUILT pages.
+
+    The first five are hard-coded, so a typo RAISES rather than being skipped -- a freshness
+    check that cannot resolve its own inputs would report "fresh" and retire the contract in
+    silence. The tool sources are derived from shipped_pages.json (ADR-002) and filtered for
+    existence the same way surfaces() filters them: a derived path cannot carry a typo, and a
+    tool that stops shipping stops mattering here on the same commit.
+    """
+    core = [Path(WARM), Path(FRONTDOOR), Path(SPA),
+            Path(os.path.join(BUILD, "build_deploy.py")),
+            Path(os.path.join(BUILD, "resident_section.py")),
+            Path(os.path.join(BUILD, "common.py"))]
+    return core + [Path(path) for _, path in tool_sources() if os.path.exists(path)]
+
+
+_SKIPS: dict[str, str] | None = None
+
+
+def build_skips() -> dict[str, str]:
+    """site -> why its built pages cannot be read, for every site that cannot be read.
+
+    An absent OR stale _build/ both land here. Absent used to make every build-reading rule
+    iterate an empty list and print a clean bill; stale used to make them report findings
+    against pages the current source no longer emits -- 22 of them on 2026-09-16, from a
+    build 13 days old, every one fabricated. Neither is a fact about the design system.
+    """
+    global _SKIPS
+    if _SKIPS is None:
+        inputs = stale_inputs()
+        _SKIPS = {}
+        for site, _ in BUILD_DIRS:
+            reason = _stale_reason(site, inputs, repo=Path(ROOT))
+            if reason:
+                _SKIPS[site] = reason
+    return _SKIPS
+
+
+def readable_build_dirs() -> list[tuple[str, str]]:
+    """BUILD_DIRS minus the sites whose output would be a lie to read."""
+    skips = build_skips()
+    return [(site, base) for site, base in BUILD_DIRS if site not in skips]
+
 
 def shipped() -> list[tuple[str, str]]:
     """SHIPPED pages — what a learner's browser actually parses. C4 reads these, not the sources.
@@ -203,7 +255,7 @@ def shipped() -> list[tuple[str, str]]:
     Auditing sources cannot see that; auditing the build can. Same principle as ADR-002.
     """
     out = []
-    for site, base in BUILD_DIRS:
+    for site, base in readable_build_dirs():
         if not os.path.isdir(base):
             continue
         index = os.path.join(base, "index.html")
@@ -305,7 +357,7 @@ def built_markdown() -> list[tuple[str, str]]:
     these as a markdown blockquote rather than the inline-styled section, but a future
     injection could land raw HTML here, and C6 is cheap."""
     out = []
-    for site, base in BUILD_DIRS:
+    for site, base in readable_build_dirs():
         content = os.path.join(base, "content")
         if not os.path.isdir(content):
             continue
@@ -761,6 +813,38 @@ def self_test() -> int:
     expect("R does not invent a breakpoint from a control size",
            measure_css(".a{min-width:44px;max-width:300px}")["nonstandard_breakpoints"] == [])
 
+    # The _build/ freshness guard. Both of its failure modes shipped here: an absent build
+    # made every shipped-page rule iterate an empty list and print "design system clean",
+    # and a 13-day-old build produced 22 findings against pages the source no longer emits.
+    # Neither is a fact about the design system, so neither may reach a caller as one.
+    with tempfile.TemporaryDirectory() as tmp:
+        fake, warm = Path(tmp), [Path(WARM)]
+        expect("F absent build is reported, not quietly skipped",
+               _stale_reason("t", warm, build_root=fake) == "_build/t is not built")
+        stamp = fake / "index.html"
+        stamp.write_text("built", encoding="utf-8")
+        os.utime(stamp, (0, 0))
+        stale = _stale_reason("t", warm, build_root=fake)
+        expect("F build older than its inputs is reported stale, not read",
+               bool(stale) and "stale" in stale)
+        os.utime(stamp, None)
+        expect("F build newer than its inputs reads clean, so the rules RUN",
+               _stale_reason("t", warm, build_root=fake) is None)
+        try:
+            _stale_reason("t", [Path(ROOT) / "no-such-input.css"], build_root=fake)
+            expect("F a declared input that does not exist raises", False)
+        except Undeterminable:
+            expect("F a declared input that does not exist raises", True)
+    expect("F this checker's own declared inputs all resolve",
+           all(path.exists() for path in stale_inputs()))
+    # Wiring, not just the predicate: the guard is useless if a build reader goes back to
+    # iterating BUILD_DIRS directly. Vacuous on a clean tree, a real catch on a stale one --
+    # which is the case that cost the cycle.
+    _readable = {site for site, _ in readable_build_dirs()}
+    expect("F the build readers read only sites the freshness guard cleared",
+           all(label.split(":")[0] in _readable for label, _ in shipped())
+           and all(label.split(":")[0] in _readable for label, _ in built_markdown()))
+
     failed = [label for label, ok in checks if not ok]
     for label, ok in checks:
         print(f"  {'ok  ' if ok else 'FAIL'}  {label}")
@@ -784,6 +868,10 @@ def main() -> int:
     baseline = json.loads(read(BASELINE)) if os.path.exists(BASELINE) else {}
     fails: list[str] = []
     notes: list[str] = []
+
+    for site, reason in sorted(build_skips().items()):
+        notes.append(f"BUILD NOT READ  {reason} — the shipped-page rules (C4, C6, C8) did "
+                     f"not run for {site}. Rebuild: " + REBUILD.format(site=site))
 
     c1_role_rule(fails)
     c2_no_raw_colour(fails)
@@ -820,6 +908,15 @@ def main() -> int:
         for f in fails:
             print("  - " + f + "\n")
         return 1
+    skipped = build_skips()
+    if skipped:
+        # Partial coverage must never render as a clean bill: the source rules did run, the
+        # shipped-page rules did not, and saying "clean" here is how absence becomes success
+        # (docs/SILENT_SHRINK_CHECKLIST.md D2/D4).
+        print(f"PARTIAL — {len(surfaces())} authoring surface(s) clean; the shipped-page "
+              f"rules did NOT run for {', '.join(sorted(skipped))} (see note above). "
+              f"{len(shipped())} shipped page(s) were read.")
+        return 0
     print(f"OK — design system clean across {len(surfaces())} authoring surface(s) and "
           f"{len(shipped())} shipped page(s); ratchets at or below baseline.")
     return 0

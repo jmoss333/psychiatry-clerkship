@@ -65,12 +65,18 @@ cd tests/smoke && npm ci && npx playwright test
 - `bin/verify.sh` is a **superset** of `ci.yml`, not a mirror: `bin/check-verify-coverage.py`
   enforces that every CI step has a local equivalent (or a recorded `ALLOWED` exemption), but
   verify.sh may run more. `bin/verify_spans.py` and `bin/check_qbank_coherence.py` run there and
-  not in CI — and both **exit 1 when they flag rows** (`return 1 if n_para else 0`,
-  `return 1 if out else 0`), so since verify.sh's `step` treats any non-zero as FAIL and verify.sh
-  is the pre-push hook, either one **can block a push**. They look harmless today only because
-  each currently finds nothing. Read their output; a PASS line is not "nothing found", and
-  verify_spans.py in particular prints "0 clean, 0 flagged, N uncached" and exits 0 when its cache
-  path is wrong — a silent pass, not a clean bill.
+  not in CI, and both are **ratchet gates** (`docs/RATCHETS.md`): the finding counts each one
+  reports (flagged rows, TRUNCATED and EDITED sentences, uncached rows; contradicting pairs)
+  are pinned in a committed `bin/*_baseline.json` beside the tool, a rise exits 1, a fall
+  prints a note, and "could not check" (no baseline, a baseline missing a key, nothing
+  audited) exits 2
+  — never 0. Since verify.sh's `step` treats any non-zero as FAIL and verify.sh is the pre-push
+  hook, either one **blocks a push**. Until 2026-09-16 the span audit gated REWORDED sentences
+  only, so the pott-2022 defect it was built for (a clause deleted MID-sentence classifies as
+  EDITED) exited 0, and a wrong cache path printed "0 clean, 0 flagged, 49 uncached" and passed;
+  both are red now (`sentences_edited` and `rows_uncached` are pinned). Read the flagged rows the
+  tool prints — a PASS line means "at or below baseline", not "nothing found". Lower a pin only
+  after a reviewed reduction: `python3 bin/<tool>.py --update-baseline`, JSON diff in the same PR.
 - **A local gate failing while CI is green usually means bash 3.2**, not your change: the Mac's
   `/bin/bash` is 3.2.57 and CI's is >= 4.4. Under `set -u`, bash < 4.4 treats `"${ARR[@]}"` on an
   empty array as unbound and aborts with an empty message (PR #469). Write
@@ -156,9 +162,12 @@ cd tests/smoke && npm ci && npx playwright test
   task is not listed. Report-only, exits 0, not a gate.
 - `docs/SILENT_SHRINK_CHECKLIST.md` — the failure mode every `bin/` tool exists for, as a
   checklist: **a check reporting success over a set smaller than the one it claims to check.**
-  Twelve entries, each earned by a defect that actually shipped here (#480, #517, #534, #539,
-  #545, #548, the 2026-08-21 annotation pass) and none of them caught by a schema or a type,
-  because each item was individually valid and the corpus was jointly wrong. Run it when you
+  Thirteen entries, each earned by a defect that actually shipped here (#480, #517, #534, #539,
+  #545, #548, #645, the 2026-08-21 annotation pass) and none of them caught by a schema or a
+  type, because each item was individually valid and the corpus was jointly wrong. §D4 is the
+  shape inverted — **no check at all rendering as coverage**: CI's unit is a pull-request head
+  or a push tip, never every commit, so `61beb3b` (pushed to `main`, not the tip of its push)
+  carries 0 check runs, turned `main` red, and read as the *next* commit's fault. Run it when you
   write or review a guard, and use §F to answer it by BREAKING the check rather than by
   reasoning about it — including the step people skip, reverting the fix to prove the fix is
   what made the difference. Only §D2 is mechanised (`bin/check_vacuity.py`); the rest is
@@ -177,7 +186,10 @@ cd tests/smoke && npm ci && npx playwright test
   the run must change a file (3), the task's own count must **move** (4 — a task measured by a
   number the work cannot move reopens the same empty PR every night; it happened), no changed
   path may be the attestation ledger, a clinical registry or LFS media (5), and an edit to an
-  attested page must be announced in the PR body — the ledger stays byte-identical, and
+  attested page must be announced in the PR body. It also writes an **`outcome`** output on
+  every exit path (`did-work` · `nothing-to-do` · `blocked` · `dry-run` · `no-commit`) —
+  **three of the five are exit 0**, so a green run does not mean it did anything; the exit code
+  says which guard refused, the outcome says what the night accomplished — the ledger stays byte-identical, and
   `post_edit_validate.py` catches that only for Edit/Write/MultiEdit while these scripts write
   through Bash. Read `_automation/AUTONOMOUS_QUEUE_RUNNER.md` before changing any of it; the
   workflow is enrolled in `validate_scheduled_workflows.py`, so editing it means recomputing its
@@ -296,6 +308,28 @@ cd tests/smoke && npm ci && npx playwright test
   retire the contract silently. Note such assertions never run on Netlify or in CI: `node --test`
   runs before **both** `build_and_check.sh` invocations and `_build/` starts absent, so a
   build-output test is a local-only contract — do not rely on CI to catch what it pins.
+  The same rule binds the `bin/` checkers that read the built sites: `bin/_build_freshness.py`
+  is the Python twin of `tests/_build_freshness.mjs`, and each caller declares only its own
+  inputs. Both of its failure modes have shipped here. **Absent** made `check_design_drift.py`
+  iterate an empty list and print "design system clean" — a vacuous pass. **Stale** is worse and
+  cost two days: a `_build/` 13 days old produced 22 findings (10 C4, 12 C8) against pages the
+  source no longer emitted, every one fabricated, and a comparison against clean `main`
+  "confirmed" them because both sides read the same stale tree. A checker that reads `_build/`
+  must therefore report which sites it could not read and must NOT summarise as clean what it
+  never opened — `check_design_drift.py` prints `PARTIAL` and names the sites; guard on
+  freshness, not existence, and rebuild before believing any finding against a built page.
+  The sibling rule for a test that **spawns** a build (rather than reading `_build/`): guard it
+  with `lfsStubReason()` from `tests/_lfs_media.mjs` (JS) or `worktree_stub_reason()` in
+  `site_build/check_lfs_media.py` (Python). Without git-lfs installed there is no smudge filter,
+  so every LFS-tracked file checks out AS its ~133-byte pointer and `build_deploy.py` aborts in
+  `welcome_compass.require_real_files()` — "MS3 Compass required files are invalid: <an .mp4>",
+  a red no source edit can clear, which is what made three `ci-build-contract.test.mjs` cases and
+  one `evidence_registry` case fail in every sandbox. CI never saw it: `is_soft_context()` already
+  exempts the `lfs:false` checkout and deploy previews, so the guard returns null there and the
+  contracts still run. **The predicate is defined once**, next to the deploy gate that enforces it;
+  do not re-derive "is a pointer stub" in a new place. It returns null — meaning RUN — for every
+  answer except a confirmed stub in a hard context, including "cannot tell": a skip guard that
+  errs permissive retires real contracts while the suite still reads green.
 - **THE LIBRARY TEACHES ADMINISTRATION; IT DOES NOT REPRODUCE INSTRUMENTS.** Same standing as the
   dose-literal rule. Teach *how to give* an instrument — the elicitation, the confounds, what the
   score does and does not license, what a negative result fails to rule out — and link to the
@@ -321,3 +355,20 @@ cd tests/smoke && npm ci && npx playwright test
   pinned page drops it or points at a copy hosted here. `bin/check_instrument_links.py` re-checks
   the far end by hand; it is not a gate.
   Audit and current disposition: `docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md`.
+- **SafetyKit governance: high-risk clinical pages cannot transition to pending.** `curriculum.json`
+  defines a `safetyKit` array of page ledger keys for high-risk clinical safety surfaces. These items
+  **must maintain `facultyReview.status = 'reviewed'`** in `reviewed.json` and `topic_meta.json` —
+  they cannot be transitioned to `pending` status even when content is enhanced. Current safetyKit
+  items (2026-09-14): `pg_suicide.md`, `agitation.md`, `exp_consult.md`, `t_sud.md`, `delirium.md`.
+  **Rationale:** High-risk clinical teaching on suicide, agitation, capacity, withdrawal, and
+  delirium requires permanent faculty review attestation. These pages are not draft content — they
+  are complete teaching surfaces where learners assess and act on clinical risk. Staying `reviewed`
+  ensures the entire page (not just new additions) carries ongoing faculty accountability.
+  **When adding resources or citations to a safetyKit item:** Enhance the content freely — add
+  evidence links, media, teaching materials, media resources — but leave `facultyReview.status`
+  at `reviewed` and update `reviewed.json` and `topic_meta.json` only if you are changing the
+  review date or reviewer. This is not a gate — it is a ledger rule. `build_and_check.sh` enforces
+  it via `validate_curriculum.py`, which hard-fails the build if any safetyKit item's
+  `facultyReview.status` is not `reviewed`. If you attempt to transition a safetyKit item and the
+  build fails with "safetyKit <ledger-key>: facultyReview.status must be 'reviewed'", revert the
+  status in both ledgers and push again.

@@ -426,6 +426,9 @@
   #fdCaptureMount:empty{display:none}
   #fdCaptureMount .fd-capture-launch{width:min(230px,100%);margin:0}
   @media(max-width:999px){#fdCaptureMount .fd-capture-launch{width:min(210px,100%)}}
+  /* Phone chrome (see the front-door stylesheet's block of that name): the launcher keeps its
+     44px target and gives up only the gap above it, so the first phone screen has more page. */
+  @media(max-width:640px){#fdCaptureMount{margin-top:0}}
   .cap-disclose{font-size:var(--fd-font-xs);color:var(--text-light);margin:8px 0 0}
   .cap-acts{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 0}
   .cap-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:8px 14px;font:inherit;font-size:var(--fd-font-sm);font-weight:600;cursor:pointer}
@@ -649,6 +652,7 @@
     groups.forEach(function(g){
       var wrap=document.createElement('section'); wrap.className='sec-c open';
       var hh=document.createElement('h2'); hh.className='sec-h';
+      if(g.h2.id)hh.id=g.h2.id;
       var btn=document.createElement('button'); btn.type='button'; btn.setAttribute('aria-expanded','true');
       btn.innerHTML='<span class="sec-chev" aria-hidden="true">▸</span>';
       var tt=document.createElement('span'); tt.textContent=g.h2.textContent; btn.appendChild(tt);
@@ -1166,11 +1170,14 @@
     if(refs.length)html+='<div class="practice-section-title">Official forms</div><div class="practice-actions">'+refs.join('')+'</div><p class="practice-muted">Official form and training \u2014 the instrument itself is not reproduced here.</p>';
     return html;
   }
-  function buildTpl(m,file){
+  function buildTpl(m,file,opts){
     if(!hasPracticeTpl(m))return '';
     /* D-1: the summary is byte-identical to what it has always rendered -- the visual
-       baselines screenshot a collapsed panel, and everything WP-D changes is inside the body. */
-    var h='<details class="topic-tpl practice-panel">';
+       baselines screenshot a collapsed panel, and everything WP-D changes is inside the body.
+       opts.open===true is the one caller-decided exception: the reader passes it on a handheld
+       viewport (fdHandheld), where this panel IS the point-of-need content and a closed
+       disclosure hid it behind a tap on every topic page. Desktop stays closed and byte-identical. */
+    var h='<details class="topic-tpl practice-panel"'+((opts&&opts.open===true)?' open':'')+'>';
     h+='<summary class="practice-summary"><span class="practice-tab">Ward</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
     h+='<div class="practice-body">';
     h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; h+='</div>';
@@ -1196,6 +1203,12 @@
     h+='</div></div></details>'; return h;
   }
   /* ---- end practice panel ---- */
+  /* "Handheld" is the shell's own not-desktop threshold: the rails and the desktop action pair
+     appear at >=1000px (the front-door stylesheet's one desktop breakpoint), so anything
+     narrower is where the fixed action bar shows and where the practice panel opens by default.
+     matchMedia rather than innerWidth so the answer can never disagree with the stylesheet;
+     a browser with no matchMedia (or a throwing one) reads as desktop, the closed default. */
+  function fdHandheld(){ try{ return !!(window.matchMedia&&window.matchMedia('(max-width:999px)').matches); }catch(_){ return false; } }
   function pageTitle(it){ return it ? (it.t+' \u2014 MS3 Psychiatry Clerkship') : 'Inpatient Psychiatry \u2014 MS3 Clerkship'; }
   function setLearnerTitle(item){ if(!facultyPreviewRequest)document.title=pageTitle(item); }
   function fdSpecialItemForState(state){
@@ -1312,7 +1325,7 @@
       var _governance=document.createElement('div'); _governance.innerHTML=renderGovernanceNotice(item); if(_governance.firstChild) _insertAfterTitle(_governance.firstChild);
       var _ledger=document.createElement('div'); _ledger.innerHTML=buildReviewLedger(item.f); if(_ledger.firstChild) _insertAfterTitle(_ledger.firstChild);
       var _m=TOPIC_META&&TOPIC_META[item.f];
-      if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
+      if(_m){ var _html=buildTpl(_m, item.f,{open:fdHandheld()}); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
       makeCollapsible(contentEl); enhanceTables(contentEl); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
@@ -1670,6 +1683,8 @@
 
   /*__FD_READER__*/
 
+  /*__FD_GUIDE__*/
+
   /*__FD_SEARCH__*/
 
   /*__FD_SHEET__*/
@@ -1969,8 +1984,13 @@
     var block=blockLoad(live.nowMs);
     if(!block) return;
     var status=fdBlockStatus(block, live.done);
-    if(status.next) fdOpenBlockStep(status.next);
-    else { blockClear(); specialRefresh(); }
+    if(!status.next){ blockClear(); specialRefresh(); return; }
+    var sess=null;
+    try{ sess=(typeof sessLoad==='function')?sessLoad('qbank'):null; }catch(_){ sess=null; }
+    /* An interrupted question set resumes as the block's step; anything else starts fresh. */
+    var resume=fdBlockResumeSearch(status.next, sess);
+    if(resume) fdOpenRef(status.next.ref, resume);
+    else fdOpenBlockStep(status.next);
   }
   function fdLiveState(state){
     var out=fdClone(state||{}), raw=progLoad(), s=srsState();
@@ -2067,18 +2087,57 @@
   }
 
   function fdTodayLive(state){
-    var html=fdToday(FD_INDEX,fdLiveState(state));
-    var sess=null;
+    var live=fdLiveState(state), sess=null;
     try{ sess=(typeof sessLoad==='function')?sessLoad('qbank'):null; }catch(_){ sess=null; }
-    var inserted=fdDueRow(dueBreakdown())+fdResumeCard(sess);
+    var due=dueBreakdown();
+    var weekN=(typeof live.week==='number'&&!isNaN(live.week))?live.week:null;
+    var wItems=weekN===null?[]:fdItemsForWeek(FD_INDEX,weekN);
+    var hasWeek=weekN!==null&&!!fdFindWeek(FD_INDEX,weekN);
+    var weekDone=fdProgressForWeek(FD_INDEX,live,live.week);
+    var progress=fdTodayProgress(wItems,weekDone);
+    var lastRead=fdTodayLastRead(LS('cw_last'),wItems,progress,weekDone);
     /* The timed block sits with the other device-store rows. In a faculty preview there is no
        learner session to plan for, so the card is omitted with the capture launcher. */
+    var liveBlock=null, blockStatus=null, blockHtml='', captureHtml='';
     if(!facultyPreviewRequest){
-      var liveForBlock=fdLiveState(state), liveBlock=blockLoad(liveForBlock.nowMs);
-      inserted+=fdBlockCard(liveBlock?null:fdBlockPlan(FD_INDEX,liveForBlock,fdBlockMinutes,fdBlockInputs()),fdBlockMinutes,liveBlock,liveForBlock.done);
+      var liveForBlock=live;
+      liveBlock=blockLoad(liveForBlock.nowMs);
+      blockStatus=liveBlock?fdBlockStatus(liveBlock,liveForBlock.done):null;
     }
-    if(!facultyPreviewRequest)inserted+=fdCaptureTriage(fdCaptureRows());
-    return html.replace('<div class="fd-today__main">','<div class="fd-today__main">'+inserted);
+    /* One Thing First: exactly one primary action, chosen by the pure picker in fd_today.js
+       from inputs this function already had. The pure renderer is told who won so it can demote
+       its own Continue card; the rows that did not win render below the secondary heading in a
+       fixed order, then the week list, daily pick, progress card and quick tools as before. */
+    var primary=fdTodayPrimary({
+      capsuleLeft:fdCapsuleLeft(sess),
+      blockNext:blockStatus?blockStatus.next:null,
+      dueTotal:fdDueCount(due),
+      weekProgress:progress,
+      hasWeek:hasWeek,
+      lastRead:lastRead
+    });
+    live.primaryKind=primary.kind;
+    var html=fdToday(FD_INDEX,live);
+    if(!facultyPreviewRequest){
+      var blockResume=(blockStatus&&sess&&fdBlockResumeSearch(blockStatus.next,sess))?{left:fdCapsuleLeft(sess),n:blockStatus.next.n}:null;
+      blockHtml=fdBlockCard(liveBlock?null:fdBlockPlan(FD_INDEX,liveForBlock,fdBlockMinutes,fdBlockInputs()),fdBlockMinutes,liveBlock,liveForBlock.done,{primary:primary.kind==='block',resume:blockResume});
+      captureHtml=fdCaptureTriage(fdCaptureRows());
+    }
+    var cards={
+      block:blockHtml,
+      due:fdDueRow(due,primary.kind==='due'),
+      resume:fdResumeCard(sess,primary.kind==='resume',blockStatus),
+      read:fdLastReadRow(lastRead,primary.kind==='read')
+    };
+    var order=['block','due','resume','read'], lead='', also='';
+    for(var i=0;i<order.length;i++){
+      if(order[i]===primary.kind) lead='<div class="fd-primary">'+cards[order[i]]+'</div>';
+      else also+=cards[order[i]];
+    }
+    also+=captureHtml;
+    var rest=fdTodayWhy()+'<h2 class="fd-sectionhead fd-also">Also today</h2>'+also;
+    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+lead+rest);
+    return html.replace(FD_TODAY_LEAD_END,rest);
   }
 
   function fdRenderCapture(state){
@@ -2149,12 +2208,18 @@
     if(control)control.setAttribute('aria-pressed',expanded?'true':'false');
   }
 
+  var fdGuideSession=null, fdGuideBookmark=null, fdGuideReturning=false;
+  function fdDisposeGuide(){
+    if(fdGuideSession)fdGuideSession.destroy();
+    fdGuideSession=null;
+  }
+
   function fdRender(state,detail){
     var app=state.screen==='app',hydrate=detail&&detail.kind==='hydrate';
     fdPrepareRoute(state,detail);
     fdAdoptSpecialContext(state);
     if(!hydrate&&fdChromeMount)fdChromeMount.innerHTML=app?fdHeader(fdLiveState(state)):'';
-    if(contentEl){ contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
+    if(contentEl){ fdDisposeGuide(); contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
     fdPatchToolLayout(state);
     fdRenderCapture(state);
     fdRenderOverlays(state);
@@ -2209,7 +2274,7 @@
       if(surfaces.completion)fdPatchCompletion(state);
     } else if(surfaces.base||surfaces.completion){
       fdAdoptSpecialContext(state);
-      if(contentEl){contentEl.className='fd-main';contentEl.innerHTML=fdBaseMarkup(state);}
+      if(contentEl){fdDisposeGuide();contentEl.className='fd-main';contentEl.innerHTML=fdBaseMarkup(state);}
     }
     if(surfaces.layout)fdPatchToolLayout(state);
     fdRenderOverlays(state);
@@ -2234,6 +2299,7 @@
 
   function fdOpenResourceLive(ref,opts){
     var options=opts||{}, item=(FD_INDEX.byRef||{})[ref]||{title:ref,kind:/\.html$/.test(ref)?'tool':'read'};
+    if(!facultyPreviewRequest)fdDisposeGuide();
     /* The audited preview path delegates to show(), which must see the previous currentItem so its
        same-tool reload guard cannot suppress the initial preflight. It also must not mutate the
        learner's bookmark. Outside preview, preserve the existing immediate route context/write. */
@@ -2254,7 +2320,7 @@
       signal:options.signal,
       parseMarkdown:function(markdown){
         var html=marked.parse(markdown), meta=TOPIC_META&&TOPIC_META[ref];
-        return (meta?buildTpl(meta,ref):'')+html;
+        return (meta?buildTpl(meta,ref,{open:fdHandheld()}):'')+html;
       },
       facultyPreviewMatches:facultyPreviewMatchesItem,
       facultyPreviewLock:showFacultyPreviewLockNotice,
@@ -2272,6 +2338,44 @@
         }
         if(!facultyPreviewRequest)setLearnerTitle(currentItem);
         announceRoute(currentItem); focusGovernanceNotice({fromHistory:!!options.fromHistory});
+        if(!facultyPreviewRequest&&body&&!fdIsTool(ref)){
+          fdGuideSession=fdGuideMount(body,{
+            ref:ref,
+            isPractice:function(target){return fdIsTool(target)&&!!((FD_INDEX.byRef||{})[target]||(FD_INDEX.known||{})[target]);},
+            onPractice:function(bookmark){fdGuideBookmark=bookmark;fdGuideReturning=false;}
+          });
+          if(fdGuideSession){
+            var guide=fdGuideSession, bookmark=fdGuideBookmark;
+            var returning=bookmark&&bookmark.ref===ref&&(fdGuideReturning||options.fromHistory);
+            var arrivalSearch=options.search===undefined?location.search:options.search;
+            if(!returning)fdGuideBookmark=null;
+            /* Initial resources mount behind the edition startup gate. Their promise must
+               settle before focus/scroll can reach the now-visible DOM. Guard the next frame
+               so an abandoned load cannot steal focus from the next route. */
+            requestAnimationFrame(function(){
+              /* The initial load's isCurrent lease ends when its promise settles; identity
+                 of the live mount is the authority for this post-mount work. */
+              if(fdGuideSession!==guide||!document.documentElement.contains(body)||
+                  !currentItem||currentItem.f!==ref)return;
+              focusGovernanceNotice({fromHistory:!!options.fromHistory});
+              var canFocus=!contentEl.querySelector('.governance-notice.pending-high');
+              if(returning){guide.arrive(bookmark.search,false);guide.restore(bookmark,canFocus);}
+              else guide.arrive(arrivalSearch,canFocus);
+            });
+          }
+          fdGuideReturning=false;
+        }else if(!facultyPreviewRequest&&fdGuideBookmark&&fdIsTool(ref)){
+          var toolbar=contentEl.querySelector('.fd-reader__toolbar');
+          if(toolbar){
+            var returnGuide=document.createElement('button');returnGuide.type='button';
+            returnGuide.className='fd-guide-return fd-btn fd-btn--ghost';returnGuide.textContent='Return to guide';
+            returnGuide.onclick=function(){
+              if(!fdGuideBookmark)return;
+              fdGuideReturning=true;fdOpenRef(fdGuideBookmark.ref,fdGuideBookmark.search);
+            };
+            toolbar.insertBefore(returnGuide,toolbar.lastChild);
+          }
+        }
       }
       return ok;
     });
@@ -2535,7 +2639,6 @@
       var fdPrereleaseRoute=new URLSearchParams(location.search);
       var fdPrereleaseRef=fdPrereleaseRoute.get('page')||fdPrereleaseRoute.get('tool')||'';
       if(fdPrereleaseRef&&!fdIsLegacyRouteAlias(fdPrereleaseRef)&&!fdPrereleaseStored.role){
-        fdPrereleaseStored.role=(FD_ROLES[0]&&FD_ROLES[0].id)||'reader';
         fdPrereleaseStored.browsing=true;
       }
       var fdPrereleaseInitial=fdResolveState(location.href,fdPrereleaseStored);
@@ -2599,8 +2702,9 @@
     if(fdFindWeek(FD_INDEX,fdWeek))fdStored.week=fdWeek;
     fdRouteParams=new URLSearchParams(location.search);
     fdIncomingRef=fdRouteParams.get('page')||fdRouteParams.get('tool')||'';
+    /* A deep-link visitor with no stored role is a GUEST: fdResolveState renders the resource
+       and assigns no role, so the next plain visit runs the wizard from step 1 (2026-09-16). */
     if(fdIncomingRef&&!fdIsLegacyRouteAlias(fdIncomingRef)&&!fdStored.role){
-      fdStored.role=(FD_ROLES[0]&&FD_ROLES[0].id)||'reader';
       fdStored.browsing=true;
     }
     fdInitial=fdResolveState(location.href,fdStored);
@@ -2628,6 +2732,7 @@
   }
   fdEditionStartupTeardowns.push(function(){
     if(fdController&&fdController.destroy)fdController.destroy();
+    fdDisposeGuide();
   });
   if(!fdEditionTrackListener(window,'resize',refreshTableScrollCues,false)||
      !fdEditionTrackListener(document,'click',fdFacultyPreviewDocumentClick,true)||

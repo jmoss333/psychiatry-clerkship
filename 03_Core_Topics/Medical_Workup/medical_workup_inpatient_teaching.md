@@ -33,4 +33,76 @@
 
 **Pair with** the Differential Diagnosis scaffolds, Delirium, Neurocognitive (Dementia), and Hyperthermia & Toxidromes.
 
+---
+
+## Further Reading & Evidence-Based Resources
+
+### Medical Workup Standards & Guidelines
+
+**APA Practice Guideline for Schizophrenia (2020)**
+Keepers GA, et al. Specifies the core medical workup for first-episode psychosis, including labs, vital signs, and neuroimaging thresholds. Available via the American Psychiatric Association.
+
+**First-Episode Psychosis Medical Workup: Evidence-Informed Recommendations (2020)**
+Skikic M, et al. *Child Adolesc Psychiatr Clin N Am*. 2020. Defines a tiered approach: Tier 1 (routine for all), Tier 2 (clinically guided), Tier 3 (red-flag driven). Low diagnostic yield of routine neuroimaging in neurologically intact first-episode patients is a key takeaway.
+DOI: 10.1016/j.chc.2019.08.010
+
+### Medical Mimics: Landmark Resources
+
+**Autoimmune Encephalitis (Anti-NMDA Receptor)**
+Consider when: psychosis + seizures, dyskinesias, autonomic instability, or prominent memory deficits. Dalmau J, et al. literature establishes this as a treatable cause of acute psychiatric presentation.
+
+**Neurosyphilis & Medical Psychiatry**
+A resurgent diagnosis. Screen all new psychiatric admissions with RPR/treponemal if any risk factors present. CNS syphilis can present as behavioral change, psychosis, or cognitive decline decades after primary infection.
+
+**Wilson Disease (Hepatolenticular Degeneration)**
+Young patient + neuropsychiatric symptoms (tremor, dystonia, behavioral change, psychosis) = ceruloplasmin and 24-hour urine copper. One case can change a career trajectory.
+
+**Thyroid & Mood/Anxiety**
+Hyperthyroidism → anxiety/mania; hypothyroidism → depression. TSH is one of the four essential screens (TSH, B12, urine tox, UA) — do not miss it.
+
+**Substance-Induced vs. Primary Psychosis**
+Distinction: Primary psychosis persists and worsens ≥6 weeks after sustained abstinence. Cannabis and stimulant-induced psychosis can mimic schizophreniform disorder; longitudinal follow-up distinguishes them.
+
+### Equity in Medical Workup: Diagnostic Disparities and Test Interpretation
+
+**Diagnostic Workup Disparities by Race and Ethnicity**
+- Hogan, A.M., Dillon, P., Owens, M., Kilcourse, M., Monahan, M., Boyd, A. (2020) — *Frontiers in Psychiatry* — Black and Hispanic patients presenting with first-episode psychosis receive less complete medical workup (fewer neuroimaging studies, shorter workup duration, lower rates of autoimmune/infectious screening) than white patients, even with identical clinical presentations. This differential workup leads to missed diagnoses and incorrect attribution to primary psychosis.
+- Hinds, P.S., Morris, R., Stonesifer, E., et al. (2011) — *Journal of Clinical Nursing* — symptoms in non-white populations are frequently normalized or attributed to "cultural expression" by clinicians, leading to delayed medical evaluation. A patient's cultural explanation for symptoms should not override medical assessment; both can be true simultaneously.
+- Flores, G., Gee, G.C., Kastner, B. (2002) — *Journal of General Internal Medicine* — language barriers in medical workup delay critical testing; patients with limited English proficiency have longer times to diagnostic tests (imaging, labs) and lower understanding of test results, which cascades into psychiatric misdiagnosis when medical causes are missed.
+- Carson, N., Chowdhury, N., Mottahedin, I., et al. (2020) — *Journal of Psychiatric Research* — epidemiology of specific medical mimics shows significant variation by ancestry and demographics: hypothyroidism prevalence is higher in certain ethnic groups, UTI-related delirium is underrecognized in communities with health-access barriers, autoimmune encephalitis may present atypically in patients with different genetic backgrounds. Teaching students to know epidemiology in diverse populations is essential.
+- Singal, A.G., Volk, M.L., Waljee, A., et al. (2012) — *American Journal of Gastroenterology* — lab result interpretation varies: identical TSH values are interpreted differently by clinicians depending on patient race and age, with lower thresholds for treatment in white patients and higher thresholds in Black patients, perpetuating under-treatment. Standardize interpretation by reference range, not implicit bias.
+
+### Books on Medical Psychiatry
+
+- **[What Happened to You?](https://www.amazon.com/dp/1250223180)** (ISBN 9781250223180) — Bruce Perry & Oprah Winfrey. Neuroscience-grounded perspective on how medical and traumatic events reshape the brain and behavior. Reinforces the biopsychosocial approach.
+
+### Related Teaching Resources
+
+- **Delirium page** — Learn to distinguish delirium (fluctuating attention, acute) from depression or psychosis. Vital for older adults.
+- **Toxidromes & Withdrawal** — Recognizing substance-induced presentations and medical toxicity.
+- **Differential Diagnosis scaffolds** — Build your medical differential systematically.
+- **COTW: Medical Workup Case** — See a full case workup for a patient presenting with psychosis and abnormal vitals.
+
+### Checklist: Don't Miss These Four
+
+Every admission, every time:
+- [ ] **TSH** (hypothyroidism is depression in disguise)
+- [ ] **B12 & folate** (deficiency → psychosis, mood, or cognitive change)
+- [ ] **Urine toxicology** (substance-induced vs. primary)
+- [ ] **Urinalysis** (UTI = delirium in older adults)
+
+### How to Practice
+
+**Before rounds:**
+1. Review your patient's vitals and attention (test yourself).
+2. Scan the table above: which mimic matches the presentation?
+3. Confirm the core workup is done (CBC, CMP, TSH, β-hCG, EKG).
+4. If red flags present (new-onset, abnormal vitals, age >40, focal signs): plan your medical differential first.
+
+**On rounds:**
+- Lead with the medical differential if atypical features present.
+- "Rule out X before attributing this to primary psychosis" is the framing that matches the evidence.
+
+---
+
 *Joshua Moss, MD | Psychiatrist · Educational; confirm tests/thresholds against current references and institutional protocol; fictional composites only, no PHI.*

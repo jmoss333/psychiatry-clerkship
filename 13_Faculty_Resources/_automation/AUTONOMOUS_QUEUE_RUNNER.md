@@ -105,6 +105,43 @@ The workflow then runs the registry validators, the shipped-pages derivation che
 node suite, and only on a clean sweep pushes the branch and opens a **draft** pull request. It
 never marks one ready, never merges, never approves, and never edits the attestation ledger.
 
+### What the run reports: `outcome`
+
+`run_queue_task.py` writes an **`outcome`** output on **every** exit path, alongside the exit
+code. The two answer different questions and both are needed:
+
+| outcome | exit | meaning |
+|---|---|---|
+| `did-work` | 0 | committed a branch; the push and pull-request steps follow |
+| `nothing-to-do` | 0 | the queue offered nothing. A success, and idle |
+| `blocked` | 2–6 | a guard refused; the **exit code** names which one |
+| `dry-run` | 0 | `--dry-run`, local only |
+| `no-commit` | 0 | `--no-commit`, local only |
+
+**Three of the five are exit 0.** A green run therefore does not mean the runner did anything,
+and until this output existed nothing distinguished a night that produced a reviewable pull
+request from a night with an empty queue — the heartbeat, the escalation deadman and the
+Actions list all showed the same green. That is §D4 of `docs/SILENT_SHRINK_CHECKLIST.md`
+(*absence rendering as success*) inside the runner itself.
+
+It is written by construction, not by remembering. `_execute()` returns
+`(exit_code, outcome, output_pairs)` and `main()` is the single writer, so a new refusal
+cannot ship without one: before that split, 4 of 16 returns wrote an output and the other 12
+wrote nothing, and an absent `outcome` is indistinguishable from any particular value. The
+outcome is also written to `outcome.txt` in `--out-dir`, so it outlives the run log in the
+uploaded evidence. `tests/run-queue-task.test.mjs` drives every refusal and asserts each one
+still reports.
+
+Nothing consumes it yet. Wiring `workflow_heartbeat.py` to treat *N consecutive
+`nothing-to-do` nights* as a reportable state — not a failure, a prompt that the autonomous
+queue needs replenishing — is the follow-up this output exists for.
+
+**The push and the pull request do not share a permission.** `contents: write` covers the
+push; opening a pull request is additionally gated by the *Allow GitHub Actions to create and
+approve pull requests* setting, which no workflow file can grant itself — so the pull request
+can be refused after everything else succeeded. That refusal is captured rather than merely
+fatal: see §4.
+
 ---
 
 ## 3. What the pull request says
@@ -145,6 +182,36 @@ the same way every other steward here does, instead of going unnoticed for weeks
 A red run leaves the repository untouched: every guard fires **before** the commit. Read the exit
 code first — it names which guard refused, and G2 in particular means *fix the measurement, not
 the task*.
+
+**One failure happens *after* the commit and leaves a branch behind: a refused pull request.**
+`gh pr create` answers
+
+```
+pull request create failed: GraphQL: GitHub Actions is not permitted to
+create or approve pull requests (createPullRequest)
+```
+
+when *Allow GitHub Actions to create and approve pull requests* is off in
+Settings → Actions → General → Workflow permissions (an organisation policy can force it off,
+in which case it changes there first). Four consecutive runs failed this way
+(2026-09-10 … 2026-09-13), each leaving a branch of finished, verified work that nothing
+explained.
+
+`13_Faculty_Resources/_automation/maintenance/queue_pr_fallback.py` now records it: one
+marker-owned rolling issue, `automation: queue branch pushed without a pull request`, naming
+each branch, its task, how many nights it has recurred, the verbatim refusal, and a pre-filled
+compare URL that opens the pull request in one click. Filing an issue is deliberately the one
+report that does **not** depend on the setting which caused the refusal.
+
+The run still goes red. Delivering the commit but not the pull request is not a pass, so the
+heartbeat and the escalation deadman keep seeing the truth. Two consequences follow:
+
+- The fix is a person opening or deleting the branch, then closing the issue. Automation
+  records the row and never resolves it, exactly as with every other rolling issue here.
+- Nothing yet stops the runner minting a *new* branch the next night, since the stand-down
+  check looks for an open pull request and a stranded branch has none. The rolling issue
+  bounds the noise to extra rows rather than extra issues; broadening the stand-down to cover
+  branches without a pull request is the obvious follow-up.
 
 Because the workflow is enrolled in `validate_scheduled_workflows.py`, editing it means
 recomputing its contract digest with the validator's own `_load`/`_contract_digest`. See

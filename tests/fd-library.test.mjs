@@ -272,3 +272,46 @@ test('real dots are keyed on the item\'s kind, and today that always agrees with
   }
   assert.ok(sawTool && sawRead, 'fixture sanity: real data must exercise both dot states');
 });
+
+// ---- hints: one line under a tool's title ------------------------------------------------------
+//
+// 23–26 tools whose titles do not say what they do (The Interview Circle, The Interview Room,
+// What Do You Say Next?, Interaction Cards…) shipped as bare titles in the only browse surface.
+// A row renders its joined `hint` under the label; a row with none renders exactly as before.
+
+test('a row with a hint renders it after the label; a row without one renders no hint span', () => {
+  const cur = JSON.parse(JSON.stringify(FIX_CUR));
+  cur.libraryHints = { 't1.html': 'Build a written exam from a descriptor bank.' };
+  const html = F.fdLibrary(F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN));
+  assert.match(html, /fd-collink__label">Tool One<\/span><span class="fd-collink__hint">Build a written exam from a descriptor bank\.<\/span>/);
+  const t2 = html.match(/data-fd-open="t2\.html">[\s\S]*?<\/button>/)[0];
+  assert.doesNotMatch(t2, /fd-collink__hint/, 'no hint, no span — not an empty one');
+});
+
+test('a hint is escaped like every other interpolated string', () => {
+  const cur = JSON.parse(JSON.stringify(FIX_CUR));
+  cur.libraryHints = { 't1.html': '<img src=x onerror=1> & "quotes"' };
+  const html = F.fdLibrary(F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN));
+  assert.doesNotMatch(html, /<img/);
+  assert.match(html, /&lt;img src=x onerror=1&gt; &amp; &quot;quotes&quot;/);
+});
+
+test('every real tool row carries a hint span, and no real hint carries an audience token', () => {
+  const html = F.fdLibrary(REAL_IDX);
+  let toolRows = 0;
+  for (const c of REAL_CUR.libraryColumns) {
+    for (const ref of c.refs) {
+      if (REAL_IDX.byRef[ref].kind !== 'tool') continue;
+      toolRows += 1;
+      const row = html.match(new RegExp('data-fd-open="' + ref.replace(/\./g, '\\.') + '">[\\s\\S]*?</button>'));
+      assert.ok(row, `no rendered row for ${ref}`);
+      const hint = row[0].match(/<span class="fd-collink__hint">([^<]*)<\/span>/);
+      assert.ok(hint, `${ref} must render its hint`);
+      assert.doesNotMatch(hint[1], AUDIENCE_TOKEN_RE, `${ref}'s hint ships to both sites: ${hint[1]}`);
+    }
+  }
+  assert.ok(toolRows >= 20, `fixture sanity: ${toolRows} tool rows`);
+  for (const [ref, hint] of Object.entries(REAL_CUR.libraryHints || {})) {
+    assert.doesNotMatch(hint, AUDIENCE_TOKEN_RE, `${ref}'s hint ships to both sites: ${hint}`);
+  }
+});

@@ -20,6 +20,7 @@ sys.path.insert(0, str(BIN))
 import build_status
 import lib_surveillance as L
 import run_citation_check
+import run_link_monitor
 import sync_findings
 
 
@@ -1182,6 +1183,206 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
                 self.assertIn("--issues-json", commands)
                 self.assertIn("report_branch.py publish", commands)
                 self.assertNotIn("git push", commands)
+
+
+class SuppressionSemanticsTests(unittest.TestCase):
+    """A closed issue is a FIXED condition, not a permanently silenced one.
+
+    Until 2026-09-16 sync_findings dedup'd against state=all, so closing an issue
+    removed that fingerprint from monitoring forever. Measured cost at the time:
+    103 distinct URLs suppressed by 118 closed issues, and two FDA drug-safety
+    pages actively failing in the link monitor with no way to raise an issue.
+    """
+
+    @staticmethod
+    def _issue(number, fingerprint, state):
+        return {
+            "number": number,
+            "url": f"https://github.com/owner/repo/issues/{number}",
+            "state": state,
+            "closedAt": None if state == "OPEN" else "2026-07-28T12:00:00Z",
+            "fingerprint": fingerprint,
+            "labels": ["surveillance"],
+        }
+
+    def test_open_issue_suppresses_so_no_duplicate_is_opened(self):
+        snapshot = [self._issue(1, "source::modified::open", "OPEN")]
+        suppressed = sync_findings.suppressed_fingerprints(snapshot, {})
+        self.assertIn("source::modified::open", suppressed)
+
+    def test_closed_issue_does_not_suppress_a_recurrence(self):
+        snapshot = [self._issue(2, "source::modified::fixed", "CLOSED")]
+        suppressed = sync_findings.suppressed_fingerprints(snapshot, {})
+        self.assertNotIn("source::modified::fixed", suppressed)
+
+    def test_registered_dismissal_suppresses_permanently(self):
+        dismissed = {"link:doi.org::broken-link::abc": {"reason": "DOI excluded by lychee"}}
+        suppressed = sync_findings.suppressed_fingerprints([], dismissed)
+        self.assertIn("link:doi.org::broken-link::abc", suppressed)
+
+    def test_the_fda_regression_can_file_again(self):
+        # The exact shape of the live defect: both FDA drug-safety fingerprints sat
+        # on issues closed as COMPLETED (#266/#247/#124 and #290/#267/#248/#212),
+        # so a fresh failure could never open an issue.
+        fda = "link:www.fda.gov::broken-link::f48ddedaa541bacf"
+        snapshot = [self._issue(290, fda, "CLOSED"), self._issue(267, fda, "CLOSED")]
+        suppressed = sync_findings.suppressed_fingerprints(snapshot, {})
+        self.assertNotIn(fda, suppressed)
+
+    def test_shipped_dismissal_registry_loads_and_every_entry_has_a_reason(self):
+        dismissed = L.load_dismissed()
+        self.assertTrue(dismissed)
+        for fingerprint, record in dismissed.items():
+            self.assertTrue(str(record.get("reason") or "").strip(), fingerprint)
+
+    def test_a_reasonless_dismissal_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "dismissed.json"
+            path.write_text(json.dumps({"dismissed": {"a::b::c": {"reason": "  "}}}))
+            with self.assertRaises(ValueError):
+                L.load_dismissed(path)
+
+    def test_a_missing_registry_suppresses_nothing_rather_than_everything(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(L.load_dismissed(Path(tmp) / "absent.json"), {})
+
+
+class LinkConfirmationTests(unittest.TestCase):
+    """No finding is filed on a single probe.
+
+    lychee reports cached errors and checks thousands of links from one CI IP;
+    #632 (P0, on the C-SSRS safety surface) and #436/#437 all answered 200 on a
+    direct GET while their issues stayed open.
+    """
+
+    @staticmethod
+    def _finding(url):
+        return {"source_url": url, "evidence": {"http_status": None}}
+
+    def test_a_candidate_that_answers_is_not_filed(self):
+        findings = [self._finding("https://example.org/alive")]
+        confirmed, unconfirmed = run_link_monitor.confirm(findings, probe=lambda url: 200)
+        self.assertEqual(confirmed, [])
+        self.assertEqual(len(unconfirmed), 1)
+        self.assertEqual(unconfirmed[0]["evidence"]["confirm_status"], 200)
+
+    def test_a_candidate_that_still_fails_is_filed(self):
+        findings = [self._finding("https://example.org/dead")]
+        confirmed, unconfirmed = run_link_monitor.confirm(findings, probe=lambda url: 404)
+        self.assertEqual(len(confirmed), 1)
+        self.assertEqual(unconfirmed, [])
+        self.assertEqual(confirmed[0]["evidence"]["confirm_status"], 404)
+
+    def test_a_method_refusal_is_treated_as_reachable_not_broken(self):
+        # 405/406 are the #436/#437 class: the server refuses this client, not the URL.
+        for code in (405, 406):
+            confirmed, unconfirmed = run_link_monitor.confirm(
+                [self._finding("https://www.aacom.org/x")], probe=lambda url, c=code: c
+            )
+            self.assertEqual(confirmed, [], code)
+            self.assertEqual(len(unconfirmed), 1, code)
+
+    def test_no_answer_at_all_is_still_filed(self):
+        confirmed, _ = run_link_monitor.confirm(
+            [self._finding("https://gone.invalid/")], probe=lambda url: None
+        )
+        self.assertEqual(len(confirmed), 1)
+        self.assertIsNone(confirmed[0]["evidence"]["confirm_status"])
+
+
+
+class DispositionTests(unittest.TestCase):
+    """A finding CI cannot verify is classified, never silenced.
+
+    #665 and #666 filed P1s for fda.gov and healthquality.va.gov, both of which
+    serve 200 to any ordinary browser. A second probe cannot catch that: it runs
+    from the SAME address as the first, so it reproduces an IP-level block instead
+    of detecting it. Classification is the thing that helps; re-probing is not.
+    """
+
+    @staticmethod
+    def _finding(url, severity="P1"):
+        return {"source_url": url, "severity": severity, "evidence": {"http_status": None},
+                "fingerprint": "fp::broken-link::" + url[-8:], "status": "new"}
+
+    def test_a_host_this_runner_cannot_reach_is_environment_not_actionable(self):
+        hosts = {"www.fda.gov": {"reason": "404s CI", "verifiedAt": "2026-09-16"}}
+        filed, reachable = run_link_monitor.confirm(
+            [self._finding("https://www.fda.gov/drugs/x")],
+            probe=lambda url: 404, unreachable=hosts)
+        self.assertEqual(reachable, [])
+        self.assertEqual(len(filed), 1)
+        self.assertEqual(filed[0]["disposition"], "environment")
+
+    def test_an_unrecorded_host_that_still_fails_is_actionable(self):
+        filed, _ = run_link_monitor.confirm(
+            [self._finding("https://www.admsep.org/csi-emodules.php")],
+            probe=lambda url: 404, unreachable={})
+        self.assertEqual(filed[0]["disposition"], "actionable")
+
+    def test_a_candidate_that_answers_is_dropped_before_classification(self):
+        hosts = {"www.fda.gov": {"reason": "404s CI", "verifiedAt": "2026-09-16"}}
+        filed, reachable = run_link_monitor.confirm(
+            [self._finding("https://www.fda.gov/drugs/x")],
+            probe=lambda url: 200, unreachable=hosts)
+        self.assertEqual(filed, [])
+        self.assertEqual(len(reachable), 1)
+        self.assertNotIn("disposition", reachable[0])
+
+    def test_only_actionable_findings_open_issues(self):
+        # Calls the real partition, not a copy of it. The first version of this test
+        # reimplemented the filter inline and therefore passed while sync_findings was
+        # reverted to file everything -- a vacuous test of exactly the kind
+        # bin/check_vacuity.py exists to catch.
+        env = self._finding("https://www.fda.gov/drugs/x")
+        env["disposition"] = "environment"
+        act = self._finding("https://www.admsep.org/gone")
+        act["disposition"] = "actionable"
+        judged = self._finding("https://example.org/unclear", severity="P2")
+        judged["disposition"] = "needs-judgment"
+
+        issues, digest, unfiled = sync_findings.partition_by_disposition([env, act, judged])
+
+        self.assertEqual([f["source_url"] for f in issues], ["https://www.admsep.org/gone"])
+        self.assertEqual(digest, [])
+        self.assertEqual({f["source_url"] for f in unfiled},
+                         {"https://www.fda.gov/drugs/x", "https://example.org/unclear"})
+
+    def test_a_finding_with_no_disposition_still_files(self):
+        # Every producer other than the link monitor emits no disposition yet; they must
+        # keep filing rather than silently becoming unfiled.
+        plain = self._finding("https://example.org/broken")
+        issues, _, unfiled = sync_findings.partition_by_disposition([plain])
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(unfiled, [])
+
+    def test_the_registry_demands_a_reason_and_a_verification_date(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "hosts.json"
+            path.write_text(json.dumps({"hosts": {"a.example": {"verifiedAt": "2026-09-16"}}}))
+            with self.assertRaises(ValueError):
+                L.load_ci_unreachable(path)
+            path.write_text(json.dumps({"hosts": {"a.example": {"reason": "blocked"}}}))
+            with self.assertRaises(ValueError):
+                L.load_ci_unreachable(path)
+
+    def test_a_missing_registry_classifies_nothing_rather_than_everything(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(L.load_ci_unreachable(Path(tmp) / "absent.json"), {})
+
+    def test_verification_age_makes_a_rotting_entry_visible(self):
+        hosts = {"a.example": {"reason": "x", "verifiedAt": "2026-09-16"}}
+        self.assertEqual(L.oldest_verification_age(hosts, "2026-09-16"), 0)
+        self.assertEqual(L.oldest_verification_age(hosts, "2026-12-25"), 100)
+        self.assertIsNone(L.oldest_verification_age({}))
+
+    def test_the_shipped_registry_loads_and_every_host_is_accounted_for(self):
+        hosts = L.load_ci_unreachable()
+        self.assertTrue(hosts)
+        for host, record in hosts.items():
+            self.assertTrue(str(record.get("reason") or "").strip(), host)
+            self.assertTrue(str(record.get("verifiedAt") or "").strip(), host)
+
 
 
 if __name__ == "__main__":

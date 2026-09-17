@@ -1,13 +1,32 @@
 {
-  "cotw_20260907_fep_ms3.md": {
+  "cotw_20260914_ssnms_ms3.md": {
     "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
     "reason": "New content awaiting faculty review.",
-    "at": "2026-09-07",
+    "at": "2026-09-14",
     "by": "Pending faculty review"
+  },
+  "cotw_20260914_ssnms_res.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New content awaiting faculty review.",
+    "at": "2026-09-14",
+    "by": "Pending faculty review"
+  },
+  "cotw_20260907_fep_ms3.md": {
+    "status": "reviewed",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "at": "2026-09-14",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260907_fep_res.md": {
     "status": "pending",
@@ -20,44 +39,40 @@
     "by": "Pending faculty review"
   },
   "cotw_20260831_catatonia_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-08-31",
-    "by": "Pending faculty review"
+    "at": "2026-09-11",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260831_catatonia_res.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-08-31",
-    "by": "Pending faculty review"
+    "at": "2026-09-11",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260827_bpd_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-08-27",
-    "by": "Pending faculty review"
+    "at": "2026-09-08",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260827_bpd_res.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-08-27",
-    "by": "Pending faculty review"
+    "at": "2026-09-11",
+    "by": "Joshua Moss, MD"
   },
   "interaction-cards.html": {
     "status": "reviewed",
@@ -213,14 +228,13 @@
     "by": "Joshua Moss, MD"
   },
   "cotw_20260720_bipolar_res.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-07-23",
-    "by": "Pending faculty review"
+    "at": "2026-09-08",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260720_mdd_res.md": {
     "status": "pending",
@@ -238,9 +252,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-09",
+    "at": "2026-09-17",
     "by": "Joshua Moss, MD",
-    "note": "Re-attested 2026-09-09 (recorded on the owner's instruction). Covers the WP-5m suicide-follow-up chain and the F1-F5 / D16(2) display change; Dana's pack facultyReview.lastReviewed advanced to 2026-09-09 in the same change."
+    "note": "Re-attested 2026-09-17 (recorded on the owner's approval of #565, issue comment 2026-09-17): Dana's direct suicide question discloses at any rapport and an earlier flag never blocks it; the local draft overlay that carried that policy is retired into the reviewed pack; debrief states that asking early was right. Dana's pack facultyReview.lastReviewed advanced to 2026-09-17 in the same change. Prior: 2026-09-09 (WP-5m chain, F1-F5 / D16(2))."
   },
   "welcome.md": {
     "status": "pending",
@@ -412,7 +426,7 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-07-01",
+    "at": "2026-09-16",
     "by": "Joshua Moss, MD"
   },
   "t_personality.md": {
@@ -457,7 +471,7 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-07-03",
+    "at": "2026-09-16",
     "by": "Joshua Moss, MD"
   },
   "agitation.md": {
@@ -628,8 +642,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-03",
-    "by": "Joshua Moss, MD"
+    "at": "2026-09-16",
+    "by": "Joshua Moss, MD",
+    "note": "safetyKit item: capacity assessment is high-risk clinical surface. Content enhanced with Further Reading resources (Phase 2) covering four-abilities model, delirium guidelines, catatonia criteria, withdrawal management, trauma-informed assessment, teaching resources (Phase 2); equity resources on capacity assessment bias, implicit bias, neurodiversity, and cultural competence (Phase 4A) — status held at 'reviewed' per safetyKit governance constraint"
   },
   "psychopharm_primer.md": {
     "status": "reviewed",
@@ -664,8 +679,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-03",
-    "by": "Joshua Moss, MD"
+    "at": "2026-09-16",
+    "by": "Joshua Moss, MD",
+    "note": "Added comprehensive Further Reading section covering documentation standards, structured handoffs (Solet & Frankel), formulation-driven assessment (Summers), differential diagnosis reasoning, MSE focus and tailoring, presentation skills under pressure, book references (Kaplan & Sadock, Morrison), practice guidance (Phase 2); equity resources on documentation bias, communication disparities, and implicit bias in note-writing (Phase 4A)"
   },
   "exp_tx.md": {
     "status": "reviewed",
@@ -677,13 +693,15 @@
     "by": "Joshua Moss, MD"
   },
   "exp_family.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-03",
-    "by": "Joshua Moss, MD"
+    "at": "2026-09-14",
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with media resources",
+    "note": "Added Further Reading section with discharge planning frameworks, lethal means assessment, family involvement evidence, and teaching resources (Phase 1 coverage curation)"
   },
   "family_modalities.md": {
     "status": "reviewed",
@@ -1073,8 +1091,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-09",
-    "by": "Joshua Moss, MD"
+    "at": "2026-09-16",
+    "by": "Joshua Moss, MD",
+    "note": "Phase 4A: Enhanced with equity-focused citations on structural racism in formulation, cultural competence, and systemic context",
+    "note": "Added Further Reading section with formulation frameworks, books, and teaching resources (Phase 1 coverage curation)"
   },
   "medical_workup.md": {
     "status": "reviewed",
@@ -1082,8 +1102,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-10",
-    "by": "Joshua Moss, MD"
+    "at": "2026-09-16",
+    "by": "Joshua Moss, MD",
+    "note": "Phase 4A: Enhanced with equity-focused citations on diagnostic workup disparities, health access barriers, and test interpretation bias",
+    "note": "Added Further Reading section with medical workup guidelines, medical mimics resources, and teaching resources (Phase 1 coverage curation)"
   },
   "toxidromes.md": {
     "status": "reviewed",

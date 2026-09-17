@@ -151,6 +151,28 @@ def main(argv):
     def bad(where, msg):
         errs.append("%s: %s" % (where, msg))
 
+    # Discovery vocabulary names resources, not clinical advice. Validate against ALL
+    # shipped producers (including weekly cases), independently of Library placement.
+    search_slugs = {page["slug"] for page in shipped_document["pages"]}
+    aliases = cur.get("searchAliases", {})
+    if not isinstance(aliases, dict):
+        bad("searchAliases", "must be a ref-keyed object")
+        aliases = {}
+    for ref, phrases in aliases.items():
+        if ref not in search_slugs:
+            bad("searchAliases", "unknown shipped ref %r" % ref)
+        if not isinstance(phrases, list) or not phrases:
+            bad("searchAliases", "%s needs a non-empty list" % ref)
+            continue
+        seen_phrases = set()
+        for phrase in phrases:
+            if not isinstance(phrase, str) or not re.fullmatch(r"[a-z0-9]+(?: [a-z0-9]+)*", phrase):
+                bad("searchAliases", "%s has a malformed phrase %r" % (ref, phrase))
+            elif phrase in seen_phrases:
+                bad("searchAliases", "%s repeats %r" % (ref, phrase))
+            else:
+                seen_phrases.add(phrase)
+
     # Synonym keys: a key with a space is a PHRASE, matched whole-phrase against the raw query.
     # Both forms must be lowercase and trimmed or they can never match a lowercased query — a
     # silently-inert entry is worse than a rejected one, because it looks like coverage.
@@ -234,6 +256,13 @@ def main(argv):
                 if ref in seen_refs:
                     bad(week_label, "duplicate ref '%s' within the week" % ref)
                 seen_refs.add(ref)
+                # A rights reference exists to say an instrument is NOT reproduced here. It
+                # belongs in the Library (INV-IR2 keeps the custodian route alive), never on a
+                # path: a checklist step that opens a "no longer reproduced" stub is a dead end
+                # the learner is asked to tick. Both stubs shipped as steps until 2026-09-16.
+                if ref in rights_refs:
+                    bad(week_label, "ref '%s' is a rights reference — it belongs in a Library "
+                        "column, never as a path step" % ref)
                 if ref not in site_shipped[site]:
                     bad(week_label, "ref '%s' is not shipped on %s" % (ref, site))
                     continue
@@ -351,6 +380,35 @@ def main(argv):
             elif ref not in site_shipped[site]:
                 bad("siteLibrary %s" % site,
                     "exclusion ref '%s' is not shipped on %s" % (ref, site))
+
+    # ---- library hints: one line per placed tool, in both directions ----
+    # A placed .html ref is a tool row in the only browse surface, and 23-26 tool titles do not
+    # say what the tool does (The Interview Circle, What Do You Say Next?, Interaction Cards).
+    # Each carries a one-line "use this when" from curriculum.libraryHints. Enforced both ways
+    # so adding a tool means writing its line, and a line for a ref no column places is copy
+    # nobody can read. Reads keep bare titles: their tldr is clinical, not navigational.
+    hints = cur.get("libraryHints", {})
+    if not isinstance(hints, dict):
+        bad("libraryHints", "must be a ref-keyed object of one-line strings")
+        hints = {}
+    hinted_universe = {ref for ref in placed if ref in tool_slugs}
+    for site in ("ms3", "resident"):
+        overlay = site_library.get(site) if isinstance(site_library, dict) else None
+        additions = overlay.get("additions") if isinstance(overlay, dict) else None
+        for addition in additions if isinstance(additions, list) else []:
+            refs = addition.get("refs") if isinstance(addition, dict) else None
+            for ref in refs if isinstance(refs, list) else []:
+                if isinstance(ref, str) and ref in tool_slugs:
+                    hinted_universe.add(ref)
+    for ref, line in sorted(hints.items(), key=lambda kv: str(kv[0])):
+        if ref not in hinted_universe:
+            bad("libraryHints", "'%s' is not a tool any Library column places" % ref)
+        if not isinstance(line, str) or not line.strip():
+            bad("libraryHints", "'%s' needs a non-empty one-line hint" % ref)
+        elif len(line) > 110 or "\n" in line:
+            bad("libraryHints", "'%s' hint must stay one line (<=110 chars, no newline)" % ref)
+    for ref in sorted(hinted_universe - set(hints)):
+        bad("libraryHints", "placed tool '%s' has no one-line hint" % ref)
 
     # ---- safety kit: five reviewed, high-safety protocols with canonical evidence ----
     kit = cur.get("safetyKit")

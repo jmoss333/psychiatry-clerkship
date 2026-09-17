@@ -48,7 +48,7 @@ REQUIRED_SYNONYMS = {
 CASES = [
     {"query": "cat", "anyTop": {"catatonia.md", "bfcrs.html"}, "limit": 3},
     {"query": "catatonia", "anyTop": {"catatonia.md", "bfcrs.html"}, "limit": 3},
-    {"query": "ss", "anyTop": {"rounds_questions.md", "cl_reference.md", "psychopharm_primer.md"}, "limit": 5},
+    {"query": "ss", "anyTop": {"rounds_questions.md", "cl_reference.md", "psychopharm_primer.md", "toxidromes.md"}, "limit": 5},
     {"query": "td", "anyTop": {"rounds_questions.md", "adv_psychopharm.md"}, "limit": 5},
     {"query": "dts", "anyTop": {"rounds_questions.md", "exp_consult.md", "delirium.md", "cl_reference.md"}, "limit": 5},
     {"query": "wke", "anyTop": {"t_sud.md", "rounds_questions.md"}, "limit": 5},

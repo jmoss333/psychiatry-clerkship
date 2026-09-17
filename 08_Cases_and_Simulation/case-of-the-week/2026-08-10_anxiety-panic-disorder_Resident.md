@@ -90,13 +90,15 @@ The apparent conflict resolves once you see that they optimize different objecti
 
 *Teaching point:* The plan is a **slow, negotiated, structured taper, sequenced correctly** — and the sequencing is where residents most often go wrong.
 
-**Sequence.** Do **not** begin the taper before the SSRI is optimized and psychotherapy is engaged. Removing his only functioning coping tool while he is still on a subtherapeutic antidepressant and has no exposure skills is how tapers fail and how patients disengage from care.
+**Sequence.** The usual ordering here — optimize the SSRI and get psychotherapy running, *then* taper — is sound clinical practice and is what this patient most likely needs: removing his only functioning coping tool while he is still on a subtherapeutic antidepressant and has no exposure skills is how tapers fail and how patients disengage from care. The 2025 joint benzodiazepine-tapering guideline lists optimizing treatment of the underlying condition among the things to do **before you begin a taper** [13].
 
-**Structure.** Consider converting short-half-life alprazolam to an equivalent dose of a **longer-half-life agent (e.g., clonazepam or diazepam)** to flatten interdose troughs, then reduce gradually — conventionally on the order of 5–10% of the current dose every 1–2 weeks, slowing further at lower doses, with the patient holding a share of control over pace. Move from PRN to a **fixed schedule** before tapering: scheduled dosing severs the reinforcement loop between symptom onset and pill-taking, which is the behavioral core of the problem.
+But hold it as a **default, not a rule**. The guideline sequences on risk, not on prerequisites: "tapering is generally indicated when the risks of continuing BZD medication outweigh the benefits," and adjunctive CBT is offered to patients **undergoing** a taper — that is, concurrently, rather than as a gate that must be cleared first [13]. Some patients should not wait: falls or cognitive impairment, a recent overdose or a co-occurring substance use disorder, supratherapeutic or escalating doses, or age ≥65 can all make continued use the larger risk. Ask which risk is bigger *for this patient now* — and be able to say why, rather than reciting an order of operations.
+
+**Structure.** Consider converting short-half-life alprazolam to an equivalent dose of a **longer-half-life agent (e.g., clonazepam or diazepam)** to flatten interdose troughs, then reduce gradually — with an initial pace of **5–10% of the current dose every 2–4 weeks**, individualized to his response — that is the 2025 joint guideline's usual starting point, and it also sets a ceiling of no more than 25% every 2 weeks [13]. Consider the lower end (5%) for the first reduction. Slow further at lower doses, and **slow or pause** the taper outright if significant withdrawal symptoms emerge, with the patient holding a share of control over pace. A shorter-duration, lower-dose user may tolerate faster; he, at fourteen months of daily alprazolam, will not be that patient. Move from PRN to a **fixed schedule** before tapering: scheduled dosing severs the reinforcement loop between symptom onset and pill-taking, which is the behavioral core of the problem.
 
 **Failure modes to name explicitly:**
 - **Tapering too fast**, producing withdrawal that both patient and physician misread as relapse — leading to reinstatement and a patient now convinced they cannot live without the drug.
-- **Tapering before the SSRI works.** Sequencing error; see above.
+- **Tapering before the SSRI works — *in a patient for whom nothing makes continued use the more urgent risk*.** Sequencing error; see above. The mirror error is treating that ordering as inviolable and leaving a high-risk patient on a benzodiazepine for months while waiting for prerequisites to be met.
 - **Leaving PRN dosing in place** during CBT, which silently converts exposure sessions into safety-behavior-assisted exposure and blocks extinction.
 - **Framing the taper as withdrawal of something he needs**, rather than removal of something now generating his symptoms. The interdose-rebound formulation from Q2 is the single most persuasive thing you can offer him — it reframes the taper as treatment rather than deprivation.
 - **Not addressing the nightly alcohol**, which is additive sedation, an independent anxiety amplifier via rebound, and a genuine safety concern in combination.
@@ -158,7 +160,7 @@ Map that onto this patient: fourteen months of illness, prominent avoidance cons
 **Where residents predictably go wrong.**
 - Re-ordering metanephrines because the BP spikes feel unresolved. Ask what a third normal result would change, and what the pre-test probability now is after two negatives and a negative CT.
 - Switching or augmenting the antidepressant instead of titrating it.
-- Tapering the benzodiazepine first, before the SSRI is optimized and CBT is running.
+- Tapering the benzodiazepine first as a reflex, before the SSRI is optimized and CBT is running, without asking whether anything about this patient makes continued use the greater risk.
 - Treating "denies SI" in a repressive-coping patient with several documented risk factors as an adequate assessment [9].
 - Diagnosing PTSD reflexively from the trauma history without applying criteria — screen properly rather than assuming.
 
@@ -197,6 +199,8 @@ Based on articles retrieved from PubMed.
 11. Haller H, Breilmann P, Schröter M, Dobos G, Cramer H. A systematic review and meta-analysis of acceptance- and mindfulness-based interventions for DSM-5 anxiety disorders. *Scientific Reports*. 2021;11(1):20385. [https://doi.org/10.1038/s41598-021-99882-w](https://doi.org/10.1038/s41598-021-99882-w)
 
 12. Papola D, Miguel C, Mazzaglia M, Franco P, Tedeschi F, Romero SA, Patel AR, Ostuzzi G, Gastaldon C, Karyotaki E, Harrer M, Purgato M, Sijbrandij M, Patel V, Furukawa TA, Cuijpers P, Barbui C. Psychotherapies for generalized anxiety disorder in adults: a systematic review and network meta-analysis of randomized clinical trials. *JAMA Psychiatry*. 2024;81(3):250–259. [https://doi.org/10.1001/jamapsychiatry.2023.3971](https://doi.org/10.1001/jamapsychiatry.2023.3971)
+
+13. Joint Clinical Practice Guideline on Benzodiazepine Tapering (ASAM and collaborating organizations), 2025. Also published as: *J Gen Intern Med.* 2025;40(12):2814–2859. [Guideline](https://www.asam.org/quality-care/clinical-guidelines/benzodiazepine-tapering) · [DOI](https://doi.org/10.1007/s11606-025-09499-2)
 
 ---
 

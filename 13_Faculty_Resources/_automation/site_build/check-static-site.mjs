@@ -56,6 +56,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from '
 import { join, basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { evaluateInstrumentRights } from './instrument-rights-gate.mjs';
+import { checkBuiltSearch } from './frontdoor-search-gate.mjs';
 
 const SITE = process.argv[2];
 if (!SITE) { console.error('usage: node check-static-site.mjs <siteDir>'); process.exit(1); }
@@ -1271,6 +1272,7 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
 }
 
 /* ---------- report ---------- */
+for (const error of checkBuiltSearch(SITE, dirname(fileURLToPath(import.meta.url)))) H(error);
 const line = '─'.repeat(64);
 console.log(`\n${line}\nStatic QA — ${SITE}\n${line}`);
 console.log(`nav items: ${navItems} · content md: ${contentFiles.length} · tools: ${toolFiles.length} · json files: ${jsonFiles.length}`);
