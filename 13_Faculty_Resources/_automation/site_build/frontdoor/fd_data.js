@@ -16,8 +16,9 @@ function fdIsTool(ref){ return /\.html$/.test(ref); }
 /* A page with no topic_meta entry still has to render -- the Library carries every shipped page
    and not all of them are topic-template pages. Degrade to a titled row rather than throwing:
    renderHome()'s history in this repo is that one unguarded throw blanks the whole surface. */
-function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights){
+function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights, libraryHints){
   var m=topicMeta[ref]||{};
+  var hints=libraryHints||{};
   var t=toolIndex[ref]||null;
   var fr=m.facultyReview||{};
   var manifest=manifestIndex[ref]||{};
@@ -46,6 +47,10 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights){
     toolRef: (m.relatedTools&&m.relatedTools.length)?m.relatedTools[0]:null,
     risk: (t&&t.riskLevel)||m.safetyLevel||null,
     governance: manifest.governance||null,
+    /* The Library's one-line "use this when…" for a tool row (curriculum.libraryHints). A
+       string always, empty when the ref has none, so renderers test truthiness rather than
+       type. Reads keep bare titles: their tldr is clinical, not navigational. */
+    hint: (typeof hints[ref]==='string')?hints[ref]:'',
     href: (isTool?'?tool=':'?page=')+ref
   };
 }
@@ -76,10 +81,10 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   var rightsRefs={}, rr=cur.rightsReferences||[];
   for(var rq=0;rq<rr.length;rq++){ rightsRefs[rr[rq]]=true; }
 
-  var byRef={};
+  var byRef={}, libraryHints=(cur.libraryHints&&typeof cur.libraryHints==='object')?cur.libraryHints:{};
   function ensure(ref, kind){
     if(!byRef[ref]){
-      byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex, rightsRefs[ref]===true);
+      byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex, rightsRefs[ref]===true, libraryHints);
       byRef[ref].searchAliases=((cur.searchAliases||{})[ref]||[]).slice();
       byRef[ref].searchTitle=(cur.searchTitles||{})[ref]||byRef[ref].title;
     }

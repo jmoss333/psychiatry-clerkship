@@ -491,6 +491,11 @@
 .fd-collink__dot{width:6px;height:6px;border-radius:var(--fd-radius-circle);flex:0 0 auto;background:var(--fd-olive)}
 .fd-collink__dot.is-tool{background:var(--fd-teal)}
 .fd-collink__label{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+/* The row's one-line "use this when…" (curriculum.libraryHints, tools only). It takes its own
+ * line under the label: the row wraps, and the hint claims the full width indented past the dot
+ * so it reads as the label's subtitle, not a second column. Reads have no hint and no wrap. */
+.fd-collink{flex-wrap:wrap}
+.fd-collink__hint{flex:0 0 100%;padding-left:calc(6px + var(--fd-space-4));font-size:var(--fd-font-xs);line-height:1.4;color:var(--fd-text-dim);white-space:normal}
 /* .governance-badge is `flex:0 0 auto` (spa_index.html) so it never yielded, while the label above
  * shrinks to nothing -- inside a library column that gave "Interaction Cards — One Action" 35px of
  * the 196px it needed, printing "Inte…" beside a full-width "Pending review · High risk". The

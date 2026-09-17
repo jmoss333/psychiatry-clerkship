@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(304 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
+(305 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -305,6 +305,7 @@ A compact row used elsewhere is borderless.
       .fd-collink  <button> ×N
         .fd-collink__dot
         .fd-collink__label
+        .fd-collink__hint          (tools only — the row's one-line "use this when…")
 ```
 
 | Class | Notes |
@@ -312,6 +313,7 @@ A compact row used elsewhere is borderless.
 | `.fd-library__grid` | `auto-fill, minmax(196px, 1fr)`, gap 22/26px. |
 | `.fd-col__name` | Column heading: uppercase terracotta with a bottom rule. |
 | `.fd-collink__dot.is-tool` | Teal dot; default is olive (a read). |
+| `.fd-collink__hint` | One line under a tool's label, from `curriculum.libraryHints` (2026-09-16). The row wraps (`flex-wrap`) and the hint takes the full width, indented past the dot. Omitted from the markup, not emptied, when an item has none — every read row renders exactly as before. |
 
 ⚠ **`.fd-col` has no rule of its own** *(known; deferred by review)*. It is still required as the
 grid child that groups a heading with its links — the grid's `align-items:start` acts on it. Emit
