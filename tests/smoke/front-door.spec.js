@@ -1709,6 +1709,7 @@ test('a returning learner can leave rotation mode: browse clears the rotation, s
   await expect(page.locator('.fd-weekpill[data-fd-change-week]')).toContainText('Week 2');
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).not.toBeNull();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')).browsing)).toBe(false);
+});
 
 // #429 — "patient refuses medication" ranked Consult Questions, Delirium, Decisional Capacity; the
 // tool that answers the question is now first, the consult sheet is still one row below it, and a

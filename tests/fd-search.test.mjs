@@ -449,19 +449,33 @@ const refsOn = (index, q) => F.fdSearchResults(index, q, SYN, {}).map((r) => r.i
 for (const [label, index] of [['ms3', REAL_INDEX], ['resident', REAL_RES_INDEX]]) {
   test(`[${label}] every medication-refusal phrasing ranks capacity.html first (#429)`, () => {
     for (const q of ['patient refuses medication', 'refuses medication', 'patient refusing medications',
-      'refusing meds', 'patient refused medication', 'declines medication']) {
+      'refusing meds', 'patient refused medication', 'declines medication',
+      // Codex on #682: an unlisted inflection or an inserted ordinary word must not lose the tool.
+      'patient refused treatment', 'declining medications', 'patient refuses to take medication',
+      'he refused his meds this morning']) {
       const refs = refsOn(index, q);
       assert.equal(refs[0], 'capacity.html', `${JSON.stringify(q)} -> ${refs.slice(0, 4).join(', ')}`);
     }
   });
 
   test(`[${label}] the consult protocol stays reachable below the tool, as a protocol row (#429)`, () => {
+    for (const q of ['patient refuses medication', 'patient refused treatment', 'declining medications',
+      'patient refuses to take medication']) {
+      const r = F.fdSearchResults(index, q, SYN, {});
+      const consult = r.find((x) => x.item.ref === 'exp_consult.md');
+      assert.ok(consult, `${JSON.stringify(q)}: exp_consult.md missing: ${r.map((x) => x.item.ref).join(', ')}`);
+      assert.equal(consult.kind, 'protocol', 'it still opens the safety sheet');
+      assert.ok(r.findIndex((x) => x.item.ref === 'exp_consult.md') > r.findIndex((x) => x.item.ref === 'capacity.html'),
+        `${JSON.stringify(q)}: the tool answers the question; the sheet follows it`);
+    }
     const r = F.fdSearchResults(index, 'patient refuses medication', SYN, {});
-    const consult = r.find((x) => x.item.ref === 'exp_consult.md');
-    assert.ok(consult, `exp_consult.md missing: ${r.map((x) => x.item.ref).join(', ')}`);
-    assert.equal(consult.kind, 'protocol', 'it still opens the safety sheet');
     assert.equal(refsOn(index, 'patient refuses medication').includes('delirium.md'), false,
       '"patient" alone no longer drags Delirium into a refusal query');
+  });
+
+  test(`[${label}] "declining" alone is not a refusal query: cognition queries keep their own results (#429)`, () => {
+    const refs = refsOn(index, 'declining cognition');
+    assert.notEqual(refs[0], 'capacity.html', `declining cognition -> ${refs.slice(0, 4).join(', ')}`);
   });
 
   test(`[${label}] exact tool title wins; a bare "capacity" still lists the consult sheet second (#429)`, () => {
