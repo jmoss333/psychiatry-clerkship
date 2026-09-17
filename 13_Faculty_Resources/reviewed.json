@@ -426,7 +426,7 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-16",
+    "at": "2026-07-01",
     "by": "Joshua Moss, MD"
   },
   "t_personality.md": {
@@ -471,9 +471,8 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-16",
-    "by": "Joshua Moss, MD",
-    "note": "safetyKit item: high-risk clinical surface on delirium assessment and management. Content enhanced with Further Reading resources (Phase 4A) including equity considerations in delirium recognition across racial/ethnic groups; clinical accuracy corrected by removing incorrect ABCDEF acronym expansion in Siddiqi citation (Codex P1 finding) — status held at 'reviewed' per safetyKit governance constraint"
+    "at": "2026-07-03",
+    "by": "Joshua Moss, MD"
   },
   "agitation.md": {
     "status": "reviewed",
@@ -643,9 +642,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-16",
+    "at": "2026-07-03",
     "by": "Joshua Moss, MD",
-    "note": "safetyKit item: capacity assessment is high-risk clinical surface. Content enhanced with Further Reading resources (Phase 2) covering four-abilities model, delirium guidelines, catatonia criteria, withdrawal management, trauma-informed assessment, teaching resources (Phase 2); equity resources on capacity assessment bias, implicit bias, neurodiversity, and cultural competence (Phase 4A) \u2014 status held at 'reviewed' per safetyKit governance constraint"
+    "note": "safetyKit item: capacity assessment is high-risk clinical surface. Content enhanced with Further Reading resources (Phase 2) covering four-abilities model, delirium guidelines, catatonia criteria, withdrawal management, trauma-informed assessment, teaching resources — status held at 'reviewed' per safetyKit governance constraint"
   },
   "psychopharm_primer.md": {
     "status": "reviewed",
@@ -680,9 +679,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "Phase 4A added clinical content pending faculty review (Codex finding).",
-    "at": "2026-09-16",
-    "by": "Pending faculty review"
+    "at": "2026-09-14",
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with evidence-based resources on documentation, oral presentation, handoff communication, and clinical reasoning",
+    "note": "Added comprehensive Further Reading section covering documentation standards, structured handoffs (Solet & Frankel), formulation-driven assessment (Summers), differential diagnosis reasoning, MSE focus and tailoring, presentation skills under pressure, book references (Kaplan & Sadock, Morrison), and practice guidance (Phase 2 coverage curation)"
   },
   "exp_tx.md": {
     "status": "reviewed",
@@ -1093,9 +1093,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "Phase 4A added clinical content pending faculty review (Codex finding).",
-    "at": "2026-09-16",
-    "by": "Pending faculty review"
+    "at": "2026-07-09",
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with media resources",
+    "note": "Added Further Reading section with formulation frameworks, books, and teaching resources (Phase 1 coverage curation)"
   },
   "medical_workup.md": {
     "status": "pending",
@@ -1103,9 +1104,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "Phase 4A added clinical content pending faculty review (Codex finding).",
-    "at": "2026-09-16",
-    "by": "Pending faculty review"
+    "at": "2026-07-10",
+    "by": "Pending faculty review",
+    "reason": "Curriculum content updated with media resources",
+    "note": "Added Further Reading section with medical workup guidelines, medical mimics resources, and teaching resources (Phase 1 coverage curation)"
   },
   "toxidromes.md": {
     "status": "reviewed",
