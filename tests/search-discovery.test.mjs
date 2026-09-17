@@ -115,8 +115,13 @@ for (const site of ['ms3', 'res']) {
       const rows = results(q);
       assert.ok(rows.some(r => r.kind === 'protocol' && r.item.ref === kit.ref), `${kit.ref}: ${q}`);
       assert.ok(results(q + '!').some(r => r.kind === 'protocol' && r.item.ref === kit.ref), `${kit.ref}: ${q}!`);
+      // The protocol the trigger names precedes every ordinary row: that is the crisis contract.
+      // Another protocol reached only by a topic word may sit below a resource the curated
+      // search aliases name for this exact phrasing ("cows": the withdrawal tool above the consult
+      // sheet whose title carries "withdrawal") -- see fdSearchResults, #429.
       const firstItem = rows.findIndex(r => r.kind !== 'protocol');
-      if (firstItem >= 0) assert.ok(rows.slice(firstItem).every(r => r.kind !== 'protocol'));
+      const named = rows.findIndex(r => r.kind === 'protocol' && r.item.ref === kit.ref);
+      if (firstItem >= 0) assert.ok(named < firstItem, `${kit.ref}: ${q} trails an ordinary row`);
     }
   });
   test(`${site}: no result is from the other audience`, () => {

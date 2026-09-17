@@ -76,6 +76,16 @@ CASES = [
     # limit 1 = must be the FIRST result, which is the strongest form this harness has.
     {"query": "agitation", "anyTop": {"agitation.md"}, "limit": 1},
     {"query": "motivational interviewing", "anyTop": {"motivational_interviewing.md"}, "limit": 1},
+    # Medication refusal (#429). The learner types the SCENARIO, not the tool's name, and
+    # before this the whole top five was teaching pages that merely mention refusal — osce.md,
+    # exp_consult.md, doc_oral.md, cases.md, rounds_questions.md — with the Decisional Capacity
+    # tool nowhere in it. common.tok() does not stem, so "refuses" could never reach the tool's
+    # old "refusal" keyword; the fix is the tool's keyword string carrying every variant a
+    # learner types, and these cases are what stops it being quietly edited back out. The
+    # intent mapping behind them is submitted for faculty review.
+    {"query": "patient refuses medication", "anyTop": {"capacity.html"}, "limit": 1},
+    {"query": "refuses medication", "anyTop": {"capacity.html"}, "limit": 1},
+    {"query": "patient refusing medications", "anyTop": {"capacity.html"}, "limit": 3},
 ]
 
 

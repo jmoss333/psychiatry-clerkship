@@ -1709,6 +1709,22 @@ test('a returning learner can leave rotation mode: browse clears the rotation, s
   await expect(page.locator('.fd-weekpill[data-fd-change-week]')).toContainText('Week 2');
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).not.toBeNull();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')).browsing)).toBe(false);
+});
+
+// #429 — "patient refuses medication" ranked Consult Questions, Delirium, Decisional Capacity; the
+// tool that answers the question is now first, the consult sheet is still one row below it, and a
+// crisis phrasing still routes to the suicide protocol ahead of everything.
+test('a medication-refusal search ranks Decisional Capacity first without weakening crisis routing', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await page.locator('[data-fd-search]').click();
+  const input = page.locator('.fd-searchpanel__input');
+  await expect(input).toBeFocused();
+  await input.fill('patient refuses medication');
+  await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-open', 'capacity.html');
+  await expect(page.locator('.fd-result[data-fd-safety="exp_consult.md"]')).toHaveCount(1);
+  await input.fill('she said she wants to die');
+  await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
   await expectHealthy(page);
 });
 
