@@ -954,10 +954,10 @@
   .fd-shell:not(:has(.fd-actionbar)) .fd-header__bar{padding-bottom:8px}
   .fd-shell:not(:has(.fd-actionbar)) .fd-tabs{
     position:fixed;left:0;right:0;bottom:0;z-index:50;max-width:none;margin:0;
-    padding:0 8px env(safe-area-inset-bottom);
+    padding:0 var(--fd-space-4) env(safe-area-inset-bottom);
     background:var(--fd-surface-warm);border-top:1px solid var(--fd-line);box-shadow:var(--fd-shadow-bar);
   }
-  .fd-shell:not(:has(.fd-actionbar)) .fd-tab{flex:1;text-align:center;padding:10px 8px;border-bottom:none;border-top:3px solid transparent}
+  .fd-shell:not(:has(.fd-actionbar)) .fd-tab{flex:1;text-align:center;padding:var(--fd-space-5) var(--fd-space-4);border-bottom:none;border-top:3px solid transparent}
   .fd-shell:not(:has(.fd-actionbar)) .fd-tab.is-active{border-top-color:var(--fd-teal)}
   .fd-shell:not(:has(.fd-actionbar)) .fd-main{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
   /* The nudge toast is bottom-anchored too; lift it clear of the tab bar. */
@@ -965,7 +965,7 @@
   .fd-shell:has(.fd-actionbar) .fd-reader>.fd-reader__back{display:none}
   .fd-shell:has(.fd-actionbar) .fd-reader__toolbar{display:none}
   .fd-main{padding-top:8px}
-  .fd-article{padding:12px 20px}
+  .fd-article{padding:var(--fd-space-6) var(--fd-space-8)}
 }
 
 /* ═══ Keyframes ══════════════════════════════════════════════════════════════

@@ -99,12 +99,15 @@ test('content clears the bottom bar and the reader gives its first screen to the
   assert.match(rule(block, '.fd-main'), /padding-top:(\d+)px/);
   assert.ok(Number(rule(block, '.fd-main').match(/padding-top:(\d+)px/)[1]) <= 12);
   const article = rule(block, '.fd-article');
-  const pad = article.match(/padding:(\d+)px (\d+)px/);
-  assert.ok(pad, `article padding must be a two-value px shorthand on phones, got: ${article}`);
-  assert.ok(Number(pad[1]) <= 18, `article vertical padding tightens on phones: ${pad[0]}`);
-  // The sides stay at 20px: 16px pushed the Welcome Compass from two tracks to three at a
+  // Dimension tokens, not px: bin/check_design_drift.py ratchets raw padding/margin/gap
+  // declarations in this stylesheet (it caught the first cut at 196 -> 199). The scale is
+  // --fd-space-1..10 = 2,4,6,8,10,12,16,20,24,28px, so vertical <= space-7 (16px) and the sides
+  // exactly space-8 (20px): 16px sides pushed the Welcome Compass from two tracks to three at a
   // 561px viewport (front-door.spec.js's width buckets) — a real layout change, not a pin.
-  assert.equal(Number(pad[2]), 20, `article side padding is a Compass width contract: ${pad[0]}`);
+  const pad = article.match(/padding:var\(--fd-space-(\d+)\) var\(--fd-space-(\d+)\)/);
+  assert.ok(pad, `article padding must be a two-token shorthand on phones, got: ${article}`);
+  assert.ok(Number(pad[1]) <= 7, `article vertical padding tightens on phones: ${pad[0]}`);
+  assert.equal(Number(pad[2]), 8, `article side padding is a Compass width contract: ${pad[0]}`);
 });
 
 test('the header bar keeps its own bottom padding once the tabs leave the flow', () => {
