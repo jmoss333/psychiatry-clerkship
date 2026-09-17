@@ -126,7 +126,13 @@ function fdResolveState(url, stored){
     var first=src.roles[0]||{};
     if(first.id) out.role=first.id;
   }
-  if(!out.role) out.screen='setup-role';
+  /* Guest deep link (2026-09-16): a routed page or tool with no stored role renders the resource
+     without asking who the reader is, and assigns NO role -- so the next plain visit still runs
+     the wizard from step 1. The flag is per-boot state, never persisted (see FD_KEYS). Only a
+     real page or tool admits a guest: the legacy aliases and every other __name__ pseudo-route
+     (__progress__ is the device's own dashboard) keep the setup gate below. */
+  if(!out.role&&routedRef&&!fdIsLegacyRouteAlias(routedRef)&&routedRef.indexOf('__')!==0){ out.guest=true; out.screen='app'; }
+  else if(!out.role) out.screen='setup-role';
   else if(src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
   else out.screen='setup-week';
   if(routedRef&&fdIsLegacyRouteAlias(routedRef)){
