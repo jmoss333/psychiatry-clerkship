@@ -964,6 +964,10 @@
   .fd-shell:not(:has(.fd-actionbar)) .fd-nudge{bottom:calc(74px + env(safe-area-inset-bottom))}
   .fd-shell:has(.fd-actionbar) .fd-reader>.fd-reader__back{display:none}
   .fd-shell:has(.fd-actionbar) .fd-reader__toolbar{display:none}
+  /* A practice tool opened from a clinical field guide inserts its only `Return to guide` control
+     into this toolbar (spa_index.html's guide-bookmark branch), and the action bar's `‹` does not
+     restore that bookmark. The toolbar therefore comes back whenever that control is in it. */
+  .fd-shell:has(.fd-actionbar) .fd-reader__toolbar:has(.fd-guide-return){display:flex}
   .fd-main{padding-top:8px}
   .fd-article{padding:var(--fd-space-6) var(--fd-space-8)}
 }

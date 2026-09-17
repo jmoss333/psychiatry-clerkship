@@ -87,6 +87,8 @@ test('the reader hides its top back link on a phone, because the action bar carr
   assert.match(rule(block, `${READER} .fd-reader>.fd-reader__back`), /display:none/);
   assert.match(rule(block, `${READER} .fd-reader__toolbar`), /display:none/,
     'a tool reader keeps its back link in the toolbar; the toolbar goes with it');
+  assert.match(rule(block, `${READER} .fd-reader__toolbar:has(.fd-guide-return)`), /display:flex/,
+    'the toolbar comes back when it carries the Return to guide control -- the action bar cannot restore a guide bookmark');
   // Guarded on :has(.fd-actionbar), never on .fd-reader alone: the Progress page and the
   // not-found surface render a .fd-reader with NO action bar, and their top back link is the
   // only way back.
