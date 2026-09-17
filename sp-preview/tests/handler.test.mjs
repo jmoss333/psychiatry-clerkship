@@ -236,11 +236,13 @@ test('the registry carries the five authorized preview cases, each with its own 
  assert.equal(getCase('not_a_case'),undefined);
 });
 
-test('only Dana carries the direct-suicide-question overlay',async()=>{
+test('the direct-suicide-question policy lives in the reviewed pack; no hosted case carries an overlay (#565)',async()=>{
  const {CASES}=await import('../lib/case.mjs');
- assert.equal(CASES.sp_depression_gated_si_001.caseDef.localDraftOverlay?.id,'dana-direct-si-v1');
- for(const id of ['sp_mania_redirect_001','sp_psychosis_paranoid_001'])
-  assert.equal(Object.hasOwn(CASES[id].caseDef,'localDraftOverlay'),false,id+' must not receive Dana overlay');
+ const gate=CASES.sp_depression_gated_si_001.caseDef.gated.find(g=>g.id==='si_active');
+ assert.equal(gate.requiresRapport,-3);
+ assert.deepEqual(gate.blockedByRecentFlags,[]);
+ for(const id of ['sp_depression_gated_si_001','sp_mania_redirect_001','sp_psychosis_paranoid_001'])
+  assert.equal(Object.hasOwn(CASES[id].caseDef,'localDraftOverlay'),false,id+' must not carry the retired overlay marker');
 });
 
 test('a receipt sealed for one case cannot be opened as another',async()=>{

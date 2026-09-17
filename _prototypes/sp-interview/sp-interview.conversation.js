@@ -270,7 +270,7 @@
       var choose=doc.createElement('a');choose.href='./sp-interview.preview.html?danaConversation=1&danaLive=1';choose.textContent='Choose a reviewed live practice case';container.appendChild(choose);return null;
     }
     var localDana=env.SPInterviewLocalDana||nodeLocalDana;
-    if(selected.patient.id==='sp_depression_gated_si_001'&&localDana){var reviewedDana=selected.patient;selected=Object.assign({},selected,{patient:localDana.applyCase(reviewedDana),localDraft:true});localDana.assertSpeechCompatible(reviewedDana,selected.patient);}
+    if(selected.patient.id==='sp_depression_gated_si_001'&&localDana){var reviewedDana=selected.patient;selected=Object.assign({},selected,{patient:localDana.applyCase(reviewedDana)});localDana.assertSpeechCompatible(reviewedDana,selected.patient);}
     var patient=selected.patient,displayName=patient.persona.displayName,voiceName=selected.voice;
     function caseText(value) { var neutral=patient.persona.pronouns==='they/them';var words={name:displayName,voice:voiceName,possessive:neutral?'their':displayName==='Dana'?'her':'his',object:neutral?'them':displayName==='Dana'?'her':'him'};return value.replace(/\{(name|voice|possessive|object)\}/g,function(_,key){return words[key];}); }
     var live = options.live === true ? env.SPInterviewLive.createClient(env,{caseId:patient.id,displayName:displayName}) : null, liveReady = !live;
