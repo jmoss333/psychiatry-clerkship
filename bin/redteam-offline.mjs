@@ -66,12 +66,16 @@ const RAPPORT = [
 
 const PROBES = [
   {
-    id: 'B1', name: 'SI as the FIRST message — rapport gate holds',
+    // D17 (#565): the safety question is never the gated object. Asked cold, as the first
+    // message, it discloses and scores -- the encounter must not teach that asking early is
+    // punished. Until 2026-09-17 this probe pinned the opposite (a rapport-1 gate).
+    id: 'B1', name: 'SI as the FIRST message — discloses (D17)',
     gates: ['si_active'],
     run: () => probe('Dana', ['Have you had thoughts of killing yourself?']),
     expect: (r) => [
-      !r.unlocked.includes('si_active') || 'si_active unlocked at rapport 0 — the disclosure gate is open to a cold question',
-      r.covered.includes('si_direct') || 'si_direct not counted as asked (the question should still register)',
+      r.unlocked.includes('si_active') || 'si_active stayed shut to a cold direct question — D17 violation',
+      r.covered.includes('si_direct') || 'si_direct not counted as asked',
+      r.row('c_si') === 'observed' || `c_si = ${r.row('c_si')} (want observed)`,
     ],
   },
   {
@@ -137,30 +141,42 @@ const PROBES = [
     ],
   },
   {
-    id: 'B4', name: 'judgmental turn, then the screen — gate stays shut',
+    // D17 (#565): a judgmental turn is flagged and answered on its own turn (rapport drops, the
+    // judgmental line is the reply) but it cannot shut the safety question that follows. The
+    // friction belongs to the judgment, never to the question. Until 2026-09-17 this probe pinned
+    // the opposite -- and its sibling B4b pinned a two-turn "recovery" window that no longer exists.
+    id: 'B4', name: 'judgmental turn, then the screen — the judgment is flagged, the question still discloses (D17)',
     gates: ['si_active'],
     // NB: the phrasing must actually trip Dana's `judgmental` intent. "Calm down"
     // is Marcus's flag vocabulary, not hers — hers keys on "you should", "at least",
     // "snap out", "look on the bright side". A probe that does not flag proves nothing.
-    run: () => probe('Dana', [...RAPPORT, JUDGMENTAL, SCREEN]),
+    run: () => ({
+      flagged: probe('Dana', [...RAPPORT, JUDGMENTAL]),
+      screened: probe('Dana', [...RAPPORT, JUDGMENTAL, SCREEN]),
+      cold: probe('Dana', [JUDGMENTAL, SCREEN]),
+    }),
     expect: (r) => [
-      !r.unlocked.includes('si_active') || 'si_active unlocked on a turn following a judgmental flag',
+      r.flagged.covered.includes('judgmental') || 'the judgmental phrasing did not trip the flag — the probe proves nothing',
+      !r.flagged.unlocked.includes('si_active') || 'a judgment alone opened si_active',
+      r.screened.unlocked.includes('si_active') || 'si_active stayed shut on the turn after a judgmental flag — D17 violation',
+      r.cold.unlocked.includes('si_active') || 'a judgment at rapport 0 shut the safety question — D17 violation',
     ],
   },
   {
-    // The other half of B4. The flag window is flagHistory.slice(-2), so a learner who
-    // was judgmental must put TWO clean turns between the flag and the re-ask before the
-    // disclosure is reachable again. That is a designed amount of forgiveness — pin it,
-    // or a change to the window silently makes the patient harsher or cheaper to win over.
-    id: 'B4b', name: 'the gate RECOVERS after the flag ages out (2 clean turns)',
+    // The old B4b pinned a flagHistory.slice(-2) recovery window for si_active. D17 removed the
+    // window from the safety question; what must still hold is that repair turns are not what
+    // opens the gate -- the question is, on whichever turn it is asked.
+    id: 'B4b', name: 'repair turns are not what opens the safety question — asking is (D17)',
     gates: ['si_active'],
     run: () => ({
-      one: probe('Dana', [...RAPPORT, JUDGMENTAL, SCREEN, REPAIR[0], SCREEN]),
-      two: probe('Dana', [...RAPPORT, JUDGMENTAL, SCREEN, ...REPAIR, SCREEN]),
+      repairedOnly: probe('Dana', [...RAPPORT, JUDGMENTAL, ...REPAIR]),
+      askedAfterOne: probe('Dana', [...RAPPORT, JUDGMENTAL, REPAIR[0], SCREEN]),
+      askedAfterTwo: probe('Dana', [...RAPPORT, JUDGMENTAL, ...REPAIR, SCREEN]),
     }),
     expect: (r) => [
-      !r.one.unlocked.includes('si_active') || 'gate reopened after only ONE repair turn — the flag window shrank',
-      r.two.unlocked.includes('si_active') || 'gate never reopened after two repair turns — a single judgmental turn locks the disclosure out permanently',
+      !r.repairedOnly.unlocked.includes('si_active') || 'repair turns alone opened si_active',
+      r.askedAfterOne.unlocked.includes('si_active') || 'the question after one repair turn did not disclose',
+      r.askedAfterTwo.unlocked.includes('si_active') || 'the question after two repair turns did not disclose',
     ],
   },
   {
@@ -237,13 +253,28 @@ const PROBES = [
     ],
   },
   {
-    id: 'B8c', name: 'a judgmental turn still shuts the attempt-history gate',
+    // D17 (#565): a judgmental turn no longer shuts the safety question -- the direct question
+    // discloses at any rapport and after any flag, and the judgment gets its own pushback line.
+    // What the flag still cannot do is open a DEPTH gate: attempt history needs the disclosure
+    // turn first, exactly as before. Until 2026-09-17 this probe expected si_active to stay shut.
+    id: 'B8c', name: 'a judgmental turn cannot shut the safety question, and cannot open the attempt-history gate on its own',
     gates: ['si_active', 'si_behavior_detail'],
-    run: () => probe('Dana', [...RAPPORT, JUDGMENTAL, SCREEN, 'Have you ever tried to end your life?']),
+    run: () => ({
+      after: probe('Dana', [...RAPPORT, JUDGMENTAL, SCREEN, 'Have you ever tried to end your life?']),
+      sameTurn: probe('Dana', [...RAPPORT, JUDGMENTAL, 'Have you ever tried to end your life?']),
+      noScreen: probe('Dana', [...RAPPORT, JUDGMENTAL, 'Have you had any past attempts?']),
+    }),
     expect: (r) => [
-      !r.unlocked.includes('si_active') || 'si_active unlocked on a turn following a judgmental flag',
-      !r.unlocked.includes('si_behavior_detail')
-        || 'si_behavior_detail opened while its required gate was blocked by a flag',
+      r.after.unlocked.includes('si_active') || 'the direct question after a judgment did not disclose',
+      r.after.unlocked.includes('si_behavior_detail')
+        || 'the attempt question after a disclosure did not open the attempt-history gate',
+      r.sameTurn.unlocked.includes('si_active')
+        || 'a turn naming the act after a judgment did not open si_active',
+      !r.sameTurn.unlocked.includes('si_behavior_detail')
+        || 'the attempt-history gate opened on the same turn as the disclosure (one gate per turn)',
+      !r.noScreen.unlocked.includes('si_active') || 'a plain attempt question opened si_active without naming the act',
+      !r.noScreen.unlocked.includes('si_behavior_detail')
+        || 'the attempt-history gate opened with no disclosure -- a judgment must not unlock depth',
     ],
   },
   {

@@ -28,8 +28,9 @@ const MODEL = 'claude-haiku-4-5-20251001';
 // pack: sp-governance treats a review dated after `now` as not yet in force, so a clock that
 // lags the pack silently drops cases from the reviewed set. Before 2026-09-10 this was
 // 2026-07-15, which excluded Marcus and Ray (reviewed 2026-08-31) without any test noticing;
-// Dana's 2026-09-09 re-attestation then emptied the set and failed 21 tests.
-const NOW_MS = Date.parse('2026-09-10T12:00:00.000Z');
+// Dana's 2026-09-09 re-attestation then emptied the set and failed 21 tests. Bump it whenever a
+// case's lastReviewed advances (2026-09-17: Dana, #565).
+const NOW_MS = Date.parse('2026-09-18T12:00:00.000Z');
 const PACK_HASH = 'ab'.repeat(32);
 const TICKET_SECRET = '0123456789abcdef0123456789abcdef';
 const ENCOUNTER_ID = Buffer.from(

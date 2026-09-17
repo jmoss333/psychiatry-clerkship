@@ -161,3 +161,13 @@ test('explicit modes ignore the OS; system follows it', () => {
   assert.equal(F.fdThemeAttr('system', true), 'dark');
   assert.equal(F.fdThemeAttr('system', false), 'light');
 });
+
+// ---- Phase 3 (F4): the header holds with no role (a guest deep link) --------------------------
+test('the header renders for a guest with no role, without leaking an undefined into copy', () => {
+  for (const state of [{}, { tab: 'today' }, { tab: 'library', week: undefined }]) {
+    const html = F.fdHeader(state);
+    assert.match(html, /data-fd-safety/, 'safety stays reachable');
+    assert.match(html, /fd-weekpill/, 'the week pill still renders');
+    assert.doesNotMatch(html, /undefined|null/, JSON.stringify(state));
+  }
+});

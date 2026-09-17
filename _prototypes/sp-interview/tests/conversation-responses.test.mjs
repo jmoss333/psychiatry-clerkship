@@ -136,13 +136,16 @@ test('clinical, safety, hostile and compound input keeps original replies and di
   }
 });
 
-test('social acknowledgements cannot unlock disclosure and original text remains in full encounter history',async()=>{
+test('social acknowledgements cannot unlock disclosure; the direct question does, at zero rapport (#565)',async()=>{
   const p=provider(),s=p.start(dana,{difficulty:'supported'});
-  const questions=['Hello',"I'm sorry that you had to","My goal is to help understand why you're here",'Have you had thoughts of killing yourself?'];
-  for(const q of questions)await p.respond(s,q);
+  const acknowledgements=['Hello',"I'm sorry that you had to","My goal is to help understand why you're here"];
+  for(const q of acknowledgements)await p.respond(s,q);
   assert.equal(s.rapport,0);assert.deepEqual(Object.keys(s.unlocked),[]);
-  assert.equal(s.turns.at(-1).pt,dana.gated[0].deflectLowRapport);
-  assert.deepEqual(Array.from(s.turns,t=>t.me),questions);
+  const question='Have you had thoughts of killing yourself?';
+  await p.respond(s,question);
+  assert.equal(s.rapport,0);assert.deepEqual(Object.keys(s.unlocked),['si_active']);
+  assert.equal(s.turns.at(-1).pt,dana.gated[0].reveal);
+  assert.deepEqual(Array.from(s.turns,t=>t.me),acknowledgements.concat([question]));
 });
 
 test('unsupported specifics and ambiguous followups remain honest scripted clarifications',async()=>{

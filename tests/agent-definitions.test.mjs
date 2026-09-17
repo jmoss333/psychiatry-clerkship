@@ -65,6 +65,17 @@ const CONTRACTS = {
       // is_soft_context() downgrades pointer stubs to a WARN and returns 0 when
       // CONTEXT=deploy-preview, so a preview reaches `ready` with no real media in it.
       'is_soft_context()', 'The gate is soft on previews',
+      // 2026-09-16 production verification (#671 merge): the runbook asserted the MARKDOWN
+      // hook (`crisis-block-hook`, from crisis_block.render_markdown) on every surface, but the
+      // eight tool pages and the shell get render_html's `<section class="crisis-block"
+      // aria-labelledby="crisis-block-heading">` instead — a guaranteed false FAIL on tools and,
+      // because spa_index.html's own JS names the hook selector, a false PASS on `/`. The body
+      // must keep teaching both shapes.
+      'crisis-block-heading',
+      // Same session: the runbook said `--source-sha` may be omitted. production_canary.py
+      // defaults it to $GITHUB_SHA (Actions-only) and probe() rejects anything else before the
+      // first request, so the body must keep saying the flag is required and what it validates.
+      '40 lowercase hexadecimal',
     ],
   },
 };

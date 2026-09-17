@@ -1,0 +1,9 @@
+{
+  "_note": "Pinned by bin/verify_spans.py. Counts may fall, never rise. Regenerate with --update-baseline as part of a reviewed reduction, never to absorb a rise -- the diff is in the PR. See docs/RATCHETS.md.",
+  "counts": {
+    "rows_flagged": 11,
+    "rows_uncached": 0,
+    "sentences_edited": 6,
+    "sentences_truncated": 9
+  }
+}

@@ -193,6 +193,35 @@ Both sites must be flipped together — `SW_KILL` is a per-site Netlify build en
 runtime flag, so leaving one site set and the other unset ships inconsistent offline behavior
 between the MS3 and resident learner populations.
 
+## 10. Deploy-preview CSP — the Netlify Drawer (#430, 2026-09-16)
+
+Both learner sites ship a `Content-Security-Policy` whose `frame-src` is `'self'` (the whole
+`_headers` payload is one string literal in `site_build/build_deploy.py`, pinned byte-for-byte by
+`tests/faculty-console-handler.test.mjs`). On a **deploy preview** Netlify injects
+`<script async src="/.netlify/scripts/cdp">` into every served HTML page; the script is same-origin
+so it passes `script-src 'self'`, but the drawer it opens frames `https://app.netlify.com/`, which
+`frame-src 'self'` blocks — every preview page logged *"Framing https://app.netlify.com/ violates
+the site's frame-src 'self' Content Security Policy directive"*, console noise that hides real
+preview-only failures. Production pages receive no such injection.
+
+**Policy (issue #430, option 1): widen `frame-src` to `'self' https://app.netlify.com` in the
+`deploy-preview` context only.** Netlify sets `CONTEXT` per build (`production`, `deploy-preview`,
+`branch-deploy`); `common.py`'s `preview_headers(text, context)` returns the payload unchanged for
+every value but `deploy-preview`, and for that one rewrites the single `frame-src` directive on the
+`Content-Security-Policy` line and nothing else. `apply_preview_headers()` runs it over the
+already-written `_build/<site>/_headers` and rewrites the file only if it changed, so **production
+and branch-deploy output stays byte-identical** and no other directive, header, or Cache-Control
+block moves. It is idempotent: the resident build re-applies it to the `_headers` it inherits
+through `shutil.copytree`, and that is a no-op. The transform fails loudly rather than silently
+no-opping if the literal's `frame-src` ever changes shape. `TestPreviewHeaders` in
+`site_build/test_common.py` (CI + `bin/verify.sh`) pins all of it, including the two source-text
+assertions that the two build scripts still call it.
+
+Reproduce locally: `CONTEXT=deploy-preview bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3`
+and diff `_build/ms3/_headers` against a build with `CONTEXT` unset — the only difference must be
+the one `frame-src` directive.
+
+
 ---
 *Prepared 2026-07-01; deployment migration completed 2026-07-02; scheduled-operations handoff linked
 2026-07-29. Baseline commit `a7793cc`. Manual deploys can remain retired; follow the maintenance

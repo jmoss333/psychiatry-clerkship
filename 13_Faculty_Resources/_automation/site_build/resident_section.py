@@ -36,6 +36,15 @@ if os.path.exists(_copied_governance): os.remove(_copied_governance)
 _copied_surface_governance=os.path.join(OUT,"governance.json")
 if os.path.exists(_copied_surface_governance): os.remove(_copied_surface_governance)
 
+# Deploy-preview CSP (#430). The resident site has no _headers writer of its own: the file
+# arrives through the copytree above, already widened if THIS build ran with
+# CONTEXT=deploy-preview (build_deploy.py ran first, in the same environment). The call is
+# repeated here anyway because inheritance is not a contract -- if the resident build ever
+# writes or rewrites its own _headers, the preview allowance must not silently disappear with
+# the copy. preview_headers() is idempotent, so on the inherited file this is a no-op and
+# nothing is rewritten or printed.
+common.apply_preview_headers(OUT, label="res")
+
 # ---- orientation video is MS3-scoped (its own narration says "clerkship") — strip the files
 # that rode along via the MS3 copytree above; resident gets its own prototypes only (below).
 # The package is declared once in site_extras.py, so this strip cannot drift from the copy.

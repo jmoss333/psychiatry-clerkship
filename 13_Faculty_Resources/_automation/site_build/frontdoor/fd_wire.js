@@ -106,6 +106,7 @@ function fdResolveState(url, stored){
   else out.viewWeek=1;
   out.autoAdvance=src.autoAdvance!==false;
   if(src.toolExpanded!==undefined) out.toolExpanded=src.toolExpanded===true;
+  if(src.browsing===true) out.browsing=true;
 
   var parsed, routedRef=null;
   try{ parsed=new URL(String(url||''),'https://frontdoor.invalid/'); }catch(_){ parsed=null; }
@@ -126,7 +127,13 @@ function fdResolveState(url, stored){
     var first=src.roles[0]||{};
     if(first.id) out.role=first.id;
   }
-  if(!out.role) out.screen='setup-role';
+  /* Guest deep link (2026-09-16): a routed page or tool with no stored role renders the resource
+     without asking who the reader is, and assigns NO role -- so the next plain visit still runs
+     the wizard from step 1. The flag is per-boot state, never persisted (see FD_KEYS). Only a
+     real page or tool admits a guest: the legacy aliases and every other __name__ pseudo-route
+     (__progress__ is the device's own dashboard) keep the setup gate below. */
+  if(!out.role&&routedRef&&!fdIsLegacyRouteAlias(routedRef)&&routedRef.indexOf('__')!==0){ out.guest=true; out.screen='app'; }
+  else if(!out.role) out.screen='setup-role';
   else if(src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
   else out.screen='setup-week';
   if(routedRef&&fdIsLegacyRouteAlias(routedRef)){
@@ -253,15 +260,27 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-week')){
     n=fdNumberAttr(a,'data-fd-week');
     if(n===0){
+      /* "Not on rotation -- just browse" is a choice, not an absence (#425). week:null alone was
+         undone on the very next render: fdLiveState re-derives the week from cw_rotation_start,
+         so a returning learner who chose browse kept seeing the week they had left. The effect
+         removes that key and browsing:true is persisted (FD_KEYS) so a reload on any tab still
+         resolves to the app rather than asking for a week again. */
       var firstWeek=(c.index&&c.index.weeks&&c.index.weeks[0])||{};
+      patch={week:null,tab:'library',viewWeek:firstWeek.n,screen:'app',openId:null,browsing:true};
+      if(s.setupFrom) patch.setupFrom=null;
       return {
-        patch:{week:null,tab:'library',viewWeek:firstWeek.n,screen:'app',openId:null},
+        patch:patch,
         route:fdRouteForTab('library',c.search),effect:{type:'browse-without-rotation'}
       };
     }
     if(n===null||!fdDispatchHasWeek(c,n)) return {patch:{},route:null,effect:null};
+    /* Leaving browse mode and the Change-week origin are patched only when set, so the
+       transition detail of an ordinary week choice stays exactly what it was. */
+    patch={week:n,viewWeek:n,tab:'today',screen:'app',openId:null};
+    if(s.browsing===true) patch.browsing=false;
+    if(s.setupFrom) patch.setupFrom=null;
     return {
-      patch:{week:n,viewWeek:n,tab:'today',screen:'app',openId:null},
+      patch:patch,
       route:fdRouteForTab('today',c.search),
       effect:{type:'set-rotation',start:fdRotationStartForWeek(n,c.index.weeks,c.nowMs)}
     };
@@ -269,8 +288,10 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-setweek')){
     n=fdNumberAttr(a,'data-fd-setweek');
     if(n===null||!fdDispatchHasWeek(c,n)) return {patch:{},route:null,effect:null};
+    patch={week:n,viewWeek:n,screen:'app'};
+    if(s.browsing===true) patch.browsing=false;
     return {
-      patch:{week:n,viewWeek:n,screen:'app'},route:null,
+      patch:patch,route:null,
       effect:{type:'set-rotation',start:fdRotationStartForWeek(n,c.index.weeks,c.nowMs)}
     };
   }
@@ -395,6 +416,14 @@ function fdDispatch(attrs, context, state){
   }
   if(fdOwn(a,'data-fd-back')){
     if(s.screen==='setup-week'){
+      /* Two learners reach this screen. First run: the role was chosen a moment ago, so Back
+         un-chooses it. A returning learner arrived through Change week (setupFrom:'app') and
+         already has a role and a rotation or a browse choice; for them Back is "never mind",
+         and clearing the role while the rotation stayed stored left a half-state that asked
+         "Who's this for?" over a live rotation (#425). */
+      if(s.setupFrom==='app'){
+        return {patch:{screen:'app',setupFrom:null},route:null,effect:null};
+      }
       return {patch:{role:null,screen:'setup-role'},route:null,effect:null};
     }
     tab=fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
@@ -412,7 +441,7 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-change-week')){
     tab=s.openId&&fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
     return {
-      patch:{screen:'setup-week',tab:tab,openId:null,searchOpen:false,sheet:null},
+      patch:{screen:'setup-week',tab:tab,openId:null,searchOpen:false,sheet:null,setupFrom:'app'},
       route:fdRouteForTab(tab,c.search),history:'replace',effect:null
     };
   }
@@ -1011,9 +1040,9 @@ function fdWire(root, initialState, opts){
   }
   function fdApplyEffect(effect, fromHistory, generation){
     if(!effect) return;
-    if(effect.type==='set-rotation'){
-      try{ localStorage.setItem('cw_rotation_start',effect.start); }catch(_){}
-    } else if(effect.type==='toggle-progress'){
+    /* set-rotation and browse-without-rotation write their key in apply(), ABOVE the render --
+       see the comment there. Nothing is left for them to do once the page has painted. */
+    if(effect.type==='toggle-progress'){
       if(effect.done&&typeof seedSRS==='function') try{seedSRS(effect.ref);}catch(_){}
       if(effect.openRef){
         var progressOpener=o.openResource||fdOpenResource;
@@ -1122,6 +1151,16 @@ function fdWire(root, initialState, opts){
        fdApplyEffect; only the read-back is order-sensitive. */
     if(result.effect&&result.effect.type==='set-theme'){
       try{ localStorage.setItem('cw_theme',result.effect.mode); }catch(_){}
+    }
+    /* Same shape again for the rotation start (#425). fdLiveState re-derives the week from
+       cw_rotation_start on EVERY render when the state carries none, and browse mode carries none
+       by definition: removed after the render, the header and Today painted the old week once
+       more before the key went, and the smoke test read "Week 1" on a learner who had just chosen
+       browse. The write for a chosen week is hoisted with it so the two stay one rule. */
+    if(result.effect&&result.effect.type==='set-rotation'){
+      try{ localStorage.setItem('cw_rotation_start',result.effect.start); }catch(_){}
+    } else if(result.effect&&result.effect.type==='browse-without-rotation'){
+      try{ localStorage.removeItem('cw_rotation_start'); }catch(_){}
     }
     /* Same shape and the same reason as the theme write above, one delegation further out. The
        Usage section renders from what the emitter reports -- fdLiveState calls enabled(), which
