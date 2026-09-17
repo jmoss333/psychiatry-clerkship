@@ -81,7 +81,7 @@
     "facultyReview": {
       "status": "reviewed",
       "reviewer": "Joshua Moss, MD",
-      "lastReviewed": "2026-09-16"
+      "lastReviewed": "2026-07-03"
     },
     "workflowStages": [
       "diagnosis",
@@ -794,7 +794,7 @@
     "facultyReview": {
       "status": "reviewed",
       "reviewer": "Joshua Moss, MD",
-      "lastReviewed": "2026-09-16"
+      "lastReviewed": "2026-07-01"
     },
     "workflowStages": [
       "diagnosis",
@@ -2808,7 +2808,7 @@
     ],
     "facultyReview": {
       "status": "reviewed",
-      "lastReviewed": "2026-09-16",
+      "lastReviewed": "2026-07-03",
       "reviewer": "Joshua Moss, MD"
     }
   },
@@ -3238,7 +3238,8 @@
       "rounds_naming_uncertainty_001"
     ],
     "facultyReview": {
-      "status": "pending"
+      "status": "pending",
+      "lastReviewed": "2026-09-14"
     }
   },
   "exp_tx.md": {
