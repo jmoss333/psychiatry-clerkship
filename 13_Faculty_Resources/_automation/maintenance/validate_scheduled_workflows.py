@@ -278,6 +278,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Crawl both public learner sites"),
             ("name", "Build content-free release twin"),
             ("name", "Read Netlify production deploy health"),
+            ("name", "Check learner production revision parity"),
             ("uses", "actions/upload-artifact"),
         ),
     },
@@ -405,7 +406,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "ae4482d9b23810d6866e31371bce5d011c30b7450acc0a2ff83aa4eb8b1ce814"
     ),
     "maintenance-production-canary.yml": (
-        "4ee13d7a3eaa2a8d839b596265a25e0f0b78a8cad69c384d81784f5334c8ccfc"
+        "d2b848a52ea19f9e68d2afff370e763291f319798d8f3c0d869c944fb6ef39df"
     ),
     "maintenance-rotation-readiness.yml": (
         "655504ee205ce4f27ddc63dc2a819dc1d1eb7987f56bbacbbfc452d1cc48476a"
@@ -638,6 +639,14 @@ npx playwright test --project=lfs""",
     },
     "maintenance-production-canary.yml": {
         "production-canary": (
+            (
+                "Check learner production revision parity",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                "production_revision_parity.py --attempts 3 --retry-delay 60 "
+                '--out "$RUNNER_TEMP/production-revision-parity.json"',
+                "always()",
+                "required production revision parity gate",
+            ),
             (
                 "Install Playwright and Chromium",
                 "cd tests/smoke\nnpm ci\n"

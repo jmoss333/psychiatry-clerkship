@@ -2639,7 +2639,6 @@
       var fdPrereleaseRoute=new URLSearchParams(location.search);
       var fdPrereleaseRef=fdPrereleaseRoute.get('page')||fdPrereleaseRoute.get('tool')||'';
       if(fdPrereleaseRef&&!fdIsLegacyRouteAlias(fdPrereleaseRef)&&!fdPrereleaseStored.role){
-        fdPrereleaseStored.role=(FD_ROLES[0]&&FD_ROLES[0].id)||'reader';
         fdPrereleaseStored.browsing=true;
       }
       var fdPrereleaseInitial=fdResolveState(location.href,fdPrereleaseStored);
@@ -2703,8 +2702,9 @@
     if(fdFindWeek(FD_INDEX,fdWeek))fdStored.week=fdWeek;
     fdRouteParams=new URLSearchParams(location.search);
     fdIncomingRef=fdRouteParams.get('page')||fdRouteParams.get('tool')||'';
+    /* A deep-link visitor with no stored role is a GUEST: fdResolveState renders the resource
+       and assigns no role, so the next plain visit runs the wizard from step 1 (2026-09-16). */
     if(fdIncomingRef&&!fdIsLegacyRouteAlias(fdIncomingRef)&&!fdStored.role){
-      fdStored.role=(FD_ROLES[0]&&FD_ROLES[0].id)||'reader';
       fdStored.browsing=true;
     }
     fdInitial=fdResolveState(location.href,fdStored);
