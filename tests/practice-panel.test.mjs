@@ -580,7 +580,7 @@ test('the panel stylesheet block is unmodified (D-1: no new CSS)', () => {
 // render stays byte-identical, and the open render differs from it by the attribute alone.
 
 test('opts.open renders the panel open, and nothing else changes', () => {
-  const [ref, closed] = renderAll()[0];
+  const [ref, closed] = renderFromSource()[0];
   const meta = TOPIC_META[ref];
   const CLOSED_TAG = '<details class="topic-tpl practice-panel">';
   const OPEN_TAG = '<details class="topic-tpl practice-panel" open>';
