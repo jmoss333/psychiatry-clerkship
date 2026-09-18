@@ -1138,6 +1138,39 @@ class AttestationConsistencyTests(unittest.TestCase):
             ["ghost.html: reviewed but not shipped and not on LEDGER_ONLY_LEGACY"],
         )
 
+    def test_a_non_dict_topic_meta_entry_is_tolerated_not_a_traceback(self):
+        # validate() has always skipped a topic_meta entry that is not a dict (the
+        # facultyReview cross-check below does `if not isinstance(meta, dict): continue`),
+        # and topic_meta.schema.json is what fails the shape. The contentHash check reads
+        # the same file, so it must skip it too: a traceback here is a non-zero exit WITH
+        # stderr, and governance_digest.mjs throws on a single unexpected stderr line —
+        # which would abort build_and_check.sh with a stack trace instead of a bullet.
+        from unittest import mock
+
+        with tempfile.TemporaryDirectory() as root:
+            self.write_reviewed_fixture(root)
+            (Path(root) / "topic_meta.json").write_text(
+                json.dumps({TOOL_SLUG: "not a record"}), encoding="utf-8"
+            )
+
+            self.assertEqual(self.validate(root), [])
+
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            with mock.patch.object(validator, "ROOT", root):
+                with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(
+                    stderr
+                ):
+                    status = validator.main()
+
+        self.assertEqual(status, 0)
+        self.assertEqual(stderr.getvalue(), "")
+        self.assertEqual(
+            stdout.getvalue(),
+            "attestation consistency OK — 1 shipped item(s), "
+            "0 topic facultyReview entries aligned.\n",
+        )
+
     def test_drift_is_not_an_error_and_adds_no_output(self):
         from unittest import mock
 

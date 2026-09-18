@@ -100,6 +100,9 @@ def canonical_topic_meta_record(record: dict) -> bytes:
     `facultyReview` is dropped: it records the act of attesting, so including it would
     make every attestation invalidate itself. `ensure_ascii=False` keeps non-ASCII as
     real UTF-8 rather than `\\u` escapes, which is what the JS twin produces.
+
+    Takes a mapping. Whether a given topic_meta value IS one is `manifest_for_slug`'s
+    decision, made once there; do not re-decide it here or in a caller.
     """
     body = {key: value for key, value in record.items() if key != "facultyReview"}
     return json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
@@ -133,13 +136,32 @@ def manifest_for_slug(slug: str, sources: dict[str, bytes], record: dict | None)
     `sources` maps each source path to its working-tree bytes. Refuses an empty mapping:
     a manifest over no sources would still produce a plausible-looking digest, which is
     exactly the shape of a check that reports success over nothing.
+
+    A `record` THAT IS NOT A MAPPING COUNTS AS NO RECORD, and this is the one place that
+    decides it, so every caller inherits it. Three reasons it is "no record" rather than
+    a refusal or a `malformed` classification:
+
+      · a value that is not a mapping is not a record. There is nothing to canonicalise,
+        and inventing bytes for it would produce a digest that looks authoritative over
+        something nobody can read;
+      · `malformed` in this module names a bad contentHash on the LEDGER row, and the
+        ledger row is not the thing at fault here. `topic_meta.json` is, and its shape is
+        `topic_meta.schema.json`'s to fail (every value must be an object) -- so this
+        stays silent rather than misreporting where the defect is;
+      · it does not freeze anything. Repairing the record into a real dict adds the
+        `topic_meta` line back, which changes the manifest, which drifts the entry into
+        re-attestation.
+
+    Same posture as `ledger_hash_report`'s non-dict ledger row: classify rather than
+    crash. A traceback out of here reaches `validate_attestation_consistency.py`, whose
+    output `governance_digest.mjs` parses and which throws on any stderr at all.
     """
     if not sources:
         raise AttestationHashError(
             f"{slug}: no attested sources — its digest would cover nothing"
         )
     lines = [f"{path} {blob_sha(sources[path])}" for path in sorted(sources)]
-    if record is not None:
+    if isinstance(record, dict):
         lines.append(f"topic_meta {blob_sha(canonical_topic_meta_record(record))}")
     return "\n".join(lines) + "\n"
 

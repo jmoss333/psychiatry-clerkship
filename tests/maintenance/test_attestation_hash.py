@@ -212,6 +212,18 @@ class ManifestForSlugTest(unittest.TestCase):
             manifest_for_slug("nope.md", {}, None)
         self.assertIn("nope.md", str(caught.exception))
 
+    def test_a_record_that_is_not_a_mapping_is_no_record_rather_than_a_crash(self):
+        # A value that is not a mapping is not a record: there is nothing to
+        # canonicalise, so the manifest carries no topic_meta line and the digest is
+        # exactly the no-record one. It is NOT reported as a malformed contentHash --
+        # the ledger row is fine and topic_meta.json is the thing at fault, which
+        # topic_meta.schema.json (every value must be an object) already fails.
+        sources = {"a.md": b"alpha\n", "b.md": b"beta\n"}
+        for record in ("not-a-dict", 7, ["x.md"], b"bytes"):
+            with self.subTest(record=record):
+                self.assertEqual(manifest_for_slug("w.md", sources, record), W_MANIFEST)
+                self.assertEqual(digest("w.md", sources, record), W_DIGEST)
+
 
 class DigestTest(FixtureTreeTestCase):
     def from_tree(self, slug):
@@ -300,6 +312,21 @@ class LedgerHashReportTest(FixtureTreeTestCase):
         report = self.report({"x.md": reviewed_entry("")})
         self.assertEqual(report["malformed"], ["x.md"])
         self.assertEqual(report["unbound"], [])
+
+    def test_a_non_dict_topic_meta_record_reports_rather_than_crashing(self):
+        # The report walks the LEDGER, but the digest also reads topic_meta.json, and a
+        # value there that is not an object used to reach record.items() and raise. One
+        # bad record must not abort the whole report -- the same posture the non-dict
+        # ledger row below already has.
+        self.topic_meta = {"x.md": "not a record", "w.md": ["nor is this"]}
+        report = self.report(
+            {"x.md": reviewed_entry(X_DIGEST), "w.md": reviewed_entry(W_DIGEST)}
+        )
+        # x.md's stored hash covers a real record, so losing the record is drift;
+        # w.md never had one, so it stays bound.
+        self.assertEqual(report["bound"], {"w.md": W_DIGEST})
+        self.assertIn("x.md", report["stale"])
+        self.assertEqual(report["malformed"], [])
 
     def test_a_non_dict_entry_is_malformed_rather_than_a_crash(self):
         report = self.report({"x.md": "reviewed", "w.md": None})
