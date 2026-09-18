@@ -122,10 +122,14 @@ def _slug_source_map(aud_key: str = "ms3") -> dict[str, str]:
     the file the *requested* audience actually builds from. The old audience-blind
     setdefault let the MS3 manifest win those collisions, so two resident surfaces
     carried MS3 Source lines (found by the 2026-09-01 review). shipped_pages.json holds
-    ONE source per slug -- a resident override reuses a slug the manifest already ships,
-    so it is not a separate shipped page and cannot carry its own source there -- and the
-    overrides are therefore re-applied below from site_extras.py, the very lists
-    resident_section.py copies from.
+    ONE `source` per slug -- a resident override reuses a slug the manifest already
+    ships, so it rides along as that page's `extraSources` rather than as a shipped page
+    of its own -- and the overrides are therefore re-applied below from site_extras.py,
+    the very lists resident_section.py copies from.
+
+    A transcript shows what ONE audience reads, so here the resident override WINS;
+    attestation_hash.sources_for_slug takes the UNION of the two, because an edit to
+    either file must drift the shared slug's attestation. The divergence is deliberate.
     """
     out: dict[str, str] = {
         page["slug"]: page["source"] for page in load_shipped_pages(LIB)["pages"]

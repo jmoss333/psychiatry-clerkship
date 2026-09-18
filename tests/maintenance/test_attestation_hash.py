@@ -149,6 +149,55 @@ class SourcesForSlugTest(unittest.TestCase):
         self.assertEqual(sources_for_slug(self.shipped, "nope.md"), [])
 
 
+class RealShippedPagesSourcesTest(unittest.TestCase):
+    """The tracked listing really does carry both files of a resident override.
+
+    The fixture above proves sources_for_slug READS extraSources; nothing there proves
+    the real shipped_pages.json WRITES them. Without that, welcome.md and cotw_index.md
+    would hash only their MS3 source and the resident text every resident actually
+    reads would sit outside the attestation that claims to cover the page.
+    """
+
+    SHIPPED = (
+        ROOT
+        / "13_Faculty_Resources"
+        / "_automation"
+        / "site_build"
+        / "shipped_pages.json"
+    )
+
+    def setUp(self):
+        self.document = json.loads(self.SHIPPED.read_text(encoding="utf-8"))
+
+    def test_cotw_index_hashes_both_audience_sources(self):
+        self.assertEqual(
+            sources_for_slug(self.document, "cotw_index.md"),
+            [
+                "08_Cases_and_Simulation/case-of-the-week/index_ms3.md",
+                "08_Cases_and_Simulation/case-of-the-week/index_resident.md",
+            ],
+        )
+
+    def test_welcome_hashes_both_audience_sources(self):
+        self.assertEqual(
+            sources_for_slug(self.document, "welcome.md"),
+            [
+                "13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md",
+                "14_Tracks/Resident/resident_welcome.md",
+            ],
+        )
+
+    def test_no_other_shipped_page_carries_extra_sources(self):
+        self.assertEqual(
+            sorted(
+                page["slug"]
+                for page in self.document["pages"]
+                if "extraSources" in page
+            ),
+            ["cotw_index.md", "welcome.md"],
+        )
+
+
 class ManifestForSlugTest(unittest.TestCase):
     def test_one_source_plus_topic_meta_record(self):
         manifest = manifest_for_slug("x.md", {"a.md": b"alpha\n"}, topic_meta_document()["x.md"])

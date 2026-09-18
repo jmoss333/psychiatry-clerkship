@@ -78,7 +78,11 @@ Introduce one tracked, generated, deterministic artifact —
 
 Shape: `{version, _note, generated_from, pages[]}`, each page carrying
 `{slug, kind, sites, title, source, producer}` with
-`producer ∈ {site_manifest, ms3_extra_tool, cotw_registry, resident_extra, resident_tool}`.
+`producer ∈ {site_manifest, ms3_extra_tool, cotw_registry, resident_extra, resident_tool}`,
+plus an optional `extraSources[]`: the further files the same slug ships from — today
+only a resident override of a page both sites ship (`welcome.md`, `cotw_index.md`).
+`attestation_hash.sources_for_slug` hashes `source` and `extraSources` together, so an
+edit to either file drifts that page's attestation.
 Sorted by slug, sorted keys, 2-space indent — byte-identical for identical inputs.
 
 Current content: **123 items** = 91 `site_manifest` (69 pages + 22 tools)

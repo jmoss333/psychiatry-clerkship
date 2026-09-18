@@ -429,6 +429,9 @@
       "title": "Serotonin Syndrome vs. NMS (Sep 14) — Resident"
     },
     {
+      "extraSources": [
+        "08_Cases_and_Simulation/case-of-the-week/index_resident.md"
+      ],
       "kind": "page",
       "producer": "site_manifest",
       "sites": [
@@ -1356,6 +1359,9 @@
       "title": "Week 6 — Integration & Exam"
     },
     {
+      "extraSources": [
+        "14_Tracks/Resident/resident_welcome.md"
+      ],
       "kind": "page",
       "producer": "site_manifest",
       "sites": [
