@@ -22,8 +22,10 @@ input that review covered, one line each, itself a blob SHA:
   attestation block that records the attesting.
 
 Every value is reproducible by hand, which is the point of choosing a git blob SHA over a
-bare sha256: `printf '%s' "$manifest" | git hash-object --stdin` re-derives the digest,
-and each line re-derives with `git hash-object <path>`. It also lets the faculty console
+bare sha256: `printf '%s' "$manifest" | git hash-object --stdin` re-derives the digest, and
+each line re-derives with `git hash-object --no-filters <path>` — the digest covers the bytes
+on disk, so a clean filter (`core.autocrlf`, LFS) would make a plain `git hash-object <path>`
+disagree with it. It also lets the faculty console
 compute the whole manifest from ONE recursive-tree API call, with no file fetches.
 Collision resistance is irrelevant here — the threat is drift, not forgery.
 
@@ -156,7 +158,9 @@ def digest_from_tree(root, shipped_doc: dict, topic_meta: dict, slug: str) -> st
     """The slug's digest computed from the working tree under `root`.
 
     Raises FileNotFoundError if an attested source is missing — never a digest over the
-    files that happen to still be there.
+    files that happen to still be there. Raises AttestationHashError when no site ships
+    the slug at all: `sources_for_slug` returns [] and a digest over nothing would look
+    exactly like a digest over something.
     """
     sources = _read_sources(Path(root), sources_for_slug(shipped_doc, slug))
     return digest(slug, sources, topic_meta.get(slug))
@@ -182,7 +186,12 @@ def ledger_hash_report(root, ledger: dict, shipped_doc: dict, topic_meta: dict) 
         "unshipped_unlisted": [],
     }
     for slug in sorted(ledger):
-        entry = ledger[slug] or {}
+        entry = ledger[slug]
+        if not isinstance(entry, dict):
+            # Not a record at all — a hand edit, not drift. Classified rather than crashed,
+            # so one bad row reports alongside the rest instead of aborting the whole report.
+            report["malformed"].append(slug)
+            continue
         if entry.get("status") != "reviewed":
             continue
 
@@ -193,9 +202,12 @@ def ledger_hash_report(root, ledger: dict, shipped_doc: dict, topic_meta: dict) 
             continue
 
         stored = entry.get("contentHash")
-        if not stored:
+        if stored is None:
             report["unbound"].append(slug)
             continue
+        # An empty string is malformed, not unbound: the key is there, so something wrote a
+        # hash and got it wrong. Unbound means nobody ever bound it, which the backfill fixes;
+        # these two want different responses, so they are different classes.
         if not isinstance(stored, str) or not HEX40.fullmatch(stored):
             report["malformed"].append(slug)
             continue

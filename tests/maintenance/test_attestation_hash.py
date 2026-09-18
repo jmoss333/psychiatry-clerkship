@@ -294,6 +294,18 @@ class LedgerHashReportTest(FixtureTreeTestCase):
         self.assertEqual(report["unbound"], [])
         self.assertEqual(report["unshipped_unlisted"], [])
 
+    def test_an_empty_hash_is_malformed_not_unbound(self):
+        # The key is present, so something wrote a hash and got it wrong; the backfill binds
+        # unbound rows and would silently skip this one if it classified as unbound.
+        report = self.report({"x.md": reviewed_entry("")})
+        self.assertEqual(report["malformed"], ["x.md"])
+        self.assertEqual(report["unbound"], [])
+
+    def test_a_non_dict_entry_is_malformed_rather_than_a_crash(self):
+        report = self.report({"x.md": "reviewed", "w.md": None})
+        self.assertEqual(report["malformed"], ["w.md", "x.md"])
+        self.assertEqual(report["bound"], {})
+
     def test_a_named_ledger_only_slug_is_legacy(self):
         self.assertIn(LEGACY_SLUG, LEDGER_ONLY_LEGACY)
         report = self.report({LEGACY_SLUG: reviewed_entry(None)})
@@ -310,6 +322,28 @@ class LedgerHashReportTest(FixtureTreeTestCase):
         report = self.report({"w.md": reviewed_entry(W_DIGEST)})
         self.assertEqual(report["unresolvable"], {"w.md": ["b.md"]})
         self.assertEqual(report["bound"], {})
+
+
+class LedgerOnlyLegacyTest(unittest.TestCase):
+    """The exemption list is pinned so it can only shrink.
+
+    `LEDGER_ONLY_LEGACY` is the one place a reviewed row escapes the requirement to be
+    bound to shipped text, so a slug added to it is a slug that stops being checked. The
+    module's comment says MAY ONLY SHRINK; this is what makes that enforceable — growing it
+    fails here, in the same diff that grew it, and each entry must carry a reason a human
+    can read rather than an empty placeholder.
+    """
+
+    def test_the_exempt_set_is_exactly_these_three(self):
+        self.assertEqual(
+            sorted(LEDGER_ONLY_LEGACY),
+            ["learning-path.html", "qbank-attest.html", "review-attest.html"],
+        )
+
+    def test_every_exemption_carries_a_reason(self):
+        for slug, reason in LEDGER_ONLY_LEGACY.items():
+            self.assertIsInstance(reason, str, slug)
+            self.assertTrue(reason.strip(), "%s: empty reason" % slug)
 
 
 class ProjectEffectiveLedgerTest(FixtureTreeTestCase):
