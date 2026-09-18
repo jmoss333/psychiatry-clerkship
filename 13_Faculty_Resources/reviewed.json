@@ -101,14 +101,13 @@
     "by": "Joshua Moss, MD"
   },
   "cotw_20260727_oud_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-07-27",
-    "by": "Pending faculty review"
+    "at": "2026-09-18",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260727_oud_res.md": {
     "status": "pending",
