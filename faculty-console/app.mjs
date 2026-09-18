@@ -171,6 +171,33 @@ export function shippedPagesNotice(server) {
   };
 }
 
+// How far the attestation branch trails the base (2026-09-18). A content hash compares a
+// page to the ledger row that attests it — both read from the SAME branch — so a lagging
+// branch can be perfectly self-consistent while every page it shows is behind what the
+// learner sites serve. That is the one staleness the per-item check cannot see, which is
+// why it gets its own sentence rather than being folded into the item rail. Pure and
+// exported for the same reason as the notices above.
+export function branchLagNotice(server) {
+  if (!server || typeof server !== 'object') return null;
+  const behind = Number(server.branchLag) || 0;
+  if (behind <= 0) return null;
+  const branch = text(server.branchSync?.branch) || 'attest/pending';
+  const baseBranch = text(server.branchSync?.baseBranch) || 'main';
+  return {
+    tone: 'alert',
+    message: `${branch} is ${behind} commit${behind === 1 ? '' : 's'} behind ${baseBranch} `
+      + '— sync before re-attesting',
+  };
+}
+
+// The load could not check any page against its stored hash — the tree read failed, or the
+// queue came from the base branch while the text would have come from another ref. Every
+// reviewed item is then marked unverified rather than clean, and this says why once.
+export function freshnessNotice(server) {
+  if (!server || typeof server !== 'object' || server.freshness !== 'unknown') return null;
+  return { tone: 'muted', message: 'Freshness unknown — reload' };
+}
+
 function parseDelimited(value) {
   return [...new Set(text(value)
     .split(/[\n,]/)
@@ -2048,14 +2075,33 @@ export function startFacultyConsole({
 
   // The ledger's stored reason for a pending item, read-only. The reopen dialog
   // owns writing reasons; this only surfaces what the learner-facing badge says.
+  // A stale item is handled by renderStaleNotice below: its reason is computed for this
+  // load rather than stored, and labelling it "Pending because" would both mislabel it
+  // and print the same sentence twice.
   function renderPendingReason(item) {
     if (!item || item.type === 'question' || item.savedStatus === 'reviewed') return null;
+    if (item.record?.stale === true) return null;
     const reason = typeof item.record?.reason === 'string' ? item.record.reason.trim() : '';
     if (!reason) return null;
     return el('p', { id: 'attestation-pending-reason', class: 'hint' }, [
       'Pending because: ',
       reason,
     ]);
+  }
+
+  /* Why this item's review no longer stands for its text (2026-09-18).
+     The server compares each reviewed row's stored contentHash against a digest of the
+     page's current sources and topic_meta record, and sends the finding — drifted, never
+     bound, or unverifiable this load. Rendered verbatim, with no lead-in: each sentence
+     already says which of the three it is, and a single label would be wrong for two of
+     them ("re-attest" is not the answer when the tree call simply failed). Shown for a
+     reviewed item as well as an unreviewed one, which is the whole point — a row recorded
+     as reviewed that cannot say WHAT it reviewed is exactly the state this closes. */
+  function renderStaleNotice(item) {
+    if (!item || item.type === 'question' || item.record?.stale !== true) return null;
+    const reason = typeof item.record?.reason === 'string' ? item.record.reason.trim() : '';
+    if (!reason) return null;
+    return el('p', { id: 'attestation-stale-notice', class: 'hint' }, [reason]);
   }
 
   /* Case-of-the-Week twin (2026-09). Names the partner page and offers one hop to it.
@@ -2124,6 +2170,7 @@ export function startFacultyConsole({
       ]),
       renderTwinContext(item),
       renderRiskContext(item),
+      renderStaleNotice(item),
       renderPendingReason(item),
       renderActionFeedback(item),
       el('section', {
@@ -2313,6 +2360,23 @@ export function startFacultyConsole({
           id: 'shipped-pages-notice',
           class: `session-notice branch-sync ${shippedNotice.tone}`,
         }, [el('p', {}, [shippedNotice.message])]);
+      })(),
+      (() => {
+        const lagNotice = branchLagNotice(state.server);
+        if (!lagNotice) return null;
+        return el('div', {
+          id: 'branch-lag-notice',
+          class: `session-notice branch-sync ${lagNotice.tone}`,
+          role: 'alert',
+        }, [el('p', {}, [lagNotice.message])]);
+      })(),
+      (() => {
+        const staleness = freshnessNotice(state.server);
+        if (!staleness) return null;
+        return el('div', {
+          id: 'freshness-notice',
+          class: `session-notice branch-sync ${staleness.tone}`,
+        }, [el('p', {}, [staleness.message])]);
       })(),
       el('section', { class: 'reviewer-strip', 'aria-label': 'Reviewer context' }, [
         el('div', { class: 'field' }, [

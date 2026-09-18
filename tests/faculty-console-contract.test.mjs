@@ -2920,6 +2920,95 @@ test('the attestation rail shows the stored pending reason read-only, never for 
     'reviewed items carry no pending reason');
 });
 
+/* Content-hash freshness in the console (2026-09-18). The server compares each reviewed
+   row's stored hash against a digest of the page's current text and says so on the wire;
+   these pin what faculty actually READ as a result. The rule the rail follows: a review
+   that could not be confirmed is never drawn as a clean one. */
+
+test('the rail states why a reviewed item is no longer bound to its page text', async () => {
+  const { document } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [
+        {
+          slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed',
+          stale: true,
+          risk: { kind: 'clinical', level: 'high' },
+          reason: 'Content changed since faculty review on 2026-07-01; awaiting re-attestation.',
+        },
+        {
+          slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed',
+          stale: true,
+          risk: { kind: 'general', level: 'low' },
+          reason: 'No content hash recorded; re-attest to bind this review to the page text.',
+        },
+      ],
+      questions: [],
+    })),
+  });
+
+  assert.equal(
+    document.getElementById('attestation-stale-notice')?.textContent,
+    'Content changed since faculty review on 2026-07-01; awaiting re-attestation.',
+  );
+  // One sentence, not two: a drifted item reads `unreviewed`, and the pending-reason line
+  // would otherwise repeat the same words under a "Pending because:" label.
+  assert.equal(document.getElementById('attestation-pending-reason'), null);
+
+  // A reviewed item can be stale too — an unbound row is recorded as reviewed and still
+  // cannot say what it reviewed. The rail says so rather than showing nothing.
+  await setValue(document, 'review-item-selector', 'tool:mse.html', 'change');
+  assert.equal(
+    document.getElementById('attestation-stale-notice')?.textContent,
+    'No content hash recorded; re-attest to bind this review to the page text.',
+  );
+});
+
+test('a clean reviewed item carries no staleness notice at all', async () => {
+  const { document } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [
+        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'reviewed' },
+      ],
+      questions: [],
+    })),
+  });
+  assert.equal(document.getElementById('attestation-stale-notice'), null);
+});
+
+test('the queue banners report branch lag and an unverifiable load', async () => {
+  const { document } = await startHarness({
+    fetchImpl: async () => jsonResponse({
+      ...serverState({ questions: [] }),
+      branchLag: 4,
+      freshness: 'unknown',
+      branchSync: {
+        isolated: true, aheadBy: 0, behindBy: 4, rollingPr: null, rollingPrChecked: false,
+        threshold: 3, reasons: [], alarmed: false,
+        branch: 'attest/pending', baseBranch: 'main',
+      },
+    }),
+  });
+
+  assert.equal(
+    document.getElementById('branch-lag-notice')?.textContent,
+    'attest/pending is 4 commits behind main — sync before re-attesting',
+  );
+  assert.equal(document.getElementById('freshness-notice')?.textContent,
+    'Freshness unknown — reload');
+});
+
+test('neither queue banner appears on an ordinary, verified load', async () => {
+  const { document } = await startHarness({
+    fetchImpl: async () => jsonResponse({
+      ...serverState({ questions: [] }),
+      branchLag: 0,
+      freshness: 'verified',
+    }),
+  });
+  assert.equal(document.getElementById('branch-lag-notice'), null);
+  assert.equal(document.getElementById('freshness-notice'), null);
+});
+
 test('page and tool use the same Live Review Resolve Confirm rail and clear content checks on selection', async () => {
   const harness = await startHarness({
     fetchImpl: async () => jsonResponse(serverState({

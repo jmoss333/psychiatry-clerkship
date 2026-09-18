@@ -222,6 +222,28 @@ Loading also **fast-forwards the attestation branch when it is only behind**, un
 the write path uses — a branch that is ahead is left alone. Both the freshen and the branch-sync
 probe are advisory: if GitHub refuses either, the queue still loads.
 
+### What a review is bound to
+
+Attesting writes a `contentHash` onto the ledger row: the git blob sha of a manifest of the page's
+own source files' blob shas plus its `topic_meta.json` record (`facultyReview` removed, so attesting
+cannot invalidate its own hash). The rule is defined once and implemented twice —
+`13_Faculty_Resources/_automation/attestation_hash.py` and `faculty-console/attestation-hash.mjs`,
+pinned byte-for-byte by `tests/attestation-hash-parity.test.mjs`. It exists because until
+2026-09-18 a row recorded *who* reviewed and *when*, and nothing at all about **what**: two
+agent-authored pull requests rewrote attested pages in September 2026 and every badge stayed green.
+Each load recomputes that digest for every reviewed row from **one** recursive git-tree call — no
+page content is fetched — and an item whose hash no longer matches reads as **needs review** with
+*"Content changed since faculty review on `<date>`; awaiting re-attestation."* A row that carries no
+hash yet says so instead (*"No content hash recorded…"*). Reading never rewrites `reviewed.json`;
+re-attesting through the console is what rebinds a drifted row to today's text. If the tree call
+fails, or the queue came from the base-branch fallback above (page text and the source list would
+then come from two different refs), the load reports `freshness: "unknown"`, banners *"Freshness
+unknown — reload"*, and marks **every** reviewed item unverified — a check that could not run
+reports that, never "clean". Finally, `branchLag` counts how far `GIT_BRANCH` trails
+`GIT_BASE_BRANCH`: a hash compares the page to the ledger row on the *same* branch, so a lagging
+branch can be perfectly self-consistent and still be showing text the base moved past, which is why
+that banner (*"attest/pending is N commits behind main — sync before re-attesting"*) is separate.
+
 **The new error.** A required file that is simply not on the branch now returns `502`
 `repository_file_missing` — *"`<path>` is not on branch `<branch>`. Update or merge the rolling
 review request, then retry."* — instead of `github_request_failed` / *"try again later"*, which
