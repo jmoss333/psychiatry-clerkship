@@ -861,14 +861,13 @@
     "by": "Joshua Moss, MD"
   },
   "rounds_questions.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "Q39 (PTSD) answer, evidence and pearl rewritten to match the stored spans from Schnurr 2024 and Williams 2022 (#441); previously reviewed 2026-08-11 by Joshua Moss, MD. Awaiting re-attestation.",
-    "at": "2026-09-16",
-    "by": "Pending faculty review"
+    "at": "2026-09-18",
+    "by": "Joshua Moss, MD"
   },
   "omm_resources.md": {
     "status": "reviewed",
