@@ -44,10 +44,21 @@ test('the corrected wording distinguishes the two instruments accurately', () =>
     'the page no longer ships CIWA-Ar descriptors, so it must not claim to');
   assert.doesNotMatch(html, /CIWA-Ar anchors are abbreviated/,
     'the same claim in the disclaimer must not survive the retirement');
-  assert.match(html, /The CIWA-Ar is NOT reproduced here/);
-  assert.match(html, /COWS items carry their published anchors and legal score values/,
-    'COWS is unchanged and must still be described accurately');
-  assert.match(html, /The CIWA-Ar is not reproduced here; COWS anchors follow the published instrument/);
+  // Updated 2026-09-10, decision `cows-anchors-retired`. The COWS interim waiver closed and the
+  // published anchor text came down, so the page's honesty contract inverts: it must no longer
+  // claim to reproduce the instrument, and must say the descriptors are ours. The symmetric
+  // guard to the CIWA-Ar pins above — understating and OVERSTATING what a rights-flagged page
+  // reproduces are the same defect.
+  assert.match(html, /Neither instrument is reproduced here/,
+    'both scales are now item names and score values only');
+  assert.doesNotMatch(html, /COWS items carry their published anchors/,
+    'the waiver closed — the page must not still claim the published anchors');
+  assert.doesNotMatch(html, /under a recorded interim waiver/,
+    'no surface may cite a waiver that no longer exists');
+  assert.match(html, /the wording under each score here is ours/,
+    'the learner must be told the descriptors are in-house, not the instrument');
+  assert.match(html, /Neither the CIWA-Ar nor the COWS is reproduced here/,
+    'the disclaimer carries the same claim as the sources block');
 });
 
 test('attribution and bedside direction survive (keep-guards)', () => {

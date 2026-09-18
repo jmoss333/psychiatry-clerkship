@@ -119,6 +119,13 @@ function shippedPages(shipped) {
    `site` is the ONE deployment the console previews an item against: 'res' for an item
    only the resident site publishes, 'ms3' otherwise — the MS3 site serves everything
    shared, and the resident build inherits it through resident_section.py's copytree.
+
+   `sites` is a DIFFERENT fact and the two must not be conflated: it is every deployment
+   that publishes the item, so it is what says WHO THE AUDIENCE IS. A page with
+   sites ['ms3','res'] previews at 'ms3' but is read by residents too, and a reviewer
+   attesting it is asserting it suits both. Audience wording reads `sites`; preview
+   routing reads `site`. Reading `site` for audience is what made every resident page
+   ask the reviewer to affirm it suited a third-year student (2026-09-14 review).
    Items keep shipped_pages.json's order, which is by slug; ordering is presentational
    only, since normalizeReviewItems re-sorts by type and title. */
 export function deriveContentUniverse({ shipped } = {}) {
@@ -127,6 +134,7 @@ export function deriveContentUniverse({ shipped } = {}) {
     title,
     kind,
     site: sites.length === 1 && sites[0] === 'res' ? 'res' : 'ms3',
+    sites: [...sites],
   }));
   const seen = new Set();
   for (const item of items) {

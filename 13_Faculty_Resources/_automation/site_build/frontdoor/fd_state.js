@@ -16,8 +16,10 @@ var FD_STORE='cw_frontdoor_v1';
 /* Persisted keys are ONLY those with no existing home. done lives in cw_progress_v1,
    streak in cw_srs_v1.stats, and the rotation week in cw_rotation_start/cw_start_week —
    copying them here would create two sources that silently desync. toolExpanded is shell layout,
-   not clinical progress or route state, so this store is its single home. */
-var FD_KEYS=['role','tab','viewWeek','openId','fromTab','scrollPos','toolExpanded'];
+   not clinical progress or route state, so this store is its single home. browsing is the
+   learner's explicit "not on rotation" choice (#425): with no rotation start left to derive a
+   week from, it is the only thing that says the app -- not week setup -- is where a reload lands. */
+var FD_KEYS=['role','tab','viewWeek','openId','fromTab','scrollPos','toolExpanded','browsing'];
 
 function fdLoad(){
   try{ return JSON.parse(localStorage.getItem(FD_STORE)||'{}')||{}; }catch(_){ return {}; }
@@ -31,27 +33,87 @@ function fdSave(o){
   try{ localStorage.setItem(FD_STORE, JSON.stringify(out)); }catch(_){ }
 }
 
-/* cw_progress_v1 predates Front Door and stores objects, not booleans. Renderers receive the
-   small boolean projection below; writes retain the legacy {done,at} entry so the old shell's
-   progLoad()/entry.done contract continues to read every learner's saved progress. */
-function fdProgressDoneMap(raw){
+/* cw_progress_v1 keeps reading history in its original {done,at} shape. Repeated practice
+   adds practiceWeeks:{1:{done:true,at:...}} to that SAME resource entry. Its old fields stay
+   readable and intact; an unscoped historical completion cannot tell us which week was done,
+   so it never awards all the repeated practice weeks. No second store or date-based guess. */
+function fdProgressRecord(value){
+  return !!value&&typeof value==='object'&&Object.prototype.toString.call(value)!=='[object Array]';
+}
+
+function fdProgressCopy(value){
+  var out={};
+  if(fdProgressRecord(value)){
+    for(var key in value){ if(Object.prototype.hasOwnProperty.call(value,key)) out[key]=value[key]; }
+  }
+  return out;
+}
+
+function fdProgressWeekScoped(index, ref){
+  var weeks=index&&index.weeks||[], count=0;
+  for(var i=0;i<weeks.length;i++){
+    var items=weeks[i]&&weeks[i].items||[];
+    for(var j=0;j<items.length;j++){
+      if(items[j]&&items[j].ref===ref&&items[j].kind==='tool'&&!items[j].rights){ count++; break; }
+    }
+  }
+  return count>1;
+}
+
+function fdProgressWeek(state, index){
+  var st=state||{};
+  var inPath=st.tab==='path'||((st.openId||st.ref)&&st.fromTab==='path');
+  var n=inPath?st.viewWeek:st.week;
+  if(index&&!fdStateHasWeek(index.weeks,n)) return inPath&&index.weeks&&index.weeks.length?index.weeks[0].n:null;
+  return typeof n==='number'&&isFinite(n)&&n%1===0&&n>0?n:null;
+}
+
+function fdProgressDoneMap(raw, index, week){
   var out={}, src=raw||{}, entry;
-  if(typeof src!=='object') return out;
+  if(!fdProgressRecord(src)) return out;
   for(var ref in src){
     if(Object.prototype.hasOwnProperty.call(src, ref)){
       entry=src[ref];
-      if(entry&&typeof entry==='object'&&typeof entry.done==='boolean') out[ref]=entry.done;
+      if(!fdProgressRecord(entry)) continue;
+      if(index&&fdProgressWeekScoped(index,ref)&&fdStateHasWeek(index.weeks,week)){
+        var scoped=fdProgressRecord(entry.practiceWeeks)?entry.practiceWeeks[week]:null;
+        out[ref]=fdProgressRecord(scoped)&&scoped.done===true;
+      } else if(typeof entry.done==='boolean') out[ref]=entry.done;
     }
   }
   return out;
 }
 
-function fdProgressToggle(raw, ref, done, nowMs){
-  var out={}, src=raw||{};
-  if(src&&typeof src==='object'){
-    for(var key in src){
-      if(Object.prototype.hasOwnProperty.call(src, key)) out[key]=src[key];
+/* Older pure-render callers supply a boolean map. Live callers supply the raw record so
+   Path can project six independent weeks and Today can always project its current week. */
+function fdProgressForWeek(index, state, week){
+  var st=state||{};
+  return st.progressRaw!==undefined?fdProgressDoneMap(st.progressRaw,index,week):(st.done||{});
+}
+
+function fdProgressToggle(raw, ref, done, nowMs, index, week){
+  var out=fdProgressCopy(raw);
+  var entry=fdProgressCopy(out[ref]);
+  var repeated=index&&fdProgressWeekScoped(index,ref);
+  if(repeated&&fdStateHasWeek(index.weeks,week)){
+    var practiceWeeks=fdProgressCopy(entry.practiceWeeks);
+    if(done){
+      practiceWeeks[week]={done:true,at:localDayStr(nowMs)};
+      if(typeof entry.done!=='boolean'){ entry.done=true; entry.at=localDayStr(nowMs); }
+    } else {
+      delete practiceWeeks[week];
     }
+    entry.practiceWeeks=practiceWeeks;
+    out[ref]=entry;
+    return out;
+  }
+  /* Browsing without a selected week still has a working history toggle. It changes only
+     unscoped history, preserving every recorded practice week and any older entry fields. */
+  if(repeated||fdProgressRecord(entry.practiceWeeks)){
+    entry.done=done===true;
+    if(done) entry.at=localDayStr(nowMs);
+    out[ref]=entry;
+    return out;
   }
   if(done) out[ref]={done:true,at:localDayStr(nowMs)};
   else delete out[ref];
@@ -123,6 +185,22 @@ function fdExamCountdown(week, weeks, nowMs, rotationStart){
   if(days<0) return '';
   if(days===0) return '· exam day — good luck';
   return '· exam in ~'+days+' day'+(days===1?'':'s');
+}
+
+/* The write half of the key fdExamCountdown reads, and the settings panel's only persistence.
+   It lives HERE rather than in fd_wire.js's fdApplyEffect, beside its reader, because the key
+   spells an audience token the controller's copy rule bans FILE-WIDE
+   (tests/fd-action-contract.test.mjs: `assert.doesNotMatch(wire, /…|shelf|…/i)`); this module's
+   equivalent rule is scoped to the strings it RETURNS, which is why the key may be named here.
+
+   An empty date removes the key rather than storing '': phase_policy.js treats an absent key and
+   an unparseable one alike (cap 12, no countdown), but only removal leaves the store in the state
+   a learner who never set a date would have. The caller validates the shape; this only stores. */
+function fdStoreExamDate(date){
+  try{
+    if(date) localStorage.setItem('cw_shelf_date', date);
+    else localStorage.removeItem('cw_shelf_date');
+  }catch(_){ }
 }
 
 /* Deterministic per local calendar day, skipping anything already done. Candidates are
@@ -197,7 +275,11 @@ function fdActivityDays(stores, nowMs){
   each(st.reason, function(r){
     if(r&&typeof r==='object'){ mark(r.updatedAt); each(r.steps, function(step){ if(step&&typeof step==='object') mark(step.at); }); }
   });
-  each(st.progress, function(e){ if(e&&typeof e==='object'&&e.done===true) mark(e.at); });
+  each(st.progress, function(e){
+    if(!e||typeof e!=='object') return;
+    if(e.done===true) mark(e.at);
+    each(e.practiceWeeks, function(w){ if(w&&typeof w==='object'&&w.done===true) mark(w.at); });
+  });
   if(st.shelf&&typeof st.shelf==='object'){
     var attempts=Object.prototype.toString.call(st.shelf.attempts)==='[object Array]'?st.shelf.attempts:[];
     for(i=0;i<attempts.length;i++){ if(attempts[i]&&typeof attempts[i]==='object') mark(attempts[i].at); }

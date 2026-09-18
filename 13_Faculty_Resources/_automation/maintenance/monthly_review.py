@@ -212,21 +212,38 @@ def _runbook_counts(root, configured_docs, today, git_last_changed):
     return counts
 
 
-def _receipt_state(root, receipt_config, today):
+def _receipt_state(root, receipt_config, today, label="openEvidence"):
+    """Age a dated `{state: success, checkedAt: ...}` receipt against maxAgeDays.
+
+    `label` names the config key in error messages. It exists because several receipts
+    now use this shape, all of them attesting to a check Actions CANNOT run itself:
+
+      openEvidence  a human ran the OpenEvidence sweep.
+      rulesetBypass a human ran `bin/check_ruleset_drift.py --check-bypass`. GitHub
+                    returns bypass_actors only to a caller with ruleset WRITE access,
+                    so a workflow token can never see it.
+      staleClaims   a human ran `bin/check_stale_claims.py --write-receipt`. That sweep
+                    needs `gh`, `npm audit --include=dev` and every local worktree --
+                    none of which exist on a fresh Actions runner, which would report a
+                    confident clean sweep of nothing.
+
+    In every case the receipt's freshness is the ONLY signal the monthly review has.
+    That is the point: a check nobody can run automatically still has to be run.
+    """
     if not isinstance(receipt_config, dict) or set(receipt_config) != {
         "path",
         "maxAgeDays",
     }:
-        raise MonthlyReviewError("OpenEvidence receipt config has an invalid shape")
+        raise MonthlyReviewError(f"{label} receipt config has an invalid shape")
     relative_path = _safe_relative_path(
-        receipt_config["path"], "receipts.openEvidence.path"
+        receipt_config["path"], f"receipts.{label}.path"
     )
     max_age = receipt_config["maxAgeDays"]
     if type(max_age) is not int or max_age < 1:
         raise MonthlyReviewError(
-            "receipts.openEvidence.maxAgeDays must be a positive integer"
+            f"receipts.{label}.maxAgeDays must be a positive integer"
         )
-    path = _repository_path(root, relative_path, "receipts.openEvidence.path")
+    path = _repository_path(root, relative_path, f"receipts.{label}.path")
     if not path.exists():
         return "missing"
     try:
@@ -330,6 +347,8 @@ def build_monthly_review(root, config, today, git_last_changed):
     if not isinstance(receipts, dict) or set(receipts) != {
         "openEvidence",
         "redTeam",
+        "rulesetBypass",
+        "staleClaims",
     }:
         raise MonthlyReviewError("receipts config has an invalid shape")
     expected_sp = _sp_expectations(root)
@@ -355,6 +374,18 @@ def build_monthly_review(root, config, today, git_last_changed):
             today,
             git_last_changed,
         ),
+        "rulesetBypassReceipt": _receipt_state(
+            root,
+            receipts["rulesetBypass"],
+            today,
+            label="rulesetBypass",
+        ),
+        "staleClaimsReceipt": _receipt_state(
+            root,
+            receipts["staleClaims"],
+            today,
+            label="staleClaims",
+        ),
     }
 
     blocked = bool(media["newRegressions"]) or not generated_views_valid
@@ -364,6 +395,8 @@ def build_monthly_review(root, config, today, git_last_changed):
         or not operations["apaCrosswalkPresent"]
         or operations["openEvidenceReceipt"] != "current"
         or operations["redTeamReceipt"] != "current"
+        or operations["rulesetBypassReceipt"] != "current"
+        or operations["staleClaimsReceipt"] != "current"
         or operations["runbooks"]["stale"] > 0
         or operations["runbooks"]["unknown"] > 0
         or evidence["identity"]["pending"] > 0
@@ -418,6 +451,10 @@ def render_monthly_markdown(report):
         f"- APA crosswalk present: {str(operations['apaCrosswalkPresent']).lower()}",
         f"- OpenEvidence receipt: `{operations['openEvidenceReceipt']}`",
         f"- Red-team receipt: `{operations['redTeamReceipt']}`",
+        f"- Ruleset bypass receipt: `{operations['rulesetBypassReceipt']}`"
+        " (local-only: needs ruleset write access)",
+        f"- Stale-claims receipt: `{operations['staleClaimsReceipt']}`"
+        " (local-only: needs gh, npm and every worktree)",
         "",
         "This GitHub-side report does not assess authenticated Netlify deploy recency.",
         "Provider-policy and local Zotero checks remain attended-only review items.",

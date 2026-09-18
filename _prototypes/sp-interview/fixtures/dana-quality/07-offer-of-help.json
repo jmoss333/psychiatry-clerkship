@@ -1,0 +1,35 @@
+{
+  "id": "offer-of-help",
+  "title": "An open offer of help",
+  "synthetic": true,
+  "tags": [
+    "offer_to_help"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "How could we be of most help today",
+  "expectations": {
+    "should": [
+      "Express Dana’s established preference to leave soon and have a say, or her present concern.",
+      "Answer the actual offer of help in one to three short sentences."
+    ],
+    "mustNot": [
+      "Do not use generic clarification for this clear question.",
+      "Do not invent a treatment request, medication preference, or discharge promise."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "responses.greeting_agenda.open.1",
+    "persona.presentingContext"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

@@ -34,13 +34,31 @@ than merely reports. A hit is still a question for a clinician first: two items
 may legitimately differ when their stems differ in a way the token overlap
 cannot see. Read the pair before changing either one.
 
-    python3 bin/check_qbank_coherence.py
-    python3 bin/check_qbank_coherence.py --self-test
+A RATCHETING GATE since 2026-09-16, the pattern of bin/check_design_drift.py:
+the pair count is pinned in bin/check_qbank_coherence_baseline.json (zero today),
+a rise fails, a fall prints a note, and no baseline or an empty bank exits 2
+rather than passing over nothing (docs/SILENT_SHRINK_CHECKLIST.md D4). The gate
+already exited 1 on any pair; what this adds is a floor that is written down,
+one documented command to move it, and a --self-test that asserts the gate's
+EXIT CODE on the two WP-5j defects rather than only that the heuristics fire.
+
+Exit 0 clean (pairs at or below baseline), 1 a rise, 2 could not check.
+
+    python3 bin/check_qbank_coherence.py                    # the gate (bin/verify.sh runs it)
+    python3 bin/check_qbank_coherence.py --self-test        # defects exit 1, the live bank exits 0
+    python3 bin/check_qbank_coherence.py --update-baseline  # LOWER the ratchet after a reviewed reduction
+
+--update-baseline rewrites the pin from the current bank. It locks in a reduction
+you made on purpose; it is never for absorbing a rise. The JSON diff is in the PR
+and a reviewer reads it. See docs/RATCHETS.md.
 """
 import argparse, difflib, itertools, json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QB = os.path.join(ROOT, "question_bank.json")
+BASELINE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "check_qbank_coherence_baseline.json")
+RATCHET_KEYS = ("pairs",)
+UPDATE_HINT = "python3 bin/check_qbank_coherence.py --update-baseline"
 
 PROHIBIT = re.compile(r"\b(contraindicated|never|must not|do not|don't|avoid|should not be (?:used|given|started))\b", re.I)
 QUALIFIED = re.compile(r"\b(not .{0,30}as monotherapy|only if|may be (?:used|continued)|acceptable (?:if|when)|unless|so long as|provided that)\b", re.I)
@@ -116,24 +134,17 @@ SELF_TEST = [
      "pearl": "Tell staff before you engage; stay near your exit."},
 ]
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--min-shared-rare", type=int, default=3,
-                    help="scenario tokens two stems must share, counting only bank-rare ones")
-    ap.add_argument("--max-token-frequency", type=int, default=4,
-                    help="a token in more than this many stems is not distinctive")
-    ap.add_argument("--bank", default=QB)
-    ap.add_argument("--self-test", action="store_true",
-                    help="run the two known WP-5j defects through the heuristics")
-    a = ap.parse_args()
+def live(items):
+    """Retired items teach nothing and are excluded before any pairing."""
+    return [i for i in items if not (i.get("retired") or i.get("retiredReason"))]
 
-    if a.self_test:
-        items = SELF_TEST
-    else:
-        doc = json.load(open(a.bank, encoding="utf-8"))
-        items = doc["items"] if isinstance(doc, dict) and "items" in doc else doc
-    items = [i for i in items if not (i.get("retired") or i.get("retiredReason"))]
 
+def find_pairs(items, min_shared_rare, max_token_frequency):
+    """TWIN + STANCE over the given items, deduplicated and sorted.
+
+    The heuristics are the original checker verbatim; only the argparse namespace
+    became parameters so --self-test can drive them on fixtures.
+    """
     findings = []
 
     # ---- TWIN: same category, shared bank-rare scenario tokens, divergent keyed steps ----
@@ -141,7 +152,7 @@ def main():
     for it in items:
         for w in set(words(it.get("stem") or it.get("q") or "")):
             df[w] = df.get(w, 0) + 1
-    rare = {w for w, n in df.items() if n <= a.max_token_frequency}
+    rare = {w for w, n in df.items() if n <= max_token_frequency}
 
     for x, y in itertools.combinations(items, 2):
         if x.get("category") != y.get("category"):
@@ -149,7 +160,7 @@ def main():
         rx = set(words(x.get("stem") or x.get("q") or "")) & rare
         ry = set(words(y.get("stem") or y.get("q") or "")) & rare
         shared = rx & ry
-        if len(shared) < a.min_shared_rare:
+        if len(shared) < min_shared_rare:
             continue
         ax, ay = assertions(x), assertions(y)
         missing = {}
@@ -203,17 +214,194 @@ def main():
         k = (kind, tuple(sorted((i, j))), msg)
         if k not in seen:
             seen.add(k); out.append((kind, i, j, msg))
+    return sorted(out)
 
-    for kind, i, j, msg in sorted(out):
-        print(f"{kind:<7} {i} <-> {j}\n        {msg}")
+
+# ---------------------------------------------------------------- ratchet
+# The pattern of bin/check_design_drift.py (and bin/verify_spans.py): a committed JSON pins
+# the count, a rise fails, a fall is a note, --update-baseline lowers the pin. The pin is
+# zero today, so the gate behaves exactly as before; what changed is that the floor is now
+# written down, lowering (or, visibly, raising) it is one documented command, and the
+# self-test asserts the gate's EXIT CODE rather than only that the heuristics still fire.
+
+def load_baseline(path):
+    """(counts, None) or (None, error). A missing key is an error, not an unpinned key."""
+    rel = os.path.relpath(path, ROOT)
+    if not os.path.exists(path):
+        return None, f"no baseline at {rel} -- run `{UPDATE_HINT}` (reviewed) to pin one"
+    try:
+        with open(path, encoding="utf-8") as fh:
+            counts = json.load(fh).get("counts") or {}
+    except (OSError, ValueError, AttributeError) as e:
+        return None, f"baseline {rel} unreadable: {e}"
+    missing = [k for k in RATCHET_KEYS if not isinstance(counts.get(k), int)]
+    if missing:
+        return None, (f"baseline {rel} does not pin {', '.join(missing)} -- "
+                      f"run `{UPDATE_HINT}` (reviewed) to pin every key")
+    return {k: counts[k] for k in RATCHET_KEYS}, None
+
+
+def write_baseline(path, counts):
+    payload = {
+        "_note": "Pinned by bin/check_qbank_coherence.py. Counts may fall, never rise. Regenerate "
+                 "with --update-baseline as part of a reviewed reduction, never to absorb a rise -- "
+                 "the diff is in the PR. See docs/RATCHETS.md.",
+        "counts": {k: counts[k] for k in RATCHET_KEYS},
+    }
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2, sort_keys=True)
+        fh.write("\n")
+
+
+def compare(counts, baseline):
+    """Per key: a rise fails, a fall is a note."""
+    fails, notes = [], []
+    for key in RATCHET_KEYS:
+        was, now = baseline[key], counts[key]
+        if now > was:
+            fails.append(f"R  {key} rose {was} -> {now}. Read the pair(s) above with a clinician "
+                         f"and fix ONE item so the bank teaches one thing; do not re-pin.")
+        elif now < was:
+            notes.append(f"R  {key} improved {was} -> {now} -- run `{UPDATE_HINT}` to lock the gain in.")
+    return fails, notes
+
+
+def gate(items, baseline, min_shared_rare, max_token_frequency, out=print):
+    """The whole exit contract, in-process so --self-test can drive it.
+    0 clean, 1 a rise above baseline, 2 could not check."""
+    items = live(items)
+    if not items:
+        out("qbank coherence: NO LIVE ITEMS loaded -- a pass over an empty bank is not a pass "
+            "(docs/SILENT_SHRINK_CHECKLIST.md D4).")
+        return 2
+    pairs = find_pairs(items, min_shared_rare, max_token_frequency)
+    for kind, i, j, msg in pairs:
+        out(f"{kind:<7} {i} <-> {j}\n        {msg}")
+    out(f"\nqbank coherence: {len(items)} live item(s), {len(pairs)} pair(s) to read")
+    if baseline is None:
+        out(f"FAIL -- no baseline to ratchet against. Run `{UPDATE_HINT}` (reviewed) and commit "
+            f"bin/check_qbank_coherence_baseline.json.")
+        return 2
+    fails, notes = compare({"pairs": len(pairs)}, baseline)
+    for note in notes:
+        out("note: " + note)
+    if fails:
+        out(f"FAIL -- {len(fails)} finding(s):")
+        for f in fails:
+            out("  - " + f)
+        return 1
+    # The tally rides on the LAST line on purpose: bin/verify.sh shows only a step's last line.
+    out(f"OK -- {len(items)} live item(s), {len(pairs)} pair(s) to read; at or below "
+        f"baseline ({baseline['pairs']}).")
+    return 0
+
+
+# Two items that share a scenario and teach the SAME steps: the detector must stay silent.
+_FX_COHERENT = [
+    {"id": "c_saf_a", "category": "safety", "stem": "Patient pacing the hallway speaking loudly. Best response?",
+     "options": [{"t": "Signal a nearby staff member before you approach; keep the exit clear.", "c": True}],
+     "pearl": "Tell staff before you engage."},
+    {"id": "c_saf_b", "category": "safety", "stem": "Patient with mania pacing loudly in the hallway. Best response?",
+     "options": [{"t": "Alert a staff member that you are approaching and do not block the doorway.", "c": True}],
+     "pearl": "Tell staff first; stay near your exit."},
+]
+
+
+def self_test() -> int:
+    import tempfile
+    checks = []
+
+    def expect(label, cond):
+        checks.append((label, bool(cond)))
+
+    def run(items, baseline):
+        lines = []
+        rc = gate(items, baseline, 3, 4, out=lines.append)
+        return rc, "\n".join(lines)
+
+    # a. the two WP-5j defects are still detected (the original falsification)
+    kinds = {k for k, _, _, _ in find_pairs(SELF_TEST, 3, 4)}
+    expect("SELF_TEST yields a TWIN and a STANCE hit", kinds >= {"TWIN", "STANCE"})
+    n = len(find_pairs(SELF_TEST, 3, 4))
+
+    # b. against the zero baseline those hits are a rise -> exit 1
+    rc, out = run(SELF_TEST, {"pairs": 0})
+    expect("known defects vs zero baseline exit 1", rc == 1 and f"pairs rose 0 -> {n}" in out)
+
+    # c. the same items against a baseline that pins them exit 0: the exit is baseline-driven
+    rc, out = run(SELF_TEST, {"pairs": n})
+    expect("pinned pair count exits 0 (exit is baseline-driven)", rc == 0 and "FAIL" not in out)
+
+    # d. a fall is a note naming the lowering command
+    rc, out = run(_FX_COHERENT, {"pairs": 2})
+    expect("coherent twins vs a higher baseline exit 0 with an improvement note",
+           rc == 0 and "improved 2 -> 0" in out and "--update-baseline" in out)
+
+    # e. coherent twins against zero stay clean
+    rc, out = run(_FX_COHERENT, {"pairs": 0})
+    expect("coherent twins vs zero baseline exit 0", rc == 0)
+
+    # f. no baseline is a broken run, not a pass
+    rc, out = run(_FX_COHERENT, None)
+    expect("missing baseline exits 2", rc == 2 and "--update-baseline" in out)
+
+    # g. nothing loaded is a broken run, not a pass (SILENT_SHRINK D4)
+    rc, out = run([], {"pairs": 0})
+    expect("zero live items exits 2", rc == 2 and "NO LIVE ITEMS" in out)
+    rc, out = run([dict(i, retired=True) for i in SELF_TEST], {"pairs": 0})
+    expect("all-retired bank exits 2", rc == 2)
+
+    # h. a malformed baseline cannot silently un-pin the count
+    with tempfile.TemporaryDirectory() as td:
+        p = os.path.join(td, "b.json")
+        with open(p, "w", encoding="utf-8") as fh:
+            json.dump({"counts": {}}, fh)
+        counts, err = load_baseline(p)
+        expect("baseline missing 'pairs' is an error naming the key", counts is None and err and "pairs" in err)
+
+    # i. the LIVE bank agrees with the committed baseline
+    doc = json.load(open(QB, encoding="utf-8"))
+    items = doc["items"] if isinstance(doc, dict) and "items" in doc else doc
+    baseline, err = load_baseline(BASELINE)
+    rc, out = run(items, baseline)
+    expect("live question_bank.json vs committed baseline exits 0", err is None and rc == 0)
+
+    failed = [label for label, ok in checks if not ok]
+    for label, ok in checks:
+        print(f"  {'ok  ' if ok else 'FAIL'} {label}")
+    print(f"\nself-test: {len(checks) - len(failed)}/{len(checks)} passed")
+    return 1 if failed else 0
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--min-shared-rare", type=int, default=3,
+                    help="scenario tokens two stems must share, counting only bank-rare ones")
+    ap.add_argument("--max-token-frequency", type=int, default=4,
+                    help="a token in more than this many stems is not distinctive")
+    ap.add_argument("--bank", default=QB)
+    ap.add_argument("--update-baseline", action="store_true",
+                    help="rewrite bin/check_qbank_coherence_baseline.json from the current bank "
+                         "(reviewed reductions only -- the diff is in the PR)")
+    ap.add_argument("--self-test", action="store_true",
+                    help="run the two known WP-5j defects through the heuristics and prove the "
+                         "gate exits 1 on them and 0 on the live bank")
+    a = ap.parse_args()
     if a.self_test:
-        kinds = {k for k, _, _, _ in out}
-        ok = kinds >= {"TWIN", "STANCE"}
-        print(f"\nself-test: {'OK' if ok else 'FAILED'} — expected a TWIN and a STANCE hit, got {sorted(kinds) or 'none'}")
-        return 0 if ok else 1
+        return self_test()
 
-    print(f"\nqbank coherence: {len(items)} live item(s), {len(out)} pair(s) to read")
-    return 1 if out else 0
+    doc = json.load(open(a.bank, encoding="utf-8"))
+    items = doc["items"] if isinstance(doc, dict) and "items" in doc else doc
+    if a.update_baseline:
+        pairs = find_pairs(live(items), a.min_shared_rare, a.max_token_frequency)
+        write_baseline(BASELINE, {"pairs": len(pairs)})
+        print(f"baseline written to {os.path.relpath(BASELINE, ROOT)}: pairs={len(pairs)}")
+    baseline, err = load_baseline(BASELINE)
+    if err:
+        print(f"FAIL -- {err}")
+        return 2
+    return gate(items, baseline, a.min_shared_rare, a.max_token_frequency)
+
 
 if __name__ == "__main__":
     sys.exit(main())

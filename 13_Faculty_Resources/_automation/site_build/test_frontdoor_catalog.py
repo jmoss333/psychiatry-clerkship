@@ -111,6 +111,62 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.ms3_catalog = _catalog(self.shared)
         self.resident_catalog = _catalog(self.shared + RESIDENT_EXTRAS)
 
+    def test_search_covers_shipped_cases_without_changing_library_or_assignments(self):
+        case = {"slug": "case.md", "title": "Full teaching case name", "kind": "page", "sites": ["ms3"]}
+        other = {"slug": "resident-case.md", "title": "Resident case", "kind": "page", "sites": ["res"]}
+        listing = {"pages": [case, other] + [
+            {"slug": ref, "title": "Full " + ref, "kind": "page", "sites": ["ms3"]}
+            for ref in self.shared]}
+        payload = build_frontdoor_payload("ms3", self.curriculum,
+            _catalog(self.shared + ["case.md"]), REVISION, shipped=listing)
+        self.assertIn("case.md", payload["curriculum"]["searchResources"])
+        self.assertNotIn("resident-case.md", payload["curriculum"]["searchResources"])
+        self.assertEqual(payload["curriculum"]["searchTitles"]["case.md"], "Full teaching case name")
+        self.assertEqual(payload["curriculum"]["libraryColumns"], self.curriculum["libraryColumns"])
+        self.assertNotIn("case.md", reachable_refs(payload))
+        self.assertEqual(reachable_refs(payload), set(self.shared))
+        # A missing nav record must fail, not quietly shrink the shipped universe.
+        with self.assertRaisesRegex(ValueError, "case.md"):
+            build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog, REVISION, shipped=listing)
+
+    def test_search_exclusion_cannot_hide_a_placed_resource_or_unknown_slug(self):
+        listing = {"pages": [{"slug": ref, "title": ref, "kind": "page", "sites": ["ms3"]}
+                             for ref in self.shared]}
+        for ref in (self.shared[0], "not-shipped.md"):
+            self.curriculum["searchExclude"] = [{"ref": ref, "reason": "fixture"}]
+            with self.assertRaisesRegex(ValueError, "searchExclude"):
+                build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog, REVISION, shipped=listing)
+
+    def test_landing_destinations_get_reader_metadata_without_library_or_path_placement(self):
+        original = copy.deepcopy(self.curriculum)
+        refs = ["week%d.md" % n for n in range(1, 7)]
+        for week, ref in zip(self.curriculum["learningPaths"]["ms3"]["weeks"], refs):
+            week["landingRef"] = ref
+        payload = build_frontdoor_payload(
+            "ms3", self.curriculum, _catalog(self.shared + refs), REVISION
+        )
+        titles = {row[1]: row[2] for row in payload["manifest"]["md"]}
+        for ref in refs:
+            self.assertEqual(titles.get(ref), "Title for " + ref)
+        self.assertEqual(payload["curriculum"]["libraryColumns"], original["libraryColumns"])
+        self.assertEqual([w["items"] for w in payload["curriculum"]["weeks"]],
+                         [w["items"] for w in original["learningPaths"]["ms3"]["weeks"]])
+        self.assertTrue(set(refs).isdisjoint(reachable_refs(payload)))
+        self.curriculum["libraryColumns"][0]["refs"].append("week1.md")
+        placed = build_frontdoor_payload(
+            "ms3", self.curriculum, _catalog(self.shared + refs), REVISION
+        )
+        self.assertIn("week1.md", reachable_refs(placed))
+
+    def test_landing_destinations_fail_closed_without_final_markdown_catalog_metadata(self):
+        for ref in ("missing.md", "landing.html"):
+            with self.subTest(ref=ref):
+                self.curriculum["learningPaths"]["ms3"]["weeks"][0]["landingRef"] = ref
+                with self.assertRaisesRegex(ValueError, "landingRef"):
+                    build_frontdoor_payload(
+                        "ms3", self.curriculum, _catalog(self.shared + ["landing.html"]), REVISION
+                    )
+
     def test_site_projections_have_expected_placed_counts_and_roles(self):
         ms3 = build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog, REVISION)
         resident = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog, REVISION)
@@ -336,6 +392,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
         }
         refs.update(ref for addition in curriculum["siteLibrary"]["resident"]["additions"]
                     for ref in addition["refs"])
+        refs.update(week["landingRef"] for week in curriculum["learningPaths"]["ms3"]["weeks"])
         catalog = _catalog(sorted(refs))
         ms3 = build_frontdoor_payload("ms3", curriculum, catalog, REVISION)
         resident = build_frontdoor_payload("resident", curriculum, catalog, REVISION)
@@ -481,6 +538,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
             for addition in curriculum["siteLibrary"]["resident"]["additions"]
             for ref in addition["refs"]
         )
+        refs.update(week["landingRef"] for week in curriculum["learningPaths"]["ms3"]["weeks"])
         catalog = _catalog(sorted(refs))
         ms3 = build_frontdoor_payload("ms3", curriculum, catalog, "a" * 40)
         resident = build_frontdoor_payload("resident", curriculum, catalog, "b" * 40)
@@ -510,7 +568,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
 
 
 class ReachableRefsTest(unittest.TestCase):
-    """reachable_refs feeds common.build_search_index; it must equal the manifest."""
+    """Search includes manifest refs except destinations added only for reader identity."""
 
     def test_returns_every_manifest_ref(self):
         payload = {"manifest": {

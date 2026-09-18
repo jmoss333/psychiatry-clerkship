@@ -40,13 +40,43 @@ function fdPathDotCls(isDone, isNow){
   return 'fd-dot';
 }
 
+/* Observable skills mirror the Orientation Packet's "What Students Should Practice Each
+   Week" table. The short feedback requests apply its "one behavior at a time" guidance.
+   These are practice suggestions, never assignments or a competence assessment. */
+var FD_PATH_PRACTICE=[
+  null,
+  {skill:'Present a focused interview/MSE and name what you would escalate immediately',
+    feedback:'Can you watch my MSE language today?'},
+  {skill:'Build a differential beyond the primary psychiatric diagnosis',
+    feedback:'Can you review whether my differential shows reasoning?'},
+  {skill:'Explain why a medication and one non-medication intervention fit the formulation',
+    feedback:'Can you review my rationale for this treatment plan?'},
+  {skill:'Draft a family-meeting agenda and discharge barrier map',
+    feedback:'Can you review my family-meeting agenda and discharge barriers?'},
+  {skill:'Formulate suicide/violence risk, recognize delirium/catatonia/withdrawal, and document supervised escalation reasoning',
+    feedback:'Can you tell me if my risk formulation separates chronic and acute risk?'},
+  {skill:'Present a full case with formulation, risk reasoning, and plan',
+    feedback:'Can you help me make my presentation more concise?'}
+];
+
+function fdPathPractice(index, week){
+  if(!index.path||index.path.id!=='ms3-six-week') return '';
+  var practice=FD_PATH_PRACTICE[week];
+  if(!practice) return '';
+  return '<div class="fd-detail__practice">'+
+    '<p><strong>Practice one skill</strong><br>'+fdEsc(practice.skill)+'.</p>'+
+    '<p><strong>Ask for feedback</strong><br>“'+fdEsc(practice.feedback)+'”</p>'+
+    '<a href="?page=orientation.md">Open Orientation →</a>'+
+  '</div>';
+}
+
 /* One timeline row. .fd-timeline__line is emitted unconditionally on every row, including the
    last -- frontdoor.css hides it there via :last-child, and skipping it in markup instead
    would break the spine on any row the CSS selector does not happen to cover (CLASS-INVENTORY
    ⚠). data-fd-view-week carries the row's browsing target; data-fd-week remains setup-only. */
 function fdPathTimelineRow(index, w, state){
   var items=fdItemsForWeek(index, w.n);
-  var progress=fdTodayProgress(items, state.done);
+  var progress=fdTodayProgress(items, fdProgressForWeek(index,state,w.n));
   var isNow=(typeof state.week==='number'&&!isNaN(state.week))&&state.week===w.n;
   var isSel=state.viewWeek===w.n;
   var isDone=progress.total>0&&progress.pct===100;
@@ -74,6 +104,7 @@ function fdPathDetail(index, state){
   var wk=fdFindWeek(idx,state.viewWeek)||weeks[0]||null;
   var viewN=wk?wk.n:null;
   var items=fdItemsForWeek(idx, viewN);
+  var done=fdProgressForWeek(idx,state,viewN);
   var isCurrent=(typeof state.week==='number'&&!isNaN(state.week))&&state.week===viewN;
 
   var out='<div class="fd-detail">';
@@ -82,8 +113,9 @@ function fdPathDetail(index, state){
   if(isCurrent) out+='<span class="fd-detail__here">you are here</span>';
   out+='</div>';
   out+='<h2 class="fd-detail__h2">'+fdEsc(wk?wk.title:'')+'</h2>';
+  out+=fdPathPractice(idx,viewN);
   out+='<div class="fd-detail__list">';
-  for(var i=0;i<items.length;i++){ out+=fdRow(items[i], i, state.done, true); }
+  for(var i=0;i<items.length;i++){ out+=fdRow(items[i], i, done, true); }
   out+='</div>';
   if(!isCurrent){
     out+='<button type="button" class="fd-btn fd-btn--accent" data-fd-setweek="'+fdEsc(viewN)+'">'+
@@ -98,13 +130,15 @@ function fdPath(index, state){
   var idx=index||{weeks:[]};
   var weeks=idx.weeks||[];
   if(!fdActivePathValid(idx)) return fdPathFallback('path');
+  var suggested=idx.path.id==='ms3-six-week';
   var out='<section class="fd-path">';
-  out+='<h1 class="fd-path__h1">Your '+fdEsc(fdPathWeekCount(idx))+'-week path</h1>';
+  out+='<h1 class="fd-path__h1">'+(suggested?'Suggested learning plan':'Your '+fdEsc(fdPathWeekCount(idx))+'-week path')+'</h1>';
+  if(suggested) out+='<p class="fd-path__intro">Six weeks of suggested practice. Confirm required work with your supervising team. Checkmarks record completed activities; your supervising team assesses clinical skills.</p>';
   out+='<div class="fd-path__cols">';
+  out+=fdPathDetail(idx, st);
   out+='<div class="fd-timeline">';
   for(var i=0;i<weeks.length;i++){ out+=fdPathTimelineRow(idx, weeks[i], st); }
   out+='</div>';
-  out+=fdPathDetail(idx, st);
   out+='</div>';
   out+='</section>';
   return out;

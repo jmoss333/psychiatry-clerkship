@@ -35,6 +35,6 @@ test('resume math and exact query survive the Front Door route adapter', () => {
 });
 
 test('Today composes the capsule row and delegated links forward the exact query', () => {
-  assert.match(shell, /fdResumeCard\(sess\)/);
+  assert.match(shell, /fdResumeCard\(sess,/);
   assert.match(shell, /fdOpenRef\(ref,url\.search\)/);
 });

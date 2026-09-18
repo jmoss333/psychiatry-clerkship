@@ -16,8 +16,9 @@ function fdIsTool(ref){ return /\.html$/.test(ref); }
 /* A page with no topic_meta entry still has to render -- the Library carries every shipped page
    and not all of them are topic-template pages. Degrade to a titled row rather than throwing:
    renderHome()'s history in this repo is that one unguarded throw blanks the whole surface. */
-function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights){
+function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights, libraryHints){
   var m=topicMeta[ref]||{};
+  var hints=libraryHints||{};
   var t=toolIndex[ref]||null;
   var fr=m.facultyReview||{};
   var manifest=manifestIndex[ref]||{};
@@ -46,6 +47,10 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights){
     toolRef: (m.relatedTools&&m.relatedTools.length)?m.relatedTools[0]:null,
     risk: (t&&t.riskLevel)||m.safetyLevel||null,
     governance: manifest.governance||null,
+    /* The Library's one-line "use this when…" for a tool row (curriculum.libraryHints). A
+       string always, empty when the ref has none, so renderers test truthiness rather than
+       type. Reads keep bare titles: their tldr is clinical, not navigational. */
+    hint: (typeof hints[ref]==='string')?hints[ref]:'',
     href: (isTool?'?tool=':'?page=')+ref
   };
 }
@@ -68,16 +73,21 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
 
   /* Rights references are a property of the PAGE, not of where it happens to be linked from, so
      the lookup has to be global rather than per-call-site. ensure() memoises by ref and the first
-     caller wins: cssrs.html is a week item on ms3 but reaches the resident index only through a
-     library column -- so a per-call-site flag would leave the same page a plain tool on one site
-     and a reference on the other. The list is derived from instrument_rights.json and
+     caller wins: a page can reach the index through a week item on one site and only through a
+     library column on the other (cssrs.html did, until the stubs left the paths on 2026-09-16)
+     -- so a per-call-site flag would leave the same page a plain tool on one site and a
+     reference on the other. The list is derived from instrument_rights.json and
      validate_curriculum.py fails if the two disagree. */
   var rightsRefs={}, rr=cur.rightsReferences||[];
   for(var rq=0;rq<rr.length;rq++){ rightsRefs[rr[rq]]=true; }
 
-  var byRef={};
+  var byRef={}, libraryHints=(cur.libraryHints&&typeof cur.libraryHints==='object')?cur.libraryHints:{};
   function ensure(ref, kind){
-    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex, rightsRefs[ref]===true);
+    if(!byRef[ref]){
+      byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex, rightsRefs[ref]===true, libraryHints);
+      byRef[ref].searchAliases=((cur.searchAliases||{})[ref]||[]).slice();
+      byRef[ref].searchTitle=(cur.searchTitles||{})[ref]||byRef[ref].title;
+    }
     return byRef[ref];
   }
 
@@ -85,13 +95,18 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   for(var w=0;w<cw.length;w++){
     var items=[], src=cw[w].items||[];
     for(var j=0;j<src.length;j++){ items.push(ensure(src[j].ref, src[j].kind)); }
-    weeks.push({
+    var week={
       n:cw[w].n,
       title:cw[w].title,
       theme:cw[w].theme,
       focusCategories:(cw[w].focusCategories||[]).slice(),
       items:items
-    });
+    };
+    // Landing destinations need reader identity without becoming assigned items or Library rows.
+    if(typeof cw[w].landingRef==='string'&&cw[w].landingRef){
+      week.landingRef=cw[w].landingRef;
+    }
+    weeks.push(week);
   }
 
   var columns=[], cc=cur.libraryColumns||[];
@@ -107,6 +122,22 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   var kit=[], ck=cur.safetyKit||[];
   for(var k=0;k<ck.length;k++){
     kit.push({ item: ensure(ck[k].ref, null), sub: ck[k].sub, triggers: (ck[k].triggers||[]).slice() });
+  }
+
+  // Resolve unplaced landing pages after browse items, so existing placements keep their behavior.
+  for(var l=0;l<weeks.length;l++){
+    var landing=weeks[l].landingRef;
+    if(landing&&!byRef[landing]) ensure(landing, 'read').readerOnly=true;
+  }
+
+  // Search covers shipped teaching resources independently of browse/assignment placement.
+  // Keep search-only pages out of daily recommendations, including week landing pages.
+  var searchRefs=cur.searchResources||[];
+  for(var sr=0;sr<searchRefs.length;sr++){
+    var prior=byRef[searchRefs[sr]];
+    var searchItem=ensure(searchRefs[sr], null);
+    if(!prior||prior.readerOnly) searchItem.searchOnly=true;
+    searchItem.readerOnly=false;
   }
 
   var sourcePath=cur.path||{};
@@ -189,7 +220,7 @@ function fdLibraryOnlyReads(index){
   var out=[];
   for(var ref in index.byRef){
     var it=index.byRef[ref];
-    if(it.kind==='read'&&!inWeek[ref]) out.push(it);
+    if(it.kind==='read'&&!it.readerOnly&&!it.searchOnly&&!inWeek[ref]) out.push(it);
   }
   out.sort(function(a,b){ return a.ref<b.ref?-1:(a.ref>b.ref?1:0); });
   return out;

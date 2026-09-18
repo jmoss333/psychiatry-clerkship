@@ -548,24 +548,11 @@ class NormalizationTests(unittest.TestCase):
 
 
 class RepositoryProducerTests(unittest.TestCase):
-    def test_site_extras_literal_still_matches_the_derived_listing(self) -> None:
-        """SITE_EXTRAS no longer answers "what ships" -- _tool_entries() reads
-        shipped_pages.json (ADR-002 Phase 2). The literal survives only because
-        validate_curriculum.py AST-parses this module for it and exits hard when
-        it is gone; that reader is its own Phase-2 batch. A leftover copy of a
-        registry is the exact hazard ADR-002 is about, so hold it against the
-        listing until it can be deleted.
-        """
-        site_names = {shipped: site for site, shipped in governance.SHIPPED_SITE_KEYS.items()}
-        document = governance.load_shipped_pages(ROOT)
-        single_site: dict[str, set] = {site: set() for site in governance.SHIPPED_SITE_KEYS}
-        for page in document["pages"]:
-            if page["kind"] != "tool" or len(page["sites"]) != 1:
-                continue
-            single_site[site_names[page["sites"][0]]].add((page["source"], page["slug"]))
-        for site in ("ms3", "resident"):
-            with self.subTest(site=site):
-                self.assertEqual(set(governance.SITE_EXTRAS[site]), single_site[site])
+    # test_site_extras_literal_still_matches_the_derived_listing lived here. It held the
+    # dead `SITE_EXTRAS` literal against shipped_pages.json for as long as the literal had
+    # to stay -- validate_curriculum.py AST-parsed this module for it. B1 (#530) removed
+    # that parse and the literal was deleted 2026-09-05, so the anti-drift test has nothing
+    # left to guard: _tool_entries() reads the derived listing directly.
 
     def test_builds_minimal_sorted_documents_from_the_derived_listing(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

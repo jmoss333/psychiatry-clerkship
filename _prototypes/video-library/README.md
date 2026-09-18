@@ -13,8 +13,7 @@ not embed the `.dc.html` files directly.
 "Yours to Run.", ~87s, silent/kinetic-text) are **resident-only**, so they're copied by
 `resident_section.py` directly, not by `build_deploy.py`'s `VIDEO_MEDIA` list below — MS3 doesn't need a
 copy riding along unused. Embed lives in `14_Tracks/Resident/resident_welcome.md` → resident's `welcome.md`,
-hero placement, click-to-play (same treatment as the MS3 intro trailer: a linear "watch once" narrative,
-not an ambient loop).
+hero placement, click-to-play as a linear "watch once" narrative, not an ambient loop.
 
 ## What actually ships
 
@@ -23,15 +22,17 @@ download button) that renders it to a real `.mp4` — a static asset, no React/B
 `.mp4` is what belongs in this folder. This export step needs a human in the design tool (Dr. Moss, or
 whoever owns this project); an agent cannot click the export button itself.
 
-Drop each exported file in this folder using **exactly** these filenames, then rerun `build_deploy.py` —
-`VIDEO_MEDIA` in that script copies whatever it finds here into `<deploy>/media/`, and the page embeds
-already wired into `welcome.md`, `orientation.md`, `week1.md`–`week6.md`, and the six tool pages will pick
-them up automatically. Nothing else needs to change.
+Drop each active MS3 export in this folder using **exactly** the filenames below, then rerun
+`build_deploy.py` — `VIDEO_MEDIA` in that script copies matching active files into `<deploy>/media/`.
+
+## Retired MS3 intro provenance
+
+`intro-trailer.mp4` and `intro-trailer-poster.jpg` are retained design provenance. They are not copied into
+or referenced by a generated learner site. Restoring or remixing the retired intro requires a separate
+approved work package.
 
 | Filename | Source | Placement |
 |---|---|---|
-| `intro-trailer.mp4` | Clerkship Hub Intro Video | Hero, top of `welcome.md`. **Needs its voiceover mixed in first** — see `VO Script - Hub Trailer.dc.html` in the handoff package (8 cues, ~160 words, timecodes matched to the video's on-screen beats). Until the VO is mixed and re-exported, the hero still renders with `controls` (click-to-play) — it will just be silent. |
-| `intro-trailer-poster.jpg` | first frame of the trailer, once exported | Poster for the hero video. Generate with `ffmpeg -ss 0 -i intro-trailer.mp4 -frames:v 1 intro-trailer-poster.jpg` — don't screenshot the `.dc.html` source, fonts settle in ~0.3s after the real first frame. |
 | `day-in-the-life.mp4` | Clerkship Day in the Life | Inline in `orientation.md`, after the intro paragraph. Muted autoplay loop. |
 | `week-intro-1.mp4` … `week-intro-6.mp4` | Week Intro Stingers, exported per-week (Tweaks panel → set `week` 1–6 → Export) | Small banner under the `<h1>` of `week1.md`–`week6.md`. Muted autoplay loop. |
 | `week-stingers-reel.mp4` | Week Intro Stingers, full 36s reel | Optional showcase reel (not yet placed on a page). |
@@ -43,7 +44,7 @@ them up automatically. Nothing else needs to change.
 | `tool-spotlight-decision-aids.mp4` | Tool Spotlight Series, `only=6` | Same, on `tools/decision-aids.html`. |
 | `tool-spotlight-reel.mp4` | Tool Spotlight Series, full 88.5s reel | Optional showcase reel (not yet placed on a page). |
 
-All are silent except the intro trailer — no audio track unless recorded and mixed in.
+The active MS3 videos listed here are silent.
 
 ## Git LFS
 
@@ -54,6 +55,6 @@ more video files on top of the existing 100 audio files pulled on every CI build
 
 ## Until the files land here
 
-`build_deploy.py` prints `video library: 0 of 17 assets found` and the `<video>` tags on the pages above
+`build_deploy.py` prints `video library: 0 of 15 assets found` and the `<video>` tags on the pages above
 simply have nothing to play (found files are copied into `<deploy>/media/`, missing ones are silently
 skipped — no broken build, no placeholder blobs). Nothing else in the site depends on these existing.

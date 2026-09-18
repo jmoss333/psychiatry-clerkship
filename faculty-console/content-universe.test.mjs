@@ -71,15 +71,16 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
   const cotw = items.filter(item => isCotwSlug(item.slug));
 
   // 69 shared pages + 22 shared tools + 1 MS3-only tool (orientation-video.html)
-  // + 22 Case-of-the-Week twins + 6 resident-only pages + 4 resident-only tools
-  // (rp-post-event-huddle.html joined the three role-play tools on 2026-09-04).
+  // + 26 Case-of-the-Week twins + 6 resident-only pages + 4 resident-only tools
+  // (rp-post-event-huddle.html joined the three role-play tools on 2026-09-04;
+  // FEP week added 2026-09-07; serotonin-syndrome-vs-NMS week added 2026-09-14).
   assert.equal(MANIFEST.md.length, 69);
   assert.equal(MANIFEST.tools.length, 22);
-  assert.equal(REGISTRY.weeks.length, 11);
-  assert.equal(items.length, 124);
-  assert.equal(pages.length, 69 + 22 + 6);
+  assert.equal(REGISTRY.weeks.length, 13);
+  assert.equal(items.length, 128);
+  assert.equal(pages.length, 69 + 26 + 6);
   assert.equal(tools.length, 22 + 1 + 4);
-  assert.equal(cotw.length, 22);
+  assert.equal(cotw.length, 26);
 
   const byProducer = {};
   for (const entry of SHIPPED.pages) {
@@ -88,7 +89,7 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
   assert.deepEqual(byProducer, {
     site_manifest: 91,
     ms3_extra_tool: 1,
-    cotw_registry: 22,
+    cotw_registry: 26,
     resident_extra: 6,
     resident_tool: 4,
   });
@@ -98,8 +99,8 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
     [...new Set(cotw.map(item => `${item.kind}:${item.site}`))].sort(),
     ['page:ms3', 'page:res'],
   );
-  assert.equal(cotw.filter(item => item.site === 'ms3').length, 11);
-  assert.equal(cotw.filter(item => item.site === 'res').length, 11);
+  assert.equal(cotw.filter(item => item.site === 'ms3').length, 13);
+  assert.equal(cotw.filter(item => item.site === 'res').length, 13);
 
   // site is the ONE deployment to preview against: resident-only items say 'res',
   // everything shared says 'ms3'.
@@ -107,7 +108,7 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
     entry => entry.sites.length === 1 && entry.sites[0] === 'res',
   );
   assert.equal(residentOnly.length, items.filter(item => item.site === 'res').length);
-  assert.equal(residentOnly.length, 11 + 6 + 4);
+  assert.equal(residentOnly.length, 13 + 6 + 4);
 });
 
 /* THE JS-SIDE PARITY CHECK. shipped_pages.json is generated Python-side; this
@@ -218,7 +219,7 @@ test('the derived slug is byte-identical to cotw_slug() in the shared Python hel
 
   const fromJs = REGISTRY.weeks.flatMap(w => ['ms3', 'res'].map(level => cotwSlug(w, level)));
   assert.deepEqual(fromJs, fromPython);
-  assert.equal(fromPython.length, 22);
+  assert.equal(fromPython.length, 26);
   assert.ok(fromPython.includes('cotw_20260831_catatonia_ms3.md'));
   assert.ok(fromPython.includes('cotw_20260831_catatonia_res.md'));
 });
@@ -239,12 +240,14 @@ test('titles name the audience so the Case-of-the-Week twins sort next to each o
       title: 'Catatonia (Aug 31) — MS3',
       kind: 'page',
       site: 'ms3',
+      sites: ['ms3'],
     },
     {
       slug: 'cotw_20260831_catatonia_res.md',
       title: 'Catatonia (Aug 31) — Resident',
       kind: 'page',
       site: 'res',
+      sites: ['res'],
     },
   ]);
   // localeCompare on the shared label prefix puts "— MS3" immediately before
@@ -303,14 +306,14 @@ test('cotwTwinSlug pairs the two halves and ignores everything else', () => {
   // Every real twin resolves to a slug that is itself in the universe.
   const universe = contentUniverseSlugs({ shipped: SHIPPED });
   const cotw = [...universe].filter(isCotwSlug);
-  assert.equal(cotw.length, 22);
+  assert.equal(cotw.length, 26);
   for (const slug of cotw) assert.ok(universe.has(cotwTwinSlug(slug)), slug);
 });
 
-test('the pending-visibility invariant fails when a producer stops being read', () => {
-  // The July 2026 state reconstructed exactly: the shared manifest alone, which is what
-  // the console used to derive its universe from. Every one of the 22 built
-  // Case-of-the-Week pages falls outside it while reviewed.json still calls them pending.
+test('the current universe exposes the former manifest-only reader\'s blind spot', () => {
+  // Current counterfactual: substitute the shared-manifest reader the console formerly
+  // used. Faculty statuses legitimately change, so define the blind spot by producer
+  // rather than pinning today's pending total or treating the live ledger as July history.
   const manifestOnly = new Set([
     ...MANIFEST.md.map(([, slug]) => slug),
     ...MANIFEST.tools.map(([, slug]) => slug),
@@ -320,19 +323,25 @@ test('the pending-visibility invariant fails when a producer stops being read', 
     .filter(([, entry]) => entry && typeof entry === 'object' && entry.status === 'pending')
     .map(([slug]) => slug);
 
-  assert.equal(pending.length, 24);
-  const invisibleBefore = pending.filter(slug => !manifestOnly.has(slug) && !allowlist.has(slug));
-  assert.equal(invisibleBefore.length, 24);
-  assert.equal(invisibleBefore.filter(isCotwSlug).length, 22);
-  // The two that are NOT Case-of-the-Week pages are the resident-only role-play tools —
-  // the ones #517's allowlist called undeployed while the resident site served them.
+  // Welcome ships from the shared manifest, so it is visible even to the former reader
+  // whatever its review status is today.
+  assert.ok(manifestOnly.has('welcome.md'));
+
+  const universe = contentUniverseSlugs({ shipped: SHIPPED });
+  const nonManifestProducerSlugs = SHIPPED.pages
+    .filter(entry => entry.producer !== 'site_manifest')
+    .map(entry => entry.slug)
+    .sort();
+  const missedByManifestOnly = [...universe]
+    .filter(slug => !manifestOnly.has(slug))
+    .sort();
   assert.deepEqual(
-    invisibleBefore.filter(slug => !isCotwSlug(slug)).sort(),
-    ['rp-agitation.html', 'rp-brief-psych.html'],
+    missedByManifestOnly,
+    nonManifestProducerSlugs,
+    'the former reader must miss exactly the surfaces shipped by non-manifest producers',
   );
 
   // Reading the one derived listing, nothing pending is unreachable and nothing is excluded.
-  const universe = contentUniverseSlugs({ shipped: SHIPPED });
   assert.deepEqual(pending.filter(slug => !universe.has(slug) && !allowlist.has(slug)), []);
   // …and no exclusion masks a live item. The list is empty; see content-universe.mjs.
   assert.deepEqual(NOT_REVIEWABLE_IN_CONSOLE.filter(slug => universe.has(slug)), []);

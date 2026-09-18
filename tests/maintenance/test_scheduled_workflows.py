@@ -25,6 +25,7 @@ EXPECTED = {
     "surveillance-link-monitor.yml": "0 6 * * 1",
     "surveillance-citations.yml": "0 7 * * 1",
     "surveillance-guideline.yml": "0 6 1 * *",
+    "maintenance-queue-runner.yml": "40 4 * * *",
     "maintenance-sp-health-monitor.yml": "15 */12 * * *",
     "maintenance-production-canary.yml": "20 9 * * *",
     "maintenance-heartbeat.yml": "45 10 * * *",
@@ -478,6 +479,11 @@ class ScheduledWorkflowTests(unittest.TestCase):
             "maintenance-governance-digest.yml": {
                 "contents": "read",
                 "issues": "write",
+                # Added 2026-09-15 for the stranded-attestation steward, which
+                # asks whether a rolling review request is open for the
+                # attestation branch. Read-only, and the narrowest grant that
+                # answers the question — the same one the heartbeat holds.
+                "pull-requests": "read",
             },
             "maintenance-monthly-review.yml": {
                 "contents": "read",
@@ -523,11 +529,11 @@ class ScheduledWorkflowTests(unittest.TestCase):
             load_workflow("ci.yml").get("concurrency"),
             {
                 "group": "ci-${{ github.event_name }}-${{ github.ref }}",
-                "cancel-in-progress": "${{ github.event_name != 'schedule' }}",
+                "cancel-in-progress": "${{ github.event_name == 'pull_request' }}",
             },
         )
 
-    def test_ci_concurrency_separates_events_and_preserves_normal_cancellation(self):
+    def test_ci_concurrency_separates_events_and_cancels_only_pull_requests(self):
         concurrency = load_workflow("ci.yml")["concurrency"]
         template = concurrency["group"]
 
@@ -551,11 +557,15 @@ class ScheduledWorkflowTests(unittest.TestCase):
         self.assertNotEqual(push_group, manual_group)
         self.assertEqual(
             concurrency["cancel-in-progress"],
-            "${{ github.event_name != 'schedule' }}",
+            "${{ github.event_name == 'pull_request' }}",
         )
+        # Only a pull_request run may be superseded. A push to main validates a
+        # distinct, permanent commit and, with the up-to-date requirement off, is the
+        # only post-merge validation main gets -- cancelling it discarded that
+        # backstop on 48% of main runs before this contract changed.
         self.assertEqual(
             {
-                event_name: event_name != "schedule"
+                event_name: event_name == "pull_request"
                 for event_name in (
                     "schedule",
                     "push",
@@ -565,9 +575,9 @@ class ScheduledWorkflowTests(unittest.TestCase):
             },
             {
                 "schedule": False,
-                "push": True,
+                "push": False,
                 "pull_request": True,
-                "workflow_dispatch": True,
+                "workflow_dispatch": False,
             },
         )
 
@@ -975,7 +985,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
         safe_ci = (
             "concurrency:\n"
             "  group: ci-${{ github.event_name }}-${{ github.ref }}\n"
-            "  cancel-in-progress: ${{ github.event_name != 'schedule' }}\n"
+            "  cancel-in-progress: ${{ github.event_name == 'pull_request' }}\n"
         )
         unsafe_ci = (
             "concurrency:\n"

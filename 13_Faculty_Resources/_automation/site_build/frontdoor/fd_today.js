@@ -51,6 +51,75 @@ function fdTodayProgress(items, doneMap){
   return { done: done, total: list.length, pct: list.length?Math.round(done*100/list.length):0, next: next };
 }
 
+/* ---- One Thing First: the priority rule (2026-09-16) -------------------------------------
+   Today shows exactly one primary action. fdTodayPrimary picks it as the first true row of
+   FD_TODAY_PRIMARY_ORDER, top-down, from plain inputs the shell already derives (the question
+   bank capsule, the live timed block, the SRS due count, this week's progress, the last opened
+   item). Pure: no store, no clock -- the shell resolves every input, this file only ranks.
+
+   The order is ONE array on purpose. Assumption A1 in the handoff -- "unfinished outranks
+   reviews due" -- was approved on a preview, not answered directly; reversing it is a swap of
+   two entries here plus the expected column of the picker table in tests/fd-today.test.mjs,
+   and nothing else moves.
+
+   Kinds: resume (a capsule with questions left), block (a live block with a next step), read
+   (cw_last names an undone read in this week that is not already the Continue target), due
+   (reviews due), week (Continue the week), ahead (week complete: look ahead), setup (no week).
+   The first three are one row in the learner-facing rule ("Pick up where you left off"); they
+   stay distinct here because each renders a different card. */
+var FD_TODAY_PRIMARY_ORDER=['resume','block','read','due','week','ahead','setup'];
+
+/* The shell splices the secondary section at this marker -- directly after the lead card
+   (Continue or the setup CTA) -- so a Continue card that won stays first in the column and one
+   that lost sits below the demoted device-store rows. An HTML comment is invisible to the
+   learner and to every selector; fdTodayLive removes or replaces it. */
+var FD_TODAY_LEAD_END='<!--fd-lead-end-->';
+
+var FD_TODAY_WHY='First things first: anything you left unfinished, then reviews due, then this week. The rest is just below.';
+
+function fdTodayPrimaryHolds(kind, inp){
+  var wp=inp.weekProgress||{};
+  if(kind==='resume') return typeof inp.capsuleLeft==='number'&&inp.capsuleLeft>0;
+  if(kind==='block') return !!inp.blockNext;
+  if(kind==='read'){
+    var lr=inp.lastRead;
+    return !!lr&&lr.kind==='read'&&lr.done!==true&&lr.isContinueTarget!==true;
+  }
+  if(kind==='due') return typeof inp.dueTotal==='number'&&inp.dueTotal>0;
+  if(kind==='week') return inp.hasWeek===true&&!!wp.next;
+  if(kind==='ahead') return inp.hasWeek===true&&typeof wp.total==='number'&&wp.total>0&&wp.done===wp.total;
+  if(kind==='setup') return inp.hasWeek!==true;
+  return false;
+}
+
+function fdTodayPrimary(inputs){
+  var inp=inputs||{};
+  for(var i=0;i<FD_TODAY_PRIMARY_ORDER.length;i++){
+    if(fdTodayPrimaryHolds(FD_TODAY_PRIMARY_ORDER[i], inp)) return {kind:FD_TODAY_PRIMARY_ORDER[i]};
+  }
+  /* A week with no items: nothing is next and nothing is complete. Continue is still the honest
+     lead -- it previews the next week. */
+  return {kind:'week'};
+}
+
+/* Resolves the last opened ref against THIS week's items. Null when it is not a week item (a
+   library read, a tool from the rail, nothing opened yet): the row is about picking the week
+   back up, not a general history. done and isContinueTarget ride along so the picker's "read"
+   row and the shell's secondary list read one object. */
+function fdTodayLastRead(ref, weekItems, progress, doneMap){
+  if(typeof ref!=='string'||!ref) return null;
+  var list=weekItems||[], d=doneMap||{}, it=null;
+  for(var i=0;i<list.length;i++){ if(list[i]&&list[i].ref===ref){ it=list[i]; break; } }
+  if(!it) return null;
+  var target=(progress&&progress.next)?progress.next.ref:null;
+  return {ref:it.ref, kind:it.kind, title:it.title, minutes:it.minutes,
+    done:d[it.ref]===true, isContinueTarget:target===it.ref};
+}
+
+function fdTodayWhy(){
+  return '<p class="fd-primary__why">'+FD_TODAY_WHY+'</p>';
+}
+
 /* Shared week-item row -- CLASS-INVENTORY's Shared Components section (.fd-row, .fd-check,
    .fd-chip, ...). The checkmark glyph is ALWAYS emitted; .fd-check's CSS toggles its colour
    (transparent vs filled) rather than the markup toggling the glyph itself, so a screenshot at
@@ -120,39 +189,55 @@ function fdRow(it, idx, doneMap, compact){
    + data-fd-view-week rather than data-fd-open. The view attribute is intentionally distinct from
    setup-only data-fd-week, so the two actions cannot collide. The next target comes from the
    projected path: its final week reviews itself rather than inventing another. */
-function fdContinue(index, state, wk, progress){
+function fdContinue(index, state, wk, progress, primary){
+  /* primary===false demotes the card (a device-store row won Today's one primary slot);
+     undefined means primary, so every caller and test that predates the picker renders exactly
+     as before. */
+  var isPrimary=primary!==false;
   var isComplete=progress.total>0&&progress.done===progress.total;
+  var suggested=index.path&&index.path.id==='ms3-six-week';
   var kickerCls=isComplete?'fd-continue__kicker is-complete':'fd-continue__kicker';
-  var kickerText=isComplete?('Week '+fdEsc(state.week)+' complete'):('Continue · Week '+fdEsc(state.week));
+  var kickerText=isComplete?('Week '+fdEsc(state.week)+(suggested?' activities complete':' complete')):('Continue · Week '+fdEsc(state.week));
   var ringPct=(typeof state.ringPct==='number'&&!isNaN(state.ringPct))?state.ringPct:0;
-  var titleText, openAttrs;
+  var titleText, openAttrs, chip='';
   if(progress.next){
     titleText=progress.next.title;
     openAttrs=' data-fd-open="'+fdEsc(progress.next.ref)+'"';
+    /* Same chip rule as fdRow: a rights reference reads "reference", never "tool". */
+    var nx=progress.next;
+    chip='<span class="'+((nx.kind==='tool')?'fd-chip is-tool':'fd-chip')+'">'+
+      (nx.rights?'reference':((nx.kind==='tool')?'tool':'read'))+'</span>';
   } else {
     var nextWeek=fdNextWeek(index,state.week);
     var target=nextWeek?nextWeek.n:state.week;
     titleText=(nextWeek?'Preview Week ':'Review Week ')+target;
     openAttrs=' data-fd-tab="path" data-fd-view-week="'+fdEsc(target)+'"';
   }
-  var done=state.done||{}, leftMin=0;
+  var done=fdProgressForWeek(index,state,state.week), leftMin=0;
   for(var i=0;i<wk.items.length;i++){
     if(done[wk.items[i].ref]!==true&&typeof wk.items[i].minutes==='number') leftMin+=wk.items[i].minutes;
   }
   var leftLabel=leftMin>0?('~'+leftMin+' min left'):'';
-  return '<button type="button" class="fd-continue"'+openAttrs+'>'+
+  var out='<button type="button" class="'+(isPrimary?'fd-continue':'fd-continue is-secondary')+'"'+openAttrs+'>'+
     '<span class="fd-ring" style="--fd-ring-pct:'+ringPct+'%">'+
       '<span class="fd-ring__inner">'+ringPct+'%</span>'+
     '</span>'+
     '<span>'+
       '<span class="'+kickerCls+'">'+kickerText+'</span>'+
-      '<span class="fd-continue__title">'+fdEsc(titleText)+' →</span>'+
+      '<span class="fd-continue__title">'+fdEsc(titleText)+chip+' →</span>'+
     '</span>'+
     '<span class="fd-continue__meta">'+
-      '<span class="fd-continue__count">'+progress.done+' of '+progress.total+' done</span>'+
+      '<span class="fd-continue__count">'+progress.done+' of '+progress.total+(suggested?' activities done':' done')+'</span>'+
       '<span class="fd-continue__left">'+leftLabel+'</span>'+
     '</span>'+
   '</button>';
+  /* Week complete AND primary: the look-ahead card leads, and a learner with time left wants
+     questions, not a preview. A sibling, never nested -- a button inside a button is invalid
+     markup and the controller would see one click twice. */
+  if(isComplete&&isPrimary){
+    out+='<button type="button" class="fd-btn fd-btn--ghost fd-freshset" data-fd-open="question-bank-practice.html">Practice a fresh set →</button>';
+  }
+  return out;
 }
 
 function fdSetupCta(){
@@ -199,7 +284,7 @@ function fdKitCard(k){
 
 function fdProgressAccess(){
   return '<button type="button" class="fd-progresscard" data-fd-progress>'+
-    '<span class="fd-progresscard__title">Progress &amp; mastery</span>'+
+    '<span class="fd-progresscard__title">Learning activity &amp; review</span>'+
     '<span class="fd-progresscard__meta">Coverage · blueprint · calibration →</span>'+
   '</button>';
 }
@@ -219,7 +304,7 @@ function fdQuickTools(index, weekItems){
   if(out.length<5){
     var all=[];
     for(ref in index.byRef){
-      if(index.byRef[ref].kind==='tool'&&!index.byRef[ref].rights) all.push(index.byRef[ref]);
+      if(index.byRef[ref].kind==='tool'&&!index.byRef[ref].rights&&!index.byRef[ref].searchOnly) all.push(index.byRef[ref]);
     }
     all.sort(function(a,b){ return a.ref<b.ref?-1:(a.ref>b.ref?1:0); });
     for(i=0;i<all.length&&out.length<5;i++){
@@ -276,7 +361,8 @@ function fdToday(index, state){
   var wk=(typeof st.week==='number'&&!isNaN(st.week))?fdFindWeek(idx, st.week):null;
   var hasWeek=!!wk;
   var wItems=hasWeek?fdItemsForWeek(idx, st.week):[];
-  var progress=fdTodayProgress(wItems, st.done);
+  var done=fdProgressForWeek(idx,st,st.week);
+  var progress=fdTodayProgress(wItems, done);
 
   var sub=hasWeek
     ?('Week '+fdEsc(st.week)+' · '+fdEsc(wk.title)+' · '+dayName)
@@ -301,18 +387,24 @@ function fdToday(index, state){
   out+=fdConsistency(st.activityDays, nowMs);
   out+='<div class="fd-today__cols"><div class="fd-today__main">';
 
-  out+=hasWeek?fdContinue(idx,st, wk, progress):fdSetupCta();
+  /* One Thing First: state.primaryKind arrives from the shell's picker. The lead card is
+     primary unless a device-store row won; undefined keeps the pre-picker render. The marker
+     that follows is where the shell splices the secondary section (see FD_TODAY_LEAD_END). */
+  var pk=st.primaryKind;
+  var leadPrimary=(pk===undefined||pk==='week'||pk==='ahead'||pk==='setup');
+  out+=hasWeek?fdContinue(idx,st, wk, progress, leadPrimary):fdSetupCta();
+  out+=FD_TODAY_LEAD_END;
 
 
   if(hasWeek){
-    out+='<div class="fd-listhead"><h2 class="fd-sectionhead">This week</h2>'+
+    out+='<div class="fd-listhead"><h2 class="fd-sectionhead">'+(idx.path&&idx.path.id==='ms3-six-week'?'Suggested this week':'This week')+'</h2>'+
       '<span class="fd-listhead__theme">'+fdEsc(wk.theme)+'</span></div>';
     out+='<div class="fd-list">';
-    for(var i=0;i<wItems.length;i++){ out+=fdRow(wItems[i], i, st.done); }
+    for(var i=0;i<wItems.length;i++){ out+=fdRow(wItems[i], i, done); }
     out+='</div>';
   }
 
-  var daily=fdDailyPick(fdLibraryOnlyReads(idx), st.done, nowMs);
+  var daily=fdDailyPick(fdLibraryOnlyReads(idx), done, nowMs);
   if(daily) out+=fdPick(daily);
 
   out+=fdProgressAccess();

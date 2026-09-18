@@ -7,6 +7,9 @@ from pathlib import Path
 # so these no longer exist as two drifting copies.
 import common
 import frontdoor_catalog
+import shipped_pages
+import welcome_compass
+from site_extras import MS3_ORIENT_VIDEO as ORIENT_VIDEO
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location instead of a
 # hard-coded sandbox mount, so the build runs under any Cowork session or the real filesystem.
 HERE=os.path.dirname(os.path.abspath(__file__))
@@ -17,7 +20,19 @@ SPA=os.path.join(HERE,"spa_index.html")                   # SPA shell (co-locate
 MARKED=os.path.join(HERE,"marked.min.js")                 # vendored marked (co-located)
 MANIFEST=os.path.join(HERE,"site_manifest.json")          # content/tool build manifest
 CLINICAL_CSS=os.path.join(HERE,"clinical-warm.css")       # shared dark-mode tokens
+THEME_SCAN=os.path.join(HERE,"theme_scan.js")             # the measurement (shared with the gate)
+THEME_AUDIT=os.path.join(HERE,"theme_audit.js")           # the panel that renders it (on demand)
+ANALYTICS_JS=os.path.join(HERE,"analytics.js")            # usage analytics emitter
 FRONTDOOR_CSS=os.path.join(HERE,"frontdoor","frontdoor.css")
+CURRICULUM=os.path.join(LIB,"curriculum.json")
+ORIENTATION_PACKET=os.path.join(
+    LIB,
+    "14_Tracks",
+    "MS3",
+    "Student_Ready_Pack",
+    "01_orientation",
+    "MS3_orientation_packet.md",
+)
 
 def _relpath(p):
     for base in (LIB,HERE):
@@ -40,8 +55,54 @@ def _copy_required(src,dst,missing):
     else:
         missing.append(src)
 
-_bootstrap_missing=[p for p in [MANIFEST,SPA,MARKED,CLINICAL_CSS,FRONTDOOR_CSS] if not os.path.exists(p)]
+_bootstrap_missing=[
+    p
+    for p in [
+        MANIFEST,
+        SPA,
+        MARKED,
+        CLINICAL_CSS,
+        FRONTDOOR_CSS,
+    ]
+    if not os.path.exists(p)
+]
 _abort_missing(_bootstrap_missing)
+
+# The same source triples are deliberately projected into separate source and
+# built paths: source validation must never be confused with output validation.
+_orientation_source_paths=[src for src,_dst,_title in ORIENT_VIDEO]
+_orientation_built_paths=[
+    os.path.join("tools",dst) for _src,dst,_title in ORIENT_VIDEO
+]
+try:
+    _curriculum,_orientation_packet=welcome_compass.load_ms3_preflight_sources(
+        CURRICULUM,ORIENTATION_PACKET
+    )
+    _shipped_document=shipped_pages.load_shipped_pages(LIB)
+    _compass_cards=welcome_compass.prepare_cards(
+        _curriculum["learningPaths"]["ms3"]["weeks"],
+        _shipped_document,
+    )
+    _safety_text=welcome_compass.extract_safety_rule(_orientation_packet)
+    _compass_fragment=welcome_compass.render_compass(_compass_cards,_safety_text)
+    welcome_compass.require_real_files(LIB,_orientation_source_paths)
+    with open(os.path.join(LIB,"media_manifest.json"),encoding="utf-8") as _media_manifest_handle:
+        welcome_compass.validate_media_manifest(json.load(_media_manifest_handle))
+except welcome_compass.CompassPreflightError as error:
+    print(error)
+    raise SystemExit(1)
+except (
+    OSError,
+    UnicodeError,
+    json.JSONDecodeError,
+    KeyError,
+    TypeError,
+    shipped_pages.ShippedPagesError,
+    welcome_compass.CompassContractError,
+) as error:
+    print("BUILD ABORTED — MS3 Compass:",error)
+    raise SystemExit(1)
+
 if os.path.exists(OUT): shutil.rmtree(OUT)
 os.makedirs(OUT+"/content"); os.makedirs(OUT+"/tools")
 
@@ -81,22 +142,21 @@ _abort_missing(_missing_req)
 # The list lives in site_extras.py, not here: orientation-video.html is a shipped,
 # attestable tool that is NOT in site_manifest.json, so shipped_pages.py has to be able
 # to enumerate it without executing this script. Same list, one importable home.
-from site_extras import MS3_ORIENT_VIDEO as ORIENT_VIDEO
+_missing_orientation=[]
 for src,dst,_title in ORIENT_VIDEO:
-    p=os.path.join(LIB,src)
-    if os.path.exists(p):
-        out_p=OUT+"/tools/"+dst
-        shutil.copy2(p, out_p)
-        os.chmod(out_p, 0o644)   # source MP4 arrives with mode 400 (LFS/download artifact); world-readable required
-    else: print("  WARN: orientation video asset missing from source:",src)
+    out_path=os.path.join(OUT,"tools",dst)
+    _copy_required(os.path.join(LIB,src),out_path,_missing_orientation)
+    if os.path.isfile(out_path):
+        os.chmod(out_path,0o644)   # source MP4 arrives with mode 400 (LFS/download artifact); world-readable required
+_abort_missing(_missing_orientation)
 
-# ---- video library (intro trailer, day-in-the-life, week stingers, tool spotlights) ----
+# ---- video library (active day-in-the-life, week stingers, and tool spotlights) ----
 # Design source: Clerkship_video_handoff package (2026-07-02/03). Each .mp4 is exported by hand
-# from the design tool (Cowork can't click "Export"); until a file lands in _prototypes/video-library/,
-# its entry below is a silent no-op and the page embed referencing it just won't play yet.
+# from the design tool (Cowork can't click "Export"). This list copies active source files that exist;
+# page embedding and missing-media treatment are handled separately by the generated-site media guard.
 # See _prototypes/video-library/README.md for the exact export filenames + placement map.
 VIDEO_MEDIA=[
- "intro-trailer.mp4","intro-trailer-poster.jpg","day-in-the-life.mp4",
+ "day-in-the-life.mp4",
  "week-intro-1.mp4","week-intro-2.mp4","week-intro-3.mp4","week-intro-4.mp4","week-intro-5.mp4","week-intro-6.mp4",
  "tool-spotlight-interview-circle.mp4","tool-spotlight-capacity.mp4","tool-spotlight-violence.mp4",
  "tool-spotlight-withdrawal.mp4","tool-spotlight-bfcrs.mp4","tool-spotlight-decision-aids.mp4",
@@ -258,6 +318,10 @@ _CRISIS_REQUIRED_TOOLS={
     # FRST one-pager: the learner screens imminent-violence warning signs, and its sibling
     # page violence.md already carries the block (MS3V05-F005).
     "violence.html",
+    # MSE teaching module: its Safety stage rehearses the suicide, violence and vulnerability
+    # elicitation ladders verbatim, the same ladders as its sibling pg_interview.md
+    # (MS3V01-F005; author's scope call, 2026-09-07).
+    "mse.html",
 }
 _CRISIS_REQUIRED_MD={
     # direct risk assessment & acute safety
@@ -274,6 +338,10 @@ _CRISIS_REQUIRED_MD={
     # safetyLevel:high, coaches suicide/self-harm/DV screening, and its discharge paragraph
     # tells the learner to hand the patient and family crisis contacts (MS3V03-F001).
     "t_anxiety.md",
+    # The pocket guide has the learner rehearse the suicide, violence and vulnerability
+    # elicitation ladders verbatim -- risk work under the scope rule, not a page that merely
+    # mentions suicide (MS3V01-F005; author's scope call, 2026-09-07).
+    "pg_interview.md",
     # Case-of-the-Week pages that rehearse risk work. These reach the injection pass through
     # the _cotw_slug(w,"ms3") entries appended to `md` above, so no pipeline change is needed
     # on this side; the resident twins are gated in resident_section.py instead.
@@ -319,7 +387,10 @@ for src,dst,_ in md:
         _t=open(p,encoding="utf-8").read()
         _t,_did=_crisis.inject_markdown(_t,_crisis_data)
         _t,_pdid=_pairings.inject_markdown(_t,_pair_data,dst,"ms3")
-        if _did or _pdid:
+        _compass_did=False
+        if dst=="welcome.md":
+            _t,_compass_did=welcome_compass.inject_compass(_t,_compass_fragment)
+        if _did or _pdid or _compass_did:
             open(OUT+"/content/"+dst,"w",encoding="utf-8").write(_t)
         if _did: _crisis_md_done.add(dst)
         if _pdid: _pair_md_done.add(dst)
@@ -355,7 +426,26 @@ def _md(t,f,hidden=False):
     return dict({"t":t,"f":f,"k":"md"},**({"hidden":True} if hidden else {}))
 def _tool(f,t=None,hidden=None):
     return dict({"t":t or _tool_titles.get(f,f),"f":f,"k":"tool"},**({"hidden":True} if (hidden if hidden is not None else f in HIDDEN_TOOLS) else {}))
-_week_items=[_md(t,f,True) for f,t in [("week%d.md"%i,["Week 1 — Foundations","Week 2 — Mood/Psychosis/Pharm","Week 3 — Psychotherapy/Personality","Week 4 — Family/Systems/EE","Week 5 — Acute/Emergency","Week 6 — Integration/Exam"][i-1]) for i in range(1,7)]]
+_week_items=[
+    _md(welcome_compass.week_nav_title(card),card.landing_ref,True)
+    for card in _compass_cards
+]
+# The manifest, both navs and the Compass must agree on a week page's title; the curriculum
+# is the source and the manifest is checked against it here (2026-09-05 review, finding 8).
+# Deliberately compared against site_manifest.json, the PRODUCER a maintainer edits to fix a
+# drift, rather than shipped_pages.json, the derived listing -- and it reuses the `md` rows
+# this script already loaded rather than opening the manifest again, because
+# tests/shipped-pages-readers.test.mjs freezes the set of direct manifest readers.
+_manifest_titles={row[1]:row[2] for row in md}
+_week_title_drift=[
+    (card.landing_ref,_manifest_titles.get(card.landing_ref),welcome_compass.week_nav_title(card))
+    for card in _compass_cards
+    if _manifest_titles.get(card.landing_ref)!=welcome_compass.week_nav_title(card)
+]
+if _week_title_drift:
+    print("BUILD ABORTED — week page titles drift between site_manifest.json and curriculum.json:")
+    for _slug,_have,_want in _week_title_drift: print("   -",_slug,"manifest",repr(_have),"curriculum",repr(_want))
+    raise SystemExit(1)
 nav=[
  {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md"),_tool("orientation-video.html","Orientation Video",True)]+_week_items},
  {"section":"Start the Encounter","items":[_md("Interview & MSE","pg_interview.md"),_tool("mse.html","Mental Status Exam"),_tool("interview-circle.html","The Interview Circle"),_tool("sp-interview.html","The Interview Room — AI Standardized Patient"),_tool("screeners.html","Screeners: PHQ-9 & GAD-7")]},
@@ -372,6 +462,7 @@ nav=[
 ]
 _navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
+welcome_compass.assert_nav_projection(nav,_compass_cards,label="MS3")
 
 # ---------- SURFACE GOVERNANCE: nav annotation ----------
 # Canonical review/risk state (13_Faculty_Resources/reviewed.json) flattened into
@@ -400,8 +491,29 @@ _missing_req=[]
 _copy_required(SPA, OUT+"/index.html", _missing_req)
 _copy_required(MARKED, OUT+"/marked.min.js", _missing_req)  # vendored (ward-wifi: no CDN dependency)
 _copy_required(CLINICAL_CSS, OUT+"/clinical-warm.css", _missing_req)  # shared dark-mode tokens (linked into tools below)
+# /theme-audit.js is theme_scan.js + theme_audit.js concatenated, in that order: the panel reads
+# window.cwThemeScan, which the scan defines. Concatenated rather than two <script> tags so the
+# loader stays ONE request on a page that only wanted a stylesheet, and so the two halves can
+# never arrive out of order. tests/smoke/frozen-colour.spec.js injects theme_scan.js by itself.
+if all(os.path.exists(p) for p in (THEME_SCAN, THEME_AUDIT)):
+    with open(OUT+"/theme-audit.js","w",encoding="utf-8") as _ta:
+        _ta.write(open(THEME_SCAN,encoding="utf-8").read())
+        _ta.write("\n")
+        _ta.write(open(THEME_AUDIT,encoding="utf-8").read())
+else:
+    _missing_req.extend(p for p in (THEME_SCAN, THEME_AUDIT) if not os.path.exists(p))
+# Usage analytics emitter -- gated behind CLERKSHIP_ANALYTICS (default off; see
+# common.analytics_enabled_for() and docs/superpowers/specs/2026-09-04-usage-
+# analytics-design.md "Rollout"). Copied only when this build's own flag
+# enables ms3, so a disabled build ships neither the file nor a <script> tag
+# pointing at it (that tag is injected below by apply_full_page_pass, gated
+# by the same _ANALYTICS_MS3 decision).
+_ANALYTICS_MS3 = common.analytics_enabled_for("ms3")
+if _ANALYTICS_MS3:
+    _copy_required(ANALYTICS_JS, OUT+"/analytics.js", _missing_req)   # usage analytics emitter (tag injected per page)
 _copy_required(FRONTDOOR_CSS, OUT+"/frontdoor.css", _missing_req)
 _abort_missing(_missing_req)
+print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
 
 # Front Door modules stay dormant in this task, but their data is made site-specific now.
 # Build after nav finalization so titles/kinds come from this site's actual browse catalog.
@@ -429,8 +541,8 @@ try:
     _validate_rotation_catalog(_rotation_catalog,_rotation_governance,today=date.today())
     _rotation_projection=_build_rotation_projection(_rotation_catalog,_rotation_governance,"ms3")
     _fd_payload=frontdoor_catalog.build_frontdoor_payload(
-        "ms3", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav, _core_revision,
-        _rotation_projection)
+        "ms3", _curriculum, nav, _core_revision,
+        _rotation_projection, shipped=frontdoor_catalog.load_search_universe(LIB))
     _frontdoor_destinations=(OUT+"/index.html", OUT+"/tools/rotation-curator.html")
     for _frontdoor_destination in _frontdoor_destinations:
         frontdoor_catalog.inject_frontdoor_payload(
@@ -512,7 +624,7 @@ common.apply_contrast_fix(
     _glob.glob(OUT+"/content/*.md")+_glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]
 )
 _QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
-common.apply_full_page_pass(OUT, cache_bust=_QV)
+common.apply_full_page_pass(OUT, cache_bust=_QV, inject_analytics=_ANALYTICS_MS3)
 for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.html"):
     frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination, _rotation_projection["revision"])
 
@@ -528,7 +640,15 @@ print("crisis block injected: shell index")
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
 open(OUT+"/404.html","w",encoding="utf-8").write('<!doctype html><meta charset="utf-8"><title>Not found</title><meta name="robots" content="noindex,nofollow"><style>body{font-family:system-ui,sans-serif;background:#f6f3ee;color:#2f2924;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}a{color:#174d43}</style><div><h1 style="color:#9f3f2a">Page not found</h1><p><a href="/">Return to the clerkship hub</a></p></div>')
-open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/media/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n/sw.js\n  Cache-Control: public, max-age=0, must-revalidate\n")
+open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app https://clerkship-metrics.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/media/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n/sw.js\n  Cache-Control: public, max-age=0, must-revalidate\n")
+
+# Deploy-preview only (#430): Netlify injects /.netlify/scripts/cdp into preview HTML, whose
+# drawer frames https://app.netlify.com/ and trips the frame-src above. The literal written
+# just now stays the production payload verbatim (it is regex-pinned by
+# tests/faculty-console-handler.test.mjs); this re-reads the written file and widens frame-src
+# ONLY when CONTEXT=deploy-preview. Production and branch-deploy stay byte-identical.
+common.apply_preview_headers(OUT, label="ms3")
+
 print("polish pass: banners stripped, contrast darkened, <main>+favicon on tools, robots/404/_headers written")
 
 
@@ -546,6 +666,28 @@ _crisis.assert_no_html_marker_file(OUT+"/index.html", "final Front Door shell in
 # Postcondition gate (architecture review rec 1.3): prove every shipped page actually
 # received the chrome/dark transforms rather than silently missing them.
 common.assert_page_contract(OUT, label="ms3")
+
+# Usage analytics fail-closed postcondition. This build is always a fresh
+# rmtree+rebuild (no copytree inheritance like resident_section.py has), so
+# this should hold trivially -- but it is the cheap, direct check that a
+# disabled build actually shipped nothing, rather than trusting the gate
+# above never to have an unnoticed second injection path.
+if not _ANALYTICS_MS3:
+    _analytics_leaked = []
+    if os.path.exists(OUT + "/analytics.js"):
+        _analytics_leaked.append("analytics.js")
+    for _dirpath, _dirnames, _filenames in os.walk(OUT):
+        for _fname in _filenames:
+            if not _fname.endswith(".html"):
+                continue
+            _fp = os.path.join(_dirpath, _fname)
+            if "CW_SITE" in open(_fp, encoding="utf-8").read():
+                _analytics_leaked.append(os.path.relpath(_fp, OUT))
+    if _analytics_leaked:
+        raise SystemExit(
+            "usage analytics: disabled for ms3 (CLERKSHIP_ANALYTICS=%s) but "
+            "still present: %s" % (common.analytics_mode(), ", ".join(sorted(_analytics_leaked)))
+        )
 
 # ---------- SURFACE GOVERNANCE: direct-tool status + public artifact ----------
 # After every tool-HTML-mutating pass (polish, crisis block, media guard) so the
@@ -576,3 +718,8 @@ print("tool governance: emitted", len(_governance["items"]), "items")
 # Last artifact step: the precache manifest must reflect the completed,
 # published-artifact file tree, not an intermediate one.
 common.emit_service_worker(OUT)
+try:
+    welcome_compass.assert_ms3_output(OUT, _compass_cards, _safety_text, _orientation_built_paths)
+except welcome_compass.CompassContractError as _compass_error:
+    print("BUILD ABORTED — MS3 Compass output:", _compass_error)
+    raise SystemExit(1)

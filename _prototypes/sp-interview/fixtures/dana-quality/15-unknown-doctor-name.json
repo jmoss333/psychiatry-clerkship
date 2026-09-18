@@ -1,0 +1,34 @@
+{
+  "id": "unknown-doctor-name",
+  "title": "An unspecified clinician name",
+  "synthetic": true,
+  "tags": [
+    "unsupported_name"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "What was the name of your doctor last night?",
+  "expectations": {
+    "should": [
+      "Acknowledge simply that the name is not known.",
+      "Treat the question as clear even though the fact is unavailable."
+    ],
+    "mustNot": [
+      "Do not invent a clinician’s name or answer with Dana’s own name.",
+      "Do not invent forgetfulness, confusion, or a blurry experience to explain the missing information."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "persona.presentingContext"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

@@ -16,7 +16,16 @@
             { "$ref": "#/definitions/learningPath" },
             { "properties": {
               "id": { "const": "ms3-six-week" },
-              "weeks": { "minItems": 6, "maxItems": 6 }
+              "weeks": {
+                "minItems": 6,
+                "maxItems": 6,
+                "items": {
+                  "allOf": [
+                    { "$ref": "#/definitions/week" },
+                    { "required": ["landingRef"] }
+                  ]
+                }
+              }
             }}
           ]
         },
@@ -72,6 +81,12 @@
       "items": { "type": "string", "minLength": 1 },
       "uniqueItems": true
     },
+    "libraryHints": {
+      "description": "One audience-neutral line per Library-placed tool ('use this when…'), keyed by ref. validate_curriculum.py requires a line for every column-placed or site-added .html ref and rejects a line for a ref no column places.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9_-]+\\.html$" },
+      "additionalProperties": { "type": "string", "minLength": 8, "maxLength": 110 }
+    },
     "safetyKit": {
       "type": "array",
       "items": {
@@ -97,6 +112,23 @@
       "properties": {
         "ms3": { "$ref": "#/definitions/roleList" },
         "resident": { "$ref": "#/definitions/roleList" }
+      }
+    },
+    "searchAliases": {
+      "description": "Curated resource-discovery vocabulary; never expands safety triggers.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9_-]+\\.(md|html)$" },
+      "additionalProperties": {
+        "type": "array", "minItems": 1, "uniqueItems": true,
+        "items": { "type": "string", "minLength": 2, "pattern": "^[a-z0-9]+(?: [a-z0-9]+)*$" }
+      }
+    },
+    "searchExclude": {
+      "description": "Explicit exceptions to shipped-resource search coverage; independent of Library placement.",
+      "type": "array", "uniqueItems": true,
+      "items": {
+        "type": "object", "required": ["ref", "reason"], "additionalProperties": false,
+        "properties": { "ref": { "type": "string", "minLength": 1 }, "reason": { "type": "string", "minLength": 1 } }
       }
     },
     "_synonymsNote": { "type": "string" },
@@ -128,6 +160,7 @@
         "n": { "type": "integer", "minimum": 1, "maximum": 6 },
         "title": { "type": "string", "minLength": 1 },
         "theme": { "type": "string", "minLength": 1 },
+        "landingRef": { "type": "string", "minLength": 1 },
         "focusCategories": {
           "type": "array",
           "minItems": 1,

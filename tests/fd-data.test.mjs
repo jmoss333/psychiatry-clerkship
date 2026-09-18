@@ -89,6 +89,24 @@ test('an item joins minutes, summary, points and attestation from topic_meta', (
   assert.equal(i.toolRef, 't.html');
 });
 
+test('landing destinations resolve titles without becoming week items, Library rows or daily picks', () => {
+  const cur = structuredClone(FIX_CUR);
+  cur.weeks[0].landingRef = 'week1.md';
+  const man = structuredClone(FIX_MAN);
+  man.md.push(['', 'week1.md', 'Week 1 — Foundations & the MSE']);
+  const index = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, man);
+  assert.equal(index.byRef['week1.md']?.title, 'Week 1 — Foundations & the MSE');
+  assert.equal(index.known['week1.md'], true);
+  assert.equal(index.byRef['week1.md'].readerOnly, true);
+  assert.deepEqual(index.weeks[0].items.map(item => item.ref), ['a.md']);
+  assert.deepEqual(index.columns[0].items.map(item => item.ref), ['a.md', 'b.md']);
+  assert.deepEqual(F.fdLibraryOnlyReads(index).map(item => item.ref), ['b.md']);
+  cur.libraryColumns[0].refs.push('week1.md');
+  const placed = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, man);
+  assert.notEqual(placed.byRef['week1.md'].readerOnly, true);
+  assert.deepEqual(F.fdLibraryOnlyReads(placed).map(item => item.ref), ['b.md', 'week1.md']);
+});
+
 test('a page with no topic_meta entry still yields a usable item', () => {
   const cur = JSON.parse(JSON.stringify(FIX_CUR));
   cur.libraryColumns[0].refs.push('orphan.md');
@@ -219,7 +237,9 @@ test('the real curriculum joins without throwing and routes every week item', ()
       n += 1;
     }
   }
-  assert.equal(n, 40, 'expected the 40 week items curriculum.json ships');
+  // 39 = 40 minus cssrs.html, which left Week 5 on 2026-09-16: a rights reference is a Library
+  // row, not a path step (tests/path-rights-references.test.mjs).
+  assert.equal(n, 39, 'expected the 39 week items curriculum.json ships');
 });
 
 test('every real library column item resolves', () => {
@@ -237,5 +257,37 @@ test('all five real kit items are attested and carry safety steps', () => {
   for (const k of idx.kit) {
     assert.equal(k.item.attested, true, `${k.item.ref} must be attested to appear in the kit`);
     assert.ok(META[k.item.ref].safetySteps.length >= 3, `${k.item.ref} needs safetySteps`);
+  }
+});
+
+// ---- libraryHints: the one-line "use this when…" a Library tool row carries ------------------
+
+test('an item joins its libraryHints line as `hint`, and a ref with none reads as empty', () => {
+  const cur = JSON.parse(JSON.stringify(FIX_CUR));
+  cur.libraryHints = { 'a.md': 'Read this first.', 'ghost.html': 'never placed' };
+  const idx = F.fdBuildIndex(cur, {}, { tools: [] }, { tools: [], md: [['s', 'a.md', 'A']] });
+  assert.equal(idx.byRef['a.md'].hint, 'Read this first.');
+  const bare = F.fdBuildIndex(FIX_CUR, {}, { tools: [] }, { tools: [], md: [['s', 'a.md', 'A']] });
+  assert.equal(bare.byRef['a.md'].hint, '', 'no libraryHints block at all still joins cleanly');
+  assert.equal(typeof bare.byRef['a.md'].hint, 'string');
+});
+
+test('every real column-placed tool carries a hint, and every hint names a placed tool', () => {
+  // The contract validate_curriculum.py enforces at build time, pinned here so it also turns
+  // `node --test` red: a tool without its one-line hint is a bare title in the only browse
+  // surface, and a hint for a ref no column places is copy nobody can read.
+  const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
+  const placedTools = [];
+  for (const c of idx.columns) for (const it of c.items) if (it.kind === 'tool') placedTools.push(it.ref);
+  assert.ok(placedTools.length >= 20, `fixture sanity: the real Library places ${placedTools.length} tools`);
+  for (const ref of placedTools) {
+    const hint = idx.byRef[ref].hint;
+    assert.ok(hint && hint.trim().length >= 20, `${ref} needs a one-line hint (got ${JSON.stringify(hint)})`);
+    assert.ok(hint.length <= 110, `${ref}'s hint must stay one line (${hint.length} chars)`);
+  }
+  const placedEverywhere = new Set(placedTools);
+  for (const addition of (CUR.siteLibrary.resident.additions || [])) for (const ref of addition.refs) placedEverywhere.add(ref);
+  for (const ref of Object.keys(CUR.libraryHints || {})) {
+    assert.ok(placedEverywhere.has(ref), `libraryHints names ${ref}, which no Library column places`);
   }
 });

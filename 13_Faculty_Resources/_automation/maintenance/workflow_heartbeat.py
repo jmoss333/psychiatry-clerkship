@@ -18,15 +18,16 @@ import yaml
 
 # Dual-mode: this module runs both as a package (tests) and as a script (workflows).
 try:  # package
-    from .receipt_summary import report
+    from .receipt_summary import BLOCKED_EXIT, classify, deferral, report
 except ImportError:  # script - siblings are on sys.path
-    from receipt_summary import report
+    from receipt_summary import BLOCKED_EXIT, classify, deferral, report
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 EXPECTATIONS = {
     "maintenance-sp-health-monitor.yml": 16,
     "maintenance-production-canary.yml": 30,
+    "maintenance-queue-runner.yml": 30,
     "maintenance-rotation-readiness.yml": 30,
     "ci.yml": 8 * 24,
     "maintenance-governance-digest.yml": 8 * 24,
@@ -35,11 +36,124 @@ EXPECTATIONS = {
     "maintenance-monthly-review.yml": 35 * 24,
     "surveillance-guideline.yml": 35 * 24,
 }
+# The ONLY workflow allowed to declare a cron and go unwatched, because a
+# heartbeat that reports on its own freshness cannot fail honestly: if it stops
+# running it also stops saying so. Every other cron must appear in EXPECTATIONS,
+# which scheduled_workflows_without_expectations() derives from the workflow
+# directory rather than from this list -- a remembered list cannot notice a
+# workflow nobody added to it. maintenance-queue-runner.yml ran daily from its
+# creation until 2026-09-16 with no freshness window at all, and the test that
+# was supposed to pin coverage restated this dict literally, so it agreed with
+# the omission (docs/SILENT_SHRINK_CHECKLIST.md A1).
+UNWATCHED_BY_DESIGN = {"maintenance-heartbeat.yml": "cannot assess its own freshness"}
+
+# The cron each watched workflow is PINNED to. Deliberately a literal and not read
+# from the workflow file: changing a schedule restarts activation, so this is the
+# "what we last agreed to" side of that comparison. Its key set must equal
+# EXPECTATIONS -- two hand-kept lists that must agree is how a workflow ends up in
+# one and not the other, so test_the_two_watch_lists_cannot_drift pins the parity.
+EXPECTED_CRONS = {
+    "maintenance-sp-health-monitor.yml": "15 */12 * * *",
+    "maintenance-production-canary.yml": "20 9 * * *",
+    "maintenance-queue-runner.yml": "40 4 * * *",
+    "maintenance-rotation-readiness.yml": "15 13 * * *",
+    "ci.yml": "0 8 * * 0",
+    "maintenance-governance-digest.yml": "30 12 * * 1",
+    "surveillance-link-monitor.yml": "0 6 * * 1",
+    "surveillance-citations.yml": "0 7 * * 1",
+    "maintenance-monthly-review.yml": "0 13 1 * *",
+    "surveillance-guideline.yml": "0 6 1 * *",
+}
+
+
+def scheduled_workflows_without_expectations(workflows_dir=None):
+    """Workflow files that declare a cron but have no freshness window.
+
+    Derived from the directory, never from EXPECTATIONS, so adding a scheduled
+    workflow without watching it is a failure rather than a silence.
+    """
+    directory = Path(workflows_dir or (REPO_ROOT / ".github" / "workflows"))
+    unwatched = {}
+    for path in sorted(directory.glob("*.y*ml")):
+        try:
+            document = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        except yaml.YAMLError as exc:
+            raise HeartbeatError(f"{path.name}: unreadable workflow YAML") from exc
+        triggers = document.get(True) or document.get("on") or {}
+        if not isinstance(triggers, dict):
+            continue
+        schedule = triggers.get("schedule")
+        if not isinstance(schedule, list) or not schedule:
+            continue
+        if not any(isinstance(entry, dict) and entry.get("cron") for entry in schedule):
+            continue
+        if path.name in EXPECTATIONS or path.name in UNWATCHED_BY_DESIGN:
+            continue
+        unwatched[path.name] = [
+            entry.get("cron") for entry in schedule if isinstance(entry, dict)
+        ]
+    return unwatched
 SAFE_REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}$")
 SAFE_WORKFLOW = re.compile(r"^[A-Za-z0-9_.-]{1,128}\.ya?ml$")
 SAFE_GIT_SHA = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
 MAX_API_BYTES = 2_000_000
 API_TIMEOUT_SECONDS = 20
+
+# A heartbeat measures pulse, not health.
+#
+# `gate` records every reason a row is not clean, and the receipt keeps saying so.
+# But the EXIT CODE answers a narrower question — is the schedule itself alive,
+# and could this run evaluate it? — because that is the only question no other
+# automation answers.
+#
+# This is the module's whole half of receipt_summary.classify's contract: the one
+# state another watcher owns. `failed` means the workflow fired exactly on
+# schedule and its run then failed. Real, and worth fixing — but
+# automation-failure-escalation.yml watches all ten of these workflows on
+# `workflow_run` and upserts one rolling issue for precisely this. A heartbeat
+# that also fails on it reports nothing new and goes permanently red: on
+# 2026-09-04 the canary recovered and the heartbeat stayed red for
+# surveillance-citations.yml and surveillance-link-monitor.yml, whose
+# `gh pr create` write-back has been failing since long before, and which the
+# escalation was already tracking. Daily red for an already-tracked failure is
+# how a monitor becomes wallpaper.
+#
+# Everything else this module can emit is its own by subtraction — `unavailable`
+# (the runs could not be read), `provenance_unavailable` (a run could not be tied
+# to the current definition), `stale` (it fired, but too long ago), `missing` (it
+# never fired inside its window) — and so is any state added here later, which is
+# why that list is a comment and not a second frozenset to keep in sync.
+DELEGATED_STATES = frozenset({"failed"})
+
+# Where the delegated rows are actually tracked, named in the deferral line so a
+# reader can go look instead of assuming nobody is watching.
+DELEGATED_WATCHER = "automation-failure-escalation.yml"
+
+# ...and WHICH rows that watcher actually holds. A delegation is a claim about
+# another workflow, so it can be false, and this one was.
+#
+# The escalation's `workflow_run` trigger lists every `maintenance-*` and
+# `surveillance-*` workflow and nothing else — a coverage rule its own pin
+# (tests/maintenance/test_escalation_issue.py) enforces. EXPECTATIONS below is
+# wider than that: it also watches `ci.yml`, whose Sunday `0 8 * * 0` run is the
+# clean-room release rehearsal. So between #531 and 2026-09-09 a scheduled CI
+# run that fired on time and failed was deferred to a watcher that was not
+# watching: the heartbeat exited 0, the escalation never fired, and a failing
+# weekly release rehearsal surfaced nowhere. Before #531 the heartbeat caught it
+# by going red itself.
+#
+# Deriving the set from the same prefix rule (rather than listing exceptions)
+# means a workflow added to EXPECTATIONS is delegable only if it is the kind the
+# escalation watches. DelegationHandoffTests resolves each filename to its
+# `name:` and checks the escalation's real list both ways, so this cannot drift
+# in either direction: a narrowed escalation fails the test, and so does an
+# exclusion that is no longer justified.
+ESCALATED_PREFIXES = ("maintenance-", "surveillance-")
+ESCALATED_WORKFLOWS = frozenset(
+    workflow_file
+    for workflow_file in EXPECTATIONS
+    if workflow_file.startswith(ESCALATED_PREFIXES)
+)
 
 
 class HeartbeatError(RuntimeError):
@@ -306,12 +420,33 @@ def evaluate_runs(
         if state == "missing":
             gate = "blocked"
 
+    pulse_blockers, _delegated = classify_blockers({"workflows": workflows})
     return {
         "schemaVersion": 1,
         "generatedAt": now.isoformat(timespec="seconds"),
         "gate": gate,
+        # Additive: `gate` still records every unclean row. `pulse` records the
+        # subset the heartbeat itself owns, and is what the exit code follows.
+        "pulse": "blocked" if pulse_blockers else "ready",
         "workflows": workflows,
     }
+
+
+def classify_blockers(receipt):
+    """Split a receipt's blocking rows into (pulse, delegated).
+
+    This module's binding of the fleet contract in receipt_summary.classify. A
+    caller decides its exit code from `pulse` alone; `delegated` is for the log
+    line, so a human still sees what the escalation is carrying.
+
+    A `failed` row is only handed over when the escalation actually watches that
+    workflow; otherwise it stays ours, because a deferral to nobody is silence.
+    """
+    return classify(
+        receipt,
+        delegated=DELEGATED_STATES,
+        delegable=ESCALATED_WORKFLOWS,
+    )
 
 
 def fetch_runs(repository, workflow_file, *, token, opener=None):
@@ -598,10 +733,22 @@ def main(argv=None, *, opener=None, now=_utc_now):
         activation_records=activations,
         run_provenance=provenance,
     )
-    # Name the workflows that blocked the gate before exiting. The heartbeat is
-    # red *because* something it watches is red, and without this the log gives
-    # no hint which one — see receipt_summary.
-    report(receipt, "heartbeat", stream=sys.stderr)
+    # Name every unclean workflow before exiting — without this the log gives no
+    # hint which one (see receipt_summary). The verdict is passed explicitly:
+    # only a pulse failure is this steward's, so only that may read as "failed".
+    pulse_blockers, delegated = classify_blockers(receipt)
+    report(receipt, "heartbeat", stream=sys.stderr, failed=bool(pulse_blockers))
+    if not pulse_blockers:
+        # Only claim the schedule is alive when it demonstrably is. On a pulse
+        # failure the deferral is beside the point and the summary above says so.
+        line = deferral(
+            "heartbeat",
+            delegated,
+            watcher=DELEGATED_WATCHER,
+            note="schedule is alive",
+        )
+        if line:
+            print(line, file=sys.stderr)
     try:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(
@@ -609,24 +756,13 @@ def main(argv=None, *, opener=None, now=_utc_now):
             encoding="utf-8",
         )
     except OSError:
-        print("heartbeat: receipt write failed", file=sys.stderr)
-        return 2
-    return 0 if receipt["gate"] == "ready" else 2
+        print("heartbeat failed: receipt write failed", file=sys.stderr)
+        return BLOCKED_EXIT
+    return BLOCKED_EXIT if pulse_blockers else 0
 
 
 def _expected_cron(workflow_file):
-    mapping = {
-        "maintenance-sp-health-monitor.yml": "15 */12 * * *",
-        "maintenance-production-canary.yml": "20 9 * * *",
-        "maintenance-rotation-readiness.yml": "15 13 * * *",
-        "ci.yml": "0 8 * * 0",
-        "maintenance-governance-digest.yml": "30 12 * * 1",
-        "surveillance-link-monitor.yml": "0 6 * * 1",
-        "surveillance-citations.yml": "0 7 * * 1",
-        "maintenance-monthly-review.yml": "0 13 1 * *",
-        "surveillance-guideline.yml": "0 6 1 * *",
-    }
-    return mapping[workflow_file]
+    return EXPECTED_CRONS[workflow_file]
 
 
 if __name__ == "__main__":

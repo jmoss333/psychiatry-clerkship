@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 import {
   buildGovernanceDigest,
@@ -170,7 +172,7 @@ test('attestation drift blocks and exposes only bounded codes and slug prefixes'
 test('attestation subprocess output is recognized narrowly', () => {
   assert.deepEqual(parseAttestationValidatorResult({
     status: 0,
-    stdout: 'attestation consistency OK — 87 manifest item(s), 13 topic facultyReview entries aligned.\n',
+    stdout: 'attestation consistency OK — 87 shipped item(s), 13 topic facultyReview entries aligned.\n',
     stderr: '',
   }), []);
   assert.deepEqual(parseAttestationValidatorResult({
@@ -191,7 +193,7 @@ test('attestation subprocess output is recognized narrowly', () => {
     {
       status: 0,
       stdout: [
-        'attestation consistency OK — 87 manifest item(s), 13 topic facultyReview entries aligned.',
+        'attestation consistency OK — 87 shipped item(s), 13 topic facultyReview entries aligned.',
         '  - t_mood.md: contradictory drift',
       ].join('\n'),
       stderr: '',
@@ -212,6 +214,35 @@ test('attestation subprocess output is recognized narrowly', () => {
       /validator|stderr/i,
     );
   }
+});
+
+/* THE FIXTURES ABOVE ARE COPIES, AND A COPY CAN GO STALE.
+
+   It did. #522 renamed the validator's success line from "N manifest item(s)" to
+   "N shipped item(s)" when the shipped set stopped coming from site_manifest.json.
+   parseAttestationValidatorResult's regex still demanded the old noun, so every real
+   run fell through to `throw new Error('attestation validator did not return a
+   recognized contract')` and main() printed "governance digest failed" and returned 1.
+   The daily maintenance workflow had been red on every run since, silently, because
+   nothing here ever ran the validator — both sides of the contract were fixtures in
+   this file, and they agreed with each other.
+
+   So: run the real validator and hold the real parser against its real stdout. If the
+   wording drifts again, this goes red in the same commit that moves it. */
+test('the contract matches the CURRENT validator, not a fixture of it', () => {
+  const repo = path.resolve(import.meta.dirname, '..');
+  const result = spawnSync('python3', [
+    path.join(repo, '13_Faculty_Resources/_automation/validate_attestation_consistency.py'),
+  ], { cwd: repo, encoding: 'utf8', maxBuffer: 1_048_576 });
+
+  assert.doesNotThrow(
+    () => parseAttestationValidatorResult(result),
+    'validate_attestation_consistency.py\'s real output no longer matches the contract '
+    + 'parseAttestationValidatorResult enforces. The digest fails closed on an '
+    + 'unrecognized contract, so this is the daily governance-digest workflow going red: '
+    + 'update the regex in governance_digest.mjs (and the fixtures above) to the wording '
+    + 'the validator prints now. Its stdout was:\n' + JSON.stringify(result.stdout),
+  );
 });
 
 test('topic metadata is grouped by high-risk versus other topics', () => {

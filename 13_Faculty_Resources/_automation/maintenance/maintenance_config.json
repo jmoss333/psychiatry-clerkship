@@ -16,6 +16,11 @@
     "baseUrl": "https://sp-interview-proxy.netlify.app",
     "siteId": "455d2740-4020-4d9c-b9f8-82f72f4b2897"
   },
+  "attestation": {
+    "branch": "attest/pending",
+    "baseBranch": "main",
+    "lagAlarmThreshold": 3
+  },
   "operationalDocs": [
     {
       "path": "13_Faculty_Resources/_automation/maintenance/README.md",
@@ -109,6 +114,14 @@
     },
     "redTeam": {
       "path": "13_Faculty_Resources/_automation/maintenance/receipts/sp-red-team.json"
+    },
+    "rulesetBypass": {
+      "path": "13_Faculty_Resources/_automation/maintenance/receipts/ruleset-bypass.json",
+      "maxAgeDays": 35
+    },
+    "staleClaims": {
+      "path": "13_Faculty_Resources/_automation/maintenance/receipts/stale-claims.json",
+      "maxAgeDays": 35
     }
   },
   "apaCrosswalk": "13_Faculty_Resources/APA_Downloads_2026-06-29/metadata/library_crosswalk.csv"

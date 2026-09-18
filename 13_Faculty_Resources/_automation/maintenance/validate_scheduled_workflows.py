@@ -21,6 +21,7 @@ EXPECTED_CRONS = {
     "surveillance-link-monitor.yml": "0 6 * * 1",
     "surveillance-citations.yml": "0 7 * * 1",
     "surveillance-guideline.yml": "0 6 1 * *",
+    "maintenance-queue-runner.yml": "40 4 * * *",
     "maintenance-sp-health-monitor.yml": "15 */12 * * *",
     "maintenance-production-canary.yml": "20 9 * * *",
     "maintenance-heartbeat.yml": "45 10 * * *",
@@ -62,6 +63,14 @@ SCOPED_FILES = set(EXPECTED_CRONS) | {
 }
 EXPECTED_PERMISSIONS = {
     "ci.yml": {"contents": "read"},
+    "maintenance-queue-runner.yml": {
+        "contents": "write",
+        # The fallback that records a pushed branch whose pull request GitHub
+        # refused. Filing an issue is deliberately the one report that does not
+        # depend on the setting which caused the refusal.
+        "issues": "write",
+        "pull-requests": "write",
+    },
     "maintenance-sp-health-monitor.yml": {"contents": "read"},
     "maintenance-production-canary.yml": {"contents": "read"},
     "maintenance-heartbeat.yml": {
@@ -72,6 +81,8 @@ EXPECTED_PERMISSIONS = {
     "maintenance-governance-digest.yml": {
         "contents": "read",
         "issues": "write",
+        # Read-only listing of the rolling attestation review request.
+        "pull-requests": "read",
     },
     "maintenance-monthly-review.yml": {
         "contents": "read",
@@ -101,10 +112,14 @@ RES_URL = "https://mmc-psychiatry-residents-sanford.netlify.app"
 EXPECTED_CONCURRENCY = {
     "ci.yml": {
         "group": "ci-${{ github.event_name }}-${{ github.ref }}",
-        "cancel-in-progress": "${{ github.event_name != 'schedule' }}",
+        "cancel-in-progress": "${{ github.event_name == 'pull_request' }}",
     },
     "maintenance-governance-digest.yml": {
         "group": "maintenance-governance",
+        "cancel-in-progress": False,
+    },
+    "maintenance-queue-runner.yml": {
+        "group": "maintenance-queue-runner",
         "cancel-in-progress": False,
     },
     "maintenance-monthly-review.yml": {
@@ -129,6 +144,7 @@ EXPECTED_CONCURRENCY = {
 }
 EXPECTED_JOB_IDS = {
     "ci.yml": {"build-test-validate", "smoke-tests"},
+    "maintenance-queue-runner.yml": {"queue-runner"},
     "maintenance-sp-health-monitor.yml": {"monitor"},
     "maintenance-production-canary.yml": {"production-canary"},
     "maintenance-heartbeat.yml": {"heartbeat"},
@@ -186,9 +202,14 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Unit — root node regression tests (tests/*.test.mjs)"),
             ("name", "Validate — WCAG AA contrast tokens"),
             ("name", "Validate — shipped_pages.json is derived from current producers"),
+            ("name", "Validate — analytics allowlist freshness"),
+            ("name", "Install — metrics collector dependencies"),
+            ("name", "Unit — metrics collector"),
             ("name", "Unit — faculty console modules and pending-visibility invariant"),
             ("name", "Install — managed SP proxy dependencies"),
             ("name", "Test — SP Interview and managed proxy"),
+            ("name", "Install — hosted Dana preview dependencies"),
+            ("name", "Test — hosted Dana preview suite and public build"),
             ("name", "Red-team tier 1 — gate integrity (deterministic probes)"),
             ("name", "Build + static QA gate (ms3)"),
             ("name", "Build + static QA gate (res)"),
@@ -208,6 +229,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Check 3: visual regression — resident site"),
             ("name", "Check 4: offline shell — service worker"),
             ("name", "Check 5: prototype contract — file:// with the network blocked"),
+            ("name", "Check 6: hosted preview in a browser under its deployed CSP"),
             ("uses", "actions/upload-artifact"),
         ),
     },
@@ -218,6 +240,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Install — governance digest dependencies"),
             ("uses", "actions/setup-node"),
             ("name", "Build faculty governance digest"),
+            ("name", "Detect stranded faculty attestations"),
             ("uses", "actions/upload-artifact"),
             ("name", "Route faculty governance review"),
             ("name", "Preserve governance gate result"),
@@ -254,6 +277,8 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Install Playwright and Chromium"),
             ("name", "Crawl both public learner sites"),
             ("name", "Build content-free release twin"),
+            ("name", "Read Netlify production deploy health"),
+            ("name", "Check learner production revision parity"),
             ("uses", "actions/upload-artifact"),
         ),
     },
@@ -265,6 +290,23 @@ EXPECTED_STEP_INVENTORIES = {
             ("uses", "actions/upload-artifact"),
             ("name", "Route due rotation review"),
             ("name", "Translate rotation routing result"),
+        ),
+    },
+    "maintenance-queue-runner.yml": {
+        "queue-runner": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Install — validator dependencies"),
+            ("uses", "actions/setup-node"),
+            ("name", "Skip while an automated queue pull request is still open"),
+            ("name", "Run the one autonomous queue task"),
+            ("name", "Validate — registry schemas and clinical contracts"),
+            ("name", "Validate — shipped pages are derived from current producers"),
+            ("name", "Unit — root node regression tests (tests/*.test.mjs)"),
+            ("name", "Push the automation branch"),
+            ("name", "Open the draft pull request"),
+            ("name", "Record the pushed branch that has no pull request"),
+            ("uses", "actions/upload-artifact"),
         ),
     },
     "maintenance-sp-health-monitor.yml": {
@@ -348,11 +390,11 @@ EXPECTED_STEP_INVENTORIES = {
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
-        "97cce854ae22f6fcbf24a87d220582ea4f125d8136d4c8d306deb9492bcdf5be"
+        "7090155fdbda3f4a9bda687841552bffb2b88e344895009241aaf17d6beb5d6f"
     ),
-    "ci.yml": "4100b90a2dd26cf4467e5d38e2ae1dd83167b2544d674d7f70dd1d238a693692",
+    "ci.yml": "0fa2a1c6d68104f3f8766b3b6fccb4b190dd849ed51fa07bd8c9797c942adf64",
     "maintenance-governance-digest.yml": (
-        "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
+        "b6cc2dcf41eec62131c18bca73f235b8599241234b0d26e5c406f635435b521e"
     ),
     "maintenance-heartbeat.yml": (
         "2657e218acd9d67f48e4ee39a6069c918056efaeebb3f15506693d4011163837"
@@ -360,8 +402,11 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     "maintenance-monthly-review.yml": (
         "acd1fe78364baf65ac9842ffb62a5abacaa8c70110a254106166130985fc9689"
     ),
+    "maintenance-queue-runner.yml": (
+        "ae4482d9b23810d6866e31371bce5d011c30b7450acc0a2ff83aa4eb8b1ce814"
+    ),
     "maintenance-production-canary.yml": (
-        "a7be8923488ec6d1d824fcdfc2fc59feefe258ac937bb9cf42ee1127485e94e7"
+        "d2b848a52ea19f9e68d2afff370e763291f319798d8f3c0d869c944fb6ef39df"
     ),
     "maintenance-rotation-readiness.yml": (
         "655504ee205ce4f27ddc63dc2a819dc1d1eb7987f56bbacbbfc452d1cc48476a"
@@ -595,6 +640,14 @@ npx playwright test --project=lfs""",
     "maintenance-production-canary.yml": {
         "production-canary": (
             (
+                "Check learner production revision parity",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                "production_revision_parity.py --attempts 3 --retry-delay 60 "
+                '--out "$RUNNER_TEMP/production-revision-parity.json"',
+                "always()",
+                "required production revision parity gate",
+            ),
+            (
                 "Install Playwright and Chromium",
                 "cd tests/smoke\nnpm ci\n"
                 "npx playwright install chromium --with-deps",
@@ -669,6 +722,19 @@ exit 0""",
                 "required governance capture",
             ),
             (
+                "Detect stranded faculty attestations",
+                """mkdir -p "$RUNNER_TEMP/maintenance-governance"
+set +e
+python3 13_Faculty_Resources/_automation/maintenance/stranded_attestations.py \\
+  --out "$RUNNER_TEMP/maintenance-governance/stranded-attestations.json"
+code=$?
+set -e
+echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+exit 0""",
+                None,
+                "required stranded-attestation capture",
+            ),
+            (
                 "Route faculty governance review",
                 "python3 13_Faculty_Resources/_automation/maintenance/"
                 "maintenance_issue.py --kind governance "
@@ -680,12 +746,15 @@ exit 0""",
             ),
             (
                 "Preserve governance gate result",
-                """code="${{ steps.governance.outputs.exit_code }}"
-case "$code" in
-  "0") exit 0 ;;
-  "1"|"2") exit "$code" ;;
-  *) exit 2 ;;
-esac""",
+                """for code in "${{ steps.governance.outputs.exit_code }}" \\
+            "${{ steps.attestations.outputs.exit_code }}"; do
+  case "$code" in
+    "0") ;;
+    "1"|"2") exit "$code" ;;
+    *) exit 2 ;;
+  esac
+done
+exit 0""",
                 "always()",
                 "governance finalizer",
             ),

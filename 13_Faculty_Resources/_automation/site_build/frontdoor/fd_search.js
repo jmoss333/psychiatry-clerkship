@@ -49,27 +49,30 @@
    week set, the raw candidate count can reach 9 and the cap trims the last pinned tool -- see
    the header note above; this is the prototype's own behaviour, not a bug introduced here.
 
-   ---- Sheet-vs-navigate signalling (task-8-brief.md's flagged divergence) ----
-   Every other row in this codebase that carries data-fd-open="<ref>" NAVIGATES (fd_today.js's
-   .fd-row__open/.fd-pick/.fd-quicktool, fd_library.js's .fd-collink, fd_reader.js's
-   .fd-prevnext__btn/.fd-railnav__row). Search results must NOT: the overlay's own footer copy
-   promises "opens as a side sheet -- whatever you're doing stays put", and Task 7's review
-   already flagged that reusing data-fd-open unchanged gives the wiring layer no way to tell a
-   search pick apart from a normal row. Two established conventions cover the two result kinds
-   without inventing a new "open an item" attribute name:
-     - protocol results reuse data-fd-safety="<ref>" UNCHANGED -- fd_today.js's fdKitCard already
-       established this exact payload ("a kit ref opens that protocol's sheet directly"), so a
-       protocol search hit is indistinguishable, on the wire, from clicking its safety-kit card.
-     - item results keep data-fd-open="<ref>" (same attribute, same meaning: "this is the ref")
-       and add a bare boolean modifier, data-fd-sheet, alongside it. The wiring layer's existing
-       data-fd-open handler branches on whether that modifier is present on the SAME element
-       before deciding sheet-vs-navigate, rather than a second attribute name carrying the ref a
-       second time. Task 9 (fd_sheet.js) is the consumer of both signals.
+   ---- Search destinations ----
+   Ordinary results navigate directly via data-fd-open, like the library and weekly rows.
+   Safety results retain data-fd-safety and its established quick-access protocol panel.
+   The explicit data-fd-sheet modifier remains available to other preview surfaces.
 
    Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. */
 
 var FD_SEARCH_PINNED = ['mse.html', 'withdrawal.html', 'pg_interview.md'];
+
+/* Discovery aliases never expand the safety haystack. Short ambiguous abbreviations must
+   be the entire query. Normalize punctuation so PHQ-9 / PHQ 9 and trailing ? work alike. */
+function fdSearchNormalize(q){
+  return String(q||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
+}
+
+function fdSearchAliasHit(item, query){
+  var q=fdSearchNormalize(query), aliases=item.searchAliases||[];
+  for(var i=0;i<aliases.length;i++){
+    var alias=fdSearchNormalize(aliases[i]);
+    if(alias&&(alias.length<=3?q===alias:(' '+q+' ').indexOf(' '+alias+' ')!==-1)) return true;
+  }
+  return false;
+}
 
 /* Words that carry no topic signal. Unguarded, "on" matched 70 of 83 items and "the" 59 --
    including as substrings inside other words -- so any multi-word query degenerated into a
@@ -78,7 +81,12 @@ var FD_SEARCH_PINNED = ['mse.html', 'withdrawal.html', 'pg_interview.md'];
 var FD_SEARCH_STOPWORDS={
   'a':1,'an':1,'and':1,'are':1,'as':1,'at':1,'be':1,'by':1,'for':1,'from':1,'has':1,'in':1,
   'is':1,'it':1,'of':1,'on':1,'or':1,'that':1,'the':1,'to':1,'was':1,'what':1,'when':1,
-  'which':1,'who':1,'with':1,'you':1,'your':1
+  'which':1,'who':1,'with':1,'you':1,'your':1,
+  /* "patient" carries no topic signal in a library where every page is about one: it sits in a
+     quarter of all haystacks and, being in delirium.md's summary, put Delirium second for
+     "patient refuses medication" (#429). Safety-kit triggers read the RAW query, so a crisis
+     phrase that starts with "patient" still routes ("patient is suicidal" -> pg_suicide.md). */
+  'patient':1,'patients':1
 };
 
 /* Drops stopwords, but never returns empty: a query made only of stopwords keeps its words so
@@ -94,12 +102,12 @@ function fdSearchContentWords(words){
 /* Higher is better. Title evidence outranks ref evidence outranks summary evidence, so an exact
    title match cannot be displaced by a page that merely mentions the phrase in prose. */
 function fdSearchScore(item, rawQuery, contentWords){
-  var title=String(item.title||'').toLowerCase();
+  var title=String(item.searchTitle||item.title||'').toLowerCase();
   var ref=String(item.ref||'').toLowerCase();
   var summary=String(item.summary||'').toLowerCase();
   var score=0,i,w;
   if(rawQuery){
-    if(title===rawQuery) score+=100;
+    if(fdSearchNormalize(title)===fdSearchNormalize(rawQuery)) score+=100;
     else if(title.indexOf(rawQuery)!==-1) score+=70;
     if(ref.indexOf(rawQuery)!==-1) score+=25;
     if(summary.indexOf(rawQuery)!==-1) score+=10;
@@ -256,12 +264,40 @@ function fdSearchResults(index, query, synonyms, state){
      fdSearchContentWords never returns empty, so an all-stopword query still surfaces the kit --
      fail-safe, and pinned by test. */
   var paddedQuery=' '+rawQuery+' ';
-  var protoResults=[];
+  /* Retain original safety evidence. Punctuation may recover an explicit trigger or a
+     curated synonym expansion, never arbitrary new substring evidence ("min" in a title
+     must not match "thiamine", nor "Sep" in a date match "separate"). */
+  // Preserve compound names (CIWA-Ar, self-harm); splitting them creates noisy short tokens.
+  var normalizedQuery=rawQuery.replace(/[^a-z0-9' -]+/g,' ').trim().replace(/\s+/g,' ');
+  var safetyWords=[], safetySynonyms=synonyms||{}, normalizedPadded=' '+normalizedQuery+' ';
+  if(normalizedQuery!==rawQuery){
+    for(var safetyKey in safetySynonyms){
+      if(normalizedPadded.indexOf(' '+safetyKey+' ')!==-1){
+        safetyWords=safetyWords.concat(fdSearchContentWords(safetySynonyms[safetyKey].split(/\s+/)));
+      }
+    }
+  }
+  /* Two tiers of protocol row, both placed by position rather than by score. Route (1) -- the
+     explicit trigger vocabulary and the punctuation-recovered safety synonyms -- is the crisis
+     contract and always comes first. Route (2), an ordinary haystack match on a content word, is
+     discovery: still ahead of every scored item, but BELOW an item the curated search aliases
+     name for this exact phrasing. Before #429 route (2) outranked those aliases too, so "patient
+     refuses medication" listed the Consult Questions sheet (its title carries "capacity", the
+     synonym expansion of "refuses medication") above the Decisional Capacity tool that answers
+     the question. An alias is a recorded faculty statement that a phrasing means a resource; a
+     topic word in a protocol's title is not. Crisis triggers are untouched by this. */
+  var protoResults=[], hayProtocols=[];
   for(var kk=0;kk<kit.length;kk++){
     var kitItem=kit[kk].item;
-    if(fdSearchTriggerHit(kit[kk].triggers, paddedQuery)||
-       fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords)){
+    var triggered=fdSearchTriggerHit(kit[kk].triggers, paddedQuery)||
+       fdSearchTriggerHit(kit[kk].triggers, ' '+normalizedQuery+' ')||
+       fdSearchHits(fdSearchHaystack(kitItem), '', safetyWords);
+    var byHaystack=fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords);
+    if(triggered){
       protoResults.push({ item: kitItem, kind:'protocol', meta:'safety · protocol' });
+      seenRefs[kitItem.ref]=true;
+    } else if(byHaystack){
+      hayProtocols.push({ item: kitItem, kind:'protocol', meta:'safety · protocol' });
       seenRefs[kitItem.ref]=true;
     }
   }
@@ -269,17 +305,19 @@ function fdSearchResults(index, query, synonyms, state){
   /* Refs are sorted first so the sort below is deterministic across engines: equal scores keep
      alphabetical order, matching fd_data.js's fdLibraryOnlyReads precedent. */
   var refs=[];
-  for(var ref in idx.byRef){ refs.push(ref); }
+  for(var ref in idx.byRef){ if(!idx.byRef[ref].readerOnly) refs.push(ref); }
   refs.sort(function(a,b){ return a<b?-1:(a>b?1:0); });
 
   var itemResults=[];
   for(var r=0;r<refs.length;r++){
     if(seenRefs[refs[r]]) continue;
     var it=idx.byRef[refs[r]];
-    if(fdSearchHits(fdSearchHaystack(it), rawQuery, contentWords)){
+    var aliasHit=fdSearchAliasHit(it, rawQuery);
+    var searchHay=fdSearchHaystack(it)+' '+String(it.searchTitle||'').toLowerCase();
+    if(aliasHit||fdSearchHits(searchHay, rawQuery, contentWords)){
       itemResults.push({
         item: it, kind:'item', meta: fdSearchItemMeta(it),
-        _score: fdSearchScore(it, rawQuery, contentWords)
+        _score: fdSearchScore(it, rawQuery, contentWords)+(aliasHit?120:0), _alias: !!aliasHit
       });
     }
   }
@@ -292,14 +330,28 @@ function fdSearchResults(index, query, synonyms, state){
     return (b._score-a._score) ||
       (a.item.ref<b.item.ref?-1:(a.item.ref>b.item.ref?1:0));
   });
-  for(var s=0;s<itemResults.length;s++){ delete itemResults[s]._score; }
+  var aliasItems=[], rest=[];
+  for(var s=0;s<itemResults.length;s++){
+    (itemResults[s]._alias?aliasItems:rest).push(itemResults[s]);
+    delete itemResults[s]._score; delete itemResults[s]._alias;
+  }
+  /* Haystack-matched protocols rank among themselves by the same score as items (with the same
+     explicit tiebreak), not by kit order: typing "delirium" should list the Delirium sheet
+     before the Consult Questions sheet whose title merely contains the word. Trigger-matched
+     protocols stay in kit order -- that block is the crisis contract and is never reordered. */
+  for(var hp=0;hp<hayProtocols.length;hp++){
+    hayProtocols[hp]._score=fdSearchScore(hayProtocols[hp].item, rawQuery, contentWords);
+  }
+  hayProtocols.sort(function(a,b){
+    return (b._score-a._score) ||
+      (a.item.ref<b.item.ref?-1:(a.item.ref>b.item.ref?1:0));
+  });
+  for(var hq=0;hq<hayProtocols.length;hq++){ delete hayProtocols[hq]._score; }
 
-  return protoResults.concat(itemResults).slice(0,8);
+  return protoResults.concat(aliasItems, hayProtocols, rest).slice(0,8);
 }
 
-/* See the header note "Sheet-vs-navigate signalling" -- protocol rows carry data-fd-safety
-   (the established kit-card payload), item rows carry data-fd-open plus the bare data-fd-sheet
-   modifier so the SAME attribute keeps meaning "this is the ref" everywhere in the codebase. */
+/* Protocol rows keep the safety panel; ordinary results open the resource directly. */
 function fdSearchResultRow(r){
   var it=r.item;
   var isProto=(r.kind==='protocol');
@@ -308,10 +360,10 @@ function fdSearchResultRow(r){
   else if(it.kind==='tool'&&!it.rights) dotCls+=' is-tool';
   var openAttrs=isProto
     ?(' data-fd-safety="'+fdEsc(it.ref)+'"')
-    :(' data-fd-open="'+fdEsc(it.ref)+'" data-fd-sheet');
+    :(' data-fd-open="'+fdEsc(it.ref)+'"');
   return '<button type="button" class="fd-result"'+openAttrs+'>'+
     '<span class="'+dotCls+'"></span>'+
-    '<span class="fd-result__title">'+fdEsc(it.title)+'</span>'+
+    '<span class="fd-result__title">'+fdEsc(it.searchTitle||it.title)+'</span>'+
     governanceBadge(it.governance)+
     '<span class="fd-result__meta">'+fdEsc(r.meta)+'</span>'+
   '</button>';
@@ -329,7 +381,7 @@ function fdSearchOverlay(index, query, synonyms, state){
     'stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle>'+
     '<path d="M21 21l-4-4"></path></svg>';
   out+='<input type="text" class="fd-searchpanel__input" value="'+fdEsc(q)+'" '+
-    'placeholder="Symptom, drug, tool, or task…">';
+    'aria-label="Search resources" placeholder="Symptom, drug, tool, or task…">';
   out+='<button type="button" class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">esc</button>';
   out+='</div>';
   /* Results replace themselves on every keystroke with no visual transition a screen reader can
@@ -344,12 +396,15 @@ function fdSearchOverlay(index, query, synonyms, state){
   if(trimmed&&!results.length){
     out+='<div class="fd-searchpanel__empty">Nothing for “'+fdEsc(trimmed)+'” '+
       '— try a symptom, scale, or drug class.</div>';
+    out+='<button type="button" class="fd-btn" data-fd-tab="library">Browse Library</button>';
   } else {
+    if(/\bcalculator\b/i.test(q)&&!results.some(function(r){
+      return /\bcalculator\b/i.test(fdSearchHaystack(r.item));
+    })) out+='<p class="fd-searchpanel__empty">No matching calculator found. Related teaching resources:</p>';
     for(var i=0;i<results.length;i++){ out+=fdSearchResultRow(results[i]); }
   }
   out+='</div>';
-  out+='<div class="fd-searchpanel__foot">↵ opens as a side sheet — whatever you\'re '+
-    'doing stays put.</div>';
+  out+='<div class="fd-searchpanel__foot">Choose a result to open it. Safety protocols open in a quick-access panel.</div>';
   out+='</div>';
   out+='</div>';
   return out;

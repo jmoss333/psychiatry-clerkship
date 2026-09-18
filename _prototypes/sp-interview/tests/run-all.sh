@@ -17,4 +17,34 @@ echo "── managed voice browser transport ──"; node --test managed-transp
 echo "── governed provider failures + source contract ──"; node --test provider-errors.test.mjs
 echo "── CI and site-build contracts ──"; node --test ci-build-contract.test.mjs
 echo "── managed voice operations docs + release passport ──"; node --test ops-docs.test.mjs
+echo "── disabled Dana conversation prototype ──"
+node --test conversation-state.test.mjs
+node --test conversation-encounter-ui.test.mjs
+node --test encounter-rhythm.test.mjs
+node --test conversation-encounter-context.test.mjs
+node --test family-visit-state.test.mjs
+node --test family-information-replay.test.mjs
+node --test family-live-server.test.mjs
+node --test conversation-adapters.test.mjs
+node --test conversation-interruptions.test.mjs
+node --test conversation-responses.test.mjs
+node --test conversation-live-context.test.mjs
+node --test conversation-local-cases.test.mjs
+node --test conversation-local-dana.test.mjs
+node --test conversation-live-server.test.mjs
+node --test conversation-live-client.test.mjs
+node --test conversation-retry.test.mjs
+node --test conversation-bookmarks.test.mjs
+node --test conversation-quality-benchmark.test.mjs
+node --test conversation-quality-refinements.test.mjs
+node --test conversation-openai-provider.test.mjs
+node --test conversation-first-sentence-experiment.test.mjs
+node --test conversation-recorded-speech.test.mjs
+node --test conversation-bootstrap.test.mjs
+node --test conversation-case-selection.test.mjs
+node --test conversation-parity.test.mjs
+node --test conversation-voices.test.mjs
+node --test conversation-audio-catalog.test.mjs
+node --test conversation-recordings.test.mjs
+node --test conversation-recording-manifest.test.mjs
 echo "ALL SUITES PASSED"

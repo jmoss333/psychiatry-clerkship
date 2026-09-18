@@ -111,7 +111,43 @@ function fdBlockRouteForStep(step){
   var s=step||{};
   if(s.kind==='review') return '?tool=review.html&block=1&limit='+encodeURIComponent(String(s.n||1));
   if(s.kind==='qb') return '?tool=question-bank-practice.html&block=1&n='+encodeURIComponent(String(s.n||5))+(s.cat?'&cat='+encodeURIComponent(String(s.cat)):'');
-  return '?page='+encodeURIComponent(String(s.ref||''));
+  return '?page='+encodeURIComponent(String(s.ref||''))+'&block=1';
+}
+
+/* An interrupted block question step resumes its own capsule instead of starting a fresh set.
+   ?resume=1 restores the queue; block=1&n[&cat] stay exactly as the receipt matches them, so
+   finishing the resumed set still marks the step. Null means "no capsule to resume": the
+   caller falls back to fdBlockRouteForStep. fdCapsuleLeft lives in fd_due.js, injected before
+   this module on every page that carries both. */
+function fdBlockResumeSearch(step, capsule){
+  var s=step||{}, c=capsule||{};
+  if(s.kind!=='qb'||c.fromBlock!==true||fdCapsuleLeft(c)<1) return null;
+  return '?tool=question-bank-practice.html&resume=1&block=1&n='+encodeURIComponent(String(s.n||5))+(s.cat?'&cat='+encodeURIComponent(String(s.cat)):'');
+}
+
+/* The page's primary action records this reading and follows the saved block, even when the
+   ordinary weekly auto-advance preference is off. A matching page is required: browsing away
+   from a live block must not turn an unrelated resource into one of its steps. Derive the
+   prospective status without mutating the saved block or the caller's progress map. */
+function fdBlockPageHandoff(block, ref, doneMap){
+  var steps=block&&block.steps||[], found=false, done={}, i, key;
+  for(i=0;i<steps.length;i++){
+    if(steps[i]&&steps[i].kind==='page'&&steps[i].ref===ref){ found=true; break; }
+  }
+  if(!found) return null;
+  for(key in (doneMap||{})){
+    if(Object.prototype.hasOwnProperty.call(doneMap,key)) done[key]=doneMap[key];
+  }
+  done[ref]=true;
+  return fdBlockStatus(block, done);
+}
+
+function fdBlockHandoffLabel(handoff){
+  var next=handoff&&handoff.next;
+  if(!next) return 'Mark done · Finish block →';
+  if(next.kind==='qb') return 'Mark done · Continue to your '+next.n+' question'+(next.n===1?'':'s')+' →';
+  if(next.kind==='review') return 'Mark done · Continue to your '+next.n+' review'+(next.n===1?'':'s')+' →';
+  return 'Mark done · Continue: '+next.title+' →';
 }
 
 /* Done state per step, page steps derived from the progress map. */
@@ -131,16 +167,23 @@ function fdBlockDot(kind){
   return '<span class="fd-block__dot is-'+fdEsc(kind)+'"></span>';
 }
 
-function fdBlockCard(plan, minutes, block, doneMap){
-  var budget=fdBlockBudget(minutes), i;
+/* opts.primary===false renders the card as a secondary row (it did not win Today's one primary
+   slot): the terracotta button becomes the accent one and the live kicker carries the count,
+   so the one primary button on Today stays the one that won. Undefined means primary. */
+function fdBlockCard(plan, minutes, block, doneMap, opts){
+  var budget=fdBlockBudget(minutes), i, o=opts||{}, isPrimary=o.primary!==false;
+  var actionCls=isPrimary?'fd-btn fd-btn--primary':'fd-btn fd-btn--accent';
   if(block&&block.steps&&block.steps.length){
     var status=fdBlockStatus(block, doneMap);
     /* The section is named by its kicker, so a screen reader hears "Your 10-minute block" (or
-       "Block complete"), not the first step's title. Each step's done state is spoken through a
-       visually-hidden prefix — the check glyph is decoration and the strike-through is CSS. */
+       "Block complete", or, demoted, "Your block · 1 of 3 done"), not the first step's title.
+       Each step's done state is spoken through a visually-hidden prefix — the check glyph is
+       decoration and the strike-through is CSS. */
+    var kicker=status.complete?'Block complete':(isPrimary?('Your '+fdEsc(block.minutes)+'-minute block'):('Your block · '+status.done+' of '+status.total+' done'));
+    var showCount=isPrimary||status.complete;
     var out='<section class="fd-block is-live" aria-labelledby="fdBlockTitle">';
-    out+='<div class="fd-block__head"><span class="fd-block__kicker" id="fdBlockTitle">'+(status.complete?'Block complete':'Your '+fdEsc(block.minutes)+'-minute block')+'</span>'+
-      '<span class="fd-block__count">'+status.done+' of '+status.total+' done</span></div>';
+    out+='<div class="fd-block__head"><span class="fd-block__kicker" id="fdBlockTitle">'+kicker+'</span>'+
+      (showCount?'<span class="fd-block__count">'+status.done+' of '+status.total+' done</span>':'')+'</div>';
     out+='<div class="fd-block__steps">';
     for(i=0;i<status.steps.length;i++){
       var row=status.steps[i], s=row.step;
@@ -151,7 +194,11 @@ function fdBlockCard(plan, minutes, block, doneMap){
     }
     out+='</div><div class="fd-block__actions">';
     if(status.next){
-      out+='<button type="button" class="fd-btn fd-btn--primary" data-block-continue="1">Continue: '+fdEsc(status.next.title)+' →</button>';
+      /* opts.resume={left,n}: the shell found a capsule this block wrote, so Continue reads as
+         picking the set back up rather than starting the step over. */
+      var resume=(o.resume&&typeof o.resume.left==='number'&&typeof o.resume.n==='number')?o.resume:null;
+      out+='<button type="button" class="'+actionCls+'" data-block-continue="1">'+
+        (resume?('Resume: '+resume.left+' of '+resume.n+' questions left →'):('Continue: '+fdEsc(status.next.title)+' →'))+'</button>';
     }else{
       out+='<span class="fd-block__doneline">'+(status.total===1?'The one step is done.':'All '+status.total+' steps done.')+' Tomorrow’s block will be built from tomorrow’s dues.</span>';
     }
@@ -169,7 +216,10 @@ function fdBlockCard(plan, minutes, block, doneMap){
   }
   h+='</div><span class="fd-block__hint">Between rounds? Today packs the window from what is due and what is next.</span></div>';
   if(!p.steps.length){
-    h+='<p class="fd-block__empty">Nothing is due and this week is read through. Open the question bank for a fresh set.</p>';
+    /* The fresh-set control is an ordinary routed open, not a block action, so it lives in the
+       controller's data-fd-* namespace on purpose; the block's own clicks stay data-block-*. */
+    h+='<p class="fd-block__empty">Nothing is due and this week is read through.</p>';
+    h+='<div class="fd-block__actions"><button type="button" class="fd-btn fd-btn--accent" data-fd-open="question-bank-practice.html">Practice a fresh set</button></div>';
   }else{
     h+='<div class="fd-block__steps">';
     for(i=0;i<p.steps.length;i++){
@@ -177,8 +227,8 @@ function fdBlockCard(plan, minutes, block, doneMap){
       h+='<div class="fd-block__step">'+fdBlockDot(step.kind)+'<span class="fd-block__title">'+fdEsc(step.title)+'</span><span class="fd-block__min">~'+fdEsc(step.min)+' min</span></div>';
     }
     h+='</div><div class="fd-block__actions">';
-    h+='<button type="button" class="fd-btn fd-btn--primary" data-block-start="'+budget+'">Start the '+budget+'-minute block</button>';
-    h+='<span class="fd-block__hint">Runs as one session; the receipt at the end marks the page done for you.</span>';
+    h+='<button type="button" class="'+actionCls+'" data-block-start="'+budget+'">Start the '+budget+'-minute block</button>';
+    h+='<span class="fd-block__hint">Runs as one session. Each step is marked done as you finish it — the page when you mark it, the questions by the receipt at the end.</span>';
     h+='</div>';
   }
   h+='</section>';

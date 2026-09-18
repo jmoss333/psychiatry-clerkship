@@ -14,9 +14,15 @@ on:
 permissions:
   contents: read
 
+# Cancel only PR runs. A new push to a PR makes the old run irrelevant, so
+# superseding it saves minutes. A push to main is different: each run validates a
+# distinct, permanent commit, and with the up-to-date requirement off it is the ONLY
+# post-merge validation main gets. Cancelling it discarded that backstop on 19 of 40
+# main runs (48%) between 2026-09-04 and 09-09. schedule and workflow_dispatch are
+# deliberate runs and are likewise never cancelled.
 concurrency:
   group: ci-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build-test-validate:
@@ -195,6 +201,23 @@ jobs:
           python3 13_Faculty_Resources/_automation/site_build/test_shipped_pages.py
           python3 13_Faculty_Resources/_automation/site_build/shipped_pages.py --check
 
+      # The analytics allowlist derives FROM shipped_pages.json (see the step just
+      # above), so its own freshness check belongs right after that one.
+      - name: Validate — analytics allowlist freshness
+        run: python3 13_Faculty_Resources/_automation/site_build/analytics_events.py --check
+
+      - name: Install — metrics collector dependencies
+        run: npm --prefix metrics ci
+
+      # Final whole-branch review finding: metrics/tests/* (21 tests) is the ONLY
+      # enforcement that no raw event is ever stored, that nothing off the build-time
+      # allowlist reaches the counter store, and that the function never logs a
+      # request — privacy invariants this design promises structurally, not by policy.
+      # Until this step existed it ran ONLY behind bin/verify.sh's local pre-push hook,
+      # so a PR from a machine without the hook, or a bot-authored PR, got none of it.
+      - name: Unit — metrics collector
+        run: cd metrics && node --test tests/*.test.mjs
+
       # The pending-visibility invariant is the gate this repository did not have in July
       # 2026: reviewed.json said 22 Case-of-the-Week pages were pending, both site builds
       # shipped them, and the faculty console could not show one of them. Nothing was red
@@ -213,6 +236,17 @@ jobs:
           npm --prefix sp-proxy test
           bash _prototypes/sp-interview/tests/run-all.sh
           python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py
+
+      - name: Install — hosted Dana preview dependencies
+        run: npm --prefix sp-preview ci
+
+      # The spoken-turn lifecycle, the NDJSON protocol, the budget, the handler, and
+      # the three-file public build. The paid hosted proof (test:hosted) is opt-in
+      # only: it demands DANA_QA_URL and DANA_QA_ACCESS_FILE and never runs here.
+      - name: Test — hosted Dana preview suite and public build
+        run: |
+          npm --prefix sp-preview test
+          npm --prefix sp-preview run build
 
       - name: Red-team tier 1 — gate integrity (deterministic probes)
         run: node bin/redteam-offline.mjs
@@ -339,6 +373,15 @@ jobs:
         run: |
           cd tests/smoke
           npx playwright test --project=prototypes
+
+      # Needs no server: the spec serves sp-preview/dist itself under the response
+      # headers from the preview's own netlify.toml. It exists because the preview's
+      # node tests drive a DOM stub, which cannot see a CSP violation, a computed
+      # style, or what Clear leaves on the page — the gap R4 and R8 came through.
+      - name: "Check 6: hosted preview in a browser under its deployed CSP"
+        run: |
+          cd tests/smoke
+          npx playwright test --project=hosted-preview
 
       - name: Upload smoke test artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

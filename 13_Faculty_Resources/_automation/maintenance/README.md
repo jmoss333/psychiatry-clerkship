@@ -37,6 +37,7 @@ days, the repository-supported ceiling. The existing CI smoke artifact remains 1
 | Internal workflow heartbeat | Daily 10:45 UTC, `45 10 * * *` | `maintenance-heartbeat.yml` | `maintenance-workflow-heartbeat-${{ github.run_id }}` — 90 days |
 | Clean-room release rehearsal | Sunday 08:00 UTC, `0 8 * * 0` | `ci.yml` | `smoke-test-results-${{ github.run_number }}` — 14 days |
 | Faculty governance digest | Monday 12:30 UTC, `30 12 * * 1` | `maintenance-governance-digest.yml` | `maintenance-governance-${{ github.run_id }}` — 90 days |
+| Stranded faculty attestations | Monday 12:30 UTC, with the governance digest | `maintenance-governance-digest.yml` | `maintenance-governance-${{ github.run_id }}` — 90 days |
 | Evidence and operations review | First day monthly 13:00 UTC, `0 13 1 * *` | `maintenance-monthly-review.yml` | `maintenance-monthly-${{ github.run_id }}` — 90 days |
 | Rotation readiness | Daily 13:15 UTC, `15 13 * * *` | `maintenance-rotation-readiness.yml` | `maintenance-rotation-${{ github.run_id }}` — 90 days |
 | Link surveillance | Monday 06:00 UTC, `0 6 * * 1` | `surveillance-link-monitor.yml` | `surveillance-link-monitor-${{ github.run_id }}` — 90 days |
@@ -61,6 +62,55 @@ days, the repository-supported ceiling. The existing CI smoke artifact remains 1
 - `pending_first_run`: the exact current workflow blob was recently activated and no
   qualifying scheduled run exists yet, within that workflow's freshness allowance.
   It is temporary grace, not success. It becomes `missing` and blocks when grace expires.
+
+## Gate versus exit code
+
+**A receipt can read `blocked` on a job that exited green, and that is correct.**
+`gate` records every reason a row is not clean — it is the full record and never
+narrows. The exit code answers something narrower: *is any of this mine?*
+
+Each steward declares one thing, `DELEGATED_STATES` in its own module, naming the
+states another watcher already owns; `receipt_summary.classify` subtracts those,
+plus the healthy and the merely-not-yet-fresh (`DEFERRED_ROW_STATES`), and the
+steward exits non-zero on whatever is left. Anything unrecognised counts as its
+own, so a state added later goes red rather than passing in silence.
+
+- **Workflow heartbeat** delegates `failed` to `automation-failure-escalation.yml`,
+  **but only for the workflows that escalation actually watches**. A watched
+  workflow that fired exactly on schedule and then failed is that escalation's
+  rolling issue, not a heartbeat failure — the heartbeat's subject is whether the
+  schedule still fires at all. When it defers, it says so on stderr and names where
+  the rows are tracked, so a green run is never a silent one.
+- **Interview Room monitor** and **stranded-PR monitor** delegate nothing
+  (`frozenset()`): nothing else watches the proxy or auto-merge, so everything they
+  see is theirs. The empty set is a deliberate declaration, not an omission.
+
+Operator consequence: when triaging a red steward, read its **first stderr line**,
+which names the rows that actually stopped it. Do not infer the exit code from
+`gate` in the artifact — for the heartbeat the two legitimately differ, and its
+receipt records the distinction in an additional `pulse` field.
+
+### A delegation is a claim, and claims get checked
+
+Naming a watcher does not make it watch. The escalation's `workflow_run` trigger
+covers every `maintenance-*` and `surveillance-*` workflow **and nothing else**,
+while the heartbeat also watches `ci.yml` for the Sunday clean-room release
+rehearsal. From #531 until 2026-09-09 a scheduled CI run that fired on time and
+failed was handed to a watcher that had never been listening: heartbeat green,
+escalation silent, failing release rehearsal visible nowhere.
+
+So `classify` takes a second restriction — which **rows** may be handed off, not
+just which states — and `ci.yml` failures stay the heartbeat's own. The pairing is
+re-derived from both YAML files by `DelegationHandoffTests`, which resolves each
+watched filename to the `name:` the escalation matches on and checks it **both
+ways**: narrowing the escalation's list fails the test, and so does widening it
+past what the heartbeat still keeps.
+
+Operator consequence: a red heartbeat naming `ci.yml:failed` is correct and is
+nobody else's. If you ever want that row escalated instead, the escalation must
+first learn to watch CI — and because `ci.yml` also runs on every pull request,
+that needs a `github.event.workflow_run.event == 'schedule'` guard or the rolling
+issue fills with ordinary red PRs.
 
 ## Local operator checks
 
@@ -218,6 +268,45 @@ enforced, not merely documented — `validate_scheduled_workflows.py` rejects an
 command in any scoped workflow, and `tests/maintenance/test_escalation_issue.py` asserts that
 no input produces a close decision.
 
+## A pushed branch with no pull request
+
+The queue runner pushes its branch and *then* asks GitHub to open the draft pull request.
+Those two operations do not share a permission. `contents: write` covers the push; opening
+a pull request is additionally gated by **Settings → Actions → General → Workflow
+permissions → Allow GitHub Actions to create and approve pull requests**, which no workflow
+file can grant itself. With that box off, `gh pr create` is refused:
+
+```
+pull request create failed: GraphQL: GitHub Actions is not permitted to
+create or approve pull requests (createPullRequest)
+```
+
+Before `queue_pr_fallback.py` the refusal simply killed the step, leaving the branch on the
+remote carrying completed, verified work with nothing anywhere saying why it had no pull
+request. Four consecutive scheduled runs failed that way (2026-09-10 … 2026-09-13); two
+orphan branches survived it and one needed its pull request opened by hand days later.
+
+The fallback folds the refusal into one marker-owned rolling issue,
+`automation: queue branch pushed without a pull request`, under
+`<!-- automation:queue-branch-without-pull-request -->`, listing each branch, its task, how
+many nights it has recurred, the verbatim refusal, and a **pre-filled compare URL** so a
+person resolves a row in one click. Filing an issue works precisely because `issues: write`
+is an ordinary workflow permission — it is not gated by the setting that just refused the
+pull request, which is the whole reason this report can exist.
+
+**It does not turn the run green.** The workflow's job is to deliver a reviewable draft pull
+request; delivering half of that is not a pass, and reporting success over the half that
+worked is the failure `docs/SILENT_SHRINK_CHECKLIST.md` is a list of. The refused step stays
+red, so the heartbeat and the escalation deadman go on seeing the truth; this issue carries
+the detail neither of them can. Classification is subtractive — a refusal the module does
+not recognise is reported verbatim as `unknown`, never dropped.
+
+`tests/maintenance/test_queue_pr_fallback.py` executes the workflow's own `run:` bodies
+against a fake `gh`, because every defect this exists for lived in a path nobody ran until
+04:40 UTC. That is how the truncation bug in the decision handoff was found: the module
+appends to `--output`, so a file that is not truncated yields `create\nupdate` and an issue
+number with a newline in it.
+
 ## Rotation configuration and manual boundary
 
 `rotation_blocks.json` accepts only an opaque ID, ISO start/end dates, and
@@ -311,6 +400,42 @@ and external deadman so their expected blocking state is explicit. To resume, re
 schedule through review, deploy, confirm a fresh six-hour invocation and receipt, and run
 the required success/failure log check plus red-team checklist. Never delete or invalidate
 a credential merely to simulate a pause.
+
+## Netlify production deploy health
+
+`bin/check_netlify_deploy_health.py` runs inside the daily production canary and is the
+alarm for a deploy FREEZE — the failure mode a liveness crawl cannot see, because a site
+whose builds are all failing keeps serving its last good publish. That is what happened on
+2026-08-31, when the GitHub-LFS budget was exhausted and every production deploy failed for
+a day and a half with both learner sites still up.
+
+Netlify's own alarm for this is a per-site "Deploy failed" email, and it stopped being
+usable the moment any site used a build-ignore rule: Netlify records a SKIP as a failed
+deploy, state `error`, message `Canceled build due to no content change`. From 2026-09-03
+the repository resolved that by never skipping (`ignore = "/bin/false"` everywhere), which
+kept the email honest and cost about $110/month, because a Netlify production deploy is 15
+credits (~$0.10) flat while build minutes, deploy previews, branch deploys and cancelled
+deploys are not metered at all. Since 2026-09-10 the satellites skip no-op builds again
+(`site_build/netlify_ignore_scoped.sh`) and this tool carries the alarm.
+
+Reading the result:
+
+| Receipt `status` | Meaning | Action |
+| --- | --- | --- |
+| `success` | No non-benign production failure in the lookback window | none |
+| `failed` | A real failed production deploy, or a deploy state this tool does not recognise | read `findings`, open the deploy in Netlify |
+| `skipped` | `NETLIFY_AUTH_TOKEN` is not set, so nothing was read | add the repository secret; **the alarm is not armed until you do** |
+| `undetermined` | The API was unreachable or unparseable (exit 2) | re-run; if it persists, treat it as an outage, not a pass |
+
+`skipped` exits 0 by design — a daily steward that goes red for a missing secret trains
+everyone to ignore it — so `skipped` is what to look for when asking "is this actually
+watching anything?". An unrecognised deploy state is a FINDING rather than silence, so
+Netlify adding a state surfaces as noise rather than as a quiet gap in coverage.
+
+Per-site notification settings that must match this arrangement: keep "Deploy failed" ON
+for `une-ms3-psychiatry` and `mmc-psychiatry-residents-sanford` (they still always build,
+so the email never fires on a no-op); turn it OFF for `sp-interview-proxy`,
+`clerkship-faculty-attest` and `psychiatry-workforce-tour`.
 
 ## Operator response
 

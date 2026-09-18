@@ -59,5 +59,16 @@ if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
 else
   echo "github: gh not authenticated here — check scheduled-workflow health in the Actions tab yourself (the heartbeat cannot escalate its own failure)"
 fi
+# Egress capability. Which hosts this environment can reach decides which repo tasks are
+# possible today, and sessions have repeatedly burned an hour discovering that the hard way.
+# Cached (6h) and hard-bounded to well under 6s. That ceiling is sized against the 30s the WHOLE
+# vitals block gets: on a gh-authenticated machine the lines above already commit ~18s, one of
+# them unbounded, and a hook killed at 30s loses every vital printed here — which would make a
+# cold session strictly worse than no probe at all. The probe reports and gates nothing.
+# Opt out with CLERKSHIP_SKIP_EGRESS_PROBE=1.
+if [ -z "${CLERKSHIP_SKIP_EGRESS_PROBE:-}" ] && [ -f bin/probe_egress.py ]; then
+  timeout 6 python3 bin/probe_egress.py --vitals 2>/dev/null || echo "egress: probe unavailable"
+fi
+
 echo "== end vitals =="
 exit 0

@@ -45,25 +45,6 @@ EXPECTED_CONTRACT_DESCRIPTOR = {
 }
 REVIEWED_RELATIVE = Path("13_Faculty_Resources/reviewed.json")
 
-# NO LONGER PART OF ANY ANSWER TO "WHAT SHIPS" (ADR-002 Phase 2). _tool_entries()
-# below reads site_build/shipped_pages.json instead, so nothing in this module
-# consults this list any more. It survives only because validate_curriculum.py
-# AST-parses THIS FILE for a top-level `SITE_EXTRAS` literal and exits hard when
-# it cannot find one; deleting it here would break the Netlify build until that
-# reader is migrated too (its own Phase-2 batch). When it is, delete this.
-# test_validate_tool_governance.py's RepositoryProducerTests holds it against the
-# listing in the meantime so the leftover cannot drift.
-SITE_EXTRAS = {
-    "ms3": (
-        ("_prototypes/orientation-video/orientation-video.html", "orientation-video.html"),
-    ),
-    "resident": (
-        ("_prototypes/agitation-trainer/rp-agitation.html", "rp-agitation.html"),
-        ("_prototypes/brief-psych/rp-brief-psych.html", "rp-brief-psych.html"),
-        ("_prototypes/canon-quiz/rp-canon-quiz.html", "rp-canon-quiz.html"),
-        ("_prototypes/post-event-huddle/rp-post-event-huddle.html", "rp-post-event-huddle.html"),
-    ),
-}
 EXPECTED_TOOL_COUNTS = {"ms3": 23, "resident": 26}
 ALLOWED_AUDIENCES = frozenset({"trainee", "ms3", "resident", "faculty"})
 
@@ -323,9 +304,11 @@ def _tool_entries(root: Path, site: str) -> list[tuple[str, str]]:
     ADR-002: read from the one derived listing, site_build/shipped_pages.json,
     which build_and_check.sh verifies against the real build output on every
     build. Until 2026-09 this module assembled its own answer -- the shared
-    "tools" list from site_manifest.json plus the SITE_EXTRAS literal above,
-    a private universe, correct only for as long as nobody adds a producer its
-    author did not know about. Ordered by slug now rather than by the order the
+    "tools" list from site_manifest.json plus a per-site `SITE_EXTRAS` literal
+    of the pages that ship outside it, a private universe, correct only for as
+    long as nobody adds a producer its author did not know about. That literal
+    outlived its last reader and was deleted 2026-09-05. Ordered by slug now
+    rather than by the order the
     manifest happened to list them in; every caller sorts (items by id, legacy
     paths by path) before anything is emitted.
     """

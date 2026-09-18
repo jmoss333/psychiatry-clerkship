@@ -181,7 +181,16 @@ _TOOLKW_MS3 = {
     "diagnostic-reasoning.html": "diagnostic reasoning workbench differential diagnosis problem representation illness script bayesian updating diagnostic humility anchoring premature closure syndrome formulation inpatient psychiatry case practice delirium catatonia mania psychosis substance trauma personality",
     "family-systems.html": "family systems practice collateral call family meeting discharge barrier map expressed emotion psychoeducation confidentiality boundaries means safety caregiver support inpatient psychiatry",
     "one-patient-six-weeks.html": "one patient six weeks longitudinal case arc six week rotation timeline alliance interview mental status exam differential diagnosis medical rule out medication ambivalence family collateral safety suicide discharge handoff reflection",
-    "capacity.html": "decisional capacity informed consent refusal four abilities understand appreciate reason communicate",
+    # #429 — intent mapping for medication refusal, SUBMITTED FOR FACULTY REVIEW.
+    # This string is both the tool's only indexed body AND its search snippet (`snip`,
+    # the first 170 characters), so the clause that matters clinically — refusal is not
+    # by itself evidence of incapacity — is deliberately the FIRST thing in it. The rest
+    # carries the words a learner actually types on the unit (refuses / refusing /
+    # refusal / refuse / declines / declining / medication / medications / meds /
+    # treatment), because common.tok() does not stem: "refuses" cannot reach "refusal".
+    # Audience-neutral and free of patient-specific legal or clinical direction by
+    # design — it says what capacity IS assessed by, never what to do about a refusal.
+    "capacity.html": "Patient refuses medication: refusal is not by itself evidence of incapacity. Decisional capacity is judged one decision at a time, by four abilities, understand, appreciate, reason, and communicate a choice, the same four that make informed consent meaningful. A patient may refuse or decline a medication, or decline treatment outright, and still have capacity. Reach for this when a patient refuses or declines medications, when a patient is refusing medications or declining meds or treatment, and you need to tell a considered refusal from an impaired one. A patient refusing medications may be weighing side effects rather than failing to understand them. Refusal is a reason to assess, never a finding: a patient who refuses a medication may simply disagree, and a patient who accepts one may still lack capacity.",
     "oral.html": "treatment team rounding prep rounds presentation oral one liner assessment plan handoff gather present practice timer collateral update 30 second sixty 60 second micro update",
     "violence.html": "violence risk aggression frst agitation safety prediction de-escalation",
     "cssrs.html": "columbia suicide severity rating scale cssrs suicidal ideation screening safety planning",
@@ -199,7 +208,11 @@ _TOOLKW_MS3 = {
 _TOOLKW_RES = {
     "mse.html": "mental status exam appearance behavior speech mood affect thought",
     "interview-circle.html": "interview circle radial domain map intake history hpi substance family social mental status safety conversation interviewing checklist",
-    "capacity.html": "decisional capacity informed consent four abilities",
+    # #429 — the resident short form. Kept a VERBATIM PREFIX of the MS3 entry above so
+    # _merge_keywords() appends nothing and the shipped `snip` stays one readable
+    # sentence pair; a re-worded twin here would tack its punctuation-bearing words onto
+    # the end of the snippet (the merge de-dupes on raw whitespace-split words).
+    "capacity.html": "Patient refuses medication: refusal is not by itself evidence of incapacity. Decisional capacity is judged one decision at a time, by four abilities, understand, appreciate, reason, and communicate a choice, the same four that make informed consent meaningful.",
     "oral.html": "rounding presentation oral assessment plan handoff timer collateral update 30 second sixty 60 second micro update",
     "violence.html": "violence risk aggression frst de-escalation",
     "cssrs.html": "columbia suicide severity rating scale ideation safety planning",
@@ -370,12 +383,168 @@ SKIP_LINK_CSS = (
 )
 FAVICON_LINK = '<link rel="icon" href="/favicon.svg">'
 CLINICAL_CSS_LINK = '<link rel="stylesheet" href="/clinical-warm.css">'
+_CLINICAL_CSS_LINK_RE = re.compile(r"<link[^>]+clinical-warm\.css", re.IGNORECASE)
 
-# Pre-paint theme init: runs before first paint so dark mode never flashes.
+
+def _links_clinical_css(text):
+    """True only when the shared dark-token stylesheet is linked as an ELEMENT.
+
+    Deliberately not `"clinical-warm.css" in text`: that is what let a comment naming the file
+    disable dark mode for a whole page (2026-09-10, the SPA shell).
+    """
+    return bool(_CLINICAL_CSS_LINK_RE.search(text))
+# Usage analytics. CW_SITE tells the emitter which site it is on; CW_PAGE (when
+# known at build time) tells it which page. The emitter sends only allowlisted
+# keys and never an identifier. See
+# docs/superpowers/specs/2026-09-04-usage-analytics-design.md
+ANALYTICS_TAG = '<script src="/analytics.js" defer></script>'
+
+
+def analytics_head(site, page=None):
+    """The tags every built page carries, in <head> order.
+
+    `page` must be a build-time-known literal identical to this page's own
+    slug in shipped_pages.json (e.g. a tool's own output filename) -- never
+    derived from a URL, query string, or anything read in the browser. Pass
+    None for a file with no single fixed page identity: the SPA shell
+    (index.html) serves dozens of content pages by client-side routing, so no
+    one CW_PAGE literal could describe it truthfully, and a wrong one would be
+    silently dropped by the collector's allowlist anyway (worse than none,
+    since it looks instrumented but never counts).
+    """
+    tag = "<script>window.CW_SITE='%s'" % site
+    if page:
+        # Structurally safe, not just incidentally safe: every current slug is
+        # already [A-Za-z0-9._-] (a filesystem basename), so this never fires
+        # today -- but %s-into-a-single-quoted-JS-string has no enforcement of
+        # that without this assertion, and a future slug source (or a typo)
+        # could otherwise break out of the string literal.
+        if not re.fullmatch(r"[A-Za-z0-9._-]+", page):
+            raise ValueError(
+                "analytics_head: page slug %r is not build-time-safe for JS "
+                "string interpolation (must match [A-Za-z0-9._-]+)" % (page,)
+            )
+        tag += ";window.CW_PAGE='%s'" % page
+    tag += "</script>" + ANALYTICS_TAG
+    return tag
+
+
+# Regex for the exact literal analytics_head() ever produces, so it can be
+# removed again when a site's OWN enablement disagrees with what it inherited
+# (see resident_section.py's reconciliation block, the only caller). Never
+# used during a normal build -- there, the tag is either injected or it is
+# not; this exists only to undo an inherited mismatch.
+_ANALYTICS_TAG_RE = re.compile(
+    r"<script>window\.CW_SITE='[A-Za-z0-9_-]+'"
+    r"(?:;window\.CW_PAGE='[A-Za-z0-9._-]+')?</script>"
+    r"<script src=\"/analytics\.js\" defer></script>\n?"
+)
+
+
+def strip_analytics_tag(text):
+    """Remove the usage-analytics <script> tag(s) analytics_head() injects."""
+    return _ANALYTICS_TAG_RE.sub("", text)
+
+
+# The emitter file itself, co-located with this module (build_deploy.py has
+# its own ANALYTICS_JS constant computed the same way; resident_section.py
+# has none, since it normally inherits the file via the MS3 copytree -- this
+# constant exists for the one case where it must copy the file itself: its
+# own site enabled while ms3's build was not).
+ANALYTICS_JS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "analytics.js")
+
+ANALYTICS_MODES = ("off", "ms3", "res", "both")
+
+
+def analytics_mode():
+    """Read CLERKSHIP_ANALYTICS from the environment; default 'off'.
+
+    See docs/superpowers/specs/2026-09-04-usage-analytics-design.md's Rollout
+    section (steps 2-4): the emitter ships behind an off-by-default build
+    flag so enabling it -- and with it, deciding the spec's open learner-
+    notice question by omission -- is a deliberate, reversible, per-site call
+    the repo owner makes, never a default an agent or a build silently picks.
+    Values: off (default, ships nothing), ms3, res, both.
+    """
+    raw = os.environ.get("CLERKSHIP_ANALYTICS", "off").strip().lower()
+    if raw not in ANALYTICS_MODES:
+        raise ValueError(
+            "CLERKSHIP_ANALYTICS must be one of %s, got %r"
+            % ("|".join(ANALYTICS_MODES), raw)
+        )
+    return raw
+
+
+def analytics_enabled_for(site, mode=None):
+    """Whether `site` ('ms3' or 'res') should ship the usage-analytics emitter."""
+    mode = analytics_mode() if mode is None else mode
+    return mode == "both" or mode == site
+
+
+# Pre-paint theme init: runs before first paint so dark mode never flashes. Injected only into
+# pages that ship without their own boot (see apply_dark_mode's `"cw_theme" not in t` guard).
+#
+# This must stay BYTE-IDENTICAL to the inline <script> at the top of spa_index.html. It cannot
+# import that script -- both run before anything else loads, which is the whole point -- so the
+# duplication is structural, and test_common.py's TestThemeInit is what stops the two copies
+# drifting. They already drifted once: the shell learned the 'system' mode on 2026-09-10 and this
+# copy did not, which left a learner on a dark-preferring phone reading a dark shell and light
+# tool pages. `cw_theme` holds a MODE (system/light/dark); documentElement holds the RESOLVED
+# attribute (light/dark), so CSS only ever sees two values. An unrecognised or absent mode reads
+# as system, not light -- a device that never expressed a preference follows its OS.
+#
+# ONE TRY PER CAPABILITY, never one around the lot. A browser can throw on the mere ACT of
+# touching localStorage -- Chrome with site data blocked does -- and when the OS resolution sat
+# inside the storage try, that throw aborted the boot before matchMedia was ever consulted.
+# Nothing was painted; clinical-warm.css scopes the dark palette to [data-theme="dark"], so no
+# attribute means light, and a storage-blocked learner on a dark OS got a white page with no
+# control anywhere that could change it. Each capability is guarded on its own and each failure
+# degrades to the safe default its own scenario row records.
+#
+# THE LISTENER LIVES HERE, and that is a placement decision rather than a convenience. 'system'
+# resolved only at boot means "your OS as of page load", and since unset now reads as system that
+# is the default for every existing device. The subscription belongs to the one piece of theme
+# code present on EVERY themed page: the tool pages carry this boot and get no frontdoor modules
+# at all, and the shell posts a resolved theme into a tool frame only on an explicit theme CHANGE,
+# never on an OS flip -- so a controller-side listener would leave an embedded tool on the old
+# palette for as long as the learner stayed in it. A second resolver beside this one is also the
+# drift 0ed0a4c had to repair.
+#
+# The mode is re-read on every paint rather than captured, so the "only while system" gate is
+# live: a learner who picks Light in the panel stops following the OS from that moment, in this
+# tab and in any other. The listener repaints the ATTRIBUTE and nothing else -- it never writes
+# cw_theme, so the panel's active segment is untouched and no render is needed.
+#
+# Four pages own their theme from <body> and carry no boot, so they get none of this
+# (tests/theme-bootless-pages.test.mjs). A second owner repainting under their own state is a
+# desync, not a feature.
 THEME_INIT = (
-    "<script>(function(){try{var t=localStorage.getItem('cw_theme');"
-    "if(t!=='dark'&&t!=='light'){t='light';}"
-    "document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>"
+    "<script>(function(){var q=null;try{q=(window.matchMedia&&"
+    "window.matchMedia('(prefers-color-scheme: dark)'))||null;}catch(e){}"
+    "function p(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}"
+    "var m=(s==='light'||s==='dark'||s==='system')?s:'system';"
+    "var a=(m==='system')?((q&&q.matches)?'dark':'light'):m;"
+    "try{document.documentElement.setAttribute('data-theme',a);}catch(e){}}p();"
+    "if(q){try{if(q.addEventListener){q.addEventListener('change',p);}"
+    "else if(q.addListener){q.addListener(p);}}catch(e){}}})();</script>"
+)
+
+# ?theme-audit — a LOADER, not the tool. Every colour defect this library shipped in 2026-09 was
+# the same thing: a colour that does not flip. The gate in bin/check_design_drift.py catches the
+# four shapes it has been taught, on the routes someone encoded; this makes the whole family
+# visible on ANY page, in five seconds, to a person. theme_audit.js is ~11 KB and would be dead
+# weight on 30 pages, so what ships is this: ~200 bytes that fetch nothing unless the URL asks.
+# rotation-curator.html is offline BY CONTRACT. check-static-site.mjs hard-fails on any network
+# transport API in it — fetch, XHR, WebSocket, and `createElement("script")` among them — because
+# the faculty edition builder must not be able to reach the network at all. A debug hook is not a
+# reason to weaken that, so it is the one page that does not get the loader below. Found the hard
+# way: the first build with the loader failed with "network transport API in rotation-curator.html".
+NO_NETWORK_PAGES = frozenset({"rotation-curator.html"})
+
+THEME_AUDIT_LOADER = (
+    "<script>(function(){if(!/[?&]theme-audit\\b/.test(location.search))return;"
+    "var s=document.createElement('script');s.src='/theme-audit.js';s.defer=true;"
+    "document.head.appendChild(s);})();</script>"
 )
 
 MOTION_CSS = (
@@ -525,7 +694,8 @@ def apply_page_chrome(path, is_index=False):
     if ".skip-link{" not in t and "</head>" in t:
         t = t.replace("</head>", SKIP_LINK_CSS + "\n</head>", 1)
 
-    # WP-03: bare accent text (--primary #c25a3c) is ~3.9:1 on the light backgrounds and
+    # WP-03: bare accent text (--primary #bc573a, darkened from #c25a3c 2026-09-10) is
+    # ~4.2:1 on the light backgrounds and still
     # fails WCAG AA for normal-size text. Repoint to --primary-dark; the literal fallback
     # covers tools whose light :root lacks the token, and clinical-warm.css overrides
     # --primary-dark to #dd9277 in dark mode, which also passes. The closing paren in the
@@ -543,8 +713,17 @@ def apply_page_chrome(path, is_index=False):
     return t != o
 
 
-def apply_dark_mode(path, is_index=False, cache_bust=None):
-    """Theme init, dark tokens via clinical-warm.css, motion CSS, iframe nav shim."""
+def apply_dark_mode(path, is_index=False, cache_bust=None, page_slug=None, inject_analytics=False):
+    """Theme init, dark tokens via clinical-warm.css, motion CSS, iframe nav shim.
+
+    `page_slug` is this file's own build-time-known slug (its basename, passed
+    by `apply_full_page_pass` below) -- used only for the usage-analytics tag.
+
+    `inject_analytics` gates the usage-analytics tag ONLY -- every other
+    transform here is unconditional. Defaults False (the flag's own default;
+    see analytics_enabled_for()) so a caller that does not pass it explicitly
+    never ships the emitter by accident.
+    """
     t = open(path, encoding="utf-8").read()
     o = t
 
@@ -556,9 +735,31 @@ def apply_dark_mode(path, is_index=False, cache_bust=None):
     if "cw_theme" not in t and "<head>" in t:
         t = t.replace("<head>", "<head>\n" + THEME_INIT, 1)
 
+    if (os.path.basename(path) not in NO_NETWORK_PAGES
+            and "theme-audit.js" not in t and "</head>" in t):
+        t = t.replace("</head>", THEME_AUDIT_LOADER + "\n</head>", 1)
+
     # Dark tokens come from the linked stylesheet — one file, not N inline copies.
-    if '[data-theme="dark"]' not in t and "clinical-warm.css" not in t and "</head>" in t:
+    #
+    # _links_clinical_css matches the <link> ELEMENT, not the bare filename. A substring test
+    # here shipped the entire SPA shell with NO dark palette on 2026-09-10: a source comment in
+    # spa_index.html happened to name the file, the guard read that as "already linked", and
+    # skipped the injection. Nothing failed — the shell simply stayed light with data-theme="dark"
+    # stamped on <html>. Same fix applied to the missing-asset check below, which was fooled
+    # identically and so could not report it.
+    if '[data-theme="dark"]' not in t and not _links_clinical_css(t) and "</head>" in t:
         t = t.replace("</head>", CLINICAL_CSS_LINK + "\n</head>", 1)
+
+    # Usage analytics. Injected here so every polished page carries it from one
+    # source; the emitter itself sends only allowlisted keys. The default site
+    # is ms3 because resident_section.py derives the resident build from the
+    # MS3 one and rewrites CW_SITE in its own pass (see resident_section.py).
+    # Gated behind CLERKSHIP_ANALYTICS (off by default -- see
+    # analytics_enabled_for()): the spec's Rollout step 2 requires the emitter
+    # ship behind an off-by-default build flag, so a caller that does not ask
+    # for it must get nothing, not a tag pointing at a file nobody copied.
+    if inject_analytics and "analytics.js" not in t and "</head>" in t:
+        t = t.replace("</head>", analytics_head("ms3", page_slug) + "\n</head>", 1)
 
     if "cc-rise" not in t and "</style>" in t:
         t = t.replace("</style>", MOTION_CSS + "\n</style>", 1)
@@ -613,6 +814,7 @@ SNIPPET_MARKERS = {
     "/*__FD_PATH__*/": "frontdoor/fd_path.js",
     "/*__FD_LIBRARY__*/": "frontdoor/fd_library.js",
     "/*__FD_READER__*/": "frontdoor/fd_reader.js",
+    "/*__FD_GUIDE__*/": "frontdoor/fd_guide.js",
     "/*__FD_SEARCH__*/": "frontdoor/fd_search.js",
     "/*__FD_SHEET__*/": "frontdoor/fd_sheet.js",
     "/*__FD_WIRE__*/": "frontdoor/fd_wire.js",
@@ -636,13 +838,18 @@ def inject_shared_snippets(path):
     return False
 
 
-def apply_full_page_pass(out_dir, cache_bust=None):
+def apply_full_page_pass(out_dir, cache_bust=None, inject_analytics=False):
     """Run chrome + dark-mode over every shipped HTML page in a build.
 
     Safe to re-run: every transform is idempotent. Callers that write additional
     HTML after the main pass (e.g. resident-only tools) should call this again
     rather than hand-rolling a subset — hand-rolled subsets are exactly how the
     rp-* tools ended up shipping without clinical-warm.css and the iframe shim.
+
+    `inject_analytics` is this CALL's own decision (typically the caller's own
+    site under analytics_enabled_for()), threaded straight to apply_dark_mode.
+    Defaults False so a caller that has not been updated to pass it explicitly
+    never ships the emitter.
     """
     pages = sorted(glob.glob(os.path.join(out_dir, "tools", "*.html")))
     index = os.path.join(out_dir, "index.html")
@@ -650,9 +857,20 @@ def apply_full_page_pass(out_dir, cache_bust=None):
         pages.append(index)
     for p in pages:
         is_index = os.path.abspath(p) == os.path.abspath(index)
+        # Every non-shell page in this loop is its own standalone HTML document
+        # named after its shipped_pages.json slug (a tool's own output
+        # filename) -- so the basename IS the build-time-known page identity
+        # analytics_head() needs. The SPA shell has no single one (see there).
+        page_slug = None if is_index else os.path.basename(p)
         inject_shared_snippets(p)
         apply_page_chrome(p, is_index=is_index)
-        apply_dark_mode(p, is_index=is_index, cache_bust=cache_bust)
+        apply_dark_mode(
+            p,
+            is_index=is_index,
+            cache_bust=cache_bust,
+            page_slug=page_slug,
+            inject_analytics=inject_analytics,
+        )
     return len(pages)
 
 
@@ -710,7 +928,7 @@ def page_contract_failures(out_dir):
             missing.append('#root anchor for the skip link')
         if "cw_theme" not in t:
             missing.append("pre-paint theme init (cw_theme)")
-        if "clinical-warm.css" not in t and '[data-theme="dark"]' not in t:
+        if not _links_clinical_css(t) and '[data-theme="dark"]' not in t:
             missing.append("dark-mode tokens (clinical-warm.css link or inline block)")
         if 'rel="icon"' not in t:
             missing.append("favicon link")
@@ -891,3 +1109,104 @@ def emit_service_worker(out_dir, kill=None):
         version, len(entries), total_bytes
     ))
     return version
+
+
+# ---------------------------------------------------------------------------
+# Deploy-preview CSP widening (issue #430)
+#
+# NOTE the module docstring: the `_headers` PAYLOAD stays in build_deploy.py as
+# one statically-inspectable string literal, because
+# tests/faculty-console-handler.test.mjs regex-extracts it from that source to
+# pin the learner CSP. What lives here is the audience-neutral TRANSFORM both
+# builds apply to the already-written file, never the payload itself.
+# ---------------------------------------------------------------------------
+
+PREVIEW_CONTEXT = "deploy-preview"
+
+# The production directive, and the one deploy previews get instead.
+FRAME_SRC_PRODUCTION = "frame-src 'self';"
+FRAME_SRC_PREVIEW = "frame-src 'self' https://app.netlify.com;"
+
+_CSP_LINE_RE = re.compile(r"^[ \t]*Content-Security-Policy:.*$", re.MULTILINE)
+
+
+def preview_headers(text, context):
+    """Widen `frame-src` for the Netlify Drawer, on deploy previews only (#430).
+
+    Why: on a `deploy-preview` build Netlify injects
+    `<script async src="/.netlify/scripts/cdp">` into every served HTML page.
+    The script is same-origin, so it satisfies `script-src 'self'`, but the
+    drawer it opens frames `https://app.netlify.com/`, which the site's
+    `frame-src 'self'` blocks -- every preview page logged "Framing
+    https://app.netlify.com/ violates the site's frame-src 'self' Content
+    Security Policy directive", console noise that hides real preview-only
+    failures. Production pages get no such injection and need no such
+    allowance, so the fix is scoped to the one build context that has the
+    problem.
+
+    Netlify sets `CONTEXT` to `production`, `deploy-preview` or `branch-deploy`.
+    For anything but `deploy-preview` -- including an empty/absent value, which
+    is what a local build sees -- the text is returned UNCHANGED, byte for
+    byte: the production CSP is never weakened by this function.
+
+    The rewrite touches exactly one directive on exactly one line: the first
+    `Content-Security-Policy:` line's single `frame-src 'self';`. Every other
+    directive, every other header, and the Cache-Control blocks are untouched.
+    Idempotent -- a line already carrying the widened directive is left alone,
+    so running the transform twice (the resident build re-applies it to a file
+    inherited from the MS3 build) yields the same output.
+
+    Raises ValueError on a preview build whose CSP line carries neither form.
+    A silent no-op there would quietly restore #430 the next time the
+    `_headers` literal's frame-src is edited; failing loudly in the one context
+    that is affected makes the drift impossible to miss and cannot reach
+    production.
+    """
+    if context != PREVIEW_CONTEXT:
+        return text
+
+    match = _CSP_LINE_RE.search(text)
+    if not match:
+        raise ValueError(
+            "preview_headers: no Content-Security-Policy line in the _headers "
+            "payload -- the deploy-preview frame-src widening (#430) cannot apply"
+        )
+
+    line = match.group(0)
+    if FRAME_SRC_PREVIEW in line:
+        return text                      # already widened; idempotent
+    if FRAME_SRC_PRODUCTION not in line:
+        raise ValueError(
+            "preview_headers: the Content-Security-Policy line carries neither "
+            "%r nor %r -- the _headers frame-src directive changed shape and the "
+            "deploy-preview widening (#430) needs updating with it"
+            % (FRAME_SRC_PRODUCTION, FRAME_SRC_PREVIEW)
+        )
+
+    widened = line.replace(FRAME_SRC_PRODUCTION, FRAME_SRC_PREVIEW, 1)
+    return text[: match.start()] + widened + text[match.end() :]
+
+
+def apply_preview_headers(out_dir, context=None, label=""):
+    """Run `preview_headers()` over an already-written `<out_dir>/_headers`.
+
+    Read-transform-compare-write: the file is rewritten only when the transform
+    actually changed it, so a production build leaves it byte-identical and a
+    resident build that inherited an already-widened file from the MS3 build
+    writes nothing. Returns True when the file was rewritten.
+    """
+    if context is None:
+        context = os.environ.get("CONTEXT", "")
+    path = os.path.join(out_dir, "_headers")
+    with open(path, encoding="utf-8") as fh:
+        original = fh.read()
+    updated = preview_headers(original, context)
+    if updated == original:
+        return False
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(updated)
+    print(
+        "deploy-preview: frame-src widened for the Netlify Drawer "
+        "(https://app.netlify.com)%s" % ((" - " + label) if label else "")
+    )
+    return True

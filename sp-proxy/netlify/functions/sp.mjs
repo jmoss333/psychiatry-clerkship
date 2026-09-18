@@ -310,7 +310,28 @@ function deriveState(caseDef, studentMsgs) {
     // produces no reply on the client (e.g. repeatAsk undefined) does not consume the turn.
     if (!flags.length) {
       const recentFlags = s.flagHistory.slice(-2).flat();
-      let consumed = false;
+      // PASS 1 — a turn that can OPEN a gate does so, in pack order, before any already-open
+      // gate replays its repeatAsk and before any locked one deflects.
+      //
+      // Without this, a follow-up phrased to ALSO name the act ("have you ever tried to end your
+      // life", "how would you kill yourself") re-hits gated[0] — si_active, already unlocked —
+      // which consumes the turn with its repeat line, so the follow-up gate is never reached.
+      // The clinically stronger phrasing therefore got LESS than the vaguer one: no disclosure,
+      // and in the means case no coverage credit either. A repeat line is the lowest-value reply
+      // available and must not outrank a first disclosure.
+      //
+      // `opens` is exactly the two unlock conditions of the cascade below, so PASS 2 is that
+      // cascade unchanged; when PASS 1 finds nothing, its unlock branches cannot fire.
+      const opens = (gd) => {
+        if (s.unlocked[gd.id]) return false;
+        if (!(gd.requiresIntents || []).some(ri => hits.includes(ri))) return false;
+        if (gd.requiresGate) return !!s.unlocked[gd.requiresGate];
+        return s.rapport >= (gd.requiresRapport || 0)
+          && !(gd.blockedByRecentFlags || []).some(f => recentFlags.includes(f));
+      };
+      const opening = caseDef.gated.find(opens);
+      if (opening) s.unlocked[opening.id] = true;
+      let consumed = !!opening;
       for (const gd of caseDef.gated) {
         if (consumed) break;
         const reqHit = (gd.requiresIntents || []).some(ri => hits.includes(ri));
@@ -351,12 +372,22 @@ function computeCoverage(caseDef, s) {
 }
 
 /* ------------------------------ prompt assembly ------------------------------ */
+// The rapport clamp in deriveState. A gate whose requiresRapport sits at this floor cannot be
+// rapport-locked: it is locked only because the question has not been asked yet. Offering such a
+// gate's deflectLowRapport line to the actor would let a probe be answered with a line that blames
+// the learner for asking ("a very direct question for someone I met four minutes ago") -- the
+// misattribution #565 removed for Dana's direct suicide question. Rapport-gated gates keep it.
+const RAPPORT_FLOOR = -3;
+function lockedDeflection(g) {
+  const rapportLocked = (g.requiresRapport || 0) > RAPPORT_FLOOR;
+  return (rapportLocked && g.deflectLowRapport) || g.deflectIfLocked || g.deflectEuphemism || 'deflect naturally';
+}
 function actorSystem(caseDef, s) {
   // Locked gates: ONLY deflection lines enter context. Unlocked: reveal + repeatAsk.
   const gates = caseDef.gated.map(g => s.unlocked[g.id]
     ? { id: g.id, status: 'UNLOCKED', reveal: g.reveal, ifAskedAgain: g.repeatAsk || null }
     : { id: g.id, status: 'LOCKED — you do not know this content exists; if probed, use the deflection',
-        deflection: g.deflectLowRapport || g.deflectIfLocked || g.deflectEuphemism || 'deflect naturally' });
+        deflection: lockedDeflection(g) });
   const personaBlock = JSON.stringify({
     persona: caseDef.persona,
     hiddenAgendaToneOnly: caseDef.hiddenAgendaTone || '',

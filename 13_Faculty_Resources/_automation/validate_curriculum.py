@@ -11,6 +11,7 @@ every ref it names is a page the build actually ships:
   - item kind agrees with the slug's type (.html => tool, .md => read)
   - refs within a week are unique
   - every shipped slug is placed in a library column or explicitly excluded
+  - every MS3 week's landingRef is a shipped MS3 Markdown page (welcome_compass.prepare_cards)
 
 WHAT "SHIPPED" COVERS — read this before trusting the totality guard.
 The shipped set is READ, not re-derived: site_build/shipped_pages.json is the one
@@ -55,6 +56,7 @@ REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 
 sys.path.insert(0, os.path.join(HERE, "site_build"))
 from shipped_pages import ShippedPagesError, load_shipped_pages  # noqa: E402
+from welcome_compass import CompassContractError, prepare_cards  # noqa: E402
 
 # The weekly-case producer, excluded from every set below by the decision recorded
 # in this module's docstring. Named once so the exclusion is greppable.
@@ -120,6 +122,11 @@ def main(argv):
 
     try:
         tool_slugs, md_slugs, site_shipped = shipped_sets(shipped_root)
+        # The Compass gate below asks the listing about each week's landing page directly —
+        # kind, sites and slug together — which the three flattened sets no longer carry.
+        # Loading the document a second time keeps shipped_sets' signature the ADR-002 shape
+        # every other reader uses; the read is a small local JSON file.
+        shipped_document = load_shipped_pages(shipped_root)
     except ShippedPagesError as error:
         print("curriculum.json INVALID — %s" % error)
         return 1
@@ -143,6 +150,28 @@ def main(argv):
 
     def bad(where, msg):
         errs.append("%s: %s" % (where, msg))
+
+    # Discovery vocabulary names resources, not clinical advice. Validate against ALL
+    # shipped producers (including weekly cases), independently of Library placement.
+    search_slugs = {page["slug"] for page in shipped_document["pages"]}
+    aliases = cur.get("searchAliases", {})
+    if not isinstance(aliases, dict):
+        bad("searchAliases", "must be a ref-keyed object")
+        aliases = {}
+    for ref, phrases in aliases.items():
+        if ref not in search_slugs:
+            bad("searchAliases", "unknown shipped ref %r" % ref)
+        if not isinstance(phrases, list) or not phrases:
+            bad("searchAliases", "%s needs a non-empty list" % ref)
+            continue
+        seen_phrases = set()
+        for phrase in phrases:
+            if not isinstance(phrase, str) or not re.fullmatch(r"[a-z0-9]+(?: [a-z0-9]+)*", phrase):
+                bad("searchAliases", "%s has a malformed phrase %r" % (ref, phrase))
+            elif phrase in seen_phrases:
+                bad("searchAliases", "%s repeats %r" % (ref, phrase))
+            else:
+                seen_phrases.add(phrase)
 
     # Synonym keys: a key with a space is a PHRASE, matched whole-phrase against the raw query.
     # Both forms must be lowercase and trimmed or they can never match a lowercased query — a
@@ -227,6 +256,13 @@ def main(argv):
                 if ref in seen_refs:
                     bad(week_label, "duplicate ref '%s' within the week" % ref)
                 seen_refs.add(ref)
+                # A rights reference exists to say an instrument is NOT reproduced here. It
+                # belongs in the Library (INV-IR2 keeps the custodian route alive), never on a
+                # path: a checklist step that opens a "no longer reproduced" stub is a dead end
+                # the learner is asked to tick. Both stubs shipped as steps until 2026-09-16.
+                if ref in rights_refs:
+                    bad(week_label, "ref '%s' is a rights reference — it belongs in a Library "
+                        "column, never as a path step" % ref)
                 if ref not in site_shipped[site]:
                     bad(week_label, "ref '%s' is not shipped on %s" % (ref, site))
                     continue
@@ -234,6 +270,11 @@ def main(argv):
                 if kind != expected_kind:
                     bad(week_label, "ref '%s' has kind '%s' but the build ships it as '%s'" %
                         (ref, kind, expected_kind))
+        if site == "ms3":
+            try:
+                prepare_cards(weeks, shipped_document)
+            except CompassContractError as error:
+                bad(label, str(error))
         path_totals[site] = sum(len(w.get("items", [])) for w in weeks if isinstance(w, dict))
 
     # ---- library totality: every shipped slug is placed or explicitly excluded ----
@@ -339,6 +380,35 @@ def main(argv):
             elif ref not in site_shipped[site]:
                 bad("siteLibrary %s" % site,
                     "exclusion ref '%s' is not shipped on %s" % (ref, site))
+
+    # ---- library hints: one line per placed tool, in both directions ----
+    # A placed .html ref is a tool row in the only browse surface, and 23-26 tool titles do not
+    # say what the tool does (The Interview Circle, What Do You Say Next?, Interaction Cards).
+    # Each carries a one-line "use this when" from curriculum.libraryHints. Enforced both ways
+    # so adding a tool means writing its line, and a line for a ref no column places is copy
+    # nobody can read. Reads keep bare titles: their tldr is clinical, not navigational.
+    hints = cur.get("libraryHints", {})
+    if not isinstance(hints, dict):
+        bad("libraryHints", "must be a ref-keyed object of one-line strings")
+        hints = {}
+    hinted_universe = {ref for ref in placed if ref in tool_slugs}
+    for site in ("ms3", "resident"):
+        overlay = site_library.get(site) if isinstance(site_library, dict) else None
+        additions = overlay.get("additions") if isinstance(overlay, dict) else None
+        for addition in additions if isinstance(additions, list) else []:
+            refs = addition.get("refs") if isinstance(addition, dict) else None
+            for ref in refs if isinstance(refs, list) else []:
+                if isinstance(ref, str) and ref in tool_slugs:
+                    hinted_universe.add(ref)
+    for ref, line in sorted(hints.items(), key=lambda kv: str(kv[0])):
+        if ref not in hinted_universe:
+            bad("libraryHints", "'%s' is not a tool any Library column places" % ref)
+        if not isinstance(line, str) or not line.strip():
+            bad("libraryHints", "'%s' needs a non-empty one-line hint" % ref)
+        elif len(line) > 110 or "\n" in line:
+            bad("libraryHints", "'%s' hint must stay one line (<=110 chars, no newline)" % ref)
+    for ref in sorted(hinted_universe - set(hints)):
+        bad("libraryHints", "placed tool '%s' has no one-line hint" % ref)
 
     # ---- safety kit: five reviewed, high-safety protocols with canonical evidence ----
     kit = cur.get("safetyKit")

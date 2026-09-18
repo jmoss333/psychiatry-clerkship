@@ -1,0 +1,34 @@
+{
+  "id": "medication-negation",
+  "title": "Confirming a negative medication history",
+  "synthetic": true,
+  "tags": [
+    "negation"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "You're not taking any medication yourself, is that right?",
+  "expectations": {
+    "should": [
+      "Confirm the established absence of Dana’s own medication use.",
+      "Keep Tom’s medication separate from Dana’s history."
+    ],
+    "mustNot": [
+      "Do not reverse the negation or report that Dana takes psychiatric medication.",
+      "Do not invent medication names, doses, or quantities."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "responses.meds_medical.open.0"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

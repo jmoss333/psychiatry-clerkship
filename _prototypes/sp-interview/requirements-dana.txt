@@ -1,0 +1,2 @@
+# Only needed by the explicitly started local live Dana server.
+openai==2.54.0

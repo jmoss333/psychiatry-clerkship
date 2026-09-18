@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Protected fictional patient conversation for faculty preview.">
+  <title>The Interview Room</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./station-content.js" defer></script>
+  <script src="./station.js" defer></script>
+  <script src="./moment-content.js" defer></script>
+  <script src="./moment-station.js" defer></script>
+  <script src="./practice-content.js" defer></script>
+  <script src="./practice-coach.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to the encounter</a>
+<main class="shell" id="preview-root" data-phase="gate">
+  <header class="masthead"><div class="brand"><span class="brand-mark" aria-hidden="true"></span><h1 id="masthead-name">The Interview Room</h1></div><span class="preview-badge">Faculty preview</span></header>
+  <div id="main-content" tabindex="-1">
+    <div class="entrance" id="entrance">
+      <section class="panel access" id="access-panel" aria-labelledby="access-title"><h2 id="access-title">Choose your encounter</h2><p id="access-lede">Up to ten questions, at your pace.</p><form id="access-form"><label for="experience-choice">Practice format</label><select id="experience-choice"><option value="full">Full encounter</option><option value="moment" hidden disabled>Practice a moment · about 3–5 minutes</option></select><label for="case-choice">Patient or family</label><select id="case-choice"><option value="sp_depression_gated_si_001">Dana — admission interview</option><option value="sp_mania_redirect_001">Marcus — a focused interview</option><option value="sp_psychosis_paranoid_001">Ray — establishing a working conversation</option><option value="sp_alcohol_ambivalence_001">Morgan — motivational interviewing</option><option value="family_morgan_maya_001">Morgan and Maya — family visit</option></select><p class="review-note" id="case-review-note" hidden>Faculty-review draft. This case has not received faculty review.</p><div id="practice-entry" hidden></div><fieldset id="family-preflight" class="family-preflight" hidden><legend>Before your family session</legend><p><strong>You lead the opening.</strong> Introduce yourself and invite the first person to speak.</p><ul><li>Begin with a name: “Morgan, what matters most to you today?” or “Maya, what would you like us to understand?”</li><li>Without a name, the selected person answers. Morgan is selected first. One person answers; both hear the shared conversation.</li><li>If someone asks to add something, say “Go ahead” to invite them.</li><li>Pause for 4.5 seconds to send your words, or press <kbd>Space</kbd> sooner outside a text field. Use headphones if you enable spoken interruption.</li></ul><label class="check"><input id="family-brief-ack" type="checkbox" disabled> I’ve reviewed how this family session works</label></fieldset><div id="family-positioning-entry-option" class="family-positioning-option" hidden><label class="check"><input id="family-positioning-entry" type="checkbox" aria-describedby="family-positioning-entry-help"> Place voices in the room · headphones</label><p class="fine" id="family-positioning-entry-help">Morgan sounds slightly to your left and Maya slightly to your right. Both ears hear both voices. Turn off to keep voices centered.</p></div><label for="preview-key">Preview passcode</label><input id="preview-key" name="preview-key" type="password" autocomplete="off" required maxlength="200" aria-describedby="voice-note"><label class="check"><input id="voice-mode" type="checkbox" checked> Continue by voice</label><button class="primary" type="submit" id="start">Start encounter</button><p class="fine" id="voice-support">Your microphone starts only when you choose Start with voice enabled, or Resume microphone. You can type at any time.</p><div id="voice-experiment-options" class="voice-experiment"><label class="check"><input id="spoken-interrupt-entry" type="checkbox" aria-describedby="spoken-interrupt-help"> Interrupt by speaking · try with headphones</label><p class="fine" id="spoken-interrupt-help">The microphone also listens while the patient speaks. Start a sentence to take the floor; a brief “mm-hmm” lets them continue. Experimental: use headphones to reduce voice pickup.</p></div><details id="faculty-voice-options" class="faculty-options"><summary>Faculty · patient delivery</summary><label for="delivery-intensity">Portrayal intensity</label><select id="delivery-intensity" aria-describedby="delivery-intensity-help"><option value="gentle">Gentler expression</option><option value="standard" selected>Current portrayal</option><option value="expressive">More pronounced expression</option></select><p id="delivery-intensity-help" class="fine">Adjusts emphasis and phrasing for this patient. Facts, symptoms, and learner controls stay the same. This is not an illness-severity scale. Choose before starting; the setting lasts for this encounter.</p></details></form><div class="entry-tip" id="voice-entry-tip"><kbd>Space</kbd><span>Finish your turn sooner.<br>Otherwise, just pause and let the conversation continue.</span></div></section>
+      <section class="door" aria-labelledby="door-title"><p class="section-label">Before you enter</p><h2 id="door-title">Begin with the patient’s story.</h2><p class="lede">Practice a conversation.<br>Leave room to listen.</p><p id="door-lede">Introduce yourself and your role, invite the patient’s account, and close with a summary they can correct.</p><details class="entry-brief" open><summary>Your case brief</summary><p id="case-preview-note"></p><p class="fine" id="case-preview-task"></p></details><p class="fine practice-note">Fictional MD/DO practice. Pauses, speaking speed, and fluency are never graded. This preview does not assess competence or readiness.</p></section>
+    </div>
+    <div id="error" class="error" role="alert" hidden></div>
+    <div class="room-grid" id="room-layout" hidden>
+      <div class="conversation-column">
+        <section class="panel encounter" id="encounter-panel" hidden aria-labelledby="encounter-title">
+          <div class="control-head"><div><p class="section-label">In the room</p><h2 id="encounter-title"><span id="patient-name">The patient</span><span class="voice-tag" id="voice-tag">AI voice</span></h2></div><time class="elapsed" id="elapsed" hidden></time><span class="turn-count" id="turn-count">0 of 10 questions</span></div>
+          <p class="review-note encounter-review" id="encounter-review-note" hidden>Faculty-review draft. This case has not received faculty review.</p>
+          <section id="family-room" class="family-room" aria-label="People in this shared meeting" hidden><div class="family-person-grid"><article id="family-card-morgan" class="family-person" data-family-role="morgan" aria-labelledby="family-name-morgan"><p class="person-name" id="family-name-morgan">Morgan</p><p class="person-identity" id="family-identity-morgan"></p><p class="person-turn" id="family-turn-morgan"></p></article><article id="family-card-maya" class="family-person" data-family-role="maya" aria-labelledby="family-name-maya"><p class="person-name" id="family-name-maya">Maya</p><p class="person-identity" id="family-identity-maya"></p><p class="person-turn" id="family-turn-maya"></p></article></div><p id="family-floor-summary" class="fine" role="status" aria-live="polite"></p><div class="family-positioning-option"><label class="check"><input id="family-positioning" type="checkbox" aria-describedby="family-positioning-room-help family-positioning-status"> Place voices in the room · headphones</label><p class="fine" id="family-positioning-room-help">Morgan slightly left; Maya slightly right. Both ears hear both voices. Switch on for the next voice; switch off any time to center the current voice.</p><p id="family-positioning-status" class="fine" role="status" aria-live="polite">Voices are centered.</p></div><details id="family-room-observations"><summary>Room observations</summary><p class="fine">At the start of this visit. These notes describe what is visible, without assuming what either person is feeling.</p><ul><li><strong>Morgan:</strong> <span id="family-observation-morgan"></span></li><li><strong>Maya:</strong> <span id="family-observation-maya"></span></li></ul><details id="family-room-illustration"><summary id="family-room-layout-label">Illustrative room layout</summary><p class="fine chair-perspective">From your chair</p><div class="family-chair-diagram" dir="ltr" role="img" aria-label="Illustration from your chair: Morgan on your left and Maya on your right, in separate chairs facing you"><div class="family-chair-row"><span class="room-chair" data-family-role="morgan">Morgan<span class="chair-position">Left</span></span><span class="room-chair" data-family-role="maya">Maya<span class="chair-position">Right</span></span></div><span class="chair-direction" aria-hidden="true">↑</span><span class="room-chair clinician-chair">Your chair</span></div><p class="fine" id="family-room-layout-text"></p></details></details></section><p id="family-opening-invite" class="family-opening-invite" hidden>Your turn to begin. Introduce yourself, then start with “Morgan” or “Maya.”</p>
+          <!-- Room view · a projection of the controller snapshot (like the station), written by renderRoom() in app.js via data-* attributes. All presentation is in styles.css: the deployed CSP is style-src 'self', so there are no style="" attributes here. -->
+          <section class="room-view" id="room-view" role="group" aria-label="Room view" data-seats="2" data-room-state="idle" data-cue="">
+            <p class="visually-hidden" id="room-alt"></p>
+            <div class="room-frame">
+              <svg class="room-scene" viewBox="0 0 640 230" aria-hidden="true" focusable="false">
+                <defs><linearGradient id="room-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf8" stop-opacity=".7"></stop><stop offset="1" stop-color="#fffdf8" stop-opacity="0"></stop></linearGradient></defs>
+                <rect class="room-wall" x="0" y="0" width="640" height="150"></rect>
+                <rect class="room-wainscot" x="0" y="128" width="640" height="22"></rect>
+                <rect class="room-floor" x="0" y="150" width="640" height="80"></rect>
+                <polygon points="236,150 404,150 452,230 188,230" fill="url(#room-light)"></polygon>
+                <g class="room-window"><rect x="250" y="22" width="140" height="98" rx="6"></rect><line x1="320" y1="22" x2="320" y2="120"></line><line x1="250" y1="71" x2="390" y2="71"></line></g>
+                <g class="room-door"><rect x="566" y="28" width="58" height="122" rx="3"></rect><circle cx="576" cy="92" r="3"></circle><path class="room-knock" d="M556 84 a12 12 0 0 1 0 16 M548 78 a20 20 0 0 1 0 28"></path></g>
+                <g class="room-plant"><ellipse cx="48" cy="104" rx="12" ry="20" transform="rotate(-28 48 104)"></ellipse><ellipse class="room-leaf-light" cx="68" cy="102" rx="12" ry="21" transform="rotate(22 68 102)"></ellipse><ellipse cx="58" cy="96" rx="10" ry="22"></ellipse><path class="room-pot" d="M40 120 h36 l-4 30 h-28 z"></path></g>
+                <g class="room-seat" data-seat="a" data-turn="idle">
+                  <rect class="room-chair-back" x="118" y="88" width="84" height="70" rx="12"></rect><rect class="room-chair-seat" x="112" y="150" width="96" height="16" rx="6"></rect>
+                  <circle class="room-halo" cx="160" cy="84" r="42"></circle>
+                  <circle class="room-cut" cx="160" cy="84" r="42"></circle>
+                  <circle class="room-figure" cx="160" cy="84" r="19"></circle><rect class="room-figure" x="124" y="106" width="72" height="64" rx="26"></rect>
+                </g>
+                <g class="room-seat" data-seat="b" data-turn="idle">
+                  <rect class="room-chair-back" x="438" y="88" width="84" height="70" rx="12"></rect><rect class="room-chair-seat" x="432" y="150" width="96" height="16" rx="6"></rect>
+                  <circle class="room-halo" cx="480" cy="84" r="42"></circle>
+                  <circle class="room-cut" cx="480" cy="84" r="42"></circle>
+                  <circle class="room-figure" cx="480" cy="84" r="19"></circle><rect class="room-figure" x="444" y="106" width="72" height="64" rx="26"></rect>
+                </g>
+                <g class="room-table"><rect x="202" y="178" width="236" height="22"></rect><ellipse cx="320" cy="200" rx="118" ry="20"></ellipse><ellipse class="room-table-top" cx="320" cy="178" rx="118" ry="20"></ellipse><rect class="room-cup" x="284" y="164" width="14" height="13" rx="3"></rect><rect class="room-cup" x="342" y="166" width="14" height="13" rx="3"></rect></g>
+                <!-- Floor rings paint above the table: a centred single seat sits directly behind it,
+                     so a ring inside the seat group would be fully occluded. renderRoom() sets data-turn. -->
+                <g class="room-next-layer"><ellipse class="room-next" data-seat="a" data-turn="idle" cx="160" cy="169" rx="58" ry="8"></ellipse><ellipse class="room-next" data-seat="b" data-turn="idle" cx="480" cy="169" rx="58" ry="8"></ellipse></g>
+                <path class="room-near" d="M0 230 Q320 200 640 230 Z"></path>
+                <g class="room-your-seat"><path class="room-your-arm" d="M30 230 L46 186 Q50 176 64 176 L106 176 Q118 178 118 190 L118 230 Z"></path><path class="room-your-arm" d="M610 230 L594 186 Q590 176 576 176 L534 176 Q522 178 522 190 L522 230 Z"></path><path class="room-your-arm-top" d="M48 182 Q76 170 108 176 Q122 181 116 192 L66 188 Q50 190 48 182 Z"></path><path class="room-your-arm-top" d="M592 182 Q564 170 532 176 Q518 181 524 192 L574 188 Q590 190 592 182 Z"></path><path class="room-your-front" d="M118 230 Q120 212 142 210 L498 210 Q520 212 522 230 Z"></path></g>
+                <g class="room-coach-mark" aria-hidden="true"><circle class="room-coach-ring" cx="586" cy="199" r="10"></circle><circle class="room-coach-dot" cx="586" cy="199" r="4"></circle></g>
+              </svg>
+              <div class="room-people">
+                <div class="room-person" data-seat="a"><span class="room-name"><span id="room-a-name"></span><span class="room-pronouns" id="room-a-pronouns"></span></span><span class="room-tag" id="room-a-tag" data-kind=""><span class="room-tag-dot" aria-hidden="true"></span><span id="room-a-tag-text"></span></span></div>
+                <span class="room-bed" id="room-bed" hidden>♪ room sound</span><div class="room-mic" id="room-mic" data-mic="off"><span class="room-mic-dot" aria-hidden="true"></span><span id="room-mic-text">Microphone off</span></div>
+                <div class="room-person" data-seat="b"><span class="room-name"><span id="room-b-name"></span><span class="room-pronouns" id="room-b-pronouns"></span></span><span class="room-tag" id="room-b-tag" data-kind=""><span class="room-tag-dot" aria-hidden="true"></span><span id="room-b-tag-text"></span></span></div>
+              </div>
+              <div class="room-caption" id="room-caption" data-kind="speech"><p><strong id="room-caption-label"></strong><span id="room-caption-text"></span></p></div>
+              <div class="room-quiet" id="room-quiet" data-window="4500" hidden><span class="room-quiet-track"><span class="room-quiet-bar" id="room-quiet-bar"></span></span><span class="room-quiet-label" id="room-quiet-label"></span></div>
+              <div class="room-foot">
+                <p class="room-note" id="room-note" hidden><span class="room-note-label">Authored note ·</span> <span id="room-observation"></span></p>
+                <details class="room-legend"><summary>What’s in the view</summary><p>A window, a low table, chairs, a plant and the door are illustrative setting only — not case facts. Figures show seating and who is speaking; they do not show expression or body language. Read the people from what they say.</p></details>
+              </div>
+            </div>
+          </section>
+          <!-- Coach · a private aside for the learner, not a fourth person in the room. It never speaks,
+               never grades, never sends, and costs no question or API credit. Every sentence is either
+               case text quoted verbatim from station-content.js or UI copy; the two generic scaffolds are
+               new teaching content and carry the draft pill until they are attested. -->
+          <section class="coach" id="coach-panel" aria-labelledby="coach-title" hidden>
+            <div class="coach-head">
+              <span class="coach-mark" aria-hidden="true"></span>
+              <div class="coach-headings">
+                <h3 id="coach-title">Coach · private aside</h3>
+                <p class="coach-contract">A private aside. It is not in the room, it sends nothing, and it costs no question.</p>
+              </div>
+            </div>
+            <p class="review-note coach-draft" id="coach-draft-note">Draft coach copy · faculty review</p>
+            <p class="coach-prompt">Stuck is normal. Pick one.</p>
+            <div class="coach-options" id="coach-options" role="group" aria-labelledby="coach-title">
+              <button type="button" class="coach-option" id="coach-option-reflect" data-coach="reflect" aria-pressed="false" aria-controls="coach-note">
+                <span class="coach-option-title" id="coach-option-reflect-title"></span><span class="coach-option-reason" id="coach-option-reflect-reason"></span></button>
+              <button type="button" class="coach-option" id="coach-option-task" data-coach="task" aria-pressed="false" aria-controls="coach-note">
+                <span class="coach-option-title" id="coach-option-task-title"></span><span class="coach-option-reason" id="coach-option-task-reason"></span></button>
+              <button type="button" class="coach-option" id="coach-option-priorities" data-coach="priorities" aria-pressed="false" aria-controls="coach-note">
+                <span class="coach-option-title" id="coach-option-priorities-title"></span><span class="coach-option-reason" id="coach-option-priorities-reason"></span></button>
+            </div>
+            <div class="coach-note" id="coach-note" aria-live="polite" hidden>
+              <blockquote class="coach-quote" id="coach-quote" hidden><p id="coach-quote-text"></p><cite id="coach-quote-cite"></cite></blockquote>
+              <p class="coach-lead" id="coach-lead" hidden></p>
+              <ul class="coach-items" id="coach-items" hidden></ul>
+              <p class="coach-scaffold" id="coach-scaffold" hidden></p>
+            </div>
+            <div class="coach-foot">
+              <button type="button" class="primary" id="coach-resume">Close · resume microphone</button>
+              <button type="button" id="coach-type">Close · type instead</button>
+            </div>
+            <p class="fine coach-fine">Uses no question and no API credit. Everything here comes from the case brief you already have.</p>
+          </section>
+          <section class="conversation" id="conversation-panel" hidden aria-labelledby="conversation-title"><h3 class="visually-hidden" id="conversation-title">Conversation</h3><div id="transcript" role="log" aria-live="off" aria-label="Conversation transcript" tabindex="0"></div><button class="latest-button" id="latest-message" type="button" hidden>Latest message</button></section>
+          <div class="controls">
+            <div class="status-row"><span class="status-dot" aria-hidden="true"></span><strong id="status" role="status" aria-live="polite">Ready</strong></div><p id="hint">Take your time.</p>
+            <fieldset class="family-speaker-controls" id="family-speaker-controls" hidden><legend>Shared family conversation</legend><div class="family-speaker-row"><label for="family-speaker-choice">Next reply from</label><select id="family-speaker-choice" aria-describedby="family-speaker-help"><option value="morgan">Morgan · parent · they/them</option><option value="maya">Maya · adult daughter · she/her</option></select></div><p class="fine" id="family-speaker-help">Begin your question with “Morgan” or “Maya” to change who answers, or choose here. One person answers each turn. Everyone stays in the shared meeting.</p></fieldset>
+            <div id="family-bid-offer" class="family-bid-offer" hidden><p id="family-bid-name"></p><p class="fine">Say “go ahead” to invite them, address either person by name, or continue with your current speaker.</p><button type="button" id="family-bid-invite">Invite their next reply</button><button type="button" id="family-bid-defer">Stay with this speaker</button></div>
+            <details id="faculty-room-controls" class="faculty-options" hidden><summary>Faculty · introduce a room interruption</summary><p class="fine">One brief cue per encounter. This pauses the patient and microphone. The same cue is shown in text, and you decide how to continue.</p><button type="button" id="cue-knock">Knock at the door</button><button type="button" id="cue-chime">Hallway chime</button><button type="button" id="cue-tap">Tap at the door</button><button type="button" id="cue-page">Overhead page</button></details>
+            <p id="room-cue-notice" class="room-cue-notice" role="status" hidden></p>
+            <p id="closing-note" class="closing-note" role="status" hidden></p>
+            <div class="draft" id="spoken-draft" hidden><span class="section-label">Your words</span><p id="draft-text"></p><p id="interim-text" class="interim"></p></div>
+            <div class="actions"><button id="done" class="primary" hidden>Done speaking <kbd>Space</kbd></button><button id="pause" hidden>Pause microphone</button><button id="resume" class="primary" hidden>Resume microphone</button><button id="interrupt" hidden><span id="interrupt-label">Interrupt</span> <kbd>Esc</kbd></button><button id="coach-open" class="coach-button" aria-pressed="false" aria-controls="coach-panel" hidden>I’m stuck</button><button id="end" class="quiet">End encounter</button></div>
+            <div id="practice-room" hidden></div>
+            <details class="speaking-options"><summary>Speaking pace &amp; shortcuts</summary><div class="options"><label class="check" id="room-sound-option"><input id="room-sound" type="checkbox" aria-describedby="room-sound-help"> Room sound · headphones</label><p class="fine" id="room-sound-help">A quiet background hum, generated in your browser. It is never recorded, never sent, and off unless you turn it on.</p><label class="check" id="spoken-interrupt-option"><input id="spoken-interrupt" type="checkbox" aria-describedby="spoken-interrupt-room-help"> Interrupt by speaking · headphones</label><label class="check"><input id="thinking-time" type="checkbox"> Give me more thinking time</label><label class="check"><input id="hold-turn" type="checkbox"> Hold my turn</label></div><p class="fine" id="spoken-interrupt-room-help">With spoken interruption on, the microphone listens during patient replies. Recognition may take a moment. Use Interrupt or Escape if your words are missed.</p><p class="fine">Your question sends itself 4.5 seconds after your last words, or 8 seconds with more thinking time. Hold keeps your turn open until you choose Done speaking. Space sends sooner outside a button or text field; Escape interrupts the reply.</p></details>
+            <details id="typing-panel" class="typing-panel"><summary>Type instead</summary><form id="composer-form" class="composer"><label for="composer">Your next question</label><textarea id="composer" rows="2" maxlength="1200" placeholder="Use your own words…"></textarea><div class="composer-bottom"><span class="fine">Typing is an equal way to practice.</span><button id="send" type="submit">Send question</button></div></form></details>
+          </div>
+        </section>
+        <section class="panel closing" id="closing-panel" hidden><h2>Take a moment to reflect.</h2><p id="closing-prompt">What did the patient want you to understand? What remains uncertain and should be discussed with your supervisor?</p><p class="fine">Use your marked moments and attending presentation to prepare for supervision. A convincing conversation is not evidence of clinical readiness.</p></section>
+        <div class="restart-row"><button id="clear" class="quiet" hidden>Clear and begin again</button><p class="fine" id="clear-note" hidden>This removes this page’s conversation, notes, and passcode. A new encounter starts from the patient’s opening.</p></div>
+      </div>
+      <aside id="station-root" aria-label="Case brief and reflection"></aside>
+    </div>
+    <details class="disclosure"><summary>About the voice and your information</summary><p id="voice-note">The voice is AI-generated. Recognized words and conversation context are sent to OpenAI to generate replies and speech. Your browser may send microphone audio to its speech-recognition service, including during patient replies when spoken interruption is on. Use fictional information only; never enter real-patient information.</p><p class="fine">This page keeps the passcode and conversation only in memory. It does not save learner audio, write browser storage, or offer transcript export. Clearing or leaving removes the page’s copy. Provider processing and retention follow the configured provider’s policies. The preview uses API credits. Practice a moment offers a private reflection that stays on this page. The separate optional Team formulation is sent only when you choose Review this moment; the existing attending presentation remains private.</p></details>
+  </div>
+  <footer><span>Fictional patient practice for supervised learning</span><a href="https://une-ms3-psychiatry.netlify.app/?tool=sp-interview.html">Return to the clerkship library</a></footer>
+</main>
+</body>
+</html>

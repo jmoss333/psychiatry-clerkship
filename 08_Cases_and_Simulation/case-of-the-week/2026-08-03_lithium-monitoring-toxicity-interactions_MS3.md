@@ -47,7 +47,7 @@ This patient took three hits at once:
 | **ACE inhibitor** (lisinopril) | Blunts angiotensin II–mediated efferent arteriolar tone → falling GFR when volume-depleted |
 | **Vomiting and diarrhea in the heat** | Direct volume and sodium loss |
 
-Her **hyponatremia (Na 132) is not incidental** — a sodium-avid kidney is a lithium-avid kidney. Her **creatinine of 1.7 from a baseline of 0.9** confirms she is prerenal. Her lithium level rose because her clearance fell.
+Her **hyponatremia (Na 132) is not incidental** — a sodium-avid kidney is a lithium-avid kidney. Her **creatinine of 1.7 from a baseline of 0.9** establishes acute kidney injury, and the clinical picture — vomiting, poor intake, a thiazide, hyponatremia — makes a **prerenal** mechanism much the most likely one. Say it that way round: the creatinine tells you the kidney is injured, not *why*. Volume responsiveness is what would confirm the mechanism, and lithium itself can cause intrinsic renal disease, so keep the alternatives open until she responds to fluids. Her lithium level rose because her clearance fell.
 
 **The classic interaction triad to memorize: NSAIDs, ACE inhibitors/ARBs, and thiazide diuretics.** (Loop diuretics are less consistently implicated than thiazides.) All three are drugs that a non-psychiatric prescriber may add without thinking about the mood stabilizer [1,2].
 
@@ -120,7 +120,7 @@ The **EXTRIP workgroup** (Extracorporeal Treatments in Poisoning) published syst
 
 Note the structure of those criteria: **impaired kidney function and clinical severity can override the number in both directions.** Our patient has AKI, a level of 2.6, and depressed consciousness — that last item alone puts her in the "recommended" category regardless of the level.
 
-**One more thing to expect:** after dialysis, lithium **redistributes out of tissue back into serum**, so the level can *rebound*. Recheck the level several hours after the session ends. A single post-dialysis level is not reassurance.
+**One more thing to expect:** after dialysis, lithium **redistributes out of tissue back into serum**, so the level can *rebound*. EXTRIP's recommendation is not a single recheck at a set hour — it is that "after interruption of ECTR, serial [Li+] measurements should be obtained over 12 h to determine use of subsequent ECTR sessions" [7]. Measure serially across that window alongside clinical reassessment, and let nephrology and toxicology guide whether another session is needed. A single post-dialysis level is not reassurance, whenever you draw it.
 
 **Q7. She recovers. Should she ever take lithium again — and what should have been in place to prevent this?**
 
@@ -166,7 +166,7 @@ And on the clinician side: **whoever adds the thiazide should check a lithium le
 
 **Escalation:**
 7. **Hemodialysis** per EXTRIP criteria — severe poisoning; impaired kidney function with level > 4.0; or depressed consciousness, seizures, or life-threatening dysrhythmias at any level [7].
-8. **Recheck the level 6–12 hours after dialysis** to catch rebound.
+8. **Serial lithium levels over the 12 hours after stopping dialysis**, with clinical reassessment, to detect rebound and decide about further sessions — nephrology and toxicology guided [7].
 
 **Diagnostic completeness:**
 9. **TSH, free T4, calcium, PTH** — lithium affects thyroid and parathyroid [1].
@@ -192,7 +192,7 @@ And on the clinician side: **whoever adds the thiazide should check a lithium le
   3. Reaching for activated charcoal on reflex — it does not bind lithium [5].
   4. Confusing lithium-induced **nephrogenic** DI with central DI, or with lithium nephropathy (a separate, slower problem).
   5. Missing NMS because "the lithium level explains it." Always check tone, temperature, and CK.
-  6. Forgetting to recheck the level after dialysis and missing the rebound.
+  6. Treating one post-dialysis level as the endpoint — or skipping post-treatment monitoring altogether — and missing the rebound.
   7. Concluding "she should never take lithium again" — losing sight of its unique mortality and suicide-prevention data [8].
 - **If the group moves fast**, push on: *what changes if she is 30 and planning a pregnancy?* (First-trimester lithium exposure is associated with an increased risk of cardiac malformations, and the association is **dose-dependent**; the magnitude was smaller than historically postulated. This is a shared-decision conversation weighing teratogenic risk against relapse risk — not an automatic discontinuation [12].) Or: *what if the level were 1.4 but she were still ataxic and confused?* (Still toxic. Still an emergency. Treat the patient.)
 - **Safety note:** if a learner raises intentional overdose, keep the discussion oriented to **recognition, escalation, and safety planning** — screening for suicidality, involving the supervising resident or attending immediately, and safe storage/supply counseling as a general principle. Do not discuss substances, amounts, or routes. It is worth naming for the group that lithium's antisuicide signal [8] is one reason the drug is not simply abandoned in patients at risk — but that risk assessment and safety planning are clinical tasks for the supervising physician, not a checklist item.

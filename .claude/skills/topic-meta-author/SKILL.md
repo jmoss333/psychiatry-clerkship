@@ -118,7 +118,8 @@ Each of these must resolve, or the validator fails. Look the id up first:
   and `case=` (above).
 - **linkedPages** (in the case banks) → an existing topic key in `topic_meta.json` — validator-enforced.
   A `?page=<key>` href in a topic's own `cta` is *not* validator-checked, but must still name a real
-  topic key or the SPA 404s.
+  topic key or the SPA 404s. <!-- stale-claims: ignore --> (Our own SPA's behaviour, enforced
+  by our own build — not a claim about an outside system that can decay unnoticed.)
 
 If the desired target does not exist, flag it as out-of-scope follow-up work — do not stub it and do
 not invent a plausible id.

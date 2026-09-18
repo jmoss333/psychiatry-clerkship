@@ -89,6 +89,15 @@ test('IMPORTANT 5 — a trailing cross-link rail is never swallowed by the last 
     'the trailing rail is the page\'s reachability surface -- it must render on first paint');
 });
 
+test('orientation and note templates are readable immediately, before any disclosure clicks', () => {
+  const orientation = render(pages.find((p) => p.slug === 'orientation.md'));
+  const notes = render(pages.find((p) => p.slug === 'doc_oral.md'));
+  assert.match(orientation.visible, /Know where rounds happen/);
+  assert.match(notes.visible, /Focus on changes and clinically relevant findings/);
+  assert.ok(orientation.sections.length > 0, 'readers retain optional disclosure controls');
+  assert.ok(notes.sections.length > 0);
+});
+
 test('IMPORTANT 3 — a print rule un-hides collapsed section bodies', () => {
   const printBlocks = [...shellCss.matchAll(/@media\s+print\s*\{([\s\S]*?)\n\s*\}\n/g)].map((m) => m[1]);
   assert.ok(printBlocks.length > 0, 'spa_index.html has no @media print block at all');

@@ -138,6 +138,17 @@ function handlerWith(mock, envOverrides = {}) {
   });
 }
 
+function ensurePrRequest() {
+  const headers = new Headers({ 'Content-Type': 'application/json' });
+  headers.set('x-faculty-key', FACULTY_KEY);
+  headers.set('Origin', API_ORIGIN);
+  return new Request(API_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ action: 'branch.ensure-pr' }),
+  });
+}
+
 function attestRequest() {
   const headers = new Headers({ 'Content-Type': 'application/json' });
   headers.set('x-faculty-key', FACULTY_KEY);
@@ -370,12 +381,94 @@ test('GET below the lag threshold with a rolling PR open does not alarm', async 
   assert.deepEqual(payload.branchSync.reasons, []);
 });
 
-test('GET on a merely-behind branch does not alarm and does not fast-forward', async () => {
+/* ------------------------------------------------------------------------- *
+ * GET freshens when it safely can (2026-09-07). Until this change only POST
+ * called ensureBranchFresh, so a branch that was merely behind stayed behind
+ * until somebody attested — and on 2026-09-04 nobody could, because the file
+ * the queue is derived from existed only on the base. A behind-only branch is
+ * exactly the case fast-forwarding cannot lose anything in, so the read path
+ * takes it too; an AHEAD branch is still left alone.
+ * ------------------------------------------------------------------------- */
+
+test('GET fast-forwards a behind-only branch before reading it', async () => {
   const mock = makeStateMock({ ahead: 0, behind: 9 });
+  const response = await handlerWith(mock)(stateRequest());
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.branchSync.alarmed, false, 'freshening is not an alarm');
+  assert.equal(payload.branchFresh.action, 'fast-forwarded');
+
+  const patched = called(mock.calls, 'PATCH', `/git/refs/heads/${ATTEST}`);
+  assert.equal(patched.length, 1, 'a behind-only branch carries nothing to lose');
+  assert.deepEqual(patched[0].body, { sha: BASE_HEAD, force: false });
+
+  const patchIndex = mock.calls.findIndex((c) => c.method === 'PATCH');
+  const readIndex = mock.calls.findIndex((c) => c.method === 'GET' && c.url.includes('/contents/'));
+  assert.ok(patchIndex < readIndex, 'freshen before reading the queue, not after');
+});
+
+test('GET leaves a branch holding unmerged attestations alone', async () => {
+  const mock = makeStateMock({ ahead: 2, behind: 9, openPull: { html_url: 'https://github.example/pull/9' } });
   const payload = await (await handlerWith(mock)(stateRequest())).json();
-  assert.equal(payload.branchSync.alarmed, false);
-  assert.equal(payload.branchSync.behindBy, 9);
-  assert.deepEqual(mutations(mock.calls), [], 'the write path fast-forwards; the probe never does');
+  assert.equal(payload.branchFresh.action, 'pending');
+  assert.equal(called(mock.calls, 'PATCH', '/git/refs/heads/').length, 0,
+    'fast-forwarding an ahead branch would discard signed-off attestations');
+});
+
+test('a failed freshen on GET is advisory and still serves the queue', async () => {
+  const mock = makeStateMock({ ahead: 0, behind: 9 });
+  const base = mock.fetchImpl;
+  const failing = {
+    calls: mock.calls,
+    fetchImpl: async (input, init = {}) => {
+      const method = (init.method || 'GET').toUpperCase();
+      if (method === 'PATCH' && String(input).includes(`/git/refs/heads/${ATTEST}`)) {
+        mock.calls.push({ url: String(input), method, body: null });
+        return jsonResponse(500, { message: 'ref update unavailable' });
+      }
+      return base(input, init);
+    },
+  };
+  const response = await handlerWith(failing)(stateRequest());
+  assert.equal(response.status, 200, 'a freshen is an improvement to the read, not a gate on it');
+  const payload = await response.json();
+  assert.ok(Array.isArray(payload.items) && payload.items.length, 'the queue still loads');
+  assert.deepEqual(payload.branchFresh, { action: 'error' });
+});
+
+test('GET flags attestations stranded with no open review request', async () => {
+  // The 2026-09-04 state: five attestations on the branch, no rolling PR, and
+  // nothing in the payload that said so until the console could load at all.
+  const mock = makeStateMock({ ahead: 5, behind: 0 });
+  const payload = await (await handlerWith(mock)(stateRequest())).json();
+  assert.equal(payload.branchSync.aheadBy, 5);
+  assert.equal(payload.branchSync.rollingPr, null);
+  assert.equal(payload.branchSync.rollingPrChecked, true,
+    '"looked, found none" must be distinguishable from "never looked"');
+  assert.equal(payload.branchSync.branch, ATTEST);
+  assert.equal(payload.branchSync.baseBranch, BASE);
+  assert.deepEqual(payload.branchSync.reasons, ['stranded-no-pr']);
+  assert.equal(called(mock.calls, 'GET', '/pulls').length, 1, 'one list call for the probe');
+  assert.equal(called(mock.calls, 'POST', '/pulls').length, 0, 'a GET never opens one');
+});
+
+test('branch.ensure-pr opens the rolling review request on demand', async () => {
+  const mock = makeMock({ ahead: 4, behind: 0 });
+  const response = await handlerWith(mock)(ensurePrRequest());
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.ok, true);
+  assert.equal(payload.pullRequest, 'https://github.example/pull/1');
+  assert.equal(called(mock.calls, 'POST', '/pulls').length, 1);
+  assert.equal(called(mock.calls, 'PATCH', '/git/refs/heads/').length, 0, 'no ref is moved');
+  assert.equal(called(mock.calls, 'PUT', '/contents/').length, 0, 'no file is written');
+});
+
+test('branch.ensure-pr reuses an open review request rather than opening a second', async () => {
+  const mock = makeMock({ ahead: 4, openPull: { html_url: 'https://github.example/pull/7' } });
+  const payload = await (await handlerWith(mock)(ensurePrRequest())).json();
+  assert.equal(payload.pullRequest, 'https://github.example/pull/7');
+  assert.equal(called(mock.calls, 'POST', '/pulls').length, 0);
 });
 
 test('ATTEST_BASE_LAG_ALARM overrides the lag threshold', async () => {
@@ -399,7 +492,7 @@ test('a failed probe degrades to an error marker without failing the load', asyn
 /* The UI half: a pure notice model the shell renders as a load-time banner.
  * Pinned here beside the probe so the wire format and its presentation cannot
  * drift apart. */
-import { branchSyncNotice } from '../faculty-console/app.mjs';
+import { branchSyncNotice, shippedPagesNotice } from '../faculty-console/app.mjs';
 
 test('no notice when the probe is absent, healthy, or non-isolated', () => {
   assert.equal(branchSyncNotice(undefined), null);
@@ -418,18 +511,45 @@ test('a failed probe yields a quiet staleness caveat, not an alarm', () => {
   assert.equal(notice.href, null);
 });
 
-test('the stranded-no-pr alarm says the attestations have no route to main', () => {
+test('the stranded-no-pr alarm names the branch and offers the repair', () => {
   const notice = branchSyncNotice({
-    isolated: true, aheadBy: 3, behindBy: 9, rollingPr: null,
+    isolated: true, aheadBy: 3, behindBy: 9, rollingPr: null, rollingPrChecked: true,
     threshold: 3, reasons: ['stranded-no-pr', 'base-lag'], alarmed: true,
+    branch: ATTEST, baseBranch: BASE,
   });
   assert.equal(notice.tone, 'alert');
-  assert.match(notice.message, /3 unmerged attestations/);
-  assert.match(notice.message, /no rolling pull request is open/i);
+  assert.match(notice.message, /3 attestations are on `attest\/pending`/);
+  assert.match(notice.message, /no open review request/i);
+  assert.match(notice.message, /press Reopen review request/);
   assert.match(notice.message, /9 commits behind main/);
   assert.match(notice.message, /queue below may be stale/i);
   assert.match(notice.message, /merge commit, not squash/i);
   assert.equal(notice.href, null);
+  assert.equal(notice.action, 'ensure-pr', 'the alarm carries its own repair');
+});
+
+test('one stranded attestation reads in the singular and still offers the repair', () => {
+  const notice = branchSyncNotice({
+    isolated: true, aheadBy: 1, behindBy: 0, rollingPr: null, rollingPrChecked: true,
+    threshold: 3, reasons: ['stranded-no-pr'], alarmed: true,
+    branch: ATTEST, baseBranch: BASE,
+  });
+  assert.match(notice.message, /1 attestation is on `attest\/pending`/);
+  assert.equal(notice.action, 'ensure-pr');
+});
+
+test('the derived-listing fallback is a one-line notice, not an alarm', () => {
+  assert.equal(shippedPagesNotice(null), null);
+  assert.equal(shippedPagesNotice({ shippedPagesSource: 'branch' }), null,
+    'the ordinary case says nothing');
+  const notice = shippedPagesNotice({
+    shippedPagesSource: 'base',
+    shippedPagesBranch: BASE,
+  });
+  assert.equal(notice.tone, 'muted');
+  assert.match(notice.message, /Review queue derived from `main`/);
+  assert.match(notice.message, /missing shipped_pages\.json/);
+  assert.match(notice.message, /merge the rolling review request/i);
 });
 
 test('the base-lag alarm links the rolling pull request, https only', () => {

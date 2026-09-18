@@ -30,6 +30,13 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
   not the code (2026-08-30 outage) — see `site_build/NETLIFY_LFS_RUNBOOK.md` "Incident pattern 2".
   `site_build/lfs_pull_cached.sh` pulls media inside the build from Netlify's persistent cache so
   a merge costs ~0 MB; it only takes effect once `GIT_LFS_ENABLED` is removed from the site's UI.
+- **`CLERKSHIP_ANALYTICS=off|ms3|res|both`** gates the usage-analytics emitter (`common.py`'s
+  `analytics_enabled_for()`), **default `off`**. Per the rollout in
+  `docs/superpowers/specs/2026-09-04-usage-analytics-design.md`, enabling it is the repo owner's
+  call, not a build default — set it in the Netlify UI per site when the owner decides to enable a
+  site (`res` first, then `both`), never as a repo-wide default. Off ships neither `analytics.js`
+  nor any `CW_SITE`/`CW_PAGE` tag; `check-static-site.mjs` §12 treats that as a clean, gated build,
+  not a failure.
 
 ## Validate & test
 ```bash
@@ -58,8 +65,18 @@ cd tests/smoke && npm ci && npx playwright test
 - `bin/verify.sh` is a **superset** of `ci.yml`, not a mirror: `bin/check-verify-coverage.py`
   enforces that every CI step has a local equivalent (or a recorded `ALLOWED` exemption), but
   verify.sh may run more. `bin/verify_spans.py` and `bin/check_qbank_coherence.py` run there and
-  not in CI — and both **exit 0 even when they flag rows**, so they surface findings at push time
-  without blocking. Read their output; a PASS line is not "nothing found".
+  not in CI, and both are **ratchet gates** (`docs/RATCHETS.md`): the finding counts each one
+  reports (flagged rows, TRUNCATED and EDITED sentences, uncached rows; contradicting pairs)
+  are pinned in a committed `bin/*_baseline.json` beside the tool, a rise exits 1, a fall
+  prints a note, and "could not check" (no baseline, a baseline missing a key, nothing
+  audited) exits 2
+  — never 0. Since verify.sh's `step` treats any non-zero as FAIL and verify.sh is the pre-push
+  hook, either one **blocks a push**. Until 2026-09-16 the span audit gated REWORDED sentences
+  only, so the pott-2022 defect it was built for (a clause deleted MID-sentence classifies as
+  EDITED) exited 0, and a wrong cache path printed "0 clean, 0 flagged, 49 uncached" and passed;
+  both are red now (`sentences_edited` and `rows_uncached` are pinned). Read the flagged rows the
+  tool prints — a PASS line means "at or below baseline", not "nothing found". Lower a pin only
+  after a reviewed reduction: `python3 bin/<tool>.py --update-baseline`, JSON diff in the same PR.
 - **A local gate failing while CI is green usually means bash 3.2**, not your change: the Mac's
   `/bin/bash` is 3.2.57 and CI's is >= 4.4. Under `set -u`, bash < 4.4 treats `"${ARR[@]}"` on an
   empty array as unbound and aborts with an empty message (PR #469). Write
@@ -73,12 +90,13 @@ cd tests/smoke && npm ci && npx playwright test
   `build_and_check.sh` (build + gate), `check-static-site.mjs` (static QA), `site_manifest.json` (source→slug map).
 - `site_manifest.json` is the registry of **hand-registered** shipped pages (tools + content md). A
   new page must be registered here **and** in nav inside `build_deploy.py`, or the QA gate's
-  orphaned-source check hard-fails the build. **It is not the only source of what ships**: Case-of-
-  the-Week pages are appended at build time from
-  `08_Cases_and_Simulation/case-of-the-week/cotw_registry.json` (`_cotw_slug()` in `build_deploy.py`
-  and `resident_section.py`). Anything that needs "the set of shipped pages" must use
-  `faculty-console/content-universe.mjs` (JS) or `validate_attestation_consistency.py`'s
-  `cotw_built_slugs()` (Python) — never the manifest alone. See the gotcha below.
+  orphaned-source check hard-fails the build. **It is not the only source of what ships** — it is
+  one of five producers; Case-of-the-Week pages, for instance, are appended at build time from
+  `08_Cases_and_Simulation/case-of-the-week/cotw_registry.json` (`cotw_slug()` in
+  `site_build/cotw_slug.py`). Anything that needs "the set of shipped pages" must read the one
+  derived listing, `site_build/shipped_pages.json` — `load_shipped_pages()` in `shipped_pages.py`
+  (Python) or `deriveContentUniverse()` in `faculty-console/content-universe.mjs` (JS) — never the
+  manifest alone. See the gotcha below.
 - `NN_Category/` (00–14, 99) — curriculum **content source**, not build output. `14_Tracks/<audience>/`
   are link-only overlays; content never forks (see README).
 - Root data + schemas: `question_bank.json`, `topic_meta.json`, `communication_cases.json`, etc. —
@@ -95,6 +113,14 @@ cd tests/smoke && npm ci && npx playwright test
   content. The inference does not carry to a preview — `check_lfs_media.py`'s `is_soft_context()`
   is true on `deploy-preview`, so a preview reaches `ready` with pointer stubs in it. Run it from a
   machine with real egress when you need the content half.
+- `.mcp.json` — the project MCP servers a Claude Code / Codex session picks up in this repo.
+  Today that is **GitHub** (remote HTTP), which is what gives a session `mcp__github__*` — reading
+  and opening PRs, reading CI, posting review replies. It reads
+  `${GITHUB_PERSONAL_ACCESS_TOKEN}` from the environment and **no token is stored in the repo**;
+  without that variable the server simply fails to connect and everything else still works.
+  Nothing in the build, CI, or the nightly runner depends on it: the queue runner deliberately
+  uses `secrets.GITHUB_TOKEN` inside Actions instead, because a scheduled session's MCP list is
+  not something the repository controls — that is precisely how the first runner failed.
 - `.claude/settings.json` + `.claude/hooks/` — session hooks that enforce the rules below at edit
   time: crisis contacts, dose literals, localStorage namespaces, machine paths (deny); PHI and
   instrument item text (ask); LFS phantoms on `git add` (deny); registry validators, workflow
@@ -110,6 +136,64 @@ cd tests/smoke && npm ci && npx playwright test
   (two question-bank items that teach different steps for the same scenario),
   `check_instrument_links.py` (dev-only; the recorded instrument routes still resolve —
   deliberately not in CI, external links are flaky and the build egress blocks those hosts).
+- **Egress is an allowlist, and which side of it a host falls on decides which tasks are possible
+  today.** `bin/probe_egress.py` reports that in the repo's own terms — not "itunes.apple.com is
+  unreachable" but "the podcast canonical backfill cannot run here". The SessionStart hook prints
+  a capped summary; run it directly for the full table, `--json` for a machine-readable one.
+  Report-only, exits 0 always, deliberately not in CI and not in `verify.sh` (a report that fails
+  a push is a report nobody keeps). Two traps it exists to prevent: a refused CONNECT tunnel and
+  a host's own 403 are **not** the same thing — one means you cannot get there, the other that you
+  need a credential — and reachability is a fact about the environment, never a content finding.
+  Results cache outside the repo for 6h and invalidate when the proxy changes;
+  `CLERKSHIP_SKIP_EGRESS_PROBE=1` turns it off.
+- **The queue that cannot rot.** `bin/what_can_i_do_today.py` joins the egress probe's capability
+  map to a per-task measurement of how much work is left, and ranks what is actually possible
+  *here, now*: ready / needs-a-key / blocked. Two rules make it trustworthy and both are pinned by
+  `tests/what-can-i-do-today.test.mjs`: a task whose count reaches zero **retires itself** (nobody
+  prunes a checklist), and a measurement that **fails reports `unknown`, never zero** — zero means
+  done and would silently retire real work. A metric nobody can drive to zero does not belong in
+  it: "topics with no book" and "unattributed claims" were both dropped for that, one a category
+  mismatch, the other gameable by renaming a heading. **The mirror failure is worse**: a task
+  whose predicate a DIFFERENT task's output can satisfy retires work that never happened —
+  "isbn-verify" (confirm each edition against a catalogue) was measured by whether the line
+  carried an ISBN-13, so the moment `isbn-derive` wrote them it reported 0 of 51 and retired,
+  having queried nothing. A never-retiring task wastes runs; a falsely-retiring one loses the
+  work silently. Confirmation needs its own persisted marker, so until something records one the
+  task is not listed. Report-only, exits 0, not a gate.
+- `docs/SILENT_SHRINK_CHECKLIST.md` — the failure mode every `bin/` tool exists for, as a
+  checklist: **a check reporting success over a set smaller than the one it claims to check.**
+  Thirteen entries, each earned by a defect that actually shipped here (#480, #517, #534, #539,
+  #545, #548, #645, the 2026-08-21 annotation pass) and none of them caught by a schema or a
+  type, because each item was individually valid and the corpus was jointly wrong. §D4 is the
+  shape inverted — **no check at all rendering as coverage**: CI's unit is a pull-request head
+  or a push tip, never every commit, so `61beb3b` (pushed to `main`, not the tip of its push)
+  carries 0 check runs, turned `main` red, and read as the *next* commit's fault. Run it when you
+  write or review a guard, and use §F to answer it by BREAKING the check rather than by
+  reasoning about it — including the step people skip, reverting the fix to prove the fix is
+  what made the difference. Only §D2 is mechanised (`bin/check_vacuity.py`); the rest is
+  judgment, which is why it is written down.
+- **A nightly runner acts on that queue — as a workflow, not as a session.**
+  `.github/workflows/maintenance-queue-runner.yml` (04:40 UTC daily, plus `workflow_dispatch`)
+  runs `bin/run_queue_task.py`: one task from `--next-autonomous` or nothing, that task's own
+  `run`, that task's own `verify`, then a **draft** PR. It never merges, never marks ready, and
+  never edits `reviewed.json`. **It was a scheduled Claude session and that could not work**: the
+  fired Routine had `sources: []`, so the repository was never cloned — the first firing reported
+  SUCCEEDED and produced nothing, and even the runbook's degraded "push the branch anyway" path
+  was unreachable. Autonomy is derived, not declared (`is_autonomous()` = a deterministic `run`
+  **and** a `verify` that can fail), which is exactly why no model is needed to execute it;
+  curation and attestation are excluded by construction rather than by a reviewer remembering.
+  Four guards, each with its own exit code and each pinned by `tests/run-queue-task.test.mjs`:
+  the run must change a file (3), the task's own count must **move** (4 — a task measured by a
+  number the work cannot move reopens the same empty PR every night; it happened), no changed
+  path may be the attestation ledger, a clinical registry or LFS media (5), and an edit to an
+  attested page must be announced in the PR body. It also writes an **`outcome`** output on
+  every exit path (`did-work` · `nothing-to-do` · `blocked` · `dry-run` · `no-commit`) —
+  **three of the five are exit 0**, so a green run does not mean it did anything; the exit code
+  says which guard refused, the outcome says what the night accomplished — the ledger stays byte-identical, and
+  `post_edit_validate.py` catches that only for Edit/Write/MultiEdit while these scripts write
+  through Bash. Read `_automation/AUTONOMOUS_QUEUE_RUNNER.md` before changing any of it; the
+  workflow is enrolled in `validate_scheduled_workflows.py`, so editing it means recomputing its
+  contract digest.
 - `docs/curriculum-review/findings/` — the review→remediation loop. `export_curriculum_review.py`
   produces the transcripts, a review pass writes `findings.json` (id · verbatim `quote` ·
   ready-to-paste `replacement` · `verification`), and remediation lands as small per-work-package
@@ -126,6 +210,14 @@ cd tests/smoke && npm ci && npx playwright test
 ## Conventions & gotchas
 - **localStorage keys must be namespaced `cw_*` (shared hub) or `rp_*` (resident).** The QA gate
   hard-fails any other prefix. Item-id collisions silently corrupt attestation (`cw_qbank_attest_v1`) and SRS state.
+- **Usage analytics store integers, never events.** `metrics/` is a separate Netlify site whose
+  one function accepts an allowlisted event key and increments a counter keyed by site + ISO week.
+  It stores no IP, user agent, session id, or timestamp finer than the week, and it does not log
+  requests. The allowlist is GENERATED from `shipped_pages.json` — regenerate with
+  `analytics_events.py --write` after adding a page or a tool step, or the freshness gate fails.
+  Cohorts here are 4-10 learners, so reported cells below n=5 are suppressed. Adding a metric is a
+  registry edit, never a free-text string: `check-static-site.mjs` hard-fails a computed or
+  unlisted `cwAnalytics.record()` argument.
 - **No hard-coded `/Users` or `/sessions` paths in tracked `.py`** — CI lints for this; derive from `__file__`.
 - Clinical tools are **single-file HTML** (Clinical Warm palette — build-injected from
   `13_Faculty_Resources/_automation/site_build/clinical-warm.css`). Dose literals
@@ -140,6 +232,23 @@ cd tests/smoke && npm ci && npx playwright test
   from the ReConnect crisis dataset and independently re-verified — refresh with
   `_automation/sync_crisis_from_reconnect.py --reconnect <path>` (dev-only, report-only; never
   runs on Netlify).
+  **Opting a surface in has two non-obvious consequences, each of which has cost a cycle.**
+  (1) **The Reader stops collapsing that page.** `makeCollapsible()` in `spa_index.html` returns
+  early on any body containing `.crisis-block-hook`, so the contacts can never be stranded inside
+  a `display:none` section body — in the DOM, absent from what a learner reads, unreachable by
+  in-page find or print. A markdown page therefore gains contacts and loses its `.sec-c` wrappers
+  in the same commit. `bin/verify.sh` cannot see it (the smoke suite is a separate CI job), and it
+  turned #562 red — `front-door.spec.js` pinned `pg_interview.md`'s collapsible table section.
+  Tools never reach `makeCollapsible`, so `<!-- crisis-block-html -->` is exempt.
+  (2) **It does NOT reopen attestation.** The block is build-injected from `crisis_resources.json`,
+  centrally governed and byte-identical across every surface, so it is not authored content on the
+  page it lands on. `cd1ae13` opted six surfaces in at once, author-approved, without touching
+  `reviewed.json`, and nearly every crisis surface still carries a `reviewed` row dated before its
+  block (27 of 32 on 2026-09-08). Move a ledger row to pending when you change **authored** clinical
+  content instead — which is what WP-5m did to `sp-interview.html` (new intent, new gated reveal,
+  rewritten feedback cards), and that contrast is the line. A review bot reads the badge and files
+  this as a P1 (#571): it is convention, not an oversight. Changing it is a policy call over the
+  whole set, and the author's to make.
 - **No PHI.** Clinical content is synthetic / de-identified only; never commit patient identifiers to
   git-tracked files, memory, or scratch outputs.
 - **Every claim the library makes about a paper needs that paper's own words.**
@@ -199,6 +308,28 @@ cd tests/smoke && npm ci && npx playwright test
   retire the contract silently. Note such assertions never run on Netlify or in CI: `node --test`
   runs before **both** `build_and_check.sh` invocations and `_build/` starts absent, so a
   build-output test is a local-only contract — do not rely on CI to catch what it pins.
+  The same rule binds the `bin/` checkers that read the built sites: `bin/_build_freshness.py`
+  is the Python twin of `tests/_build_freshness.mjs`, and each caller declares only its own
+  inputs. Both of its failure modes have shipped here. **Absent** made `check_design_drift.py`
+  iterate an empty list and print "design system clean" — a vacuous pass. **Stale** is worse and
+  cost two days: a `_build/` 13 days old produced 22 findings (10 C4, 12 C8) against pages the
+  source no longer emitted, every one fabricated, and a comparison against clean `main`
+  "confirmed" them because both sides read the same stale tree. A checker that reads `_build/`
+  must therefore report which sites it could not read and must NOT summarise as clean what it
+  never opened — `check_design_drift.py` prints `PARTIAL` and names the sites; guard on
+  freshness, not existence, and rebuild before believing any finding against a built page.
+  The sibling rule for a test that **spawns** a build (rather than reading `_build/`): guard it
+  with `lfsStubReason()` from `tests/_lfs_media.mjs` (JS) or `worktree_stub_reason()` in
+  `site_build/check_lfs_media.py` (Python). Without git-lfs installed there is no smudge filter,
+  so every LFS-tracked file checks out AS its ~133-byte pointer and `build_deploy.py` aborts in
+  `welcome_compass.require_real_files()` — "MS3 Compass required files are invalid: <an .mp4>",
+  a red no source edit can clear, which is what made three `ci-build-contract.test.mjs` cases and
+  one `evidence_registry` case fail in every sandbox. CI never saw it: `is_soft_context()` already
+  exempts the `lfs:false` checkout and deploy previews, so the guard returns null there and the
+  contracts still run. **The predicate is defined once**, next to the deploy gate that enforces it;
+  do not re-derive "is a pointer stub" in a new place. It returns null — meaning RUN — for every
+  answer except a confirmed stub in a hard context, including "cannot tell": a skip guard that
+  errs permissive retires real contracts while the suite still reads green.
 - **THE LIBRARY TEACHES ADMINISTRATION; IT DOES NOT REPRODUCE INSTRUMENTS.** Same standing as the
   dose-literal rule. Teach *how to give* an instrument — the elicitation, the confounds, what the
   score does and does not license, what a negative result fails to rule out — and link to the

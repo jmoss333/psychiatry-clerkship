@@ -1,0 +1,65 @@
+{
+  "id": "resume-after-played-prefix",
+  "title": "Continue after only a prefix was played",
+  "synthetic": true,
+  "tags": [
+    "interrupted_prefix",
+    "topic_follow_up"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    },
+    {
+      "who": "me",
+      "text": "Tell me about what brought you here."
+    },
+    {
+      "who": "pt",
+      "text": "Honestly... the last couple of months everything got heavy. Getting out of bed started feeling like a job. And then Tom heard me say some stuff I probably shouldn't have said out loud.",
+      "playbackStatus": "played"
+    },
+    {
+      "who": "me",
+      "text": "Have you had thoughts of killing yourself?"
+    },
+    {
+      "who": "pt",
+      "text": "...Most nights, when I'm awake at three, I think it would be simpler if I just didn't wake up.",
+      "playbackStatus": "played",
+      "omittedTail": true
+    }
+  ],
+  "currentLearnerUtterance": "Go on, take your time.",
+  "expectations": {
+    "should": [
+      "Continue from the actually played prefix without assuming the rest was heard.",
+      "Any further disclosure must stay within the already unlocked si_active facts."
+    ],
+    "mustNot": [
+      "Do not refer to the unheard remainder as something already told to the learner.",
+      "Do not disclose the still-locked plan, means, or protective detail banks."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "persona.presentingContext",
+    "responses.open_invite.open.0",
+    "gated.si_active.reveal"
+  ],
+  "relevantGates": [
+    "si_active",
+    "si_plan_detail",
+    "si_means_detail",
+    "si_protective_detail"
+  ],
+  "expectedUnlockedGates": [
+    "si_active"
+  ],
+  "deliveryContext": {
+    "kind": "interrupted_after_played_prefix",
+    "sourceFactId": "gated.si_active.reveal"
+  }
+}

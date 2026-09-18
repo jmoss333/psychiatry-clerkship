@@ -30,8 +30,11 @@ const config = fs.readFileSync(configPath, 'utf8');
 // the nav inventory matching what was deployed, and the governance/attestation surfaces actually
 // rendering to a learner. Client-side behaviour is byte-identical in the build CI already tests.
 const EXPECTED = {
-  'canary-ms3': ['nav-crawl.spec.js', 'governance-warnings.spec.js', 'qbank-retired.spec.js'],
-  'canary-res': ['nav-crawl.spec.js', 'governance-warnings.spec.js'],
+  'canary-ms3': [
+    'nav-crawl.spec.js', 'governance-warnings.spec.js', 'qbank-retired.spec.js',
+    'contrast.spec.js',
+  ],
+  'canary-res': ['nav-crawl.spec.js', 'governance-warnings.spec.js', 'contrast.spec.js'],
 };
 
 // A canary spec must be CHEAP, because every operation crosses the public internet to Netlify's
@@ -43,6 +46,11 @@ const EXPECTED = {
 //   in  : nav-crawl 4 · qbank-retired 5 · governance-warnings 8          (ceiling is ~4x the max)
 //   out : rotation-curator 35 · front-door 38 · communication-practice 50
 //         rotation-edition-v2 86 · frontdoor-runtime 220
+//
+// KNOWN LIMIT OF THIS METRIC, stated rather than worked around: it counts CALL SITES, so a spec
+// that loops under-reports. contrast.spec.js scores 2 and actually makes ~16 (4 routes x 2 themes,
+// one navigation and one evaluation each) — still inside the budget, and its header says so. If a
+// future canary spec loops harder, count what it RUNS, not what it reads.
 const ROUND_TRIP_BUDGET = 30;
 
 function readArray(name) {
@@ -147,7 +155,7 @@ test('no canary spec identifies its audience by an exact project name', () => {
   }
 });
 
-// The six projects whose names encode no audience. Each runs a single audience-agnostic spec,
+// The seven projects whose names encode no audience. Each runs a single audience-agnostic spec,
 // and none of those specs may import audience.js — that is what makes audienceOf() safe to throw
 // on an unrecognised name instead of quietly answering 'ms3'. Defaulting is the exact shape of
 // the bug audience.js exists to fix: a name nobody taught the helper about becoming the MS3
@@ -157,7 +165,10 @@ test('no canary spec identifies its audience by an exact project name', () => {
 // 'prototypes' is agnostic for a structural reason, not a convenient one: it drives files over
 // file:// straight out of _prototypes/, so there is no site and no audience to resolve. Several
 // of the files it covers are served by neither site at all, which is precisely the gap it fills.
-const AUDIENCE_AGNOSTIC = ['lfs', 'visual', 'interview-room', 'faculty-console', 'offline', 'prototypes'];
+// 'hosted-preview' is agnostic for the same structural reason as 'prototypes': it serves
+// sp-preview/dist from the spec itself under the preview's own deployed headers, and the
+// hosted preview is not published to either learner site.
+const AUDIENCE_AGNOSTIC = ['lfs', 'visual', 'interview-room', 'faculty-console', 'offline', 'prototypes', 'hosted-preview'];
 
 test('audience.js resolves every audience-bearing project name in the config', async () => {
   const { audienceOf } = await import(path.join(smokeDir, 'audience.js'));

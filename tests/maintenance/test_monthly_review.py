@@ -109,6 +109,14 @@ class MonthlyReviewTests(unittest.TestCase):
                     "maxAgeDays": 35,
                 },
                 "redTeam": {"path": "receipts/red-team.json"},
+                "rulesetBypass": {
+                    "path": "receipts/ruleset-bypass.json",
+                    "maxAgeDays": 35,
+                },
+                "staleClaims": {
+                    "path": "receipts/stale-claims.json",
+                    "maxAgeDays": 35,
+                },
             },
             "apaCrosswalk": "metadata/library_crosswalk.csv",
             "evidenceGeneratedViewsValid": True,
@@ -337,6 +345,147 @@ class MonthlyReviewTests(unittest.TestCase):
         report = self.build_report()
         self.assertEqual(report["operations"]["openEvidenceReceipt"], "stale")
         self.assertEqual(report["gate"], "review")
+
+    def test_ruleset_bypass_receipt_ages_and_is_a_review_item(self):
+        """The bypass list cannot be checked from Actions -- GitHub returns
+        bypass_actors only to a caller with ruleset WRITE access. This receipt's
+        freshness is therefore the only signal that a human ran
+        `check_ruleset_drift.py --check-bypass`, so an absent or stale one must
+        surface as a review item rather than passing quietly."""
+        report = self.build_report()
+        self.assertEqual(report["operations"]["rulesetBypassReceipt"], "missing")
+        self.assertEqual(report["gate"], "review")
+
+        # Fresh: verified five days before the review runs (fixture date 2026-07-15).
+        self.write_json(
+            "receipts/ruleset-bypass.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-07-10T00:00:00+00:00",
+                "state": "success",
+                "actorCount": 1,
+                "bypassSha256": "0" * 64,
+            },
+        )
+        self.assertEqual(
+            self.build_report()["operations"]["rulesetBypassReceipt"], "current"
+        )
+
+        # Older than maxAgeDays: nobody has looked in over a month.
+        self.write_json(
+            "receipts/ruleset-bypass.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-05-01T00:00:00+00:00",
+                "state": "success",
+                "actorCount": 1,
+                "bypassSha256": "0" * 64,
+            },
+        )
+        report = self.build_report()
+        self.assertEqual(report["operations"]["rulesetBypassReceipt"], "stale")
+        self.assertEqual(report["gate"], "review")
+
+        # A receipt that did not record success is not evidence of anything.
+        self.write_json(
+            "receipts/ruleset-bypass.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-07-10T00:00:00+00:00",
+                "state": "drifted",
+            },
+        )
+        self.assertEqual(
+            self.build_report()["operations"]["rulesetBypassReceipt"], "failed"
+        )
+
+        # A receipt dated after the review is not trustworthy either.
+        self.write_json(
+            "receipts/ruleset-bypass.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-08-01T00:00:00+00:00",
+                "state": "success",
+            },
+        )
+        self.assertEqual(
+            self.build_report()["operations"]["rulesetBypassReceipt"], "invalid"
+        )
+
+    def test_stale_claims_receipt_ages_and_is_a_review_item(self):
+        """The stale-claims sweep needs `gh`, `npm audit --include=dev` and every
+        local worktree, none of which exist on a fresh Actions runner -- a runner
+        would report a confident clean sweep of nothing. So, exactly like the ruleset
+        bypass list, this receipt's freshness is the only signal that a human ran
+        `bin/check_stale_claims.py --write-receipt`, and an absent or stale one must
+        surface as a review item rather than passing quietly."""
+        report = self.build_report()
+        self.assertEqual(report["operations"]["staleClaimsReceipt"], "missing")
+        self.assertEqual(report["gate"], "review")
+
+        # Fresh: swept five days before the review runs (fixture date 2026-07-15).
+        self.write_json(
+            "receipts/stale-claims.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-07-10T00:00:00+00:00",
+                "state": "success",
+                "skillFilesScanned": 2,
+                "suppressedBlocks": 1,
+                "manifestsAudited": 4,
+                "branchesScanned": 107,
+                "worktreesScanned": 33,
+            },
+        )
+        self.assertEqual(
+            self.build_report()["operations"]["staleClaimsReceipt"], "current"
+        )
+
+        # Older than maxAgeDays: a quarter of silent decay is exactly the window
+        # that let `clerkship-deploy` trap 3 mislead every session for two months.
+        self.write_json(
+            "receipts/stale-claims.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-05-01T00:00:00+00:00",
+                "state": "success",
+                "skillFilesScanned": 2,
+                "suppressedBlocks": 1,
+                "manifestsAudited": 4,
+                "branchesScanned": 107,
+                "worktreesScanned": 33,
+            },
+        )
+        report = self.build_report()
+        self.assertEqual(report["operations"]["staleClaimsReceipt"], "stale")
+        self.assertEqual(report["gate"], "review")
+
+        # check_stale_claims.py writes a receipt ONLY on a clean run, so a receipt
+        # that did not record success cannot be evidence of a clean sweep.
+        self.write_json(
+            "receipts/stale-claims.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-07-10T00:00:00+00:00",
+                "state": "findings",
+            },
+        )
+        self.assertEqual(
+            self.build_report()["operations"]["staleClaimsReceipt"], "failed"
+        )
+
+        # A receipt dated after the review is not trustworthy either.
+        self.write_json(
+            "receipts/stale-claims.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-08-01T00:00:00+00:00",
+                "state": "success",
+            },
+        )
+        self.assertEqual(
+            self.build_report()["operations"]["staleClaimsReceipt"], "invalid"
+        )
 
     def test_expected_sp_hash_changes_and_red_team_recency_use_pack_git_time(self):
         pack_hash = sha256(self.pack_bytes).hexdigest()

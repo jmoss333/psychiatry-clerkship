@@ -1,0 +1,63 @@
+# Usage-analytics collector — its own tiny Netlify site (same repo, base directory: metrics).
+# Kept SEPARATE from sp-proxy so analytics never shares a deployment bundle with the LLM
+# API key, and so an analytics change never re-opens sp-proxy's REDTEAM_CHECKLIST.
+#
+# BUILD ONLY WHEN THIS SITE'S OWN DIRECTORY CHANGES. `ignore` runs
+# netlify_ignore_scoped.sh, which exits 0 ("skip, no production deploy") only when the
+# context is production AND the diff between the last built commit and this one does not
+# touch the path it is given. Deploy previews and branch deploys always build: they are
+# free and they are the PR gate. Anything unexpected -- missing refs, a path that has
+# moved, a non-git checkout -- exits non-zero and BUILDS.
+#
+# This replaced `ignore = "/bin/false"` (always build, never cancel) on 2026-09-10. That
+# rule was there for a real reason: Netlify records a skip as a FAILED deploy (state
+# "error", "Canceled build due to no content change") and this site's "Deploy failed"
+# email -- the only alarm for a genuinely broken production deploy, added after the
+# 2026-08-31 LFS outage -- fired on every one of them (~75/day observed 2026-09-02). It
+# was priced in these comments as "one ~30 s build per event", which was correct when
+# Netlify billed build MINUTES. Under credit pricing build minutes are FREE and a
+# PRODUCTION DEPLOY is 15 credits (~$0.10) flat: 513 of the 815 production deploys charged
+# across the satellite sites over 14 days were byte-identical republishes, about
+# $110/month. The alarm moved to bin/check_netlify_deploy_health.py, which reads deploy
+# state from the Netlify API, discards exactly that cancel message, and runs daily inside
+# maintenance-production-canary.yml.
+# ACTION REQUIRED IN THE NETLIFY UI: turn OFF this site's "Deploy failed" email.
+# Numbers and rollback: 13_Faculty_Resources/_automation/NETLIFY_COST_REDUCTION_PLAN.md;
+# history: GIT_AND_DEPLOY_PLAN.md section 7.
+[build]
+  publish = "."
+  command = "npm ci --omit=dev"
+  ignore = 'bash ../13_Faculty_Resources/_automation/site_build/netlify_ignore_scoped.sh metrics'
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# node_bundler = "nft" (NOT "esbuild"). ev.mjs loads its allowlist at module scope via
+# `readFileSync(new URL('../../allowlist.json', import.meta.url))`. esbuild only rewrites a
+# `new URL(..., import.meta.url)` reference for its `file`/`copy` loaders; a `.json` target
+# uses esbuild's `json` loader instead, so esbuild would NOT carry allowlist.json into the
+# bundle. The read would throw at module load, the function would never boot, and — because
+# this handler is silent by design (no logging, every store error swallowed) — nothing would
+# report it: counters would simply stay at zero. "nft" (Node File Trace, via @vercel/nft — the
+# same tracer zip-it-and-ship-it's default "zisi" bundler uses internally) traces the real
+# runtime file reads a function performs instead of statically rewriting import specifiers, so
+# it finds and includes this readFileSync target on its own. included_files below is kept as a
+# second, explicit guarantee — see the note on it.
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "nft"
+  # Path is relative to this site's BASE DIRECTORY ("metrics", set in the Netlify UI per Step
+  # 6), not to the repo root and not to the functions directory — Netlify's file-based-config
+  # docs: "All paths defined in the netlify.toml file must be absolute paths relative to the
+  # base directory." metrics/allowlist.json relative to base directory "metrics" is
+  # "allowlist.json".
+  included_files = ["allowlist.json"]
+
+# Pinned explicitly: in-source route registration was observed NOT to register on the live
+# sp-proxy deploy, so the path fell through to the static 404 (which carries no CORS header)
+# and the browser reported a generic load failure. Status 200 = rewrite, not redirect.
+[[redirects]]
+  from = "/api/ev"
+  to = "/.netlify/functions/ev"
+  status = 200
+  force = true

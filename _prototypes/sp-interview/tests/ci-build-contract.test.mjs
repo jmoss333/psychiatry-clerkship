@@ -6,6 +6,8 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { lfsStubReason } from '../../../tests/_lfs_media.mjs';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const MANIFEST = path.join(
   ROOT,
@@ -53,12 +55,16 @@ function run(command, args, options = {}) {
   });
 }
 
-test('manifest drives both Interview Room runtime assets into a real site build', () => {
+test('manifest drives both Interview Room runtime assets into a real site build', (t) => {
   const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
   assert.deepEqual(manifest.toolAssets, EXPECTED_ASSETS);
   for (const [source] of EXPECTED_ASSETS) {
     assert.equal(fs.existsSync(path.join(ROOT, source)), true, `missing source asset: ${source}`);
   }
+
+  // The manifest half above needs no build and has already run. The rest spawns one.
+  const noBuild = lfsStubReason(ROOT);
+  if (noBuild) return t.skip(noBuild);
 
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'sp-build-contract-'));
   const output = path.join(temporary, 'site');
@@ -81,7 +87,10 @@ test('manifest drives both Interview Room runtime assets into a real site build'
   }
 });
 
-test('both builders emit governance inventories matching their final tools', () => {
+test('both builders emit governance inventories matching their final tools', (t) => {
+  const noBuild = lfsStubReason(ROOT);
+  if (noBuild) return t.skip(noBuild);
+
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-governance-build-'));
   const ms3 = path.join(temporary, 'ms3');
   const resident = path.join(temporary, 'resident');
@@ -272,7 +281,10 @@ test('static QA accepts preferred and legacy metadata markers but rejects missin
   }
 });
 
-test('resident build removes copied governance output when resident generation fails', () => {
+test('resident build removes copied governance output when resident generation fails', (t) => {
+  const noBuild = lfsStubReason(ROOT);
+  if (noBuild) return t.skip(noBuild);
+
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resident-governance-failure-'));
   const ms3 = path.join(temporary, 'ms3');
   const resident = path.join(temporary, 'resident');
