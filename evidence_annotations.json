@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-09-02",
+  "updated": "2026-09-18",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -22,7 +22,6 @@
       "rosenhan-1973-sane-places",
       "rush-2006-stard",
       "stanley-brown-2012-safety-planning",
-      "volkow-2016-addiction-brain-disease",
       "wampold-1997-bona-fide-psychotherapies"
     ],
     "orphanBacklogNote": "Required sources that predate the gate (seeded 2026-08-21, n=17). This list may only shrink. Clearing it is the therapy-library verification backlog."
@@ -1269,6 +1268,43 @@
           "direction": "positive",
           "usedBy": [
             "exp_family"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "volkow-2016-addiction-brain-disease",
+      "verifiedAgainst": {
+        "spanType": "fulltext",
+        "sourceEndpoint": "ncbi:pmc:efetch?db=pmc",
+        "retrievedAt": "2026-09-18",
+        "pmid": "26816013",
+        "doi": "10.1056/nejmra1511480",
+        "sourceSpan": "When prevention has failed and there is need for treatment, research based on the brain disease model of addiction has shown that medical treatment can help to restore healthy function in the affected brain circuitry and lead to improvements in behavior. The health care system already has at its disposal several evidence-based treatment interventions that could improve clinical outcomes in patients with substance-use disorders if properly and comprehensively implemented. During treatment, medication can assist in preventing relapse while the brain is healing and normal emotional and decision-making capacities are being restored. For patients with opioid-use disorder, maintenance therapy with agonists or partial agonists such as methadone or buprenorphine can be essential in helping to control symptoms of withdrawal and cravings. Naltrexone and acamprosate have been efficacious in the treatment of alcohol-use disorders, and other medications can help in the recovery from nicotine addiction."
+      },
+      "claims": [
+        {
+          "claimId": "brain-disease-model-licenses-medical-treatment",
+          "claimText": "Research based on the brain disease model of addiction has shown that medical treatment can help to restore healthy function in the affected brain circuitry and lead to improvements in behavior, and that during treatment medication can assist in preventing relapse while the brain is healing.",
+          "claimTerms": [
+            "medical treatment can help to restore healthy function",
+            "preventing relapse while the brain is healing"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_sud"
+          ]
+        },
+        {
+          "claimId": "pharmacotherapy-for-opioid-and-alcohol-use-disorder",
+          "claimText": "For patients with opioid-use disorder, maintenance therapy with agonists or partial agonists such as methadone or buprenorphine can be essential in helping to control symptoms of withdrawal and cravings; naltrexone and acamprosate have been efficacious in the treatment of alcohol-use disorders.",
+          "claimTerms": [
+            "maintenance therapy with agonists or partial agonists such as methadone or buprenorphine",
+            "naltrexone and acamprosate have been efficacious"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_sud"
           ]
         }
       ]

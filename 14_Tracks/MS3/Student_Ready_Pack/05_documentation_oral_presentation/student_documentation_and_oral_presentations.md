@@ -222,10 +222,6 @@ Use when handing off a psychiatric patient:
 - Epstein, R.M., Hundert, E.M. (2002) — *JAMA* — clinical competence includes communication. Practicing the templates out loud (with peers, with faculty) builds automaticity so you can present clearly when you are nervous, sleep-deprived, or presenting a high-risk patient.
 - Teaching focus: start with the structured templates, then practice presenting without them. The template is the scaffold; the goal is to internalize the logic so it becomes second nature.
 
-**Documentation Equity and Bias in Psychiatric Note-Writing**
-- Fernandez, A., Schillinger, D., Warton, E.M., Adler, N., Moffet, H.H., Schenker, Y., Salgado, M.V., Ahmed, A.T., Karter, A.J. (2011) — *JAMA Internal Medicine* — documentation quality and completeness in psychiatric encounters varies by patient language concordance and literacy; patients with limited English proficiency have shorter, less detailed notes with fewer documented patient goals and fewer documented safety plans, a proxy for lower-quality risk assessment.
-- Street, R.L., Gordon, H.S., Haidet, P. (2007) — *Social Science & Medicine* — communication patterns in psychiatric encounters differ significantly by patient race; clinicians spend less time explaining diagnoses and prognosis to Black and Hispanic patients, leading to less detailed notes and fewer documented discussions of treatment rationale, which increases misalignment between clinician and patient goals.
-
 **Book References**
 - Kaplan & Sadock's Synopsis of Psychiatry — sections on documentation standards and case presentation frameworks used in training programs nationwide. Comprehensive reference for note-writing and presentation expectations.
 - Morrison, J. (2014) — *Diagnosis Made Easier Revised* (ISBN 9781585629695) — teaches differential diagnosis reasoning as a clinical skill, not a checklist. Relevant to building formulations that show thinking.

@@ -63,12 +63,6 @@ Hyperthyroidism → anxiety/mania; hypothyroidism → depression. TSH is one of 
 **Substance-Induced vs. Primary Psychosis**
 Distinction: Primary psychosis persists and worsens ≥6 weeks after sustained abstinence. Cannabis and stimulant-induced psychosis can mimic schizophreniform disorder; longitudinal follow-up distinguishes them.
 
-### Equity in Medical Workup: Diagnostic Disparities and Test Interpretation
-
-**Diagnostic Workup Disparities by Race and Ethnicity**
-- Hinds, P.S., Morris, R., Stonesifer, E., et al. (2011) — *Journal of Clinical Nursing* — symptoms in non-white populations are frequently normalized or attributed to "cultural expression" by clinicians, leading to delayed medical evaluation. A patient's cultural explanation for symptoms should not override medical assessment; both can be true simultaneously.
-- Singal, A.G., Volk, M.L., Waljee, A., et al. (2012) — *American Journal of Gastroenterology* — lab result interpretation varies: identical TSH values are interpreted differently by clinicians depending on patient race and age, with lower thresholds for treatment in white patients and higher thresholds in Black patients, perpetuating under-treatment. Standardize interpretation by reference range, not implicit bias.
-
 ### Books on Medical Psychiatry
 
 - **[What Happened to You?](https://www.amazon.com/dp/1250223180)** (ISBN 9781250223180) — Bruce Perry & Oprah Winfrey. Neuroscience-grounded perspective on how medical and traumatic events reshape the brain and behavior. Reinforces the biopsychosocial approach.
