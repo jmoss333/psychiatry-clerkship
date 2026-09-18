@@ -10,6 +10,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import attestation_hash
 import validate_attestation_consistency as validator
 
 
@@ -309,6 +310,22 @@ def write_shipped_pages(root):
     )
 
 
+def fixture_content_hash(root, slug=TOOL_SLUG):
+    """The contentHash a reviewed row must carry to be bound to THIS fixture's bytes.
+
+    Computed from the fixture rather than pinned as a literal: a hard-coded digest
+    stops tracking the fixture the moment the fixture changes, and every reviewed row
+    here would then read as drifted instead of bound -- which is precisely the shape
+    of a check that passes over the wrong set.
+    """
+    root = Path(root)
+    shipped = json.loads(
+        (root / validator.SHIPPED_PAGES_RELATIVE).read_text(encoding="utf-8")
+    )
+    topic_meta = json.loads((root / "topic_meta.json").read_text(encoding="utf-8"))
+    return attestation_hash.digest_from_tree(root, shipped, topic_meta, slug)
+
+
 def write_fixture(
     root,
     *,
@@ -350,10 +367,6 @@ def write_fixture(
     }
     if ledger_status != "reviewed":
         ledger_entry["reason"] = "Synthetic review is pending"
-    reviewed_path.write_text(
-        json.dumps({TOOL_SLUG: ledger_entry}),
-        encoding="utf-8",
-    )
     (root / "topic_meta.json").write_text("{}", encoding="utf-8")
     manifest_path.write_text(
         json.dumps(
@@ -371,6 +384,14 @@ def write_fixture(
     )
     pack_path.write_text(json.dumps(pack), encoding="utf-8")
     write_shipped_pages(root)
+
+    # The ledger is written LAST because a reviewed row must name the text it attested,
+    # and that text is the fixture's own bytes -- which only exist once everything above
+    # has been written. An unbound reviewed row is a validator error now, so a fixture
+    # that skipped this would fail every reviewed case for the wrong reason.
+    if ledger_status == "reviewed":
+        ledger_entry["contentHash"] = fixture_content_hash(root)
+    reviewed_path.write_text(json.dumps({TOOL_SLUG: ledger_entry}), encoding="utf-8")
 
 
 def write_pending_topic_meta_fixture(root, *, faculty_status):
@@ -1029,6 +1050,122 @@ class AttestationConsistencyTests(unittest.TestCase):
                 pack = canonical_pack()
                 mutate(pack)
                 self.assertTrue(self.validate_pack(pack), label)
+
+    # ------------------------------------------------------------------------------
+    # contentHash: an attestation must name the text it attested.
+    #
+    # Four shapes fail, and each is something only a hand edit produces. DRIFT IS NOT
+    # ONE OF THEM: a content PR edits an attested page constantly, the build demotes
+    # the entry, and failing here would make the gate noise and then make it optional.
+    # The stale case below therefore pins the ABSENCE of a finding *and* the absence
+    # of any extra stdout -- governance_digest.mjs parses this validator's output with
+    # an anchored regex and throws on a single unexpected line.
+    # ------------------------------------------------------------------------------
+
+    def write_reviewed_fixture(self, root):
+        """A fixture whose one tool is reviewed, bound, and internally consistent."""
+        pack = pending_pack()
+        pack["status"] = "reviewed"
+        write_fixture(root, ledger_status="reviewed", tool_status="reviewed", pack=pack)
+
+    def rewrite_ledger(self, root, mutate):
+        path = Path(root) / "13_Faculty_Resources" / "reviewed.json"
+        ledger = json.loads(path.read_text(encoding="utf-8"))
+        mutate(ledger)
+        path.write_text(json.dumps(ledger), encoding="utf-8")
+
+    def test_reviewed_entry_without_a_content_hash_fails(self):
+        with tempfile.TemporaryDirectory() as root:
+            self.write_reviewed_fixture(root)
+            self.rewrite_ledger(root, lambda led: led[TOOL_SLUG].pop("contentHash"))
+            errors = self.validate(root)
+        self.assertEqual(
+            errors,
+            [
+                "sp-interview.html: reviewed entry is unbound (no contentHash) — "
+                "bind it through the faculty console"
+            ],
+        )
+
+    def test_content_hash_the_schema_cannot_reject_is_still_malformed(self):
+        # A 40-hex hash with a trailing newline PASSES reviewed.schema.json, because a
+        # JSON Schema `pattern` is a search and `$` also matches before a final newline.
+        # HEX40 is matched with fullmatch() for exactly this reason, so the validator is
+        # the only thing standing between that value and a hash nothing can reproduce.
+        with tempfile.TemporaryDirectory() as root:
+            self.write_reviewed_fixture(root)
+            self.rewrite_ledger(
+                root, lambda led: led[TOOL_SLUG].update(contentHash="f" * 40 + "\n")
+            )
+            errors = self.validate(root)
+        self.assertEqual(
+            errors,
+            [
+                "sp-interview.html: contentHash is malformed "
+                "(expected a 40-hex git blob SHA)"
+            ],
+        )
+
+    def test_reviewed_entry_whose_attested_source_is_gone_fails(self):
+        with tempfile.TemporaryDirectory() as root:
+            self.write_reviewed_fixture(root)
+            (Path(root) / TOOL_SOURCE).unlink()
+            errors = self.validate(root)
+        self.assertIn(
+            "sp-interview.html: attested source missing (%s)" % TOOL_SOURCE, errors
+        )
+
+    def test_reviewed_entry_for_a_page_nothing_ships_fails(self):
+        with tempfile.TemporaryDirectory() as root:
+            self.write_reviewed_fixture(root)
+            self.rewrite_ledger(
+                root,
+                lambda led: led.update(
+                    {
+                        "ghost.html": {
+                            "status": "reviewed",
+                            "risk": {"kind": "clinical", "level": "high"},
+                            "at": "2026-07-13",
+                            "by": "Historical Reviewer, MD",
+                            "contentHash": "0" * 40,
+                        }
+                    }
+                ),
+            )
+            errors = self.validate(root)
+        self.assertEqual(
+            errors,
+            ["ghost.html: reviewed but not shipped and not on LEDGER_ONLY_LEGACY"],
+        )
+
+    def test_drift_is_not_an_error_and_adds_no_output(self):
+        from unittest import mock
+
+        with tempfile.TemporaryDirectory() as root:
+            self.write_reviewed_fixture(root)
+            source = Path(root) / TOOL_SOURCE
+            source.write_text(
+                source.read_text(encoding="utf-8") + "\n<!-- edited after review -->\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(self.validate(root), [])
+
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            with mock.patch.object(validator, "ROOT", root):
+                with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(
+                    stderr
+                ):
+                    status = validator.main()
+
+        self.assertEqual(status, 0)
+        self.assertEqual(stderr.getvalue(), "")
+        # Byte-exact: governance_digest.mjs anchors this line and throws on anything else.
+        self.assertEqual(
+            stdout.getvalue(),
+            "attestation consistency OK — 1 shipped item(s), "
+            "0 topic facultyReview entries aligned.\n",
+        )
 
 
 class UtcClockTests(unittest.TestCase):
