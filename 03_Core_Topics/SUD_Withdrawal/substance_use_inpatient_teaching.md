@@ -61,7 +61,7 @@ External listings can change. Confirm current details with the organization, and
 
 **Medication-Assisted Treatment and Opioid Use Disorder**
 - Mattick, R.P. et al. (2014) — *Cochrane Database of Systematic Reviews* — meta-analysis of buprenorphine and methadone for opioid use disorder. Both reduce illicit opioid use and improve retention; buprenorphine has lower overdose risk and abuse potential. Inpatient buprenorphine induction, when done safely (after objective withdrawal), engages patients before discharge and reduces post-discharge relapse risk.
-- Volkow, N.D., Blanco, C. (2004) — *New England Journal of Medicine* — addiction as a chronic brain disease. The dopaminergic and opioid system dysregulation in addiction justifies long-term, evidence-based pharmacotherapy. Reframing addiction as a medical condition (not moral failure) directly combats stigma and improves treatment engagement.
+- Volkow, N.D., Koob, G.F., McLellan, A.T. (2016) — *New England Journal of Medicine* 374(4):363-371 [DOI: 10.1056/nejmra1511480] — addiction as a chronic brain disease. The dopaminergic and opioid system dysregulation in addiction justifies long-term, evidence-based pharmacotherapy. Reframing addiction as a medical condition (not moral failure) directly combats stigma and improves treatment engagement.
 
 **Alcohol Use Disorder Pharmacotherapy**
 - Litten, R.Z. et al. (2016) — *JAMA Psychiatry* — naltrexone and acamprosate as FDA-approved maintenance medications for alcohol use disorder. Naltrexone (opioid antagonist) reduces craving and heavy drinking but is contraindicated with opioids and requires hepatic function monitoring; acamprosate supports abstinence and is renally cleared (preferred in liver disease).
@@ -72,7 +72,6 @@ External listings can change. Confirm current details with the organization, and
 - DiClemente, C.C. (2003) — *Addiction: Comprehensive Guidebook* — the stages-of-change model (precontemplation, contemplation, preparation, action, maintenance) normalizes ambivalence and helps clinicians tailor interventions to where the patient is, not where clinicians wish they were.
 
 **Healthcare Equity and Substance Use Disorders**
-- Singal, A.G. et al. (2023) — *American Journal of Psychiatry* — disparities in opioid use disorder diagnosis and treatment. Black patients receive opioid-use-disorder diagnoses at significantly lower rates and receive medication-assisted treatment less frequently, despite equivalent or higher opioid use burden. Institutional racism and unconscious bias contribute to undertreatment.
 - Hansen, H., Netherland, J. (2016) — *Journal of Bioethical Inquiry* — the racialized war on drugs and its impact on substance use treatment access. Patients with SUD, particularly from communities of color, face systemic barriers (incarceration history, insurance gaps, treatment availability) that clinical encounters alone cannot overcome.
 
 **Trauma-Informed Care in Substance Use Disorders**
