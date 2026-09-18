@@ -451,7 +451,15 @@ def run_backfill(root, as_of="attestation", table_path=None, stream=None):
             raise InputError("%s: reviewed with no `at` date; cannot bind it truthfully" % slug)
         if as_of == "now":
             rev, basis = "(working tree)", "now"
-            content_hash = digest_from_tree(root, shipped, topic_meta, slug)
+            try:
+                content_hash = digest_from_tree(root, shipped, topic_meta, slug)
+            except OSError as exc:
+                # `unbound` is decided before `unresolvable` (attestation_hash.py:205 precedes
+                # :215), so an unbound row whose source is gone reaches here. Refusing is the
+                # only honest answer: --as-of-now has no other tree to read.
+                raise InputError("%s: attested source missing from the tree (%s); "
+                                 "--as-of-attestation reads it from history instead"
+                                 % (slug, exc)) from exc
         else:
             rev, basis, content_hash = _row_as_of_attestation(
                 root, ref, shipped, slug, at, cache, notes)
@@ -523,7 +531,10 @@ def main(argv=None):
         if args.explain:
             return run_explain(root, args.explain)
         return run_report(root, args.base, args.format)
-    except (InputError, GitError, AttestationHashError) as exc:
+    except (InputError, GitError, AttestationHashError, OSError) as exc:
+        # OSError is the backstop, not a formality: a file this tool must read or write can
+        # vanish anywhere (a deleted attested source, an unwritable --table). "Could not
+        # check" is exit 2 by contract, and a traceback exits 1 — which reads as a finding.
         print("could not check: %s" % exc, file=sys.stderr)
         return 2
 
@@ -660,6 +671,28 @@ def _read_text(path):
         return ""
 
 
+def _table_rows(text):
+    """The audit table's DATA rows, as {slug: [slug, at, rev, basis, commits, stale]}.
+
+    Asserting on the table's prose instead of its rows is how a check goes vacuous: the
+    explanatory paragraph names every basis, so `basis=at-date` appears in a table with no
+    rows at all (SILENT_SHRINK_CHECKLIST §D2). Only a parsed row can answer what the tool
+    actually recorded for a slug.
+    """
+    rows = {}
+    for line in text.splitlines():
+        if not line.startswith("|") or line.startswith("| slug ") or set(line) <= set("|- "):
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if len(cells) == 6:
+            rows[cells[0]] = cells
+    return rows
+
+
+def _cell(rows, slug, index):
+    return rows[slug][index] if slug in rows else "(no row for %s)" % slug
+
+
 def self_test():  # noqa: C901 — a flat list of cases reads better than helpers here
     failures, cases, stack = [], [], []
 
@@ -792,11 +825,11 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         }
         _write_root(repo, ledger, files={"a.md": ALPHA},
                     topic_meta=_fixture_topic_meta("one"), shipped=back_shipped)
-        _fixture_commit(repo, "first", "2020-01-01T12:00:00 +0000")
+        first_rev = _fixture_commit(repo, "first", "2020-01-01T12:00:00 +0000")
         # b.md is born AFTER the attestation date; a.md changes after it.
         _write_root(repo, ledger, files={"a.md": ALPHA_REVISED, "b.md": BETA},
                     topic_meta=_fixture_topic_meta("two"), shipped=back_shipped)
-        _fixture_commit(repo, "second", "2030-01-01T12:00:00 +0000")
+        second_rev = _fixture_commit(repo, "second", "2030-01-01T12:00:00 +0000")
         # b.md changes again, and c.md is born last of all.
         _write_root(repo, ledger, files={"a.md": ALPHA_REVISED, "b.md": BETA_REVISED,
                                          "c.md": GAMMA},
@@ -843,11 +876,21 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
               [line for line in added
                if '"contentHash"' not in line and line.rstrip(",") not in before_lines], [])
 
+        # The table's ROWS, not its prose: the explanatory paragraph names every basis, so a
+        # table with zero rows would satisfy a substring check for "at-date" (§D2).
         table_text = _read_text(table)
-        check_in("the table names the history ref it read", "HEAD", table_text)
-        check_in("the table carries the at-date basis", "at-date", table_text)
-        check_in("the table carries the earliest basis", "earliest", table_text)
-        check_in("the table has the agreed columns", "commits since at", table_text)
+        check_in("the table names the history ref it read", "History read from `HEAD`",
+                 table_text)
+        check_in("the table has the agreed columns",
+                 "| slug | at | rev | basis | commits since at | stale now |", table_text)
+        table_rows = _table_rows(table_text)
+        check("the table has one row per bound slug", sorted(table_rows), ["v.md", "w.md", "x.md"])
+        check("x.md's ROW says basis=at-date", _cell(table_rows, "x.md", 3), "at-date")
+        check("and names the commit it hashed", _cell(table_rows, "x.md", 2), first_rev[:7])
+        check("and carries its attestation date", _cell(table_rows, "x.md", 1), "2025-01-01")
+        check("and records that it is stale now", _cell(table_rows, "x.md", 5), "yes")
+        check("w.md's ROW says basis=earliest", _cell(table_rows, "w.md", 3), "earliest")
+        check("and names b.md's earliest commit", _cell(table_rows, "w.md", 2), second_rev[:7])
 
         _fixture_commit(repo, "backfill", "2030-01-02T12:00:00 +0000")
         code, out = _run(["--root", str(repo), "--write-backfill"])
@@ -865,6 +908,31 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         check("--as-of-now binds the working tree",
               now_written.get("x.md", {}).get("contentHash"),
               digest_from_tree(repo2, back_shipped, _fixture_topic_meta("two"), "x.md"))
+
+        # An unbound row whose source is GONE from the tree. `unbound` is classified before
+        # `unresolvable`, so the row is targeted; --as-of-now has no tree left to read it
+        # from, and "could not check" is exit 2 — a traceback would exit 1 and read as a
+        # finding. --as-of-attestation still binds it, because history still has the bytes.
+        repo4 = _fixture_repo(_tmp(stack))
+        _write_root(repo4, {"x.md": _entry(at="2025-01-01")}, files={"a.md": ALPHA},
+                    topic_meta=_fixture_topic_meta("one"), shipped=back_shipped)
+        _fixture_commit(repo4, "only", "2020-01-01T12:00:00 +0000")
+        gone_text = _read_text(repo4 / LEDGER_REL)
+        (repo4 / "a.md").unlink()
+        code, out = _run(["--root", str(repo4), "--write-backfill", "--as-of-now"])
+        check("--as-of-now over a missing source exits 2, not a traceback", code, 2)
+        check_in("and says it could not check", "could not check", out)
+        check_in("naming the slug", "x.md", out)
+        check("and writes nothing", _read_text(repo4 / LEDGER_REL), gone_text)
+        code, out = _run(["--root", str(repo4), "--write-backfill", "--as-of-attestation",
+                          "--table", str(repo4 / "gone.md")])
+        check("--as-of-attestation binds it from history instead", code, 0)
+        check("to the blob that commit holds",
+              json.loads(_read_text(repo4 / LEDGER_REL) or "{}").get("x.md", {})
+              .get("contentHash"),
+              digest("x.md", {"a.md": ALPHA}, _fixture_topic_meta("one")["x.md"]))
+        check("and its row reports `stale now` as unresolvable, never as clean",
+              _cell(_table_rows(_read_text(repo4 / "gone.md")), "x.md", 5), "unresolvable")
 
         # a dirty ledger is refused: the backfill must be the only change in its commit.
         repo3 = _fixture_repo(_tmp(stack))
