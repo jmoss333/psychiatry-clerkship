@@ -85,6 +85,14 @@ step "every falsification is on a gate"     python3 bin/check_vacuity.py
 step "unit — PR preflight"                  python3 bin/pr_preflight.py --self-test
 step "unit — attestation authorship"        python3 bin/check_attestation_authorship.py --self-test
 step "attestation authorship"               python3 bin/check_attestation_authorship.py
+# DRAFT GATES — self-tests only, deliberately. Both scripts are proposals awaiting a ruling
+# (docs/superpowers/specs/2026-09-17-*.md), so the GATE half of each is NOT wired: no
+# `step "policy/content separation"` and no `step "citation attribution"` line here or in ci.yml.
+# The self-tests are wired because check_vacuity.py is right that a falsification nothing runs is
+# not a falsification — the logic is pinned now, and activating the gates is a one-line change
+# once the design questions are answered.
+step "unit — policy/content separation"     python3 bin/check_policy_content_separation.py --self-test
+step "unit — citation attribution"          python3 bin/check_citation_attribution.py --self-test
 
 # --- python validators ---
 # This block mirrors the python half of ci.yml's build-test-validate job, step for step.
