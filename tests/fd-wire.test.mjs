@@ -2944,3 +2944,10 @@ test('Progress from the full Library shorthand preserves full context through re
   assert.equal(reload.libraryView,'full');
   assert.equal(F.fdDispatch({'data-fd-back':''},{search:opened.route},reload).route,'?tab=library&library=full');
 });
+
+test('plain Today Progress keeps its existing route while Path keeps its return origin', () => {
+  const initial = {...roleContext, screen:'app', tab:'today', libraryView:'essentials'};
+  assert.equal(F.fdDispatch({'data-fd-progress':''},{search:''},initial).route,'?page=__progress__');
+  const path = F.fdDispatch({'data-fd-progress':''},{search:''},{...initial,tab:'path'});
+  assert.equal(path.route,'?page=__progress__&tab=path');
+});

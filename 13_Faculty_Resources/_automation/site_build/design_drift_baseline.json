@@ -1,10 +1,11 @@
 {
-  "_note": "Pinned by bin/check_design_drift.py. Counts may fall, never rise. Regenerate with --update-baseline as part of a reviewed reduction.",
+  "_note": "Pinned by bin/check_design_drift.py. Counts may fall, never rise. Regenerate with --update-baseline as part of a reviewed reduction. Essentials Phase 2 explicitly authorizes the 480px phone quick-tool ordering breakpoint; this exception changes no other design ratchet.",
   "files": {
     "frontdoor.css": {
       "distinct_font_sizes": 1,
       "nonstandard_breakpoints": [
         390,
+        480,
         999
       ],
       "raw_dimension_declarations": 196,

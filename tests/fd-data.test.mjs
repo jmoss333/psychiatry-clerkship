@@ -363,3 +363,15 @@ for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93
     }
   });
 }
+
+test('inherited object names are unresolved Essentials refs and preserve the canonical index', () => {
+  const canonical = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
+  const cur = structuredClone(FIX_CUR);
+  cur.essentials = [{name:'Unresolved', accent:'topic', refs:['__proto__','constructor','toString']}];
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.deepEqual(idx.essentials[0].items, []);
+  assert.equal(idx.essentialsDropped, 3);
+  for (const key of Object.keys(canonical).filter(key => !key.startsWith('essentials'))) {
+    assert.deepEqual(idx[key], canonical[key], `${key} must remain the canonical index`);
+  }
+});

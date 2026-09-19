@@ -210,7 +210,7 @@ function fdRouteForRef(ref, search, blockNavigation, origin){
   var view=origin?origin.libraryView:previous.get('library');
   if(tab==='library'&&view==='full'){
     params.set('tab','library'); params.set('library','full');
-  } else if(fdValidTab(tab)&&((origin&&origin.libraryView)||fdValidTab(previous.get('tab')))){ params.set('tab',tab); }
+  } else if(fdValidTab(tab)&&((origin&&origin.libraryView&&(tab!=='today'||previous.get('library')==='full'))||fdValidTab(previous.get('tab')))){ params.set('tab',tab); }
   var extra=params.toString();
   return '?'+key+'='+encodeURIComponent(ref)+(extra?'&'+extra:'');
 }

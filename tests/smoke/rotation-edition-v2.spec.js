@@ -737,6 +737,10 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
 
   await activateTab('Library');
   await expect(page.locator('.fd-library')).toBeVisible();
+  // A4: the real Curator-generated edition opens the trainee Library at Your kit.
+  await expect(page.locator('.fd-library__h1')).toHaveText('Your kit');
+  await expect(page.locator('.fd-collink')).toHaveCount(audience === 'ms3' ? 30 : 35);
+  await keyboardActivate(page.locator('[data-fd-library-view="full"]'));
   const libraryItems = await page.locator('.fd-library .fd-collink[data-fd-open]').evaluateAll((links) => (
     links.map((link) => ({
       ref: link.getAttribute('data-fd-open'),
@@ -764,6 +768,8 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
   await expect(page.getByRole('heading', { name: library.omitted.title, exact: true }).first()).toBeVisible();
 
   await activateTab('Library');
+  await expect(page.locator('.fd-library__h1')).toHaveText('Your kit');
+  await keyboardActivate(page.locator('[data-fd-library-view="full"]'));
   await expect(page.locator(`.fd-collink[data-fd-open="${library.omitted.ref}"]`)).toBeVisible();
   await activateTab('Today');
   await expect(page.locator('.fd-today')).toBeVisible();

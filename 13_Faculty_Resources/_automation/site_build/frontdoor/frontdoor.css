@@ -1362,6 +1362,13 @@
     position:sticky;left:0;z-index:1;background:var(--fd-surface);border-right:1px solid var(--fd-line-strong);
   }
 }
+/* Phone quick tools precede the primary card without changing document order. */
+@media (max-width:480px){
+  .fd-today__main{display:flex;flex-direction:column}
+  .fd-today__main > .fd-quicktools--pills{order:-1;margin-bottom:var(--fd-space-8)}
+  .fd-quicktools--pills .fd-quicktool{max-width:100%;min-width:0}
+}
+
 @media print{
   /* System print ink/paper tokens remain legible even when the screen is in dark mode. */
   body:has(.fd-reader--guide){--fd-guide-print-ink:CanvasText;--fd-guide-print-paper:Canvas;color-scheme:light;background:var(--fd-guide-print-paper) !important;color:var(--fd-guide-print-ink) !important}
@@ -1414,9 +1421,3 @@
 }
 /* Phase 2: the Resume card's block progress line ("Block · 1 of 2 done"). */
 .fd-resume__block{display:block;font-size:var(--fd-font-xs);color:var(--fd-text-dim)}
-
-/* Phone quick tools precede the primary card without changing document order. */
-@media (max-width:480px){
-  .fd-today__main{display:flex;flex-direction:column}
-  .fd-today__main > .fd-quicktools--pills{order:-1;margin-bottom:var(--fd-space-8)}
-}
