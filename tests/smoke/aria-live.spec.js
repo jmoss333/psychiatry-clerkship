@@ -11,8 +11,13 @@ test('question bank announces the verdict in an aria-live region', async ({ page
   // Two-tier items do not emit a verdict until the rationale is answered.
   const rationale = page.locator('#tier2Opts .opt').first();
   if (await rationale.count()) await rationale.click();
-  // a persistent live region should now carry a verdict
-  const live = page.locator('[aria-live]');
+  // A persistent live region should now carry a verdict, and it must be the ONLY announcer on
+  // the page — two competing announcers is the defect this pins. Count the regions that
+  // actually announce, not every [aria-live] attribute: a tool whose review has drifted also
+  // ships a build-injected governance block, and that block is deliberately aria-live="off"
+  // (static initial markup, never a runtime change — see surface_governance.py's
+  // _direct_status_markup). An off region announces nothing, so it is not a competitor.
+  const live = page.locator('[aria-live="polite"], [aria-live="assertive"]');
   await expect(live).toHaveCount(1);
   await expect(live).toContainText(/correct|incorrect|reasoning/i);
 });
