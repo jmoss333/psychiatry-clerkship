@@ -63,6 +63,12 @@ def monthly_report(gate="review"):
             "cadence": {"current": 1, "due": 1, "overdue": 1, "unknown": 1},
             "localPolicyDependent": 1,
             "generatedViewsValid": True,
+            "surveillanceCredit": {
+                "historyPresent": True,
+                "baselines": 3,
+                "openChangeFindings": 1,
+                "sourcesCredited": 2,
+            },
         },
         "media": {
             "servedMissingCount": 1,
@@ -463,6 +469,50 @@ class MaintenanceIssueTests(unittest.TestCase):
                 list_issues=lambda: [],
                 create_issue=lambda _payload: {"number": 1},
                 update_issue=lambda *_args: {"number": 1},
+            )
+
+
+    def test_monthly_body_states_how_many_reviews_surveillance_credited(self):
+        """The cadence figure is now net of surveillance credit, so the body says so.
+
+        Without it a reader watching "due or overdue" fall has no way to tell work the
+        job did from findings somebody quietly dismissed.
+        """
+        created = []
+        route_issue(
+            "monthly",
+            monthly_report(),
+            run_url=RUN_URL,
+            artifact_url=ARTIFACT_URL,
+            list_issues=lambda: [],
+            create_issue=lambda payload: created.append(payload) or {"number": 11},
+            update_issue=lambda number, payload: self.fail("unexpected update"),
+        )
+        self.assertIn(
+            "Reviews credited to guideline surveillance: 2",
+            created[0]["body"],
+        )
+
+    def test_a_monthly_report_without_the_credit_block_is_malformed(self):
+        """Strict, like every other figure in this body: absent is not zero.
+
+        A report predating the credit rule would otherwise render a confident
+        `credited: 0` beside a cadence count that never considered credit at all.
+        """
+        report = monthly_report()
+        del report["evidence"]["surveillanceCredit"]
+        with self.assertRaisesRegex(
+            IssueRoutingError,
+            "surveillance credit is invalid",
+        ):
+            route_issue(
+                "monthly",
+                report,
+                run_url=RUN_URL,
+                artifact_url=ARTIFACT_URL,
+                list_issues=lambda: [],
+                create_issue=lambda payload: self.fail("unexpected create"),
+                update_issue=lambda number, payload: self.fail("unexpected update"),
             )
 
 

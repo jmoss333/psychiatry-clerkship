@@ -185,6 +185,18 @@ def _monthly_body(report, run_url, artifact_url):
     new_regressions = media.get("newRegressions")
     if not isinstance(new_regressions, list) or len(new_regressions) > MAX_COUNT:
         raise IssueRoutingError("new accessibility regressions are invalid")
+    # Why the cadence number moved. Since 2026-09-19 a green guideline-surveillance
+    # examination counts as the review, so "due or overdue" is smaller than the count
+    # of faculty dates alone. Unexplained, that reads as findings having been quietly
+    # dismissed; named, it reads as work the job did. Strict, like every other figure
+    # here: a report without the block is a malformed report, not a zero.
+    credit = evidence.get("surveillanceCredit")
+    if not isinstance(credit, dict):
+        raise IssueRoutingError("evidence surveillance credit is invalid")
+    credited = _bounded_count(
+        credit.get("sourcesCredited"),
+        "surveillance-credited reviews",
+    )
     stale_runbooks = _bounded_count(runbooks.get("stale"), "stale runbooks")
     unknown_runbooks = _bounded_count(runbooks.get("unknown"), "unknown runbooks")
     marker = "<!-- maintenance:monthly -->"
@@ -196,6 +208,7 @@ def _monthly_body(report, run_url, artifact_url):
         f"Evidence records: {total}",
         f"Pending or unknown identities: {identity_pending + identity_unknown}",
         f"Evidence cadence due or overdue: {cadence_due + cadence_overdue}",
+        f"Reviews credited to guideline surveillance: {credited}",
         f"Served media missing alternatives: {served_missing}",
         f"New accessibility regressions: {len(new_regressions)}",
         f"Stale or unknown runbooks: {stale_runbooks + unknown_runbooks}",
