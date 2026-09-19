@@ -64,6 +64,34 @@ test('every published tool route gets the shared control, including unindexed ht
   await expect(page.locator(TOGGLE)).toHaveCount(0);
 });
 
+// The shell's masthead yields to the tool at every width (frontdoor.css, .fd-reader--tool block;
+// tests/tool-masthead.test.mjs pins the stylesheet). That contract only holds if every tool
+// actually titles itself, which no stylesheet pin can see — so this opens each published tool
+// LIVE (no route stub) and asserts the visible <h1> inside the frame, at the desktop width where
+// the double masthead used to show. A tool that ships a <div> title instead of a heading fails
+// here by name, which is how feedback.html and review.html were found on 2026-09-19.
+test('every published tool titles itself, and the shell masthead yields to it on desktop', async ({ page, request }) => {
+  test.setTimeout(240_000);
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page);
+  const navResponse = await requestGetWithRetry(request, '/nav.json');
+  expect(navResponse.ok()).toBe(true);
+  const nav = await navResponse.json();
+  const tools = [...new Set(nav.flatMap(section => section.items || [])
+    .filter(item => item.k === 'tool').map(item => item.f))];
+  expect(tools.length).toBeGreaterThan(20);
+  for (const ref of tools) {
+    await page.goto(`/?tool=${encodeURIComponent(ref)}&masthead-inventory=1`);
+    const frame = page.locator('.fd-article iframe');
+    await expect(frame, ref).toHaveCount(1);
+    await expect(page.frameLocator('.fd-article iframe').locator('h1').first(), `${ref} titles itself`).toBeVisible();
+    await expect(page.locator('.fd-reader--tool .fd-article__head'), `${ref} shell head yields`).toBeHidden();
+    const shellH1 = await page.locator('.fd-reader--tool .fd-article__h1').boundingBox();
+    expect(shellH1, `${ref} shell h1 stays in the document`).not.toBeNull();
+    expect(Math.max(shellH1.width, shellH1.height), `${ref} shell h1 is clipped, not painted`).toBeLessThanOrEqual(1);
+  }
+});
+
 test('desktop toggle expands the same live iframe and remembers the preference across tools', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await seedCompleteSetup(page);

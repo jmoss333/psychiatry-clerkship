@@ -43,6 +43,7 @@ them and let the breakpoint decide:
 | `.fd-actionbar`, `.fd-actionbar__spacer`, `.fd-quicktools--pills` | ≥ 1000px | below 1000px |
 | `.fd-article__actions` | below 1000px | ≥ 1000px |
 | `.fd-article .fd-tip` (Reader's keyboard hint **only** — the wizard's `.fd-tip--setup` line is a different subtree and stays visible) | below 1000px | ≥ 1000px |
+| `.fd-article__head` and an empty `.fd-article__lead` on a **tool** (`.fd-reader--tool`); `.fd-article__h1` is clipped there, never `display:none`. Not a breakpoint: a tool supplies its own `<h1>` (calibrated on every shipped tool 2026-09-19; `tool-expand.spec.js` opens each one and asserts it), so the shell's masthead yields at every width. | every width | never on a tool |
 
 The enhanced `.fd-reader--guide` is a scoped exception: its week `.fd-railnav` remains
 available below the article at every width. Its new `.fd-guide-margin` is sticky beside the
@@ -334,10 +335,10 @@ it; just don't expect it to paint anything.
   [read only] .fd-reader__back   <button>
   .fd-reader__cols
     .fd-article
-      .fd-article__head
+      .fd-article__head                  (tool: display:none at EVERY width — the tool titles itself)
         .fd-eyebrow / .fd-article__dot / .fd-article__meta / .fd-attested
-      .fd-article__h1
-      .fd-article__lead
+      .fd-article__h1                    (tool: clipped, never removed — the outer document keeps its heading)
+      .fd-article__lead                  (tool: hidden when empty)
       .fd-article__body                  (rendered long-form content)
       .fd-keypoints
         .fd-keypoints__label
