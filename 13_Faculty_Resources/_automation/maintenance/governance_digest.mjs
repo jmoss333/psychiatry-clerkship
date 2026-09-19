@@ -118,7 +118,8 @@ function reviewQueuePresent(digest) {
     || digest.topics.other.optionalGovernanceMissing > 0
     || digest.reviewed.pending > 0
     || digest.reviewed.missing > 0
-    || digest.reattestation.count > 0;
+    || digest.reattestation.count > 0
+    || digest.staleAttestations.count > 0;
 }
 
 export function buildGovernanceDigest(inputs) {
@@ -135,6 +136,12 @@ export function buildGovernanceDigest(inputs) {
   const reviewed = object(source.reviewed, 'reviewed');
   const needsReattest = object(source.needsReattest, 'needsReattest');
   const reattestationSlugs = uniqueSlugs(needsReattest.slugs, 'needsReattest.slugs');
+  const staleAttestations = object(source.staleAttestations, 'staleAttestations');
+  /* Deliberately NOT cross-checked against manifestItems the way needsReattest.slugs is:
+     a stale row is one the drift tool already resolved THROUGH shipped_pages.json (an
+     unshipped reviewed row is refused there, never reported stale), so a second
+     membership test could only ever disagree with the listing both sides read. */
+  const staleSlugs = uniqueSlugs(staleAttestations.slugs, 'staleAttestations.slugs');
   if (reattestationSlugs.some((slug) => !manifestItems.includes(slug))) {
     fail('needsReattest.slugs contains an item outside the shipped manifest');
   }
@@ -165,6 +172,7 @@ export function buildGovernanceDigest(inputs) {
     topics: topicSummary(manifestPages, topicMeta),
     reviewed: reviewedSummary(manifestItems, reviewed),
     reattestation: { count: reattestationSlugs.length, slugs: reattestationSlugs },
+    staleAttestations: { count: staleSlugs.length, slugs: staleSlugs },
     attestation: {
       status: errors.length ? 'invalid' : 'ready',
       errorCount: errors.length,
@@ -192,6 +200,7 @@ export function renderGovernanceMarkdown(digest) {
     `Reviewed coverage: ${digest.reviewed.reviewed}/${digest.reviewed.total}; `
       + `${digest.reviewed.pending} pending; ${digest.reviewed.missing} missing.`,
     `Re-attestation queue: ${digest.reattestation.count}.`,
+    `Stale attestations: ${digest.staleAttestations.count}.`,
     `Attestation consistency: ${digest.attestation.status} (${digest.attestation.errorCount} error(s)).`,
     '',
     'Faculty review remains required. This automation does not attest, approve, or modify content.',
@@ -262,6 +271,46 @@ export function parseAttestationValidatorResult(result) {
   throw new Error('attestation validator did not return a recognized contract');
 }
 
+/* A reviewed page whose attested inputs no longer match its stored contentHash. The
+   learner sites render it pending (surface_governance.load_effective_ledger); this is how
+   the weekly digest learns the same thing, from the same tool an auditor would run.
+
+   EXIT CODES ARE A CONTRACT (docs/RATCHETS.md): 0 clean, 1 a finding (an unbound,
+   malformed or unshipped-and-unlisted row -- still a complete report), 2 COULD NOT CHECK.
+   Anything but 0 or 1 throws, so the digest fails rather than reporting "0 stale" over a
+   set it never read: a check reporting success over nothing is the failure this whole
+   contract exists to end (docs/SILENT_SHRINK_CHECKLIST.md §D2/§D4). stderr is not
+   inspected -- on 0 and 1 the tool writes its report to stdout and nothing else, and it is
+   the exit code, not a stray line, that says whether the report can be trusted. */
+export function parseStaleAttestationResult(result) {
+  object(result, 'stale attestation result');
+  if (result.error) throw result.error;
+  if (result.status !== 0 && result.status !== 1) {
+    fail(`stale attestation check could not check (exit ${result.status})`);
+  }
+  let payload;
+  try {
+    payload = JSON.parse(typeof result.stdout === 'string' ? result.stdout : '');
+  } catch {
+    fail('stale attestation report is not JSON');
+  }
+  object(payload, 'stale attestation report');
+  if (payload.schemaVersion !== 1) fail('stale attestation report has an unknown schema');
+  const stale = object(payload.stale, 'stale attestation report stale');
+  return Object.keys(stale)
+    .map((slug) => safeSlug(slug, 'stale attestation slug'))
+    .sort();
+}
+
+function runStaleAttestations() {
+  const tool = path.join(ROOT, 'bin/check_attestation_hashes.py');
+  return parseStaleAttestationResult(spawnSync('python3', [tool, '--format', 'json'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 8_388_608,
+  }));
+}
+
 function runAttestationValidator() {
   const validator = path.join(ROOT, '13_Faculty_Resources/_automation/validate_attestation_consistency.py');
   return parseAttestationValidatorResult(spawnSync('python3', [validator], {
@@ -287,6 +336,7 @@ export function main(argv = process.argv.slice(2), dependencies = {}) {
   const read = dependencies.readJson ?? readJson;
   const validateAttestation = dependencies.runAttestationValidator
     ?? runAttestationValidator;
+  const staleAttestations = dependencies.runStaleAttestations ?? runStaleAttestations;
   const write = dependencies.writeFile ?? writeFileSync;
   const logError = dependencies.logError ?? console.error;
   try {
@@ -303,6 +353,7 @@ export function main(argv = process.argv.slice(2), dependencies = {}) {
       needsReattest: read(
         '13_Faculty_Resources/_automation/surveillance/config/needs_reattest.json',
       ),
+      staleAttestations: { slugs: staleAttestations() },
       attestationErrors: validateAttestation(),
     });
     write(args['--out-json'], `${JSON.stringify(digest, null, 2)}\n`, 'utf8');

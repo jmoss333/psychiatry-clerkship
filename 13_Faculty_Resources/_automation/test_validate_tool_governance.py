@@ -12,6 +12,7 @@ from decimal import Decimal
 from pathlib import Path
 from unittest.mock import patch
 
+import attestation_hash
 import validate_tool_governance as governance
 
 
@@ -53,9 +54,11 @@ def synthetic_ledger_for_site_entries(root: Path) -> dict:
     Task 1 risk schema yet (that migration is a separate, faculty-gated
     step — see .superpowers/sdd/2026-07-26-risk-aware-publishing-warnings/).
     Tests that exercise the real repository's tool sources/markers patch
-    load_validated_ledger with this synthetic stand-in so they stay
+    load_effective_ledger with this synthetic stand-in so they stay
     decoupled from that pending migration without ever reading or writing
-    the real reviewed.json.
+    the real reviewed.json. The patch returns the (ledger, report) PAIR that
+    function returns -- a bare dict would unpack into two strings and turn the
+    patch into a silent no-op.
     """
     entry = reviewed_ledger_entry()
     slugs = set()
@@ -124,26 +127,6 @@ def write_synthetic_repository(root: Path) -> None:
     shipped_path = root / "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
     shipped_path.parent.mkdir(parents=True, exist_ok=True)
     shipped_path.write_text(json.dumps(shipped), encoding="utf-8")
-    reviewed = root / "13_Faculty_Resources/reviewed.json"
-    reviewed.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(SCHEMA_SOURCE, reviewed.with_name("reviewed.schema.json"))
-    ledger_entry = reviewed_ledger_entry()
-    reviewed.write_text(
-        json.dumps(
-            {
-                slug: ledger_entry
-                for slug in (
-                    "base.html",
-                    "orientation-video.html",
-                    "rp-agitation.html",
-                    "rp-brief-psych.html",
-                    "rp-canon-quiz.html",
-                    "rp-post-event-huddle.html",
-                )
-            }
-        ),
-        encoding="utf-8",
-    )
     sources = {
         "synthetic/base.html": b'<!-- [CLERKSHIP-META v1] tool="synthetic-base" audience="trainee" -->\n',
         "_prototypes/orientation-video/orientation-video.html": b'<!-- [RC-META] tool="synthetic-video" audience="trainee" -->\n',
@@ -156,6 +139,33 @@ def write_synthetic_repository(root: Path) -> None:
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(value)
+    # Written AFTER the sources, and with topic_meta.json beside it, because the ledger
+    # now has to name the text it attests: build_governance_document() loads the
+    # EFFECTIVE ledger, and a reviewed row with no contentHash is refused outright.
+    (root / "topic_meta.json").write_text("{}", encoding="utf-8")
+    reviewed = root / "13_Faculty_Resources/reviewed.json"
+    reviewed.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(SCHEMA_SOURCE, reviewed.with_name("reviewed.schema.json"))
+    ledger_entry = reviewed_ledger_entry()
+    reviewed.write_text(
+        json.dumps(
+            {
+                slug: dict(
+                    ledger_entry,
+                    contentHash=attestation_hash.digest_from_tree(root, shipped, {}, slug),
+                )
+                for slug in (
+                    "base.html",
+                    "orientation-video.html",
+                    "rp-agitation.html",
+                    "rp-brief-psych.html",
+                    "rp-canon-quiz.html",
+                    "rp-post-event-huddle.html",
+                )
+            }
+        ),
+        encoding="utf-8",
+    )
 
 
 def run_validator(root: Path, *arguments: str, forbid_socket: bool = False) -> subprocess.CompletedProcess[str]:
@@ -593,8 +603,8 @@ class RepositoryProducerTests(unittest.TestCase):
         # real reviewed.json's current content.
         with patch.object(
             governance,
-            "load_validated_ledger",
-            return_value=synthetic_ledger_for_site_entries(ROOT),
+            "load_effective_ledger",
+            return_value=(synthetic_ledger_for_site_entries(ROOT), {"stale": {}}),
         ):
             diagnostics, documents = governance.validate_repository(ROOT)
 
@@ -606,8 +616,8 @@ class RepositoryProducerTests(unittest.TestCase):
     def test_current_emitted_sources_leave_only_the_expected_legacy_markers(self) -> None:
         with patch.object(
             governance,
-            "load_validated_ledger",
-            return_value=synthetic_ledger_for_site_entries(ROOT),
+            "load_effective_ledger",
+            return_value=(synthetic_ledger_for_site_entries(ROOT), {"stale": {}}),
         ):
             diagnostics, _documents = governance.validate_repository(ROOT)
 
@@ -615,6 +625,32 @@ class RepositoryProducerTests(unittest.TestCase):
             diagnostics[0].removeprefix("legacy metadata warning: ").split(", ")
         )
         self.assertEqual(legacy_paths, EXPECTED_LEGACY_MARKER_SOURCES)
+
+    def test_a_tool_whose_source_drifted_is_emitted_as_needs_review(self) -> None:
+        """A reviewed tool whose own source changed since the review is not reviewed.
+
+        tool-governance.json takes reviewStatus and attestationStatus from the ledger
+        alone; before PR 1b that was the SOURCE ledger, so editing an attested tool left
+        its envelope reading "faculty-attested" with nobody having seen the new text.
+        """
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_synthetic_repository(root)
+            source = root / "synthetic/base.html"
+            source.write_bytes(source.read_bytes() + b"<p>Added after the review</p>\n")
+
+            document, _warnings = governance.build_governance_document(
+                root, "ms3", revision="f" * 40
+            )
+
+        items = {item["id"]: item for item in document["items"]}
+        drifted = items["tools/base"]
+        self.assertEqual(drifted["reviewStatus"], "needs-review")
+        self.assertEqual(drifted["attestationStatus"], "needs-attestation")
+        # The untouched sibling is unaffected: drift is per slug, not per build.
+        untouched = items["tools/orientation-video"]
+        self.assertEqual(untouched["reviewStatus"], "reviewed")
+        self.assertEqual(untouched["attestationStatus"], "faculty-attested")
 
     def test_built_tool_inventory_matches_generated_governance_ids(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -646,7 +682,9 @@ class RepositoryProducerTests(unittest.TestCase):
         ledger = synthetic_ledger_for_site_entries(ROOT)
         with (
             patch.object(governance, "_tool_entries", return_value=entries[:-1]),
-            patch.object(governance, "load_validated_ledger", return_value=ledger),
+            patch.object(
+                governance, "load_effective_ledger", return_value=(ledger, {"stale": {}})
+            ),
         ):
             with self.assertRaisesRegex(
                 governance.GovernanceError,
@@ -696,21 +734,44 @@ class RepositoryProducerTests(unittest.TestCase):
         self.assertIn("ms3: 23 item(s)", result.stdout)
         self.assertIn("resident: 26 item(s)", result.stdout)
 
-    def test_rotation_curator_is_an_attested_faculty_local_policy_tool(self) -> None:
-        # Reviewed by Joshua Moss, MD in the faculty console on 2026-08-23; the attestation
-        # was stranded on attest/pending and landed 2026-08-27. The source was verified
-        # unchanged between review and landing, so the reviewed status describes the
-        # content it was given for. The remaining diagnostic is the legacy-metadata
-        # warning, which never belonged to the curator.
+    def test_rotation_curator_envelope_agrees_with_the_effective_ledger(
+        self,
+    ) -> None:
+        # Reviewed by Joshua Moss, MD in the faculty console on 2026-08-23; the attestation was
+        # stranded on attest/pending and landed 2026-08-27, and the source was verified unchanged
+        # between review and landing. It has changed SINCE, so today the contentHash rule calls
+        # the row stale and the envelope says needs-review.
+        #
+        # WHAT THIS ASSERTS, and why it is not "the curator is stale". An earlier version pinned
+        # the drift itself, which made a LEGITIMATE re-attestation a guaranteed red -- in
+        # bin/verify.sh, which is the pre-push hook, and in ci.yml. A gate that fires when the
+        # owner does the very work the gate exists to prompt is worse than no gate. So the
+        # assertion is the INVARIANT instead: the envelope agrees with report["stale"], whichever
+        # regime the tree is in. It still goes red if build_governance_document reverts to
+        # load_validated_ledger, because then a stale slug would keep reading `reviewed` here.
+        #
+        # The classification fields are the ledger's risk record and the source's own marker, so
+        # they hold either way. The one diagnostic is the legacy-metadata warning, which never
+        # belonged to the curator.
         diagnostics, documents = governance.validate_repository(ROOT)
+        _ledger, report = governance.load_effective_ledger(ROOT)
 
+        drifted = "rotation-curator.html" in report["stale"]
+        expected_review = "needs-review" if drifted else "reviewed"
+        expected_attestation = "needs-attestation" if drifted else "faculty-attested"
         self.assertEqual(len(diagnostics), 1)
         for site in ("ms3", "resident"):
             items = {item["id"]: item for item in documents[site]["items"]}
             curator = items["tools/rotation-curator"]
             self.assertEqual(curator["audiences"], ["faculty"])
-            self.assertEqual(curator["reviewStatus"], "reviewed")
-            self.assertEqual(curator["attestationStatus"], "faculty-attested")
+            self.assertEqual(
+                curator["reviewStatus"],
+                expected_review,
+                f"{site}: rotation-curator.html is "
+                f"{'stale' if drifted else 'bound'} in the effective ledger but its "
+                f"envelope reads {curator['reviewStatus']}",
+            )
+            self.assertEqual(curator["attestationStatus"], expected_attestation)
             self.assertEqual(curator["reviewCategory"], "local-policy")
             self.assertEqual(curator["safetySeverity"], "moderate")
             self.assertEqual(curator["clinicalClaim"], False)
