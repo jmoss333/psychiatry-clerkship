@@ -224,12 +224,16 @@ def main():
     reports = L.write_report(args.job, findings, base=args.out_dir)
     digest = L.append_digest(digest_findings + overflow + unfiled, base=args.out_dir)
     L.update_last_run(checked_sources, base=args.out_dir)
+    ordered = sorted(issue_snapshot, key=lambda item: (item["number"] is None, item["number"] or 0))
     with open(args.issues_out, "w", encoding="utf-8") as fh:
-        json.dump(
-            sorted(issue_snapshot, key=lambda item: (item["number"] is None, item["number"] or 0)),
-            fh,
-            indent=2,
-        )
+        json.dump(ordered, fh, indent=2)
+    # The same content-free snapshot also lands in history/, so offline readers (the
+    # cadence guard, a session with no gh) see the issue truth as of the last scheduled run
+    # rather than the status frozen into a dated report. Content-free by construction
+    # (normalize_issue_snapshot keeps number, url, state, closedAt, fingerprint, labels).
+    os.makedirs(args.out_dir, exist_ok=True)
+    with open(os.path.join(args.out_dir, "issue_snapshot.json"), "w", encoding="utf-8") as fh:
+        json.dump({"schemaVersion": 1, "capturedAt": L.utcnow(), "issues": ordered}, fh, indent=2)
 
     print(f"\nSummary [{args.job}]: {len(created)} created, {len(deduped)} deduped, "
           f"{len(digest_findings)} P2 digested, {len(overflow)} overflow->digest.")
