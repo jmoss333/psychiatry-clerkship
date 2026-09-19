@@ -70,6 +70,123 @@ def cron_for(name):
     return [entry["cron"] for entry in schedules]
 
 
+class OperatorDocumentationTests(unittest.TestCase):
+    """Pin approved operator corrections, including absence of contradictory guidance."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.readme = (ROOT / "13_Faculty_Resources/_automation/maintenance/README.md").read_text()
+        cls.proxy = (ROOT / "sp-proxy/README.md").read_text()
+        cls.redteam = (ROOT / "sp-proxy/REDTEAM_CHECKLIST.md").read_text()
+
+    def section(self, document, heading):
+        self.assertEqual(document.count(f"## {heading}\n"), 1)
+        return " ".join(document.split(f"## {heading}\n", 1)[1].split("\n## ", 1)[0].split())
+
+    def test_operator_matrix_covers_queue_and_all_heartbeat_artifacts(self):
+        matrix = self.section(self.readme, "Schedule and evidence matrix")
+        for name, label in (
+            ("maintenance-queue-runner.yml", "Autonomous queue runner"),
+            ("maintenance-heartbeat.yml", "Internal workflow heartbeat"),
+        ):
+            with self.subTest(workflow=name):
+                row = next((line for line in self.readme.splitlines() if line.startswith(f"| {label} |")), "")
+                self.assertIn(name, row)
+                self.assertIn(f"`{EXPECTED[name]}`", row)
+                for step in steps(name):
+                    if str(step.get("uses", "")).startswith("actions/upload-artifact@"):
+                        self.assertIn(step["with"]["name"], row)
+                        self.assertIn(f'{step["with"]["retention-days"]} days', row)
+        self.assertIn("Daily 04:40 UTC", matrix)
+
+    def test_operator_codex_cadence_is_one_consolidated_heartbeat(self):
+        clocks = self.section(self.readme, "Activation and clocks")
+        for phrase in ("one consolidated Codex heartbeat", "08:30", "America/New_York",
+                       "Monday", "first Tuesday", "inside", "next-run"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, clocks)
+        self.assertEqual(self.readme.count("| Controller-managed Codex heartbeat;"), 1)
+        for stale in ("three Codex heartbeats", "First Tuesday 09:00 local", "Monday 09:15 local"):
+            self.assertNotIn(stale, self.readme)
+
+    def test_operator_canary_documents_paid_conditional_actor_and_limits(self):
+        health = self.section(self.readme, "Interview Room health path")
+        for phrase in ("0 */6 * * *", "authenticated `GET /api/sp`", "only when `learnerReady`",
+                       "one live actor `POST /api/sp`", "spends one actor turn",
+                       "never invokes evaluator, speech, transcription, or synthesis",
+                       "content-free receipt", "one bounded actor reply", "safety screen",
+                       "clinical quality", "privacy approval", "release readiness"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, health)
+        for stale in ("makes no actor", "proves authenticated read-only reachability only"):
+            self.assertNotIn(stale, health)
+
+    def test_operator_monitor_samples_alternating_canary_slots(self):
+        for document, heading in ((self.readme, "Interview Room health path"),
+                                  (self.proxy, "Scheduled health receipts")):
+            with self.subTest(heading=heading):
+                health = self.section(document, heading)
+                for phrase in ("00:15 and 12:15 UTC", "00:00 and 12:00", "alternating",
+                               "eight hours", "ten minutes"):
+                    self.assertIn(phrase, health)
+                self.assertNotIn("after each slot", health)
+                self.assertNotIn("after each scheduled slot", health)
+
+    def test_proxy_actor_proof_requires_learner_ready_success(self):
+        health = self.section(self.proxy, "Scheduled health receipts")
+        self.assertIn(
+            "A learner-ready success proves that the contract is intact and that the actor answered one neutral turn.",
+            health,
+        )
+        self.assertIn(
+            "Only a learner-ready success is evidence that the tool can speak; a green draft-pack receipt skips actor probing.",
+            health,
+        )
+        self.assertNotIn("This check proves that", health)
+        self.assertNotIn("it is now evidence that the tool can speak", health)
+
+    def test_operator_turnover_keeps_learner_passcode_fixed(self):
+        for document, heading in ((self.readme, "Rotation configuration and manual boundary"),
+                                  (self.proxy, "Rotation turnover")):
+            with self.subTest(heading=heading):
+                turnover = self.section(document, heading)
+                for phrase in ("learner passcode is fixed", "non-rotating", "only the separate operations credential",
+                               "suspected disclosure", "content-free"):
+                    self.assertIn(phrase, turnover)
+                self.assertNotIn("rotates the learner passcode", turnover)
+                self.assertNotIn("Revoke the old learner", turnover)
+                self.assertNotIn("SP_ROTATION_ID`, learner passcode", turnover)
+        self.assertIn("new non-identifying `SP_ROTATION_ID`", self.section(self.proxy, "Rotation turnover"))
+
+    def test_operator_queue_recovery_requires_exact_workflow_did_work(self):
+        escalation = self.section(self.readme, "Failure escalation")
+        for phrase in ("Maintenance — Autonomous Queue Runner", "`nothing-to-do` is idle/neutral",
+                       "cannot recover", "only `did-work`", "missing or unrecognized outcome",
+                       "unverified", "prior failing row unchanged", "non-queue"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, escalation)
+        self.assertNotIn("a success flips that row", escalation)
+
+    def test_operator_branch_steward_documents_ownership_and_human_resolution(self):
+        branches = self.section(self.readme, "A pushed branch with no pull request")
+        for phrase in ("`automation_branch_prs.py`", "independent", "GET only",
+                       "exact `automation/surveillance-inbox`", "imported", "`queue_pr_fallback.py`",
+                       "`automation/queue-[a-z0-9][a-z0-9-]{0,63}-YYYY-MM-DD`",
+                       "content-free", "`missing_open_pr`", "draft", "same-repository",
+                       "incomplete", "ambiguous", "malformed", "`unavailable`", "exit 2",
+                       "never opens or closes PRs or issues", "never deletes branches",
+                       "resolution remains human"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, branches)
+
+    def test_redteam_d7_rejects_actor_receipt_as_release_approval(self):
+        row = next(line for line in self.redteam.splitlines() if line.startswith("| D7 |"))
+        for phrase in ("learner-ready", "bounded contract", "one actor reply",
+                       "never replaces", "deploy/model/pack", "faculty/privacy"):
+            self.assertIn(phrase, row)
+        self.assertNotIn("GET reachability only", row)
+
+
 class ScheduledWorkflowTests(unittest.TestCase):
     def validate_mutation(self, name, old, new):
         with tempfile.TemporaryDirectory() as directory:
@@ -444,6 +561,34 @@ class ScheduledWorkflowTests(unittest.TestCase):
         )
         self.assertEqual(upload["with"]["retention-days"], "90")
         self.assertIsInstance(upload["with"]["retention-days"], str)
+
+    def test_branch_pr_detector_is_independent_with_unique_90_day_receipt(self):
+        heartbeat_steps = steps("maintenance-heartbeat.yml")
+        detector_name = "Detect automation branches without open pull requests"
+        detectors = [step for step in heartbeat_steps if step.get("name") == detector_name]
+        self.assertEqual(len(detectors), 1, "heartbeat must detect branch-only publication debris")
+        detector = detectors[0]
+        self.assertEqual(detector["if"], "always()")
+        self.assertEqual(detector["env"], {
+            "GITHUB_REPOSITORY": "${{ github.repository }}",
+            "GITHUB_TOKEN": "${{ secrets.GITHUB_TOKEN }}",
+        })
+        names = [step.get("name") for step in heartbeat_steps]
+        self.assertLess(names.index("Evaluate scheduled workflow freshness"), names.index(detector_name))
+        self.assertEqual(names.index(detector_name), names.index("Detect stranded auto-merge pull requests") + 1)
+        uploads = [step for step in heartbeat_steps if step.get("with", {}).get("name") ==
+                   "maintenance-automation-branch-prs-${{ github.run_id }}"]
+        self.assertEqual(len(uploads), 1)
+        upload = uploads[0]
+        self.assertLess(heartbeat_steps.index(detector), heartbeat_steps.index(upload))
+        self.assertEqual(upload["if"], "always()")
+        self.assertEqual(upload["uses"],
+                         "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a")
+        self.assertEqual(upload["with"], {
+            "name": "maintenance-automation-branch-prs-${{ github.run_id }}",
+            "path": "${{ runner.temp }}/automation-branch-prs.json",
+            "if-no-files-found": "warn", "retention-days": "90",
+        })
 
     def test_artifact_retention_is_bounded_and_maintenance_evidence_is_90_days(self):
         names = [

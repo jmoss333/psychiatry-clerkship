@@ -133,6 +133,12 @@ class WorkflowHeartbeatTests(unittest.TestCase):
                 "surveillance-guideline.yml": 35 * 24,
             },
         )
+        self.assertEqual(
+            heartbeat_module._expected_cron(
+                "maintenance-queue-runner.yml"
+            ),
+            "40 4 * * *",
+        )
         self.assertNotIn("maintenance-heartbeat.yml", EXPECTATIONS)
 
     def test_every_cron_in_the_repo_has_a_freshness_window(self):

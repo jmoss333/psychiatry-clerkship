@@ -254,7 +254,9 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Install workflow parser"),
             ("name", "Evaluate scheduled workflow freshness"),
             ("name", "Detect stranded auto-merge pull requests"),
+            ("name", "Detect automation branches without open pull requests"),
             ("name", "Detect branch ruleset drift"),
+            ("uses", "actions/upload-artifact"),
             ("uses", "actions/upload-artifact"),
             ("uses", "actions/upload-artifact"),
         ),
@@ -381,6 +383,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("uses", "actions/setup-python"),
             ("name", "Read the rolling escalation issue"),
             ("name", "Capture the first error line from the failed run"),
+            ("name", "Read the successful queue run outcome"),
             ("name", "Render the escalation decision"),
             ("name", "Upsert the rolling escalation issue"),
         ),
@@ -391,14 +394,14 @@ EXPECTED_STEP_INVENTORIES = {
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
-        "7090155fdbda3f4a9bda687841552bffb2b88e344895009241aaf17d6beb5d6f"
+        "674b60ea33bcf8545c60ce5094fc0aa64fc27c241db417e74ed26c5842670677"
     ),
     "ci.yml": "ac309354549f9258a2420175f22b85b988ee7c673edaa2c8ebbbaa69b2c29f28",
     "maintenance-governance-digest.yml": (
         "b6cc2dcf41eec62131c18bca73f235b8599241234b0d26e5c406f635435b521e"
     ),
     "maintenance-heartbeat.yml": (
-        "2657e218acd9d67f48e4ee39a6069c918056efaeebb3f15506693d4011163837"
+        "2fd18edc8a3d3cf15ea82c4838e28fb4d075513f027fd751b995dee3ea887261"
     ),
     "maintenance-monthly-review.yml": (
         "acd1fe78364baf65ac9842ffb62a5abacaa8c70110a254106166130985fc9689"
@@ -716,6 +719,13 @@ npx playwright test --project=lfs""",
                 'stranded_prs.py --out "$RUNNER_TEMP/stranded-prs.json"',
                 "always()",
                 "required stranded pull request gate",
+            ),
+            (
+                "Detect automation branches without open pull requests",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                'automation_branch_prs.py --out "$RUNNER_TEMP/automation-branch-prs.json"',
+                "always()",
+                "required automation branch pull request gate",
             ),
             (
                 "Detect branch ruleset drift",

@@ -19,10 +19,11 @@ GitHub and Netlify cron expressions are UTC. A GitHub schedule is active only wh
 workflow file is on the repository's default branch; a branch-local cron is not an active
 schedule. Until merge, any external status report must call it `pending_merge`.
 
-The three Codex heartbeats below are controller-activated automations specified for the
-operational handoff. They are not repository jobs and must not be reported as active until
-their definitions and next-run times have been inspected in Codex. Their clock is
-`America/New_York`, so daylight-saving changes do not move the human-facing local time.
+The operational handoff specifies one consolidated Codex heartbeat, daily at 08:30
+`America/New_York`. Monday rotation-readiness and first Tuesday policy/provider/evidence
+(including Zotero) work run conditionally inside that heartbeat, not as separate schedules.
+It is controller-managed, not a repository job: verify its definition and next-run time
+in Codex before reporting it active. Daylight-saving changes preserve the local time.
 
 ## Schedule and evidence matrix
 
@@ -31,10 +32,11 @@ days, the repository-supported ceiling. The existing CI smoke artifact remains 1
 
 | Check | Cadence | Workflow or home | Artifact and retention |
 |---|---|---|---|
-| Interview Room authenticated GET | Every 6 hours, `0 */6 * * *` | Netlify `sp-health-canary` | Blob store `sp-health-canary`, key `latest`; not a GitHub artifact |
+| Interview Room contract and conditional actor canary | Every 6 hours, `0 */6 * * *` | Netlify `sp-health-canary` | Blob store `sp-health-canary`, key `latest`; not a GitHub artifact |
 | Interview Room receipt monitor | Every 12 hours at minute 15, `15 */12 * * *` | `maintenance-sp-health-monitor.yml` | `maintenance-sp-health-${{ github.run_id }}` — 90 days |
+| Autonomous queue runner | Daily 04:40 UTC, `40 4 * * *` | `maintenance-queue-runner.yml` | `maintenance-queue-runner-${{ github.run_id }}` — 90 days |
 | Production learner canary | Daily 09:20 UTC, `20 9 * * *` | `maintenance-production-canary.yml` | `maintenance-production-canary-${{ github.run_id }}` — 90 days |
-| Internal workflow heartbeat | Daily 10:45 UTC, `45 10 * * *` | `maintenance-heartbeat.yml` | `maintenance-workflow-heartbeat-${{ github.run_id }}` — 90 days |
+| Internal workflow heartbeat | Daily 10:45 UTC, `45 10 * * *` | `maintenance-heartbeat.yml` | `maintenance-workflow-heartbeat-${{ github.run_id }}`, `maintenance-stranded-prs-${{ github.run_id }}`, `maintenance-automation-branch-prs-${{ github.run_id }}` — 90 days each |
 | Clean-room release rehearsal | Sunday 08:00 UTC, `0 8 * * 0` | `ci.yml` | `smoke-test-results-${{ github.run_number }}` — 14 days |
 | Faculty governance digest | Monday 12:30 UTC, `30 12 * * 1` | `maintenance-governance-digest.yml` | `maintenance-governance-${{ github.run_id }}` — 90 days |
 | Stranded faculty attestations | Monday 12:30 UTC, with the governance digest | `maintenance-governance-digest.yml` | `maintenance-governance-${{ github.run_id }}` — 90 days |
@@ -44,9 +46,7 @@ days, the repository-supported ceiling. The existing CI smoke artifact remains 1
 | Citation surveillance | Monday 07:00 UTC, `0 7 * * 1` | `surveillance-citations.yml` | `surveillance-citation-monitor-${{ github.run_id }}` — 90 days |
 | Guideline surveillance | First day monthly 06:00 UTC, `0 6 1 * *` | `surveillance-guideline.yml` | `surveillance-guideline-monitor-${{ github.run_id }}` — 90 days |
 | Resource intake | On demand only | `surveillance-resource-intake.yml` | `surveillance-resource-intake-${{ github.run_id }}` — 90 days |
-| External automation deadman | Daily 08:30 local | Controller-managed Codex heartbeat; verify current status | Notification; no repository artifact |
-| Policy/provider/Zotero review | First Tuesday 09:00 local | Controller-managed Codex heartbeat; verify current status | Read-only review proposal |
-| Rotation follow-up | Monday 09:15 local | Controller-managed Codex heartbeat; verify current status | Notification only when actionable |
+| Consolidated external deadman and conditional reviews | Daily 08:30 America/New_York; Monday rotation and first-Tuesday policy/evidence work inside the same run | Controller-managed Codex heartbeat; verify current status | Notify only when actionable; no repository artifact |
 
 ## State meanings
 
@@ -176,24 +176,31 @@ is not serialized into the bounded heartbeat receipt.
 
 ## Interview Room health path
 
-Netlify runs `sp-health-canary` at `0 */6 * * *`. It reuses the server-only learner
-passcode for one authenticated `GET /api/sp`, makes no actor, evaluator, speech, budget,
-transcription, or synthesis call, and replaces strong-consistency Blob key
-`sp-health-canary/latest` with a bounded receipt. The public credential-free
+Netlify runs `sp-health-canary` every six hours at `0 */6 * * *`. It reuses the
+server-only learner passcode for one authenticated `GET /api/sp` contract check and,
+only when `learnerReady` is true, one live actor `POST /api/sp`. That POST spends one
+actor turn against the shared rotation budget; the canary never invokes evaluator,
+speech, transcription, or synthesis. It replaces strong-consistency Blob key
+`sp-health-canary/latest` with a bounded, content-free receipt; prompts and replies
+are not retained. The public credential-free
 `GET /api/sp/health-status` response is `Cache-Control: no-store`.
 
-GitHub checks that status 15 minutes after each slot. A success blocks if it is more than
-eight hours old or if `nextRun` is more than ten minutes late; missing, malformed, failed,
-and unavailable receipts also block. A prior success therefore cannot hide a missed slot
-or Blob-write loss.
+GitHub checks that status every 12 hours at minute 15 (`15 */12 * * *`): nominally
+00:15 and 12:15 UTC, sampling the 00:00 and 12:00 canary slots. It samples alternating
+six-hour slots, not every slot. A success blocks if it is more than eight hours old or
+if `nextRun` is more than ten minutes late; missing, malformed, failed, and unavailable
+receipts also block. These freshness checks detect stale or lost receipts when polled,
+but do not provide continuous coverage of intervening slots.
 
 The public receipt is the alert surface, not the only operational proof. After a deploy,
 pack/model change, credential rotation, or forced canary failure, inspect Netlify's
 `sp-health-canary` scheduled-function invocations and logs. Confirm the expected six-hour
 slots and that failure logs contain only `event`, `state`, and an allow-listed
 `failureCode`. Apply red-team check D6 to both a success and a forced failure. A green
-receipt proves authenticated read-only reachability only; it does not replace the full
-red-team checklist or faculty/privacy activation gates.
+learner-ready receipt proves the authenticated contract and one bounded actor reply,
+not evaluator behavior, the safety screen, voice behavior, clinical quality, privacy
+approval, or release readiness. A non-learner-ready success does not prove actor capability.
+Neither replaces the full red-team checklist or faculty/privacy activation gates.
 
 ## Production cache and integrity contract
 
@@ -250,12 +257,20 @@ authority for the edit, review stamp, and issue closure.
 
 ## Failure escalation
 
-Every workflow above reports its completion to `automation-failure-escalation.yml`
+The watched maintenance and surveillance workflows report completion to
+`automation-failure-escalation.yml`
 (`workflow_run`), which folds the event into one rolling issue,
 `automation: scheduled job failures`, under the marker
 `<!-- automation:failure-escalation -->`. The body lists each failing workflow, its
-consecutive-failure count, the run link, and the first error line; a success flips that row
-to recovered and resets the count.
+consecutive-failure count, the run link, and the first error line. A successful non-queue
+workflow flips its failing row to recovered and resets the count.
+
+For the exact workflow `Maintenance — Autonomous Queue Runner`, a successful run must
+also supply `outcome.txt` from its queue artifact: only `did-work` can recover that
+workflow's failing row. `nothing-to-do` is idle/neutral and cannot recover a prior failure;
+a missing or unrecognized outcome (including unreadable evidence) is unverified. Both
+leave the prior failing row unchanged. Workflow recovery does not resolve older branches
+without PRs; the independent branch steward below continues to report them.
 
 It shares no code path with `maintenance_issue.py` on purpose — the escalation has to keep
 reporting when that path is the thing that broke. State round-trips through a JSON block in
@@ -269,6 +284,20 @@ command in any scoped workflow, and `tests/maintenance/test_escalation_issue.py`
 no input produces a close decision.
 
 ## A pushed branch with no pull request
+
+The independent `automation_branch_prs.py` steward runs inside the internal heartbeat,
+even when the other checks fail. It uses GitHub GET only and owns exact
+`automation/surveillance-inbox` plus the queue grammar imported from
+`queue_pr_fallback.py`: `automation/queue-[a-z0-9][a-z0-9-]{0,63}-YYYY-MM-DD`.
+Other automation names are not rendered. Its bounded, content-free receipt lists
+`missing_open_pr` for each owned branch without an exact same-repository open head;
+an open draft counts, but closed/merged PRs and same-named fork heads do not.
+Any incomplete, ambiguous, malformed, over-limit, or inaccessible evidence produces
+state `unavailable`, `gate=blocked`, and exit 2, never an empty healthy result.
+Missing-PR rows also block with exit 2. The steward never opens or closes PRs or issues,
+never edits or merges them, and never deletes branches; resolution remains human after
+reviewing the exact branch and its evidence. This receipt is separate from the queue
+publication fallback below, which can create or update its own issue.
 
 The queue runner pushes its branch and *then* asks GitHub to open the draft pull request.
 Those two operations do not share a permission. `contents: write` covers the push; opening
@@ -335,9 +364,12 @@ confirms them:
 ```
 
 Never add a name, email, learner/institution ID, assignment, patient information, or a
-secret. A human must supply the authoritative dates and non-identifying ID. Before a new
-block, an authorized operator separately rotates the learner passcode and operations
-credential, preserves the prior content-free usage receipt, and runs the Interview Room
+secret. A human must supply the authoritative dates and non-identifying ID. The
+learner passcode is fixed and non-rotating at ordinary block turnover; only the separate
+operations credential rotates then, performed by an authorized operator. An incident
+involving suspected disclosure requires separate incident response, including emergency
+learner-passcode replacement when appropriate.
+Before the new block, preserve the prior content-free usage receipt and run the Interview Room
 red-team checklist and golden transcript. Do not put credential values in git, issues,
 artifacts, chat, or logs. Managed voice remains disabled until all required external
 faculty and privacy gates are recorded.

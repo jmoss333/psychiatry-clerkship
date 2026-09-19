@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -17,6 +19,7 @@ sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation" / "maintena
 import escalation_issue as esc  # noqa: E402
 
 WORKFLOW = ROOT / ".github" / "workflows" / "automation-failure-escalation.yml"
+QUEUE = "Maintenance — Autonomous Queue Runner"
 
 
 def event(workflow="Maintenance — Workflow Heartbeat", conclusion="failure", **kw):
@@ -93,6 +96,40 @@ class StateTests(unittest.TestCase):
 
 
 class DecisionTests(unittest.TestCase):
+    def test_queue_success_without_did_work_retains_the_entire_failure_row(self):
+        prior = esc.apply_event({}, event(workflow=QUEUE, error="publication failed"))
+        body = esc.render_body(prior)
+        for outcome in (None, "", "nothing-to-do", "unknown", "did-work\nextra", "DID-WORK"):
+            with self.subTest(outcome=outcome):
+                completion = event(workflow=QUEUE, conclusion="success", at="2026-09-03T10:00:00Z")
+                if outcome is not None:
+                    completion["outcome"] = outcome
+                result = esc.build([issue(body)], completion)
+                self.assertEqual(esc.parse_state(result["body"]), prior)
+                self.assertEqual(result["decision"], esc.NONE)
+
+    def test_queue_did_work_success_recovers_a_failure(self):
+        body = esc.render_body(esc.apply_event({}, event(workflow=QUEUE)))
+        result = esc.build([issue(body)], event(workflow=QUEUE, conclusion="success", outcome="did-work"))
+        row = esc.parse_state(result["body"])[QUEUE]
+        self.assertEqual(row["status"], esc.RECOVERED)
+        self.assertEqual(row["recovered_after"], 1)
+        self.assertEqual(result["decision"], esc.UPDATE)
+
+    def test_queue_failure_records_failure_regardless_of_outcome(self):
+        for outcome in (None, "nothing-to-do", "did-work"):
+            with self.subTest(outcome=outcome):
+                result = esc.build([], event(workflow=QUEUE, outcome=outcome))
+                self.assertEqual(esc.parse_state(result["body"])[QUEUE]["status"], esc.FAILING)
+                self.assertEqual(result["decision"], esc.CREATE)
+
+    def test_non_queue_success_ignores_queue_outcome(self):
+        for name in ("Maintenance — Workflow Heartbeat", QUEUE + " copy"):
+            body = esc.render_body(esc.apply_event({}, event(workflow=name)))
+            result = esc.build([issue(body)], event(workflow=name, conclusion="success", outcome="nothing-to-do"))
+            self.assertEqual(esc.parse_state(result["body"])[name]["status"], esc.RECOVERED)
+            self.assertEqual(result["decision"], esc.UPDATE)
+
     def test_first_failure_without_an_issue_creates_one(self):
         result = esc.build([], event())
         self.assertEqual(result["decision"], esc.CREATE)
@@ -163,6 +200,31 @@ class BodyTests(unittest.TestCase):
 
 
 class CliTests(unittest.TestCase):
+    def test_optional_outcome_file_is_safe_and_controls_queue_recovery(self):
+        for content, expected in ((b"did-work\n", esc.UPDATE), (b"nothing-to-do\n", esc.NONE),
+                                  (b"", esc.NONE), (b"unknown\n", esc.NONE),
+                                  (b"\xff", esc.NONE), (None, esc.NONE), ("directory", esc.NONE)):
+            with self.subTest(content=content), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                prior = esc.apply_event({}, event(workflow=QUEUE))
+                issues = root / "issues.json"
+                issues.write_text(json.dumps([issue(esc.render_body(prior))]), encoding="utf-8")
+                outcome = root / "outcome.txt"
+                if isinstance(content, bytes):
+                    outcome.write_bytes(content)
+                elif content == "directory":
+                    outcome.mkdir()
+                body_out, output = root / "body.md", root / "output.txt"
+                code = esc.main([
+                    "--issues", str(issues), "--workflow", QUEUE, "--conclusion", "success",
+                    "--run-url", "https://example.invalid/run/2", "--at", "2026-09-03T10:00:00Z",
+                    "--outcome-file", str(outcome), "--body-out", str(body_out), "--output", str(output),
+                ])
+                self.assertEqual(code, 0)
+                self.assertIn(f"decision={expected}\n", output.read_text(encoding="utf-8"))
+                if expected == esc.NONE:
+                    self.assertEqual(esc.parse_state(body_out.read_text(encoding="utf-8")), prior)
+
     def test_cli_writes_the_body_and_the_step_outputs(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -216,6 +278,60 @@ class WorkflowWiringTests(unittest.TestCase):
             self.document["permissions"],
             {"actions": "read", "contents": "read", "issues": "write"},
         )
+        self.assertNotIn("permissions", self.document["jobs"]["escalate"])
+
+    def queue_outcome_step(self):
+        matches = [step for step in self.document["jobs"]["escalate"]["steps"]
+                   if step.get("id") == "queue_outcome"]
+        self.assertEqual(len(matches), 1, "successful queue runs need one outcome download step")
+        return matches[0]
+
+    def test_queue_download_only_runs_for_successful_exact_queue_name(self):
+        step = self.queue_outcome_step()
+        condition = " ".join(step["if"].split())
+        self.assertEqual(condition,
+                         "${{ github.event.workflow_run.name == 'Maintenance — Autonomous Queue Runner' && "
+                         "github.event.workflow_run.conclusion == 'success' }}")
+        self.assertEqual(step["env"]["RUN_ID"], "${{ github.event.workflow_run.id }}")
+        self.assertEqual(step["env"]["GH_TOKEN"], "${{ secrets.GITHUB_TOKEN }}")
+
+    def test_workflow_download_and_renderer_preserve_or_recover_with_real_outcome(self):
+        step = self.queue_outcome_step()
+        render = next(step for step in self.document["jobs"]["escalate"]["steps"]
+                      if step.get("id") == "render")
+        for mode, expected in (("did-work", esc.UPDATE), ("nothing-to-do", esc.NONE),
+                               ("missing", esc.NONE), ("missing-file", esc.NONE), ("partial-failure", esc.NONE)):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                gh = root / "gh"
+                gh.write_text(
+                    f"#!{sys.executable}\n"
+                    "import os, sys\nfrom pathlib import Path\n"
+                    "args = sys.argv[1:]\n"
+                    "assert args[:3] == ['run', 'download', '314159'], args\n"
+                    "assert args[3:5] == ['--name', 'maintenance-queue-runner-314159'], args\n"
+                    "assert args[5] == '--dir' and len(args) == 7, args\n"
+                    "mode = os.environ['ARTIFACT_MODE']\n"
+                    "if mode == 'missing': sys.exit(1)\n"
+                    "dest = Path(args[6]); dest.mkdir(parents=True, exist_ok=True)\n"
+                    "if mode != 'missing-file': (dest / 'outcome.txt').write_text(('did-work' if mode == 'partial-failure' else mode) + '\\n')\n"
+                    "sys.exit(1 if mode == 'partial-failure' else 0)\n",
+                    encoding="utf-8",
+                )
+                gh.chmod(0o700)
+                prior = esc.apply_event({}, event(workflow=QUEUE))
+                (root / "open-issues.json").write_text(json.dumps([issue(esc.render_body(prior))]), encoding="utf-8")
+                env = dict(os.environ, PATH=f"{root}{os.pathsep}{os.environ['PATH']}",
+                           RUNNER_TEMP=str(root), RUN_ID="314159", ARTIFACT_MODE=mode,
+                           RUN_WORKFLOW=QUEUE, RUN_CONCLUSION="success", RUN_URL="https://example.invalid/run/2",
+                           RUN_AT="2026-09-03T10:00:00Z", GITHUB_OUTPUT=str(root / "output.txt"))
+                download = subprocess.run(["bash", "-c", step["run"]], env=env, cwd=ROOT, capture_output=True, text=True)
+                self.assertEqual(download.returncode, 0, download.stderr)
+                result = subprocess.run(["bash", "-c", render["run"]], env=env, cwd=ROOT, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(f"decision={expected}\n", (root / "output.txt").read_text(encoding="utf-8"))
+                if expected == esc.NONE:
+                    self.assertEqual(esc.parse_state((root / "escalation-body.md").read_text(encoding="utf-8")), prior)
 
     def test_no_step_can_close_an_issue(self):
         source = WORKFLOW.read_text(encoding="utf-8")
