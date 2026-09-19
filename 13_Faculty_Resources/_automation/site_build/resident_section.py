@@ -314,15 +314,23 @@ welcome_compass.assert_nav_projection(nav,_week_cards,label="resident")
 # orientation video, adds the rp-* prototypes), so the document below only ever
 # requires ledger records / built tool files for what resident actually ships.
 sys.path.insert(0, os.path.dirname(HERE))
+from attestation_hash import project_topic_meta_faculty_review
 from surface_governance import (
-    load_validated_ledger,
+    load_effective_ledger,
+    hash_report_summary,
     build_site_document,
     annotate_navigation,
     apply_tool_status,
     write_site_document,
 )
 
-_ledger = load_validated_ledger(Path(LIB))
+# The EFFECTIVE ledger, same as MS3: an attestation whose attested inputs no longer match
+# its stored contentHash renders PENDING here too. The digest is computed from the SOURCE
+# tree, so both sites demote the same set -- what differs is only which of them each site
+# ships. The built topic_meta.json is demoted further down, after this build's own last
+# write to it (cotw_meta.inject).
+_ledger, _hash_report = load_effective_ledger(Path(LIB))
+print(hash_report_summary(_hash_report))
 _surface_governance = build_site_document(_ledger, nav, "resident")
 nav = annotate_navigation(nav, _surface_governance)
 open(OUT + "/nav.json", "w", encoding="utf-8").write(
@@ -358,6 +366,15 @@ import cotw_meta as _cotw_meta
 _cm_add,_cm_skip,_cm_prune,_cm_untagged=_cotw_meta.inject(OUT,_cotw_weeks,"res")
 print("cotw topic_meta: %d derived, %d hand-written kept, %d ms3 keys pruned"%(_cm_add,_cm_skip,_cm_prune))
 if _cm_untagged: print("  NOTE no 'blueprint' in cotw_registry.json (case absent from the crosswalk): "+", ".join(_cm_untagged))
+
+# D6, after the LAST write to OUT/topic_meta.json above and before every read of it below:
+# a drifted page's facultyReview block reads pending in the BUILT copy, so the Front Door
+# sheet's "attested" line cannot outlive the text it attested. `reviewer`/`lastReviewed`
+# stay (the review did happen); the SOURCE topic_meta.json is never touched.
+_tm_built=json.load(open(OUT+"/topic_meta.json",encoding="utf-8"))
+_tm_demoted=project_topic_meta_faculty_review(_tm_built,set(_hash_report["stale"]))
+json.dump(_tm_built,open(OUT+"/topic_meta.json","w",encoding="utf-8"),ensure_ascii=False)
+print("topic_meta facultyReview: %d demoted to pending (drift)"%_tm_demoted)
 
 # The resident build begins as a copy of MS3, so replace every Front Door global only after
 # resident extras, nav metadata, and topic-meta overlays are all complete. Reusing the copied

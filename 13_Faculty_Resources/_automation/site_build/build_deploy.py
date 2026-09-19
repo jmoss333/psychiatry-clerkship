@@ -473,15 +473,31 @@ welcome_compass.assert_nav_projection(nav,_compass_cards,label="MS3")
 # reviewed.json to the risk schema, this is EXPECTED to abort the real build; see
 # .superpowers/sdd/2026-07-26-risk-aware-publishing-warnings/task-3-brief.md.
 sys.path.insert(0, os.path.dirname(HERE))
+from attestation_hash import project_topic_meta_faculty_review
 from surface_governance import (
-    load_validated_ledger,
+    load_effective_ledger,
+    hash_report_summary,
     build_site_document,
     annotate_navigation,
     apply_tool_status,
     write_site_document,
 )
 
-_ledger = load_validated_ledger(Path(LIB))
+# The EFFECTIVE ledger: an attestation whose attested inputs no longer match its stored
+# contentHash renders PENDING, because the receipt describes text this build no longer
+# ships. The source reviewed.json is never rewritten -- the review happened, on its
+# recorded date, over the older text; only the faculty console writes that file.
+_ledger, _hash_report = load_effective_ledger(Path(LIB))
+print(hash_report_summary(_hash_report))
+# D6: the BUILT topic_meta.json follows the same demotion, so the Front Door sheet's
+# "attested" line cannot outlive the text it attested (frontdoor/fd_data.js reads the built
+# copy and looks at `status` alone). `reviewer` and `lastReviewed` stay: the review did
+# happen. The SOURCE topic_meta.json is never touched -- and this runs after the last write
+# to OUT/topic_meta.json (cotw_meta.inject, above) and before every read of it below.
+_tm_built = json.load(open(OUT+"/topic_meta.json",encoding="utf-8"))
+_tm_demoted = project_topic_meta_faculty_review(_tm_built, set(_hash_report["stale"]))
+json.dump(_tm_built, open(OUT+"/topic_meta.json","w",encoding="utf-8"), ensure_ascii=False)
+print("topic_meta facultyReview: %d demoted to pending (drift)" % _tm_demoted)
 _surface_governance = build_site_document(_ledger, nav, "ms3")
 nav = annotate_navigation(nav, _surface_governance)
 open(OUT + "/nav.json", "w", encoding="utf-8").write(
