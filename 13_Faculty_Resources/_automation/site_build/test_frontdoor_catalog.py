@@ -101,6 +101,12 @@ def _curriculum():
                 "exclusions": [],
             },
         },
+        "essentials": {
+            "_note": "Synthetic source only",
+            "ms3": [{"name": "Core kit", "accent": "topic", "refs": [shared[0]]}],
+            "resident": [{"name": "Practice kit", "accent": "tool",
+                          "refs": ["rp-agitation.html"]}],
+        },
     }
 
 
@@ -110,6 +116,84 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.shared = list(self.curriculum["libraryColumns"][0]["refs"])
         self.ms3_catalog = _catalog(self.shared)
         self.resident_catalog = _catalog(self.shared + RESIDENT_EXTRAS)
+
+    def test_essentials_projects_only_selected_audience_in_order(self):
+        for site, catalog in (("ms3", self.ms3_catalog),
+                              ("resident", self.resident_catalog)):
+            with self.subTest(site=site):
+                curriculum = copy.deepcopy(self.curriculum)
+                curriculum["essentials"][site].append(
+                    {"name": "More", "accent": "topic",
+                     "refs": [self.shared[2], self.shared[1]]})
+                payload = build_frontdoor_payload(site, curriculum, catalog, REVISION)
+                selection = payload["curriculum"]["essentials"]
+                self.assertIsInstance(selection, list)
+                self.assertEqual(selection, curriculum["essentials"][site])
+
+    def test_essentials_projection_is_deep_copied(self):
+        source = copy.deepcopy(self.curriculum)
+        ms3 = build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog, REVISION)
+        resident = build_frontdoor_payload(
+            "resident", self.curriculum, self.resident_catalog, REVISION)
+        self.assertIsInstance(ms3["curriculum"]["essentials"], list)
+        self.assertIsInstance(resident["curriculum"]["essentials"], list)
+        resident_before = copy.deepcopy(resident["curriculum"]["essentials"])
+        ms3["curriculum"]["essentials"][0]["name"] = "Changed"
+        ms3["curriculum"]["essentials"][0]["refs"].append(self.shared[1])
+        self.assertEqual(self.curriculum, source)
+        self.assertEqual(resident["curriculum"]["essentials"], resident_before)
+
+    def test_essentials_projection_rejects_missing_empty_or_wrong_typed_selection(self):
+        cases = [
+            lambda c: c.pop("essentials"),
+            lambda c: c.__setitem__("essentials", None),
+            lambda c: c.__setitem__("essentials", []),
+            lambda c: c["essentials"].pop("ms3"),
+        ]
+        for value in (None, {}, [], "bad"):
+            cases.append(lambda c, value=value: c["essentials"].__setitem__("ms3", value))
+        for mutate in cases:
+            with self.subTest(mutate=repr(mutate)):
+                curriculum = copy.deepcopy(self.curriculum)
+                mutate(curriculum)
+                with self.assertRaisesRegex(ValueError, r"curriculum\.essentials\.ms3"):
+                    build_frontdoor_payload("ms3", curriculum, self.ms3_catalog, REVISION)
+
+    def test_essentials_does_not_change_full_payload_inventory(self):
+        for site, catalog, replacement in (
+            ("ms3", self.ms3_catalog, self.shared[1]),
+            ("resident", self.resident_catalog, self.shared[1]),
+        ):
+            with self.subTest(site=site):
+                changed = copy.deepcopy(self.curriculum)
+                changed["essentials"][site][0]["refs"] = [replacement]
+                before = build_frontdoor_payload(site, self.curriculum, catalog, REVISION)
+                after = build_frontdoor_payload(site, changed, catalog, REVISION)
+                before["curriculum"].pop("essentials")
+                after["curriculum"].pop("essentials")
+                self.assertEqual(after, before)
+
+    def test_reachable_refs_ignores_essentials_with_and_without_search_resources(self):
+        listing = {"pages": [
+            {"slug": ref, "title": "Full " + ref,
+             "kind": "tool" if ref.endswith(".html") else "page",
+             "sites": (["ms3", "res"] if ref in self.shared else ["res"])}
+            for ref in self.shared + RESIDENT_EXTRAS
+        ]}
+        for site, catalog in (("ms3", self.ms3_catalog),
+                              ("resident", self.resident_catalog)):
+            for shipped in (None, listing):
+                with self.subTest(site=site, search=shipped is not None):
+                    payload = build_frontdoor_payload(
+                        site, self.curriculum, catalog, REVISION, shipped=shipped)
+                    expected = reachable_refs(payload)
+                    self.assertTrue(expected)
+                    self.assertIn(self.shared[-1], expected)
+                    payload["curriculum"]["essentials"] = [
+                        {"name": "Changed", "accent": "topic", "refs": [self.shared[1]]}]
+                    self.assertEqual(reachable_refs(payload), expected)
+                    del payload["curriculum"]["essentials"]
+                    self.assertEqual(reachable_refs(payload), expected)
 
     def test_search_covers_shipped_cases_without_changing_library_or_assignments(self):
         case = {"slug": "case.md", "title": "Full teaching case name", "kind": "page", "sites": ["ms3"]}
@@ -438,6 +522,14 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 83)
         # 93 as of 2026-09-04: +rp-post-event-huddle.html in the resident "Interactive tools" column.
         self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 93)
+        for site, payload, count in (("ms3", ms3, 30), ("resident", resident, 35)):
+            selection = payload["curriculum"]["essentials"]
+            essential_refs = [ref for section in selection for ref in section["refs"]]
+            placed_refs = {ref for column in payload["curriculum"]["libraryColumns"]
+                           for ref in column["refs"]}
+            self.assertEqual(selection, curriculum["essentials"][site])
+            self.assertEqual(len(essential_refs), count)
+            self.assertTrue(set(essential_refs).issubset(placed_refs))
         self.assertEqual(resident_additions, RESIDENT_EXTRAS)
         self.assertTrue(set(RESIDENT_EXTRAS).issubset(resident_placed))
         self.assertTrue(set(RESIDENT_EXTRAS).isdisjoint(resident_excluded))
