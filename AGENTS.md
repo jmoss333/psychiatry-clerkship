@@ -364,9 +364,10 @@ cd tests/smoke && npm ci && npx playwright test
   `standards.json`, `instrument_rights.json`, `vocabulary.json`, and everything under `.claude/`
   (skills, hooks, subagents, settings) and `.github/workflows/`. **Content** is any path
   `site_build/shipped_pages.json` lists as a `source` or `extraSources` at HEAD, plus anything
-  matching `^(0\d|1[0-4]|99)_` that is not under `13_Faculty_Resources/` — the derived listing
-  because a page can ship from a path the regex misses (`welcome.md`'s resident override), the
-  regex because a path can be content before any site lists it. A **promotion** is a claim that a
+  matching `^(0\d|1[0-4]|99)_[^/]+/` that is not under `13_Faculty_Resources/` — a directory
+  segment is required, so a top-level `03_notes.md` is not content — the derived listing because
+  a page can ship from a path the regex misses (`welcome.md`'s resident override), the regex
+  because a path can be content before any site lists it. A **promotion** is a claim that a
   review happened: in `reviewed.json`, a row whose `status` becomes `reviewed`, a row born
   `reviewed`, or a row reviewed on BOTH sides whose `at`, `by`, `risk`, `note`, `contentHash`,
   `claimsHash`, `evidenceHash` or `evidenceThrough` changes — **a missing key is a value**,
@@ -379,14 +380,17 @@ cd tests/smoke && npm ci && npx playwright test
   other than `reviewed.json` in the same diff as content; **L2** a promotion on any branch but
   `attest/pending`; **L3** a promotion in a diff that also changes content; **L4** any non-merge
   commit introducing a `reviewed.json` promotion whose author **or** committer email is not
-  `faculty@clerkship.local`. Exit 0 clean, 1 a failure, **2 could-not-check** — no base, an
-  unparsable registry, a HEAD with no `shipped_pages.json`, a base that resolves to the head, a
-  `reviewed.json` absent at head — and since the tool is a `bin/verify.sh` step and verify.sh is
-  the pre-push hook, **2 blocks a push exactly as 1 does**: a classifier that cannot tell content
-  from not-content would clear every diff it was handed. Why: run it over #672 (`8b8ccd9`) and it
-  fails L2+L3+L4 — three pending pages flipped to `reviewed` under the owner's name and three
-  attestations re-dated, in the same diff as six content files, authored by `jmoss333` and
-  committed by `GitHub`. Run it over #640 (`0009ad6`) and it fails L1+L2+L3+L4 — a rule written
+  `faculty@clerkship.local`. Exit 0 clean, 1 a failure, **2 could-not-check** — no base, no git,
+  an unparsable registry, a HEAD with no `shipped_pages.json`, a `reviewed.json` absent at head,
+  or a base you NAMED that resolves to the head (`--base HEAD`, or `CLERKSHIP_PR_BASE` pointing
+  at your own tip after a push: an empty range shows no promotion). The **default** base
+  equalling the head is the opposite finding and exits 0 saying so — it means the branch owns no
+  commits, which is why a clean `main` still passes. Since the tool is a `bin/verify.sh` step and
+  verify.sh is the pre-push hook, **2 blocks a push exactly as 1 does**: a classifier that cannot
+  tell content from not-content would clear every diff it was handed. Why: run it over #672
+  (`8b8ccd9`) and it fails L2+L3+L4 — three pending pages flipped to `reviewed` under the owner's
+  name and three attestations re-dated, in the same diff as six content files, authored by
+  `jmoss333` and committed by `GitHub`. Run it over #640 (`0009ad6`): L1+L2+L3+L4 — a rule written
   into `CLAUDE.md`/`AGENTS.md` from inside a 926-line content PR, plus a `note added` to an
   already-reviewed row. Nothing stopped either; the rule catches both retroactively. **When it
   fires:** split the governance edit into its own PR, and take the attestation through the
