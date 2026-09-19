@@ -67,7 +67,12 @@ and it silences no rule.
 
 EXIT 2 IS NOT A PASS. No base, no git, an unparsable registry, or a HEAD tree with no
 shipped_pages.json all mean the CONTENT predicate cannot be evaluated — and a classifier that
-cannot tell content from not-content would clear every diff it was handed.
+cannot tell content from not-content would clear every diff it was handed. Two more doors are
+exit 2 for the same reason, and both were once a clean 0: a base that RESOLVES TO THE HEAD
+(`--base HEAD`, or `CLERKSHIP_PR_BASE=origin/<this branch>` after a push) makes the diff empty
+and every promotion in it invisible; and a reviewed.json ABSENT AT HEAD reads as "every entry
+deleted", i.e. registration, so moving the ledger to a path this tool does not read would clear
+a diff that promoted every row in it. Absent at BASE still means "every entry is new".
 """
 
 from __future__ import annotations
@@ -171,9 +176,27 @@ def _git_text(root, args, check=True):
     return _git(root, args, check=check).stdout.decode("utf-8", "replace")
 
 
-def _rev_exists(root, rev):
+def _resolve(root, rev):
+    """The full commit sha `rev` names here, or None when it names no commit."""
     proc = _git(root, ["rev-parse", "--verify", "--quiet", "%s^{commit}" % rev], check=False)
-    return proc.returncode == 0 and bool(proc.stdout.strip())
+    sha = proc.stdout.decode("utf-8", "replace").strip()
+    return sha if proc.returncode == 0 and sha else None
+
+
+def _rev_exists(root, rev):
+    return _resolve(root, rev) is not None
+
+
+def _short_rev(root, rev):
+    """`rev` as git's own abbreviated sha; the literal text when it resolves to nothing.
+
+    The header used to print `rev[:7]`, which renders `origin/main~1` as `origin/` and
+    `8b8ccd9~1` as `8b8ccd9` — the short sha of a DIFFERENT commit than the one compared.
+    A base a reader cannot trust is a base nobody can reproduce the run from.
+    """
+    proc = _git(root, ["rev-parse", "--short", "%s^{commit}" % rev], check=False)
+    out = proc.stdout.decode("utf-8", "replace").strip()
+    return out if proc.returncode == 0 and out else rev
 
 
 def _blob_at(root, rev, path):
@@ -373,6 +396,13 @@ def commit_promotions(root, base, head):
 
 def classify(root, base, head, head_branch, base_source=None):
     """The whole verdict as data. Raises InputError / GitError; never guesses."""
+    # An empty range is not a clean range. `CLERKSHIP_PR_BASE=origin/<own-branch>` after a
+    # push, or `--base HEAD`, makes the diff empty and every promotion invisible — which
+    # would print OK over the exact diff the rule exists to read.
+    base_sha = _resolve(root, base)
+    if base_sha is not None and base_sha == _resolve(root, head):
+        raise InputError("the named base is the head — nothing to compare")
+
     shipped = json_at(root, head, SHIPPED_REL)
     if shipped is None:
         raise InputError("%s is absent at %s — the CONTENT predicate cannot be evaluated"
@@ -383,8 +413,13 @@ def classify(root, base, head, head_branch, base_source=None):
     content = [path for path in changed if is_content(path, sources)]
     governance = [path for path in changed if is_governance(path)]
 
-    ledger = ledger_promotions(json_at(root, base, LEDGER_REL),
-                               json_at(root, head, LEDGER_REL))
+    # Absent at head is NOT "every entry deleted". A rename of the ledger would empty the
+    # promotion set and clear a diff that carries every promotion in it, at a new path this
+    # tool does not read; absent at BASE stays "every entry is new" (a repo's first commit).
+    head_ledger = json_at(root, head, LEDGER_REL)
+    if head_ledger is None:
+        raise InputError("%s is absent at head" % LEDGER_REL)
+    ledger = ledger_promotions(json_at(root, base, LEDGER_REL), head_ledger)
     topic_meta = topic_meta_promotions(json_at(root, base, TOPIC_META_REL),
                                        json_at(root, head, TOPIC_META_REL))
     promotions = bool(ledger) or bool(topic_meta)
@@ -402,7 +437,7 @@ def classify(root, base, head, head_branch, base_source=None):
 
     return {
         "base": base, "head": head, "headBranch": head_branch,
-        "baseSource": base_source or "--base",
+        "baseSource": base_source or "from --base",
         "changed": changed, "content": content, "governance": governance,
         "ledgerPromotions": ledger, "topicMetaPromotions": topic_meta,
         "commitOffenders": offenders, "failures": failures,
@@ -463,7 +498,7 @@ def report_lines(verdict):
 def run(root, base, head, head_branch, fmt="text", stream=None, base_source=None):
     stream = stream or sys.stdout
     verdict = classify(root, base, head, head_branch, base_source)
-    where = "base %s (%s)" % (base[:7] if len(base) >= 7 else base, verdict["baseSource"])
+    where = "base %s (%s)" % (_short_rev(root, base), verdict["baseSource"])
 
     if fmt == "json":
         payload = dict(verdict, schemaVersion=1)
@@ -893,6 +928,24 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         # A content-only PR is the common case and must stay silent.
         verdict("content alone", _case(root, "feature-content", touch_content), 0, [])
 
+        # The header must name the commit it actually compared. `rev[:7]` printed `origin/`
+        # for `origin/main~1` and, worse, a VALID-LOOKING short sha for `8b8ccd9~1` — the
+        # parent's run reported under the child's name.
+        resolved = _fixture_git(root, ["rev-parse", "--short", "main"]).strip()
+        code, text = _run(["--root", str(root), "--base", "main", "--head", "feature-content",
+                           "--head-branch", "feature-content"])
+        check("a symbolic base still exits 0", code, 0)
+        check("and the header names the resolved sha, not the ref text",
+              "base %s (from --base)" % resolved in text, True)
+        check("and does not print the ref text as if it were a sha",
+              "base main (" in text, False)
+
+        # An empty range is not a clean range.
+        code, text = _run(["--root", str(root), "--base", "main", "--head", "main",
+                           "--head-branch", "main"])
+        check("a base that resolves to the head exits 2", code, 2)
+        check("and says nothing to compare", "the named base is the head" in text, True)
+
         # The regex half of CONTENT: shipped_pages.json has never heard of this path.
         def unshipped():
             _write(root, UNSHIPPED, "# draft\n\nrevised\n")
@@ -991,6 +1044,14 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         check("an unresolvable CLERKSHIP_PR_BASE exits 2", code, 2)
         check("and names the variable", "CLERKSHIP_PR_BASE=origin/no-such-branch" in text, True)
 
+        # The shape that gets typed after a push: the variable names the branch's OWN remote
+        # tip, merge-base returns the head, and the diff is empty. Exit 2, not a clean 0.
+        with _env(CLERKSHIP_PR_BASE="stack-child"):
+            code, text = _run(["--root", str(root), "--head", "stack-child",
+                               "--head-branch", "stack-child"])
+        check("CLERKSHIP_PR_BASE naming the branch's own tip exits 2", code, 2)
+        check("and says the base is the head", "the named base is the head" in text, True)
+
         # (m) no base and no origin/main: could not check, never a pass.
         with _env(CLERKSHIP_PR_BASE=None):
             code, text = _run(["--root", str(root), "--head", "main"])
@@ -1014,6 +1075,23 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
                            "feature-no-shipped", "--head-branch", "feature-no-shipped"])
         check("a HEAD without shipped_pages.json exits 2", code, 2)
         check("and says the predicate cannot be evaluated", "CONTENT predicate" in text, True)
+        _fixture_git(root, ["checkout", "-q", "main"])
+
+        # MOVING THE LEDGER IS NOT DELETING EVERY ROW. Absent-at-head used to read as "every
+        # entry deleted" — registration — so this diff, which promotes x.md on the way past,
+        # exited 0 and the promotion left no trace anywhere the tool looks.
+        _branch(root, "feature-moved-ledger")
+        moved_ledger = "13_Faculty_Resources/reviewed.moved.json"
+        promoted_rows = json.loads(json.dumps(ledger))
+        promoted_rows["x.md"] = _reviewed(at="2026-09-16")
+        (root / LEDGER_REL).unlink()
+        _write(root, moved_ledger, promoted_rows)
+        _commit(root, "move the ledger, promoting on the way past")
+        code, text = _run(["--root", str(root), "--base", "main", "--head",
+                           "feature-moved-ledger", "--head-branch", "feature-moved-ledger"])
+        check("a ledger renamed away at head exits 2, not 0", code, 2)
+        check("and names the file it could not read",
+              "%s is absent at head" % LEDGER_REL in text, True)
         _fixture_git(root, ["checkout", "-q", "main"])
 
         # --format json carries the same verdict a machine can read.
