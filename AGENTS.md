@@ -207,6 +207,44 @@ cd tests/smoke && npm ci && npx playwright test
   audience) for external clinical review. Reads the **builds**, not the source tree, so it
   reflects nav order and audience scoping. Report-only; regenerate after building both sites.
 
+## Branching, worktrees & pushing
+- **Policy and content may not travel in the same commit.** A commit may touch the governing
+  surface (`CLAUDE.md`, `AGENTS.md`, `.github/workflows/**`, `bin/verify.sh`, the `bin/check_*`
+  gates, `docs/adr/*`, attestation config) **or** content (curriculum, tools, snapshots,
+  registries) — never both. `docs/superpowers/specs/*` is exempt: a design draft describes policy without
+  enacting it. *A PR that can edit `CLAUDE.md` can edit the rules governing PRs* — that is exactly
+  what #640 did (a governance rule inside a curriculum PR) and what #672 then invoked to bypass
+  review. Splitting them makes the rule change its own reviewable object and keeps
+  `git log -- CLAUDE.md` an honest record of every governance change.
+- **Push the branch the day you create it, before the work is finished.** A branch that exists only
+  locally is invisible to every gate, every reviewer, and every automation in this repository. The
+  2026-09-17 review found two branches stranded on one machine — including the 8-commit branch
+  carrying `automation_branch_prs.py`, *the stranded-branch detector itself*, which could not
+  report its own condition because it had never been pushed. Open the PR as a draft if the work is
+  not ready; do not hold the branch back.
+- **Branch names are `<agent>/<topic>` or `<agent>/<topic>-<date>`** — e.g. `claude/panel-gate-freshness-2026-09-17`,
+  `codex/rounds-prep-quick-guided`. Keep the agent prefix: it is what makes ownership legible in
+  `git branch -a` and is what `automation_branch_prs.py` matches on.
+- **Never merge to `main` locally and never force-push.** `main` is protected with
+  `enforce_admins: true`, both checks required, strict mode, 0 required approvals — so PRs merge on
+  green checks alone, and **every PR must be re-synced after each merge.**
+- **Worktrees live in one of three pools**, and each one is registered in `.git/worktrees`:
+  `.worktrees/<topic>/` (in-repo), `.claude/worktrees/<name>/`, or a loose sibling checkout
+  `~/Psychiatry-Clerkship-Library-<purpose>/`. Remove with `git worktree remove <path>` once the PR
+  merges — deleting the directory by hand leaves the registration behind.
+- **Never run `git worktree prune` from an agent sandbox.** Worktrees are registered at host paths
+  (`/Users/jm/...`) that do not resolve inside a sandbox mount, so **every** worktree reports
+  `prunable` there regardless of its real state — 26 of 26 did on 2026-09-17. Pruning on that
+  signal deregisters trees that hold uncommitted work. `git worktree list` is safe and read-only;
+  act on it only from a host shell, and only after checking each tree for uncommitted changes.
+- **Anything that commits runs host-side, not in the Cowork sandbox.** Git-LFS is absent there, so
+  the ~100 `.m4a` files under `07_Evidence_and_Reading/` show as falsely modified and a commit made
+  there replaces real media with pointer stubs. Read and analyse in the sandbox; commit, push and
+  build on the host. Confirm with `git status --porcelain | grep -c '\.m4a'` → expect `0`.
+- **`bin/verify.sh` is the pre-push hook**, so a red gate blocks the push itself. It runs the full
+  battery including both site builds (~several minutes) — background it to a log and poll rather
+  than waiting on it interactively.
+
 ## Conventions & gotchas
 - **localStorage keys must be namespaced `cw_*` (shared hub) or `rp_*` (resident).** The QA gate
   hard-fails any other prefix. Item-id collisions silently corrupt attestation (`cw_qbank_attest_v1`) and SRS state.
