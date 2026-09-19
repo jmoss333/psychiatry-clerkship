@@ -144,7 +144,10 @@ cd tests/smoke && npm ci && npx playwright test
   datacenter runner is bot-blocked by some hosts; it never edits the registry — recording a
   correction is faculty's), `check_review_cadence.py` (NAMES the sources `lastReviewed` +
   `reviewCadence` make due, overdue or due within 30/90 days — `monthly_review.py` only counts
-  them; same month-end clamping, pinned by the self-test), and `check_icd_codes.py` (every
+  them; same month-end clamping, pinned by the self-test. **Policy 2026-09-19: a green
+  guideline-surveillance examination counts as a surveilled source's review** — credit is
+  DERIVED from `surveillance/history/baselines/<id>.json` at read time, never written to the
+  registry, and withheld across a `modified` finding the faculty have not actioned), and `check_icd_codes.py` (every
   dotted F-code in shipped content exists in the ICD-10-CM set in force on the date it is read,
   from committed tables under `bin/data/`; `retiring` fires BEFORE the October 1 boundary).
   All three state what they examined beside the verdict, exit 2 rather than pass over a

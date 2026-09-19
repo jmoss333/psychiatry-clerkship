@@ -28,12 +28,32 @@ check that cannot see is never a check that agrees. Every unknown row carries it
 Nothing here decides whether a source is still correct. It asserts only that somebody
 looked when they said they would.
 
+POLICY (Josh, 2026-09-19): for a source under guideline surveillance, a green monthly
+surveillance examination COUNTS as its review. The first run of this tool named all 8
+monthly-cadence sources 41 days overdue against `governance.lastReviewed` (2026-07-08),
+while the surveillance job had examined seven of them on 2026-09-01. Nobody re-stamps the
+registry by hand for a run that found nothing, and automation must not stamp it either
+(an agent never signs a review) -- so the credit is DERIVED at read time, never written:
+  · the examination date comes from the job's own per-source record,
+    `surveillance/history/baselines/<id>.json` `checked_at`, which the job writes only
+    after a successful extraction and hash compare (a dead scraper writes nothing);
+  · the credit is withheld when the job detected a CHANGE the faculty have not yet
+    actioned -- a `modified` finding in `history/guideline_delta_*.json` newer than the
+    faculty's own `lastReviewed` whose status is not `actioned` or `dismissed`. A change
+    is exactly the case where a person must look, so it stays in faculty's court;
+  · every row says who the effective review came from (`reviewedBy`: faculty or
+    guideline-surveillance) and why the credit was or was not given.
+`--no-surveillance-credit` shows the faculty-only view. `monthly_review.py` still counts
+by `lastReviewed` alone; teaching it the same rule is a follow-up (WS-7).
+
 MODES
   (default)                   examine ROOT/evidence_registry.json as of today; exit 1 on findings
   --as-of YYYY-MM-DD          examine as of a frozen date (the self-test never reads the clock)
   --json                      same, as machine-readable JSON
   --all                       also name the due-90d and current rows (default: counts only)
   --registry PATH             examine a different registry file (used by --self-test)
+  --history PATH              surveillance history dir (default: the repo's; used by --self-test)
+  --no-surveillance-credit    faculty lastReviewed only; ignore surveillance examinations
   --self-test                 prove each bucket can fire and stays silent on the good case,
                               assert parity with monthly_review._add_months, drive main()
                               end-to-end against inline fixtures; no network, no clock
@@ -56,6 +76,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REGISTRY = ROOT / "evidence_registry.json"
 MONTHLY_REVIEW_DIR = ROOT / "13_Faculty_Resources" / "_automation" / "maintenance"
+DEFAULT_HISTORY = ROOT / "13_Faculty_Resources" / "_automation" / "surveillance" / "history"
+
+# The surveillance job whose examination counts as a review, and the finding statuses that
+# mean the faculty have dealt with a detected change (lifecycle in surveillance/REVIEW_RULES.md:
+# new -> triaged -> issue-open -> actioned -> dismissed).
+CREDITED_JOB = "guideline-surveillance"
+RESOLVED_STATUSES = frozenset({"actioned", "dismissed"})
 
 # Cadence word -> months until the next review. Anything else is `unknown`, deliberately:
 # the schema does not constrain the value, so a typo like "anual" must surface as a
@@ -102,22 +129,75 @@ def _add_months(value: date, months: int) -> date:
     return date(year, month, day)
 
 
+# ------------------------------------------------------------------ surveillance credit
+
+
+def _iso_date_prefix(value):
+    """The date part of an ISO datetime such as 2026-09-01T06:08:48+00:00, else None."""
+    return _exact_date(value[:10]) if isinstance(value, str) and len(value) >= 10 else None
+
+
+def load_surveillance(history_dir: Path) -> dict:
+    """Per-source examination evidence from the guideline-surveillance job's own records.
+
+    Returns {source_id: {"examinedAt": date|None, "openChanges": [{"detectedAt", "status",
+    "severity"}]}}. Reads only; an absent directory is an empty map (no credit, so every
+    surveilled source falls back to the faculty date -- loud, never a silent pass).
+    """
+    out: dict = {}
+    base = history_dir / "baselines"
+    if base.is_dir():
+        for path in sorted(base.glob("*.json")):
+            try:
+                rec = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            when = _iso_date_prefix(rec.get("checked_at")) if isinstance(rec, dict) else None
+            if when is not None:
+                out.setdefault(path.stem, {"examinedAt": None, "openChanges": []})["examinedAt"] = when
+    for path in sorted(history_dir.glob("guideline_delta_*.json")) if history_dir.is_dir() else []:
+        try:
+            findings = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        for f in findings if isinstance(findings, list) else []:
+            if not isinstance(f, dict) or f.get("change_type") != "modified":
+                continue
+            if f.get("status") in RESOLVED_STATUSES:
+                continue
+            when = _iso_date_prefix(f.get("detected_at"))
+            sid = f.get("source_id")
+            if when is None or not sid:
+                continue
+            out.setdefault(sid, {"examinedAt": None, "openChanges": []})["openChanges"].append(
+                {"detectedAt": when.isoformat(), "status": f.get("status"), "severity": f.get("severity")})
+    return out
+
+
 # ------------------------------------------------------------------ classification
 
 
-def classify(source: dict, today: date) -> dict:
-    """Bucket one source by its own cadence, as of `today`. Pure; never reads the clock."""
+def classify(source: dict, today: date, surveillance: dict | None = None) -> dict:
+    """Bucket one source by its own cadence, as of `today`. Pure; never reads the clock.
+
+    `surveillance` is the map from load_surveillance(); None or {} means no credit is
+    available and the faculty's `lastReviewed` stands alone.
+    """
     source = source if isinstance(source, dict) else {}
     governance = source.get("governance")
     governance = governance if isinstance(governance, dict) else {}
     citation = source.get("citation")
     citation = citation if isinstance(citation, dict) else {}
+    surv_block = source.get("surveillance")
+    surv_block = surv_block if isinstance(surv_block, dict) else {}
 
     row = {
         "id": source.get("id"),
         "title": citation.get("title"),
         "lastReviewed": governance.get("lastReviewed"),
         "cadence": governance.get("reviewCadence"),
+        "reviewedBy": "faculty",
+        "effectiveReviewed": None,
         "nextReview": None,
         "bucket": "unknown",
         "daysUntil": None,
@@ -137,6 +217,31 @@ def classify(source: dict, today: date) -> dict:
     if months is None:
         row["reason"] = f"reviewCadence not in {sorted(CADENCE_MONTHS)}: {row['cadence']!r}"
         return row
+
+    # Surveillance credit: only for sources the credited job examines, only from the job's
+    # own record, and never across a detected change the faculty have not actioned.
+    if surv_block.get("job") == CREDITED_JOB:
+        ev = (surveillance or {}).get(row["id"]) or {}
+        examined = ev.get("examinedAt")
+        pending = [c for c in ev.get("openChanges", [])
+                   if _exact_date(c["detectedAt"]) is not None and _exact_date(c["detectedAt"]) > last]
+        if surveillance is None:
+            row["surveillance"] = "credit disabled"
+        elif pending:
+            newest = max(pending, key=lambda c: c["detectedAt"])
+            row["surveillance"] = (f"change detected {newest['detectedAt']} ({newest['status']}, "
+                                   f"{newest['severity']}) — faculty review pending; no credit")
+        elif examined is None:
+            row["surveillance"] = "no successful examination on record; no credit"
+        elif examined <= last:
+            row["surveillance"] = f"last examined {examined.isoformat()}, not after faculty review"
+        elif examined > today:
+            row["surveillance"] = f"examined {examined.isoformat()} is after as-of; no credit"
+        else:
+            last = examined
+            row["reviewedBy"] = CREDITED_JOB
+            row["surveillance"] = f"examined {examined.isoformat()}, no change — counts as the review"
+    row["effectiveReviewed"] = last.isoformat()
 
     next_review = _add_months(last, months)
     days = (next_review - today).days
@@ -168,10 +273,10 @@ def load_registry(path: Path) -> list:
     return data["sources"]
 
 
-def examine(sources: list, today: date) -> dict:
+def examine(sources: list, today: date, surveillance: dict | None = None) -> dict:
     """Classify every declared source. Raises rather than summarising over a short set."""
     declared = len(sources)
-    rows = [classify(s, today) for s in sources]
+    rows = [classify(s, today, surveillance) for s in sources]
     if len(rows) != declared:
         raise CadenceError(f"examined {len(rows)} of {declared} declared sources")
     counts = {b: sum(1 for r in rows if r["bucket"] == b) for b in BUCKETS}
@@ -179,11 +284,17 @@ def examine(sources: list, today: date) -> dict:
     rows.sort(key=lambda r: (order[r["bucket"]],
                              r["daysUntil"] if r["daysUntil"] is not None else 0,
                              str(r["id"])))
+    credited = sum(1 for r in rows if r["reviewedBy"] == CREDITED_JOB)
     return {
         "schemaVersion": 1,
         "asOf": today.isoformat(),
         "declared": declared,
         "examined": len(rows),
+        "surveillanceCredit": None if surveillance is None else {
+            "baselines": sum(1 for v in surveillance.values() if v.get("examinedAt")),
+            "openChangeFindings": sum(len(v.get("openChanges", [])) for v in surveillance.values()),
+            "sourcesCredited": credited,
+        },
         "counts": counts,
         "rows": rows,
     }
@@ -196,6 +307,13 @@ def render(report: dict, show_all: bool) -> str:
         f"{report['examined']} examined, as of {report['asOf']}",
         "  " + "  ".join(f"{b} {counts[b]}" for b in BUCKETS),
     ]
+    sc = report.get("surveillanceCredit")
+    if sc is None:
+        out.append("  surveillance credit: disabled (faculty lastReviewed only)")
+    else:
+        out.append(f"  surveillance credit: {sc['baselines']} baseline(s) read, "
+                   f"{sc['openChangeFindings']} unactioned change finding(s), "
+                   f"{sc['sourcesCredited']} source(s) credited")
     named = set(FAILING) | {"due-30d"}
     if show_all:
         named |= {"due-90d", "current"}
@@ -219,6 +337,8 @@ def render(report: dict, show_all: bool) -> str:
                     detail = f"next {when}, in {d}d"
             out.append(f"  {str(r['id']):40s} {str(r['cadence']):8s} "
                        f"last {r['lastReviewed'] or '-'}  {detail}")
+            if r.get("surveillance"):
+                out.append(f"  {'':40s} {'':8s} surveillance: {r['surveillance']}")
     failing = sum(counts[b] for b in FAILING)
     out.append("")
     if failing:
@@ -360,6 +480,101 @@ def self_test() -> int:
     expect("classify: reports daysUntil as an integer, negative when late",
            classify(_source("x", "2026-07-08", "monthly"), today)["daysUntil"] == -41)
 
+    # --- surveillance credit: derived, never written; withheld across an unactioned change.
+    def surv_source(sid, last="2026-07-08"):
+        src = _source(sid, last, "monthly")
+        src["surveillance"] = {"job": CREDITED_JOB}
+        return src
+
+    ev = {
+        "clean": {"examinedAt": date(2026, 9, 1), "openChanges": []},
+        "changed": {"examinedAt": date(2026, 9, 1),
+                    "openChanges": [{"detectedAt": "2026-08-31", "status": "issue-open", "severity": "P0"}]},
+        "settled": {"examinedAt": date(2026, 9, 1),
+                    "openChanges": [{"detectedAt": "2026-07-01", "status": "new", "severity": "P2"}]},
+        "stale": {"examinedAt": date(2026, 7, 1), "openChanges": []},
+        "future": {"examinedAt": date(2026, 9, 30), "openChanges": []},
+    }
+    r = classify(surv_source("clean"), today, ev)
+    expect("credit: a green examination after the faculty date counts as the review",
+           r["reviewedBy"] == CREDITED_JOB and r["effectiveReviewed"] == "2026-09-01"
+           and r["bucket"] == "due-30d" and r["nextReview"] == "2026-10-01")
+    r = classify(surv_source("changed"), today, ev)
+    expect("credit: withheld across an unactioned change newer than the faculty review",
+           r["reviewedBy"] == "faculty" and r["bucket"] == "overdue"
+           and "change detected 2026-08-31" in r["surveillance"])
+    r = classify(surv_source("settled"), today, ev)
+    expect("credit: a change older than the faculty review does not block credit",
+           r["reviewedBy"] == CREDITED_JOB and r["bucket"] == "due-30d")
+    r = classify(surv_source("absent"), today, ev)
+    expect("credit: no baseline on record -> no credit, reason says so",
+           r["reviewedBy"] == "faculty" and r["bucket"] == "overdue"
+           and "no successful examination" in r["surveillance"])
+    r = classify(surv_source("stale"), today, ev)
+    expect("credit: an examination BEFORE the faculty review is not a newer review",
+           r["reviewedBy"] == "faculty" and "not after faculty review" in r["surveillance"])
+    r = classify(surv_source("future"), today, ev)
+    expect("credit: an examination after as-of is not credited",
+           r["reviewedBy"] == "faculty" and "after as-of" in r["surveillance"])
+    r = classify(surv_source("clean"), today, None)
+    expect("credit: disabled (None) -> faculty only, and the row says so",
+           r["reviewedBy"] == "faculty" and r["bucket"] == "overdue"
+           and r["surveillance"] == "credit disabled")
+    r = classify(_source("plain", "2026-07-08", "monthly"), today, ev)
+    expect("credit: a source outside the credited job never gets credit",
+           r["reviewedBy"] == "faculty" and "surveillance" not in r)
+    other = _source("otherjob", "2026-07-08", "monthly")
+    other["surveillance"] = {"job": "link-source-monitor"}
+    expect("credit: a link check is not a review",
+           classify(other, today, {"otherjob": ev["clean"]})["reviewedBy"] == "faculty")
+    expect("credit: an unknown row stays unknown even with a baseline",
+           classify({"id": "clean", "surveillance": {"job": CREDITED_JOB},
+                     "governance": {"reviewCadence": "monthly"}}, today, ev)["bucket"] == "unknown")
+    with tempfile.TemporaryDirectory() as tmp:
+        hist = Path(tmp)
+        (hist / "baselines").mkdir()
+        (hist / "baselines" / "clean.json").write_text(
+            json.dumps({"hash": "x", "chars": 10, "checked_at": "2026-09-01T06:08:48+00:00"}))
+        (hist / "baselines" / "broken.json").write_text("{not json")
+        (hist / "guideline_delta_2026-08-31.json").write_text(json.dumps([
+            {"source_id": "changed", "change_type": "modified", "status": "issue-open",
+             "severity": "P0", "detected_at": "2026-08-31T15:53:39+00:00"},
+            {"source_id": "done", "change_type": "modified", "status": "actioned",
+             "severity": "P2", "detected_at": "2026-08-31T15:53:39+00:00"},
+            {"source_id": "down", "change_type": "removed", "status": "new",
+             "severity": "P1", "detected_at": "2026-08-31T15:53:39+00:00"},
+        ]))
+        loaded = load_surveillance(hist)
+        expect("load_surveillance: reads the baseline's checked_at as a date",
+               loaded.get("clean", {}).get("examinedAt") == date(2026, 9, 1))
+        expect("load_surveillance: keeps an unactioned modified finding",
+               [c["status"] for c in loaded.get("changed", {}).get("openChanges", [])] == ["issue-open"])
+        expect("load_surveillance: drops an actioned finding and a non-modified one",
+               "done" not in loaded and "down" not in loaded)
+        expect("load_surveillance: skips an unparseable baseline without failing",
+               "broken" not in loaded)
+        expect("load_surveillance: an absent directory is an empty map",
+               load_surveillance(hist / "nope") == {})
+        # end to end through main(): credit turns the overdue row green; the flag turns it off.
+        import io
+        from contextlib import redirect_stdout
+        reg = hist / "reg.json"
+        reg.write_text(json.dumps(_fixture([surv_source("clean")])))
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = main(["--registry", str(reg), "--history", str(hist), "--as-of", "2026-09-18", "--json"])
+        blob = json.loads(out.getvalue())
+        expect("main: surveillance credit lifts a credited source out of overdue (exit 0)",
+               code == 0 and blob["counts"]["due-30d"] == 1
+               and blob["surveillanceCredit"]["sourcesCredited"] == 1)
+        with redirect_stdout(io.StringIO()):
+            code = main(["--registry", str(reg), "--history", str(hist), "--as-of", "2026-09-18",
+                         "--no-surveillance-credit"])
+        expect("main: --no-surveillance-credit restores the faculty-only verdict (exit 1)", code == 1)
+        with redirect_stdout(io.StringIO()):
+            code = main(["--registry", str(reg), "--history", str(hist / "nope"), "--as-of", "2026-09-18"])
+        expect("main: a missing history dir gives no credit and fails loudly (exit 1)", code == 1)
+
     # --- examine: counts sum to declared, and declared == examined.
     report = examine([_source("a", "2026-07-08", "monthly"),
                       _source("b", "2026-09-01", "annual"),
@@ -458,6 +673,10 @@ def main(argv=None) -> int:
                     help="also name the due-90d and current rows")
     ap.add_argument("--registry", metavar="PATH", default=str(DEFAULT_REGISTRY),
                     help="registry to examine (default: evidence_registry.json at the repo root)")
+    ap.add_argument("--history", metavar="PATH", default=str(DEFAULT_HISTORY),
+                    help="surveillance history dir holding baselines/ and guideline_delta_*.json")
+    ap.add_argument("--no-surveillance-credit", action="store_true",
+                    help="ignore surveillance examinations; faculty lastReviewed only")
     ap.add_argument("--self-test", action="store_true",
                     help="prove each bucket can fire, and stays silent on the good case")
     args = ap.parse_args(argv)
@@ -473,7 +692,8 @@ def main(argv=None) -> int:
             if today is None:
                 raise CadenceError(f"--as-of must be YYYY-MM-DD, got {args.as_of!r}")
         sources = load_registry(Path(args.registry))
-        report = examine(sources, today)
+        surveillance = None if args.no_surveillance_credit else load_surveillance(Path(args.history))
+        report = examine(sources, today, surveillance)
     except CadenceError as exc:
         print(f"review cadence: cannot run ({exc})", file=sys.stderr)
         return 2
