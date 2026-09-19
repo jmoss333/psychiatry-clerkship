@@ -345,15 +345,76 @@ cd tests/smoke && npm ci && npx playwright test
   `--write-backfill --as-of-now` least of all: it would rebind every drifted row to today's text,
   silently re-attesting pages nobody reviewed. Rendering a drifted page as pending on the learner
   sites is **not** wired yet — that is the follow-up PR "1b"; until it ships, drift is visible in
-  the console and in those two tools and nowhere a learner looks. **And what it does not close,
-  until PR 2:** a content PR that edits an attested page AND rewrites that row's `contentHash` in
-  the same diff passes every gate — diff-scoped `--strict` fails only a touched row that is stale
-  at head, and the authorship check reads the signer string — so this gate's detection is
-  advisory against a deliberate forge until the governance/content separation and the
-  console-identity rules ship. Not the same field as `canonical_claims.json`'s
+  the console and in those two tools and nowhere a learner looks. **And what it does not close on
+  its own:** a content PR that edits an attested page AND rewrites that row's `contentHash` in the
+  same diff passes every gate *this* bullet installs — diff-scoped `--strict` fails only a touched
+  row that is stale at head, and the authorship check reads the signer string. The next bullet
+  closes it: rewriting a reviewed row's `contentHash` **is a promotion**, so L2 fails that diff on
+  any branch but `attest/pending` and L4 fails it for any author or committer but the console.
+  What survives both is a promotion pushed to `attest/pending` under a forged
+  `faculty@clerkship.local` identity — deliberate fraud rather than drift, and the owner-side
+  close for it is named there too. Not the same field as `canonical_claims.json`'s
   `contentHashAtReview`, which is a sha256 of one cited file's whole text per **cited-file
   entry** (an `appliesTo` entry in `canonical_claims.schema.json`, narrowed by
   `scopeHashAtReview`).
+- **A content PR may register and demote an attestation; only the console may promote one.**
+  `bin/check_governance_separation.py` reads a PR's whole range — base rev, head rev, head branch
+  — and sorts every changed path into two sets. **Governance** is what decides how the work is
+  done: `13_Faculty_Resources/reviewed.json`, `CLAUDE.md`, `AGENTS.md`, `decisions.json`,
+  `standards.json`, `instrument_rights.json`, `vocabulary.json`, and everything under `.claude/`
+  (skills, hooks, subagents, settings) and `.github/workflows/`. **Content** is any path
+  `site_build/shipped_pages.json` lists as a `source` or `extraSources` at HEAD, plus anything
+  matching `^(0\d|1[0-4]|99)_` that is not under `13_Faculty_Resources/` — the derived listing
+  because a page can ship from a path the regex misses (`welcome.md`'s resident override), the
+  regex because a path can be content before any site lists it. A **promotion** is a claim that a
+  review happened: in `reviewed.json`, a row whose `status` becomes `reviewed`, a row born
+  `reviewed`, or a row reviewed on BOTH sides whose `at`, `by`, `risk`, `note`, `contentHash`,
+  `claimsHash`, `evidenceHash` or `evidenceThrough` changes — **a missing key is a value**,
+  because #640 promoted a row by *adding* a note to it; in `topic_meta.json`, a `facultyReview`
+  block that becomes `reviewed`/`attested`, or one reviewed on both sides whose `lastReviewed` or
+  `reviewer` changes. Everything else a content PR does to the ledger — a new pending row, a
+  pending row edited, `reviewed`→`pending`, a row deleted, a demotion that drops
+  `lastReviewed`/`reviewer` — is **registration**, and is exactly what a content PR is supposed
+  to do. The rule forbids the claim, not the bookkeeping. Four laws: **L1** a governance path
+  other than `reviewed.json` in the same diff as content; **L2** a promotion on any branch but
+  `attest/pending`; **L3** a promotion in a diff that also changes content; **L4** any non-merge
+  commit introducing a `reviewed.json` promotion whose author **or** committer email is not
+  `faculty@clerkship.local`. Exit 0 clean, 1 a failure, **2 could-not-check** — no base, an
+  unparsable registry, a HEAD with no `shipped_pages.json`, a base that resolves to the head, a
+  `reviewed.json` absent at head — and since the tool is a `bin/verify.sh` step and verify.sh is
+  the pre-push hook, **2 blocks a push exactly as 1 does**: a classifier that cannot tell content
+  from not-content would clear every diff it was handed. Why: run it over #672 (`8b8ccd9`) and it
+  fails L2+L3+L4 — three pending pages flipped to `reviewed` under the owner's name and three
+  attestations re-dated, in the same diff as six content files, authored by `jmoss333` and
+  committed by `GitHub`. Run it over #640 (`0009ad6`) and it fails L1+L2+L3+L4 — a rule written
+  into `CLAUDE.md`/`AGENTS.md` from inside a 926-line content PR, plus a `note added` to an
+  already-reviewed row. Nothing stopped either; the rule catches both retroactively. **When it
+  fires:** split the governance edit into its own PR, and take the attestation through the
+  faculty console rather than the ledger — a `topic_meta` `facultyReview` parity edit rides
+  `attest/pending` with the promotion it mirrors, never a content branch. `attest/pending` is the
+  only branch that may carry a promotion and `faculty@clerkship.local` — author AND committer,
+  because #672 was authored by one identity and committed by another — the only identity that may
+  author one. L4 asks git, not the ledger's `by` field, which any writer can type; it is still
+  forgeable with `git commit --author`, but that is deliberate fraud with a name on it, not the
+  drift this gate exists to stop. The CI step ("Guard — governance/content separation",
+  `build-test-validate`) is **pull-request-only** — `github.event.pull_request.base.sha` is the
+  one base a push event does not carry — and on an `attest/pending` PR it also runs
+  `bin/check_attestation_hashes.py --strict --base`, so the one branch that may promote is the
+  one branch whose promotions must bind to the text they attest. Its body and its branch literal
+  are pinned by `validate_scheduled_workflows.py`'s `CRITICAL_STEPS` and
+  `tests/maintenance/test_governance_guard_pins.py`. **On a branch stacked on an unmerged PR**
+  the default base is `merge-base origin/main HEAD`, which carries the PARENT's commits — so the
+  gate judges work this branch never wrote and blocks every push off the stack until the parent
+  merges. Push with `CLERKSHIP_PR_BASE=origin/<parent-branch> git push`: it moves the base, it
+  silences no rule, and naming the branch's own tip is exit 2, not a pass. **The limits, which
+  are the honest part.** L4 covers `reviewed.json` only, so a `topic_meta`-only promotion on
+  `attest/pending` passes — the console does not write `topic_meta`, so no console-identity rule
+  could be defined for it. On a **fork** PR both `github.head_ref` and the commit emails are
+  attacker-controlled, so the gate does not authenticate a fork's promotion and does not claim
+  to. The close is owner-side, not agent-side: move the console's token to a GitHub App or
+  machine user so `faculty@clerkship.local` is an identity nobody else holds, and add a ruleset
+  restricting pushes to `attest/pending` to it. Until that lands, this gate raises the cost of a
+  forged promotion; it does not make one impossible.
 - **Adding a step to `ci.yml` trips three separate contracts.** `bin/check-verify-coverage.py`
   (mirror it in `bin/verify.sh` or justify an `ALLOWED` exemption);
   `_automation/maintenance/validate_scheduled_workflows.py`, which pins the workflow by **exact step
