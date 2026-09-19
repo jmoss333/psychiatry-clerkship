@@ -476,7 +476,16 @@
  * the measured width that clears the great majority of real titles; the longest ("Consult
  * Questions: Capacity, Delirium, Catatonia, Withdrawal") still ellipses, which is the intended
  * behaviour of .fd-collink__label rather than a layout failure. */
-.fd-library__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--fd-space-9) var(--fd-space-10);align-items:start}
+/* A multi-column FLOW, not grid rows (2026-09-19). Five sections in a 3-track grid put the
+ * 18-row "Interactive tools" section (each row with a hint since PR 686) in row one beside two
+ * 12–17-row sections; a grid row is as tall as its tallest cell, so at 1024px two thirds of the
+ * width sat empty below the first screen until row two began ~1100px down. Multicol balances by
+ * height: sections stay whole (.fd-col below) and fill columns top to bottom. Same 280px measure,
+ * so the column count at any width is what the grid gave. tests/library-layout.test.mjs pins it. */
+.fd-library__grid{columns:280px;column-gap:var(--fd-space-10)}
+/* .fd-col's first rule of its own (CLASS-INVENTORY's deferred ⚠): a section never splits across
+ * columns, and it carries the row gap the grid used to. */
+.fd-col{break-inside:avoid;margin-bottom:var(--fd-space-9)}
 
 .fd-col__name{
   font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fd-terracotta-dark);
@@ -789,6 +798,7 @@
 .fd-block__chips{display:flex;gap:var(--fd-space-4)}
 .fd-block__chip{
   min-width:64px;padding:8px 14px;border-radius:var(--fd-radius-pill);font:inherit;font-size:var(--fd-font-sm);font-weight:600;cursor:pointer;
+  white-space:nowrap; /* "10 min" once broke into two lines inside its pill at 375px, so the three chips were three shapes */
   border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);
 }
 .fd-block__chip:hover{border-color:var(--fd-line-hover)}
@@ -815,7 +825,7 @@
 .fd-block__doneline,.fd-block__empty{font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-mid);margin:0}
 @media (max-width:640px){
   .fd-block__head .fd-block__hint{text-align:left;flex-basis:100%}
-  .fd-block__chip{flex:1;min-height:44px}
+  .fd-block__chip{flex:1;min-height:44px;padding:var(--fd-space-4) var(--fd-space-5)}
   .fd-block__actions .fd-btn{min-height:44px}
 }
 
@@ -935,6 +945,9 @@
    * one too -- the Library header read "81 pages · press to filter", a sentence with its verb's
    * object deleted. Only the header chip is competing for width at this breakpoint. */
   .fd-searchbtn .fd-kbd{display:none}
+  /* The Library's "· press / to filter" is a keyboard affordance; a phone has no slash key and
+     the header's search field is one tap up. The whole fragment goes, never .fd-kbd alone. */
+  .fd-library__shortcut{display:none}
   .fd-header__actions{grid-column:1/-1;margin-left:0;justify-content:flex-end}
 }
 

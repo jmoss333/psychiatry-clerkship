@@ -310,10 +310,10 @@ function fdReader(index, state, bodyHtml){
      applies to a fully-built index -- a caller passing a bare {byRef:{}} (tests, early boot)
      keeps the old degrade-gracefully path rather than showing every page as missing. */
   if(idx.known&&st.ref&&!idx.known[st.ref]) return fdNotFound(st.ref);
-  var item=(idx.byRef&&idx.byRef[st.ref])|| {
+  var item=(idx.byRef&&idx.byRef[st.ref])||(typeof fdKnownItem==='function'?fdKnownItem(idx, st.ref):{
     ref: st.ref||'', kind:'read', title: st.ref||'', minutes:null, summary:'',
     points:[], attested:false, toolRef:null, risk:null, href:'',
-  };
+  });
   /* Direct .html routes such as orientation-video.html can be intentionally absent from the
      Library projection while still being governed tool routes. Extension inference keeps the
      shared control literal across all tools instead of silently treating those routes as reads. */

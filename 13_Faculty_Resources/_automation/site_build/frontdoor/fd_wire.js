@@ -587,6 +587,38 @@ function fdResourceRequest(ref, search){
   };
 }
 
+/* Embedded-tool frame contract (2026-09-19). A tool page is one <iframe class="toolframe">.
+   Until now that frame was a viewport-height box inside a page that also scrolled: two nested
+   scroll surfaces, worst on a phone, where the inner scrollbar was the tool's only way down.
+   The default is now CONTENT: the shell sizes the frame to the tool document and the page is
+   the only thing that scrolls. A tool that lays itself out against its OWN viewport -- a fixed
+   bottom bar, a sticky panel, a transcript with its own scroll -- declares
+   <meta name="cw-frame" content="viewport"> in its <head> and keeps the viewport-height frame.
+   Both helpers are pure over a document so tests/tool-frame.test.mjs drives them with plain
+   objects; the DOM half (load listener, ResizeObserver) is fdSizeToolFrame in spa_index.html.
+   An unknown or missing declaration is the default, never an error: a tool cannot break its own
+   frame by misspelling the opt-out, it can only fail to opt out. */
+function fdToolFrameMode(doc){
+  var meta=null;
+  try{ meta=(doc&&typeof doc.querySelector==='function')?doc.querySelector('meta[name="cw-frame"]'):null; }
+  catch(_){ meta=null; }
+  var value=(meta&&typeof meta.getAttribute==='function')?String(meta.getAttribute('content')||''):'';
+  return value.trim().toLowerCase()==='viewport'?'viewport':'content';
+}
+
+/* The html element's OWN box (offsetHeight), not documentElement.scrollHeight: scrollHeight is
+   max(viewport, content), so read from a frame that is already tall it can never allow the
+   frame to shrink -- the classic auto-height iframe trap. With height:auto (every shipped tool; surveyed
+   2026-09-19 for html/body height and overflow) the html box IS the content, whatever the frame
+   currently measures. The body is the fallback for a document whose html reports nothing. */
+function fdToolFrameHeight(doc){
+  if(!doc) return 0;
+  var el=doc.documentElement, body=doc.body, h=0;
+  if(el&&typeof el.offsetHeight==='number') h=el.offsetHeight;
+  if(!(h>0)&&body&&typeof body.scrollHeight==='number') h=body.scrollHeight;
+  return h>0?Math.ceil(h):0;
+}
+
 function fdWireEsc(s){
   return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -609,9 +641,9 @@ function fdOpenResource(ref, opts){
   var search=o.search;
   if(search===undefined&&typeof location!=='undefined') search=location.search;
   var request=fdResourceRequest(ref,search||'');
-  var item=(index.byRef||{})[ref]||{
+  var item=(index.byRef||{})[ref]||(typeof fdKnownItem==='function'?fdKnownItem(index,ref,request.kind):{
     ref:ref,kind:request.kind,title:ref,minutes:null,summary:'',points:[],attested:false
-  };
+  });
   var legacy=fdLegacyItem(item,ref,request.kind);
   var host=o.host||(typeof contentEl!=='undefined'?contentEl:null);
   var facultyMatch=o.facultyPreviewMatches||

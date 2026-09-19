@@ -327,6 +327,28 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertEqual({entry[1] for entry in payload["manifest"]["tools"]},
                          {ref for ref in self.shared + RESIDENT_EXTRAS if ref.endswith(".html")})
 
+    def test_library_excluded_pages_keep_their_title_in_the_shell_manifest(self):
+        """A libraryExclude page is `known` to the shell, so it needs a manifest entry (2026-09-19).
+
+        Until then every reader-side fallback synthesized {title: ref}: ?tool=feedback.html painted
+        "feedback.html" as the page heading, the iframe title and the document title. Only refs
+        with a final catalog entry on this site qualify; an excluded ref the site does not ship
+        must not conjure an entry."""
+        curriculum = copy.deepcopy(self.curriculum)
+        curriculum["libraryExclude"] = [
+            {"ref": "extra.html", "reason": "excluded but shipped"},
+            {"ref": "ghost.html", "reason": "excluded and not shipped anywhere"},
+        ]
+        catalog = _catalog(self.shared + ["extra.html"])
+        payload = build_frontdoor_payload("ms3", curriculum, catalog, REVISION)
+        entries = {entry[1]: entry for group in payload["manifest"].values() for entry in group}
+        self.assertIn("extra.html", entries)
+        self.assertEqual(entries["extra.html"][2], "Title for extra.html")
+        self.assertEqual(entries["extra.html"][3], DEFAULT_GOVERNANCE)
+        self.assertNotIn("ghost.html", entries)
+        placed_refs = {ref for column in payload["curriculum"]["libraryColumns"] for ref in column["refs"]}
+        self.assertNotIn("extra.html", placed_refs, "a manifest entry is identity, not Library placement")
+
     def test_projected_manifest_preserves_each_site_governance_triplet_without_mutating_inputs(self):
         shared_pending = {"status": "pending", "riskKind": "clinical", "riskLevel": "high"}
         resident_pending = {"status": "pending", "riskKind": "legal", "riskLevel": "moderate"}

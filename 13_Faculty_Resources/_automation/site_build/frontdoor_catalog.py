@@ -201,6 +201,14 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
     manifest = {"tools": [], "md": []}
     manifest_refs = placed + [ref for ref in path_refs if ref not in placed]
     manifest_refs += [ref for ref in landing_refs if ref not in manifest_refs]
+    # A libraryExclude page ships and is reachable (the shell marks it `known`), so the shell
+    # needs its title: without an entry every reader-side fallback synthesized {title: ref} and
+    # ?tool=feedback.html painted "feedback.html" as heading, iframe title and document title
+    # (2026-09-18 critique). Search refs below cover most of them, but a page that is BOTH
+    # library- and search-excluded (the feedback form, the faculty curator) reached the shell
+    # with no entry at all. Only refs this site actually ships (a final catalog entry) qualify.
+    manifest_refs += [ref for ref in sorted(excluded_refs)
+                      if ref in catalog_entries and ref not in manifest_refs]
 
     if shipped is not None:
         # Search is independent of assignments and Library placement. Read the generated

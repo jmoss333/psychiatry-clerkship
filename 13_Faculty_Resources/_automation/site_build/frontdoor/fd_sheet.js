@@ -220,10 +220,18 @@ function fdSheetProtocolBody(entry, topicMeta, stepsDone, crisisHtml, failureCop
   for(var i=0;i<steps.length;i++){ out+=fdSheetStep(steps[i], i, stepsDone); }
   out+='</div>';
   out+='<div class="fd-doccallout"><b>Document:</b> '+fdEsc(protocol.doc)+'</div>';
+  /* "From:" names the PAGE, not the file. The prototype's line is `From: {{ protoSrc }}` with a
+     human-readable source ("Acute & Safety / Toxidromes"); the first implementation substituted
+     item.ref and a learner read "From: pg_suicide.md · faculty-attested" — an internal slug on the
+     most safety-critical surface in the product (2026-09-18 critique). The ref stays machine-
+     readable on the element (data-ref) for the smoke crawler and for faculty feedback; the
+     .fd-src chip in the item preview is unchanged, since that chip IS the file reference by
+     design and the route tests key on it. Titles are escaped like every interpolated value. */
+  var fromName=fdEsc(item.title||item.ref);
   if(protocol.kind==='reviewed'){
-    out+='<div class="fd-sheet__attribution">✓ From: '+fdEsc(item.ref)+' · faculty-attested</div>';
+    out+='<div class="fd-sheet__attribution" data-ref="'+fdEsc(item.ref)+'">✓ From: '+fromName+' · faculty-attested</div>';
   } else {
-    out+='<p class="fd-sheet__pending">Not yet faculty-reviewed · From: '+fdEsc(item.ref)+'</p>';
+    out+='<p class="fd-sheet__pending" data-ref="'+fdEsc(item.ref)+'">Not yet faculty-reviewed · From: '+fromName+'</p>';
   }
   out+='<button type="button" class="fd-btn fd-btn--ghost" style="margin-top:16px" '+
     'data-fd-open="'+fdEsc(item.ref)+'">Open the full page →</button>';

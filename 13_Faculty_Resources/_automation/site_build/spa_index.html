@@ -124,6 +124,8 @@
   #content.toolmode{max-width:none;padding:0;margin:0;display:flex;flex-direction:column;height:calc(100vh - 46px)}
   .toolframe{width:100%;height:calc(100vh - 46px);border:0;display:block;background:var(--bg)}
   #content.toolmode .toolframe{flex:1 1 auto;height:auto;min-height:0}
+  /* Content-sized frame (fdSizeToolFrame): released from the viewport height before its inline height lands. */
+  .toolframe.is-content-sized{height:auto}
   .pgfb{margin:30px 0 0;padding-top:16px;border-top:1px solid var(--border)}
   .pgfb-b{background:none;border:1px solid var(--border);border-radius:999px;padding:6px 15px;color:var(--text-light);cursor:pointer;font:inherit;font-size:var(--fd-font-sm)}
   .pgfb-b:hover{border-color:var(--accent);color:var(--accent-dark)}
@@ -226,18 +228,20 @@
   .practice-action-arrow{font-size:var(--fd-font-xs);color:var(--warning)}
   .practice-action.is-review{color:var(--text-mid);background:var(--bg-alt)}
   .tpl-meta{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
-  .tpl-chip{font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 10px;border:1px solid var(--border)}
+  /* Mirrors the Front Door .fd-chip rule: one chip language on a reader page. Semantic colours below stay. */
+.tpl-chip{display:inline-flex;align-items:center;font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.03em;border-radius:999px;padding:2px 9px;border:1px solid var(--border)}
   .tpl-chip.read{color:var(--text-mid);background:var(--bg-alt)}
   .tpl-chip.hy{color:var(--warning);background:var(--warning-light);border-color:var(--warning)}
   .tpl-chip.safety{color:var(--danger);background:var(--danger-light);border-color:var(--danger)}
   .tpl-chip.evidence{color:var(--accent-dark);background:var(--accent-light);border-color:var(--accent)}
-  .tpl-chip.review{color:var(--success);background:var(--success-light);border-color:var(--success)}
-  .tpl-chip.mode{color:var(--text-mid);background:var(--bg-alt)}
+    .tpl-chip.mode{color:var(--text-mid);background:var(--bg-alt)}
   .tpl-chip.mode.on{color:#fff;background:var(--accent);border-color:var(--accent)}
   .practice-panel .tpl-meta{margin:0 0 12px}
   .practice-mode-note{display:flex;gap:10px;align-items:flex-start;background:var(--panel-tree-bg);border:1px solid var(--panel-line-soft);border-radius:12px;padding:11px 13px;margin:0 0 12px}
   .practice-mode-note .k{flex:0 0 auto;font-size:var(--fd-font-2xs);font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark)}
   .practice-mode-note .v{font-size:var(--fd-font-md);line-height:1.4;color:var(--text-mid)}
+  /* On a phone the label column squeezed the sentence to ~60% of the width; stack them. */
+  @media(max-width:640px){.practice-mode-note{flex-direction:column;gap:var(--fd-space-2)}}
   .page-title-row{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin:.2em 0 .25em}
   .page-title-row h1{margin:0}
   .page-title-row .markrev{font-size:var(--fd-font-2xs);font-weight:800;letter-spacing:.03em;border-radius:999px;padding:4px 9px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-family:inherit;white-space:nowrap;margin-top:.42rem}
@@ -259,9 +263,7 @@
   .in30{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:13px 16px;margin:0 0 14px}
   .practice-panel .in30{background:transparent;border-left:none;border-radius:0;padding:0;margin:0}
   .in30 .lbl{font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark);margin-bottom:6px}
-  .in30 .one{font-family:var(--font-head);font-size:var(--fd-font-lg);line-height:1.4;margin-bottom:8px;color:var(--text)}
-  .practice-panel .in30 .lbl{display:none}
-  .practice-panel .in30 .one{font-size:var(--fd-font-lg);margin-bottom:8px}
+    .practice-panel .in30 .lbl{display:none}
   .in30 ul{margin:0;padding:0;list-style:none}
   .in30 li{position:relative;padding-left:24px;margin:5px 0;font-size:var(--fd-font-base)}
   .in30 li::before{content:"\2713";position:absolute;left:0;color:var(--accent);font-weight:700}
@@ -1191,7 +1193,7 @@
     var h='<details class="topic-tpl practice-panel"'+((opts&&opts.open===true)?' open':'')+'>';
     h+='<summary class="practice-summary"><span class="practice-tab">Ward</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
     h+='<div class="practice-body">';
-    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; h+='</div>';
+    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; /* No review chip: the governance receipt above the panel already states review status and date, and the head's ✓ pill states attestation — a third rendering on one page was the 2026-09-18 critique's consistency finding. */ h+='</div>';
     var reason=practiceReason(m);
     if(reason) h+='<div class="practice-mode-note"><span class="k">Can\u2019t miss</span><span class="v">'+esc(reason)+'</span></div>';
     var primary=practicePrimary(m,file,practicePhaseName(),practiceDrillDone), pseen={}, prow=[];
@@ -1201,7 +1203,7 @@
     }
     h+='<div class="practice-sections">';
     h+='<section class="practice-section"><div class="practice-section-title">In 30 seconds</div>';
-    if(m.tldr){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><div class="one">'+esc(m.tldr)+'</div>'; if(m.points&&m.points.length){ h+='<ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul>'; } h+='</div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
+    /* Points only. The one-line tldr is ALREADY the page's lead (fd_data.js maps item.summary from it), and on a phone the panel opens by default directly under that lead, so the same sentence printed twice on one screen (2026-09-18 critique). */ if(m.points&&m.points.length){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul></div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
     h+='</section><section class="practice-section"><div class="practice-section-title">On the unit</div>';
     var wf=buildWorkflow(m,pseen), hasUnit=false; if(wf){ h+=wf; hasUnit=true; }
     if(m.cant&&m.cant!==reason){ h+='<div class="cantmiss"><span class="ico">⚠</span><span class="tx"><b>Can’t miss. </b>'+esc(m.cant)+'</span></div>'; hasUnit=true; }
@@ -2237,6 +2239,64 @@
 
   /* Tool width is a transient shell preference. Patch only classes and aria state so the live
      iframe, its contentWindow, learner inputs, scroll position, and focused toggle all survive. */
+  /* Embedded-tool frame (2026-09-19): content-height by default, so the page is the only scroll
+     surface; a tool that declares <meta name="cw-frame" content="viewport"> keeps the
+     viewport-height frame. fdToolFrameMode / fdToolFrameHeight (fd_wire.js) are the pure halves;
+     this is the DOM half. Idempotent per frame element (__fdSized): fdOpenResourceLive calls it
+     once the resource has mounted and fdPatchToolLayout calls it on every re-render that keeps
+     the live frame, and only the first call wires anything. The inner ResizeObserver watches the
+     tool's own <html> and <body>, so a tab switch, an expanded card or a loaded image re-sizes
+     the frame; the outer one watches the frame's width (the expand toggle, a rotated phone),
+     which reflows the tool and so changes its height. A tool that navigates itself fires load
+     again and is wired against its new document. tests/tool-frame.test.mjs pins the wiring;
+     tool-expand.spec.js measures the live frame. */
+  function fdSizeToolFrame(frame){
+    if(!frame||frame.__fdSized)return;
+    frame.__fdSized=true;
+    var pending=false;
+    function doc(){ try{ return frame.contentDocument||null; }catch(_){ return null; } }
+    function apply(){
+      pending=false;
+      var d=doc();
+      if(!d||!d.documentElement||!frame.isConnected)return;
+      if(fdToolFrameMode(d)!=='content'){ frame.classList.remove('is-content-sized'); frame.style.height=''; return; }
+      /* A React tool's document is EMPTY at its load event (an empty root, body margin 0): the
+         html box measures 0 until the first render, which the observer reports a frame later.
+         Releasing the frame from its viewport height on that measurement collapses it to the
+         150px iframe default for a frame -- and for as long as a hidden tab throttles rAF. So
+         the frame keeps its viewport-height placeholder until the tool has a real height. */
+      var h=fdToolFrameHeight(d), cur=parseInt(frame.style.height,10)||0;
+      if(h<48)return;
+      frame.classList.add('is-content-sized');
+      if(Math.abs(h-cur)>1)frame.style.height=h+'px';
+    }
+    function schedule(){
+      if(pending)return;
+      pending=true;
+      (window.requestAnimationFrame||window.setTimeout)(apply);
+    }
+    function wire(){
+      var d=doc(), win=null;
+      try{ win=frame.contentWindow; }catch(_){ win=null; }
+      if(!d||!win)return;
+      apply();
+      if(fdToolFrameMode(d)!=='content')return;
+      if(typeof win.ResizeObserver==='function'){
+        var inner=new win.ResizeObserver(schedule);
+        if(d.documentElement)inner.observe(d.documentElement);
+        if(d.body)inner.observe(d.body);
+      }else if(typeof win.MutationObserver==='function'&&d.documentElement){
+        new win.MutationObserver(schedule).observe(d.documentElement,{childList:true,subtree:true,attributes:true,characterData:true});
+      }
+      if(typeof window.ResizeObserver==='function')new window.ResizeObserver(schedule).observe(frame);
+      win.addEventListener('load',schedule);
+    }
+    var loaded=false;
+    try{ var d0=frame.contentDocument; loaded=!!d0&&d0.readyState==='complete'&&!!(d0.body&&d0.body.childNodes.length); }catch(_){ loaded=false; }
+    frame.addEventListener('load',wire);
+    if(loaded)wire();
+  }
+
   function fdPatchToolLayout(state){
     if(!contentEl)return;
     var reader=contentEl.querySelector('.fd-reader--tool');
@@ -2248,6 +2308,8 @@
     if(!reader)return;
     if(expanded)reader.classList.add('is-tool-expanded');
     else reader.classList.remove('is-tool-expanded');
+    var liveFrame=reader.querySelector('.toolframe');
+    if(liveFrame&&!facultyPreviewRequest&&typeof fdSizeToolFrame==='function')fdSizeToolFrame(liveFrame);
     var control=reader.querySelector('[data-fd-expand-tool]');
     if(control)control.setAttribute('aria-pressed',expanded?'true':'false');
   }
@@ -2342,7 +2404,7 @@
   }
 
   function fdOpenResourceLive(ref,opts){
-    var options=opts||{}, item=(FD_INDEX.byRef||{})[ref]||{title:ref,kind:/\.html$/.test(ref)?'tool':'read'};
+    var options=opts||{}, item=(FD_INDEX.byRef||{})[ref]||(typeof fdKnownItem==='function'?fdKnownItem(FD_INDEX,ref):{title:ref,kind:/\.html$/.test(ref)?'tool':'read'});
     if(!facultyPreviewRequest)fdDisposeGuide();
     /* The audited preview path delegates to show(), which must see the previous currentItem so its
        same-tool reload guard cannot suppress the initial preflight. It also must not mutate the
@@ -2372,6 +2434,8 @@
     }).then(function(ok){
       if(ok&&(!options.isCurrent||options.isCurrent(ref)!==false)){
         var body=contentEl&&contentEl.querySelector('.fd-article__body');
+        var toolFrame=contentEl&&contentEl.querySelector('.toolframe');
+        if(toolFrame&&!facultyPreviewRequest&&typeof fdSizeToolFrame==='function')fdSizeToolFrame(toolFrame);
         if(body){
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){

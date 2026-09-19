@@ -92,6 +92,57 @@ test('every published tool titles itself, and the shell masthead yields to it on
   }
 });
 
+// The frame is content-height by default (fdSizeToolFrame in the shell; tests/tool-frame.test.mjs
+// pins the wiring) so the page is the only scroll surface. A tool that declares
+// <meta name="cw-frame" content="viewport"> keeps the viewport-height frame. This measures the
+// live frame at both widths, then proves the observer half: content that grows after load grows
+// the frame, and content that shrinks lets it shrink (the trap a scrollHeight-based sizer falls into).
+test('a tool frame is sized to its content by default, follows the content, and a viewport tool keeps its frame', async ({ page, request }) => {
+  test.setTimeout(120_000);
+  const measure = () => page.evaluate(() => {
+    const frame = document.querySelector('.toolframe');
+    const doc = frame.contentDocument;
+    return {
+      frameHeight: frame.getBoundingClientRect().height,
+      contentHeight: doc.documentElement.offsetHeight,
+      innerScroll: doc.documentElement.scrollHeight - doc.documentElement.clientHeight,
+      contentSized: frame.classList.contains('is-content-sized'),
+    };
+  });
+  const setInnerPadding = (px) => page.evaluate((value) => {
+    const doc = document.querySelector('.toolframe').contentDocument;
+    doc.body.style.paddingBottom = value;
+    return doc.documentElement.offsetHeight;
+  }, px);
+  await seedCompleteSetup(page);
+  for (const viewport of [DESKTOP, PHONE]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/?tool=capacity.html&frame-size=1');
+    await expect(page.frameLocator('.toolframe').locator('h1').first()).toBeVisible();
+    await expect.poll(async () => (await measure()).contentSized, `${viewport.width}px content-sized`).toBe(true);
+    await expect.poll(async () => {
+      const m = await measure();
+      return Math.abs(m.frameHeight - m.contentHeight) <= 2 && m.innerScroll <= 1;
+    }, `${viewport.width}px frame matches its content with no inner scroll`).toBe(true);
+    const grown = await setInnerPadding('600px');
+    await expect.poll(async () => Math.abs((await measure()).frameHeight - grown) <= 2, `${viewport.width}px frame followed growth`).toBe(true);
+    const shrunk = await setInnerPadding('');
+    expect(shrunk).toBeLessThan(grown);
+    await expect.poll(async () => Math.abs((await measure()).frameHeight - shrunk) <= 2, `${viewport.width}px frame followed shrink`).toBe(true);
+  }
+  // rp-brief-psych ships on the resident site only; on the student site the probe 404s and this half is skipped.
+  const probe = await requestGetWithRetry(request, '/tools/rp-brief-psych.html');
+  if (probe.ok()) {
+    await page.setViewportSize(DESKTOP);
+    await page.goto('/?tool=rp-brief-psych.html&frame-size=viewport');
+    await expect(page.frameLocator('.toolframe').locator('h1').first()).toBeVisible();
+    await expect(page.frameLocator('.toolframe').locator('meta[name="cw-frame"]')).toHaveAttribute('content', 'viewport');
+    const m = await measure();
+    expect(m.contentSized, 'a declared viewport tool is never content-sized').toBe(false);
+    expect(m.frameHeight, 'the viewport-height frame is kept').toBeGreaterThanOrEqual(DESKTOP.height - 46 - 1);
+  }
+});
+
 test('desktop toggle expands the same live iframe and remembers the preference across tools', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await seedCompleteSetup(page);
