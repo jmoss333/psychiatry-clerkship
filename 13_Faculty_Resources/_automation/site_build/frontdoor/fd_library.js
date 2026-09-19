@@ -71,7 +71,7 @@ function fdLibrary(index){
   var out='<section class="fd-library">';
   out+='<div class="fd-library__head">';
   out+='<h1 class="fd-library__h1">Everything, one screen</h1>';
-  out+='<span class="fd-library__count">'+count+' pages · press <span class="fd-kbd">/</span> to filter</span>';
+  out+='<span class="fd-library__count">'+count+' pages<span class="fd-library__shortcut"> · press <span class="fd-kbd">/</span> to filter</span></span>';
   out+='</div>';
   out+='<div class="fd-library__grid">';
   for(var i=0;i<cols.length;i++){ out+=fdLibraryCol(cols[i]); }
