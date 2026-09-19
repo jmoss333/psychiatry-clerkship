@@ -91,6 +91,13 @@ step "attestation authorship"               python3 bin/check_attestation_author
 # unshipped-and-unlisted row is a finding.
 step "unit — attestation hashes"            python3 bin/check_attestation_hashes.py --self-test
 step "attestation hashes"                   python3 bin/check_attestation_hashes.py
+# The third question, about the DIFF rather than the ledger: who may promote an attestation,
+# and in what company. A content PR may register and demote; only the console, on
+# attest/pending, may promote. On a branch stacked on an unmerged PR the default base is
+# merge-base with origin/main and so includes the PARENT's commits — push with
+# CLERKSHIP_PR_BASE=origin/<parent-branch> git push and the gate compares against the parent.
+step "unit — governance/content separation" python3 bin/check_governance_separation.py --self-test
+step "governance/content separation"        python3 bin/check_governance_separation.py
 
 # --- python validators ---
 # This block mirrors the python half of ci.yml's build-test-validate job, step for step.
