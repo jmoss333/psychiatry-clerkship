@@ -43,6 +43,7 @@ them and let the breakpoint decide:
 | `.fd-actionbar`, `.fd-actionbar__spacer`, `.fd-quicktools--pills` | ≥ 1000px | below 1000px |
 | `.fd-article__actions` | below 1000px | ≥ 1000px |
 | `.fd-article .fd-tip` (Reader's keyboard hint **only** — the wizard's `.fd-tip--setup` line is a different subtree and stays visible) | below 1000px | ≥ 1000px |
+| `.fd-tabs`, `.fd-weekpill`, `.fd-settingsbtn` — on a **reader** only (`.fd-shell:has(.fd-actionbar)`; frontdoor.css "Phone chrome", 2026-09-18). The action bar's `‹` is the route to all three. `.fd-brand__name` is clipped there, never `display:none`, so the home button keeps its accessible name. | ≤ 640px | above 640px, and at every width on Today / Path / Library / Progress / not-found |
 
 The enhanced `.fd-reader--guide` is a scoped exception: its week `.fd-railnav` remains
 available below the article at every width. Its new `.fd-guide-margin` is sticky beside the
@@ -124,7 +125,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | Class | Notes |
 |---|---|
 | `.fd-header` | `position:sticky; top:0; z-index:40`. |
-| `.fd-header__bar` | The 1200px-capped flex row; at 640px and below it becomes a two-row grid so brand/search and utilities cannot collide. `.fd-header` alone has no max-width. |
+| `.fd-header__bar` | The 1200px-capped flex row; at 640px and below it becomes a two-row grid so brand/search and utilities cannot collide — except on a reader (`.fd-shell:has(.fd-actionbar)`), where it is one flex row again: ψ tile, search grown to fill, ✚ Safety. `.fd-header` alone has no max-width. |
 | `.fd-header__actions` | `margin-left:auto` in the flex layout; at 640px and below it spans grid row two, resets the margin, and aligns right. |
 | `.fd-settingsbtn` | Compact icon-only header gear opening the settings panel; `aria-label` names the action. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |

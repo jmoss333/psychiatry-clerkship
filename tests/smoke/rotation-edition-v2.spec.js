@@ -667,6 +667,14 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
   }
   const activateTab = async (name) => {
     const control = page.locator(`.fd-tab[data-fd-tab="${name.toLowerCase()}"]`);
+    // On a phone a reader collapses its header to one row and hides the tab row (frontdoor.css
+    // "Phone chrome", 2026-09-18); the action bar's Back is the route a learner has to the tabs,
+    // so the matrix takes it too before reaching for the tab. Top-level screens and desktop
+    // readers keep the tab row and skip this.
+    if (!(await control.isVisible())) {
+      const back = page.locator('.fd-actionbar [data-fd-back]');
+      if (await back.isVisible()) await keyboardActivate(back);
+    }
     await keyboardActivate(control);
     await expect(page.locator(`.fd-tab[data-fd-tab="${name.toLowerCase()}"]`))
       .toHaveAttribute('aria-current', 'page');
