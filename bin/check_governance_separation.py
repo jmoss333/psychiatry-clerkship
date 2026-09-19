@@ -1,0 +1,932 @@
+#!/usr/bin/env python3
+"""A content change may register and demote an attestation; only the console may promote one.
+
+WHY THIS EXISTS: on 2026-09-16 two agent-authored PRs merged from the same head branch,
+`claude/repo-issues-review-g3pqoq`. #640 (0009ad6) was a 926-line content PR that also wrote a
+new governance rule into CLAUDE.md and AGENTS.md and demoted four pages; #672 (8b8ccd9) flipped
+three pending pages to `reviewed` under the owner's name, re-dated three existing attestations,
+and flipped and re-dated `facultyReview` blocks in topic_meta.json — all in the same diff that
+added the citations later found to be 53/74 wrong. Both were reverted (#687/#688).
+
+That is root cause 3: nothing stopped a content PR from also changing the files that govern it.
+An agent editing pages could, in one commit, edit the rules it works under and sign off the very
+text it had just written. Review sees one diff and reads the content; the governance lines ride
+along.
+
+It is also root cause 1. The agents run under the repository owner's GitHub account, so
+"authored by jmoss333" does not distinguish a human governance act from an agent's. The one
+identity that does is the Faculty Attestation Console's own commit identity —
+`Faculty Attestation Console <faculty@clerkship.local>`, author AND committer — because only the
+console writes it. Agent and owner commits carry `jmoss333 <…users.noreply.github.com>` with a
+`GitHub` committer. So L4 asks the git identity, not the ledger's `by` field, which any writer
+can type. (CONSOLE_IDENTITY is imported from attestation_hash.py; it is defined once.)
+
+THE RULE, verbatim:
+
+    Inputs: base rev, head rev, head branch name.
+    Changed = git diff --name-only base head
+    G_FILES = {13_Faculty_Resources/reviewed.json, CLAUDE.md, AGENTS.md, decisions.json,
+               standards.json, instrument_rights.json, vocabulary.json}
+    G_DIRS  = {.claude/, .github/workflows/}     # skills, hooks, agents, settings; workflows
+    CONTENT(path) = path is a `source`/`extraSources` entry of shipped_pages.json at HEAD
+                    OR (matches ^(0\\d|1[0-4]|99)_[^/]+/ AND not under 13_Faculty_Resources/)
+    PROMOTION, reviewed.json (JSON diff per key; a missing key is a value):
+       status becomes reviewed; or an entry reviewed on BOTH sides changes any of
+       at, by, risk, note, contentHash, claimsHash, evidenceHash, evidenceThrough;
+       or a new entry born reviewed.
+    PROMOTION, topic_meta.json: a facultyReview block whose status becomes reviewed/attested,
+       or a block reviewed on BOTH sides whose lastReviewed or reviewer changes.
+       (A demotion that deletes lastReviewed/reviewer is registration.)
+    REGISTRATION: every other reviewed.json change.
+    L1  any G_FILES\\{reviewed.json} or G_DIRS path changed  AND any CONTENT changed     → FAIL
+    L2  any PROMOTION                                   AND head branch != attest/pending → FAIL
+    L3  any PROMOTION                                   AND any CONTENT changed           → FAIL
+    L4  any commit in base..head (skipping merge commits) that introduces a reviewed.json
+        PROMOTION whose author email or committer email != faculty@clerkship.local  → FAIL  (D8)
+    Exit 0 clean · 1 any FAIL · 2 could not check (no base, unparsable JSON, no git).
+
+WHAT IT DOES NOT SAY. Registration and demotion are how a content PR is *supposed* to record
+that it touched attested text: a new pending row, a pending row edited, reviewed→pending, a row
+deleted, a `facultyReview` demotion that drops `lastReviewed`/`reviewer`. None of those claim a
+review happened, so none of them fail here. The rule forbids the claim, not the bookkeeping.
+
+    python3 bin/check_governance_separation.py              # base = merge-base with origin/main
+    python3 bin/check_governance_separation.py --base REV --head REV --head-branch NAME
+    python3 bin/check_governance_separation.py --format json
+    python3 bin/check_governance_separation.py --self-test              # hermetic fixture repos
+
+EXIT 2 IS NOT A PASS. No base, no git, an unparsable registry, or a HEAD tree with no
+shipped_pages.json all mean the CONTENT predicate cannot be evaluated — and a classifier that
+cannot tell content from not-content would clear every diff it was handed.
+"""
+
+from __future__ import annotations
+
+import argparse
+import io
+import json
+import os
+import re
+import subprocess
+import sys
+import tempfile
+from contextlib import redirect_stderr, redirect_stdout
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
+
+from attestation_hash import CONSOLE_IDENTITY  # noqa: E402
+
+LEDGER_REL = "13_Faculty_Resources/reviewed.json"
+TOPIC_META_REL = "topic_meta.json"
+SHIPPED_REL = "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
+ATTEST_BRANCH = "attest/pending"
+
+G_FILES = frozenset({
+    LEDGER_REL,
+    "CLAUDE.md",
+    "AGENTS.md",
+    "decisions.json",
+    "standards.json",
+    "instrument_rights.json",
+    "vocabulary.json",
+})
+# Everything under these is governance: skills, hooks, subagent definitions, settings; workflows.
+G_DIRS = (".claude/", ".github/workflows/")
+
+# The numbered curriculum trees. 13_Faculty_Resources matches `1[0-4]` and is excluded by name.
+CONTENT_DIR = re.compile(r"^(0\d|1[0-4]|99)_[^/]+/")
+CONTENT_EXCLUDE = "13_Faculty_Resources/"
+
+# A reviewed row's promotable fields. `reason` is deliberately absent: it explains a pending
+# row, and editing it claims nothing about a review.
+LEDGER_PROMOTION_KEYS = (
+    "at", "by", "risk", "note", "contentHash", "claimsHash", "evidenceHash", "evidenceThrough",
+)
+TOPIC_META_PROMOTION_KEYS = ("lastReviewed", "reviewer")
+# topic_meta's schema enum is draft/pending/reviewed/retired; `attested` is named by the rule
+# and honoured here so a future rename cannot slip a promotion past this.
+PROMOTED_STATES = frozenset({"reviewed", "attested"})
+
+RULE_TEXT = {
+    "L1": "a governance file and page content changed in the same diff",
+    "L2": "an attestation was promoted on a branch that is not " + ATTEST_BRANCH,
+    "L3": "an attestation was promoted in a diff that also changes content",
+    "L4": "a reviewed.json promotion was committed by an identity other than the console",
+}
+
+
+class InputError(Exception):
+    """An input this tool must read is unreadable — exit 2, never a pass."""
+
+
+class GitError(Exception):
+    """A git command this tool depends on failed — exit 2, never a pass."""
+
+
+class _Missing:
+    """A key that is absent. A missing key is a VALUE: #640 promoted a row by ADDING a note."""
+
+    def __repr__(self):
+        return "<missing>"
+
+
+MISSING = _Missing()
+
+
+# --------------------------------------------------------------------------------------
+# git, with the ambient git environment scrubbed
+# --------------------------------------------------------------------------------------
+
+
+def _git(root, args, check=True):
+    """Run git under `root`, returning the CompletedProcess with BYTES on stdout.
+
+    Every GIT_* variable is dropped: git exports GIT_DIR into hook children and this tool's
+    self-test builds throwaway repos, so an inherited GIT_DIR would point those writes at the
+    real repository (bin/verify.sh:30-38 for the incident that earned this). Bytes, not text,
+    because `cat-file blob` returns a registry and the locale is not the repo's business.
+    """
+    env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+    env["GIT_OPTIONAL_LOCKS"] = "0"
+    proc = subprocess.run(["git", *args], cwd=str(root), capture_output=True, env=env)
+    if check and proc.returncode != 0:
+        raise GitError("git %s: %s"
+                       % (" ".join(args), proc.stderr.decode("utf-8", "replace").strip()))
+    return proc
+
+
+def _git_text(root, args, check=True):
+    return _git(root, args, check=check).stdout.decode("utf-8", "replace")
+
+
+def _rev_exists(root, rev):
+    proc = _git(root, ["rev-parse", "--verify", "--quiet", "%s^{commit}" % rev], check=False)
+    return proc.returncode == 0 and bool(proc.stdout.strip())
+
+
+def _blob_at(root, rev, path):
+    """The bytes of `path` at `rev`, or None when the tree there does not carry it."""
+    proc = _git(root, ["rev-parse", "--verify", "--quiet", "%s:%s" % (rev, path)], check=False)
+    sha = proc.stdout.decode("utf-8", "replace").strip()
+    if proc.returncode != 0 or not sha:
+        return None
+    return _git(root, ["cat-file", "blob", sha]).stdout
+
+
+def json_at(root, rev, path):
+    """`path` parsed as JSON at `rev`; None when absent there.
+
+    Absent at base means every entry is new; absent at head means every entry is deleted.
+    Present-but-unparsable is exit 2: a classifier that silently reads {} would report a
+    diff full of promotions as clean.
+    """
+    raw = _blob_at(root, rev, path)
+    if raw is None:
+        return None
+    try:
+        return json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise InputError("%s at %s is not parsable JSON: %s" % (path, rev, exc))
+
+
+def changed_paths(root, base, head):
+    out = _git_text(root, ["diff", "--name-only", base, head])
+    return [line for line in out.splitlines() if line]
+
+
+# --------------------------------------------------------------------------------------
+# the predicates
+# --------------------------------------------------------------------------------------
+
+
+def shipped_sources(shipped_doc):
+    """Every `source` and `extraSources` entry in shipped_pages.json.
+
+    Read the derived listing, never the producers (ADR-002). A page can ship from a path the
+    regex does not match — welcome.md's resident override lives under 13_Faculty_Resources —
+    and a path the regex does match can be an unshipped draft.
+    """
+    if not isinstance(shipped_doc, dict):
+        raise InputError("shipped_pages.json is not an object")
+    out = set()
+    for page in shipped_doc.get("pages") or []:
+        if not isinstance(page, dict):
+            continue
+        source = page.get("source")
+        if isinstance(source, str):
+            out.add(source)
+        for extra in page.get("extraSources") or []:
+            if isinstance(extra, str):
+                out.add(extra)
+    return out
+
+
+def is_content(path, sources):
+    if path in sources:
+        return True
+    return bool(CONTENT_DIR.match(path)) and not path.startswith(CONTENT_EXCLUDE)
+
+
+def is_governance(path):
+    """A governance path other than reviewed.json — the set L1 asks about."""
+    if path in G_FILES and path != LEDGER_REL:
+        return True
+    return any(path.startswith(prefix) for prefix in G_DIRS)
+
+
+def _value(raw):
+    if isinstance(raw, str):
+        return raw
+    return json.dumps(raw, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def _describe(key, before, after):
+    """`at 2026-07-03→2026-09-16` · `note added` · `note rewritten` — short enough to read."""
+    if before is MISSING:
+        return "%s added" % key
+    if after is MISSING:
+        return "%s removed" % key
+    shown_before, shown_after = _value(before), _value(after)
+    if len(shown_before) > 40 or len(shown_after) > 40:
+        return "%s rewritten" % key if isinstance(after, str) else "%s changed" % key
+    return "%s %s→%s" % (key, shown_before, shown_after)
+
+
+def _changed_keys(before, after, keys):
+    out = []
+    for key in keys:
+        was = before.get(key, MISSING)
+        now = after.get(key, MISSING)
+        if was is MISSING and now is MISSING:
+            continue
+        if was is MISSING or now is MISSING or was != now:
+            out.append(_describe(key, was, now))
+    return out
+
+
+def ledger_promotions(base_doc, head_doc):
+    """[(slug, what changed)] for every reviewed.json promotion between the two documents."""
+    base = base_doc if isinstance(base_doc, dict) else {}
+    head = head_doc if isinstance(head_doc, dict) else {}
+    out = []
+    for slug in sorted(set(base) | set(head)):
+        after = head.get(slug)
+        if not isinstance(after, dict):
+            continue  # deleted, or never an object: registration, or someone else's error
+        before = base.get(slug) if isinstance(base.get(slug), dict) else None
+        after_status = after.get("status")
+        before_status = before.get("status") if before is not None else None
+        if after_status != "reviewed":
+            continue  # a demotion, a pending edit, a new pending row: registration
+        if before_status != "reviewed":
+            out.append((slug, "%s→reviewed" % (before_status or "new")))
+            continue
+        for change in _changed_keys(before, after, LEDGER_PROMOTION_KEYS):
+            out.append((slug, change))
+    return out
+
+
+def _faculty_review(record):
+    if not isinstance(record, dict):
+        return None
+    block = record.get("facultyReview")
+    return block if isinstance(block, dict) else None
+
+
+def topic_meta_promotions(base_doc, head_doc):
+    """[(slug, what changed)] for every topic_meta.json facultyReview promotion.
+
+    reviewed↔attested is a rename inside the promoted set, not a promotion; any date or
+    reviewer edit there is still caught by the both-sides check below.
+    """
+    base = base_doc if isinstance(base_doc, dict) else {}
+    head = head_doc if isinstance(head_doc, dict) else {}
+    out = []
+    for slug in sorted(set(base) | set(head)):
+        after = _faculty_review(head.get(slug))
+        if after is None:
+            continue  # the block went away, or never existed: registration
+        before = _faculty_review(base.get(slug))
+        after_status = after.get("status")
+        before_status = before.get("status") if before is not None else None
+        if after_status not in PROMOTED_STATES:
+            continue  # a demotion, including one that deletes lastReviewed/reviewer
+        if before_status not in PROMOTED_STATES:
+            out.append((slug, "facultyReview %s→%s"
+                        % (before_status or "new", after_status)))
+            continue
+        for change in _changed_keys(before, after, TOPIC_META_PROMOTION_KEYS):
+            out.append((slug, "facultyReview " + change))
+    return out
+
+
+# --------------------------------------------------------------------------------------
+# the four laws
+# --------------------------------------------------------------------------------------
+
+
+def commit_promotions(root, base, head):
+    """[(sha7, author email, committer email, [(slug, change)])] for L4.
+
+    Merge commits are skipped: a merge's diff against its first parent re-reports every
+    promotion on the branch it merges, under the merger's identity, so every console
+    attestation would fail the moment it reached main.
+    """
+    revs = _git_text(root, ["rev-list", "--no-merges", "--reverse",
+                            "%s..%s" % (base, head)]).split()
+    offenders = []
+    for rev in revs:
+        parent = "%s^" % rev
+        before = json_at(root, parent, LEDGER_REL) if _rev_exists(root, parent) else None
+        promotions = ledger_promotions(before, json_at(root, rev, LEDGER_REL))
+        if not promotions:
+            continue
+        identities = _git_text(root, ["log", "-1", "--format=%ae%n%ce", rev]).splitlines()
+        author = identities[0].strip() if identities else ""
+        committer = identities[1].strip() if len(identities) > 1 else ""
+        if author == CONSOLE_IDENTITY and committer == CONSOLE_IDENTITY:
+            continue
+        offenders.append((rev[:7], author, committer, promotions))
+    return offenders
+
+
+def classify(root, base, head, head_branch):
+    """The whole verdict as data. Raises InputError / GitError; never guesses."""
+    shipped = json_at(root, head, SHIPPED_REL)
+    if shipped is None:
+        raise InputError("%s is absent at %s — the CONTENT predicate cannot be evaluated"
+                         % (SHIPPED_REL, head))
+    sources = shipped_sources(shipped)
+
+    changed = changed_paths(root, base, head)
+    content = [path for path in changed if is_content(path, sources)]
+    governance = [path for path in changed if is_governance(path)]
+
+    ledger = ledger_promotions(json_at(root, base, LEDGER_REL),
+                               json_at(root, head, LEDGER_REL))
+    topic_meta = topic_meta_promotions(json_at(root, base, TOPIC_META_REL),
+                                       json_at(root, head, TOPIC_META_REL))
+    promotions = bool(ledger) or bool(topic_meta)
+
+    failures = []
+    if governance and content:
+        failures.append("L1")
+    if promotions and head_branch != ATTEST_BRANCH:
+        failures.append("L2")
+    if promotions and content:
+        failures.append("L3")
+    offenders = commit_promotions(root, base, head) if ledger else []
+    if offenders:
+        failures.append("L4")
+
+    return {
+        "base": base, "head": head, "headBranch": head_branch,
+        "changed": changed, "content": content, "governance": governance,
+        "ledgerPromotions": ledger, "topicMetaPromotions": topic_meta,
+        "commitOffenders": offenders, "failures": failures,
+    }
+
+
+# --------------------------------------------------------------------------------------
+# output
+# --------------------------------------------------------------------------------------
+
+
+def _promotion_lines(verdict, indent="    "):
+    lines = []
+    if verdict["ledgerPromotions"]:
+        lines.append("%s%s:" % (indent, LEDGER_REL))
+        for slug, change in verdict["ledgerPromotions"]:
+            lines.append("%s  %s: %s" % (indent, slug, change))
+    if verdict["topicMetaPromotions"]:
+        lines.append("%s%s:" % (indent, TOPIC_META_REL))
+        for slug, change in verdict["topicMetaPromotions"]:
+            lines.append("%s  %s: %s" % (indent, slug, change))
+    return lines
+
+
+def report_lines(verdict):
+    """One block per rule that fired, naming the offending paths, entries and commits."""
+    lines = []
+    for rule in verdict["failures"]:
+        lines.append("%s FAIL: %s" % (rule, RULE_TEXT[rule]))
+        if rule == "L1":
+            lines.append("    governance changed:")
+            lines.extend("      %s" % path for path in verdict["governance"])
+            lines.append("    content changed:")
+            lines.extend("      %s" % path for path in verdict["content"])
+            lines.append("    split the governance edit into its own PR.")
+        elif rule == "L2":
+            lines.append("    head branch: %s" % verdict["headBranch"])
+            lines.extend(_promotion_lines(verdict))
+            lines.append("    a promotion is the console's to write, on %s." % ATTEST_BRANCH)
+        elif rule == "L3":
+            if "L2" in verdict["failures"]:
+                lines.append("    the promotions listed under L2 above, and:")
+            else:
+                lines.extend(_promotion_lines(verdict))
+            lines.append("    content changed:")
+            lines.extend("      %s" % path for path in verdict["content"])
+            lines.append("    attest the text as it stands, in a diff that does not change it.")
+        elif rule == "L4":
+            for sha, author, committer, promotions in verdict["commitOffenders"]:
+                lines.append("    %s authored %s, committed %s"
+                             % (sha, author or "(none)", committer or "(none)"))
+                for slug, change in promotions:
+                    lines.append("      %s: %s" % (slug, change))
+            lines.append("    only %s writes a promotion." % CONSOLE_IDENTITY)
+    return lines
+
+
+def run(root, base, head, head_branch, fmt="text", stream=None):
+    stream = stream or sys.stdout
+    verdict = classify(root, base, head, head_branch)
+
+    if fmt == "json":
+        payload = dict(verdict, schemaVersion=1)
+        payload["ledgerPromotions"] = [{"slug": s, "change": c}
+                                       for s, c in verdict["ledgerPromotions"]]
+        payload["topicMetaPromotions"] = [{"slug": s, "change": c}
+                                          for s, c in verdict["topicMetaPromotions"]]
+        payload["commitOffenders"] = [
+            {"commit": sha, "author": author, "committer": committer,
+             "promotions": [{"slug": s, "change": c} for s, c in promotions]}
+            for sha, author, committer, promotions in verdict["commitOffenders"]]
+        json.dump(payload, stream, indent=1)
+        stream.write("\n")
+        return 1 if verdict["failures"] else 0
+
+    if verdict["failures"]:
+        print("governance separation: %d rule(s) failed between %s and %s"
+              % (len(verdict["failures"]), base, head), file=sys.stderr)
+        for line in report_lines(verdict):
+            print(line, file=sys.stderr)
+        print("  see this file's docstring for what registration and demotion may do",
+              file=sys.stderr)
+        return 1
+
+    promotions = len(verdict["ledgerPromotions"]) + len(verdict["topicMetaPromotions"])
+    print("governance separation OK — %d changed path(s), %d content, %d governance, "
+          "%d promotion(s) on %s"
+          % (len(verdict["changed"]), len(verdict["content"]), len(verdict["governance"]),
+             promotions, verdict["headBranch"]), file=stream)
+    return 0
+
+
+def default_base(root, head):
+    proc = _git(root, ["merge-base", "origin/main", head], check=False)
+    base = proc.stdout.decode("utf-8", "replace").strip()
+    if proc.returncode != 0 or not base:
+        raise InputError("origin/main not resolvable — pass --base")
+    return base
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--root", default=None,
+                        help="repository to check (default: this checkout)")
+    parser.add_argument("--base", default=None,
+                        help="the ref to compare against (default: merge-base with origin/main)")
+    parser.add_argument("--head", default="HEAD", help="the ref to check (default: HEAD)")
+    parser.add_argument("--head-branch", default=None,
+                        help="the branch name the head would merge from "
+                             "(default: the current branch)")
+    parser.add_argument("--format", choices=("text", "json"), default="text")
+    parser.add_argument("--self-test", action="store_true")
+    args = parser.parse_args(argv)
+
+    if args.self_test:
+        return self_test()
+
+    root = Path(args.root).resolve() if args.root else ROOT
+    try:
+        if not (root / ".git").exists() and not _rev_exists(root, args.head):
+            raise InputError("%s is not a git repository" % root)
+        head_branch = args.head_branch
+        if head_branch is None:
+            head_branch = _git_text(root, ["rev-parse", "--abbrev-ref", "HEAD"]).strip()
+        base = args.base or default_base(root, args.head)
+        return run(root, base, args.head, head_branch, args.format)
+    except (InputError, GitError, OSError) as exc:
+        print("could not check: %s" % exc, file=sys.stderr)
+        return 2
+
+
+# --------------------------------------------------------------------------------------
+# self-test — hermetic: throwaway git repos only, never the live tree
+# --------------------------------------------------------------------------------------
+
+FIXTURE_EMAIL = "fixture@example.invalid"
+ATTESTER = "Joshua Moss, MD"
+PENDING_BY = "Pending faculty review"
+
+# w.md's second source is deliberately OUTSIDE the numbered-tree regex and under the
+# directory the regex excludes: it is content only because shipped_pages.json says so.
+X_SOURCE = "03_Core_Topics/x/x.md"
+W_SOURCE = "03_Core_Topics/w/w.md"
+W_EXTRA = "13_Faculty_Resources/Outreach/w_resident.md"
+UNSHIPPED = "05_Therapeutics/draft/notes.md"          # content by regex, shipped by nothing
+NOT_CONTENT = "docs/design/notes.md"                  # neither
+
+
+def _fixture_shipped():
+    return {
+        "version": 1,
+        "pages": [
+            {"slug": "x.md", "kind": "page", "producer": "site_manifest",
+             "sites": ["ms3"], "source": X_SOURCE, "title": "X"},
+            {"slug": "w.md", "kind": "page", "producer": "site_manifest",
+             "sites": ["ms3", "res"], "source": W_SOURCE, "extraSources": [W_EXTRA],
+             "title": "W"},
+        ],
+    }
+
+
+def _reviewed(at="2026-07-03", **extra):
+    entry = {"status": "reviewed", "risk": {"kind": "clinical", "level": "moderate"},
+             "at": at, "by": ATTESTER}
+    entry.update(extra)
+    return entry
+
+
+def _pending(at="2026-07-03", **extra):
+    entry = {"status": "pending", "risk": {"kind": "clinical", "level": "moderate"},
+             "at": at, "by": PENDING_BY}
+    entry.update(extra)
+    return entry
+
+
+def _fixture_ledger():
+    return {"x.md": _pending(), "w.md": _reviewed()}
+
+
+def _fixture_topic_meta():
+    return {
+        "_note": "fixture",
+        "x.md": {"tldr": "x", "facultyReview": {"status": "pending"}},
+        "w.md": {"tldr": "w", "facultyReview": {"status": "reviewed", "reviewer": ATTESTER,
+                                                "lastReviewed": "2026-07-03"}},
+    }
+
+
+def _name_for(email):
+    return "Faculty Attestation Console" if email == CONSOLE_IDENTITY else "Fixture"
+
+
+def _fixture_git_env(email=None, committer=None):
+    """Author and committer are set SEPARATELY: #672 was authored by one and committed by
+    another (jmoss333 / GitHub), and L4 must reject either half being wrong."""
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    author = email or FIXTURE_EMAIL
+    committer = committer or author
+    env.update({
+        "GIT_AUTHOR_NAME": _name_for(author), "GIT_AUTHOR_EMAIL": author,
+        "GIT_COMMITTER_NAME": _name_for(committer), "GIT_COMMITTER_EMAIL": committer,
+        "GIT_AUTHOR_DATE": "2026-09-16T12:00:00+00:00",
+        "GIT_COMMITTER_DATE": "2026-09-16T12:00:00+00:00",
+    })
+    return env
+
+
+def _fixture_git(root, args, email=None, committer=None):
+    proc = subprocess.run(["git", *args], cwd=str(root), capture_output=True, text=True,
+                          env=_fixture_git_env(email, committer))
+    if proc.returncode != 0:
+        raise GitError("fixture git %s failed: %s" % (" ".join(args), proc.stderr.strip()))
+    return proc.stdout
+
+
+def _write(root, rel, payload):
+    path = root / rel
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if isinstance(payload, (dict, list)):
+        payload = json.dumps(payload, indent=2) + "\n"
+    path.write_text(payload, encoding="utf-8")
+
+
+def _commit(root, message, email=None, committer=None):
+    _fixture_git(root, ["add", "-A"])
+    _fixture_git(root, ["commit", "-q", "--no-verify", "-m", message],
+                 email=email, committer=committer)
+    return _fixture_git(root, ["rev-parse", "HEAD"]).strip()
+
+
+def _fixture_repo(root):
+    """A seeded repo on `main`: registries, governance files, content, a skill."""
+    root.mkdir(parents=True, exist_ok=True)
+    _fixture_git(root, ["init", "-q", "-b", "main"])
+    _fixture_git(root, ["config", "user.name", "Fixture"])
+    _fixture_git(root, ["config", "user.email", FIXTURE_EMAIL])
+    _fixture_git(root, ["config", "commit.gpgsign", "false"])
+    _write(root, SHIPPED_REL, _fixture_shipped())
+    _write(root, LEDGER_REL, _fixture_ledger())
+    _write(root, TOPIC_META_REL, _fixture_topic_meta())
+    _write(root, "CLAUDE.md", "# Agent Guide\n\nrule one\n")
+    _write(root, "AGENTS.md", "# Agent Guide\n\nrule one\n")
+    _write(root, "decisions.json", {"D1": "decided"})
+    _write(root, ".claude/skills/s/SKILL.md", "---\nname: s\n---\n\nbody\n")
+    for rel in (X_SOURCE, W_SOURCE, W_EXTRA, UNSHIPPED, NOT_CONTENT):
+        _write(root, rel, "# page\n\noriginal\n")
+    _commit(root, "seed")
+    return root
+
+
+def _branch(root, name):
+    _fixture_git(root, ["checkout", "-q", "-b", name, "main"])
+
+
+def _run(argv):
+    """Run the CLI, capturing both streams. A crash is a failure, not a traceback."""
+    out, err = io.StringIO(), io.StringIO()
+    try:
+        with redirect_stdout(out), redirect_stderr(err):
+            code = main(argv)
+    except SystemExit as exc:  # argparse
+        code = exc.code
+    except Exception as exc:  # noqa: BLE001 — a crash must read as a failed case
+        return -1, "%s: %s" % (type(exc).__name__, exc)
+    return code, out.getvalue() + err.getvalue()
+
+
+def _case(root, name, mutate, email=None, head_branch=None, committer=None):
+    """Branch from main, apply `mutate`, commit, and run the tool over base..branch.
+
+    `head_branch` is what the PR would merge FROM, which is the branch name unless a case
+    needs a second branch carrying the same name to the rule (c2 and d both do).
+    """
+    _branch(root, name)
+    mutate()
+    _commit(root, name, email=email, committer=committer)
+    code, text = _run(["--root", str(root), "--base", "main", "--head", name,
+                       "--head-branch", head_branch or name])
+    _fixture_git(root, ["checkout", "-q", "main"])
+    return code, text
+
+
+def _rules(text):
+    """The rule names the report actually printed, in order."""
+    return [rule for rule in ("L1", "L2", "L3", "L4") if ("%s FAIL" % rule) in text]
+
+
+def self_test():  # noqa: C901 — a flat list of cases reads better than helpers here
+    failures, total = [], []
+
+    def check(name, got, want):
+        total.append(name)
+        if got != want:
+            failures.append("%s: got %r, want %r" % (name, got, want))
+
+    def verdict(name, got, want_code, want_rules):
+        code, text = got
+        check("%s exits %d" % (name, want_code), code, want_code)
+        check("%s fires %s" % (name, want_rules or "nothing"), _rules(text), want_rules)
+
+    holder = tempfile.TemporaryDirectory()
+    try:
+        root = _fixture_repo(Path(holder.name) / "repo")
+        ledger, meta = _fixture_ledger(), _fixture_topic_meta()
+
+        def touch_content():
+            _write(root, X_SOURCE, "# page\n\nrevised\n")
+
+        def promote_ledger():
+            data = json.loads(json.dumps(ledger))
+            data["x.md"] = _reviewed(at="2026-09-16")
+            _write(root, LEDGER_REL, data)
+
+        # (a) a content PR that also rewrites the rules it works under — the #640 shape.
+        def a():
+            touch_content()
+            _write(root, "CLAUDE.md", "# Agent Guide\n\nrule one\nrule two\n")
+        verdict("(a) content + CLAUDE.md on a feature branch",
+                _case(root, "feature-a", a), 1, ["L1"])
+
+        # (a2) governance is a directory too: a skill is an instruction an agent obeys.
+        def a2():
+            touch_content()
+            _write(root, ".claude/skills/s/SKILL.md", "---\nname: s\n---\n\nrewritten\n")
+        verdict("(a2) content + .claude/skills/s/SKILL.md",
+                _case(root, "feature-a2", a2), 1, ["L1"])
+
+        # (b) a promotion on a feature branch, by a non-console identity.
+        verdict("(b) promotion only on a feature branch",
+                _case(root, "feature-b", promote_ledger), 1, ["L2", "L4"])
+
+        # (c) the same promotion, on attest/pending, committed by the console: the clean path.
+        verdict("(c) promotion on attest/pending as the console",
+                _case(root, ATTEST_BRANCH, promote_ledger, email=CONSOLE_IDENTITY), 0, [])
+
+        # (c2) same branch name, same diff, wrong hands. L4 is the whole point: the branch is
+        # not a credential, and the agents commit under the owner's own account.
+        verdict("(c2) promotion on attest/pending as the fixture identity",
+                _case(root, "attest/pending-2", promote_ledger, head_branch=ATTEST_BRANCH),
+                1, ["L4"])
+
+        # Both halves of the identity are load-bearing. #672 was AUTHORED by jmoss333 and
+        # COMMITTED by GitHub; a squash-merge rewrites the committer, so checking one half
+        # would clear the exact commit this tool was built for.
+        verdict("a console author with a foreign committer still fails",
+                _case(root, "attest/pending-author-only", promote_ledger,
+                      email=CONSOLE_IDENTITY, committer=FIXTURE_EMAIL,
+                      head_branch=ATTEST_BRANCH), 1, ["L4"])
+        verdict("a console committer with a foreign author still fails",
+                _case(root, "attest/pending-committer-only", promote_ledger,
+                      email=FIXTURE_EMAIL, committer=CONSOLE_IDENTITY,
+                      head_branch=ATTEST_BRANCH), 1, ["L4"])
+
+        # (d) the console's own branch and identity cannot launder a content edit.
+        def d():
+            promote_ledger()
+            touch_content()
+        verdict("(d) promotion + content on attest/pending as the console",
+                _case(root, "attest/pending-3", d, email=CONSOLE_IDENTITY,
+                      head_branch=ATTEST_BRANCH), 1, ["L3"])
+
+        # (e) the supported way to record that a content PR touched an unattested page.
+        def e():
+            data = json.loads(json.dumps(ledger))
+            data["new.md"] = _pending(at="2026-09-16", reason="New content awaiting review.")
+            _write(root, LEDGER_REL, data)
+            touch_content()
+        verdict("(e) new pending row + content", _case(root, "feature-e", e), 0, [])
+
+        # (f) demotion is the honest move when a content PR rewrites attested text.
+        def f():
+            data = json.loads(json.dumps(ledger))
+            data["w.md"] = _pending(at="2026-09-16", reason="Content changed; re-review.")
+            _write(root, LEDGER_REL, data)
+            _write(root, W_SOURCE, "# page\n\nrevised\n")
+        verdict("(f) reviewed→pending + content", _case(root, "feature-f", f), 0, [])
+
+        # (g) the #640 exp_consult.md shape: a note ADDED to a row already reviewed. A missing
+        # key is a value, or this diff reads as "nothing changed on a reviewed row".
+        def g():
+            data = json.loads(json.dumps(ledger))
+            data["w.md"] = _reviewed(note="Content enhanced with Further Reading (Phase 2).")
+            _write(root, LEDGER_REL, data)
+        code, text = _case(root, "feature-g", g)
+        check("(g) note added to a reviewed row exits 1", code, 1)
+        check("(g) fires L2 and L4", _rules(text), ["L2", "L4"])
+        check("(g) names the entry and the change", "w.md: note added" in text, True)
+
+        # (h) the #672 shape: an attestation re-dated in place, everything else identical.
+        def h():
+            data = json.loads(json.dumps(ledger))
+            data["w.md"] = _reviewed(at="2026-09-16")
+            _write(root, LEDGER_REL, data)
+        code, text = _case(root, "feature-h", h)
+        check("(h) at re-dated on a reviewed row exits 1", code, 1)
+        check("(h) names the dates", "w.md: at 2026-07-03→2026-09-16" in text, True)
+
+        # (i) topic_meta carries the same claim; L4 does not reach it (no per-commit identity
+        # rule was ever defined for topic_meta), so a feature branch trips L2 alone.
+        def i():
+            data = json.loads(json.dumps(meta))
+            data["x.md"]["facultyReview"] = {"status": "reviewed", "reviewer": ATTESTER,
+                                             "lastReviewed": "2026-09-16"}
+            _write(root, TOPIC_META_REL, data)
+        code, text = _case(root, "feature-i", i)
+        check("(i) topic_meta pending→reviewed exits 1", code, 1)
+        check("(i) fires L2 only", _rules(text), ["L2"])
+
+        # (j) the #640 case_formulation.md shape: a demotion that deletes the date and the
+        # reviewer. It claims LESS than before, so it is registration.
+        def j():
+            data = json.loads(json.dumps(meta))
+            data["w.md"]["facultyReview"] = {"status": "pending"}
+            _write(root, TOPIC_META_REL, data)
+            touch_content()
+        verdict("(j) topic_meta demotion dropping lastReviewed/reviewer",
+                _case(root, "feature-j", j), 0, [])
+
+        # (k) re-dating a block reviewed on both sides is a fresh claim about fresh text.
+        def k():
+            data = json.loads(json.dumps(meta))
+            data["w.md"]["facultyReview"]["lastReviewed"] = "2026-09-16"
+            _write(root, TOPIC_META_REL, data)
+        code, text = _case(root, "feature-k", k)
+        check("(k) topic_meta lastReviewed re-dated exits 1", code, 1)
+        check("(k) names the block and the dates",
+              "w.md: facultyReview lastReviewed 2026-07-03→2026-09-16" in text, True)
+
+        # (l) a governance file alone is fine: L1 is about the COMBINATION.
+        def l_case():
+            _write(root, "decisions.json", {"D1": "decided", "D2": "decided"})
+        verdict("(l) decisions.json alone", _case(root, "feature-l", l_case), 0, [])
+
+        # A content-only PR is the common case and must stay silent.
+        verdict("content alone", _case(root, "feature-content", touch_content), 0, [])
+
+        # The regex half of CONTENT: shipped_pages.json has never heard of this path.
+        def unshipped():
+            _write(root, UNSHIPPED, "# draft\n\nrevised\n")
+            _write(root, "CLAUDE.md", "# Agent Guide\n\nrule one\nrule three\n")
+        verdict("a numbered-tree path shipped_pages does not list is still content",
+                _case(root, "feature-regex", unshipped), 1, ["L1"])
+
+        # The shipped_pages half: W_EXTRA is under 13_Faculty_Resources/, which the regex
+        # excludes; it is content because the derived listing says the site ships it.
+        def extra_source():
+            _write(root, W_EXTRA, "# page\n\nrevised\n")
+            _write(root, "AGENTS.md", "# Agent Guide\n\nrule one\nrule four\n")
+        verdict("an extraSources path under 13_Faculty_Resources is content",
+                _case(root, "feature-extra", extra_source), 1, ["L1"])
+
+        # ...and a path that is neither is neither.
+        def not_content():
+            _write(root, NOT_CONTENT, "# notes\n\nrevised\n")
+            _write(root, "CLAUDE.md", "# Agent Guide\n\nrule one\nrule five\n")
+        verdict("a path outside both halves is not content",
+                _case(root, "feature-noncontent", not_content), 0, [])
+
+        # L4 skips merges: a merge re-reports the branch's promotions under the merger's
+        # identity, so without this every console attestation would fail on reaching main.
+        _fixture_git(root, ["checkout", "-q", "-b", "merge-main", "main"])
+        _fixture_git(root, ["merge", "-q", "--no-ff", "--no-verify", "-m", "merge",
+                            ATTEST_BRANCH], email=FIXTURE_EMAIL)
+        code, text = _run(["--root", str(root), "--base", "main", "--head", "merge-main",
+                           "--head-branch", ATTEST_BRANCH])
+        check("a merge of the console's branch exits 0", code, 0)
+        check("and fires nothing", _rules(text), [])
+        _fixture_git(root, ["checkout", "-q", "main"])
+
+        # (m) no base and no origin/main: could not check, never a pass.
+        code, text = _run(["--root", str(root), "--head", "main"])
+        check("(m) an unresolvable base exits 2", code, 2)
+        check("(m) says why", "origin/main not resolvable" in text, True)
+
+        # The other exit-2 doors.
+        _branch(root, "feature-unparsable")
+        (root / LEDGER_REL).write_text("{not json", encoding="utf-8")
+        _commit(root, "unparsable ledger")
+        code, text = _run(["--root", str(root), "--base", "main", "--head",
+                           "feature-unparsable", "--head-branch", "feature-unparsable"])
+        check("an unparsable reviewed.json exits 2", code, 2)
+        check("and says which file", LEDGER_REL in text, True)
+        _fixture_git(root, ["checkout", "-q", "main"])
+
+        _branch(root, "feature-no-shipped")
+        (root / SHIPPED_REL).unlink()
+        _commit(root, "drop shipped_pages")
+        code, text = _run(["--root", str(root), "--base", "main", "--head",
+                           "feature-no-shipped", "--head-branch", "feature-no-shipped"])
+        check("a HEAD without shipped_pages.json exits 2", code, 2)
+        check("and says the predicate cannot be evaluated", "CONTENT predicate" in text, True)
+        _fixture_git(root, ["checkout", "-q", "main"])
+
+        # --format json carries the same verdict a machine can read.
+        code, text = _run(["--root", str(root), "--base", "main", "--head", "feature-b",
+                           "--head-branch", "feature-b", "--format", "json"])
+        check("--format json exits 1 on the same case", code, 1)
+        payload = json.loads(text)
+        check("--format json names the rules", payload["failures"], ["L2", "L4"])
+        check("--format json names the entry",
+              payload["ledgerPromotions"], [{"slug": "x.md", "change": "pending→reviewed"}])
+        check("--format json names the commit's identities",
+              [payload["commitOffenders"][0]["author"],
+               payload["commitOffenders"][0]["committer"]], [FIXTURE_EMAIL, FIXTURE_EMAIL])
+
+        # The classifier's own unit edges, away from git.
+        check("a deleted reviewed row is registration",
+              ledger_promotions({"a.md": _reviewed()}, {}), [])
+        check("a new row born reviewed is a promotion",
+              ledger_promotions({}, {"a.md": _reviewed()}), [("a.md", "new→reviewed")])
+        check("a pending row edited is registration",
+              ledger_promotions({"a.md": _pending()}, {"a.md": _pending(at="2026-09-16")}), [])
+        check("`reason` is not a promotable key",
+              ledger_promotions({"a.md": _reviewed()},
+                                {"a.md": _reviewed(reason="why")}), [])
+        check("a removed note on a reviewed row is still a promotion",
+              ledger_promotions({"a.md": _reviewed(note="n")}, {"a.md": _reviewed()}),
+              [("a.md", "note removed")])
+        check("contentHash rebinding is a promotion",
+              [c for _, c in ledger_promotions({"a.md": _reviewed()},
+                                               {"a.md": _reviewed(contentHash="a" * 40)})],
+              ["contentHash added"])
+        check("a topic_meta block that vanishes is registration",
+              topic_meta_promotions({"a.md": {"facultyReview": {"status": "reviewed"}}},
+                                    {"a.md": {}}), [])
+        check("a record without facultyReview is ignored",
+              topic_meta_promotions({"a.md": {}}, {"a.md": {"tldr": "x"}}), [])
+        check("is_content honours the exclusion",
+              is_content("13_Faculty_Resources/_automation/x.py", set()), False)
+        check("is_content honours the regex", is_content("99_Archive/a/b.md", set()), True)
+        check("is_governance excludes reviewed.json", is_governance(LEDGER_REL), False)
+        check("is_governance covers .github/workflows",
+              is_governance(".github/workflows/ci.yml"), True)
+    finally:
+        holder.cleanup()
+
+    if failures:
+        for line in failures:
+            print("  FAIL %s" % line, file=sys.stderr)
+        print("self-test: %d/%d failed" % (len(failures), len(total)), file=sys.stderr)
+        return 1
+    print("self-test: %d/%d passed" % (len(total), len(total)))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
