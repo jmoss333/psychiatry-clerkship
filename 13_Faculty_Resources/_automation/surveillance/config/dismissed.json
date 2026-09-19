@@ -181,6 +181,12 @@
       "at": "2026-09-16",
       "by": "open-issues review 2026-09-16 (Claude, for Joshua Moss, MD)",
       "issue": 422
+    },
+    "aacap-parameters::modified::0044b046b4f32574": {
+      "reason": "2026-08-31 guideline-surveillance diff is a heading rename only ('Practice Parameters' -> 'Clinical Practice Guidelines' on the AACAP landing page); the body text is unchanged and no curriculum page cites the AACAP parameters (affects: []). No teaching content is affected. Dismissal proposed 2026-09-19 for faculty review in the PR that carries it.",
+      "at": "2026-09-19",
+      "by": "Claude (Cowork session) — approved by merge",
+      "issue": null
     }
   }
 }

@@ -43,6 +43,15 @@ registry by hand for a run that found nothing, and automation must not stamp it 
     is exactly the case where a person must look, so it stays in faculty's court;
   · every row says who the effective review came from (`reviewedBy`: faculty or
     guideline-surveillance) and why the credit was or was not given.
+A change finding counts as ACTIONED when any of three records says so, because the
+dated reports freeze the status a finding had on the day it was written (REVIEW_RULES §7:
+"nothing auto-closes", but a closed issue IS the human's action): (1) the newest report
+row for that fingerprint carries `actioned`/`dismissed`; (2) the fingerprint is in
+`surveillance/config/dismissed.json`; (3) the issue that carries the fingerprint is CLOSED
+in the issue snapshot -- `history/issue_snapshot.json`, which sync_findings.py writes on
+every scheduled run, or a file passed with `--issues-json` (either that shape or raw
+`gh issue list --state all --json number,state,body,closedAt,url,labels` output). Without
+any of the three the finding stays pending and the credit is withheld -- loud, not silent.
 `--no-surveillance-credit` shows the faculty-only view. `monthly_review.py` still counts
 by `lastReviewed` alone; teaching it the same rule is a follow-up (WS-7).
 
@@ -53,6 +62,7 @@ MODES
   --all                       also name the due-90d and current rows (default: counts only)
   --registry PATH             examine a different registry file (used by --self-test)
   --history PATH              surveillance history dir (default: the repo's; used by --self-test)
+  --issues-json PATH          issue snapshot to honour instead of history/issue_snapshot.json
   --no-surveillance-credit    faculty lastReviewed only; ignore surveillance examinations
   --self-test                 prove each bucket can fire and stays silent on the good case,
                               assert parity with monthly_review._add_months, drive main()
@@ -68,6 +78,7 @@ from __future__ import annotations
 import argparse
 import calendar
 import json
+import re
 import sys
 import tempfile
 from datetime import date, timedelta
@@ -83,6 +94,7 @@ DEFAULT_HISTORY = ROOT / "13_Faculty_Resources" / "_automation" / "surveillance"
 # new -> triaged -> issue-open -> actioned -> dismissed).
 CREDITED_JOB = "guideline-surveillance"
 RESOLVED_STATUSES = frozenset({"actioned", "dismissed"})
+FP_RE = re.compile(r"surveillance:fp=([A-Za-z0-9:._\-]+)")  # same marker sync_findings.py uses
 
 # Cadence word -> months until the next review. Anything else is `unknown`, deliberately:
 # the schema does not constrain the value, so a typo like "anual" must surface as a
@@ -137,40 +149,94 @@ def _iso_date_prefix(value):
     return _exact_date(value[:10]) if isinstance(value, str) and len(value) >= 10 else None
 
 
-def load_surveillance(history_dir: Path) -> dict:
+def _read_json(path: Path):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def closed_fingerprints(snapshot) -> set:
+    """Fingerprints whose GitHub issue is CLOSED, from any of the accepted snapshot shapes:
+    {"issues": [...]} as history/issue_snapshot.json, a bare list of normalized entries
+    ({fingerprint, state}), or raw `gh issue list --json number,state,body,...` entries
+    (fingerprint recovered from the `surveillance:fp=` marker in the body)."""
+    items = snapshot.get("issues") if isinstance(snapshot, dict) else snapshot
+    out = set()
+    for it in items if isinstance(items, list) else []:
+        if not isinstance(it, dict) or "pull_request" in it:
+            continue
+        fp = it.get("fingerprint")
+        if not fp:
+            m = FP_RE.search(it.get("body") or "")
+            fp = m.group(1) if m else None
+        if fp and str(it.get("state") or "").upper() == "CLOSED":
+            out.add(fp)
+    return out
+
+
+def load_surveillance(history_dir: Path, issues_path: Path | None = None,
+                      dismissed_path: Path | None = None) -> dict:
     """Per-source examination evidence from the guideline-surveillance job's own records.
 
     Returns {source_id: {"examinedAt": date|None, "openChanges": [{"detectedAt", "status",
-    "severity"}]}}. Reads only; an absent directory is an empty map (no credit, so every
-    surveilled source falls back to the faculty date -- loud, never a silent pass).
+    "severity", "fingerprint"}]}} plus a "_meta" entry with what was read and how each
+    change finding was resolved. Reads only; an absent directory is an empty map (no
+    credit, so every surveilled source falls back to the faculty date -- loud, never a
+    silent pass).
     """
     out: dict = {}
+    meta = {"baselines": 0, "findingsSeen": 0, "resolvedByStatus": 0, "resolvedByDismissal": 0,
+            "resolvedByClosedIssue": 0, "issueSnapshotCapturedAt": None, "dismissedFingerprints": 0}
     base = history_dir / "baselines"
     if base.is_dir():
         for path in sorted(base.glob("*.json")):
-            try:
-                rec = json.loads(path.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError):
-                continue
+            rec = _read_json(path)
             when = _iso_date_prefix(rec.get("checked_at")) if isinstance(rec, dict) else None
             if when is not None:
                 out.setdefault(path.stem, {"examinedAt": None, "openChanges": []})["examinedAt"] = when
-    for path in sorted(history_dir.glob("guideline_delta_*.json")) if history_dir.is_dir() else []:
-        try:
-            findings = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
+                meta["baselines"] += 1
+
+    dismissed_path = dismissed_path or (history_dir.parent / "config" / "dismissed.json")
+    dismissed = _read_json(dismissed_path)
+    dismissed_fps = set((dismissed or {}).get("dismissed", {}).keys()) if isinstance(dismissed, dict) else set()
+    meta["dismissedFingerprints"] = len(dismissed_fps)
+
+    snapshot = _read_json(issues_path) if issues_path else _read_json(history_dir / "issue_snapshot.json")
+    if isinstance(snapshot, dict):
+        meta["issueSnapshotCapturedAt"] = snapshot.get("capturedAt")
+    closed = closed_fingerprints(snapshot) if snapshot is not None else set()
+
+    # Newest report row per fingerprint wins: a dated report freezes the status a finding
+    # had that day, and a later run may carry the same fingerprint with a later status.
+    latest: dict = {}
+    files = sorted(history_dir.glob("guideline_delta_*.json")) if history_dir.is_dir() else []
+    for path in files:
+        findings = _read_json(path)
         for f in findings if isinstance(findings, list) else []:
             if not isinstance(f, dict) or f.get("change_type") != "modified":
                 continue
-            if f.get("status") in RESOLVED_STATUSES:
-                continue
+            fp = f.get("fingerprint") or f.get("finding_id")
             when = _iso_date_prefix(f.get("detected_at"))
             sid = f.get("source_id")
-            if when is None or not sid:
+            if not fp or when is None or not sid:
                 continue
-            out.setdefault(sid, {"examinedAt": None, "openChanges": []})["openChanges"].append(
-                {"detectedAt": when.isoformat(), "status": f.get("status"), "severity": f.get("severity")})
+            latest[fp] = {"sid": sid, "detectedAt": when.isoformat(), "status": f.get("status"),
+                          "severity": f.get("severity"), "fingerprint": fp}
+    meta["findingsSeen"] = len(latest)
+    for fp, rec in latest.items():
+        if rec["status"] in RESOLVED_STATUSES:
+            meta["resolvedByStatus"] += 1
+            continue
+        if fp in dismissed_fps:
+            meta["resolvedByDismissal"] += 1
+            continue
+        if fp in closed:
+            meta["resolvedByClosedIssue"] += 1
+            continue
+        sid = rec.pop("sid")
+        out.setdefault(sid, {"examinedAt": None, "openChanges": []})["openChanges"].append(rec)
+    out["_meta"] = meta
     return out
 
 
@@ -291,8 +357,9 @@ def examine(sources: list, today: date, surveillance: dict | None = None) -> dic
         "declared": declared,
         "examined": len(rows),
         "surveillanceCredit": None if surveillance is None else {
-            "baselines": sum(1 for v in surveillance.values() if v.get("examinedAt")),
-            "openChangeFindings": sum(len(v.get("openChanges", [])) for v in surveillance.values()),
+            "baselines": sum(1 for k, v in surveillance.items() if k != "_meta" and v.get("examinedAt")),
+            **{k: v for k, v in (surveillance.get("_meta") or {}).items() if k != "baselines"},
+            "openChangeFindings": sum(len(v.get("openChanges", [])) for k, v in surveillance.items() if k != "_meta"),
             "sourcesCredited": credited,
         },
         "counts": counts,
@@ -314,6 +381,11 @@ def render(report: dict, show_all: bool) -> str:
         out.append(f"  surveillance credit: {sc['baselines']} baseline(s) read, "
                    f"{sc['openChangeFindings']} unactioned change finding(s), "
                    f"{sc['sourcesCredited']} source(s) credited")
+        if "findingsSeen" in sc:
+            out.append(f"    change findings seen {sc['findingsSeen']}: resolved by status {sc['resolvedByStatus']}, "
+                       f"by dismissal {sc['resolvedByDismissal']}, by closed issue {sc['resolvedByClosedIssue']}"
+                       + (f"; issue snapshot captured {sc['issueSnapshotCapturedAt'][:10]}"
+                          if sc.get("issueSnapshotCapturedAt") else "; no issue snapshot"))
     named = set(FAILING) | {"due-30d"}
     if show_all:
         named |= {"due-90d", "current"}
@@ -537,24 +609,69 @@ def self_test() -> int:
             json.dumps({"hash": "x", "chars": 10, "checked_at": "2026-09-01T06:08:48+00:00"}))
         (hist / "baselines" / "broken.json").write_text("{not json")
         (hist / "guideline_delta_2026-08-31.json").write_text(json.dumps([
-            {"source_id": "changed", "change_type": "modified", "status": "issue-open",
-             "severity": "P0", "detected_at": "2026-08-31T15:53:39+00:00"},
-            {"source_id": "done", "change_type": "modified", "status": "actioned",
-             "severity": "P2", "detected_at": "2026-08-31T15:53:39+00:00"},
-            {"source_id": "down", "change_type": "removed", "status": "new",
-             "severity": "P1", "detected_at": "2026-08-31T15:53:39+00:00"},
+            {"source_id": "changed", "fingerprint": "changed::modified::aaaa", "change_type": "modified",
+             "status": "issue-open", "severity": "P0", "detected_at": "2026-08-31T15:53:39+00:00"},
+            {"source_id": "done", "fingerprint": "done::modified::bbbb", "change_type": "modified",
+             "status": "actioned", "severity": "P2", "detected_at": "2026-08-31T15:53:39+00:00"},
+            {"source_id": "down", "fingerprint": "down::removed::cccc", "change_type": "removed",
+             "status": "new", "severity": "P1", "detected_at": "2026-08-31T15:53:39+00:00"},
+            {"source_id": "later", "fingerprint": "later::modified::dddd", "change_type": "modified",
+             "status": "new", "severity": "P2", "detected_at": "2026-08-31T15:53:39+00:00"},
+            {"source_id": "dis", "fingerprint": "dis::modified::eeee", "change_type": "modified",
+             "status": "new", "severity": "P2", "detected_at": "2026-08-31T15:53:39+00:00"},
+            {"source_id": "closed", "fingerprint": "closed::modified::ffff", "change_type": "modified",
+             "status": "issue-open", "severity": "P1", "detected_at": "2026-08-31T15:53:39+00:00"},
         ]))
+        # a LATER report carries the same fingerprint with a later status: newest wins
+        (hist / "guideline_delta_2026-09-01.json").write_text(json.dumps([
+            {"source_id": "later", "fingerprint": "later::modified::dddd", "change_type": "modified",
+             "status": "actioned", "severity": "P2", "detected_at": "2026-08-31T15:53:39+00:00"},
+        ]))
+        (hist.parent / "config").mkdir(exist_ok=True)
+        (hist.parent / "config" / "dismissed.json").write_text(json.dumps(
+            {"dismissed": {"dis::modified::eeee": {"reason": "heading rename", "at": "2026-09-19"}}}))
         loaded = load_surveillance(hist)
         expect("load_surveillance: reads the baseline's checked_at as a date",
                loaded.get("clean", {}).get("examinedAt") == date(2026, 9, 1))
-        expect("load_surveillance: keeps an unactioned modified finding",
-               [c["status"] for c in loaded.get("changed", {}).get("openChanges", [])] == ["issue-open"])
+        expect("load_surveillance: keeps an unactioned modified finding, with its fingerprint",
+               [(c["status"], c["fingerprint"]) for c in loaded.get("changed", {}).get("openChanges", [])]
+               == [("issue-open", "changed::modified::aaaa")])
         expect("load_surveillance: drops an actioned finding and a non-modified one",
                "done" not in loaded and "down" not in loaded)
+        expect("load_surveillance: the newest report row for a fingerprint wins (actioned later)",
+               "later" not in loaded and loaded["_meta"]["resolvedByStatus"] == 2)
+        expect("load_surveillance: a fingerprint in config/dismissed.json is resolved",
+               "dis" not in loaded and loaded["_meta"]["resolvedByDismissal"] == 1)
+        expect("load_surveillance: with no issue snapshot a closed-on-GitHub finding is still pending",
+               "closed" in loaded and loaded["_meta"]["resolvedByClosedIssue"] == 0
+               and loaded["_meta"]["issueSnapshotCapturedAt"] is None)
         expect("load_surveillance: skips an unparseable baseline without failing",
                "broken" not in loaded)
-        expect("load_surveillance: an absent directory is an empty map",
-               load_surveillance(hist / "nope") == {})
+        expect("load_surveillance: an absent directory yields no sources (meta only)",
+               [k for k in load_surveillance(hist / "nope") if k != "_meta"] == [])
+        # issue snapshot, both shapes
+        snap = hist / "issue_snapshot.json"
+        snap.write_text(json.dumps({"schemaVersion": 1, "capturedAt": "2026-09-19T10:00:00+00:00", "issues": [
+            {"number": 1, "state": "CLOSED", "fingerprint": "closed::modified::ffff"},
+            {"number": 2, "state": "OPEN", "fingerprint": "changed::modified::aaaa"},
+        ]}))
+        loaded = load_surveillance(hist)
+        expect("load_surveillance: history/issue_snapshot.json CLOSED resolves the finding",
+               "closed" not in loaded and loaded["_meta"]["resolvedByClosedIssue"] == 1
+               and loaded["_meta"]["issueSnapshotCapturedAt"] == "2026-09-19T10:00:00+00:00")
+        expect("load_surveillance: an OPEN issue keeps the finding pending", "changed" in loaded)
+        raw = hist / "gh.json"
+        raw.write_text(json.dumps([
+            {"number": 1, "state": "CLOSED", "body": "...\n<!-- surveillance:fp=closed::modified::ffff -->"},
+            {"number": 3, "state": "CLOSED", "body": "no marker here"},
+            {"number": 4, "state": "CLOSED", "body": "<!-- surveillance:fp=changed::modified::aaaa -->", "pull_request": {}},
+        ]))
+        loaded = load_surveillance(hist, issues_path=raw)
+        expect("load_surveillance: raw gh issue JSON is honoured via the fp marker; PRs and unmarked bodies ignored",
+               "closed" not in loaded and "changed" in loaded)
+        expect("closed_fingerprints: accepts a bare normalized list",
+               closed_fingerprints([{"fingerprint": "x", "state": "closed"}]) == {"x"})
+
         # end to end through main(): credit turns the overdue row green; the flag turns it off.
         import io
         from contextlib import redirect_stdout
@@ -675,6 +792,8 @@ def main(argv=None) -> int:
                     help="registry to examine (default: evidence_registry.json at the repo root)")
     ap.add_argument("--history", metavar="PATH", default=str(DEFAULT_HISTORY),
                     help="surveillance history dir holding baselines/ and guideline_delta_*.json")
+    ap.add_argument("--issues-json", metavar="PATH", default=None,
+                    help="issue snapshot (history/issue_snapshot.json shape, or raw gh issue list JSON)")
     ap.add_argument("--no-surveillance-credit", action="store_true",
                     help="ignore surveillance examinations; faculty lastReviewed only")
     ap.add_argument("--self-test", action="store_true",
@@ -692,7 +811,8 @@ def main(argv=None) -> int:
             if today is None:
                 raise CadenceError(f"--as-of must be YYYY-MM-DD, got {args.as_of!r}")
         sources = load_registry(Path(args.registry))
-        surveillance = None if args.no_surveillance_credit else load_surveillance(Path(args.history))
+        surveillance = None if args.no_surveillance_credit else load_surveillance(
+            Path(args.history), Path(args.issues_json) if args.issues_json else None)
         report = examine(sources, today, surveillance)
     except CadenceError as exc:
         print(f"review cadence: cannot run ({exc})", file=sys.stderr)

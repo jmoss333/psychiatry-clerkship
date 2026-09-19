@@ -80,6 +80,15 @@ A finding is `actioned` only when either (a) the affected page(s) were re-stampe
 `reviewed.json`, or (b) a human explicitly confirmed no change was warranted (logged in
 the issue). Nothing auto-closes.
 
+Three records carry that human decision, and `bin/check_review_cadence.py` honours all
+three when deciding whether a guideline-surveillance examination may count as a source's
+review (policy 2026-09-19): the newest dated report row for the fingerprint says
+`actioned`/`dismissed`; the fingerprint is in `config/dismissed.json`; or the issue that
+carries the fingerprint is CLOSED in `history/issue_snapshot.json`, which
+`sync_findings.py` writes on every scheduled run (content-free: number, url, state,
+closedAt, fingerprint, labels). A dated report freezes the status a finding had that day,
+so the snapshot is what lets an offline reader see a closure made since.
+
 ## 8. Generated-report publication boundary
 
 - Scheduled runs never push reports to `main`.
