@@ -641,9 +641,9 @@ function fdOpenResource(ref, opts){
   var search=o.search;
   if(search===undefined&&typeof location!=='undefined') search=location.search;
   var request=fdResourceRequest(ref,search||'');
-  var item=(index.byRef||{})[ref]||{
+  var item=(index.byRef||{})[ref]||(typeof fdKnownItem==='function'?fdKnownItem(index,ref,request.kind):{
     ref:ref,kind:request.kind,title:ref,minutes:null,summary:'',points:[],attested:false
-  };
+  });
   var legacy=fdLegacyItem(item,ref,request.kind);
   var host=o.host||(typeof contentEl!=='undefined'?contentEl:null);
   var facultyMatch=o.facultyPreviewMatches||

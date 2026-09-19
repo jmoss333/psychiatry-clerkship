@@ -55,6 +55,18 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights, libr
   };
 }
 
+/* The fallback item for a ref the index knows but does not carry (curriculum.libraryExclude:
+   the feedback form, the faculty curator, the week pages, the rp-* trainers). Same shape as a
+   byRef item so every consumer -- the Reader, the resource mount, the live open path, the
+   document title -- reads it the same way; the title comes from index.titles (the site manifest)
+   and only falls back to the ref when no manifest entry exists, which is how a bare test index
+   ({byRef:{}}) keeps its old behaviour. kind is the caller's when it has one, else the extension. */
+function fdKnownItem(index, ref, kind){
+  var idx=index||{}, titles=idx.titles||{}, r=ref||'';
+  return { ref:r, kind:kind||(fdIsTool(r)?'tool':'read'), title:titles[r]||r, minutes:null,
+    summary:'', points:[], attested:false, toolRef:null, risk:null, href:'' };
+}
+
 function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   var meta=topicMeta||{}, cur=curriculum||{};
   var toolIndex={}, list=(toolRegistry&&toolRegistry.tools)||[];
@@ -159,7 +171,15 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     if(lx[lxi]&&typeof lx[lxi].ref==='string') known[lx[lxi].ref]=true;
   }
 
-  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known };
+  /* titles = the manifest title of EVERY manifest entry, indexed or not. A known-but-excluded ref
+     (see above) has no byRef item, and until 2026-09-19 every reader-side fallback synthesized
+     {title: ref}: ?tool=feedback.html painted "feedback.html" as the page heading, the iframe's
+     title and the document title while the manifest had carried "Improve this library — send
+     feedback" all along. fdKnownItem below is the one place that fallback is built now. */
+  var titles={}, tk;
+  for(tk in manifestIndex){ if(manifestIndex[tk]&&typeof manifestIndex[tk].title==='string') titles[tk]=manifestIndex[tk].title; }
+
+  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known, titles:titles };
 }
 
 /* The browser receives exactly one projected path. Treat that small object as untrusted at the

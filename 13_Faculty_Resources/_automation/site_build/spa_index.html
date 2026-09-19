@@ -2404,7 +2404,7 @@
   }
 
   function fdOpenResourceLive(ref,opts){
-    var options=opts||{}, item=(FD_INDEX.byRef||{})[ref]||{title:ref,kind:/\.html$/.test(ref)?'tool':'read'};
+    var options=opts||{}, item=(FD_INDEX.byRef||{})[ref]||(typeof fdKnownItem==='function'?fdKnownItem(FD_INDEX,ref):{title:ref,kind:/\.html$/.test(ref)?'tool':'read'});
     if(!facultyPreviewRequest)fdDisposeGuide();
     /* The audited preview path delegates to show(), which must see the previous currentItem so its
        same-tool reload guard cannot suppress the initial preflight. It also must not mutate the
