@@ -124,6 +124,8 @@
   #content.toolmode{max-width:none;padding:0;margin:0;display:flex;flex-direction:column;height:calc(100vh - 46px)}
   .toolframe{width:100%;height:calc(100vh - 46px);border:0;display:block;background:var(--bg)}
   #content.toolmode .toolframe{flex:1 1 auto;height:auto;min-height:0}
+  /* Content-sized frame (fdSizeToolFrame): released from the viewport height before its inline height lands. */
+  .toolframe.is-content-sized{height:auto}
   .pgfb{margin:30px 0 0;padding-top:16px;border-top:1px solid var(--border)}
   .pgfb-b{background:none;border:1px solid var(--border);border-radius:999px;padding:6px 15px;color:var(--text-light);cursor:pointer;font:inherit;font-size:var(--fd-font-sm)}
   .pgfb-b:hover{border-color:var(--accent);color:var(--accent-dark)}
@@ -2237,6 +2239,64 @@
 
   /* Tool width is a transient shell preference. Patch only classes and aria state so the live
      iframe, its contentWindow, learner inputs, scroll position, and focused toggle all survive. */
+  /* Embedded-tool frame (2026-09-19): content-height by default, so the page is the only scroll
+     surface; a tool that declares <meta name="cw-frame" content="viewport"> keeps the
+     viewport-height frame. fdToolFrameMode / fdToolFrameHeight (fd_wire.js) are the pure halves;
+     this is the DOM half. Idempotent per frame element (__fdSized): fdOpenResourceLive calls it
+     once the resource has mounted and fdPatchToolLayout calls it on every re-render that keeps
+     the live frame, and only the first call wires anything. The inner ResizeObserver watches the
+     tool's own <html> and <body>, so a tab switch, an expanded card or a loaded image re-sizes
+     the frame; the outer one watches the frame's width (the expand toggle, a rotated phone),
+     which reflows the tool and so changes its height. A tool that navigates itself fires load
+     again and is wired against its new document. tests/tool-frame.test.mjs pins the wiring;
+     tool-expand.spec.js measures the live frame. */
+  function fdSizeToolFrame(frame){
+    if(!frame||frame.__fdSized)return;
+    frame.__fdSized=true;
+    var pending=false;
+    function doc(){ try{ return frame.contentDocument||null; }catch(_){ return null; } }
+    function apply(){
+      pending=false;
+      var d=doc();
+      if(!d||!d.documentElement||!frame.isConnected)return;
+      if(fdToolFrameMode(d)!=='content'){ frame.classList.remove('is-content-sized'); frame.style.height=''; return; }
+      /* A React tool's document is EMPTY at its load event (an empty root, body margin 0): the
+         html box measures 0 until the first render, which the observer reports a frame later.
+         Releasing the frame from its viewport height on that measurement collapses it to the
+         150px iframe default for a frame -- and for as long as a hidden tab throttles rAF. So
+         the frame keeps its viewport-height placeholder until the tool has a real height. */
+      var h=fdToolFrameHeight(d), cur=parseInt(frame.style.height,10)||0;
+      if(h<48)return;
+      frame.classList.add('is-content-sized');
+      if(Math.abs(h-cur)>1)frame.style.height=h+'px';
+    }
+    function schedule(){
+      if(pending)return;
+      pending=true;
+      (window.requestAnimationFrame||window.setTimeout)(apply);
+    }
+    function wire(){
+      var d=doc(), win=null;
+      try{ win=frame.contentWindow; }catch(_){ win=null; }
+      if(!d||!win)return;
+      apply();
+      if(fdToolFrameMode(d)!=='content')return;
+      if(typeof win.ResizeObserver==='function'){
+        var inner=new win.ResizeObserver(schedule);
+        if(d.documentElement)inner.observe(d.documentElement);
+        if(d.body)inner.observe(d.body);
+      }else if(typeof win.MutationObserver==='function'&&d.documentElement){
+        new win.MutationObserver(schedule).observe(d.documentElement,{childList:true,subtree:true,attributes:true,characterData:true});
+      }
+      if(typeof window.ResizeObserver==='function')new window.ResizeObserver(schedule).observe(frame);
+      win.addEventListener('load',schedule);
+    }
+    var loaded=false;
+    try{ var d0=frame.contentDocument; loaded=!!d0&&d0.readyState==='complete'&&!!(d0.body&&d0.body.childNodes.length); }catch(_){ loaded=false; }
+    frame.addEventListener('load',wire);
+    if(loaded)wire();
+  }
+
   function fdPatchToolLayout(state){
     if(!contentEl)return;
     var reader=contentEl.querySelector('.fd-reader--tool');
@@ -2248,6 +2308,8 @@
     if(!reader)return;
     if(expanded)reader.classList.add('is-tool-expanded');
     else reader.classList.remove('is-tool-expanded');
+    var liveFrame=reader.querySelector('.toolframe');
+    if(liveFrame&&!facultyPreviewRequest&&typeof fdSizeToolFrame==='function')fdSizeToolFrame(liveFrame);
     var control=reader.querySelector('[data-fd-expand-tool]');
     if(control)control.setAttribute('aria-pressed',expanded?'true':'false');
   }
@@ -2372,6 +2434,8 @@
     }).then(function(ok){
       if(ok&&(!options.isCurrent||options.isCurrent(ref)!==false)){
         var body=contentEl&&contentEl.querySelector('.fd-article__body');
+        var toolFrame=contentEl&&contentEl.querySelector('.toolframe');
+        if(toolFrame&&!facultyPreviewRequest&&typeof fdSizeToolFrame==='function')fdSizeToolFrame(toolFrame);
         if(body){
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
