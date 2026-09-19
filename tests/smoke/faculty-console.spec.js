@@ -2014,10 +2014,10 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await expect(fullPage.locator('#faculty-preview-lock-notice')).toHaveCount(0);
     await expect(fullPage.locator('.fd-article__h1')).toHaveText('Mood');
     await fullPage.locator('[data-fd-tab="library"]').click();
-    await fullPage.locator('.fd-collink[data-fd-open="t_anxiety.md"]').click();
+    await fullPage.locator('.fd-kit__reading[data-fd-open="t_anxiety.md"]').click();
     await expect(fullPage.locator('.fd-article__h1')).toContainText('Anxiety');
     await fullPage.locator('[data-fd-tab="library"]').click();
-    await fullPage.locator('.fd-collink[data-fd-open="t_mood.md"]').click();
+    await fullPage.locator('.fd-kit__reading[data-fd-open="t_mood.md"]').click();
     const externalPromise = fullPage.waitForEvent('popup');
     await fullPage.locator('#content').getByRole('link', {
       name: 'Mental Status Exam tool',

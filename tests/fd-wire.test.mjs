@@ -483,7 +483,7 @@ test('Tab trapping wraps at both ends of a dialog', () => {
   assert.equal(prevented, 2);
 });
 
-test('fdWire registers and destroys one delegated click/input/change/keydown/popstate listener for the live shell', () => {
+test('fdWire registers and destroys one delegated click/input/change/focusin/keydown/popstate listener for the live shell', () => {
   const rootCalls = [];
   const windowCalls = [];
   const rootRemoves = [];
@@ -501,7 +501,7 @@ test('fdWire registers and destroys one delegated click/input/change/keydown/pop
   assert.equal(controller.ok, true);
   // 'change' is the settings panel's date field -- the one control not on the delegated click
   // path. Registered through listen() like the rest, so destroy() takes it down too.
-  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input', 'change']);
+  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input', 'change', 'focusin']);
   assert.deepEqual(windowCalls.map(([type]) => type), ['keydown', 'popstate']);
   controller.destroy();
   assert.deepEqual(rootRemoves, rootCalls.slice().reverse());
@@ -2998,4 +2998,34 @@ test('explicit Essentials revisit rerenders even when All was already selected',
   assert.equal(renders.length,1);
   h.controller.dispatch({'data-fd-tab':'library'});
   assert.equal(renders.length,2);
+});
+
+test('Essentials tool focus reveals both clipped edges without route, state, storage, or page scrolling', () => {
+  const storage=memStorage(), routes=[], scrolls=[];
+  const h=fakeHarness({...roleContext,screen:'app',tab:'library'}, {
+    F:make(storage),route:(...args)=>routes.push(args),scrollTo:(...args)=>scrolls.push(args)
+  });
+  h.fakeWindow.getComputedStyle=node=>node===strip ? {paddingLeft:'6px',paddingRight:'6px'} : {outlineWidth:'2px',outlineOffset:'2px'};
+  const strip={scrollLeft:0,clientLeft:0,clientWidth:362,getBoundingClientRect:()=>({left:14,right:376})};
+  let bounds={left:308,right:588};
+  const target={closest:selector=>selector==='.fd-kit__tool-list [data-fd-open]'?target:strip,getBoundingClientRect:()=>bounds};
+  const state=JSON.stringify(h.controller.getState()), saved=storage.dump(); routes.length=0;
+  assert.equal(typeof h.rootHandlers.focusin,'function');
+  h.rootHandlers.focusin({target}); assert.equal(strip.scrollLeft,218);
+  bounds={left:10,right:290}; h.rootHandlers.focusin({target}); assert.equal(strip.scrollLeft,208);
+  bounds={left:20,right:300}; h.rootHandlers.focusin({target}); assert.equal(strip.scrollLeft,208);
+  h.rootHandlers.focusin({target:{closest:()=>null}}); assert.equal(strip.scrollLeft,208);
+  assert.equal(JSON.stringify(h.controller.getState()),state); assert.deepEqual(storage.dump(),saved);
+  assert.deepEqual(routes,[]); assert.deepEqual(scrolls,[]);
+  h.controller.destroy(); bounds={left:400,right:680}; h.rootHandlers.focusin({target});
+  assert.equal(strip.scrollLeft,208);
+});
+
+test('Essentials tool focus is inert before startup and during faculty preview', () => {
+  for(const options of [{commitStartup:false},{facultyPreview:()=>true}]) {
+    const h=fakeHarness({...roleContext,screen:'app',tab:'library'}, {F:make(memStorage()),...options});
+    let inspected=0;
+    h.rootHandlers.focusin({target:{closest(){inspected++;return null;}}});
+    assert.equal(inspected,0);
+  }
 });

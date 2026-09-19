@@ -1375,6 +1375,24 @@ function fdWire(root, initialState, opts){
     if(event.preventDefault) event.preventDefault();
     apply(fdDispatch(attrs,context({inSheet:!!state.sheet}),state),target,false);
   }
+  /* Chromium can focus a partly visible button in the native details tool strip without
+     scrolling it fully into view. Move only that strip, preserving the page and route. */
+  function focusHandler(event){
+    if(destroyed||!startupCommitted||previewActive()) return;
+    var target=event&&event.target;
+    var control=target&&target.closest?target.closest('.fd-kit__tool-list [data-fd-open]'):null;
+    if(!control) return;
+    var strip=control.closest('.fd-kit__tool-list');
+    if(!strip||!strip.getBoundingClientRect||!control.getBoundingClientRect) return;
+    var frame=strip.getBoundingClientRect(), box=control.getBoundingClientRect();
+    var style=win&&win.getComputedStyle?win.getComputedStyle(strip):null;
+    var focusStyle=win&&win.getComputedStyle?win.getComputedStyle(control):null;
+    var ring=focusStyle?(parseFloat(focusStyle.outlineWidth)||0)+(parseFloat(focusStyle.outlineOffset)||0):0;
+    var left=frame.left+(strip.clientLeft||0)+Math.max(style?parseFloat(style.paddingLeft)||0:0,ring);
+    var right=frame.left+(strip.clientLeft||0)+strip.clientWidth-Math.max(style?parseFloat(style.paddingRight)||0:0,ring);
+    if(box.left<left) strip.scrollLeft-=left-box.left;
+    else if(box.right>right) strip.scrollLeft+=box.right-right;
+  }
   function inputHandler(event){
     if(destroyed) return;
     var target=event.target;
@@ -1662,7 +1680,7 @@ function fdWire(root, initialState, opts){
   }
 
   if(!listen(root,'click',clickHandler,false)||!listen(root,'input',inputHandler,false)||
-     !listen(root,'change',changeHandler,false)||
+     !listen(root,'change',changeHandler,false)||!listen(root,'focusin',focusHandler,false)||
      !listen(win,'keydown',keyHandler,false)||!listen(win,'popstate',popstateHandler,false)){
       removeRegistrations();
       destroyed=true;
