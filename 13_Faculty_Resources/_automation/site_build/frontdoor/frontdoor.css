@@ -552,6 +552,21 @@
  * base rule it overrides (specificity, not order, decides the cascade here; tests/fd-tokens.test.mjs
  * resolves a selector by first textual match, so an override placed above would shadow the base). */
 .fd-reader--tool .fd-article__body{max-width:none}
+/* A tool titles itself. Measured 2026-09-18 on production at 1024px: the shell painted
+ * "INTERACTIVE TOOL · self-paced / Decisional Capacity" and the tool, directly beneath, its own
+ * "ACUTE & SAFETY · 04 / Assessing Decisional Capacity" — two mastheads for one page. Below
+ * 1000px the shell already yielded (a phone had no room for two); the desktop kept both because
+ * nobody had asked which title was the page's. A 2026-09-19 calibration on the built sites found
+ * every shipped tool renders its own visible <h1> (feedback.html and review.html gained real
+ * headings in the same change), so this is one contract at every width, not a breakpoint: the
+ * head and an empty lead go, and the h1 is clipped rather than removed so the outer document
+ * keeps an accessible heading. Governance notices stay visible above the frame. Kept after the
+ * base .fd-article__h1/__lead rules for the same first-textual-match reason as the line above.
+ * tests/tool-masthead.test.mjs pins this; tool-expand.spec.js opens every tool and asserts the
+ * visible h1 inside the frame. */
+.fd-reader--tool .fd-article__head{display:none}
+.fd-reader--tool .fd-article__h1{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.fd-reader--tool .fd-article__lead:empty{display:none}
 .fd-article__body h2{margin:30px 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-2xl);line-height:1.3;color:var(--fd-text)}
 .fd-article__body h3{margin:24px 0 10px;font-size:var(--fd-font-xl);line-height:1.4;color:var(--fd-text)}
 .fd-article__body ul{margin:0 0 18px;padding-left:1.35em}
@@ -864,12 +879,9 @@
 @media (max-width:999px){
   .fd-path__cols{flex-direction:column;gap:var(--fd-space-8)}
   .fd-path__cols>.fd-detail,.fd-path__cols>.fd-timeline{flex:none;width:100%;box-sizing:border-box}
+  /* The card chrome around the frame is phone-only; the shell's head/h1/lead yield to the tool
+     at EVERY width — see the .fd-reader--tool block after .fd-article__body above. */
   .fd-reader--tool .fd-article{padding:12px 10px;border:0;box-shadow:none;background:transparent}
-  .fd-reader--tool .fd-article__head{display:none}
-  /* The embedded tool supplies the visible title. Keep the shell heading accessible without
-     taking another phone screen of space; governance notices remain visible above the frame. */
-  .fd-reader--tool .fd-article__h1{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-  .fd-reader--tool .fd-article__lead:empty{display:none}
   .fd-brand,.fd-btn--primary,.fd-safetybtn,.fd-weekpill,.fd-searchbtn,.fd-weekgrid__browse{min-height:44px}
   .fd-searchbtn,.fd-actionbar .fd-btn--ghost{min-width:44px}
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-pick,.fd-setupcta{min-height:44px}
