@@ -167,6 +167,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Unit — scheduled maintenance"),
             ("name", "Validate — scheduled workflow contracts"),
             ("name", "Lint — no hard-coded machine paths in tracked Python"),
+            ("name", "Guard — governance/content separation"),
             ("name", "Unit — media guard"),
             ("name", "Unit — shared build logic (common.py)"),
             ("name", "Unit — pairing block renderer"),
@@ -392,7 +393,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "7090155fdbda3f4a9bda687841552bffb2b88e344895009241aaf17d6beb5d6f"
     ),
-    "ci.yml": "0fa2a1c6d68104f3f8766b3b6fccb4b190dd849ed51fa07bd8c9797c942adf64",
+    "ci.yml": "ac309354549f9258a2420175f22b85b988ee7c673edaa2c8ebbbaa69b2c29f28",
     "maintenance-governance-digest.yml": (
         "b6cc2dcf41eec62131c18bca73f235b8599241234b0d26e5c406f635435b521e"
     ),
