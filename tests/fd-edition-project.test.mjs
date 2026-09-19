@@ -151,7 +151,7 @@ for (const audience of ['ms3','resident']) {
       readFileSync(new URL('frontdoor/fd_library.js',base),'utf8')+
       '\nreturn {kit:fdEssentials,full:fdLibrary};'
     )();
-    assert.match(render.kit(projected.index),/>Your kit<\/h1>/);
+    assert.match(render.kit(projected.index),/>Core readings<\/h1>/);
     assert.equal(render.kit(projected.index),render.kit(before));
     assert.equal(render.full(projected.index),render.full(before));
     assert.deepEqual(core,before,'projection cannot mutate the canonical kit');

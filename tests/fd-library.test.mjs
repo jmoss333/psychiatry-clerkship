@@ -319,32 +319,42 @@ test('every real tool row carries a hint span, and no real hint carries an audie
 
 // ---- Essentials renderer -------------------------------------------------------------------
 
-test('Essentials reuses Library columns and rows with computed kit/full counts and native view controls', () => {
-  const cur = JSON.parse(JSON.stringify(FIX_CUR));
-  cur.essentials = [
-    { name: 'First <group>', accent: 'safety', refs: ['s1.md', 't1.html'] },
-    { name: 'Second', accent: 'topic', refs: ['m2.md'] },
-  ];
-  const html = F.fdEssentials(F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN));
-  assert.match(html, /<section class="fd-library">/);
-  assert.match(html, /<h1 class="fd-library__h1">Your kit<\/h1>/);
-  assert.match(html, /<span class="fd-library__count">3 pages<span class="fd-library__shortcut"> · press <span class="fd-kbd">\/<\/span> to filter<\/span><\/span>/);
-  assert.match(html, /<div class="fd-library__grid">/);
-  assert.match(html, /<div class="fd-col__name">First &lt;group&gt;<\/div>/);
-  assert.match(html, /data-fd-open="s1\.md"/);
-  assert.match(html, /data-fd-open="t1\.html"/);
-  assert.match(html, /<button type="button" class="fd-btn fd-btn--ghost" data-fd-library-view="full">Full library \(10 pages\) →<\/button>/);
-  assert.doesNotMatch(html, /<script>|First <group>/);
+test('Essentials uses reading rows, open native groups, a labelled filter and a separate tool group', () => {
+  const idx = {columns: IDX.columns, essentials:[{name:'First <group>',items:[
+    {ref:'read.md',title:'Title <one>',summary:'A & B',minutes:7,kind:'md',governance:{status:'pending'}},
+    {ref:'tool.html',title:'Tool',kind:'tool'}]}]};
+  const calls=[];
+  const G=make((g,o)=>{calls.push([g,o]); return g?.status==='pending'?'<span class="pending-test"></span>':'';});
+  const html=G.fdEssentials(idx);
+  assert.match(html, /<section class="fd-library fd-kit">/);
+  assert.match(html, />Core readings<\/h1>/);
+  assert.match(html, />1 readings · 1 tools<\/span>/);
+  assert.match(html, /<label[^>]*for="fd-kit-section"/);
+  assert.match(html, /<select[^>]*data-fd-kit-section/);
+  assert.equal((html.match(/<details class="fd-kit__group/g)||[]).length,2);
+  assert.equal((html.match(/<option /g)||[]).length,3);
+  assert.match(html, /Title &lt;one&gt;/); assert.match(html,/A &amp; B/); assert.match(html,/7 min/);
+  assert.match(html, /Faculty re-review in progress — 1 of 1 readings changed since they were last attested ·/); assert.match(html, /<summary>What that means<\/summary>/);
+  assert.match(html, /Everything \(10 pages\) →/);
+  assert.deepEqual(calls[0][1],{compact:true});
+  const filtered=G.fdEssentials(idx,{kitSection:'0'});
+  assert.match(filtered,/data-fd-open="read.md"/); assert.doesNotMatch(filtered,/data-fd-open="tool.html"/);
+  const tools=G.fdEssentials(idx,{kitSection:'tools'});
+  assert.match(tools,/data-fd-open="tool.html"/); assert.doesNotMatch(tools,/data-fd-open="read.md"/);
+  assert.equal(G.fdEssentials(idx,{kitSection:'unknown'}),html);
 });
 
-test('zero resolved Essentials falls back exactly to the full Library', () => {
-  const empty = { columns: IDX.columns, essentials: [], essentialsDropped: 2 };
-  assert.equal(F.fdEssentials(empty), F.fdLibrary(empty));
+test('zero resolved Essentials falls back exactly to full Library with no dead return control', () => {
+  for(const essentials of [[],[{name:'Empty',items:[]}]]) {
+    const empty={columns:IDX.columns,essentials};
+    assert.equal(F.fdEssentials(empty), F.fdLibrary(empty));
+    assert.doesNotMatch(F.fdLibrary(empty),/data-fd-library-view="essentials"/);
+  }
 });
 
-test('full Library adds only the leading native Your kit control to its existing header', () => {
-  const html = F.fdLibrary(IDX);
-  assert.match(html, /<div class="fd-library__head"><button type="button" class="fd-btn fd-btn--ghost" data-fd-library-view="essentials">← Your kit<\/button><h1 class="fd-library__h1">Everything, one screen<\/h1>/);
+test('full Library return control appears only for resolved Essentials', () => {
+  const html=F.fdLibrary({...IDX,essentials:[{name:'One',items:[IDX.columns[0].items[0]]}]});
+  assert.match(html,/data-fd-library-view="essentials">← The Essentials<\/button>/);
 });
 
 test('fdEssentials is pure and does not mutate its index', () => {
@@ -379,8 +389,15 @@ for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93
     const idx = F.fdBuildIndex(payload.curriculum, REAL_META, REAL_TOOLS, payload.manifest);
     const html = F.fdEssentials(idx);
     assert.equal((html.match(/data-fd-open="/g) || []).length, expectedKit);
-    assert.match(html, new RegExp('fd-library__count">' + expectedKit + ' pages'));
-    assert.match(html, new RegExp('data-fd-library-view="full">Full library \\(' + expectedFull + ' pages\\) →'));
+    assert.match(html, new RegExp('fd-library__count\">' + (site==='ms3'?23:26) + ' readings · ' + (site==='ms3'?7:9) + ' tools'));
+    assert.equal((html.match(/<details class=\"fd-kit__group/g)||[]).length,site==='ms3'?8:7);
+    assert.equal((html.match(/<option /g)||[]).length,site==='ms3'?9:8);
+    assert.doesNotMatch(html,/governance-badge/);
+    const pending=idx.essentials.flatMap(c=>c.items).filter(i=>i.kind!=='tool'&&i.governance?.status==='pending').length;
+    assert.match(html,new RegExp('— '+pending+' of '+(site==='ms3'?23:26)+' readings'));
+    const compact=make((g,o)=>g?.status==='pending'&&o?.compact?'<span class=\"dot-test\"></span>':'').fdEssentials(idx);
+    assert.equal((compact.match(/dot-test/g)||[]).length,pending);
+    assert.match(html, new RegExp('data-fd-library-view="full">Everything \\(' + expectedFull + ' pages\\) →'));
   });
 }
 
@@ -397,4 +414,15 @@ test('the live Library shell selects kit by default and the complete renderer on
     assert.equal(run({tab:'library',libraryView},idx,surface,F.fdLibrary,F.fdEssentials),F.fdEssentials(idx));
   }
   assert.equal(run({tab:'library',libraryView:'full'},idx,surface,F.fdLibrary,F.fdEssentials),F.fdLibrary(idx));
+});
+
+test('compact shared badge retains normal behavior and names pending dots accessibly', () => {
+  const src=read('spa_index.html');
+  const body=src.slice(src.indexOf('  function governanceBadge('),src.indexOf('  /* Report whether the alert'));
+  const badge=new Function(body+';return governanceBadge;')();
+  for(const g of [null,{status:'reviewed'}]) assert.equal(badge(g,{compact:true}),'');
+  const g={status:'pending',riskLevel:'high'};
+  assert.match(badge(g),/governance-badge high/);
+  assert.doesNotMatch(badge(g,{compact:true}),/governance-badge/);
+  assert.match(badge(g,{compact:true}),/role="img" aria-label="Awaiting faculty re-review"/);
 });

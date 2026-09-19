@@ -3,9 +3,8 @@
    pure; browser effects live in fdWire and fdOpenResource behind explicit options so the same
    decisions can be tested without a DOM. */
 
-/* Every attribute the controller gives a meaning to. All but one are activated by the delegated
-   click path; 'data-fd-exam-date' is an <input> committed on a change event and is deliberately
-   absent from FD_ACTION_SELECTOR below -- see changeHandler for why a click must not own it. */
+/* Every attribute the controller gives a meaning to. The exam-date input and section select
+   commit on change and are deliberately absent from FD_ACTION_SELECTOR below. */
 var FD_HANDLED_ATTRS=[
   'data-fd-open','data-fd-sheet','data-fd-safety','data-fd-toggle','data-fd-tab',
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
@@ -13,7 +12,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-theme','data-fd-settings','data-fd-analytics','data-fd-exam-date',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
-  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view'
+  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -23,6 +22,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-toggle':'toggle governed progress',
   'data-fd-tab':'open top-level tab',
   'data-fd-library-view':'choose Library view',
+  'data-fd-kit-section':'filter Essentials sections',
   'data-fd-week':'select setup week',
   'data-fd-view-week':'preview path week',
   'data-fd-setweek':'adopt previewed week',
@@ -100,6 +100,7 @@ function fdResolveState(url, stored){
   if(typeof src.role==='string'&&src.role) out.role=src.role;
   out.tab=fdValidTab(src.tab)?src.tab:'today';
   out.libraryView='essentials';
+  out.kitSection='all';
   if(typeof src.openId==='string'&&src.openId) out.openId=src.openId;
   if(fdValidTab(src.fromTab)) out.fromTab=src.fromTab;
   if(typeof src.week==='number'&&!isNaN(src.week)) out.week=src.week;
@@ -286,7 +287,7 @@ function fdDispatch(attrs, context, state){
          removes that key and browsing:true is persisted (FD_KEYS) so a reload on any tab still
          resolves to the app rather than asking for a week again. */
       var firstWeek=(c.index&&c.index.weeks&&c.index.weeks[0])||{};
-      patch={week:null,tab:'library',libraryView:'essentials',viewWeek:firstWeek.n,screen:'app',openId:null,browsing:true};
+      patch={week:null,tab:'library',libraryView:'essentials',kitSection:'all',viewWeek:firstWeek.n,screen:'app',openId:null,browsing:true};
       if(s.setupFrom) patch.setupFrom=null;
       return {
         patch:patch,
@@ -408,11 +409,14 @@ function fdDispatch(attrs, context, state){
     return {patch:patch,route:null,effect:effect};
   }
 
+  if(fdOwn(a,'data-fd-kit-section')){
+    return {patch:{kitSection:String(a['data-fd-kit-section']||'all')},route:null,effect:null};
+  }
   if(fdOwn(a,'data-fd-library-view')){
     var view=String(a['data-fd-library-view']||'');
     if(view!=='essentials'&&view!=='full') return {patch:{},route:null,effect:null};
     return {
-      patch:{tab:'library',libraryView:view,openId:null,searchOpen:false,sheet:null,nudge:null},
+      patch:{tab:'library',libraryView:view,kitSection:'all',openId:null,searchOpen:false,sheet:null,nudge:null},
       route:fdRouteForTab('library',c.search,view),effect:null
     };
   }
@@ -420,7 +424,7 @@ function fdDispatch(attrs, context, state){
     tab=String(a['data-fd-tab']||'');
     if(!fdValidTab(tab)) return {patch:{},route:null,effect:null};
     patch={tab:tab,openId:null,searchOpen:false};
-    if(tab==='library') patch.libraryView='essentials';
+    if(tab==='library'){ patch.libraryView='essentials'; patch.kitSection='all'; }
     return {patch:patch,route:fdRouteForTab(tab,c.search),effect:null};
   }
   if(fdOwn(a,'data-fd-role')){
@@ -454,7 +458,7 @@ function fdDispatch(attrs, context, state){
       return {patch:{role:null,screen:'setup-role'},route:null,effect:null};
     }
     tab=fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
-    return {patch:{openId:null,tab:tab},route:fdRouteForTab(tab,c.search,s.libraryView),effect:null};
+    return {patch:{openId:null,tab:tab,kitSection:'all'},route:fdRouteForTab(tab,c.search,s.libraryView),effect:null};
   }
   if(fdOwn(a,'data-fd-home')){
     return {
@@ -1012,7 +1016,7 @@ function fdWire(root, initialState, opts){
     return raw||'';
   }
   function baseChanged(before, after){
-    var keys=['openId','tab','screen','libraryView'];
+    var keys=['openId','tab','screen','libraryView','kitSection'];
     for(var i=0;i<keys.length;i++){
       if(baseValue(before,keys[i])!==baseValue(after,keys[i])) return true;
     }
@@ -1258,7 +1262,9 @@ function fdWire(root, initialState, opts){
     if(!before.openId&&state.openId){ state.scrollPos=currentScrollY(); rememberOpener(state.openId,invoker); }
     var afterOverlay=overlayIdentity(state);
     if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
-    var changedBase=baseChanged(before,state);
+    /* An explicit Essentials visit also reopens native groups when All was already selected. */
+    if(before.openId&&!state.openId&&state.tab==='library') state.kitSection='all';
+    var changedBase=baseChanged(before,state)||fdOwn(patch,'kitSection');
     var detail=absorbStaleBase(transitionDetail(before,patch,result.effect,changedBase));
     var generation=navGeneration;
     if(changedBase||result.route||result.effect&&(result.effect.type==='open-resource'||
@@ -1427,12 +1433,24 @@ function fdWire(root, initialState, opts){
   function changeHandler(event){
     if(destroyed) return;
     var target=event&&event.target;
-    if(!target||!target.hasAttribute||!target.hasAttribute('data-fd-exam-date')) return;
+    if(!target||!target.hasAttribute) return;
+    var kitChange=target.hasAttribute('data-fd-kit-section');
+    if(!kitChange&&!target.hasAttribute('data-fd-exam-date')) return;
     /* No preventDefault() on the pre-commit bail, unlike the click and key handlers: a change
        event is not cancelable, so calling it would only look like a guard. Dropping the write is
        the guard, and the field keeps showing what the learner typed either way. */
     if(!startupCommitted) return;
     if(previewActive()){ lockPreview(); return; }
+    if(kitChange){
+      /* The selection belongs only to this visit: no save, route, or history snapshot. */
+      var before=fdClone(state);
+      var selection=fdDispatch({'data-fd-kit-section':String(target.value||'all')},context(),state);
+      state.kitSection=selection.patch.kitSection;
+      render(state,absorbStaleBase(transitionDetail(before,selection.patch,null,true)));
+      var select=root.querySelector('[data-fd-kit-section]');
+      if(select&&select.focus) select.focus();
+      return;
+    }
     var result=fdDispatch(
       {'data-fd-exam-date':String(target.value||'')},context(),state
     );
@@ -1512,6 +1530,7 @@ function fdWire(root, initialState, opts){
         if(fdOwn(snap,routeKey)) merged[routeKey]=snap[routeKey];
       }
       if(merged.libraryView!=='full') merged.libraryView='essentials';
+      merged.kitSection='all';
     } else {
       merged.roles=o.roles||merged.roles;
       merged.rotationStart=o.rotationStart||merged.rotationStart;

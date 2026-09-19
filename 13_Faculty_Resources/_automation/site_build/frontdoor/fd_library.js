@@ -70,7 +70,9 @@ function fdLibrary(index){
 
   var out='<section class="fd-library">';
   out+='<div class="fd-library__head">';
-  out+='<button type="button" class="fd-btn fd-btn--ghost" data-fd-library-view="essentials">← Your kit</button>';
+  var hasEssentials=false;
+  for(var e=0;e<(idx.essentials||[]).length;e++){ if((idx.essentials[e].items||[]).length) hasEssentials=true; }
+  if(hasEssentials) out+='<button type="button" class="fd-btn fd-btn--ghost" data-fd-library-view="essentials">← The Essentials</button>';
   out+='<h1 class="fd-library__h1">Everything, one screen</h1>';
   out+='<span class="fd-library__count">'+count+' pages<span class="fd-library__shortcut"> · press <span class="fd-kbd">/</span> to filter</span></span>';
   out+='</div>';
@@ -81,24 +83,64 @@ function fdLibrary(index){
   return out;
 }
 
-/* Curated default view over the same canonical Library items and row renderer. `opts` is reserved
-   for callers that already pass renderer options; the output remains a pure function of inputs. */
+/* Readings-first view of the same resolved items. Section selection is an input only. */
+function fdKitReading(item){
+  return '<button type="button" class="fd-kit__reading" data-fd-open="'+fdEsc(item.ref)+'">'+
+    '<span class="fd-kit__title">'+fdEsc(item.title)+'</span>'+governanceBadge(item.governance,{compact:true})+
+    (item.summary?'<span class="fd-kit__summary">'+fdEsc(item.summary)+'</span>':'')+
+    (item.minutes?'<span class="fd-kit__minutes">'+fdEsc(item.minutes)+' min</span>':'')+'</button>';
+}
 function fdEssentials(index, opts){
-  var idx=index||{columns:[],essentials:[]};
-  var cols=idx.essentials||[], count=0, fullCount=0, all=idx.columns||[];
-  for(var c=0;c<cols.length;c++){ count+=(cols[c].items||[]).length; }
-  if(count===0) return fdLibrary(idx);
-  for(var f=0;f<all.length;f++){ fullCount+=(all[f].items||[]).length; }
-
-  var out='<section class="fd-library">';
-  out+='<div class="fd-library__head">';
-  out+='<h1 class="fd-library__h1">Your kit</h1>';
-  out+='<span class="fd-library__count">'+count+' pages<span class="fd-library__shortcut"> · press <span class="fd-kbd">/</span> to filter</span></span>';
-  out+='</div>';
-  out+='<div class="fd-library__grid">';
-  for(var i=0;i<cols.length;i++){ out+=fdLibraryCol(cols[i]); }
-  out+='</div>';
-  out+='<div class="fd-library__footer"><button type="button" class="fd-btn fd-btn--ghost" data-fd-library-view="full">Full library ('+fullCount+' pages) →</button></div>';
-  out+='</section>';
+  var idx=index||{columns:[],essentials:[]}, cols=idx.essentials||[];
+  var groups=[], tools=[], readings=0, pending=0, fullCount=0, all=idx.columns||[];
+  for(var c=0;c<cols.length;c++){
+    var items=cols[c].items||[], reads=[];
+    for(var j=0;j<items.length;j++){
+      var item=items[j];
+      if(item.kind==='tool') tools.push(item);
+      else{
+        reads.push(item); readings++;
+        if(item.governance&&item.governance.status==='pending') pending++;
+      }
+    }
+    if(reads.length) groups.push({key:String(c),name:cols[c].name,items:reads});
+  }
+  if(!readings&&!tools.length) return fdLibrary(idx);
+  for(var f=0;f<all.length;f++) fullCount+=(all[f].items||[]).length;
+  var selected=String(opts&&opts.kitSection||'all'), valid=selected==='all'||(selected==='tools'&&tools.length>0);
+  for(var v=0;v<groups.length;v++) if(groups[v].key===selected) valid=true;
+  if(!valid) selected='all';
+  var out='<section class="fd-library fd-kit">';
+  out+='<div class="fd-library__head"><h1 class="fd-library__h1">Core readings</h1>'+
+    '<span class="fd-library__count">'+readings+' readings · '+tools.length+' tools</span></div>';
+  out+='<div class="fd-kit__filter"><label for="fd-kit-section">Section</label> '+
+    '<select id="fd-kit-section" data-fd-kit-section><option value="all"'+(selected==='all'?' selected':'')+'>All sections · '+(readings+tools.length)+'</option>';
+  for(var o=0;o<groups.length;o++){
+    out+='<option value="'+fdEsc(groups[o].key)+'"'+(selected===groups[o].key?' selected':'')+'>'+fdEsc(groups[o].name)+' · '+groups[o].items.length+'</option>';
+  }
+  if(tools.length) out+='<option value="tools"'+(selected==='tools'?' selected':'')+'>Tools · '+tools.length+'</option>';
+  out+='</select></div>';
+  if(pending) out+='<div class="fd-kit__review"><span>Faculty re-review in progress — '+pending+' of '+readings+' readings changed since they were last attested ·</span> '+
+    '<details><summary>What that means</summary><p>These readings are marked pending review. Open a reading to see its full review notice.</p></details></div>';
+  out+='<div class="fd-kit__layout'+(selected==='tools'?' fd-kit__layout--tools':'')+'">';
+  if(selected!=='tools'){
+    out+='<div class="fd-kit__readings">';
+    for(var g=0;g<groups.length;g++){
+      var group=groups[g];
+      if(selected!=='all'&&selected!==group.key) continue;
+      out+='<details class="fd-kit__group" open><summary>'+fdEsc(group.name)+' <span class="fd-kit__group-count">'+group.items.length+' readings</span><span class="fd-kit__chevron" aria-hidden="true">⌄</span></summary>';
+      for(var r=0;r<group.items.length;r++) out+=fdKitReading(group.items[r]);
+      out+='</details>';
+    }
+    out+='</div>';
+  }
+  if(tools.length&&(selected==='all'||selected==='tools')){
+    out+='<aside class="fd-kit__tools" aria-label="Tools"><details class="fd-kit__group fd-kit__tool-group" open><summary>Tools <span class="fd-kit__group-count">'+tools.length+' tools</span><span class="fd-kit__chevron" aria-hidden="true">⌄</span></summary><div class="fd-kit__tool-list">';
+    for(var t=0;t<tools.length;t++){
+      out+='<button type="button" class="fd-collink" data-fd-open="'+fdEsc(tools[t].ref)+'"><span class="fd-collink__dot is-tool" aria-hidden="true"></span><span class="fd-collink__label">'+fdEsc(tools[t].title)+'</span></button>';
+    }
+    out+='</div></details></aside>';
+  }
+  out+='</div><div class="fd-library__footer"><button type="button" class="fd-btn fd-btn--ghost" data-fd-library-view="full">Everything ('+fullCount+' pages) →</button></div></section>';
   return out;
 }

@@ -77,7 +77,7 @@ test('URL page/tool/tab values beat persisted Front Door state', () => {
   };
   assert.deepEqual(F.fdResolveState('/?page=new.md', stored), {
     role: 'first-role', tab: 'library', openId: 'new.md', fromTab: 'library',
-    week: 2, viewWeek: 2, autoAdvance: true, toolExpanded: true, screen: 'app', libraryView: 'essentials',
+    week: 2, viewWeek: 2, autoAdvance: true, toolExpanded: true, screen: 'app', libraryView: 'essentials', kitSection: 'all',
   });
   assert.equal(F.fdResolveState('/?tool=drill.html&case=a', stored).openId, 'drill.html');
   const tab = F.fdResolveState('/?tab=path', stored);
@@ -132,7 +132,7 @@ test('a bare URL restores stored state and defaults to Today with autoAdvance tr
     viewWeek: 4, week: 2,
   }), {
     role: 'first-role', tab: 'path', openId: 'saved.md', fromTab: 'library',
-    viewWeek: 4, week: 2, autoAdvance: true, screen: 'app', libraryView: 'essentials',
+    viewWeek: 4, week: 2, autoAdvance: true, screen: 'app', libraryView: 'essentials', kitSection: 'all',
   });
   const empty = F.fdResolveState('/', {});
   assert.equal(empty.tab, 'today');
@@ -217,7 +217,7 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     { ...roleContext, screen: 'setup-role' }).patch,
   { role: 'second-role', screen: 'setup-week' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'library' }, {}, roleContext).patch,
-    { tab: 'library', openId: null, searchOpen: false, libraryView: 'essentials' });
+    { tab: 'library', openId: null, searchOpen: false, libraryView: 'essentials', kitSection: 'all' });
   assert.equal(F.fdDispatch({ 'data-fd-back': '' }, {}, { ...roleContext, openId: 'x.md', fromTab: 'path' }).route,
     '?tab=path');
   assert.equal(F.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).route, '/');
@@ -2950,4 +2950,52 @@ test('plain Today Progress keeps its existing route while Path keeps its return 
   assert.equal(F.fdDispatch({'data-fd-progress':''},{search:''},initial).route,'?page=__progress__');
   const path = F.fdDispatch({'data-fd-progress':''},{search:''},{...initial,tab:'path'});
   assert.equal(path.route,'?page=__progress__&tab=path');
+});
+
+
+test('Essentials section change rerenders and focuses the select without writing storage or history', () => {
+  const storage=memStorage(), local=make(storage), routes=[], renders=[], focused=[];
+  const select={focus(){focused.push(true);}};
+  const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials'}, {
+    F:local,route:(...a)=>routes.push(a),render:(...a)=>renders.push(a),
+    querySelector:sel=>sel==='[data-fd-kit-section]'?select:null
+  });
+  let writes=0; storage.setItem=()=>{writes++;}; storage.removeItem=()=>{writes++;};
+  const before=storage.dump(); routes.length=0; renders.length=0;
+  h.rootHandlers.change({target:{hasAttribute:k=>k==='data-fd-kit-section',value:'tools'}});
+  assert.equal(h.controller.getState().kitSection,'tools');
+  assert.equal(renders.length,1); assert.equal(renders[0][1].surfaces.base,true);
+  assert.equal(focused.length,1); assert.equal(writes,0);
+  assert.deepEqual(storage.dump(),before); assert.deepEqual(routes,[]);
+  const filtered={...h.controller.getState(),kitSection:'tools'};
+  for(const action of [{'data-fd-tab':'library'},{'data-fd-library-view':'full'},{'data-fd-library-view':'essentials'},{'data-fd-back':''}]){
+    assert.equal(local.fdDispatch(action,{},filtered).patch.kitSection,'all');
+  }
+  assert.equal(local.fdResolveState('/?tab=library&kitSection=tools',filtered).kitSection,'all');
+});
+
+test('Essentials select respects startup and faculty preview guards', () => {
+  for(const options of [{commitStartup:false},{facultyPreview:()=>true}]){
+    const storage=memStorage(), renders=[];
+    const h=fakeHarness({...roleContext,screen:'app',tab:'library',kitSection:'all'}, {
+      F:make(storage),render:(...a)=>renders.push(a),...options
+    });
+    const before=storage.dump(); renders.length=0;
+    h.rootHandlers.change({target:{hasAttribute:k=>k==='data-fd-kit-section',value:'tools'}});
+    assert.equal(h.controller.getState().kitSection,'all'); assert.equal(renders.length,0);
+    assert.deepEqual(storage.dump(),before);
+  }
+});
+
+
+test('explicit Essentials revisit rerenders even when All was already selected', () => {
+  const renders=[];
+  const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials',kitSection:'all'}, {
+    F:make(memStorage()),render:(...args)=>renders.push(args)
+  });
+  renders.length=0;
+  h.controller.dispatch({'data-fd-library-view':'essentials'});
+  assert.equal(renders.length,1);
+  h.controller.dispatch({'data-fd-tab':'library'});
+  assert.equal(renders.length,2);
 });

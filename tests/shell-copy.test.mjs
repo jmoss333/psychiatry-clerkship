@@ -247,3 +247,10 @@ test('the audience-token guard actually rejects a "Shelf" planted in a concatena
     labels.forEach((s) => assert.doesNotMatch(s, AUDIENCE_TOKEN_RE));
   }, /AssertionError/, 'the audience-token guard must fail closed when a concatenated phase-policy label\'s tail is corrupted');
 });
+
+
+test('The Essentials replaces the Library tab label without changing its identifier', () => {
+  const shell=fs.readFileSync(path.join(BUILD_DIR,'frontdoor','fd_shell.js'),'utf8');
+  assert.match(shell,/id:'library',label:'The Essentials'/);
+  assert.doesNotMatch(shell,/Your kit/);
+});
