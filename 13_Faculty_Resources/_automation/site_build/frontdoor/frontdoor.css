@@ -941,18 +941,25 @@
 /* ═══ Phone chrome ═══════════════════════════════════════════════════════════
  * Measured 2026-09-16 on a 375×812 phone opening a topic page: header 154px, capture bar
  * bottom at 210px, article h1 top at 382px — nearly half the first screen was shell. The
- * two-row header above stays exactly as the 2026-08 audit pinned it (brand name visible,
- * search label >= 44px, five 44×44 controls, no collisions). What moves is the tab row: on
- * the top-level screens (Today, Path, Library) it docks to the bottom of the viewport as a tab
- * bar, where a thumb reaches it.
- * A reader carries the fixed action bar instead, so there the tabs KEEP their header row: two
- * fixed bars cannot share the bottom edge, and the tabs must stay reachable while reading —
- * rotation-edition-v2.spec.js's keyboard matrix switches tabs from an open reader at 390px,
- * and hiding them there was the first thing that run caught. What the reader gives up is its
- * top-of-page back link and the tool toolbar, because the action bar's `‹` is the same control.
+ * two-row header above stays exactly as the 2026-08 audit pinned it on the TOP-LEVEL screens
+ * (brand name visible, search label >= 44px, five 44×44 controls, no collisions). What moves
+ * there is the tab row: on Today, Path and Library it docks to the bottom of the viewport as a
+ * tab bar, where a thumb reaches it.
+ * A READER (2026-09-18) collapses the header to ONE row instead: ψ home tile, the search field
+ * grown to fill, ✚ Safety. It carries the fixed action bar, whose `‹` returns to the tab it was
+ * opened from, so the tab row, the week pill and the settings gear are each one tap away and
+ * leave the header; the brand name is clipped rather than removed so the home button keeps its
+ * accessible name. Measured before this on ?page=suicide.md at 375×812: header 154px (three
+ * rows — brand+search, week+safety+gear, tabs), title at 258px: 32% of the screen was shell
+ * before the first word of the page. The 2026-09-16 cut kept the reader's tab row because
+ * rotation-edition-v2.spec.js's keyboard matrix switched tabs from an open reader at 390px;
+ * that matrix now presses the action bar's Back first when the tab row is hidden, which is the
+ * route a learner has. Two fixed bars still cannot share the bottom edge, so the reader's tabs
+ * are hidden, not docked. The reader also gives up its top-of-page back link and the tool
+ * toolbar, because the action bar's `‹` is the same control.
  * Guarded on :has(.fd-actionbar), never on .fd-reader alone: the Progress page and the
- * not-found surface render a .fd-reader with NO action bar, and their top back link is the
- * only way back.
+ * not-found surface render a .fd-reader with NO action bar, keep the full header, and their
+ * top back link is the only way back.
  * .fd-tabs stays a child of .fd-header in the markup (CLASS-INVENTORY's sticky contract); a
  * position:fixed descendant of a sticky ancestor is still viewport-fixed as long as no
  * ancestor transforms, and .fd-header has none. Overlays (search, sheets) are body-mounted
@@ -960,7 +967,7 @@
  * .fd-article keeps its 20px sides: 16px pushed the Welcome Compass from two tracks to three
  * at 561px (front-door.spec.js's width buckets); only the vertical padding tightens.
  * tests/fd-phone-chrome.test.mjs pins this block; tests/smoke/front-door.spec.js ("phone
- * chrome …") measures the rendered result.
+ * chrome …" and "320-641px header controls …") measures the rendered result.
  */
 @media (max-width:640px){
   .fd-shell:not(:has(.fd-actionbar)) .fd-header__bar{padding-bottom:8px}
@@ -980,6 +987,15 @@
      into this toolbar (spa_index.html's guide-bookmark branch), and the action bar's `‹` does not
      restore that bookmark. The toolbar therefore comes back whenever that control is in it. */
   .fd-shell:has(.fd-actionbar) .fd-reader__toolbar:has(.fd-guide-return){display:flex}
+  /* Reader: one row. The bar leaves the two-row grid, the search field takes the width the
+     utilities held, and the brand name is clipped (never display:none) so the home button keeps
+     its accessible name; min-width keeps the bare tile a 44px target. */
+  .fd-shell:has(.fd-actionbar) .fd-header__bar{display:flex;padding-bottom:8px}
+  .fd-shell:has(.fd-actionbar) .fd-brand{min-width:44px;justify-content:center}
+  .fd-shell:has(.fd-actionbar) .fd-brand__name{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+  .fd-shell:has(.fd-actionbar) .fd-searchbtn{width:auto;flex:1;max-width:none}
+  .fd-shell:has(.fd-actionbar) .fd-header__actions{margin-left:0;flex:0 0 auto}
+  .fd-shell:has(.fd-actionbar) .fd-tabs,.fd-shell:has(.fd-actionbar) .fd-weekpill,.fd-shell:has(.fd-actionbar) .fd-settingsbtn{display:none}
   .fd-main{padding-top:8px}
   .fd-article{padding:var(--fd-space-6) var(--fd-space-8)}
 }

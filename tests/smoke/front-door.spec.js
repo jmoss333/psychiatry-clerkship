@@ -633,9 +633,19 @@ test('390x844 reduced-motion Reader keeps fixed 44px actions during scroll witho
 
 test('320-641px header controls remain distinct, readable, and fully tappable', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
+  // A reader collapses its header to one row on a phone (frontdoor.css "Phone chrome",
+  // 2026-09-18): the week pill, the settings gear and the tab row are one Back-tap away in the
+  // action bar and leave the header; the brand name is clipped but stays the home button's
+  // accessible name. Every control that remains keeps the 2026-08 audit's bar.
   const cases = [
-    { url: '/', ready: '.fd-today' },
-    { url: '/?page=t_mood.md', ready: '.fd-reader .fd-article__body' },
+    {
+      url: '/', ready: '.fd-today', oneRow: false,
+      selectors: ['.fd-brand', '.fd-searchbtn', '.fd-weekpill', '.fd-safetybtn', '.fd-settingsbtn'],
+    },
+    {
+      url: '/?page=t_mood.md', ready: '.fd-reader .fd-article__body', oneRow: true,
+      selectors: ['.fd-brand', '.fd-searchbtn', '.fd-safetybtn'],
+    },
   ];
 
   for (const width of [320, 360, 390, 561, 600, 601, 640, 641]) {
@@ -644,10 +654,7 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
       await page.goto(surface.url);
       await expect(page.locator(surface.ready)).toBeVisible();
 
-      const geometry = await page.evaluate(() => {
-        const selectors = [
-          '.fd-brand', '.fd-searchbtn', '.fd-weekpill', '.fd-safetybtn', '.fd-settingsbtn',
-        ];
+      const geometry = await page.evaluate((selectors) => {
         const visible = element => {
           const style = getComputedStyle(element);
           const box = element.getBoundingClientRect();
@@ -685,19 +692,23 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
         const searchIcon = document.querySelector('.fd-searchbtn svg').getBoundingClientRect();
         const searchLabel = document.querySelector('.fd-searchbtn__label').getBoundingClientRect();
         const shortcut = document.querySelector('.fd-kbd');
+        const hidden = selector => !visible(document.querySelector(selector));
         return {
           controls,
           intersections,
+          headerHeight: header.height,
           headerBottom: header.bottom,
           mainTop: main.top,
           brandNameWidth: brandName.width,
+          brandAccessibleText: document.querySelector('.fd-brand').textContent.trim(),
+          utilitiesHidden: hidden('.fd-weekpill') && hidden('.fd-settingsbtn') && hidden('.fd-tabs'),
           searchIconWidth: searchIcon.width,
           searchLabelWidth: searchLabel.width,
           shortcutDisplay: getComputedStyle(shortcut).display,
           viewportWidth: innerWidth,
           scrollWidth: document.documentElement.scrollWidth,
         };
-      });
+      }, surface.selectors);
 
       expect(geometry.intersections, `${width}px ${surface.url} header collisions`).toEqual([]);
       for (const [selector, box] of Object.entries(geometry.controls)) {
@@ -707,7 +718,14 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
         expect.soft(box.right, `${width}px ${surface.url} ${selector} right edge`)
           .toBeLessThanOrEqual(geometry.viewportWidth);
       }
-      expect.soft(geometry.brandNameWidth).toBeGreaterThan(0);
+      if (surface.oneRow && width <= 640) {
+        expect.soft(geometry.utilitiesHidden, `${width}px reader hides week, settings and tabs`).toBe(true);
+        expect.soft(geometry.brandAccessibleText, `${width}px reader home tile keeps its name`).toMatch(/\S/);
+        expect.soft(geometry.headerHeight, `${width}px reader header is one row`).toBeLessThanOrEqual(64);
+      } else {
+        expect.soft(geometry.brandNameWidth).toBeGreaterThan(0);
+        expect.soft(geometry.utilitiesHidden, `${width}px ${surface.url} keeps its utilities`).toBe(false);
+      }
       expect.soft(geometry.searchIconWidth).toBeGreaterThan(0);
       expect.soft(geometry.searchLabelWidth).toBeGreaterThanOrEqual(44);
       expect.soft(geometry.shortcutDisplay).toBe(width <= 640 ? 'none' : 'block');
@@ -1764,15 +1782,21 @@ test('phone chrome: tabs dock to the bottom, yield to the reader action bar, and
   await page.goto('/?page=t_mood.md');
   await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
   await expect(page.locator('.fd-actionbar')).toBeVisible();
-  // A reader keeps its tab row in the header: the action bar owns the bottom edge, and the tabs
-  // must stay reachable while reading (rotation-edition-v2's keyboard matrix switches tabs from
-  // an open reader at this width). What the reader gives up is the top back link.
-  await expect(tabs).toBeVisible();
-  const readerTabs = await tabs.boundingBox();
-  expect(readerTabs.y, 'reader tabs sit in the header row, not docked').toBeLessThan(170);
+  // A reader collapses its header to one row: the action bar owns the bottom edge and its Back
+  // returns to the tab the page was opened from, so the tab row, the week pill and the settings
+  // gear leave the header. Safety and search stay, and the home tile keeps its accessible name
+  // (the brand name is clipped, not removed). What the reader also gives up is the top back link.
+  await expect(tabs).toBeHidden();
+  await expect(page.locator('.fd-weekpill')).toBeHidden();
+  await expect(page.locator('.fd-settingsbtn')).toBeHidden();
+  await expect(page.locator('.fd-safetybtn')).toBeVisible();
+  await expect(page.locator('.fd-searchbtn')).toBeVisible();
+  await expect(page.locator('.fd-brand')).toHaveAccessibleName(/\S/);
+  const readerHeader = await page.locator('.fd-header').boundingBox();
+  expect(readerHeader.height, 'reader header is a single row').toBeLessThanOrEqual(64);
   await expect(page.locator('.fd-reader > .fd-reader__back')).toBeHidden();
   const h1 = await page.locator('.fd-article__h1').boundingBox();
-  expect(h1.y, 'the topic title sits in the top third of a phone screen').toBeLessThanOrEqual(PHONE.height * 0.35);
+  expect(h1.y, 'the topic title sits in the top quarter of a phone screen').toBeLessThanOrEqual(PHONE.height * 0.25);
   expect(await page.locator('details.practice-panel').evaluate(el => el.open)).toBe(true);
   // The Progress page renders no action bar, so its top back link is the way back and stays.
   await page.goto('/?page=__progress__');

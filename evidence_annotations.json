@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-09-16",
+  "updated": "2026-09-18",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -22,7 +22,6 @@
       "rosenhan-1973-sane-places",
       "rush-2006-stard",
       "stanley-brown-2012-safety-planning",
-      "volkow-2016-addiction-brain-disease",
       "wampold-1997-bona-fide-psychotherapies"
     ],
     "orphanBacklogNote": "Required sources that predate the gate (seeded 2026-08-21, n=17). This list may only shrink. Clearing it is the therapy-library verification backlog."
@@ -1343,6 +1342,31 @@
           "direction": "positive",
           "usedBy": [
             "rounds_questions"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "volkow-2016-addiction-brain-disease",
+      "verifiedAgainst": {
+        "spanType": "fulltext",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pmc&id=PMC6135257 (NIHMS985496 author manuscript, section 'Implications of the brain disease model of addiction for prevention and treatment'; the manuscript XML renders 'scientific' as 'scientif' and the cache normalises that one word)",
+        "retrievedAt": "2026-09-18",
+        "pmid": "26816013",
+        "doi": "10.1056/nejmra1511480",
+        "sourceSpan": "A more comprehensive understanding of the brain disease model of addiction may help to moderate some of the moral judgment attached to addictive behaviors and foster more scientific and public health–oriented approaches to prevention and treatment."
+      },
+      "claims": [
+        {
+          "claimId": "brain-disease-model-may-moderate-moral-judgment",
+          "claimText": "The authors argue that a more comprehensive understanding of the brain disease model of addiction may help to moderate some of the moral judgment attached to addictive behaviors and foster more scientific and public health-oriented approaches to prevention and treatment; the paper frames this as a hedged expectation, not a demonstrated effect on stigma.",
+          "claimTerms": [
+            "may help to moderate some of the moral judgment",
+            "brain disease model of addiction"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_sud"
           ]
         }
       ]

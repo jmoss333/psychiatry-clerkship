@@ -4,15 +4,18 @@
 // Measured on 2026-09-16 on a 375×812 phone opening ?page=t_mood.md: header 154px, capture bar
 // bottom 210px, article h1 top at 382px — nearly half the first screen was chrome. The 2026-08
 // audit pinned the two-row header (brand name visible, search label >= 44px, five 44×44
-// controls, no collisions) and this change keeps every one of those; what moves is the tab row,
-// which docks to the bottom of the viewport as a tab bar on the top-level screens.
+// controls, no collisions) on the TOP-LEVEL screens, and this block keeps every one of those
+// there; what moves is the tab row, which docks to the bottom of the viewport as a tab bar.
 //
-// A reader carries the fixed action bar instead, so there the tabs KEEP their header row: two
-// fixed bars cannot share the bottom edge, and the tabs must stay reachable while reading — the
-// keyboard matrix in rotation-edition-v2.spec.js switches tabs from an open reader at 390px, and
-// a first version that hid them there was exactly what that run caught. The reader gives up its
-// top-of-page back link and the tool toolbar instead, because the action bar's `‹` is the same
-// control.
+// A READER is different (2026-09-18). It carries the fixed action bar, whose `‹` returns to the
+// tab it was opened from, so the tab row, the week pill and the settings gear are all one tap
+// away and the header collapses to ONE row: the ψ home tile, the search field grown to fill, and
+// ✚ Safety. Measured before the change on a 375×812 phone opening ?page=suicide.md: header
+// 154px (three rows), article h1 at 258px — 32% of the screen before the title. The first cut
+// of the 2026-09-16 change hid the tabs on readers too and rotation-edition-v2.spec.js's
+// keyboard matrix caught it, because that matrix switched tabs from an open reader at 390px;
+// the matrix now presses the action bar's Back first when the tab row is hidden, which is the
+// route a learner has.
 //
 // These assertions read the stylesheet; tests/smoke/front-door.spec.js ("phone chrome …")
 // measures the rendered result. Both exist because a CSS pin cannot see a rule that a later
@@ -68,18 +71,59 @@ test('the tab row docks to the bottom of a phone viewport on the top-level scree
   assert.match(tabs, /z-index:/);
 });
 
-test('a reader keeps its tab row in the header — the tabs are never hidden or docked there', () => {
-  const block = phoneBlock();
-  // Every .fd-tabs / .fd-tab rule in the block is scoped to the no-action-bar state. A bare
-  // `.fd-tabs{` or a `:has(.fd-actionbar) .fd-tabs{` rule would either dock the tabs under the
-  // action bar or remove them from a reader, and the keyboard matrix needs them reachable there.
-  const tabRules = block.match(/[^{}]*\.fd-tabs?\b[^{}]*\{/g) || [];
-  assert.ok(tabRules.length >= 2, `expected tab rules in the phone block, found ${tabRules.length}`);
-  for (const sel of tabRules) {
-    assert.ok(sel.includes(TOP_LEVEL), `tab rule must be scoped to the top-level screens: ${sel.trim()}`);
-    assert.doesNotMatch(sel, /:has\(\.fd-actionbar\)\s/, `no reader-scoped tab rule: ${sel.trim()}`);
+// Finds the rule whose selector LIST contains `selector` as one member (comma-split, trimmed).
+// `rule()` above matches a single selector at a rule start; a shared `a,b,c{display:none}` rule
+// is invisible to it, and the reader's hidden trio is written as one rule on purpose.
+function ruleIncluding(block, selector) {
+  for (const m of block.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (m[1].split(',').map((part) => part.trim()).includes(selector)) return m[2];
   }
-  assert.doesNotMatch(block, /\.fd-tabs?\b[^{}]*\{[^}]*display:none/, 'tabs are never display:none');
+  assert.fail(`phone chrome block must carry a rule whose selector list includes ${selector}`);
+}
+
+test('every tab rule in the phone block is scoped to one side of the action bar, never bare', () => {
+  const block = phoneBlock();
+  // A bare `.fd-tabs{` would dock the tabs under a reader's action bar or hide them on Today.
+  const tabRules = block.match(/[^{}]*\.fd-tabs?\b[^{}]*\{/g) || [];
+  assert.ok(tabRules.length >= 3, `expected tab rules in the phone block, found ${tabRules.length}`);
+  for (const sel of tabRules) {
+    const parts = sel.split(',').map((part) => part.trim()).filter((part) => /\.fd-tabs?\b/.test(part));
+    for (const part of parts) {
+      assert.ok(part.includes(TOP_LEVEL) || part.includes(READER),
+        `tab rule must be scoped to the top-level screens or to a reader: ${part}`);
+    }
+  }
+});
+
+test('a reader collapses its header to one row on a phone: tabs, week pill and settings leave', () => {
+  const block = phoneBlock();
+  for (const sel of ['.fd-tabs', '.fd-weekpill', '.fd-settingsbtn']) {
+    assert.match(ruleIncluding(block, `${READER} ${sel}`), /display:none/,
+      `${sel} is one Back-tap away on a reader and leaves the header`);
+  }
+  assert.match(ruleIncluding(block, `${READER} .fd-header__bar`), /display:flex/,
+    'the two-row grid returns to a single flex row');
+  assert.match(ruleIncluding(block, `${READER} .fd-header__bar`), /padding-bottom:\d+px/,
+    'the bar keeps its own bottom padding once the tab row is gone');
+  const search = ruleIncluding(block, `${READER} .fd-searchbtn`);
+  assert.match(search, /flex:1/, 'the search field grows into the room the utilities left');
+  assert.match(search, /width:auto/, 'the 96px phone width is released');
+});
+
+test('a reader keeps safety and search in the header, and the home tile keeps its name and its target', () => {
+  const block = phoneBlock();
+  // Nothing in the block may hide the crisis affordance or the search field, on either side.
+  for (const m of block.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (/\.fd-(safetybtn|searchbtn)\b/.test(m[1])) {
+      assert.doesNotMatch(m[2], /display:none|visibility:hidden/, `never hidden: ${m[1].trim()}`);
+    }
+  }
+  const name = ruleIncluding(block, `${READER} .fd-brand__name`);
+  assert.doesNotMatch(name, /display:none/, 'the brand name is the home button\'s accessible name');
+  assert.match(name, /position:absolute/);
+  assert.match(name, /width:1px/, 'visually hidden, not removed');
+  assert.match(ruleIncluding(block, `${READER} .fd-brand`), /min-width:44px/,
+    'a bare 30px tile is not a touch target');
 });
 
 test('the reader hides its top back link on a phone, because the action bar carries the same control', () => {
