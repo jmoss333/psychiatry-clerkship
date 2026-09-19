@@ -36,7 +36,8 @@
       "level": "moderate"
     },
     "at": "2026-09-18",
-    "by": "Joshua Moss, MD"
+    "by": "Joshua Moss, MD",
+    "contentHash": "084d585f69f9106cd2ee37a12b5dbe52a88785e4"
   },
   "cotw_20260831_catatonia_ms3.md": {
     "status": "reviewed",
@@ -95,7 +96,8 @@
       "level": "moderate"
     },
     "at": "2026-09-18",
-    "by": "Joshua Moss, MD"
+    "by": "Joshua Moss, MD",
+    "contentHash": "67dcba550a09583619745c4386755022f9683b0f"
   },
   "cotw_20260803_lithium_res.md": {
     "status": "reviewed",
@@ -104,7 +106,8 @@
       "level": "moderate"
     },
     "at": "2026-09-18",
-    "by": "Joshua Moss, MD"
+    "by": "Joshua Moss, MD",
+    "contentHash": "0ffd3b53633b64bf126646ec9246dd7dd1cc8730"
   },
   "cotw_20260727_oud_ms3.md": {
     "status": "reviewed",
@@ -113,7 +116,8 @@
       "level": "moderate"
     },
     "at": "2026-09-18",
-    "by": "Joshua Moss, MD"
+    "by": "Joshua Moss, MD",
+    "contentHash": "ea6f3610fe9fc09da290f03e8361bb5076a0e700"
   },
   "cotw_20260727_oud_res.md": {
     "status": "pending",
@@ -212,7 +216,8 @@
       "level": "moderate"
     },
     "at": "2026-09-18",
-    "by": "Joshua Moss, MD"
+    "by": "Joshua Moss, MD",
+    "contentHash": "3ec92b36500373cab09492b3bfcc20da179b7445"
   },
   "cotw_20260709_ssnms_res.md": {
     "status": "pending",
@@ -251,7 +256,8 @@
       "level": "moderate"
     },
     "at": "2026-09-18",
-    "by": "Joshua Moss, MD"
+    "by": "Joshua Moss, MD",
+    "contentHash": "714ffa50832bc43f529621e1c6b05dc10b15ea0b"
   },
   "sp-interview.html": {
     "status": "reviewed",
@@ -943,7 +949,8 @@
       "level": "moderate"
     },
     "at": "2026-09-18",
-    "by": "Joshua Moss, MD"
+    "by": "Joshua Moss, MD",
+    "contentHash": "9582e2735fe71038bcbf9a4bb4d1bc1f524e6e5a"
   },
   "omm_resources.md": {
     "status": "reviewed",
