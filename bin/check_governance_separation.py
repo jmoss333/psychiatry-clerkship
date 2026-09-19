@@ -21,14 +21,22 @@ console writes it. Agent and owner commits carry `jmoss333 <…users.noreply.git
 `GitHub` committer. So L4 asks the git identity, not the ledger's `by` field, which any writer
 can type. (CONSOLE_IDENTITY is imported from attestation_hash.py; it is defined once.)
 
-THE RULE, verbatim:
+THE RULE:
 
     Inputs: base rev, head rev, head branch name.
-    Changed = git diff --name-only base head
+    Changed = git diff --no-renames --name-only base head
     G_FILES = {13_Faculty_Resources/reviewed.json, CLAUDE.md, AGENTS.md, decisions.json,
-               standards.json, instrument_rights.json, vocabulary.json}
-    G_DIRS  = {.claude/, .github/workflows/}     # skills, hooks, agents, settings; workflows
-    CONTENT(path) = path is a `source`/`extraSources` entry of shipped_pages.json at HEAD
+               standards.json, instrument_rights.json, vocabulary.json, .gitattributes,
+               13_Faculty_Resources/reviewed.schema.json,
+               13_Faculty_Resources/_automation/attestation_hash.py,
+               13_Faculty_Resources/_automation/surface_governance.py,
+               13_Faculty_Resources/_automation/validate_attestation_consistency.py,
+               13_Faculty_Resources/_automation/validate_curriculum.py,
+               13_Faculty_Resources/_automation/validate_topic_meta.py}
+               PLUS any path ending .schema.json
+    G_DIRS  = {.claude/, .github/, bin/, faculty-console/,
+               13_Faculty_Resources/_automation/maintenance/, tests/maintenance/}
+    CONTENT(path) = a `source`/`extraSources` entry of shipped_pages.json at BASE or at HEAD
                     OR (matches ^(0\\d|1[0-4]|99)_[^/]+/ AND not under 13_Faculty_Resources/)
     PROMOTION, reviewed.json (JSON diff per key; a missing key is a value):
        status becomes reviewed; or an entry reviewed on BOTH sides changes any of
@@ -37,13 +45,46 @@ THE RULE, verbatim:
     PROMOTION, topic_meta.json: a facultyReview block whose status becomes reviewed/attested,
        or a block reviewed on BOTH sides whose lastReviewed or reviewer changes.
        (A demotion that deletes lastReviewed/reviewer is registration.)
+    PROMOTION, question_bank.json (items identified by their `id`): an item whose status
+       becomes attested, an item born attested, or an item attested on BOTH sides ANY of
+       whose fields changes — the whole item is the attested text.
+       (attested→draft, with or without an edit, is registration: the honest edit demotes.)
     REGISTRATION: every other reviewed.json change.
     L1  any G_FILES\\{reviewed.json} or G_DIRS path changed  AND any CONTENT changed     → FAIL
     L2  any PROMOTION                                   AND head branch != attest/pending → FAIL
     L3  any PROMOTION                                   AND any CONTENT changed           → FAIL
     L4  any commit in base..head (skipping merge commits) that introduces a reviewed.json
         PROMOTION whose author email or committer email != faculty@clerkship.local  → FAIL  (D8)
-    Exit 0 clean · 1 any FAIL · 2 could not check (no base, unparsable JSON, no git).
+    Exit 0 clean · 1 any FAIL · 2 could not check (no base, unparsable JSON or registry
+    shape, no git).
+
+GOVERNANCE IS THE MACHINERY OF ATTESTATION, NOT ONLY THE LEDGER AND CLAUDE.md. The first
+draft named the rule files and the workflow directory, and a content PR could still edit THIS
+FILE, or `bin/verify.sh`, in the same diff as the pages it was changing — rewriting the gate
+that judges it and the pages it judges, inside one reviewer's single glance. So `bin/` (every
+gate and audit tool), `faculty-console/` (what writes an attestation), `.github/` in full (not
+only `workflows/`: actions, templates, CODEOWNERS), `_automation/maintenance/` and
+`tests/maintenance/` (what pins the workflows and this guard) are governance too, as is any
+`*.schema.json` — a schema is the shape a registry must hold, and loosening one is a
+governance act wherever the file lives.
+
+TWO DIRECTORIES ARE DELIBERATELY NOT GOVERNANCE, because a legitimate content PR has to touch
+them in the same diff as the page it ships:
+
+  * `13_Faculty_Resources/_automation/site_build/` — REGISTRATION DATA. A new page must be
+    added to the site manifest (or the case-of-the-week registry), regenerated into
+    shipped_pages.json, and wired into nav inside build_deploy.py, or the QA gate's
+    orphaned-source check hard-fails the build. Making that governance would forbid shipping
+    a page at all. (A `*.schema.json` under it is still governance: the data may ride along,
+    the contract it must satisfy may not. And the producer filenames are spelled without
+    backticks on purpose: tests/shipped-pages-readers.test.mjs freezes every file carrying a
+    QUOTED literal that ends in one, and a markdown backtick is a quote to that regex. This
+    tool asks shipped_pages.json what ships, per ADR-002; it never reads a producer.)
+  * `tests/` outside `tests/maintenance/` — panel snapshots and per-surface test rows are
+    written by the PR that adds the surface; a new page legitimately brings its own test row.
+
+Neither exclusion is a hole in L2/L3/L4: nothing under either directory can promote an
+attestation. They are outside the L1 same-diff rule only.
 
 WHAT IT DOES NOT SAY. Registration and demotion are how a content PR is *supposed* to record
 that it touched attested text: a new pending row, a pending row edited, reviewed→pending, a row
@@ -65,8 +106,12 @@ always says which of the three the base came from. It is not a bypass: whatever 
 still passed to `git merge-base`, so it can only shrink the range to commits this branch owns,
 and it silences no rule.
 
-EXIT 2 IS NOT A PASS. No base, no git, an unparsable registry, or a HEAD tree with no
-shipped_pages.json all mean the CONTENT predicate cannot be evaluated — and a classifier that
+EXIT 2 IS NOT A PASS. No base, no git, an unparsable registry, a registry that parses to
+something other than the shape the rule reads (a reviewed.json or topic_meta.json that is not
+an object, a question_bank.json with no `items` list, a shipped_pages.json with no `pages`
+list — `{"entries": {…}}` and a bare JSON list both used to coerce to `{}`, i.e. "every row
+deleted", i.e. registration, over a diff that promoted every row), or a HEAD tree with no
+shipped_pages.json all mean the rule cannot be evaluated — and a classifier that
 cannot tell content from not-content would clear every diff it was handed. Two more doors are
 exit 2 for the same reason, and both were once a clean 0: a NAMED base that resolves to the head
 (`--base HEAD`, or `CLERKSHIP_PR_BASE=origin/<this branch>` after a push) makes the diff empty
@@ -102,6 +147,7 @@ from attestation_hash import CONSOLE_IDENTITY  # noqa: E402
 
 LEDGER_REL = "13_Faculty_Resources/reviewed.json"
 TOPIC_META_REL = "topic_meta.json"
+QBANK_REL = "question_bank.json"
 SHIPPED_REL = "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
 ATTEST_BRANCH = "attest/pending"
 
@@ -113,9 +159,37 @@ G_FILES = frozenset({
     "standards.json",
     "instrument_rights.json",
     "vocabulary.json",
+    # The attestation machinery's own data and code. Editing how a hash is computed, what a
+    # reviewed row may contain, or what a validator accepts changes what every attestation in
+    # the ledger MEANS — which is a governance act even though no ledger row moves.
+    ".gitattributes",
+    "13_Faculty_Resources/reviewed.schema.json",
+    "13_Faculty_Resources/_automation/attestation_hash.py",
+    "13_Faculty_Resources/_automation/surface_governance.py",
+    "13_Faculty_Resources/_automation/validate_attestation_consistency.py",
+    "13_Faculty_Resources/_automation/validate_curriculum.py",
+    "13_Faculty_Resources/_automation/validate_topic_meta.py",
 })
-# Everything under these is governance: skills, hooks, subagent definitions, settings; workflows.
-G_DIRS = (".claude/", ".github/workflows/")
+# Everything under these is governance. `.github/` in FULL, not only `workflows/`: a composite
+# action, an issue template or CODEOWNERS decides how the work is reviewed just as a workflow
+# does. `bin/` is every gate and audit tool INCLUDING THIS FILE — the hole this widening
+# closed is a content PR that edits its own judge in the same diff as the pages being judged.
+# `faculty-console/` is what writes an attestation; `_automation/maintenance/` and
+# `tests/maintenance/` are what pin the workflows and this guard.
+# NOT here, deliberately, and the docstring says why: `_automation/site_build/` (registration
+# data a new page must edit) and `tests/` outside `tests/maintenance/` (per-surface test rows).
+G_DIRS = (
+    ".claude/",
+    ".github/",
+    "bin/",
+    "faculty-console/",
+    "13_Faculty_Resources/_automation/maintenance/",
+    "tests/maintenance/",
+)
+# A schema is the shape a registry must hold; loosening one is a governance act wherever the
+# file lives — including under site_build/, whose DATA rides with a page but whose CONTRACTS
+# do not.
+G_SUFFIX = ".schema.json"
 
 # The numbered curriculum trees. 13_Faculty_Resources matches `1[0-4]` and is excluded by name.
 CONTENT_DIR = re.compile(r"^(0\d|1[0-4]|99)_[^/]+/")
@@ -127,9 +201,18 @@ LEDGER_PROMOTION_KEYS = (
     "at", "by", "risk", "note", "contentHash", "claimsHash", "evidenceHash", "evidenceThrough",
 )
 TOPIC_META_PROMOTION_KEYS = ("lastReviewed", "reviewer")
+# question_bank.json's `status` enum is draft/attested; only faculty attest tooling writes
+# `attested`, and what it vouches for is the WHOLE item — stem, options, rationale, evidence.
+QBANK_ATTESTED = "attested"
 # topic_meta's schema enum is draft/pending/reviewed/retired; `attested` is named by the rule
 # and honoured here so a future rename cannot slip a promotion past this.
 PROMOTED_STATES = frozenset({"reviewed", "attested"})
+
+# Appended to the L2 block when every ledger promotion in range is the console's own work.
+STALE_BASE_HINT = (
+    "hint: every promotion here was committed by the faculty console — if these rows are "
+    "already on main, your base is stale (git fetch origin main; or push with "
+    "CLERKSHIP_PR_BASE=origin/<parent>)")
 
 RULE_TEXT = {
     "L1": "a governance file and page content changed in the same diff",
@@ -231,6 +314,42 @@ def json_at(root, rev, path):
         raise InputError("%s at %s is not parsable JSON: %s" % (path, rev, exc))
 
 
+def _registry_at(root, rev, path):
+    """`path` at `rev` as a JSON OBJECT, or None when absent there.
+
+    Present-but-not-an-object is exit 2. `ledger_promotions` and `topic_meta_promotions`
+    coerce a non-dict document to `{}` so their unit edges stay total, and that coercion at
+    HEAD reads as "every row deleted", i.e. registration: a head whose ledger is
+    `{"entries": {…}}` or a bare JSON list exited 0 over a diff that promoted every row in it.
+    Absent is left exactly as it was — at base, every entry is new.
+    """
+    doc = json_at(root, rev, path)
+    if doc is not None and not isinstance(doc, dict):
+        raise InputError("%s at %s is a %s, not an object — the promotion set cannot be read"
+                         % (path, rev, type(doc).__name__))
+    return doc
+
+
+def _ledger_at(root, rev, path=LEDGER_REL):
+    """reviewed.json at `rev` as {slug: row}, or None when absent there.
+
+    Stricter than `_registry_at`, because `{"entries": {…}}` IS a dict: a wrapper around the
+    rows parses fine, every slug the base carried then reads as deleted — registration — and a
+    diff that promoted every row in the ledger exited 0. `reviewed.schema.json` requires
+    `status` on every row and sets `additionalProperties: false`, so "every value is an object
+    carrying a string `status`" is this file's own contract, not a new one invented here.
+    """
+    doc = _registry_at(root, rev, path)
+    if doc is None:
+        return None
+    wrong = [key for key, row in doc.items()
+             if not (isinstance(row, dict) and isinstance(row.get("status"), str))]
+    if wrong:
+        raise InputError("%s at %s is not a map of attestation rows — %r has no `status`"
+                         % (path, rev, wrong[0]))
+    return doc
+
+
 def changed_paths(root, base, head):
     """Every path the diff touches, with BOTH sides of a rename.
 
@@ -259,8 +378,15 @@ def shipped_sources(shipped_doc):
     """
     if not isinstance(shipped_doc, dict):
         raise InputError("shipped_pages.json is not an object")
+    pages = shipped_doc.get("pages")
+    if not isinstance(pages, list):
+        # `"pages": 7`, `"pages": {}`, or no `pages` key at all used to raise a TypeError out
+        # of this loop — a traceback, which exits 1 and reads as a rule failure. It is not one:
+        # it is the CONTENT predicate being unreadable, which is exit 2.
+        raise InputError("shipped_pages.json has no `pages` list (found %s)"
+                         % type(pages).__name__)
     out = set()
-    for page in shipped_doc.get("pages") or []:
+    for page in pages:
         if not isinstance(page, dict):
             continue
         source = page.get("source")
@@ -280,7 +406,9 @@ def is_content(path, sources):
 
 def is_governance(path):
     """A governance path other than reviewed.json — the set L1 asks about."""
-    if path in G_FILES and path != LEDGER_REL:
+    if path == LEDGER_REL:
+        return False  # the ledger is L2/L3/L4's business; L1 is about everything else
+    if path in G_FILES or path.endswith(G_SUFFIX):
         return True
     return any(path.startswith(prefix) for prefix in G_DIRS)
 
@@ -371,6 +499,60 @@ def topic_meta_promotions(base_doc, head_doc):
     return out
 
 
+def qbank_items(doc):
+    """{id: item} for question_bank.json, or {} when the file is absent at that rev.
+
+    A wrong SHAPE is exit 2, never {}: `bin/run_queue_task.py` names this file beside
+    reviewed.json and topic_meta.json as a registry the nightly runner may never edit, 144 of
+    its items carry `status: "attested"`, and a document that coerces to nothing would read as
+    "every item deleted" — registration — over a diff that attested the lot.
+    """
+    if doc is None:
+        return {}
+    if not isinstance(doc, dict):
+        raise InputError("%s is not an object" % QBANK_REL)
+    items = doc.get("items")
+    if not isinstance(items, list):
+        raise InputError("%s has no `items` list (found %s)"
+                         % (QBANK_REL, type(items).__name__))
+    out = {}
+    for item in items:
+        if isinstance(item, dict) and isinstance(item.get("id"), str):
+            out[item["id"]] = item
+    return out
+
+
+def qbank_promotions(base_doc, head_doc):
+    """[(item id, what changed)] for every question_bank.json promotion.
+
+    Identity is the item's `id` (stable forever per the schema: SRS cards and response records
+    key on it). Unlike a ledger row, an attested ITEM has no separately attested field — the
+    stem, the options, the rationale and the evidence are all the text faculty signed — so ANY
+    field changing while the item is attested on both sides is a fresh claim about fresh text.
+    The honest edit demotes to `draft` first, which is registration and passes here.
+    """
+    base = qbank_items(base_doc)
+    head = qbank_items(head_doc)
+    out = []
+    for item_id in sorted(set(base) | set(head)):
+        after = head.get(item_id)
+        if after is None:
+            continue  # deleted: registration
+        before = base.get(item_id)
+        after_status = after.get("status")
+        before_status = before.get("status") if before is not None else None
+        if after_status != QBANK_ATTESTED:
+            continue  # a draft, a new draft item, or a demotion: registration
+        if before_status != QBANK_ATTESTED:
+            out.append((item_id, "%s→attested" % (before_status or "new")))
+            continue
+        changed = [key for key in sorted(set(before) | set(after))
+                   if before.get(key, MISSING) != after.get(key, MISSING)]
+        if changed:
+            out.append((item_id, "attested item edited (fields: %s)" % ", ".join(changed)))
+    return out
+
+
 # --------------------------------------------------------------------------------------
 # the four laws
 # --------------------------------------------------------------------------------------
@@ -421,7 +603,16 @@ def classify(root, base, head, head_branch, base_source=None):
     if shipped is None:
         raise InputError("%s is absent at %s — the CONTENT predicate cannot be evaluated"
                          % (SHIPPED_REL, head))
+    # CONTENT-NESS IS READ AT BASE ∪ HEAD. Ten of the 130 shipped sources are content ONLY
+    # because shipped_pages.json says so — the six `_prototypes/` tools (sp-interview.html
+    # among them) and four under 13_Faculty_Resources/, all of which the regex misses. Read
+    # the head side alone and a diff that DE-REGISTERS such a page and rewrites it in the same
+    # commit shows no content path at all: the file stops being content exactly when it is
+    # being changed. Whether a path is content is a fact about the range, not about its end.
     sources = shipped_sources(shipped)
+    base_shipped = json_at(root, base, SHIPPED_REL)
+    if base_shipped is not None:
+        sources |= shipped_sources(base_shipped)
 
     changed = changed_paths(root, base, head)
     content = [path for path in changed if is_content(path, sources)]
@@ -430,13 +621,14 @@ def classify(root, base, head, head_branch, base_source=None):
     # Absent at head is NOT "every entry deleted". A rename of the ledger would empty the
     # promotion set and clear a diff that carries every promotion in it, at a new path this
     # tool does not read; absent at BASE stays "every entry is new" (a repo's first commit).
-    head_ledger = json_at(root, head, LEDGER_REL)
+    head_ledger = _ledger_at(root, head)
     if head_ledger is None:
         raise InputError("%s is absent at head" % LEDGER_REL)
-    ledger = ledger_promotions(json_at(root, base, LEDGER_REL), head_ledger)
-    topic_meta = topic_meta_promotions(json_at(root, base, TOPIC_META_REL),
-                                       json_at(root, head, TOPIC_META_REL))
-    promotions = bool(ledger) or bool(topic_meta)
+    ledger = ledger_promotions(_ledger_at(root, base), head_ledger)
+    topic_meta = topic_meta_promotions(_registry_at(root, base, TOPIC_META_REL),
+                                       _registry_at(root, head, TOPIC_META_REL))
+    qbank = qbank_promotions(json_at(root, base, QBANK_REL), json_at(root, head, QBANK_REL))
+    promotions = bool(ledger) or bool(topic_meta) or bool(qbank)
 
     failures = []
     if governance and content:
@@ -445,16 +637,30 @@ def classify(root, base, head, head_branch, base_source=None):
         failures.append("L2")
     if promotions and content:
         failures.append("L3")
+    # L4 walks commits only when the base..head DIFF carries a ledger promotion, so a
+    # promotion introduced and then reverted inside the range lands nothing, is invisible
+    # here, and is treated as registration. That is by design, not an oversight: this gate
+    # judges what the PR DELIVERS. A branch that promoted a row and backed it out before
+    # review has claimed nothing by the time it merges, and failing it would punish the fix.
     offenders = commit_promotions(root, base, head) if ledger else []
     if offenders:
         failures.append("L4")
+
+    # THE STALE-BASE DIAGNOSTIC. L2 firing while L4 stays silent means every ledger promotion
+    # in range was committed by the console itself — which cannot happen on a branch an agent
+    # or the owner wrote. It is what a base too far back looks like: a local `origin/main`
+    # behind a merged console PR, or a re-run CI event carrying an older base.sha. The rows
+    # are real, they are just already on main. Say so rather than letting the reader hunt.
+    stale_base = bool("L2" in failures and ledger and not offenders
+                      and head_branch != ATTEST_BRANCH)
 
     return {
         "base": base, "head": head, "headBranch": head_branch,
         "baseSource": source, "emptyRange": empty_range,
         "changed": changed, "content": content, "governance": governance,
         "ledgerPromotions": ledger, "topicMetaPromotions": topic_meta,
-        "commitOffenders": offenders, "failures": failures,
+        "qbankPromotions": qbank,
+        "commitOffenders": offenders, "staleBaseHint": stale_base, "failures": failures,
     }
 
 
@@ -473,6 +679,10 @@ def _promotion_lines(verdict, indent="    "):
         lines.append("%s%s:" % (indent, TOPIC_META_REL))
         for slug, change in verdict["topicMetaPromotions"]:
             lines.append("%s  %s: %s" % (indent, slug, change))
+    if verdict["qbankPromotions"]:
+        lines.append("%s%s:" % (indent, QBANK_REL))
+        for item_id, change in verdict["qbankPromotions"]:
+            lines.append("%s  qbank %s: %s" % (indent, item_id, change))
     return lines
 
 
@@ -491,6 +701,8 @@ def report_lines(verdict):
             lines.append("    head branch: %s" % verdict["headBranch"])
             lines.extend(_promotion_lines(verdict))
             lines.append("    a promotion is the console's to write, on %s." % ATTEST_BRANCH)
+            if verdict["staleBaseHint"]:
+                lines.append("    %s" % STALE_BASE_HINT)
         elif rule == "L3":
             if "L2" in verdict["failures"]:
                 lines.append("    the promotions listed under L2 above, and:")
@@ -520,6 +732,8 @@ def run(root, base, head, head_branch, fmt="text", stream=None, base_source=None
                                        for s, c in verdict["ledgerPromotions"]]
         payload["topicMetaPromotions"] = [{"slug": s, "change": c}
                                           for s, c in verdict["topicMetaPromotions"]]
+        payload["qbankPromotions"] = [{"id": i, "change": c}
+                                      for i, c in verdict["qbankPromotions"]]
         payload["commitOffenders"] = [
             {"commit": sha, "author": author, "committer": committer,
              "promotions": [{"slug": s, "change": c} for s, c in promotions]}
@@ -544,7 +758,8 @@ def run(root, base, head, head_branch, fmt="text", stream=None, base_source=None
               % where, file=stream)
         return 0
 
-    promotions = len(verdict["ledgerPromotions"]) + len(verdict["topicMetaPromotions"])
+    promotions = (len(verdict["ledgerPromotions"]) + len(verdict["topicMetaPromotions"])
+                  + len(verdict["qbankPromotions"]))
     print("governance separation OK — %s; %d changed path(s), %d content, %d governance, "
           "%d promotion(s) on %s"
           % (where, len(verdict["changed"]), len(verdict["content"]),
@@ -667,6 +882,20 @@ def _fixture_ledger():
     return {"x.md": _pending(), "w.md": _reviewed()}
 
 
+def _fixture_qbank():
+    """Two items: one draft, one attested. `id` is the identity; the whole item is the text."""
+    return {
+        "_note": "fixture",
+        "version": 1,
+        "items": [
+            {"id": "qb_mood_001", "status": "draft", "stem": "draft stem",
+             "options": [{"key": "A", "t": "a"}], "pearl": "p"},
+            {"id": "qb_sud_001", "status": QBANK_ATTESTED, "stem": "attested stem",
+             "options": [{"key": "A", "t": "a"}], "pearl": "p"},
+        ],
+    }
+
+
 def _fixture_topic_meta():
     return {
         "_note": "fixture",
@@ -728,6 +957,7 @@ def _fixture_repo(root):
     _write(root, SHIPPED_REL, _fixture_shipped())
     _write(root, LEDGER_REL, _fixture_ledger())
     _write(root, TOPIC_META_REL, _fixture_topic_meta())
+    _write(root, QBANK_REL, _fixture_qbank())
     _write(root, "CLAUDE.md", "# Agent Guide\n\nrule one\n")
     _write(root, "AGENTS.md", "# Agent Guide\n\nrule one\n")
     _write(root, "decisions.json", {"D1": "decided"})
@@ -806,6 +1036,14 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         total.append(name)
         if got != want:
             failures.append("%s: got %r, want %r" % (name, got, want))
+
+    def raises(call):
+        """True when `call` raises InputError — the exit-2 shape doors, away from git."""
+        try:
+            call()
+        except InputError:
+            return True
+        return False
 
     def verdict(name, got, want_code, want_rules):
         code, text = got
@@ -949,6 +1187,49 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
             _write(root, "decisions.json", {"D1": "decided", "D2": "decided"})
         verdict("(l) decisions.json alone", _case(root, "feature-l", l_case), 0, [])
 
+        # (n)-(q) THE QUESTION BANK IS AN ATTESTATION LEDGER TOO. 144 of its items carry
+        # `status: "attested"`; `bin/run_queue_task.py` names the file beside reviewed.json
+        # and topic_meta.json as a registry the nightly runner may never touch, and until this
+        # landed nothing in the gate reached it. L4 stays reviewed.json-only (D3/D8 as
+        # written: the console does not write question_bank.json, so no console-identity rule
+        # could be defined for it) — so a qbank promotion on a feature branch is L2 alone.
+        qb = _fixture_qbank()
+
+        def attest_item():
+            data = json.loads(json.dumps(qb))
+            data["items"][0]["status"] = QBANK_ATTESTED
+            _write(root, QBANK_REL, data)
+        code, text = _case(root, "feature-qbank-promote", attest_item)
+        check("(n) a qbank item flipped to attested exits 1", code, 1)
+        check("(n) fires L2 only — L4 is reviewed.json's rule", _rules(text), ["L2"])
+        check("(n) names the item and the flip",
+              "qbank qb_mood_001: draft→attested" in text, True)
+
+        # An attested item has no separately-attested field: the stem, the options and the
+        # rationale are all the text faculty signed, so ANY edit is a fresh claim.
+        def edit_attested_item():
+            data = json.loads(json.dumps(qb))
+            data["items"][1]["stem"] = "a different stem entirely"
+            _write(root, QBANK_REL, data)
+        code, text = _case(root, "feature-qbank-edit", edit_attested_item)
+        check("(o) editing an item attested on both sides exits 1", code, 1)
+        check("(o) fires L2", _rules(text), ["L2"])
+        check("(o) names the item and the field",
+              "qbank qb_sud_001: attested item edited (fields: stem)" in text, True)
+
+        # ...and the honest way to make that edit: demote first. That is registration.
+        def demote_then_edit():
+            data = json.loads(json.dumps(qb))
+            data["items"][1]["status"] = "draft"
+            data["items"][1]["stem"] = "a different stem entirely"
+            _write(root, QBANK_REL, data)
+        verdict("(p) attested→draft plus the edit is registration",
+                _case(root, "feature-qbank-demote", demote_then_edit), 0, [])
+
+        verdict("(q) the same qbank promotion on attest/pending as the console",
+                _case(root, "attest/pending-qbank", attest_item, email=CONSOLE_IDENTITY,
+                      head_branch=ATTEST_BRANCH), 0, [])
+
         # A content-only PR is the common case and must stay silent.
         verdict("content alone", _case(root, "feature-content", touch_content), 0, [])
 
@@ -984,6 +1265,59 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
             _write(root, "AGENTS.md", "# Agent Guide\n\nrule one\nrule four\n")
         verdict("an extraSources path under 13_Faculty_Resources is content",
                 _case(root, "feature-extra", extra_source), 1, ["L1"])
+
+        # THE GOVERNANCE SET IS THE MACHINERY OF ATTESTATION, not only the ledger and the
+        # rule files. Until this widened, a content PR could edit the gate that judges it —
+        # this very file, or bin/verify.sh — in the same diff as the pages being judged, and
+        # `bin/ + content` exited 0. Each of these is a different clause of is_governance.
+        governance_paths = (
+            ("bin/x.py", "#!/usr/bin/env python3\nprint('a gate')\n"),          # G_DIRS
+            ("faculty-console/x.mjs", "export const x = 1;\n"),                  # G_DIRS
+            ("foo.schema.json", '{"type": "object"}\n'),                         # G_SUFFIX
+            (".gitattributes", "*.bin binary\n"),                                # G_FILES
+        )
+        for index, (rel, body) in enumerate(governance_paths):
+            def governance_plus_content(rel=rel, body=body):
+                touch_content()
+                _write(root, rel, body)
+            verdict("%s in the same diff as content" % rel,
+                    _case(root, "feature-gov-%d" % index, governance_plus_content), 1, ["L1"])
+
+        # ...and the two exclusions, each of which a legitimate content PR must touch. A new
+        # page is REGISTERED in site_build/ — added to the manifest, regenerated into
+        # shipped_pages.json, wired into build_deploy.py's nav — or the build's
+        # orphaned-source check fails it, and it brings its own panel snapshot under tests/.
+        # Making either governance would forbid shipping a page at all.
+        # (The regenerated listing stands in for the manifest here rather than that file's
+        # own name: tests/shipped-pages-readers.test.mjs freezes every file
+        # carrying a quoted literal that ends in a producer filename, and this fixture path
+        # would read as this tool going around the single source. It is the stronger case
+        # anyway — the listing is what a new page MUST regenerate.)
+        not_governance_paths = (
+            (SHIPPED_REL, json.dumps(_fixture_shipped(), indent=2) + "\n"),
+            ("13_Faculty_Resources/_automation/site_build/build_deploy.py",
+             "NAV = ['x.md', 'w.md']\n"),
+            ("tests/__panels__/x.html", "<!doctype html>\n<p>panel</p>\n"),
+        )
+        for index, (rel, body) in enumerate(not_governance_paths):
+            def registration_plus_content(rel=rel, body=body):
+                touch_content()
+                _write(root, rel, body)
+            verdict("%s rides with content" % rel,
+                    _case(root, "feature-notgov-%d" % index, registration_plus_content), 0, [])
+
+        # CONTENT-NESS IS READ AT BASE ∪ HEAD. Ten of the 130 shipped sources are content
+        # ONLY because shipped_pages.json says so, W_EXTRA's shape among them. Read the head
+        # side alone and de-registering such a page in the same commit that rewrites it makes
+        # it stop being content exactly when it is being changed — no CONTENT path, L1 silent.
+        def deregister_and_edit():
+            shipped = _fixture_shipped()
+            shipped["pages"][1].pop("extraSources")
+            _write(root, SHIPPED_REL, shipped)
+            _write(root, W_EXTRA, "# page\n\nrewritten on the way out of the listing\n")
+            _write(root, "CLAUDE.md", "# Agent Guide\n\nrule one\nrule seven\n")
+        verdict("a source de-registered at head is still content in that diff",
+                _case(root, "feature-deregister", deregister_and_edit), 1, ["L1"])
 
         # ...and a path that is neither is neither.
         def not_content():
@@ -1076,6 +1410,36 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         check("CLERKSHIP_PR_BASE naming the branch's own tip exits 2", code, 2)
         check("and says the base is the head", "the named base is the head" in text, True)
 
+        # THE STALE-BASE DIAGNOSTIC. `stale-main` carries a promotion the console really
+        # committed; `stale-child` is cut from it and edits a non-content file. Judged against
+        # a base BEFORE the console commit — a local origin/main behind a merged console PR,
+        # or a re-run CI event carrying an older base.sha — L2 fires over rows this branch
+        # never wrote while L4 stays silent, because the console is exactly who committed
+        # them. That combination is the signature; without the hint the reader has no way to
+        # tell a stale base from a breach, and the honest fix is a fetch, not an edit.
+        _fixture_git(root, ["checkout", "-q", "-b", "stale-main", "main"])
+        promote_ledger()
+        console_tip = _commit(root, "console: attest x.md", email=CONSOLE_IDENTITY,
+                              committer=CONSOLE_IDENTITY)
+        _fixture_git(root, ["checkout", "-q", "-b", "stale-child", "stale-main"])
+        _write(root, NOT_CONTENT, "# notes\n\nchild edit\n")
+        _commit(root, "child: a note — no content, no promotion")
+        _fixture_git(root, ["checkout", "-q", "main"])
+
+        code, text = _run(["--root", str(root), "--base", "main", "--head", "stale-child",
+                           "--head-branch", "stale-child"])
+        check("a stale base drags a merged console promotion into range", code, 1)
+        check("as L2 alone — L4 is silent because the console did commit it",
+              _rules(text), ["L2"])
+        check("and the report names the likely cause", "your base is stale" in text, True)
+        check("and gives the two ways out",
+              "git fetch origin main" in text and "CLERKSHIP_PR_BASE" in text, True)
+
+        code, text = _run(["--root", str(root), "--base", console_tip, "--head",
+                           "stale-child", "--head-branch", "stale-child"])
+        check("and with the right base the same branch is clean", code, 0)
+        check("with no hint to give", "your base is stale" in text, False)
+
         # (m) no base and no origin/main: could not check, never a pass.
         with _env(CLERKSHIP_PR_BASE=None):
             code, text = _run(["--root", str(root), "--head", "main"])
@@ -1137,6 +1501,59 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
               "%s is absent at head" % LEDGER_REL in text, True)
         _fixture_git(root, ["checkout", "-q", "main"])
 
+        # A PRESENT-BUT-WRONG-SHAPED REGISTRY AT HEAD IS COULD-NOT-CHECK, NOT A PASS. Both
+        # of these promote every row in the ledger on the way past, and both exited 0: a bare
+        # JSON list coerced to {} — "every row deleted", i.e. registration — and
+        # `{"entries": {…}}` IS a dict, so the wrapper parsed and every slug the base carried
+        # read as deleted. reviewed.schema.json requires `status` on every row; that is the
+        # contract, and it is the file's own, not one invented here.
+        every_row_reviewed = {slug: _reviewed(at="2026-09-16") for slug in ledger}
+        for index, (shape, payload) in enumerate((
+                ("a bare JSON list", list(every_row_reviewed.values())),
+                ("an object wrapping the rows", {"entries": every_row_reviewed}))):
+            branch = "feature-ledger-shape-%d" % index
+            _branch(root, branch)
+            _write(root, LEDGER_REL, payload)
+            _commit(root, "reshape the ledger while promoting every row")
+            code, text = _run(["--root", str(root), "--base", "main", "--head", branch,
+                               "--head-branch", branch])
+            check("a reviewed.json that is %s exits 2" % shape, code, 2)
+            check("and names the ledger (%s)" % shape, LEDGER_REL in text, True)
+            _fixture_git(root, ["checkout", "-q", "main"])
+
+        # The same door for the other two registries the rule reads.
+        _branch(root, "feature-meta-shape")
+        _write(root, TOPIC_META_REL,
+               [{"slug": "x.md", "facultyReview": {"status": "reviewed"}}])
+        _commit(root, "reshape topic_meta")
+        code, text = _run(["--root", str(root), "--base", "main", "--head",
+                           "feature-meta-shape", "--head-branch", "feature-meta-shape"])
+        check("a topic_meta.json that is not an object exits 2", code, 2)
+        check("and names it", TOPIC_META_REL in text, True)
+        _fixture_git(root, ["checkout", "-q", "main"])
+
+        _branch(root, "feature-qbank-shape")
+        _write(root, QBANK_REL, {"_note": "fixture", "version": 1, "items": {"a": 1}})
+        _commit(root, "reshape question_bank")
+        code, text = _run(["--root", str(root), "--base", "main", "--head",
+                           "feature-qbank-shape", "--head-branch", "feature-qbank-shape"])
+        check("a question_bank.json with no `items` list exits 2", code, 2)
+        check("and says which list it wanted", "has no `items` list" in text, True)
+        _fixture_git(root, ["checkout", "-q", "main"])
+
+        # A malformed shipped_pages.json used to raise TypeError out of the loop — a
+        # traceback, which exits 1 and reads as a rule failure. It is the CONTENT predicate
+        # being unreadable, which is exit 2.
+        _branch(root, "feature-shipped-shape")
+        _write(root, SHIPPED_REL, {"version": 1, "pages": 7})
+        _commit(root, "malform shipped_pages")
+        code, text = _run(["--root", str(root), "--base", "main", "--head",
+                           "feature-shipped-shape", "--head-branch", "feature-shipped-shape"])
+        check("a shipped_pages.json whose `pages` is not a list exits 2", code, 2)
+        check("and says so rather than tracebacking",
+              "has no `pages` list" in text and "Traceback" not in text, True)
+        _fixture_git(root, ["checkout", "-q", "main"])
+
         # --format json carries the same verdict a machine can read.
         code, text = _run(["--root", str(root), "--base", "main", "--head", "feature-b",
                            "--head-branch", "feature-b", "--format", "json"])
@@ -1186,6 +1603,51 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         check("is_governance excludes reviewed.json", is_governance(LEDGER_REL), False)
         check("is_governance covers .github/workflows",
               is_governance(".github/workflows/ci.yml"), True)
+        # The widened set, clause by clause, and the two deliberate exclusions.
+        check("is_governance covers bin/", is_governance("bin/verify.sh"), True)
+        check("is_governance covers this gate itself",
+              is_governance("bin/check_governance_separation.py"), True)
+        check("is_governance covers .github outside workflows/",
+              is_governance(".github/CODEOWNERS"), True)
+        check("is_governance covers faculty-console/",
+              is_governance("faculty-console/netlify/functions/attest.mjs"), True)
+        check("is_governance covers _automation/maintenance/",
+              is_governance("13_Faculty_Resources/_automation/maintenance/"
+                            "validate_scheduled_workflows.py"), True)
+        check("is_governance covers tests/maintenance/",
+              is_governance("tests/maintenance/test_governance_guard_pins.py"), True)
+        check("is_governance covers any .schema.json, wherever it lives",
+              is_governance("13_Faculty_Resources/_automation/site_build/"
+                            "shipped_pages.schema.json"), True)
+        check("is_governance covers the attestation machinery's own modules",
+              is_governance("13_Faculty_Resources/_automation/attestation_hash.py"), True)
+        check("is_governance excludes site_build registration DATA", is_governance(SHIPPED_REL),
+              False)
+        check("is_governance excludes the build's own nav wiring",
+              is_governance("13_Faculty_Resources/_automation/site_build/build_deploy.py"),
+              False)
+        check("is_governance excludes tests outside tests/maintenance/",
+              is_governance("tests/front-door.test.mjs"), False)
+        # question_bank's classifier edges, away from git.
+        check("a deleted qbank item is registration",
+              qbank_promotions({"items": [{"id": "a", "status": QBANK_ATTESTED}]},
+                               {"items": []}), [])
+        check("an item born attested is a promotion",
+              qbank_promotions({"items": []},
+                               {"items": [{"id": "a", "status": QBANK_ATTESTED}]}),
+              [("a", "new→attested")])
+        check("a draft item edited is registration",
+              qbank_promotions({"items": [{"id": "a", "status": "draft", "stem": "x"}]},
+                               {"items": [{"id": "a", "status": "draft", "stem": "y"}]}), [])
+        check("a field ADDED to an attested item is a promotion",
+              qbank_promotions({"items": [{"id": "a", "status": QBANK_ATTESTED}]},
+                               {"items": [{"id": "a", "status": QBANK_ATTESTED,
+                                           "pearl": "p"}]}),
+              [("a", "attested item edited (fields: pearl)")])
+        check("a question_bank.json with no `items` list raises",
+              raises(lambda: qbank_items({"items": {}})), True)
+        check("a shipped_pages.json with a non-list `pages` raises",
+              raises(lambda: shipped_sources({"version": 1, "pages": 7})), True)
     finally:
         ambient.__exit__(None, None, None)
         holder.cleanup()
