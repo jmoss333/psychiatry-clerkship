@@ -7,9 +7,11 @@
 // This is the 2am surface, so two of the assertions below are load-bearing beyond ordinary markup
 // coverage:
 //
-//   1. "every real kit protocol renders >= 3 steps" runs against the LIVE topic_meta.json, not a
-//      fixture, so a safetySteps array emptied by an unrelated edit fails here rather than on the
-//      ward.
+//   1. "every real kit protocol renders >= 3 steps" runs against the SOURCE topic_meta.json, not
+//      a fixture, so a safetySteps array emptied by an unrelated edit fails here rather than on
+//      the ward. (Source, not built: the built copy may demote a drifted page's facultyReview to
+//      pending -- see attestation_hash.project_topic_meta_faculty_review -- which changes only
+//      governance state, never safetySteps.)
 //   2. "no protocol step or doc line is a literal in fd_sheet.js" pins the single most important
 //      rule of the module: protocol content is faculty-attested content owned by topic_meta.json,
 //      and a hardcoded copy in the renderer would be unreviewed clinical text on the one surface
@@ -43,6 +45,10 @@ const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/
 
 const readJson = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const REAL_CUR = readJson('../curriculum.json');
+// The SOURCE topic_meta.json -- the faculty's own record, which this suite asserts against. The
+// BUILT copy may demote a drifted page's facultyReview to `pending` (see
+// attestation_hash.project_topic_meta_faculty_review), so a `reviewed` premise below is a fact
+// about the source, not about what either site serves today.
 const REAL_META = readJson('../topic_meta.json');
 const REAL_TOOLS = readJson('../tool_registry.json');
 const REAL_MAN = readJson(`${BUILD}/site_manifest.json`);
@@ -214,7 +220,7 @@ test('the kit variant has no back affordance -- it is the root of the sheet', ()
 
 // ---- the protocol view ----------------------------------------------------------------------
 
-test('every real kit protocol renders at least 3 steps from the live topic_meta.json', () => {
+test('every real kit protocol renders at least 3 steps from the source topic_meta.json', () => {
   for (const ref of KIT_REFS) {
     const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: ref });
     const n = html.split('class="fd-step"').length - 1;
@@ -313,6 +319,10 @@ test('the live shell boundary renders a valid reviewed protocol without failure 
     sheet: 'delirium.md', week: 1, done: {},
   });
   const html = rendered.html;
+  // Fixture premise, and a SOURCE-copy fact: the built topic_meta.json may read `pending` for
+  // this same slug once its attestation drifts (project_topic_meta_faculty_review), which is
+  // exactly the Front Door behaviour PR 1b adds. This assertion pins the renderer's reviewed
+  // branch, not what either site serves today.
   assert.equal(REAL_META['delirium.md'].facultyReview.status, 'reviewed', 'fixture premise');
   assert.equal(html.includes(rendered.copy), false,
     'valid reviewed data must not render the owner-approved failure copy');
