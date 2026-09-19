@@ -22,7 +22,7 @@
 
 function fdTabs(tab){
   var cur=(tab==='path'||tab==='library')?tab:'today';
-  var defs=[{id:'today',label:'Today'},{id:'path',label:'Path'},{id:'library',label:'Library'}];
+  var defs=[{id:'today',label:'Today'},{id:'path',label:'Path'},{id:'library',label:'The Essentials'}];
   var out='<nav class="fd-tabs">';
   for(var i=0;i<defs.length;i++){
     var t=defs[i];

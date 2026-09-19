@@ -179,7 +179,21 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   var titles={}, tk;
   for(tk in manifestIndex){ if(manifestIndex[tk]&&typeof manifestIndex[tk].title==='string') titles[tk]=manifestIndex[tk].title; }
 
-  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known, titles:titles };
+  /* Essentials is a view of the canonical Library, not another source of items. Resolve it only
+     after every ordinary producer has populated byRef, reuse those exact objects, and count
+     stale/unknown refs without ensuring them into search or any other surface. */
+  var essentials=[], essentialsDropped=0, ce=Array.isArray(cur.essentials)?cur.essentials:[];
+  for(var ec=0;ec<ce.length;ec++){
+    var eitems=[], erefs=ce[ec].refs||[];
+    for(var er=0;er<erefs.length;er++){
+      if(Object.prototype.hasOwnProperty.call(byRef,erefs[er])) eitems.push(byRef[erefs[er]]);
+      else essentialsDropped++;
+    }
+    essentials.push({ name:ce[ec].name, accent:ce[ec].accent, items:eitems });
+  }
+
+  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known,
+    titles:titles, essentials:essentials, essentialsDropped:essentialsDropped };
 }
 
 /* The browser receives exactly one projected path. Treat that small object as untrusted at the

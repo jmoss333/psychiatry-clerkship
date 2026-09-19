@@ -9,6 +9,7 @@
 // fixture) is the load-bearing test here -- it is the one that fails if a page silently stops
 // being placed in a column.
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
@@ -23,7 +24,7 @@ function make(governanceBadge) {
     ${read('frontdoor/fd_state.js')}
     ${read('frontdoor/fd_data.js')}
     ${librarySrc}
-    return { fdLibrary: fdLibrary, fdBuildIndex: fdBuildIndex };
+    return { fdLibrary: fdLibrary, fdEssentials: fdEssentials, fdBuildIndex: fdBuildIndex };
   `)(governanceBadge || function () { return ''; });
 }
 const F = make();
@@ -314,4 +315,114 @@ test('every real tool row carries a hint span, and no real hint carries an audie
   for (const [ref, hint] of Object.entries(REAL_CUR.libraryHints || {})) {
     assert.doesNotMatch(hint, AUDIENCE_TOKEN_RE, `${ref}'s hint ships to both sites: ${hint}`);
   }
+});
+
+// ---- Essentials renderer -------------------------------------------------------------------
+
+test('Essentials uses reading rows, open native groups, a labelled filter and a separate tool group', () => {
+  const idx = {columns: IDX.columns, essentials:[{name:'First <group>',items:[
+    {ref:'read.md',title:'Title <one>',summary:'A & B',minutes:7,kind:'md',governance:{status:'pending'}},
+    {ref:'tool.html',title:'Tool',kind:'tool'}]}]};
+  const calls=[];
+  const G=make((g,o)=>{calls.push([g,o]); return g?.status==='pending'?'<span class="pending-test"></span>':'';});
+  const html=G.fdEssentials(idx);
+  assert.match(html, /<section class="fd-library fd-kit">/);
+  assert.match(html, />Core readings<\/h1>/);
+  assert.match(html, />1 readings · 1 tools<\/span>/);
+  assert.match(html, /<label[^>]*for="fd-kit-section"/);
+  assert.match(html, /<select[^>]*data-fd-kit-section/);
+  assert.equal((html.match(/<details class="fd-kit__group/g)||[]).length,2);
+  assert.equal((html.match(/<option /g)||[]).length,3);
+  assert.match(html, /Title &lt;one&gt;/); assert.match(html,/A &amp; B/); assert.match(html,/7 min/);
+  assert.match(html, /Faculty re-review in progress — 1 of 1 readings changed since they were last attested ·/); assert.match(html, /<summary>What that means<\/summary>/);
+  assert.match(html, /Everything \(10 pages\) →/);
+  assert.deepEqual(calls[0][1],{compact:true});
+  const filtered=G.fdEssentials(idx,{kitSection:'0'});
+  assert.match(filtered,/data-fd-open="read.md"/); assert.doesNotMatch(filtered,/data-fd-open="tool.html"/);
+  const tools=G.fdEssentials(idx,{kitSection:'tools'});
+  assert.match(tools,/data-fd-open="tool.html"/); assert.doesNotMatch(tools,/data-fd-open="read.md"/);
+  assert.equal(G.fdEssentials(idx,{kitSection:'unknown'}),html);
+});
+
+test('zero resolved Essentials falls back exactly to full Library with no dead return control', () => {
+  for(const essentials of [[],[{name:'Empty',items:[]}]]) {
+    const empty={columns:IDX.columns,essentials};
+    assert.equal(F.fdEssentials(empty), F.fdLibrary(empty));
+    assert.doesNotMatch(F.fdLibrary(empty),/data-fd-library-view="essentials"/);
+  }
+});
+
+test('full Library return control appears only for resolved Essentials', () => {
+  const html=F.fdLibrary({...IDX,essentials:[{name:'One',items:[IDX.columns[0].items[0]]}]});
+  assert.match(html,/data-fd-library-view="essentials">← The Essentials<\/button>/);
+});
+
+test('fdEssentials is pure and does not mutate its index', () => {
+  const cur = JSON.parse(JSON.stringify(FIX_CUR));
+  cur.essentials = [{ name: 'Kit', accent: 'topic', refs: ['m1.md', 'm2.md'] }];
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  const before = JSON.stringify(idx);
+  assert.equal(F.fdEssentials(idx), F.fdEssentials(idx));
+  assert.equal(JSON.stringify(idx), before);
+});
+
+const PROJECT_ROOT = new URL('../', import.meta.url);
+const projected = JSON.parse(execFileSync('python3', ['-B', '-c', `
+import json,sys
+sys.path.insert(0,'13_Faculty_Resources/_automation/site_build')
+from frontdoor_catalog import build_frontdoor_payload
+from shipped_pages import load_shipped_pages
+cur=json.load(open('curriculum.json')); shipped=load_shipped_pages('.')
+out={}
+for site,key in [('ms3','ms3'),('res','resident')]:
+    nav=[{'section':'Resources','items':[{'f':p['slug'],'t':p['title'],
+        'k':'tool' if p['kind']=='tool' else 'md',
+        'governance':{'status':'pending','riskKind':'general','riskLevel':'low'}}
+        for p in shipped['pages'] if site in p['sites']]}]
+    out[site]=build_frontdoor_payload(key,cur,nav,'0'*40,shipped=shipped)
+print(json.dumps(out))
+`], { cwd: PROJECT_ROOT, encoding: 'utf8' }));
+
+for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93]]) {
+  test(`${site}: real Essentials renders ${expectedKit} rows and links to all ${expectedFull} pages`, () => {
+    const payload = projected[site];
+    const idx = F.fdBuildIndex(payload.curriculum, REAL_META, REAL_TOOLS, payload.manifest);
+    const html = F.fdEssentials(idx);
+    assert.equal((html.match(/data-fd-open="/g) || []).length, expectedKit);
+    assert.match(html, new RegExp('fd-library__count\">' + (site==='ms3'?23:26) + ' readings · ' + (site==='ms3'?7:9) + ' tools'));
+    assert.equal((html.match(/<details class=\"fd-kit__group/g)||[]).length,site==='ms3'?8:7);
+    assert.equal((html.match(/<option /g)||[]).length,site==='ms3'?9:8);
+    assert.doesNotMatch(html,/governance-badge/);
+    const pending=idx.essentials.flatMap(c=>c.items).filter(i=>i.kind!=='tool'&&i.governance?.status==='pending').length;
+    assert.match(html,new RegExp('— '+pending+' of '+(site==='ms3'?23:26)+' readings'));
+    const compact=make((g,o)=>g?.status==='pending'&&o?.compact?'<span class=\"dot-test\"></span>':'').fdEssentials(idx);
+    assert.equal((compact.match(/dot-test/g)||[]).length,pending);
+    assert.match(html, new RegExp('data-fd-library-view="full">Everything \\(' + expectedFull + ' pages\\) →'));
+  });
+}
+
+test('the live Library shell selects kit by default and the complete renderer only for full', () => {
+  const shell = read('spa_index.html');
+  const branch = /if\(state\.tab==='library'\) return (fdSurface\('library',function\(\)\{[^\n]+\}\));/.exec(shell);
+  assert.ok(branch,'Library shell branch remains a shared pure renderer call');
+  const run = new Function('state','FD_INDEX','fdSurface','fdLibrary','fdEssentials',`return ${branch[1]};`);
+  const surface = (_name,render) => render();
+  const cur = structuredClone(FIX_CUR);
+  cur.essentials = [{name:'Kit',accent:'topic',refs:['m1.md']}];
+  const idx = F.fdBuildIndex(cur,FIX_META,FIX_TOOLS,FIX_MAN);
+  for (const libraryView of [undefined,'essentials']) {
+    assert.equal(run({tab:'library',libraryView},idx,surface,F.fdLibrary,F.fdEssentials),F.fdEssentials(idx));
+  }
+  assert.equal(run({tab:'library',libraryView:'full'},idx,surface,F.fdLibrary,F.fdEssentials),F.fdLibrary(idx));
+});
+
+test('compact shared badge retains normal behavior and names pending dots accessibly', () => {
+  const src=read('spa_index.html');
+  const body=src.slice(src.indexOf('  function governanceBadge('),src.indexOf('  /* Report whether the alert'));
+  const badge=new Function(body+';return governanceBadge;')();
+  for(const g of [null,{status:'reviewed'}]) assert.equal(badge(g,{compact:true}),'');
+  const g={status:'pending',riskLevel:'high'};
+  assert.match(badge(g),/governance-badge high/);
+  assert.doesNotMatch(badge(g,{compact:true}),/governance-badge/);
+  assert.match(badge(g,{compact:true}),/role="img" aria-label="Awaiting faculty re-review"/);
 });

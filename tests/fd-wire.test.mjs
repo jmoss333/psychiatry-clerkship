@@ -77,7 +77,7 @@ test('URL page/tool/tab values beat persisted Front Door state', () => {
   };
   assert.deepEqual(F.fdResolveState('/?page=new.md', stored), {
     role: 'first-role', tab: 'library', openId: 'new.md', fromTab: 'library',
-    week: 2, viewWeek: 2, autoAdvance: true, toolExpanded: true, screen: 'app',
+    week: 2, viewWeek: 2, autoAdvance: true, toolExpanded: true, screen: 'app', libraryView: 'essentials', kitSection: 'all',
   });
   assert.equal(F.fdResolveState('/?tool=drill.html&case=a', stored).openId, 'drill.html');
   const tab = F.fdResolveState('/?tab=path', stored);
@@ -132,7 +132,7 @@ test('a bare URL restores stored state and defaults to Today with autoAdvance tr
     viewWeek: 4, week: 2,
   }), {
     role: 'first-role', tab: 'path', openId: 'saved.md', fromTab: 'library',
-    viewWeek: 4, week: 2, autoAdvance: true, screen: 'app',
+    viewWeek: 4, week: 2, autoAdvance: true, screen: 'app', libraryView: 'essentials', kitSection: 'all',
   });
   const empty = F.fdResolveState('/', {});
   assert.equal(empty.tab, 'today');
@@ -217,7 +217,7 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     { ...roleContext, screen: 'setup-role' }).patch,
   { role: 'second-role', screen: 'setup-week' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'library' }, {}, roleContext).patch,
-    { tab: 'library', openId: null, searchOpen: false });
+    { tab: 'library', openId: null, searchOpen: false, libraryView: 'essentials', kitSection: 'all' });
   assert.equal(F.fdDispatch({ 'data-fd-back': '' }, {}, { ...roleContext, openId: 'x.md', fromTab: 'path' }).route,
     '?tab=path');
   assert.equal(F.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).route, '/');
@@ -483,7 +483,7 @@ test('Tab trapping wraps at both ends of a dialog', () => {
   assert.equal(prevented, 2);
 });
 
-test('fdWire registers and destroys one delegated click/input/change/keydown/popstate listener for the live shell', () => {
+test('fdWire registers and destroys one delegated click/input/change/focusin/keydown/popstate listener for the live shell', () => {
   const rootCalls = [];
   const windowCalls = [];
   const rootRemoves = [];
@@ -501,7 +501,7 @@ test('fdWire registers and destroys one delegated click/input/change/keydown/pop
   assert.equal(controller.ok, true);
   // 'change' is the settings panel's date field -- the one control not on the delegated click
   // path. Registered through listen() like the rest, so destroy() takes it down too.
-  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input', 'change']);
+  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input', 'change', 'focusin']);
   assert.deepEqual(windowCalls.map(([type]) => type), ['keydown', 'popstate']);
   controller.destroy();
   assert.deepEqual(rootRemoves, rootCalls.slice().reverse());
@@ -581,7 +581,7 @@ test('fdWire reports a partial window registration failure and unwinds every ins
 function actionTarget(attrs, extra = {}) {
   return {
     tagName: 'BUTTON', isContentEditable: false, isConnected: true,
-    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-analytics],[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
+    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-analytics],[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
     hasAttribute(name) { return Object.hasOwn(attrs, name); },
     getAttribute(name) { return Object.hasOwn(attrs, name) ? attrs[name] : null; },
     focus() { this.focused = (this.focused || 0) + 1; },
@@ -605,6 +605,7 @@ function fakeHarness(initial, options = {}) {
     location: options.location || { href: 'https://example.test/', search: '', pathname: '/' },
     history: options.history,
     matchMedia: options.matchMedia,
+    innerHeight: options.innerHeight,
     get scrollY() { return typeof options.scrollY === 'function' ? options.scrollY() : options.scrollY; },
     scrollTo: options.scrollTo,
   };
@@ -2686,6 +2687,7 @@ function originHarness(initial, extra = {}) {
     openResource: () => {},
     scrollY: () => scrollY,
     scrollTo: (x, y) => scrolls.push([x, y]),
+    innerHeight: extra.innerHeight,
     querySelector: (sel) => openers[sel] || null,
     ...(extra.querySelectorAll ? { querySelectorAll: extra.querySelectorAll } : {}),
   });
@@ -2823,4 +2825,305 @@ test('browser Back out of a resource is the same return (#427)', () => {
   assert.equal(h.controller.getState().openId, null);
   assert.deepEqual(scrolls, [[0, 480]]);
   assert.equal(link.focused, 1);
+});
+
+test('browser Back rechecks a relocated Essentials opener after native history scroll restoration', () => {
+  const location={href:'https://example.test/?tab=library',pathname:'/',search:'?tab=library'};
+  const memory=memoryHistory(location), timers=[];
+  let scrollY=0;
+  const link={
+    ...opener(),
+    getBoundingClientRect:()=>({top:5000-scrollY,bottom:5060-scrollY}),
+    scrollIntoView(){ scrollY=4700; },
+  };
+  const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials',kitSection:'late'}, {
+    F:make(memStorage()),location,history:memory.history,openResource:()=>{},innerHeight:600,
+    scrollY:()=>scrollY,scrollTo:(_x,y)=>{scrollY=y;},
+    setTimer:fn=>{timers.push(fn);},
+    querySelector:sel=>sel==='[data-fd-open="late.md"]'?link:null,
+  });
+  memory.bind(h.windowHandlers.popstate);
+  h.controller.dispatch({'data-fd-open':'late.md'});
+  memory.go(-1);
+  scrollY=0; // Chromium restores persisted scroll after the popstate listeners finish.
+  while(timers.length) timers.shift()();
+  const box=link.getBoundingClientRect();
+  assert.ok(box.top>=0&&box.bottom<=600,'the post-history focus remains visible');
+});
+
+test('deferred browser Back visibility recheck is inert after navigation or controller destruction', () => {
+  for(const invalidate of ['navigate','destroy']){
+    const location={href:'https://example.test/?tab=library',pathname:'/',search:'?tab=library'};
+    const memory=memoryHistory(location), timers=[];
+    let scrollY=0, visibilityCorrections=0;
+    const link={
+      ...opener(),
+      getBoundingClientRect:()=>({top:5000-scrollY,bottom:5060-scrollY}),
+      scrollIntoView(){ visibilityCorrections++; scrollY=4700; },
+    };
+    const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials',kitSection:'late'}, {
+      F:make(memStorage()),location,history:memory.history,openResource:()=>{},innerHeight:600,
+      scrollY:()=>scrollY,scrollTo:(_x,y)=>{scrollY=y;},
+      setTimer:fn=>{timers.push(fn);},
+      querySelector:sel=>sel==='[data-fd-open="late.md"]'?link:null,
+    });
+    memory.bind(h.windowHandlers.popstate);
+    h.controller.dispatch({'data-fd-open':'late.md'});
+    memory.go(-1);
+    assert.equal(visibilityCorrections,1,'the synchronous return correction still runs');
+    if(invalidate==='navigate') h.controller.dispatch({'data-fd-tab':'today'});
+    else h.controller.destroy();
+    scrollY=0;
+    while(timers.length) timers.shift()();
+    assert.equal(visibilityCorrections,1,`the deferred correction is cancelled after ${invalidate}`);
+  }
+});
+
+test('Library view defaults to kit and URL full shorthand preserves setup and route precedence', () => {
+  assert.equal(F.fdResolveState('/', {...roleContext, libraryView:'full'}).libraryView, 'essentials');
+  const full = F.fdResolveState('/?library=full', roleContext);
+  assert.equal(full.tab, 'library'); assert.equal(full.libraryView, 'full');
+  assert.equal(F.fdResolveState('/?library=full', {}).screen, 'setup-role');
+  for (const tab of ['today', 'path']) {
+    const chosen = F.fdResolveState('/?tab='+tab+'&library=full', roleContext);
+    assert.equal(chosen.tab, tab); assert.equal(chosen.libraryView, 'essentials');
+  }
+  const read = F.fdResolveState('/?library=full&page=extra.md', roleContext);
+  assert.equal(read.openId, 'extra.md'); assert.equal(read.fromTab, 'library');
+});
+
+test('Library view actions close overlays, reject invalid values, and explicit Library resets kit', () => {
+  const initial = {...roleContext, tab:'library', libraryView:'essentials', openId:'a.md', sheet:'kit', searchOpen:true};
+  const full = F.fdDispatch({'data-fd-library-view':'full'}, {}, initial);
+  assert.equal(full.patch.libraryView, 'full'); assert.equal(full.patch.tab, 'library');
+  assert.equal(full.patch.openId, null); assert.equal(full.patch.sheet, null);
+  assert.equal(full.patch.searchOpen, false); assert.equal(full.route, '?tab=library&library=full');
+  assert.deepEqual(F.fdDispatch({'data-fd-library-view':'invalid'}, {}, initial), {patch:{},route:null,effect:null});
+  const kit = F.fdDispatch({'data-fd-tab':'library'}, {search:'?tab=library&library=full'}, {...initial,libraryView:'full'});
+  assert.equal(kit.patch.libraryView, 'essentials'); assert.equal(kit.route, '?tab=library');
+  const browse = F.fdDispatch({'data-fd-week':'0'}, {index:FOUR_INDEX,search:'?library=full'}, initial);
+  assert.equal(browse.patch.libraryView, 'essentials'); assert.equal(browse.route, '?tab=library');
+});
+
+test('full Library resource route survives reload and Back while tool frame strips shell context', () => {
+  const initial = {...roleContext,tab:'library',libraryView:'full'};
+  const opened = F.fdDispatch({'data-fd-open':'extra.html'}, {search:'?tab=library&library=full&case=c1'}, initial);
+  const reloaded = F.fdResolveState(opened.route, {...roleContext,tab:'today'});
+  assert.equal(reloaded.fromTab, 'library'); assert.equal(reloaded.libraryView,'full');
+  const back = F.fdDispatch({'data-fd-back':''}, {search:opened.route}, reloaded);
+  assert.equal(back.route, '?tab=library&case=c1&library=full');
+  const request = new Function(`${wire}; return fdResourceRequest('extra.html', ${JSON.stringify(opened.route)});`)();
+  assert.equal(new URLSearchParams(request.frameSuffix).has('library'),false);
+  assert.equal(new URLSearchParams(request.frameSuffix).has('tab'),false);
+  assert.equal(new URLSearchParams(request.frameSuffix).get('case'),'c1');
+  const today = F.fdDispatch({'data-fd-tab':'today'}, {search:opened.route}, reloaded);
+  assert.equal(new URLSearchParams(today.route.replace(/^\//,'')).has('library'),false);
+});
+
+test('Library view is route-local history, redraws the base, and defaults old snapshots to kit', () => {
+  const location = {href:'https://example.test/?tab=library',pathname:'/',search:'?tab=library'};
+  const memory = memoryHistory(location); const renders = [];
+  const h = fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials'}, {
+    F, location, history:memory.history, render:()=>renders.push('base'),
+    renderTransient:()=>renders.push('transient'), openResource:()=>{},
+  });
+  memory.bind(h.windowHandlers.popstate);
+  h.controller.dispatch({'data-fd-library-view':'full'});
+  assert.equal(renders.at(-1),'base');
+  assert.equal(memory.entries.at(-1).state.state.libraryView,'full');
+  h.controller.dispatch({'data-fd-open':'extra.md'});
+  memory.go(-1); assert.equal(h.controller.getState().libraryView,'full');
+  assert.equal(h.controller.getState().openId,null);
+  memory.go(-1); assert.equal(h.controller.getState().libraryView,'essentials');
+  memory.go(1); assert.equal(h.controller.getState().libraryView,'full');
+  h.windowHandlers.popstate({state:{fd:true,state:{tab:'library'}}});
+  assert.equal(h.controller.getState().libraryView,'essentials');
+  location.href='https://example.test/?library=full'; location.search='?library=full';
+  h.windowHandlers.popstate({});
+  assert.equal(h.controller.getState().tab,'library');
+  assert.equal(h.controller.getState().libraryView,'full');
+});
+
+test('full Library retains resource return scroll and focus including reload', () => {
+  const link = opener();
+  const initial = {...roleContext,screen:'app',tab:'library',libraryView:'full',openId:null};
+  const {h,ls,scrolls} = originHarness(initial, {scrollY:640,openers:{'[data-fd-open="extra.md"]':link}});
+  h.controller.dispatch({'data-fd-open':'extra.md'});
+  const persisted = JSON.parse(ls.getItem('cw_frontdoor_v1'));
+  const reload = F.fdResolveState('/?page=extra.md&tab=library&library=full', persisted);
+  assert.equal(reload.scrollPos,640); assert.equal(reload.libraryView,'full');
+  h.controller.dispatch({'data-fd-back':''});
+  assert.equal(h.controller.getState().libraryView,'full');
+  assert.deepEqual(scrolls,[[0,640]]); assert.equal(link.focused,1);
+  const reloadLink = opener();
+  const restored = originHarness(reload,{openers:{'[data-fd-open="extra.md"]':reloadLink}});
+  restored.h.controller.dispatch({'data-fd-back':''});
+  assert.deepEqual(restored.scrolls,[[0,640]]); assert.equal(reloadLink.focused,1);
+});
+
+test('Today, Path, and full Library preserve exact return offset without recentering an off-screen opener', () => {
+  for(const context of [
+    {tab:'today',libraryView:'essentials'},
+    {tab:'path',libraryView:'essentials'},
+    {tab:'library',libraryView:'full'},
+  ]){
+    let visibilityCorrections=0;
+    const link={
+      ...opener(),getBoundingClientRect:()=>({top:900,bottom:960}),
+      scrollIntoView(){visibilityCorrections++;},
+    };
+    const {h,scrolls,setScrollY}=originHarness(
+      {...roleContext,screen:'app',...context,openId:null},
+      {scrollY:640,innerHeight:600,openers:{'[data-fd-open="deep.md"]':link}},
+    );
+    h.controller.dispatch({'data-fd-open':'deep.md'});
+    setScrollY(0);
+    h.controller.dispatch({'data-fd-back':''});
+    assert.deepEqual(scrolls,[[0,640]],`${context.tab}/${context.libraryView} keeps the saved offset`);
+    assert.equal(link.focused,1);
+    assert.equal(visibilityCorrections,0,`${context.tab}/${context.libraryView} does not recenter`);
+  }
+});
+
+test('Essentials return keeps a relocated late-section opener inside the viewport after reset to All', () => {
+  let box={top:900,bottom:960};
+  const link={
+    ...opener(),
+    getBoundingClientRect:()=>box,
+    scrollIntoView(){ box={top:200,bottom:260}; },
+  };
+  const initial={...roleContext,screen:'app',tab:'library',libraryView:'essentials',kitSection:'late',openId:null};
+  const {h,scrolls,setScrollY}=originHarness(initial,{
+    scrollY:40,innerHeight:600,openers:{'[data-fd-open="late.md"]':link},
+  });
+  h.controller.dispatch({'data-fd-open':'late.md'});
+  setScrollY(0);
+  h.controller.dispatch({'data-fd-back':''});
+  assert.equal(h.controller.getState().kitSection,'all');
+  assert.equal(link.focused,1);
+  assert.deepEqual(scrolls,[[0,40]],'the saved offset is restored before visibility correction');
+  assert.ok(box.top>=0&&box.bottom<=600,'the refocused opener is visible after its section moves');
+});
+
+test('full Library returns after autoAdvance and Change week while Today and Path own search returns', () => {
+  const full = {...roleContext,screen:'app',tab:'library',libraryView:'full',openId:'extra.md',fromTab:'library'};
+  const c = {search:'?page=extra.md&tab=library&library=full',weekItems:[{ref:'extra.md'}]};
+  assert.equal(F.fdDispatch({'data-fd-toggle':'extra.md'},c,full).route,'?tab=library&library=full');
+  assert.equal(F.fdDispatch({'data-fd-change-week':''},c,full).route,'?tab=library&library=full');
+  for (const tab of ['today','path']) {
+    const opened = F.fdDispatch({'data-fd-open':'extra.md'}, {search:'?library=full'},
+      {...roleContext,tab,libraryView:'essentials',searchOpen:true});
+    const reload = F.fdResolveState(opened.route,{...roleContext,tab:'library'});
+    assert.equal(reload.fromTab,tab); assert.equal(reload.libraryView,'essentials');
+    assert.equal(new URLSearchParams(opened.route).has('library'),false);
+  }
+});
+
+test('legacy start Progress canonicalization reloads and returns to Today despite old Library or Path context', () => {
+  for (const search of ['?page=__start__&tab=library&library=full','?page=__start__&tab=path','?page=__start__&library=full']) {
+    const initial = F.fdResolveState(search,{...roleContext,screen:'app'});
+    const opened = F.fdDispatch({'data-fd-open':'__start__'},{search},initial);
+    const reload = F.fdResolveState(opened.route,{...roleContext,tab:'library'});
+    assert.equal(reload.openId,'__progress__');
+    assert.equal(reload.fromTab,'today');
+    assert.equal(reload.libraryView,'essentials');
+    assert.equal(new URLSearchParams(opened.route).has('library'),false);
+    assert.equal(F.fdDispatch({'data-fd-back':''},{search:opened.route},reload).route,'/');
+  }
+});
+
+test('Progress from the full Library shorthand preserves full context through reload and return', () => {
+  const search = '?library=full';
+  const initial = F.fdResolveState(search,roleContext);
+  const opened = F.fdDispatch({'data-fd-progress':''},{search},initial);
+  const reload = F.fdResolveState(opened.route,{...roleContext,tab:'today'});
+  assert.equal(reload.openId,'__progress__');
+  assert.equal(reload.fromTab,'library');
+  assert.equal(reload.libraryView,'full');
+  assert.equal(F.fdDispatch({'data-fd-back':''},{search:opened.route},reload).route,'?tab=library&library=full');
+});
+
+test('plain Today Progress keeps its existing route while Path keeps its return origin', () => {
+  const initial = {...roleContext, screen:'app', tab:'today', libraryView:'essentials'};
+  assert.equal(F.fdDispatch({'data-fd-progress':''},{search:''},initial).route,'?page=__progress__');
+  const path = F.fdDispatch({'data-fd-progress':''},{search:''},{...initial,tab:'path'});
+  assert.equal(path.route,'?page=__progress__&tab=path');
+});
+
+
+test('Essentials section change rerenders and focuses the select without writing storage or history', () => {
+  const storage=memStorage(), local=make(storage), routes=[], renders=[], focused=[];
+  const select={focus(){focused.push(true);}};
+  const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials'}, {
+    F:local,route:(...a)=>routes.push(a),render:(...a)=>renders.push(a),
+    querySelector:sel=>sel==='[data-fd-kit-section]'?select:null
+  });
+  let writes=0; storage.setItem=()=>{writes++;}; storage.removeItem=()=>{writes++;};
+  const before=storage.dump(); routes.length=0; renders.length=0;
+  h.rootHandlers.change({target:{hasAttribute:k=>k==='data-fd-kit-section',value:'tools'}});
+  assert.equal(h.controller.getState().kitSection,'tools');
+  assert.equal(renders.length,1); assert.equal(renders[0][1].surfaces.base,true);
+  assert.equal(focused.length,1); assert.equal(writes,0);
+  assert.deepEqual(storage.dump(),before); assert.deepEqual(routes,[]);
+  const filtered={...h.controller.getState(),kitSection:'tools'};
+  for(const action of [{'data-fd-tab':'library'},{'data-fd-library-view':'full'},{'data-fd-library-view':'essentials'},{'data-fd-back':''}]){
+    assert.equal(local.fdDispatch(action,{},filtered).patch.kitSection,'all');
+  }
+  assert.equal(local.fdResolveState('/?tab=library&kitSection=tools',filtered).kitSection,'all');
+});
+
+test('Essentials select respects startup and faculty preview guards', () => {
+  for(const options of [{commitStartup:false},{facultyPreview:()=>true}]){
+    const storage=memStorage(), renders=[];
+    const h=fakeHarness({...roleContext,screen:'app',tab:'library',kitSection:'all'}, {
+      F:make(storage),render:(...a)=>renders.push(a),...options
+    });
+    const before=storage.dump(); renders.length=0;
+    h.rootHandlers.change({target:{hasAttribute:k=>k==='data-fd-kit-section',value:'tools'}});
+    assert.equal(h.controller.getState().kitSection,'all'); assert.equal(renders.length,0);
+    assert.deepEqual(storage.dump(),before);
+  }
+});
+
+
+test('explicit Essentials revisit rerenders even when All was already selected', () => {
+  const renders=[];
+  const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials',kitSection:'all'}, {
+    F:make(memStorage()),render:(...args)=>renders.push(args)
+  });
+  renders.length=0;
+  h.controller.dispatch({'data-fd-library-view':'essentials'});
+  assert.equal(renders.length,1);
+  h.controller.dispatch({'data-fd-tab':'library'});
+  assert.equal(renders.length,2);
+});
+
+test('Essentials tool focus reveals both clipped edges without route, state, storage, or page scrolling', () => {
+  const storage=memStorage(), routes=[], scrolls=[];
+  const h=fakeHarness({...roleContext,screen:'app',tab:'library'}, {
+    F:make(storage),route:(...args)=>routes.push(args),scrollTo:(...args)=>scrolls.push(args)
+  });
+  h.fakeWindow.getComputedStyle=node=>node===strip ? {paddingLeft:'6px',paddingRight:'6px'} : {outlineWidth:'2px',outlineOffset:'2px'};
+  const strip={scrollLeft:0,clientLeft:0,clientWidth:362,getBoundingClientRect:()=>({left:14,right:376})};
+  let bounds={left:308,right:588};
+  const target={closest:selector=>selector==='.fd-kit__tool-list [data-fd-open]'?target:strip,getBoundingClientRect:()=>bounds};
+  const state=JSON.stringify(h.controller.getState()), saved=storage.dump(); routes.length=0;
+  assert.equal(typeof h.rootHandlers.focusin,'function');
+  h.rootHandlers.focusin({target}); assert.equal(strip.scrollLeft,218);
+  bounds={left:10,right:290}; h.rootHandlers.focusin({target}); assert.equal(strip.scrollLeft,208);
+  bounds={left:20,right:300}; h.rootHandlers.focusin({target}); assert.equal(strip.scrollLeft,208);
+  h.rootHandlers.focusin({target:{closest:()=>null}}); assert.equal(strip.scrollLeft,208);
+  assert.equal(JSON.stringify(h.controller.getState()),state); assert.deepEqual(storage.dump(),saved);
+  assert.deepEqual(routes,[]); assert.deepEqual(scrolls,[]);
+  h.controller.destroy(); bounds={left:400,right:680}; h.rootHandlers.focusin({target});
+  assert.equal(strip.scrollLeft,208);
+});
+
+test('Essentials tool focus is inert before startup and during faculty preview', () => {
+  for(const options of [{commitStartup:false},{facultyPreview:()=>true}]) {
+    const h=fakeHarness({...roleContext,screen:'app',tab:'library'}, {F:make(memStorage()),...options});
+    let inspected=0;
+    h.rootHandlers.focusin({target:{closest(){inspected++;return null;}}});
+    assert.equal(inspected,0);
+  }
 });

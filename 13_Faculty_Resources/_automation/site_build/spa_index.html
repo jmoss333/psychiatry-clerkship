@@ -808,8 +808,9 @@
   /* Nav/search rows carry only the compact {status,riskKind,riskLevel} triplet baked into
      nav.json/search-index.json at build time (Task 3) — independent of the GOVERNANCE fetch
      above, so no loading race here. Text conveys the full status; never color alone. */
-  function governanceBadge(triplet){
+  function governanceBadge(triplet,opts){
     if(!triplet||triplet.status!=='pending')return '';
+    if(opts&&opts.compact) return '<span class="fd-kit__pending" role="img" aria-label="Awaiting faculty re-review"></span>';
     var high=triplet.riskLevel==='high';
     var label=high?'Pending review · High risk':'Pending review';
     return '<span class="governance-badge'+(high?' high':'')+'" aria-label="'+label+'">'+label+'</span>';
@@ -2259,7 +2260,7 @@
       });
     }
     if(state.tab==='path') return fdSurface('path',function(){ return fdPath(FD_INDEX,live); });
-    if(state.tab==='library') return fdSurface('library',function(){ return fdLibrary(FD_INDEX); });
+    if(state.tab==='library') return fdSurface('library',function(){ return state.libraryView==='full'?fdLibrary(FD_INDEX):fdEssentials(FD_INDEX,{kitSection:state.kitSection}); });
     return fdSurface('today',function(){ return fdTodayLive(live); });
   }
 

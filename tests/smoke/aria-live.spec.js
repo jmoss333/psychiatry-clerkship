@@ -39,8 +39,8 @@ test('Front Door route changes announce the loaded resource through #routeStatus
     }));
   });
   await page.goto('/?tab=library');
-  const target = page.locator('.fd-collink[data-fd-open]').first();
-  const title = (await target.locator('.fd-collink__label').innerText()).trim();
+  const target = page.locator('.fd-kit__reading[data-fd-open]').first();
+  const title = (await target.locator('.fd-kit__title').innerText()).trim();
   await target.click();
 
   await expect(page.locator('#routeStatus[aria-live="polite"]')).toHaveText(`${title} loaded`);

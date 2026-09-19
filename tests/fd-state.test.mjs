@@ -511,3 +511,9 @@ test('the day normaliser accepts ms and Y-M-D strings only', () => {
   assert.equal(F2.fdActivityDayIndex('yesterday'), null);
   assert.equal(F2.fdActivityDayIndex(null), null);
 });
+
+test('Library view is never a persisted device preference', () => {
+  const {fdSave,fdLoad} = make(memStorage());
+  fdSave({tab:'library',libraryView:'full'});
+  assert.deepEqual(fdLoad(), {tab:'library'});
+});

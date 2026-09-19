@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
 import { isResidentProject } from './audience.js';
 
@@ -72,6 +73,7 @@ test('first run reaches Today; browse mode exposes the exact audience Library', 
   await page.locator('[data-fd-week="0"]').click();
   await expect(page.locator('.fd-library')).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBeNull();
+  await page.locator('[data-fd-library-view="full"]').click();
 
   const refs = await page.locator('.fd-collink[data-fd-open]').evaluateAll(controls => (
     controls.map(control => control.getAttribute('data-fd-open'))
@@ -163,6 +165,7 @@ test('legacy completion objects survive Reader previous/next and browser history
     state: { tab: 'library' },
   });
   await page.goto('/');
+  await page.locator('[data-fd-library-view="full"]').click();
   const refs = await page.locator('.fd-collink[data-fd-open]').evaluateAll(controls => (
     controls.map(control => control.getAttribute('data-fd-open'))
   ));
@@ -172,6 +175,7 @@ test('legacy completion objects survive Reader previous/next and browser history
   const nextRef = await page.locator('.fd-prevnext__btn.is-next').getAttribute('data-fd-open');
   expect(nextRef).toMatch(/\.md$/);
   await page.goto('/');
+  await page.locator('[data-fd-library-view="full"]').click();
   const legacy = {
     [firstRef]: { done: true, at: '2026-08-10' },
     [nextRef]: { done: false, at: '2026-08-10' },
@@ -1862,6 +1866,7 @@ test('returning from a Library resource restores the list position and focuses t
   await seedApp(page, testInfo);
   await page.goto('/?tab=library');
   await expect(page.locator('.fd-library')).toBeVisible();
+  await page.locator('[data-fd-library-view="full"]').click();
   const link = page.locator('.fd-collink[data-fd-open$=".md"]').last();
   const ref = await link.getAttribute('data-fd-open');
   await link.scrollIntoViewIfNeeded();
@@ -1896,4 +1901,359 @@ test('returning from a Library resource restores the list position and focuses t
   await page.goBack();
   await backAtOrigin();
   await expectHealthy(page);
+});
+
+// Essentials Phase 2: exercise rendered controls against the actual audience payload.
+test.describe('Essentials Phase 2', () => {
+  const rows = page => page.locator('.fd-kit [data-fd-open], .fd-library:not(.fd-kit) .fd-collink[data-fd-open]');
+  const full = page => page.locator('[data-fd-library-view="full"]');
+  const kit = page => page.locator('[data-fd-library-view="essentials"]');
+  const kitCount = info => audience(info).role === 'student' ? 30 : 35;
+  const curriculum = JSON.parse(readFileSync(new URL('../../curriculum.json', import.meta.url), 'utf8'));
+  const expectedKit = info => curriculum.essentials[audience(info).role === 'student' ? 'ms3' : 'resident'].flatMap(column => column.refs);
+  async function readyReader(page, ref) {
+    await expect(page.locator('.fd-src')).toHaveText(ref);
+    if (ref.endsWith('.html')) {
+      await expect(page.locator('.fd-article iframe')).toBeVisible();
+      await expect.poll(async () => (await page.frameLocator('.fd-article iframe').locator('body').innerText()).trim().length).toBeGreaterThan(100);
+    } else {
+      await expect(page.locator('.fd-article__body')).not.toContainText('Loading');
+      await expect(page.locator('.fd-article__body :is(p,h2,h3,ul,ol,table)').first()).toBeAttached();
+    }
+  }
+  test('L1–L3: default kit, both view buttons, URL reload and browser history', async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.goto('/?tab=library');
+    await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
+    await expect(rows(page)).toHaveCount(kitCount(info));
+    expect(await rows(page).evaluateAll(nodes => nodes.map(node => node.dataset.fdOpen))).toEqual([...expectedKit(info).filter(ref => !ref.endsWith('.html')), ...expectedKit(info).filter(ref => ref.endsWith('.html'))]);
+    await full(page).click();
+    await expect(rows(page)).toHaveCount(audience(info).libraryCount);
+    await expect(page).toHaveURL(/tab=library&library=full/);
+    await page.reload();
+    await expect(rows(page)).toHaveCount(audience(info).libraryCount);
+    await page.locator('.fd-collink[data-fd-open="t_dissociative.md"]').click();
+    await readyReader(page, 't_dissociative.md');
+    await page.reload();
+    await readyReader(page, 't_dissociative.md');
+    await page.locator('.fd-reader__back[data-fd-back]').first().click();
+    await expect(rows(page)).toHaveCount(audience(info).libraryCount);
+    await kit(page).click();
+    await expect(rows(page)).toHaveCount(kitCount(info));
+    await page.goBack();
+    await expect(rows(page)).toHaveCount(audience(info).libraryCount);
+    await page.goForward();
+    await expect(rows(page)).toHaveCount(kitCount(info));
+    await page.goto('/?library=full');
+    await expect(rows(page)).toHaveCount(audience(info).libraryCount);
+    await page.locator('[data-fd-tab="library"]').click();
+    await expect(rows(page)).toHaveCount(kitCount(info));
+    expect(new URL(page.url()).searchParams.has('library')).toBe(false);
+    await expectHealthy(page);
+  });
+  test('readings-first sections: keyboard disclosure, every filter, memory-only state and reentry reset', async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.goto('/?tab=library');
+    await page.locator('[data-fd-tab="library"]').click();
+    await expect(page.locator('[data-fd-tab="library"]')).toHaveText('The Essentials');
+    const student = audience(info).role === 'student';
+    const select = page.locator('[data-fd-kit-section]');
+    const groups = page.locator('.fd-kit__group');
+    await expect(groups).toHaveCount(student ? 8 : 7);
+    await expect(select.locator('option')).toHaveCount(student ? 9 : 8);
+    await expect(page.locator('.fd-kit__reading')).toHaveCount(student ? 23 : 26);
+    const allRefs = await rows(page).evaluateAll(ns => ns.map(n => n.dataset.fdOpen));
+    expect([...allRefs].sort()).toEqual([...expectedKit(info)].sort());
+    const storage = () => page.evaluate(() => ({local: {...localStorage}, session: {...sessionStorage}}));
+    const before = await storage(); const url = page.url();
+    const expected = await groups.evaluateAll(ns => ns.map(n => [...n.querySelectorAll('[data-fd-open]')].map(x => x.dataset.fdOpen)));
+    const values = await select.locator('option').evaluateAll(ns => ns.slice(1).map(n => n.value));
+    const summary = groups.first().locator('summary');
+    await summary.focus(); await summary.press('Enter');
+    await expect(groups.first()).not.toHaveAttribute('open', '');
+    await summary.press('Space'); await expect(groups.first()).toHaveAttribute('open', '');
+    for (let i = 0; i < values.length; i++) {
+      await select.selectOption(values[i]);
+      await expect(select).toBeFocused(); await expect(groups).toHaveCount(1);
+      expect(await rows(page).evaluateAll(ns => ns.map(n => n.dataset.fdOpen))).toEqual(expected[i]);
+      expect(page.url()).toBe(url); expect(await storage()).toEqual(before);
+    }
+    await select.selectOption('all');
+    await groups.first().locator('summary').click();
+    await select.selectOption(values[0]); await select.selectOption('all');
+    await expect(page.locator('.fd-kit__group[open]')).toHaveCount(student ? 8 : 7);
+    await select.selectOption(values[0]);
+    await page.locator('.fd-kit__reading').first().click();
+    await expect(page.locator('.fd-reader .loading')).toHaveCount(0);
+    await page.locator('.fd-reader__back[data-fd-back]').first().click();
+    await expect(select).toHaveValue('all');
+    await select.selectOption('tools'); await page.reload(); await expect(select).toHaveValue('all');
+    await select.selectOption('tools'); await page.locator('[data-fd-tab="today"]').click();
+    await page.locator('[data-fd-tab="library"]').click(); await expect(select).toHaveValue('all');
+    const dots = page.locator('.fd-kit__pending');
+    expect(await dots.count()).toBeGreaterThan(0);
+    await expect(page.locator('.fd-kit .governance-badge')).toHaveCount(0);
+    for (const dot of await dots.all()) {
+      await expect(dot).toHaveAttribute('role', 'img');
+      await expect(dot).toHaveAttribute('aria-label', 'Awaiting faculty re-review');
+    }
+    await expect(page.locator('.fd-kit__review')).toContainText(`${await dots.count()} of ${student ? 23 : 26} readings`);
+    await page.getByText('What that means', { exact: true }).click();
+    await expect(page.locator('.fd-kit__review details p')).toBeVisible();
+    const pending = page.locator('.fd-kit__reading').filter({has: dots}).first();
+    const ref = await pending.getAttribute('data-fd-open');
+    await pending.click(); await readyReader(page, ref);
+    await expect(page.locator('.fd-reader .governance-notice').first()).toBeVisible();
+    await expect(page.locator('.fd-reader .governance-notice').first()).toContainText(/pending|re-review/i);
+    await expectHealthy(page);
+  });
+  test('late Essentials section return resets All and keeps focus visible through Back and reload', async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto('/?tab=library');
+    const select=page.locator('[data-fd-kit-section]');
+    const lateSection=await select.locator('option').evaluateAll(options =>
+      options.map(option=>option.value).filter(value=>value!=='all'&&value!=='tools').at(-1));
+    const openLateReading=async()=>{
+      await select.selectOption(lateSection);
+      const opener=page.locator('.fd-kit__reading').first();
+      const ref=await opener.getAttribute('data-fd-open');
+      await opener.click();
+      await readyReader(page,ref);
+      return {opener:page.locator(`.fd-kit__reading[data-fd-open="${ref}"]`),ref};
+    };
+    const expectVisibleReturn=async opener=>{
+      await expect(select).toHaveValue('all');
+      await expect(opener).toBeFocused();
+      const geometry=await opener.evaluate(element=>{
+        const box=element.getBoundingClientRect();
+        let top=0,bottom=innerHeight;
+        const header=document.querySelector('.fd-header');
+        if(header&&header.getClientRects().length&&getComputedStyle(header).position==='sticky'){
+          const rect=header.getBoundingClientRect();
+          if(rect.top<=0&&rect.bottom>0) top=rect.bottom;
+        }
+        const tabs=document.querySelector('.fd-tabs');
+        if(tabs&&tabs.getClientRects().length&&getComputedStyle(tabs).position==='fixed'){
+          const rect=tabs.getBoundingClientRect();
+          if(rect.bottom>=innerHeight-1) bottom=rect.top;
+        }
+        return {top:box.top,bottom:box.bottom,visibleTop:top,visibleBottom:bottom};
+      });
+      expect(geometry.top).toBeGreaterThanOrEqual(geometry.visibleTop);
+      expect(geometry.bottom).toBeLessThanOrEqual(geometry.visibleBottom);
+    };
+
+    let opened=await openLateReading();
+    await page.locator('[data-fd-back]:visible').first().click();
+    await expectVisibleReturn(opened.opener);
+
+    opened=await openLateReading();
+    await page.goBack();
+    await expectVisibleReturn(opened.opener);
+
+    opened=await openLateReading();
+    await page.reload();
+    await readyReader(page,opened.ref);
+    await page.locator('[data-fd-back]:visible').first().click();
+    await expectVisibleReturn(opened.opener);
+    await expectHealthy(page);
+  });
+  test('readings-first responsive targets and actual desktop and phone evidence', async ({ page }, info) => {
+    await seedApp(page, info);
+    for (const width of [390, 640, 641, 1280]) {
+      await page.setViewportSize({width, height: 844}); await page.goto('/?tab=library');
+      await expect(page.locator('.fd-kit__reading').first()).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      const tools = await page.locator('.fd-kit__tools').boundingBox();
+      const readings = await page.locator('.fd-kit__readings').boundingBox();
+      if (width <= 640) expect(tools.y + tools.height).toBeLessThanOrEqual(readings.y);
+      if (width >= 1000) expect(tools.x).toBeGreaterThanOrEqual(readings.x + readings.width);
+      for (const control of await page.locator('.fd-kit__reading, .fd-kit__tool-list button, .fd-kit__group > summary, [data-fd-kit-section]').all()) {
+        await control.focus(); await expect(control).toBeFocused();
+        const box = await control.boundingBox();
+        // Chromium can report a CSS 44px target as 43.999984px after scrolling.
+        expect(Math.round(box.height * 1000) / 1000).toBeGreaterThanOrEqual(44);
+        expect(Math.round(box.width * 1000) / 1000).toBeGreaterThanOrEqual(44);
+        expect(box.x).toBeGreaterThanOrEqual(0); expect(box.x + box.width).toBeLessThanOrEqual(width);
+      }
+      const toolButtons = page.locator('.fd-kit__tool-list button');
+      await toolButtons.first().focus();
+      const stable = await page.evaluate(() => ({url: location.href, local: {...localStorage}, session: {...sessionStorage}}));
+      for (let i = 1; i < await toolButtons.count(); i++) {
+        await page.keyboard.press('Tab'); await expect(toolButtons.nth(i)).toBeFocused();
+        const box = await toolButtons.nth(i).boundingBox();
+        const strip = await page.locator('.fd-kit__tool-list').boundingBox();
+        expect(box.x).toBeGreaterThanOrEqual(strip.x);
+        expect(box.x + box.width).toBeLessThanOrEqual(strip.x + strip.width);
+        expect(await page.evaluate(() => ({url: location.href, local: {...localStorage}, session: {...sessionStorage}}))).toEqual(stable);
+      }
+      if (width === 390 || width === 1280) {
+        await page.evaluate(() => {document.activeElement.blur(); document.querySelector('.fd-kit__tool-list').scrollLeft = 0; window.scrollTo(0, 0);});
+        await page.evaluate(() => document.fonts.ready);
+        const path=info.outputPath(`essentials-${audience(info).role}-${width}.png`);
+        await page.screenshot({path,animations:'disabled'});
+        await info.attach(`essentials-${audience(info).role}-${width}`,{path,contentType:'image/png'});
+      }
+    }
+  });
+  test('L4: every resource omitted from kit remains readable through Full and Back', async ({ page }, info) => {
+    // Exhaustive mounted navigation costs more than one ordinary smoke flow.
+    test.setTimeout(240_000);
+    await seedApp(page, info);
+    await page.goto('/?tab=library');
+    const selected = new Set(await rows(page).evaluateAll(nodes => nodes.map(n => n.dataset.fdOpen)));
+    expect(selected.size).toBe(kitCount(info));
+    await full(page).click();
+    const all = await rows(page).evaluateAll(nodes => nodes.map(n => n.dataset.fdOpen));
+    expect(all.length).toBe(audience(info).libraryCount);
+    const omitted = all.filter(ref => !selected.has(ref));
+    expect(omitted.length).toBe(audience(info).libraryCount - kitCount(info));
+    for (const ref of omitted) {
+      await page.locator(`.fd-collink[data-fd-open="${ref}"]`).click();
+      await expect.poll(() => new URL(page.url()).searchParams.get(ref.endsWith('.html') ? 'tool' : 'page')).toBe(ref);
+      await readyReader(page, ref);
+      await page.goBack();
+      await expect(rows(page)).toHaveCount(audience(info).libraryCount);
+      await expect(page.locator(`.fd-collink[data-fd-open="${ref}"]`)).toBeFocused();
+    }
+  });
+  test('L5: Dissociative search ranks first and Enter opens the omitted topic', async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.goto('/?tab=library');
+    await expect(page.locator('.fd-kit [data-fd-open="t_dissociative.md"]')).toHaveCount(0);
+    await page.locator('[data-fd-search]').click();
+    const input = page.locator('.fd-searchpanel__input');
+    await input.fill('Dissociative');
+    await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-open', 't_dissociative.md');
+    await input.press('Enter');
+    await readyReader(page, 't_dissociative.md');
+    expect(new URL(page.url()).searchParams.get('page')).toBe('t_dissociative.md');
+    await page.locator('[data-fd-search]').click();
+    await input.fill('she said she wants to die');
+    await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+    await expectHealthy(page);
+  });
+  test('L6: view toggles add no storage keys or stored view, and tool openLibrary resets to kit', async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.goto('/?tab=library');
+    await expect(rows(page)).toHaveCount(kitCount(info));
+    // Settle the existing persisted tab/openId fields before comparing view-only actions.
+    await page.locator('[data-fd-tab="library"]').click();
+    const snapshot = () => page.evaluate(() => ({
+      local: Object.keys(localStorage).sort(), session: Object.keys(sessionStorage).sort(),
+      state: JSON.parse(localStorage.getItem('cw_frontdoor_v1')),
+    }));
+    const before = await snapshot();
+    await full(page).click();
+    await kit(page).click();
+    expect(await snapshot()).toEqual(before);
+    const payload = await (await page.request.get('/')).text();
+    const keys = payload.match(/var FD_KEYS=(\[[^;]+\]);/);
+    expect(keys).not.toBeNull();
+    expect(keys[1]).not.toContain('libraryView');
+    expect(keys[1]).not.toContain('kitSection');
+    await full(page).click();
+    await page.locator('.fd-collink[data-fd-open="mse.html"]').click();
+    await readyReader(page, 'mse.html');
+    const frame = await page.locator('.fd-article iframe').elementHandle();
+    await (await frame.contentFrame()).evaluate(() => parent.postMessage({ type: 'openLibrary' }, location.origin));
+    await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
+    await expect(rows(page)).toHaveCount(kitCount(info));
+  });
+  test('A2: an entirely unresolved built kit falls back to the complete Library', async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.route('**/*', async route => {
+      if (route.request().resourceType() !== 'document' || new URL(route.request().url()).pathname !== '/') return route.continue();
+      const response = await routeFetchWithRetry(route);
+      const body = await response.text();
+      const prefix = 'var FD_CURRICULUM=';
+      const start = body.indexOf(prefix) + prefix.length;
+      const end = body.indexOf(';\n  var FD_TOPIC_META=', start);
+      expect(start).toBeGreaterThan(prefix.length);
+      expect(end).toBeGreaterThan(start);
+      const curriculum = JSON.parse(body.slice(start, end));
+      expect(curriculum.essentials.length).toBeGreaterThan(0);
+      curriculum.essentials.forEach(column => { column.refs = ['missing-phase2-ref.md']; });
+      await route.fulfill({ response, body: body.slice(0, start) + JSON.stringify(curriculum) + body.slice(end) });
+    });
+    await page.goto('/?tab=library');
+    await expect(page.locator('.fd-library__h1')).toHaveText('Everything, one screen');
+    await expect(kit(page)).toHaveCount(0);
+    await expect(rows(page)).toHaveCount(audience(info).libraryCount);
+    await expectHealthy(page);
+  });
+  test('T1: phone quick tools precede the primary action without overflow; wider layouts retain order', async ({ page }, info) => {
+    await seedApp(page, info, { storage: { cw_srs_v1: OTF.srs } });
+    for (const width of [390, 640, 641, 1280]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto('/?tab=today');
+      const pills = page.locator('.fd-quicktools--pills');
+      const pillRefs = await pills.locator('[data-fd-open]').evaluateAll(nodes => nodes.map(node => node.dataset.fdOpen));
+      expect(pillRefs.length).toBeGreaterThan(0);
+      expect(pillRefs).toEqual(await page.locator('.fd-rail .fd-quicktool').evaluateAll(nodes => nodes.map(node => node.dataset.fdOpen)));
+      const primary = await page.locator('.fd-primary').boundingBox();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      if (width === 1280) {
+        await expect(pills).toBeHidden();
+        await expect(page.locator('.fd-rail')).toBeVisible();
+        const rail = await page.locator('.fd-rail').boundingBox();
+        expect(rail.x).toBeGreaterThan(primary.x + primary.width);
+      } else {
+        await expect(pills).toBeVisible();
+        const bounds = await pills.boundingBox();
+        if (width <= 640) expect(bounds.y + bounds.height).toBeLessThanOrEqual(primary.y);
+        else expect(bounds.y).toBeGreaterThan(primary.y + primary.height);
+        const links = pills.locator('button');
+        for (let i = 0; i < await links.count(); i++) {
+          await links.nth(i).focus();
+          await expect(links.nth(i)).toBeFocused();
+          const box = await links.nth(i).boundingBox();
+          expect(box.x).toBeGreaterThanOrEqual(0);
+          expect(box.x + box.width).toBeLessThanOrEqual(width);
+          expect(box.y).toBeGreaterThanOrEqual(0);
+          expect(box.y + box.height).toBeLessThanOrEqual(width === 390
+            ? (await page.locator('.fd-tabs').boundingBox()).y : 844);
+        }
+      }
+    }
+  });
+  test('first-screen contact sheet: Today, The Essentials, Reader', async ({ page, context }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    const images = [];
+    for (const [label, route, surface] of [
+      ['Today', '/?tab=today', '.fd-today'], ['The Essentials', '/?tab=library', '.fd-library'],
+      ['Reader', '/?page=t_mood.md', '.fd-article__body'],
+    ]) {
+      await page.goto(route);
+      await expect(page.locator(surface)).toBeVisible();
+      if (label === 'Reader') {
+        await readyReader(page, 't_mood.md');
+        await expect(page.locator('.fd-reader .governance-notice').first()).toBeVisible();
+        await expect(page.locator('.fd-reader .governance-notice.unavailable')).toHaveCount(0);
+      }
+      await page.evaluate(() => document.fonts.ready);
+      images.push({ label, data: (await page.screenshot({ animations: 'disabled' })).toString('base64') });
+    }
+    const scratch = await context.newPage();
+    try {
+      const data = await scratch.evaluate(async images => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1170; canvas.height = 880;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < images.length; i++) {
+          const img = new Image(); img.src = 'data:image/png;base64,' + images[i].data;
+          await img.decode(); ctx.drawImage(img, i * 390, 36, 390, 844);
+          ctx.fillStyle = '#202020'; ctx.font = 'bold 18px sans-serif';
+          ctx.fillText(images[i].label, i * 390 + 12, 25);
+        }
+        return canvas.toDataURL('image/png').split(',')[1];
+      }, images);
+      await info.attach(`essentials-${audience(info).role === 'student' ? 'ms3' : 'res'}-contact-sheet`, {
+        body: Buffer.from(data, 'base64'), contentType: 'image/png',
+      });
+    } finally { await scratch.close(); }
+  });
 });

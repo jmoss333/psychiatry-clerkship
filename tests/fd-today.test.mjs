@@ -564,3 +564,12 @@ test('every new string is audience-neutral', () => {
     + F.fdTodayWhy();
   assert.doesNotMatch(all, AUDIENCE_TOKEN_RE);
 });
+
+test('phone pill ordering is CSS-only at 640px and desktop remains unchanged', () => {
+  const css = read('frontdoor/frontdoor.css');
+  const phone = [...css.matchAll(/@media\s*\(max-width:640px\)\s*\{([\s\S]*?)\n\}/g)].find(m=>m[1].includes('.fd-today__main{'));
+  assert.ok(phone,'phone-only breakpoint exists');
+  assert.match(phone[1], /\.fd-today__main\{display:flex;flex-direction:column\}/);
+  assert.match(phone[1], /\.fd-today__main > \.fd-quicktools--pills\{order:-1;margin-bottom:var\(--fd-space-\d+\)\}/);
+  assert.match(css, /@media \(min-width:1000px\)\{[\s\S]*?\.fd-quicktools--pills\{display:none\}/);
+});

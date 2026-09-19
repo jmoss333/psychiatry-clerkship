@@ -53,10 +53,10 @@ test('route renders announce the page and move focus to #content', () => {
   assert.match(shell, /contentEl\.focus\(\{preventScroll:true\}\)/);
 });
 
-test('Today, Path, and Library are navigation tabs with one current page', () => {
+test('Today, Path, and The Essentials are navigation tabs with one current page', () => {
   assert.match(fdShell, /\{id:'today',label:'Today'\}/);
   assert.match(fdShell, /\{id:'path',label:'Path'\}/);
-  assert.match(fdShell, /\{id:'library',label:'Library'\}/);
+  assert.match(fdShell, /\{id:'library',label:'The Essentials'\}/);
   assert.match(fdShell, /active\?' aria-current="page"'/);
   assert.doesNotMatch(fdShell, /id:'progress',label:'Progress'/);
 });

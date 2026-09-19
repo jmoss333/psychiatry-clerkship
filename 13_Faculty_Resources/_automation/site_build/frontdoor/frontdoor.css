@@ -1361,7 +1361,45 @@
   .fd-reader--guide .fd-article__body .table-scroll tbody :is(th,td):first-child{
     position:sticky;left:0;z-index:1;background:var(--fd-surface);border-right:1px solid var(--fd-line-strong);
   }
+  /* Phone quick tools precede the primary card without changing document order. */
+  .fd-today__main{display:flex;flex-direction:column}
+  .fd-today__main > .fd-quicktools--pills{order:-1;margin-bottom:var(--fd-space-8)}
+  .fd-quicktools--pills .fd-quicktool{max-width:100%;min-width:0}
 }
+
+/* Essentials uses the reading typography and existing Clinical Warm tokens. */
+.fd-kit .fd-library__h1{font-size:var(--fd-font-3xl)}
+.fd-kit__filter{display:flex;align-items:center;gap:var(--fd-space-4);margin-bottom:var(--fd-space-6)}
+.fd-kit__filter select{max-width:100%;min-width:0;min-height:var(--fd-target-touch);font:inherit;color:var(--fd-text);background:var(--fd-surface);border:1px solid var(--fd-line-strong);border-radius:var(--fd-space-2);padding:var(--fd-space-3)}
+.fd-kit__review{font-size:var(--fd-font-sm);color:var(--fd-text-mid);margin-bottom:var(--fd-space-8)}
+.fd-kit__review summary{cursor:pointer;color:var(--fd-teal-deep);min-height:var(--fd-target-touch);align-content:center}
+.fd-kit__layout{display:grid;gap:var(--fd-space-10);align-items:start}
+.fd-kit__readings{min-width:0;max-width:calc(var(--fd-space-9) * 30)}
+.fd-kit__group{margin-bottom:var(--fd-space-8)}
+.fd-kit__group > summary{display:flex;gap:var(--fd-space-4);align-items:center;min-height:var(--fd-target-touch);cursor:pointer;list-style:none;font-size:var(--fd-font-sm);text-transform:uppercase;letter-spacing:.08em;font-weight:600;border-bottom:1px solid var(--fd-line-strong)}
+.fd-kit__group > summary::-webkit-details-marker{display:none}
+.fd-kit__group-count{color:var(--fd-text-dim);font-size:var(--fd-font-sm);font-weight:400}
+.fd-kit__chevron{margin-left:auto;transform:rotate(-90deg)}
+.fd-kit__group[open] > summary .fd-kit__chevron{transform:none}
+.fd-kit__reading{display:grid;grid-template-columns:minmax(0,1fr) auto;width:100%;min-height:var(--fd-target-touch);text-align:left;font:inherit;color:var(--fd-text);border:0;border-bottom:1px solid var(--fd-line);background:transparent;padding:var(--fd-space-6) 0;cursor:pointer;gap:var(--fd-space-3) var(--fd-space-4)}
+.fd-kit__title{font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-xl);line-height:1.4}
+.fd-kit__summary{grid-column:1/-1;color:var(--fd-text-mid);font-size:var(--fd-font-base);line-height:1.6}
+.fd-kit__minutes{grid-column:1/-1;color:var(--fd-text-dim);font-size:var(--fd-font-sm)}
+.fd-kit__pending{display:inline-block;align-self:center;width:calc(var(--fd-space-10) / 4);height:calc(var(--fd-space-10) / 4);border-radius:50%;background:var(--fd-olive)}
+.fd-kit__reading:hover{color:var(--fd-teal-deep)}
+.fd-kit__tools{min-width:0}
+.fd-kit__tools .fd-collink{min-height:var(--fd-target-touch)}
+.fd-kit .fd-library__footer{margin-top:var(--fd-space-8)}
+@media (min-width:1000px){
+  .fd-kit__layout{grid-template-columns:minmax(0,3fr) minmax(0,1fr)}
+  .fd-kit__layout--tools{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+  .fd-kit__tools{order:-1}
+  .fd-kit__tool-list{display:flex;gap:var(--fd-space-4);overflow-x:auto;padding:var(--fd-space-3)}
+  .fd-kit__tool-list .fd-collink{flex:0 0 auto;max-width:calc(var(--fd-space-10) * 10);padding:var(--fd-space-4);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill)}
+}
+
 @media print{
   /* System print ink/paper tokens remain legible even when the screen is in dark mode. */
   body:has(.fd-reader--guide){--fd-guide-print-ink:CanvasText;--fd-guide-print-paper:Canvas;color-scheme:light;background:var(--fd-guide-print-paper) !important;color:var(--fd-guide-print-ink) !important}

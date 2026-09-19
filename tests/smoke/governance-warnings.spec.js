@@ -32,6 +32,7 @@ async function seedCompleteSetup(page) {
 async function loadPlacedNavItems(page, request, baseURL) {
   await seedCompleteSetup(page);
   await page.goto(`${baseURL}/?tab=library`, { waitUntil: 'domcontentloaded' });
+  await page.locator('[data-fd-library-view="full"]').click();
   const placed = new Set(await page.locator('.fd-collink[data-fd-open]').evaluateAll(controls => (
     controls.map(control => control.getAttribute('data-fd-open'))
   )));

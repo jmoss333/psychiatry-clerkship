@@ -3,9 +3,8 @@
    pure; browser effects live in fdWire and fdOpenResource behind explicit options so the same
    decisions can be tested without a DOM. */
 
-/* Every attribute the controller gives a meaning to. All but one are activated by the delegated
-   click path; 'data-fd-exam-date' is an <input> committed on a change event and is deliberately
-   absent from FD_ACTION_SELECTOR below -- see changeHandler for why a click must not own it. */
+/* Every attribute the controller gives a meaning to. The exam-date input and section select
+   commit on change and are deliberately absent from FD_ACTION_SELECTOR below. */
 var FD_HANDLED_ATTRS=[
   'data-fd-open','data-fd-sheet','data-fd-safety','data-fd-toggle','data-fd-tab',
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
@@ -13,7 +12,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-theme','data-fd-settings','data-fd-analytics','data-fd-exam-date',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
-  'data-fd-try-now','data-fd-expand-tool'
+  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -22,6 +21,8 @@ var FD_ACTION_SEMANTICS={
   'data-fd-safety':'open safety kit or protocol',
   'data-fd-toggle':'toggle governed progress',
   'data-fd-tab':'open top-level tab',
+  'data-fd-library-view':'choose Library view',
+  'data-fd-kit-section':'filter Essentials sections',
   'data-fd-week':'select setup week',
   'data-fd-view-week':'preview path week',
   'data-fd-setweek':'adopt previewed week',
@@ -82,7 +83,7 @@ function fdLegacyRouteResult(ref, context, state){
     if(s.screen==='app'){
       return {
         patch:{tab:'today',openId:'__progress__',fromTab:'today',searchOpen:false,sheet:null},
-        route:fdRouteForRef('__progress__',c.search),history:'replace',
+        route:fdRouteForRef('__progress__',c.search,false,{tab:'today',libraryView:s.libraryView==='full'?'essentials':undefined}),history:'replace',
         effect:{type:'open-progress'}
       };
     }
@@ -98,6 +99,8 @@ function fdResolveState(url, stored){
   var src=stored||{}, out={};
   if(typeof src.role==='string'&&src.role) out.role=src.role;
   out.tab=fdValidTab(src.tab)?src.tab:'today';
+  out.libraryView='essentials';
+  out.kitSection='all';
   if(typeof src.openId==='string'&&src.openId) out.openId=src.openId;
   if(fdValidTab(src.fromTab)) out.fromTab=src.fromTab;
   if(typeof src.week==='number'&&!isNaN(src.week)) out.week=src.week;
@@ -117,6 +120,11 @@ function fdResolveState(url, stored){
   if(parsed){
     var routedTab=parsed.searchParams.get('tab');
     routedRef=parsed.searchParams.get('page')||parsed.searchParams.get('tool');
+    if(parsed.searchParams.get('library')==='full'&&(!fdValidTab(routedTab)||routedTab==='library')){
+      out.tab='library';
+      out.libraryView='full';
+      delete out.openId;
+    }
     if(routedTab&&fdValidTab(routedTab)){
       out.tab=routedTab;
       delete out.openId;
@@ -166,6 +174,7 @@ function fdParamsWithoutRoute(search){
   params.delete('page');
   params.delete('tool');
   params.delete('tab');
+  params.delete('library');
   /* Passage context belongs to the current reading, never the next activity iframe. */
   params.delete('guideFind');
   params.delete('guideSection');
@@ -186,17 +195,25 @@ function fdSearchOutsideBlock(search){
   return params.toString();
 }
 
-function fdRouteForTab(tab, search){
-  var params=fdParamsWithoutRoute(fdSearchOutsideBlock(search)), extra=params.toString();
+function fdRouteForTab(tab, search, libraryView){
+  var params=fdParamsWithoutRoute(fdSearchOutsideBlock(search));
+  if(tab==='library'&&libraryView==='full') params.set('library','full');
+  var extra=params.toString();
   if(tab==='today') return extra?('/?'+extra):'/';
   return '?tab='+encodeURIComponent(tab)+(extra?'&'+extra:'');
 }
 
-function fdRouteForRef(ref, search, blockNavigation){
+function fdRouteForRef(ref, search, blockNavigation, origin){
   var key=/\.html$/.test(String(ref||''))?'tool':'page';
-  return '?'+key+'='+encodeURIComponent(ref)+fdExtraSearch(
-    blockNavigation===true?search:fdSearchOutsideBlock(search)
-  );
+  var params=fdParamsWithoutRoute(blockNavigation===true?search:fdSearchOutsideBlock(search));
+  var previous=new URLSearchParams(String(search||'').replace(/^\?/,''));
+  var tab=origin&&fdValidTab(origin.tab)?origin.tab:previous.get('tab');
+  var view=origin?origin.libraryView:previous.get('library');
+  if(tab==='library'&&view==='full'){
+    params.set('tab','library'); params.set('library','full');
+  } else if(fdValidTab(tab)&&((origin&&origin.libraryView&&(tab!=='today'||previous.get('library')==='full'))||fdValidTab(previous.get('tab')))){ params.set('tab',tab); }
+  var extra=params.toString();
+  return '?'+key+'='+encodeURIComponent(ref)+(extra?'&'+extra:'');
 }
 
 function fdNumberAttr(attrs,name){
@@ -270,7 +287,7 @@ function fdDispatch(attrs, context, state){
          removes that key and browsing:true is persisted (FD_KEYS) so a reload on any tab still
          resolves to the app rather than asking for a week again. */
       var firstWeek=(c.index&&c.index.weeks&&c.index.weeks[0])||{};
-      patch={week:null,tab:'library',viewWeek:firstWeek.n,screen:'app',openId:null,browsing:true};
+      patch={week:null,tab:'library',libraryView:'essentials',kitSection:'all',viewWeek:firstWeek.n,screen:'app',openId:null,browsing:true};
       if(s.setupFrom) patch.setupFrom=null;
       return {
         patch:patch,
@@ -331,7 +348,7 @@ function fdDispatch(attrs, context, state){
       };
     }
     tab=fdValidTab(s.tab)?s.tab:'today';
-    var resourceRoute=fdRouteForRef(ref,c.search,c.blockNavigation);
+    var resourceRoute=fdRouteForRef(ref,c.search,c.blockNavigation,s);
     if(s.searchOpen&&s.query&&!fdIsTool(ref)){
       resourceRoute+='&guideFind='+encodeURIComponent(String(s.query).trim().slice(0,160));
     }
@@ -382,23 +399,33 @@ function fdDispatch(attrs, context, state){
         patch.openId=next.ref;
         patch.navDir=1;
         effect.openRef=next.ref;
-        return {patch:patch,route:fdRouteForRef(next.ref,c.search),effect:effect};
+        return {patch:patch,route:fdRouteForRef(next.ref,c.search,false,s),effect:effect};
       }
       tab=fdValidTab(s.fromTab)?s.fromTab:'today';
       patch.openId=null;
       patch.tab=tab;
-      return {patch:patch,route:fdRouteForTab(tab,c.search),effect:effect};
+      return {patch:patch,route:fdRouteForTab(tab,c.search,s.libraryView),effect:effect};
     }
     return {patch:patch,route:null,effect:effect};
   }
 
+  if(fdOwn(a,'data-fd-kit-section')){
+    return {patch:{kitSection:String(a['data-fd-kit-section']||'all')},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-library-view')){
+    var view=String(a['data-fd-library-view']||'');
+    if(view!=='essentials'&&view!=='full') return {patch:{},route:null,effect:null};
+    return {
+      patch:{tab:'library',libraryView:view,kitSection:'all',openId:null,searchOpen:false,sheet:null,nudge:null},
+      route:fdRouteForTab('library',c.search,view),effect:null
+    };
+  }
   if(fdOwn(a,'data-fd-tab')){
     tab=String(a['data-fd-tab']||'');
     if(!fdValidTab(tab)) return {patch:{},route:null,effect:null};
-    return {
-      patch:{tab:tab,openId:null,searchOpen:false},
-      route:fdRouteForTab(tab,c.search),effect:null
-    };
+    patch={tab:tab,openId:null,searchOpen:false};
+    if(tab==='library'){ patch.libraryView='essentials'; patch.kitSection='all'; }
+    return {patch:patch,route:fdRouteForTab(tab,c.search),effect:null};
   }
   if(fdOwn(a,'data-fd-role')){
     /* Two emitters, two meanings. In the wizard this is step 1 of 2 and must advance; in the
@@ -431,7 +458,7 @@ function fdDispatch(attrs, context, state){
       return {patch:{role:null,screen:'setup-role'},route:null,effect:null};
     }
     tab=fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
-    return {patch:{openId:null,tab:tab},route:fdRouteForTab(tab,c.search),effect:null};
+    return {patch:{openId:null,tab:tab,kitSection:'all'},route:fdRouteForTab(tab,c.search,s.libraryView),effect:null};
   }
   if(fdOwn(a,'data-fd-home')){
     return {
@@ -446,14 +473,14 @@ function fdDispatch(attrs, context, state){
     tab=s.openId&&fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
     return {
       patch:{screen:'setup-week',tab:tab,openId:null,searchOpen:false,sheet:null,setupFrom:'app'},
-      route:fdRouteForTab(tab,c.search),history:'replace',effect:null
+      route:fdRouteForTab(tab,c.search,s.libraryView),history:'replace',effect:null
     };
   }
   if(fdOwn(a,'data-fd-progress')){
     tab=fdValidTab(s.tab)?s.tab:'today';
     return {
       patch:{openId:'__progress__',fromTab:tab,searchOpen:false,sheet:null},
-      route:fdRouteForRef('__progress__',c.search),effect:{type:'open-progress'}
+      route:fdRouteForRef('__progress__',c.search,false,s),effect:{type:'open-progress'}
     };
   }
   if(fdOwn(a,'data-fd-settings')){
@@ -787,7 +814,7 @@ function fdTrapFocus(event, dialog){
    opens the native picker and -- the attribute being valueless in the markup -- dispatches an
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
-var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],'+
+var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],'+
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
@@ -912,7 +939,7 @@ function fdWire(root, initialState, opts){
     return !!r.route||!!(r.effect&&r.effect.type&&r.effect.type!=='set-theme');
   }
   function historySnapshot(){
-    var keys=['tab','viewWeek','openId','fromTab'];
+    var keys=['tab','viewWeek','openId','fromTab','libraryView'];
     var snap={};
     for(var i=0;i<keys.length;i++){
       if(state[keys[i]]!==undefined) snap[keys[i]]=state[keys[i]];
@@ -989,7 +1016,7 @@ function fdWire(root, initialState, opts){
     return raw||'';
   }
   function baseChanged(before, after){
-    var keys=['openId','tab','screen'];
+    var keys=['openId','tab','screen','libraryView','kitSection'];
     for(var i=0;i<keys.length;i++){
       if(baseValue(before,keys[i])!==baseValue(after,keys[i])) return true;
     }
@@ -1194,6 +1221,27 @@ function fdWire(root, initialState, opts){
     }
     return null;
   }
+  function keepFocusedOpenerVisible(el){
+    if(state.tab!=='library'||state.libraryView!=='essentials') return;
+    if(!el||!el.getBoundingClientRect||!el.scrollIntoView||!win||typeof win.innerHeight!=='number') return;
+    var top=0,bottom=win.innerHeight, box, chrome, style;
+    try{
+      chrome=root&&root.querySelector?root.querySelector('.fd-header'):null;
+      style=chrome&&win.getComputedStyle?win.getComputedStyle(chrome):null;
+      if(chrome&&chrome.getBoundingClientRect&&style&&(style.position==='sticky'||style.position==='fixed')){
+        box=chrome.getBoundingClientRect();
+        if(box.top<=0&&box.bottom>0) top=box.bottom;
+      }
+      chrome=root&&root.querySelector?root.querySelector('.fd-tabs'):null;
+      style=chrome&&win.getComputedStyle?win.getComputedStyle(chrome):null;
+      if(chrome&&chrome.getBoundingClientRect&&style&&style.position==='fixed'){
+        box=chrome.getBoundingClientRect();
+        if(box.bottom>=win.innerHeight-1&&box.top<bottom) bottom=box.top;
+      }
+      box=el.getBoundingClientRect();
+      if(box.top<top||box.bottom>bottom) el.scrollIntoView({block:'center',inline:'nearest'});
+    }catch(_){}
+  }
   /* Returning from a resource lands the learner where they left the originating tab (#427): the
      list scrolled back to the offset recorded when the resource opened, and focus on the control
      that opened it, so a keyboard or screen-reader user resumes from the link they chose rather
@@ -1203,11 +1251,15 @@ function fdWire(root, initialState, opts){
      to return to, and the render's focus stands. Scroll is restored even then only for the
      originating tab, since the offset belongs to that list. */
   function restoreOrigin(before){
-    if(state.screen!=='app'||state.tab!==before.fromTab||state.searchOpen||state.sheet) return;
+    if(state.screen!=='app'||state.tab!==before.fromTab||state.searchOpen||state.sheet) return null;
     var y=typeof before.scrollPos==='number'&&before.scrollPos>=0?before.scrollPos:0;
     if(win&&win.scrollTo) try{ win.scrollTo(0,y); }catch(_){}
     var el=openerFor(before.openId);
-    if(el&&el.focus){ try{ el.focus({preventScroll:true}); }catch(_){ try{ el.focus(); }catch(__){} } }
+    if(el&&el.focus){
+      try{ el.focus({preventScroll:true}); }catch(_){ try{ el.focus(); }catch(__){} }
+      keepFocusedOpenerVisible(el);
+    }
+    return el;
   }
   function focusPostTransition(before, result, changedBase){
     if(changedBase&&state.screen&&state.screen.indexOf('setup-')===0){
@@ -1235,7 +1287,9 @@ function fdWire(root, initialState, opts){
     if(!before.openId&&state.openId){ state.scrollPos=currentScrollY(); rememberOpener(state.openId,invoker); }
     var afterOverlay=overlayIdentity(state);
     if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
-    var changedBase=baseChanged(before,state);
+    /* An explicit Essentials visit also reopens native groups when All was already selected. */
+    if(before.openId&&!state.openId&&state.tab==='library') state.kitSection='all';
+    var changedBase=baseChanged(before,state)||fdOwn(patch,'kitSection');
     var detail=absorbStaleBase(transitionDetail(before,patch,result.effect,changedBase));
     var generation=navGeneration;
     if(changedBase||result.route||result.effect&&(result.effect.type==='open-resource'||
@@ -1346,6 +1400,24 @@ function fdWire(root, initialState, opts){
     if(event.preventDefault) event.preventDefault();
     apply(fdDispatch(attrs,context({inSheet:!!state.sheet}),state),target,false);
   }
+  /* Chromium can focus a partly visible button in the native details tool strip without
+     scrolling it fully into view. Move only that strip, preserving the page and route. */
+  function focusHandler(event){
+    if(destroyed||!startupCommitted||previewActive()) return;
+    var target=event&&event.target;
+    var control=target&&target.closest?target.closest('.fd-kit__tool-list [data-fd-open]'):null;
+    if(!control) return;
+    var strip=control.closest('.fd-kit__tool-list');
+    if(!strip||!strip.getBoundingClientRect||!control.getBoundingClientRect) return;
+    var frame=strip.getBoundingClientRect(), box=control.getBoundingClientRect();
+    var style=win&&win.getComputedStyle?win.getComputedStyle(strip):null;
+    var focusStyle=win&&win.getComputedStyle?win.getComputedStyle(control):null;
+    var ring=focusStyle?(parseFloat(focusStyle.outlineWidth)||0)+(parseFloat(focusStyle.outlineOffset)||0):0;
+    var left=frame.left+(strip.clientLeft||0)+Math.max(style?parseFloat(style.paddingLeft)||0:0,ring);
+    var right=frame.left+(strip.clientLeft||0)+strip.clientWidth-Math.max(style?parseFloat(style.paddingRight)||0:0,ring);
+    if(box.left<left) strip.scrollLeft-=left-box.left;
+    else if(box.right>right) strip.scrollLeft+=box.right-right;
+  }
   function inputHandler(event){
     if(destroyed) return;
     var target=event.target;
@@ -1404,12 +1476,24 @@ function fdWire(root, initialState, opts){
   function changeHandler(event){
     if(destroyed) return;
     var target=event&&event.target;
-    if(!target||!target.hasAttribute||!target.hasAttribute('data-fd-exam-date')) return;
+    if(!target||!target.hasAttribute) return;
+    var kitChange=target.hasAttribute('data-fd-kit-section');
+    if(!kitChange&&!target.hasAttribute('data-fd-exam-date')) return;
     /* No preventDefault() on the pre-commit bail, unlike the click and key handlers: a change
        event is not cancelable, so calling it would only look like a guard. Dropping the write is
        the guard, and the field keeps showing what the learner typed either way. */
     if(!startupCommitted) return;
     if(previewActive()){ lockPreview(); return; }
+    if(kitChange){
+      /* The selection belongs only to this visit: no save, route, or history snapshot. */
+      var before=fdClone(state);
+      var selection=fdDispatch({'data-fd-kit-section':String(target.value||'all')},context(),state);
+      state.kitSection=selection.patch.kitSection;
+      render(state,absorbStaleBase(transitionDetail(before,selection.patch,null,true)));
+      var select=root.querySelector('[data-fd-kit-section]');
+      if(select&&select.focus) select.focus();
+      return;
+    }
     var result=fdDispatch(
       {'data-fd-exam-date':String(target.value||'')},context(),state
     );
@@ -1480,7 +1564,7 @@ function fdWire(root, initialState, opts){
     merged.sheetFrom=null;
     merged.stepsDone={};
     if(snap){
-      var routeKeys=['tab','viewWeek','openId','fromTab'];
+      var routeKeys=['tab','viewWeek','openId','fromTab','libraryView'];
       for(var routeIndex=0;routeIndex<routeKeys.length;routeIndex++){
         delete merged[routeKeys[routeIndex]];
       }
@@ -1488,12 +1572,14 @@ function fdWire(root, initialState, opts){
         var routeKey=routeKeys[snapIndex];
         if(fdOwn(snap,routeKey)) merged[routeKey]=snap[routeKey];
       }
+      if(merged.libraryView!=='full') merged.libraryView='essentials';
+      merged.kitSection='all';
     } else {
       merged.roles=o.roles||merged.roles;
       merged.rotationStart=o.rotationStart||merged.rotationStart;
       merged=fdResolveState(win.location.href,merged);
       var params=new URLSearchParams(win.location.search||'');
-      if(!params.get('page')&&!params.get('tool')&&!params.get('tab')){
+      if(!params.get('page')&&!params.get('tool')&&!params.get('tab')&&params.get('library')!=='full'){
         merged.tab='today';
         delete merged.openId;
       }
@@ -1518,7 +1604,7 @@ function fdWire(root, initialState, opts){
         (fdValidTab(state.tab)?state.tab:'today');
       state.tab=setupTab;
       state.openId=null;
-      routeTo(fdRouteForTab(setupTab,win.location.search||''),true);
+      routeTo(fdRouteForTab(setupTab,win.location.search||'',state.libraryView),true);
     }
     navGeneration++;
     var generation=navGeneration;
@@ -1532,7 +1618,16 @@ function fdWire(root, initialState, opts){
     }));
     fdSave(state);
     /* Browser Back out of a resource is the same return as the in-app control (#427). */
-    if(before.openId&&!state.openId) restoreOrigin(before);
+    if(before.openId&&!state.openId){
+      var restoredOpener=restoreOrigin(before);
+      /* Persisted scroll state is restored after popstate listeners finish. Recheck at the end of
+         the event loop so native restoration cannot strand a focused Essentials opener. */
+      if(restoredOpener&&setTimer){
+        setTimer(function(){
+          if(!destroyed&&generation===navGeneration&&!state.openId) keepFocusedOpenerVisible(restoredOpener);
+        },0);
+      }
+    }
     if(legacyResult&&legacyResult.effect){
       fdApplyEffect(legacyResult.effect,true,generation);
     } else if(state.openId==='__progress__'){
@@ -1619,7 +1714,7 @@ function fdWire(root, initialState, opts){
   }
 
   if(!listen(root,'click',clickHandler,false)||!listen(root,'input',inputHandler,false)||
-     !listen(root,'change',changeHandler,false)||
+     !listen(root,'change',changeHandler,false)||!listen(root,'focusin',focusHandler,false)||
      !listen(win,'keydown',keyHandler,false)||!listen(win,'popstate',popstateHandler,false)){
       removeRegistrations();
       destroyed=true;

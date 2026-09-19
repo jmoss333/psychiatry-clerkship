@@ -157,3 +157,28 @@ for (const viewport of VIEWPORTS) {
     }
   });
 }
+
+// Phase 2 extends, rather than replaces, the resident reader/archetype baselines above.
+for (const site of ['ms3', 'res']) {
+  for (const viewport of VIEWPORTS) {
+    test.describe(`Essentials ${site} visual @ ${viewport.label}`, () => {
+      test.use({ viewport: { width: viewport.width, height: viewport.height } });
+      for (const view of ['kit', 'full', ...(site === 'ms3' ? ['today'] : [])]) {
+        test(`${view} first viewport`, async ({ page }) => {
+          await page.clock.setFixedTime(FROZEN_NOW);
+          await page.addInitScript(role => {
+            localStorage.setItem('cw_rotation_start', '2026-08-17');
+            localStorage.setItem('cw_frontdoor_v1', JSON.stringify({ role, tab: 'today', viewWeek: 1 }));
+            localStorage.setItem('cw_theme', 'light');
+          }, site === 'ms3' ? 'student' : 'pgy1');
+          const base = site === 'ms3' ? process.env.MS3_BASE_URL || 'http://localhost:4200' : process.env.RES_BASE_URL || 'http://localhost:4201';
+          await page.goto(`${base}/?tab=${view === 'today' ? 'today' : 'library'}${view === 'full' ? '&library=full' : ''}`);
+          await waitForStableFrontDoor(page, view === 'today' ? '.fd-today' : '.fd-library');
+          if (view !== 'today') await expect(page.locator(view === 'full' ? '.fd-collink' : '.fd-kit [data-fd-open]')).toHaveCount(
+            view === 'full' ? (site === 'ms3' ? 83 : 93) : (site === 'ms3' ? 30 : 35));
+          await expect(page).toHaveScreenshot(`essentials-${site}-${view}-${viewport.label}.png`);
+        });
+      }
+    });
+  }
+}

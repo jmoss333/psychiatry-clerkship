@@ -154,6 +154,7 @@ test('Front Door Library exactly matches the projected placed refs', async ({ pa
   await expect(page.locator('.fd-library')).toBeVisible();
   await expect(page.locator('.fd-fallback[role="alert"]')).toHaveCount(0);
 
+  await page.locator('[data-fd-library-view="full"]').click();
   const expected = await loadProjectedLibraryRefs(request, baseURL);
   const rendered = await page.locator('.fd-collink[data-fd-open]').evaluateAll(controls => (
     controls.map(control => control.getAttribute('data-fd-open')).sort()
