@@ -41,6 +41,12 @@ def governance_report(gate="review"):
             "warningCount": 1,
             "blockedIds": [],
         },
+        # governance_digest.mjs writes this on every digest since PR 1b; it is what makes
+        # `Gate: review` legible when nothing else in the report explains the gate.
+        "staleAttestations": {
+            "count": 3,
+            "slugs": ["agitation.md", "bfcrs.html", "delirium.md"],
+        },
         "privateClinicalText": "PRIVATE CLINICAL SENTINEL",
         "reviewerName": "PRIVATE IDENTITY SENTINEL",
         "credential": "PRIVATE SECRET SENTINEL",
@@ -408,6 +414,71 @@ class MaintenanceIssueTests(unittest.TestCase):
                 self.assertNotIn("PRIVATE UNTRUSTED CHECKLIST SENTINEL", body)
                 self.assertNotIn("PRIVATE CLINICAL SENTINEL", body)
                 self.assertNotIn("PRIVATE SECRET SENTINEL", body)
+
+    def _governance_body(self, report):
+        created = []
+        route_issue(
+            "governance",
+            report,
+            run_url=RUN_URL,
+            artifact_url=ARTIFACT_URL,
+            list_issues=lambda: [],
+            create_issue=lambda payload: created.append(payload) or {"number": 3},
+            update_issue=lambda number, payload: self.fail("unexpected update"),
+        )
+        self.assertEqual(len(created), 1)
+        return created[0]["body"]
+
+    def test_governance_body_names_the_stale_attestation_count_and_first_slugs(self):
+        # A routed `Gate: review` that does not say WHY is an issue nobody can act on: the
+        # question counts alone are clean here, so the stale queue is the only thing that
+        # opened it.
+        body = self._governance_body(governance_report())
+        self.assertIn("Gate: review", body)
+        self.assertIn(
+            "Stale attestations: 3 (agitation.md, bfcrs.html, delirium.md)", body
+        )
+
+    def test_governance_body_truncates_a_long_stale_list_and_says_how_many_are_hidden(self):
+        slugs = [f"page{index:02d}.md" for index in range(12)]
+        body = self._governance_body(
+            {
+                **governance_report(),
+                "staleAttestations": {"count": len(slugs), "slugs": slugs},
+            }
+        )
+        self.assertIn(
+            "Stale attestations: 12 (page00.md, page01.md, page02.md, page03.md, "
+            "page04.md; 7 more)",
+            body,
+        )
+        self.assertNotIn("page05.md", body)
+
+    def test_governance_body_reports_a_missing_stale_summary_as_unknown_never_zero(self):
+        # An older digest artifact has no staleAttestations key. Rendering that as 0 would say
+        # the queue is empty when nothing measured it -- the failure mode CLAUDE.md's queue rule
+        # names ("a measurement that fails reports unknown, never zero").
+        report = {key: value for key, value in governance_report().items()
+                  if key != "staleAttestations"}
+        body = self._governance_body(report)
+        self.assertIn("Stale attestations: not reported", body)
+        self.assertNotIn("Stale attestations: 0", body)
+
+    def test_unsafe_stale_attestation_summaries_fail_closed(self):
+        for stale in (
+            [],
+            {"count": 3},
+            {"count": -1, "slugs": []},
+            {"count": 1, "slugs": ["../../etc/passwd"]},
+            {"count": 1, "slugs": "agitation.md"},
+            {"count": 2, "slugs": ["agitation.md"]},
+            {"count": 1, "slugs": ["slug with whitespace"]},
+        ):
+            with self.subTest(stale=stale):
+                with self.assertRaises(IssueRoutingError):
+                    self._governance_body(
+                        {**governance_report(), "staleAttestations": stale}
+                    )
 
     def test_unsafe_rotation_id_dates_counts_and_links_fail_closed(self):
         bad_reports = [

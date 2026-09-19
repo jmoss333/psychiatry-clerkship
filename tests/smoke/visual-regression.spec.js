@@ -71,7 +71,15 @@ async function waitForStableFrontDoor(page, surface) {
 
 async function waitForStableReader(page) {
   await waitForStableFrontDoor(page, '.fd-reader .fd-article__body');
-  await expect(page.locator('.fd-reader .governance-notice.reviewed-receipt')).toBeVisible();
+  // A governance notice of SOME kind must have rendered -- that is what proves the ledger
+  // arrived and the reader painted it, which is the only thing a baseline needs settled.
+  // It deliberately does NOT require the reviewed receipt: a baselined page whose attestation
+  // drifts renders pending-high or pending-compact instead, and an assertion failure (unlike
+  // snapshot drift) cannot be fixed by refreshing baselines -- it would red the visual and
+  // nav projects until the owner re-attests, which is the deadlock D1 exists to prevent.
+  // `unavailable` stays banned: baselining "Review status unavailable" would freeze a
+  // governance FETCH FAILURE into the reference images, which is the real hazard here.
+  await expect(page.locator('.fd-reader .governance-notice').first()).toBeVisible();
   await expect(page.locator('.fd-reader .governance-notice.unavailable')).toHaveCount(0);
 }
 

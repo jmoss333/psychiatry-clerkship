@@ -866,14 +866,39 @@ test('collapsible section toggle hides and restores a wide table', async ({ page
 const GUIDE_REF = 'therapy_on_the_unit.md';
 const GUIDE_URL = `/?page=${GUIDE_REF}`;
 
+/* This suite tests the GUIDE READER, not the ledger, so it pins its fixture page's governance
+ * row instead of inheriting whatever the ledger says this week. Two reasons, both learned the
+ * hard way when therapy_on_the_unit.md drifted to pending/high:
+ *   1. a receipt assertion here is an ASSERTION failure, not snapshot drift, so no baseline
+ *      refresh can clear it and every ordinary edit to this page would red CI until the owner
+ *      re-attests (the deadlock D1 exists to prevent);
+ *   2. a pending/HIGH page focuses its `role="alert"` notice on route change
+ *      (focusPendingHighNotice in spa_index.html), which takes focus away from the arrival
+ *      passage and the section heading that several tests below assert on.
+ * The live rendering of a drifted page is covered where it belongs: governance-warnings.spec.js
+ * picks its targets from the built governance.json, and the pending/high FOCUS priority has its
+ * own test below that routes this same row the other way, to pending/high, on purpose. */
+async function pinGuideGovernance(page, status) {
+  const response = await requestGetWithRetry(page.request, '/governance.json');
+  const ledger = await response.json();
+  ledger.items[GUIDE_REF] = { ...ledger.items[GUIDE_REF], ...status };
+  await page.route('**/governance.json', route => route.fulfill({ json: ledger }));
+}
+
 async function openClinicalGuide(page, testInfo, query = '') {
   await seedApp(page, testInfo, { state: { tab: 'library' } });
+  await pinGuideGovernance(page, {
+    status: 'reviewed', riskLevel: 'low', reviewer: 'Joshua Moss, MD', reviewedAt: '2026-08-21',
+  });
   await page.goto(`${GUIDE_URL}${query}`);
   await expect(page.locator('.fd-reader--guide .fd-article__body')).toBeVisible();
   // Mobile starts with a native contents disclosure; it remains available without preceding
   // every passage with the expanded navigation inventory.
   await expect(page.locator('nav[aria-label="On this page"]')).toHaveCount(1);
-  await expect(page.locator('.fd-reader .governance-notice.reviewed-receipt')).toBeVisible();
+  // A governance notice of SOME kind rendered, and it is not the fetch-failure one. The KIND is
+  // not asserted here -- see pinGuideGovernance above.
+  await expect(page.locator('.fd-reader .governance-notice').first()).toBeVisible();
+  await expect(page.locator('.fd-reader .governance-notice.unavailable')).toHaveCount(0);
 }
 
 async function guideSourceInventory(page) {
@@ -1049,8 +1074,11 @@ test.describe('Clinical field guide', () => {
   test('a passage arrival keeps a pending high-risk review warning in focus', async ({ page }, testInfo) => {
     // Synthetic transport fixture only: the actual attestation ledger is never edited. It
     // exercises the focus priority even when every placed teaching page is currently reviewed.
-    // Serve the ledger immediately: fetching it inside the route callback would make warning
-    // focus depend on whether governance arrives before or after the startup focus guard opens.
+    // The ledger is served immediately so the fixture itself adds no latency. The focus-take no
+    // longer depends on that: since takePendingHighFocus() in spa_index.html, the warning is
+    // focused whichever lands second — governance.json or the release of the startup gate's
+    // `inert` (which silently refuses focus while it is closed). governance-warnings.spec.js
+    // covers the gate-second order against the real ledger.
     const response = await requestGetWithRetry(page.request, '/governance.json');
     const ledger = await response.json();
     ledger.items[GUIDE_REF] = {
@@ -1184,6 +1212,11 @@ test.describe('Clinical field guide', () => {
     test(`320px ${theme} table retains every source cell in comparison and row reading modes`, async ({ page }, testInfo) => {
       await page.setViewportSize({ width: 320, height: 844 });
       await seedApp(page, testInfo, { state: { tab: 'library' }, storage: { cw_theme: theme } });
+      // Same reason openClinicalGuide pins it: this is a TABLE-geometry test at 320px, and a
+      // pending/high alert above the table changes the layout it measures.
+      await pinGuideGovernance(page, {
+        status: 'reviewed', riskLevel: 'low', reviewer: 'Joshua Moss, MD', reviewedAt: '2026-08-21',
+      });
       await page.goto(GUIDE_URL);
       await expect(page.locator('.fd-reader--guide')).toBeVisible();
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
@@ -1256,7 +1289,10 @@ test.describe('Clinical field guide', () => {
     await expect(page.locator('.fd-guide-table-controls')).toBeHidden();
     await expect(page.locator('.fd-guide-table-rows')).toBeHidden();
     await expect(page.locator('.fd-article__body .table-scroll-viewport')).toBeVisible();
-    await expect(page.locator('.fd-reader .governance-notice.reviewed-receipt')).toBeVisible();
+    // Print must not hide the governance notice. Its KIND is not asserted: a drifted page
+    // renders pending instead of a receipt, and that must not red the print contract.
+    await expect(page.locator('.fd-reader .governance-notice').first()).toBeVisible();
+    await expect(page.locator('.fd-reader .governance-notice.unavailable')).toHaveCount(0);
     await expect(page.locator('.fd-article__body blockquote').filter({ has: page.locator('.crisis-block-hook') })).toBeVisible();
     const printed = await page.locator('.fd-article__body').innerText();
     for (const heading of source.headings) expect(printed).toContain(heading);

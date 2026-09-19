@@ -1,7 +1,7 @@
 // Contract for the front-door join layer. Evaluates the real snippet body via new Function,
 // following tests/fd-state.test.mjs. Exercised against BOTH a small fixture (for shape) and the
-// repo's REAL curriculum.json + topic_meta.json (for the join actually holding on live data) --
-// a fixture-only suite would not have caught a topic_meta field being renamed.
+// repo's REAL curriculum.json + SOURCE topic_meta.json (for the join actually holding on live
+// data) -- a fixture-only suite would not have caught a topic_meta field being renamed.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -21,6 +21,9 @@ const F = make();
 
 const readJson = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const CUR = readJson('../curriculum.json');
+// The SOURCE topic_meta.json. The BUILT copy may demote a drifted page's facultyReview to
+// `pending` (attestation_hash.project_topic_meta_faculty_review), so the attestation premises
+// below are facts about the faculty's own record, not about what either site serves today.
 const META = readJson('../topic_meta.json');
 const TOOLS = readJson('../tool_registry.json');
 const MAN = readJson('../13_Faculty_Resources/_automation/site_build/site_manifest.json');
@@ -251,6 +254,9 @@ test('every real library column item resolves', () => {
   assert.equal(placed, 83, 'expected the 83 pages curriculum.json places');
 });
 
+// Source-copy premise: these five are attested in topic_meta.json. On a site whose build found
+// their sources drifted, the BUILT registry reads pending and the Front Door drops the attested
+// affordance -- that projection is pinned in tests/attestation-projection-build.test.mjs.
 test('all five real kit items are attested and carry safety steps', () => {
   const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
   assert.equal(idx.kit.length, 5);

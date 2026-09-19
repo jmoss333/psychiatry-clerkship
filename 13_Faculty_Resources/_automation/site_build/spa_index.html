@@ -814,11 +814,49 @@
     var label=high?'Pending review · High risk':'Pending review';
     return '<span class="governance-badge'+(high?' high':'')+'" aria-label="'+label+'">'+label+'</span>';
   }
+  /* Report whether the alert IS focused, not merely whether it is on the page. focus() is
+     silently refused — nothing thrown, nothing moved — while #fdApp still carries the edition
+     startup gate's `inert`, which on a cold route is still set when the resource mounts. */
   function focusPendingHighNotice(){
     var notice=contentEl.querySelector('.governance-notice.pending-high');
     if(!notice)return false;
     try{ notice.focus(); }catch(_){ }
+    return document.activeElement===notice;
+  }
+  /* Run `after` when the startup gate releases. Arms only while the gate is actually closed —
+     that is the one cause of a refusal a retry can fix — so an ordinary route arms nothing. */
+  function afterStartupGate(after){
+    var app=null;
+    try{ app=document.getElementById('fdApp'); }catch(_){ }
+    if(!app||!app.hasAttribute('inert')||typeof MutationObserver!=='function')return false;
+    var obs=new MutationObserver(function(){
+      if(app.hasAttribute('inert'))return;
+      obs.disconnect(); after();
+    });
+    obs.observe(app,{attributes:true,attributeFilter:['inert']});
     return true;
+  }
+  /* Take the focus, or record what the take is still waiting on. TWO things defer it and
+     either can come second: governance.json (until it lands the notice is not rendered at
+     all — refreshGovernanceNotice finishes the take) and the startup gate (the notice is
+     rendered but inert — afterStartupGate finishes it). Only the first case was ever
+     exercised before drift projection, because the one placed pending/high page happened to
+     render before its ledger arrived; with ~25 such pages per site the gate case is the
+     common one, and a take that silently did nothing read as "no warning was announced". */
+  function takePendingHighFocus(){
+    if(focusPendingHighNotice()){ governanceFocusSlug=''; return true; }
+    var slug=(currentItem&&currentItem.f)||'';
+    if(contentEl.querySelector('.governance-notice.pending-high')){
+      governanceFocusSlug=slug;
+      afterStartupGate(function(){
+        if(facultyPreviewRequest||governanceFocusSlug!==slug)return;
+        if(!currentItem||currentItem.f!==slug)return;
+        if(focusPendingHighNotice())governanceFocusSlug='';
+      });
+    }
+    else if(GOVERNANCE.status!=='ready'){ governanceFocusSlug=slug; }
+    else{ governanceFocusSlug=''; }
+    return false;
   }
   /* Focus a high-risk warning after a normal route change only. Never during faculty-preview
      initialization (the console iframe owns focus there) or browser-history restoration —
@@ -827,9 +865,7 @@
   function focusGovernanceNotice(opts){
     if(facultyPreviewRequest)return;
     if(opts&&opts.fromHistory)return;
-    if(focusPendingHighNotice()){ governanceFocusSlug=''; }
-    else if(GOVERNANCE.status!=='ready'){ governanceFocusSlug=currentItem&&currentItem.f; }
-    else{ governanceFocusSlug=''; }
+    takePendingHighFocus();
   }
   /* Runs once, when governance.json settles (see the fetch below) — surgically swaps just the
      existing .governance-notice element for a freshly rendered one. Deliberately NOT a full
@@ -845,8 +881,9 @@
     if(!wrap.firstChild)return;
     el.parentNode.replaceChild(wrap.firstChild,el);
     if(!facultyPreviewRequest&&governanceFocusSlug===currentItem.f){
-      governanceFocusSlug='';
-      focusPendingHighNotice();
+      /* The ledger can also land while the gate is still closed, so this take defers the same
+         way rather than clearing the slug on a focus() that moved nothing. */
+      takePendingHighFocus();
     }
   }
   function rerenderCurrent(){ refreshGovernanceNotice(); }

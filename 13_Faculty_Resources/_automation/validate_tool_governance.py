@@ -19,7 +19,7 @@ AUTOMATION_DIRECTORY = Path(__file__).resolve().parent
 if str(AUTOMATION_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(AUTOMATION_DIRECTORY))
 
-from surface_governance import SurfaceGovernanceError, load_validated_ledger
+from surface_governance import SurfaceGovernanceError, load_effective_ledger
 
 # site_build/ is a sibling directory, not a package -- same sys.path convention
 # validate_attestation_consistency.py uses to reach the single source.
@@ -375,7 +375,11 @@ def build_governance_document(
     root = Path(root).resolve()
     _schema, descriptor = load_vendored_contract()
     try:
-        ledger = load_validated_ledger(root)
+        # The EFFECTIVE ledger: a tool whose own source has changed since its review is
+        # emitted needs-review/needs-attestation, because reviewStatus and
+        # attestationStatus below come from the ledger record alone and a drifted record
+        # is no longer a statement about this file.
+        ledger, _hash_report = load_effective_ledger(root)
     except SurfaceGovernanceError as error:
         raise GovernanceError(str(error)) from error
     revision = revision or current_revision(root)

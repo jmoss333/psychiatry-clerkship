@@ -346,9 +346,47 @@ cd tests/smoke && npm ci && npx playwright test
   `13_Faculty_Resources/Handoffs/CONTENTHASH_BACKFILL_2026-09-18.md`. **That exception is spent**
   — `--write-backfill` is never to be run against the live ledger again, and
   `--write-backfill --as-of-now` least of all: it would rebind every drifted row to today's text,
-  silently re-attesting pages nobody reviewed. Rendering a drifted page as pending on the learner
-  sites is **not** wired yet — that is the follow-up PR "1b"; until it ships, drift is visible in
-  the console and in those two tools and nowhere a learner looks. **And what it does not close on
+  silently re-attesting pages nobody reviewed.
+  **A drifted row RENDERS as pending, on every surface, and never unplaces the page.** Both
+  builds load the ledger through `surface_governance.load_effective_ledger()`, which projects a
+  stale row to `status: pending`, `by: "Pending faculty review"` and the one
+  `attestation_hash.STALE_REASON` string. A learner therefore sees the ordinary pending-high or
+  pending-compact notice carrying that reason, the nav/search badge, and — for a tool — the
+  direct-open block plus `needs-review` in `tool-governance.json`. The **built** `topic_meta.json`
+  is demoted in the same pass (`project_topic_meta_faculty_review`, after `cotw_meta.inject` in
+  both build scripts): `facultyReview.status` becomes `pending` while `reviewer` and
+  `lastReviewed` are **kept** (D6 — the review did happen on that date, over the older text), so
+  the Front Door's `✓ … faculty-attested` line disappears for a drifted page without erasing who
+  reviewed it. The source `topic_meta.json` and `reviewed.json` are never written: only the
+  console writes the faculty's record. The weekly digest reports `staleAttestations` and sits at
+  `gate: review` while the count is above zero, which routes one maintenance issue naming the
+  count and the first five slugs. The demotion **warns, it never unplaces** — a drifted page stays
+  in nav and in the search index, because an unreachable protocol at 2am is worse than a warned
+  one. What pins all of that is `tests/attestation-projection-build.test.mjs`, which reads
+  `_build/<site>` and asserts that the two built registries AGREE: a `governance.json` item that
+  is pending with the stale reason has a built `topic_meta.facultyReview` that is not `reviewed`
+  and still carries `reviewer`/`lastReviewed`; a `governance.json` item that is `reviewed` and
+  has a source-authored block has a built block reading `reviewed` (it skips with its reason
+  while that set is empty, rather than passing over nothing); every drifted slug is still placed
+  in `nav.json` and every drifted index row badges `pending`; and no tracked `contentHash`
+  appears in any served JSON. It is a local-only contract — `node --test` runs before both
+  builds, so CI never reaches it. **What it does not pin is ORDER.** `cotw_meta.py` writes
+  `facultyReview.status: "pending"` unconditionally for every derived case and `inject()` leaves
+  a hand-written entry alone, while `project_topic_meta_faculty_review` only rewrites blocks that
+  already exist — so inject-then-demote and demote-then-inject produce identical bytes, and
+  re-ordering them is undetectable *and harmless*. A later write that re-marked a drifted page
+  `reviewed` is the real hazard, and that one IS caught, because the two built registries would
+  then disagree. Placement is not pinned by `faculty-console/check_pending_visible.mjs` either:
+  that reads the **source** ledger, where a drifted row still says `reviewed`, and never opens
+  `nav.json` or `search-index.json`. The search index legitimately carries fewer slugs than nav
+  (the week pages and two tools are never indexed) and that omission is governance-independent,
+  so the test asserts nav placement and the embedded badge rather than search membership.
+  One knock-on to expect: `check-static-site.mjs` §4a2 counts only pages the built
+  `governance.json` calls `reviewed` toward crosswalk coverage, so drift surfaces there as
+  **soft** `blueprint gap:` findings — the §9 ratchet was raised 0 → 6 per site for exactly
+  that, and each re-attestation lowers it, so **lower the pin back** as the queue drains rather
+  than leaving headroom.
+  **And what it does not close on
   its own:** a content PR that edits an attested page AND rewrites that row's `contentHash` in the
   same diff passes every gate *this* bullet installs — diff-scoped `--strict` fails only a touched
   row that is stale at head, and the authorship check reads the signer string. The next bullet
