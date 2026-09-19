@@ -174,10 +174,15 @@ def derive(root=ROOT):
     # 4 -- resident-only markdown. Two entries deliberately reuse a slug the
     # manifest already ships (welcome.md, cotw_index.md): the resident build
     # OVERWRITES the inherited page rather than adding one, so those are not new
-    # shipped pages and must not appear twice.
+    # shipped pages and must not appear twice. The override's own file is still an
+    # attested input of that slug -- attestation_hash.sources_for_slug reads the UNION
+    # of `source` and `extraSources` -- so it is recorded there rather than dropped.
     for source, slug, title in site_extras.RESIDENT_EXTRA_PAGES:
-        if slug in by_slug:
-            continue  # resident override of a page that already ships on both sites
+        existing = by_slug.get(slug)
+        if existing is not None:
+            if source != existing["source"]:
+                existing.setdefault("extraSources", []).append(source)
+            continue
         add(_page(slug, "page", ["res"], title, source, "resident_extra"))
 
     # 5 -- resident-only prototype tools. These DO ship: _build/res/tools/.

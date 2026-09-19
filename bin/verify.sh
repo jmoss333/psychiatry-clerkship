@@ -85,6 +85,12 @@ step "every falsification is on a gate"     python3 bin/check_vacuity.py
 step "unit — PR preflight"                  python3 bin/pr_preflight.py --self-test
 step "unit — attestation authorship"        python3 bin/check_attestation_authorship.py --self-test
 step "attestation authorship"               python3 bin/check_attestation_authorship.py
+# The sibling question. Authorship asks WHO signed; this asks WHAT they signed — every
+# reviewed row must name the text it attested, and the name must still fit. Drift is a
+# notice here and exits 0 on purpose (see the tool's docstring); an unbound, malformed or
+# unshipped-and-unlisted row is a finding.
+step "unit — attestation hashes"            python3 bin/check_attestation_hashes.py --self-test
+step "attestation hashes"                   python3 bin/check_attestation_hashes.py
 
 # --- python validators ---
 # This block mirrors the python half of ci.yml's build-test-validate job, step for step.

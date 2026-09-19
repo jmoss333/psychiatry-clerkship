@@ -17,6 +17,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 
 import { createHandler } from '../faculty-console/netlify/functions/attest.mjs';
 
@@ -32,6 +33,10 @@ const BRANCH_HEAD = 'b'.repeat(40);
 const REVIEWED_SHA = 'c'.repeat(40);
 const WRITTEN_SHA = 'd'.repeat(40);
 
+// The page every fixture here ships from; `contentsFor` below serves the listing that
+// names it and the tree route serves its blob sha.
+const ANKI_SOURCE = 'x/anki.md';
+
 // Task 5 (risk-aware publishing warnings): the content-mutation handler now refuses
 // to act on a slug whose current ledger record lacks a valid `risk` — this fixture
 // must carry one or every attestRequest() in this file 502s instead of committing.
@@ -44,6 +49,18 @@ const REVIEWED = {
     reason: 'Synthetic review is pending',
   },
 };
+
+// Attesting binds the row to page text, so the write path reads the shipped listing, the
+// topic metadata and one recursive git tree — all from the attestation branch. Serving one
+// blob for every path (what this mock did before) made every attest 400 on a missing source.
+const SOURCE_BYTES = Buffer.from('# Anki\n\nSynthetic source.\n', 'utf8');
+
+function blobShaOf(bytes) {
+  return createHash('sha1')
+    .update(Buffer.from(`blob ${bytes.length}\0`, 'utf8'))
+    .update(bytes)
+    .digest('hex');
+}
 
 function jsonResponse(status, body) {
   return new Response(JSON.stringify(body), {
@@ -71,6 +88,7 @@ function makeMock({
   failPullRequest = false,
 } = {}) {
   const calls = [];
+  let created = false;
   const fetchImpl = async (input, init = {}) => {
     const url = String(input);
     const method = (init.method || 'GET').toUpperCase();
@@ -80,11 +98,15 @@ function makeMock({
       return jsonResponse(200, { object: { type: 'commit', sha: BASE_HEAD } });
     }
     if (method === 'GET' && url.endsWith(`/git/ref/heads/${ATTEST}`)) {
-      return branchMissing
+      // Once the ref has been created the branch HAS a head, and the write path asks for
+      // it to read the tree its digests come from. A mock that kept answering 404 would
+      // make the created-branch case look like a repository failure.
+      return branchMissing && !created
         ? jsonResponse(404, { message: 'Not Found' })
         : jsonResponse(200, { object: { type: 'commit', sha: BRANCH_HEAD } });
     }
     if (method === 'POST' && url.endsWith('/git/refs')) {
+      created = true;
       return jsonResponse(201, { ref: `refs/heads/${ATTEST}` });
     }
     if (method === 'PATCH' && url.endsWith(`/git/refs/heads/${ATTEST}`)) {
@@ -93,8 +115,21 @@ function makeMock({
     if (method === 'GET' && url.includes('/compare/')) {
       return jsonResponse(200, { ahead_by: ahead, behind_by: behind });
     }
+    if (method === 'GET' && url.includes('/git/trees/')) {
+      return jsonResponse(200, {
+        sha: BRANCH_HEAD,
+        truncated: false,
+        tree: [{
+          path: ANKI_SOURCE,
+          mode: '100644',
+          type: 'blob',
+          sha: blobShaOf(SOURCE_BYTES),
+          size: SOURCE_BYTES.length,
+        }],
+      });
+    }
     if (method === 'GET' && url.includes('/contents/')) {
-      const serialized = JSON.stringify(REVIEWED);
+      const serialized = JSON.stringify(contentsFor(url));
       return jsonResponse(200, {
         sha: REVIEWED_SHA,
         size: Buffer.byteLength(serialized, 'utf8'),
@@ -307,11 +342,16 @@ const SHIPPED_FIXTURE = {
   ],
 };
 const QBANK_FIXTURE = { items: [] };
+// The other half of a content hash. Served explicitly: before this existed the fallthrough
+// handed the LEDGER back for topic_meta.json, and a digest computed over that would have
+// been a hash of the attestation record rather than of the page's metadata.
+const TOPIC_META_FIXTURE = { 'anki.md': { title: 'Anki' } };
 
 function contentsFor(url) {
   if (url.includes('question_bank.json')) return QBANK_FIXTURE;
   if (url.includes('shipped_pages.json')) return SHIPPED_FIXTURE;
   if (url.includes('site_manifest.json')) return MANIFEST_FIXTURE;
+  if (url.includes('topic_meta.json')) return TOPIC_META_FIXTURE;
   return REVIEWED;
 }
 
@@ -489,10 +529,63 @@ test('a failed probe degrades to an error marker without failing the load', asyn
   assert.deepEqual(payload.branchSync, { error: true });
 });
 
+test('GET carries the base lag as branchLag and verifies freshness at the branch head', async () => {
+  const openPull = { html_url: 'https://github.example/pull/9' };
+  const mock = makeStateMock({ ahead: 2, behind: 4, openPull });
+  const payload = await (await handlerWith(mock)(stateRequest())).json();
+
+  // A content hash compares a page to the ledger, both read from the attestation branch —
+  // so an internally consistent queue can still be four commits behind what main ships.
+  // That is a fact only the probe knows, and the payload has to carry it to the banner.
+  assert.equal(payload.branchLag, 4);
+  assert.equal(payload.freshness, 'verified');
+  const item = payload.items.find(entry => entry.slug === 'anki.md');
+  assert.equal(item.status, 'unreviewed', 'the pending fixture row is unchanged');
+  assert.equal(Object.hasOwn(item, 'stale'), false, 'a pending row claims nothing about text');
+});
+
+test('a branch level with the base reports no lag', async () => {
+  const mock = makeStateMock({ ahead: 0, behind: 0 });
+  const payload = await (await handlerWith(mock)(stateRequest())).json();
+  assert.equal(payload.branchLag, 0);
+});
+
 /* The UI half: a pure notice model the shell renders as a load-time banner.
  * Pinned here beside the probe so the wire format and its presentation cannot
  * drift apart. */
-import { branchSyncNotice, shippedPagesNotice } from '../faculty-console/app.mjs';
+import {
+  branchLagNotice,
+  branchSyncNotice,
+  freshnessNotice,
+  shippedPagesNotice,
+} from '../faculty-console/app.mjs';
+
+test('the branch-lag banner names the branch, the base and the number of commits', () => {
+  assert.equal(branchLagNotice(null), null);
+  assert.equal(branchLagNotice({ branchLag: 0 }), null, 'a branch in sync says nothing');
+  const notice = branchLagNotice({
+    branchLag: 4,
+    branchSync: { branch: ATTEST, baseBranch: BASE },
+  });
+  assert.equal(notice.tone, 'alert');
+  assert.equal(
+    notice.message,
+    'attest/pending is 4 commits behind main — sync before re-attesting',
+  );
+  const single = branchLagNotice({
+    branchLag: 1,
+    branchSync: { branch: ATTEST, baseBranch: BASE },
+  });
+  assert.match(single.message, /is 1 commit behind/);
+});
+
+test('the freshness banner appears exactly when nothing could be checked', () => {
+  assert.equal(freshnessNotice(null), null);
+  assert.equal(freshnessNotice({ freshness: 'verified' }), null);
+  const notice = freshnessNotice({ freshness: 'unknown' });
+  assert.equal(notice.tone, 'muted');
+  assert.equal(notice.message, 'Freshness unknown — reload');
+});
 
 test('no notice when the probe is absent, healthy, or non-isolated', () => {
   assert.equal(branchSyncNotice(undefined), null);

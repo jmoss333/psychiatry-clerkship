@@ -78,13 +78,19 @@ Introduce one tracked, generated, deterministic artifact —
 
 Shape: `{version, _note, generated_from, pages[]}`, each page carrying
 `{slug, kind, sites, title, source, producer}` with
-`producer ∈ {site_manifest, ms3_extra_tool, cotw_registry, resident_extra, resident_tool}`.
+`producer ∈ {site_manifest, ms3_extra_tool, cotw_registry, resident_extra, resident_tool}`,
+plus an optional `extraSources[]`: the further files the same slug ships from — today
+only a resident override of a page both sites ship (`welcome.md`, `cotw_index.md`).
+`attestation_hash.sources_for_slug` hashes `source` and `extraSources` together, so an
+edit to either file drifts that page's attestation.
 Sorted by slug, sorted keys, 2-space indent — byte-identical for identical inputs.
 
-Current content: **123 items** = 91 `site_manifest` (69 pages + 22 tools)
-+ 1 `ms3_extra_tool` + 22 `cotw_registry` + 6 `resident_extra` + 3 `resident_tool`.
-MS3 publishes 103 of them, the resident site 111; both numbers are checked against
-`find _build/<site>` on every build.
+Current content (2026-09-18): **128 items** = 91 `site_manifest` (69 pages + 22 tools)
++ 1 `ms3_extra_tool` + 26 `cotw_registry` + 6 `resident_extra` + 4 `resident_tool`.
+MS3 publishes 105 of them, the resident site 114; both numbers are checked against
+`find _build/<site>` on every build. These counts move with every new case of the week
+and every new tool — `shipped_pages.py --check` prints the live breakdown, which is the
+number to trust over this paragraph.
 
 `generated_from` records a sha256 per producer. It is **informational** — it lets a
 reader explain a staleness failure. The gate is regenerate-and-diff, never a hash
