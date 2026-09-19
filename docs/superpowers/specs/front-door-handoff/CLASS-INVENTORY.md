@@ -557,7 +557,7 @@ content. The high-risk governance focus rule outranks passage arrival focus.
 | `.fd-sheetbackdrop` | Separate sibling element, before `.fd-sheet`. Carries the click-to-close. |
 | `.fd-sheet__body` | The scroll container (`flex:1; overflow-y:auto`). |
 | `.fd-doccallout` | Amber "Document:" callout. Border is derived via `color-mix` from the two olive tokens. |
-| `.fd-sheet__attribution` | "✓ From: … · faculty-attested". |
+| `.fd-sheet__attribution` | "✓ From: <page title> · faculty-attested". Names the page, never the file (the prototype's `protoSrc` was a readable source); the ref rides on `data-ref`. |
 | `.fd-sheet__pending` | Affirmative not-yet-reviewed state for a valid 3–5-step protocol; mutually exclusive with attribution and failure. |
 | `.fd-sheet__failure` | Fail-closed alert with an owner-controlled sentence; protocol steps and documentation remain absent. |
 | `.fd-set` | One settings section. Spaced by `.fd-set + .fd-set`, so sections are direct siblings and a new one can be inserted anywhere in the order without a wrapper. |

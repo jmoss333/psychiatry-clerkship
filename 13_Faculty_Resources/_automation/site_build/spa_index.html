@@ -228,13 +228,13 @@
   .practice-action-arrow{font-size:var(--fd-font-xs);color:var(--warning)}
   .practice-action.is-review{color:var(--text-mid);background:var(--bg-alt)}
   .tpl-meta{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
-  .tpl-chip{font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 10px;border:1px solid var(--border)}
+  /* Mirrors the Front Door .fd-chip rule: one chip language on a reader page. Semantic colours below stay. */
+.tpl-chip{display:inline-flex;align-items:center;font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.03em;border-radius:999px;padding:2px 9px;border:1px solid var(--border)}
   .tpl-chip.read{color:var(--text-mid);background:var(--bg-alt)}
   .tpl-chip.hy{color:var(--warning);background:var(--warning-light);border-color:var(--warning)}
   .tpl-chip.safety{color:var(--danger);background:var(--danger-light);border-color:var(--danger)}
   .tpl-chip.evidence{color:var(--accent-dark);background:var(--accent-light);border-color:var(--accent)}
-  .tpl-chip.review{color:var(--success);background:var(--success-light);border-color:var(--success)}
-  .tpl-chip.mode{color:var(--text-mid);background:var(--bg-alt)}
+    .tpl-chip.mode{color:var(--text-mid);background:var(--bg-alt)}
   .tpl-chip.mode.on{color:#fff;background:var(--accent);border-color:var(--accent)}
   .practice-panel .tpl-meta{margin:0 0 12px}
   .practice-mode-note{display:flex;gap:10px;align-items:flex-start;background:var(--panel-tree-bg);border:1px solid var(--panel-line-soft);border-radius:12px;padding:11px 13px;margin:0 0 12px}
@@ -1193,7 +1193,7 @@
     var h='<details class="topic-tpl practice-panel"'+((opts&&opts.open===true)?' open':'')+'>';
     h+='<summary class="practice-summary"><span class="practice-tab">Ward</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
     h+='<div class="practice-body">';
-    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; h+='</div>';
+    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; /* No review chip: the governance receipt above the panel already states review status and date, and the head's ✓ pill states attestation — a third rendering on one page was the 2026-09-18 critique's consistency finding. */ h+='</div>';
     var reason=practiceReason(m);
     if(reason) h+='<div class="practice-mode-note"><span class="k">Can\u2019t miss</span><span class="v">'+esc(reason)+'</span></div>';
     var primary=practicePrimary(m,file,practicePhaseName(),practiceDrillDone), pseen={}, prow=[];
