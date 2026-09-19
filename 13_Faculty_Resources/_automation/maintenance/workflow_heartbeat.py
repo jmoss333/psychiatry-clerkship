@@ -36,6 +36,63 @@ EXPECTATIONS = {
     "maintenance-monthly-review.yml": 35 * 24,
     "surveillance-guideline.yml": 35 * 24,
 }
+# The ONLY workflow allowed to declare a cron and go unwatched, because a
+# heartbeat that reports on its own freshness cannot fail honestly: if it stops
+# running it also stops saying so. Every other cron must appear in EXPECTATIONS,
+# which scheduled_workflows_without_expectations() derives from the workflow
+# directory rather than from this list -- a remembered list cannot notice a
+# workflow nobody added to it. maintenance-queue-runner.yml ran daily from its
+# creation until 2026-09-16 with no freshness window at all, and the test that
+# was supposed to pin coverage restated this dict literally, so it agreed with
+# the omission (docs/SILENT_SHRINK_CHECKLIST.md A1).
+UNWATCHED_BY_DESIGN = {"maintenance-heartbeat.yml": "cannot assess its own freshness"}
+
+# The cron each watched workflow is PINNED to. Deliberately a literal and not read
+# from the workflow file: changing a schedule restarts activation, so this is the
+# "what we last agreed to" side of that comparison. Its key set must equal
+# EXPECTATIONS -- two hand-kept lists that must agree is how a workflow ends up in
+# one and not the other, so test_the_two_watch_lists_cannot_drift pins the parity.
+EXPECTED_CRONS = {
+    "maintenance-sp-health-monitor.yml": "15 */12 * * *",
+    "maintenance-production-canary.yml": "20 9 * * *",
+    "maintenance-queue-runner.yml": "40 4 * * *",
+    "maintenance-rotation-readiness.yml": "15 13 * * *",
+    "ci.yml": "0 8 * * 0",
+    "maintenance-governance-digest.yml": "30 12 * * 1",
+    "surveillance-link-monitor.yml": "0 6 * * 1",
+    "surveillance-citations.yml": "0 7 * * 1",
+    "maintenance-monthly-review.yml": "0 13 1 * *",
+    "surveillance-guideline.yml": "0 6 1 * *",
+}
+
+
+def scheduled_workflows_without_expectations(workflows_dir=None):
+    """Workflow files that declare a cron but have no freshness window.
+
+    Derived from the directory, never from EXPECTATIONS, so adding a scheduled
+    workflow without watching it is a failure rather than a silence.
+    """
+    directory = Path(workflows_dir or (REPO_ROOT / ".github" / "workflows"))
+    unwatched = {}
+    for path in sorted(directory.glob("*.y*ml")):
+        try:
+            document = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        except yaml.YAMLError as exc:
+            raise HeartbeatError(f"{path.name}: unreadable workflow YAML") from exc
+        triggers = document.get(True) or document.get("on") or {}
+        if not isinstance(triggers, dict):
+            continue
+        schedule = triggers.get("schedule")
+        if not isinstance(schedule, list) or not schedule:
+            continue
+        if not any(isinstance(entry, dict) and entry.get("cron") for entry in schedule):
+            continue
+        if path.name in EXPECTATIONS or path.name in UNWATCHED_BY_DESIGN:
+            continue
+        unwatched[path.name] = [
+            entry.get("cron") for entry in schedule if isinstance(entry, dict)
+        ]
+    return unwatched
 SAFE_REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}$")
 SAFE_WORKFLOW = re.compile(r"^[A-Za-z0-9_.-]{1,128}\.ya?ml$")
 SAFE_GIT_SHA = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
@@ -705,19 +762,7 @@ def main(argv=None, *, opener=None, now=_utc_now):
 
 
 def _expected_cron(workflow_file):
-    mapping = {
-        "maintenance-sp-health-monitor.yml": "15 */12 * * *",
-        "maintenance-production-canary.yml": "20 9 * * *",
-        "maintenance-queue-runner.yml": "40 4 * * *",
-        "maintenance-rotation-readiness.yml": "15 13 * * *",
-        "ci.yml": "0 8 * * 0",
-        "maintenance-governance-digest.yml": "30 12 * * 1",
-        "surveillance-link-monitor.yml": "0 6 * * 1",
-        "surveillance-citations.yml": "0 7 * * 1",
-        "maintenance-monthly-review.yml": "0 13 1 * *",
-        "surveillance-guideline.yml": "0 6 1 * *",
-    }
-    return mapping[workflow_file]
+    return EXPECTED_CRONS[workflow_file]
 
 
 if __name__ == "__main__":

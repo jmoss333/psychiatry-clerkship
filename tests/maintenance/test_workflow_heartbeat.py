@@ -141,6 +141,54 @@ class WorkflowHeartbeatTests(unittest.TestCase):
         )
         self.assertNotIn("maintenance-heartbeat.yml", EXPECTATIONS)
 
+    def test_every_cron_in_the_repo_has_a_freshness_window(self):
+        # The pin above restates EXPECTATIONS from the same memory that wrote it,
+        # so it agreed for months that maintenance-queue-runner.yml -- a DAILY
+        # workflow -- needed no freshness window. This derives the answer from the
+        # workflow directory instead, so a newly scheduled workflow fails until
+        # someone decides how stale it is allowed to get.
+        self.assertEqual(heartbeat_module.scheduled_workflows_without_expectations(), {})
+
+    def test_an_unwatched_cron_is_reported_with_its_schedule(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            (directory / "brand-new-nightly.yml").write_text(
+                "name: Brand New\non:\n  schedule:\n    - cron: '0 3 * * *'\njobs: {}\n"
+            )
+            unwatched = heartbeat_module.scheduled_workflows_without_expectations(directory)
+        self.assertEqual(unwatched, {"brand-new-nightly.yml": ["0 3 * * *"]})
+
+    def test_a_dispatch_only_workflow_is_not_reported_as_unwatched(self):
+        # surveillance-resource-intake.yml declares no cron: freshness does not
+        # apply to a workflow that only ever runs when a human asks.
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            (directory / "dispatch-only.yml").write_text(
+                "name: Dispatch Only\non:\n  workflow_dispatch:\njobs: {}\n"
+            )
+            self.assertEqual(
+                heartbeat_module.scheduled_workflows_without_expectations(directory), {}
+            )
+
+    def test_the_two_watch_lists_cannot_drift(self):
+        # EXPECTATIONS says how stale a workflow may get; EXPECTED_CRONS says which
+        # schedule it is pinned to. maintenance-queue-runner.yml was missing from
+        # BOTH, and nothing compared them.
+        self.assertEqual(set(EXPECTATIONS), set(heartbeat_module.EXPECTED_CRONS))
+
+    def test_each_pinned_cron_matches_the_workflow_file(self):
+        workflows = Path(heartbeat_module.REPO_ROOT) / ".github" / "workflows"
+        for name, pinned in heartbeat_module.EXPECTED_CRONS.items():
+            document = yaml.safe_load((workflows / name).read_text(encoding="utf-8"))
+            triggers = document.get(True) or document.get("on")
+            crons = [e["cron"] for e in triggers["schedule"] if isinstance(e, dict)]
+            self.assertIn(pinned, crons, name)
+
+    def test_the_heartbeat_itself_stays_exempt_with_a_recorded_reason(self):
+        self.assertIn("maintenance-heartbeat.yml", heartbeat_module.UNWATCHED_BY_DESIGN)
+        for name, reason in heartbeat_module.UNWATCHED_BY_DESIGN.items():
+            self.assertTrue(str(reason).strip(), name)
+
     def test_fresh_success_is_ready_and_normalized(self):
         receipt = evaluate_runs(
             {"ci.yml": 192},

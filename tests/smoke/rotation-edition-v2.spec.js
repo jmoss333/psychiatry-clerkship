@@ -667,6 +667,14 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
   }
   const activateTab = async (name) => {
     const control = page.locator(`.fd-tab[data-fd-tab="${name.toLowerCase()}"]`);
+    // On a phone a reader collapses its header to one row and hides the tab row (frontdoor.css
+    // "Phone chrome", 2026-09-18); the action bar's Back is the route a learner has to the tabs,
+    // so the matrix takes it too before reaching for the tab. Top-level screens and desktop
+    // readers keep the tab row and skip this.
+    if (!(await control.isVisible())) {
+      const back = page.locator('.fd-actionbar [data-fd-back]');
+      if (await back.isVisible()) await keyboardActivate(back);
+    }
     await keyboardActivate(control);
     await expect(page.locator(`.fd-tab[data-fd-tab="${name.toLowerCase()}"]`))
       .toHaveAttribute('aria-current', 'page');
@@ -1862,6 +1870,11 @@ test('hostile dialog on a real switch preserves the active edition and leaves no
     await expect(learner.page.locator('.fd-today')).toBeVisible();
     await setCanonicalLearnerWeek(learner.page, first.envelope.config.pathItems[0].week);
     const canonicalCore = await coreRenderSignature(learner.page);
+    // Today renders the learner's reading history (cw_last → "You were reading", 2026-09-16), and
+    // verifying the first edition below opens a Library page. That is learner state, not edition
+    // state, so the canonical signature is only comparable once cw_last is put back to what it
+    // was when the signature was taken.
+    const canonicalLastRead = await learner.page.evaluate(() => localStorage.getItem('cw_last'));
     await gotoFreshEditionDocument(learner.page, first.link);
     await expectLearnerEdition(learner.page, first, audience);
     const before = await storageSnapshot(learner.page, audience);
@@ -1870,6 +1883,10 @@ test('hostile dialog on a real switch preserves the active edition and leaves no
     expect(activeCore).not.toEqual(canonicalCore);
     expect(before[keys.edition]).toBe(first.backupJson);
     const channelOffsets = [consoleMessages.length, nativeDialogs.length, pageErrors.length];
+    await learner.page.evaluate((value) => {
+      if (value === null) localStorage.removeItem('cw_last');
+      else localStorage.setItem('cw_last', value);
+    }, canonicalLastRead);
     await learner.page.evaluate(() => { window.__task8ResetStorageOperations(); });
     const target = new URL(second.link);
     target.searchParams.set('task8-fault', 'dialog');

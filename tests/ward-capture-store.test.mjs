@@ -252,3 +252,86 @@ test('the capture mounts are removed entirely in a faculty preview', () => {
   assert.match(today, /data-capture-open/,
     'the guarded branch must own the capture launcher itself, leaving no focusable preview control');
 });
+
+// ---- #426 / #428: every retained capture stays visible and deletable -------------------------
+
+test('T4j: deleting the last capture removes the storage key rather than leaving an empty record', () => {
+  const ls = memStorage();
+  // eslint-disable-next-line no-new-func
+  const s = new Function('localStorage', 'currentItem', `${phi}\n${storeCode}\nreturn {capAdd:capAdd,capRead:capRead,capRemove:capRemove,capMarkTriaged:capMarkTriaged};`)(ls, null);
+  s.capAdd('first');
+  s.capAdd('second');
+  const [a, b] = s.capRead().items;
+  s.capMarkTriaged(b.id);
+  s.capRemove(a.id);
+  assert.equal(s.capRead().items.length, 1, 'a triaged item is still a retained record');
+  assert.notEqual(ls.getItem('cw_capture_v1'), null);
+  s.capRemove(b.id);
+  assert.equal(ls.getItem('cw_capture_v1'), null, 'no records left: the key is gone, not an empty shell');
+});
+
+const listCode = slice(shell, '  /* Attribute-context escape for learner text', '  function capRenderBody(){');
+function makeList(items) {
+  const ls = memStorage();
+  if (items) ls.setItem('cw_capture_v1', JSON.stringify({ v: 1, items }));
+  // eslint-disable-next-line no-new-func
+  return new Function('localStorage', 'currentItem', `
+    ${phi}
+    ${storeCode}
+    function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    ${listCode}
+    return { capListHtml: capListHtml, capDeleteLabel: capDeleteLabel };
+  `)(ls, null);
+}
+
+test('T13a: triaged captures are listed with their status, after the untriaged ones', () => {
+  const html = makeList([
+    { id: 'c_old', text: 'when does clozapine need a wbc', at: 1, ctx: null, triaged: true },
+    { id: 'c_new', text: 'why lithium levels at 12 hours', at: 2, ctx: null, triaged: false },
+  ]).capListHtml();
+  const rows = html.match(/<li [^>]*data-cap-status="(new|triaged)"/g);
+  assert.deepEqual(rows.map((r) => r.match(/"(new|triaged)"/)[1]), ['new', 'triaged']);
+  assert.match(html, /clozapine[\s\S]*cap-list__status">Triaged</);
+  assert.match(html, /lithium[\s\S]*cap-list__status">New</);
+  assert.equal((html.match(/data-cap-del="/g) || []).length, 2, 'every retained record has its own delete control');
+});
+
+test('T13b: Erase all is offered whenever any record remains, triaged included', () => {
+  const only = makeList([{ id: 'c_t', text: 'triaged only', at: 1, ctx: null, triaged: true }]).capListHtml();
+  assert.match(only, /id="capEraseAll"/);
+  assert.equal(makeList([]).capListHtml(), '');
+  assert.equal(makeList(null).capListHtml(), '');
+});
+
+test('T13c: each delete control carries the question in its accessible name, attribute-safe', () => {
+  const s = makeList([
+    { id: 'c_1', text: 'is "QTc > 500" the number?', at: 1, ctx: null, triaged: false },
+    { id: 'c_2', text: 'x'.repeat(90), at: 2, ctx: null, triaged: false },
+  ]);
+  const html = s.capListHtml();
+  const labels = [...html.matchAll(/aria-label="([^"]*)"/g)].map((m) => m[1]);
+  assert.equal(labels.length, 2);
+  assert.notEqual(labels[0], labels[1], 'no two controls share a name');
+  assert.equal(labels[0], 'Delete question: is &quot;QTc &gt; 500&quot; the number?');
+  assert.equal(s.capDeleteLabel('x'.repeat(90)), 'Delete question: ' + 'x'.repeat(57) + '…', 'long text is cut to 57 chars plus an ellipsis');
+  assert.ok(!/aria-label="Delete this question"/.test(html), 'the generic repeated name is gone');
+});
+
+test('T14: the sheet owns a stable live-status region and announces mutations from it', () => {
+  assert.match(shell, /id="capStatus" class="vh-live" aria-live="polite" aria-atomic="true"/);
+  for (const needle of [
+    "capAnnounce('Question deleted. '+capRemainingText())",
+    "capAnnounce('All saved questions erased.')",
+    "capAnnounce('Question saved. '+capRemainingText())",
+  ]) assert.ok(shell.includes(needle), `missing announcement: ${needle}`);
+});
+
+test('T15: delete controls meet the 44px target and the skip link stops animating under reduced motion', () => {
+  const rule = shell.match(/\.cap-list \.x\{[^}]*\}/)?.[0] || '';
+  // The design system's touch token is 44px (clinical-warm.css --fd-target-touch); the rule must
+  // use the token, not a raw px value, or the design-drift ratchet refuses the push.
+  assert.match(rule, /min-width:var\(--fd-target-touch\)/);
+  assert.match(rule, /min-height:var\(--fd-target-touch\)/);
+  const reduced = shell.match(/@media\(prefers-reduced-motion:reduce\)\{\.skip-link[^}]*\}\}/)?.[0] || '';
+  assert.match(reduced, /transition:none/);
+});

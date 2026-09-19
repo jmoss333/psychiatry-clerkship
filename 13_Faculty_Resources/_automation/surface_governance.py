@@ -7,6 +7,8 @@ Owns the single source of truth for review/risk state
 artifacts derived from it for each learner site:
 
   - load_validated_ledger()  -- read + validate the ledger (schema + dates)
+  - load_effective_ledger()  -- the same ledger AS IT MUST RENDER: every attestation
+                                whose attested inputs have drifted reads pending
   - build_site_document()    -- flatten nav + ledger into one sanitized doc
   - annotate_navigation()    -- copy governance triplets onto a nav tree
   - apply_tool_status()      -- inject a status block into shipped tool HTML
@@ -40,6 +42,11 @@ from html import escape
 from pathlib import Path
 
 from jsonschema import Draft7Validator
+
+# A SIBLING in this directory, not a site_build/ import (see the note above
+# SHIPPED_PAGES_RELATIVE): attestation_hash.py is stdlib-only and imports nothing from
+# this repository, so depending on it adds no dependency of this module's own.
+from attestation_hash import AttestationHashError, project_effective_ledger
 
 
 REVIEWED_RELATIVE = Path("13_Faculty_Resources/reviewed.json")
@@ -602,6 +609,59 @@ def _shipped_pages(root: Path) -> list:
     if not isinstance(pages, list):
         raise SurfaceGovernanceError("shipped_pages.json: pages must be a list")
     return [page for page in pages if isinstance(page, dict)]
+
+
+def load_effective_ledger(root: Path):
+    """The ledger as a learner surface must RENDER it, plus the hash report behind it.
+
+    Returns `(effective_ledger, report)`. The ledger is `load_validated_ledger()`'s
+    output with every attestation whose attested inputs no longer match its stored
+    `contentHash` projected to `status: "pending"` -- so a page that was reviewed, and
+    then edited, presents as awaiting re-attestation instead of carrying a receipt for
+    text nobody has read. The source ledger on disk is never touched: the review really
+    happened, on its recorded date, over the older text, and only the faculty console
+    writes that file. `report` is `attestation_hash.ledger_hash_report()`'s full
+    classification, whose `stale` keys are what the caller demotes elsewhere (the built
+    topic_meta.json's facultyReview blocks, per D6).
+
+    Drift is the normal in-flight state of an edit to a reviewed page, so it renders
+    rather than failing. The four shapes a HAND EDIT produces -- unbound, malformed,
+    unresolvable, unshipped-and-unlisted -- are refused, as SurfaceGovernanceError: the
+    error every caller of this module already catches, rather than an AttestationHashError
+    escaping uncaught through a build script. `validate_attestation_consistency.py` runs
+    before either build and names all of them at once; this reports the first.
+
+    Reads three inputs from `root`: reviewed.json (validated), the derived shipped
+    listing, and the SOURCE topic_meta.json -- the digest covers the text an attestation
+    covered, which is the repository's own copy, never a build's projection of it.
+    """
+    root = Path(root)
+    ledger = load_validated_ledger(root)
+    topic_meta = _load_json(root / TOPIC_META_RELATIVE, "topic_meta.json")
+    if not isinstance(topic_meta, dict):
+        raise SurfaceGovernanceError("topic_meta.json: must be an object")
+    try:
+        return project_effective_ledger(
+            root, ledger, {"pages": _shipped_pages(root)}, topic_meta
+        )
+    except AttestationHashError as error:
+        raise SurfaceGovernanceError(str(error)) from error
+
+
+def hash_report_summary(report: dict, preview: int = 6) -> str:
+    """The one build-log line both site builds print about attestation drift.
+
+    Defined once so the two logs cannot say the same thing differently -- the count is
+    what a deploy log is read for, and a truncation rule that differs per site is a
+    reading error waiting to happen. Returns a string; the caller prints it.
+    """
+    stale = sorted(report["stale"])
+    shown = ", ".join(stale[:preview]) + (", …" if len(stale) > preview else "")
+    return "attestation hash: %d bound, %d stale%s" % (
+        len(report["bound"]),
+        len(stale),
+        " → rendered pending: " + shown if stale else "",
+    )
 
 
 def _tool_source_paths(root: Path) -> dict:

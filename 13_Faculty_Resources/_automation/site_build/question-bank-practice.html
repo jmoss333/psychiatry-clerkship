@@ -853,7 +853,13 @@ function checkpointSession(){
     idx: SESSION.idx,
     responses: SESSION.responses.map(function(r){
       return { id: r.item.id, correct: r.correct, confidence: r.confidence };
-    })
+    }),
+    /* Block identity (2026-09-16): a set the timed block opened resumes AS that block's step
+       (?resume=1&block=1&n[&cat]), so the receipt at the end can still mark it. Additive —
+       every reader guards the shape; a capsule without these is an ordinary resume. */
+    fromBlock: SESSION.fromBlock===true,
+    n: SESSION.queue.length,
+    cat: SESSION.cat||null
   });
 }
 
@@ -897,6 +903,13 @@ function tryResumeSession(){
     queue: queue, idx: idx, responses: responses, confidence: null, tier1Key: null,
     displayOrder: [], tier2DisplayOrder: [], state: 'conf'
   };
+  /* A capsule the timed block wrote resumes as the block's step: the receipt keys its
+     blockKind off SESSION.fromBlock, and the category label follows the block's filter. */
+  SESSION.fromBlock = cap.fromBlock===true;
+  if(SESSION.fromBlock){
+    SESSION.cat = (typeof cap.cat==='string'&&CAT_LABELS[cap.cat])?cap.cat:null;
+    SESSION.catLabel = SESSION.cat?(CAT_LABELS[SESSION.cat]||''):'';
+  }
   showQuestion();
   return true;
 }
@@ -1128,7 +1141,7 @@ function showSummary(){
       if(BLOCK_REQUEST){
         var _blockCat = (BLOCK_REQUEST.cat!=='all' && CAT_LABELS[BLOCK_REQUEST.cat]) ? BLOCK_REQUEST.cat : 'all';
         startSession(_blockCat, 'all', String(BLOCK_REQUEST.n));
-        if(SESSION){ SESSION.catLabel = _blockCat==='all' ? '' : (CAT_LABELS[_blockCat]||''); SESSION.fromBlock = true; }
+        if(SESSION){ SESSION.catLabel = _blockCat==='all' ? '' : (CAT_LABELS[_blockCat]||''); SESSION.fromBlock = true; SESSION.cat = _blockCat==='all' ? null : _blockCat; }
         return;
       }
       showSetup();

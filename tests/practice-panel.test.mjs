@@ -569,3 +569,38 @@ test('the panel stylesheet block is unmodified (D-1: no new CSS)', () => {
   assert.ok(!/\.practice-action\.is-reference\s*\{/.test(source),
     'is-reference is intentionally an unstyled hook — adding CSS for it needs a baseline refresh');
 });
+
+// ---- Phone-first reading · the panel opens by default on a handheld -----------------------------
+//
+// The panel is the point-of-need content (Can't miss, Do this next, In 30 seconds, On the unit,
+// Test yourself, Tools) and D-1 above pins it CLOSED by default so the desktop visual baselines
+// hold. On a phone that default hid the ward content behind a tap on every topic page — the
+// 2026-07-12 seven-persona audit's dominant finding, back again. buildTpl now takes an opts
+// object; only the reader decides, from the viewport, whether to pass open:true. The closed
+// render stays byte-identical, and the open render differs from it by the attribute alone.
+
+test('opts.open renders the panel open, and nothing else changes', () => {
+  const [ref, closed] = renderAll()[0];
+  const meta = TOPIC_META[ref];
+  const CLOSED_TAG = '<details class="topic-tpl practice-panel">';
+  const OPEN_TAG = '<details class="topic-tpl practice-panel" open>';
+  const open = F.buildTpl(meta, ref, { open: true });
+  assert.ok(open.startsWith(OPEN_TAG), 'open:true must emit the open attribute on the panel');
+  assert.equal(open.slice(OPEN_TAG.length), closed.slice(CLOSED_TAG.length),
+    'the open render must differ from the closed one by the attribute alone');
+  assert.equal(F.buildTpl(meta, ref, {}), closed, 'an empty opts object keeps the closed default');
+  assert.equal(F.buildTpl(meta, ref, { open: false }), closed, 'open:false is the closed default');
+  assert.equal(F.buildTpl(meta, ref, { open: 'yes' }), closed, 'only boolean true opens the panel');
+});
+
+test('the reader opens the panel on a handheld viewport and keeps desktop closed', () => {
+  // Both call sites that inject the panel ask the same question. fdHandheld() is the shell's
+  // own "not desktop" threshold: rails and the desktop action pair appear at >=1000px
+  // (frontdoor.css), so a handheld is anything narrower.
+  const calls = source.match(/buildTpl\([^()]*\{open:fdHandheld\(\)\}\)/g) || [];
+  assert.equal(calls.length, 2, `every buildTpl call site passes the handheld flag: ${calls}`);
+  assert.match(source, /function fdHandheld\(\)\{[^}]*matchMedia\('\(max-width:999px\)'\)/,
+    'fdHandheld reads the 999px boundary, the mirror of the 1000px desktop breakpoint');
+  assert.doesNotMatch(source, /function fdHandheld\(\)\{[^}]*innerWidth/,
+    'use matchMedia, not innerWidth, so the answer agrees with the stylesheet');
+});

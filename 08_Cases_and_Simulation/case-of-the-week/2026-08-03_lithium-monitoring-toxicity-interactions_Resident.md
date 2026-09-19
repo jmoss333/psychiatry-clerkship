@@ -50,7 +50,7 @@ A 2025 case series from Mayo described exactly this pattern: patients on stable 
 
 **Q2. Classify the toxicity and explain the dissociation between her serum level and her neurologic exam.**
 
-*Teaching point:* Her level is 1.9 — barely above therapeutic — and she has multifocal myoclonus, sustained clonus, and encephalopathy. Residents should be able to explain this precisely.
+*Teaching point:* Her level is 1.9 mEq/L and she has multifocal myoclonus, sustained clonus, and encephalopathy. Resist the reflex to call that level "only mildly elevated": in chronic toxicity the serum number and the CNS burden come apart, and **the exam is the severity**. A patient with encephalopathy and sustained clonus has severe neurotoxicity whatever the serum value reads. Residents should be able to explain why precisely.
 
 Toxicity is conventionally classified as **acute** (naïve overdose), **chronic** (accumulation on maintenance), and **acute-on-chronic** [2]. The clinical distinction is driven by **two-compartment kinetics**: lithium crosses the blood–brain barrier slowly, so the CNS behaves as a deep compartment that equilibrates over hours to days.
 
@@ -59,7 +59,7 @@ Toxicity is conventionally classified as **acute** (naïve overdose), **chronic*
 
 Two corollaries worth stating explicitly:
 1. **There is no serum threshold that rules out toxicity in a maintenance patient.** Disposition is driven by exam.
-2. **Post-dialysis rebound** is the same physics running backward — lithium redistributes from tissue into plasma after extracorporeal removal, so a reassuring immediate post-treatment level is not an endpoint (see Q5).
+2. **Post-dialysis rebound** is the same physics running backward — lithium redistributes from tissue into plasma after extracorporeal removal, so no single post-treatment level is an endpoint; it takes a series across the following 12 hours (see Q5).
 
 **Q3. Give a full differential for this neurologic syndrome, and name the complication that determines her long-term prognosis.**
 
@@ -107,7 +107,7 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
 **Applying it:** she has impaired kidney function and a decreasing level of consciousness. The consciousness criterion alone qualifies her **irrespective of the level of 2.4** — this is the clause residents most often miss, because they anchor on the >4.0 threshold.
 
 **Running it well:**
-- Anticipate **rebound**; recheck the level **6–12 hours** after the session, not immediately after.
+- Anticipate **rebound**: EXTRIP recommends **serial lithium measurements over the 12 hours after interrupting** extracorporeal treatment, "to determine use of subsequent ECTR sessions" [6]. Serial means starting promptly and repeating across that window — an early level is a useful first point in a series, and the error to avoid is treating any single value as the endpoint, not drawing one early. Nephrology and toxicology should guide the monitoring and any further treatment.
 - The "expected time to <1.0 mEq/L > 36 hours" criterion is the one that quietly captures patients with impaired clearance and unimpressive levels — teach residents to actually estimate it.
 - **CRRT's advantage** is slower, sustained removal with less rebound; **intermittent HD's advantage** is speed. In a hemodynamically stable patient, HD first, CRRT after, is a common practical sequence.
 - **Activated charcoal has no role** — the 2026 Clinical Toxicology Recommendations Collaborative consensus explicitly lists lithium among the poisons for which activated charcoal is not indicated [7]. Whole-bowel irrigation is a separate consideration confined to large **sustained-release** ingestions, and a toxicology decision.
@@ -166,7 +166,7 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
 
 **Escalate:**
 8. **Hemodialysis** per EXTRIP if severe poisoning, impaired renal function with level > 4.0, or **decreased consciousness / seizures / life-threatening dysrhythmias at any level**; CRRT acceptable [6].
-9. **Recheck 6–12 h post-treatment** for rebound.
+9. **Serial levels over 12 h after stopping treatment**, with clinical reassessment, to detect rebound and guide further sessions — nephrology/toxicology directed [6].
 
 **Characterize the chronic injury:**
 10. **Re-stage renal function after AKI resolution**; formal assessment of the concentrating defect; consider **amiloride** for Li-NDI [4].
@@ -191,7 +191,7 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
 - **Common resident errors to correct:**
   1. Anchoring disposition to the serum level rather than the exam.
   2. Missing the EXTRIP clause that decreased consciousness, seizures, or life-threatening dysrhythmias qualify **irrespective of level**.
-  3. Declaring a post-dialysis level reassuring without rechecking for rebound.
+  3. Declaring a single post-dialysis level reassuring instead of following serial levels across the 12-hour rebound window.
   4. Discontinuing lithium permanently on the basis of an AKI-era eGFR.
   5. Stopping lithium for subclinical hypothyroidism instead of adding levothyroxine [1].
   6. Not connecting hypercalcemia back to lithium-associated hyperparathyroidism — and therefore missing a monitorable endocrine effect that needs endocrine follow-up. Note the converse error too: at a corrected calcium of 10.9 it is a marker, not a treatable contributor to tonight's encephalopathy (which needs >12–13 mg/dL) or to her polyuria (already explained by lithium's direct collecting-duct effect, Q4) [1].

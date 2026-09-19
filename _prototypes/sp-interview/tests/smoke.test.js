@@ -84,13 +84,17 @@ await run('interrogation + euphemism',[
   return errs;
 });
 
-// Scenario 3: direct SI with zero rapport — deflected, not revealed
-await run('direct SI, no rapport',[
+// Scenario 3: direct SI with zero rapport — discloses (#565). Until 2026-09-17 this deflected with
+// "a very direct question for someone I met four minutes ago", teaching that asking early is punished.
+await run('direct SI, no rapport — discloses',[
  "Have you had thoughts of killing yourself?"
 ],(s,cov,rub,nar,replies)=>{
   const errs=[];
-  if(s.unlocked['si_active'])errs.push('gate unlocked with rapport 0');
-  if(!(replies[0]||'').includes('four minutes'))errs.push('low-rapport deflect not used: '+replies[0]);
+  if(!s.unlocked['si_active'])errs.push('gate did not unlock at rapport 0');
+  if(!(replies[0]||'').includes('didn'))errs.push('SI reveal text not returned: '+replies[0]);
+  if((replies[0]||'').includes('four minutes'))errs.push('low-rapport deflect still used: '+replies[0]);
+  const si=cov.find(c=>c.id==='c_si');
+  if(si.status!=='observed')errs.push('c_si = '+si.status+' (expected observed)');
   return errs;
 });
 

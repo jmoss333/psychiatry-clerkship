@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Contract tests for validate_curriculum.py.
 
-Mirrors the harness convention of test_validate_registry_schemas.py: build a
-minimal in-memory curriculum + shipped-pages listing in a tmp dir, run the
-validator as a subprocess, and assert on exit code and message. Nothing here
-reads the real curriculum.json, so a content edit never turns these red.
+Most tests build a minimal in-memory curriculum + shipped-pages listing in a
+tmp dir, run the validator as a subprocess, and assert on exit code and message.
+The Essentials smoke and schema tests deliberately read the real curriculum so
+the selected audience counts and closed schema stay pinned to shipped data.
 
 The validator asks site_build/shipped_pages.json what ships (ADR-002), so the
 fixture writes that listing rather than the producers behind it. The listing it
@@ -25,11 +25,14 @@ pages (welcome_compass.prepare_cards requires every MS3 week's landingRef to be 
 shipped MS3 Markdown page). Drop either and every "accepts" test turns red.
 """
 import json
+import copy
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
+
+from jsonschema import Draft7Validator
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
@@ -97,15 +100,15 @@ SAFETY_REFS = (
     "delirium.md",
 )
 
+
+def _safety_column():
+    return {"name": "Safety", "accent": "safety", "refs": list(SAFETY_REFS)}
+
 # Keep the two manifest slugs out of this list: the totality tests below assert on
 # exactly those, and blanket-excluding them would hide what they are checking.
 EXTRA_EXCLUDES = [
     {"ref": slug, "reason": "outside this fixture — a build extra, not a manifest page"}
     for slug in sorted(EXTRA_SHIPPED - MANIFEST_SLUGS)
-]
-FIXTURE_SAFETY_EXCLUDES = [
-    {"ref": ref, "reason": "outside this fixture — supplied only for safety-kit validation"}
-    for ref in SAFETY_REFS
 ]
 FIXTURE_RIGHTS_EXCLUDES = [
     {"ref": ref, "reason": "outside this fixture — supplied only for rights-reference validation"}
@@ -209,12 +212,16 @@ def _curriculum(items):
         "libraryColumns": [
             {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
             {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
+            _safety_column(),
         ],
-        "libraryExclude": (
-            list(EXTRA_EXCLUDES) + list(FIXTURE_SAFETY_EXCLUDES)
-            + list(FIXTURE_RIGHTS_EXCLUDES) + list(FIXTURE_WEEK_EXCLUDES)
+        "libraryExclude": copy.deepcopy(
+            list(EXTRA_EXCLUDES) + list(FIXTURE_RIGHTS_EXCLUDES)
+            + list(FIXTURE_WEEK_EXCLUDES)
         ),
         "rightsReferences": list(RIGHTS_REFS),
+        # Every column-placed tool needs its one-line Library hint (2026-09-16); the default
+        # column above places exactly one tool, so the fixture stays valid with exactly one.
+        "libraryHints": {"mse.html": "Draft a written exam from a descriptor bank."},
         # `triggers` became mandatory on 2026-08-28, when "i want to kill myself" was found to
         # reach pg_suicide.md only through the stopword "to". This fixture went without it for
         # months and every accept-case here failed — invisibly, because no gate ran the file.
@@ -228,10 +235,31 @@ def _curriculum(items):
             "ms3": {"additions": [], "exclusions": []},
             "resident": {"additions": [], "exclusions": []},
         },
+        "essentials": {
+            site: [
+                {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
+                _safety_column(),
+            ]
+            for site in ("ms3", "resident")
+        },
     }
 
 
 class ValidateCurriculumTest(unittest.TestCase):
+    def test_search_aliases_reject_unknown_refs_empty_values_and_duplicate_vocabulary(self):
+        for aliases in ({"ghost.md": ["ghost"]}, {"mse.html": []},
+                        {"mse.html": ["mse", "mse"]}, {"mse.html": [" MSE "]}):
+            with self.subTest(aliases=aliases), tempfile.TemporaryDirectory() as tmp:
+                curriculum = _curriculum([])
+                c, root = _write(tmp, curriculum)
+                baseline = _run(c, root)
+                self.assertEqual(baseline.returncode, 0, baseline.stdout + baseline.stderr)
+                curriculum["searchAliases"] = aliases
+                c, root = _write(tmp, curriculum)
+                result = _run(c, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("searchAliases", result.stdout)
+
     def test_accepts_six_shipped_ms3_landing_refs_without_resident_landing_refs(self):
         with tempfile.TemporaryDirectory() as tmp:
             c, root = _write(tmp, _curriculum([]))
@@ -339,6 +367,78 @@ class ValidateCurriculumTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("ms3", result.stdout)
         self.assertIn("rp-canon-quiz.html", result.stdout)
+
+    def test_rejects_a_rights_reference_as_a_path_item(self):
+        # A rights reference exists to say an instrument is NOT reproduced here. It belongs in
+        # the Library (INV-IR2 keeps the custodian route alive) but never on a learning path:
+        # a checklist step that opens a "no longer reproduced" stub is a dead end the learner
+        # is asked to tick. Both stubs sat on the shipped paths until 2026-09-16.
+        stub = RIGHTS_REFS[0]
+        for site in ("ms3", "resident"):
+            with self.subTest(site=site), tempfile.TemporaryDirectory() as tmp:
+                cur = _curriculum([])
+                cur["learningPaths"][site]["weeks"][0]["items"] = [
+                    {"ref": stub, "kind": "tool"}]
+                c, root = _write(tmp, cur)
+                result = _run(c, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn(site, result.stdout)
+            self.assertIn(stub, result.stdout)
+            self.assertIn("rights reference", result.stdout)
+
+    def test_library_hints_require_one_line_per_placed_tool_and_no_strays(self):
+        # A placed .html ref is a tool row in the only browse surface; without its one-line
+        # "use this when" it is a bare title. Both directions are enforced: a placed tool with
+        # no hint, and a hint for a ref no column (or site addition) places.
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["libraryColumns"][0]["refs"] = ["mse.html", "rp-canon-quiz.html"]
+            cur["libraryExclude"] = [e for e in cur["libraryExclude"]
+                                     if e["ref"] != "rp-canon-quiz.html"]
+            cur["libraryHints"] = {"mse.html": "Draft a written exam from a descriptor bank."}
+            c, root = _write(tmp, cur)
+            missing = _run(c, root)
+            self.assertEqual(missing.returncode, 1, missing.stdout + missing.stderr)
+            self.assertIn("libraryHints", missing.stdout)
+            self.assertIn("rp-canon-quiz.html", missing.stdout)
+
+            cur["libraryHints"]["rp-canon-quiz.html"] = "Drill the landmark-paper decks."
+            c, root = _write(tmp, cur)
+            complete = _run(c, root)
+            self.assertEqual(complete.returncode, 0, complete.stdout + complete.stderr)
+
+            cur["libraryHints"]["welcome.md"] = "A read is not a tool row."
+            c, root = _write(tmp, cur)
+            stray = _run(c, root)
+            self.assertEqual(stray.returncode, 1, stray.stdout + stray.stderr)
+            self.assertIn("welcome.md", stray.stdout)
+            del cur["libraryHints"]["welcome.md"]
+
+            for bad_value in ("", "   ", "x" * 111, 7):
+                cur["libraryHints"]["mse.html"] = bad_value
+                c, root = _write(tmp, cur)
+                result = _run(c, root)
+                self.assertEqual(result.returncode, 1, repr(bad_value))
+                self.assertIn("libraryHints", result.stdout)
+
+    def test_a_site_addition_tool_needs_a_hint_too(self):
+        # rp-* tools reach the resident Library through siteLibrary additions, not the shared
+        # columns; the completeness rule covers them or the resident column ships bare rows.
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["libraryHints"] = {"mse.html": "Draft a written exam from a descriptor bank."}
+            # Shaped like the real file: an rp-* tool stays in the shared libraryExclude and
+            # reaches one site's Library through that site's additions.
+            cur["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Tools", "refs": ["rp-canon-quiz.html"]}]
+            c, root = _write(tmp, cur)
+            result = _run(c, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("rp-canon-quiz.html", result.stdout)
+            cur["libraryHints"]["rp-canon-quiz.html"] = "Drill the landmark-paper decks."
+            c, root = _write(tmp, cur)
+            ok = _run(c, root)
+            self.assertEqual(ok.returncode, 0, ok.stdout + ok.stderr)
 
     def test_accepts_resident_only_ref_on_resident_path(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -457,6 +557,320 @@ class ValidateCurriculumTest(unittest.TestCase):
             self.assertIn("must be a string", r.stdout)
 
 
+class CurriculumSchemaEssentialsTest(unittest.TestCase):
+    """Exercise the checked-in Draft 7 schema directly with pinned jsonschema."""
+
+    def _document(self):
+        with open(os.path.join(ROOT, "curriculum.json"), encoding="utf-8") as fh:
+            document = json.load(fh)
+        document["essentials"] = {
+            "_note": "Synthetic schema fixture",
+            "ms3": [{"name": "Kit", "accent": "safety", "refs": ["mse.html"]}],
+            "resident": [{"name": "Tools", "accent": "tool", "refs": ["mse.html"]}],
+        }
+        return document
+
+    def _errors(self, document):
+        with open(os.path.join(ROOT, "curriculum.schema.json"), encoding="utf-8") as fh:
+            schema = json.load(fh)
+        return sorted(Draft7Validator(schema).iter_errors(document),
+                      key=lambda error: tuple(str(part) for part in error.absolute_path))
+
+    @staticmethod
+    def _render(errors):
+        return "\n".join("/%s: %s" % (
+            "/".join(str(part) for part in error.absolute_path), error.message)
+            for error in errors)
+
+    def assert_schema_mutation(self, mutate, marker):
+        original = self._document()
+        self.assertEqual(self._errors(original), [])
+        changed = copy.deepcopy(original)
+        mutate(changed)
+        rendered = self._render(self._errors(changed))
+        self.assertIn(marker, rendered, rendered)
+        self.assertEqual(self._errors(original), [])
+
+    def test_curriculum_accepts_essentials(self):
+        document = self._document()
+        document["essentials"]["ms3"].extend([
+            {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
+            {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
+        ])
+        self.assertEqual(self._errors(document), [])
+        document["unexpectedRootKey"] = True
+        self.assertIn("unexpectedRootKey", self._render(self._errors(document)))
+
+    def test_curriculum_essentials_requires_both_audiences(self):
+        cases = [
+            (lambda c: c.pop("essentials"), "essentials"),
+            (lambda c: c["essentials"].pop("ms3"), "ms3"),
+            (lambda c: c["essentials"].pop("resident"), "resident"),
+        ]
+        for value in (None, [], {}):
+            cases.append((lambda c, value=value: c.__setitem__("essentials", value),
+                          "essentials"))
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
+
+    def test_curriculum_essentials_requires_nonempty_section_arrays(self):
+        cases = []
+        for site in ("ms3", "resident"):
+            for value in (None, {}, "bad", []):
+                cases.append((lambda c, site=site, value=value:
+                              c["essentials"].__setitem__(site, value),
+                              "/essentials/%s" % site))
+        cases.extend([
+            (lambda c: c["essentials"]["ms3"].__setitem__(0, None),
+             "/essentials/ms3/0"),
+            (lambda c: c["essentials"]["ms3"][0].pop("refs"),
+             "/essentials/ms3/0"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", []),
+             "/essentials/ms3/0/refs"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", None),
+             "/essentials/ms3/0/refs"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", [""]),
+             "/essentials/ms3/0/refs/0"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", [1]),
+             "/essentials/ms3/0/refs/0"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__(
+                "refs", ["mse.html", "mse.html"]),
+             "/essentials/ms3/0/refs"),
+        ])
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
+
+    def test_curriculum_essentials_uses_closed_library_section_shape(self):
+        cases = [
+            (lambda c: c["essentials"]["ms3"][0].pop("name"), "/essentials/ms3/0"),
+            (lambda c: c["essentials"]["ms3"][0].pop("accent"), "/essentials/ms3/0"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("name", ""),
+             "/essentials/ms3/0/name"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("accent", "urgent"),
+             "/essentials/ms3/0/accent"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("extra", True),
+             "/essentials/ms3/0"),
+            (lambda c: c["essentials"].__setitem__("faculty", []), "/essentials"),
+            (lambda c: c["essentials"].__setitem__("_note", 7), "/essentials/_note"),
+        ]
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
+
+
+class EssentialsTest(unittest.TestCase):
+    def assert_mutation(self, mutate, code, marker):
+        with tempfile.TemporaryDirectory() as tmp:
+            original = _curriculum([])
+            cpath, root = _write(tmp, original)
+            baseline = _run(cpath, root)
+            self.assertEqual(baseline.returncode, 0, baseline.stdout + baseline.stderr)
+            changed = copy.deepcopy(original)
+            mutate(changed)
+            cpath, root = _write(tmp, changed)
+            result = _run(cpath, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn(code, result.stdout)
+            self.assertIn(marker, result.stdout)
+            self.assertNotIn("Traceback", result.stderr)
+            cpath, root = _write(tmp, original)
+            restored = _run(cpath, root)
+            self.assertEqual(restored.returncode, 0, restored.stdout + restored.stderr)
+
+    def test_missing_essentials_is_E1(self):
+        self.assert_mutation(lambda c: c.pop("essentials"), "E1", "essentials")
+
+    def test_essentials_requires_object_and_both_nonempty_audiences(self):
+        cases = []
+        for value in (None, [], {}):
+            cases.append((lambda c, value=value: c.__setitem__("essentials", value),
+                          "essentials"))
+        for site in ("ms3", "resident"):
+            cases.append((lambda c, site=site: c["essentials"].pop(site), site))
+            for value in (None, {}, [], "bad"):
+                cases.append((lambda c, site=site, value=value:
+                              c["essentials"].__setitem__(site, value), site))
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_mutation(mutate, "E1", marker)
+
+    def test_sections_and_refs_fail_loudly_when_malformed(self):
+        cases = [
+            (lambda c: c["essentials"]["ms3"].__setitem__(0, None), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].pop("name"), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("name", " "), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("accent", "urgent"), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].pop("refs"), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", None), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", []), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", [7]), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", [" "]), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", [["mse.html"]]),
+             "ms3[0]"),
+        ]
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_mutation(mutate, "E1", marker)
+
+    def test_unknown_ref_is_E2(self):
+        for site in ("ms3", "resident"):
+            with self.subTest(site=site):
+                self.assert_mutation(
+                    lambda c, site=site: c["essentials"][site][0]["refs"].append("ghost.md"),
+                    "E2", "ghost.md")
+
+    def test_other_audiences_page_is_E2(self):
+        cases = (("ms3", "rp-agitation.html"),
+                 ("resident", "orientation-video.html"))
+        for site, ref in cases:
+            with self.subTest(site=site):
+                self.assert_mutation(
+                    lambda c, site=site, ref=ref:
+                    c["essentials"][site][0]["refs"].append(ref), "E2", ref)
+
+    def test_shipped_but_unplaced_is_E3(self):
+        with open(os.path.join(ROOT, "curriculum.json"), encoding="utf-8") as fh:
+            original = json.load(fh)
+        self.assertIn("essentials", original, "Phase 1 curriculum data is missing essentials")
+        changed = copy.deepcopy(original)
+        changed["essentials"]["resident"][0]["refs"].append("t_sleep.md")
+        for column in changed["libraryColumns"]:
+            if "t_sleep.md" in column["refs"]:
+                column["refs"].remove("t_sleep.md")
+        changed["libraryExclude"].append(
+            {"ref": "t_sleep.md", "reason": "Synthetic E3 subset mutation"})
+        with tempfile.TemporaryDirectory() as tmp:
+            cpath = os.path.join(tmp, "curriculum.json")
+            with open(cpath, "w", encoding="utf-8") as fh:
+                json.dump(original, fh)
+            baseline = _run(cpath, ROOT, os.path.join(ROOT, "topic_meta.json"),
+                            os.path.join(ROOT, "evidence_registry.json"))
+            self.assertEqual(baseline.returncode, 0, baseline.stdout + baseline.stderr)
+            with open(cpath, "w", encoding="utf-8") as fh:
+                json.dump(changed, fh)
+            result = _run(cpath, ROOT, os.path.join(ROOT, "topic_meta.json"),
+                          os.path.join(ROOT, "evidence_registry.json"))
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("E3", result.stdout)
+            self.assertIn("t_sleep.md", result.stdout)
+            self.assertNotIn("appears in no column", result.stdout)
+            with open(cpath, "w", encoding="utf-8") as fh:
+                json.dump(original, fh)
+            restored = _run(cpath, ROOT, os.path.join(ROOT, "topic_meta.json"),
+                            os.path.join(ROOT, "evidence_registry.json"))
+            self.assertEqual(restored.returncode, 0, restored.stdout + restored.stderr)
+
+    def test_matching_site_addition_satisfies_E3(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            original = _curriculum([])
+            original["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Tools", "refs": ["rp-agitation.html"]}]
+            original["libraryHints"]["rp-agitation.html"] = "Practice first-line agitation care."
+            original["essentials"]["resident"][0]["refs"].append("rp-agitation.html")
+            cpath, root = _write(tmp, original)
+            baseline = _run(cpath, root)
+            self.assertEqual(baseline.returncode, 0, baseline.stdout + baseline.stderr)
+            changed = copy.deepcopy(original)
+            changed["siteLibrary"]["resident"]["additions"] = []
+            del changed["libraryHints"]["rp-agitation.html"]
+            cpath, root = _write(tmp, changed)
+            result = _run(cpath, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("E3", result.stdout)
+            self.assertIn("rp-agitation.html", result.stdout)
+            cpath, root = _write(tmp, original)
+            restored = _run(cpath, root)
+            self.assertEqual(restored.returncode, 0, restored.stdout + restored.stderr)
+
+    def test_site_exclusion_cannot_hide_an_essential(self):
+        for site in ("ms3", "resident"):
+            with self.subTest(site=site):
+                def exclude(c, site=site):
+                    c["siteLibrary"][site]["exclusions"] = ["mse.html"]
+                with tempfile.TemporaryDirectory() as tmp:
+                    original = _curriculum([])
+                    cpath, root = _write(tmp, original)
+                    self.assertEqual(_run(cpath, root).returncode, 0)
+                    changed = copy.deepcopy(original)
+                    exclude(changed)
+                    cpath, root = _write(tmp, changed)
+                    result = _run(cpath, root)
+                    self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                    self.assertIn("E3", result.stdout)
+                    self.assertIn(site, result.stdout)
+                    self.assertNotIn("E2", result.stdout)
+                    cpath, root = _write(tmp, original)
+                    restored = _run(cpath, root)
+                    self.assertEqual(restored.returncode, 0,
+                                     restored.stdout + restored.stderr)
+
+    def test_duplicate_ref_is_E4(self):
+        for site in ("ms3", "resident"):
+            mutations = (
+                lambda c, site=site: c["essentials"][site][0]["refs"].append("mse.html"),
+                lambda c, site=site: c["essentials"][site].append(
+                    {"name": "Again", "accent": "tool", "refs": ["mse.html"]}),
+            )
+            for mutate in mutations:
+                with self.subTest(site=site):
+                    self.assert_mutation(mutate, "E4", "mse.html")
+
+    def test_missing_safety_ref_is_E5(self):
+        for site in ("ms3", "resident"):
+            for ref in SAFETY_REFS:
+                with self.subTest(site=site, ref=ref):
+                    self.assert_mutation(
+                        lambda c, site=site, ref=ref:
+                        c["essentials"][site][1]["refs"].remove(ref), "E5", ref)
+
+    def test_no_html_tool_is_E6(self):
+        for site in ("ms3", "resident"):
+            with self.subTest(site=site):
+                self.assert_mutation(
+                    lambda c, site=site: c["essentials"][site].pop(0), "E6", ".html")
+
+    def test_no_populated_safety_section_is_E6(self):
+        for site in ("ms3", "resident"):
+            def strip_safety(c, site=site):
+                c["essentials"][site][1]["accent"] = "topic"
+
+            def add_empty_safety(c, site=site):
+                strip_safety(c, site)
+                c["essentials"][site].append(
+                    {"name": "Empty safety", "accent": "safety", "refs": []})
+
+            with self.subTest(site=site, empty=False):
+                self.assert_mutation(strip_safety, "E6", "safety")
+            with self.subTest(site=site, empty=True):
+                self.assert_mutation(add_empty_safety, "E6", "safety")
+
+    def test_real_curriculum_passes_and_pins_selection_counts(self):
+        with open(os.path.join(ROOT, "curriculum.json"), encoding="utf-8") as fh:
+            curriculum = json.load(fh)
+        self.assertIn("essentials", curriculum,
+                      "Phase 1 curriculum data is missing essentials")
+        with tempfile.TemporaryDirectory() as tmp:
+            cpath = os.path.join(tmp, "curriculum.json")
+            with open(cpath, "w", encoding="utf-8") as fh:
+                json.dump(curriculum, fh)
+            result = _run(cpath, ROOT, os.path.join(ROOT, "topic_meta.json"),
+                          os.path.join(ROOT, "evidence_registry.json"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        for site, count in (("ms3", 30), ("resident", 35)):
+            refs = [ref for section in curriculum["essentials"][site]
+                    for ref in section["refs"]]
+            placed = {ref for column in curriculum["libraryColumns"] for ref in column["refs"]}
+            for addition in curriculum["siteLibrary"][site]["additions"]:
+                placed.update(addition["refs"])
+            placed.difference_update(curriculum["siteLibrary"][site]["exclusions"])
+            self.assertEqual(len(refs), count)
+            self.assertEqual(len(set(refs)), count)
+            self.assertTrue(set(SAFETY_REFS).issubset(refs))
+            self.assertTrue(set(refs).issubset(placed))
+
+
 class LibraryTotalityTest(unittest.TestCase):
     """Every shipped slug is placed in a column or explicitly excluded with a reason.
 
@@ -466,8 +880,8 @@ class LibraryTotalityTest(unittest.TestCase):
 
     def _cur(self, columns, exclude):
         c = _curriculum([])
-        c["libraryColumns"] = columns
-        c["libraryExclude"] = (list(exclude) + EXTRA_EXCLUDES + FIXTURE_SAFETY_EXCLUDES
+        c["libraryColumns"] = columns + [_safety_column()]
+        c["libraryExclude"] = (list(exclude) + EXTRA_EXCLUDES
                                + FIXTURE_RIGHTS_EXCLUDES + FIXTURE_WEEK_EXCLUDES)
         return c
 
@@ -650,6 +1064,7 @@ class ShippedSetTest(unittest.TestCase):
             cur["libraryColumns"] = [
                 {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
                 {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
+                _safety_column(),
             ]
             c, root = _write(tmp, cur)
             r = _run(c, root)
@@ -662,11 +1077,11 @@ class ShippedSetTest(unittest.TestCase):
             cur["libraryColumns"] = [
                 {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
                 {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
+                _safety_column(),
             ]
             cur["libraryExclude"] = ([e for e in EXTRA_EXCLUDES
                                       if e["ref"] != "orientation-video.html"]
-                                     + FIXTURE_SAFETY_EXCLUDES + FIXTURE_RIGHTS_EXCLUDES
-                                     + FIXTURE_WEEK_EXCLUDES)
+                                     + FIXTURE_RIGHTS_EXCLUDES + FIXTURE_WEEK_EXCLUDES)
             c, root = _write(tmp, cur)
             r = _run(c, root)
             self.assertEqual(r.returncode, 1)

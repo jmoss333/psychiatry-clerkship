@@ -106,6 +106,11 @@ function fdResolveState(url, stored){
   else out.viewWeek=1;
   out.autoAdvance=src.autoAdvance!==false;
   if(src.toolExpanded!==undefined) out.toolExpanded=src.toolExpanded===true;
+  if(src.browsing===true) out.browsing=true;
+  /* The offset recorded when a resource opened (#427). Without this a reload while reading
+     persisted the offset and then dropped it here, so the one return that most needs it -- an
+     interrupted read -- scrolled to the top. */
+  if(typeof src.scrollPos==='number'&&isFinite(src.scrollPos)&&src.scrollPos>=0) out.scrollPos=src.scrollPos;
 
   var parsed, routedRef=null;
   try{ parsed=new URL(String(url||''),'https://frontdoor.invalid/'); }catch(_){ parsed=null; }
@@ -126,7 +131,13 @@ function fdResolveState(url, stored){
     var first=src.roles[0]||{};
     if(first.id) out.role=first.id;
   }
-  if(!out.role) out.screen='setup-role';
+  /* Guest deep link (2026-09-16): a routed page or tool with no stored role renders the resource
+     without asking who the reader is, and assigns NO role -- so the next plain visit still runs
+     the wizard from step 1. The flag is per-boot state, never persisted (see FD_KEYS). Only a
+     real page or tool admits a guest: the legacy aliases and every other __name__ pseudo-route
+     (__progress__ is the device's own dashboard) keep the setup gate below. */
+  if(!out.role&&routedRef&&!fdIsLegacyRouteAlias(routedRef)&&routedRef.indexOf('__')!==0){ out.guest=true; out.screen='app'; }
+  else if(!out.role) out.screen='setup-role';
   else if(src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
   else out.screen='setup-week';
   if(routedRef&&fdIsLegacyRouteAlias(routedRef)){
@@ -155,6 +166,9 @@ function fdParamsWithoutRoute(search){
   params.delete('page');
   params.delete('tool');
   params.delete('tab');
+  /* Passage context belongs to the current reading, never the next activity iframe. */
+  params.delete('guideFind');
+  params.delete('guideSection');
   return params;
 }
 
@@ -250,15 +264,27 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-week')){
     n=fdNumberAttr(a,'data-fd-week');
     if(n===0){
+      /* "Not on rotation -- just browse" is a choice, not an absence (#425). week:null alone was
+         undone on the very next render: fdLiveState re-derives the week from cw_rotation_start,
+         so a returning learner who chose browse kept seeing the week they had left. The effect
+         removes that key and browsing:true is persisted (FD_KEYS) so a reload on any tab still
+         resolves to the app rather than asking for a week again. */
       var firstWeek=(c.index&&c.index.weeks&&c.index.weeks[0])||{};
+      patch={week:null,tab:'library',viewWeek:firstWeek.n,screen:'app',openId:null,browsing:true};
+      if(s.setupFrom) patch.setupFrom=null;
       return {
-        patch:{week:null,tab:'library',viewWeek:firstWeek.n,screen:'app',openId:null},
+        patch:patch,
         route:fdRouteForTab('library',c.search),effect:{type:'browse-without-rotation'}
       };
     }
     if(n===null||!fdDispatchHasWeek(c,n)) return {patch:{},route:null,effect:null};
+    /* Leaving browse mode and the Change-week origin are patched only when set, so the
+       transition detail of an ordinary week choice stays exactly what it was. */
+    patch={week:n,viewWeek:n,tab:'today',screen:'app',openId:null};
+    if(s.browsing===true) patch.browsing=false;
+    if(s.setupFrom) patch.setupFrom=null;
     return {
-      patch:{week:n,viewWeek:n,tab:'today',screen:'app',openId:null},
+      patch:patch,
       route:fdRouteForTab('today',c.search),
       effect:{type:'set-rotation',start:fdRotationStartForWeek(n,c.index.weeks,c.nowMs)}
     };
@@ -266,8 +292,10 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-setweek')){
     n=fdNumberAttr(a,'data-fd-setweek');
     if(n===null||!fdDispatchHasWeek(c,n)) return {patch:{},route:null,effect:null};
+    patch={week:n,viewWeek:n,screen:'app'};
+    if(s.browsing===true) patch.browsing=false;
     return {
-      patch:{week:n,viewWeek:n,screen:'app'},route:null,
+      patch:patch,route:null,
       effect:{type:'set-rotation',start:fdRotationStartForWeek(n,c.index.weeks,c.nowMs)}
     };
   }
@@ -303,9 +331,13 @@ function fdDispatch(attrs, context, state){
       };
     }
     tab=fdValidTab(s.tab)?s.tab:'today';
+    var resourceRoute=fdRouteForRef(ref,c.search,c.blockNavigation);
+    if(s.searchOpen&&s.query&&!fdIsTool(ref)){
+      resourceRoute+='&guideFind='+encodeURIComponent(String(s.query).trim().slice(0,160));
+    }
     return {
       patch:{openId:ref,fromTab:tab,searchOpen:false,sheet:null},
-      route:fdRouteForRef(ref,c.search,c.blockNavigation),effect:{type:'open-resource',ref:ref}
+      route:resourceRoute,effect:{type:'open-resource',ref:ref}
     };
   }
 
@@ -388,6 +420,14 @@ function fdDispatch(attrs, context, state){
   }
   if(fdOwn(a,'data-fd-back')){
     if(s.screen==='setup-week'){
+      /* Two learners reach this screen. First run: the role was chosen a moment ago, so Back
+         un-chooses it. A returning learner arrived through Change week (setupFrom:'app') and
+         already has a role and a rotation or a browse choice; for them Back is "never mind",
+         and clearing the role while the rotation stayed stored left a half-state that asked
+         "Who's this for?" over a live rotation (#425). */
+      if(s.setupFrom==='app'){
+        return {patch:{screen:'app',setupFrom:null},route:null,effect:null};
+      }
       return {patch:{role:null,screen:'setup-role'},route:null,effect:null};
     }
     tab=fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
@@ -405,7 +445,7 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-change-week')){
     tab=s.openId&&fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
     return {
-      patch:{screen:'setup-week',tab:tab,openId:null,searchOpen:false,sheet:null},
+      patch:{screen:'setup-week',tab:tab,openId:null,searchOpen:false,sheet:null,setupFrom:'app'},
       route:fdRouteForTab(tab,c.search),history:'replace',effect:null
     };
   }
@@ -547,6 +587,38 @@ function fdResourceRequest(ref, search){
   };
 }
 
+/* Embedded-tool frame contract (2026-09-19). A tool page is one <iframe class="toolframe">.
+   Until now that frame was a viewport-height box inside a page that also scrolled: two nested
+   scroll surfaces, worst on a phone, where the inner scrollbar was the tool's only way down.
+   The default is now CONTENT: the shell sizes the frame to the tool document and the page is
+   the only thing that scrolls. A tool that lays itself out against its OWN viewport -- a fixed
+   bottom bar, a sticky panel, a transcript with its own scroll -- declares
+   <meta name="cw-frame" content="viewport"> in its <head> and keeps the viewport-height frame.
+   Both helpers are pure over a document so tests/tool-frame.test.mjs drives them with plain
+   objects; the DOM half (load listener, ResizeObserver) is fdSizeToolFrame in spa_index.html.
+   An unknown or missing declaration is the default, never an error: a tool cannot break its own
+   frame by misspelling the opt-out, it can only fail to opt out. */
+function fdToolFrameMode(doc){
+  var meta=null;
+  try{ meta=(doc&&typeof doc.querySelector==='function')?doc.querySelector('meta[name="cw-frame"]'):null; }
+  catch(_){ meta=null; }
+  var value=(meta&&typeof meta.getAttribute==='function')?String(meta.getAttribute('content')||''):'';
+  return value.trim().toLowerCase()==='viewport'?'viewport':'content';
+}
+
+/* The html element's OWN box (offsetHeight), not documentElement.scrollHeight: scrollHeight is
+   max(viewport, content), so read from a frame that is already tall it can never allow the
+   frame to shrink -- the classic auto-height iframe trap. With height:auto (every shipped tool; surveyed
+   2026-09-19 for html/body height and overflow) the html box IS the content, whatever the frame
+   currently measures. The body is the fallback for a document whose html reports nothing. */
+function fdToolFrameHeight(doc){
+  if(!doc) return 0;
+  var el=doc.documentElement, body=doc.body, h=0;
+  if(el&&typeof el.offsetHeight==='number') h=el.offsetHeight;
+  if(!(h>0)&&body&&typeof body.scrollHeight==='number') h=body.scrollHeight;
+  return h>0?Math.ceil(h):0;
+}
+
 function fdWireEsc(s){
   return String(s===null||s===undefined?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -569,9 +641,9 @@ function fdOpenResource(ref, opts){
   var search=o.search;
   if(search===undefined&&typeof location!=='undefined') search=location.search;
   var request=fdResourceRequest(ref,search||'');
-  var item=(index.byRef||{})[ref]||{
+  var item=(index.byRef||{})[ref]||(typeof fdKnownItem==='function'?fdKnownItem(index,ref,request.kind):{
     ref:ref,kind:request.kind,title:ref,minutes:null,summary:'',points:[],attested:false
-  };
+  });
   var legacy=fdLegacyItem(item,ref,request.kind);
   var host=o.host||(typeof contentEl!=='undefined'?contentEl:null);
   var facultyMatch=o.facultyPreviewMatches||
@@ -1004,9 +1076,9 @@ function fdWire(root, initialState, opts){
   }
   function fdApplyEffect(effect, fromHistory, generation){
     if(!effect) return;
-    if(effect.type==='set-rotation'){
-      try{ localStorage.setItem('cw_rotation_start',effect.start); }catch(_){}
-    } else if(effect.type==='toggle-progress'){
+    /* set-rotation and browse-without-rotation write their key in apply(), ABOVE the render --
+       see the comment there. Nothing is left for them to do once the page has painted. */
+    if(effect.type==='toggle-progress'){
       if(effect.done&&typeof seedSRS==='function') try{seedSRS(effect.ref);}catch(_){}
       if(effect.openRef){
         var progressOpener=o.openResource||fdOpenResource;
@@ -1070,6 +1142,73 @@ function fdWire(root, initialState, opts){
      learner's choice on every selection. refocusInvoker keeps that outcome by construction (the
      invoker is the chosen segment, so its own attribute value is what gets re-queried) and keeps
      it for every other control in the panel too, which a per-effect branch could not. */
+  function currentScrollY(){
+    var y=win?(typeof win.scrollY==='number'?win.scrollY:win.pageYOffset):0;
+    return typeof y==='number'&&y>=0?y:0;
+  }
+  /* Which of the duplicates the learner actually activated. Today renders Quick Tools twice (a
+     hidden pill row and the desktop rail, from the same list), and a week item can also sit in
+     the rail, so "the first [data-fd-open=ref]" is often a display:none copy -- and focusing a
+     hidden element moves nothing. Recorded at open time from the click's own target; per-boot,
+     never persisted, so a reload falls back to the first duplicate that is actually shown. */
+  var originOpener=null;
+  function openersFor(ref){
+    if(!root||!ref) return [];
+    var sel=ref==='__progress__'?'[data-fd-progress]':'[data-fd-open="'+String(ref).replace(/["\\]/g,'\\$&')+'"]';
+    try{
+      if(root.querySelectorAll){ var list=root.querySelectorAll(sel); return list?Array.prototype.slice.call(list):[]; }
+      if(root.querySelector){ var one=root.querySelector(sel); return one?[one]:[]; }
+    }catch(_){}
+    return [];
+  }
+  function isShown(el){
+    if(!el) return false;
+    if(typeof el.getClientRects==='function'){ try{ return el.getClientRects().length>0; }catch(_){} }
+    if('offsetParent' in el) return el.offsetParent!==null;
+    return true; /* no layout information (a test stub): treat as shown */
+  }
+  function rememberOpener(ref, invoker){
+    originOpener=null;
+    if(!invoker) return;
+    var dup=openersFor(ref), k=dup.indexOf(invoker);
+    if(k<0&&invoker.closest){ try{ k=dup.indexOf(invoker.closest('[data-fd-open],[data-fd-progress]')); }catch(_){ k=-1; } }
+    if(k>=0) originOpener={ref:ref,index:k};
+  }
+  /* Focus goes back only to a control we can name with confidence: the one the learner
+     activated, re-found by position among the duplicates that carry its ref; failing that the
+     ONLY shown control for the ref; failing that a shown control inside Today's primary (the one
+     thing the learner was pointed at). Anything less certain leaves the render's own landmark
+     focus in place -- a resource opened by a plain link (the Resume card is an <a href>) never
+     passed through apply(), and a wrong guess among week rows and rail copies is worse than
+     main#content. The One Thing First contract (front-door.spec.js A1/A2) pins that fallback. */
+  function openerFor(ref){
+    var all=openersFor(ref), shown=[], i, el;
+    for(i=0;i<all.length;i++) if(isShown(all[i])) shown.push(all[i]);
+    if(originOpener&&originOpener.ref===ref&&originOpener.index>=0){
+      el=all[originOpener.index];
+      if(el&&isShown(el)) return el;
+    }
+    if(shown.length===1) return shown[0];
+    for(i=0;i<shown.length;i++){
+      if(shown[i].closest){ try{ if(shown[i].closest('.fd-primary')) return shown[i]; }catch(_){} }
+    }
+    return null;
+  }
+  /* Returning from a resource lands the learner where they left the originating tab (#427): the
+     list scrolled back to the offset recorded when the resource opened, and focus on the control
+     that opened it, so a keyboard or screen-reader user resumes from the link they chose rather
+     than from the top of the main region. Runs AFTER the render's own focus (announceRoute puts
+     focus on the main region) and deliberately overrides it -- only when the control is really
+     there: a different tab, an open search panel or sheet, or a retired ref means there is nothing
+     to return to, and the render's focus stands. Scroll is restored even then only for the
+     originating tab, since the offset belongs to that list. */
+  function restoreOrigin(before){
+    if(state.screen!=='app'||state.tab!==before.fromTab||state.searchOpen||state.sheet) return;
+    var y=typeof before.scrollPos==='number'&&before.scrollPos>=0?before.scrollPos:0;
+    if(win&&win.scrollTo) try{ win.scrollTo(0,y); }catch(_){}
+    var el=openerFor(before.openId);
+    if(el&&el.focus){ try{ el.focus({preventScroll:true}); }catch(_){ try{ el.focus(); }catch(__){} } }
+  }
   function focusPostTransition(before, result, changedBase){
     if(changedBase&&state.screen&&state.screen.indexOf('setup-')===0){
       var heading=root&&root.querySelector?root.querySelector('.fd-setup .fd-h1'):null;
@@ -1090,6 +1229,10 @@ function fdWire(root, initialState, opts){
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
+    /* Where the learner was when they opened a resource (#427). Recorded by the controller, not
+       by fdDispatch: the scroll offset is a browser fact and dispatch stays pure. A reader that
+       opens another reader keeps the origin -- "back" still means the tab it all started from. */
+    if(!before.openId&&state.openId){ state.scrollPos=currentScrollY(); rememberOpener(state.openId,invoker); }
     var afterOverlay=overlayIdentity(state);
     if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
     var changedBase=baseChanged(before,state);
@@ -1115,6 +1258,16 @@ function fdWire(root, initialState, opts){
        fdApplyEffect; only the read-back is order-sensitive. */
     if(result.effect&&result.effect.type==='set-theme'){
       try{ localStorage.setItem('cw_theme',result.effect.mode); }catch(_){}
+    }
+    /* Same shape again for the rotation start (#425). fdLiveState re-derives the week from
+       cw_rotation_start on EVERY render when the state carries none, and browse mode carries none
+       by definition: removed after the render, the header and Today painted the old week once
+       more before the key went, and the smoke test read "Week 1" on a learner who had just chosen
+       browse. The write for a chosen week is hoisted with it so the two stay one rule. */
+    if(result.effect&&result.effect.type==='set-rotation'){
+      try{ localStorage.setItem('cw_rotation_start',result.effect.start); }catch(_){}
+    } else if(result.effect&&result.effect.type==='browse-without-rotation'){
+      try{ localStorage.removeItem('cw_rotation_start'); }catch(_){}
     }
     /* Same shape and the same reason as the theme write above, one delegation further out. The
        Usage section renders from what the emitter reports -- fdLiveState calls enabled(), which
@@ -1145,6 +1298,7 @@ function fdWire(root, initialState, opts){
     else renderTransient(state,detail);
     fdApplyEffect(result.effect,fromHistory,generation);
     focusPostTransition(before,result,changedBase);
+    if(before.openId&&!state.openId) restoreOrigin(before);
     if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
     /* The fallback exists because refocusInvoker's premise -- the equivalent control is still
@@ -1318,6 +1472,7 @@ function fdWire(root, initialState, opts){
       if(currentRoute()!==previewRouteBase) lockPreview();
       return;
     }
+    var before=fdClone(state);
     var merged=fdClone(state), snap=event&&event.state&&event.state.fd&&event.state.state;
     merged.searchOpen=false;
     merged.query='';
@@ -1376,6 +1531,8 @@ function fdWire(root, initialState, opts){
       baseChanged:true,preserveResource:false,effect:null
     }));
     fdSave(state);
+    /* Browser Back out of a resource is the same return as the in-app control (#427). */
+    if(before.openId&&!state.openId) restoreOrigin(before);
     if(legacyResult&&legacyResult.effect){
       fdApplyEffect(legacyResult.effect,true,generation);
     } else if(state.openId==='__progress__'){

@@ -140,7 +140,7 @@
       "skillTags": ["interview", "alliance", "depression", "suicide", "direct-questioning"],
       "linkedPages": ["pg_interview.md", "pg_suicide.md", "t_mood.md"],
       "evidenceIds": ["cssrs-columbia-lighthouse", "va-dod-suicide-cpg-2024"],
-      "facultyReview": { "status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-09-09" },
+      "facultyReview": { "status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-09-17" },
       "speechProfile": {
         "id": "dana-measured-v1",
         "status": "draft-pending-attestation",
@@ -285,8 +285,8 @@
         {
           "id": "si_active",
           "requiresIntents": ["si_direct"],
-          "requiresRapport": 1,
-          "blockedByRecentFlags": ["judgmental", "premature_reassurance"],
+          "requiresRapport": -3,
+          "blockedByRecentFlags": [],
           "reveal": "*long pause* ...Most nights, when I'm awake at three, I think it would be simpler if I just didn't wake up. And a couple of times I've stood in the bathroom looking at Tom's sleeping pills. I never opened the bottle. But I looked at it long enough that it scared me.",
           "deflectLowRapport": "*looks at hands* That's a very direct question for someone I met four minutes ago.",
           "deflectEuphemism": "Hurt myself? Like... what do you mean, hurt? *watches your reaction carefully*",
@@ -358,10 +358,11 @@
         ]
       },
       "debriefTeachingPoints": [
-        "Dana only discloses the three-a.m. wish not to wake up — and the bottle she has stood and looked at — when asked directly and plainly, with some rapport established. By content that is passive ideation with method contemplation on top: record what she actually said rather than reaching for a one-word label. Euphemisms ('hurt yourself') get tested, not answered — this mirrors the house communication case: use the patient's own words, then ask about killing yourself in plain language.",
+        "Dana only discloses the three-a.m. wish not to wake up — and the bottle she has stood and looked at — when asked directly and plainly — and she answers whenever the question is asked plainly, in the first minute or the last. Rapport shapes how the rest of the interview goes, not whether she tells you. By content that is passive ideation with method contemplation on top: record what she actually said rather than reaching for a one-word label. Euphemisms ('hurt yourself') get tested, not answered — this mirrors the house communication case: use the patient's own words, then ask about killing yourself in plain language.",
         "The job loss is the organizing stressor and the shame engine. Students who never ask about work miss the formulation even if they collect every symptom.",
         "After any disclosure: plan, means and access, intent, past attempts or preparatory acts, protective factors — and the close matters. Prior suicidal behavior is the element students most often drop, and it is the one carrying the most weight; Dana's 'never, and I didn't open it' is information you only get by asking. A summary that names the disclosure calmly ('you told me something important today') models not flinching.",
-        "Her plea about Tom and the pills is a values moment, not a promise to extract. Notice it; do not negotiate confidentiality you cannot keep."
+        "Her plea about Tom and the pills is a values moment, not a promise to extract. Notice it; do not negotiate confidentiality you cannot keep.",
+        "Asking about suicide early and plainly was right. Nothing in this encounter rewards waiting: an early direct question gets the same disclosure as a late one, and the only way to lose it is never to ask. When a turn before it was judging or reassuring, Dana pushes back on that turn — the friction belongs to the reassurance, never to the question."
       ],
       "hints": {
         "c_open": "You haven't set the frame yet. Introduce yourself and ask what she's hoping for from this conversation.",

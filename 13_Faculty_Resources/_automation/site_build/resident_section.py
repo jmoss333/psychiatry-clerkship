@@ -36,6 +36,15 @@ if os.path.exists(_copied_governance): os.remove(_copied_governance)
 _copied_surface_governance=os.path.join(OUT,"governance.json")
 if os.path.exists(_copied_surface_governance): os.remove(_copied_surface_governance)
 
+# Deploy-preview CSP (#430). The resident site has no _headers writer of its own: the file
+# arrives through the copytree above, already widened if THIS build ran with
+# CONTEXT=deploy-preview (build_deploy.py ran first, in the same environment). The call is
+# repeated here anyway because inheritance is not a contract -- if the resident build ever
+# writes or rewrites its own _headers, the preview allowance must not silently disappear with
+# the copy. preview_headers() is idempotent, so on the inherited file this is a no-op and
+# nothing is rewritten or printed.
+common.apply_preview_headers(OUT, label="res")
+
 # ---- orientation video is MS3-scoped (its own narration says "clerkship") — strip the files
 # that rode along via the MS3 copytree above; resident gets its own prototypes only (below).
 # The package is declared once in site_extras.py, so this strip cannot drift from the copy.
@@ -305,15 +314,23 @@ welcome_compass.assert_nav_projection(nav,_week_cards,label="resident")
 # orientation video, adds the rp-* prototypes), so the document below only ever
 # requires ledger records / built tool files for what resident actually ships.
 sys.path.insert(0, os.path.dirname(HERE))
+from attestation_hash import project_topic_meta_faculty_review
 from surface_governance import (
-    load_validated_ledger,
+    load_effective_ledger,
+    hash_report_summary,
     build_site_document,
     annotate_navigation,
     apply_tool_status,
     write_site_document,
 )
 
-_ledger = load_validated_ledger(Path(LIB))
+# The EFFECTIVE ledger, same as MS3: an attestation whose attested inputs no longer match
+# its stored contentHash renders PENDING here too. The digest is computed from the SOURCE
+# tree, so both sites demote the same set -- what differs is only which of them each site
+# ships. The built topic_meta.json is demoted further down, after this build's own last
+# write to it (cotw_meta.inject).
+_ledger, _hash_report = load_effective_ledger(Path(LIB))
+print(hash_report_summary(_hash_report))
 _surface_governance = build_site_document(_ledger, nav, "resident")
 nav = annotate_navigation(nav, _surface_governance)
 open(OUT + "/nav.json", "w", encoding="utf-8").write(
@@ -350,6 +367,15 @@ _cm_add,_cm_skip,_cm_prune,_cm_untagged=_cotw_meta.inject(OUT,_cotw_weeks,"res")
 print("cotw topic_meta: %d derived, %d hand-written kept, %d ms3 keys pruned"%(_cm_add,_cm_skip,_cm_prune))
 if _cm_untagged: print("  NOTE no 'blueprint' in cotw_registry.json (case absent from the crosswalk): "+", ".join(_cm_untagged))
 
+# D6, after the LAST write to OUT/topic_meta.json above and before every read of it below:
+# a drifted page's facultyReview block reads pending in the BUILT copy, so the Front Door
+# sheet's "attested" line cannot outlive the text it attested. `reviewer`/`lastReviewed`
+# stay (the review did happen); the SOURCE topic_meta.json is never touched.
+_tm_built=json.load(open(OUT+"/topic_meta.json",encoding="utf-8"))
+_tm_demoted=project_topic_meta_faculty_review(_tm_built,set(_hash_report["stale"]))
+json.dump(_tm_built,open(OUT+"/topic_meta.json","w",encoding="utf-8"),ensure_ascii=False)
+print("topic_meta facultyReview: %d demoted to pending (drift)"%_tm_demoted)
+
 # The resident build begins as a copy of MS3, so replace every Front Door global only after
 # resident extras, nav metadata, and topic-meta overlays are all complete. Reusing the copied
 # MS3 literals would silently hide resident-only browse paths behind student data.
@@ -378,7 +404,7 @@ try:
     _rotation_projection=_build_rotation_projection(_rotation_catalog,_rotation_governance,"resident")
     _fd_payload=frontdoor_catalog.build_frontdoor_payload(
         "resident", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav, _core_revision,
-        _rotation_projection)
+        _rotation_projection, shipped=frontdoor_catalog.load_search_universe(LIB))
     _frontdoor_destinations=(OUT+"/index.html", OUT+"/tools/rotation-curator.html")
     for _frontdoor_destination in _frontdoor_destinations:
         frontdoor_catalog.inject_frontdoor_payload(

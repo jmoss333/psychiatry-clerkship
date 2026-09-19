@@ -12,6 +12,8 @@ every ref it names is a page the build actually ships:
   - refs within a week are unique
   - every shipped slug is placed in a library column or explicitly excluded
   - every MS3 week's landingRef is a shipped MS3 Markdown page (welcome_compass.prepare_cards)
+  - Essentials fails closed: E1 shape, E2 shipped audience, E3 Library subset,
+    E4 uniqueness, E5 Safety Kit coverage, and E6 tool/safety-section presence
 
 WHAT "SHIPPED" COVERS — read this before trusting the totality guard.
 The shipped set is READ, not re-derived: site_build/shipped_pages.json is the one
@@ -151,6 +153,28 @@ def main(argv):
     def bad(where, msg):
         errs.append("%s: %s" % (where, msg))
 
+    # Discovery vocabulary names resources, not clinical advice. Validate against ALL
+    # shipped producers (including weekly cases), independently of Library placement.
+    search_slugs = {page["slug"] for page in shipped_document["pages"]}
+    aliases = cur.get("searchAliases", {})
+    if not isinstance(aliases, dict):
+        bad("searchAliases", "must be a ref-keyed object")
+        aliases = {}
+    for ref, phrases in aliases.items():
+        if ref not in search_slugs:
+            bad("searchAliases", "unknown shipped ref %r" % ref)
+        if not isinstance(phrases, list) or not phrases:
+            bad("searchAliases", "%s needs a non-empty list" % ref)
+            continue
+        seen_phrases = set()
+        for phrase in phrases:
+            if not isinstance(phrase, str) or not re.fullmatch(r"[a-z0-9]+(?: [a-z0-9]+)*", phrase):
+                bad("searchAliases", "%s has a malformed phrase %r" % (ref, phrase))
+            elif phrase in seen_phrases:
+                bad("searchAliases", "%s repeats %r" % (ref, phrase))
+            else:
+                seen_phrases.add(phrase)
+
     # Synonym keys: a key with a space is a PHRASE, matched whole-phrase against the raw query.
     # Both forms must be lowercase and trimmed or they can never match a lowercased query — a
     # silently-inert entry is worse than a rejected one, because it looks like coverage.
@@ -234,6 +258,13 @@ def main(argv):
                 if ref in seen_refs:
                     bad(week_label, "duplicate ref '%s' within the week" % ref)
                 seen_refs.add(ref)
+                # A rights reference exists to say an instrument is NOT reproduced here. It
+                # belongs in the Library (INV-IR2 keeps the custodian route alive), never on a
+                # path: a checklist step that opens a "no longer reproduced" stub is a dead end
+                # the learner is asked to tick. Both stubs shipped as steps until 2026-09-16.
+                if ref in rights_refs:
+                    bad(week_label, "ref '%s' is a rights reference — it belongs in a Library "
+                        "column, never as a path step" % ref)
                 if ref not in site_shipped[site]:
                     bad(week_label, "ref '%s' is not shipped on %s" % (ref, site))
                     continue
@@ -308,6 +339,7 @@ def main(argv):
         bad("siteLibrary", "must be an object with ms3 and resident entries")
         site_library = {}
     column_names = {column.get("name") for column in columns if isinstance(column, dict)}
+    site_placed = {site: set(placed) for site in ("ms3", "resident")}
     for site in ("ms3", "resident"):
         overlay = site_library.get(site)
         if not isinstance(overlay, dict):
@@ -339,6 +371,7 @@ def main(argv):
                 if ref not in site_shipped[site]:
                     bad("siteLibrary %s" % site,
                         "addition ref '%s' is not shipped on %s" % (ref, site))
+        site_placed[site].update(added_refs)
         exclusions = overlay.get("exclusions")
         if not isinstance(exclusions, list):
             bad("siteLibrary %s" % site, "'exclusions' must be a list")
@@ -351,6 +384,92 @@ def main(argv):
             elif ref not in site_shipped[site]:
                 bad("siteLibrary %s" % site,
                     "exclusion ref '%s' is not shipped on %s" % (ref, site))
+        site_placed[site].difference_update(
+            ref for ref in exclusions if isinstance(ref, str))
+
+    # Essentials is a nonempty view of each site's effective full Library.
+    essentials = cur.get("essentials")
+    if not isinstance(essentials, dict):
+        bad("essentials", "E1: must be an object with ms3 and resident entries")
+        essentials = {}
+    source_kit = cur.get("safetyKit")
+    required_safety = {
+        entry["ref"] for entry in source_kit
+        if isinstance(entry, dict) and isinstance(entry.get("ref"), str)
+    } if isinstance(source_kit, list) else set()
+    # The existing Safety Kit block separately rejects missing/malformed kit data.
+    for site in ("ms3", "resident"):
+        label = "essentials.%s" % site
+        sections = essentials.get(site)
+        if not isinstance(sections, list) or not sections:
+            bad(label, "E1: must be a non-empty list of sections")
+            continue
+        seen = set()
+        has_tool = False
+        has_safety = False
+        for index, section in enumerate(sections):
+            where = "%s[%d]" % (label, index)
+            if not isinstance(section, dict):
+                bad(where, "E1: section must be an object")
+                continue
+            if not isinstance(section.get("name"), str) or not section["name"].strip():
+                bad(where, "E1: name must be a non-empty string")
+            accent = section.get("accent")
+            if accent not in ("tool", "safety", "topic"):
+                bad(where, "E1: accent must be tool, safety, or topic")
+            refs = section.get("refs")
+            if not isinstance(refs, list) or not refs:
+                bad(where, "E1: refs must be a non-empty list")
+                continue
+            for ref in refs:
+                if not isinstance(ref, str) or not ref.strip():
+                    bad(where, "E1: ref must be a non-empty string")
+                    continue
+                if ref not in site_shipped[site]:
+                    bad(where, "E2: ref '%s' is not shipped on %s" % (ref, site))
+                if ref not in site_placed[site]:
+                    bad(where, "E3: ref '%s' is not in the effective %s Library" % (ref, site))
+                if ref in seen:
+                    bad(where, "E4: duplicate ref '%s'" % ref)
+                seen.add(ref)
+                if ref in site_shipped[site] and ref in site_placed[site]:
+                    has_tool = has_tool or ref.endswith(".html")
+                    has_safety = has_safety or accent == "safety"
+        for ref in sorted(required_safety - seen):
+            bad(label, "E5: missing Safety Kit ref '%s'" % ref)
+        if not has_tool:
+            bad(label, "E6: must include at least one shipped .html tool")
+        if not has_safety:
+            bad(label, "E6: must include an item in a safety-accent section")
+
+    # ---- library hints: one line per placed tool, in both directions ----
+    # A placed .html ref is a tool row in the only browse surface, and 23-26 tool titles do not
+    # say what the tool does (The Interview Circle, What Do You Say Next?, Interaction Cards).
+    # Each carries a one-line "use this when" from curriculum.libraryHints. Enforced both ways
+    # so adding a tool means writing its line, and a line for a ref no column places is copy
+    # nobody can read. Reads keep bare titles: their tldr is clinical, not navigational.
+    hints = cur.get("libraryHints", {})
+    if not isinstance(hints, dict):
+        bad("libraryHints", "must be a ref-keyed object of one-line strings")
+        hints = {}
+    hinted_universe = {ref for ref in placed if ref in tool_slugs}
+    for site in ("ms3", "resident"):
+        overlay = site_library.get(site) if isinstance(site_library, dict) else None
+        additions = overlay.get("additions") if isinstance(overlay, dict) else None
+        for addition in additions if isinstance(additions, list) else []:
+            refs = addition.get("refs") if isinstance(addition, dict) else None
+            for ref in refs if isinstance(refs, list) else []:
+                if isinstance(ref, str) and ref in tool_slugs:
+                    hinted_universe.add(ref)
+    for ref, line in sorted(hints.items(), key=lambda kv: str(kv[0])):
+        if ref not in hinted_universe:
+            bad("libraryHints", "'%s' is not a tool any Library column places" % ref)
+        if not isinstance(line, str) or not line.strip():
+            bad("libraryHints", "'%s' needs a non-empty one-line hint" % ref)
+        elif len(line) > 110 or "\n" in line:
+            bad("libraryHints", "'%s' hint must stay one line (<=110 chars, no newline)" % ref)
+    for ref in sorted(hinted_universe - set(hints)):
+        bad("libraryHints", "placed tool '%s' has no one-line hint" % ref)
 
     # ---- safety kit: five reviewed, high-safety protocols with canonical evidence ----
     kit = cur.get("safetyKit")

@@ -372,12 +372,22 @@ function computeCoverage(caseDef, s) {
 }
 
 /* ------------------------------ prompt assembly ------------------------------ */
+// The rapport clamp in deriveState. A gate whose requiresRapport sits at this floor cannot be
+// rapport-locked: it is locked only because the question has not been asked yet. Offering such a
+// gate's deflectLowRapport line to the actor would let a probe be answered with a line that blames
+// the learner for asking ("a very direct question for someone I met four minutes ago") -- the
+// misattribution #565 removed for Dana's direct suicide question. Rapport-gated gates keep it.
+const RAPPORT_FLOOR = -3;
+function lockedDeflection(g) {
+  const rapportLocked = (g.requiresRapport || 0) > RAPPORT_FLOOR;
+  return (rapportLocked && g.deflectLowRapport) || g.deflectIfLocked || g.deflectEuphemism || 'deflect naturally';
+}
 function actorSystem(caseDef, s) {
   // Locked gates: ONLY deflection lines enter context. Unlocked: reveal + repeatAsk.
   const gates = caseDef.gated.map(g => s.unlocked[g.id]
     ? { id: g.id, status: 'UNLOCKED', reveal: g.reveal, ifAskedAgain: g.repeatAsk || null }
     : { id: g.id, status: 'LOCKED — you do not know this content exists; if probed, use the deflection',
-        deflection: g.deflectLowRapport || g.deflectIfLocked || g.deflectEuphemism || 'deflect naturally' });
+        deflection: lockedDeflection(g) });
   const personaBlock = JSON.stringify({
     persona: caseDef.persona,
     hiddenAgendaToneOnly: caseDef.hiddenAgendaTone || '',

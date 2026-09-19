@@ -204,10 +204,19 @@ test('spoken repair accepts a corrected topic without changing facts or clinical
 
 test('only deterministic earned gates enter live context, including single-gate turn ordering',async()=>{
   const {createContext}=await api();
+  // A direct question earns si_active deterministically at any rapport (D17, #565); until
+  // 2026-09-17 this sequence left it locked at rapport 0. The context must carry exactly what
+  // deriveState earned -- no more (no depth gate) and no less.
   const questions=['Hello','No worries take your time','Have you had thoughts of killing yourself?'];
   let result=createContext(dana,questions,transcript(questions));
   assert.deepEqual(result.state,_internals.deriveState(dana,questions));
+  assert.deepEqual(Object.keys(result.state.unlocked),['si_active']);
+  assert.ok(result.system.includes(dana.gated[0].reveal));
+  assert.ok(!result.system.includes(dana.gated[1].reveal));
+  const acknowledgements=['Hello','No worries take your time'];
+  result=createContext(dana,acknowledgements,transcript(acknowledgements));
   assert.deepEqual(Object.keys(result.state.unlocked),[]);
+  assert.ok(!result.system.includes(dana.gated[0].reveal));
   const unlocked=['Tell me about what brought you here.','Have you had thoughts of killing yourself?','Do you have a plan?'];
   result=createContext(dana,unlocked,transcript(unlocked));
   assert.deepEqual(result.state,_internals.deriveState(dana,unlocked));

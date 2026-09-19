@@ -1516,3 +1516,15 @@ test('a signalled device offers nothing the click path could act on', () => {
   assert.equal(h.storage.getItem('cw_analytics_optout_v1'), null,
     'and nothing has been written on this device’s behalf');
 });
+
+// ---- Phase 3 (F4): a guest opens settings — no chip is the truth ------------------------------
+test('with no stored role, the role chips render with none pressed and none styled active', () => {
+  const h = S.fdSheetSettingsBody(withState({ roles: ROLES }));
+  const chips = h.match(/<button[^>]*data-fd-role="[^"]*"[^>]*>/g) || [];
+  assert.equal(chips.length, ROLES.length, 'every role is offered');
+  for (const chip of chips) {
+    assert.match(chip, /aria-pressed="false"/, chip);
+    assert.doesNotMatch(chip, /\bis-active\b/, chip);
+  }
+  assert.doesNotMatch(h, /undefined/);
+});

@@ -85,6 +85,19 @@ step "every falsification is on a gate"     python3 bin/check_vacuity.py
 step "unit — PR preflight"                  python3 bin/pr_preflight.py --self-test
 step "unit — attestation authorship"        python3 bin/check_attestation_authorship.py --self-test
 step "attestation authorship"               python3 bin/check_attestation_authorship.py
+# The sibling question. Authorship asks WHO signed; this asks WHAT they signed — every
+# reviewed row must name the text it attested, and the name must still fit. Drift is a
+# notice here and exits 0 on purpose (see the tool's docstring); an unbound, malformed or
+# unshipped-and-unlisted row is a finding.
+step "unit — attestation hashes"            python3 bin/check_attestation_hashes.py --self-test
+step "attestation hashes"                   python3 bin/check_attestation_hashes.py
+# The third question, about the DIFF rather than the ledger: who may promote an attestation,
+# and in what company. A content PR may register and demote; only the console, on
+# attest/pending, may promote. On a branch stacked on an unmerged PR the default base is
+# merge-base with origin/main and so includes the PARENT's commits — push with
+# CLERKSHIP_PR_BASE=origin/<parent-branch> git push and the gate compares against the parent.
+step "unit — governance/content separation" python3 bin/check_governance_separation.py --self-test
+step "governance/content separation"        python3 bin/check_governance_separation.py
 
 # --- python validators ---
 # This block mirrors the python half of ci.yml's build-test-validate job, step for step.
@@ -145,6 +158,14 @@ step "test_validate_claim_anchors"          python3 $A/test_validate_claim_ancho
 step "validate_claim_anchors"               python3 $A/validate_claim_anchors.py
 step "unit — evidence annotations"          python3 $A/validate_evidence_annotations.py --self-test
 step "validate_evidence_annotations"        python3 $A/validate_evidence_annotations.py
+# Both audits below are RATCHETS (docs/RATCHETS.md): the finding counts each one reports are
+# pinned in a committed bin/*_baseline.json beside the tool, a rise fails, a fall is a note, and
+# `--update-baseline` lowers the pin as part of a reviewed reduction. Until 2026-09-16 the span
+# audit gated REWORDED sentences only, so the pott-2022 defect it was built for -- a clause
+# deleted MID-sentence classifies as EDITED -- exited 0, and a wrong cache path printed
+# "0 clean ... 49 uncached" and passed. Both are red now. The --self-test proves a synthetic
+# regression exits 1 and the live tree exits 0; check_vacuity.py requires it on a hard step.
+step "unit — span audit"                    python3 bin/verify_spans.py --self-test
 step "span audit (verbatim vs paper)"       python3 bin/verify_spans.py
 step "unit — research dock"                 python3 bin/research-dock.py --self-test
 step "research return dock"                 python3 bin/research-dock.py check --strict
@@ -196,6 +217,18 @@ step "unit — twin parity"                   python3 bin/check_twin_parity.py -
 # no-content-change cancel is not, and that an unrecognised deploy state is a finding rather
 # than a pass. Without that last one the alarm would quietly match nothing.
 step "unit — netlify deploy health"         python3 bin/check_netlify_deploy_health.py --self-test
+# Currency guards (2026-09-18). Only the SELF-TESTS run here for the first two: the real
+# source-integrity run asks PubMed and Crossref for every identified source (~60s, real egress,
+# and a datacenter runner is bot-blocked by some hosts), and the real cadence run is a faculty
+# queue — 8 monthly-cadence sources were 41 days overdue on the day it was written, and an
+# overdue review needs a person, not a red push. The ICD check is offline (its code tables are
+# committed under bin/data/), so it runs for real: a retiring F-code fires BEFORE October 1.
+step "unit — source integrity"              python3 bin/check_source_integrity.py --self-test
+step "unit — review cadence"                python3 bin/check_review_cadence.py --self-test
+step "unit — icd-10-cm codes"               python3 bin/check_icd_codes.py --self-test
+step "icd-10-cm codes in force"             python3 bin/check_icd_codes.py
+# Ratchet against bin/check_qbank_coherence_baseline.json (pairs = 0 today); the pin is what
+# the --self-test step above asserts the exit code against. See the span-audit comment above.
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
 step "twin parity (audience copies)"        python3 bin/check_twin_parity.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py

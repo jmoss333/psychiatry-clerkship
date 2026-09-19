@@ -349,7 +349,8 @@ test('late data hydration refreshes Progress only while its root view is still m
 
 test('live Reader keeps topic practice, quiz, feedback, and page enhancement behavior delegated', () => {
   assert.match(source, /parseMarkdown:function\(markdown\)/);
-  assert.match(source, /buildTpl\(meta,ref\)/);
+  // The reader passes the handheld flag (tests/practice-panel.test.mjs pins both call sites).
+  assert.match(source, /buildTpl\(meta,ref,\{open:fdHandheld\(\)\}\)/);
   assert.match(source, /makeCollapsible\(body\)/);
   assert.match(source, /enhanceTables\(body\)/);
   for (const selector of ["closest('.tyo')", "closest('.pgfb-b')", "closest('[data-tool]')"]) {
@@ -405,4 +406,18 @@ test('the live shell carries no hand-maintained tool map, and static QA covers w
   }
   assert.doesNotMatch(staticQa, /idBlockCheck\('(?:CASE_TITLES|FAMILY_SCENARIO_TITLES)'/,
     'retired shell title maps must not remain mandatory QA inputs');
+});
+
+// ---- Phase 3 (F4): the boot never stamps a role onto a deep-link visitor --------------------
+//
+// Until 2026-09-16 a visitor following a link to one page was silently given FD_ROLES[0] so the
+// resolver would not send them to the wizard. fdResolveState now admits that visitor as a guest
+// with no role; both boot sites (the main boot and the rejected-edition prerelease path) keep
+// `browsing=true` and assign nothing, so the next plain visit runs the wizard from step 1.
+test('a deep-link visitor is a guest: the boot keeps browsing but assigns no role, on both boot paths', () => {
+  assert.doesNotMatch(source, /fdStored\.role=\(FD_ROLES\[0\]/, 'main boot must not stamp a role');
+  assert.doesNotMatch(source, /fdPrereleaseStored\.role=\(FD_ROLES\[0\]/, 'prerelease boot must not stamp a role');
+  assert.match(source, /if\(fdIncomingRef&&!fdIsLegacyRouteAlias\(fdIncomingRef\)&&!fdStored\.role\)\{\s*fdStored\.browsing=true;\s*\}/);
+  assert.match(source, /if\(fdPrereleaseRef&&!fdIsLegacyRouteAlias\(fdPrereleaseRef\)&&!fdPrereleaseStored\.role\)\{\s*fdPrereleaseStored\.browsing=true;\s*\}/);
+  assert.match(wireModule, /out\.guest=true;\s*out\.screen='app';/, 'the resolver, not the boot, owns the guest decision');
 });

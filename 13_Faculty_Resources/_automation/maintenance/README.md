@@ -39,6 +39,7 @@ days, the repository-supported ceiling. The existing CI smoke artifact remains 1
 | Internal workflow heartbeat | Daily 10:45 UTC, `45 10 * * *` | `maintenance-heartbeat.yml` | `maintenance-workflow-heartbeat-${{ github.run_id }}`, `maintenance-stranded-prs-${{ github.run_id }}`, `maintenance-automation-branch-prs-${{ github.run_id }}` — 90 days each |
 | Clean-room release rehearsal | Sunday 08:00 UTC, `0 8 * * 0` | `ci.yml` | `smoke-test-results-${{ github.run_number }}` — 14 days |
 | Faculty governance digest | Monday 12:30 UTC, `30 12 * * 1` | `maintenance-governance-digest.yml` | `maintenance-governance-${{ github.run_id }}` — 90 days |
+| Stranded faculty attestations | Monday 12:30 UTC, with the governance digest | `maintenance-governance-digest.yml` | `maintenance-governance-${{ github.run_id }}` — 90 days |
 | Evidence and operations review | First day monthly 13:00 UTC, `0 13 1 * *` | `maintenance-monthly-review.yml` | `maintenance-monthly-${{ github.run_id }}` — 90 days |
 | Rotation readiness | Daily 13:15 UTC, `15 13 * * *` | `maintenance-rotation-readiness.yml` | `maintenance-rotation-${{ github.run_id }}` — 90 days |
 | Link surveillance | Monday 06:00 UTC, `0 6 * * 1` | `surveillance-link-monitor.yml` | `surveillance-link-monitor-${{ github.run_id }}` — 90 days |

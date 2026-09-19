@@ -473,15 +473,31 @@ welcome_compass.assert_nav_projection(nav,_compass_cards,label="MS3")
 # reviewed.json to the risk schema, this is EXPECTED to abort the real build; see
 # .superpowers/sdd/2026-07-26-risk-aware-publishing-warnings/task-3-brief.md.
 sys.path.insert(0, os.path.dirname(HERE))
+from attestation_hash import project_topic_meta_faculty_review
 from surface_governance import (
-    load_validated_ledger,
+    load_effective_ledger,
+    hash_report_summary,
     build_site_document,
     annotate_navigation,
     apply_tool_status,
     write_site_document,
 )
 
-_ledger = load_validated_ledger(Path(LIB))
+# The EFFECTIVE ledger: an attestation whose attested inputs no longer match its stored
+# contentHash renders PENDING, because the receipt describes text this build no longer
+# ships. The source reviewed.json is never rewritten -- the review happened, on its
+# recorded date, over the older text; only the faculty console writes that file.
+_ledger, _hash_report = load_effective_ledger(Path(LIB))
+print(hash_report_summary(_hash_report))
+# D6: the BUILT topic_meta.json follows the same demotion, so the Front Door sheet's
+# "attested" line cannot outlive the text it attested (frontdoor/fd_data.js reads the built
+# copy and looks at `status` alone). `reviewer` and `lastReviewed` stay: the review did
+# happen. The SOURCE topic_meta.json is never touched -- and this runs after the last write
+# to OUT/topic_meta.json (cotw_meta.inject, above) and before every read of it below.
+_tm_built = json.load(open(OUT+"/topic_meta.json",encoding="utf-8"))
+_tm_demoted = project_topic_meta_faculty_review(_tm_built, set(_hash_report["stale"]))
+json.dump(_tm_built, open(OUT+"/topic_meta.json","w",encoding="utf-8"), ensure_ascii=False)
+print("topic_meta facultyReview: %d demoted to pending (drift)" % _tm_demoted)
 _surface_governance = build_site_document(_ledger, nav, "ms3")
 nav = annotate_navigation(nav, _surface_governance)
 open(OUT + "/nav.json", "w", encoding="utf-8").write(
@@ -542,7 +558,7 @@ try:
     _rotation_projection=_build_rotation_projection(_rotation_catalog,_rotation_governance,"ms3")
     _fd_payload=frontdoor_catalog.build_frontdoor_payload(
         "ms3", _curriculum, nav, _core_revision,
-        _rotation_projection)
+        _rotation_projection, shipped=frontdoor_catalog.load_search_universe(LIB))
     _frontdoor_destinations=(OUT+"/index.html", OUT+"/tools/rotation-curator.html")
     for _frontdoor_destination in _frontdoor_destinations:
         frontdoor_catalog.inject_frontdoor_payload(
@@ -641,6 +657,14 @@ open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.o
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
 open(OUT+"/404.html","w",encoding="utf-8").write('<!doctype html><meta charset="utf-8"><title>Not found</title><meta name="robots" content="noindex,nofollow"><style>body{font-family:system-ui,sans-serif;background:#f6f3ee;color:#2f2924;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}a{color:#174d43}</style><div><h1 style="color:#9f3f2a">Page not found</h1><p><a href="/">Return to the clerkship hub</a></p></div>')
 open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app https://clerkship-metrics.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/media/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n/sw.js\n  Cache-Control: public, max-age=0, must-revalidate\n")
+
+# Deploy-preview only (#430): Netlify injects /.netlify/scripts/cdp into preview HTML, whose
+# drawer frames https://app.netlify.com/ and trips the frame-src above. The literal written
+# just now stays the production payload verbatim (it is regex-pinned by
+# tests/faculty-console-handler.test.mjs); this re-reads the written file and widens frame-src
+# ONLY when CONTEXT=deploy-preview. Production and branch-deploy stay byte-identical.
+common.apply_preview_headers(OUT, label="ms3")
+
 print("polish pass: banners stripped, contrast darkened, <main>+favicon on tools, robots/404/_headers written")
 
 

@@ -624,6 +624,11 @@ class ScheduledWorkflowTests(unittest.TestCase):
             "maintenance-governance-digest.yml": {
                 "contents": "read",
                 "issues": "write",
+                # Added 2026-09-15 for the stranded-attestation steward, which
+                # asks whether a rolling review request is open for the
+                # attestation branch. Read-only, and the narrowest grant that
+                # answers the question — the same one the heartbeat holds.
+                "pull-requests": "read",
             },
             "maintenance-monthly-review.yml": {
                 "contents": "read",

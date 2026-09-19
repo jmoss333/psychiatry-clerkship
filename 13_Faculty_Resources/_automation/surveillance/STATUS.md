@@ -1,15 +1,15 @@
 # Surveillance status
 
-_Generated 2026-09-07T07:21:30+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
+_Generated 2026-09-16T17:11:30+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
 _Issue truth: **live**._
 
 ## Summary
 
-- **P0 open:** 1  •  **P1 open:** 740  •  **P2 (digest):** 1
-- **Pages needing re-review:** 29
+- **P0 open:** 1  •  **P1 open:** 738  •  **P2 (digest):** 1
+- **Pages needing re-review:** 28
 - **Stale sources:** 1
 
-- **Citation checks:** 646 DOI/PMID IDs tracked  •  latest check 2026-09-07  •  0 stale
+- **Citation checks:** 652 DOI/PMID IDs tracked  •  latest check 2026-09-16  •  1 stale
 
 - **Citation P1s:** 733 total  •  233 touch live teaching pages  •  500 archive/import-only
 
@@ -18,21 +18,17 @@ _Issue truth: **live**._
 - **[apa-practice-guidelines]** Content changed at APA Practice Guidelines (index)  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/432))
   - affects: `02_Clinical_Skills/Interviewing/README.md`, `02_Clinical_Skills/Screeners/README.md`, `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md`, `03_Core_Topics/Geriatric/README.md`, `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md`, `03_Core_Topics/Nutrition/README.md`, `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md`, `03_Core_Topics/Personality/README.md`, `03_Core_Topics/Psychosis/README.md`, `03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md`, `03_Core_Topics/SUD_Withdrawal/README.md`, `04_Acute_and_Safety/Delirium/README.md`, `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html`, `07_Evidence_and_Reading/Landmark_Library/Primary_Source_Download_List.md`, `13_Faculty_Resources/APA_Downloads_2026-06-29/APA_SURFACE_CARDS.md`, `13_Faculty_Resources/APA_Downloads_2026-06-29/catalog.html`, `13_Faculty_Resources/APA_membership_resource_scan_2026-06-29.md`, `13_Faculty_Resources/README.md`, `14_Tracks/MS3/README.md`, `14_Tracks/MS3/Student_Ready_Pack/00_index/README.md`
 
-## Open P1 — non-citation (7)
+## Open P1 — non-citation (5)
 
 - **[link:www.psychiatry.org]** Broken link (406) on 13_Faculty_Resources/APA_Downloads_2026-06-29/APA_SURFACE_CARDS.md: https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/Professional-Topics/Integrated-Care/Private/Integration-of-Mental-Health-Into-Primary-Care-The-Collaborative-Care-Model.pptx  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/433))
   - affects: `13_Faculty_Resources/APA_Downloads_2026-06-29/APA_SURFACE_CARDS.md`
-- **[link:mmc-psychiatry-residents-sanford.netlify.app]** Broken link (no response) on 13_Faculty_Resources/Handoffs/library_review_2026-07-01.md: https://mmc-psychiatry-residents-sanford.netlify.app/  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/434))
-  - affects: `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md`
-- **[link:mental-health-education-library.netlify.app]** Broken link (no response) on 13_Faculty_Resources/Outreach/alex-tour/index.html: https://mental-health-education-library.netlify.app/  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/435))
-  - affects: `13_Faculty_Resources/Outreach/alex-tour/index.html`
-- **[link:www.aacom.org]** Broken link (405) on 03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md: https://www.aacom.org/become-a-doctor/about-osteopathic-medicine/omm-explained  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/436))
-  - affects: `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md`
-- **[link:www.aacom.org]** Broken link (405) on 03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md: https://www.aacom.org/medical-education/teaching-and-learning/competency-curriculum-resources  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/437))
-  - affects: `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md`
-- **[link:www.admsep.org]** Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/csi-emodules.php  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/422))
-  - affects: `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`
+- **[link:www.fda.gov]** Broken link (404) on docs/curriculum-review/ms3/MS3_CURRICULUM_COMPLETE.md: https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/665))
+  - affects: `docs/curriculum-review/ms3/MS3_CURRICULUM_COMPLETE.md`
+- **[link:www.healthquality.va.gov]** Broken link (no response) on docs/curriculum-review/ms3/MS3_CURRICULUM_COMPLETE.md: https://www.healthquality.va.gov/guidelines/mh/srb/  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/666))
+  - affects: `docs/curriculum-review/ms3/MS3_CURRICULUM_COMPLETE.md`
 - **[link:www.admsep.org]** Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/Educational-Objectives-for-a-Junior-Psychiatry-Clerkship.php  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/423))
+  - affects: `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`
+- **[link:www.admsep.org]** Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/csi-emodules.php  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/422))
   - affects: `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`
 
 ## Citation triage
@@ -66,7 +62,7 @@ _Issue truth: **live**._
 | `03_Core_Topics/Geriatric/README.md` | 2026-08-31 | — never attested — |
 | `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md` | 2026-08-31 | — never attested — |
 | `03_Core_Topics/Nutrition/README.md` | 2026-08-31 | — never attested — |
-| `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md` | 2026-08-31 | — never attested — |
+| `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md` | 2026-07-06 | — never attested — |
 | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 2026-08-31 | — never attested — |
 | `03_Core_Topics/Personality/README.md` | 2026-08-31 | — never attested — |
 | `03_Core_Topics/Psychosis/README.md` | 2026-08-31 | — never attested — |
@@ -82,27 +78,26 @@ _Issue truth: **live**._
 | `13_Faculty_Resources/APA_Downloads_2026-06-29/APA_SURFACE_CARDS.md` | 2026-08-31 | — never attested — |
 | `13_Faculty_Resources/APA_Downloads_2026-06-29/catalog.html` | 2026-08-31 | — never attested — |
 | `13_Faculty_Resources/APA_membership_resource_scan_2026-06-29.md` | 2026-08-31 | — never attested — |
-| `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md` | 2026-09-07 | — never attested — |
-| `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md` | 2026-08-31 | — never attested — |
-| `13_Faculty_Resources/Outreach/alex-tour/index.html` | 2026-08-31 | — never attested — |
+| `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md` | 2026-09-16 | — never attested — |
 | `13_Faculty_Resources/README.md` | 2026-08-31 | — never attested — |
 | `14_Tracks/MS3/README.md` | 2026-08-31 | — never attested — |
 | `14_Tracks/MS3/Student_Ready_Pack/00_index/README.md` | 2026-08-31 | — never attested — |
 | `14_Tracks/Resident/canon_200.md` | 2026-07-06 | 2026-07-04 |
+| `docs/curriculum-review/ms3/MS3_CURRICULUM_COMPLETE.md` | 2026-09-16 | — never attested — |
 
 ## Source freshness
 
 | Source | Last checked | Age (days) | Status |
 |---|---|---|---|
-| `aacap-parameters` | 2026-09-07 | 0 | ok |
-| `apa-practice-guidelines` | 2026-09-07 | 0 | ok |
-| `clozapine-rems` | 2026-09-07 | 0 | ok |
-| `dsm-5-tr` | 2026-09-01 | 6 | ok |
-| `fda-drug-safety` | 2026-09-07 | 0 | ok |
-| `link-monitor` | 2026-09-07 | 0 | ok |
-| `link:www.samhsa.gov` | 2026-07-13 | 56 | ⚠ stale |
-| `samhsa-guidelines` | 2026-09-07 | 0 | ok |
-| `spravato-rems` | 2026-09-07 | 0 | ok |
-| `uspstf-mental-health` | 2026-09-07 | 0 | ok |
+| `aacap-parameters` | 2026-09-16 | 0 | ok |
+| `apa-practice-guidelines` | 2026-09-16 | 0 | ok |
+| `clozapine-rems` | 2026-09-16 | 0 | ok |
+| `dsm-5-tr` | 2026-09-01 | 15 | ok |
+| `fda-drug-safety` | 2026-09-16 | 0 | ok |
+| `link-monitor` | 2026-09-16 | 0 | ok |
+| `link:www.samhsa.gov` | 2026-07-13 | 65 | ⚠ stale |
+| `samhsa-guidelines` | 2026-09-16 | 0 | ok |
+| `spravato-rems` | 2026-09-16 | 0 | ok |
+| `uspstf-mental-health` | 2026-09-16 | 0 | ok |
 
 DOI/PMID freshness is summarized above so this table stays focused on authoritative source-registry targets.

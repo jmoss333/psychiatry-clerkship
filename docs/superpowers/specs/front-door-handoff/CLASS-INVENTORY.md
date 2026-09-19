@@ -3,11 +3,11 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(277 distinct `fd-*` selector names, 20 `is-*` state classes). Every class below has a rule in that file unless
+(307 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
-**Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-273. The remaining 234 are `__element` and `--modifier` names introduced while porting the
+**Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
+273. The remaining 234 were `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -43,6 +43,12 @@ them and let the breakpoint decide:
 | `.fd-actionbar`, `.fd-actionbar__spacer`, `.fd-quicktools--pills` | ≥ 1000px | below 1000px |
 | `.fd-article__actions` | below 1000px | ≥ 1000px |
 | `.fd-article .fd-tip` (Reader's keyboard hint **only** — the wizard's `.fd-tip--setup` line is a different subtree and stays visible) | below 1000px | ≥ 1000px |
+| `.fd-tabs`, `.fd-weekpill`, `.fd-settingsbtn` — on a **reader** only (`.fd-shell:has(.fd-actionbar)`; frontdoor.css "Phone chrome", 2026-09-18). The action bar's `‹` is the route to all three. `.fd-brand__name` is clipped there, never `display:none`, so the home button keeps its accessible name. | ≤ 640px | above 640px, and at every width on Today / Path / Library / Progress / not-found |
+| `.fd-article__head` and an empty `.fd-article__lead` on a **tool** (`.fd-reader--tool`); `.fd-article__h1` is clipped there, never `display:none`. Not a breakpoint: a tool supplies its own `<h1>` (calibrated on every shipped tool 2026-09-19; `tool-expand.spec.js` opens each one and asserts it), so the shell's masthead yields at every width. | every width | never on a tool |
+
+The enhanced `.fd-reader--guide` is a scoped exception: its week `.fd-railnav` remains
+available below the article at every width. Its new `.fd-guide-margin` is sticky beside the
+article at ≥1000px and flows before the article below 1000px. See §6a.
 
 Every row above has a matching rule in `frontdoor.css`'s `@media (min-width:1000px)` /
 `@media (max-width:999px)` blocks — checked 2026-08-16 after `.fd-article__actions` and the
@@ -120,7 +126,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | Class | Notes |
 |---|---|
 | `.fd-header` | `position:sticky; top:0; z-index:40`. |
-| `.fd-header__bar` | The 1200px-capped flex row; at 640px and below it becomes a two-row grid so brand/search and utilities cannot collide. `.fd-header` alone has no max-width. |
+| `.fd-header__bar` | The 1200px-capped flex row; at 640px and below it becomes a two-row grid so brand/search and utilities cannot collide — except on a reader (`.fd-shell:has(.fd-actionbar)`), where it is one flex row again: ψ tile, search grown to fill, ✚ Safety. `.fd-header` alone has no max-width. |
 | `.fd-header__actions` | `margin-left:auto` in the flex layout; at 640px and below it spans grid row two, resets the margin, and aligns right. |
 | `.fd-settingsbtn` | Compact icon-only header gear opening the settings panel; `aria-label` names the action. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
@@ -218,7 +224,14 @@ internal Progress. These are part of the same shipped class contract:
 |---|---|
 | `.fd-due` | Due-review button; contains `.fd-due__label`, `.fd-due__breakdown`, and `.fd-due__action`. |
 | `.fd-resume` | Session-resume section; `.fd-resume__link` is the query-preserving link. |
+| `.fd-resume__block` | Progress line inside `.fd-resume__link` when the capsule came from a timed block ("Block · 1 of 2 done"); the link then carries `resume=1&block=1&n[&cat]` (Phase 2, 2026-09-16). |
 | `.fd-block` | Timed block card (2026-09-02, not in the prototype), spliced in with the due row and resume card by `fdTodayLive`. Planner face: `.fd-block__head` (`__kicker`, `__chips` › `__chip(.is-sel)`, `__hint`), `.fd-block__steps` › `__step` (`__dot.is-review/.is-page/.is-qb`, `__title`, `__min`), `.fd-block__actions` (a `.fd-btn--primary` carrying `data-block-start`), or `.fd-block__empty`. Live face adds `.is-live` on the card, `__count`, `__check` on each `__step(.is-done)`, and `__doneline`. Click attributes are `data-block-minutes` / `-start` / `-continue` / `-end`, owned by the shell's auxiliary click handler — deliberately outside the `data-fd-*` controller namespace. Rendered by `fdBlockCard` (`frontdoor/fd_block.js`). |
+| `.fd-primary` | Wrapper the shell puts around the ONE device-store row that won Today's primary slot (`fdTodayPrimary`, `frontdoor/fd_today.js`; composed by `fdTodayLive`). Gives the card inside a terracotta top bar and the card shadow. Absent when the lead card (`.fd-continue` / `.fd-setupcta`) is itself the primary — that card then carries no `.is-secondary`. |
+| `.fd-primary__why` | One-paragraph explanation of the rule, directly under the primary. Rendered by `fdTodayWhy`. |
+| `.fd-also` | Modifier on the `.fd-sectionhead` `<h2>` that reads "Also today"; everything that did not win renders below it in a fixed order (block › due › resume › last-read › capture), then the week list. |
+| `.fd-lastread` | "You were reading" row (`fdLastReadRow`, `frontdoor/fd_due.js`): the last opened item when it is an undone read from this week and not already the Continue target. Shares the runtime-row rule with `.fd-due`. Contains `.fd-lastread__kicker` (primary only), `.fd-lastread__title`, `.fd-lastread__action`. |
+| `.fd-due__kicker` | "Clear what's due" line, present only when the due row is the primary (`.fd-due.is-primary`). |
+| `.fd-freshset` | Ghost `.fd-btn` sibling of a completed-week `.fd-continue` that is primary: "Practice a fresh set →", opens the question bank. |
 | `.fd-capture-launch` | Full-width capture-dialog launcher. |
 | `.fd-capture-launch--global` | Stable learner-route launcher hook; its in-flow utility-row positioning comes from `#fdCaptureMount`, so it cannot cover Reader or Today content. *(no rule)* |
 | `.fd-capture` | Today triage section; contains `.fd-capture__head`, `.fd-capture__new`, `.fd-capture__purpose`, `.fd-capture__item`, `.fd-capture__question`, `.fd-capture__action`, and `.fd-capture__copy`. |
@@ -289,22 +302,24 @@ A compact row used elsewhere is borderless.
   .fd-library__head
     .fd-library__h1 / .fd-library__count
   .fd-library__grid
-    .fd-col                      (no rule — plain grid child)
+    .fd-col                      (break-inside:avoid; a whole section per column)
       .fd-col__name
       .fd-collink  <button> ×N
         .fd-collink__dot
         .fd-collink__label
+        .fd-collink__hint          (tools only — the row's one-line "use this when…")
 ```
 
 | Class | Notes |
 |---|---|
-| `.fd-library__grid` | `auto-fill, minmax(196px, 1fr)`, gap 22/26px. |
+| `.fd-library__grid` | Multi-column flow, `columns:280px` (2026-09-19; was an `auto-fill, minmax(280px,1fr)` grid whose rows were as tall as their tallest cell). Sections balance by height; `.fd-col{break-inside:avoid}` keeps each whole. |
+| `.fd-library__shortcut` | Wraps "· press / to filter" inside `.fd-library__count`; hidden at ≤640px as a whole fragment. |
 | `.fd-col__name` | Column heading: uppercase terracotta with a bottom rule. |
 | `.fd-collink__dot.is-tool` | Teal dot; default is olive (a read). |
+| `.fd-collink__hint` | One line under a tool's label, from `curriculum.libraryHints` (2026-09-16). The row wraps (`flex-wrap`) and the hint takes the full width, indented past the dot. Omitted from the markup, not emptied, when an item has none — every read row renders exactly as before. |
 
-⚠ **`.fd-col` has no rule of its own** *(known; deferred by review)*. It is still required as the
-grid child that groups a heading with its links — the grid's `align-items:start` acts on it. Emit
-it; just don't expect it to paint anything.
+`.fd-col` gained its first rule on 2026-09-19 (`break-inside:avoid` + the section gap): it is the
+unit the multi-column flow keeps whole, and the wrapper that groups a heading with its links.
 
 ⚠ `.fd-collink` rows have **no sibling margin** — they sit flush by design (5px internal padding).
 
@@ -321,10 +336,10 @@ it; just don't expect it to paint anything.
   [read only] .fd-reader__back   <button>
   .fd-reader__cols
     .fd-article
-      .fd-article__head
+      .fd-article__head                  (tool: display:none at EVERY width — the tool titles itself)
         .fd-eyebrow / .fd-article__dot / .fd-article__meta / .fd-attested
-      .fd-article__h1
-      .fd-article__lead
+      .fd-article__h1                    (tool: clipped, never removed — the outer document keeps its heading)
+      .fd-article__lead                  (tool: hidden when empty)
       .fd-article__body                  (rendered long-form content)
       .fd-keypoints
         .fd-keypoints__label
@@ -360,7 +375,7 @@ it; just don't expect it to paint anything.
 | `.fd-reader.is-nav-next` / `.is-nav-prev` | Slide-in direction. **Same element as `.fd-reader`.** |
 | `.fd-reader--tool.is-tool-expanded` | Tool-only wide workspace state. The same state is mirrored on `.fd-main`; neither class is applied to reads. |
 | `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
-| `.fd-article__body` | Long-form markdown typography: 16.5px, 1.72 line-height, 62ch measure. |
+| `.fd-article__body` | Base long-form markdown typography: `--fd-font-lg` (17px), 1.72 line-height, 62ch measure. Enhanced field guides use the scoped type treatment in §6a. |
 | `.fd-compass` | Six-Week Compass, build-injected into `.fd-article__body` on the six-week Welcome (`welcome_compass.py`). Children: `.fd-compass__title`, `.fd-compass__weeks` (`<ol>`, markerless card grid), `.fd-compass__week` (`<li>` card), `.fd-compass__heading` (`<h3>`), `.fd-compass__kicker` (the `Week N` span inside that heading), `.fd-compass__link` *(no rule)*. Every rule but the root is written as a two-class selector so it outranks the `.fd-article__body` element rules it sits inside. |
 | `.fd-visually-hidden` | Accessible completion suffix on done rail rows; never use `aria-pressed` for navigation. |
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |
@@ -381,6 +396,71 @@ independent states on the child. A current *and* done item carries both.
 
 ⚠ `.fd-railnav` is `display:none` below 1000px and `display:block` at/above it — do not set
 `display:flex` on it; `.fd-railnav__list` is the flex container.
+
+---
+
+## 6a. Clinical field guide
+
+Scoped enhancement of a real teaching page; never applied to an activity iframe or faculty
+preview. Full behavior and content-preservation contract:
+[`2026-09-15-clinical-field-guide-components.md`](../2026-09-15-clinical-field-guide-components.md).
+
+```
+.fd-reader.fd-reader--guide
+  .fd-reader__cols
+    .fd-guide-header                      (original identity, title and lead moved here)
+    .fd-guide-margin                      (after orientation, before teaching)
+      .fd-guide-practice                   (canonical related activity, when available)
+      .fd-guide-contents <details>
+        <summary>On this page</summary>
+        <nav> links[data-guide-section]
+      .fd-guide-find <form>
+        <label> / <input> / <button>
+      .fd-guide-results
+      <button>Print guide</button>
+    .fd-article                          (existing teaching and progress controls)
+      .fd-article__body
+        .fd-guide-arrival
+        .fd-guide-section | .sec-c        (section target)
+          h2
+          original content
+          .fd-guide-table-controls       (optional comparison/row toggles)
+          .table-scroll
+            .table-scroll-viewport       (original semantic table)
+            .fd-guide-table-rows          (derived alternative; hidden initially)
+              dl > dt + dd
+    .fd-railnav                          (week navigation after the article)
+.fd-guide-return                         (temporary return button on an activity)
+```
+
+| Class | Notes |
+|---|---|
+| `.fd-reader--guide` | Modifier on the existing reader. Removes the enclosing article card; 18px/1.75 prose, 720px maximum reading column, serif display title and section headings. Existing activity layout remains separate. |
+| `.fd-guide-header` | Original identity, H1 and lead nodes move into this semantic header. First in DOM; desktop column two/row one, centered in natural narrow-screen flow. |
+| `.fd-guide-margin` | Sticky 180–220px desktop column with bounded scrolling, spanning header/article rows. Natural document flow below 1000px. Follows `.fd-guide-header` and precedes `.fd-article` in DOM; CSS never reverses keyboard order. |
+| `.fd-guide-practice` | Full-width shortcut to the existing related activity; long canonical titles wrap. Uses the real `data-fd-open` route and carries no simulated activity. |
+| `.fd-guide-contents` | Native `<details>` containing a labeled section `<nav>`. Desktop starts expanded; narrow views start collapsed. Links expose current location with `aria-current="location"`. |
+| `.fd-guide-find` | Page-scoped finder form. The narrow desktop margin stacks its field and action; the wider mobile flow pairs them. The label spans all form columns; input shrinks safely and action remains visible. |
+| `.fd-guide-results` | Finder feedback/results. Result buttons fill their container and wrap text. |
+| `.fd-guide-section` | Wrapper preserving a non-collapsible authored heading and its following content. `.sec-c` keeps the existing explicit disclosure behavior where allowed. |
+| `.fd-guide-orientation` | Teal summary/orientation treatment applied to an authored section by a narrow heading match. |
+| `.fd-guide-caution` | Olive rule and wash for an explicitly titled caution section. Meaning remains in the original heading. |
+| `.fd-guide-example` | Teal rule and smaller supporting type for an explicitly identified example block. |
+| `.fd-guide-references` | Ruled reference region with 14px/1.7 text and long citation wrapping. |
+| `.fd-guide-match` | Temporary passage outline and wash; no completion or review meaning. Scroll margin keeps it below sticky chrome. |
+| `.fd-guide-arrival` | Visible context for passage arrival. Hidden on paper, while the passage itself remains. |
+| `.fd-guide-table-controls` | Wrapping buttons with real `aria-pressed` state. Minimum 44px height. |
+| `.fd-guide-table-rows` | Derived row reading view, one `<dl>` per original row; exact source header/cell text. The semantic table remains the print representation. |
+| `.fd-guide-return` | Temporary practice return control; deliberately styled outside the guide modifier because it appears while a real activity is open. |
+
+⚠ **Hidden means hidden.** `.fd-reader--guide [hidden]` wins on screen. Print overrides only
+the original `.table-scroll-viewport[hidden]`, hides the row alternative and controls, expands
+all teaching/disclosures, and retains safety and review notices. Native details are opened and
+restored by the print lifecycle as well as having a CSS fallback.
+
+⚠ **Purpose is presentation.** These classes never add a clinical interpretation or change
+source wording. The crisis block stays in its original context and remains outside collapsed
+content. The high-risk governance focus rule outranks passage arrival focus.
 
 ---
 
@@ -477,7 +557,7 @@ independent states on the child. A current *and* done item carries both.
 | `.fd-sheetbackdrop` | Separate sibling element, before `.fd-sheet`. Carries the click-to-close. |
 | `.fd-sheet__body` | The scroll container (`flex:1; overflow-y:auto`). |
 | `.fd-doccallout` | Amber "Document:" callout. Border is derived via `color-mix` from the two olive tokens. |
-| `.fd-sheet__attribution` | "✓ From: … · faculty-attested". |
+| `.fd-sheet__attribution` | "✓ From: <page title> · faculty-attested". Names the page, never the file (the prototype's `protoSrc` was a readable source); the ref rides on `data-ref`. |
 | `.fd-sheet__pending` | Affirmative not-yet-reviewed state for a valid 3–5-step protocol; mutually exclusive with attribution and failure. |
 | `.fd-sheet__failure` | Fail-closed alert with an owner-controlled sentence; protocol steps and documentation remain absent. |
 | `.fd-set` | One settings section. Spaced by `.fd-set + .fd-set`, so sections are direct siblings and a new one can be inserted anywhere in the order without a wrapper. |
@@ -521,6 +601,8 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 | `.is-next` | `.fd-prevnext__btn` | right-aligned variant |
 | `.is-nav-next` / `.is-nav-prev` | `.fd-reader` | slide direction |
 | `.is-tool-expanded` | `.fd-main`, `.fd-reader--tool` | saved desktop tool workspace width |
+| `.is-primary` | `.fd-due`, `.fd-resume`, `.fd-lastread` | this row is Today's primary action (kicker copy changes; the visual treatment comes from the `.fd-primary` wrapper) |
+| `.is-secondary` | `.fd-continue` | a device-store row won the primary slot; the Continue card drops its gradient and top accent |
 
 ## Keyframes
 

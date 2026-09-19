@@ -304,15 +304,18 @@
       var lastPatient=null;
       (latest.transcript||[]).forEach(function(entry){if(entry.who==='pt')lastPatient=entry;});
       var interrupted=!!lastPatient&&lastPatient.playbackStatus==='interrupted';
-      var next=latest.phase==='ended'?profile.cues.closing:interrupted?profile.cues.interrupted:profile.cues.opening;
+      var next=content.observationCue?content.observationCue(profile,{phase:latest.phase,interrupted:interrupted,turn:latest.turn}):
+        (latest.phase==='ended'?profile.cues.closing:interrupted?profile.cues.interrupted:profile.cues.opening);
+      next=next||'';
       if(next!==lastCue){lastCue=next;cue.textContent=next;}
+      cue.hidden=!next;
       markButton.hidden=!store.candidate(latest);
       closing.hidden=latest.phase!=='ended';
       if(latest.phase==='ended'&&!retrySelect.children.length){
         retryMoments(latest).forEach(function(moment,index){el('option','Turn '+moment.turnId+(moment.targetName?' · '+moment.targetName:'')+' — '+moment.question.slice(0,80),retrySelect,{value:String(index)});});
         showMoment();
       }
-      retryBox.hidden=!!hostedSnapshot.retryUsed;
+      retryBox.hidden=!!hostedSnapshot.retryUsed||retryMoments(latest).length===0;
       draw();
     }
     update({phase:'gate',messages:[]});

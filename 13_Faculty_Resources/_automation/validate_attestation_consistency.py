@@ -15,6 +15,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
+from attestation_hash import ledger_hash_report
 from surface_governance import SurfaceGovernanceError, load_validated_ledger
 from validate_tool_governance import GovernanceError, parse_metadata_marker
 
@@ -773,27 +774,69 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
     return errors
 
 
-def shipped_slugs(root):
-    """Every page and tool either learner site publishes.
+def shipped_document(root):
+    """The one derived listing of what each learner site publishes, or None.
 
-    Read from the one derived listing, site_build/shipped_pages.json, rather than
-    re-derived here. Until 2026-09 this function privately rebuilt the Case-of-the-Week
-    slugs from cotw_registry.json -- a fourth copy of the same formula, and still blind
-    to the resident-only pages and tools resident_section.py ships. shipped_pages.py
-    enumerates every producer and build_and_check.sh verifies its output against the real
-    build on every build, so "what ships" is now a read rather than a re-derivation.
+    Read from site_build/shipped_pages.json rather than re-derived here. Until 2026-09
+    this privately rebuilt the Case-of-the-Week slugs from cotw_registry.json -- a fourth
+    copy of the same formula, and still blind to the resident-only pages and tools
+    resident_section.py ships. shipped_pages.py enumerates every producer and
+    build_and_check.sh verifies its output against the real build on every build, so
+    "what ships" is now a read rather than a re-derivation.
 
-    A root with no listing yields the empty set: the synthetic roots this validator's own
-    test suite builds carry a manifest and a ledger but no shipped_pages.json, and the
-    manifest-driven per-entry checks below still run against them.
+    A root with no listing yields None: a synthetic root carrying a manifest and a ledger
+    but no shipped_pages.json still runs the manifest-driven per-entry checks below.
     """
     if not os.path.exists(os.path.join(root, SHIPPED_PAGES_RELATIVE)):
-        return set()
+        return None
     try:
-        document = load_shipped_pages(root)
+        return load_shipped_pages(root)
     except ShippedPagesError as error:
         raise SystemExit("attestation consistency INVALID — %s" % error)
-    return {page["slug"] for page in document["pages"]}
+
+
+def shipped_slugs(root):
+    """Every page and tool either learner site publishes; empty when there is no listing."""
+    return {page["slug"] for page in (shipped_document(root) or {}).get("pages", [])}
+
+
+def _content_hash_errors(root, reviewed, document, topic_meta):
+    """Every reviewed row that cannot be bound to the text it attested.
+
+    Root cause 2 of the 2026-09-16 breach: a review recorded a person, a date and a risk
+    level and never an answer to "reviewed WHAT?", so rewriting the page afterwards cost
+    nothing and showed nowhere. `contentHash` is that answer, and these four shapes mean
+    it cannot be read at all. Each is something only a hand edit produces.
+
+    DRIFT IS DELIBERATELY ABSENT. A content PR edits an attested page constantly;
+    bin/check_attestation_hashes.py reports it, and the build will demote the entry once
+    PR 1b wires `project_effective_ledger` into the builds — today nothing renders drift.
+    Failing every such PR here would make this gate noise and then make it optional.
+
+    Returns [] when the root carries no shipped listing: without one, nothing here knows
+    what ships, and every reviewed row would be reported as unshipped.
+    """
+    if document is None:
+        return []
+    report = ledger_hash_report(root, reviewed, document, topic_meta)
+    errors = []
+    for slug in sorted(report["unbound"]):
+        errors.append(
+            "%s: reviewed entry is unbound (no contentHash) — bind it through the "
+            "faculty console" % slug
+        )
+    for slug in sorted(report["malformed"]):
+        errors.append(
+            "%s: contentHash is malformed (expected a 40-hex git blob SHA)" % slug
+        )
+    for slug in sorted(report["unresolvable"]):
+        for path in report["unresolvable"][slug]:
+            errors.append("%s: attested source missing (%s)" % (slug, path))
+    for slug in sorted(report["unshipped_unlisted"]):
+        errors.append(
+            "%s: reviewed but not shipped and not on LEDGER_ONLY_LEGACY" % slug
+        )
+    return errors
 
 
 def validate(root):
@@ -810,12 +853,15 @@ def validate(root):
     manifest_md = {slug for _src, slug, _title in manifest_md_entries}
     # Every slug that reaches a learner site, from every producer -- not just the two
     # manifest lists. A shipped page with no ledger row is a page nobody can attest.
-    shipped_items = shipped_slugs(root)
+    document = shipped_document(root)
+    shipped_items = {page["slug"] for page in (document or {}).get("pages", [])}
 
     errors = []
     for slug in sorted(shipped_items):
         if slug not in reviewed:
             errors.append("%s: missing reviewed.json entry" % slug)
+
+    errors.extend(_content_hash_errors(root, reviewed, document, topic_meta))
 
     for src, slug, _title in manifest_md_entries:
         ledger_status = norm_status(reviewed.get(slug, {}).get("status"))

@@ -70,16 +70,16 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
   const cotw = items.filter(item => isCotwSlug(item.slug));
 
   // 69 shared pages + 22 shared tools + 1 MS3-only tool (orientation-video.html)
-  // + 24 Case-of-the-Week twins + 6 resident-only pages + 4 resident-only tools
+  // + 26 Case-of-the-Week twins + 6 resident-only pages + 4 resident-only tools
   // (rp-post-event-huddle.html joined the three role-play tools on 2026-09-04;
-  // FEP week added 2026-09-07).
+  // FEP week added 2026-09-07; serotonin-syndrome-vs-NMS week added 2026-09-14).
   assert.equal(MANIFEST.md.length, 69);
   assert.equal(MANIFEST.tools.length, 22);
-  assert.equal(REGISTRY.weeks.length, 12);
-  assert.equal(items.length, 126);
-  assert.equal(pages.length, 69 + 24 + 6);
+  assert.equal(REGISTRY.weeks.length, 13);
+  assert.equal(items.length, 128);
+  assert.equal(pages.length, 69 + 26 + 6);
   assert.equal(tools.length, 22 + 1 + 4);
-  assert.equal(cotw.length, 24);
+  assert.equal(cotw.length, 26);
 
   const byProducer = {};
   for (const entry of SHIPPED.pages) {
@@ -88,7 +88,7 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
   assert.deepEqual(byProducer, {
     site_manifest: 91,
     ms3_extra_tool: 1,
-    cotw_registry: 24,
+    cotw_registry: 26,
     resident_extra: 6,
     resident_tool: 4,
   });
@@ -98,8 +98,8 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
     [...new Set(cotw.map(item => `${item.kind}:${item.site}`))].sort(),
     ['page:ms3', 'page:res'],
   );
-  assert.equal(cotw.filter(item => item.site === 'ms3').length, 12);
-  assert.equal(cotw.filter(item => item.site === 'res').length, 12);
+  assert.equal(cotw.filter(item => item.site === 'ms3').length, 13);
+  assert.equal(cotw.filter(item => item.site === 'res').length, 13);
 
   // site is the ONE deployment to preview against: resident-only items say 'res',
   // everything shared says 'ms3'.
@@ -107,7 +107,7 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
     entry => entry.sites.length === 1 && entry.sites[0] === 'res',
   );
   assert.equal(residentOnly.length, items.filter(item => item.site === 'res').length);
-  assert.equal(residentOnly.length, 12 + 6 + 4);
+  assert.equal(residentOnly.length, 13 + 6 + 4);
 });
 
 /* THE JS-SIDE PARITY CHECK. shipped_pages.json is generated Python-side; this
@@ -181,6 +181,27 @@ test('shipped_pages.json agrees with the producers it claims to be derived from'
   for (const [slug, want] of expected) assert.deepEqual(actual.get(slug), want, slug);
 });
 
+test('a resident override is recorded on the shared page as extraSources', () => {
+  // The parity check above compares a five-field projection, which drops this key —
+  // so the key needs an assertion against the raw file. attestation_hash's
+  // sources_for_slug reads source + extraSources, and that union is what makes an edit
+  // to the resident file drift the shared slug's attestation instead of going unnoticed.
+  const bySlug = new Map(SHIPPED.pages.map(page => [page.slug, page]));
+  assert.deepEqual(
+    bySlug.get('welcome.md').extraSources,
+    ['14_Tracks/Resident/resident_welcome.md'],
+  );
+  assert.deepEqual(
+    bySlug.get('cotw_index.md').extraSources,
+    ['08_Cases_and_Simulation/case-of-the-week/index_resident.md'],
+  );
+  assert.deepEqual(
+    SHIPPED.pages.filter(page => page.extraSources !== undefined).map(page => page.slug).sort(),
+    ['cotw_index.md', 'welcome.md'],
+    'only the two resident overrides reuse a slug the manifest already ships',
+  );
+});
+
 test('the derived slug is byte-identical to cotw_slug() in the shared Python helper', () => {
   const helper = read('13_Faculty_Resources/_automation/site_build/cotw_slug.py');
   assert.ok(
@@ -218,7 +239,7 @@ test('the derived slug is byte-identical to cotw_slug() in the shared Python hel
 
   const fromJs = REGISTRY.weeks.flatMap(w => ['ms3', 'res'].map(level => cotwSlug(w, level)));
   assert.deepEqual(fromJs, fromPython);
-  assert.equal(fromPython.length, 24);
+  assert.equal(fromPython.length, 26);
   assert.ok(fromPython.includes('cotw_20260831_catatonia_ms3.md'));
   assert.ok(fromPython.includes('cotw_20260831_catatonia_res.md'));
 });
@@ -239,12 +260,14 @@ test('titles name the audience so the Case-of-the-Week twins sort next to each o
       title: 'Catatonia (Aug 31) — MS3',
       kind: 'page',
       site: 'ms3',
+      sites: ['ms3'],
     },
     {
       slug: 'cotw_20260831_catatonia_res.md',
       title: 'Catatonia (Aug 31) — Resident',
       kind: 'page',
       site: 'res',
+      sites: ['res'],
     },
   ]);
   // localeCompare on the shared label prefix puts "— MS3" immediately before
@@ -303,7 +326,7 @@ test('cotwTwinSlug pairs the two halves and ignores everything else', () => {
   // Every real twin resolves to a slug that is itself in the universe.
   const universe = contentUniverseSlugs({ shipped: SHIPPED });
   const cotw = [...universe].filter(isCotwSlug);
-  assert.equal(cotw.length, 24);
+  assert.equal(cotw.length, 26);
   for (const slug of cotw) assert.ok(universe.has(cotwTwinSlug(slug)), slug);
 });
 

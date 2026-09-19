@@ -81,6 +81,8 @@ EXPECTED_PERMISSIONS = {
     "maintenance-governance-digest.yml": {
         "contents": "read",
         "issues": "write",
+        # Read-only listing of the rolling attestation review request.
+        "pull-requests": "read",
     },
     "maintenance-monthly-review.yml": {
         "contents": "read",
@@ -165,6 +167,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Unit — scheduled maintenance"),
             ("name", "Validate — scheduled workflow contracts"),
             ("name", "Lint — no hard-coded machine paths in tracked Python"),
+            ("name", "Guard — governance/content separation"),
             ("name", "Unit — media guard"),
             ("name", "Unit — shared build logic (common.py)"),
             ("name", "Unit — pairing block renderer"),
@@ -238,6 +241,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Install — governance digest dependencies"),
             ("uses", "actions/setup-node"),
             ("name", "Build faculty governance digest"),
+            ("name", "Detect stranded faculty attestations"),
             ("uses", "actions/upload-artifact"),
             ("name", "Route faculty governance review"),
             ("name", "Preserve governance gate result"),
@@ -277,6 +281,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Crawl both public learner sites"),
             ("name", "Build content-free release twin"),
             ("name", "Read Netlify production deploy health"),
+            ("name", "Check learner production revision parity"),
             ("uses", "actions/upload-artifact"),
         ),
     },
@@ -391,9 +396,9 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "674b60ea33bcf8545c60ce5094fc0aa64fc27c241db417e74ed26c5842670677"
     ),
-    "ci.yml": "0fa2a1c6d68104f3f8766b3b6fccb4b190dd849ed51fa07bd8c9797c942adf64",
+    "ci.yml": "ac309354549f9258a2420175f22b85b988ee7c673edaa2c8ebbbaa69b2c29f28",
     "maintenance-governance-digest.yml": (
-        "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
+        "b6cc2dcf41eec62131c18bca73f235b8599241234b0d26e5c406f635435b521e"
     ),
     "maintenance-heartbeat.yml": (
         "2fd18edc8a3d3cf15ea82c4838e28fb4d075513f027fd751b995dee3ea887261"
@@ -405,7 +410,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "ae4482d9b23810d6866e31371bce5d011c30b7450acc0a2ff83aa4eb8b1ce814"
     ),
     "maintenance-production-canary.yml": (
-        "4ee13d7a3eaa2a8d839b596265a25e0f0b78a8cad69c384d81784f5334c8ccfc"
+        "d2b848a52ea19f9e68d2afff370e763291f319798d8f3c0d869c944fb6ef39df"
     ),
     "maintenance-rotation-readiness.yml": (
         "655504ee205ce4f27ddc63dc2a819dc1d1eb7987f56bbacbbfc452d1cc48476a"
@@ -565,6 +570,25 @@ CRITICAL_STEPS = {
                 None,
                 "required CI gate",
             ),
+            # PR-only by design: `github.event.pull_request.base.sha` is the one base a
+            # push event does not carry, and the rule is about a PR's range. The `if` is
+            # therefore pinned as part of the contract — widening it to every event would
+            # make the step exit 2 on every push, and exit 2 is a failure, not a skip.
+            # The second command is load-bearing too: on attest/pending the console's own
+            # promotions still have to bind to the text they attest.
+            (
+                "Guard — governance/content separation",
+                'if [[ ! "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then '
+                'echo "::error::no base sha"; exit 2; fi\n'
+                "python3 bin/check_governance_separation.py "
+                '--base "$BASE_SHA" --head HEAD --head-branch "$HEAD_BRANCH"\n'
+                'if [ "$HEAD_BRANCH" = "attest/pending" ]; then\n'
+                "  python3 bin/check_attestation_hashes.py --strict "
+                '--base "$BASE_SHA"\n'
+                "fi",
+                "github.event_name == 'pull_request'",
+                "required CI gate",
+            ),
             (
                 "Unit — root node regression tests (tests/*.test.mjs)",
                 "node --test tests/*.test.mjs",
@@ -638,6 +662,14 @@ npx playwright test --project=lfs""",
     },
     "maintenance-production-canary.yml": {
         "production-canary": (
+            (
+                "Check learner production revision parity",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                "production_revision_parity.py --attempts 3 --retry-delay 60 "
+                '--out "$RUNNER_TEMP/production-revision-parity.json"',
+                "always()",
+                "required production revision parity gate",
+            ),
             (
                 "Install Playwright and Chromium",
                 "cd tests/smoke\nnpm ci\n"
@@ -720,6 +752,19 @@ exit 0""",
                 "required governance capture",
             ),
             (
+                "Detect stranded faculty attestations",
+                """mkdir -p "$RUNNER_TEMP/maintenance-governance"
+set +e
+python3 13_Faculty_Resources/_automation/maintenance/stranded_attestations.py \\
+  --out "$RUNNER_TEMP/maintenance-governance/stranded-attestations.json"
+code=$?
+set -e
+echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+exit 0""",
+                None,
+                "required stranded-attestation capture",
+            ),
+            (
                 "Route faculty governance review",
                 "python3 13_Faculty_Resources/_automation/maintenance/"
                 "maintenance_issue.py --kind governance "
@@ -731,12 +776,15 @@ exit 0""",
             ),
             (
                 "Preserve governance gate result",
-                """code="${{ steps.governance.outputs.exit_code }}"
-case "$code" in
-  "0") exit 0 ;;
-  "1"|"2") exit "$code" ;;
-  *) exit 2 ;;
-esac""",
+                """for code in "${{ steps.governance.outputs.exit_code }}" \\
+            "${{ steps.attestations.outputs.exit_code }}"; do
+  case "$code" in
+    "0") ;;
+    "1"|"2") exit "$code" ;;
+    *) exit 2 ;;
+  esac
+done
+exit 0""",
                 "always()",
                 "governance finalizer",
             ),

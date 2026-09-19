@@ -16,8 +16,9 @@ function fdIsTool(ref){ return /\.html$/.test(ref); }
 /* A page with no topic_meta entry still has to render -- the Library carries every shipped page
    and not all of them are topic-template pages. Degrade to a titled row rather than throwing:
    renderHome()'s history in this repo is that one unguarded throw blanks the whole surface. */
-function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights){
+function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights, libraryHints){
   var m=topicMeta[ref]||{};
+  var hints=libraryHints||{};
   var t=toolIndex[ref]||null;
   var fr=m.facultyReview||{};
   var manifest=manifestIndex[ref]||{};
@@ -46,8 +47,24 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights){
     toolRef: (m.relatedTools&&m.relatedTools.length)?m.relatedTools[0]:null,
     risk: (t&&t.riskLevel)||m.safetyLevel||null,
     governance: manifest.governance||null,
+    /* The Library's one-line "use this when…" for a tool row (curriculum.libraryHints). A
+       string always, empty when the ref has none, so renderers test truthiness rather than
+       type. Reads keep bare titles: their tldr is clinical, not navigational. */
+    hint: (typeof hints[ref]==='string')?hints[ref]:'',
     href: (isTool?'?tool=':'?page=')+ref
   };
+}
+
+/* The fallback item for a ref the index knows but does not carry (curriculum.libraryExclude:
+   the feedback form, the faculty curator, the week pages, the rp-* trainers). Same shape as a
+   byRef item so every consumer -- the Reader, the resource mount, the live open path, the
+   document title -- reads it the same way; the title comes from index.titles (the site manifest)
+   and only falls back to the ref when no manifest entry exists, which is how a bare test index
+   ({byRef:{}}) keeps its old behaviour. kind is the caller's when it has one, else the extension. */
+function fdKnownItem(index, ref, kind){
+  var idx=index||{}, titles=idx.titles||{}, r=ref||'';
+  return { ref:r, kind:kind||(fdIsTool(r)?'tool':'read'), title:titles[r]||r, minutes:null,
+    summary:'', points:[], attested:false, toolRef:null, risk:null, href:'' };
 }
 
 function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
@@ -68,16 +85,21 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
 
   /* Rights references are a property of the PAGE, not of where it happens to be linked from, so
      the lookup has to be global rather than per-call-site. ensure() memoises by ref and the first
-     caller wins: cssrs.html is a week item on ms3 but reaches the resident index only through a
-     library column -- so a per-call-site flag would leave the same page a plain tool on one site
-     and a reference on the other. The list is derived from instrument_rights.json and
+     caller wins: a page can reach the index through a week item on one site and only through a
+     library column on the other (cssrs.html did, until the stubs left the paths on 2026-09-16)
+     -- so a per-call-site flag would leave the same page a plain tool on one site and a
+     reference on the other. The list is derived from instrument_rights.json and
      validate_curriculum.py fails if the two disagree. */
   var rightsRefs={}, rr=cur.rightsReferences||[];
   for(var rq=0;rq<rr.length;rq++){ rightsRefs[rr[rq]]=true; }
 
-  var byRef={};
+  var byRef={}, libraryHints=(cur.libraryHints&&typeof cur.libraryHints==='object')?cur.libraryHints:{};
   function ensure(ref, kind){
-    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex, rightsRefs[ref]===true);
+    if(!byRef[ref]){
+      byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex, rightsRefs[ref]===true, libraryHints);
+      byRef[ref].searchAliases=((cur.searchAliases||{})[ref]||[]).slice();
+      byRef[ref].searchTitle=(cur.searchTitles||{})[ref]||byRef[ref].title;
+    }
     return byRef[ref];
   }
 
@@ -120,6 +142,16 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     if(landing&&!byRef[landing]) ensure(landing, 'read').readerOnly=true;
   }
 
+  // Search covers shipped teaching resources independently of browse/assignment placement.
+  // Keep search-only pages out of daily recommendations, including week landing pages.
+  var searchRefs=cur.searchResources||[];
+  for(var sr=0;sr<searchRefs.length;sr++){
+    var prior=byRef[searchRefs[sr]];
+    var searchItem=ensure(searchRefs[sr], null);
+    if(!prior||prior.readerOnly) searchItem.searchOnly=true;
+    searchItem.readerOnly=false;
+  }
+
   var sourcePath=cur.path||{};
   var pathInfo={
     id:(typeof sourcePath.id==='string')?sourcePath.id:'',
@@ -139,7 +171,15 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     if(lx[lxi]&&typeof lx[lxi].ref==='string') known[lx[lxi].ref]=true;
   }
 
-  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known };
+  /* titles = the manifest title of EVERY manifest entry, indexed or not. A known-but-excluded ref
+     (see above) has no byRef item, and until 2026-09-19 every reader-side fallback synthesized
+     {title: ref}: ?tool=feedback.html painted "feedback.html" as the page heading, the iframe's
+     title and the document title while the manifest had carried "Improve this library — send
+     feedback" all along. fdKnownItem below is the one place that fallback is built now. */
+  var titles={}, tk;
+  for(tk in manifestIndex){ if(manifestIndex[tk]&&typeof manifestIndex[tk].title==='string') titles[tk]=manifestIndex[tk].title; }
+
+  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known, titles:titles };
 }
 
 /* The browser receives exactly one projected path. Treat that small object as untrusted at the
@@ -200,7 +240,7 @@ function fdLibraryOnlyReads(index){
   var out=[];
   for(var ref in index.byRef){
     var it=index.byRef[ref];
-    if(it.kind==='read'&&!it.readerOnly&&!inWeek[ref]) out.push(it);
+    if(it.kind==='read'&&!it.readerOnly&&!it.searchOnly&&!inWeek[ref]) out.push(it);
   }
   out.sort(function(a,b){ return a.ref<b.ref?-1:(a.ref>b.ref?1:0); });
   return out;

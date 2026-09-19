@@ -1,6 +1,12 @@
 // Faculty attestation — authenticated commit-on-save (Netlify Functions v2, ESM).
 // Secrets remain server-side. The browser supplies only x-faculty-key.
 
+import {
+  STALE_REASON,
+  digestFromManifest,
+  manifestForSlug,
+  sourcesForSlug,
+} from '../../attestation-hash.mjs';
 import { deriveContentUniverse } from '../../content-universe.mjs';
 import { assessBank } from '../../qbank-rules.mjs';
 import {
@@ -41,7 +47,18 @@ const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest
 // plus the case registry still missed the resident-only pages and tools. One derived
 // listing, verified against the build, ends that class of gap.
 const SHIPPED_PAGES_PATH = '13_Faculty_Resources/_automation/site_build/shipped_pages.json';
+// The second half of a content hash. A page's own metadata record is part of what a reviewer
+// reads, so it is hashed alongside the page source — minus `facultyReview`, which records the
+// attesting itself (attestation-hash.mjs).
+const TOPIC_META_PATH = 'topic_meta.json';
 const QBANK_PATH = 'question_bank.json';
+
+// The three sentences a content item can carry instead of a clean `reviewed`. STALE_REASON —
+// the drift case — lives in attestation-hash.mjs, because the Python projection renders the
+// same words into the ledger and the two must read identically.
+const UNBOUND_REASON = 'No content hash recorded; re-attest to bind this review to the page text.';
+const UNVERIFIED_REASON = 'This review could not be checked against the page text for this load.';
+const MISSING_SOURCE_REASON = 'An attested source file is missing from the repository tree.';
 
 // Both files are stored 2-space indented, so every write must re-emit them that way.
 // This is not cosmetic: reviewed.json was written with an indent of 1 until 2026-08-20,
@@ -304,6 +321,40 @@ function gitRepositoryUrl(settings, path) {
   return `${GITHUB_API}/repos/${settings.repo}/git/${encodedRepositoryPath(path)}`;
 }
 
+// Its own builder, deliberately: gitRepositoryUrl percent-encodes every path segment, which
+// would turn `trees/<sha>?recursive=1` into a literal path with an escaped `?` in it.
+function gitTreeUrl(settings, commitSha) {
+  return `${GITHUB_API}/repos/${settings.repo}/git/trees/`
+    + `${encodeURIComponent(commitSha)}?recursive=1`;
+}
+
+/**
+ * One recursive tree per commit, remembered for as long as the container lives.
+ *
+ * THE KEY IS `repo@commit`, and that is the whole of it. A commit sha names an immutable
+ * tree, so a hit can never be stale, and a warm Netlify container reuses the listing across
+ * loads instead of re-fetching every path in the repository on each one.
+ *
+ * The outer WeakMap is NOT a credential boundary, and saying so would be a comfortable lie:
+ * in production every invocation of a container shares the one `globalThis.fetch`, so the
+ * effective key is exactly `repo@commit`. What it does buy is that distinct transports —
+ * in practice test mocks — never share entries. The token is deliberately not in the key:
+ * it is fixed per deployment, so it cannot vary between invocations of one container, and
+ * the repository already is in the key, so the memo never crosses repositories.
+ */
+const TREE_CACHE = new WeakMap();
+const TREE_CACHE_LIMIT = 4;
+
+function treeCacheFor(fetchImpl) {
+  if (typeof fetchImpl !== 'function') return new Map();
+  let cache = TREE_CACHE.get(fetchImpl);
+  if (!cache) {
+    cache = new Map();
+    TREE_CACHE.set(fetchImpl, cache);
+  }
+  return cache;
+}
+
 async function githubRequest(fetchImpl, input, init) {
   let response;
   try {
@@ -382,7 +433,14 @@ function parseRepositoryJson(bytes) {
   }
 }
 
-function createRepositoryGateway({ settings, fetchImpl }) {
+function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
+  // The cross-request tree memo, or `null` for none. Injectable for two honest reasons: a
+  // test cannot otherwise count how many times readTree is INVOKED (with a memo on, a correct
+  // implementation and one that hashes per item both make exactly one network call), and a
+  // deployment that must not hold repository listings in container memory between requests
+  // can turn it off. `undefined` means "the shared default".
+  const trees = treeCache === undefined ? treeCacheFor(fetchImpl) : treeCache;
+
   async function read(path, { maxBytes = 0, ref = settings.branch } = {}) {
     const objectResponse = await githubRequest(
       fetchImpl,
@@ -467,6 +525,40 @@ function createRepositoryGateway({ settings, fetchImpl }) {
       throw new GithubError('github_response_invalid', 502);
     }
     return { commit, revision };
+  }
+
+  /**
+   * Every file's blob sha at one commit, in ONE call — the whole read side of content hashes.
+   *
+   * The digest is a hash OF blob shas precisely so staleness costs no page fetches: this
+   * listing answers for the entire review queue at once. A TRUNCATED listing is refused
+   * rather than used, because it is a short listing: every path it omits would read as
+   * "source missing", and a digest over what did come back would cover less than the page.
+   */
+  async function readTree(commitSha) {
+    const sha = normalizeGitObjectId(commitSha);
+    const key = `${settings.repo}@${sha}`;
+    const cached = trees ? trees.get(key) : null;
+    if (cached) return cached;
+
+    const response = await githubRequest(fetchImpl, gitTreeUrl(settings, sha), {
+      headers: githubHeaders(settings.token),
+    });
+    const payload = await githubJson(response);
+    if (!Array.isArray(payload.tree) || payload.truncated === true) {
+      throw new GithubError('github_response_invalid', 502);
+    }
+    const blobs = new Map();
+    for (const entry of payload.tree) {
+      if (isRecord(entry) && entry.type === 'blob' && typeof entry.path === 'string') {
+        blobs.set(entry.path, normalizeGitObjectId(entry.sha));
+      }
+    }
+    if (trees) {
+      trees.set(key, blobs);
+      while (trees.size > TREE_CACHE_LIMIT) trees.delete(trees.keys().next().value);
+    }
+    return blobs;
   }
 
   async function headOf(branch) {
@@ -789,7 +881,7 @@ function createRepositoryGateway({ settings, fetchImpl }) {
   }
 
   return {
-    read, write, head, headOf, writeAtHead,
+    read, readTree, write, head, headOf, writeAtHead,
     ensureBranchFresh, ensureRollingPullRequest, describeBranchSync,
   };
 }
@@ -938,13 +1030,86 @@ function contentApiStatus(entry) {
   return entry.status === 'pending' ? 'unreviewed' : entry.status;
 }
 
+/**
+ * The slug's content hash from one tree listing, or null when it cannot be computed.
+ *
+ * Null covers two situations with the same consequence: no site ships the slug, and an
+ * attested source is absent from the tree. Neither may yield a digest, because a hash over
+ * the sources that happen to be present is indistinguishable from a hash over all of them —
+ * the write path refuses (400) and the read path reports the item as unverified.
+ *
+ * `shipped` is the RAW shipped_pages document: deriveContentUniverse drops `source` and
+ * `extraSources`, so a universe entry knows the page's title and not its text.
+ */
+function digestForSlug(slug, { shipped, tree, topicMeta }) {
+  const paths = sourcesForSlug(shipped, slug);
+  if (!paths.length) return null;
+  const sources = {};
+  for (const path of paths) {
+    const blob = tree.get(path);
+    if (!blob) return null;
+    sources[path] = blob;
+  }
+  // Own properties only: `topicMeta.constructor` would otherwise hand a function to a rule
+  // whose "is this a record?" test is about what topic_meta.json actually contains.
+  const record = isRecord(topicMeta) && Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : null;
+  return digestFromManifest(manifestForSlug(slug, sources, record));
+}
+
+/**
+ * Everything a content hash is computed from, all read at the SAME ref.
+ *
+ * The tree is read at the attestation branch's head and the metadata from that same branch:
+ * a digest whose source list came from one ref while its bytes came from another describes a
+ * tree that never existed. That is also why buildState refuses to verify at all when
+ * shipped_pages.json came from the base-branch fallback.
+ */
+async function readDigestInputs(repository, shipped, branch) {
+  const tree = await repository.readTree(await repository.head());
+  // readRequired, not read: on the write path a topic_meta.json that is simply absent from
+  // this branch must say so and name the branch, rather than reaching the reviewer as
+  // "the repository request failed, try again later" — the 2026-09-04 misdiagnosis.
+  const topicMetaFile = await readRequired(repository, TOPIC_META_PATH, branch);
+  if (!isRecord(topicMetaFile.json)) invalidRepositoryFile();
+  return { tree, shipped, topicMeta: topicMetaFile.json };
+}
+
+/**
+ * What a reviewed row can still be told about the text it attested, or null when it is clean.
+ *
+ * The rule this encodes: a check that could not run reports that it could not run. It never
+ * reports "reviewed" — "the tree call failed" and "the page is unchanged" are different
+ * facts, and collapsing them is how a badge stays green through an edit nobody reviewed.
+ * Only REVIEWED rows are assessed; a pending row claims nothing about page text.
+ */
+function contentFreshness(entry, slug, verification) {
+  if (entry.status !== 'reviewed') return null;
+  if (verification.freshness !== 'verified') return { reason: UNVERIFIED_REASON };
+  const stored = entry.contentHash;
+  if (typeof stored !== 'string' || !stored) return { reason: UNBOUND_REASON };
+  let actual;
+  try {
+    actual = digestForSlug(slug, verification);
+  } catch {
+    return { reason: UNVERIFIED_REASON };
+  }
+  if (actual === null) return { reason: MISSING_SOURCE_REASON };
+  if (actual === stored) return null;
+  // Drift, and only drift, changes what the item IS: the page was reviewed and then edited,
+  // so it needs review again. The ledger keeps saying `reviewed` — a read never writes it —
+  // `attestation_hash.py`'s `project_effective_ledger` WILL apply the same projection to the
+  // built site once PR 1b wires it into the builds; today nothing renders drift to a learner.
+  const at = typeof entry.at === 'string' ? entry.at : '';
+  return { drifted: true, reason: STALE_REASON.replace('{at}', at) };
+}
+
 // The console's content universe is exactly what shipped_pages.json lists — every page
 // and tool either learner site publishes, whichever producer put it there (see
 // faculty-console/content-universe.mjs). deriveContentUniverse throws TypeError on a
 // malformed listing; that becomes the same repository_file_invalid 502 requireManifest
 // already returns, because a content universe that is silently short is precisely the
 // failure this change exists to end.
-function buildContentItems(reviewed, shipped) {
+function buildContentItems(reviewed, shipped, verification) {
   if (!isRecord(reviewed)) invalidRepositoryFile();
   let universe;
   try {
@@ -952,8 +1117,9 @@ function buildContentItems(reviewed, shipped) {
   } catch {
     invalidRepositoryFile();
   }
-  return universe.map(({ slug, title, kind, site }) => {
+  return universe.map(({ slug, title, kind, site, sites }) => {
     const entry = isRecord(reviewed[slug]) ? reviewed[slug] : {};
+    const freshness = contentFreshness(entry, slug, verification);
     return {
       slug,
       title,
@@ -961,18 +1127,29 @@ function buildContentItems(reviewed, shipped) {
       // Which learner deployment serves this item, so the console previews the resident
       // half of a Case-of-the-Week pair against the resident site.
       site,
-      status: contentApiStatus(entry),
+      // EVERY deployment that publishes it — the audience the reviewer is attesting it
+      // suitable for, which is not the same fact as `site` above and must be sent
+      // separately. Dropping it here is what left the browser with nothing to say but
+      // "third-year student" on all 22 resident-only pages (2026-09-14 review).
+      sites,
+      // A drifted item IS unreviewed: it was reviewed, and then the text changed.
+      status: freshness?.drifted ? 'unreviewed' : contentApiStatus(entry),
       at: typeof entry.at === 'string' ? entry.at : '',
       by: typeof entry.by === 'string' ? entry.by : '',
       risk: validRisk(entry.risk),
+      // Absent, not `false`, when the item is clean: a reader that forgets to check cannot
+      // mistake a missing flag for a positive "verified fresh" the server never claimed.
+      ...(freshness ? { stale: true } : {}),
       // "Pending reason" only: note/contentHash/claimsHash/evidenceHash/evidenceThrough
-      // are internal ledger fields and must never reach the browser.
-      reason: entry.status === 'pending' && typeof entry.reason === 'string' ? entry.reason : '',
+      // are internal ledger fields and must never reach the browser. A freshness finding
+      // is not a ledger field — it is computed for this load — so it may be said here.
+      reason: freshness?.reason
+        ?? (entry.status === 'pending' && typeof entry.reason === 'string' ? entry.reason : ''),
     };
   });
 }
 
-async function buildState(repository, settings) {
+async function buildState(repository, settings, branchSync) {
   const { student, resident, attester, branch, baseBranch } = settings;
   const reviewedFile = await readRequired(repository, REVIEWED_PATH, branch);
   const manifestFile = await readRequired(repository, MANIFEST_PATH, branch);
@@ -986,7 +1163,21 @@ async function buildState(repository, settings) {
   const qbankFile = await readRequired(repository, QBANK_PATH, branch, {
     maxBytes: MAX_BANK_BYTES,
   });
-  const items = buildContentItems(reviewedFile.json, shippedFile.json);
+
+  // Freshness is advisory to the LOAD and fail-closed to the ITEMS: a GitHub hiccup on the
+  // tree call must not turn a working console into a failed load, but it also must not let a
+  // single item render as reviewed-and-current when nothing checked it. `unknown` is the
+  // honest third answer, and the queue banner says so.
+  let verification = { freshness: 'unknown' };
+  if (shipped.source === 'branch') {
+    try {
+      const inputs = await readDigestInputs(repository, shippedFile.json, branch);
+      verification = { freshness: 'verified', ...inputs };
+    } catch {
+      verification = { freshness: 'unknown' };
+    }
+  }
+  const items = buildContentItems(reviewedFile.json, shippedFile.json, verification);
   // The qbank half still needs the manifest itself: requireManifest both validates it and
   // yields manifestPages, the list a question may anchor to.
   requireManifest(manifestFile.json);
@@ -1007,6 +1198,15 @@ async function buildState(repository, settings) {
     shippedPagesRevision: shippedFile.sha,
     shippedPagesSource: shipped.source,
     shippedPagesBranch: shipped.source === 'base' ? baseBranch : branch,
+    // 'verified' means every reviewed item below was compared against the text it attests;
+    // 'unknown' means none of them was, and no item is reported clean.
+    freshness: verification.freshness,
+    // How far the attestation branch trails the base. A content hash compares the page to
+    // the ledger, both read from the same branch — so a branch that is behind can be
+    // internally consistent and still be showing a queue that main moved past.
+    branchLag: Number.isInteger(branchSync?.behindBy) && branchSync.behindBy > 0
+      ? branchSync.behindBy
+      : 0,
     items,
     ...qbankPayload,
     counts: {
@@ -1095,7 +1295,28 @@ function requireCurrentRisk(current) {
   }
 }
 
-async function commitContentMutation({ repository, body, attester }) {
+/**
+ * The digest inputs for a WRITE, read from the attestation branch and nowhere else.
+ *
+ * No base-branch fallback here, unlike the read path's shipped_pages listing: the hash being
+ * written is the evidence of what a clinician just reviewed, so it is computed from the same
+ * ref the ledger row lands on or it is not computed at all.
+ */
+async function readMutationDigestInputs(repository, branch) {
+  const shippedFile = await readRequired(repository, SHIPPED_PAGES_PATH, branch);
+  return readDigestInputs(repository, shippedFile.json, branch);
+}
+
+function noSourceError(slug) {
+  return new HttpError(
+    'content.no_source',
+    400,
+    `\`${slug}\` has no source file in the repository tree, so a review of it cannot be `
+      + 'bound to the page text. Rebuild shipped_pages.json or merge the branch, then retry.',
+  );
+}
+
+async function commitContentMutation({ repository, settings, body, attester }) {
   const changes = requireContentChanges(body.changes);
   if (!changes.length) {
     return { ok: true, target: 'content', updated: 0, commit: null };
@@ -1106,18 +1327,52 @@ async function commitContentMutation({ repository, body, attester }) {
     const file = await repository.read(REVIEWED_PATH);
     if (!isRecord(file.json)) invalidRepositoryFile();
     const reviewed = structuredClone(file.json);
+
+    // The digest inputs are read BEFORE the no-op filter, because for an attest the filter
+    // needs them. Read once per attempt, and only when something is actually being attested:
+    // a reopen writes no hash and needs no tree. A retry re-reads because the branch may have
+    // moved under it; the tree is memoized per commit, so a retry at the same head is free.
+    const digestInputs = changes.some(([, selected]) => selected)
+      ? await readMutationDigestInputs(repository, settings.branch)
+      : null;
+    const digests = new Map();
+    const digestOf = (slug) => {
+      if (!digests.has(slug)) digests.set(slug, digestForSlug(slug, digestInputs));
+      return digests.get(slug);
+    };
+
+    /*
+     * What counts as a change — and why status alone is the wrong question for an attest.
+     *
+     * A drifted row's STORED status is still `reviewed`: a read never rewrites the ledger, it
+     * projects. So a status-only filter drops the one press that repairs it — the console
+     * shows the item as needing review, faculty confirm, the server answers `updated: 0` with
+     * no commit, and the browser reports "This content review was not saved." Re-attesting is
+     * the remediation this whole feature exists to provide, so a reviewed row is a no-op only
+     * while it is still BOUND: its stored hash equals the digest of today's text.
+     */
     const effectiveChanges = changes.filter(([slug, selected]) => {
       const current = Object.hasOwn(reviewed, slug) && isRecord(reviewed[slug])
-        ? reviewed[slug].status
-        : '';
-      return current !== (selected ? 'reviewed' : 'pending');
+        ? reviewed[slug]
+        : null;
+      const status = current ? current.status : '';
+      if (!selected) return status !== 'pending';
+      if (status !== 'reviewed') return true;
+      // `undefined` (never bound) and a stale value are both real work. So is `null` from
+      // digestOf — the digest cannot be computed, which the write below refuses outright
+      // rather than passing off as "nothing to do".
+      return current.contentHash !== digestOf(slug);
     });
     if (!effectiveChanges.length) {
       return { ok: true, target: 'content', updated: 0, commit: null };
     }
+
     // Per-record preserve pattern (Task 1 ledger contract), applied per batch entry:
     // spread the CURRENT record forward rather than replacing it, so risk/note/hashes
     // — everything this handler does not itself own — survive attest and reopen alike.
+    // The one exception is `contentHash` on an attest: the act of attesting is precisely
+    // the act of binding this review to today's text, so a preserved hash there would
+    // record a review of whatever the page said the last time somebody bound it.
     for (const [slug, selected] of effectiveChanges) {
       const current = reviewed[slug];
       requireCurrentRisk(current);
@@ -1125,6 +1380,11 @@ async function commitContentMutation({ repository, body, attester }) {
       if (selected) {
         next.by = attester;
         delete next.reason;
+        // Refused rather than written partially: a digest over the sources that happen to
+        // be in the tree would look exactly like a digest over all of them.
+        const digest = digestOf(slug);
+        if (!digest) throw noSourceError(slug);
+        next.contentHash = digest;
       } else {
         next.by = 'Pending faculty review';
         next.reason = requireReopenReason(body.reasons?.[slug]);
@@ -1323,7 +1583,7 @@ async function readPostBody(request) {
   return body;
 }
 
-async function handlePost({ repository, body, attester }) {
+async function handlePost({ repository, settings, body, attester }) {
   if (body.target === 'qbank') {
     throw new HttpError(
       'legacy_qbank_action',
@@ -1344,7 +1604,7 @@ async function handlePost({ repository, body, attester }) {
 
   let mutate;
   if (body.target === 'content') {
-    mutate = () => commitContentMutation({ repository, body, attester });
+    mutate = () => commitContentMutation({ repository, settings, body, attester });
   } else if (body.action === 'qbank.save-draft' || body.action === 'qbank.attest') {
     mutate = () => commitQbankMutation({ repository, action: body.action, body, attester });
   } else {
@@ -1371,7 +1631,11 @@ async function handlePost({ repository, body, attester }) {
   return result;
 }
 
-export function createHandler({ env = process.env, fetchImpl = globalThis.fetch } = {}) {
+export function createHandler({
+  env = process.env,
+  fetchImpl = globalThis.fetch,
+  treeCache,
+} = {}) {
   return async function facultyAttestHandler(request) {
     const context = responseContext(request, env);
     try {
@@ -1397,7 +1661,7 @@ export function createHandler({ env = process.env, fetchImpl = globalThis.fetch 
       }
       const settings = requireServerSettings(env, fetchImpl, originPolicy);
 
-      const repository = createRepositoryGateway({ settings, fetchImpl });
+      const repository = createRepositoryGateway({ settings, fetchImpl, treeCache });
       switch (request.method.toUpperCase()) {
         case 'GET': {
           // Freshen before reading, exactly where it is safe to: a branch that is
@@ -1414,21 +1678,25 @@ export function createHandler({ env = process.env, fetchImpl = globalThis.fetch 
           } catch {
             branchFresh = { action: 'error' };
           }
-          const state = await buildState(repository, settings);
           // The alarm is advisory; the queue is the payload. A GitHub hiccup on
-          // the probe must never turn a working console into a failed load.
+          // the probe must never turn a working console into a failed load. It runs
+          // BEFORE the queue is built so the state can carry the lag it reports:
+          // content hashes compare a page to the ledger, both read from the same
+          // branch, so a branch trailing the base is stale in a way no hash can see.
           let branchSync;
           try {
             branchSync = await repository.describeBranchSync();
           } catch {
             branchSync = { error: true };
           }
+          const state = await buildState(repository, settings, branchSync);
           return jsonResponse(context, 200, { ...state, branchSync, branchFresh });
         }
         case 'POST': {
           const body = await readPostBody(request);
           return jsonResponse(context, 200, await handlePost({
             repository,
+            settings,
             body,
             attester: settings.attester,
           }));

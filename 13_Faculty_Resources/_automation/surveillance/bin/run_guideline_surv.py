@@ -4,6 +4,10 @@ run_guideline_surv.py — detect changes at authoritative guideline sources.
 
 For each source in source_registry.yaml with job == guideline-surveillance:
   1. Fetch cleaned text via apify/website-content-crawler (run-sync-get-dataset-items).
+     A `type: pdf` source is fetched DIRECTLY and its text extracted here: the crawler
+     renders pages, not PDFs, and returned 0 characters for the SPRAVATO REMS overview on
+     every run from 2026-07-04 to 2026-09-01 -- a "removed" alarm each month for a
+     376 KB PDF that a plain GET serves fine, so the source never earned a baseline.
   2. Normalize -> hash. Compare to the stored baseline (history/baselines/<id>.json).
   3. First time: establish baseline, emit nothing. Changed: emit a finding.
   4. 0 characters extracted (source down / scraper broken): emit a P1 "removed"
@@ -19,9 +23,12 @@ Usage:
   APIFY_TOKEN=*** python3 run_guideline_surv.py --out findings.json
   python3 run_guideline_surv.py --out f.json --fixture fake_texts.json --baseline-dir /tmp/bl
 """
-import os, sys, json, argparse, difflib
+import os, sys, json, argparse, difflib, hashlib, io, subprocess
 import urllib.request
 import lib_surveillance as L
+
+PDF_UA = "curriculum-surveillance-guideline/1.0 (+education; contact faculty)"
+PDF_TIMEOUT_S = 60
 
 
 # ---------------------------------------------------------------- pure diff core
@@ -95,6 +102,43 @@ def _finding(source, change_type, severity, summary, evidence, signature):
     }
 
 
+# ---------------------------------------------------------------- pdf sources
+def pdf_text(data):
+    """Text of a PDF's bytes, or "" when the bytes are not a PDF at all.
+
+    Pure enough to test offline: bytes in, text out. Extraction uses pypdf when it is
+    importable (installed on demand the same way oe_scan.py does it); a PDF whose pages
+    yield no text (scanned, image-only) falls back to a byte signature, so the run still
+    records a REAL examination and any re-issue of the document still flips the hash.
+    An empty return is reserved for "this is not a PDF" -- the dead-scraper alarm.
+    """
+    if not data or not data.startswith(b"%PDF"):
+        return ""
+    text = ""
+    try:
+        try:
+            import pypdf  # noqa: F401
+        except ImportError:
+            subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "pypdf"],
+                           check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            import pypdf  # noqa: F401
+        reader = pypdf.PdfReader(io.BytesIO(data))
+        text = "\n".join((page.extract_text() or "") for page in reader.pages)
+    except Exception as exc:  # noqa: BLE001 - extraction failure is not "source down"
+        print(f"  ! pdf text extraction unavailable ({exc}); using byte signature", file=sys.stderr)
+        text = ""
+    if text.strip():
+        return text
+    return "pdf-bytes sha256=%s size=%d" % (hashlib.sha256(data).hexdigest(), len(data))
+
+
+def fetch_pdf(source):
+    req = urllib.request.Request(source["url"], method="GET")
+    req.add_header("User-Agent", PDF_UA)
+    with urllib.request.urlopen(req, timeout=PDF_TIMEOUT_S) as r:
+        return pdf_text(r.read())
+
+
 # ---------------------------------------------------------------- apify wrapper
 def fetch_apify(source, token):
     ctype = "cheerio" if source.get("type") == "html" else "playwright:firefox"
@@ -128,14 +172,20 @@ def main():
 
     fixture = json.load(open(args.fixture, encoding="utf-8")) if args.fixture else None
     token = os.environ.get("APIFY_TOKEN")
-    if fixture is None and not token:
+    needs_apify = any(s.get("type") != "pdf" for s in sources)
+    if fixture is None and needs_apify and not token:
         sys.exit("ERROR: APIFY_TOKEN required (or pass --fixture for offline runs)")
 
     os.makedirs(args.baseline_dir, exist_ok=True)
     findings, checked = [], []
     for s in sources:
         try:
-            raw = fixture.get(s["id"], "") if fixture is not None else fetch_apify(s, token)
+            if fixture is not None:
+                raw = fixture.get(s["id"], "")
+            elif s.get("type") == "pdf":
+                raw = fetch_pdf(s)
+            else:
+                raw = fetch_apify(s, token)
         except Exception as e:
             print(f"  ! fetch failed for {s['id']}: {e}", file=sys.stderr)
             raw = ""

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "curriculum.json — front door structure",
   "type": "object",
-  "required": ["learningPaths", "libraryColumns", "libraryExclude", "siteLibrary", "rightsReferences", "safetyKit", "roles", "synonyms"],
+  "required": ["learningPaths", "libraryColumns", "essentials", "libraryExclude", "siteLibrary", "rightsReferences", "safetyKit", "roles", "synonyms"],
   "additionalProperties": false,
   "properties": {
     "_note": { "type": "string" },
@@ -53,6 +53,16 @@
         }
       }
     },
+    "essentials": {
+      "type": "object",
+      "required": ["ms3", "resident"],
+      "additionalProperties": false,
+      "properties": {
+        "_note": { "type": "string" },
+        "ms3": { "$ref": "#/definitions/essentialsSections" },
+        "resident": { "$ref": "#/definitions/essentialsSections" }
+      }
+    },
     "libraryExclude": {
       "type": "array",
       "items": {
@@ -81,6 +91,12 @@
       "items": { "type": "string", "minLength": 1 },
       "uniqueItems": true
     },
+    "libraryHints": {
+      "description": "One audience-neutral line per Library-placed tool ('use this when…'), keyed by ref. validate_curriculum.py requires a line for every column-placed or site-added .html ref and rejects a line for a ref no column places.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9_-]+\\.html$" },
+      "additionalProperties": { "type": "string", "minLength": 8, "maxLength": 110 }
+    },
     "safetyKit": {
       "type": "array",
       "items": {
@@ -108,6 +124,23 @@
         "resident": { "$ref": "#/definitions/roleList" }
       }
     },
+    "searchAliases": {
+      "description": "Curated resource-discovery vocabulary; never expands safety triggers.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9_-]+\\.(md|html)$" },
+      "additionalProperties": {
+        "type": "array", "minItems": 1, "uniqueItems": true,
+        "items": { "type": "string", "minLength": 2, "pattern": "^[a-z0-9]+(?: [a-z0-9]+)*$" }
+      }
+    },
+    "searchExclude": {
+      "description": "Explicit exceptions to shipped-resource search coverage; independent of Library placement.",
+      "type": "array", "uniqueItems": true,
+      "items": {
+        "type": "object", "required": ["ref", "reason"], "additionalProperties": false,
+        "properties": { "ref": { "type": "string", "minLength": 1 }, "reason": { "type": "string", "minLength": 1 } }
+      }
+    },
     "_synonymsNote": { "type": "string" },
     "synonyms": {
       "description": "Query expansion. A single-word key expands per word. A key CONTAINING A SPACE is a phrase, matched whole-phrase against the raw query — the safe way to express a multi-word intent whose individual words are too common to expand on their own.",
@@ -117,6 +150,16 @@
     }
   },
   "definitions": {
+    "essentialsSections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "allOf": [
+          { "$ref": "#/properties/libraryColumns/items" },
+          { "properties": { "refs": { "minItems": 1, "uniqueItems": true } } }
+        ]
+      }
+    },
     "learningPath": {
       "type": "object",
       "required": ["id", "weeks"],

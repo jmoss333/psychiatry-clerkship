@@ -181,7 +181,16 @@ _TOOLKW_MS3 = {
     "diagnostic-reasoning.html": "diagnostic reasoning workbench differential diagnosis problem representation illness script bayesian updating diagnostic humility anchoring premature closure syndrome formulation inpatient psychiatry case practice delirium catatonia mania psychosis substance trauma personality",
     "family-systems.html": "family systems practice collateral call family meeting discharge barrier map expressed emotion psychoeducation confidentiality boundaries means safety caregiver support inpatient psychiatry",
     "one-patient-six-weeks.html": "one patient six weeks longitudinal case arc six week rotation timeline alliance interview mental status exam differential diagnosis medical rule out medication ambivalence family collateral safety suicide discharge handoff reflection",
-    "capacity.html": "decisional capacity informed consent refusal four abilities understand appreciate reason communicate",
+    # #429 — intent mapping for medication refusal, SUBMITTED FOR FACULTY REVIEW.
+    # This string is both the tool's only indexed body AND its search snippet (`snip`,
+    # the first 170 characters), so the clause that matters clinically — refusal is not
+    # by itself evidence of incapacity — is deliberately the FIRST thing in it. The rest
+    # carries the words a learner actually types on the unit (refuses / refusing /
+    # refusal / refuse / declines / declining / medication / medications / meds /
+    # treatment), because common.tok() does not stem: "refuses" cannot reach "refusal".
+    # Audience-neutral and free of patient-specific legal or clinical direction by
+    # design — it says what capacity IS assessed by, never what to do about a refusal.
+    "capacity.html": "Patient refuses medication: refusal is not by itself evidence of incapacity. Decisional capacity is judged one decision at a time, by four abilities, understand, appreciate, reason, and communicate a choice, the same four that make informed consent meaningful. A patient may refuse or decline a medication, or decline treatment outright, and still have capacity. Reach for this when a patient refuses or declines medications, when a patient is refusing medications or declining meds or treatment, and you need to tell a considered refusal from an impaired one. A patient refusing medications may be weighing side effects rather than failing to understand them. Refusal is a reason to assess, never a finding: a patient who refuses a medication may simply disagree, and a patient who accepts one may still lack capacity.",
     "oral.html": "treatment team rounding prep rounds presentation oral one liner assessment plan handoff gather present practice timer collateral update 30 second sixty 60 second micro update",
     "violence.html": "violence risk aggression frst agitation safety prediction de-escalation",
     "cssrs.html": "columbia suicide severity rating scale cssrs suicidal ideation screening safety planning",
@@ -199,7 +208,11 @@ _TOOLKW_MS3 = {
 _TOOLKW_RES = {
     "mse.html": "mental status exam appearance behavior speech mood affect thought",
     "interview-circle.html": "interview circle radial domain map intake history hpi substance family social mental status safety conversation interviewing checklist",
-    "capacity.html": "decisional capacity informed consent four abilities",
+    # #429 — the resident short form. Kept a VERBATIM PREFIX of the MS3 entry above so
+    # _merge_keywords() appends nothing and the shipped `snip` stays one readable
+    # sentence pair; a re-worded twin here would tack its punctuation-bearing words onto
+    # the end of the snippet (the merge de-dupes on raw whitespace-split words).
+    "capacity.html": "Patient refuses medication: refusal is not by itself evidence of incapacity. Decisional capacity is judged one decision at a time, by four abilities, understand, appreciate, reason, and communicate a choice, the same four that make informed consent meaningful.",
     "oral.html": "rounding presentation oral assessment plan handoff timer collateral update 30 second sixty 60 second micro update",
     "violence.html": "violence risk aggression frst de-escalation",
     "cssrs.html": "columbia suicide severity rating scale ideation safety planning",
@@ -801,6 +814,7 @@ SNIPPET_MARKERS = {
     "/*__FD_PATH__*/": "frontdoor/fd_path.js",
     "/*__FD_LIBRARY__*/": "frontdoor/fd_library.js",
     "/*__FD_READER__*/": "frontdoor/fd_reader.js",
+    "/*__FD_GUIDE__*/": "frontdoor/fd_guide.js",
     "/*__FD_SEARCH__*/": "frontdoor/fd_search.js",
     "/*__FD_SHEET__*/": "frontdoor/fd_sheet.js",
     "/*__FD_WIRE__*/": "frontdoor/fd_wire.js",
@@ -1095,3 +1109,104 @@ def emit_service_worker(out_dir, kill=None):
         version, len(entries), total_bytes
     ))
     return version
+
+
+# ---------------------------------------------------------------------------
+# Deploy-preview CSP widening (issue #430)
+#
+# NOTE the module docstring: the `_headers` PAYLOAD stays in build_deploy.py as
+# one statically-inspectable string literal, because
+# tests/faculty-console-handler.test.mjs regex-extracts it from that source to
+# pin the learner CSP. What lives here is the audience-neutral TRANSFORM both
+# builds apply to the already-written file, never the payload itself.
+# ---------------------------------------------------------------------------
+
+PREVIEW_CONTEXT = "deploy-preview"
+
+# The production directive, and the one deploy previews get instead.
+FRAME_SRC_PRODUCTION = "frame-src 'self';"
+FRAME_SRC_PREVIEW = "frame-src 'self' https://app.netlify.com;"
+
+_CSP_LINE_RE = re.compile(r"^[ \t]*Content-Security-Policy:.*$", re.MULTILINE)
+
+
+def preview_headers(text, context):
+    """Widen `frame-src` for the Netlify Drawer, on deploy previews only (#430).
+
+    Why: on a `deploy-preview` build Netlify injects
+    `<script async src="/.netlify/scripts/cdp">` into every served HTML page.
+    The script is same-origin, so it satisfies `script-src 'self'`, but the
+    drawer it opens frames `https://app.netlify.com/`, which the site's
+    `frame-src 'self'` blocks -- every preview page logged "Framing
+    https://app.netlify.com/ violates the site's frame-src 'self' Content
+    Security Policy directive", console noise that hides real preview-only
+    failures. Production pages get no such injection and need no such
+    allowance, so the fix is scoped to the one build context that has the
+    problem.
+
+    Netlify sets `CONTEXT` to `production`, `deploy-preview` or `branch-deploy`.
+    For anything but `deploy-preview` -- including an empty/absent value, which
+    is what a local build sees -- the text is returned UNCHANGED, byte for
+    byte: the production CSP is never weakened by this function.
+
+    The rewrite touches exactly one directive on exactly one line: the first
+    `Content-Security-Policy:` line's single `frame-src 'self';`. Every other
+    directive, every other header, and the Cache-Control blocks are untouched.
+    Idempotent -- a line already carrying the widened directive is left alone,
+    so running the transform twice (the resident build re-applies it to a file
+    inherited from the MS3 build) yields the same output.
+
+    Raises ValueError on a preview build whose CSP line carries neither form.
+    A silent no-op there would quietly restore #430 the next time the
+    `_headers` literal's frame-src is edited; failing loudly in the one context
+    that is affected makes the drift impossible to miss and cannot reach
+    production.
+    """
+    if context != PREVIEW_CONTEXT:
+        return text
+
+    match = _CSP_LINE_RE.search(text)
+    if not match:
+        raise ValueError(
+            "preview_headers: no Content-Security-Policy line in the _headers "
+            "payload -- the deploy-preview frame-src widening (#430) cannot apply"
+        )
+
+    line = match.group(0)
+    if FRAME_SRC_PREVIEW in line:
+        return text                      # already widened; idempotent
+    if FRAME_SRC_PRODUCTION not in line:
+        raise ValueError(
+            "preview_headers: the Content-Security-Policy line carries neither "
+            "%r nor %r -- the _headers frame-src directive changed shape and the "
+            "deploy-preview widening (#430) needs updating with it"
+            % (FRAME_SRC_PRODUCTION, FRAME_SRC_PREVIEW)
+        )
+
+    widened = line.replace(FRAME_SRC_PRODUCTION, FRAME_SRC_PREVIEW, 1)
+    return text[: match.start()] + widened + text[match.end() :]
+
+
+def apply_preview_headers(out_dir, context=None, label=""):
+    """Run `preview_headers()` over an already-written `<out_dir>/_headers`.
+
+    Read-transform-compare-write: the file is rewritten only when the transform
+    actually changed it, so a production build leaves it byte-identical and a
+    resident build that inherited an already-widened file from the MS3 build
+    writes nothing. Returns True when the file was rewritten.
+    """
+    if context is None:
+        context = os.environ.get("CONTEXT", "")
+    path = os.path.join(out_dir, "_headers")
+    with open(path, encoding="utf-8") as fh:
+        original = fh.read()
+    updated = preview_headers(original, context)
+    if updated == original:
+        return False
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(updated)
+    print(
+        "deploy-preview: frame-src widened for the Netlify Drawer "
+        "(https://app.netlify.com)%s" % ((" - " + label) if label else "")
+    )
+    return True

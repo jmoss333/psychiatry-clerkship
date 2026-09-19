@@ -87,9 +87,20 @@ done < <(git ls-files -- "${PATTERNS[@]}")
 
 if [ "$stubs" -eq 0 ]; then
   log "all $real LFS-tracked file(s) are already real bytes -> nothing to do"
-  log "NOTE: the clone fetched them (GIT_LFS_ENABLED is still set on this site), which spends"
-  log "      the full LFS bandwidth on EVERY build. Remove GIT_LFS_ENABLED and"
-  log "      GIT_LFS_FETCH_INCLUDE from the site's env vars to let this cache take over."
+  # Say what was observed, not why. An earlier version of this NOTE asserted the cause
+  # ("GIT_LFS_ENABLED is still set") and a per-build cost, and both were wrong: on
+  # 2026-09-14 the vars were removed from both sites and the checkout still materialised
+  # every object, so this branch kept printing a reason that no longer existed. Netlify's
+  # build image ships git-lfs, so its checkout smudges LFS objects whether or not the env
+  # var is set — which is also why this cache has never taken over. Measured the same
+  # morning, same site, "Preparing Git Reference" to the next log line:
+  #     fresh clone (cache cleared) : 69 s  -- the full ~455 MB
+  #     cache-reusing build         :  2 s  -- no download at all
+  # so the bandwidth is spent per FRESH CLONE, not per build.
+  log "NOTE: something before this script already materialised them — normally Netlify's"
+  log "      own checkout, which does so whether or not GIT_LFS_ENABLED is set. A fresh"
+  log "      clone pays the full LFS bandwidth; a cache-reusing build downloads nothing."
+  log "      This cache engages only when it finds pointer stubs, so it is idle here."
   exit 0
 fi
 log "$stubs pointer stub(s) among $((stubs + real)) LFS-tracked file(s) -> pulling via cache"

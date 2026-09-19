@@ -19,7 +19,11 @@ const make = new Function(`
   ${read('frontdoor/fd_edition_student.js')}
   ${todaySrc}
   return { fdTodayProgress: fdTodayProgress, fdToday: fdToday, fdBuildIndex: fdBuildIndex,
-           fdItemsForWeek: fdItemsForWeek, fdLibraryOnlyReads: fdLibraryOnlyReads };
+           fdItemsForWeek: fdItemsForWeek, fdLibraryOnlyReads: fdLibraryOnlyReads,
+           fdFindWeek: fdFindWeek, fdContinue: fdContinue, fdTodayPrimary: fdTodayPrimary,
+           fdTodayLastRead: fdTodayLastRead, fdTodayWhy: fdTodayWhy,
+           FD_TODAY_PRIMARY_ORDER: FD_TODAY_PRIMARY_ORDER, FD_TODAY_LEAD_END: FD_TODAY_LEAD_END,
+           FD_TODAY_WHY: FD_TODAY_WHY };
 `);
 const F = make();
 
@@ -118,19 +122,22 @@ test('the greeting varies by time of day, derived from state.nowMs', () => {
   const morning = new Date(2026, 7, 10, 9, 0, 0).getTime();
   const afternoon = new Date(2026, 7, 10, 14, 0, 0).getTime();
   const evening = new Date(2026, 7, 10, 20, 0, 0).getTime();
-  assert.match(F.fdToday(IDX, s({ nowMs: morning })), /Morning, there /);
-  assert.match(F.fdToday(IDX, s({ nowMs: afternoon })), /Afternoon, there /);
-  assert.match(F.fdToday(IDX, s({ nowMs: evening })), /Evening, there /);
+  assert.match(F.fdToday(IDX, s({ nowMs: morning })), /Morning, there<\/h1>/);
+  assert.match(F.fdToday(IDX, s({ nowMs: afternoon })), /Afternoon, there<\/h1>/);
+  assert.match(F.fdToday(IDX, s({ nowMs: evening })), /Evening, there<\/h1>/);
 });
 
 // ---- accessibility (Fresh Eyes Audit A2/A6) --------------------------------------------------
 
-test('the greeting’s trailing dash is decoration, not something a screen reader announces', () => {
-  // "Evening, Core rotation —" left a dangling em dash in the accessible name. Same treatment as
-  // the ✓ glyph in fdRow: the character stays visually and becomes aria-hidden.
+test('the greeting ends with the role, not a dangling dash', () => {
+  // "Evening, Core rotation —" first lost its dash from the accessible name (aria-hidden) and on
+  // 2026-09-19 lost it altogether: after a role label it read as a truncated sentence, and at
+  // 375px the dash wrapped onto a line of its own. The prototype's dash followed a NAME.
   const html = F.fdToday(IDX, s({}));
-  assert.match(html, /<span aria-hidden="true">—<\/span>/);
-  assert.doesNotMatch(html, /<h1 class="fd-today__h1">[^<]*—/);
+  const h1 = html.match(/<h1 class="fd-today__h1">([\s\S]*?)<\/h1>/);
+  assert.ok(h1, 'the greeting h1 renders');
+  assert.doesNotMatch(h1[1], /—|aria-hidden/, `no dash, decorative or otherwise: ${h1[1]}`);
+  assert.match(h1[1], /^(Morning|Afternoon|Evening), [^<]+$/);
 });
 
 test('each done-toggle carries its item title in the accessible name', () => {
@@ -391,4 +398,169 @@ test('fd_today.js touches no DOM, storage, or clock', () => {
 test('no rendered output carries a due-row or capture-triage surface', () => {
   const html = F.fdToday(IDX, s({})) + F.fdToday(IDX, s({ week: null }));
   assert.doesNotMatch(html, /fd-due|fd-capture|data-fd-due|data-fd-capture/i);
+});
+
+// ---- One Thing First: the priority rule (handoff 2026-09-16 §2) --------------------------
+//
+// The picker is pure over plain inputs the shell derives. The ORDER is one array so that
+// reversing assumption A1 ("unfinished outranks reviews due") is a swap of two entries in
+// fd_today.js plus the expected column of the table below — nothing else moves.
+
+const PICK = (over) => F.fdTodayPrimary(Object.assign({
+  capsuleLeft: 0, blockNext: null, dueTotal: 0, hasWeek: true,
+  weekProgress: { done: 0, total: 2, next: { ref: 'a.md' } }, lastRead: null,
+}, over)).kind;
+const LAST_READ = { ref: 'b.md', kind: 'read', done: false, isContinueTarget: false };
+const NO_WEEK = { done: 0, total: 0, next: null };
+
+test('the order is a single array, top-down, and A1 places unfinished work above reviews due', () => {
+  assert.deepEqual(F.FD_TODAY_PRIMARY_ORDER, ['resume', 'block', 'read', 'due', 'week', 'ahead', 'setup']);
+});
+
+test('the primary is the first true row of the table', () => {
+  const table = [
+    // rule 1: unfinished — resume › block › "You were reading"
+    [{ capsuleLeft: 4, blockNext: { kind: 'qb' }, dueTotal: 2, lastRead: LAST_READ }, 'resume'],
+    [{ blockNext: { kind: 'qb' }, dueTotal: 2, lastRead: LAST_READ }, 'block'],
+    [{ dueTotal: 2, lastRead: LAST_READ }, 'read'],
+    // rule 2: reviews due
+    [{ dueTotal: 2 }, 'due'],
+    // rule 3: the week has an undone item
+    [{}, 'week'],
+    // rule 4: week complete
+    [{ weekProgress: { done: 2, total: 2, next: null } }, 'ahead'],
+    // rule 5: no week
+    [{ hasWeek: false, weekProgress: NO_WEEK }, 'setup'],
+    // unfinished work and dues still outrank a missing week
+    [{ hasWeek: false, weekProgress: NO_WEEK, capsuleLeft: 1 }, 'resume'],
+    [{ hasWeek: false, weekProgress: NO_WEEK, dueTotal: 3 }, 'due'],
+  ];
+  for (const [over, kind] of table) assert.equal(PICK(over), kind, JSON.stringify(over));
+});
+
+test('"You were reading" falls through when the last item is done, a tool, or already the Continue target', () => {
+  assert.equal(PICK({ lastRead: Object.assign({}, LAST_READ, { done: true }) }), 'week');
+  assert.equal(PICK({ lastRead: Object.assign({}, LAST_READ, { kind: 'tool' }) }), 'week');
+  assert.equal(PICK({ lastRead: Object.assign({}, LAST_READ, { isContinueTarget: true }) }), 'week');
+  assert.equal(PICK({ lastRead: null }), 'week');
+});
+
+test('a capsule with nothing left and a block with no next step do not win', () => {
+  assert.equal(PICK({ capsuleLeft: 0, blockNext: null, dueTotal: 1 }), 'due');
+  assert.equal(PICK({ capsuleLeft: -1 }), 'week');
+  assert.equal(PICK({ capsuleLeft: 'x' }), 'week');
+});
+
+test('a week with no items is neither complete nor in progress; Continue still leads', () => {
+  assert.equal(PICK({ weekProgress: NO_WEEK }), 'week');
+  assert.equal(F.fdTodayPrimary(undefined).kind, 'setup', 'no inputs at all reads as no week');
+});
+
+test('fdTodayLastRead resolves cw_last against THIS week only and carries done + target', () => {
+  const items = F.fdItemsForWeek(IDX, 1);           // a.md (read), t.html (tool)
+  const progress = F.fdTodayProgress(items, {});    // next = a.md
+  assert.equal(F.fdTodayLastRead('zzz.md', items, progress, {}), null, 'not a week item');
+  assert.equal(F.fdTodayLastRead('', items, progress, {}), null);
+  assert.equal(F.fdTodayLastRead(null, items, progress, {}), null);
+  assert.deepEqual(F.fdTodayLastRead('a.md', items, progress, {}),
+    { ref: 'a.md', kind: 'read', title: 'Page A', minutes: 6, done: false, isContinueTarget: true });
+  assert.deepEqual(F.fdTodayLastRead('t.html', items, progress, { 't.html': true }),
+    { ref: 't.html', kind: 'tool', title: 'Tool T', minutes: null, done: true, isContinueTarget: false });
+});
+
+test('the explanation line is one paragraph with the approved copy, audience-neutral, and no due/capture markup', () => {
+  assert.equal(F.fdTodayWhy(),
+    '<p class="fd-primary__why">First things first: anything you left unfinished, then reviews due, then this week. The rest is just below.</p>');
+  assert.equal(F.FD_TODAY_WHY, 'First things first: anything you left unfinished, then reviews due, then this week. The rest is just below.');
+  assert.doesNotMatch(F.fdTodayWhy(), AUDIENCE_TOKEN_RE);
+  assert.doesNotMatch(F.fdTodayWhy(), /fd-due|fd-capture/i);
+});
+
+test('the lead-end marker is an HTML comment the shell can splice at', () => {
+  assert.equal(F.FD_TODAY_LEAD_END, '<!--fd-lead-end-->');
+});
+
+// ---- fdContinue: one lead card, demotable ------------------------------------------------
+
+const WK1 = F.fdFindWeek(IDX, 1);
+const PROG = (done) => F.fdTodayProgress(F.fdItemsForWeek(IDX, 1), done);
+
+test('fdContinue: primary undefined renders exactly what primary=true renders, and opens with the pinned class', () => {
+  const a = F.fdContinue(IDX, s({}), WK1, PROG({}));
+  const b = F.fdContinue(IDX, s({}), WK1, PROG({}), true);
+  assert.equal(a, b);
+  assert.match(a, /^<button type="button" class="fd-continue" data-fd-open="a\.md">/);
+  assert.doesNotMatch(a, /is-secondary|fd-freshset/);
+});
+
+test('fdContinue: primary=false adds is-secondary and changes nothing else', () => {
+  const secondary = F.fdContinue(IDX, s({}), WK1, PROG({}), false);
+  assert.match(secondary, /^<button type="button" class="fd-continue is-secondary" data-fd-open="a\.md">/);
+  assert.equal(secondary.replace(' is-secondary', ''), F.fdContinue(IDX, s({}), WK1, PROG({})));
+});
+
+test('fdContinue names the kind of the next item with the same chip rule as the week rows', () => {
+  assert.match(F.fdContinue(IDX, s({}), WK1, PROG({})),
+    /<span class="fd-continue__title">Page A<span class="fd-chip">read<\/span> →<\/span>/);
+  assert.match(F.fdContinue(IDX, s({}), WK1, PROG({ 'a.md': true })),
+    /<span class="fd-continue__title">Tool T<span class="fd-chip is-tool">tool<\/span> →<\/span>/);
+  // A rights reference reads "reference", never "tool" (fd_data.js: rights is a presentation flag).
+  const rights = JSON.parse(JSON.stringify(IDX));
+  rights.weeks[0].items[1].rights = true;
+  assert.match(F.fdContinue(rights, s({}), F.fdFindWeek(rights, 1),
+    F.fdTodayProgress(F.fdItemsForWeek(rights, 1), { 'a.md': true })),
+    /<span class="fd-chip is-tool">reference<\/span>/);
+  // No chip on the look-ahead card — there is no next item to name.
+  assert.doesNotMatch(F.fdContinue(IDX, s({}), WK1, PROG({ 'a.md': true, 't.html': true })), /fd-chip/);
+});
+
+test('a completed week, when primary, offers a fresh set beside the look-ahead card — as a sibling, never nested', () => {
+  const done = { 'a.md': true, 't.html': true };
+  const lead = F.fdContinue(IDX, s({ done }), WK1, PROG(done));
+  assert.match(lead, /<\/button><button type="button" class="fd-btn fd-btn--ghost fd-freshset" data-fd-open="question-bank-practice\.html">Practice a fresh set →<\/button>$/);
+  assert.equal((lead.match(/<button/g) || []).length, 2);
+  assert.doesNotMatch(F.fdContinue(IDX, s({ done }), WK1, PROG(done), false), /fd-freshset/,
+    'a demoted look-ahead card keeps its footprint small');
+  assert.doesNotMatch(F.fdContinue(IDX, s({}), WK1, PROG({})), /fd-freshset/,
+    'an unfinished week never offers the fresh set from this card');
+});
+
+test('fdToday demotes its own Continue card only when a device-store row won', () => {
+  for (const kind of [undefined, 'week', 'ahead', 'setup']) {
+    assert.match(F.fdToday(IDX, s({ primaryKind: kind })), /class="fd-continue" data-fd-open/, String(kind));
+  }
+  for (const kind of ['resume', 'block', 'due', 'read']) {
+    assert.match(F.fdToday(IDX, s({ primaryKind: kind })), /class="fd-continue is-secondary" data-fd-open/, kind);
+  }
+});
+
+test('fdToday emits the lead-end marker exactly once, directly after the lead card', () => {
+  const html = F.fdToday(IDX, s({}));
+  assert.equal(html.split(F.FD_TODAY_LEAD_END).length - 1, 1);
+  const lead = html.indexOf('class="fd-continue"');
+  const mark = html.indexOf(F.FD_TODAY_LEAD_END);
+  const list = html.indexOf('<div class="fd-listhead">');
+  assert.ok(lead > -1 && lead < mark && mark < list, `lead ${lead} mark ${mark} list ${list}`);
+  const setup = F.fdToday(IDX, s({ week: null }));
+  assert.equal(setup.split(F.FD_TODAY_LEAD_END).length - 1, 1);
+  assert.ok(setup.indexOf('fd-setupcta') < setup.indexOf(F.FD_TODAY_LEAD_END));
+  const complete = F.fdToday(IDX, s({ done: { 'a.md': true, 't.html': true } }));
+  assert.ok(complete.indexOf('fd-freshset') < complete.indexOf(F.FD_TODAY_LEAD_END),
+    'the fresh-set button belongs to the lead, above the marker');
+});
+
+test('the same primary kind renders the same lead treatment for both path ids', () => {
+  for (const id of ['ms3-six-week', 'resident-four-week']) {
+    const idx = Object.assign({}, IDX, { path: { id } });
+    assert.match(F.fdToday(idx, s({ primaryKind: 'week' })), /class="fd-continue" data-fd-open/, id);
+    assert.match(F.fdToday(idx, s({ primaryKind: 'resume' })), /class="fd-continue is-secondary" data-fd-open/, id);
+  }
+});
+
+test('every new string is audience-neutral', () => {
+  const done = { 'a.md': true, 't.html': true };
+  const all = F.fdContinue(IDX, s({}), WK1, PROG({}), false)
+    + F.fdContinue(IDX, s({ done }), WK1, PROG(done))
+    + F.fdTodayWhy();
+  assert.doesNotMatch(all, AUDIENCE_TOKEN_RE);
 });

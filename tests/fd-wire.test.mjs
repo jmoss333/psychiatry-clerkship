@@ -49,6 +49,27 @@ const roleContext = {
   week: 2,
 };
 
+test('guide context never leaks into another resource or a practice iframe', () => {
+  const context = { search: '?page=source.md&guideFind=private+query&guideSection=one&case=c1' };
+  const out = F.fdDispatch({ 'data-fd-open': 'practice.html' }, context, roleContext);
+  const params = new URLSearchParams(out.route);
+  assert.equal(params.has('guideFind'), false);
+  assert.equal(params.has('guideSection'), false);
+  assert.equal(params.get('case'), 'c1');
+});
+
+test('opening a reading from search carries a bounded passage query only to that reading', () => {
+  const out = F.fdDispatch({ 'data-fd-open': 'therapy.md' }, {},
+    { ...roleContext, searchOpen: true, query: 'behavioral activation' });
+  assert.equal(new URLSearchParams(out.route).get('guideFind'), 'behavioral activation');
+  const tool = F.fdDispatch({ 'data-fd-open': 'practice.html' }, {},
+    { ...roleContext, searchOpen: true, query: 'behavioral activation' });
+  assert.equal(new URLSearchParams(tool.route).has('guideFind'), false);
+  const long = F.fdDispatch({ 'data-fd-open': 'therapy.md' }, {},
+    { ...roleContext, searchOpen: true, query: 'x'.repeat(300) });
+  assert.equal(new URLSearchParams(long.route).get('guideFind').length, 160);
+});
+
 test('URL page/tool/tab values beat persisted Front Door state', () => {
   const stored = {
     role: 'first-role', tab: 'library', openId: 'old.md', fromTab: 'today', week: 2,
@@ -202,7 +223,7 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
   assert.equal(F.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).route, '/');
   assert.deepEqual(F.fdDispatch({ 'data-fd-search': '' }, {}, roleContext).patch, { searchOpen: true });
   assert.deepEqual(F.fdDispatch({ 'data-fd-change-week': '' }, {}, roleContext), {
-    patch: { screen: 'setup-week', tab: 'today', openId: null, searchOpen: false, sheet: null },
+    patch: { screen: 'setup-week', tab: 'today', openId: null, searchOpen: false, sheet: null, setupFrom: 'app' },
     route: '/', history: 'replace', effect: null,
   });
   assert.equal(F.fdDispatch({ 'data-fd-progress': '' }, {}, roleContext).effect.type, 'open-progress');
@@ -232,7 +253,7 @@ test('change-week uses a reader origin only while a reader is open', () => {
   });
   assert.deepEqual(reader, {
     patch: {
-      screen: 'setup-week', tab: 'path', openId: null, searchOpen: false, sheet: null,
+      screen: 'setup-week', tab: 'path', openId: null, searchOpen: false, sheet: null, setupFrom: 'app',
     },
     route: '?tab=path&case=c1', history: 'replace', effect: null,
   });
@@ -242,7 +263,7 @@ test('change-week uses a reader origin only while a reader is open', () => {
   });
   assert.deepEqual(tabOnly, {
     patch: {
-      screen: 'setup-week', tab: 'library', openId: null, searchOpen: false, sheet: null,
+      screen: 'setup-week', tab: 'library', openId: null, searchOpen: false, sheet: null, setupFrom: 'app',
     },
     route: '?tab=library&case=c1', history: 'replace', effect: null,
   });
@@ -575,6 +596,7 @@ function fakeHarness(initial, options = {}) {
     addEventListener(type, fn) { rootHandlers[type] = fn; },
     removeEventListener() {},
     querySelector: options.querySelector || (() => null),
+    ...(options.querySelectorAll ? { querySelectorAll: options.querySelectorAll } : {}),
     matches: options.matches || (() => false),
   };
   const fakeWindow = {
@@ -583,6 +605,8 @@ function fakeHarness(initial, options = {}) {
     location: options.location || { href: 'https://example.test/', search: '', pathname: '/' },
     history: options.history,
     matchMedia: options.matchMedia,
+    get scrollY() { return typeof options.scrollY === 'function' ? options.scrollY() : options.scrollY; },
+    scrollTo: options.scrollTo,
   };
   const controller = options.F.fdWire(root, initial, {
     window: fakeWindow,
@@ -2513,4 +2537,290 @@ test('the erase names no key of its own and reaches past no namespace', () => {
     'clear() reaches past the namespace the storage-namespaces decision governs');
   assert.equal((body[0].match(/indexOf\('(?:cw|rp)_'\)===0/g) || []).length, 2,
     'both sanctioned prefixes, and only those');
+});
+
+// ---- Phase 3 (F4): a guest deep link renders the resource and assigns no role ----------------
+
+test('a routed page or tool with no stored role renders as a guest: app screen, guest flag, no role', () => {
+  const guest = F.fdResolveState('/?page=pg_suicide.md', {});
+  assert.equal(guest.screen, 'app');
+  assert.equal(guest.guest, true);
+  assert.equal(guest.openId, 'pg_suicide.md');
+  assert.equal(guest.fromTab, 'today');
+  assert.equal(guest.role, undefined, 'a guest is never assigned a role');
+  const tool = F.fdResolveState('/?tool=mse.html', { tab: 'library' });
+  assert.equal(tool.screen, 'app');
+  assert.equal(tool.guest, true);
+  assert.equal(tool.openId, 'mse.html');
+  assert.equal(tool.fromTab, 'library');
+  assert.equal(tool.role, undefined);
+});
+
+test('the guest flag never appears once a role exists, and aliases keep the setup gate', () => {
+  const known = F.fdResolveState('/?page=pg_suicide.md', {
+    role: 'first-role', roles: [{ id: 'first-role' }], rotationStart: '2026-08-17', week: 1,
+  });
+  assert.equal(known.screen, 'app');
+  assert.equal(known.guest, undefined);
+  assert.equal(known.role, 'first-role');
+  // A role without a week still meets the week step on a deep link — unchanged by this phase.
+  const roleNoWeek = F.fdResolveState('/?page=pg_suicide.md', { role: 'first-role', roles: [{ id: 'first-role' }] });
+  assert.equal(roleNoWeek.screen, 'setup-week');
+  assert.equal(roleNoWeek.guest, undefined);
+  for (const alias of ['__home__', '__path__', '__start__', '__progress__']) {
+    const out = F.fdResolveState(`/?page=${alias}`, {});
+    assert.equal(out.screen, 'setup-role', alias);
+    assert.equal(out.guest, undefined, alias);
+    assert.equal(out.role, undefined, alias);
+  }
+});
+
+test('the next plain visit after a guest read asks who this is for, from step 1', () => {
+  // What a guest visit leaves behind: the shell persists FD_KEYS (openId, tab, ...) but never a
+  // role, and `browsing` is not persisted at all. With no routed ref, the role gate runs first.
+  const next = F.fdResolveState('/', { openId: 'pg_suicide.md', tab: 'today', fromTab: 'today', browsing: true });
+  assert.equal(next.screen, 'setup-role');
+  assert.equal(next.role, undefined);
+  assert.equal(next.guest, undefined);
+  assert.equal(F.fdResolveState('/', {}).screen, 'setup-role');
+});
+
+// ---- #425: leaving rotation mode is a choice that sticks --------------------------------------
+
+test('browse mode clears the rotation start, is persisted, and survives a reload on any tab (#425)', () => {
+  const nowMs = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  const ls = memStorage({ cw_rotation_start: '2026-07-20' });
+  const LocalF = make(ls);
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'today', viewWeek: 2, openId: null,
+  }, { F: LocalF });
+  h.controller.dispatch({ 'data-fd-change-week': '' });
+  assert.equal(h.controller.getState().screen, 'setup-week');
+  h.controller.dispatch({ 'data-fd-week': '0' }, { nowMs });
+  const st = h.controller.getState();
+  assert.equal(st.screen, 'app');
+  assert.equal(st.tab, 'library');
+  assert.equal(st.week, null);
+  assert.equal(st.browsing, true);
+  assert.equal(ls.getItem('cw_rotation_start'), null,
+    'the rotation start is removed, not merely ignored -- fdLiveState re-derives the week from it');
+  const stored = JSON.parse(ls.getItem('cw_frontdoor_v1'));
+  assert.equal(stored.browsing, true, 'the choice is persisted with the route state');
+
+  // A reload resolves straight to the app on ANY tab, not back to week setup.
+  for (const tab of ['today', 'path', 'library']) {
+    const resolved = LocalF.fdResolveState('https://example.test/', {
+      ...stored, tab, roles: roleContext.roles, rotationStart: '',
+    });
+    assert.equal(resolved.screen, 'app', `${tab}: browse mode survives a reload`);
+    assert.equal(resolved.browsing, true);
+    assert.equal('week' in resolved, false);
+  }
+  // Without the persisted flag the same store would have asked for a week again.
+  const legacy = LocalF.fdResolveState('https://example.test/', {
+    ...stored, browsing: undefined, tab: 'today', roles: roleContext.roles, rotationStart: '',
+  });
+  assert.equal(legacy.screen, 'setup-week');
+
+  // Choosing a week again leaves browse mode and restores a rotation start.
+  h.controller.dispatch({ 'data-fd-setweek': '3' }, { nowMs });
+  assert.equal(h.controller.getState().browsing, false);
+  assert.equal(ls.getItem('cw_rotation_start'), '2026-07-27');
+  assert.equal(JSON.parse(ls.getItem('cw_frontdoor_v1')).browsing, false);
+});
+
+test('Back from Change week cancels to the app for a returning learner; first-run Back still un-chooses the role (#425)', () => {
+  const back = F.fdDispatch({ 'data-fd-back': '' }, {},
+    { ...roleContext, screen: 'setup-week', setupFrom: 'app' });
+  assert.deepEqual(back, { patch: { screen: 'app', setupFrom: null }, route: null, effect: null });
+  const firstRun = F.fdDispatch({ 'data-fd-back': '' }, {}, { ...roleContext, screen: 'setup-week' });
+  assert.deepEqual(firstRun, { patch: { role: null, screen: 'setup-role' }, route: null, effect: null });
+
+  // End to end through the controller: role and rotation are intact after the cancel.
+  const ls = memStorage({ cw_rotation_start: '2026-07-20' });
+  const LocalF = make(ls);
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'today', viewWeek: 2, openId: null,
+  }, { F: LocalF });
+  h.controller.dispatch({ 'data-fd-change-week': '' });
+  h.controller.dispatch({ 'data-fd-back': '' });
+  const st = h.controller.getState();
+  assert.equal(st.screen, 'app');
+  assert.equal(st.role, 'first-role');
+  assert.equal(st.week, 2);
+  assert.equal(ls.getItem('cw_rotation_start'), '2026-07-20');
+  assert.equal(JSON.parse(ls.getItem('cw_frontdoor_v1')).role, 'first-role');
+  // Picking a week from the same screen also clears the origin marker, so a later first-run
+  // Back (after a device erase) cannot inherit it.
+  h.controller.dispatch({ 'data-fd-change-week': '' });
+  h.controller.dispatch({ 'data-fd-week': '1' }, { nowMs: new Date(2026, 7, 12, 9, 0, 0).getTime() });
+  assert.equal(h.controller.getState().setupFrom, null);
+});
+
+test('the rotation key is already gone when the render that paints the header runs (#425)', () => {
+  // fdLiveState re-derives the week from cw_rotation_start on every render. Removing the key
+  // AFTER the render painted "Week 1" once more for a learner who had just chosen browse.
+  const ls = memStorage({ cw_rotation_start: '2026-07-20' });
+  const LocalF = make(ls);
+  const seenAtRender = [];
+  const h = fakeHarness({
+    ...roleContext, screen: 'setup-week', tab: 'today', viewWeek: 2, openId: null, setupFrom: 'app',
+  }, { F: LocalF, render: () => seenAtRender.push(ls.getItem('cw_rotation_start')) });
+  h.controller.dispatch({ 'data-fd-week': '0' }, { nowMs: new Date(2026, 7, 12, 9, 0, 0).getTime() });
+  assert.deepEqual(seenAtRender, [null], 'the browse render must not be able to see the old start');
+  seenAtRender.length = 0;
+  h.controller.dispatch({ 'data-fd-setweek': '2' }, { nowMs: new Date(2026, 7, 12, 9, 0, 0).getTime() });
+  assert.deepEqual(seenAtRender, ['2026-08-03'], 'a chosen week is stored before its render, too');
+});
+
+// ---- #427: returning from a resource lands where the learner left the originating tab -------
+
+function originHarness(initial, extra = {}) {
+  const ls = memStorage();
+  const LocalF = make(ls);
+  let scrollY = extra.scrollY ?? 0;
+  const scrolls = [];
+  const openers = extra.openers || {};
+  const h = fakeHarness(initial, {
+    F: LocalF,
+    openResource: () => {},
+    scrollY: () => scrollY,
+    scrollTo: (x, y) => scrolls.push([x, y]),
+    querySelector: (sel) => openers[sel] || null,
+    ...(extra.querySelectorAll ? { querySelectorAll: extra.querySelectorAll } : {}),
+  });
+  return { h, ls, scrolls, setScrollY: (y) => { scrollY = y; } };
+}
+
+function opener() { return { focused: 0, focus() { this.focused += 1; } }; }
+
+test('in-app Back restores the originating tab offset and focuses the link that opened the resource (#427)', () => {
+  const link = opener();
+  const { h, ls, scrolls, setScrollY } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'library', openId: null },
+    { scrollY: 640, openers: { '[data-fd-open="deep.md"]': link } },
+  );
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'deep.md' }), preventDefault() {} });
+  assert.equal(h.controller.getState().scrollPos, 640, 'the offset is recorded when the resource opens');
+  assert.equal(JSON.parse(ls.getItem('cw_frontdoor_v1')).scrollPos, 640, 'and persisted with the route');
+  setScrollY(0);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.deepEqual(scrolls, [[0, 640]]);
+  assert.equal(link.focused, 1);
+  assert.equal(h.controller.getState().tab, 'library');
+});
+
+test('a reader opened from another reader keeps the original origin; a different tab restores nothing (#427)', () => {
+  const link = opener();
+  const { h, scrolls, setScrollY } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'path', openId: null },
+    { scrollY: 900, openers: { '[data-fd-open="first.md"]': link } },
+  );
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'first.md' }), preventDefault() {} });
+  setScrollY(120);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'second.md' }), preventDefault() {} });
+  assert.equal(h.controller.getState().scrollPos, 900, 'reader -> reader does not move the origin');
+  // Leaving through a different tab: nothing on Today opened the resource, so no restore.
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-tab': 'today' }), preventDefault() {} });
+  assert.deepEqual(scrolls, []);
+  assert.equal(link.focused, 0);
+  assert.equal(h.controller.getState().openId, null);
+});
+
+test('a retired or missing opener falls back to the render focus without throwing (#427)', () => {
+  const { h, scrolls } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'library', openId: null },
+    { scrollY: 300, openers: {} },
+  );
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'gone.md' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.deepEqual(scrolls, [[0, 300]], 'the list offset is still the learner\'s');
+});
+
+test('fdResolveState carries a persisted scroll offset through startup, and drops a bad one (#427)', () => {
+  const F = make(memStorage());
+  assert.equal(F.fdResolveState('https://example.test/?page=deep.md', { role: 'ms3', tab: 'library', scrollPos: 640 }).scrollPos, 640,
+    'a reload while reading keeps the offset the open recorded');
+  assert.equal(F.fdResolveState('https://example.test/', { role: 'ms3', tab: 'library', scrollPos: -1 }).scrollPos, undefined);
+  assert.equal(F.fdResolveState('https://example.test/', { role: 'ms3', tab: 'library', scrollPos: '640' }).scrollPos, undefined);
+});
+
+test('a hidden duplicate of the opener is skipped in favour of one that is shown (#427)', () => {
+  // Today's Quick Tools pill row precedes the desktop rail in the DOM and is display:none there.
+  const hidden = { ...opener(), getClientRects: () => [] };
+  const shown = { ...opener(), getClientRects: () => [{}] };
+  const { h, setScrollY } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'today', openId: null },
+    { scrollY: 200, querySelectorAll: () => [hidden, shown] },
+  );
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'tool.html' }), preventDefault() {} });
+  setScrollY(0);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.equal(hidden.focused, 0, 'focusing a display:none element moves nothing, so it is never chosen');
+  assert.equal(shown.focused, 1);
+});
+
+test('among shown duplicates, the control the learner activated is the one that gets focus back (#427)', () => {
+  const rail = { ...opener(), getClientRects: () => [{}] };
+  const week = { ...opener(), getClientRects: () => [{}] };
+  const target = actionTarget({ 'data-fd-open': 'tool.html' });
+  Object.assign(week, target); // the click target IS the second duplicate
+  const { h, setScrollY } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'today', openId: null },
+    { scrollY: 200, querySelectorAll: () => [rail, week] },
+  );
+  h.rootHandlers.click({ target: week, preventDefault() {} });
+  setScrollY(0);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.equal(rail.focused, 0);
+  assert.equal(week.focused, 1, 'the second duplicate was the invoker, so it is the one restored');
+});
+
+test('with no remembered invoker and several shown duplicates, the render focus stands unless one is the primary (#427)', () => {
+  // A resource opened by a plain link (the Resume card is an <a href>) never passes through
+  // apply(), so on Back nothing says which of the week row and the rail copy the learner used.
+  const row = { ...opener(), getClientRects: () => [{}], closest: () => null };
+  const rail = { ...opener(), getClientRects: () => [{}], closest: () => null };
+  const { h, scrolls, setScrollY } = originHarness(
+    { ...roleContext, screen: 'app', tab: 'today', openId: null },
+    { scrollY: 150, querySelectorAll: () => [row, rail] },
+  );
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'tool.html' }), preventDefault() {} });
+  setScrollY(0);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.deepEqual(scrolls, [[0, 150]], 'the offset is still restored');
+  assert.equal(row.focused + rail.focused, 0, 'no guess: the landmark focus from the render stands');
+
+  // ...but a shown duplicate inside Today's primary IS the one thing the learner was pointed at.
+  const primary = { ...opener(), getClientRects: () => [{}], closest: (sel) => (sel === '.fd-primary' ? {} : null) };
+  const h2 = originHarness(
+    { ...roleContext, screen: 'app', tab: 'today', openId: null },
+    { scrollY: 0, querySelectorAll: () => [row, primary] },
+  ).h;
+  h2.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'tool.html' }), preventDefault() {} });
+  h2.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.equal(primary.focused, 1);
+  assert.equal(row.focused, 0);
+});
+
+test('browser Back out of a resource is the same return (#427)', () => {
+  const link = opener();
+  const location = { href: 'https://example.test/?tab=library', pathname: '/', search: '?tab=library' };
+  const memory = memoryHistory(location);
+  const ls = memStorage();
+  const LocalF = make(ls);
+  let scrollY = 480;
+  const scrolls = [];
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'library', openId: null }, {
+    F: LocalF, location, history: memory.history, openResource: () => {},
+    scrollY: () => scrollY, scrollTo: (x, y) => scrolls.push([x, y]),
+    querySelector: (sel) => (sel === '[data-fd-open="deep.md"]' ? link : null),
+  });
+  memory.bind(h.windowHandlers.popstate);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'deep.md' }), preventDefault() {} });
+  scrollY = 0;
+  memory.go(-1);
+  assert.equal(h.controller.getState().openId, null);
+  assert.deepEqual(scrolls, [[0, 480]]);
+  assert.equal(link.focused, 1);
 });
