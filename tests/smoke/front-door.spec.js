@@ -1074,8 +1074,11 @@ test.describe('Clinical field guide', () => {
   test('a passage arrival keeps a pending high-risk review warning in focus', async ({ page }, testInfo) => {
     // Synthetic transport fixture only: the actual attestation ledger is never edited. It
     // exercises the focus priority even when every placed teaching page is currently reviewed.
-    // Serve the ledger immediately: fetching it inside the route callback would make warning
-    // focus depend on whether governance arrives before or after the startup focus guard opens.
+    // The ledger is served immediately so the fixture itself adds no latency. The focus-take no
+    // longer depends on that: since takePendingHighFocus() in spa_index.html, the warning is
+    // focused whichever lands second — governance.json or the release of the startup gate's
+    // `inert` (which silently refuses focus while it is closed). governance-warnings.spec.js
+    // covers the gate-second order against the real ledger.
     const response = await requestGetWithRetry(page.request, '/governance.json');
     const ledger = await response.json();
     ledger.items[GUIDE_REF] = {
