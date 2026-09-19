@@ -55,6 +55,16 @@ review happened, so none of them fail here. The rule forbids the claim, not the 
     python3 bin/check_governance_separation.py --format json
     python3 bin/check_governance_separation.py --self-test              # hermetic fixture repos
 
+ON A BRANCH STACKED ON ANOTHER PR, push with
+`CLERKSHIP_PR_BASE=origin/<parent-branch> git push` so the pre-push gate compares against the
+parent, not main. The default base is `merge-base origin/main HEAD`, which on a stack contains
+the PARENT PR's commits — so the gate judges work this branch never wrote, and because
+bin/verify.sh is the pre-push hook, it blocks every push from the stack until the parent
+merges. `CLERKSHIP_PR_BASE` moves the base; `--base` still wins over both, and the header line
+always says which of the three the base came from. It is not a bypass: whatever it names is
+still passed to `git merge-base`, so it can only shrink the range to commits this branch owns,
+and it silences no rule.
+
 EXIT 2 IS NOT A PASS. No base, no git, an unparsable registry, or a HEAD tree with no
 shipped_pages.json all mean the CONTENT predicate cannot be evaluated — and a classifier that
 cannot tell content from not-content would clear every diff it was handed.
@@ -192,7 +202,16 @@ def json_at(root, rev, path):
 
 
 def changed_paths(root, base, head):
-    out = _git_text(root, ["diff", "--name-only", base, head])
+    """Every path the diff touches, with BOTH sides of a rename.
+
+    `--no-renames` is load-bearing. Git's default rename detection collapses a moved file to
+    its destination alone, so moving a shipped content source out of the content trees —
+    `03_Core_Topics/x/x.md` → `docs/moved_x.md` — in the same commit as a CLAUDE.md edit
+    listed only `docs/moved_x.md`, no CONTENT path was seen, and L1 and L3 both passed a diff
+    that had emptied a content tree. The source side is what the CONTENT predicate has to
+    read: whether a path IS content is a fact about where it was, not only where it went.
+    """
+    out = _git_text(root, ["diff", "--no-renames", "--name-only", base, head])
     return [line for line in out.splitlines() if line]
 
 
@@ -352,7 +371,7 @@ def commit_promotions(root, base, head):
     return offenders
 
 
-def classify(root, base, head, head_branch):
+def classify(root, base, head, head_branch, base_source=None):
     """The whole verdict as data. Raises InputError / GitError; never guesses."""
     shipped = json_at(root, head, SHIPPED_REL)
     if shipped is None:
@@ -383,6 +402,7 @@ def classify(root, base, head, head_branch):
 
     return {
         "base": base, "head": head, "headBranch": head_branch,
+        "baseSource": base_source or "--base",
         "changed": changed, "content": content, "governance": governance,
         "ledgerPromotions": ledger, "topicMetaPromotions": topic_meta,
         "commitOffenders": offenders, "failures": failures,
@@ -440,9 +460,10 @@ def report_lines(verdict):
     return lines
 
 
-def run(root, base, head, head_branch, fmt="text", stream=None):
+def run(root, base, head, head_branch, fmt="text", stream=None, base_source=None):
     stream = stream or sys.stdout
-    verdict = classify(root, base, head, head_branch)
+    verdict = classify(root, base, head, head_branch, base_source)
+    where = "base %s (%s)" % (base[:7] if len(base) >= 7 else base, verdict["baseSource"])
 
     if fmt == "json":
         payload = dict(verdict, schemaVersion=1)
@@ -459,8 +480,8 @@ def run(root, base, head, head_branch, fmt="text", stream=None):
         return 1 if verdict["failures"] else 0
 
     if verdict["failures"]:
-        print("governance separation: %d rule(s) failed between %s and %s"
-              % (len(verdict["failures"]), base, head), file=sys.stderr)
+        print("governance separation: %d rule(s) failed — %s .. %s"
+              % (len(verdict["failures"]), where, head), file=sys.stderr)
         for line in report_lines(verdict):
             print(line, file=sys.stderr)
         print("  see this file's docstring for what registration and demotion may do",
@@ -468,19 +489,40 @@ def run(root, base, head, head_branch, fmt="text", stream=None):
         return 1
 
     promotions = len(verdict["ledgerPromotions"]) + len(verdict["topicMetaPromotions"])
-    print("governance separation OK — %d changed path(s), %d content, %d governance, "
+    print("governance separation OK — %s; %d changed path(s), %d content, %d governance, "
           "%d promotion(s) on %s"
-          % (len(verdict["changed"]), len(verdict["content"]), len(verdict["governance"]),
-             promotions, verdict["headBranch"]), file=stream)
+          % (where, len(verdict["changed"]), len(verdict["content"]),
+             len(verdict["governance"]), promotions, verdict["headBranch"]), file=stream)
     return 0
 
 
-def default_base(root, head):
+PR_BASE_ENV = "CLERKSHIP_PR_BASE"
+
+
+def default_base(root, head, environ=None):
+    """(base sha, where it came from) when --base was not given.
+
+    A branch stacked on an unmerged PR has that PR's commits in `merge-base origin/main HEAD`,
+    so the gate judges work its author never wrote and — because verify.sh is the pre-push
+    hook — blocks every push from the stack until the parent merges. `CLERKSHIP_PR_BASE` lets
+    the pusher name the parent. It is not a bypass: it MOVES the base, it does not silence a
+    rule, and whatever it names is still a merge-base, so it can only ever shrink the range to
+    commits the branch actually owns.
+    """
+    environ = os.environ if environ is None else environ
+    parent = (environ.get(PR_BASE_ENV) or "").strip()
+    if parent:
+        proc = _git(root, ["merge-base", parent, head], check=False)
+        base = proc.stdout.decode("utf-8", "replace").strip()
+        if proc.returncode == 0 and base:
+            return base, "from %s" % PR_BASE_ENV
+        raise InputError("%s=%s does not resolve here — unset it or pass --base"
+                         % (PR_BASE_ENV, parent))
     proc = _git(root, ["merge-base", "origin/main", head], check=False)
     base = proc.stdout.decode("utf-8", "replace").strip()
     if proc.returncode != 0 or not base:
         raise InputError("origin/main not resolvable — pass --base")
-    return base
+    return base, "merge-base with origin/main"
 
 
 def main(argv=None):
@@ -488,7 +530,8 @@ def main(argv=None):
     parser.add_argument("--root", default=None,
                         help="repository to check (default: this checkout)")
     parser.add_argument("--base", default=None,
-                        help="the ref to compare against (default: merge-base with origin/main)")
+                        help="the ref to compare against (default: merge-base with "
+                             "$CLERKSHIP_PR_BASE when set, else with origin/main)")
     parser.add_argument("--head", default="HEAD", help="the ref to check (default: HEAD)")
     parser.add_argument("--head-branch", default=None,
                         help="the branch name the head would merge from "
@@ -507,8 +550,11 @@ def main(argv=None):
         head_branch = args.head_branch
         if head_branch is None:
             head_branch = _git_text(root, ["rev-parse", "--abbrev-ref", "HEAD"]).strip()
-        base = args.base or default_base(root, args.head)
-        return run(root, base, args.head, head_branch, args.format)
+        if args.base:
+            base, base_source = args.base, "from --base"
+        else:
+            base, base_source = default_base(root, args.head)
+        return run(root, base, args.head, head_branch, args.format, base_source=base_source)
     except (InputError, GitError, OSError) as exc:
         print("could not check: %s" % exc, file=sys.stderr)
         return 2
@@ -670,6 +716,30 @@ def _rules(text):
     return [rule for rule in ("L1", "L2", "L3", "L4") if ("%s FAIL" % rule) in text]
 
 
+class _env:
+    """Set environment variables for a block, restoring what was there afterwards."""
+
+    def __init__(self, **values):
+        self.values, self.previous = values, {}
+
+    def __enter__(self):
+        for key, value in self.values.items():
+            self.previous[key] = os.environ.get(key)
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+        return self
+
+    def __exit__(self, *exc):
+        for key, value in self.previous.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+        return False
+
+
 def self_test():  # noqa: C901 — a flat list of cases reads better than helpers here
     failures, total = [], []
 
@@ -684,6 +754,10 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         check("%s fires %s" % (name, want_rules or "nothing"), _rules(text), want_rules)
 
     holder = tempfile.TemporaryDirectory()
+    # The whole suite runs with the ambient CLERKSHIP_PR_BASE cleared: a value in the caller's
+    # shell must not reach into a hermetic case and move a base out from under it.
+    ambient = _env(CLERKSHIP_PR_BASE=None)
+    ambient.__enter__()
     try:
         root = _fixture_repo(Path(holder.name) / "repo")
         ledger, meta = _fixture_ledger(), _fixture_topic_meta()
@@ -841,6 +915,23 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         verdict("a path outside both halves is not content",
                 _case(root, "feature-noncontent", not_content), 0, [])
 
+        # A RENAME HAS TWO SIDES. Git's default rename detection lists a moved file at its
+        # destination only, so moving a shipped source OUT of the content trees alongside a
+        # CLAUDE.md edit showed no CONTENT path at all and cleared L1 and L3 — on the one diff
+        # that had emptied a content tree. Whether a path is content is a fact about where it
+        # WAS, so the diff is taken with --no-renames.
+        moved = "docs/moved_x.md"
+
+        def renamed_out():
+            (root / X_SOURCE).unlink()
+            _write(root, moved, "# page\n\noriginal\n")
+            _write(root, "CLAUDE.md", "# Agent Guide\n\nrule one\nrule six\n")
+        verdict("a content source renamed out of the tree still counts as content",
+                _case(root, "feature-rename", renamed_out), 1, ["L1"])
+        listed = changed_paths(root, "main", "feature-rename")
+        check("the diff lists the source side of the rename", X_SOURCE in listed, True)
+        check("and the destination side", moved in listed, True)
+
         # L4 skips merges: a merge re-reports the branch's promotions under the merger's
         # identity, so without this every console attestation would fail on reaching main.
         _fixture_git(root, ["checkout", "-q", "-b", "merge-main", "main"])
@@ -852,8 +943,57 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         check("and fires nothing", _rules(text), [])
         _fixture_git(root, ["checkout", "-q", "main"])
 
+        # A STACKED BRANCH MUST BE ABLE TO NAME ITS BASE. `stack-child` owns a harmless
+        # content edit; its parent carries a promotion. Against main the child is judged for
+        # the parent's work — and verify.sh is the pre-push hook, so that blocks every push
+        # off the stack until the parent merges.
+        _fixture_git(root, ["checkout", "-q", "-b", "stack-parent", "main"])
+        promote_ledger()
+        _commit(root, "parent PR: a promotion")
+        _fixture_git(root, ["checkout", "-q", "-b", "stack-child", "stack-parent"])
+        _write(root, W_SOURCE, "# page\n\nchild edit\n")
+        _commit(root, "child PR: content only")
+        _fixture_git(root, ["checkout", "-q", "main"])
+
+        code, text = _run(["--root", str(root), "--base", "main", "--head", "stack-child",
+                           "--head-branch", "stack-child"])
+        check("a stacked branch judged against main inherits the parent's finding", code, 1)
+        check("which is the parent's promotion", _rules(text), ["L2", "L3", "L4"])
+        check("and the header names --base as the source", "(from --base)" in text, True)
+
+        with _env(CLERKSHIP_PR_BASE="stack-parent"):
+            code, text = _run(["--root", str(root), "--head", "stack-child",
+                               "--head-branch", "stack-child"])
+        check("CLERKSHIP_PR_BASE narrows the range to the branch's own commits", code, 0)
+        check("and the header says where the base came from",
+              "(from CLERKSHIP_PR_BASE)" in text, True)
+
+        # It moves the base; it does not silence a rule. Pointed at the grandparent, the
+        # parent's promotion is back in range.
+        with _env(CLERKSHIP_PR_BASE="main"):
+            code, text = _run(["--root", str(root), "--head", "stack-child",
+                               "--head-branch", "stack-child"])
+        check("pointed at main it finds the promotion again", code, 1)
+        check("with the same rules", _rules(text), ["L2", "L3", "L4"])
+
+        # --base wins over the env var.
+        with _env(CLERKSHIP_PR_BASE="stack-parent"):
+            code, text = _run(["--root", str(root), "--base", "main", "--head", "stack-child",
+                               "--head-branch", "stack-child"])
+        check("--base wins over CLERKSHIP_PR_BASE", code, 1)
+        check("and says so", "(from --base)" in text, True)
+
+        # A name that does not resolve is exit 2, not a silent fall back to origin/main:
+        # a typo in a push command must not quietly widen the range it was set to narrow.
+        with _env(CLERKSHIP_PR_BASE="origin/no-such-branch"):
+            code, text = _run(["--root", str(root), "--head", "stack-child",
+                               "--head-branch", "stack-child"])
+        check("an unresolvable CLERKSHIP_PR_BASE exits 2", code, 2)
+        check("and names the variable", "CLERKSHIP_PR_BASE=origin/no-such-branch" in text, True)
+
         # (m) no base and no origin/main: could not check, never a pass.
-        code, text = _run(["--root", str(root), "--head", "main"])
+        with _env(CLERKSHIP_PR_BASE=None):
+            code, text = _run(["--root", str(root), "--head", "main"])
         check("(m) an unresolvable base exits 2", code, 2)
         check("(m) says why", "origin/main not resolvable" in text, True)
 
@@ -917,6 +1057,7 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         check("is_governance covers .github/workflows",
               is_governance(".github/workflows/ci.yml"), True)
     finally:
+        ambient.__exit__(None, None, None)
         holder.cleanup()
 
     if failures:
