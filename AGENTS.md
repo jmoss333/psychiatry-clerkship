@@ -346,9 +346,30 @@ cd tests/smoke && npm ci && npx playwright test
   `13_Faculty_Resources/Handoffs/CONTENTHASH_BACKFILL_2026-09-18.md`. **That exception is spent**
   — `--write-backfill` is never to be run against the live ledger again, and
   `--write-backfill --as-of-now` least of all: it would rebind every drifted row to today's text,
-  silently re-attesting pages nobody reviewed. Rendering a drifted page as pending on the learner
-  sites is **not** wired yet — that is the follow-up PR "1b"; until it ships, drift is visible in
-  the console and in those two tools and nowhere a learner looks. **And what it does not close on
+  silently re-attesting pages nobody reviewed.
+  **A drifted row RENDERS as pending, on every surface, and never unplaces the page.** Both
+  builds load the ledger through `surface_governance.load_effective_ledger()`, which projects a
+  stale row to `status: pending`, `by: "Pending faculty review"` and the one
+  `attestation_hash.STALE_REASON` string. A learner therefore sees the ordinary pending-high or
+  pending-compact notice carrying that reason, the nav/search badge, and — for a tool — the
+  direct-open block plus `needs-review` in `tool-governance.json`. The **built** `topic_meta.json`
+  is demoted in the same pass (`project_topic_meta_faculty_review`, after `cotw_meta.inject` in
+  both build scripts): `facultyReview.status` becomes `pending` while `reviewer` and
+  `lastReviewed` are **kept** (D6 — the review did happen on that date, over the older text), so
+  the Front Door's `✓ … faculty-attested` line disappears for a drifted page without erasing who
+  reviewed it. The source `topic_meta.json` and `reviewed.json` are never written: only the
+  console writes the faculty's record. The weekly digest reports `staleAttestations` and sits at
+  `gate: review` while the count is above zero, which routes one maintenance issue naming the
+  count and the first five slugs. The demotion **warns, it never unplaces** — a drifted page stays
+  in nav and in the search index, because an unreachable protocol at 2am is worse than a warned
+  one; `faculty-console/check_pending_visible.mjs` pins that. Ordering is the part no unit test
+  can see, so `tests/attestation-projection-build.test.mjs` pins it against `_build/` (a
+  local-only contract: `node --test` runs before both builds, so CI never reaches it). One knock-on
+  to expect: `check-static-site.mjs` §4a2 counts only pages the built `governance.json` calls
+  `reviewed` toward crosswalk coverage, so drift surfaces there as **soft** `blueprint gap:`
+  findings — the §9 ratchet was raised 0 → 6 per site for exactly that, and each re-attestation
+  lowers it, so **lower the pin back** as the queue drains rather than leaving headroom.
+  **And what it does not close on
   its own:** a content PR that edits an attested page AND rewrites that row's `contentHash` in the
   same diff passes every gate *this* bullet installs — diff-scoped `--strict` fails only a touched
   row that is stale at head, and the authorship check reads the signer string. The next bullet
