@@ -19,6 +19,15 @@
 #   ADR-002: the one listing every new consumer reads cannot drift from reality without
 #   the build going red, in either direction (a tracked slug the build did not produce,
 #   or a published slug nothing tracks and therefore nobody can attest).
+# - render_panels.mjs --check re-renders every panel this build publishes and compares it
+#   against tests/__panels__/<site>/. It runs HERE rather than in the node suite because it
+#   needs the build: the suite runs before build_deploy.py, so a build-dependent test there
+#   would skip in CI and wedge the build that repairs it. Running after the build also means
+#   a failure leaves _build/ current, so the render stays re-runnable with no rebuild. Repair
+#   it with `node bin/render_panels.mjs --write --site <the site you just built>`: bare
+#   --write checks BOTH audiences and exits 2 when the other tree is absent or stale, which
+#   is the normal state after an ms3-only build. (Building res is the other route -- that
+#   builds both trees.)
 #
 # HARD findings (broken nav/search targets,
 # dose literals in rp-*/-trainer tools, invalid JSON, missing <title>/viewport,
@@ -80,6 +89,8 @@ case "$SITE" in
     python3 "$HERE/check_search_quality.py" "$MS3_OUT" ms3
     echo "── Shipped-pages parity: $MS3_OUT"
     python3 "$HERE/shipped_pages.py" --check-build "$MS3_OUT" --site ms3
+    echo "── Panel snapshots: $MS3_OUT"
+    node "$LIB/bin/render_panels.mjs" --check --site ms3
     echo "── Anki decks → $MS3_OUT/anki (fail-soft)"
     bash "$HERE/build_anki.sh" "$MS3_OUT" || true
     ;;
@@ -97,6 +108,8 @@ case "$SITE" in
     python3 "$HERE/check_search_quality.py" "$RES_OUT" resident
     echo "── Shipped-pages parity: $RES_OUT"
     python3 "$HERE/shipped_pages.py" --check-build "$RES_OUT" --site res
+    echo "── Panel snapshots: $RES_OUT"
+    node "$LIB/bin/render_panels.mjs" --check --site res
     echo "── Anki decks → $RES_OUT/anki (fail-soft)"
     bash "$HERE/build_anki.sh" "$RES_OUT" || true
     ;;
