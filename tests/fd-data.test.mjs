@@ -3,6 +3,7 @@
 // repo's REAL curriculum.json + SOURCE topic_meta.json (for the join actually holding on live
 // data) -- a fixture-only suite would not have caught a topic_meta field being renamed.
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
@@ -297,3 +298,68 @@ test('every real column-placed tool carries a hint, and every hint names a place
     assert.ok(placedEverywhere.has(ref), `libraryHints names ${ref}, which no Library column places`);
   }
 });
+
+// ---- Essentials: a resolved view over the canonical audience projection -----------------
+
+test('Essentials resolves known refs in authored order, reuses canonical items, and counts drops', () => {
+  const cur = structuredClone(FIX_CUR);
+  cur.essentials = [
+    { name: 'Second & first', accent: 'safety', refs: ['b.md', 'missing.md', 'a.md'] },
+    { name: 'Tool', accent: 'tool', refs: ['t.html'] },
+  ];
+  const before = structuredClone(cur);
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.deepEqual(idx.essentials.map(col => ({
+    name: col.name, accent: col.accent, refs: col.items.map(item => item.ref),
+  })), [
+    { name: 'Second & first', accent: 'safety', refs: ['b.md', 'a.md'] },
+    { name: 'Tool', accent: 'tool', refs: [] },
+  ]);
+  assert.strictEqual(idx.essentials[0].items[0], idx.byRef['b.md']);
+  assert.strictEqual(idx.essentials[0].items[1], idx.byRef['a.md']);
+  assert.equal(idx.essentialsDropped, 2);
+  assert.equal(idx.byRef['missing.md'], undefined, 'an unknown essential must never enter byRef');
+  assert.equal(idx.byRef['t.html'], undefined, 'known-to-manifest but unplaced must not be ensured by Essentials');
+  assert.deepEqual(cur, before, 'building the view must not mutate the projected curriculum');
+});
+
+test('a missing Essentials array degrades to an empty view with a numeric zero drop count', () => {
+  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.deepEqual(idx.essentials, []);
+  assert.equal(idx.essentialsDropped, 0);
+});
+
+const ROOT = new URL('../', import.meta.url);
+const projections = JSON.parse(execFileSync('python3', ['-B', '-c', `
+import json,sys
+sys.path.insert(0,'13_Faculty_Resources/_automation/site_build')
+from frontdoor_catalog import build_frontdoor_payload
+from shipped_pages import load_shipped_pages
+cur=json.load(open('curriculum.json')); shipped=load_shipped_pages('.')
+out={}
+for site,key in [('ms3','ms3'),('res','resident')]:
+    nav=[{'section':'Resources','items':[{'f':p['slug'],'t':p['title'],
+        'k':'tool' if p['kind']=='tool' else 'md',
+        'governance':{'status':'pending','riskKind':'general','riskLevel':'low'}}
+        for p in shipped['pages'] if site in p['sites']]}]
+    out[site]=build_frontdoor_payload(key,cur,nav,'0'*40,shipped=shipped)
+print(json.dumps(out))
+`], { cwd: ROOT, encoding: 'utf8' }));
+
+for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93]]) {
+  test(`${site}: real projected Essentials resolves ${expectedKit} of ${expectedFull} Library pages`, () => {
+    const payload = projections[site];
+    const idx = F.fdBuildIndex(payload.curriculum, META, TOOLS, payload.manifest);
+    const actual = idx.essentials.reduce((n, col) => n + col.items.length, 0);
+    const full = idx.columns.reduce((n, col) => n + col.items.length, 0);
+    assert.equal(actual, expectedKit);
+    assert.equal(full, expectedFull);
+    assert.equal(idx.essentialsDropped, 0);
+    assert.deepEqual(idx.essentials.map(col => col.items.map(item => item.ref)),
+      payload.curriculum.essentials.map(col => col.refs), 'projection order must be display order');
+    for (const col of idx.essentials) for (const item of col.items) {
+      assert.strictEqual(item, idx.byRef[item.ref], `${item.ref} must reuse its canonical object`);
+      assert.ok(item.title && item.kind && item.href, `${item.ref} keeps joined display metadata`);
+    }
+  });
+}

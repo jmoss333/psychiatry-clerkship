@@ -70,12 +70,35 @@ function fdLibrary(index){
 
   var out='<section class="fd-library">';
   out+='<div class="fd-library__head">';
+  out+='<button type="button" class="fd-btn fd-btn--ghost" data-fd-library-view="essentials">← Your kit</button>';
   out+='<h1 class="fd-library__h1">Everything, one screen</h1>';
   out+='<span class="fd-library__count">'+count+' pages<span class="fd-library__shortcut"> · press <span class="fd-kbd">/</span> to filter</span></span>';
   out+='</div>';
   out+='<div class="fd-library__grid">';
   for(var i=0;i<cols.length;i++){ out+=fdLibraryCol(cols[i]); }
   out+='</div>';
+  out+='</section>';
+  return out;
+}
+
+/* Curated default view over the same canonical Library items and row renderer. `opts` is reserved
+   for callers that already pass renderer options; the output remains a pure function of inputs. */
+function fdEssentials(index, opts){
+  var idx=index||{columns:[],essentials:[]};
+  var cols=idx.essentials||[], count=0, fullCount=0, all=idx.columns||[];
+  for(var c=0;c<cols.length;c++){ count+=(cols[c].items||[]).length; }
+  if(count===0) return fdLibrary(idx);
+  for(var f=0;f<all.length;f++){ fullCount+=(all[f].items||[]).length; }
+
+  var out='<section class="fd-library">';
+  out+='<div class="fd-library__head">';
+  out+='<h1 class="fd-library__h1">Your kit</h1>';
+  out+='<span class="fd-library__count">'+count+' pages<span class="fd-library__shortcut"> · press <span class="fd-kbd">/</span> to filter</span></span>';
+  out+='</div>';
+  out+='<div class="fd-library__grid">';
+  for(var i=0;i<cols.length;i++){ out+=fdLibraryCol(cols[i]); }
+  out+='</div>';
+  out+='<div class="fd-library__footer"><button type="button" class="fd-btn fd-btn--ghost" data-fd-library-view="full">Full library ('+fullCount+' pages) →</button></div>';
   out+='</section>';
   return out;
 }

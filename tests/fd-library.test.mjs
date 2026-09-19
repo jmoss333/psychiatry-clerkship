@@ -9,6 +9,7 @@
 // fixture) is the load-bearing test here -- it is the one that fails if a page silently stops
 // being placed in a column.
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
@@ -23,7 +24,7 @@ function make(governanceBadge) {
     ${read('frontdoor/fd_state.js')}
     ${read('frontdoor/fd_data.js')}
     ${librarySrc}
-    return { fdLibrary: fdLibrary, fdBuildIndex: fdBuildIndex };
+    return { fdLibrary: fdLibrary, fdEssentials: fdEssentials, fdBuildIndex: fdBuildIndex };
   `)(governanceBadge || function () { return ''; });
 }
 const F = make();
@@ -315,3 +316,70 @@ test('every real tool row carries a hint span, and no real hint carries an audie
     assert.doesNotMatch(hint, AUDIENCE_TOKEN_RE, `${ref}'s hint ships to both sites: ${hint}`);
   }
 });
+
+// ---- Essentials renderer -------------------------------------------------------------------
+
+test('Essentials reuses Library columns and rows with computed kit/full counts and native view controls', () => {
+  const cur = JSON.parse(JSON.stringify(FIX_CUR));
+  cur.essentials = [
+    { name: 'First <group>', accent: 'safety', refs: ['s1.md', 't1.html'] },
+    { name: 'Second', accent: 'topic', refs: ['m2.md'] },
+  ];
+  const html = F.fdEssentials(F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN));
+  assert.match(html, /<section class="fd-library">/);
+  assert.match(html, /<h1 class="fd-library__h1">Your kit<\/h1>/);
+  assert.match(html, /<span class="fd-library__count">3 pages<span class="fd-library__shortcut"> · press <span class="fd-kbd">\/<\/span> to filter<\/span><\/span>/);
+  assert.match(html, /<div class="fd-library__grid">/);
+  assert.match(html, /<div class="fd-col__name">First &lt;group&gt;<\/div>/);
+  assert.match(html, /data-fd-open="s1\.md"/);
+  assert.match(html, /data-fd-open="t1\.html"/);
+  assert.match(html, /<button type="button" class="fd-btn fd-btn--ghost" data-fd-library-view="full">Full library \(10 pages\) →<\/button>/);
+  assert.doesNotMatch(html, /<script>|First <group>/);
+});
+
+test('zero resolved Essentials falls back exactly to the full Library', () => {
+  const empty = { columns: IDX.columns, essentials: [], essentialsDropped: 2 };
+  assert.equal(F.fdEssentials(empty), F.fdLibrary(empty));
+});
+
+test('full Library adds only the leading native Your kit control to its existing header', () => {
+  const html = F.fdLibrary(IDX);
+  assert.match(html, /<div class="fd-library__head"><button type="button" class="fd-btn fd-btn--ghost" data-fd-library-view="essentials">← Your kit<\/button><h1 class="fd-library__h1">Everything, one screen<\/h1>/);
+});
+
+test('fdEssentials is pure and does not mutate its index', () => {
+  const cur = JSON.parse(JSON.stringify(FIX_CUR));
+  cur.essentials = [{ name: 'Kit', accent: 'topic', refs: ['m1.md', 'm2.md'] }];
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  const before = JSON.stringify(idx);
+  assert.equal(F.fdEssentials(idx), F.fdEssentials(idx));
+  assert.equal(JSON.stringify(idx), before);
+});
+
+const PROJECT_ROOT = new URL('../', import.meta.url);
+const projected = JSON.parse(execFileSync('python3', ['-B', '-c', `
+import json,sys
+sys.path.insert(0,'13_Faculty_Resources/_automation/site_build')
+from frontdoor_catalog import build_frontdoor_payload
+from shipped_pages import load_shipped_pages
+cur=json.load(open('curriculum.json')); shipped=load_shipped_pages('.')
+out={}
+for site,key in [('ms3','ms3'),('res','resident')]:
+    nav=[{'section':'Resources','items':[{'f':p['slug'],'t':p['title'],
+        'k':'tool' if p['kind']=='tool' else 'md',
+        'governance':{'status':'pending','riskKind':'general','riskLevel':'low'}}
+        for p in shipped['pages'] if site in p['sites']]}]
+    out[site]=build_frontdoor_payload(key,cur,nav,'0'*40,shipped=shipped)
+print(json.dumps(out))
+`], { cwd: PROJECT_ROOT, encoding: 'utf8' }));
+
+for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93]]) {
+  test(`${site}: real Essentials renders ${expectedKit} rows and links to all ${expectedFull} pages`, () => {
+    const payload = projected[site];
+    const idx = F.fdBuildIndex(payload.curriculum, REAL_META, REAL_TOOLS, payload.manifest);
+    const html = F.fdEssentials(idx);
+    assert.equal((html.match(/data-fd-open="/g) || []).length, expectedKit);
+    assert.match(html, new RegExp('fd-library__count">' + expectedKit + ' pages'));
+    assert.match(html, new RegExp('data-fd-library-view="full">Full library \\(' + expectedFull + ' pages\\) →'));
+  });
+}
