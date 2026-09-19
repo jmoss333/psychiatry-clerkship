@@ -193,6 +193,12 @@ test('a two-source slug, a non-record topic_meta value, and an unshipped slug ag
         slug: 'pair.md',
         source: 'zz_second/resident.md',
         extraSources: ['aa_first/ms3.md'],
+      }, {
+        // plain.md must be SHIPPED here, or Python returns AttestationHashError for it
+        // (no sources) and the non-record comparison below never happens — the JS side
+        // would be asserting against itself while reading as a parity check.
+        slug: 'plain.md',
+        source: 'aa_first/ms3.md',
       }],
     };
     const topicMeta = {
@@ -225,10 +231,14 @@ test('a two-source slug, a non-record topic_meta value, and an unshipped slug ag
 
     // A topic_meta value that is not a mapping is NO record: one source line, no topic_meta
     // line — the same decision on both sides, or the two disagree about every such slug.
-    const plainShipped = { pages: [{ slug: 'plain.md', source: 'aa_first/ms3.md' }] };
-    const plain = jsManifest(root, plainShipped, topicMeta, 'plain.md');
+    // Compared against PYTHON's manifest and digest, not only against JS's own shape: the
+    // shape assertions alone would pass even if Python decided the opposite.
+    const plain = jsManifest(root, shipped, topicMeta, 'plain.md');
     assert.equal(plain.split('\n').filter(Boolean).length, 1);
     assert.equal(plain.includes('topic_meta'), false);
+    assert.equal(plain, expected.slugs['plain.md'].manifest,
+      'Python and JS disagree about a topic_meta value that is not a record');
+    assert.equal(digestFromManifest(plain), expected.slugs['plain.md'].digest);
 
     // An unshipped slug has no sources, and a digest over nothing is refused on both sides
     // rather than returned as a plausible-looking hash.
@@ -238,6 +248,47 @@ test('a two-source slug, a non-record topic_meta value, and an unshipped slug ag
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('working-tree bytes hash to the same blob sha git stores, for every shipped source',
+  (t) => {
+    // THE PREMISE OF THE CONSOLE'S READ SIDE. Python hashes the bytes on disk; the console
+    // hashes nothing at all — it reads blob shas straight out of ONE recursive-tree API
+    // call. The two agree only while `git hash-object --no-filters <path>` equals the tree's
+    // sha, which a clean filter (core.autocrlf, an LFS smudge) breaks silently: every page
+    // would read as drifted, which is indistinguishable from the defect the hash exists for.
+    const sources = [...new Set(shippedDoc.pages.flatMap(
+      page => [page.source, ...(page.extraSources ?? [])].filter(Boolean)))].sort();
+    assert.ok(sources.length > 100, `expected the shipped source paths, got ${sources.length}`);
+
+    // A dirty path has working-tree bytes git's tree does not claim to match, so the
+    // comparison would be meaningless. SKIP with the reason printed — never a silent pass.
+    const dirty = spawnSync('git', ['status', '--porcelain', '--', ...sources],
+      { cwd: repo, encoding: 'utf8' });
+    assert.equal(dirty.status, 0, `git status failed: ${dirty.stderr}`);
+    if (dirty.stdout.trim() !== '') {
+      const paths = dirty.stdout.trim().split('\n').map(line => line.slice(3)).join(', ');
+      t.skip(`shipped sources are modified in the working tree, so tree shas cannot be `
+        + `compared to disk bytes: ${paths}`);
+      return;
+    }
+
+    const listed = spawnSync('git', ['ls-tree', '-r', '-z', 'HEAD'],
+      { cwd: repo, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+    assert.equal(listed.status, 0, `git ls-tree failed: ${listed.stderr}`);
+    const tree = new Map(listed.stdout.split('\0').filter(Boolean).map((record) => {
+      const [meta, filePath] = record.split('\t');
+      return [filePath, meta.split(/\s+/)[2]];
+    }));
+
+    for (const source of sources) {
+      const inTree = tree.get(source);
+      assert.ok(inTree, `${source} ships but is not tracked at HEAD`);
+      assert.equal(blobSha(fs.readFileSync(path.join(repo, source))), inTree,
+        `${source}: working-tree bytes do not hash to the blob sha git stores `
+        + `(a checkout filter is rewriting it — the console would read every page as drifted)`);
+    }
+    t.diagnostic(`${sources.length} shipped source paths hash identically on disk and in HEAD`);
+  });
 
 test('the ledger stores 40-hex git blob shas, and the drifted count is reported', (t) => {
   let bound = 0;

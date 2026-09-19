@@ -454,7 +454,9 @@ class LedgerValidationTests(unittest.TestCase):
         search-and-replace across the three cannot pass unnoticed.
         """
         valid = reviewed_entry()
-        valid.update({"contentHash": "a" * 40, "claimsHash": "b" * 64})
+        valid.update(
+            {"contentHash": "a" * 40, "claimsHash": "b" * 64, "evidenceHash": "c" * 64}
+        )
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             write_ledger(root, {"synthetic.md": valid})
@@ -463,6 +465,7 @@ class LedgerValidationTests(unittest.TestCase):
 
         self.assertEqual(loaded["synthetic.md"]["contentHash"], "a" * 40)
         self.assertEqual(loaded["synthetic.md"]["claimsHash"], "b" * 64)
+        self.assertEqual(loaded["synthetic.md"]["evidenceHash"], "c" * 64)
 
         stale_width = reviewed_entry()
         stale_width["contentHash"] = "a" * 64

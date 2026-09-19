@@ -357,7 +357,11 @@ def run_explain(root, slug, rev=None, stream=None):
         print("  %s %s" % (path, blob_sha(sources[path])), file=stream)
         print("      %s" % ("working-tree bytes of %s" % path if rev is None
                             else "%s at %s" % (path, origins[path][:7])), file=stream)
-    if record is not None:
+    # Mirrors `manifest_for_slug`'s rule exactly: a value that is not a mapping is no
+    # record, so there is no `topic_meta` line to print. Printing one would crash inside
+    # `canonical_topic_meta_record` (AttributeError on a str) and turn an explanation of a
+    # defect into a traceback about it.
+    if isinstance(record, dict):
         print("  topic_meta %s" % blob_sha(canonical_topic_meta_record(record)), file=stream)
         print("      %s record %r%s, facultyReview removed, key-sorted, no whitespace"
               % (TOPIC_META_REL, slug, "" if rev is None else " at %s" % resolved[:7]),
@@ -879,6 +883,18 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
 
         code, out = _run(["--root", str(root), "--explain", "ghost.md"])
         check("--explain on a slug no site ships exits 2", code, 2)
+
+        # A topic_meta value that is not a record is no record — `--explain` must MIRROR
+        # `manifest_for_slug`, not crash. Before the guard this raised
+        # `AttributeError: 'str' object has no attribute 'items'` out of
+        # canonical_topic_meta_record, so the one command that explains a defect died on it.
+        bad = _write_root(_tmp(stack), {"x.md": _entry(content_hash=x_hash)},
+                          topic_meta={"x.md": "not a record"})
+        code, out = _run(["--root", str(bad), "--explain", "x.md"])
+        check("--explain on a non-record topic_meta value exits 0", code, 0)
+        check_in("still prints the source line", "a.md ", out)
+        check("and prints no topic_meta line", "  topic_meta " in out, False)
+        check_in("saying so in words", "no topic_meta record for this slug", out)
 
         code, out = _run(["--root", str(root), "--rev", "HEAD"])
         check("--rev without --explain exits 2", code, 2)

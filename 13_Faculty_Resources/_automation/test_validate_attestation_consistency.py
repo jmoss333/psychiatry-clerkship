@@ -1055,8 +1055,9 @@ class AttestationConsistencyTests(unittest.TestCase):
     # contentHash: an attestation must name the text it attested.
     #
     # Four shapes fail, and each is something only a hand edit produces. DRIFT IS NOT
-    # ONE OF THEM: a content PR edits an attested page constantly, the build demotes
-    # the entry, and failing here would make the gate noise and then make it optional.
+    # ONE OF THEM: a content PR edits an attested page constantly, the build will demote
+    # the entry once PR 1b wires `project_effective_ledger` into the builds (today nothing
+    # renders drift), and failing here would make the gate noise and then make it optional.
     # The stale case below therefore pins the ABSENCE of a finding *and* the absence
     # of any extra stdout -- governance_digest.mjs parses this validator's output with
     # an anchored regex and throws on a single unexpected line.

@@ -808,9 +808,10 @@ def _content_hash_errors(root, reviewed, document, topic_meta):
     nothing and showed nowhere. `contentHash` is that answer, and these four shapes mean
     it cannot be read at all. Each is something only a hand edit produces.
 
-    DRIFT IS DELIBERATELY ABSENT. A content PR edits an attested page constantly; the
-    build demotes the entry and bin/check_attestation_hashes.py reports it. Failing every
-    such PR here would make this gate noise and then make it optional.
+    DRIFT IS DELIBERATELY ABSENT. A content PR edits an attested page constantly;
+    bin/check_attestation_hashes.py reports it, and the build will demote the entry once
+    PR 1b wires `project_effective_ledger` into the builds — today nothing renders drift.
+    Failing every such PR here would make this gate noise and then make it optional.
 
     Returns [] when the root carries no shipped listing: without one, nothing here knows
     what ships, and every reviewed row would be reported as unshipped.

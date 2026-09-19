@@ -1097,7 +1097,8 @@ function contentFreshness(entry, slug, verification) {
   if (actual === stored) return null;
   // Drift, and only drift, changes what the item IS: the page was reviewed and then edited,
   // so it needs review again. The ledger keeps saying `reviewed` — a read never writes it —
-  // and the same projection is applied to the built site by attestation_hash.py.
+  // `attestation_hash.py`'s `project_effective_ledger` WILL apply the same projection to the
+  // built site once PR 1b wires it into the builds; today nothing renders drift to a learner.
   const at = typeof entry.at === 'string' ? entry.at : '';
   return { drifted: true, reason: STALE_REASON.replace('{at}', at) };
 }
