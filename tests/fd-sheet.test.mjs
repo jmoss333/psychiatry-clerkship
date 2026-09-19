@@ -317,7 +317,10 @@ test('the live shell boundary renders a valid reviewed protocol without failure 
   assert.equal(html.includes(rendered.copy), false,
     'valid reviewed data must not render the owner-approved failure copy');
   assert.doesNotMatch(html, /class="fd-sheet__failure"/);
-  assert.match(html, /<div class="fd-sheet__attribution">✓ From: delirium\.md · faculty-attested<\/div>/);
+  // "From:" names the page a learner would recognise, never the file; the ref rides on data-ref.
+  const deliriumTitle = F.fdEsc(REAL_INDEX.byRef['delirium.md'].title).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  assert.match(html, new RegExp(`<div class="fd-sheet__attribution" data-ref="delirium\\.md">✓ From: ${deliriumTitle} · faculty-attested</div>`));
+  assert.doesNotMatch(html, /From: delirium\.md/, 'the slug is not learner-facing copy');
   assert.doesNotMatch(html, /fd-sheet__pending|Not yet faculty-reviewed/);
   assert.equal(html.split(crisisHtml).length - 1, 1,
     'the template-derived canonical crisis block appears once in a protocol sheet');
@@ -337,8 +340,9 @@ test('the live shell boundary renders a valid pending protocol without failure c
   assert.doesNotMatch(html, /fd-sheet__attribution/);
   assert.doesNotMatch(html, /✓ From:/);
   assert.match(html,
-    /<p class="fd-sheet__pending">Not yet faculty-reviewed · From: evil\.md<\/p>/,
-    'absence of the attested treatment is not an observable pending-review state');
+    /<p class="fd-sheet__pending" data-ref="evil\.md">Not yet faculty-reviewed · From: &lt;b&gt;Evil&lt;\/b&gt;<\/p>/,
+    'absence of the attested treatment is not an observable pending-review state; the page title is named and escaped');
+  assert.doesNotMatch(html, /From: <b>|From: evil\.md/);
   assert.equal(html.split(crisisHtml).length - 1, 1,
     'the template-derived canonical crisis block appears once in a protocol sheet');
 });
