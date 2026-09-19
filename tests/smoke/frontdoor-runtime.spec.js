@@ -2036,7 +2036,8 @@ test('legacy aliases canonicalize on load, delegated actions, messages, and hist
       data: { type: 'openPage', f: '__start__' }, origin: location.origin,
     }));
   });
-  await expect(page).toHaveURL(/\/\?page=__progress__&case=c1$/);
+  // The legacy Start alias resets its return origin to Today, even when opened from Path.
+  await expect(page).toHaveURL(/\/\?page=__progress__&case=c1&tab=today$/);
   await expect(page.locator('#pgRoot')).toBeVisible();
   expect(aliasRequests).toEqual([]);
   expect(await page.evaluate(() => localStorage.getItem('cw_last'))).toBeNull();
