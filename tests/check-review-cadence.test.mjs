@@ -164,3 +164,64 @@ test('a corrupt registry is exit 2, never a clean pass', () => {
 test('it carries no machine-specific paths', () => {
   assert.doesNotMatch(fs.readFileSync(script, 'utf8'), /\/(Users|sessions)\/[a-z]/);
 });
+
+// --- surveillance credit (policy 2026-09-19: a green guideline-surveillance examination counts
+//     as the review; withheld across a change the faculty have not actioned). Derived at read
+//     time from the job's own records; the registry is never written.
+
+function classifyWith(source, surveillance, asOf = '2026-09-18') {
+  return JSON.parse(py(`
+import json
+src = ${JSON.stringify(source)}
+surv = ${surveillance === null ? 'None' : `json.loads(${JSON.stringify(JSON.stringify(surveillance))})`}
+if surv is not None:
+    for v in surv.values():
+        v["examinedAt"] = date.fromisoformat(v["examinedAt"]) if v.get("examinedAt") else None
+print(json.dumps(C.classify(src, date.fromisoformat(${JSON.stringify(asOf)}), surv)))`));
+}
+
+const surveilled = {
+  id: 's', citation: { title: 'T' }, surveillance: { job: 'guideline-surveillance' },
+  governance: { lastReviewed: '2026-07-08', reviewCadence: 'monthly' },
+};
+
+test('surveillance credit: a green examination counts, a pending change does not, and the row says which', () => {
+  const clean = classifyWith(surveilled, { s: { examinedAt: '2026-09-01', openChanges: [] } });
+  assert.equal(clean.reviewedBy, 'guideline-surveillance');
+  assert.equal(clean.effectiveReviewed, '2026-09-01');
+  assert.equal(clean.bucket, 'due-30d');
+  const changed = classifyWith(surveilled, {
+    s: { examinedAt: '2026-09-01', openChanges: [{ detectedAt: '2026-08-31', status: 'issue-open', severity: 'P0' }] },
+  });
+  assert.equal(changed.reviewedBy, 'faculty');
+  assert.equal(changed.bucket, 'overdue');
+  assert.match(changed.surveillance, /change detected 2026-08-31/);
+  const absent = classifyWith(surveilled, {});
+  assert.equal(absent.bucket, 'overdue');
+  assert.match(absent.surveillance, /no successful examination/);
+  const disabled = classifyWith(surveilled, null);
+  assert.equal(disabled.bucket, 'overdue');
+  assert.equal(disabled.surveillance, 'credit disabled');
+});
+
+test('surveillance credit: only the guideline job earns it', () => {
+  const linkOnly = { ...surveilled, surveillance: { job: 'link-source-monitor' } };
+  const r = classifyWith(linkOnly, { s: { examinedAt: '2026-09-01', openChanges: [] } });
+  assert.equal(r.reviewedBy, 'faculty');
+  const plain = { ...surveilled, surveillance: undefined };
+  assert.equal(classifyWith(plain, { s: { examinedAt: '2026-09-01', openChanges: [] } }).reviewedBy, 'faculty');
+});
+
+test('surveillance credit: the real run reports what evidence it read, and credit never exceeds baselines', () => {
+  const proc = run(['--as-of', '2026-09-18', '--json']);
+  assert.ok(proc.status === 0 || proc.status === 1, proc.stderr);
+  const blob = JSON.parse(proc.stdout);
+  const sc = blob.surveillanceCredit;
+  assert.ok(sc && typeof sc.baselines === 'number' && typeof sc.sourcesCredited === 'number');
+  assert.ok(sc.sourcesCredited <= sc.baselines, 'cannot credit more sources than baselines read');
+  for (const r of blob.rows) {
+    if (r.reviewedBy === 'guideline-surveillance') {
+      assert.ok(r.effectiveReviewed >= r.lastReviewed, `${r.id}: credit moved the review backwards`);
+    }
+  }
+});
