@@ -1,13 +1,24 @@
-// D6 build-output pin: the drift projection reaches the SHIPPED artifacts, in the right order.
+// D6 build-output pin: the drift projection reaches the SHIPPED artifacts, and the two built
+// registries agree with each other.
 //
 // WHY A BUILD-OUTPUT TEST AND NOT A UNIT TEST. `project_effective_ledger` and
 // `project_topic_meta_faculty_review` are unit-tested against fixtures in
 // 13_Faculty_Resources/_automation/test_surface_governance.py and tests/maintenance/
-// test_attestation_hash.py. What those cannot see is ORDERING inside the two build scripts:
-// the built topic_meta.json is written by cotw_meta.inject() and then demoted, and a demotion
-// placed before that inject would be silently overwritten for every Case-of-the-Week slug and
-// silently correct for every other one. That is a whole-pipeline fact, so it is pinned here,
-// against _build/, per docs/SILENT_SHRINK_CHECKLIST.md §D.
+// test_attestation_hash.py -- each against its own inputs. What no unit test can see is whether
+// the two registries the BUILD writes still say the same thing about the same page once every
+// producer has had its turn: governance.json comes from the projected ledger, topic_meta.json is
+// assembled from the source registry plus cotw_meta.inject() plus the demotion, and nav.json and
+// search-index.json each embed their own copy of the governance triplet. Four writers, one fact.
+// A later write that re-marked a drifted page `reviewed` in the built topic_meta would be
+// invisible to every unit test and caught here, because the two registries would disagree.
+//
+// WHAT THIS DOES *NOT* PIN, said plainly so nobody reads more into a green run: the ORDER in
+// which the demotion and cotw_meta.inject() run. cotw_meta.py:211-215 writes
+// `facultyReview.status: "pending"` unconditionally for every DERIVED case, inject() leaves a
+// hand-written entry completely alone, and project_topic_meta_faculty_review only rewrites
+// blocks that already exist -- so inject-then-demote and demote-then-inject emit identical
+// bytes. Re-ordering them is undetectable, and harmless. (Today the only drifted cotw_* slug,
+// cotw_index.md, is source-authored and inject never touches it.)
 //
 // WHAT IT PINS, per site:
 //   1. every page the built governance.json calls pending WITH THE STALE REASON keeps a

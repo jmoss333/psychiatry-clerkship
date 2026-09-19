@@ -362,19 +362,30 @@ cd tests/smoke && npm ci && npx playwright test
   `gate: review` while the count is above zero, which routes one maintenance issue naming the
   count and the first five slugs. The demotion **warns, it never unplaces** — a drifted page stays
   in nav and in the search index, because an unreachable protocol at 2am is worse than a warned
-  one. Both halves that no unit test can see — placement, and the ORDER the built `topic_meta`
-  demotion runs in relative to `cotw_meta.inject` — are pinned by
-  `tests/attestation-projection-build.test.mjs` against `_build/` (a local-only contract:
-  `node --test` runs before both builds, so CI never reaches it). Not by
-  `faculty-console/check_pending_visible.mjs`: that reads the **source** ledger, where a drifted
-  row still says `reviewed`, and never opens `nav.json` or `search-index.json` at all. The search
-  index legitimately carries fewer slugs than nav (the week pages and two tools are never
-  indexed), and that omission is governance-independent, so the test asserts nav placement and
-  the embedded pending badge rather than search membership. One knock-on
-  to expect: `check-static-site.mjs` §4a2 counts only pages the built `governance.json` calls
-  `reviewed` toward crosswalk coverage, so drift surfaces there as **soft** `blueprint gap:`
-  findings — the §9 ratchet was raised 0 → 6 per site for exactly that, and each re-attestation
-  lowers it, so **lower the pin back** as the queue drains rather than leaving headroom.
+  one. What pins all of that is `tests/attestation-projection-build.test.mjs`, which reads
+  `_build/<site>` and asserts that the two built registries AGREE: a `governance.json` item that
+  is pending with the stale reason has a built `topic_meta.facultyReview` that is not `reviewed`
+  and still carries `reviewer`/`lastReviewed`; a `governance.json` item that is `reviewed` and
+  has a source-authored block has a built block reading `reviewed` (it skips with its reason
+  while that set is empty, rather than passing over nothing); every drifted slug is still placed
+  in `nav.json` and every drifted index row badges `pending`; and no tracked `contentHash`
+  appears in any served JSON. It is a local-only contract — `node --test` runs before both
+  builds, so CI never reaches it. **What it does not pin is ORDER.** `cotw_meta.py` writes
+  `facultyReview.status: "pending"` unconditionally for every derived case and `inject()` leaves
+  a hand-written entry alone, while `project_topic_meta_faculty_review` only rewrites blocks that
+  already exist — so inject-then-demote and demote-then-inject produce identical bytes, and
+  re-ordering them is undetectable *and harmless*. A later write that re-marked a drifted page
+  `reviewed` is the real hazard, and that one IS caught, because the two built registries would
+  then disagree. Placement is not pinned by `faculty-console/check_pending_visible.mjs` either:
+  that reads the **source** ledger, where a drifted row still says `reviewed`, and never opens
+  `nav.json` or `search-index.json`. The search index legitimately carries fewer slugs than nav
+  (the week pages and two tools are never indexed) and that omission is governance-independent,
+  so the test asserts nav placement and the embedded badge rather than search membership.
+  One knock-on to expect: `check-static-site.mjs` §4a2 counts only pages the built
+  `governance.json` calls `reviewed` toward crosswalk coverage, so drift surfaces there as
+  **soft** `blueprint gap:` findings — the §9 ratchet was raised 0 → 6 per site for exactly
+  that, and each re-attestation lowers it, so **lower the pin back** as the queue drains rather
+  than leaving headroom.
   **And what it does not close on
   its own:** a content PR that edits an attested page AND rewrites that row's `contentHash` in the
   same diff passes every gate *this* bullet installs — diff-scoped `--strict` fails only a touched
