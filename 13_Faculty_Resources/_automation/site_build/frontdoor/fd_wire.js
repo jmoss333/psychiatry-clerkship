@@ -13,7 +13,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-theme','data-fd-settings','data-fd-analytics','data-fd-exam-date',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
-  'data-fd-try-now','data-fd-expand-tool'
+  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -22,6 +22,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-safety':'open safety kit or protocol',
   'data-fd-toggle':'toggle governed progress',
   'data-fd-tab':'open top-level tab',
+  'data-fd-library-view':'choose Library view',
   'data-fd-week':'select setup week',
   'data-fd-view-week':'preview path week',
   'data-fd-setweek':'adopt previewed week',
@@ -98,6 +99,7 @@ function fdResolveState(url, stored){
   var src=stored||{}, out={};
   if(typeof src.role==='string'&&src.role) out.role=src.role;
   out.tab=fdValidTab(src.tab)?src.tab:'today';
+  out.libraryView='essentials';
   if(typeof src.openId==='string'&&src.openId) out.openId=src.openId;
   if(fdValidTab(src.fromTab)) out.fromTab=src.fromTab;
   if(typeof src.week==='number'&&!isNaN(src.week)) out.week=src.week;
@@ -117,6 +119,11 @@ function fdResolveState(url, stored){
   if(parsed){
     var routedTab=parsed.searchParams.get('tab');
     routedRef=parsed.searchParams.get('page')||parsed.searchParams.get('tool');
+    if(parsed.searchParams.get('library')==='full'&&(!fdValidTab(routedTab)||routedTab==='library')){
+      out.tab='library';
+      out.libraryView='full';
+      delete out.openId;
+    }
     if(routedTab&&fdValidTab(routedTab)){
       out.tab=routedTab;
       delete out.openId;
@@ -166,6 +173,7 @@ function fdParamsWithoutRoute(search){
   params.delete('page');
   params.delete('tool');
   params.delete('tab');
+  params.delete('library');
   /* Passage context belongs to the current reading, never the next activity iframe. */
   params.delete('guideFind');
   params.delete('guideSection');
@@ -186,17 +194,25 @@ function fdSearchOutsideBlock(search){
   return params.toString();
 }
 
-function fdRouteForTab(tab, search){
-  var params=fdParamsWithoutRoute(fdSearchOutsideBlock(search)), extra=params.toString();
+function fdRouteForTab(tab, search, libraryView){
+  var params=fdParamsWithoutRoute(fdSearchOutsideBlock(search));
+  if(tab==='library'&&libraryView==='full') params.set('library','full');
+  var extra=params.toString();
   if(tab==='today') return extra?('/?'+extra):'/';
   return '?tab='+encodeURIComponent(tab)+(extra?'&'+extra:'');
 }
 
-function fdRouteForRef(ref, search, blockNavigation){
+function fdRouteForRef(ref, search, blockNavigation, origin){
   var key=/\.html$/.test(String(ref||''))?'tool':'page';
-  return '?'+key+'='+encodeURIComponent(ref)+fdExtraSearch(
-    blockNavigation===true?search:fdSearchOutsideBlock(search)
-  );
+  var params=fdParamsWithoutRoute(blockNavigation===true?search:fdSearchOutsideBlock(search));
+  var previous=new URLSearchParams(String(search||'').replace(/^\?/,''));
+  var tab=origin&&fdValidTab(origin.tab)?origin.tab:previous.get('tab');
+  var view=origin?origin.libraryView:previous.get('library');
+  if(tab==='library'&&view==='full'){
+    params.set('tab','library'); params.set('library','full');
+  } else if(fdValidTab(tab)&&((origin&&origin.libraryView)||fdValidTab(previous.get('tab')))){ params.set('tab',tab); }
+  var extra=params.toString();
+  return '?'+key+'='+encodeURIComponent(ref)+(extra?'&'+extra:'');
 }
 
 function fdNumberAttr(attrs,name){
@@ -270,7 +286,7 @@ function fdDispatch(attrs, context, state){
          removes that key and browsing:true is persisted (FD_KEYS) so a reload on any tab still
          resolves to the app rather than asking for a week again. */
       var firstWeek=(c.index&&c.index.weeks&&c.index.weeks[0])||{};
-      patch={week:null,tab:'library',viewWeek:firstWeek.n,screen:'app',openId:null,browsing:true};
+      patch={week:null,tab:'library',libraryView:'essentials',viewWeek:firstWeek.n,screen:'app',openId:null,browsing:true};
       if(s.setupFrom) patch.setupFrom=null;
       return {
         patch:patch,
@@ -331,7 +347,7 @@ function fdDispatch(attrs, context, state){
       };
     }
     tab=fdValidTab(s.tab)?s.tab:'today';
-    var resourceRoute=fdRouteForRef(ref,c.search,c.blockNavigation);
+    var resourceRoute=fdRouteForRef(ref,c.search,c.blockNavigation,s);
     if(s.searchOpen&&s.query&&!fdIsTool(ref)){
       resourceRoute+='&guideFind='+encodeURIComponent(String(s.query).trim().slice(0,160));
     }
@@ -382,23 +398,30 @@ function fdDispatch(attrs, context, state){
         patch.openId=next.ref;
         patch.navDir=1;
         effect.openRef=next.ref;
-        return {patch:patch,route:fdRouteForRef(next.ref,c.search),effect:effect};
+        return {patch:patch,route:fdRouteForRef(next.ref,c.search,false,s),effect:effect};
       }
       tab=fdValidTab(s.fromTab)?s.fromTab:'today';
       patch.openId=null;
       patch.tab=tab;
-      return {patch:patch,route:fdRouteForTab(tab,c.search),effect:effect};
+      return {patch:patch,route:fdRouteForTab(tab,c.search,s.libraryView),effect:effect};
     }
     return {patch:patch,route:null,effect:effect};
   }
 
+  if(fdOwn(a,'data-fd-library-view')){
+    var view=String(a['data-fd-library-view']||'');
+    if(view!=='essentials'&&view!=='full') return {patch:{},route:null,effect:null};
+    return {
+      patch:{tab:'library',libraryView:view,openId:null,searchOpen:false,sheet:null,nudge:null},
+      route:fdRouteForTab('library',c.search,view),effect:null
+    };
+  }
   if(fdOwn(a,'data-fd-tab')){
     tab=String(a['data-fd-tab']||'');
     if(!fdValidTab(tab)) return {patch:{},route:null,effect:null};
-    return {
-      patch:{tab:tab,openId:null,searchOpen:false},
-      route:fdRouteForTab(tab,c.search),effect:null
-    };
+    patch={tab:tab,openId:null,searchOpen:false};
+    if(tab==='library') patch.libraryView='essentials';
+    return {patch:patch,route:fdRouteForTab(tab,c.search),effect:null};
   }
   if(fdOwn(a,'data-fd-role')){
     /* Two emitters, two meanings. In the wizard this is step 1 of 2 and must advance; in the
@@ -431,7 +454,7 @@ function fdDispatch(attrs, context, state){
       return {patch:{role:null,screen:'setup-role'},route:null,effect:null};
     }
     tab=fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
-    return {patch:{openId:null,tab:tab},route:fdRouteForTab(tab,c.search),effect:null};
+    return {patch:{openId:null,tab:tab},route:fdRouteForTab(tab,c.search,s.libraryView),effect:null};
   }
   if(fdOwn(a,'data-fd-home')){
     return {
@@ -446,7 +469,7 @@ function fdDispatch(attrs, context, state){
     tab=s.openId&&fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
     return {
       patch:{screen:'setup-week',tab:tab,openId:null,searchOpen:false,sheet:null,setupFrom:'app'},
-      route:fdRouteForTab(tab,c.search),history:'replace',effect:null
+      route:fdRouteForTab(tab,c.search,s.libraryView),history:'replace',effect:null
     };
   }
   if(fdOwn(a,'data-fd-progress')){
@@ -787,7 +810,7 @@ function fdTrapFocus(event, dialog){
    opens the native picker and -- the attribute being valueless in the markup -- dispatches an
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
-var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],'+
+var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],'+
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
@@ -912,7 +935,7 @@ function fdWire(root, initialState, opts){
     return !!r.route||!!(r.effect&&r.effect.type&&r.effect.type!=='set-theme');
   }
   function historySnapshot(){
-    var keys=['tab','viewWeek','openId','fromTab'];
+    var keys=['tab','viewWeek','openId','fromTab','libraryView'];
     var snap={};
     for(var i=0;i<keys.length;i++){
       if(state[keys[i]]!==undefined) snap[keys[i]]=state[keys[i]];
@@ -989,7 +1012,7 @@ function fdWire(root, initialState, opts){
     return raw||'';
   }
   function baseChanged(before, after){
-    var keys=['openId','tab','screen'];
+    var keys=['openId','tab','screen','libraryView'];
     for(var i=0;i<keys.length;i++){
       if(baseValue(before,keys[i])!==baseValue(after,keys[i])) return true;
     }
@@ -1480,7 +1503,7 @@ function fdWire(root, initialState, opts){
     merged.sheetFrom=null;
     merged.stepsDone={};
     if(snap){
-      var routeKeys=['tab','viewWeek','openId','fromTab'];
+      var routeKeys=['tab','viewWeek','openId','fromTab','libraryView'];
       for(var routeIndex=0;routeIndex<routeKeys.length;routeIndex++){
         delete merged[routeKeys[routeIndex]];
       }
@@ -1488,12 +1511,13 @@ function fdWire(root, initialState, opts){
         var routeKey=routeKeys[snapIndex];
         if(fdOwn(snap,routeKey)) merged[routeKey]=snap[routeKey];
       }
+      if(merged.libraryView!=='full') merged.libraryView='essentials';
     } else {
       merged.roles=o.roles||merged.roles;
       merged.rotationStart=o.rotationStart||merged.rotationStart;
       merged=fdResolveState(win.location.href,merged);
       var params=new URLSearchParams(win.location.search||'');
-      if(!params.get('page')&&!params.get('tool')&&!params.get('tab')){
+      if(!params.get('page')&&!params.get('tool')&&!params.get('tab')&&params.get('library')!=='full'){
         merged.tab='today';
         delete merged.openId;
       }
@@ -1518,7 +1542,7 @@ function fdWire(root, initialState, opts){
         (fdValidTab(state.tab)?state.tab:'today');
       state.tab=setupTab;
       state.openId=null;
-      routeTo(fdRouteForTab(setupTab,win.location.search||''),true);
+      routeTo(fdRouteForTab(setupTab,win.location.search||'',state.libraryView),true);
     }
     navGeneration++;
     var generation=navGeneration;

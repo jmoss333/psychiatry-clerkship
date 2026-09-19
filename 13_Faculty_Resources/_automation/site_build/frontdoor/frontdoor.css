@@ -1414,3 +1414,9 @@
 }
 /* Phase 2: the Resume card's block progress line ("Block · 1 of 2 done"). */
 .fd-resume__block{display:block;font-size:var(--fd-font-xs);color:var(--fd-text-dim)}
+
+/* Phone quick tools precede the primary card without changing document order. */
+@media (max-width:480px){
+  .fd-today__main{display:flex;flex-direction:column}
+  .fd-today__main > .fd-quicktools--pills{order:-1;margin-bottom:var(--fd-space-8)}
+}

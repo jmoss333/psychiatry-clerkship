@@ -383,3 +383,18 @@ for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93
     assert.match(html, new RegExp('data-fd-library-view="full">Full library \\(' + expectedFull + ' pages\\) →'));
   });
 }
+
+test('the live Library shell selects kit by default and the complete renderer only for full', () => {
+  const shell = read('spa_index.html');
+  const branch = /if\(state\.tab==='library'\) return (fdSurface\('library',function\(\)\{[^\n]+\}\));/.exec(shell);
+  assert.ok(branch,'Library shell branch remains a shared pure renderer call');
+  const run = new Function('state','FD_INDEX','fdSurface','fdLibrary','fdEssentials',`return ${branch[1]};`);
+  const surface = (_name,render) => render();
+  const cur = structuredClone(FIX_CUR);
+  cur.essentials = [{name:'Kit',accent:'topic',refs:['m1.md']}];
+  const idx = F.fdBuildIndex(cur,FIX_META,FIX_TOOLS,FIX_MAN);
+  for (const libraryView of [undefined,'essentials']) {
+    assert.equal(run({tab:'library',libraryView},idx,surface,F.fdLibrary,F.fdEssentials),F.fdEssentials(idx));
+  }
+  assert.equal(run({tab:'library',libraryView:'full'},idx,surface,F.fdLibrary,F.fdEssentials),F.fdLibrary(idx));
+});

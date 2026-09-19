@@ -41,7 +41,7 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     'data-fd-analytics', 'data-fd-back', 'data-fd-change-week',
     'data-fd-clear-ask', 'data-fd-clear-cancel', 'data-fd-clear-confirm', 'data-fd-close-nudge',
     'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-exam-date', 'data-fd-expand-tool',
-    'data-fd-home', 'data-fd-local-toggle', 'data-fd-open',
+    'data-fd-home', 'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-open',
     'data-fd-progress', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-settings',
     'data-fd-setweek', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle',
     'data-fd-view-week', 'data-fd-week',
@@ -91,4 +91,9 @@ test('FD_WIRE is registered, injected last, and activated as the sole shell cont
   assert.doesNotMatch(shell, /fetch\('nav\.json'\)|<aside id="side">/);
   assert.equal((shell.match(/=fdWire\(/g) || []).length, 1);
   assert.match(shell, /renderTransient:fdRenderTransient/);
+});
+
+test('Library view has a distinct registered semantic', () => {
+  assert.equal(F.semantic('data-fd-library-view'), 'choose Library view');
+  assert.match(wire, /\[data-fd-library-view\]/);
 });
