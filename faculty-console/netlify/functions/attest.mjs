@@ -329,12 +329,18 @@ function gitTreeUrl(settings, commitSha) {
 }
 
 /**
- * One recursive tree per commit, remembered for as long as the transport lives.
+ * One recursive tree per commit, remembered for as long as the container lives.
  *
- * A commit sha names an immutable tree, so a memo on it can never serve a stale answer, and a
- * warm Netlify container reuses the listing across loads instead of re-fetching every path in
- * the repository. Keyed by the fetch implementation so the memo is scoped to the credentials
- * and repository it was read through — one test's fixture tree can never answer another's.
+ * THE KEY IS `repo@commit`, and that is the whole of it. A commit sha names an immutable
+ * tree, so a hit can never be stale, and a warm Netlify container reuses the listing across
+ * loads instead of re-fetching every path in the repository on each one.
+ *
+ * The outer WeakMap is NOT a credential boundary, and saying so would be a comfortable lie:
+ * in production every invocation of a container shares the one `globalThis.fetch`, so the
+ * effective key is exactly `repo@commit`. What it does buy is that distinct transports —
+ * in practice test mocks — never share entries. The token is deliberately not in the key:
+ * it is fixed per deployment, so it cannot vary between invocations of one container, and
+ * the repository already is in the key, so the memo never crosses repositories.
  */
 const TREE_CACHE = new WeakMap();
 const TREE_CACHE_LIMIT = 4;
@@ -427,7 +433,14 @@ function parseRepositoryJson(bytes) {
   }
 }
 
-function createRepositoryGateway({ settings, fetchImpl }) {
+function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
+  // The cross-request tree memo, or `null` for none. Injectable for two honest reasons: a
+  // test cannot otherwise count how many times readTree is INVOKED (with a memo on, a correct
+  // implementation and one that hashes per item both make exactly one network call), and a
+  // deployment that must not hold repository listings in container memory between requests
+  // can turn it off. `undefined` means "the shared default".
+  const trees = treeCache === undefined ? treeCacheFor(fetchImpl) : treeCache;
+
   async function read(path, { maxBytes = 0, ref = settings.branch } = {}) {
     const objectResponse = await githubRequest(
       fetchImpl,
@@ -524,9 +537,8 @@ function createRepositoryGateway({ settings, fetchImpl }) {
    */
   async function readTree(commitSha) {
     const sha = normalizeGitObjectId(commitSha);
-    const cache = treeCacheFor(fetchImpl);
     const key = `${settings.repo}@${sha}`;
-    const cached = cache.get(key);
+    const cached = trees ? trees.get(key) : null;
     if (cached) return cached;
 
     const response = await githubRequest(fetchImpl, gitTreeUrl(settings, sha), {
@@ -542,8 +554,10 @@ function createRepositoryGateway({ settings, fetchImpl }) {
         blobs.set(entry.path, normalizeGitObjectId(entry.sha));
       }
     }
-    cache.set(key, blobs);
-    while (cache.size > TREE_CACHE_LIMIT) cache.delete(cache.keys().next().value);
+    if (trees) {
+      trees.set(key, blobs);
+      while (trees.size > TREE_CACHE_LIMIT) trees.delete(trees.keys().next().value);
+    }
     return blobs;
   }
 
@@ -1312,22 +1326,45 @@ async function commitContentMutation({ repository, settings, body, attester }) {
     const file = await repository.read(REVIEWED_PATH);
     if (!isRecord(file.json)) invalidRepositoryFile();
     const reviewed = structuredClone(file.json);
+
+    // The digest inputs are read BEFORE the no-op filter, because for an attest the filter
+    // needs them. Read once per attempt, and only when something is actually being attested:
+    // a reopen writes no hash and needs no tree. A retry re-reads because the branch may have
+    // moved under it; the tree is memoized per commit, so a retry at the same head is free.
+    const digestInputs = changes.some(([, selected]) => selected)
+      ? await readMutationDigestInputs(repository, settings.branch)
+      : null;
+    const digests = new Map();
+    const digestOf = (slug) => {
+      if (!digests.has(slug)) digests.set(slug, digestForSlug(slug, digestInputs));
+      return digests.get(slug);
+    };
+
+    /*
+     * What counts as a change — and why status alone is the wrong question for an attest.
+     *
+     * A drifted row's STORED status is still `reviewed`: a read never rewrites the ledger, it
+     * projects. So a status-only filter drops the one press that repairs it — the console
+     * shows the item as needing review, faculty confirm, the server answers `updated: 0` with
+     * no commit, and the browser reports "This content review was not saved." Re-attesting is
+     * the remediation this whole feature exists to provide, so a reviewed row is a no-op only
+     * while it is still BOUND: its stored hash equals the digest of today's text.
+     */
     const effectiveChanges = changes.filter(([slug, selected]) => {
       const current = Object.hasOwn(reviewed, slug) && isRecord(reviewed[slug])
-        ? reviewed[slug].status
-        : '';
-      return current !== (selected ? 'reviewed' : 'pending');
+        ? reviewed[slug]
+        : null;
+      const status = current ? current.status : '';
+      if (!selected) return status !== 'pending';
+      if (status !== 'reviewed') return true;
+      // `undefined` (never bound) and a stale value are both real work. So is `null` from
+      // digestOf — the digest cannot be computed, which the write below refuses outright
+      // rather than passing off as "nothing to do".
+      return current.contentHash !== digestOf(slug);
     });
     if (!effectiveChanges.length) {
       return { ok: true, target: 'content', updated: 0, commit: null };
     }
-    // Read once per attempt, and only when something is actually being attested: a reopen
-    // writes no hash, so it needs no tree. A retry re-reads, because the branch may have
-    // moved under it — the tree itself is memoized per commit, so a retry at the same head
-    // costs nothing.
-    const digestInputs = effectiveChanges.some(([, selected]) => selected)
-      ? await readMutationDigestInputs(repository, settings.branch)
-      : null;
 
     // Per-record preserve pattern (Task 1 ledger contract), applied per batch entry:
     // spread the CURRENT record forward rather than replacing it, so risk/note/hashes
@@ -1344,7 +1381,7 @@ async function commitContentMutation({ repository, settings, body, attester }) {
         delete next.reason;
         // Refused rather than written partially: a digest over the sources that happen to
         // be in the tree would look exactly like a digest over all of them.
-        const digest = digestForSlug(slug, digestInputs);
+        const digest = digestOf(slug);
         if (!digest) throw noSourceError(slug);
         next.contentHash = digest;
       } else {
@@ -1593,7 +1630,11 @@ async function handlePost({ repository, settings, body, attester }) {
   return result;
 }
 
-export function createHandler({ env = process.env, fetchImpl = globalThis.fetch } = {}) {
+export function createHandler({
+  env = process.env,
+  fetchImpl = globalThis.fetch,
+  treeCache,
+} = {}) {
   return async function facultyAttestHandler(request) {
     const context = responseContext(request, env);
     try {
@@ -1619,7 +1660,7 @@ export function createHandler({ env = process.env, fetchImpl = globalThis.fetch 
       }
       const settings = requireServerSettings(env, fetchImpl, originPolicy);
 
-      const repository = createRepositoryGateway({ settings, fetchImpl });
+      const repository = createRepositoryGateway({ settings, fetchImpl, treeCache });
       switch (request.method.toUpperCase()) {
         case 'GET': {
           // Freshen before reading, exactly where it is safe to: a branch that is

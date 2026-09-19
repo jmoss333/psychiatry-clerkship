@@ -554,12 +554,17 @@ function createGithubMock({
     effectiveWrites,
     files,
     sources,
+    // Editing a tracked file means a new commit, so a fixture that edits one must move the
+    // branch head too — otherwise the per-commit tree memo is asked to believe that the same
+    // commit has two different trees, which git never does.
+    advanceBranch,
   };
 }
 
-function handlerWith(mock, envOverrides = {}) {
+function handlerWith(mock, envOverrides = {}, options = {}) {
   return createHandler({
     fetchImpl: mock.fetchImpl,
+    ...options,
     env: {
       GITHUB_TOKEN: TOKEN,
       FACULTY_ATTEST_PASSWORD: FACULTY_KEY,
@@ -2191,7 +2196,10 @@ test('qbank and content no-op requests perform no commit', async () => {
   });
   assert.equal(contentMock.calls.length, 0);
 
-  const semanticMock = createGithubMock();
+  // A reviewed row is a semantic no-op only while it is still BOUND to the page text —
+  // hence boundFiles() rather than defaultFiles(), whose t_mood.md carries no hash and is
+  // therefore real work (it rebinds). The drifted and unbound cases are pinned below.
+  const semanticMock = createGithubMock({ files: boundFiles() });
   const semanticResponse = await handlerWith(semanticMock)(apiRequest('POST', {
     body: {
       target: 'content',
@@ -2207,7 +2215,20 @@ test('qbank and content no-op requests perform no commit', async () => {
     commit: null,
   });
   assert.equal(semanticMock.putBodies.length, 0);
-  assert.equal(semanticMock.calls.filter(call => call.method === 'GET').length, 1);
+  // A no-op attest now costs the digest inputs, and cannot not: whether an already-reviewed
+  // row is a no-op is a question about its hash, which the ledger alone cannot answer.
+  assert.deepEqual(
+    semanticMock.calls
+      .filter(call => call.method === 'GET')
+      .map(call => call.path || call.git),
+    [
+      REVIEWED_PATH,
+      SHIPPED_PAGES_PATH,
+      'ref/heads/main',
+      `trees/${BRANCH_HEAD_SHA}`,
+      TOPIC_META_PATH,
+    ],
+  );
 });
 
 test('reopen preserves legacy pending storage and returns canonical unreviewed state', async () => {
@@ -2916,17 +2937,168 @@ test('a missing topic_meta.json leaves freshness unknown rather than hashing wit
   );
 });
 
-test('the tree is read once per load and reused across items', async () => {
+function treeReads(mock) {
+  return mock.calls.filter(call => call.method === 'GET' && call.git.startsWith('trees/'));
+}
+
+// Four reviewed, bound pages, so "once per load" and "once per item" are different numbers.
+function manyBoundFiles() {
+  const files = defaultFiles();
+  const sources = defaultSources();
+  for (const name of ['anxiety', 'psychosis', 'delirium']) {
+    const source = `01_Core/t_${name}.md`;
+    sources[source] = Buffer.from(`# ${name}\n\nSynthetic page source.\n`, 'utf8');
+    files[SHIPPED_PAGES_PATH].json.pages.push({
+      slug: `t_${name}.md`,
+      kind: 'page',
+      sites: ['ms3'],
+      title: name,
+      source,
+      producer: 'site_manifest',
+    });
+    files[REVIEWED_PATH].json[`t_${name}.md`] = {
+      status: 'reviewed',
+      at: '2026-07-01',
+      by: 'Synthetic Reviewer',
+      risk: { kind: 'general', level: 'low' },
+    };
+  }
+  for (const slug of ['t_mood.md', 't_anxiety.md', 't_psychosis.md', 't_delirium.md']) {
+    files[REVIEWED_PATH].json[slug].contentHash = expectedDigest(files, sources, slug);
+  }
+  return { files, sources };
+}
+
+test('the whole queue is hashed from ONE tree read', async () => {
+  // The memo is OFF here, and that is the point. With it on this assertion cannot fail:
+  // readTree memoizes per commit, so an implementation that read the tree once PER ITEM
+  // would still make exactly one network call. Off, the network count IS the invocation
+  // count, and four reviewed items make "once per load" and "once per item" tell apart.
+  const { files, sources } = manyBoundFiles();
+  const mock = createGithubMock({ files, sources });
+  const handler = handlerWith(mock, {}, { treeCache: null });
+  const payload = await (await handler(apiRequest('GET'))).json();
+
+  assert.equal(payload.items.filter(item => item.status === 'reviewed').length, 4);
+  assert.equal(treeReads(mock).length, 1);
+  // topic_meta.json is never memoized, so this is a second, independent witness that the
+  // digest inputs are assembled once per load rather than once per item.
+  assert.equal(mock.calls.filter(call => call.path === TOPIC_META_PATH).length, 1);
+});
+
+test('the tree memo spares a second load at the same head, and is dropped when it moves', async () => {
   const mock = createGithubMock({ files: boundFiles() });
-  await handlerWith(mock)(apiRequest('GET'));
-  assert.equal(
-    mock.calls.filter(call => call.method === 'GET' && call.git.startsWith('trees/')).length,
-    1,
-  );
+  const handler = handlerWith(mock);
+  await handler(apiRequest('GET'));
+  await handler(apiRequest('GET'));
+  assert.equal(treeReads(mock).length, 1, 'a commit sha names an immutable tree');
+
+  mock.advanceBranch();
+  await handler(apiRequest('GET'));
+  assert.equal(treeReads(mock).length, 2, 'a new head is a new tree and must be re-read');
 });
 
 test('a branch in sync reports no lag', async () => {
   const mock = createGithubMock({ files: boundFiles() });
   const payload = await (await handlerWith(mock)(apiRequest('GET'))).json();
   assert.equal(payload.branchLag, 0);
+});
+
+/* Re-attestation, the whole point of the hash.
+
+   The remediation loop has to close: a page is reviewed, someone edits it, the console says
+   so, and the reviewer's next press REBINDS the row. It nearly did not — the no-op filter
+   compared the request against the ledger's stored `status`, and a drifted row's stored
+   status is still `reviewed` (a read projects, it never writes). The press would have been
+   dropped as "nothing to do": `updated: 0`, no commit, and the browser reporting "This
+   content review was not saved." over an item it was showing as needing review. */
+
+test('a drifted row re-attests, and the press that repairs it is not dropped as a no-op', async () => {
+  const files = boundFiles();
+  const boundAt = files[REVIEWED_PATH].json['t_mood.md'].contentHash;
+  const mock = createGithubMock({ files });
+  const handler = handlerWith(mock);
+
+  const before = await (await handler(apiRequest('GET'))).json();
+  assert.equal(before.items.find(item => item.slug === 't_mood.md').status, 'reviewed');
+
+  // Editing a page is a new commit, so the head moves with the bytes.
+  mock.sources['01_Core/t_mood.md'] = DRIFTED_MOOD_SOURCE;
+  mock.advanceBranch();
+
+  const drifted = (await (await handler(apiRequest('GET'))).json())
+    .items.find(item => item.slug === 't_mood.md');
+  assert.equal(drifted.status, 'unreviewed');
+  assert.equal(drifted.stale, true);
+
+  const response = await handler(apiRequest('POST', {
+    body: { target: 'content', changes: { 't_mood.md': true } },
+  }));
+  const payload = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(payload.updated, 1, 'the remediation press must reach the ledger');
+  assert.equal(mock.putBodies.length, 1);
+
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  const record = saved['t_mood.md'];
+  assert.equal(record.status, 'reviewed');
+  assert.equal(record.contentHash, expectedDigest(files, mock.sources, 't_mood.md'));
+  assert.notEqual(record.contentHash, boundAt, 'the row is bound to the NEW text');
+  assert.match(record.at, /^\d{4}-\d{2}-\d{2}$/);
+  assert.notEqual(record.at, '2026-07-01', 'the review date is the date of this review');
+
+  const after = (await (await handler(apiRequest('GET'))).json())
+    .items.find(item => item.slug === 't_mood.md');
+  assert.equal(after.status, 'reviewed');
+  assert.equal(Object.hasOwn(after, 'stale'), false, 'the loop closes: clean again');
+  assert.equal(after.reason, '');
+});
+
+test('an unbound reviewed row rebinds on the next attest rather than reading as settled', async () => {
+  // defaultFiles()'s t_mood.md is reviewed with no contentHash at all — the state every row
+  // was in before the backfill, and the one the console reports as "No content hash recorded".
+  const files = defaultFiles();
+  const mock = createGithubMock({ files });
+  const handler = handlerWith(mock);
+
+  const unbound = (await (await handler(apiRequest('GET'))).json())
+    .items.find(item => item.slug === 't_mood.md');
+  assert.equal(unbound.stale, true);
+
+  const payload = await (await handler(apiRequest('POST', {
+    body: { target: 'content', changes: { 't_mood.md': true } },
+  }))).json();
+  assert.equal(payload.updated, 1);
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  assert.equal(saved['t_mood.md'].contentHash, expectedDigest(files, mock.sources, 't_mood.md'));
+
+  const after = (await (await handler(apiRequest('GET'))).json())
+    .items.find(item => item.slug === 't_mood.md');
+  assert.equal(Object.hasOwn(after, 'stale'), false);
+});
+
+test('a bound, clean, reviewed row is still a no-op and writes nothing', async () => {
+  const mock = createGithubMock({ files: boundFiles() });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 't_mood.md': true } },
+  }));
+  assert.deepEqual(await response.json(), {
+    ok: true, target: 'content', updated: 0, commit: null,
+  });
+  assert.equal(mock.putBodies.length, 0);
+});
+
+test('re-attesting a row whose source left the tree is refused, never reported as settled', async () => {
+  const files = boundFiles();
+  const sources = defaultSources();
+  delete sources['01_Core/t_mood.md'];
+  const mock = createGithubMock({ files, sources });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 't_mood.md': true } },
+  }));
+
+  // Not `updated: 0`: the digest cannot be computed, so the row's binding cannot be
+  // confirmed either — silently answering "nothing to do" would call that settled.
+  await expectError(response, { status: 400, code: 'content.no_source' });
+  assert.equal(mock.putBodies.length, 0);
 });

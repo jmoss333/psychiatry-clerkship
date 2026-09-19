@@ -235,7 +235,10 @@ Each load recomputes that digest for every reviewed row from **one** recursive g
 page content is fetched — and an item whose hash no longer matches reads as **needs review** with
 *"Content changed since faculty review on `<date>`; awaiting re-attestation."* A row that carries no
 hash yet says so instead (*"No content hash recorded…"*). Reading never rewrites `reviewed.json`;
-re-attesting through the console is what rebinds a drifted row to today's text. If the tree call
+re-attesting through the console is what rebinds a drifted row to today's text. That is also why
+the write path's no-op rule asks about the hash rather than the status: a row that is already
+`reviewed` is "nothing to do" only while it is still **bound**, and a drifted or unbound row is
+real work — pressing Confirm on one rewrites its `contentHash` and its `at`. If the tree call
 fails, or the queue came from the base-branch fallback above (page text and the source list would
 then come from two different refs), the load reports `freshness: "unknown"`, banners *"Freshness
 unknown — reload"*, and marks **every** reviewed item unverified — a check that could not run
