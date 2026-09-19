@@ -222,6 +222,14 @@ cd tests/smoke && npm ci && npx playwright test
 - Clinical tools are **single-file HTML** (Clinical Warm palette — build-injected from
   `13_Faculty_Resources/_automation/site_build/clinical-warm.css`). Dose literals
   are banned in `rp-*` / `*-trainer` tools (QA gate).
+- **A tool frame is content-height by default.** The shell sizes `<iframe class="toolframe">`
+  to the tool document (`fdSizeToolFrame` in `spa_index.html`; `fdToolFrameMode` /
+  `fdToolFrameHeight` in `fd_wire.js`) so the page is the only scroll surface. A tool that lays
+  itself out against its own viewport — a fixed bottom bar, a sticky panel, a transcript with its
+  own scroll — declares `<meta name="cw-frame" content="viewport">` in its `<head>` and keeps the
+  viewport-height frame; `tests/tool-frame.test.mjs` pins the set of such tools and
+  `tool-expand.spec.js` measures the live frame. Surveyed before the default flipped (2026-09-19):
+  no shipped tool sets html/body height or overflow, so the html box is the content height.
 - **Crisis contacts (988 etc.) live in `crisis_resources.json` only.** Never hard-code a crisis
   number in a content page or tool. A page opts in with a `<!-- crisis-block -->` marker
   (`<!-- crisis-block-html -->` in tools); `site_build/crisis_block.py` renders it and
