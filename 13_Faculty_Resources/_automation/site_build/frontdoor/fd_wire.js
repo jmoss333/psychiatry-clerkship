@@ -83,7 +83,7 @@ function fdLegacyRouteResult(ref, context, state){
     if(s.screen==='app'){
       return {
         patch:{tab:'today',openId:'__progress__',fromTab:'today',searchOpen:false,sheet:null},
-        route:fdRouteForRef('__progress__',c.search),history:'replace',
+        route:fdRouteForRef('__progress__',c.search,false,{tab:'today',libraryView:s.libraryView==='full'?'essentials':undefined}),history:'replace',
         effect:{type:'open-progress'}
       };
     }
@@ -476,7 +476,7 @@ function fdDispatch(attrs, context, state){
     tab=fdValidTab(s.tab)?s.tab:'today';
     return {
       patch:{openId:'__progress__',fromTab:tab,searchOpen:false,sheet:null},
-      route:fdRouteForRef('__progress__',c.search),effect:{type:'open-progress'}
+      route:fdRouteForRef('__progress__',c.search,false,s),effect:{type:'open-progress'}
     };
   }
   if(fdOwn(a,'data-fd-settings')){

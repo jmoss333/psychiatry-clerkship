@@ -2920,3 +2920,27 @@ test('full Library returns after autoAdvance and Change week while Today and Pat
     assert.equal(new URLSearchParams(opened.route).has('library'),false);
   }
 });
+
+test('legacy start Progress canonicalization reloads and returns to Today despite old Library or Path context', () => {
+  for (const search of ['?page=__start__&tab=library&library=full','?page=__start__&tab=path','?page=__start__&library=full']) {
+    const initial = F.fdResolveState(search,{...roleContext,screen:'app'});
+    const opened = F.fdDispatch({'data-fd-open':'__start__'},{search},initial);
+    const reload = F.fdResolveState(opened.route,{...roleContext,tab:'library'});
+    assert.equal(reload.openId,'__progress__');
+    assert.equal(reload.fromTab,'today');
+    assert.equal(reload.libraryView,'essentials');
+    assert.equal(new URLSearchParams(opened.route).has('library'),false);
+    assert.equal(F.fdDispatch({'data-fd-back':''},{search:opened.route},reload).route,'/');
+  }
+});
+
+test('Progress from the full Library shorthand preserves full context through reload and return', () => {
+  const search = '?library=full';
+  const initial = F.fdResolveState(search,roleContext);
+  const opened = F.fdDispatch({'data-fd-progress':''},{search},initial);
+  const reload = F.fdResolveState(opened.route,{...roleContext,tab:'today'});
+  assert.equal(reload.openId,'__progress__');
+  assert.equal(reload.fromTab,'library');
+  assert.equal(reload.libraryView,'full');
+  assert.equal(F.fdDispatch({'data-fd-back':''},{search:opened.route},reload).route,'?tab=library&library=full');
+});
