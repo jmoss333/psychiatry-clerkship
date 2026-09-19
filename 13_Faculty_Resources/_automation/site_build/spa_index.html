@@ -238,6 +238,8 @@
   .practice-mode-note{display:flex;gap:10px;align-items:flex-start;background:var(--panel-tree-bg);border:1px solid var(--panel-line-soft);border-radius:12px;padding:11px 13px;margin:0 0 12px}
   .practice-mode-note .k{flex:0 0 auto;font-size:var(--fd-font-2xs);font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark)}
   .practice-mode-note .v{font-size:var(--fd-font-md);line-height:1.4;color:var(--text-mid)}
+  /* On a phone the label column squeezed the sentence to ~60% of the width; stack them. */
+  @media(max-width:640px){.practice-mode-note{flex-direction:column;gap:var(--fd-space-2)}}
   .page-title-row{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin:.2em 0 .25em}
   .page-title-row h1{margin:0}
   .page-title-row .markrev{font-size:var(--fd-font-2xs);font-weight:800;letter-spacing:.03em;border-radius:999px;padding:4px 9px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-family:inherit;white-space:nowrap;margin-top:.42rem}
@@ -259,9 +261,7 @@
   .in30{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:13px 16px;margin:0 0 14px}
   .practice-panel .in30{background:transparent;border-left:none;border-radius:0;padding:0;margin:0}
   .in30 .lbl{font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark);margin-bottom:6px}
-  .in30 .one{font-family:var(--font-head);font-size:var(--fd-font-lg);line-height:1.4;margin-bottom:8px;color:var(--text)}
-  .practice-panel .in30 .lbl{display:none}
-  .practice-panel .in30 .one{font-size:var(--fd-font-lg);margin-bottom:8px}
+    .practice-panel .in30 .lbl{display:none}
   .in30 ul{margin:0;padding:0;list-style:none}
   .in30 li{position:relative;padding-left:24px;margin:5px 0;font-size:var(--fd-font-base)}
   .in30 li::before{content:"\2713";position:absolute;left:0;color:var(--accent);font-weight:700}
@@ -1201,7 +1201,7 @@
     }
     h+='<div class="practice-sections">';
     h+='<section class="practice-section"><div class="practice-section-title">In 30 seconds</div>';
-    if(m.tldr){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><div class="one">'+esc(m.tldr)+'</div>'; if(m.points&&m.points.length){ h+='<ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul>'; } h+='</div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
+    /* Points only. The one-line tldr is ALREADY the page's lead (fd_data.js maps item.summary from it), and on a phone the panel opens by default directly under that lead, so the same sentence printed twice on one screen (2026-09-18 critique). */ if(m.points&&m.points.length){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul></div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
     h+='</section><section class="practice-section"><div class="practice-section-title">On the unit</div>';
     var wf=buildWorkflow(m,pseen), hasUnit=false; if(wf){ h+=wf; hasUnit=true; }
     if(m.cant&&m.cant!==reason){ h+='<div class="cantmiss"><span class="ico">⚠</span><span class="tx"><b>Can’t miss. </b>'+esc(m.cant)+'</span></div>'; hasUnit=true; }
