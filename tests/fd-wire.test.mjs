@@ -605,6 +605,7 @@ function fakeHarness(initial, options = {}) {
     location: options.location || { href: 'https://example.test/', search: '', pathname: '/' },
     history: options.history,
     matchMedia: options.matchMedia,
+    innerHeight: options.innerHeight,
     get scrollY() { return typeof options.scrollY === 'function' ? options.scrollY() : options.scrollY; },
     scrollTo: options.scrollTo,
   };
@@ -2686,6 +2687,7 @@ function originHarness(initial, extra = {}) {
     openResource: () => {},
     scrollY: () => scrollY,
     scrollTo: (x, y) => scrolls.push([x, y]),
+    innerHeight: extra.innerHeight,
     querySelector: (sel) => openers[sel] || null,
     ...(extra.querySelectorAll ? { querySelectorAll: extra.querySelectorAll } : {}),
   });
@@ -2825,6 +2827,58 @@ test('browser Back out of a resource is the same return (#427)', () => {
   assert.equal(link.focused, 1);
 });
 
+test('browser Back rechecks a relocated Essentials opener after native history scroll restoration', () => {
+  const location={href:'https://example.test/?tab=library',pathname:'/',search:'?tab=library'};
+  const memory=memoryHistory(location), timers=[];
+  let scrollY=0;
+  const link={
+    ...opener(),
+    getBoundingClientRect:()=>({top:5000-scrollY,bottom:5060-scrollY}),
+    scrollIntoView(){ scrollY=4700; },
+  };
+  const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials',kitSection:'late'}, {
+    F:make(memStorage()),location,history:memory.history,openResource:()=>{},innerHeight:600,
+    scrollY:()=>scrollY,scrollTo:(_x,y)=>{scrollY=y;},
+    setTimer:fn=>{timers.push(fn);},
+    querySelector:sel=>sel==='[data-fd-open="late.md"]'?link:null,
+  });
+  memory.bind(h.windowHandlers.popstate);
+  h.controller.dispatch({'data-fd-open':'late.md'});
+  memory.go(-1);
+  scrollY=0; // Chromium restores persisted scroll after the popstate listeners finish.
+  while(timers.length) timers.shift()();
+  const box=link.getBoundingClientRect();
+  assert.ok(box.top>=0&&box.bottom<=600,'the post-history focus remains visible');
+});
+
+test('deferred browser Back visibility recheck is inert after navigation or controller destruction', () => {
+  for(const invalidate of ['navigate','destroy']){
+    const location={href:'https://example.test/?tab=library',pathname:'/',search:'?tab=library'};
+    const memory=memoryHistory(location), timers=[];
+    let scrollY=0, visibilityCorrections=0;
+    const link={
+      ...opener(),
+      getBoundingClientRect:()=>({top:5000-scrollY,bottom:5060-scrollY}),
+      scrollIntoView(){ visibilityCorrections++; scrollY=4700; },
+    };
+    const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials',kitSection:'late'}, {
+      F:make(memStorage()),location,history:memory.history,openResource:()=>{},innerHeight:600,
+      scrollY:()=>scrollY,scrollTo:(_x,y)=>{scrollY=y;},
+      setTimer:fn=>{timers.push(fn);},
+      querySelector:sel=>sel==='[data-fd-open="late.md"]'?link:null,
+    });
+    memory.bind(h.windowHandlers.popstate);
+    h.controller.dispatch({'data-fd-open':'late.md'});
+    memory.go(-1);
+    assert.equal(visibilityCorrections,1,'the synchronous return correction still runs');
+    if(invalidate==='navigate') h.controller.dispatch({'data-fd-tab':'today'});
+    else h.controller.destroy();
+    scrollY=0;
+    while(timers.length) timers.shift()();
+    assert.equal(visibilityCorrections,1,`the deferred correction is cancelled after ${invalidate}`);
+  }
+});
+
 test('Library view defaults to kit and URL full shorthand preserves setup and route precedence', () => {
   assert.equal(F.fdResolveState('/', {...roleContext, libraryView:'full'}).libraryView, 'essentials');
   const full = F.fdResolveState('/?library=full', roleContext);
@@ -2905,6 +2959,50 @@ test('full Library retains resource return scroll and focus including reload', (
   const restored = originHarness(reload,{openers:{'[data-fd-open="extra.md"]':reloadLink}});
   restored.h.controller.dispatch({'data-fd-back':''});
   assert.deepEqual(restored.scrolls,[[0,640]]); assert.equal(reloadLink.focused,1);
+});
+
+test('Today, Path, and full Library preserve exact return offset without recentering an off-screen opener', () => {
+  for(const context of [
+    {tab:'today',libraryView:'essentials'},
+    {tab:'path',libraryView:'essentials'},
+    {tab:'library',libraryView:'full'},
+  ]){
+    let visibilityCorrections=0;
+    const link={
+      ...opener(),getBoundingClientRect:()=>({top:900,bottom:960}),
+      scrollIntoView(){visibilityCorrections++;},
+    };
+    const {h,scrolls,setScrollY}=originHarness(
+      {...roleContext,screen:'app',...context,openId:null},
+      {scrollY:640,innerHeight:600,openers:{'[data-fd-open="deep.md"]':link}},
+    );
+    h.controller.dispatch({'data-fd-open':'deep.md'});
+    setScrollY(0);
+    h.controller.dispatch({'data-fd-back':''});
+    assert.deepEqual(scrolls,[[0,640]],`${context.tab}/${context.libraryView} keeps the saved offset`);
+    assert.equal(link.focused,1);
+    assert.equal(visibilityCorrections,0,`${context.tab}/${context.libraryView} does not recenter`);
+  }
+});
+
+test('Essentials return keeps a relocated late-section opener inside the viewport after reset to All', () => {
+  let box={top:900,bottom:960};
+  const link={
+    ...opener(),
+    getBoundingClientRect:()=>box,
+    scrollIntoView(){ box={top:200,bottom:260}; },
+  };
+  const initial={...roleContext,screen:'app',tab:'library',libraryView:'essentials',kitSection:'late',openId:null};
+  const {h,scrolls,setScrollY}=originHarness(initial,{
+    scrollY:40,innerHeight:600,openers:{'[data-fd-open="late.md"]':link},
+  });
+  h.controller.dispatch({'data-fd-open':'late.md'});
+  setScrollY(0);
+  h.controller.dispatch({'data-fd-back':''});
+  assert.equal(h.controller.getState().kitSection,'all');
+  assert.equal(link.focused,1);
+  assert.deepEqual(scrolls,[[0,40]],'the saved offset is restored before visibility correction');
+  assert.ok(box.top>=0&&box.bottom<=600,'the refocused opener is visible after its section moves');
 });
 
 test('full Library returns after autoAdvance and Change week while Today and Path own search returns', () => {

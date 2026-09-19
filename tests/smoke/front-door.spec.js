@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
 import { isResidentProject } from './audience.js';
 
@@ -2007,6 +2007,58 @@ test.describe('Essentials Phase 2', () => {
     await expect(page.locator('.fd-reader .governance-notice').first()).toContainText(/pending|re-review/i);
     await expectHealthy(page);
   });
+  test('late Essentials section return resets All and keeps focus visible through Back and reload', async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto('/?tab=library');
+    const select=page.locator('[data-fd-kit-section]');
+    const lateSection=await select.locator('option').evaluateAll(options =>
+      options.map(option=>option.value).filter(value=>value!=='all'&&value!=='tools').at(-1));
+    const openLateReading=async()=>{
+      await select.selectOption(lateSection);
+      const opener=page.locator('.fd-kit__reading').first();
+      const ref=await opener.getAttribute('data-fd-open');
+      await opener.click();
+      await readyReader(page,ref);
+      return {opener:page.locator(`.fd-kit__reading[data-fd-open="${ref}"]`),ref};
+    };
+    const expectVisibleReturn=async opener=>{
+      await expect(select).toHaveValue('all');
+      await expect(opener).toBeFocused();
+      const geometry=await opener.evaluate(element=>{
+        const box=element.getBoundingClientRect();
+        let top=0,bottom=innerHeight;
+        const header=document.querySelector('.fd-header');
+        if(header&&header.getClientRects().length&&getComputedStyle(header).position==='sticky'){
+          const rect=header.getBoundingClientRect();
+          if(rect.top<=0&&rect.bottom>0) top=rect.bottom;
+        }
+        const tabs=document.querySelector('.fd-tabs');
+        if(tabs&&tabs.getClientRects().length&&getComputedStyle(tabs).position==='fixed'){
+          const rect=tabs.getBoundingClientRect();
+          if(rect.bottom>=innerHeight-1) bottom=rect.top;
+        }
+        return {top:box.top,bottom:box.bottom,visibleTop:top,visibleBottom:bottom};
+      });
+      expect(geometry.top).toBeGreaterThanOrEqual(geometry.visibleTop);
+      expect(geometry.bottom).toBeLessThanOrEqual(geometry.visibleBottom);
+    };
+
+    let opened=await openLateReading();
+    await page.locator('[data-fd-back]:visible').first().click();
+    await expectVisibleReturn(opened.opener);
+
+    opened=await openLateReading();
+    await page.goBack();
+    await expectVisibleReturn(opened.opener);
+
+    opened=await openLateReading();
+    await page.reload();
+    await readyReader(page,opened.ref);
+    await page.locator('[data-fd-back]:visible').first().click();
+    await expectVisibleReturn(opened.opener);
+    await expectHealthy(page);
+  });
   test('readings-first responsive targets and actual desktop and phone evidence', async ({ page }, info) => {
     await seedApp(page, info);
     for (const width of [390, 640, 641, 1280]) {
@@ -2039,8 +2091,9 @@ test.describe('Essentials Phase 2', () => {
       if (width === 390 || width === 1280) {
         await page.evaluate(() => {document.activeElement.blur(); document.querySelector('.fd-kit__tool-list').scrollLeft = 0; window.scrollTo(0, 0);});
         await page.evaluate(() => document.fonts.ready);
-        mkdirSync('/tmp/essentials-phase2c-evidence', { recursive: true });
-        await page.screenshot({path: `/tmp/essentials-phase2c-evidence/${audience(info).role}-${width}.png`, animations: 'disabled'});
+        const path=info.outputPath(`essentials-${audience(info).role}-${width}.png`);
+        await page.screenshot({path,animations:'disabled'});
+        await info.attach(`essentials-${audience(info).role}-${width}`,{path,contentType:'image/png'});
       }
     }
   });
@@ -2198,8 +2251,6 @@ test.describe('Essentials Phase 2', () => {
         }
         return canvas.toDataURL('image/png').split(',')[1];
       }, images);
-      mkdirSync('/tmp/essentials-phase2c-evidence', { recursive: true });
-      writeFileSync(`/tmp/essentials-phase2c-evidence/${audience(info).role}-contact-sheet.png`, Buffer.from(data, 'base64'));
       await info.attach(`essentials-${audience(info).role === 'student' ? 'ms3' : 'res'}-contact-sheet`, {
         body: Buffer.from(data, 'base64'), contentType: 'image/png',
       });

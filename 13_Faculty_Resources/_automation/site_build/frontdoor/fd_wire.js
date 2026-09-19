@@ -1221,6 +1221,27 @@ function fdWire(root, initialState, opts){
     }
     return null;
   }
+  function keepFocusedOpenerVisible(el){
+    if(state.tab!=='library'||state.libraryView!=='essentials') return;
+    if(!el||!el.getBoundingClientRect||!el.scrollIntoView||!win||typeof win.innerHeight!=='number') return;
+    var top=0,bottom=win.innerHeight, box, chrome, style;
+    try{
+      chrome=root&&root.querySelector?root.querySelector('.fd-header'):null;
+      style=chrome&&win.getComputedStyle?win.getComputedStyle(chrome):null;
+      if(chrome&&chrome.getBoundingClientRect&&style&&(style.position==='sticky'||style.position==='fixed')){
+        box=chrome.getBoundingClientRect();
+        if(box.top<=0&&box.bottom>0) top=box.bottom;
+      }
+      chrome=root&&root.querySelector?root.querySelector('.fd-tabs'):null;
+      style=chrome&&win.getComputedStyle?win.getComputedStyle(chrome):null;
+      if(chrome&&chrome.getBoundingClientRect&&style&&style.position==='fixed'){
+        box=chrome.getBoundingClientRect();
+        if(box.bottom>=win.innerHeight-1&&box.top<bottom) bottom=box.top;
+      }
+      box=el.getBoundingClientRect();
+      if(box.top<top||box.bottom>bottom) el.scrollIntoView({block:'center',inline:'nearest'});
+    }catch(_){}
+  }
   /* Returning from a resource lands the learner where they left the originating tab (#427): the
      list scrolled back to the offset recorded when the resource opened, and focus on the control
      that opened it, so a keyboard or screen-reader user resumes from the link they chose rather
@@ -1230,11 +1251,15 @@ function fdWire(root, initialState, opts){
      to return to, and the render's focus stands. Scroll is restored even then only for the
      originating tab, since the offset belongs to that list. */
   function restoreOrigin(before){
-    if(state.screen!=='app'||state.tab!==before.fromTab||state.searchOpen||state.sheet) return;
+    if(state.screen!=='app'||state.tab!==before.fromTab||state.searchOpen||state.sheet) return null;
     var y=typeof before.scrollPos==='number'&&before.scrollPos>=0?before.scrollPos:0;
     if(win&&win.scrollTo) try{ win.scrollTo(0,y); }catch(_){}
     var el=openerFor(before.openId);
-    if(el&&el.focus){ try{ el.focus({preventScroll:true}); }catch(_){ try{ el.focus(); }catch(__){} } }
+    if(el&&el.focus){
+      try{ el.focus({preventScroll:true}); }catch(_){ try{ el.focus(); }catch(__){} }
+      keepFocusedOpenerVisible(el);
+    }
+    return el;
   }
   function focusPostTransition(before, result, changedBase){
     if(changedBase&&state.screen&&state.screen.indexOf('setup-')===0){
@@ -1593,7 +1618,16 @@ function fdWire(root, initialState, opts){
     }));
     fdSave(state);
     /* Browser Back out of a resource is the same return as the in-app control (#427). */
-    if(before.openId&&!state.openId) restoreOrigin(before);
+    if(before.openId&&!state.openId){
+      var restoredOpener=restoreOrigin(before);
+      /* Persisted scroll state is restored after popstate listeners finish. Recheck at the end of
+         the event loop so native restoration cannot strand a focused Essentials opener. */
+      if(restoredOpener&&setTimer){
+        setTimer(function(){
+          if(!destroyed&&generation===navGeneration&&!state.openId) keepFocusedOpenerVisible(restoredOpener);
+        },0);
+      }
+    }
     if(legacyResult&&legacyResult.effect){
       fdApplyEffect(legacyResult.effect,true,generation);
     } else if(state.openId==='__progress__'){

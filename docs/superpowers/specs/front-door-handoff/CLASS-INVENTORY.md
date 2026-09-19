@@ -310,6 +310,34 @@ A compact row used elsewhere is borderless.
         .fd-collink__hint          (tools only — the row's one-line "use this when…")
 ```
 
+The Essentials view keeps the same `.fd-library` root and replaces the full Library grid with
+this subtree:
+
+```
+.fd-library.fd-kit
+  .fd-library__head
+  .fd-kit__filter
+    label + select[data-fd-kit-section]   (native section picker)
+  .fd-kit__review
+    details / summary                    (native review explanation)
+  .fd-kit__layout
+    .fd-kit__readings
+      details.fd-kit__group ×N
+        summary
+        .fd-kit__reading <button> ×N
+          .fd-kit__title / .fd-kit__pending / .fd-kit__summary / .fd-kit__minutes
+    aside.fd-kit__tools                  (tool rail)
+      details.fd-kit__group.fd-kit__tool-group
+        summary
+        .fd-kit__tool-list
+          .fd-collink <button> ×N
+```
+
+At 1000px and wider, `.fd-kit__layout` is a 3:1 readings/tool-rail grid. From 641–999px the
+readings and tools stack in document order. At 640px and narrower, the tool rail moves above the
+readings and `.fd-kit__tool-list` becomes a horizontally scrolling row. The section picker and
+both group types remain native `select`/`details` controls at every width.
+
 | Class | Notes |
 |---|---|
 | `.fd-library__grid` | Multi-column flow, `columns:280px` (2026-09-19; was an `auto-fill, minmax(280px,1fr)` grid whose rows were as tall as their tallest cell). Sections balance by height; `.fd-col{break-inside:avoid}` keeps each whole. |
