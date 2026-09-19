@@ -287,7 +287,41 @@ cd tests/smoke && npm ci && npx playwright test
   (4) if you edit a producer, regenerate — a stale `shipped_pages.json` fails `--check` in CI, in
   `bin/verify.sh`, in the build, and in the post-edit hook;
   (5) when a faculty-facing surface shows a partial list, treat "partial" as a bug signal, not a
-  filter — compare its count against `reviewed.json` before assuming it is right (today: 123).
+  filter — compare its count against `reviewed.json` before assuming it is right (today: 128, and
+  a drifted row counts as needs-review there).
+- **An attestation names the text it attested, and the name has to still fit.** A reviewed row's
+  `contentHash` in `13_Faculty_Resources/reviewed.json` is a **git blob SHA over a manifest** —
+  one line per input, each line itself a blob SHA: the slug's shipped source file(s) (`source`
+  plus any `extraSources` in `site_build/shipped_pages.json`, sorted by path) and its
+  `topic_meta.json` record canonicalised with `facultyReview` removed, because governance state is
+  not content and attesting a page must not depend on the block that records the attesting. The
+  rule lives once in `13_Faculty_Resources/_automation/attestation_hash.py`;
+  `python3 bin/check_attestation_hashes.py --explain SLUG [--rev REV]` prints the manifest so
+  anyone can re-derive the value by hand with `git hash-object --stdin`, and
+  `faculty-console/attestation-hash.mjs` is the JS twin that the console writes with
+  (`tests/attestation-hash-parity.test.mjs` pins the two byte for byte). Why: on 2026-09-16 #640
+  and #672 added 85 citations to already-attested pages, re-dated three of those attestations and
+  flipped three pending pages to `reviewed` under the owner's name, and every one of those pages
+  went on reading reviewed, by a named clinician, on a date — nothing in the repository bound an
+  attestation to the text it attested, so rewriting the page afterwards cost nothing and showed
+  nowhere. **Drift is a notice; unbound fails closed.** A content PR edits an attested page
+  constantly, so a stale row exits 0 — `bin/verify.sh` reports it and `bin/what_needs_josh.py`
+  lists the drifted pages as the owner's work — but a reviewed *shipped* row with no
+  `contentHash`, a malformed one (not 40 hex), a missing attested source, or an unshipped row
+  absent from `attestation_hash.py`'s `LEDGER_ONLY_LEGACY` is an **error** in
+  `validate_attestation_consistency.py`, which `site_build/build_and_check.sh` runs **before**
+  either build — so a hand-edited ledger fails the Netlify production deploy and the last good
+  deploy stays live, which is the intended posture for a crisis-content site, not an outage.
+  **Only the faculty console writes a hash** (`faculty-console/netlify/functions/attest.mjs`, on
+  attest): it shows a drifted row as needs-review — status `unreviewed`, "Content changed since
+  faculty review on <at>" — and re-attesting rebinds it. The 2026-09-18 truthful backfill was the
+  one-time exception, binding each existing row to the text as of its own `at` date (the day ends
+  23:59:59 **UTC**, always); its provenance is
+  `13_Faculty_Resources/Handoffs/CONTENTHASH_BACKFILL_2026-09-18.md`. Rendering a drifted page as
+  pending on the learner sites is **not** wired yet — that is the follow-up PR "1b"; until it
+  ships, drift is visible in the console and in those two tools and nowhere a learner looks. Not
+  the same field as `canonical_claims.json`'s `contentHashAtReview`, which is a sha256 of one
+  cited file's whole text per claim pointer (narrowed by `scopeHashAtReview`).
 - **Adding a step to `ci.yml` trips three separate contracts.** `bin/check-verify-coverage.py`
   (mirror it in `bin/verify.sh` or justify an `ALLOWED` exemption);
   `_automation/maintenance/validate_scheduled_workflows.py`, which pins the workflow by **exact step
