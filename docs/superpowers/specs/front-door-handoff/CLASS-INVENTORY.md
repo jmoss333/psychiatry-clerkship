@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(305 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
+(307 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -302,7 +302,7 @@ A compact row used elsewhere is borderless.
   .fd-library__head
     .fd-library__h1 / .fd-library__count
   .fd-library__grid
-    .fd-col                      (no rule — plain grid child)
+    .fd-col                      (break-inside:avoid; a whole section per column)
       .fd-col__name
       .fd-collink  <button> ×N
         .fd-collink__dot
@@ -312,14 +312,14 @@ A compact row used elsewhere is borderless.
 
 | Class | Notes |
 |---|---|
-| `.fd-library__grid` | `auto-fill, minmax(196px, 1fr)`, gap 22/26px. |
+| `.fd-library__grid` | Multi-column flow, `columns:280px` (2026-09-19; was an `auto-fill, minmax(280px,1fr)` grid whose rows were as tall as their tallest cell). Sections balance by height; `.fd-col{break-inside:avoid}` keeps each whole. |
+| `.fd-library__shortcut` | Wraps "· press / to filter" inside `.fd-library__count`; hidden at ≤640px as a whole fragment. |
 | `.fd-col__name` | Column heading: uppercase terracotta with a bottom rule. |
 | `.fd-collink__dot.is-tool` | Teal dot; default is olive (a read). |
 | `.fd-collink__hint` | One line under a tool's label, from `curriculum.libraryHints` (2026-09-16). The row wraps (`flex-wrap`) and the hint takes the full width, indented past the dot. Omitted from the markup, not emptied, when an item has none — every read row renders exactly as before. |
 
-⚠ **`.fd-col` has no rule of its own** *(known; deferred by review)*. It is still required as the
-grid child that groups a heading with its links — the grid's `align-items:start` acts on it. Emit
-it; just don't expect it to paint anything.
+`.fd-col` gained its first rule on 2026-09-19 (`break-inside:avoid` + the section gap): it is the
+unit the multi-column flow keeps whole, and the wrapper that groups a heading with its links.
 
 ⚠ `.fd-collink` rows have **no sibling margin** — they sit flush by design (5px internal padding).
 
