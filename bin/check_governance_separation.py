@@ -68,11 +68,18 @@ and it silences no rule.
 EXIT 2 IS NOT A PASS. No base, no git, an unparsable registry, or a HEAD tree with no
 shipped_pages.json all mean the CONTENT predicate cannot be evaluated — and a classifier that
 cannot tell content from not-content would clear every diff it was handed. Two more doors are
-exit 2 for the same reason, and both were once a clean 0: a base that RESOLVES TO THE HEAD
+exit 2 for the same reason, and both were once a clean 0: a NAMED base that resolves to the head
 (`--base HEAD`, or `CLERKSHIP_PR_BASE=origin/<this branch>` after a push) makes the diff empty
 and every promotion in it invisible; and a reviewed.json ABSENT AT HEAD reads as "every entry
 deleted", i.e. registration, so moving the ledger to a path this tool does not read would clear
 a diff that promoted every row in it. Absent at BASE still means "every entry is new".
+
+The DEFAULT base equalling the head is the opposite case and exits 0, saying so: `merge-base
+origin/main HEAD` can only equal HEAD when the branch owns no commits — a fresh worktree of
+`main`, a branch before its first commit, a fully-merged branch — and a range with nothing in
+it has provably nothing to hide. Failing those would redden `bin/verify.sh` on clean `main`,
+which is the checkout this repo tells people to run a failing gate on to find out whose fault
+it is.
 """
 
 from __future__ import annotations
@@ -396,11 +403,18 @@ def commit_promotions(root, base, head):
 
 def classify(root, base, head, head_branch, base_source=None):
     """The whole verdict as data. Raises InputError / GitError; never guesses."""
-    # An empty range is not a clean range. `CLERKSHIP_PR_BASE=origin/<own-branch>` after a
-    # push, or `--base HEAD`, makes the diff empty and every promotion invisible — which
-    # would print OK over the exact diff the rule exists to read.
+    # An empty range is not a clean range — when somebody NAMED the base. `--base HEAD`, or
+    # `CLERKSHIP_PR_BASE=origin/<own-branch>` typed after a push, makes the diff empty and
+    # every promotion invisible, which would print OK over the exact diff the rule exists to
+    # read. The DEFAULT base is the opposite case: `merge-base origin/main HEAD` can only
+    # equal the head when the branch owns no commits — a fresh worktree of `main`, a branch
+    # before its first commit, a fully-merged branch — and a range with nothing in it has
+    # provably nothing to hide. Failing those would redden `bin/verify.sh` on clean `main`,
+    # which CLAUDE.md tells people to run to find out whose fault a red gate is.
     base_sha = _resolve(root, base)
-    if base_sha is not None and base_sha == _resolve(root, head):
+    source = base_source or "from --base"
+    empty_range = base_sha is not None and base_sha == _resolve(root, head)
+    if empty_range and source != DEFAULT_BASE_SOURCE:
         raise InputError("the named base is the head — nothing to compare")
 
     shipped = json_at(root, head, SHIPPED_REL)
@@ -437,7 +451,7 @@ def classify(root, base, head, head_branch, base_source=None):
 
     return {
         "base": base, "head": head, "headBranch": head_branch,
-        "baseSource": base_source or "from --base",
+        "baseSource": source, "emptyRange": empty_range,
         "changed": changed, "content": content, "governance": governance,
         "ledgerPromotions": ledger, "topicMetaPromotions": topic_meta,
         "commitOffenders": offenders, "failures": failures,
@@ -523,6 +537,13 @@ def run(root, base, head, head_branch, fmt="text", stream=None, base_source=None
               file=sys.stderr)
         return 1
 
+    if verdict["emptyRange"]:
+        # Only reachable on the DEFAULT base (a named one raised in classify). Say what
+        # happened rather than printing "0 changed paths" as if a diff had been read.
+        print("governance separation OK — %s is the head; this branch owns no commits"
+              % where, file=stream)
+        return 0
+
     promotions = len(verdict["ledgerPromotions"]) + len(verdict["topicMetaPromotions"])
     print("governance separation OK — %s; %d changed path(s), %d content, %d governance, "
           "%d promotion(s) on %s"
@@ -532,6 +553,9 @@ def run(root, base, head, head_branch, fmt="text", stream=None, base_source=None
 
 
 PR_BASE_ENV = "CLERKSHIP_PR_BASE"
+# The one base nobody chose. `classify` treats it differently from a NAMED base when it turns
+# out to equal the head: see the empty-range guard there.
+DEFAULT_BASE_SOURCE = "merge-base with origin/main"
 
 
 def default_base(root, head, environ=None):
@@ -557,7 +581,7 @@ def default_base(root, head, environ=None):
     base = proc.stdout.decode("utf-8", "replace").strip()
     if proc.returncode != 0 or not base:
         raise InputError("origin/main not resolvable — pass --base")
-    return base, "merge-base with origin/main"
+    return base, DEFAULT_BASE_SOURCE
 
 
 def main(argv=None):
@@ -940,10 +964,10 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         check("and does not print the ref text as if it were a sha",
               "base main (" in text, False)
 
-        # An empty range is not a clean range.
+        # An empty range is not a clean range — when somebody NAMED the base.
         code, text = _run(["--root", str(root), "--base", "main", "--head", "main",
                            "--head-branch", "main"])
-        check("a base that resolves to the head exits 2", code, 2)
+        check("a NAMED base that resolves to the head exits 2", code, 2)
         check("and says nothing to compare", "the named base is the head" in text, True)
 
         # The regex half of CONTENT: shipped_pages.json has never heard of this path.
@@ -1058,6 +1082,25 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         check("(m) an unresolvable base exits 2", code, 2)
         check("(m) says why", "origin/main not resolvable" in text, True)
 
+        # ...but the DEFAULT base equalling the head is the opposite finding, and failing it
+        # reddened verify.sh on every checkout that owns no commits of its own — including a
+        # clean `main`, the checkout CLAUDE.md tells people to run a failing gate on. The
+        # range is empty because the branch wrote nothing, which hides nothing.
+        # (This ref must be created AFTER case (m), which asserts origin/main is absent.)
+        _fixture_git(root, ["update-ref", "refs/remotes/origin/main", "main"])
+        with _env(CLERKSHIP_PR_BASE=None):
+            code, text = _run(["--root", str(root), "--head", "main", "--head-branch", "main"])
+        check("the DEFAULT base equalling the head exits 0", code, 0)
+        check("and says the branch owns no commits",
+              "is the head; this branch owns no commits" in text, True)
+        check("and names it as the default base", "(%s)" % DEFAULT_BASE_SOURCE in text, True)
+        # The named doors are unaffected: same repo, same empty range, named base → 2.
+        with _env(CLERKSHIP_PR_BASE="main"):
+            code, text = _run(["--root", str(root), "--head", "main", "--head-branch", "main"])
+        check("CLERKSHIP_PR_BASE naming that same commit still exits 2", code, 2)
+        check("and still says the named base is the head",
+              "the named base is the head" in text, True)
+
         # The other exit-2 doors.
         _branch(root, "feature-unparsable")
         (root / LEDGER_REL).write_text("{not json", encoding="utf-8")
@@ -1131,6 +1174,15 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         check("is_content honours the exclusion",
               is_content("13_Faculty_Resources/_automation/x.py", set()), False)
         check("is_content honours the regex", is_content("99_Archive/a/b.md", set()), True)
+        # The two entry points must agree about what an unlabelled base is called: the
+        # header read differently depending on which one produced it, and `baseSource` now
+        # also decides whether an empty range is exit 0 or exit 2.
+        check("classify's baseSource default is the CLI's label",
+              classify(root, "main", "feature-content", "feature-content")["baseSource"],
+              "from --base")
+        check("and is not the default-base label",
+              classify(root, "main", "feature-content",
+                       "feature-content")["baseSource"] == DEFAULT_BASE_SOURCE, False)
         check("is_governance excludes reviewed.json", is_governance(LEDGER_REL), False)
         check("is_governance covers .github/workflows",
               is_governance(".github/workflows/ci.yml"), True)
