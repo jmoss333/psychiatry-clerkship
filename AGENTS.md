@@ -136,6 +136,19 @@ cd tests/smoke && npm ci && npx playwright test
   (two question-bank items that teach different steps for the same scenario),
   `check_instrument_links.py` (dev-only; the recorded instrument routes still resolve —
   deliberately not in CI, external links are flaky and the build egress blocks those hosts).
+  **Currency guards (2026-09-18)** — the world changing under a claim that is still internally
+  perfect: `check_source_integrity.py` (PubMed `CommentsCorrections` + Crossref `updated-by` for
+  every source with a PMID/DOI — retraction, erratum, expression of concern, newer version — but
+  ONLY what `governance.correctionStatus` / `supersededBy` do not already record; P0 is a
+  retraction of a source that licenses a claim; run it from a machine with real egress, a
+  datacenter runner is bot-blocked by some hosts; it never edits the registry — recording a
+  correction is faculty's), `check_review_cadence.py` (NAMES the sources `lastReviewed` +
+  `reviewCadence` make due, overdue or due within 30/90 days — `monthly_review.py` only counts
+  them; same month-end clamping, pinned by the self-test), and `check_icd_codes.py` (every
+  dotted F-code in shipped content exists in the ICD-10-CM set in force on the date it is read,
+  from committed tables under `bin/data/`; `retiring` fires BEFORE the October 1 boundary).
+  All three state what they examined beside the verdict, exit 2 rather than pass over a
+  partial set, and only the self-tests (plus the offline ICD scan) run in `verify.sh`.
 - **Egress is an allowlist, and which side of it a host falls on decides which tasks are possible
   today.** `bin/probe_egress.py` reports that in the repo's own terms — not "itunes.apple.com is
   unreachable" but "the podcast canonical backfill cannot run here". The SessionStart hook prints
