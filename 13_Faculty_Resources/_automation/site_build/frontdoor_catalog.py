@@ -104,12 +104,18 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
     if not isinstance(config, dict):
         raise ValueError("curriculum.siteLibrary.%s must be an object" % site)
 
+    essentials = curriculum.get("essentials")
+    selection = essentials.get(site) if isinstance(essentials, dict) else None
+    if not isinstance(selection, list) or not selection:
+        raise ValueError("curriculum.essentials.%s must be a non-empty list" % site)
+
     projected = copy.deepcopy(curriculum)
     projected.pop("learningPaths", None)
     projected.pop("roles", None)
     projected.pop("siteLibrary", None)
     projected["path"] = {"id": expected_id, "weekCount": len(weeks)}
     projected["weeks"] = copy.deepcopy(weeks)
+    projected["essentials"] = copy.deepcopy(selection)
     columns = projected.get("libraryColumns")
     if not isinstance(columns, list):
         raise ValueError("curriculum.libraryColumns must be a list")

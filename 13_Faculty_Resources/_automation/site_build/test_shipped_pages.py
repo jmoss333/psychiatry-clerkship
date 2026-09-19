@@ -98,6 +98,28 @@ class DeriveTests(unittest.TestCase):
             self.assertEqual(pages[slug]["sites"], ["ms3", "res"], slug)
             self.assertEqual(pages[slug]["producer"], "site_manifest", slug)
 
+    def test_a_resident_override_is_recorded_as_an_extra_source(self):
+        """The override's own file is an attested input of the shared slug.
+
+        attestation_hash.sources_for_slug takes the UNION of `source` and
+        `extraSources`, so an edit to the resident file must drift the shared page's
+        attestation. Dropping the override on the floor would leave the text the
+        resident site actually serves outside every hash that claims to cover it.
+        """
+        pages = {page["slug"]: page for page in shipped_pages.derive(ROOT)["pages"]}
+        self.assertEqual(
+            pages["welcome.md"]["extraSources"],
+            ["14_Tracks/Resident/resident_welcome.md"],
+        )
+        self.assertEqual(
+            pages["cotw_index.md"]["extraSources"],
+            ["08_Cases_and_Simulation/case-of-the-week/index_resident.md"],
+        )
+        self.assertEqual(
+            sorted(slug for slug, page in pages.items() if "extraSources" in page),
+            ["cotw_index.md", "welcome.md"],
+        )
+
     def test_synthetic_root_derives_the_expected_shape(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = synthetic_root(tmp)

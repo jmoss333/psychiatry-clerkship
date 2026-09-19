@@ -130,6 +130,56 @@ print(J.measure_red_team())`);
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
+test('a page whose text changed after review is owed a re-attestation, not settled', () => {
+  // Root cause 2 of the 2026-09-16 breach: a reviewed row named a person and a date and
+  // never the text. Once it names the text, an edit to that text is visible — and it is
+  // the author's work, because only the author can re-attest. A row that still read as
+  // settled would hide exactly the pages the breach rewrote.
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'wnj-'));
+  fs.mkdirSync(path.join(tmp, 'docs'), { recursive: true });
+  fs.writeFileSync(path.join(tmp, 'docs', 'ward.md'), '# Ward\n\nedited AFTER the review\n');
+  fs.writeFileSync(path.join(tmp, 'shipped.json'), JSON.stringify({
+    version: 1,
+    pages: [{
+      slug: 'ward.md', kind: 'page', sites: ['ms3'], title: 'Ward',
+      source: 'docs/ward.md', producer: 'site_manifest',
+    }],
+  }));
+  fs.writeFileSync(path.join(tmp, 'reviewed.json'), JSON.stringify({
+    'ward.md': {
+      status: 'reviewed', at: '2026-07-13', by: 'Historical Reviewer, MD',
+      risk: { kind: 'clinical', level: 'high' },
+      contentHash: '0'.repeat(40),   // bound to text this file no longer contains
+    },
+  }));
+  fs.writeFileSync(path.join(tmp, 'topic_meta.json'), '{}');
+  const out = py(`
+import pathlib
+J.ROOT = pathlib.Path(${JSON.stringify(tmp)})
+J.SHIPPED = J.ROOT / "shipped.json"
+J.REVIEWED = J.ROOT / "reviewed.json"
+J.TOPIC_META = J.ROOT / "topic_meta.json"
+print(J.describe_reattestation())
+print(J.measure_reattestation())
+print(J.measure_attestation())`);
+  const [detail, reattest, attestation] = out.split('\n');
+  assert.equal(detail, 'Re-attest 1 page whose inputs changed since review: ward.md');
+  assert.equal(reattest, '(1, 1)');
+  assert.equal(attestation, '(1, 1)', 'a drifted row must not count as settled');
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('a long drift list names the first few and says how many more', () => {
+  // A 94-slug paragraph is a line nobody reads, and an uncapped one is what today's
+  // backlog would render. The count stays exact; only the naming is capped.
+  const out = py(`
+J.stale_attestations = lambda: ["p%02d.md" % i for i in range(12)]
+print(J.describe_reattestation())`);
+  assert.match(out, /^Re-attest 12 pages whose inputs changed since review: p00\.md, p01\.md/);
+  assert.match(out, / … and 4 more$/);
+  assert.ok(!out.includes('p08.md'), 'the capped tail must not be named');
+});
+
 test('every row carries a measurement, a unit, a rationale and a way to act', () => {
   const out = py(`
 bad = [r["key"] for r in J.ROWS

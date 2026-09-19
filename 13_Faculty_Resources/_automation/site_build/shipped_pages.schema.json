@@ -55,6 +55,13 @@
           "minLength": 1,
           "description": "Repo-relative source path. For a page both sites ship where the resident build overwrites it from its own source (welcome.md, cotw_index.md), this is the shared/MS3 source."
         },
+        "extraSources": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" },
+          "description": "Further repo-relative source paths the same slug ships from — today only a resident override of a page both sites ship (welcome.md, cotw_index.md). Absent on a page with one source. attestation_hash.sources_for_slug hashes `source` and these together, so an edit to either drifts the page's attestation. Unique: a path listed twice would hash twice into the manifest and change the digest without changing any text — derive() appends only a source it does not already carry (shipped_pages.py), and uniqueItems makes that convention a gate."
+        },
         "producer": {
           "enum": [
             "site_manifest",

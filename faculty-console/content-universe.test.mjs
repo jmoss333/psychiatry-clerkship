@@ -181,6 +181,27 @@ test('shipped_pages.json agrees with the producers it claims to be derived from'
   for (const [slug, want] of expected) assert.deepEqual(actual.get(slug), want, slug);
 });
 
+test('a resident override is recorded on the shared page as extraSources', () => {
+  // The parity check above compares a five-field projection, which drops this key —
+  // so the key needs an assertion against the raw file. attestation_hash's
+  // sources_for_slug reads source + extraSources, and that union is what makes an edit
+  // to the resident file drift the shared slug's attestation instead of going unnoticed.
+  const bySlug = new Map(SHIPPED.pages.map(page => [page.slug, page]));
+  assert.deepEqual(
+    bySlug.get('welcome.md').extraSources,
+    ['14_Tracks/Resident/resident_welcome.md'],
+  );
+  assert.deepEqual(
+    bySlug.get('cotw_index.md').extraSources,
+    ['08_Cases_and_Simulation/case-of-the-week/index_resident.md'],
+  );
+  assert.deepEqual(
+    SHIPPED.pages.filter(page => page.extraSources !== undefined).map(page => page.slug).sort(),
+    ['cotw_index.md', 'welcome.md'],
+    'only the two resident overrides reuse a slug the manifest already ships',
+  );
+});
+
 test('the derived slug is byte-identical to cotw_slug() in the shared Python helper', () => {
   const helper = read('13_Faculty_Resources/_automation/site_build/cotw_slug.py');
   assert.ok(

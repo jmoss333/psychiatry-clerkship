@@ -230,6 +230,28 @@
       ]
     }
   ],
+  "essentials": {
+    "_note": "The default Library view. Everything here MUST also be placed in libraryColumns (or that site's siteLibrary additions): Essentials is a view of the Library, never a second catalogue. Order is display order.",
+    "ms3": [
+      {"name": "Start here",        "accent": "topic",  "refs": ["welcome.md", "doc_oral.md"]},
+      {"name": "Pocket cards",      "accent": "safety", "refs": ["pg_interview.md", "pg_suicide.md", "pg_formulation.md"]},
+      {"name": "Acute & safety",    "accent": "safety", "refs": ["agitation.md", "delirium.md", "catatonia.md", "suicide.md", "exp_consult.md"]},
+      {"name": "Core diagnoses",    "accent": "topic",  "refs": ["ddx.md", "t_mood.md", "t_psychosis.md", "t_sud.md", "t_personality.md", "t_anxiety.md"]},
+      {"name": "Medications",       "accent": "topic",  "refs": ["psychopharm_primer.md", "med_monitoring.md"]},
+      {"name": "Family & discharge","accent": "topic",  "refs": ["exp_family.md", "collateral_workflow.md", "brief_psychotherapy.md"]},
+      {"name": "Exam",              "accent": "topic",  "refs": ["shelf.md", "rapid_review.md"]},
+      {"name": "Tools",             "accent": "tool",   "refs": ["mse.html", "withdrawal.html", "capacity.html", "oral.html", "question-bank-practice.html", "review.html", "sp-interview.html"]}
+    ],
+    "resident": [
+      {"name": "Start here",        "accent": "topic",  "refs": ["rotation.md", "doc_oral.md"]},
+      {"name": "Pocket cards",      "accent": "safety", "refs": ["pg_interview.md", "pg_suicide.md", "cl_reference.md"]},
+      {"name": "Acute & safety",    "accent": "safety", "refs": ["agitation.md", "delirium.md", "catatonia.md", "suicide.md", "exp_consult.md", "violence.md", "toxidromes.md", "systems_medlegal.md"]},
+      {"name": "Diagnosis & meds",  "accent": "topic",  "refs": ["ddx.md", "t_mood.md", "t_psychosis.md", "t_sud.md", "t_personality.md", "psychopharm_primer.md", "adv_psychopharm.md", "med_monitoring.md"]},
+      {"name": "Systems & family",  "accent": "topic",  "refs": ["exp_family.md", "collateral_workflow.md", "supervision_teaching.md"]},
+      {"name": "Scholarship",       "accent": "topic",  "refs": ["case_formulation.md", "landmark_trials.md"]},
+      {"name": "Tools",             "accent": "tool",   "refs": ["mse.html", "withdrawal.html", "capacity.html", "violence.html", "oral.html", "rp-agitation.html", "rp-post-event-huddle.html", "question-bank-practice.html", "review.html"]}
+    ]
+  },
   "libraryExclude": [
     { "ref": "feedback.html", "reason": "a feedback form, not library content — reachable from the header" },
     { "ref": "rotation-curator.html", "reason": "faculty curation utility; not learner Library content" },

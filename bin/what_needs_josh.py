@@ -36,15 +36,44 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SHIPPED = ROOT / "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
 REVIEWED = ROOT / "13_Faculty_Resources/reviewed.json"
+TOPIC_META = ROOT / "topic_meta.json"
 RIGHTS = ROOT / "instrument_rights.json"
 PACK = ROOT / "_prototypes/sp-interview/sp-interview.pack.json"
 RECEIPT = ROOT / "13_Faculty_Resources/_automation/maintenance/receipts/sp-red-team.json"
 
+sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
+
+from attestation_hash import ledger_hash_report  # noqa: E402
+
 UNKNOWN = "unknown"
+
+# How many items a row's detail line names before it says "and N more".
+NAMED_LIMIT = 8
 
 
 # ------------------------------------------------------------------ measurements
 # Each returns (remaining, total). Raising is fine -- the caller reports `unknown`.
+
+def _hash_report():
+    """Every reviewed row classified against today's tree.
+
+    The three inputs are read as data and the classification is attestation_hash's,
+    never re-derived here.
+    """
+    shipped = json.loads(SHIPPED.read_text(encoding="utf-8"))
+    ledger = json.loads(REVIEWED.read_text(encoding="utf-8"))
+    topic_meta = json.loads(TOPIC_META.read_text(encoding="utf-8"))
+    return ledger_hash_report(ROOT, ledger, shipped, topic_meta)
+
+
+def stale_attestations():
+    """Reviewed slugs whose inputs no longer hash to the recorded contentHash.
+
+    A drifted row is the author's work by construction: the console is the only writer
+    of a hash, and re-attesting is the human act.
+    """
+    return sorted(_hash_report()["stale"])
+
 
 def measure_attestation():
     """Shipped pages with nobody's name against them.
@@ -52,12 +81,44 @@ def measure_attestation():
     Reads the DERIVED listing (ADR-002), never the producers. Only the author can
     move this: #645 had to revert 23 attestations an agent signed, and
     check_attestation_authorship.py now gates the signature.
+
+    A reviewed row whose text has since changed is NOT settled. Before contentHash
+    existed the row stayed `reviewed` through any rewrite, which is precisely how
+    #640/#672 rewrote attested pages and left every badge reading green.
     """
     slugs = {p["slug"] for p in json.loads(SHIPPED.read_text(encoding="utf-8"))["pages"]}
     reviewed = json.loads(REVIEWED.read_text(encoding="utf-8"))
     settled = {slug for slug, row in reviewed.items()
                if (row or {}).get("status") not in (None, "pending")}
+    settled -= set(stale_attestations())
     return len(slugs - settled), len(slugs)
+
+
+def measure_reattestation():
+    """Attestations bound to text the repository no longer contains.
+
+    The total is every reviewed row this can actually check -- bound plus drifted --
+    not the whole ledger: a row nothing ships, or one whose source is missing, is a
+    different problem and validate_attestation_consistency.py fails on it.
+    """
+    report = _hash_report()
+    return len(report["stale"]), len(report["bound"]) + len(report["stale"])
+
+
+def describe_reattestation():
+    """The drifted pages, named. A count alone cannot be acted on.
+
+    Capped at NAMED_LIMIT: today's backlog is 94 slugs, and a paragraph-long line is a
+    line nobody reads. The full list is `python3 bin/check_attestation_hashes.py`.
+    """
+    stale = stale_attestations()
+    noun = "page" if len(stale) == 1 else "pages"
+    rest = len(stale) - NAMED_LIMIT
+    named = ", ".join(stale[:NAMED_LIMIT])
+    if rest > 0:
+        named += " … and %d more" % rest
+    return "Re-attest %d %s whose inputs changed since review: %s" % (
+        len(stale), noun, named)
 
 
 def measure_red_team():
@@ -132,11 +193,28 @@ ROWS = [
         "title": "Put your name to the pages that ship without it",
         "needs": None,
         "measure": measure_attestation,
-        "unit": "shipped pages with no faculty review recorded",
-        "why": "These are live in front of learners with nobody's name against them. "
-               "An agent cannot do this and must not: #645 reverted 23 attestations a "
-               "bot signed, and the authorship gate now refuses them.",
+        "unit": "shipped pages with no faculty review of their current text",
+        "why": "These are live in front of learners with nobody's name against what they "
+               "say TODAY -- never reviewed, or reviewed and since rewritten. An agent "
+               "cannot do this and must not: #645 reverted 23 attestations a bot signed, "
+               "and the authorship gate now refuses them. The `re-attest` row is the "
+               "second group on its own.",
         "do": "open the faculty console and work the queue",
+    },
+    {
+        "key": "re-attest",
+        "title": "Re-attest the pages whose text changed after you signed them",
+        "needs": None,
+        "measure": measure_reattestation,
+        "detail": describe_reattestation,
+        "unit": "attestations bound to text the repository no longer contains",
+        "why": "Until 2026-09 a reviewed row named a person, a date and a risk level and "
+               "never the text, so #640/#672 could rewrite attested pages and every badge "
+               "went on reading green. Each row now carries the digest of what was "
+               "reviewed; these no longer match. Only you can re-attest, and an agent "
+               "must not: check_attestation_authorship.py refuses the signature.",
+        "do": "open the faculty console and re-attest each; "
+              "python3 bin/check_attestation_hashes.py --explain <slug> names the inputs",
     },
     {
         "key": "red-team",
@@ -198,6 +276,17 @@ def evaluate(row):
     return "waiting", remaining, total, ""
 
 
+def describe(row):
+    """A waiting row's specific items, or "" when it names none / cannot name them."""
+    describer = row.get("detail")
+    if not callable(describer):
+        return ""
+    try:
+        return describer()
+    except Exception:                             # noqa: BLE001 - a detail is not a gate
+        return ""
+
+
 def render(rows, show_done):
     out = []
     waiting = [r for r in rows if r["status"] == "waiting"]
@@ -206,6 +295,8 @@ def render(rows, show_done):
         out.append("\n── WAITING ON YOU ──")
         for r in sorted(waiting, key=lambda r: -r["remaining"]):
             out.append("  %-18s %s/%s %s" % (r["key"], r["remaining"], r["total"], r["unit"]))
+            if r.get("detail"):
+                out.append("        %s" % r["detail"])
             out.append("        → %s" % r["do"])
     if unknown:
         out.append("\n── COULD NOT MEASURE ──")
@@ -233,8 +324,12 @@ def main(argv=None):
     rows = []
     for row in ROWS:
         status, remaining, total, note = evaluate(row)
-        rows.append({**{k: v for k, v in row.items() if k != "measure"},
-                     "status": status, "remaining": remaining, "total": total, "note": note})
+        rows.append({**{k: v for k, v in row.items() if k not in ("measure", "detail")},
+                     "status": status, "remaining": remaining, "total": total, "note": note,
+                     # A row may name its specific items. Computed only when the row is
+                     # waiting, and from the SAME inputs the measurement just read, so a
+                     # detail cannot contradict the count it sits under.
+                     "detail": describe(row) if status == "waiting" else ""})
 
     if args.json:
         print(json.dumps(rows, indent=2))

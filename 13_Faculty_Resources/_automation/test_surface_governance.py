@@ -443,6 +443,45 @@ class LedgerValidationTests(unittest.TestCase):
             )
             self.assertNotIn("2026-08-14", message)
 
+    def test_content_hash_is_a_40_hex_blob_sha_and_not_a_64_hex_digest(self) -> None:
+        """contentHash is `git hash-object` output -- sha1, 40 hex -- not a sha256.
+
+        The 64-hex pattern predates any implementation of the digest;
+        attestation_hash.blob_sha emits 40. Leaving the old pattern in place would let
+        a value no tool in the repository can produce sit in the ledger and validate,
+        which is a binding nothing can ever check. claimsHash and evidenceHash are
+        unrelated sha256 digests and stay at 64 -- asserted here so a blanket
+        search-and-replace across the three cannot pass unnoticed.
+        """
+        valid = reviewed_entry()
+        valid.update(
+            {"contentHash": "a" * 40, "claimsHash": "b" * 64, "evidenceHash": "c" * 64}
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_ledger(root, {"synthetic.md": valid})
+
+            loaded = governance.load_validated_ledger(root)
+
+        self.assertEqual(loaded["synthetic.md"]["contentHash"], "a" * 40)
+        self.assertEqual(loaded["synthetic.md"]["claimsHash"], "b" * 64)
+        self.assertEqual(loaded["synthetic.md"]["evidenceHash"], "c" * 64)
+
+        stale_width = reviewed_entry()
+        stale_width["contentHash"] = "a" * 64
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_ledger(root, {"synthetic.md": stale_width})
+
+            with self.assertRaises(governance.SurfaceGovernanceError) as raised:
+                governance.load_validated_ledger(root)
+
+        message = str(raised.exception)
+        self.assertEqual(
+            message, "reviewed.json: synthetic.md invalid at /synthetic.md/contentHash"
+        )
+        self.assertNotIn("a" * 64, message)
+
 
 class SiteDocumentTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -462,7 +501,7 @@ class SiteDocumentTests(unittest.TestCase):
         reviewed.update(
             {
                 "note": "Internal faculty note — never shipped",
-                "contentHash": "a" * 64,
+                "contentHash": "a" * 40,
                 "claimsHash": "b" * 64,
                 "evidenceHash": "c" * 64,
                 "evidenceThrough": "2026-07-01",
@@ -535,7 +574,7 @@ class SiteDocumentTests(unittest.TestCase):
         )
         serialized = json.dumps(document)
         self.assertNotIn("Internal faculty note", serialized)
-        self.assertNotIn("a" * 64, serialized)
+        self.assertNotIn("a" * 40, serialized)
         self.assertNotIn("contentHash", serialized)
         self.assertNotIn("claimsHash", serialized)
         self.assertNotIn("evidenceHash", serialized)
@@ -1028,7 +1067,7 @@ class BuildContractTests(unittest.TestCase):
         reviewed.update(
             {
                 "note": "Internal faculty note — never shipped",
-                "contentHash": "a" * 64,
+                "contentHash": "a" * 40,
                 "claimsHash": "b" * 64,
                 "evidenceHash": "c" * 64,
                 "evidenceThrough": "2026-07-01",
@@ -1046,7 +1085,7 @@ class BuildContractTests(unittest.TestCase):
             raw = output.read_text(encoding="utf-8")
 
         self.assertNotIn("Internal faculty note", raw)
-        self.assertNotIn("a" * 64, raw)
+        self.assertNotIn("a" * 40, raw)
         self.assertNotIn("contentHash", raw)
         self.assertNotIn("claimsHash", raw)
         self.assertNotIn("evidenceHash", raw)
