@@ -225,3 +225,30 @@ test('surveillance credit: the real run reports what evidence it read, and credi
     }
   }
 });
+
+test('resolution records: newest report row, dismissed.json and a CLOSED issue each retire a change finding', () => {
+  const out = JSON.parse(py(`
+import json, tempfile
+from pathlib import Path
+with tempfile.TemporaryDirectory() as td:
+    hist = Path(td) / "history"; (hist / "baselines").mkdir(parents=True)
+    (hist.parent / "config").mkdir()
+    (hist / "baselines" / "a.json").write_text(json.dumps({"checked_at": "2026-09-01T06:00:00+00:00"}))
+    rows = lambda st: [{"source_id": s, "fingerprint": f"{s}::modified::x", "change_type": "modified",
+                        "status": st, "severity": "P1", "detected_at": "2026-08-31T00:00:00+00:00"}
+                       for s in ("byrow", "bydismiss", "byissue", "pending")]
+    (hist / "guideline_delta_2026-08-31.json").write_text(json.dumps(rows("issue-open")))
+    later = [r for r in rows("actioned") if r["source_id"] == "byrow"]
+    (hist / "guideline_delta_2026-09-01.json").write_text(json.dumps(later))
+    (hist.parent / "config" / "dismissed.json").write_text(json.dumps({"dismissed": {"bydismiss::modified::x": {"reason": "r"}}}))
+    (hist / "issue_snapshot.json").write_text(json.dumps({"capturedAt": "2026-09-19T00:00:00+00:00", "issues": [
+        {"number": 1, "state": "CLOSED", "fingerprint": "byissue::modified::x"},
+        {"number": 2, "state": "OPEN", "fingerprint": "pending::modified::x"}]}))
+    m = C.load_surveillance(hist)
+    print(json.dumps({"pending": sorted(k for k in m if k != "_meta" and m[k]["openChanges"]), "meta": m["_meta"]}))`));
+  assert.deepEqual(out.pending, ['pending']);
+  assert.equal(out.meta.resolvedByStatus, 1);
+  assert.equal(out.meta.resolvedByDismissal, 1);
+  assert.equal(out.meta.resolvedByClosedIssue, 1);
+  assert.equal(out.meta.issueSnapshotCapturedAt, '2026-09-19T00:00:00+00:00');
+});

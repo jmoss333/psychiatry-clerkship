@@ -20,6 +20,7 @@ sys.path.insert(0, str(BIN))
 import build_status
 import lib_surveillance as L
 import run_citation_check
+import run_guideline_surv
 import run_link_monitor
 import sync_findings
 
@@ -1387,3 +1388,53 @@ class DispositionTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+MINIMAL_PDF = (
+    b"%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n"
+    b"2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
+    b"3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\n"
+    b"xref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000052 00000 n \n"
+    b"0000000101 00000 n \ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n160\n%%EOF\n"
+)
+
+
+class GuidelinePdfSourceTests(unittest.TestCase):
+    """A `type: pdf` guideline source is read directly, not through the page crawler.
+
+    The crawler returned 0 characters for the SPRAVATO REMS overview on every run from
+    2026-07-04 to 2026-09-01, so the source raised a P1 "removed" alarm monthly and never
+    earned a baseline. These pin the contract of the direct path: non-PDF bytes are the
+    dead-scraper case (""), a text-less PDF still yields a REAL examination (a byte
+    signature that flips when the document is re-issued), and the dispatcher routes a pdf
+    source to fetch_pdf rather than to Apify.
+    """
+
+    def test_non_pdf_bytes_are_the_dead_scraper_case(self):
+        self.assertEqual(run_guideline_surv.pdf_text(b""), "")
+        self.assertEqual(run_guideline_surv.pdf_text(b"<html>not a pdf</html>"), "")
+
+    def test_textless_pdf_yields_a_byte_signature_not_silence(self):
+        out = run_guideline_surv.pdf_text(MINIMAL_PDF)
+        self.assertTrue(out.startswith("pdf-bytes sha256="), out)
+        self.assertIn("size=%d" % len(MINIMAL_PDF), out)
+        # a re-issued document is a different examination result
+        self.assertNotEqual(out, run_guideline_surv.pdf_text(MINIMAL_PDF + b"\n%tweak\n"))
+
+    def test_pdf_source_is_fetched_directly_not_via_apify(self):
+        calls = []
+        with mock.patch.object(run_guideline_surv, "fetch_pdf", lambda s: calls.append(("pdf", s["id"])) or "some text"), \
+             mock.patch.object(run_guideline_surv, "fetch_apify", lambda s, t: calls.append(("apify", s["id"])) or "some text"), \
+             mock.patch.object(run_guideline_surv.L, "load_registry", lambda: {"sources": [
+                 {"id": "p", "job": "guideline-surveillance", "type": "pdf", "name": "P", "url": "https://x/p.pdf"},
+                 {"id": "h", "job": "guideline-surveillance", "type": "html", "name": "H", "url": "https://x/h"},
+             ]}), \
+             mock.patch.dict("os.environ", {"APIFY_TOKEN": "t"}), \
+             tempfile.TemporaryDirectory() as tmp:
+            argv = ["run_guideline_surv.py", "--baseline-dir", str(Path(tmp) / "bl"),
+                    "--out", str(Path(tmp) / "f.json"), "--checked-out", str(Path(tmp) / "c.json")]
+            with mock.patch.object(sys, "argv", argv):
+                run_guideline_surv.main()
+            self.assertEqual(sorted(calls), [("apify", "h"), ("pdf", "p")])
+            self.assertEqual(json.loads((Path(tmp) / "c.json").read_text()), ["h", "p"])
+
