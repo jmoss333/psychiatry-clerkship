@@ -353,10 +353,12 @@ function fdToday(index, state){
   var dayName=FD_TODAY_DAYNAMES[new Date(nowMs).getDay()];
   var roleShort=st.role||'there';
   var period=hour<12?'Morning':(hour<18?'Afternoon':'Evening');
-  /* The trailing em dash is typographic lead-in to the line below, not content: a screen reader
-     announced "Evening, Core rotation, dash". Same treatment as the ✓ glyph in fdRow -- the
-     character stays exactly where it was and becomes decoration. */
-  var greeting=period+', '+fdEsc(roleShort)+' <span aria-hidden="true">—</span>';
+  /* No trailing em dash. The prototype's "Evening, Alex —" led into the line below with a dash
+     after a NAME; with a role label the same dash read as a truncated sentence ("Evening, Core
+     rotation —"), and at 375px it wrapped onto a line of its own (2026-09-18 critique). It had
+     already been made aria-hidden so a screen reader stopped announcing "dash"; now it is gone
+     for sighted readers too. The subhead below carries the week and the day. */
+  var greeting=period+', '+fdEsc(roleShort);
 
   var wk=(typeof st.week==='number'&&!isNaN(st.week))?fdFindWeek(idx, st.week):null;
   var hasWeek=!!wk;

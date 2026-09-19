@@ -122,19 +122,22 @@ test('the greeting varies by time of day, derived from state.nowMs', () => {
   const morning = new Date(2026, 7, 10, 9, 0, 0).getTime();
   const afternoon = new Date(2026, 7, 10, 14, 0, 0).getTime();
   const evening = new Date(2026, 7, 10, 20, 0, 0).getTime();
-  assert.match(F.fdToday(IDX, s({ nowMs: morning })), /Morning, there /);
-  assert.match(F.fdToday(IDX, s({ nowMs: afternoon })), /Afternoon, there /);
-  assert.match(F.fdToday(IDX, s({ nowMs: evening })), /Evening, there /);
+  assert.match(F.fdToday(IDX, s({ nowMs: morning })), /Morning, there<\/h1>/);
+  assert.match(F.fdToday(IDX, s({ nowMs: afternoon })), /Afternoon, there<\/h1>/);
+  assert.match(F.fdToday(IDX, s({ nowMs: evening })), /Evening, there<\/h1>/);
 });
 
 // ---- accessibility (Fresh Eyes Audit A2/A6) --------------------------------------------------
 
-test('the greeting’s trailing dash is decoration, not something a screen reader announces', () => {
-  // "Evening, Core rotation —" left a dangling em dash in the accessible name. Same treatment as
-  // the ✓ glyph in fdRow: the character stays visually and becomes aria-hidden.
+test('the greeting ends with the role, not a dangling dash', () => {
+  // "Evening, Core rotation —" first lost its dash from the accessible name (aria-hidden) and on
+  // 2026-09-19 lost it altogether: after a role label it read as a truncated sentence, and at
+  // 375px the dash wrapped onto a line of its own. The prototype's dash followed a NAME.
   const html = F.fdToday(IDX, s({}));
-  assert.match(html, /<span aria-hidden="true">—<\/span>/);
-  assert.doesNotMatch(html, /<h1 class="fd-today__h1">[^<]*—/);
+  const h1 = html.match(/<h1 class="fd-today__h1">([\s\S]*?)<\/h1>/);
+  assert.ok(h1, 'the greeting h1 renders');
+  assert.doesNotMatch(h1[1], /—|aria-hidden/, `no dash, decorative or otherwise: ${h1[1]}`);
+  assert.match(h1[1], /^(Morning|Afternoon|Evening), [^<]+$/);
 });
 
 test('each done-toggle carries its item title in the accessible name', () => {

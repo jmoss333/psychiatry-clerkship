@@ -798,6 +798,7 @@
 .fd-block__chips{display:flex;gap:var(--fd-space-4)}
 .fd-block__chip{
   min-width:64px;padding:8px 14px;border-radius:var(--fd-radius-pill);font:inherit;font-size:var(--fd-font-sm);font-weight:600;cursor:pointer;
+  white-space:nowrap; /* "10 min" once broke into two lines inside its pill at 375px, so the three chips were three shapes */
   border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);
 }
 .fd-block__chip:hover{border-color:var(--fd-line-hover)}
@@ -824,7 +825,7 @@
 .fd-block__doneline,.fd-block__empty{font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-mid);margin:0}
 @media (max-width:640px){
   .fd-block__head .fd-block__hint{text-align:left;flex-basis:100%}
-  .fd-block__chip{flex:1;min-height:44px}
+  .fd-block__chip{flex:1;min-height:44px;padding:var(--fd-space-4) var(--fd-space-5)}
   .fd-block__actions .fd-btn{min-height:44px}
 }
 
