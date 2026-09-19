@@ -734,31 +734,44 @@ class RepositoryProducerTests(unittest.TestCase):
         self.assertIn("ms3: 23 item(s)", result.stdout)
         self.assertIn("resident: 26 item(s)", result.stdout)
 
-    def test_rotation_curator_is_a_faculty_local_policy_tool_pending_re_attestation(
+    def test_rotation_curator_envelope_agrees_with_the_effective_ledger(
         self,
     ) -> None:
-        # Reviewed by Joshua Moss, MD in the faculty console on 2026-08-23; the attestation
-        # was stranded on attest/pending and landed 2026-08-27, and the source was verified
-        # unchanged between review and landing. It has changed SINCE, so under the
-        # contentHash rule the row is stale and the envelope says needs-review: the
-        # attestation describes text this file no longer carries. Both halves are asserted
-        # -- the drift itself and the envelope derived from it -- so this cannot pass
-        # because the wiring silently stopped working. Re-attesting the tool in the console
-        # rebinds its hash and flips both fields back; update this test in that change.
-        # The classification fields below are the ledger's risk record and the source's own
-        # marker, so they hold either way. The one diagnostic is the legacy-metadata
-        # warning, which never belonged to the curator.
+        # Reviewed by Joshua Moss, MD in the faculty console on 2026-08-23; the attestation was
+        # stranded on attest/pending and landed 2026-08-27, and the source was verified unchanged
+        # between review and landing. It has changed SINCE, so today the contentHash rule calls
+        # the row stale and the envelope says needs-review.
+        #
+        # WHAT THIS ASSERTS, and why it is not "the curator is stale". An earlier version pinned
+        # the drift itself, which made a LEGITIMATE re-attestation a guaranteed red -- in
+        # bin/verify.sh, which is the pre-push hook, and in ci.yml. A gate that fires when the
+        # owner does the very work the gate exists to prompt is worse than no gate. So the
+        # assertion is the INVARIANT instead: the envelope agrees with report["stale"], whichever
+        # regime the tree is in. It still goes red if build_governance_document reverts to
+        # load_validated_ledger, because then a stale slug would keep reading `reviewed` here.
+        #
+        # The classification fields are the ledger's risk record and the source's own marker, so
+        # they hold either way. The one diagnostic is the legacy-metadata warning, which never
+        # belonged to the curator.
         diagnostics, documents = governance.validate_repository(ROOT)
         _ledger, report = governance.load_effective_ledger(ROOT)
 
-        self.assertIn("rotation-curator.html", report["stale"])
+        drifted = "rotation-curator.html" in report["stale"]
+        expected_review = "needs-review" if drifted else "reviewed"
+        expected_attestation = "needs-attestation" if drifted else "faculty-attested"
         self.assertEqual(len(diagnostics), 1)
         for site in ("ms3", "resident"):
             items = {item["id"]: item for item in documents[site]["items"]}
             curator = items["tools/rotation-curator"]
             self.assertEqual(curator["audiences"], ["faculty"])
-            self.assertEqual(curator["reviewStatus"], "needs-review")
-            self.assertEqual(curator["attestationStatus"], "needs-attestation")
+            self.assertEqual(
+                curator["reviewStatus"],
+                expected_review,
+                f"{site}: rotation-curator.html is "
+                f"{'stale' if drifted else 'bound'} in the effective ledger but its "
+                f"envelope reads {curator['reviewStatus']}",
+            )
+            self.assertEqual(curator["attestationStatus"], expected_attestation)
             self.assertEqual(curator["reviewCategory"], "local-policy")
             self.assertEqual(curator["safetySeverity"], "moderate")
             self.assertEqual(curator["clinicalClaim"], False)

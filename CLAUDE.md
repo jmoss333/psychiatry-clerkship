@@ -362,9 +362,15 @@ cd tests/smoke && npm ci && npx playwright test
   `gate: review` while the count is above zero, which routes one maintenance issue naming the
   count and the first five slugs. The demotion **warns, it never unplaces** — a drifted page stays
   in nav and in the search index, because an unreachable protocol at 2am is worse than a warned
-  one; `faculty-console/check_pending_visible.mjs` pins that. Ordering is the part no unit test
-  can see, so `tests/attestation-projection-build.test.mjs` pins it against `_build/` (a
-  local-only contract: `node --test` runs before both builds, so CI never reaches it). One knock-on
+  one. Both halves that no unit test can see — placement, and the ORDER the built `topic_meta`
+  demotion runs in relative to `cotw_meta.inject` — are pinned by
+  `tests/attestation-projection-build.test.mjs` against `_build/` (a local-only contract:
+  `node --test` runs before both builds, so CI never reaches it). Not by
+  `faculty-console/check_pending_visible.mjs`: that reads the **source** ledger, where a drifted
+  row still says `reviewed`, and never opens `nav.json` or `search-index.json` at all. The search
+  index legitimately carries fewer slugs than nav (the week pages and two tools are never
+  indexed), and that omission is governance-independent, so the test asserts nav placement and
+  the embedded pending badge rather than search membership. One knock-on
   to expect: `check-static-site.mjs` §4a2 counts only pages the built `governance.json` calls
   `reviewed` toward crosswalk coverage, so drift surfaces there as **soft** `blueprint gap:`
   findings — the §9 ratchet was raised 0 → 6 per site for exactly that, and each re-attestation

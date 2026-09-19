@@ -16,7 +16,11 @@
 //   2. a page the ledger still calls `reviewed` is not demoted in the built topic_meta;
 //   3. the inverse -- no block is demoted relative to the SOURCE topic_meta.json unless this
 //      site's governance says that page drifted;
-//   4. no stored contentHash reaches any built artifact. The ledger's hashes are governance
+//   4. a drifted page is STILL PLACED -- every stale slug is in the built nav.json, and every
+//      stale slug that nav.json or search-index.json carries has `governance.status: pending`
+//      embedded in its row (the badge). A demotion warns; it must never unplace a page, because
+//      an unreachable protocol at 2am is worse than a warned one;
+//   5. no stored contentHash reaches any built artifact. The ledger's hashes are governance
 //      evidence, not learner-facing data; a hash in the served tree would let anyone recompute
 //      which pages are bound without the console.
 //
@@ -40,15 +44,28 @@ const SITES = ['ms3', 'res'];
 // staleBuildReason(): a typo would make the freshness check vacuously "fresh" and retire this
 // contract silently. reviewed.json and topic_meta.json decide WHICH pages drift;
 // attestation_hash.py + surface_governance.py decide what drift means; the two build scripts
-// decide where the demotion lands relative to cotw_meta.inject().
+// decide where the demotion lands relative to cotw_meta.inject(); cotw_meta.py and
+// cotw_registry.json ARE the other half of that ordering (they write the blocks the demotion
+// must run after, and one of them is why assertion 2 has an exclusion at all); and
+// validate_tool_governance.py produces the tool-governance.json assertion 5 searches.
+//
+// Page SOURCES are deliberately NOT declared, and that is not an oversight. Every assertion
+// here is built-vs-built or built-vs-source-topic_meta: none reads a page's markdown or HTML.
+// Editing a page changes which slugs drift, but the build recomputes that from reviewed.json
+// and the tree on the next run, and reviewed.json IS declared -- whereas declaring all ~128
+// sources would mean a single content edit skipped this suite until a full rebuild, which is
+// the freshness guard erring permissive in the expensive direction.
 const BUILD_INPUTS = [
   join(root, '13_Faculty_Resources/reviewed.json'),
   join(root, 'topic_meta.json'),
   join(root, '13_Faculty_Resources/_automation/site_build/shipped_pages.json'),
   join(root, '13_Faculty_Resources/_automation/site_build/build_deploy.py'),
   join(root, '13_Faculty_Resources/_automation/site_build/resident_section.py'),
+  join(root, '13_Faculty_Resources/_automation/site_build/cotw_meta.py'),
+  join(root, '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json'),
   join(root, '13_Faculty_Resources/_automation/surface_governance.py'),
   join(root, '13_Faculty_Resources/_automation/attestation_hash.py'),
+  join(root, '13_Faculty_Resources/_automation/validate_tool_governance.py'),
 ];
 
 // The shape of attestation_hash.STALE_REASON. Matched rather than compared so the date varies,
@@ -80,14 +97,26 @@ const facultyReview = (meta, slug) => {
 
 function built(site) {
   const dir = join(root, '_build', site);
+  const nav = readJson(join(dir, 'nav.json'));
+  const search = readJson(join(dir, 'search-index.json'));
   return {
     governance: readJson(join(dir, 'governance.json')).items,
     topicMeta: readJson(join(dir, 'topic_meta.json')),
+    // nav.json is [{section, items:[{f, governance}]}]; search-index.json carries the same row
+    // shape under `docs`. Both embed the governance triplet -- that embedded copy IS the badge.
+    navRows: nav.flatMap((section) => section.items || []),
+    searchRows: search.docs || [],
   };
 }
 
 // Run `body(site, built)` for every site whose _build/ is current; skip the sites that are not.
 // Only the whole test skips when no site could be read, so one fresh tree still enforces this.
+//
+// Every per-site skip is ALWAYS reported, not just when nothing could be checked: a run where
+// ms3 is fresh and res is stale would otherwise print a bare `pass` and say nothing about the
+// half it never opened -- a check reporting success over a set smaller than the one it claims
+// to cover (docs/SILENT_SHRINK_CHECKLIST.md, the shape this whole suite exists for).
+// Returns how many sites ran, so a caller can decide whether its own set was empty or unread.
 function forEachFreshSite(t, body) {
   const skipped = [];
   let checked = 0;
@@ -97,7 +126,9 @@ function forEachFreshSite(t, body) {
     body(site, built(site));
     checked += 1;
   }
+  if (skipped.length) t.diagnostic(`NOT CHECKED — ${skipped.join(' | ')}`);
   if (checked === 0) t.skip(skipped.join(' | '));
+  return checked;
 }
 
 test('a drifted page renders pending in governance.json and keeps its attribution in the built topic_meta (D6)', (t) => {
@@ -135,30 +166,94 @@ test('a drifted page renders pending in governance.json and keeps its attributio
   });
 });
 
+// Slugs whose topic_meta block is DERIVED at build time rather than authored. Today that is
+// exactly Case-of-the-Week: cotw_meta.py:211-215 writes `facultyReview.status = "pending"` for
+// every case unconditionally, independent of any ledger, so a reviewed cotw row legitimately
+// carries a pending block and must not be read as a demotion.
+const DERIVED_BLOCK_SLUG = /^cotw_\d{8}_[a-z0-9]+_(ms3|res)\.md$/;
+
 test('a page the ledger still calls reviewed is not demoted in the built topic_meta', (t) => {
-  forEachFreshSite(t, (site, { governance, topicMeta }) => {
+  let inScope = 0;
+  const ran = forEachFreshSite(t, (site, { governance, topicMeta }) => {
     const reviewed = Object.entries(governance)
       .filter(([, item]) => item.status === 'reviewed')
       .map(([slug]) => slug);
 
     let checked = 0;
+    const excluded = [];
     for (const slug of reviewed) {
-      // Only blocks AUTHORED in topic_meta.json are in scope. A Case-of-the-Week block is
-      // DERIVED at build time by cotw_meta.py, which writes status "pending" for every case
-      // unconditionally (cotw_meta.py:211) -- nothing to do with this ledger, and a fact that
-      // predates the projection. Scoping by the source keeps this from asserting cotw_meta's
-      // behaviour by accident.
-      if (!facultyReview(SOURCE_META, slug)) continue;
       const block = facultyReview(topicMeta, slug);
       if (!block) continue;
+      // Only blocks AUTHORED in topic_meta.json are in scope -- see DERIVED_BLOCK_SLUG.
+      if (!facultyReview(SOURCE_META, slug)) { excluded.push(slug); continue; }
       checked += 1;
       assert.equal(block.status, 'reviewed',
         `${site}: ${slug} is reviewed in governance.json but demoted in the built topic_meta.json`);
     }
-    // Deliberately no floor: while the re-attestation queue is full this set is EMPTY, and a
-    // floor would fail honest work. It lights up as the owner re-attests -- the count is printed
-    // so a reader can see which regime the tree is in rather than inferring a pass means data.
-    t.diagnostic(`${site}: ${reviewed.length} reviewed page(s), ${checked} with a source-authored facultyReview block`);
+    inScope += checked;
+
+    // PIN THE EXCLUSION'S DIMENSIONS. That `continue` is the only way a reviewed page can leave
+    // this assertion's scope, so a NEW build-time injector writing facultyReview blocks would
+    // silently join it and take its pages with it. The COUNT is deliberately not pinned: it is
+    // 6 on ms3 and 5 on res today (only the _ms3 half of the 2026-09-07 case is bound) and it
+    // moves legitimately whenever the owner attests a case or lets one drift. The SHAPE is
+    // pinned instead, which is what cannot change unless someone means it.
+    for (const slug of excluded) {
+      assert.match(slug, DERIVED_BLOCK_SLUG,
+        `${site}: ${slug} carries a build-derived facultyReview block from something other than `
+        + "cotw_meta.py -- a new injector has silently joined this assertion's exclusion");
+    }
+    t.diagnostic(`${site}: ${reviewed.length} reviewed page(s), ${checked} in scope, `
+      + `${excluded.length} excluded as build-derived block(s)`);
+  });
+
+  // NEVER PASS OVER AN EMPTY SET. While the re-attestation queue is full, no reviewed page
+  // carries a source-authored block, so this assertion has nothing to check -- and a green `ok`
+  // would read as "verified" when nothing was. It skips with the reason instead and lights up on
+  // its own as the owner re-attests. A floor is the wrong tool: zero is a legitimate state of
+  // the tree, not a regression.
+  if (ran > 0 && inScope === 0) {
+    t.skip('no reviewed page carries a source-authored facultyReview block — nothing to check');
+  }
+});
+
+test('a drifted page keeps its place in nav.json and carries a pending badge in both indexes', (t) => {
+  forEachFreshSite(t, (site, { governance, navRows, searchRows }) => {
+    const drifted = new Set(Object.entries(governance)
+      .filter(([, item]) => item.status === 'pending' && STALE_REASON_RE.test(item.reason || ''))
+      .map(([slug]) => slug));
+
+    // PLACEMENT. This is the claim CLAUDE.md makes -- "the demotion warns, it never unplaces" --
+    // and until now nothing pinned it: faculty-console/check_pending_visible.mjs reads the
+    // SOURCE ledger, where a drifted row still says `reviewed`, and never opens nav.json at all.
+    const placed = new Set(navRows.map((row) => row.f));
+    for (const slug of drifted) {
+      assert.ok(placed.has(slug),
+        `${site}: ${slug} drifted and fell out of nav.json — a demotion must never unplace`);
+    }
+
+    // THE BADGE. Both indexes embed the governance triplet per row, and that embedded copy is
+    // what paints the "Pending review" chip in the Library and in search results, so it has to
+    // agree with the PROJECTED ledger rather than the source one.
+    let badges = 0;
+    for (const row of [...navRows, ...searchRows]) {
+      if (!drifted.has(row.f)) continue;
+      badges += 1;
+      assert.equal(row.governance && row.governance.status, 'pending',
+        `${site}: ${row.f} is drifted but its index row still badges as `
+        + `${row.governance && row.governance.status}`);
+    }
+    assert.ok(drifted.size === 0 || badges > 0,
+      `${site}: ${drifted.size} drifted page(s) and not one badged index row`);
+
+    // search-index.json legitimately carries fewer slugs than nav.json, and that omission is
+    // governance-independent (the week pages and a couple of tools are never indexed). Reported,
+    // not asserted, so this test cannot quietly become a pin on the indexer's scope.
+    const indexed = new Set(searchRows.map((row) => row.f));
+    const unindexed = [...drifted].filter((slug) => !indexed.has(slug)).sort();
+    t.diagnostic(`${site}: ${drifted.size} drifted, all placed in nav; ${badges} badged index `
+      + `row(s); ${unindexed.length} absent from search-index.json by construction`
+      + `${unindexed.length ? ` (${unindexed.slice(0, 4).join(', ')}…)` : ''}`);
   });
 });
 
