@@ -1,0 +1,8925 @@
+{
+ "chapter": "F01-F99 Mental, Behavioral and Neurodevelopmental disorders",
+ "fiscalYears": {
+  "fy2026": {
+   "codes": {
+    "F01": [
+     "0",
+     "Vascular dementia"
+    ],
+    "F015": [
+     "0",
+     "Vascular dementia, unspecified severity"
+    ],
+    "F0150": [
+     "1",
+     "Vascular dementia, unsp severity, without beh/psych/mood/anx"
+    ],
+    "F0151": [
+     "0",
+     "Vascular dementia, unsp severity, with behavioral disturb"
+    ],
+    "F01511": [
+     "1",
+     "Vascular dementia, unspecified severity, with agitation"
+    ],
+    "F01518": [
+     "1",
+     "Vascular dementia, unsp severity, with other beh disturb"
+    ],
+    "F0152": [
+     "1",
+     "Vascular dementia, unsp severity, with psychotic disturb"
+    ],
+    "F0153": [
+     "1",
+     "Vascular dementia, unspecified severity, with mood disturb"
+    ],
+    "F0154": [
+     "1",
+     "Vascular dementia, unspecified severity, with anxiety"
+    ],
+    "F01A": [
+     "0",
+     "Vascular dementia, mild"
+    ],
+    "F01A0": [
+     "1",
+     "Vascular dementia, mild, without beh/psych/mood/anx"
+    ],
+    "F01A1": [
+     "0",
+     "Vascular dementia, mild, with behavioral disturbance"
+    ],
+    "F01A11": [
+     "1",
+     "Vascular dementia, mild, with agitation"
+    ],
+    "F01A18": [
+     "1",
+     "Vascular dementia, mild, with other behavioral disturbance"
+    ],
+    "F01A2": [
+     "1",
+     "Vascular dementia, mild, with psychotic disturbance"
+    ],
+    "F01A3": [
+     "1",
+     "Vascular dementia, mild, with mood disturbance"
+    ],
+    "F01A4": [
+     "1",
+     "Vascular dementia, mild, with anxiety"
+    ],
+    "F01B": [
+     "0",
+     "Vascular dementia, moderate"
+    ],
+    "F01B0": [
+     "1",
+     "Vascular dementia, moderate, without beh/psych/mood/anx"
+    ],
+    "F01B1": [
+     "0",
+     "Vascular dementia, moderate, with behavioral disturbance"
+    ],
+    "F01B11": [
+     "1",
+     "Vascular dementia, moderate, with agitation"
+    ],
+    "F01B18": [
+     "1",
+     "Vascular dementia, moderate, with other behavioral disturb"
+    ],
+    "F01B2": [
+     "1",
+     "Vascular dementia, moderate, with psychotic disturbance"
+    ],
+    "F01B3": [
+     "1",
+     "Vascular dementia, moderate, with mood disturbance"
+    ],
+    "F01B4": [
+     "1",
+     "Vascular dementia, moderate, with anxiety"
+    ],
+    "F01C": [
+     "0",
+     "Vascular dementia, severe"
+    ],
+    "F01C0": [
+     "1",
+     "Vascular dementia, severe, without beh/psych/mood/anx"
+    ],
+    "F01C1": [
+     "0",
+     "Vascular dementia, severe, with behavioral disturbance"
+    ],
+    "F01C11": [
+     "1",
+     "Vascular dementia, severe, with agitation"
+    ],
+    "F01C18": [
+     "1",
+     "Vascular dementia, severe, with other behavioral disturbance"
+    ],
+    "F01C2": [
+     "1",
+     "Vascular dementia, severe, with psychotic disturbance"
+    ],
+    "F01C3": [
+     "1",
+     "Vascular dementia, severe, with mood disturbance"
+    ],
+    "F01C4": [
+     "1",
+     "Vascular dementia, severe, with anxiety"
+    ],
+    "F02": [
+     "0",
+     "Dementia in other diseases classified elsewhere"
+    ],
+    "F028": [
+     "0",
+     "Dementia in other diseases classd elswhr, unsp severity"
+    ],
+    "F0280": [
+     "1",
+     "Dem in oth dis classd elswhr,unsp sev,w/o beh/psych/mood/anx"
+    ],
+    "F0281": [
+     "0",
+     "Dem in other dis classd elswhr, unsp sev, with beh distrb"
+    ],
+    "F02811": [
+     "1",
+     "Dem in other dis classd elswhr, unsp severt, with agitation"
+    ],
+    "F02818": [
+     "1",
+     "Dem in oth dis classd elswhr, unsp sev, with oth beh distrb"
+    ],
+    "F0282": [
+     "1",
+     "Dem in other dis classd elswhr, unsp sev, with psych distrb"
+    ],
+    "F0283": [
+     "1",
+     "Dem in other dis classd elswhr, unsp sev, with mood distrb"
+    ],
+    "F0284": [
+     "1",
+     "Dem in other dis classd elswhr, unsp severity, with anxiety"
+    ],
+    "F02A": [
+     "0",
+     "Dementia in other diseases classified elsewhere, mild"
+    ],
+    "F02A0": [
+     "1",
+     "Dem in other dis classd elswhr, mild, w/o beh/psych/mood/anx"
+    ],
+    "F02A1": [
+     "0",
+     "Dem in other diseases classd elswhr, mild, with beh disturb"
+    ],
+    "F02A11": [
+     "1",
+     "Dem in other diseases classd elswhr, mild, with agitation"
+    ],
+    "F02A18": [
+     "1",
+     "Dem in other dis classd elswhr, mild, with other beh distrb"
+    ],
+    "F02A2": [
+     "1",
+     "Dem in other dis classd elswhr, mild, with psych disturb"
+    ],
+    "F02A3": [
+     "1",
+     "Dem in other diseases classd elswhr, mild, with mood disturb"
+    ],
+    "F02A4": [
+     "1",
+     "Dementia in other diseases classd elswhr, mild, with anxiety"
+    ],
+    "F02B": [
+     "0",
+     "Dementia in other diseases classified elsewhere, moderate"
+    ],
+    "F02B0": [
+     "1",
+     "Dem in other dis classd elswhr, mod, w/o beh/psych/mood/anx"
+    ],
+    "F02B1": [
+     "0",
+     "Dem in other dis classd elswhr, moderate, with beh disturb"
+    ],
+    "F02B11": [
+     "1",
+     "Dem in other dis classd elswhr, moderate, with agitation"
+    ],
+    "F02B18": [
+     "1",
+     "Dem in other dis classd elswhr, mod, with other beh disturb"
+    ],
+    "F02B2": [
+     "1",
+     "Dem in other dis classd elswhr, moderate, with psych disturb"
+    ],
+    "F02B3": [
+     "1",
+     "Dem in other dis classd elswhr, moderate, with mood disturb"
+    ],
+    "F02B4": [
+     "1",
+     "Dem in other diseases classd elswhr, moderate, with anxiety"
+    ],
+    "F02C": [
+     "0",
+     "Dementia in other diseases classified elsewhere, severe"
+    ],
+    "F02C0": [
+     "1",
+     "Dem in other dis classd elswhr, sev, w/o beh/psych/mood/anx"
+    ],
+    "F02C1": [
+     "0",
+     "Dem in other dis classd elswhr, severe, with beh disturb"
+    ],
+    "F02C11": [
+     "1",
+     "Dem in other diseases classd elswhr, severe, with agitation"
+    ],
+    "F02C18": [
+     "1",
+     "Dem in other dis classd elswhr, sev, with other beh distrb"
+    ],
+    "F02C2": [
+     "1",
+     "Dem in other dis classd elswhr, severe, with psych disturb"
+    ],
+    "F02C3": [
+     "1",
+     "Dem in other dis classd elswhr, severe, with mood disturb"
+    ],
+    "F02C4": [
+     "1",
+     "Dem in other diseases classd elswhr, severe, with anxiety"
+    ],
+    "F03": [
+     "0",
+     "Unspecified dementia"
+    ],
+    "F039": [
+     "0",
+     "Unspecified dementia, unspecified severity"
+    ],
+    "F0390": [
+     "1",
+     "Unsp dementia, unsp severity, without beh/psych/mood/anx"
+    ],
+    "F0391": [
+     "0",
+     "Unsp dementia, unspecified severity, with behavioral disturb"
+    ],
+    "F03911": [
+     "1",
+     "Unspecified dementia, unspecified severity, with agitation"
+    ],
+    "F03918": [
+     "1",
+     "Unsp dementia, unsp severity, with other behavioral disturb"
+    ],
+    "F0392": [
+     "1",
+     "Unsp dementia, unspecified severity, with psychotic disturb"
+    ],
+    "F0393": [
+     "1",
+     "Unsp dementia, unspecified severity, with mood disturb"
+    ],
+    "F0394": [
+     "1",
+     "Unspecified dementia, unspecified severity, with anxiety"
+    ],
+    "F03A": [
+     "0",
+     "Unspecified dementia, mild"
+    ],
+    "F03A0": [
+     "1",
+     "Unspecified dementia, mild, without beh/psych/mood/anx"
+    ],
+    "F03A1": [
+     "0",
+     "Unspecified dementia, mild, with behavioral disturbance"
+    ],
+    "F03A11": [
+     "1",
+     "Unspecified dementia, mild, with agitation"
+    ],
+    "F03A18": [
+     "1",
+     "Unspecified dementia, mild, with other behavioral disturb"
+    ],
+    "F03A2": [
+     "1",
+     "Unspecified dementia, mild, with psychotic disturbance"
+    ],
+    "F03A3": [
+     "1",
+     "Unspecified dementia, mild, with mood disturbance"
+    ],
+    "F03A4": [
+     "1",
+     "Unspecified dementia, mild, with anxiety"
+    ],
+    "F03B": [
+     "0",
+     "Unspecified dementia, moderate"
+    ],
+    "F03B0": [
+     "1",
+     "Unspecified dementia, moderate, without beh/psych/mood/anx"
+    ],
+    "F03B1": [
+     "0",
+     "Unspecified dementia, moderate, with behavioral disturbance"
+    ],
+    "F03B11": [
+     "1",
+     "Unspecified dementia, moderate, with agitation"
+    ],
+    "F03B18": [
+     "1",
+     "Unsp dementia, moderate, with other behavioral disturb"
+    ],
+    "F03B2": [
+     "1",
+     "Unspecified dementia, moderate, with psychotic disturbance"
+    ],
+    "F03B3": [
+     "1",
+     "Unspecified dementia, moderate, with mood disturbance"
+    ],
+    "F03B4": [
+     "1",
+     "Unspecified dementia, moderate, with anxiety"
+    ],
+    "F03C": [
+     "0",
+     "Unspecified dementia, severe"
+    ],
+    "F03C0": [
+     "1",
+     "Unspecified dementia, severe, without beh/psych/mood/anx"
+    ],
+    "F03C1": [
+     "0",
+     "Unspecified dementia, severe, with behavioral disturbance"
+    ],
+    "F03C11": [
+     "1",
+     "Unspecified dementia, severe, with agitation"
+    ],
+    "F03C18": [
+     "1",
+     "Unspecified dementia, severe, with other behavioral disturb"
+    ],
+    "F03C2": [
+     "1",
+     "Unspecified dementia, severe, with psychotic disturbance"
+    ],
+    "F03C3": [
+     "1",
+     "Unspecified dementia, severe, with mood disturbance"
+    ],
+    "F03C4": [
+     "1",
+     "Unspecified dementia, severe, with anxiety"
+    ],
+    "F04": [
+     "1",
+     "Amnestic disorder due to known physiological condition"
+    ],
+    "F05": [
+     "1",
+     "Delirium due to known physiological condition"
+    ],
+    "F06": [
+     "0",
+     "Other mental disorders due to known physiological condition"
+    ],
+    "F060": [
+     "1",
+     "Psychotic disorder w hallucin due to known physiol condition"
+    ],
+    "F061": [
+     "1",
+     "Catatonic disorder due to known physiological condition"
+    ],
+    "F062": [
+     "1",
+     "Psychotic disorder w delusions due to known physiol cond"
+    ],
+    "F063": [
+     "0",
+     "Mood disorder due to known physiological condition"
+    ],
+    "F0630": [
+     "1",
+     "Mood disorder due to known physiological condition, unsp"
+    ],
+    "F0631": [
+     "1",
+     "Mood disorder due to known physiol cond w depressv features"
+    ],
+    "F0632": [
+     "1",
+     "Mood disord d/t physiol cond w major depressive-like epsd"
+    ],
+    "F0633": [
+     "1",
+     "Mood disorder due to known physiol cond w manic features"
+    ],
+    "F0634": [
+     "1",
+     "Mood disorder due to known physiol cond w mixed features"
+    ],
+    "F064": [
+     "1",
+     "Anxiety disorder due to known physiological condition"
+    ],
+    "F067": [
+     "0",
+     "Mild neurocog disorder due to known physiological condition"
+    ],
+    "F0670": [
+     "1",
+     "Mild neurocog disord d/t known physiol cond w/o beh distrb"
+    ],
+    "F0671": [
+     "1",
+     "Mild neurocog disord d/t known physiol cond with beh distrb"
+    ],
+    "F068": [
+     "1",
+     "Oth mental disorders due to known physiological condition"
+    ],
+    "F07": [
+     "0",
+     "Personality & behavrl disorders due to known physiol cond"
+    ],
+    "F070": [
+     "1",
+     "Personality change due to known physiological condition"
+    ],
+    "F078": [
+     "0",
+     "Oth personality & behavrl disord due to known physiol cond"
+    ],
+    "F0781": [
+     "1",
+     "Postconcussional syndrome"
+    ],
+    "F0789": [
+     "1",
+     "Oth personality & behavrl disord due to known physiol cond"
+    ],
+    "F079": [
+     "1",
+     "Unsp personality & behavrl disord due to known physiol cond"
+    ],
+    "F09": [
+     "1",
+     "Unsp mental disorder due to known physiological condition"
+    ],
+    "F10": [
+     "0",
+     "Alcohol related disorders"
+    ],
+    "F101": [
+     "0",
+     "Alcohol abuse"
+    ],
+    "F1010": [
+     "1",
+     "Alcohol abuse, uncomplicated"
+    ],
+    "F1011": [
+     "1",
+     "Alcohol abuse, in remission"
+    ],
+    "F1012": [
+     "0",
+     "Alcohol abuse with intoxication"
+    ],
+    "F10120": [
+     "1",
+     "Alcohol abuse with intoxication, uncomplicated"
+    ],
+    "F10121": [
+     "1",
+     "Alcohol abuse with intoxication delirium"
+    ],
+    "F10129": [
+     "1",
+     "Alcohol abuse with intoxication, unspecified"
+    ],
+    "F1013": [
+     "0",
+     "Alcohol abuse, with withdrawal"
+    ],
+    "F10130": [
+     "1",
+     "Alcohol abuse with withdrawal, uncomplicated"
+    ],
+    "F10131": [
+     "1",
+     "Alcohol abuse with withdrawal delirium"
+    ],
+    "F10132": [
+     "1",
+     "Alcohol abuse with withdrawal with perceptual disturbance"
+    ],
+    "F10139": [
+     "1",
+     "Alcohol abuse with withdrawal, unspecified"
+    ],
+    "F1014": [
+     "1",
+     "Alcohol abuse with alcohol-induced mood disorder"
+    ],
+    "F1015": [
+     "0",
+     "Alcohol abuse with alcohol-induced psychotic disorder"
+    ],
+    "F10150": [
+     "1",
+     "Alcohol abuse w alcoh-induce psychotic disorder w delusions"
+    ],
+    "F10151": [
+     "1",
+     "Alcohol abuse w alcoh-induce psychotic disorder w hallucin"
+    ],
+    "F10159": [
+     "1",
+     "Alcohol abuse with alcohol-induced psychotic disorder, unsp"
+    ],
+    "F1018": [
+     "0",
+     "Alcohol abuse with other alcohol-induced disorders"
+    ],
+    "F10180": [
+     "1",
+     "Alcohol abuse with alcohol-induced anxiety disorder"
+    ],
+    "F10181": [
+     "1",
+     "Alcohol abuse with alcohol-induced sexual dysfunction"
+    ],
+    "F10182": [
+     "1",
+     "Alcohol abuse with alcohol-induced sleep disorder"
+    ],
+    "F10188": [
+     "1",
+     "Alcohol abuse with other alcohol-induced disorder"
+    ],
+    "F1019": [
+     "1",
+     "Alcohol abuse with unspecified alcohol-induced disorder"
+    ],
+    "F102": [
+     "0",
+     "Alcohol dependence"
+    ],
+    "F1020": [
+     "1",
+     "Alcohol dependence, uncomplicated"
+    ],
+    "F1021": [
+     "1",
+     "Alcohol dependence, in remission"
+    ],
+    "F1022": [
+     "0",
+     "Alcohol dependence with intoxication"
+    ],
+    "F10220": [
+     "1",
+     "Alcohol dependence with intoxication, uncomplicated"
+    ],
+    "F10221": [
+     "1",
+     "Alcohol dependence with intoxication delirium"
+    ],
+    "F10229": [
+     "1",
+     "Alcohol dependence with intoxication, unspecified"
+    ],
+    "F1023": [
+     "0",
+     "Alcohol dependence with withdrawal"
+    ],
+    "F10230": [
+     "1",
+     "Alcohol dependence with withdrawal, uncomplicated"
+    ],
+    "F10231": [
+     "1",
+     "Alcohol dependence with withdrawal delirium"
+    ],
+    "F10232": [
+     "1",
+     "Alcohol dependence w withdrawal with perceptual disturbance"
+    ],
+    "F10239": [
+     "1",
+     "Alcohol dependence with withdrawal, unspecified"
+    ],
+    "F1024": [
+     "1",
+     "Alcohol dependence with alcohol-induced mood disorder"
+    ],
+    "F1025": [
+     "0",
+     "Alcohol dependence with alcohol-induced psychotic disorder"
+    ],
+    "F10250": [
+     "1",
+     "Alcohol depend w alcoh-induce psychotic disorder w delusions"
+    ],
+    "F10251": [
+     "1",
+     "Alcohol depend w alcoh-induce psychotic disorder w hallucin"
+    ],
+    "F10259": [
+     "1",
+     "Alcohol dependence w alcoh-induce psychotic disorder, unsp"
+    ],
+    "F1026": [
+     "1",
+     "Alcohol depend w alcoh-induce persisting amnestic disorder"
+    ],
+    "F1027": [
+     "1",
+     "Alcohol dependence with alcohol-induced persisting dementia"
+    ],
+    "F1028": [
+     "0",
+     "Alcohol dependence with other alcohol-induced disorders"
+    ],
+    "F10280": [
+     "1",
+     "Alcohol dependence with alcohol-induced anxiety disorder"
+    ],
+    "F10281": [
+     "1",
+     "Alcohol dependence with alcohol-induced sexual dysfunction"
+    ],
+    "F10282": [
+     "1",
+     "Alcohol dependence with alcohol-induced sleep disorder"
+    ],
+    "F10288": [
+     "1",
+     "Alcohol dependence with other alcohol-induced disorder"
+    ],
+    "F1029": [
+     "1",
+     "Alcohol dependence with unspecified alcohol-induced disorder"
+    ],
+    "F109": [
+     "0",
+     "Alcohol use, unspecified"
+    ],
+    "F1090": [
+     "1",
+     "Alcohol use, unspecified, uncomplicated"
+    ],
+    "F1091": [
+     "1",
+     "Alcohol use, unspecified, in remission"
+    ],
+    "F1092": [
+     "0",
+     "Alcohol use, unspecified with intoxication"
+    ],
+    "F10920": [
+     "1",
+     "Alcohol use, unspecified with intoxication, uncomplicated"
+    ],
+    "F10921": [
+     "1",
+     "Alcohol use, unspecified with intoxication delirium"
+    ],
+    "F10929": [
+     "1",
+     "Alcohol use, unspecified with intoxication, unspecified"
+    ],
+    "F1093": [
+     "0",
+     "Alcohol use, unspecified with withdrawal"
+    ],
+    "F10930": [
+     "1",
+     "Alcohol use, unspecified with withdrawal, uncomplicated"
+    ],
+    "F10931": [
+     "1",
+     "Alcohol use, unspecified with withdrawal delirium"
+    ],
+    "F10932": [
+     "1",
+     "Alcohol use, unspecified with w/drawal w perceptual disturb"
+    ],
+    "F10939": [
+     "1",
+     "Alcohol use, unspecified with withdrawal, unspecified"
+    ],
+    "F1094": [
+     "1",
+     "Alcohol use, unspecified with alcohol-induced mood disorder"
+    ],
+    "F1095": [
+     "0",
+     "Alcohol use, unsp with alcohol-induced psychotic disorder"
+    ],
+    "F10950": [
+     "1",
+     "Alcohol use, unsp w alcoh-induce psych disorder w delusions"
+    ],
+    "F10951": [
+     "1",
+     "Alcohol use, unsp w alcoh-induce psych disorder w hallucin"
+    ],
+    "F10959": [
+     "1",
+     "Alcohol use, unsp w alcohol-induced psychotic disorder, unsp"
+    ],
+    "F1096": [
+     "1",
+     "Alcohol use, unsp w alcoh-induce persist amnestic disorder"
+    ],
+    "F1097": [
+     "1",
+     "Alcohol use, unsp with alcohol-induced persisting dementia"
+    ],
+    "F1098": [
+     "0",
+     "Alcohol use, unsp with other alcohol-induced disorders"
+    ],
+    "F10980": [
+     "1",
+     "Alcohol use, unsp with alcohol-induced anxiety disorder"
+    ],
+    "F10981": [
+     "1",
+     "Alcohol use, unsp with alcohol-induced sexual dysfunction"
+    ],
+    "F10982": [
+     "1",
+     "Alcohol use, unspecified with alcohol-induced sleep disorder"
+    ],
+    "F10988": [
+     "1",
+     "Alcohol use, unspecified with other alcohol-induced disorder"
+    ],
+    "F1099": [
+     "1",
+     "Alcohol use, unsp with unspecified alcohol-induced disorder"
+    ],
+    "F11": [
+     "0",
+     "Opioid related disorders"
+    ],
+    "F111": [
+     "0",
+     "Opioid abuse"
+    ],
+    "F1110": [
+     "1",
+     "Opioid abuse, uncomplicated"
+    ],
+    "F1111": [
+     "1",
+     "Opioid abuse, in remission"
+    ],
+    "F1112": [
+     "0",
+     "Opioid abuse with intoxication"
+    ],
+    "F11120": [
+     "1",
+     "Opioid abuse with intoxication, uncomplicated"
+    ],
+    "F11121": [
+     "1",
+     "Opioid abuse with intoxication delirium"
+    ],
+    "F11122": [
+     "1",
+     "Opioid abuse with intoxication with perceptual disturbance"
+    ],
+    "F11129": [
+     "1",
+     "Opioid abuse with intoxication, unspecified"
+    ],
+    "F1113": [
+     "1",
+     "Opioid abuse with withdrawal"
+    ],
+    "F1114": [
+     "1",
+     "Opioid abuse with opioid-induced mood disorder"
+    ],
+    "F1115": [
+     "0",
+     "Opioid abuse with opioid-induced psychotic disorder"
+    ],
+    "F11150": [
+     "1",
+     "Opioid abuse w opioid-induced psychotic disorder w delusions"
+    ],
+    "F11151": [
+     "1",
+     "Opioid abuse w opioid-induced psychotic disorder w hallucin"
+    ],
+    "F11159": [
+     "1",
+     "Opioid abuse with opioid-induced psychotic disorder, unsp"
+    ],
+    "F1118": [
+     "0",
+     "Opioid abuse with other opioid-induced disorder"
+    ],
+    "F11181": [
+     "1",
+     "Opioid abuse with opioid-induced sexual dysfunction"
+    ],
+    "F11182": [
+     "1",
+     "Opioid abuse with opioid-induced sleep disorder"
+    ],
+    "F11188": [
+     "1",
+     "Opioid abuse with other opioid-induced disorder"
+    ],
+    "F1119": [
+     "1",
+     "Opioid abuse with unspecified opioid-induced disorder"
+    ],
+    "F112": [
+     "0",
+     "Opioid dependence"
+    ],
+    "F1120": [
+     "1",
+     "Opioid dependence, uncomplicated"
+    ],
+    "F1121": [
+     "1",
+     "Opioid dependence, in remission"
+    ],
+    "F1122": [
+     "0",
+     "Opioid dependence with intoxication"
+    ],
+    "F11220": [
+     "1",
+     "Opioid dependence with intoxication, uncomplicated"
+    ],
+    "F11221": [
+     "1",
+     "Opioid dependence with intoxication delirium"
+    ],
+    "F11222": [
+     "1",
+     "Opioid dependence w intoxication with perceptual disturbance"
+    ],
+    "F11229": [
+     "1",
+     "Opioid dependence with intoxication, unspecified"
+    ],
+    "F1123": [
+     "1",
+     "Opioid dependence with withdrawal"
+    ],
+    "F1124": [
+     "1",
+     "Opioid dependence with opioid-induced mood disorder"
+    ],
+    "F1125": [
+     "0",
+     "Opioid dependence with opioid-induced psychotic disorder"
+    ],
+    "F11250": [
+     "1",
+     "Opioid depend w opioid-induc psychotic disorder w delusions"
+    ],
+    "F11251": [
+     "1",
+     "Opioid depend w opioid-induc psychotic disorder w hallucin"
+    ],
+    "F11259": [
+     "1",
+     "Opioid dependence w opioid-induced psychotic disorder, unsp"
+    ],
+    "F1128": [
+     "0",
+     "Opioid dependence with other opioid-induced disorder"
+    ],
+    "F11281": [
+     "1",
+     "Opioid dependence with opioid-induced sexual dysfunction"
+    ],
+    "F11282": [
+     "1",
+     "Opioid dependence with opioid-induced sleep disorder"
+    ],
+    "F11288": [
+     "1",
+     "Opioid dependence with other opioid-induced disorder"
+    ],
+    "F1129": [
+     "1",
+     "Opioid dependence with unspecified opioid-induced disorder"
+    ],
+    "F119": [
+     "0",
+     "Opioid use, unspecified"
+    ],
+    "F1190": [
+     "1",
+     "Opioid use, unspecified, uncomplicated"
+    ],
+    "F1191": [
+     "1",
+     "Opioid use, unspecified, in remission"
+    ],
+    "F1192": [
+     "0",
+     "Opioid use, unspecified with intoxication"
+    ],
+    "F11920": [
+     "1",
+     "Opioid use, unspecified with intoxication, uncomplicated"
+    ],
+    "F11921": [
+     "1",
+     "Opioid use, unspecified with intoxication delirium"
+    ],
+    "F11922": [
+     "1",
+     "Opioid use, unsp w intoxication with perceptual disturbance"
+    ],
+    "F11929": [
+     "1",
+     "Opioid use, unspecified with intoxication, unspecified"
+    ],
+    "F1193": [
+     "1",
+     "Opioid use, unspecified with withdrawal"
+    ],
+    "F1194": [
+     "1",
+     "Opioid use, unspecified with opioid-induced mood disorder"
+    ],
+    "F1195": [
+     "0",
+     "Opioid use, unsp with opioid-induced psychotic disorder"
+    ],
+    "F11950": [
+     "1",
+     "Opioid use, unsp w opioid-induc psych disorder w delusions"
+    ],
+    "F11951": [
+     "1",
+     "Opioid use, unsp w opioid-induc psych disorder w hallucin"
+    ],
+    "F11959": [
+     "1",
+     "Opioid use, unsp w opioid-induced psychotic disorder, unsp"
+    ],
+    "F1198": [
+     "0",
+     "Opioid use, unspecified with oth opioid-induced disorder"
+    ],
+    "F11981": [
+     "1",
+     "Opioid use, unsp with opioid-induced sexual dysfunction"
+    ],
+    "F11982": [
+     "1",
+     "Opioid use, unspecified with opioid-induced sleep disorder"
+    ],
+    "F11988": [
+     "1",
+     "Opioid use, unspecified with other opioid-induced disorder"
+    ],
+    "F1199": [
+     "1",
+     "Opioid use, unsp with unspecified opioid-induced disorder"
+    ],
+    "F12": [
+     "0",
+     "Cannabis related disorders"
+    ],
+    "F121": [
+     "0",
+     "Cannabis abuse"
+    ],
+    "F1210": [
+     "1",
+     "Cannabis abuse, uncomplicated"
+    ],
+    "F1211": [
+     "1",
+     "Cannabis abuse, in remission"
+    ],
+    "F1212": [
+     "0",
+     "Cannabis abuse with intoxication"
+    ],
+    "F12120": [
+     "1",
+     "Cannabis abuse with intoxication, uncomplicated"
+    ],
+    "F12121": [
+     "1",
+     "Cannabis abuse with intoxication delirium"
+    ],
+    "F12122": [
+     "1",
+     "Cannabis abuse with intoxication with perceptual disturbance"
+    ],
+    "F12129": [
+     "1",
+     "Cannabis abuse with intoxication, unspecified"
+    ],
+    "F1213": [
+     "1",
+     "Cannabis abuse with withdrawal"
+    ],
+    "F1215": [
+     "0",
+     "Cannabis abuse with psychotic disorder"
+    ],
+    "F12150": [
+     "1",
+     "Cannabis abuse with psychotic disorder with delusions"
+    ],
+    "F12151": [
+     "1",
+     "Cannabis abuse with psychotic disorder with hallucinations"
+    ],
+    "F12159": [
+     "1",
+     "Cannabis abuse with psychotic disorder, unspecified"
+    ],
+    "F1218": [
+     "0",
+     "Cannabis abuse with other cannabis-induced disorder"
+    ],
+    "F12180": [
+     "1",
+     "Cannabis abuse with cannabis-induced anxiety disorder"
+    ],
+    "F12188": [
+     "1",
+     "Cannabis abuse with other cannabis-induced disorder"
+    ],
+    "F1219": [
+     "1",
+     "Cannabis abuse with unspecified cannabis-induced disorder"
+    ],
+    "F122": [
+     "0",
+     "Cannabis dependence"
+    ],
+    "F1220": [
+     "1",
+     "Cannabis dependence, uncomplicated"
+    ],
+    "F1221": [
+     "1",
+     "Cannabis dependence, in remission"
+    ],
+    "F1222": [
+     "0",
+     "Cannabis dependence with intoxication"
+    ],
+    "F12220": [
+     "1",
+     "Cannabis dependence with intoxication, uncomplicated"
+    ],
+    "F12221": [
+     "1",
+     "Cannabis dependence with intoxication delirium"
+    ],
+    "F12222": [
+     "1",
+     "Cannabis dependence w intoxication w perceptual disturbance"
+    ],
+    "F12229": [
+     "1",
+     "Cannabis dependence with intoxication, unspecified"
+    ],
+    "F1223": [
+     "1",
+     "Cannabis dependence with withdrawal"
+    ],
+    "F1225": [
+     "0",
+     "Cannabis dependence with psychotic disorder"
+    ],
+    "F12250": [
+     "1",
+     "Cannabis dependence with psychotic disorder with delusions"
+    ],
+    "F12251": [
+     "1",
+     "Cannabis dependence w psychotic disorder with hallucinations"
+    ],
+    "F12259": [
+     "1",
+     "Cannabis dependence with psychotic disorder, unspecified"
+    ],
+    "F1228": [
+     "0",
+     "Cannabis dependence with other cannabis-induced disorder"
+    ],
+    "F12280": [
+     "1",
+     "Cannabis dependence with cannabis-induced anxiety disorder"
+    ],
+    "F12288": [
+     "1",
+     "Cannabis dependence with other cannabis-induced disorder"
+    ],
+    "F1229": [
+     "1",
+     "Cannabis dependence with unsp cannabis-induced disorder"
+    ],
+    "F129": [
+     "0",
+     "Cannabis use, unspecified"
+    ],
+    "F1290": [
+     "1",
+     "Cannabis use, unspecified, uncomplicated"
+    ],
+    "F1291": [
+     "1",
+     "Cannabis use, unspecified, in remission"
+    ],
+    "F1292": [
+     "0",
+     "Cannabis use, unspecified with intoxication"
+    ],
+    "F12920": [
+     "1",
+     "Cannabis use, unspecified with intoxication, uncomplicated"
+    ],
+    "F12921": [
+     "1",
+     "Cannabis use, unspecified with intoxication delirium"
+    ],
+    "F12922": [
+     "1",
+     "Cannabis use, unsp w intoxication w perceptual disturbance"
+    ],
+    "F12929": [
+     "1",
+     "Cannabis use, unspecified with intoxication, unspecified"
+    ],
+    "F1293": [
+     "1",
+     "Cannabis use, unspecified with withdrawal"
+    ],
+    "F1295": [
+     "0",
+     "Cannabis use, unspecified with psychotic disorder"
+    ],
+    "F12950": [
+     "1",
+     "Cannabis use, unsp with psychotic disorder with delusions"
+    ],
+    "F12951": [
+     "1",
+     "Cannabis use, unsp w psychotic disorder with hallucinations"
+    ],
+    "F12959": [
+     "1",
+     "Cannabis use, unsp with psychotic disorder, unspecified"
+    ],
+    "F1298": [
+     "0",
+     "Cannabis use, unsp with other cannabis-induced disorder"
+    ],
+    "F12980": [
+     "1",
+     "Cannabis use, unspecified with anxiety disorder"
+    ],
+    "F12988": [
+     "1",
+     "Cannabis use, unsp with other cannabis-induced disorder"
+    ],
+    "F1299": [
+     "1",
+     "Cannabis use, unsp with unsp cannabis-induced disorder"
+    ],
+    "F13": [
+     "0",
+     "Sedative, hypnotic, or anxiolytic related disorders"
+    ],
+    "F131": [
+     "0",
+     "Sedative, hypnotic or anxiolytic-related abuse"
+    ],
+    "F1310": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse, uncomplicated"
+    ],
+    "F1311": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse, in remission"
+    ],
+    "F1312": [
+     "0",
+     "Sedative, hypnotic or anxiolytic abuse with intoxication"
+    ],
+    "F13120": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse w intoxication, uncomplicated"
+    ],
+    "F13121": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse w intoxication delirium"
+    ],
+    "F13129": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w intoxication, unsp"
+    ],
+    "F1313": [
+     "0",
+     "Sedative, hypnotic or anxiolytic abuse with withdrawal"
+    ],
+    "F13130": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse with withdrawal, uncomplicated"
+    ],
+    "F13131": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse with withdrawal delirium"
+    ],
+    "F13132": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse with w/drawal w perceptl disturb"
+    ],
+    "F13139": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse with withdrawal, unspecified"
+    ],
+    "F1314": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w mood disorder"
+    ],
+    "F1315": [
+     "0",
+     "Sedative, hypnotic or anxiolytic abuse w psychotic disorder"
+    ],
+    "F13150": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse w psychotic disorder w delusions"
+    ],
+    "F13151": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse w psychotic disorder w hallucin"
+    ],
+    "F13159": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse w psychotic disorder, unsp"
+    ],
+    "F1318": [
+     "0",
+     "Sedative, hypnotic or anxiolytic abuse w oth disorders"
+    ],
+    "F13180": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w anxiety disorder"
+    ],
+    "F13181": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w sexual dysfunction"
+    ],
+    "F13182": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w sleep disorder"
+    ],
+    "F13188": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w oth disorder"
+    ],
+    "F1319": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w unsp disorder"
+    ],
+    "F132": [
+     "0",
+     "Sedative, hypnotic or anxiolytic-related dependence"
+    ],
+    "F1320": [
+     "1",
+     "Sedative, hypnotic or anxiolytic dependence, uncomplicated"
+    ],
+    "F1321": [
+     "1",
+     "Sedative, hypnotic or anxiolytic dependence, in remission"
+    ],
+    "F1322": [
+     "0",
+     "Sedative, hypnotic or anxiolytic dependence w intoxication"
+    ],
+    "F13220": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w intoxication, uncomp"
+    ],
+    "F13221": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w intoxication delirium"
+    ],
+    "F13229": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w intoxication, unsp"
+    ],
+    "F1323": [
+     "0",
+     "Sedative, hypnotic or anxiolytic dependence with withdrawal"
+    ],
+    "F13230": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w withdrawal, uncomplicated"
+    ],
+    "F13231": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w withdrawal delirium"
+    ],
+    "F13232": [
+     "1",
+     "Sedatv/hyp/anxiolytc depend w w/drawal w perceptual disturb"
+    ],
+    "F13239": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w withdrawal, unsp"
+    ],
+    "F1324": [
+     "1",
+     "Sedative, hypnotic or anxiolytic dependence w mood disorder"
+    ],
+    "F1325": [
+     "0",
+     "Sedatv/hyp/anxiolytc dependence w psychotic disorder"
+    ],
+    "F13250": [
+     "1",
+     "Sedatv/hyp/anxiolytc depend w psychotic disorder w delusions"
+    ],
+    "F13251": [
+     "1",
+     "Sedatv/hyp/anxiolytc depend w psychotic disorder w hallucin"
+    ],
+    "F13259": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w psychotic disorder, unsp"
+    ],
+    "F1326": [
+     "1",
+     "Sedatv/hyp/anxiolytc depend w persisting amnestic disorder"
+    ],
+    "F1327": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w persisting dementia"
+    ],
+    "F1328": [
+     "0",
+     "Sedative, hypnotic or anxiolytic dependence w oth disorders"
+    ],
+    "F13280": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w anxiety disorder"
+    ],
+    "F13281": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w sexual dysfunction"
+    ],
+    "F13282": [
+     "1",
+     "Sedative, hypnotic or anxiolytic dependence w sleep disorder"
+    ],
+    "F13288": [
+     "1",
+     "Sedative, hypnotic or anxiolytic dependence w oth disorder"
+    ],
+    "F1329": [
+     "1",
+     "Sedative, hypnotic or anxiolytic dependence w unsp disorder"
+    ],
+    "F139": [
+     "0",
+     "Sedative, hypnotic or anxiolytic-related use, unspecified"
+    ],
+    "F1390": [
+     "1",
+     "Sedative, hypnotic, or anxiolytic use, unsp, uncomplicated"
+    ],
+    "F1391": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unspecified, in remission"
+    ],
+    "F1392": [
+     "0",
+     "Sedative, hypnotic or anxiolytic use, unsp with intoxication"
+    ],
+    "F13920": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w intoxication, uncomplicated"
+    ],
+    "F13921": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w intoxication delirium"
+    ],
+    "F13929": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w intoxication, unsp"
+    ],
+    "F1393": [
+     "0",
+     "Sedative, hypnotic or anxiolytic use, unsp with withdrawal"
+    ],
+    "F13930": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w withdrawal, uncomplicated"
+    ],
+    "F13931": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w withdrawal delirium"
+    ],
+    "F13932": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w w/drawal w perceptl disturb"
+    ],
+    "F13939": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w withdrawal, unsp"
+    ],
+    "F1394": [
+     "1",
+     "Sedative, hypnotic or anxiolytic use, unsp w mood disorder"
+    ],
+    "F1395": [
+     "0",
+     "Sedatv/hyp/anxiolytc use, unsp w psychotic disorder"
+    ],
+    "F13950": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w psych disorder w delusions"
+    ],
+    "F13951": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w psych disorder w hallucin"
+    ],
+    "F13959": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w psychotic disorder, unsp"
+    ],
+    "F1396": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w persist amnestic disorder"
+    ],
+    "F1397": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w persisting dementia"
+    ],
+    "F1398": [
+     "0",
+     "Sedative, hypnotic or anxiolytic use, unsp w oth disorders"
+    ],
+    "F13980": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w anxiety disorder"
+    ],
+    "F13981": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w sexual dysfunction"
+    ],
+    "F13982": [
+     "1",
+     "Sedative, hypnotic or anxiolytic use, unsp w sleep disorder"
+    ],
+    "F13988": [
+     "1",
+     "Sedative, hypnotic or anxiolytic use, unsp w oth disorder"
+    ],
+    "F1399": [
+     "1",
+     "Sedative, hypnotic or anxiolytic use, unsp w unsp disorder"
+    ],
+    "F14": [
+     "0",
+     "Cocaine related disorders"
+    ],
+    "F141": [
+     "0",
+     "Cocaine abuse"
+    ],
+    "F1410": [
+     "1",
+     "Cocaine abuse, uncomplicated"
+    ],
+    "F1411": [
+     "1",
+     "Cocaine abuse, in remission"
+    ],
+    "F1412": [
+     "0",
+     "Cocaine abuse with intoxication"
+    ],
+    "F14120": [
+     "1",
+     "Cocaine abuse with intoxication, uncomplicated"
+    ],
+    "F14121": [
+     "1",
+     "Cocaine abuse with intoxication with delirium"
+    ],
+    "F14122": [
+     "1",
+     "Cocaine abuse with intoxication with perceptual disturbance"
+    ],
+    "F14129": [
+     "1",
+     "Cocaine abuse with intoxication, unspecified"
+    ],
+    "F1413": [
+     "1",
+     "Cocaine abuse, unspecified with withdrawal"
+    ],
+    "F1414": [
+     "1",
+     "Cocaine abuse with cocaine-induced mood disorder"
+    ],
+    "F1415": [
+     "0",
+     "Cocaine abuse with cocaine-induced psychotic disorder"
+    ],
+    "F14150": [
+     "1",
+     "Cocaine abuse w cocaine-induc psychotic disorder w delusions"
+    ],
+    "F14151": [
+     "1",
+     "Cocaine abuse w cocaine-induc psychotic disorder w hallucin"
+    ],
+    "F14159": [
+     "1",
+     "Cocaine abuse with cocaine-induced psychotic disorder, unsp"
+    ],
+    "F1418": [
+     "0",
+     "Cocaine abuse with other cocaine-induced disorder"
+    ],
+    "F14180": [
+     "1",
+     "Cocaine abuse with cocaine-induced anxiety disorder"
+    ],
+    "F14181": [
+     "1",
+     "Cocaine abuse with cocaine-induced sexual dysfunction"
+    ],
+    "F14182": [
+     "1",
+     "Cocaine abuse with cocaine-induced sleep disorder"
+    ],
+    "F14188": [
+     "1",
+     "Cocaine abuse with other cocaine-induced disorder"
+    ],
+    "F1419": [
+     "1",
+     "Cocaine abuse with unspecified cocaine-induced disorder"
+    ],
+    "F142": [
+     "0",
+     "Cocaine dependence"
+    ],
+    "F1420": [
+     "1",
+     "Cocaine dependence, uncomplicated"
+    ],
+    "F1421": [
+     "1",
+     "Cocaine dependence, in remission"
+    ],
+    "F1422": [
+     "0",
+     "Cocaine dependence with intoxication"
+    ],
+    "F14220": [
+     "1",
+     "Cocaine dependence with intoxication, uncomplicated"
+    ],
+    "F14221": [
+     "1",
+     "Cocaine dependence with intoxication delirium"
+    ],
+    "F14222": [
+     "1",
+     "Cocaine dependence w intoxication w perceptual disturbance"
+    ],
+    "F14229": [
+     "1",
+     "Cocaine dependence with intoxication, unspecified"
+    ],
+    "F1423": [
+     "1",
+     "Cocaine dependence with withdrawal"
+    ],
+    "F1424": [
+     "1",
+     "Cocaine dependence with cocaine-induced mood disorder"
+    ],
+    "F1425": [
+     "0",
+     "Cocaine dependence with cocaine-induced psychotic disorder"
+    ],
+    "F14250": [
+     "1",
+     "Cocaine depend w cocaine-induc psych disorder w delusions"
+    ],
+    "F14251": [
+     "1",
+     "Cocaine depend w cocaine-induc psychotic disorder w hallucin"
+    ],
+    "F14259": [
+     "1",
+     "Cocaine dependence w cocaine-induc psychotic disorder, unsp"
+    ],
+    "F1428": [
+     "0",
+     "Cocaine dependence with other cocaine-induced disorder"
+    ],
+    "F14280": [
+     "1",
+     "Cocaine dependence with cocaine-induced anxiety disorder"
+    ],
+    "F14281": [
+     "1",
+     "Cocaine dependence with cocaine-induced sexual dysfunction"
+    ],
+    "F14282": [
+     "1",
+     "Cocaine dependence with cocaine-induced sleep disorder"
+    ],
+    "F14288": [
+     "1",
+     "Cocaine dependence with other cocaine-induced disorder"
+    ],
+    "F1429": [
+     "1",
+     "Cocaine dependence with unspecified cocaine-induced disorder"
+    ],
+    "F149": [
+     "0",
+     "Cocaine use, unspecified"
+    ],
+    "F1490": [
+     "1",
+     "Cocaine use, unspecified, uncomplicated"
+    ],
+    "F1491": [
+     "1",
+     "Cocaine use, unspecified, in remission"
+    ],
+    "F1492": [
+     "0",
+     "Cocaine use, unspecified with intoxication"
+    ],
+    "F14920": [
+     "1",
+     "Cocaine use, unspecified with intoxication, uncomplicated"
+    ],
+    "F14921": [
+     "1",
+     "Cocaine use, unspecified with intoxication delirium"
+    ],
+    "F14922": [
+     "1",
+     "Cocaine use, unsp w intoxication with perceptual disturbance"
+    ],
+    "F14929": [
+     "1",
+     "Cocaine use, unspecified with intoxication, unspecified"
+    ],
+    "F1493": [
+     "1",
+     "Cocaine use, unspecified with withdrawal"
+    ],
+    "F1494": [
+     "1",
+     "Cocaine use, unspecified with cocaine-induced mood disorder"
+    ],
+    "F1495": [
+     "0",
+     "Cocaine use, unsp with cocaine-induced psychotic disorder"
+    ],
+    "F14950": [
+     "1",
+     "Cocaine use, unsp w cocaine-induc psych disorder w delusions"
+    ],
+    "F14951": [
+     "1",
+     "Cocaine use, unsp w cocaine-induc psych disorder w hallucin"
+    ],
+    "F14959": [
+     "1",
+     "Cocaine use, unsp w cocaine-induced psychotic disorder, unsp"
+    ],
+    "F1498": [
+     "0",
+     "Cocaine use, unspecified with oth cocaine-induced disorder"
+    ],
+    "F14980": [
+     "1",
+     "Cocaine use, unsp with cocaine-induced anxiety disorder"
+    ],
+    "F14981": [
+     "1",
+     "Cocaine use, unsp with cocaine-induced sexual dysfunction"
+    ],
+    "F14982": [
+     "1",
+     "Cocaine use, unspecified with cocaine-induced sleep disorder"
+    ],
+    "F14988": [
+     "1",
+     "Cocaine use, unspecified with other cocaine-induced disorder"
+    ],
+    "F1499": [
+     "1",
+     "Cocaine use, unsp with unspecified cocaine-induced disorder"
+    ],
+    "F15": [
+     "0",
+     "Other stimulant related disorders"
+    ],
+    "F151": [
+     "0",
+     "Other stimulant abuse"
+    ],
+    "F1510": [
+     "1",
+     "Other stimulant abuse, uncomplicated"
+    ],
+    "F1511": [
+     "1",
+     "Other stimulant abuse, in remission"
+    ],
+    "F1512": [
+     "0",
+     "Other stimulant abuse with intoxication"
+    ],
+    "F15120": [
+     "1",
+     "Other stimulant abuse with intoxication, uncomplicated"
+    ],
+    "F15121": [
+     "1",
+     "Other stimulant abuse with intoxication delirium"
+    ],
+    "F15122": [
+     "1",
+     "Oth stimulant abuse w intoxication w perceptual disturbance"
+    ],
+    "F15129": [
+     "1",
+     "Other stimulant abuse with intoxication, unspecified"
+    ],
+    "F1513": [
+     "1",
+     "Other stimulant abuse with withdrawal"
+    ],
+    "F1514": [
+     "1",
+     "Other stimulant abuse with stimulant-induced mood disorder"
+    ],
+    "F1515": [
+     "0",
+     "Oth stimulant abuse w stimulant-induced psychotic disorder"
+    ],
+    "F15150": [
+     "1",
+     "Oth stimulant abuse w stim-induce psych disorder w delusions"
+    ],
+    "F15151": [
+     "1",
+     "Oth stimulant abuse w stim-induce psych disorder w hallucin"
+    ],
+    "F15159": [
+     "1",
+     "Oth stimulant abuse w stim-induce psychotic disorder, unsp"
+    ],
+    "F1518": [
+     "0",
+     "Other stimulant abuse with other stimulant-induced disorder"
+    ],
+    "F15180": [
+     "1",
+     "Oth stimulant abuse with stimulant-induced anxiety disorder"
+    ],
+    "F15181": [
+     "1",
+     "Oth stimulant abuse w stimulant-induced sexual dysfunction"
+    ],
+    "F15182": [
+     "1",
+     "Other stimulant abuse with stimulant-induced sleep disorder"
+    ],
+    "F15188": [
+     "1",
+     "Other stimulant abuse with other stimulant-induced disorder"
+    ],
+    "F1519": [
+     "1",
+     "Other stimulant abuse with unsp stimulant-induced disorder"
+    ],
+    "F152": [
+     "0",
+     "Other stimulant dependence"
+    ],
+    "F1520": [
+     "1",
+     "Other stimulant dependence, uncomplicated"
+    ],
+    "F1521": [
+     "1",
+     "Other stimulant dependence, in remission"
+    ],
+    "F1522": [
+     "0",
+     "Other stimulant dependence with intoxication"
+    ],
+    "F15220": [
+     "1",
+     "Other stimulant dependence with intoxication, uncomplicated"
+    ],
+    "F15221": [
+     "1",
+     "Other stimulant dependence with intoxication delirium"
+    ],
+    "F15222": [
+     "1",
+     "Oth stimulant dependence w intox w perceptual disturbance"
+    ],
+    "F15229": [
+     "1",
+     "Other stimulant dependence with intoxication, unspecified"
+    ],
+    "F1523": [
+     "1",
+     "Other stimulant dependence with withdrawal"
+    ],
+    "F1524": [
+     "1",
+     "Oth stimulant dependence w stimulant-induced mood disorder"
+    ],
+    "F1525": [
+     "0",
+     "Oth stimulant dependence w stim-induce psychotic disorder"
+    ],
+    "F15250": [
+     "1",
+     "Oth stim depend w stim-induce psych disorder w delusions"
+    ],
+    "F15251": [
+     "1",
+     "Oth stimulant depend w stim-induce psych disorder w hallucin"
+    ],
+    "F15259": [
+     "1",
+     "Oth stimulant depend w stim-induce psychotic disorder, unsp"
+    ],
+    "F1528": [
+     "0",
+     "Oth stimulant dependence with oth stimulant-induced disorder"
+    ],
+    "F15280": [
+     "1",
+     "Oth stimulant dependence w stim-induce anxiety disorder"
+    ],
+    "F15281": [
+     "1",
+     "Oth stimulant dependence w stim-induce sexual dysfunction"
+    ],
+    "F15282": [
+     "1",
+     "Oth stimulant dependence w stimulant-induced sleep disorder"
+    ],
+    "F15288": [
+     "1",
+     "Oth stimulant dependence with oth stimulant-induced disorder"
+    ],
+    "F1529": [
+     "1",
+     "Oth stimulant dependence w unsp stimulant-induced disorder"
+    ],
+    "F159": [
+     "0",
+     "Other stimulant use, unspecified"
+    ],
+    "F1590": [
+     "1",
+     "Other stimulant use, unspecified, uncomplicated"
+    ],
+    "F1591": [
+     "1",
+     "Other stimulant use, unspecified, in remission"
+    ],
+    "F1592": [
+     "0",
+     "Other stimulant use, unspecified with intoxication"
+    ],
+    "F15920": [
+     "1",
+     "Other stimulant use, unsp with intoxication, uncomplicated"
+    ],
+    "F15921": [
+     "1",
+     "Other stimulant use, unspecified with intoxication delirium"
+    ],
+    "F15922": [
+     "1",
+     "Oth stimulant use, unsp w intox w perceptual disturbance"
+    ],
+    "F15929": [
+     "1",
+     "Other stimulant use, unsp with intoxication, unspecified"
+    ],
+    "F1593": [
+     "1",
+     "Other stimulant use, unspecified with withdrawal"
+    ],
+    "F1594": [
+     "1",
+     "Oth stimulant use, unsp with stimulant-induced mood disorder"
+    ],
+    "F1595": [
+     "0",
+     "Oth stimulant use, unsp w stim-induce psychotic disorder"
+    ],
+    "F15950": [
+     "1",
+     "Oth stim use, unsp w stim-induce psych disorder w delusions"
+    ],
+    "F15951": [
+     "1",
+     "Oth stim use, unsp w stim-induce psych disorder w hallucin"
+    ],
+    "F15959": [
+     "1",
+     "Oth stimulant use, unsp w stim-induce psych disorder, unsp"
+    ],
+    "F1598": [
+     "0",
+     "Oth stimulant use, unsp with oth stimulant-induced disorder"
+    ],
+    "F15980": [
+     "1",
+     "Oth stimulant use, unsp w stimulant-induced anxiety disorder"
+    ],
+    "F15981": [
+     "1",
+     "Oth stimulant use, unsp w stim-induce sexual dysfunction"
+    ],
+    "F15982": [
+     "1",
+     "Oth stimulant use, unsp w stimulant-induced sleep disorder"
+    ],
+    "F15988": [
+     "1",
+     "Oth stimulant use, unsp with oth stimulant-induced disorder"
+    ],
+    "F1599": [
+     "1",
+     "Oth stimulant use, unsp with unsp stimulant-induced disorder"
+    ],
+    "F16": [
+     "0",
+     "Hallucinogen related disorders"
+    ],
+    "F161": [
+     "0",
+     "Hallucinogen abuse"
+    ],
+    "F1610": [
+     "1",
+     "Hallucinogen abuse, uncomplicated"
+    ],
+    "F1611": [
+     "1",
+     "Hallucinogen abuse, in remission"
+    ],
+    "F1612": [
+     "0",
+     "Hallucinogen abuse with intoxication"
+    ],
+    "F16120": [
+     "1",
+     "Hallucinogen abuse with intoxication, uncomplicated"
+    ],
+    "F16121": [
+     "1",
+     "Hallucinogen abuse with intoxication with delirium"
+    ],
+    "F16122": [
+     "1",
+     "Hallucinogen abuse w intoxication w perceptual disturbance"
+    ],
+    "F16129": [
+     "1",
+     "Hallucinogen abuse with intoxication, unspecified"
+    ],
+    "F1614": [
+     "1",
+     "Hallucinogen abuse with hallucinogen-induced mood disorder"
+    ],
+    "F1615": [
+     "0",
+     "Hallucinogen abuse w hallucinogen-induced psychotic disorder"
+    ],
+    "F16150": [
+     "1",
+     "Hallucinogen abuse w psychotic disorder w delusions"
+    ],
+    "F16151": [
+     "1",
+     "Hallucinogen abuse w psychotic disorder w hallucinations"
+    ],
+    "F16159": [
+     "1",
+     "Hallucinogen abuse w psychotic disorder, unsp"
+    ],
+    "F1618": [
+     "0",
+     "Hallucinogen abuse with other hallucinogen-induced disorder"
+    ],
+    "F16180": [
+     "1",
+     "Hallucinogen abuse w hallucinogen-induced anxiety disorder"
+    ],
+    "F16183": [
+     "1",
+     "Hallucign abuse w hallucign persisting perception disorder"
+    ],
+    "F16188": [
+     "1",
+     "Hallucinogen abuse with other hallucinogen-induced disorder"
+    ],
+    "F1619": [
+     "1",
+     "Hallucinogen abuse with unsp hallucinogen-induced disorder"
+    ],
+    "F162": [
+     "0",
+     "Hallucinogen dependence"
+    ],
+    "F1620": [
+     "1",
+     "Hallucinogen dependence, uncomplicated"
+    ],
+    "F1621": [
+     "1",
+     "Hallucinogen dependence, in remission"
+    ],
+    "F1622": [
+     "0",
+     "Hallucinogen dependence with intoxication"
+    ],
+    "F16220": [
+     "1",
+     "Hallucinogen dependence with intoxication, uncomplicated"
+    ],
+    "F16221": [
+     "1",
+     "Hallucinogen dependence with intoxication with delirium"
+    ],
+    "F16229": [
+     "1",
+     "Hallucinogen dependence with intoxication, unspecified"
+    ],
+    "F1624": [
+     "1",
+     "Hallucinogen dependence w hallucinogen-induced mood disorder"
+    ],
+    "F1625": [
+     "0",
+     "Hallucinogen dependence w psychotic disorder"
+    ],
+    "F16250": [
+     "1",
+     "Hallucinogen dependence w psychotic disorder w delusions"
+    ],
+    "F16251": [
+     "1",
+     "Hallucinogen dependence w psychotic disorder w hallucin"
+    ],
+    "F16259": [
+     "1",
+     "Hallucinogen dependence w psychotic disorder, unsp"
+    ],
+    "F1628": [
+     "0",
+     "Hallucinogen dependence w oth hallucinogen-induced disorder"
+    ],
+    "F16280": [
+     "1",
+     "Hallucinogen dependence w anxiety disorder"
+    ],
+    "F16283": [
+     "1",
+     "Hallucign depend w hallucign persisting perception disorder"
+    ],
+    "F16288": [
+     "1",
+     "Hallucinogen dependence w oth hallucinogen-induced disorder"
+    ],
+    "F1629": [
+     "1",
+     "Hallucinogen dependence w unsp hallucinogen-induced disorder"
+    ],
+    "F169": [
+     "0",
+     "Hallucinogen use, unspecified"
+    ],
+    "F1690": [
+     "1",
+     "Hallucinogen use, unspecified, uncomplicated"
+    ],
+    "F1691": [
+     "1",
+     "Hallucinogen use, unspecified, in remission"
+    ],
+    "F1692": [
+     "0",
+     "Hallucinogen use, unspecified with intoxication"
+    ],
+    "F16920": [
+     "1",
+     "Hallucinogen use, unsp with intoxication, uncomplicated"
+    ],
+    "F16921": [
+     "1",
+     "Hallucinogen use, unsp with intoxication with delirium"
+    ],
+    "F16929": [
+     "1",
+     "Hallucinogen use, unspecified with intoxication, unspecified"
+    ],
+    "F1694": [
+     "1",
+     "Hallucinogen use, unsp w hallucinogen-induced mood disorder"
+    ],
+    "F1695": [
+     "0",
+     "Hallucinogen use, unsp w psychotic disorder"
+    ],
+    "F16950": [
+     "1",
+     "Hallucinogen use, unsp w psychotic disorder w delusions"
+    ],
+    "F16951": [
+     "1",
+     "Hallucinogen use, unsp w psychotic disorder w hallucinations"
+    ],
+    "F16959": [
+     "1",
+     "Hallucinogen use, unsp w psychotic disorder, unsp"
+    ],
+    "F1698": [
+     "0",
+     "Hallucinogen use, unsp w oth hallucinogen-induced disorder"
+    ],
+    "F16980": [
+     "1",
+     "Hallucinogen use, unsp w anxiety disorder"
+    ],
+    "F16983": [
+     "1",
+     "Hallucign use, unsp w hallucign persist perception disorder"
+    ],
+    "F16988": [
+     "1",
+     "Hallucinogen use, unsp w oth hallucinogen-induced disorder"
+    ],
+    "F1699": [
+     "1",
+     "Hallucinogen use, unsp w unsp hallucinogen-induced disorder"
+    ],
+    "F17": [
+     "0",
+     "Nicotine dependence"
+    ],
+    "F172": [
+     "0",
+     "Nicotine dependence"
+    ],
+    "F1720": [
+     "0",
+     "Nicotine dependence, unspecified"
+    ],
+    "F17200": [
+     "1",
+     "Nicotine dependence, unspecified, uncomplicated"
+    ],
+    "F17201": [
+     "1",
+     "Nicotine dependence, unspecified, in remission"
+    ],
+    "F17203": [
+     "1",
+     "Nicotine dependence unspecified, with withdrawal"
+    ],
+    "F17208": [
+     "1",
+     "Nicotine dependence, unsp, w oth nicotine-induced disorders"
+    ],
+    "F17209": [
+     "1",
+     "Nicotine dependence, unsp, w unsp nicotine-induced disorders"
+    ],
+    "F1721": [
+     "0",
+     "Nicotine dependence, cigarettes"
+    ],
+    "F17210": [
+     "1",
+     "Nicotine dependence, cigarettes, uncomplicated"
+    ],
+    "F17211": [
+     "1",
+     "Nicotine dependence, cigarettes, in remission"
+    ],
+    "F17213": [
+     "1",
+     "Nicotine dependence, cigarettes, with withdrawal"
+    ],
+    "F17218": [
+     "1",
+     "Nicotine dependence, cigarettes, w oth disorders"
+    ],
+    "F17219": [
+     "1",
+     "Nicotine dependence, cigarettes, w unsp disorders"
+    ],
+    "F1722": [
+     "0",
+     "Nicotine dependence, chewing tobacco"
+    ],
+    "F17220": [
+     "1",
+     "Nicotine dependence, chewing tobacco, uncomplicated"
+    ],
+    "F17221": [
+     "1",
+     "Nicotine dependence, chewing tobacco, in remission"
+    ],
+    "F17223": [
+     "1",
+     "Nicotine dependence, chewing tobacco, with withdrawal"
+    ],
+    "F17228": [
+     "1",
+     "Nicotine dependence, chewing tobacco, w oth disorders"
+    ],
+    "F17229": [
+     "1",
+     "Nicotine dependence, chewing tobacco, w unsp disorders"
+    ],
+    "F1729": [
+     "0",
+     "Nicotine dependence, other tobacco product"
+    ],
+    "F17290": [
+     "1",
+     "Nicotine dependence, other tobacco product, uncomplicated"
+    ],
+    "F17291": [
+     "1",
+     "Nicotine dependence, other tobacco product, in remission"
+    ],
+    "F17293": [
+     "1",
+     "Nicotine dependence, other tobacco product, with withdrawal"
+    ],
+    "F17298": [
+     "1",
+     "Nicotine dependence, oth tobacco product, w oth disorders"
+    ],
+    "F17299": [
+     "1",
+     "Nicotine dependence, oth tobacco product, w unsp disorders"
+    ],
+    "F18": [
+     "0",
+     "Inhalant related disorders"
+    ],
+    "F181": [
+     "0",
+     "Inhalant abuse"
+    ],
+    "F1810": [
+     "1",
+     "Inhalant abuse, uncomplicated"
+    ],
+    "F1811": [
+     "1",
+     "Inhalant abuse, in remission"
+    ],
+    "F1812": [
+     "0",
+     "Inhalant abuse with intoxication"
+    ],
+    "F18120": [
+     "1",
+     "Inhalant abuse with intoxication, uncomplicated"
+    ],
+    "F18121": [
+     "1",
+     "Inhalant abuse with intoxication delirium"
+    ],
+    "F18129": [
+     "1",
+     "Inhalant abuse with intoxication, unspecified"
+    ],
+    "F1814": [
+     "1",
+     "Inhalant abuse with inhalant-induced mood disorder"
+    ],
+    "F1815": [
+     "0",
+     "Inhalant abuse with inhalant-induced psychotic disorder"
+    ],
+    "F18150": [
+     "1",
+     "Inhalant abuse w inhalnt-induce psych disorder w delusions"
+    ],
+    "F18151": [
+     "1",
+     "Inhalant abuse w inhalnt-induce psych disorder w hallucin"
+    ],
+    "F18159": [
+     "1",
+     "Inhalant abuse w inhalant-induced psychotic disorder, unsp"
+    ],
+    "F1817": [
+     "1",
+     "Inhalant abuse with inhalant-induced dementia"
+    ],
+    "F1818": [
+     "0",
+     "Inhalant abuse with other inhalant-induced disorders"
+    ],
+    "F18180": [
+     "1",
+     "Inhalant abuse with inhalant-induced anxiety disorder"
+    ],
+    "F18188": [
+     "1",
+     "Inhalant abuse with other inhalant-induced disorder"
+    ],
+    "F1819": [
+     "1",
+     "Inhalant abuse with unspecified inhalant-induced disorder"
+    ],
+    "F182": [
+     "0",
+     "Inhalant dependence"
+    ],
+    "F1820": [
+     "1",
+     "Inhalant dependence, uncomplicated"
+    ],
+    "F1821": [
+     "1",
+     "Inhalant dependence, in remission"
+    ],
+    "F1822": [
+     "0",
+     "Inhalant dependence with intoxication"
+    ],
+    "F18220": [
+     "1",
+     "Inhalant dependence with intoxication, uncomplicated"
+    ],
+    "F18221": [
+     "1",
+     "Inhalant dependence with intoxication delirium"
+    ],
+    "F18229": [
+     "1",
+     "Inhalant dependence with intoxication, unspecified"
+    ],
+    "F1824": [
+     "1",
+     "Inhalant dependence with inhalant-induced mood disorder"
+    ],
+    "F1825": [
+     "0",
+     "Inhalant dependence with inhalant-induced psychotic disorder"
+    ],
+    "F18250": [
+     "1",
+     "Inhalant depend w inhalnt-induce psych disorder w delusions"
+    ],
+    "F18251": [
+     "1",
+     "Inhalant depend w inhalnt-induce psych disorder w hallucin"
+    ],
+    "F18259": [
+     "1",
+     "Inhalant depend w inhalnt-induce psychotic disorder, unsp"
+    ],
+    "F1827": [
+     "1",
+     "Inhalant dependence with inhalant-induced dementia"
+    ],
+    "F1828": [
+     "0",
+     "Inhalant dependence with other inhalant-induced disorders"
+    ],
+    "F18280": [
+     "1",
+     "Inhalant dependence with inhalant-induced anxiety disorder"
+    ],
+    "F18288": [
+     "1",
+     "Inhalant dependence with other inhalant-induced disorder"
+    ],
+    "F1829": [
+     "1",
+     "Inhalant dependence with unsp inhalant-induced disorder"
+    ],
+    "F189": [
+     "0",
+     "Inhalant use, unspecified"
+    ],
+    "F1890": [
+     "1",
+     "Inhalant use, unspecified, uncomplicated"
+    ],
+    "F1891": [
+     "1",
+     "Inhalant use, unspecified, in remission"
+    ],
+    "F1892": [
+     "0",
+     "Inhalant use, unspecified with intoxication"
+    ],
+    "F18920": [
+     "1",
+     "Inhalant use, unspecified with intoxication, uncomplicated"
+    ],
+    "F18921": [
+     "1",
+     "Inhalant use, unspecified with intoxication with delirium"
+    ],
+    "F18929": [
+     "1",
+     "Inhalant use, unspecified with intoxication, unspecified"
+    ],
+    "F1894": [
+     "1",
+     "Inhalant use, unsp with inhalant-induced mood disorder"
+    ],
+    "F1895": [
+     "0",
+     "Inhalant use, unsp with inhalant-induced psychotic disorder"
+    ],
+    "F18950": [
+     "1",
+     "Inhalant use, unsp w inhalnt-induce psych disord w delusions"
+    ],
+    "F18951": [
+     "1",
+     "Inhalant use, unsp w inhalnt-induce psych disord w hallucin"
+    ],
+    "F18959": [
+     "1",
+     "Inhalant use, unsp w inhalnt-induce psychotic disorder, unsp"
+    ],
+    "F1897": [
+     "1",
+     "Inhalant use, unsp with inhalant-induced persisting dementia"
+    ],
+    "F1898": [
+     "0",
+     "Inhalant use, unsp with other inhalant-induced disorders"
+    ],
+    "F18980": [
+     "1",
+     "Inhalant use, unsp with inhalant-induced anxiety disorder"
+    ],
+    "F18988": [
+     "1",
+     "Inhalant use, unsp with other inhalant-induced disorder"
+    ],
+    "F1899": [
+     "1",
+     "Inhalant use, unsp with unsp inhalant-induced disorder"
+    ],
+    "F19": [
+     "0",
+     "Other psychoactive substance related disorders"
+    ],
+    "F191": [
+     "0",
+     "Other psychoactive substance abuse"
+    ],
+    "F1910": [
+     "1",
+     "Other psychoactive substance abuse, uncomplicated"
+    ],
+    "F1911": [
+     "1",
+     "Other psychoactive substance abuse, in remission"
+    ],
+    "F1912": [
+     "0",
+     "Other psychoactive substance abuse with intoxication"
+    ],
+    "F19120": [
+     "1",
+     "Oth psychoactive substance abuse w intoxication, uncomp"
+    ],
+    "F19121": [
+     "1",
+     "Oth psychoactive substance abuse with intoxication delirium"
+    ],
+    "F19122": [
+     "1",
+     "Oth psychoactv substance abuse w intox w perceptual disturb"
+    ],
+    "F19129": [
+     "1",
+     "Other psychoactive substance abuse with intoxication, unsp"
+    ],
+    "F1913": [
+     "0",
+     "Other psychoactive substance abuse with withdrawal"
+    ],
+    "F19130": [
+     "1",
+     "Other psychoactive substance abuse with withdrawal, uncomp"
+    ],
+    "F19131": [
+     "1",
+     "Other psychoactive substance abuse with withdrawal delirium"
+    ],
+    "F19132": [
+     "1",
+     "Other psychoactv sub abuse with w/drawal w perceptl disturb"
+    ],
+    "F19139": [
+     "1",
+     "Other psychoactv substance abuse with withdrawal, unsp"
+    ],
+    "F1914": [
+     "1",
+     "Oth psychoactive substance abuse w mood disorder"
+    ],
+    "F1915": [
+     "0",
+     "Oth psychoactive substance abuse w psychotic disorder"
+    ],
+    "F19150": [
+     "1",
+     "Oth psychoactv substance abuse w psych disorder w delusions"
+    ],
+    "F19151": [
+     "1",
+     "Oth psychoactv substance abuse w psych disorder w hallucin"
+    ],
+    "F19159": [
+     "1",
+     "Oth psychoactive substance abuse w psychotic disorder, unsp"
+    ],
+    "F1916": [
+     "1",
+     "Oth psychoactv substance abuse w persist amnestic disorder"
+    ],
+    "F1917": [
+     "1",
+     "Oth psychoactive substance abuse w persisting dementia"
+    ],
+    "F1918": [
+     "0",
+     "Oth psychoactive substance abuse w oth disorders"
+    ],
+    "F19180": [
+     "1",
+     "Oth psychoactive substance abuse w anxiety disorder"
+    ],
+    "F19181": [
+     "1",
+     "Oth psychoactive substance abuse w sexual dysfunction"
+    ],
+    "F19182": [
+     "1",
+     "Oth psychoactive substance abuse w sleep disorder"
+    ],
+    "F19188": [
+     "1",
+     "Oth psychoactive substance abuse w oth disorder"
+    ],
+    "F1919": [
+     "1",
+     "Oth psychoactive substance abuse w unsp disorder"
+    ],
+    "F192": [
+     "0",
+     "Other psychoactive substance dependence"
+    ],
+    "F1920": [
+     "1",
+     "Other psychoactive substance dependence, uncomplicated"
+    ],
+    "F1921": [
+     "1",
+     "Other psychoactive substance dependence, in remission"
+    ],
+    "F1922": [
+     "0",
+     "Other psychoactive substance dependence with intoxication"
+    ],
+    "F19220": [
+     "1",
+     "Oth psychoactive substance dependence w intoxication, uncomp"
+    ],
+    "F19221": [
+     "1",
+     "Oth psychoactive substance dependence w intox delirium"
+    ],
+    "F19222": [
+     "1",
+     "Oth psychoactv substance depend w intox w perceptual disturb"
+    ],
+    "F19229": [
+     "1",
+     "Oth psychoactive substance dependence w intoxication, unsp"
+    ],
+    "F1923": [
+     "0",
+     "Other psychoactive substance dependence with withdrawal"
+    ],
+    "F19230": [
+     "1",
+     "Oth psychoactive substance dependence w withdrawal, uncomp"
+    ],
+    "F19231": [
+     "1",
+     "Oth psychoactive substance dependence w withdrawal delirium"
+    ],
+    "F19232": [
+     "1",
+     "Oth psychoactv sub depend w w/drawal w perceptl disturb"
+    ],
+    "F19239": [
+     "1",
+     "Oth psychoactive substance dependence with withdrawal, unsp"
+    ],
+    "F1924": [
+     "1",
+     "Oth psychoactive substance dependence w mood disorder"
+    ],
+    "F1925": [
+     "0",
+     "Oth psychoactive substance dependence w psychotic disorder"
+    ],
+    "F19250": [
+     "1",
+     "Oth psychoactv substance depend w psych disorder w delusions"
+    ],
+    "F19251": [
+     "1",
+     "Oth psychoactv substance depend w psych disorder w hallucin"
+    ],
+    "F19259": [
+     "1",
+     "Oth psychoactv substance depend w psychotic disorder, unsp"
+    ],
+    "F1926": [
+     "1",
+     "Oth psychoactv substance depend w persist amnestic disorder"
+    ],
+    "F1927": [
+     "1",
+     "Oth psychoactive substance dependence w persisting dementia"
+    ],
+    "F1928": [
+     "0",
+     "Oth psychoactive substance dependence w oth disorders"
+    ],
+    "F19280": [
+     "1",
+     "Oth psychoactive substance dependence w anxiety disorder"
+    ],
+    "F19281": [
+     "1",
+     "Oth psychoactive substance dependence w sexual dysfunction"
+    ],
+    "F19282": [
+     "1",
+     "Oth psychoactive substance dependence w sleep disorder"
+    ],
+    "F19288": [
+     "1",
+     "Oth psychoactive substance dependence w oth disorder"
+    ],
+    "F1929": [
+     "1",
+     "Oth psychoactive substance dependence w unsp disorder"
+    ],
+    "F199": [
+     "0",
+     "Other psychoactive substance use, unspecified"
+    ],
+    "F1990": [
+     "1",
+     "Other psychoactive substance use, unspecified, uncomplicated"
+    ],
+    "F1991": [
+     "1",
+     "Other psychoactive substance use, unspecified, in remission"
+    ],
+    "F1992": [
+     "0",
+     "Other psychoactive substance use, unsp with intoxication"
+    ],
+    "F19920": [
+     "1",
+     "Oth psychoactive substance use, unsp w intoxication, uncomp"
+    ],
+    "F19921": [
+     "1",
+     "Oth psychoactive substance use, unsp w intox w delirium"
+    ],
+    "F19922": [
+     "1",
+     "Oth psychoactv sub use, unsp w intox w perceptl disturb"
+    ],
+    "F19929": [
+     "1",
+     "Oth psychoactive substance use, unsp with intoxication, unsp"
+    ],
+    "F1993": [
+     "0",
+     "Other psychoactive substance use, unsp with withdrawal"
+    ],
+    "F19930": [
+     "1",
+     "Oth psychoactive substance use, unsp w withdrawal, uncomp"
+    ],
+    "F19931": [
+     "1",
+     "Oth psychoactive substance use, unsp w withdrawal delirium"
+    ],
+    "F19932": [
+     "1",
+     "Oth psychoactv sub use, unsp w w/drawal w perceptl disturb"
+    ],
+    "F19939": [
+     "1",
+     "Other psychoactive substance use, unsp with withdrawal, unsp"
+    ],
+    "F1994": [
+     "1",
+     "Oth psychoactive substance use, unsp w mood disorder"
+    ],
+    "F1995": [
+     "0",
+     "Oth psychoactive substance use, unsp w psychotic disorder"
+    ],
+    "F19950": [
+     "1",
+     "Oth psychoactv sub use, unsp w psych disorder w delusions"
+    ],
+    "F19951": [
+     "1",
+     "Oth psychoactv sub use, unsp w psych disorder w hallucin"
+    ],
+    "F19959": [
+     "1",
+     "Oth psychoactv substance use, unsp w psych disorder, unsp"
+    ],
+    "F1996": [
+     "1",
+     "Oth psychoactv sub use, unsp w persist amnestic disorder"
+    ],
+    "F1997": [
+     "1",
+     "Oth psychoactive substance use, unsp w persisting dementia"
+    ],
+    "F1998": [
+     "0",
+     "Oth psychoactive substance use, unsp w oth disorders"
+    ],
+    "F19980": [
+     "1",
+     "Oth psychoactive substance use, unsp w anxiety disorder"
+    ],
+    "F19981": [
+     "1",
+     "Oth psychoactive substance use, unsp w sexual dysfunction"
+    ],
+    "F19982": [
+     "1",
+     "Oth psychoactive substance use, unsp w sleep disorder"
+    ],
+    "F19988": [
+     "1",
+     "Oth psychoactive substance use, unsp w oth disorder"
+    ],
+    "F1999": [
+     "1",
+     "Oth psychoactive substance use, unsp w unsp disorder"
+    ],
+    "F20": [
+     "0",
+     "Schizophrenia"
+    ],
+    "F200": [
+     "1",
+     "Paranoid schizophrenia"
+    ],
+    "F201": [
+     "1",
+     "Disorganized schizophrenia"
+    ],
+    "F202": [
+     "1",
+     "Catatonic schizophrenia"
+    ],
+    "F203": [
+     "1",
+     "Undifferentiated schizophrenia"
+    ],
+    "F205": [
+     "1",
+     "Residual schizophrenia"
+    ],
+    "F208": [
+     "0",
+     "Other schizophrenia"
+    ],
+    "F2081": [
+     "1",
+     "Schizophreniform disorder"
+    ],
+    "F2089": [
+     "1",
+     "Other schizophrenia"
+    ],
+    "F209": [
+     "1",
+     "Schizophrenia, unspecified"
+    ],
+    "F21": [
+     "1",
+     "Schizotypal disorder"
+    ],
+    "F22": [
+     "1",
+     "Delusional disorders"
+    ],
+    "F23": [
+     "1",
+     "Brief psychotic disorder"
+    ],
+    "F24": [
+     "1",
+     "Shared psychotic disorder"
+    ],
+    "F25": [
+     "0",
+     "Schizoaffective disorders"
+    ],
+    "F250": [
+     "1",
+     "Schizoaffective disorder, bipolar type"
+    ],
+    "F251": [
+     "1",
+     "Schizoaffective disorder, depressive type"
+    ],
+    "F258": [
+     "1",
+     "Other schizoaffective disorders"
+    ],
+    "F259": [
+     "1",
+     "Schizoaffective disorder, unspecified"
+    ],
+    "F28": [
+     "1",
+     "Oth psych disorder not due to a sub or known physiol cond"
+    ],
+    "F29": [
+     "1",
+     "Unsp psychosis not due to a substance or known physiol cond"
+    ],
+    "F30": [
+     "0",
+     "Manic episode"
+    ],
+    "F301": [
+     "0",
+     "Manic episode without psychotic symptoms"
+    ],
+    "F3010": [
+     "1",
+     "Manic episode without psychotic symptoms, unspecified"
+    ],
+    "F3011": [
+     "1",
+     "Manic episode without psychotic symptoms, mild"
+    ],
+    "F3012": [
+     "1",
+     "Manic episode without psychotic symptoms, moderate"
+    ],
+    "F3013": [
+     "1",
+     "Manic episode, severe, without psychotic symptoms"
+    ],
+    "F302": [
+     "1",
+     "Manic episode, severe with psychotic symptoms"
+    ],
+    "F303": [
+     "1",
+     "Manic episode in partial remission"
+    ],
+    "F304": [
+     "1",
+     "Manic episode in full remission"
+    ],
+    "F308": [
+     "1",
+     "Other manic episodes"
+    ],
+    "F309": [
+     "1",
+     "Manic episode, unspecified"
+    ],
+    "F31": [
+     "0",
+     "Bipolar disorder"
+    ],
+    "F310": [
+     "1",
+     "Bipolar disorder, current episode hypomanic"
+    ],
+    "F311": [
+     "0",
+     "Bipolar disorder, current episode manic w/o psych features"
+    ],
+    "F3110": [
+     "1",
+     "Bipolar disord, crnt episode manic w/o psych features, unsp"
+    ],
+    "F3111": [
+     "1",
+     "Bipolar disord, crnt episode manic w/o psych features, mild"
+    ],
+    "F3112": [
+     "1",
+     "Bipolar disord, crnt episode manic w/o psych features, mod"
+    ],
+    "F3113": [
+     "1",
+     "Bipolar disord, crnt epsd manic w/o psych features, severe"
+    ],
+    "F312": [
+     "1",
+     "Bipolar disord, crnt episode manic severe w psych features"
+    ],
+    "F313": [
+     "0",
+     "Bipolar disord, current episode depress, mild or mod severt"
+    ],
+    "F3130": [
+     "1",
+     "Bipolar disord, crnt epsd depress, mild or mod severt, unsp"
+    ],
+    "F3131": [
+     "1",
+     "Bipolar disorder, current episode depressed, mild"
+    ],
+    "F3132": [
+     "1",
+     "Bipolar disorder, current episode depressed, moderate"
+    ],
+    "F314": [
+     "1",
+     "Bipolar disord, crnt epsd depress, sev, w/o psych features"
+    ],
+    "F315": [
+     "1",
+     "Bipolar disord, crnt epsd depress, severe, w psych features"
+    ],
+    "F316": [
+     "0",
+     "Bipolar disorder, current episode mixed"
+    ],
+    "F3160": [
+     "1",
+     "Bipolar disorder, current episode mixed, unspecified"
+    ],
+    "F3161": [
+     "1",
+     "Bipolar disorder, current episode mixed, mild"
+    ],
+    "F3162": [
+     "1",
+     "Bipolar disorder, current episode mixed, moderate"
+    ],
+    "F3163": [
+     "1",
+     "Bipolar disord, crnt epsd mixed, severe, w/o psych features"
+    ],
+    "F3164": [
+     "1",
+     "Bipolar disord, crnt episode mixed, severe, w psych features"
+    ],
+    "F317": [
+     "0",
+     "Bipolar disorder, currently in remission"
+    ],
+    "F3170": [
+     "1",
+     "Bipolar disord, currently in remis, most recent episode unsp"
+    ],
+    "F3171": [
+     "1",
+     "Bipolar disord, in partial remis, most recent epsd hypomanic"
+    ],
+    "F3172": [
+     "1",
+     "Bipolar disord, in full remis, most recent episode hypomanic"
+    ],
+    "F3173": [
+     "1",
+     "Bipolar disord, in partial remis, most recent episode manic"
+    ],
+    "F3174": [
+     "1",
+     "Bipolar disorder, in full remis, most recent episode manic"
+    ],
+    "F3175": [
+     "1",
+     "Bipolar disord, in partial remis, most recent epsd depress"
+    ],
+    "F3176": [
+     "1",
+     "Bipolar disorder, in full remis, most recent episode depress"
+    ],
+    "F3177": [
+     "1",
+     "Bipolar disord, in partial remis, most recent episode mixed"
+    ],
+    "F3178": [
+     "1",
+     "Bipolar disorder, in full remis, most recent episode mixed"
+    ],
+    "F318": [
+     "0",
+     "Other bipolar disorders"
+    ],
+    "F3181": [
+     "1",
+     "Bipolar II disorder"
+    ],
+    "F3189": [
+     "1",
+     "Other bipolar disorder"
+    ],
+    "F319": [
+     "1",
+     "Bipolar disorder, unspecified"
+    ],
+    "F32": [
+     "0",
+     "Depressive episode"
+    ],
+    "F320": [
+     "1",
+     "Major depressive disorder, single episode, mild"
+    ],
+    "F321": [
+     "1",
+     "Major depressive disorder, single episode, moderate"
+    ],
+    "F322": [
+     "1",
+     "Major depressv disord, single epsd, sev w/o psych features"
+    ],
+    "F323": [
+     "1",
+     "Major depressv disord, single epsd, severe w psych features"
+    ],
+    "F324": [
+     "1",
+     "Major depressv disorder, single episode, in partial remis"
+    ],
+    "F325": [
+     "1",
+     "Major depressive disorder, single episode, in full remission"
+    ],
+    "F328": [
+     "0",
+     "Other depressive episodes"
+    ],
+    "F3281": [
+     "1",
+     "Premenstrual dysphoric disorder"
+    ],
+    "F3289": [
+     "1",
+     "Other specified depressive episodes"
+    ],
+    "F329": [
+     "1",
+     "Major depressive disorder, single episode, unspecified"
+    ],
+    "F32A": [
+     "1",
+     "Depression, unspecified"
+    ],
+    "F33": [
+     "0",
+     "Major depressive disorder, recurrent"
+    ],
+    "F330": [
+     "1",
+     "Major depressive disorder, recurrent, mild"
+    ],
+    "F331": [
+     "1",
+     "Major depressive disorder, recurrent, moderate"
+    ],
+    "F332": [
+     "1",
+     "Major depressv disorder, recurrent severe w/o psych features"
+    ],
+    "F333": [
+     "1",
+     "Major depressv disorder, recurrent, severe w psych symptoms"
+    ],
+    "F334": [
+     "0",
+     "Major depressive disorder, recurrent, in remission"
+    ],
+    "F3340": [
+     "1",
+     "Major depressive disorder, recurrent, in remission, unsp"
+    ],
+    "F3341": [
+     "1",
+     "Major depressive disorder, recurrent, in partial remission"
+    ],
+    "F3342": [
+     "1",
+     "Major depressive disorder, recurrent, in full remission"
+    ],
+    "F338": [
+     "1",
+     "Other recurrent depressive disorders"
+    ],
+    "F339": [
+     "1",
+     "Major depressive disorder, recurrent, unspecified"
+    ],
+    "F34": [
+     "0",
+     "Persistent mood [affective] disorders"
+    ],
+    "F340": [
+     "1",
+     "Cyclothymic disorder"
+    ],
+    "F341": [
+     "1",
+     "Dysthymic disorder"
+    ],
+    "F348": [
+     "0",
+     "Other persistent mood [affective] disorders"
+    ],
+    "F3481": [
+     "1",
+     "Disruptive mood dysregulation disorder"
+    ],
+    "F3489": [
+     "1",
+     "Other specified persistent mood disorders"
+    ],
+    "F349": [
+     "1",
+     "Persistent mood [affective] disorder, unspecified"
+    ],
+    "F39": [
+     "1",
+     "Unspecified mood [affective] disorder"
+    ],
+    "F40": [
+     "0",
+     "Phobic anxiety disorders"
+    ],
+    "F400": [
+     "0",
+     "Agoraphobia"
+    ],
+    "F4000": [
+     "1",
+     "Agoraphobia, unspecified"
+    ],
+    "F4001": [
+     "1",
+     "Agoraphobia with panic disorder"
+    ],
+    "F4002": [
+     "1",
+     "Agoraphobia without panic disorder"
+    ],
+    "F401": [
+     "0",
+     "Social phobias"
+    ],
+    "F4010": [
+     "1",
+     "Social phobia, unspecified"
+    ],
+    "F4011": [
+     "1",
+     "Social phobia, generalized"
+    ],
+    "F402": [
+     "0",
+     "Specific (isolated) phobias"
+    ],
+    "F4021": [
+     "0",
+     "Animal type phobia"
+    ],
+    "F40210": [
+     "1",
+     "Arachnophobia"
+    ],
+    "F40218": [
+     "1",
+     "Other animal type phobia"
+    ],
+    "F4022": [
+     "0",
+     "Natural environment type phobia"
+    ],
+    "F40220": [
+     "1",
+     "Fear of thunderstorms"
+    ],
+    "F40228": [
+     "1",
+     "Other natural environment type phobia"
+    ],
+    "F4023": [
+     "0",
+     "Blood, injection, injury type phobia"
+    ],
+    "F40230": [
+     "1",
+     "Fear of blood"
+    ],
+    "F40231": [
+     "1",
+     "Fear of injections and transfusions"
+    ],
+    "F40232": [
+     "1",
+     "Fear of other medical care"
+    ],
+    "F40233": [
+     "1",
+     "Fear of injury"
+    ],
+    "F4024": [
+     "0",
+     "Situational type phobia"
+    ],
+    "F40240": [
+     "1",
+     "Claustrophobia"
+    ],
+    "F40241": [
+     "1",
+     "Acrophobia"
+    ],
+    "F40242": [
+     "1",
+     "Fear of bridges"
+    ],
+    "F40243": [
+     "1",
+     "Fear of flying"
+    ],
+    "F40248": [
+     "1",
+     "Other situational type phobia"
+    ],
+    "F4029": [
+     "0",
+     "Other specified phobia"
+    ],
+    "F40290": [
+     "1",
+     "Androphobia"
+    ],
+    "F40291": [
+     "1",
+     "Gynephobia"
+    ],
+    "F40298": [
+     "1",
+     "Other specified phobia"
+    ],
+    "F408": [
+     "1",
+     "Other phobic anxiety disorders"
+    ],
+    "F409": [
+     "1",
+     "Phobic anxiety disorder, unspecified"
+    ],
+    "F41": [
+     "0",
+     "Other anxiety disorders"
+    ],
+    "F410": [
+     "1",
+     "Panic disorder [episodic paroxysmal anxiety]"
+    ],
+    "F411": [
+     "1",
+     "Generalized anxiety disorder"
+    ],
+    "F413": [
+     "1",
+     "Other mixed anxiety disorders"
+    ],
+    "F418": [
+     "1",
+     "Other specified anxiety disorders"
+    ],
+    "F419": [
+     "1",
+     "Anxiety disorder, unspecified"
+    ],
+    "F42": [
+     "0",
+     "Obsessive-compulsive disorder"
+    ],
+    "F422": [
+     "1",
+     "Mixed obsessional thoughts and acts"
+    ],
+    "F423": [
+     "1",
+     "Hoarding disorder"
+    ],
+    "F424": [
+     "1",
+     "Excoriation (skin-picking) disorder"
+    ],
+    "F428": [
+     "1",
+     "Other obsessive-compulsive disorder"
+    ],
+    "F429": [
+     "1",
+     "Obsessive-compulsive disorder, unspecified"
+    ],
+    "F43": [
+     "0",
+     "Reaction to severe stress, and adjustment disorders"
+    ],
+    "F430": [
+     "1",
+     "Acute stress reaction"
+    ],
+    "F431": [
+     "0",
+     "Post-traumatic stress disorder (PTSD)"
+    ],
+    "F4310": [
+     "1",
+     "Post-traumatic stress disorder, unspecified"
+    ],
+    "F4311": [
+     "1",
+     "Post-traumatic stress disorder, acute"
+    ],
+    "F4312": [
+     "1",
+     "Post-traumatic stress disorder, chronic"
+    ],
+    "F432": [
+     "0",
+     "Adjustment disorders"
+    ],
+    "F4320": [
+     "1",
+     "Adjustment disorder, unspecified"
+    ],
+    "F4321": [
+     "1",
+     "Adjustment disorder with depressed mood"
+    ],
+    "F4322": [
+     "1",
+     "Adjustment disorder with anxiety"
+    ],
+    "F4323": [
+     "1",
+     "Adjustment disorder with mixed anxiety and depressed mood"
+    ],
+    "F4324": [
+     "1",
+     "Adjustment disorder with disturbance of conduct"
+    ],
+    "F4325": [
+     "1",
+     "Adjustment disorder w mixed disturb of emotions and conduct"
+    ],
+    "F4329": [
+     "1",
+     "Adjustment disorder with other symptoms"
+    ],
+    "F438": [
+     "0",
+     "Other reactions to severe stress"
+    ],
+    "F4381": [
+     "1",
+     "Prolonged grief disorder"
+    ],
+    "F4389": [
+     "1",
+     "Other reactions to severe stress"
+    ],
+    "F439": [
+     "1",
+     "Reaction to severe stress, unspecified"
+    ],
+    "F44": [
+     "0",
+     "Dissociative and conversion disorders"
+    ],
+    "F440": [
+     "1",
+     "Dissociative amnesia"
+    ],
+    "F441": [
+     "1",
+     "Dissociative fugue"
+    ],
+    "F442": [
+     "1",
+     "Dissociative stupor"
+    ],
+    "F444": [
+     "1",
+     "Conversion disorder with motor symptom or deficit"
+    ],
+    "F445": [
+     "1",
+     "Conversion disorder with seizures or convulsions"
+    ],
+    "F446": [
+     "1",
+     "Conversion disorder with sensory symptom or deficit"
+    ],
+    "F447": [
+     "1",
+     "Conversion disorder with mixed symptom presentation"
+    ],
+    "F448": [
+     "0",
+     "Other dissociative and conversion disorders"
+    ],
+    "F4481": [
+     "1",
+     "Dissociative identity disorder"
+    ],
+    "F4489": [
+     "1",
+     "Other dissociative and conversion disorders"
+    ],
+    "F449": [
+     "1",
+     "Dissociative and conversion disorder, unspecified"
+    ],
+    "F45": [
+     "0",
+     "Somatoform disorders"
+    ],
+    "F450": [
+     "1",
+     "Somatization disorder"
+    ],
+    "F451": [
+     "1",
+     "Undifferentiated somatoform disorder"
+    ],
+    "F452": [
+     "0",
+     "Hypochondriacal disorders"
+    ],
+    "F4520": [
+     "1",
+     "Hypochondriacal disorder, unspecified"
+    ],
+    "F4521": [
+     "1",
+     "Hypochondriasis"
+    ],
+    "F4522": [
+     "1",
+     "Body dysmorphic disorder"
+    ],
+    "F4529": [
+     "1",
+     "Other hypochondriacal disorders"
+    ],
+    "F454": [
+     "0",
+     "Pain disorders related to psychological factors"
+    ],
+    "F4541": [
+     "1",
+     "Pain disorder exclusively related to psychological factors"
+    ],
+    "F4542": [
+     "1",
+     "Pain disorder with related psychological factors"
+    ],
+    "F458": [
+     "1",
+     "Other somatoform disorders"
+    ],
+    "F459": [
+     "1",
+     "Somatoform disorder, unspecified"
+    ],
+    "F48": [
+     "0",
+     "Other nonpsychotic mental disorders"
+    ],
+    "F481": [
+     "1",
+     "Depersonalization-derealization syndrome"
+    ],
+    "F482": [
+     "1",
+     "Pseudobulbar affect"
+    ],
+    "F488": [
+     "1",
+     "Other specified nonpsychotic mental disorders"
+    ],
+    "F489": [
+     "1",
+     "Nonpsychotic mental disorder, unspecified"
+    ],
+    "F50": [
+     "0",
+     "Eating disorders"
+    ],
+    "F500": [
+     "0",
+     "Anorexia nervosa"
+    ],
+    "F5000": [
+     "1",
+     "Anorexia nervosa, unspecified"
+    ],
+    "F5001": [
+     "0",
+     "Anorexia nervosa, restricting type"
+    ],
+    "F50010": [
+     "1",
+     "Anorexia nervosa, restricting type, mild"
+    ],
+    "F50011": [
+     "1",
+     "Anorexia nervosa, restricting type, moderate"
+    ],
+    "F50012": [
+     "1",
+     "Anorexia nervosa, restricting type, severe"
+    ],
+    "F50013": [
+     "1",
+     "Anorexia nervosa, restricting type, extreme"
+    ],
+    "F50014": [
+     "1",
+     "Anorexia nervosa, restricting type, in remission"
+    ],
+    "F50019": [
+     "1",
+     "Anorexia nervosa, restricting type, unspecified"
+    ],
+    "F5002": [
+     "0",
+     "Anorexia nervosa, binge eating/purging type"
+    ],
+    "F50020": [
+     "1",
+     "Anorexia nervosa, binge eating/purging type, mild"
+    ],
+    "F50021": [
+     "1",
+     "Anorexia nervosa, binge eating/purging type, moderate"
+    ],
+    "F50022": [
+     "1",
+     "Anorexia nervosa, binge eating/purging type, severe"
+    ],
+    "F50023": [
+     "1",
+     "Anorexia nervosa, binge eating/purging type, extreme"
+    ],
+    "F50024": [
+     "1",
+     "Anorexia nervosa, binge eating/purging type, in remission"
+    ],
+    "F50029": [
+     "1",
+     "Anorexia nervosa, binge eating/purging type, unspecified"
+    ],
+    "F502": [
+     "0",
+     "Bulimia nervosa"
+    ],
+    "F5020": [
+     "1",
+     "Bulimia nervosa, unspecified"
+    ],
+    "F5021": [
+     "1",
+     "Bulimia nervosa, mild"
+    ],
+    "F5022": [
+     "1",
+     "Bulimia nervosa, moderate"
+    ],
+    "F5023": [
+     "1",
+     "Bulimia nervosa, severe"
+    ],
+    "F5024": [
+     "1",
+     "Bulimia nervosa, extreme"
+    ],
+    "F5025": [
+     "1",
+     "Bulimia nervosa, in remission"
+    ],
+    "F508": [
+     "0",
+     "Other eating disorders"
+    ],
+    "F5081": [
+     "0",
+     "Binge eating disorder"
+    ],
+    "F50810": [
+     "1",
+     "Binge eating disorder, mild"
+    ],
+    "F50811": [
+     "1",
+     "Binge eating disorder, moderate"
+    ],
+    "F50812": [
+     "1",
+     "Binge eating disorder, severe"
+    ],
+    "F50813": [
+     "1",
+     "Binge eating disorder, extreme"
+    ],
+    "F50814": [
+     "1",
+     "Binge eating disorder, in remission"
+    ],
+    "F50819": [
+     "1",
+     "Binge eating disorder, unspecified"
+    ],
+    "F5082": [
+     "1",
+     "Avoidant/restrictive food intake disorder"
+    ],
+    "F5083": [
+     "1",
+     "Pica in adults"
+    ],
+    "F5084": [
+     "1",
+     "Rumination disorder in adults"
+    ],
+    "F5089": [
+     "1",
+     "Other specified eating disorder"
+    ],
+    "F509": [
+     "1",
+     "Eating disorder, unspecified"
+    ],
+    "F51": [
+     "0",
+     "Sleep disorders not due to a substance or known physiol cond"
+    ],
+    "F510": [
+     "0",
+     "Insomnia not due to a substance or known physiol condition"
+    ],
+    "F5101": [
+     "1",
+     "Primary insomnia"
+    ],
+    "F5102": [
+     "1",
+     "Adjustment insomnia"
+    ],
+    "F5103": [
+     "1",
+     "Paradoxical insomnia"
+    ],
+    "F5104": [
+     "1",
+     "Psychophysiologic insomnia"
+    ],
+    "F5105": [
+     "1",
+     "Insomnia due to other mental disorder"
+    ],
+    "F5109": [
+     "1",
+     "Oth insomnia not due to a substance or known physiol cond"
+    ],
+    "F511": [
+     "0",
+     "Hypersomnia not due to a substance or known physiol cond"
+    ],
+    "F5111": [
+     "1",
+     "Primary hypersomnia"
+    ],
+    "F5112": [
+     "1",
+     "Insufficient sleep syndrome"
+    ],
+    "F5113": [
+     "1",
+     "Hypersomnia due to other mental disorder"
+    ],
+    "F5119": [
+     "1",
+     "Oth hypersomnia not due to a substance or known physiol cond"
+    ],
+    "F513": [
+     "1",
+     "Sleepwalking [somnambulism]"
+    ],
+    "F514": [
+     "1",
+     "Sleep terrors [night terrors]"
+    ],
+    "F515": [
+     "1",
+     "Nightmare disorder"
+    ],
+    "F518": [
+     "1",
+     "Oth sleep disord not due to a sub or known physiol cond"
+    ],
+    "F519": [
+     "1",
+     "Sleep disorder not due to a sub or known physiol cond, unsp"
+    ],
+    "F52": [
+     "0",
+     "Sexual dysfnct not due to a substance or known physiol cond"
+    ],
+    "F520": [
+     "1",
+     "Hypoactive sexual desire disorder"
+    ],
+    "F521": [
+     "1",
+     "Sexual aversion disorder"
+    ],
+    "F522": [
+     "0",
+     "Sexual arousal disorders"
+    ],
+    "F5221": [
+     "1",
+     "Male erectile disorder"
+    ],
+    "F5222": [
+     "1",
+     "Female sexual arousal disorder"
+    ],
+    "F523": [
+     "0",
+     "Orgasmic disorder"
+    ],
+    "F5231": [
+     "1",
+     "Female orgasmic disorder"
+    ],
+    "F5232": [
+     "1",
+     "Male orgasmic disorder"
+    ],
+    "F524": [
+     "1",
+     "Premature ejaculation"
+    ],
+    "F525": [
+     "1",
+     "Vaginismus not due to a substance or known physiol condition"
+    ],
+    "F526": [
+     "1",
+     "Dyspareunia not due to a substance or known physiol cond"
+    ],
+    "F528": [
+     "1",
+     "Oth sexual dysfnct not due to a sub or known physiol cond"
+    ],
+    "F529": [
+     "1",
+     "Unsp sexual dysfnct not due to a sub or known physiol cond"
+    ],
+    "F53": [
+     "0",
+     "Mental and behavrl disorders assoc with the puerperium, NEC"
+    ],
+    "F530": [
+     "1",
+     "Postpartum depression"
+    ],
+    "F531": [
+     "1",
+     "Puerperal psychosis"
+    ],
+    "F54": [
+     "1",
+     "Psych & behavrl factors assoc w disord or dis classd elswhr"
+    ],
+    "F55": [
+     "0",
+     "Abuse of non-psychoactive substances"
+    ],
+    "F550": [
+     "1",
+     "Abuse of antacids"
+    ],
+    "F551": [
+     "1",
+     "Abuse of herbal or folk remedies"
+    ],
+    "F552": [
+     "1",
+     "Abuse of laxatives"
+    ],
+    "F553": [
+     "1",
+     "Abuse of steroids or hormones"
+    ],
+    "F554": [
+     "1",
+     "Abuse of vitamins"
+    ],
+    "F558": [
+     "1",
+     "Abuse of other non-psychoactive substances"
+    ],
+    "F59": [
+     "1",
+     "Unsp behavrl synd assoc w physiol disturb and physcl factors"
+    ],
+    "F60": [
+     "0",
+     "Specific personality disorders"
+    ],
+    "F600": [
+     "1",
+     "Paranoid personality disorder"
+    ],
+    "F601": [
+     "1",
+     "Schizoid personality disorder"
+    ],
+    "F602": [
+     "1",
+     "Antisocial personality disorder"
+    ],
+    "F603": [
+     "1",
+     "Borderline personality disorder"
+    ],
+    "F604": [
+     "1",
+     "Histrionic personality disorder"
+    ],
+    "F605": [
+     "1",
+     "Obsessive-compulsive personality disorder"
+    ],
+    "F606": [
+     "1",
+     "Avoidant personality disorder"
+    ],
+    "F607": [
+     "1",
+     "Dependent personality disorder"
+    ],
+    "F608": [
+     "0",
+     "Other specific personality disorders"
+    ],
+    "F6081": [
+     "1",
+     "Narcissistic personality disorder"
+    ],
+    "F6089": [
+     "1",
+     "Other specific personality disorders"
+    ],
+    "F609": [
+     "1",
+     "Personality disorder, unspecified"
+    ],
+    "F63": [
+     "0",
+     "Impulse disorders"
+    ],
+    "F630": [
+     "1",
+     "Pathological gambling"
+    ],
+    "F631": [
+     "1",
+     "Pyromania"
+    ],
+    "F632": [
+     "1",
+     "Kleptomania"
+    ],
+    "F633": [
+     "1",
+     "Trichotillomania"
+    ],
+    "F638": [
+     "0",
+     "Other impulse disorders"
+    ],
+    "F6381": [
+     "1",
+     "Intermittent explosive disorder"
+    ],
+    "F6389": [
+     "1",
+     "Other impulse disorders"
+    ],
+    "F639": [
+     "1",
+     "Impulse disorder, unspecified"
+    ],
+    "F64": [
+     "0",
+     "Gender identity disorders"
+    ],
+    "F640": [
+     "1",
+     "Transsexualism"
+    ],
+    "F641": [
+     "1",
+     "Dual role transvestism"
+    ],
+    "F642": [
+     "1",
+     "Gender identity disorder of childhood"
+    ],
+    "F648": [
+     "1",
+     "Other gender identity disorders"
+    ],
+    "F649": [
+     "1",
+     "Gender identity disorder, unspecified"
+    ],
+    "F65": [
+     "0",
+     "Paraphilias"
+    ],
+    "F650": [
+     "1",
+     "Fetishism"
+    ],
+    "F651": [
+     "1",
+     "Transvestic fetishism"
+    ],
+    "F652": [
+     "1",
+     "Exhibitionism"
+    ],
+    "F653": [
+     "1",
+     "Voyeurism"
+    ],
+    "F654": [
+     "1",
+     "Pedophilia"
+    ],
+    "F655": [
+     "0",
+     "Sadomasochism"
+    ],
+    "F6550": [
+     "1",
+     "Sadomasochism, unspecified"
+    ],
+    "F6551": [
+     "1",
+     "Sexual masochism"
+    ],
+    "F6552": [
+     "1",
+     "Sexual sadism"
+    ],
+    "F658": [
+     "0",
+     "Other paraphilias"
+    ],
+    "F6581": [
+     "1",
+     "Frotteurism"
+    ],
+    "F6589": [
+     "1",
+     "Other paraphilias"
+    ],
+    "F659": [
+     "1",
+     "Paraphilia, unspecified"
+    ],
+    "F66": [
+     "1",
+     "Other sexual disorders"
+    ],
+    "F68": [
+     "0",
+     "Other disorders of adult personality and behavior"
+    ],
+    "F681": [
+     "0",
+     "Factitious disorder imposed on self"
+    ],
+    "F6810": [
+     "1",
+     "Factitious disorder imposed on self, unspecified"
+    ],
+    "F6811": [
+     "1",
+     "Factit disord imposed on self, with predom psych signs/symp"
+    ],
+    "F6812": [
+     "1",
+     "Factit disord impsd on self, with predom physcl signs/symp"
+    ],
+    "F6813": [
+     "1",
+     "Factit disord impsd on self,w comb psych & physcl signs/symp"
+    ],
+    "F688": [
+     "1",
+     "Other specified disorders of adult personality and behavior"
+    ],
+    "F68A": [
+     "1",
+     "Factitious disorder imposed on another"
+    ],
+    "F69": [
+     "1",
+     "Unspecified disorder of adult personality and behavior"
+    ],
+    "F70": [
+     "1",
+     "Mild intellectual disabilities"
+    ],
+    "F71": [
+     "1",
+     "Moderate intellectual disabilities"
+    ],
+    "F72": [
+     "1",
+     "Severe intellectual disabilities"
+    ],
+    "F73": [
+     "1",
+     "Profound intellectual disabilities"
+    ],
+    "F78": [
+     "0",
+     "Other intellectual disabilities"
+    ],
+    "F78A": [
+     "0",
+     "Other genetic related intellectual disabilities"
+    ],
+    "F78A1": [
+     "1",
+     "SYNGAP1-related intellectual disability"
+    ],
+    "F78A9": [
+     "1",
+     "Other genetic related intellectual disability"
+    ],
+    "F79": [
+     "1",
+     "Unspecified intellectual disabilities"
+    ],
+    "F80": [
+     "0",
+     "Specific developmental disorders of speech and language"
+    ],
+    "F800": [
+     "1",
+     "Phonological disorder"
+    ],
+    "F801": [
+     "1",
+     "Expressive language disorder"
+    ],
+    "F802": [
+     "1",
+     "Mixed receptive-expressive language disorder"
+    ],
+    "F804": [
+     "1",
+     "Speech and language development delay due to hearing loss"
+    ],
+    "F808": [
+     "0",
+     "Other developmental disorders of speech and language"
+    ],
+    "F8081": [
+     "1",
+     "Childhood onset fluency disorder"
+    ],
+    "F8082": [
+     "1",
+     "Social pragmatic communication disorder"
+    ],
+    "F8089": [
+     "1",
+     "Other developmental disorders of speech and language"
+    ],
+    "F809": [
+     "1",
+     "Developmental disorder of speech and language, unspecified"
+    ],
+    "F81": [
+     "0",
+     "Specific developmental disorders of scholastic skills"
+    ],
+    "F810": [
+     "1",
+     "Specific reading disorder"
+    ],
+    "F812": [
+     "1",
+     "Mathematics disorder"
+    ],
+    "F818": [
+     "0",
+     "Other developmental disorders of scholastic skills"
+    ],
+    "F8181": [
+     "1",
+     "Disorder of written expression"
+    ],
+    "F8189": [
+     "1",
+     "Other developmental disorders of scholastic skills"
+    ],
+    "F819": [
+     "1",
+     "Developmental disorder of scholastic skills, unspecified"
+    ],
+    "F82": [
+     "1",
+     "Specific developmental disorder of motor function"
+    ],
+    "F84": [
+     "0",
+     "Pervasive developmental disorders"
+    ],
+    "F840": [
+     "1",
+     "Autistic disorder"
+    ],
+    "F842": [
+     "1",
+     "Rett's syndrome"
+    ],
+    "F843": [
+     "1",
+     "Other childhood disintegrative disorder"
+    ],
+    "F845": [
+     "1",
+     "Asperger's syndrome"
+    ],
+    "F848": [
+     "1",
+     "Other pervasive developmental disorders"
+    ],
+    "F849": [
+     "1",
+     "Pervasive developmental disorder, unspecified"
+    ],
+    "F88": [
+     "1",
+     "Other disorders of psychological development"
+    ],
+    "F89": [
+     "1",
+     "Unspecified disorder of psychological development"
+    ],
+    "F90": [
+     "0",
+     "Attention-deficit hyperactivity disorders"
+    ],
+    "F900": [
+     "1",
+     "Attn-defct hyperactivity disorder, predom inattentive type"
+    ],
+    "F901": [
+     "1",
+     "Attn-defct hyperactivity disorder, predom hyperactive type"
+    ],
+    "F902": [
+     "1",
+     "Attention-deficit hyperactivity disorder, combined type"
+    ],
+    "F908": [
+     "1",
+     "Attention-deficit hyperactivity disorder, other type"
+    ],
+    "F909": [
+     "1",
+     "Attention-deficit hyperactivity disorder, unspecified type"
+    ],
+    "F91": [
+     "0",
+     "Conduct disorders"
+    ],
+    "F910": [
+     "1",
+     "Conduct disorder confined to family context"
+    ],
+    "F911": [
+     "1",
+     "Conduct disorder, childhood-onset type"
+    ],
+    "F912": [
+     "1",
+     "Conduct disorder, adolescent-onset type"
+    ],
+    "F913": [
+     "1",
+     "Oppositional defiant disorder"
+    ],
+    "F918": [
+     "1",
+     "Other conduct disorders"
+    ],
+    "F919": [
+     "1",
+     "Conduct disorder, unspecified"
+    ],
+    "F93": [
+     "0",
+     "Emotional disorders with onset specific to childhood"
+    ],
+    "F930": [
+     "1",
+     "Separation anxiety disorder of childhood"
+    ],
+    "F938": [
+     "1",
+     "Other childhood emotional disorders"
+    ],
+    "F939": [
+     "1",
+     "Childhood emotional disorder, unspecified"
+    ],
+    "F94": [
+     "0",
+     "Disord social w onset specific to childhood and adolescence"
+    ],
+    "F940": [
+     "1",
+     "Selective mutism"
+    ],
+    "F941": [
+     "1",
+     "Reactive attachment disorder of childhood"
+    ],
+    "F942": [
+     "1",
+     "Disinhibited attachment disorder of childhood"
+    ],
+    "F948": [
+     "1",
+     "Other childhood disorders of social functioning"
+    ],
+    "F949": [
+     "1",
+     "Childhood disorder of social functioning, unspecified"
+    ],
+    "F95": [
+     "0",
+     "Tic disorder"
+    ],
+    "F950": [
+     "1",
+     "Transient tic disorder"
+    ],
+    "F951": [
+     "1",
+     "Chronic motor or vocal tic disorder"
+    ],
+    "F952": [
+     "1",
+     "Tourette's disorder"
+    ],
+    "F958": [
+     "1",
+     "Other tic disorders"
+    ],
+    "F959": [
+     "1",
+     "Tic disorder, unspecified"
+    ],
+    "F98": [
+     "0",
+     "Oth behav/emotn disord w onset usly occur in chldhd and adol"
+    ],
+    "F980": [
+     "1",
+     "Enuresis not due to a substance or known physiol condition"
+    ],
+    "F981": [
+     "1",
+     "Encopresis not due to a substance or known physiol condition"
+    ],
+    "F982": [
+     "0",
+     "Other feeding disorders of infancy and childhood"
+    ],
+    "F9821": [
+     "1",
+     "Rumination disorder of infancy and childhood"
+    ],
+    "F9829": [
+     "1",
+     "Other feeding disorders of infancy and early childhood"
+    ],
+    "F983": [
+     "1",
+     "Pica of infancy and childhood"
+    ],
+    "F984": [
+     "1",
+     "Stereotyped movement disorders"
+    ],
+    "F985": [
+     "1",
+     "Adult onset fluency disorder"
+    ],
+    "F988": [
+     "1",
+     "Oth behav/emotn disord w onset usly occur in chldhd and adol"
+    ],
+    "F989": [
+     "1",
+     "Unsp behav/emotn disord w onst usly occur in chldhd and adol"
+    ],
+    "F99": [
+     "1",
+     "Mental disorder, not otherwise specified"
+    ]
+   },
+   "effective": "2025-10-01"
+  },
+  "fy2027": {
+   "codes": {
+    "F01": [
+     "0",
+     "Vascular dementia"
+    ],
+    "F015": [
+     "0",
+     "Vascular dementia, unspecified severity"
+    ],
+    "F0150": [
+     "1",
+     "Vascular dementia, unsp severity, without beh/psych/mood/anx"
+    ],
+    "F0151": [
+     "0",
+     "Vascular dementia, unsp severity, with behavioral disturb"
+    ],
+    "F01511": [
+     "1",
+     "Vascular dementia, unspecified severity, with agitation"
+    ],
+    "F01518": [
+     "1",
+     "Vascular dementia, unsp severity, with other beh disturb"
+    ],
+    "F0152": [
+     "1",
+     "Vascular dementia, unsp severity, with psychotic disturb"
+    ],
+    "F0153": [
+     "1",
+     "Vascular dementia, unspecified severity, with mood disturb"
+    ],
+    "F0154": [
+     "1",
+     "Vascular dementia, unspecified severity, with anxiety"
+    ],
+    "F01A": [
+     "0",
+     "Vascular dementia, mild"
+    ],
+    "F01A0": [
+     "1",
+     "Vascular dementia, mild, without beh/psych/mood/anx"
+    ],
+    "F01A1": [
+     "0",
+     "Vascular dementia, mild, with behavioral disturbance"
+    ],
+    "F01A11": [
+     "1",
+     "Vascular dementia, mild, with agitation"
+    ],
+    "F01A18": [
+     "1",
+     "Vascular dementia, mild, with other behavioral disturbance"
+    ],
+    "F01A2": [
+     "1",
+     "Vascular dementia, mild, with psychotic disturbance"
+    ],
+    "F01A3": [
+     "1",
+     "Vascular dementia, mild, with mood disturbance"
+    ],
+    "F01A4": [
+     "1",
+     "Vascular dementia, mild, with anxiety"
+    ],
+    "F01B": [
+     "0",
+     "Vascular dementia, moderate"
+    ],
+    "F01B0": [
+     "1",
+     "Vascular dementia, moderate, without beh/psych/mood/anx"
+    ],
+    "F01B1": [
+     "0",
+     "Vascular dementia, moderate, with behavioral disturbance"
+    ],
+    "F01B11": [
+     "1",
+     "Vascular dementia, moderate, with agitation"
+    ],
+    "F01B18": [
+     "1",
+     "Vascular dementia, moderate, with other behavioral disturb"
+    ],
+    "F01B2": [
+     "1",
+     "Vascular dementia, moderate, with psychotic disturbance"
+    ],
+    "F01B3": [
+     "1",
+     "Vascular dementia, moderate, with mood disturbance"
+    ],
+    "F01B4": [
+     "1",
+     "Vascular dementia, moderate, with anxiety"
+    ],
+    "F01C": [
+     "0",
+     "Vascular dementia, severe"
+    ],
+    "F01C0": [
+     "1",
+     "Vascular dementia, severe, without beh/psych/mood/anx"
+    ],
+    "F01C1": [
+     "0",
+     "Vascular dementia, severe, with behavioral disturbance"
+    ],
+    "F01C11": [
+     "1",
+     "Vascular dementia, severe, with agitation"
+    ],
+    "F01C18": [
+     "1",
+     "Vascular dementia, severe, with other behavioral disturbance"
+    ],
+    "F01C2": [
+     "1",
+     "Vascular dementia, severe, with psychotic disturbance"
+    ],
+    "F01C3": [
+     "1",
+     "Vascular dementia, severe, with mood disturbance"
+    ],
+    "F01C4": [
+     "1",
+     "Vascular dementia, severe, with anxiety"
+    ],
+    "F02": [
+     "0",
+     "Dementia in other diseases classified elsewhere"
+    ],
+    "F028": [
+     "0",
+     "Dementia in other diseases classd elswhr, unsp severity"
+    ],
+    "F0280": [
+     "1",
+     "Dem in oth dis classd elswhr,unsp sev,w/o beh/psych/mood/anx"
+    ],
+    "F0281": [
+     "0",
+     "Dem in other dis classd elswhr, unsp sev, with beh distrb"
+    ],
+    "F02811": [
+     "1",
+     "Dem in other dis classd elswhr, unsp severt, with agitation"
+    ],
+    "F02818": [
+     "1",
+     "Dem in oth dis classd elswhr, unsp sev, with oth beh distrb"
+    ],
+    "F0282": [
+     "1",
+     "Dem in other dis classd elswhr, unsp sev, with psych distrb"
+    ],
+    "F0283": [
+     "1",
+     "Dem in other dis classd elswhr, unsp sev, with mood distrb"
+    ],
+    "F0284": [
+     "1",
+     "Dem in other dis classd elswhr, unsp severity, with anxiety"
+    ],
+    "F02A": [
+     "0",
+     "Dementia in other diseases classified elsewhere, mild"
+    ],
+    "F02A0": [
+     "1",
+     "Dem in other dis classd elswhr, mild, w/o beh/psych/mood/anx"
+    ],
+    "F02A1": [
+     "0",
+     "Dem in other diseases classd elswhr, mild, with beh disturb"
+    ],
+    "F02A11": [
+     "1",
+     "Dem in other diseases classd elswhr, mild, with agitation"
+    ],
+    "F02A18": [
+     "1",
+     "Dem in other dis classd elswhr, mild, with other beh distrb"
+    ],
+    "F02A2": [
+     "1",
+     "Dem in other dis classd elswhr, mild, with psych disturb"
+    ],
+    "F02A3": [
+     "1",
+     "Dem in other diseases classd elswhr, mild, with mood disturb"
+    ],
+    "F02A4": [
+     "1",
+     "Dementia in other diseases classd elswhr, mild, with anxiety"
+    ],
+    "F02B": [
+     "0",
+     "Dementia in other diseases classified elsewhere, moderate"
+    ],
+    "F02B0": [
+     "1",
+     "Dem in other dis classd elswhr, mod, w/o beh/psych/mood/anx"
+    ],
+    "F02B1": [
+     "0",
+     "Dem in other dis classd elswhr, moderate, with beh disturb"
+    ],
+    "F02B11": [
+     "1",
+     "Dem in other dis classd elswhr, moderate, with agitation"
+    ],
+    "F02B18": [
+     "1",
+     "Dem in other dis classd elswhr, mod, with other beh disturb"
+    ],
+    "F02B2": [
+     "1",
+     "Dem in other dis classd elswhr, moderate, with psych disturb"
+    ],
+    "F02B3": [
+     "1",
+     "Dem in other dis classd elswhr, moderate, with mood disturb"
+    ],
+    "F02B4": [
+     "1",
+     "Dem in other diseases classd elswhr, moderate, with anxiety"
+    ],
+    "F02C": [
+     "0",
+     "Dementia in other diseases classified elsewhere, severe"
+    ],
+    "F02C0": [
+     "1",
+     "Dem in other dis classd elswhr, sev, w/o beh/psych/mood/anx"
+    ],
+    "F02C1": [
+     "0",
+     "Dem in other dis classd elswhr, severe, with beh disturb"
+    ],
+    "F02C11": [
+     "1",
+     "Dem in other diseases classd elswhr, severe, with agitation"
+    ],
+    "F02C18": [
+     "1",
+     "Dem in other dis classd elswhr, sev, with other beh distrb"
+    ],
+    "F02C2": [
+     "1",
+     "Dem in other dis classd elswhr, severe, with psych disturb"
+    ],
+    "F02C3": [
+     "1",
+     "Dem in other dis classd elswhr, severe, with mood disturb"
+    ],
+    "F02C4": [
+     "1",
+     "Dem in other diseases classd elswhr, severe, with anxiety"
+    ],
+    "F03": [
+     "0",
+     "Unspecified dementia"
+    ],
+    "F039": [
+     "0",
+     "Unspecified dementia, unspecified severity"
+    ],
+    "F0390": [
+     "1",
+     "Unsp dementia, unsp severity, without beh/psych/mood/anx"
+    ],
+    "F0391": [
+     "0",
+     "Unsp dementia, unspecified severity, with behavioral disturb"
+    ],
+    "F03911": [
+     "1",
+     "Unspecified dementia, unspecified severity, with agitation"
+    ],
+    "F03918": [
+     "1",
+     "Unsp dementia, unsp severity, with other behavioral disturb"
+    ],
+    "F0392": [
+     "1",
+     "Unsp dementia, unspecified severity, with psychotic disturb"
+    ],
+    "F0393": [
+     "1",
+     "Unsp dementia, unspecified severity, with mood disturb"
+    ],
+    "F0394": [
+     "1",
+     "Unspecified dementia, unspecified severity, with anxiety"
+    ],
+    "F03A": [
+     "0",
+     "Unspecified dementia, mild"
+    ],
+    "F03A0": [
+     "1",
+     "Unspecified dementia, mild, without beh/psych/mood/anx"
+    ],
+    "F03A1": [
+     "0",
+     "Unspecified dementia, mild, with behavioral disturbance"
+    ],
+    "F03A11": [
+     "1",
+     "Unspecified dementia, mild, with agitation"
+    ],
+    "F03A18": [
+     "1",
+     "Unspecified dementia, mild, with other behavioral disturb"
+    ],
+    "F03A2": [
+     "1",
+     "Unspecified dementia, mild, with psychotic disturbance"
+    ],
+    "F03A3": [
+     "1",
+     "Unspecified dementia, mild, with mood disturbance"
+    ],
+    "F03A4": [
+     "1",
+     "Unspecified dementia, mild, with anxiety"
+    ],
+    "F03B": [
+     "0",
+     "Unspecified dementia, moderate"
+    ],
+    "F03B0": [
+     "1",
+     "Unspecified dementia, moderate, without beh/psych/mood/anx"
+    ],
+    "F03B1": [
+     "0",
+     "Unspecified dementia, moderate, with behavioral disturbance"
+    ],
+    "F03B11": [
+     "1",
+     "Unspecified dementia, moderate, with agitation"
+    ],
+    "F03B18": [
+     "1",
+     "Unsp dementia, moderate, with other behavioral disturb"
+    ],
+    "F03B2": [
+     "1",
+     "Unspecified dementia, moderate, with psychotic disturbance"
+    ],
+    "F03B3": [
+     "1",
+     "Unspecified dementia, moderate, with mood disturbance"
+    ],
+    "F03B4": [
+     "1",
+     "Unspecified dementia, moderate, with anxiety"
+    ],
+    "F03C": [
+     "0",
+     "Unspecified dementia, severe"
+    ],
+    "F03C0": [
+     "1",
+     "Unspecified dementia, severe, without beh/psych/mood/anx"
+    ],
+    "F03C1": [
+     "0",
+     "Unspecified dementia, severe, with behavioral disturbance"
+    ],
+    "F03C11": [
+     "1",
+     "Unspecified dementia, severe, with agitation"
+    ],
+    "F03C18": [
+     "1",
+     "Unspecified dementia, severe, with other behavioral disturb"
+    ],
+    "F03C2": [
+     "1",
+     "Unspecified dementia, severe, with psychotic disturbance"
+    ],
+    "F03C3": [
+     "1",
+     "Unspecified dementia, severe, with mood disturbance"
+    ],
+    "F03C4": [
+     "1",
+     "Unspecified dementia, severe, with anxiety"
+    ],
+    "F04": [
+     "1",
+     "Amnestic disorder due to known physiological condition"
+    ],
+    "F05": [
+     "1",
+     "Delirium due to known physiological condition"
+    ],
+    "F06": [
+     "0",
+     "Other mental disorders due to known physiological condition"
+    ],
+    "F060": [
+     "1",
+     "Psychotic disorder w hallucin due to known physiol condition"
+    ],
+    "F061": [
+     "1",
+     "Catatonic disorder due to known physiological condition"
+    ],
+    "F062": [
+     "1",
+     "Psychotic disorder w delusions due to known physiol cond"
+    ],
+    "F063": [
+     "0",
+     "Mood disorder due to known physiological condition"
+    ],
+    "F0630": [
+     "1",
+     "Mood disorder due to known physiological condition, unsp"
+    ],
+    "F0631": [
+     "1",
+     "Mood disorder due to known physiol cond w depressv features"
+    ],
+    "F0632": [
+     "1",
+     "Mood disord d/t physiol cond w major depressive-like epsd"
+    ],
+    "F0633": [
+     "1",
+     "Mood disorder due to known physiol cond w manic features"
+    ],
+    "F0634": [
+     "1",
+     "Mood disorder due to known physiol cond w mixed features"
+    ],
+    "F064": [
+     "1",
+     "Anxiety disorder due to known physiological condition"
+    ],
+    "F067": [
+     "0",
+     "Mild neurocog disorder due to known physiological condition"
+    ],
+    "F0670": [
+     "1",
+     "Mild neurocog disord d/t known physiol cond w/o beh distrb"
+    ],
+    "F0671": [
+     "1",
+     "Mild neurocog disord d/t known physiol cond with beh distrb"
+    ],
+    "F068": [
+     "1",
+     "Oth mental disorders due to known physiological condition"
+    ],
+    "F07": [
+     "0",
+     "Personality & behavrl disorders due to known physiol cond"
+    ],
+    "F070": [
+     "1",
+     "Personality change due to known physiological condition"
+    ],
+    "F078": [
+     "0",
+     "Oth personality & behavrl disord due to known physiol cond"
+    ],
+    "F0781": [
+     "1",
+     "Postconcussional syndrome"
+    ],
+    "F0789": [
+     "1",
+     "Oth personality & behavrl disord due to known physiol cond"
+    ],
+    "F079": [
+     "1",
+     "Unsp personality & behavrl disord due to known physiol cond"
+    ],
+    "F09": [
+     "1",
+     "Unsp mental disorder due to known physiological condition"
+    ],
+    "F10": [
+     "0",
+     "Alcohol related disorders"
+    ],
+    "F101": [
+     "0",
+     "Alcohol abuse"
+    ],
+    "F1010": [
+     "1",
+     "Alcohol abuse, uncomplicated"
+    ],
+    "F1011": [
+     "1",
+     "Alcohol abuse, in remission"
+    ],
+    "F1012": [
+     "0",
+     "Alcohol abuse with intoxication"
+    ],
+    "F10120": [
+     "1",
+     "Alcohol abuse with intoxication, uncomplicated"
+    ],
+    "F10121": [
+     "1",
+     "Alcohol abuse with intoxication delirium"
+    ],
+    "F10129": [
+     "1",
+     "Alcohol abuse with intoxication, unspecified"
+    ],
+    "F1013": [
+     "0",
+     "Alcohol abuse, with withdrawal"
+    ],
+    "F10130": [
+     "1",
+     "Alcohol abuse with withdrawal, uncomplicated"
+    ],
+    "F10131": [
+     "1",
+     "Alcohol abuse with withdrawal delirium"
+    ],
+    "F10132": [
+     "1",
+     "Alcohol abuse with withdrawal with perceptual disturbance"
+    ],
+    "F10139": [
+     "1",
+     "Alcohol abuse with withdrawal, unspecified"
+    ],
+    "F1014": [
+     "1",
+     "Alcohol abuse with alcohol-induced mood disorder"
+    ],
+    "F1015": [
+     "0",
+     "Alcohol abuse with alcohol-induced psychotic disorder"
+    ],
+    "F10150": [
+     "1",
+     "Alcohol abuse w alcoh-induce psychotic disorder w delusions"
+    ],
+    "F10151": [
+     "1",
+     "Alcohol abuse w alcoh-induce psychotic disorder w hallucin"
+    ],
+    "F10159": [
+     "1",
+     "Alcohol abuse with alcohol-induced psychotic disorder, unsp"
+    ],
+    "F1018": [
+     "0",
+     "Alcohol abuse with other alcohol-induced disorders"
+    ],
+    "F10180": [
+     "1",
+     "Alcohol abuse with alcohol-induced anxiety disorder"
+    ],
+    "F10181": [
+     "1",
+     "Alcohol abuse with alcohol-induced sexual dysfunction"
+    ],
+    "F10182": [
+     "1",
+     "Alcohol abuse with alcohol-induced sleep disorder"
+    ],
+    "F10188": [
+     "1",
+     "Alcohol abuse with other alcohol-induced disorder"
+    ],
+    "F1019": [
+     "1",
+     "Alcohol abuse with unspecified alcohol-induced disorder"
+    ],
+    "F102": [
+     "0",
+     "Alcohol dependence"
+    ],
+    "F1020": [
+     "1",
+     "Alcohol dependence, uncomplicated"
+    ],
+    "F1021": [
+     "1",
+     "Alcohol dependence, in remission"
+    ],
+    "F1022": [
+     "0",
+     "Alcohol dependence with intoxication"
+    ],
+    "F10220": [
+     "1",
+     "Alcohol dependence with intoxication, uncomplicated"
+    ],
+    "F10221": [
+     "1",
+     "Alcohol dependence with intoxication delirium"
+    ],
+    "F10229": [
+     "1",
+     "Alcohol dependence with intoxication, unspecified"
+    ],
+    "F1023": [
+     "0",
+     "Alcohol dependence with withdrawal"
+    ],
+    "F10230": [
+     "1",
+     "Alcohol dependence with withdrawal, uncomplicated"
+    ],
+    "F10231": [
+     "1",
+     "Alcohol dependence with withdrawal delirium"
+    ],
+    "F10232": [
+     "1",
+     "Alcohol dependence w withdrawal with perceptual disturbance"
+    ],
+    "F10239": [
+     "1",
+     "Alcohol dependence with withdrawal, unspecified"
+    ],
+    "F1024": [
+     "1",
+     "Alcohol dependence with alcohol-induced mood disorder"
+    ],
+    "F1025": [
+     "0",
+     "Alcohol dependence with alcohol-induced psychotic disorder"
+    ],
+    "F10250": [
+     "1",
+     "Alcohol depend w alcoh-induce psychotic disorder w delusions"
+    ],
+    "F10251": [
+     "1",
+     "Alcohol depend w alcoh-induce psychotic disorder w hallucin"
+    ],
+    "F10259": [
+     "1",
+     "Alcohol dependence w alcoh-induce psychotic disorder, unsp"
+    ],
+    "F1026": [
+     "1",
+     "Alcohol depend w alcoh-induce persisting amnestic disorder"
+    ],
+    "F1027": [
+     "1",
+     "Alcohol dependence with alcohol-induced persisting dementia"
+    ],
+    "F1028": [
+     "0",
+     "Alcohol dependence with other alcohol-induced disorders"
+    ],
+    "F10280": [
+     "1",
+     "Alcohol dependence with alcohol-induced anxiety disorder"
+    ],
+    "F10281": [
+     "1",
+     "Alcohol dependence with alcohol-induced sexual dysfunction"
+    ],
+    "F10282": [
+     "1",
+     "Alcohol dependence with alcohol-induced sleep disorder"
+    ],
+    "F10288": [
+     "1",
+     "Alcohol dependence with other alcohol-induced disorder"
+    ],
+    "F1029": [
+     "1",
+     "Alcohol dependence with unspecified alcohol-induced disorder"
+    ],
+    "F109": [
+     "0",
+     "Alcohol use, unspecified"
+    ],
+    "F1090": [
+     "1",
+     "Alcohol use, unspecified, uncomplicated"
+    ],
+    "F1091": [
+     "1",
+     "Alcohol use, unspecified, in remission"
+    ],
+    "F1092": [
+     "0",
+     "Alcohol use, unspecified with intoxication"
+    ],
+    "F10920": [
+     "1",
+     "Alcohol use, unspecified with intoxication, uncomplicated"
+    ],
+    "F10921": [
+     "1",
+     "Alcohol use, unspecified with intoxication delirium"
+    ],
+    "F10929": [
+     "1",
+     "Alcohol use, unspecified with intoxication, unspecified"
+    ],
+    "F1093": [
+     "0",
+     "Alcohol use, unspecified with withdrawal"
+    ],
+    "F10930": [
+     "1",
+     "Alcohol use, unspecified with withdrawal, uncomplicated"
+    ],
+    "F10931": [
+     "1",
+     "Alcohol use, unspecified with withdrawal delirium"
+    ],
+    "F10932": [
+     "1",
+     "Alcohol use, unspecified with w/drawal w perceptual disturb"
+    ],
+    "F10939": [
+     "1",
+     "Alcohol use, unspecified with withdrawal, unspecified"
+    ],
+    "F1094": [
+     "1",
+     "Alcohol use, unspecified with alcohol-induced mood disorder"
+    ],
+    "F1095": [
+     "0",
+     "Alcohol use, unsp with alcohol-induced psychotic disorder"
+    ],
+    "F10950": [
+     "1",
+     "Alcohol use, unsp w alcoh-induce psych disorder w delusions"
+    ],
+    "F10951": [
+     "1",
+     "Alcohol use, unsp w alcoh-induce psych disorder w hallucin"
+    ],
+    "F10959": [
+     "1",
+     "Alcohol use, unsp w alcohol-induced psychotic disorder, unsp"
+    ],
+    "F1096": [
+     "1",
+     "Alcohol use, unsp w alcoh-induce persist amnestic disorder"
+    ],
+    "F1097": [
+     "1",
+     "Alcohol use, unsp with alcohol-induced persisting dementia"
+    ],
+    "F1098": [
+     "0",
+     "Alcohol use, unsp with other alcohol-induced disorders"
+    ],
+    "F10980": [
+     "1",
+     "Alcohol use, unsp with alcohol-induced anxiety disorder"
+    ],
+    "F10981": [
+     "1",
+     "Alcohol use, unsp with alcohol-induced sexual dysfunction"
+    ],
+    "F10982": [
+     "1",
+     "Alcohol use, unspecified with alcohol-induced sleep disorder"
+    ],
+    "F10988": [
+     "1",
+     "Alcohol use, unspecified with other alcohol-induced disorder"
+    ],
+    "F1099": [
+     "1",
+     "Alcohol use, unsp with unspecified alcohol-induced disorder"
+    ],
+    "F11": [
+     "0",
+     "Opioid related disorders"
+    ],
+    "F111": [
+     "0",
+     "Opioid abuse"
+    ],
+    "F1110": [
+     "1",
+     "Opioid abuse, uncomplicated"
+    ],
+    "F1111": [
+     "1",
+     "Opioid abuse, in remission"
+    ],
+    "F1112": [
+     "0",
+     "Opioid abuse with intoxication"
+    ],
+    "F11120": [
+     "1",
+     "Opioid abuse with intoxication, uncomplicated"
+    ],
+    "F11121": [
+     "1",
+     "Opioid abuse with intoxication delirium"
+    ],
+    "F11122": [
+     "1",
+     "Opioid abuse with intoxication with perceptual disturbance"
+    ],
+    "F11129": [
+     "1",
+     "Opioid abuse with intoxication, unspecified"
+    ],
+    "F1113": [
+     "1",
+     "Opioid abuse with withdrawal"
+    ],
+    "F1114": [
+     "1",
+     "Opioid abuse with opioid-induced mood disorder"
+    ],
+    "F1115": [
+     "0",
+     "Opioid abuse with opioid-induced psychotic disorder"
+    ],
+    "F11150": [
+     "1",
+     "Opioid abuse w opioid-induced psychotic disorder w delusions"
+    ],
+    "F11151": [
+     "1",
+     "Opioid abuse w opioid-induced psychotic disorder w hallucin"
+    ],
+    "F11159": [
+     "1",
+     "Opioid abuse with opioid-induced psychotic disorder, unsp"
+    ],
+    "F1118": [
+     "0",
+     "Opioid abuse with other opioid-induced disorder"
+    ],
+    "F11181": [
+     "1",
+     "Opioid abuse with opioid-induced sexual dysfunction"
+    ],
+    "F11182": [
+     "1",
+     "Opioid abuse with opioid-induced sleep disorder"
+    ],
+    "F11188": [
+     "1",
+     "Opioid abuse with other opioid-induced disorder"
+    ],
+    "F1119": [
+     "1",
+     "Opioid abuse with unspecified opioid-induced disorder"
+    ],
+    "F112": [
+     "0",
+     "Opioid dependence"
+    ],
+    "F1120": [
+     "1",
+     "Opioid dependence, uncomplicated"
+    ],
+    "F1121": [
+     "1",
+     "Opioid dependence, in remission"
+    ],
+    "F1122": [
+     "0",
+     "Opioid dependence with intoxication"
+    ],
+    "F11220": [
+     "1",
+     "Opioid dependence with intoxication, uncomplicated"
+    ],
+    "F11221": [
+     "1",
+     "Opioid dependence with intoxication delirium"
+    ],
+    "F11222": [
+     "1",
+     "Opioid dependence w intoxication with perceptual disturbance"
+    ],
+    "F11229": [
+     "1",
+     "Opioid dependence with intoxication, unspecified"
+    ],
+    "F1123": [
+     "1",
+     "Opioid dependence with withdrawal"
+    ],
+    "F1124": [
+     "1",
+     "Opioid dependence with opioid-induced mood disorder"
+    ],
+    "F1125": [
+     "0",
+     "Opioid dependence with opioid-induced psychotic disorder"
+    ],
+    "F11250": [
+     "1",
+     "Opioid depend w opioid-induc psychotic disorder w delusions"
+    ],
+    "F11251": [
+     "1",
+     "Opioid depend w opioid-induc psychotic disorder w hallucin"
+    ],
+    "F11259": [
+     "1",
+     "Opioid dependence w opioid-induced psychotic disorder, unsp"
+    ],
+    "F1128": [
+     "0",
+     "Opioid dependence with other opioid-induced disorder"
+    ],
+    "F11281": [
+     "1",
+     "Opioid dependence with opioid-induced sexual dysfunction"
+    ],
+    "F11282": [
+     "1",
+     "Opioid dependence with opioid-induced sleep disorder"
+    ],
+    "F11288": [
+     "1",
+     "Opioid dependence with other opioid-induced disorder"
+    ],
+    "F1129": [
+     "1",
+     "Opioid dependence with unspecified opioid-induced disorder"
+    ],
+    "F119": [
+     "0",
+     "Opioid use, unspecified"
+    ],
+    "F1190": [
+     "1",
+     "Opioid use, unspecified, uncomplicated"
+    ],
+    "F1191": [
+     "1",
+     "Opioid use, unspecified, in remission"
+    ],
+    "F1192": [
+     "0",
+     "Opioid use, unspecified with intoxication"
+    ],
+    "F11920": [
+     "1",
+     "Opioid use, unspecified with intoxication, uncomplicated"
+    ],
+    "F11921": [
+     "1",
+     "Opioid use, unspecified with intoxication delirium"
+    ],
+    "F11922": [
+     "1",
+     "Opioid use, unsp w intoxication with perceptual disturbance"
+    ],
+    "F11929": [
+     "1",
+     "Opioid use, unspecified with intoxication, unspecified"
+    ],
+    "F1193": [
+     "1",
+     "Opioid use, unspecified with withdrawal"
+    ],
+    "F1194": [
+     "1",
+     "Opioid use, unspecified with opioid-induced mood disorder"
+    ],
+    "F1195": [
+     "0",
+     "Opioid use, unsp with opioid-induced psychotic disorder"
+    ],
+    "F11950": [
+     "1",
+     "Opioid use, unsp w opioid-induc psych disorder w delusions"
+    ],
+    "F11951": [
+     "1",
+     "Opioid use, unsp w opioid-induc psych disorder w hallucin"
+    ],
+    "F11959": [
+     "1",
+     "Opioid use, unsp w opioid-induced psychotic disorder, unsp"
+    ],
+    "F1198": [
+     "0",
+     "Opioid use, unspecified with oth opioid-induced disorder"
+    ],
+    "F11981": [
+     "1",
+     "Opioid use, unsp with opioid-induced sexual dysfunction"
+    ],
+    "F11982": [
+     "1",
+     "Opioid use, unspecified with opioid-induced sleep disorder"
+    ],
+    "F11988": [
+     "1",
+     "Opioid use, unspecified with other opioid-induced disorder"
+    ],
+    "F1199": [
+     "1",
+     "Opioid use, unsp with unspecified opioid-induced disorder"
+    ],
+    "F12": [
+     "0",
+     "Cannabis related disorders"
+    ],
+    "F121": [
+     "0",
+     "Cannabis abuse"
+    ],
+    "F1210": [
+     "1",
+     "Cannabis abuse, uncomplicated"
+    ],
+    "F1211": [
+     "1",
+     "Cannabis abuse, in remission"
+    ],
+    "F1212": [
+     "0",
+     "Cannabis abuse with intoxication"
+    ],
+    "F12120": [
+     "1",
+     "Cannabis abuse with intoxication, uncomplicated"
+    ],
+    "F12121": [
+     "1",
+     "Cannabis abuse with intoxication delirium"
+    ],
+    "F12122": [
+     "1",
+     "Cannabis abuse with intoxication with perceptual disturbance"
+    ],
+    "F12129": [
+     "1",
+     "Cannabis abuse with intoxication, unspecified"
+    ],
+    "F1213": [
+     "1",
+     "Cannabis abuse with withdrawal"
+    ],
+    "F1215": [
+     "0",
+     "Cannabis abuse with psychotic disorder"
+    ],
+    "F12150": [
+     "1",
+     "Cannabis abuse with psychotic disorder with delusions"
+    ],
+    "F12151": [
+     "1",
+     "Cannabis abuse with psychotic disorder with hallucinations"
+    ],
+    "F12159": [
+     "1",
+     "Cannabis abuse with psychotic disorder, unspecified"
+    ],
+    "F1218": [
+     "0",
+     "Cannabis abuse with other cannabis-induced disorder"
+    ],
+    "F12180": [
+     "1",
+     "Cannabis abuse with cannabis-induced anxiety disorder"
+    ],
+    "F12188": [
+     "1",
+     "Cannabis abuse with other cannabis-induced disorder"
+    ],
+    "F1219": [
+     "1",
+     "Cannabis abuse with unspecified cannabis-induced disorder"
+    ],
+    "F122": [
+     "0",
+     "Cannabis dependence"
+    ],
+    "F1220": [
+     "1",
+     "Cannabis dependence, uncomplicated"
+    ],
+    "F1221": [
+     "1",
+     "Cannabis dependence, in remission"
+    ],
+    "F1222": [
+     "0",
+     "Cannabis dependence with intoxication"
+    ],
+    "F12220": [
+     "1",
+     "Cannabis dependence with intoxication, uncomplicated"
+    ],
+    "F12221": [
+     "1",
+     "Cannabis dependence with intoxication delirium"
+    ],
+    "F12222": [
+     "1",
+     "Cannabis dependence w intoxication w perceptual disturbance"
+    ],
+    "F12229": [
+     "1",
+     "Cannabis dependence with intoxication, unspecified"
+    ],
+    "F1223": [
+     "1",
+     "Cannabis dependence with withdrawal"
+    ],
+    "F1225": [
+     "0",
+     "Cannabis dependence with psychotic disorder"
+    ],
+    "F12250": [
+     "1",
+     "Cannabis dependence with psychotic disorder with delusions"
+    ],
+    "F12251": [
+     "1",
+     "Cannabis dependence w psychotic disorder with hallucinations"
+    ],
+    "F12259": [
+     "1",
+     "Cannabis dependence with psychotic disorder, unspecified"
+    ],
+    "F1228": [
+     "0",
+     "Cannabis dependence with other cannabis-induced disorder"
+    ],
+    "F12280": [
+     "1",
+     "Cannabis dependence with cannabis-induced anxiety disorder"
+    ],
+    "F12288": [
+     "1",
+     "Cannabis dependence with other cannabis-induced disorder"
+    ],
+    "F1229": [
+     "1",
+     "Cannabis dependence with unsp cannabis-induced disorder"
+    ],
+    "F129": [
+     "0",
+     "Cannabis use, unspecified"
+    ],
+    "F1290": [
+     "1",
+     "Cannabis use, unspecified, uncomplicated"
+    ],
+    "F1291": [
+     "1",
+     "Cannabis use, unspecified, in remission"
+    ],
+    "F1292": [
+     "0",
+     "Cannabis use, unspecified with intoxication"
+    ],
+    "F12920": [
+     "1",
+     "Cannabis use, unspecified with intoxication, uncomplicated"
+    ],
+    "F12921": [
+     "1",
+     "Cannabis use, unspecified with intoxication delirium"
+    ],
+    "F12922": [
+     "1",
+     "Cannabis use, unsp w intoxication w perceptual disturbance"
+    ],
+    "F12929": [
+     "1",
+     "Cannabis use, unspecified with intoxication, unspecified"
+    ],
+    "F1293": [
+     "1",
+     "Cannabis use, unspecified with withdrawal"
+    ],
+    "F1295": [
+     "0",
+     "Cannabis use, unspecified with psychotic disorder"
+    ],
+    "F12950": [
+     "1",
+     "Cannabis use, unsp with psychotic disorder with delusions"
+    ],
+    "F12951": [
+     "1",
+     "Cannabis use, unsp w psychotic disorder with hallucinations"
+    ],
+    "F12959": [
+     "1",
+     "Cannabis use, unsp with psychotic disorder, unspecified"
+    ],
+    "F1298": [
+     "0",
+     "Cannabis use, unsp with other cannabis-induced disorder"
+    ],
+    "F12980": [
+     "1",
+     "Cannabis use, unspecified with anxiety disorder"
+    ],
+    "F12988": [
+     "1",
+     "Cannabis use, unsp with other cannabis-induced disorder"
+    ],
+    "F1299": [
+     "1",
+     "Cannabis use, unsp with unsp cannabis-induced disorder"
+    ],
+    "F13": [
+     "0",
+     "Sedative, hypnotic, or anxiolytic related disorders"
+    ],
+    "F131": [
+     "0",
+     "Sedative, hypnotic or anxiolytic-related abuse"
+    ],
+    "F1310": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse, uncomplicated"
+    ],
+    "F1311": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse, in remission"
+    ],
+    "F1312": [
+     "0",
+     "Sedative, hypnotic or anxiolytic abuse with intoxication"
+    ],
+    "F13120": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse w intoxication, uncomplicated"
+    ],
+    "F13121": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse w intoxication delirium"
+    ],
+    "F13129": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w intoxication, unsp"
+    ],
+    "F1313": [
+     "0",
+     "Sedative, hypnotic or anxiolytic abuse with withdrawal"
+    ],
+    "F13130": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse with withdrawal, uncomplicated"
+    ],
+    "F13131": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse with withdrawal delirium"
+    ],
+    "F13132": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse with w/drawal w perceptl disturb"
+    ],
+    "F13139": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse with withdrawal, unspecified"
+    ],
+    "F1314": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w mood disorder"
+    ],
+    "F1315": [
+     "0",
+     "Sedative, hypnotic or anxiolytic abuse w psychotic disorder"
+    ],
+    "F13150": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse w psychotic disorder w delusions"
+    ],
+    "F13151": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse w psychotic disorder w hallucin"
+    ],
+    "F13159": [
+     "1",
+     "Sedatv/hyp/anxiolytc abuse w psychotic disorder, unsp"
+    ],
+    "F1318": [
+     "0",
+     "Sedative, hypnotic or anxiolytic abuse w oth disorders"
+    ],
+    "F13180": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w anxiety disorder"
+    ],
+    "F13181": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w sexual dysfunction"
+    ],
+    "F13182": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w sleep disorder"
+    ],
+    "F13188": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w oth disorder"
+    ],
+    "F1319": [
+     "1",
+     "Sedative, hypnotic or anxiolytic abuse w unsp disorder"
+    ],
+    "F132": [
+     "0",
+     "Sedative, hypnotic or anxiolytic-related dependence"
+    ],
+    "F1320": [
+     "1",
+     "Sedative, hypnotic or anxiolytic dependence, uncomplicated"
+    ],
+    "F1321": [
+     "1",
+     "Sedative, hypnotic or anxiolytic dependence, in remission"
+    ],
+    "F1322": [
+     "0",
+     "Sedative, hypnotic or anxiolytic dependence w intoxication"
+    ],
+    "F13220": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w intoxication, uncomp"
+    ],
+    "F13221": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w intoxication delirium"
+    ],
+    "F13229": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w intoxication, unsp"
+    ],
+    "F1323": [
+     "0",
+     "Sedative, hypnotic or anxiolytic dependence with withdrawal"
+    ],
+    "F13230": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w withdrawal, uncomplicated"
+    ],
+    "F13231": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w withdrawal delirium"
+    ],
+    "F13232": [
+     "1",
+     "Sedatv/hyp/anxiolytc depend w w/drawal w perceptual disturb"
+    ],
+    "F13239": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w withdrawal, unsp"
+    ],
+    "F1324": [
+     "1",
+     "Sedative, hypnotic or anxiolytic dependence w mood disorder"
+    ],
+    "F1325": [
+     "0",
+     "Sedatv/hyp/anxiolytc dependence w psychotic disorder"
+    ],
+    "F13250": [
+     "1",
+     "Sedatv/hyp/anxiolytc depend w psychotic disorder w delusions"
+    ],
+    "F13251": [
+     "1",
+     "Sedatv/hyp/anxiolytc depend w psychotic disorder w hallucin"
+    ],
+    "F13259": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w psychotic disorder, unsp"
+    ],
+    "F1326": [
+     "1",
+     "Sedatv/hyp/anxiolytc depend w persisting amnestic disorder"
+    ],
+    "F1327": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w persisting dementia"
+    ],
+    "F1328": [
+     "0",
+     "Sedative, hypnotic or anxiolytic dependence w oth disorders"
+    ],
+    "F13280": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w anxiety disorder"
+    ],
+    "F13281": [
+     "1",
+     "Sedatv/hyp/anxiolytc dependence w sexual dysfunction"
+    ],
+    "F13282": [
+     "1",
+     "Sedative, hypnotic or anxiolytic dependence w sleep disorder"
+    ],
+    "F13288": [
+     "1",
+     "Sedative, hypnotic or anxiolytic dependence w oth disorder"
+    ],
+    "F1329": [
+     "1",
+     "Sedative, hypnotic or anxiolytic dependence w unsp disorder"
+    ],
+    "F139": [
+     "0",
+     "Sedative, hypnotic or anxiolytic-related use, unspecified"
+    ],
+    "F1390": [
+     "1",
+     "Sedative, hypnotic, or anxiolytic use, unsp, uncomplicated"
+    ],
+    "F1391": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unspecified, in remission"
+    ],
+    "F1392": [
+     "0",
+     "Sedative, hypnotic or anxiolytic use, unsp with intoxication"
+    ],
+    "F13920": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w intoxication, uncomplicated"
+    ],
+    "F13921": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w intoxication delirium"
+    ],
+    "F13929": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w intoxication, unsp"
+    ],
+    "F1393": [
+     "0",
+     "Sedative, hypnotic or anxiolytic use, unsp with withdrawal"
+    ],
+    "F13930": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w withdrawal, uncomplicated"
+    ],
+    "F13931": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w withdrawal delirium"
+    ],
+    "F13932": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w w/drawal w perceptl disturb"
+    ],
+    "F13939": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w withdrawal, unsp"
+    ],
+    "F1394": [
+     "1",
+     "Sedative, hypnotic or anxiolytic use, unsp w mood disorder"
+    ],
+    "F1395": [
+     "0",
+     "Sedatv/hyp/anxiolytc use, unsp w psychotic disorder"
+    ],
+    "F13950": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w psych disorder w delusions"
+    ],
+    "F13951": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w psych disorder w hallucin"
+    ],
+    "F13959": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w psychotic disorder, unsp"
+    ],
+    "F1396": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w persist amnestic disorder"
+    ],
+    "F1397": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w persisting dementia"
+    ],
+    "F1398": [
+     "0",
+     "Sedative, hypnotic or anxiolytic use, unsp w oth disorders"
+    ],
+    "F13980": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w anxiety disorder"
+    ],
+    "F13981": [
+     "1",
+     "Sedatv/hyp/anxiolytc use, unsp w sexual dysfunction"
+    ],
+    "F13982": [
+     "1",
+     "Sedative, hypnotic or anxiolytic use, unsp w sleep disorder"
+    ],
+    "F13988": [
+     "1",
+     "Sedative, hypnotic or anxiolytic use, unsp w oth disorder"
+    ],
+    "F1399": [
+     "1",
+     "Sedative, hypnotic or anxiolytic use, unsp w unsp disorder"
+    ],
+    "F14": [
+     "0",
+     "Cocaine related disorders"
+    ],
+    "F141": [
+     "0",
+     "Cocaine abuse"
+    ],
+    "F1410": [
+     "1",
+     "Cocaine abuse, uncomplicated"
+    ],
+    "F1411": [
+     "1",
+     "Cocaine abuse, in remission"
+    ],
+    "F1412": [
+     "0",
+     "Cocaine abuse with intoxication"
+    ],
+    "F14120": [
+     "1",
+     "Cocaine abuse with intoxication, uncomplicated"
+    ],
+    "F14121": [
+     "1",
+     "Cocaine abuse with intoxication with delirium"
+    ],
+    "F14122": [
+     "1",
+     "Cocaine abuse with intoxication with perceptual disturbance"
+    ],
+    "F14129": [
+     "1",
+     "Cocaine abuse with intoxication, unspecified"
+    ],
+    "F1413": [
+     "1",
+     "Cocaine abuse, unspecified with withdrawal"
+    ],
+    "F1414": [
+     "1",
+     "Cocaine abuse with cocaine-induced mood disorder"
+    ],
+    "F1415": [
+     "0",
+     "Cocaine abuse with cocaine-induced psychotic disorder"
+    ],
+    "F14150": [
+     "1",
+     "Cocaine abuse w cocaine-induc psychotic disorder w delusions"
+    ],
+    "F14151": [
+     "1",
+     "Cocaine abuse w cocaine-induc psychotic disorder w hallucin"
+    ],
+    "F14159": [
+     "1",
+     "Cocaine abuse with cocaine-induced psychotic disorder, unsp"
+    ],
+    "F1418": [
+     "0",
+     "Cocaine abuse with other cocaine-induced disorder"
+    ],
+    "F14180": [
+     "1",
+     "Cocaine abuse with cocaine-induced anxiety disorder"
+    ],
+    "F14181": [
+     "1",
+     "Cocaine abuse with cocaine-induced sexual dysfunction"
+    ],
+    "F14182": [
+     "1",
+     "Cocaine abuse with cocaine-induced sleep disorder"
+    ],
+    "F14188": [
+     "1",
+     "Cocaine abuse with other cocaine-induced disorder"
+    ],
+    "F1419": [
+     "1",
+     "Cocaine abuse with unspecified cocaine-induced disorder"
+    ],
+    "F142": [
+     "0",
+     "Cocaine dependence"
+    ],
+    "F1420": [
+     "1",
+     "Cocaine dependence, uncomplicated"
+    ],
+    "F1421": [
+     "1",
+     "Cocaine dependence, in remission"
+    ],
+    "F1422": [
+     "0",
+     "Cocaine dependence with intoxication"
+    ],
+    "F14220": [
+     "1",
+     "Cocaine dependence with intoxication, uncomplicated"
+    ],
+    "F14221": [
+     "1",
+     "Cocaine dependence with intoxication delirium"
+    ],
+    "F14222": [
+     "1",
+     "Cocaine dependence w intoxication w perceptual disturbance"
+    ],
+    "F14229": [
+     "1",
+     "Cocaine dependence with intoxication, unspecified"
+    ],
+    "F1423": [
+     "1",
+     "Cocaine dependence with withdrawal"
+    ],
+    "F1424": [
+     "1",
+     "Cocaine dependence with cocaine-induced mood disorder"
+    ],
+    "F1425": [
+     "0",
+     "Cocaine dependence with cocaine-induced psychotic disorder"
+    ],
+    "F14250": [
+     "1",
+     "Cocaine depend w cocaine-induc psych disorder w delusions"
+    ],
+    "F14251": [
+     "1",
+     "Cocaine depend w cocaine-induc psychotic disorder w hallucin"
+    ],
+    "F14259": [
+     "1",
+     "Cocaine dependence w cocaine-induc psychotic disorder, unsp"
+    ],
+    "F1428": [
+     "0",
+     "Cocaine dependence with other cocaine-induced disorder"
+    ],
+    "F14280": [
+     "1",
+     "Cocaine dependence with cocaine-induced anxiety disorder"
+    ],
+    "F14281": [
+     "1",
+     "Cocaine dependence with cocaine-induced sexual dysfunction"
+    ],
+    "F14282": [
+     "1",
+     "Cocaine dependence with cocaine-induced sleep disorder"
+    ],
+    "F14288": [
+     "1",
+     "Cocaine dependence with other cocaine-induced disorder"
+    ],
+    "F1429": [
+     "1",
+     "Cocaine dependence with unspecified cocaine-induced disorder"
+    ],
+    "F149": [
+     "0",
+     "Cocaine use, unspecified"
+    ],
+    "F1490": [
+     "1",
+     "Cocaine use, unspecified, uncomplicated"
+    ],
+    "F1491": [
+     "1",
+     "Cocaine use, unspecified, in remission"
+    ],
+    "F1492": [
+     "0",
+     "Cocaine use, unspecified with intoxication"
+    ],
+    "F14920": [
+     "1",
+     "Cocaine use, unspecified with intoxication, uncomplicated"
+    ],
+    "F14921": [
+     "1",
+     "Cocaine use, unspecified with intoxication delirium"
+    ],
+    "F14922": [
+     "1",
+     "Cocaine use, unsp w intoxication with perceptual disturbance"
+    ],
+    "F14929": [
+     "1",
+     "Cocaine use, unspecified with intoxication, unspecified"
+    ],
+    "F1493": [
+     "1",
+     "Cocaine use, unspecified with withdrawal"
+    ],
+    "F1494": [
+     "1",
+     "Cocaine use, unspecified with cocaine-induced mood disorder"
+    ],
+    "F1495": [
+     "0",
+     "Cocaine use, unsp with cocaine-induced psychotic disorder"
+    ],
+    "F14950": [
+     "1",
+     "Cocaine use, unsp w cocaine-induc psych disorder w delusions"
+    ],
+    "F14951": [
+     "1",
+     "Cocaine use, unsp w cocaine-induc psych disorder w hallucin"
+    ],
+    "F14959": [
+     "1",
+     "Cocaine use, unsp w cocaine-induced psychotic disorder, unsp"
+    ],
+    "F1498": [
+     "0",
+     "Cocaine use, unspecified with oth cocaine-induced disorder"
+    ],
+    "F14980": [
+     "1",
+     "Cocaine use, unsp with cocaine-induced anxiety disorder"
+    ],
+    "F14981": [
+     "1",
+     "Cocaine use, unsp with cocaine-induced sexual dysfunction"
+    ],
+    "F14982": [
+     "1",
+     "Cocaine use, unspecified with cocaine-induced sleep disorder"
+    ],
+    "F14988": [
+     "1",
+     "Cocaine use, unspecified with other cocaine-induced disorder"
+    ],
+    "F1499": [
+     "1",
+     "Cocaine use, unsp with unspecified cocaine-induced disorder"
+    ],
+    "F15": [
+     "0",
+     "Other stimulant related disorders"
+    ],
+    "F151": [
+     "0",
+     "Other stimulant abuse"
+    ],
+    "F1510": [
+     "1",
+     "Other stimulant abuse, uncomplicated"
+    ],
+    "F1511": [
+     "1",
+     "Other stimulant abuse, in remission"
+    ],
+    "F1512": [
+     "0",
+     "Other stimulant abuse with intoxication"
+    ],
+    "F15120": [
+     "1",
+     "Other stimulant abuse with intoxication, uncomplicated"
+    ],
+    "F15121": [
+     "1",
+     "Other stimulant abuse with intoxication delirium"
+    ],
+    "F15122": [
+     "1",
+     "Oth stimulant abuse w intoxication w perceptual disturbance"
+    ],
+    "F15129": [
+     "1",
+     "Other stimulant abuse with intoxication, unspecified"
+    ],
+    "F1513": [
+     "1",
+     "Other stimulant abuse with withdrawal"
+    ],
+    "F1514": [
+     "1",
+     "Other stimulant abuse with stimulant-induced mood disorder"
+    ],
+    "F1515": [
+     "0",
+     "Oth stimulant abuse w stimulant-induced psychotic disorder"
+    ],
+    "F15150": [
+     "1",
+     "Oth stimulant abuse w stim-induce psych disorder w delusions"
+    ],
+    "F15151": [
+     "1",
+     "Oth stimulant abuse w stim-induce psych disorder w hallucin"
+    ],
+    "F15159": [
+     "1",
+     "Oth stimulant abuse w stim-induce psychotic disorder, unsp"
+    ],
+    "F1518": [
+     "0",
+     "Other stimulant abuse with other stimulant-induced disorder"
+    ],
+    "F15180": [
+     "1",
+     "Oth stimulant abuse with stimulant-induced anxiety disorder"
+    ],
+    "F15181": [
+     "1",
+     "Oth stimulant abuse w stimulant-induced sexual dysfunction"
+    ],
+    "F15182": [
+     "1",
+     "Other stimulant abuse with stimulant-induced sleep disorder"
+    ],
+    "F15188": [
+     "1",
+     "Other stimulant abuse with other stimulant-induced disorder"
+    ],
+    "F1519": [
+     "1",
+     "Other stimulant abuse with unsp stimulant-induced disorder"
+    ],
+    "F152": [
+     "0",
+     "Other stimulant dependence"
+    ],
+    "F1520": [
+     "1",
+     "Other stimulant dependence, uncomplicated"
+    ],
+    "F1521": [
+     "1",
+     "Other stimulant dependence, in remission"
+    ],
+    "F1522": [
+     "0",
+     "Other stimulant dependence with intoxication"
+    ],
+    "F15220": [
+     "1",
+     "Other stimulant dependence with intoxication, uncomplicated"
+    ],
+    "F15221": [
+     "1",
+     "Other stimulant dependence with intoxication delirium"
+    ],
+    "F15222": [
+     "1",
+     "Oth stimulant dependence w intox w perceptual disturbance"
+    ],
+    "F15229": [
+     "1",
+     "Other stimulant dependence with intoxication, unspecified"
+    ],
+    "F1523": [
+     "1",
+     "Other stimulant dependence with withdrawal"
+    ],
+    "F1524": [
+     "1",
+     "Oth stimulant dependence w stimulant-induced mood disorder"
+    ],
+    "F1525": [
+     "0",
+     "Oth stimulant dependence w stim-induce psychotic disorder"
+    ],
+    "F15250": [
+     "1",
+     "Oth stim depend w stim-induce psych disorder w delusions"
+    ],
+    "F15251": [
+     "1",
+     "Oth stimulant depend w stim-induce psych disorder w hallucin"
+    ],
+    "F15259": [
+     "1",
+     "Oth stimulant depend w stim-induce psychotic disorder, unsp"
+    ],
+    "F1528": [
+     "0",
+     "Oth stimulant dependence with oth stimulant-induced disorder"
+    ],
+    "F15280": [
+     "1",
+     "Oth stimulant dependence w stim-induce anxiety disorder"
+    ],
+    "F15281": [
+     "1",
+     "Oth stimulant dependence w stim-induce sexual dysfunction"
+    ],
+    "F15282": [
+     "1",
+     "Oth stimulant dependence w stimulant-induced sleep disorder"
+    ],
+    "F15288": [
+     "1",
+     "Oth stimulant dependence with oth stimulant-induced disorder"
+    ],
+    "F1529": [
+     "1",
+     "Oth stimulant dependence w unsp stimulant-induced disorder"
+    ],
+    "F159": [
+     "0",
+     "Other stimulant use, unspecified"
+    ],
+    "F1590": [
+     "1",
+     "Other stimulant use, unspecified, uncomplicated"
+    ],
+    "F1591": [
+     "1",
+     "Other stimulant use, unspecified, in remission"
+    ],
+    "F1592": [
+     "0",
+     "Other stimulant use, unspecified with intoxication"
+    ],
+    "F15920": [
+     "1",
+     "Other stimulant use, unsp with intoxication, uncomplicated"
+    ],
+    "F15921": [
+     "1",
+     "Other stimulant use, unspecified with intoxication delirium"
+    ],
+    "F15922": [
+     "1",
+     "Oth stimulant use, unsp w intox w perceptual disturbance"
+    ],
+    "F15929": [
+     "1",
+     "Other stimulant use, unsp with intoxication, unspecified"
+    ],
+    "F1593": [
+     "1",
+     "Other stimulant use, unspecified with withdrawal"
+    ],
+    "F1594": [
+     "1",
+     "Oth stimulant use, unsp with stimulant-induced mood disorder"
+    ],
+    "F1595": [
+     "0",
+     "Oth stimulant use, unsp w stim-induce psychotic disorder"
+    ],
+    "F15950": [
+     "1",
+     "Oth stim use, unsp w stim-induce psych disorder w delusions"
+    ],
+    "F15951": [
+     "1",
+     "Oth stim use, unsp w stim-induce psych disorder w hallucin"
+    ],
+    "F15959": [
+     "1",
+     "Oth stimulant use, unsp w stim-induce psych disorder, unsp"
+    ],
+    "F1598": [
+     "0",
+     "Oth stimulant use, unsp with oth stimulant-induced disorder"
+    ],
+    "F15980": [
+     "1",
+     "Oth stimulant use, unsp w stimulant-induced anxiety disorder"
+    ],
+    "F15981": [
+     "1",
+     "Oth stimulant use, unsp w stim-induce sexual dysfunction"
+    ],
+    "F15982": [
+     "1",
+     "Oth stimulant use, unsp w stimulant-induced sleep disorder"
+    ],
+    "F15988": [
+     "1",
+     "Oth stimulant use, unsp with oth stimulant-induced disorder"
+    ],
+    "F1599": [
+     "1",
+     "Oth stimulant use, unsp with unsp stimulant-induced disorder"
+    ],
+    "F16": [
+     "0",
+     "Hallucinogen related disorders"
+    ],
+    "F161": [
+     "0",
+     "Hallucinogen abuse"
+    ],
+    "F1610": [
+     "1",
+     "Hallucinogen abuse, uncomplicated"
+    ],
+    "F1611": [
+     "1",
+     "Hallucinogen abuse, in remission"
+    ],
+    "F1612": [
+     "0",
+     "Hallucinogen abuse with intoxication"
+    ],
+    "F16120": [
+     "1",
+     "Hallucinogen abuse with intoxication, uncomplicated"
+    ],
+    "F16121": [
+     "1",
+     "Hallucinogen abuse with intoxication with delirium"
+    ],
+    "F16122": [
+     "1",
+     "Hallucinogen abuse w intoxication w perceptual disturbance"
+    ],
+    "F16129": [
+     "1",
+     "Hallucinogen abuse with intoxication, unspecified"
+    ],
+    "F1614": [
+     "1",
+     "Hallucinogen abuse with hallucinogen-induced mood disorder"
+    ],
+    "F1615": [
+     "0",
+     "Hallucinogen abuse w hallucinogen-induced psychotic disorder"
+    ],
+    "F16150": [
+     "1",
+     "Hallucinogen abuse w psychotic disorder w delusions"
+    ],
+    "F16151": [
+     "1",
+     "Hallucinogen abuse w psychotic disorder w hallucinations"
+    ],
+    "F16159": [
+     "1",
+     "Hallucinogen abuse w psychotic disorder, unsp"
+    ],
+    "F1618": [
+     "0",
+     "Hallucinogen abuse with other hallucinogen-induced disorder"
+    ],
+    "F16180": [
+     "1",
+     "Hallucinogen abuse w hallucinogen-induced anxiety disorder"
+    ],
+    "F16183": [
+     "1",
+     "Hallucign abuse w hallucign persisting perception disorder"
+    ],
+    "F16188": [
+     "1",
+     "Hallucinogen abuse with other hallucinogen-induced disorder"
+    ],
+    "F1619": [
+     "1",
+     "Hallucinogen abuse with unsp hallucinogen-induced disorder"
+    ],
+    "F162": [
+     "0",
+     "Hallucinogen dependence"
+    ],
+    "F1620": [
+     "1",
+     "Hallucinogen dependence, uncomplicated"
+    ],
+    "F1621": [
+     "1",
+     "Hallucinogen dependence, in remission"
+    ],
+    "F1622": [
+     "0",
+     "Hallucinogen dependence with intoxication"
+    ],
+    "F16220": [
+     "1",
+     "Hallucinogen dependence with intoxication, uncomplicated"
+    ],
+    "F16221": [
+     "1",
+     "Hallucinogen dependence with intoxication with delirium"
+    ],
+    "F16229": [
+     "1",
+     "Hallucinogen dependence with intoxication, unspecified"
+    ],
+    "F1624": [
+     "1",
+     "Hallucinogen dependence w hallucinogen-induced mood disorder"
+    ],
+    "F1625": [
+     "0",
+     "Hallucinogen dependence w psychotic disorder"
+    ],
+    "F16250": [
+     "1",
+     "Hallucinogen dependence w psychotic disorder w delusions"
+    ],
+    "F16251": [
+     "1",
+     "Hallucinogen dependence w psychotic disorder w hallucin"
+    ],
+    "F16259": [
+     "1",
+     "Hallucinogen dependence w psychotic disorder, unsp"
+    ],
+    "F1628": [
+     "0",
+     "Hallucinogen dependence w oth hallucinogen-induced disorder"
+    ],
+    "F16280": [
+     "1",
+     "Hallucinogen dependence w anxiety disorder"
+    ],
+    "F16283": [
+     "1",
+     "Hallucign depend w hallucign persisting perception disorder"
+    ],
+    "F16288": [
+     "1",
+     "Hallucinogen dependence w oth hallucinogen-induced disorder"
+    ],
+    "F1629": [
+     "1",
+     "Hallucinogen dependence w unsp hallucinogen-induced disorder"
+    ],
+    "F169": [
+     "0",
+     "Hallucinogen use, unspecified"
+    ],
+    "F1690": [
+     "1",
+     "Hallucinogen use, unspecified, uncomplicated"
+    ],
+    "F1691": [
+     "1",
+     "Hallucinogen use, unspecified, in remission"
+    ],
+    "F1692": [
+     "0",
+     "Hallucinogen use, unspecified with intoxication"
+    ],
+    "F16920": [
+     "1",
+     "Hallucinogen use, unsp with intoxication, uncomplicated"
+    ],
+    "F16921": [
+     "1",
+     "Hallucinogen use, unsp with intoxication with delirium"
+    ],
+    "F16929": [
+     "1",
+     "Hallucinogen use, unspecified with intoxication, unspecified"
+    ],
+    "F1694": [
+     "1",
+     "Hallucinogen use, unsp w hallucinogen-induced mood disorder"
+    ],
+    "F1695": [
+     "0",
+     "Hallucinogen use, unsp w psychotic disorder"
+    ],
+    "F16950": [
+     "1",
+     "Hallucinogen use, unsp w psychotic disorder w delusions"
+    ],
+    "F16951": [
+     "1",
+     "Hallucinogen use, unsp w psychotic disorder w hallucinations"
+    ],
+    "F16959": [
+     "1",
+     "Hallucinogen use, unsp w psychotic disorder, unsp"
+    ],
+    "F1698": [
+     "0",
+     "Hallucinogen use, unsp w oth hallucinogen-induced disorder"
+    ],
+    "F16980": [
+     "1",
+     "Hallucinogen use, unsp w anxiety disorder"
+    ],
+    "F16983": [
+     "1",
+     "Hallucign use, unsp w hallucign persist perception disorder"
+    ],
+    "F16988": [
+     "1",
+     "Hallucinogen use, unsp w oth hallucinogen-induced disorder"
+    ],
+    "F1699": [
+     "1",
+     "Hallucinogen use, unsp w unsp hallucinogen-induced disorder"
+    ],
+    "F17": [
+     "0",
+     "Nicotine dependence"
+    ],
+    "F172": [
+     "0",
+     "Nicotine dependence"
+    ],
+    "F1720": [
+     "0",
+     "Nicotine dependence, unspecified"
+    ],
+    "F17200": [
+     "1",
+     "Nicotine dependence, unspecified, uncomplicated"
+    ],
+    "F17201": [
+     "1",
+     "Nicotine dependence, unspecified, in remission"
+    ],
+    "F17203": [
+     "1",
+     "Nicotine dependence unspecified, with withdrawal"
+    ],
+    "F17208": [
+     "1",
+     "Nicotine dependence, unsp, w oth nicotine-induced disorders"
+    ],
+    "F17209": [
+     "1",
+     "Nicotine dependence, unsp, w unsp nicotine-induced disorders"
+    ],
+    "F1721": [
+     "0",
+     "Nicotine dependence, cigarettes"
+    ],
+    "F17210": [
+     "1",
+     "Nicotine dependence, cigarettes, uncomplicated"
+    ],
+    "F17211": [
+     "1",
+     "Nicotine dependence, cigarettes, in remission"
+    ],
+    "F17213": [
+     "1",
+     "Nicotine dependence, cigarettes, with withdrawal"
+    ],
+    "F17218": [
+     "1",
+     "Nicotine dependence, cigarettes, w oth disorders"
+    ],
+    "F17219": [
+     "1",
+     "Nicotine dependence, cigarettes, w unsp disorders"
+    ],
+    "F1722": [
+     "0",
+     "Nicotine dependence, chewing tobacco"
+    ],
+    "F17220": [
+     "1",
+     "Nicotine dependence, chewing tobacco, uncomplicated"
+    ],
+    "F17221": [
+     "1",
+     "Nicotine dependence, chewing tobacco, in remission"
+    ],
+    "F17223": [
+     "1",
+     "Nicotine dependence, chewing tobacco, with withdrawal"
+    ],
+    "F17228": [
+     "1",
+     "Nicotine dependence, chewing tobacco, w oth disorders"
+    ],
+    "F17229": [
+     "1",
+     "Nicotine dependence, chewing tobacco, w unsp disorders"
+    ],
+    "F1729": [
+     "0",
+     "Nicotine dependence, other tobacco product"
+    ],
+    "F17290": [
+     "1",
+     "Nicotine dependence, other tobacco product, uncomplicated"
+    ],
+    "F17291": [
+     "1",
+     "Nicotine dependence, other tobacco product, in remission"
+    ],
+    "F17293": [
+     "1",
+     "Nicotine dependence, other tobacco product, with withdrawal"
+    ],
+    "F17298": [
+     "1",
+     "Nicotine dependence, oth tobacco product, w oth disorders"
+    ],
+    "F17299": [
+     "1",
+     "Nicotine dependence, oth tobacco product, w unsp disorders"
+    ],
+    "F18": [
+     "0",
+     "Inhalant related disorders"
+    ],
+    "F181": [
+     "0",
+     "Inhalant abuse"
+    ],
+    "F1810": [
+     "1",
+     "Inhalant abuse, uncomplicated"
+    ],
+    "F1811": [
+     "1",
+     "Inhalant abuse, in remission"
+    ],
+    "F1812": [
+     "0",
+     "Inhalant abuse with intoxication"
+    ],
+    "F18120": [
+     "1",
+     "Inhalant abuse with intoxication, uncomplicated"
+    ],
+    "F18121": [
+     "1",
+     "Inhalant abuse with intoxication delirium"
+    ],
+    "F18129": [
+     "1",
+     "Inhalant abuse with intoxication, unspecified"
+    ],
+    "F1814": [
+     "1",
+     "Inhalant abuse with inhalant-induced mood disorder"
+    ],
+    "F1815": [
+     "0",
+     "Inhalant abuse with inhalant-induced psychotic disorder"
+    ],
+    "F18150": [
+     "1",
+     "Inhalant abuse w inhalnt-induce psych disorder w delusions"
+    ],
+    "F18151": [
+     "1",
+     "Inhalant abuse w inhalnt-induce psych disorder w hallucin"
+    ],
+    "F18159": [
+     "1",
+     "Inhalant abuse w inhalant-induced psychotic disorder, unsp"
+    ],
+    "F1817": [
+     "1",
+     "Inhalant abuse with inhalant-induced dementia"
+    ],
+    "F1818": [
+     "0",
+     "Inhalant abuse with other inhalant-induced disorders"
+    ],
+    "F18180": [
+     "1",
+     "Inhalant abuse with inhalant-induced anxiety disorder"
+    ],
+    "F18188": [
+     "1",
+     "Inhalant abuse with other inhalant-induced disorder"
+    ],
+    "F1819": [
+     "1",
+     "Inhalant abuse with unspecified inhalant-induced disorder"
+    ],
+    "F182": [
+     "0",
+     "Inhalant dependence"
+    ],
+    "F1820": [
+     "1",
+     "Inhalant dependence, uncomplicated"
+    ],
+    "F1821": [
+     "1",
+     "Inhalant dependence, in remission"
+    ],
+    "F1822": [
+     "0",
+     "Inhalant dependence with intoxication"
+    ],
+    "F18220": [
+     "1",
+     "Inhalant dependence with intoxication, uncomplicated"
+    ],
+    "F18221": [
+     "1",
+     "Inhalant dependence with intoxication delirium"
+    ],
+    "F18229": [
+     "1",
+     "Inhalant dependence with intoxication, unspecified"
+    ],
+    "F1824": [
+     "1",
+     "Inhalant dependence with inhalant-induced mood disorder"
+    ],
+    "F1825": [
+     "0",
+     "Inhalant dependence with inhalant-induced psychotic disorder"
+    ],
+    "F18250": [
+     "1",
+     "Inhalant depend w inhalnt-induce psych disorder w delusions"
+    ],
+    "F18251": [
+     "1",
+     "Inhalant depend w inhalnt-induce psych disorder w hallucin"
+    ],
+    "F18259": [
+     "1",
+     "Inhalant depend w inhalnt-induce psychotic disorder, unsp"
+    ],
+    "F1827": [
+     "1",
+     "Inhalant dependence with inhalant-induced dementia"
+    ],
+    "F1828": [
+     "0",
+     "Inhalant dependence with other inhalant-induced disorders"
+    ],
+    "F18280": [
+     "1",
+     "Inhalant dependence with inhalant-induced anxiety disorder"
+    ],
+    "F18288": [
+     "1",
+     "Inhalant dependence with other inhalant-induced disorder"
+    ],
+    "F1829": [
+     "1",
+     "Inhalant dependence with unsp inhalant-induced disorder"
+    ],
+    "F189": [
+     "0",
+     "Inhalant use, unspecified"
+    ],
+    "F1890": [
+     "1",
+     "Inhalant use, unspecified, uncomplicated"
+    ],
+    "F1891": [
+     "1",
+     "Inhalant use, unspecified, in remission"
+    ],
+    "F1892": [
+     "0",
+     "Inhalant use, unspecified with intoxication"
+    ],
+    "F18920": [
+     "1",
+     "Inhalant use, unspecified with intoxication, uncomplicated"
+    ],
+    "F18921": [
+     "1",
+     "Inhalant use, unspecified with intoxication with delirium"
+    ],
+    "F18929": [
+     "1",
+     "Inhalant use, unspecified with intoxication, unspecified"
+    ],
+    "F1894": [
+     "1",
+     "Inhalant use, unsp with inhalant-induced mood disorder"
+    ],
+    "F1895": [
+     "0",
+     "Inhalant use, unsp with inhalant-induced psychotic disorder"
+    ],
+    "F18950": [
+     "1",
+     "Inhalant use, unsp w inhalnt-induce psych disord w delusions"
+    ],
+    "F18951": [
+     "1",
+     "Inhalant use, unsp w inhalnt-induce psych disord w hallucin"
+    ],
+    "F18959": [
+     "1",
+     "Inhalant use, unsp w inhalnt-induce psychotic disorder, unsp"
+    ],
+    "F1897": [
+     "1",
+     "Inhalant use, unsp with inhalant-induced persisting dementia"
+    ],
+    "F1898": [
+     "0",
+     "Inhalant use, unsp with other inhalant-induced disorders"
+    ],
+    "F18980": [
+     "1",
+     "Inhalant use, unsp with inhalant-induced anxiety disorder"
+    ],
+    "F18988": [
+     "1",
+     "Inhalant use, unsp with other inhalant-induced disorder"
+    ],
+    "F1899": [
+     "1",
+     "Inhalant use, unsp with unsp inhalant-induced disorder"
+    ],
+    "F19": [
+     "0",
+     "Other psychoactive substance related disorders"
+    ],
+    "F191": [
+     "0",
+     "Other psychoactive substance abuse"
+    ],
+    "F1910": [
+     "1",
+     "Other psychoactive substance abuse, uncomplicated"
+    ],
+    "F1911": [
+     "1",
+     "Other psychoactive substance abuse, in remission"
+    ],
+    "F1912": [
+     "0",
+     "Other psychoactive substance abuse with intoxication"
+    ],
+    "F19120": [
+     "1",
+     "Oth psychoactive substance abuse w intoxication, uncomp"
+    ],
+    "F19121": [
+     "1",
+     "Oth psychoactive substance abuse with intoxication delirium"
+    ],
+    "F19122": [
+     "1",
+     "Oth psychoactv substance abuse w intox w perceptual disturb"
+    ],
+    "F19129": [
+     "1",
+     "Other psychoactive substance abuse with intoxication, unsp"
+    ],
+    "F1913": [
+     "0",
+     "Other psychoactive substance abuse with withdrawal"
+    ],
+    "F19130": [
+     "1",
+     "Other psychoactive substance abuse with withdrawal, uncomp"
+    ],
+    "F19131": [
+     "1",
+     "Other psychoactive substance abuse with withdrawal delirium"
+    ],
+    "F19132": [
+     "1",
+     "Other psychoactv sub abuse with w/drawal w perceptl disturb"
+    ],
+    "F19139": [
+     "1",
+     "Other psychoactv substance abuse with withdrawal, unsp"
+    ],
+    "F1914": [
+     "1",
+     "Oth psychoactive substance abuse w mood disorder"
+    ],
+    "F1915": [
+     "0",
+     "Oth psychoactive substance abuse w psychotic disorder"
+    ],
+    "F19150": [
+     "1",
+     "Oth psychoactv substance abuse w psych disorder w delusions"
+    ],
+    "F19151": [
+     "1",
+     "Oth psychoactv substance abuse w psych disorder w hallucin"
+    ],
+    "F19159": [
+     "1",
+     "Oth psychoactive substance abuse w psychotic disorder, unsp"
+    ],
+    "F1916": [
+     "1",
+     "Oth psychoactv substance abuse w persist amnestic disorder"
+    ],
+    "F1917": [
+     "1",
+     "Oth psychoactive substance abuse w persisting dementia"
+    ],
+    "F1918": [
+     "0",
+     "Oth psychoactive substance abuse w oth disorders"
+    ],
+    "F19180": [
+     "1",
+     "Oth psychoactive substance abuse w anxiety disorder"
+    ],
+    "F19181": [
+     "1",
+     "Oth psychoactive substance abuse w sexual dysfunction"
+    ],
+    "F19182": [
+     "1",
+     "Oth psychoactive substance abuse w sleep disorder"
+    ],
+    "F19188": [
+     "1",
+     "Oth psychoactive substance abuse w oth disorder"
+    ],
+    "F1919": [
+     "1",
+     "Oth psychoactive substance abuse w unsp disorder"
+    ],
+    "F192": [
+     "0",
+     "Other psychoactive substance dependence"
+    ],
+    "F1920": [
+     "1",
+     "Other psychoactive substance dependence, uncomplicated"
+    ],
+    "F1921": [
+     "1",
+     "Other psychoactive substance dependence, in remission"
+    ],
+    "F1922": [
+     "0",
+     "Other psychoactive substance dependence with intoxication"
+    ],
+    "F19220": [
+     "1",
+     "Oth psychoactive substance dependence w intoxication, uncomp"
+    ],
+    "F19221": [
+     "1",
+     "Oth psychoactive substance dependence w intox delirium"
+    ],
+    "F19222": [
+     "1",
+     "Oth psychoactv substance depend w intox w perceptual disturb"
+    ],
+    "F19229": [
+     "1",
+     "Oth psychoactive substance dependence w intoxication, unsp"
+    ],
+    "F1923": [
+     "0",
+     "Other psychoactive substance dependence with withdrawal"
+    ],
+    "F19230": [
+     "1",
+     "Oth psychoactive substance dependence w withdrawal, uncomp"
+    ],
+    "F19231": [
+     "1",
+     "Oth psychoactive substance dependence w withdrawal delirium"
+    ],
+    "F19232": [
+     "1",
+     "Oth psychoactv sub depend w w/drawal w perceptl disturb"
+    ],
+    "F19239": [
+     "1",
+     "Oth psychoactive substance dependence with withdrawal, unsp"
+    ],
+    "F1924": [
+     "1",
+     "Oth psychoactive substance dependence w mood disorder"
+    ],
+    "F1925": [
+     "0",
+     "Oth psychoactive substance dependence w psychotic disorder"
+    ],
+    "F19250": [
+     "1",
+     "Oth psychoactv substance depend w psych disorder w delusions"
+    ],
+    "F19251": [
+     "1",
+     "Oth psychoactv substance depend w psych disorder w hallucin"
+    ],
+    "F19259": [
+     "1",
+     "Oth psychoactv substance depend w psychotic disorder, unsp"
+    ],
+    "F1926": [
+     "1",
+     "Oth psychoactv substance depend w persist amnestic disorder"
+    ],
+    "F1927": [
+     "1",
+     "Oth psychoactive substance dependence w persisting dementia"
+    ],
+    "F1928": [
+     "0",
+     "Oth psychoactive substance dependence w oth disorders"
+    ],
+    "F19280": [
+     "1",
+     "Oth psychoactive substance dependence w anxiety disorder"
+    ],
+    "F19281": [
+     "1",
+     "Oth psychoactive substance dependence w sexual dysfunction"
+    ],
+    "F19282": [
+     "1",
+     "Oth psychoactive substance dependence w sleep disorder"
+    ],
+    "F19288": [
+     "1",
+     "Oth psychoactive substance dependence w oth disorder"
+    ],
+    "F1929": [
+     "1",
+     "Oth psychoactive substance dependence w unsp disorder"
+    ],
+    "F199": [
+     "0",
+     "Other psychoactive substance use, unspecified"
+    ],
+    "F1990": [
+     "1",
+     "Other psychoactive substance use, unspecified, uncomplicated"
+    ],
+    "F1991": [
+     "1",
+     "Other psychoactive substance use, unspecified, in remission"
+    ],
+    "F1992": [
+     "0",
+     "Other psychoactive substance use, unsp with intoxication"
+    ],
+    "F19920": [
+     "1",
+     "Oth psychoactive substance use, unsp w intoxication, uncomp"
+    ],
+    "F19921": [
+     "1",
+     "Oth psychoactive substance use, unsp w intox w delirium"
+    ],
+    "F19922": [
+     "1",
+     "Oth psychoactv sub use, unsp w intox w perceptl disturb"
+    ],
+    "F19929": [
+     "1",
+     "Oth psychoactive substance use, unsp with intoxication, unsp"
+    ],
+    "F1993": [
+     "0",
+     "Other psychoactive substance use, unsp with withdrawal"
+    ],
+    "F19930": [
+     "1",
+     "Oth psychoactive substance use, unsp w withdrawal, uncomp"
+    ],
+    "F19931": [
+     "1",
+     "Oth psychoactive substance use, unsp w withdrawal delirium"
+    ],
+    "F19932": [
+     "1",
+     "Oth psychoactv sub use, unsp w w/drawal w perceptl disturb"
+    ],
+    "F19939": [
+     "1",
+     "Other psychoactive substance use, unsp with withdrawal, unsp"
+    ],
+    "F1994": [
+     "1",
+     "Oth psychoactive substance use, unsp w mood disorder"
+    ],
+    "F1995": [
+     "0",
+     "Oth psychoactive substance use, unsp w psychotic disorder"
+    ],
+    "F19950": [
+     "1",
+     "Oth psychoactv sub use, unsp w psych disorder w delusions"
+    ],
+    "F19951": [
+     "1",
+     "Oth psychoactv sub use, unsp w psych disorder w hallucin"
+    ],
+    "F19959": [
+     "1",
+     "Oth psychoactv substance use, unsp w psych disorder, unsp"
+    ],
+    "F1996": [
+     "1",
+     "Oth psychoactv sub use, unsp w persist amnestic disorder"
+    ],
+    "F1997": [
+     "1",
+     "Oth psychoactive substance use, unsp w persisting dementia"
+    ],
+    "F1998": [
+     "0",
+     "Oth psychoactive substance use, unsp w oth disorders"
+    ],
+    "F19980": [
+     "1",
+     "Oth psychoactive substance use, unsp w anxiety disorder"
+    ],
+    "F19981": [
+     "1",
+     "Oth psychoactive substance use, unsp w sexual dysfunction"
+    ],
+    "F19982": [
+     "1",
+     "Oth psychoactive substance use, unsp w sleep disorder"
+    ],
+    "F19988": [
+     "1",
+     "Oth psychoactive substance use, unsp w oth disorder"
+    ],
+    "F1999": [
+     "1",
+     "Oth psychoactive substance use, unsp w unsp disorder"
+    ],
+    "F20": [
+     "0",
+     "Schizophrenia"
+    ],
+    "F200": [
+     "1",
+     "Paranoid schizophrenia"
+    ],
+    "F201": [
+     "1",
+     "Disorganized schizophrenia"
+    ],
+    "F202": [
+     "1",
+     "Catatonic schizophrenia"
+    ],
+    "F203": [
+     "1",
+     "Undifferentiated schizophrenia"
+    ],
+    "F205": [
+     "1",
+     "Residual schizophrenia"
+    ],
+    "F208": [
+     "0",
+     "Other schizophrenia"
+    ],
+    "F2081": [
+     "1",
+     "Schizophreniform disorder"
+    ],
+    "F2089": [
+     "1",
+     "Other schizophrenia"
+    ],
+    "F209": [
+     "1",
+     "Schizophrenia, unspecified"
+    ],
+    "F21": [
+     "1",
+     "Schizotypal disorder"
+    ],
+    "F22": [
+     "1",
+     "Delusional disorders"
+    ],
+    "F23": [
+     "1",
+     "Brief psychotic disorder"
+    ],
+    "F24": [
+     "1",
+     "Shared psychotic disorder"
+    ],
+    "F25": [
+     "0",
+     "Schizoaffective disorders"
+    ],
+    "F250": [
+     "1",
+     "Schizoaffective disorder, bipolar type"
+    ],
+    "F251": [
+     "1",
+     "Schizoaffective disorder, depressive type"
+    ],
+    "F258": [
+     "1",
+     "Other schizoaffective disorders"
+    ],
+    "F259": [
+     "1",
+     "Schizoaffective disorder, unspecified"
+    ],
+    "F28": [
+     "1",
+     "Oth psych disorder not due to a sub or known physiol cond"
+    ],
+    "F29": [
+     "1",
+     "Unsp psychosis not due to a substance or known physiol cond"
+    ],
+    "F30": [
+     "0",
+     "Manic episode"
+    ],
+    "F301": [
+     "0",
+     "Manic episode without psychotic symptoms"
+    ],
+    "F3010": [
+     "1",
+     "Manic episode without psychotic symptoms, unspecified"
+    ],
+    "F3011": [
+     "1",
+     "Manic episode without psychotic symptoms, mild"
+    ],
+    "F3012": [
+     "1",
+     "Manic episode without psychotic symptoms, moderate"
+    ],
+    "F3013": [
+     "1",
+     "Manic episode, severe, without psychotic symptoms"
+    ],
+    "F302": [
+     "1",
+     "Manic episode, severe with psychotic symptoms"
+    ],
+    "F303": [
+     "1",
+     "Manic episode in partial remission"
+    ],
+    "F304": [
+     "1",
+     "Manic episode in full remission"
+    ],
+    "F308": [
+     "1",
+     "Other manic episodes"
+    ],
+    "F309": [
+     "1",
+     "Manic episode, unspecified"
+    ],
+    "F31": [
+     "0",
+     "Bipolar disorder"
+    ],
+    "F310": [
+     "1",
+     "Bipolar disorder, current episode hypomanic"
+    ],
+    "F311": [
+     "0",
+     "Bipolar disorder, current episode manic w/o psych features"
+    ],
+    "F3110": [
+     "1",
+     "Bipolar disord, crnt episode manic w/o psych features, unsp"
+    ],
+    "F3111": [
+     "1",
+     "Bipolar disord, crnt episode manic w/o psych features, mild"
+    ],
+    "F3112": [
+     "1",
+     "Bipolar disord, crnt episode manic w/o psych features, mod"
+    ],
+    "F3113": [
+     "1",
+     "Bipolar disord, crnt epsd manic w/o psych features, severe"
+    ],
+    "F312": [
+     "1",
+     "Bipolar disord, crnt episode manic severe w psych features"
+    ],
+    "F313": [
+     "0",
+     "Bipolar disord, current episode depress, mild or mod severt"
+    ],
+    "F3130": [
+     "1",
+     "Bipolar disord, crnt epsd depress, mild or mod severt, unsp"
+    ],
+    "F3131": [
+     "1",
+     "Bipolar disorder, current episode depressed, mild"
+    ],
+    "F3132": [
+     "1",
+     "Bipolar disorder, current episode depressed, moderate"
+    ],
+    "F314": [
+     "1",
+     "Bipolar disord, crnt epsd depress, sev, w/o psych features"
+    ],
+    "F315": [
+     "1",
+     "Bipolar disord, crnt epsd depress, severe, w psych features"
+    ],
+    "F316": [
+     "0",
+     "Bipolar disorder, current episode mixed"
+    ],
+    "F3160": [
+     "1",
+     "Bipolar disorder, current episode mixed, unspecified"
+    ],
+    "F3161": [
+     "1",
+     "Bipolar disorder, current episode mixed, mild"
+    ],
+    "F3162": [
+     "1",
+     "Bipolar disorder, current episode mixed, moderate"
+    ],
+    "F3163": [
+     "1",
+     "Bipolar disord, crnt epsd mixed, severe, w/o psych features"
+    ],
+    "F3164": [
+     "1",
+     "Bipolar disord, crnt episode mixed, severe, w psych features"
+    ],
+    "F317": [
+     "0",
+     "Bipolar disorder, currently in remission"
+    ],
+    "F3170": [
+     "1",
+     "Bipolar disord, currently in remis, most recent episode unsp"
+    ],
+    "F3171": [
+     "1",
+     "Bipolar disord, in partial remis, most recent epsd hypomanic"
+    ],
+    "F3172": [
+     "1",
+     "Bipolar disord, in full remis, most recent episode hypomanic"
+    ],
+    "F3173": [
+     "1",
+     "Bipolar disord, in partial remis, most recent episode manic"
+    ],
+    "F3174": [
+     "1",
+     "Bipolar disorder, in full remis, most recent episode manic"
+    ],
+    "F3175": [
+     "1",
+     "Bipolar disord, in partial remis, most recent epsd depress"
+    ],
+    "F3176": [
+     "1",
+     "Bipolar disorder, in full remis, most recent episode depress"
+    ],
+    "F3177": [
+     "1",
+     "Bipolar disord, in partial remis, most recent episode mixed"
+    ],
+    "F3178": [
+     "1",
+     "Bipolar disorder, in full remis, most recent episode mixed"
+    ],
+    "F318": [
+     "0",
+     "Other bipolar disorders"
+    ],
+    "F3181": [
+     "1",
+     "Bipolar II disorder"
+    ],
+    "F3189": [
+     "1",
+     "Other bipolar disorder"
+    ],
+    "F319": [
+     "1",
+     "Bipolar disorder, unspecified"
+    ],
+    "F32": [
+     "0",
+     "Depressive episode"
+    ],
+    "F320": [
+     "1",
+     "Major depressive disorder, single episode, mild"
+    ],
+    "F321": [
+     "1",
+     "Major depressive disorder, single episode, moderate"
+    ],
+    "F322": [
+     "1",
+     "Major depressv disord, single epsd, sev w/o psych features"
+    ],
+    "F323": [
+     "1",
+     "Major depressv disord, single epsd, severe w psych features"
+    ],
+    "F324": [
+     "1",
+     "Major depressv disorder, single episode, in partial remis"
+    ],
+    "F325": [
+     "1",
+     "Major depressive disorder, single episode, in full remission"
+    ],
+    "F328": [
+     "0",
+     "Other depressive episodes"
+    ],
+    "F3281": [
+     "1",
+     "Premenstrual dysphoric disorder"
+    ],
+    "F3289": [
+     "1",
+     "Other specified depressive episodes"
+    ],
+    "F329": [
+     "1",
+     "Major depressive disorder, single episode, unspecified"
+    ],
+    "F32A": [
+     "1",
+     "Depression, unspecified"
+    ],
+    "F33": [
+     "0",
+     "Major depressive disorder, recurrent"
+    ],
+    "F330": [
+     "1",
+     "Major depressive disorder, recurrent, mild"
+    ],
+    "F331": [
+     "1",
+     "Major depressive disorder, recurrent, moderate"
+    ],
+    "F332": [
+     "1",
+     "Major depressv disorder, recurrent severe w/o psych features"
+    ],
+    "F333": [
+     "1",
+     "Major depressv disorder, recurrent, severe w psych symptoms"
+    ],
+    "F334": [
+     "0",
+     "Major depressive disorder, recurrent, in remission"
+    ],
+    "F3340": [
+     "1",
+     "Major depressive disorder, recurrent, in remission, unsp"
+    ],
+    "F3341": [
+     "1",
+     "Major depressive disorder, recurrent, in partial remission"
+    ],
+    "F3342": [
+     "1",
+     "Major depressive disorder, recurrent, in full remission"
+    ],
+    "F338": [
+     "1",
+     "Other recurrent depressive disorders"
+    ],
+    "F339": [
+     "1",
+     "Major depressive disorder, recurrent, unspecified"
+    ],
+    "F34": [
+     "0",
+     "Persistent mood [affective] disorders"
+    ],
+    "F340": [
+     "1",
+     "Cyclothymic disorder"
+    ],
+    "F341": [
+     "1",
+     "Dysthymic disorder"
+    ],
+    "F348": [
+     "0",
+     "Other persistent mood [affective] disorders"
+    ],
+    "F3481": [
+     "1",
+     "Disruptive mood dysregulation disorder"
+    ],
+    "F3489": [
+     "1",
+     "Other specified persistent mood disorders"
+    ],
+    "F349": [
+     "1",
+     "Persistent mood [affective] disorder, unspecified"
+    ],
+    "F39": [
+     "1",
+     "Unspecified mood [affective] disorder"
+    ],
+    "F40": [
+     "0",
+     "Phobic anxiety disorders"
+    ],
+    "F400": [
+     "0",
+     "Agoraphobia"
+    ],
+    "F4000": [
+     "1",
+     "Agoraphobia, unspecified"
+    ],
+    "F4001": [
+     "1",
+     "Agoraphobia with panic disorder"
+    ],
+    "F4002": [
+     "1",
+     "Agoraphobia without panic disorder"
+    ],
+    "F401": [
+     "0",
+     "Social phobias"
+    ],
+    "F4010": [
+     "1",
+     "Social phobia, unspecified"
+    ],
+    "F4011": [
+     "1",
+     "Social phobia, generalized"
+    ],
+    "F402": [
+     "0",
+     "Specific (isolated) phobias"
+    ],
+    "F4021": [
+     "0",
+     "Animal type phobia"
+    ],
+    "F40210": [
+     "1",
+     "Arachnophobia"
+    ],
+    "F40218": [
+     "1",
+     "Other animal type phobia"
+    ],
+    "F4022": [
+     "0",
+     "Natural environment type phobia"
+    ],
+    "F40220": [
+     "1",
+     "Fear of thunderstorms"
+    ],
+    "F40228": [
+     "1",
+     "Other natural environment type phobia"
+    ],
+    "F4023": [
+     "0",
+     "Blood, injection, injury type phobia"
+    ],
+    "F40230": [
+     "1",
+     "Fear of blood"
+    ],
+    "F40231": [
+     "1",
+     "Fear of injections and transfusions"
+    ],
+    "F40232": [
+     "1",
+     "Fear of other medical care"
+    ],
+    "F40233": [
+     "1",
+     "Fear of injury"
+    ],
+    "F4024": [
+     "0",
+     "Situational type phobia"
+    ],
+    "F40240": [
+     "1",
+     "Claustrophobia"
+    ],
+    "F40241": [
+     "1",
+     "Acrophobia"
+    ],
+    "F40242": [
+     "1",
+     "Fear of bridges"
+    ],
+    "F40243": [
+     "1",
+     "Fear of flying"
+    ],
+    "F40248": [
+     "1",
+     "Other situational type phobia"
+    ],
+    "F4029": [
+     "0",
+     "Other specified phobia"
+    ],
+    "F40290": [
+     "1",
+     "Androphobia"
+    ],
+    "F40291": [
+     "1",
+     "Gynephobia"
+    ],
+    "F40298": [
+     "1",
+     "Other specified phobia"
+    ],
+    "F408": [
+     "1",
+     "Other phobic anxiety disorders"
+    ],
+    "F409": [
+     "1",
+     "Phobic anxiety disorder, unspecified"
+    ],
+    "F41": [
+     "0",
+     "Other anxiety disorders"
+    ],
+    "F410": [
+     "1",
+     "Panic disorder [episodic paroxysmal anxiety]"
+    ],
+    "F411": [
+     "1",
+     "Generalized anxiety disorder"
+    ],
+    "F413": [
+     "1",
+     "Other mixed anxiety disorders"
+    ],
+    "F418": [
+     "1",
+     "Other specified anxiety disorders"
+    ],
+    "F419": [
+     "1",
+     "Anxiety disorder, unspecified"
+    ],
+    "F42": [
+     "0",
+     "Obsessive-compulsive disorder"
+    ],
+    "F422": [
+     "1",
+     "Mixed obsessional thoughts and acts"
+    ],
+    "F423": [
+     "1",
+     "Hoarding disorder"
+    ],
+    "F424": [
+     "1",
+     "Excoriation (skin-picking) disorder"
+    ],
+    "F428": [
+     "1",
+     "Other obsessive-compulsive disorder"
+    ],
+    "F429": [
+     "1",
+     "Obsessive-compulsive disorder, unspecified"
+    ],
+    "F43": [
+     "0",
+     "Reaction to severe stress, and adjustment disorders"
+    ],
+    "F430": [
+     "1",
+     "Acute stress reaction"
+    ],
+    "F431": [
+     "0",
+     "Post-traumatic stress disorder (PTSD)"
+    ],
+    "F4310": [
+     "1",
+     "Post-traumatic stress disorder, unspecified"
+    ],
+    "F4311": [
+     "1",
+     "Post-traumatic stress disorder, acute"
+    ],
+    "F4312": [
+     "1",
+     "Post-traumatic stress disorder, chronic"
+    ],
+    "F432": [
+     "0",
+     "Adjustment disorders"
+    ],
+    "F4320": [
+     "1",
+     "Adjustment disorder, unspecified"
+    ],
+    "F4321": [
+     "1",
+     "Adjustment disorder with depressed mood"
+    ],
+    "F4322": [
+     "1",
+     "Adjustment disorder with anxiety"
+    ],
+    "F4323": [
+     "1",
+     "Adjustment disorder with mixed anxiety and depressed mood"
+    ],
+    "F4324": [
+     "1",
+     "Adjustment disorder with disturbance of conduct"
+    ],
+    "F4325": [
+     "1",
+     "Adjustment disorder w mixed disturb of emotions and conduct"
+    ],
+    "F4329": [
+     "1",
+     "Adjustment disorder with other symptoms"
+    ],
+    "F438": [
+     "0",
+     "Other reactions to severe stress"
+    ],
+    "F4381": [
+     "1",
+     "Prolonged grief disorder"
+    ],
+    "F4389": [
+     "1",
+     "Other reactions to severe stress"
+    ],
+    "F439": [
+     "1",
+     "Reaction to severe stress, unspecified"
+    ],
+    "F44": [
+     "0",
+     "Dissociative and conversion disorders"
+    ],
+    "F440": [
+     "1",
+     "Dissociative amnesia"
+    ],
+    "F441": [
+     "1",
+     "Dissociative fugue"
+    ],
+    "F442": [
+     "1",
+     "Dissociative stupor"
+    ],
+    "F444": [
+     "1",
+     "Conversion disorder with motor symptom or deficit"
+    ],
+    "F445": [
+     "1",
+     "Conversion disorder with seizures or convulsions"
+    ],
+    "F446": [
+     "1",
+     "Conversion disorder with sensory symptom or deficit"
+    ],
+    "F447": [
+     "1",
+     "Conversion disorder with mixed symptom presentation"
+    ],
+    "F448": [
+     "0",
+     "Other dissociative and conversion disorders"
+    ],
+    "F4481": [
+     "1",
+     "Dissociative identity disorder"
+    ],
+    "F4489": [
+     "1",
+     "Other dissociative and conversion disorders"
+    ],
+    "F449": [
+     "1",
+     "Dissociative and conversion disorder, unspecified"
+    ],
+    "F45": [
+     "0",
+     "Somatoform disorders"
+    ],
+    "F450": [
+     "1",
+     "Somatization disorder"
+    ],
+    "F451": [
+     "1",
+     "Undifferentiated somatoform disorder"
+    ],
+    "F452": [
+     "0",
+     "Hypochondriacal disorders"
+    ],
+    "F4520": [
+     "1",
+     "Hypochondriacal disorder, unspecified"
+    ],
+    "F4521": [
+     "1",
+     "Hypochondriasis"
+    ],
+    "F4522": [
+     "1",
+     "Body dysmorphic disorder"
+    ],
+    "F4529": [
+     "1",
+     "Other hypochondriacal disorders"
+    ],
+    "F454": [
+     "0",
+     "Pain disorders related to psychological factors"
+    ],
+    "F4541": [
+     "1",
+     "Pain disorder exclusively related to psychological factors"
+    ],
+    "F4542": [
+     "1",
+     "Pain disorder with related psychological factors"
+    ],
+    "F458": [
+     "1",
+     "Other somatoform disorders"
+    ],
+    "F459": [
+     "1",
+     "Somatoform disorder, unspecified"
+    ],
+    "F48": [
+     "0",
+     "Other nonpsychotic mental disorders"
+    ],
+    "F481": [
+     "1",
+     "Depersonalization-derealization syndrome"
+    ],
+    "F482": [
+     "1",
+     "Pseudobulbar affect"
+    ],
+    "F488": [
+     "1",
+     "Other specified nonpsychotic mental disorders"
+    ],
+    "F489": [
+     "1",
+     "Nonpsychotic mental disorder, unspecified"
+    ],
+    "F50": [
+     "0",
+     "Eating disorders"
+    ],
+    "F500": [
+     "0",
+     "Anorexia nervosa"
+    ],
+    "F5000": [
+     "1",
+     "Anorexia nervosa, unspecified"
+    ],
+    "F5001": [
+     "0",
+     "Anorexia nervosa, restricting type"
+    ],
+    "F50010": [
+     "1",
+     "Anorexia nervosa, restricting type, mild"
+    ],
+    "F50011": [
+     "1",
+     "Anorexia nervosa, restricting type, moderate"
+    ],
+    "F50012": [
+     "1",
+     "Anorexia nervosa, restricting type, severe"
+    ],
+    "F50013": [
+     "1",
+     "Anorexia nervosa, restricting type, extreme"
+    ],
+    "F50014": [
+     "1",
+     "Anorexia nervosa, restricting type, in remission"
+    ],
+    "F50019": [
+     "1",
+     "Anorexia nervosa, restricting type, unspecified"
+    ],
+    "F5002": [
+     "0",
+     "Anorexia nervosa, binge eating/purging type"
+    ],
+    "F50020": [
+     "1",
+     "Anorexia nervosa, binge eating/purging type, mild"
+    ],
+    "F50021": [
+     "1",
+     "Anorexia nervosa, binge eating/purging type, moderate"
+    ],
+    "F50022": [
+     "1",
+     "Anorexia nervosa, binge eating/purging type, severe"
+    ],
+    "F50023": [
+     "1",
+     "Anorexia nervosa, binge eating/purging type, extreme"
+    ],
+    "F50024": [
+     "1",
+     "Anorexia nervosa, binge eating/purging type, in remission"
+    ],
+    "F50029": [
+     "1",
+     "Anorexia nervosa, binge eating/purging type, unspecified"
+    ],
+    "F502": [
+     "0",
+     "Bulimia nervosa"
+    ],
+    "F5020": [
+     "1",
+     "Bulimia nervosa, unspecified"
+    ],
+    "F5021": [
+     "1",
+     "Bulimia nervosa, mild"
+    ],
+    "F5022": [
+     "1",
+     "Bulimia nervosa, moderate"
+    ],
+    "F5023": [
+     "1",
+     "Bulimia nervosa, severe"
+    ],
+    "F5024": [
+     "1",
+     "Bulimia nervosa, extreme"
+    ],
+    "F5025": [
+     "1",
+     "Bulimia nervosa, in remission"
+    ],
+    "F508": [
+     "0",
+     "Other eating disorders"
+    ],
+    "F5081": [
+     "0",
+     "Binge eating disorder"
+    ],
+    "F50810": [
+     "1",
+     "Binge eating disorder, mild"
+    ],
+    "F50811": [
+     "1",
+     "Binge eating disorder, moderate"
+    ],
+    "F50812": [
+     "1",
+     "Binge eating disorder, severe"
+    ],
+    "F50813": [
+     "1",
+     "Binge eating disorder, extreme"
+    ],
+    "F50814": [
+     "1",
+     "Binge eating disorder, in remission"
+    ],
+    "F50819": [
+     "1",
+     "Binge eating disorder, unspecified"
+    ],
+    "F5082": [
+     "1",
+     "Avoidant/restrictive food intake disorder"
+    ],
+    "F5083": [
+     "1",
+     "Pica in adults"
+    ],
+    "F5084": [
+     "1",
+     "Rumination disorder in adults"
+    ],
+    "F5089": [
+     "1",
+     "Other specified eating disorder"
+    ],
+    "F509": [
+     "1",
+     "Eating disorder, unspecified"
+    ],
+    "F51": [
+     "0",
+     "Sleep disorders not due to a substance or known physiol cond"
+    ],
+    "F510": [
+     "0",
+     "Insomnia not due to a substance or known physiol condition"
+    ],
+    "F5101": [
+     "1",
+     "Primary insomnia"
+    ],
+    "F5102": [
+     "1",
+     "Adjustment insomnia"
+    ],
+    "F5103": [
+     "1",
+     "Paradoxical insomnia"
+    ],
+    "F5104": [
+     "1",
+     "Psychophysiologic insomnia"
+    ],
+    "F5105": [
+     "1",
+     "Insomnia due to other mental disorder"
+    ],
+    "F5109": [
+     "1",
+     "Oth insomnia not due to a substance or known physiol cond"
+    ],
+    "F511": [
+     "0",
+     "Hypersomnia not due to a substance or known physiol cond"
+    ],
+    "F5111": [
+     "1",
+     "Primary hypersomnia"
+    ],
+    "F5112": [
+     "1",
+     "Insufficient sleep syndrome"
+    ],
+    "F5113": [
+     "1",
+     "Hypersomnia due to other mental disorder"
+    ],
+    "F5119": [
+     "1",
+     "Oth hypersomnia not due to a substance or known physiol cond"
+    ],
+    "F513": [
+     "1",
+     "Sleepwalking [somnambulism]"
+    ],
+    "F514": [
+     "1",
+     "Sleep terrors [night terrors]"
+    ],
+    "F515": [
+     "1",
+     "Nightmare disorder"
+    ],
+    "F518": [
+     "1",
+     "Oth sleep disord not due to a sub or known physiol cond"
+    ],
+    "F519": [
+     "1",
+     "Sleep disorder not due to a sub or known physiol cond, unsp"
+    ],
+    "F52": [
+     "0",
+     "Sexual dysfnct not due to a substance or known physiol cond"
+    ],
+    "F520": [
+     "1",
+     "Hypoactive sexual desire disorder"
+    ],
+    "F521": [
+     "1",
+     "Sexual aversion disorder"
+    ],
+    "F522": [
+     "0",
+     "Sexual arousal disorders"
+    ],
+    "F5221": [
+     "1",
+     "Male erectile disorder"
+    ],
+    "F5222": [
+     "1",
+     "Female sexual arousal disorder"
+    ],
+    "F523": [
+     "0",
+     "Orgasmic disorder"
+    ],
+    "F5231": [
+     "1",
+     "Female orgasmic disorder"
+    ],
+    "F5232": [
+     "1",
+     "Male orgasmic disorder"
+    ],
+    "F524": [
+     "1",
+     "Premature ejaculation"
+    ],
+    "F525": [
+     "1",
+     "Vaginismus not due to a substance or known physiol condition"
+    ],
+    "F526": [
+     "1",
+     "Dyspareunia not due to a substance or known physiol cond"
+    ],
+    "F528": [
+     "1",
+     "Oth sexual dysfnct not due to a sub or known physiol cond"
+    ],
+    "F529": [
+     "1",
+     "Unsp sexual dysfnct not due to a sub or known physiol cond"
+    ],
+    "F53": [
+     "0",
+     "Mental and behavrl disorders assoc with the puerperium, NEC"
+    ],
+    "F530": [
+     "1",
+     "Postpartum depression"
+    ],
+    "F531": [
+     "1",
+     "Puerperal psychosis"
+    ],
+    "F54": [
+     "1",
+     "Psych & behavrl factors assoc w disord or dis classd elswhr"
+    ],
+    "F55": [
+     "0",
+     "Abuse of non-psychoactive substances"
+    ],
+    "F550": [
+     "1",
+     "Abuse of antacids"
+    ],
+    "F551": [
+     "1",
+     "Abuse of herbal or folk remedies"
+    ],
+    "F552": [
+     "1",
+     "Abuse of laxatives"
+    ],
+    "F553": [
+     "1",
+     "Abuse of steroids or hormones"
+    ],
+    "F554": [
+     "1",
+     "Abuse of vitamins"
+    ],
+    "F558": [
+     "1",
+     "Abuse of other non-psychoactive substances"
+    ],
+    "F59": [
+     "1",
+     "Unsp behavrl synd assoc w physiol disturb and physcl factors"
+    ],
+    "F60": [
+     "0",
+     "Specific personality disorders"
+    ],
+    "F600": [
+     "1",
+     "Paranoid personality disorder"
+    ],
+    "F601": [
+     "1",
+     "Schizoid personality disorder"
+    ],
+    "F602": [
+     "1",
+     "Antisocial personality disorder"
+    ],
+    "F603": [
+     "1",
+     "Borderline personality disorder"
+    ],
+    "F604": [
+     "1",
+     "Histrionic personality disorder"
+    ],
+    "F605": [
+     "1",
+     "Obsessive-compulsive personality disorder"
+    ],
+    "F606": [
+     "1",
+     "Avoidant personality disorder"
+    ],
+    "F607": [
+     "1",
+     "Dependent personality disorder"
+    ],
+    "F608": [
+     "0",
+     "Other specific personality disorders"
+    ],
+    "F6081": [
+     "1",
+     "Narcissistic personality disorder"
+    ],
+    "F6089": [
+     "1",
+     "Other specific personality disorders"
+    ],
+    "F609": [
+     "1",
+     "Personality disorder, unspecified"
+    ],
+    "F63": [
+     "0",
+     "Impulse disorders"
+    ],
+    "F630": [
+     "1",
+     "Pathological gambling"
+    ],
+    "F631": [
+     "1",
+     "Pyromania"
+    ],
+    "F632": [
+     "1",
+     "Kleptomania"
+    ],
+    "F633": [
+     "1",
+     "Trichotillomania"
+    ],
+    "F638": [
+     "0",
+     "Other impulse disorders"
+    ],
+    "F6381": [
+     "1",
+     "Intermittent explosive disorder"
+    ],
+    "F6389": [
+     "1",
+     "Other impulse disorders"
+    ],
+    "F639": [
+     "1",
+     "Impulse disorder, unspecified"
+    ],
+    "F64": [
+     "0",
+     "Gender identity disorders"
+    ],
+    "F640": [
+     "1",
+     "Transsexualism"
+    ],
+    "F641": [
+     "1",
+     "Dual role transvestism"
+    ],
+    "F642": [
+     "1",
+     "Gender identity disorder of childhood"
+    ],
+    "F648": [
+     "1",
+     "Other gender identity disorders"
+    ],
+    "F649": [
+     "1",
+     "Gender identity disorder, unspecified"
+    ],
+    "F64A": [
+     "1",
+     "Gender identity disorder, in remission"
+    ],
+    "F65": [
+     "0",
+     "Paraphilias"
+    ],
+    "F650": [
+     "1",
+     "Fetishism"
+    ],
+    "F651": [
+     "1",
+     "Transvestic fetishism"
+    ],
+    "F652": [
+     "1",
+     "Exhibitionism"
+    ],
+    "F653": [
+     "1",
+     "Voyeurism"
+    ],
+    "F654": [
+     "1",
+     "Pedophilia"
+    ],
+    "F655": [
+     "0",
+     "Sadomasochism"
+    ],
+    "F6550": [
+     "1",
+     "Sadomasochism, unspecified"
+    ],
+    "F6551": [
+     "1",
+     "Sexual masochism"
+    ],
+    "F6552": [
+     "1",
+     "Sexual sadism"
+    ],
+    "F658": [
+     "0",
+     "Other paraphilias"
+    ],
+    "F6581": [
+     "1",
+     "Frotteurism"
+    ],
+    "F6589": [
+     "1",
+     "Other paraphilias"
+    ],
+    "F659": [
+     "1",
+     "Paraphilia, unspecified"
+    ],
+    "F66": [
+     "1",
+     "Other sexual disorders"
+    ],
+    "F68": [
+     "0",
+     "Other disorders of adult personality and behavior"
+    ],
+    "F681": [
+     "0",
+     "Factitious disorder imposed on self"
+    ],
+    "F6810": [
+     "1",
+     "Factitious disorder imposed on self, unspecified"
+    ],
+    "F6811": [
+     "1",
+     "Factit disord imposed on self, with predom psych signs/symp"
+    ],
+    "F6812": [
+     "1",
+     "Factit disord impsd on self, with predom physcl signs/symp"
+    ],
+    "F6813": [
+     "1",
+     "Factit disord impsd on self,w comb psych & physcl signs/symp"
+    ],
+    "F688": [
+     "1",
+     "Other specified disorders of adult personality and behavior"
+    ],
+    "F68A": [
+     "1",
+     "Factitious disorder imposed on another"
+    ],
+    "F69": [
+     "1",
+     "Unspecified disorder of adult personality and behavior"
+    ],
+    "F70": [
+     "1",
+     "Mild intellectual disabilities"
+    ],
+    "F71": [
+     "1",
+     "Moderate intellectual disabilities"
+    ],
+    "F72": [
+     "1",
+     "Severe intellectual disabilities"
+    ],
+    "F73": [
+     "1",
+     "Profound intellectual disabilities"
+    ],
+    "F78": [
+     "0",
+     "Other intellectual disabilities"
+    ],
+    "F78A": [
+     "0",
+     "Other genetic related intellectual disabilities"
+    ],
+    "F78A1": [
+     "1",
+     "SYNGAP1-related intellectual disability"
+    ],
+    "F78A9": [
+     "1",
+     "Other genetic related intellectual disability"
+    ],
+    "F79": [
+     "1",
+     "Unspecified intellectual disabilities"
+    ],
+    "F80": [
+     "0",
+     "Specific developmental disorders of speech and language"
+    ],
+    "F800": [
+     "1",
+     "Phonological disorder"
+    ],
+    "F801": [
+     "1",
+     "Expressive language disorder"
+    ],
+    "F802": [
+     "1",
+     "Mixed receptive-expressive language disorder"
+    ],
+    "F804": [
+     "1",
+     "Speech and language development delay due to hearing loss"
+    ],
+    "F808": [
+     "0",
+     "Other developmental disorders of speech and language"
+    ],
+    "F8081": [
+     "1",
+     "Childhood onset fluency disorder"
+    ],
+    "F8082": [
+     "1",
+     "Social pragmatic communication disorder"
+    ],
+    "F8089": [
+     "1",
+     "Other developmental disorders of speech and language"
+    ],
+    "F809": [
+     "1",
+     "Developmental disorder of speech and language, unspecified"
+    ],
+    "F81": [
+     "0",
+     "Specific developmental disorders of scholastic skills"
+    ],
+    "F810": [
+     "1",
+     "Specific reading disorder"
+    ],
+    "F812": [
+     "1",
+     "Mathematics disorder"
+    ],
+    "F818": [
+     "0",
+     "Other developmental disorders of scholastic skills"
+    ],
+    "F8181": [
+     "1",
+     "Disorder of written expression"
+    ],
+    "F8189": [
+     "1",
+     "Other developmental disorders of scholastic skills"
+    ],
+    "F819": [
+     "1",
+     "Developmental disorder of scholastic skills, unspecified"
+    ],
+    "F82": [
+     "1",
+     "Specific developmental disorder of motor function"
+    ],
+    "F84": [
+     "0",
+     "Pervasive developmental disorders"
+    ],
+    "F840": [
+     "1",
+     "Autistic disorder"
+    ],
+    "F842": [
+     "1",
+     "Rett's syndrome"
+    ],
+    "F843": [
+     "1",
+     "Other childhood disintegrative disorder"
+    ],
+    "F845": [
+     "1",
+     "Asperger's syndrome"
+    ],
+    "F848": [
+     "1",
+     "Other pervasive developmental disorders"
+    ],
+    "F849": [
+     "1",
+     "Pervasive developmental disorder, unspecified"
+    ],
+    "F88": [
+     "1",
+     "Other disorders of psychological development"
+    ],
+    "F89": [
+     "1",
+     "Unspecified disorder of psychological development"
+    ],
+    "F90": [
+     "0",
+     "Attention-deficit hyperactivity disorders"
+    ],
+    "F900": [
+     "1",
+     "Attn-defct hyperactivity disorder, predom inattentive type"
+    ],
+    "F901": [
+     "1",
+     "Attn-defct hyperactivity disorder, predom hyperactive type"
+    ],
+    "F902": [
+     "1",
+     "Attention-deficit hyperactivity disorder, combined type"
+    ],
+    "F908": [
+     "1",
+     "Attention-deficit hyperactivity disorder, other type"
+    ],
+    "F909": [
+     "1",
+     "Attention-deficit hyperactivity disorder, unspecified type"
+    ],
+    "F91": [
+     "0",
+     "Conduct disorders"
+    ],
+    "F910": [
+     "1",
+     "Conduct disorder confined to family context"
+    ],
+    "F911": [
+     "1",
+     "Conduct disorder, childhood-onset type"
+    ],
+    "F912": [
+     "1",
+     "Conduct disorder, adolescent-onset type"
+    ],
+    "F913": [
+     "1",
+     "Oppositional defiant disorder"
+    ],
+    "F918": [
+     "1",
+     "Other conduct disorders"
+    ],
+    "F919": [
+     "1",
+     "Conduct disorder, unspecified"
+    ],
+    "F93": [
+     "0",
+     "Emotional disorders with onset specific to childhood"
+    ],
+    "F930": [
+     "1",
+     "Separation anxiety disorder of childhood"
+    ],
+    "F938": [
+     "1",
+     "Other childhood emotional disorders"
+    ],
+    "F939": [
+     "1",
+     "Childhood emotional disorder, unspecified"
+    ],
+    "F94": [
+     "0",
+     "Disord social w onset specific to childhood and adolescence"
+    ],
+    "F940": [
+     "1",
+     "Selective mutism"
+    ],
+    "F941": [
+     "1",
+     "Reactive attachment disorder of childhood"
+    ],
+    "F942": [
+     "1",
+     "Disinhibited attachment disorder of childhood"
+    ],
+    "F948": [
+     "1",
+     "Other childhood disorders of social functioning"
+    ],
+    "F949": [
+     "1",
+     "Childhood disorder of social functioning, unspecified"
+    ],
+    "F95": [
+     "0",
+     "Tic disorder"
+    ],
+    "F950": [
+     "1",
+     "Transient tic disorder"
+    ],
+    "F951": [
+     "1",
+     "Chronic motor or vocal tic disorder"
+    ],
+    "F952": [
+     "1",
+     "Tourette's disorder"
+    ],
+    "F958": [
+     "1",
+     "Other tic disorders"
+    ],
+    "F959": [
+     "1",
+     "Tic disorder, unspecified"
+    ],
+    "F98": [
+     "0",
+     "Oth behav/emotn disord w onset usly occur in chldhd and adol"
+    ],
+    "F980": [
+     "1",
+     "Enuresis not due to a substance or known physiol condition"
+    ],
+    "F981": [
+     "1",
+     "Encopresis not due to a substance or known physiol condition"
+    ],
+    "F982": [
+     "0",
+     "Other feeding disorders of infancy and childhood"
+    ],
+    "F9821": [
+     "1",
+     "Rumination disorder of infancy and childhood"
+    ],
+    "F9829": [
+     "1",
+     "Other feeding disorders of infancy and early childhood"
+    ],
+    "F983": [
+     "1",
+     "Pica of infancy and childhood"
+    ],
+    "F984": [
+     "1",
+     "Stereotyped movement disorders"
+    ],
+    "F985": [
+     "1",
+     "Adult onset fluency disorder"
+    ],
+    "F988": [
+     "1",
+     "Oth behav/emotn disord w onset usly occur in chldhd and adol"
+    ],
+    "F989": [
+     "1",
+     "Unsp behav/emotn disord w onst usly occur in chldhd and adol"
+    ],
+    "F99": [
+     "1",
+     "Mental disorder, not otherwise specified"
+    ]
+   },
+   "effective": "2026-10-01"
+  }
+ },
+ "schemaVersion": 1,
+ "source": "CMS ICD-10-CM code descriptions in tabular order (icd10cm_order_YYYY.txt)",
+ "sourceSha256": {
+  "fy2026": "6dc95c9c7e96c734806e1682f4bf9df76251d60e99199bba0d375ba3dd11026b",
+  "fy2027": "38981fb2c1226e2b92393cef7d921d2293494dd184b5ad039dde08e4b364265f"
+ },
+ "sourceUrls": {
+  "fy2026": "https://www.cms.gov/files/zip/2026-code-descriptions-tabular-order.zip",
+  "fy2027": "https://www.cms.gov/files/zip/2027-code-descriptions-tabular-order.zip"
+ }
+}

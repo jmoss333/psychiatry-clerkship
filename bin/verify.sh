@@ -204,6 +204,16 @@ step "unit — twin parity"                   python3 bin/check_twin_parity.py -
 # no-content-change cancel is not, and that an unrecognised deploy state is a finding rather
 # than a pass. Without that last one the alarm would quietly match nothing.
 step "unit — netlify deploy health"         python3 bin/check_netlify_deploy_health.py --self-test
+# Currency guards (2026-09-18). Only the SELF-TESTS run here for the first two: the real
+# source-integrity run asks PubMed and Crossref for every identified source (~60s, real egress,
+# and a datacenter runner is bot-blocked by some hosts), and the real cadence run is a faculty
+# queue — 8 monthly-cadence sources were 41 days overdue on the day it was written, and an
+# overdue review needs a person, not a red push. The ICD check is offline (its code tables are
+# committed under bin/data/), so it runs for real: a retiring F-code fires BEFORE October 1.
+step "unit — source integrity"              python3 bin/check_source_integrity.py --self-test
+step "unit — review cadence"                python3 bin/check_review_cadence.py --self-test
+step "unit — icd-10-cm codes"               python3 bin/check_icd_codes.py --self-test
+step "icd-10-cm codes in force"             python3 bin/check_icd_codes.py
 # Ratchet against bin/check_qbank_coherence_baseline.json (pairs = 0 today); the pin is what
 # the --self-test step above asserts the exit code against. See the span-audit comment above.
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
