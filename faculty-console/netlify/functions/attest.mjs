@@ -52,6 +52,9 @@ const SHIPPED_PAGES_PATH = '13_Faculty_Resources/_automation/site_build/shipped_
 // attesting itself (attestation-hash.mjs).
 const TOPIC_META_PATH = 'topic_meta.json';
 const QBANK_PATH = 'question_bank.json';
+// The Essentials selection (curriculum.json → essentials.{ms3,resident}) orders the queue;
+// it is advisory and never gates a load — see readEssentials.
+const CURRICULUM_PATH = 'curriculum.json';
 
 // The three sentences a content item can carry instead of a clean `reviewed`. STALE_REASON —
 // the drift case — lives in attestation-hash.mjs, because the Python projection renders the
@@ -949,6 +952,55 @@ async function readShippedPages(repository, settings) {
   };
 }
 
+/**
+ * The Essentials selection, read for queue ORDER only.
+ *
+ * `curriculum.json.essentials.{ms3,resident}` is the list of pages a learner sees first on
+ * either site (validated by validate_curriculum.py E1–E6 on main). Putting those items at
+ * the top of the review queue means the faculty attestations that most learners actually
+ * see get signed first. It is derived, never written here, and the same branch-then-base
+ * rule as shipped_pages.json applies — with one extra step: a branch copy of the file that
+ * predates the key falls through to the base too, because a queue ordered by an absent
+ * list is the same queue as before, not a failure.
+ *
+ * Advisory in both directions: any read or shape problem yields `null` and
+ * `essentialsSource: 'unavailable'`, never a failed load and never an exception. An item
+ * that cannot be placed is simply not flagged; nothing about attestation depends on it.
+ */
+function essentialSlugsFrom(json) {
+  if (!isRecord(json) || !isRecord(json.essentials)) return null;
+  const bySite = { ms3: new Set(), res: new Set() };
+  const audiences = [['ms3', 'ms3'], ['resident', 'res']];
+  let any = false;
+  for (const [key, site] of audiences) {
+    const sections = json.essentials[key];
+    if (!Array.isArray(sections)) continue;
+    for (const section of sections) {
+      if (!isRecord(section) || !Array.isArray(section.refs)) continue;
+      for (const ref of section.refs) {
+        if (typeof ref === 'string' && ref.trim()) { bySite[site].add(ref.trim()); any = true; }
+      }
+    }
+  }
+  return any ? bySite : null;
+}
+
+async function readEssentials(repository, settings) {
+  const attempts = [{ ref: undefined, source: 'branch' }];
+  if (settings.isolated) attempts.push({ ref: settings.baseBranch, source: 'base' });
+  for (const attempt of attempts) {
+    let file;
+    try {
+      file = await repository.read(CURRICULUM_PATH, attempt.ref ? { ref: attempt.ref } : {});
+    } catch {
+      continue;
+    }
+    const slugs = essentialSlugsFrom(file?.json);
+    if (slugs) return { slugs, source: attempt.source };
+  }
+  return { slugs: null, source: 'unavailable' };
+}
+
 function requireManifest(manifest) {
   if (!isRecord(manifest)) invalidRepositoryFile();
   const markdown = manifest.md ?? [];
@@ -1109,7 +1161,7 @@ function contentFreshness(entry, slug, verification) {
 // malformed listing; that becomes the same repository_file_invalid 502 requireManifest
 // already returns, because a content universe that is silently short is precisely the
 // failure this change exists to end.
-function buildContentItems(reviewed, shipped, verification) {
+function buildContentItems(reviewed, shipped, verification, essentials = null) {
   if (!isRecord(reviewed)) invalidRepositoryFile();
   let universe;
   try {
@@ -1120,10 +1172,17 @@ function buildContentItems(reviewed, shipped, verification) {
   return universe.map(({ slug, title, kind, site, sites }) => {
     const entry = isRecord(reviewed[slug]) ? reviewed[slug] : {};
     const freshness = contentFreshness(entry, slug, verification);
+    // Which learner deployments list this item in The Essentials — the pages a learner
+    // sees first. Empty when it is not in either selection, or when the selection could
+    // not be read (essentialsSource says which). Order only; never an attestation input.
+    const essentialSites = essentials
+      ? ['ms3', 'res'].filter(candidate => essentials[candidate].has(slug))
+      : [];
     return {
       slug,
       title,
       kind,
+      essentialSites,
       // Which learner deployment serves this item, so the console previews the resident
       // half of a Case-of-the-Week pair against the resident site.
       site,
@@ -1177,7 +1236,8 @@ async function buildState(repository, settings, branchSync) {
       verification = { freshness: 'unknown' };
     }
   }
-  const items = buildContentItems(reviewedFile.json, shippedFile.json, verification);
+  const essentials = await readEssentials(repository, settings);
+  const items = buildContentItems(reviewedFile.json, shippedFile.json, verification, essentials.slugs);
   // The qbank half still needs the manifest itself: requireManifest both validates it and
   // yields manifestPages, the list a question may anchor to.
   requireManifest(manifestFile.json);
@@ -1201,6 +1261,9 @@ async function buildState(repository, settings, branchSync) {
     // 'verified' means every reviewed item below was compared against the text it attests;
     // 'unknown' means none of them was, and no item is reported clean.
     freshness: verification.freshness,
+    // Where the queue's Essentials ordering came from: 'branch', 'base', or 'unavailable'
+    // (no readable selection — the queue is then ordered as before, nothing is flagged).
+    essentialsSource: essentials.source,
     // How far the attestation branch trails the base. A content hash compares the page to
     // the ledger, both read from the same branch — so a branch that is behind can be
     // internally consistent and still be showing a queue that main moved past.

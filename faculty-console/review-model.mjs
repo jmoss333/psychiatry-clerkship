@@ -85,8 +85,17 @@ function completion(type, status) {
     : (status === 'reviewed' ? 'complete' : 'needs-review');
 }
 
+/* The Essentials first, within each type. A page in either site's Essentials selection is
+   what a learner sees before anything else, so its attestation is the one that matters
+   most; sorting it ahead of the long tail turns the queue into the signing order. Type
+   order still wins (pages, then tools, then questions) so Next/Previous keep their shape. */
+function essentialsRank(item) {
+  return item.essential ? 0 : 1;
+}
+
 function compareItems(left, right) {
   return TYPE_ORDER[left.type] - TYPE_ORDER[right.type]
+    || essentialsRank(left) - essentialsRank(right)
     || left.title.localeCompare(right.title)
     || left.identity.localeCompare(right.identity);
 }
@@ -106,6 +115,9 @@ export function normalizeReviewItems(server = {}) {
     const rawSite = record?.site;
     const site = rawSite === undefined || rawSite === null ? 'ms3' : clean(rawSite);
     if (!SITES.has(site)) throw new TypeError('Invalid content review item site.');
+    // Which deployments list the item in The Essentials (server-derived; absent means
+    // "not flagged", never "unknown" — the server reports essentialsSource separately).
+    const essentialSites = audienceSites(record?.essentialSites) || [];
     items.push({
       key: `${type}:${identity}`, type, identity, site,
       // Audience, not preview routing — see audienceSites(). Absent stays null.
@@ -114,7 +126,10 @@ export function normalizeReviewItems(server = {}) {
       savedStatus: clean(record.status), completion: completion(type, record.status),
       revision: '', gate: '',
       risk,
-      searchText: [record.title, identity, ...riskSearchTerms(risk)].map(clean).join(' ').toLowerCase(),
+      essential: essentialSites.length > 0,
+      essentialSites,
+      searchText: [record.title, identity, ...riskSearchTerms(risk), ...(essentialSites.length ? ['essentials'] : [])]
+        .map(clean).join(' ').toLowerCase(),
       record,
     });
   }
@@ -127,6 +142,7 @@ export function normalizeReviewItems(server = {}) {
       completion: completion('question', record.status),
       revision: clean(record.revision), gate: clean(record.assessment?.gate),
       risk: null,
+      essential: false, essentialSites: [],
       searchText: [identity, record.stem, record.category, record.evidence, ...list(record.pages)]
         .map(clean).join(' ').toLowerCase(),
       record,
@@ -155,10 +171,19 @@ export function filterReviewItems(items, filters = {}) {
 }
 
 export function deriveReviewCounts(items) {
-  const counts = { total: 0, needsReview: 0, complete: 0, page: 0, tool: 0, question: 0 };
+  const counts = {
+    total: 0, needsReview: 0, complete: 0, page: 0, tool: 0, question: 0,
+    // The Essentials subset, so the summary can say how many of the pages learners see
+    // first are still unsigned — the number that should read 0 before a cohort starts.
+    essentialTotal: 0, essentialNeedsReview: 0,
+  };
   for (const item of list(items)) {
     counts.total += 1; counts[item.type] += 1;
     counts[item.completion === 'complete' ? 'complete' : 'needsReview'] += 1;
+    if (item.essential) {
+      counts.essentialTotal += 1;
+      if (item.completion !== 'complete') counts.essentialNeedsReview += 1;
+    }
   }
   return counts;
 }
