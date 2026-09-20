@@ -227,6 +227,10 @@ step "unit — source integrity"              python3 bin/check_source_integrity
 step "unit — review cadence"                python3 bin/check_review_cadence.py --self-test
 step "unit — icd-10-cm codes"               python3 bin/check_icd_codes.py --self-test
 step "icd-10-cm codes in force"             python3 bin/check_icd_codes.py
+# Only the SELF-TEST runs here: the real comparison fetches a newer abstract from Europe PMC
+# for one (source, DOI) pair a human names, after the source-integrity job has reported a
+# supersession. Advisory by design -- the located sentences are the evidence, the verdict a pointer.
+step "unit — claim direction"                python3 bin/check_claim_direction.py --self-test
 # Ratchet against bin/check_qbank_coherence_baseline.json (pairs = 0 today); the pin is what
 # the --self-test step above asserts the exit code against. See the span-audit comment above.
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
