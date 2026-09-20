@@ -797,6 +797,7 @@ test('normalizes, filters, and counts the shared review queue', () => {
   }).map(item => item.key), ['tool:mse.html']);
   assert.deepEqual(deriveReviewCounts(items), {
     total: 4, needsReview: 3, complete: 1, page: 1, tool: 1, question: 2,
+    essentialTotal: 0, essentialNeedsReview: 0,
   });
 });
 

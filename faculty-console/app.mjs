@@ -2575,7 +2575,7 @@ export function startFacultyConsole({
       value: item.key,
       selected: item.key === state.selectedKey,
       'aria-current': item.key === state.selectedKey ? 'true' : null,
-    }, [`${itemTypeLabel(item.type)} · ${item.title} · ${savedStatusLabel(item)}`])) : [
+    }, [`${itemTypeLabel(item.type)} · ${item.title}${item.essential ? ' · Essentials' : ''} · ${savedStatusLabel(item)}`])) : [
       option('', 'No items match the active filters', ''),
     ]);
     return el('section', {
@@ -2646,7 +2646,10 @@ export function startFacultyConsole({
           event => updateQueueFilter('status', event.target.value, 'review-status-filter'),
         ),
         el('p', { id: 'review-queue-counts', class: 'queue-counts' }, [
-          `${counts.total} shown · ${counts.needsReview} need review · ${counts.complete} complete`,
+          `${counts.total} shown · ${counts.needsReview} need review · ${counts.complete} complete`
+          + (counts.essentialTotal
+            ? ` · ${counts.essentialNeedsReview} of ${counts.essentialTotal} Essentials need review`
+            : ''),
         ]),
       ]),
       el('details', {
