@@ -405,7 +405,7 @@ test('the live Library shell selects kit by default and the complete renderer on
   const shell = read('spa_index.html');
   const branch = /if\(state\.tab==='library'\) return (fdSurface\('library',function\(\)\{[^\n]+\}\));/.exec(shell);
   assert.ok(branch,'Library shell branch remains a shared pure renderer call');
-  const run = new Function('state','FD_INDEX','fdSurface','fdLibrary','fdEssentials',`return ${branch[1]};`);
+  const run = new Function('state','FD_INDEX','fdSurface','fdLibrary','fdEssentials',`var live=state; return ${branch[1]};`);
   const surface = (_name,render) => render();
   const cur = structuredClone(FIX_CUR);
   cur.essentials = [{name:'Kit',accent:'topic',refs:['m1.md']}];
@@ -425,4 +425,85 @@ test('compact shared badge retains normal behavior and names pending dots access
   assert.match(badge(g),/governance-badge high/);
   assert.doesNotMatch(badge(g,{compact:true}),/governance-badge/);
   assert.match(badge(g,{compact:true}),/role="img" aria-label="Awaiting faculty re-review"/);
+});
+
+// This week is an intersection of the active Path and the existing Essentials readings.
+function weeklyFixture() {
+  const cur = structuredClone(FIX_CUR);
+  cur.essentials = [
+    { name: 'First', accent: 'topic', refs: ['m2.md', 't1.html', 'm1.md'] },
+    { name: 'Second', accent: 'topic', refs: ['s1.md', 'm3.md'] },
+  ];
+  cur.weeks[0].items = [{ ref: 'm1.md' }, { ref: 's1.md' }, { ref: 'm1.md' }, { ref: 't1.html' }, { ref: 'n1.md' }];
+  cur.weeks[1].items = [{ ref: 'm2.md' }];
+  cur.weeks[2].items = [{ ref: 't1.html' }, { ref: 'n1.md' }];
+  return F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+}
+
+const renderedRefs = html => [...html.matchAll(/data-fd-open="([^"]+)"/g)].map(match => match[1]);
+
+test('This week counts only matching Essentials readings and preserves their section order', () => {
+  const idx = weeklyFixture(), before = JSON.stringify(idx);
+  const all = F.fdEssentials(idx, { week: 1 });
+  assert.match(all, /<option value="week">This week · 2<\/option>/);
+  assert.deepEqual(renderedRefs(all), ['m2.md', 'm1.md', 's1.md', 'm3.md', 't1.html']);
+  const filtered = F.fdEssentials(idx, { week: 1, kitSection: 'week' });
+  assert.match(filtered, /<option value="week" selected>This week · 2<\/option>/);
+  assert.deepEqual(renderedRefs(filtered), ['m1.md', 's1.md']);
+  assert.equal((filtered.match(/<details class="fd-kit__group" open>/g) || []).length, 2);
+  assert.equal((filtered.match(/fd-kit__group-count">1 readings/g) || []).length, 2);
+  assert.doesNotMatch(filtered, /fd-kit__tools/);
+  assert.match(filtered, /Everything \(10 pages\)/);
+  assert.equal(JSON.stringify(idx), before, 'weekly filtering cannot mutate Path or Essentials');
+});
+
+test('This week drops empty groups and changes with the actual current week', () => {
+  const html = F.fdEssentials(weeklyFixture(), { week: 2, viewWeek: 1, kitSection: 'week' });
+  assert.deepEqual(renderedRefs(html), ['m2.md']);
+  assert.match(html, /This week · 1/);
+  assert.doesNotMatch(html, /<summary>Second /);
+});
+
+test('unset, invalid, empty and tool-only weeks offer All instead of an empty weekly view', () => {
+  const idx = weeklyFixture(), all = F.fdEssentials(idx);
+  for (const week of [undefined, null, 0, -1, 1.5, '1', NaN, Infinity, 99, 3, 4]) {
+    assert.equal(F.fdEssentials(idx, { week, kitSection: 'week' }), all, `week ${week}`);
+  }
+  const noWeeks = { ...idx, weeks: undefined };
+  assert.equal(F.fdEssentials(noWeeks, { week: 1, kitSection: 'week' }), F.fdEssentials(noWeeks));
+  const emptyKit = { ...idx, essentials: [] };
+  assert.equal(F.fdEssentials(emptyKit, { week: 1, kitSection: 'week' }), F.fdLibrary(emptyKit));
+});
+
+for (const site of ['ms3', 'res']) {
+  test(`${site}: every actual Path week filters the exact Essentials reading intersection`, () => {
+    const payload = projected[site];
+    const idx = F.fdBuildIndex(payload.curriculum, REAL_META, REAL_TOOLS, payload.manifest);
+    const readings = payload.curriculum.essentials.flatMap(group => group.refs).filter(ref => ref.endsWith('.md'));
+    let exercised = 0;
+    for (const week of payload.curriculum.weeks) {
+      const assigned = new Set(week.items.map(item => item.ref));
+      const expected = readings.filter(ref => assigned.has(ref));
+      const html = F.fdEssentials(idx, { week: week.n, kitSection: 'week' });
+      if (expected.length) {
+        exercised++;
+        assert.deepEqual(renderedRefs(html), expected, `week ${week.n}`);
+        assert.match(html, new RegExp('This week · ' + expected.length + '<'));
+      } else {
+        assert.doesNotMatch(html, /value="week"/);
+        assert.deepEqual(renderedRefs(html), renderedRefs(F.fdEssentials(idx)));
+      }
+    }
+    assert.ok(exercised > 0, 'real weekly intersections must actually be checked');
+  });
+}
+
+test('the live shell passes the actual week to Essentials rather than the browsed Path week', () => {
+  const shell = read('spa_index.html');
+  const branch = /if\(state\.tab==='library'\) return (fdSurface\('library',function\(\)\{[^\n]+\}\));/.exec(shell);
+  const run = new Function('state','live','FD_INDEX','fdSurface','fdLibrary','fdEssentials', `return ${branch[1]};`);
+  const idx = weeklyFixture(), state = { tab: 'library', viewWeek: 1, kitSection: 'week' };
+  const render = live => run(state,live,idx,(_name,paint)=>paint(),F.fdLibrary,F.fdEssentials);
+  assert.deepEqual(renderedRefs(render({ week: 2, viewWeek: 1 })), ['m2.md']);
+  assert.deepEqual(renderedRefs(render({ viewWeek: 1 })), renderedRefs(F.fdEssentials(idx)));
 });

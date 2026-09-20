@@ -2260,7 +2260,7 @@
       });
     }
     if(state.tab==='path') return fdSurface('path',function(){ return fdPath(FD_INDEX,live); });
-    if(state.tab==='library') return fdSurface('library',function(){ return state.libraryView==='full'?fdLibrary(FD_INDEX):fdEssentials(FD_INDEX,{kitSection:state.kitSection}); });
+    if(state.tab==='library') return fdSurface('library',function(){ return state.libraryView==='full'?fdLibrary(FD_INDEX):fdEssentials(FD_INDEX,{kitSection:state.kitSection,week:live.week}); });
     return fdSurface('today',function(){ return fdTodayLive(live); });
   }
 
