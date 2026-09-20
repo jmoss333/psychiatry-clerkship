@@ -11,6 +11,12 @@ this job verifies two things lychee does NOT cover:
      it here (and flip `verified`).
   2. **DOIs and PMIDs** cited in curriculum text — resolved against doi.org and
      NCBI eutils. A citation that no longer resolves is a retraction/typo signal.
+  3. **Source integrity** (2026-09-19, WS-7): `bin/check_source_integrity.py` asks PubMed
+     and Crossref whether each registry source still STANDS — retraction, erratum,
+     expression of concern, newer version — and only what the registry does not already
+     record becomes a finding (job "source-integrity"). A transport failure is a single P2
+     "check-unavailable" finding, never silence, and the receipt for the monthly review
+     (history/source_integrity_receipt.json) is written only by a determinate run.
 
 Emits findings conforming to config/finding.schema.json (job "link-source-monitor")
 to --out; the existing sync_findings.py turns them into idempotent issues, and
@@ -21,6 +27,7 @@ Stdlib only (urllib). Politeness: per-request timeout, bounded retries, throttle
 Usage:
   python3 run_citation_check.py --out findings.json                  # registry + citations
   python3 run_citation_check.py --out findings.json --skip-citations # registry only
+  python3 run_citation_check.py --out findings.json --skip-integrity # no PubMed/Crossref
   python3 run_citation_check.py --self-test                          # no network, logic check
 """
 import os, re, sys, json, time, argparse, urllib.request, urllib.error
@@ -165,6 +172,136 @@ def _finding(source_id, source_name, url, change_type, code, redirect_to, affect
         "evidence": ev, "affects": affects,
         "recommended_action": action, "status": "new",
     }
+
+
+# ---------------------------------------------------------------- source integrity
+INTEGRITY_CHANGE_TYPES = {
+    "retracted": "retracted",
+    "erratum": "erratum",
+    "expression-of-concern": "expression-of-concern",
+    "updated": "superseded",
+    "pmid-unresolved": "identifier-unresolved",
+}
+INTEGRITY_RECEIPT = os.path.join(L.HISTORY, "source_integrity_receipt.json")
+
+
+def _integrity_module():
+    """bin/check_source_integrity.py, loaded by path so the collector stays standalone."""
+    import importlib.util
+    path = os.path.join(L.LIB_ROOT, "bin", "check_source_integrity.py")
+    spec = importlib.util.spec_from_file_location("check_source_integrity", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def integrity_findings_from_summary(summary, when=None):
+    """Pure: a check_source_integrity summary -> schema-shaped findings.
+
+    One finding per (source, kind, signal). The signature is the kind plus the citation of
+    the correcting/superseding record, so the same retraction fingerprints the same way
+    every week and sync_findings dedups it against its issue.
+    """
+    when = when or L.utcnow()
+    out = []
+    for row in summary.get("rows", []):
+        # PubMed and Crossref are two opinions of the same event when Crossref's DOI is the
+        # one PubMed's RefSource cites; file that once, under the PubMed citation.
+        pubmed_cites = " ".join((f.get("signal") or {}).get("refSource") or ""
+                                for f in row.get("findings", [])
+                                if (f.get("signal") or {}).get("via") == "pubmed").lower()
+        for f in row.get("findings", []):
+            sig = f.get("signal") or {}
+            if sig.get("via") == "crossref" and sig.get("doi") and sig["doi"].lower() in pubmed_cites:
+                continue
+            where = sig.get("refSource") or sig.get("doi") or ""
+            change_type = INTEGRITY_CHANGE_TYPES.get(f["kind"], f["kind"])
+            fp = L.fingerprint(row["id"], change_type, "%s|%s" % (f["kind"], where))
+            licenses = bool(row.get("licensesClaims"))
+            summary_text = "%s: %s%s — %s" % (
+                row["id"], f["kind"].replace("-", " "),
+                " (licenses stored claims)" if licenses else "", where or "no citation given")
+            out.append({
+                "finding_id": fp, "fingerprint": fp, "job": "source-integrity",
+                "source_id": row["id"], "source_name": row["id"],
+                "source_url": ("https://pubmed.ncbi.nlm.nih.gov/%s/" % row["pmid"]) if row.get("pmid")
+                              else ("https://doi.org/%s" % row["doi"] if row.get("doi") else ""),
+                "source_type": "html", "detected_at": when, "change_type": change_type,
+                "severity": f["severity"], "summary": summary_text,
+                "evidence": {"via": sig.get("via"), "kind": f["kind"], "refSource": sig.get("refSource"),
+                             "doi": sig.get("doi"), "correctingPmid": sig.get("pmid"),
+                             "updated": sig.get("updated"), "licensesClaims": licenses,
+                             "recordedCorrectionStatus": row.get("recordedCorrectionStatus"),
+                             "supersededBy": row.get("supersededBy")},
+                "affects": [],
+                "recommended_action": (
+                    "Read the correcting/superseding record. If it changes what the library "
+                    "teaches, fix the SOURCE page and its stored span and re-stamp reviewed.json; "
+                    "then record governance.correctionStatus / supersededBy in evidence_registry.json. "
+                    "If it changes nothing, record the status anyway so this stops re-filing."),
+                "status": "new",
+            })
+    return out
+
+
+def integrity_unavailable_finding(reason, when=None):
+    """A transport failure is reported, never swallowed (silence != stability)."""
+    when = when or L.utcnow()
+    fp = L.fingerprint("source-integrity", "check-unavailable", "weekly")
+    return {
+        "finding_id": fp, "fingerprint": fp, "job": "source-integrity",
+        "source_id": "source-integrity", "source_name": "Source integrity check",
+        "source_url": "", "source_type": "html", "detected_at": when,
+        "change_type": "check-unavailable", "severity": "P2",
+        "summary": "source-integrity check could not run this week: %s" % reason,
+        "evidence": {"reason": reason}, "affects": [],
+        "recommended_action": "Run `python3 bin/check_source_integrity.py` from a machine with "
+                              "real egress; if the runner is bot-blocked, say so in the registry note.",
+        "status": "new",
+    }
+
+
+def integrity_receipt(summary, when=None):
+    """Content-free counts for monthly_review.py. Written only by a determinate run."""
+    return {
+        "schemaVersion": 1,
+        "state": "success",
+        "checkedAt": when or L.utcnow(),
+        "sourcesDeclared": summary.get("sourcesDeclared"),
+        "sourcesIdentified": summary.get("sourcesIdentified"),
+        "pubmedExamined": summary.get("pubmedExamined"),
+        "crossrefExamined": summary.get("crossrefExamined"),
+        "unverifiableById": len(summary.get("unverifiableById", [])),
+        "findingCounts": summary.get("findingCounts"),
+        "sourcesWithFindings": summary.get("sourcesWithFindings"),
+    }
+
+
+def check_source_integrity(receipt_path=INTEGRITY_RECEIPT):
+    """Ask PubMed and Crossref about every identified registry source (network)."""
+    try:
+        SI = _integrity_module()
+    except Exception as exc:  # noqa: BLE001 - a missing module is not "all sources stand"
+        print("  ! source-integrity module unavailable: %s" % exc, file=sys.stderr)
+        return [integrity_unavailable_finding("module unavailable: %s" % exc)]
+    try:
+        sources = SI.load_registry()
+        licensing = SI.licensing_ids()
+        summary = SI.examine(sources, licensing, pubmed_only=False)
+    except SI.IntegrityError as exc:
+        print("  ! source-integrity could not determine: %s" % exc, file=sys.stderr)
+        return [integrity_unavailable_finding(str(exc))]
+    findings = integrity_findings_from_summary(summary)
+    os.makedirs(os.path.dirname(receipt_path), exist_ok=True)
+    with open(receipt_path, "w", encoding="utf-8") as fh:
+        json.dump(integrity_receipt(summary), fh, indent=2, sort_keys=True)
+        fh.write("\n")
+    c = summary["findingCounts"]
+    print("source-integrity: %d declared, %d identified, %d via PubMed, %d via Crossref -> "
+          "%d finding(s) (P0 %d · P1 %d · P2 %d)" % (
+              summary["sourcesDeclared"], summary["sourcesIdentified"], summary["pubmedExamined"],
+              summary["crossrefExamined"], len(findings), c["P0"], c["P1"], c["P2"]))
+    return findings
 
 
 def _capped_severity(source, code):
@@ -327,6 +464,44 @@ def self_test():
               "change_type", "severity", "summary", "status"):
         assert k in f, "missing %s" % k
     assert f["job"] == "link-source-monitor"
+    # source-integrity conversion: pure, schema-shaped, stable fingerprints, no network
+    fake = {"sourcesDeclared": 2, "sourcesIdentified": 1, "pubmedExamined": 1, "crossrefExamined": 1,
+            "unverifiableById": ["x"], "findingCounts": {"P0": 1, "P1": 0, "P2": 1}, "sourcesWithFindings": 1,
+            "rows": [{"id": "s1", "pmid": "123", "doi": "10.1/a", "licensesClaims": True,
+                      "recordedCorrectionStatus": "none-known", "supersededBy": [],
+                      "findings": [
+                          {"kind": "retracted", "severity": "P0",
+                           "signal": {"via": "pubmed", "refSource": "Lancet. 2010", "pmid": "9"}},
+                          {"kind": "updated", "severity": "P2",
+                           "signal": {"via": "crossref", "doi": "10.1/a.pub4", "updated": "2026-05-28"}}]}]}
+    conv = integrity_findings_from_summary(fake, when="2026-09-19T00:00:00+00:00")
+    assert [c["change_type"] for c in conv] == ["retracted", "superseded"], conv
+    assert all(c["job"] == "source-integrity" and c["status"] == "new" for c in conv)
+    for c in conv:
+        for k in ("finding_id", "fingerprint", "job", "source_id", "detected_at",
+                  "change_type", "severity", "summary", "status"):
+            assert k in c, "integrity finding missing %s" % k
+    assert conv[0]["severity"] == "P0" and "licenses stored claims" in conv[0]["summary"]
+    assert conv[0]["source_url"].endswith("/123/")
+    again = integrity_findings_from_summary(fake, when="2026-09-20T00:00:00+00:00")
+    assert [c["fingerprint"] for c in again] == [c["fingerprint"] for c in conv], "fingerprint must not depend on the run date"
+    assert integrity_findings_from_summary({"rows": []}) == []
+    dup = {"rows": [{"id": "s2", "pmid": "1", "doi": "10.1/b", "licensesClaims": False,
+                     "findings": [
+                         {"kind": "erratum", "severity": "P2",
+                          "signal": {"via": "pubmed", "refSource": "J Am Geriatr Soc. 2019;67(9):1991. doi: 10.1111/jgs.15925."}},
+                         {"kind": "erratum", "severity": "P2",
+                          "signal": {"via": "crossref", "doi": "10.1111/jgs.15925"}},
+                         {"kind": "erratum", "severity": "P2",
+                          "signal": {"via": "crossref", "doi": "10.1111/other"}}]}]}
+    d = integrity_findings_from_summary(dup)
+    assert len(d) == 2 and d[0]["evidence"]["via"] == "pubmed" and d[1]["evidence"]["doi"] == "10.1111/other", \
+        "a Crossref erratum PubMed already cites is the same event, filed once"
+    u = integrity_unavailable_finding("simulated")
+    assert u["change_type"] == "check-unavailable" and u["severity"] == "P2" and "simulated" in u["summary"]
+    r = integrity_receipt(fake, when="2026-09-19T00:00:00+00:00")
+    assert r["state"] == "success" and r["sourcesDeclared"] == 2 and r["findingCounts"]["P0"] == 1
+    assert "rows" not in r and "summary" not in r, "receipt must stay content-free"
     assert _browser_required_soft_failure({"link_check": "browser_required"}, 403)
     assert _browser_required_soft_failure({"link_check": "browser_required"}, None)
     assert not _browser_required_soft_failure({"link_check": "browser_required"}, 404)
@@ -374,6 +549,8 @@ def main():
     ap.add_argument("--root", default=L.LIB_ROOT, help="Curriculum root to scan for DOIs/PMIDs.")
     ap.add_argument("--skip-citations", action="store_true", help="Registry source URLs only.")
     ap.add_argument("--skip-sources", action="store_true", help="DOIs/PMIDs only.")
+    ap.add_argument("--skip-integrity", action="store_true",
+                    help="Do not ask PubMed/Crossref whether registry sources still stand.")
     ap.add_argument("--self-test", action="store_true", help="No network; validate logic.")
     a = ap.parse_args()
 
@@ -385,6 +562,10 @@ def main():
         findings += check_registry_sources(checked)
     if not a.skip_citations:
         findings += check_citations(a.root, checked)
+    # Integrity rides with the registry-source pass: --skip-sources (the offline test path)
+    # skips it too, so no test reaches the network by accident.
+    if not a.skip_sources and not a.skip_integrity:
+        findings += check_source_integrity()
 
     # de-dup by fingerprint (a DOI cited on many pages already merged in check_citations)
     uniq, seen = [], set()

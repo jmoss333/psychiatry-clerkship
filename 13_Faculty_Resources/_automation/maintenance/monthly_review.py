@@ -354,6 +354,11 @@ def _receipt_state(root, receipt_config, today, label="openEvidence"):
                     needs `gh`, `npm audit --include=dev` and every local worktree --
                     none of which exist on a fresh Actions runner, which would report a
                     confident clean sweep of nothing.
+      sourceIntegrity  the exception: written BY Actions, by the weekly citation job,
+                    and only when bin/check_source_integrity.py reached PubMed and
+                    Crossref for every identified source. Its freshness says the
+                    retraction watch looked this week; a bot-blocked or failed week
+                    leaves it to age into a review item.
 
     In every case the receipt's freshness is the ONLY signal the monthly review has.
     That is the point: a check nobody can run automatically still has to be run.
@@ -501,6 +506,7 @@ def build_monthly_review(root, config, today, git_last_changed):
         "openEvidence",
         "redTeam",
         "rulesetBypass",
+        "sourceIntegrity",
         "staleClaims",
     }:
         raise MonthlyReviewError("receipts config has an invalid shape")
@@ -539,6 +545,17 @@ def build_monthly_review(root, config, today, git_last_changed):
             today,
             label="staleClaims",
         ),
+        # The one receipt Actions CAN write: the weekly citation job runs
+        # bin/check_source_integrity.py (PubMed + Crossref) and stamps
+        # surveillance/history/source_integrity_receipt.json only on a determinate run --
+        # a transport failure files a P2 finding and leaves the receipt to age. Freshness
+        # here therefore means "the retraction watch actually looked this week".
+        "sourceIntegrityReceipt": _receipt_state(
+            root,
+            receipts["sourceIntegrity"],
+            today,
+            label="sourceIntegrity",
+        ),
     }
 
     blocked = bool(media["newRegressions"]) or not generated_views_valid
@@ -550,6 +567,7 @@ def build_monthly_review(root, config, today, git_last_changed):
         or operations["redTeamReceipt"] != "current"
         or operations["rulesetBypassReceipt"] != "current"
         or operations["staleClaimsReceipt"] != "current"
+        or operations["sourceIntegrityReceipt"] != "current"
         or operations["runbooks"]["stale"] > 0
         or operations["runbooks"]["unknown"] > 0
         or evidence["identity"]["pending"] > 0
@@ -610,6 +628,8 @@ def render_monthly_markdown(report):
         " (local-only: needs ruleset write access)",
         f"- Stale-claims receipt: `{operations['staleClaimsReceipt']}`"
         " (local-only: needs gh, npm and every worktree)",
+        f"- Source-integrity receipt: `{operations['sourceIntegrityReceipt']}`"
+        " (weekly citation job: PubMed + Crossref retraction/supersession watch)",
         "",
         "Cadence counts credit a green guideline-surveillance examination as the review,",
         "on the same rule `bin/check_review_cadence.py` applies; that tool names the rows.",

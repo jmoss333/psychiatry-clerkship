@@ -125,6 +125,10 @@ class MonthlyReviewTests(unittest.TestCase):
                     "path": "receipts/stale-claims.json",
                     "maxAgeDays": 35,
                 },
+                "sourceIntegrity": {
+                    "path": "receipts/source-integrity.json",
+                    "maxAgeDays": 10,
+                },
             },
             "apaCrosswalk": "metadata/library_crosswalk.csv",
             "evidenceGeneratedViewsValid": True,
@@ -648,6 +652,45 @@ class MonthlyReviewTests(unittest.TestCase):
         self.assertEqual(
             self.build_report()["operations"]["rulesetBypassReceipt"], "invalid"
         )
+
+    def test_source_integrity_receipt_ages_and_is_a_review_item(self):
+        """The weekly citation job writes this receipt only when
+        bin/check_source_integrity.py reached PubMed and Crossref for every identified
+        source. A missing or stale receipt means the retraction watch did not look, and
+        that is a review item -- the whole point of the watch is that nobody has to
+        remember it ran."""
+        report = self.build_report()
+        self.assertEqual(report["operations"]["sourceIntegrityReceipt"], "missing")
+        self.assertEqual(report["gate"], "review")
+
+        self.write_json(
+            "receipts/source-integrity.json",
+            {
+                "schemaVersion": 1,
+                "checkedAt": "2026-07-13T07:00:00+00:00",
+                "state": "success",
+                "sourcesDeclared": 109,
+                "sourcesIdentified": 91,
+                "pubmedExamined": 88,
+                "crossrefExamined": 90,
+                "unverifiableById": 18,
+                "findingCounts": {"P0": 0, "P1": 1, "P2": 7},
+                "sourcesWithFindings": 6,
+            },
+        )
+        self.assertEqual(
+            self.build_report()["operations"]["sourceIntegrityReceipt"], "current"
+        )
+
+        # A 10-day ceiling: a weekly job that missed a tick ages out before the month is up.
+        self.write_json(
+            "receipts/source-integrity.json",
+            {"schemaVersion": 1, "checkedAt": "2026-07-01T07:00:00+00:00", "state": "success"},
+        )
+        report = self.build_report()
+        self.assertEqual(report["operations"]["sourceIntegrityReceipt"], "stale")
+        self.assertEqual(report["gate"], "review")
+        self.assertIn("Source-integrity receipt: `stale`", render_monthly_markdown(report))
 
     def test_stale_claims_receipt_ages_and_is_a_review_item(self):
         """The stale-claims sweep needs `gh`, `npm audit --include=dev` and every
