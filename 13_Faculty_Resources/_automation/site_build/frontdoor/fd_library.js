@@ -93,21 +93,27 @@ function fdKitReading(item){
 function fdEssentials(index, opts){
   var idx=index||{columns:[],essentials:[]}, cols=idx.essentials||[];
   var groups=[], tools=[], readings=0, pending=0, fullCount=0, all=idx.columns||[];
+  /* Use the active Path's assignments, keyed by ref so repeated placements count once.
+     The caller supplies the actual rotation week, never the week being browsed in Path. */
+  var week=fdFindWeek(idx,opts&&opts.week), weekRefs=Object.create(null), weekCount=0;
+  var weekItems=week&&Array.isArray(week.items)?week.items:[];
+  for(var w=0;w<weekItems.length;w++) weekRefs[weekItems[w].ref]=true;
   for(var c=0;c<cols.length;c++){
-    var items=cols[c].items||[], reads=[];
+    var items=cols[c].items||[], reads=[], weekReads=[];
     for(var j=0;j<items.length;j++){
       var item=items[j];
       if(item.kind==='tool') tools.push(item);
       else{
         reads.push(item); readings++;
+        if(weekRefs[item.ref]){ weekReads.push(item); weekCount++; }
         if(item.governance&&item.governance.status==='pending') pending++;
       }
     }
-    if(reads.length) groups.push({key:String(c),name:cols[c].name,items:reads});
+    if(reads.length) groups.push({key:String(c),name:cols[c].name,items:reads,weekItems:weekReads});
   }
   if(!readings&&!tools.length) return fdLibrary(idx);
   for(var f=0;f<all.length;f++) fullCount+=(all[f].items||[]).length;
-  var selected=String(opts&&opts.kitSection||'all'), valid=selected==='all'||(selected==='tools'&&tools.length>0);
+  var selected=String(opts&&opts.kitSection||'all'), valid=selected==='all'||(selected==='tools'&&tools.length>0)||(selected==='week'&&weekCount>0);
   for(var v=0;v<groups.length;v++) if(groups[v].key===selected) valid=true;
   if(!valid) selected='all';
   var out='<section class="fd-library fd-kit">';
@@ -115,6 +121,7 @@ function fdEssentials(index, opts){
     '<span class="fd-library__count">'+readings+' readings · '+tools.length+' tools</span></div>';
   out+='<div class="fd-kit__filter"><label for="fd-kit-section">Section</label> '+
     '<select id="fd-kit-section" data-fd-kit-section><option value="all"'+(selected==='all'?' selected':'')+'>All sections · '+(readings+tools.length)+'</option>';
+  if(weekCount) out+='<option value="week"'+(selected==='week'?' selected':'')+'>This week · '+weekCount+'</option>';
   for(var o=0;o<groups.length;o++){
     out+='<option value="'+fdEsc(groups[o].key)+'"'+(selected===groups[o].key?' selected':'')+'>'+fdEsc(groups[o].name)+' · '+groups[o].items.length+'</option>';
   }
@@ -126,10 +133,10 @@ function fdEssentials(index, opts){
   if(selected!=='tools'){
     out+='<div class="fd-kit__readings">';
     for(var g=0;g<groups.length;g++){
-      var group=groups[g];
-      if(selected!=='all'&&selected!==group.key) continue;
-      out+='<details class="fd-kit__group" open><summary>'+fdEsc(group.name)+' <span class="fd-kit__group-count">'+group.items.length+' readings</span><span class="fd-kit__chevron" aria-hidden="true">⌄</span></summary>';
-      for(var r=0;r<group.items.length;r++) out+=fdKitReading(group.items[r]);
+      var group=groups[g], visibleItems=selected==='week'?group.weekItems:group.items;
+      if((selected!=='all'&&selected!=='week'&&selected!==group.key)||!visibleItems.length) continue;
+      out+='<details class="fd-kit__group" open><summary>'+fdEsc(group.name)+' <span class="fd-kit__group-count">'+visibleItems.length+' readings</span><span class="fd-kit__chevron" aria-hidden="true">⌄</span></summary>';
+      for(var r=0;r<visibleItems.length;r++) out+=fdKitReading(visibleItems[r]);
       out+='</details>';
     }
     out+='</div>';
