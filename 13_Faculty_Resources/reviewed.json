@@ -668,9 +668,9 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-07-09",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
-    "contentHash": "3373de9444fb893c359b0823c90425831ea30356"
+    "contentHash": "63f13173bb76233b378e2eb736e460797254d603"
   },
   "violence.md": {
     "status": "reviewed",
