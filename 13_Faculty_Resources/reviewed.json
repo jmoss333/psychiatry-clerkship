@@ -778,9 +778,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-03",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
-    "contentHash": "2640c6dc314300eb5cea8a9863682ab20bf3c0ac"
+    "contentHash": "c473e33b5c207b0c2c4085f9adaf49dcecd0e103"
   },
   "brief_psychotherapy.md": {
     "status": "reviewed",
