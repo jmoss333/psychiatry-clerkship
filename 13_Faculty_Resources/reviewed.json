@@ -728,9 +728,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-03",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
-    "contentHash": "c0a40a41d45e667ac043f70f4291083f48890990"
+    "contentHash": "0f74879c06668ec764b215a401bf1701590bda34"
   },
   "doc_oral.md": {
     "status": "reviewed",
