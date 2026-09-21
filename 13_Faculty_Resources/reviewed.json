@@ -150,14 +150,14 @@
     "contentHash": "c07ee340e29d27d15eccfccbf581065416622191"
   },
   "cotw_20260723_suiciderisk_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "high"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-07-23",
-    "by": "Pending faculty review"
+    "at": "2026-09-21",
+    "by": "Joshua Moss, MD",
+    "contentHash": "317b9394db332eabf6424d4374b26e166d3db0f8"
   },
   "cotw_20260723_suiciderisk_res.md": {
     "status": "pending",
