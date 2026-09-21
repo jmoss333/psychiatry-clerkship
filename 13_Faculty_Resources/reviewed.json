@@ -1,13 +1,13 @@
 {
   "cotw_20260914_ssnms_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-09-14",
-    "by": "Pending faculty review"
+    "at": "2026-09-21",
+    "by": "Joshua Moss, MD",
+    "contentHash": "9f15b50e2e9eb9c40c0b4a2fa6281f45827a0fd1"
   },
   "cotw_20260914_ssnms_res.md": {
     "status": "pending",
