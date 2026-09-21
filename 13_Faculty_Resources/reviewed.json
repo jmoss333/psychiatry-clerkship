@@ -648,9 +648,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-03",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
-    "contentHash": "8a4061727c92ee7c12ae6132325b6dbf52c1a7e0"
+    "contentHash": "f6a310bac03612aca3067fe9dd5ce368b8a355e0"
   },
   "pg_suicide.md": {
     "status": "reviewed",
