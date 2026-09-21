@@ -10,6 +10,7 @@ import test from 'node:test';
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf8');
 const todaySrc = read('frontdoor/fd_today.js');
+const frontdoorCss = read('frontdoor/frontdoor.css');
 
 // eslint-disable-next-line no-new-func
 const make = new Function(`
@@ -125,6 +126,30 @@ test('the greeting varies by time of day, derived from state.nowMs', () => {
   assert.match(F.fdToday(IDX, s({ nowMs: morning })), /Morning, there<\/h1>/);
   assert.match(F.fdToday(IDX, s({ nowMs: afternoon })), /Afternoon, there<\/h1>/);
   assert.match(F.fdToday(IDX, s({ nowMs: evening })), /Evening, there<\/h1>/);
+});
+
+test('Today visibly invites feedback while the shared site is in active testing', () => {
+  const html = F.fdToday(IDX, s({}));
+  assert.match(html, /class="fd-pilot"/);
+  assert.match(html, /This learning site is in active testing/);
+  assert.match(html, /official rotation materials and supervision/);
+  assert.match(html, /class="[^"]*pgfb-b[^"]*"[^>]*data-fb-context="Today landing page"/);
+  assert.match(html, />Share feedback</);
+});
+
+test('the active-testing invitation is audience-neutral', () => {
+  const banner = F.fdToday(IDX, s({})).match(/<section class="fd-pilot"[\s\S]*?<\/section>/);
+  assert.ok(banner, 'the invitation renders as one labelled section');
+  assert.doesNotMatch(banner[0], AUDIENCE_TOKEN_RE);
+});
+
+test('the 390px pilot keeps its concise action above the fold across font metrics', () => {
+  const phone = frontdoorCss.match(/@media \(max-width:390px\)\{([\s\S]*?)\n\}/);
+  assert.ok(phone, 'the exact 390px phone contract must exist');
+  assert.match(phone[1], /\.fd-pilot__copy p\s*\{\s*display:none\s*\}/,
+    'the optional explanatory sentence must not push the primary card below the phone fold');
+  assert.match(phone[1], /\.fd-pilot\s*\{\s*margin-bottom:var\(--fd-space-6\)\s*\}/,
+    'the compact pilot-to-primary gap must leave room for cross-platform font metrics');
 });
 
 // ---- accessibility (Fresh Eyes Audit A2/A6) --------------------------------------------------

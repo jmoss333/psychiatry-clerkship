@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(330 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
+(335 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -176,6 +176,11 @@ ancestor; there is no modifier class for it.
 ```
 .fd-today
   .fd-today__h1 / .fd-today__sub
+  .fd-pilot                           labelled active-testing feedback invitation
+    .fd-pilot__eyebrow
+    .fd-pilot__copy
+      .fd-pilot__title
+    .fd-pilot__button   <button>      opens the existing private feedback form
   .fd-consistency                     role="img" aria-label="Active N of the last 7 days" (absent until N ≥ 1)
     .fd-consistency__dots  <span>     aria-hidden
       .fd-consistency__day ×7
@@ -216,6 +221,7 @@ ancestor; there is no modifier class for it.
 | `.fd-ring.is-celebrating` | One-shot pulse on week completion. |
 | `.fd-list` | Supplies the 8px gap between `.fd-row`s — rows have no sibling margin. |
 | `.fd-consistency` | Seven-day activity strip (2026-09-02, not in the prototype). Replaces the subhead's `· N days in a row` clause, which only Daily Review could write. Derived at render time by `fdActivityDays` from the timestamps every tool already stores; nothing new is persisted. Carries a `-12px` top margin so the subhead's 22px gap closes only when the strip is present. |
+| `.fd-pilot` | Shared active-testing invitation (2026-09-21). Its `.fd-pilot__button` uses the existing `.pgfb-b` launcher and adds `data-fb-context="Today landing page"`; no second form or submission channel is introduced. |
 
 Task 5 composes device-local activity around the pure Today renderer and reuses the Reader for
 internal Progress. These are part of the same shipped class contract:
