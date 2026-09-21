@@ -1279,9 +1279,9 @@
       "kind": "local-policy",
       "level": "moderate"
     },
-    "at": "2026-08-23",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
-    "contentHash": "a98b2e0888a32ebc08fd224fc2d74a2417ea6dee"
+    "contentHash": "313b1df6c38ba2f8d4ada80d497bea52479b2a5d"
   },
   "therapy_on_the_unit.md": {
     "status": "reviewed",
