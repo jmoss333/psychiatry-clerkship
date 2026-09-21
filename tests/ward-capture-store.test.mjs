@@ -47,6 +47,7 @@ function makeStore({ throwOnWrite = false, currentItem = { k: 'page', f: 't_mood
     ${storeCode}
     return { capRead: capRead, capWrite: capWrite, capAdd: capAdd, capRemove: capRemove,
       capMarkTriaged: capMarkTriaged, capEraseAll: capEraseAll, capRisky: capRisky,
+      capSetStatus: typeof capSetStatus==='function'?capSetStatus:null,
       capClipboardText: capClipboardText, capCtx: capCtx, CAP_MAX: CAP_MAX, CAP_LIMIT: CAP_LIMIT };
   `);
   return factory(memStorage(throwOnWrite), currentItem);
@@ -139,6 +140,26 @@ test('T4i: triaged captures are excluded from the clipboard payload', () => {
   assert.ok(out.includes('second question'));
 });
 
+test('capture status migrates legacy rows and records scheduled or supervision without deleting them', () => {
+  const s = makeStore();
+  const id = s.capAdd('How should I distinguish delirium from psychosis?');
+  assert.equal(typeof s.capSetStatus, 'function');
+  assert.equal(s.capRead().items[0].status, 'new');
+  s.capSetStatus(id, 'scheduled');
+  assert.equal(s.capRead().items[0].status, 'scheduled');
+  assert.equal(s.capRead().items[0].triaged, true, 'legacy consumers still see a triaged scheduled row');
+  s.capSetStatus(id, 'supervision');
+  assert.equal(s.capRead().items[0].status, 'supervision');
+  assert.equal(s.capRead().items.length, 1, 'changing status never removes the learner question');
+});
+
+test('capture status rejects unknown values and preserves the current state', () => {
+  const s = makeStore();
+  const id = s.capAdd('A safe question');
+  assert.equal(s.capSetStatus(id, 'invented'), false);
+  assert.equal(s.capRead().items[0].status, 'new');
+});
+
 test('T5: the study export allow-list does not carry the capture key', () => {
   // Static assertion over the payload literal — exportStudy needs Blob/URL/document, none of
   // which exist under bare `node --test`, and this suite runs before the build anyway.
@@ -167,7 +188,7 @@ test('T11b: focus return is guarded on the recorded invoker still being connecte
 });
 
 test('T12a: the triage card offers Review only for quiz-bearing pages', () => {
-  const rows = slice(shell, 'function fdCaptureRows(', 'function fdTodayLive(');
+  const rows = slice(shell, 'function fdCaptureMatch(', 'function fdTodayLive(');
   assert.match(rows, /hasQuiz:topicHasQuiz\(hit\.f\)/,
     'the runtime adapter must normalize quiz availability before pure rendering');
   assert.match(due, /if\(match\.hasQuiz\)/,
@@ -189,7 +210,7 @@ function makeCaptureRows(results, quizzed) {
     function capRead(){ return { items: items }; }
     function runSearch(){ return results; }
     function topicHasQuiz(f){ return quizzed.indexOf(f) >= 0; }
-    ${slice(shell, 'function fdCaptureRows(', 'function fdTodayLive(')}
+    ${slice(shell, 'function fdCaptureMatch(', 'function fdTodayLive(')}
     return fdCaptureRows();
   `);
   return factory([{ id: 'c1', text: 'psychosis', triaged: false }], results, quizzed);
@@ -217,9 +238,9 @@ test('T12d: it still routes somewhere when nothing in the results has a quiz', (
   assert.equal(rows[0].match.hasQuiz, false);
 });
 
-test('T12b: unavailable matching preserves untriaged captures and safe actions', () => {
-  const rows = slice(shell, 'function fdCaptureRows(', 'function fdTodayLive(');
-  assert.match(rows, /results=SI\?runSearch\(item\.text\):\[\]/,
+test('T12b: unavailable matching preserves captures and safe actions', () => {
+  const rows = slice(shell, 'function fdCaptureMatch(', 'function fdTodayLive(');
+  assert.match(rows, /results=SI\?runSearch\(text\):\[\]/,
     'an unavailable index yields no match instead of throwing or dropping a capture');
   assert.match(due, /data-cap-drop=/);
   assert.match(due, /data-cap-copy="1"/);

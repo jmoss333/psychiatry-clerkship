@@ -102,6 +102,46 @@ test('a saved question survives reload and reaches the home triage card', async 
   await expect(card).toContainText('why clozapine and not another antipsychotic');
 });
 
+test('question starters seed the textarea without saving or replacing learner text', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.goto('/');
+  await captureLauncher(page).click();
+  const starters = page.locator('[data-cap-starter]');
+  await expect(starters).toHaveCount(4);
+  await starters.nth(0).click();
+  await expect(page.locator('#capText')).toHaveValue('Why would we ');
+  await page.locator('#capText').fill('My own wording');
+  await starters.nth(1).click();
+  await expect(page.locator('#capText')).toHaveValue('My own wording');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_capture_v1'))).toBeNull();
+});
+
+test('saving immediately offers the best next step while keeping the question in the inbox', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.goto('/');
+  await captureLauncher(page).click();
+  await page.locator('#capText').fill('How should I distinguish delirium from psychosis?');
+  await page.locator('#capSave').click();
+  const next = page.locator('.cap-next');
+  await expect(next).toBeVisible();
+  await expect(next).toContainText('Question saved');
+  await expect(next.locator('[data-cap-open]')).toBeVisible();
+  await expect(next.locator('[data-cap-review]')).toBeVisible();
+  await expect(next.locator('[data-cap-supervise]')).toBeVisible();
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_capture_v1')).items[0]);
+  expect(stored.status).toBe('new');
+});
+
+test('the global capture control remains in the viewport after a long reader scroll', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.goto('/?page=t_mood.md');
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect(captureLauncher(page)).toBeVisible();
+  const box = await captureLauncher(page).boundingBox();
+  expect(box.y).toBeGreaterThanOrEqual(0);
+  expect(box.y + box.height).toBeLessThanOrEqual(PHONE.height);
+});
+
 test('Today capture clears a prior Reader context without corrupting the learner bookmark', async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.goto('/?page=orientation.md');
@@ -188,7 +228,7 @@ test('T10: the stable launcher adds no horizontal overflow and stays outside the
   expect(widths.scroll).toBeLessThanOrEqual(widths.client);
 });
 
-test('the global launcher occupies its own layout row instead of covering learner content', async ({ page }) => {
+test('the global launcher stays fixed, reachable, and inside the viewport', async ({ page }) => {
   const cases = [
     { label: 'Today', url: '/', ready: '.fd-today' },
     { label: 'Reader', url: '/?page=t_mood.md', ready: '.fd-reader .fd-article__body' },
@@ -202,30 +242,26 @@ test('the global launcher occupies its own layout row instead of covering learne
       const geometry = await page.evaluate(() => {
         const mount = document.querySelector('#fdCaptureMount');
         const button = mount.querySelector('.fd-capture-launch--global');
-        const content = document.querySelector('#content');
         const mountBox = mount.getBoundingClientRect();
         const buttonBox = button.getBoundingClientRect();
-        const contentBox = content.getBoundingClientRect();
-        const overlaps = buttonBox.left < contentBox.right && buttonBox.right > contentBox.left
-          && buttonBox.top < contentBox.bottom && buttonBox.bottom > contentBox.top;
         return {
           position: getComputedStyle(mount).position,
+          mountTop: mountBox.top,
           mountBottom: mountBox.bottom,
           buttonTop: buttonBox.top,
+          buttonBottom: buttonBox.bottom,
           buttonWidth: buttonBox.width,
           buttonHeight: buttonBox.height,
-          contentTop: contentBox.top,
-          overlaps,
           scrollWidth: document.documentElement.scrollWidth,
           clientWidth: document.documentElement.clientWidth,
+          viewportHeight: window.innerHeight,
         };
       });
-      expect(['static', 'relative'], `${viewport.width}px ${surface.label} mount position`)
-        .toContain(geometry.position);
-      expect(geometry.overlaps, `${viewport.width}px ${surface.label} content overlap`).toBe(false);
-      expect(geometry.mountBottom, `${viewport.width}px ${surface.label} mount order`)
-        .toBeLessThanOrEqual(geometry.contentTop + 0.5);
+      expect(geometry.position, `${viewport.width}px ${surface.label} mount position`).toBe('fixed');
+      expect(geometry.mountTop).toBeGreaterThanOrEqual(0);
+      expect(geometry.mountBottom).toBeLessThanOrEqual(geometry.viewportHeight);
       expect(geometry.buttonTop).toBeGreaterThanOrEqual(0);
+      expect(geometry.buttonBottom).toBeLessThanOrEqual(geometry.viewportHeight);
       expect(geometry.buttonWidth).toBeGreaterThanOrEqual(44);
       expect(geometry.buttonHeight).toBeGreaterThanOrEqual(44);
       expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.clientWidth);
