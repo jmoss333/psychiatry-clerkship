@@ -345,6 +345,20 @@ function fdConsistency(activityDays, nowMs){
   '</div>';
 }
 
+/* Shared pilot invitation. The pgfb-b class deliberately routes through the shell's existing
+   private feedback launcher, while data-fb-context tells the form this came from Today rather
+   than from a specific learning page. */
+function fdPilotFeedback(){
+  return '<section class="fd-pilot" aria-labelledby="fd-pilot-title">'+
+    '<span class="fd-pilot__eyebrow">Active testing</span>'+
+    '<div class="fd-pilot__copy">'+
+      '<h2 class="fd-pilot__title" id="fd-pilot-title">This learning site is in active testing</h2>'+
+      '<p>Use it alongside your official rotation materials and supervision. Tell us what helped, what was unclear, or what did not work.</p>'+
+    '</div>'+
+    '<button type="button" class="fd-btn fd-btn--ghost fd-pilot__button pgfb-b" data-fb-context="Today landing page">Share feedback</button>'+
+  '</section>';
+}
+
 function fdToday(index, state){
   var st=state||{};
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
@@ -386,6 +400,7 @@ function fdToday(index, state){
   var out='<section class="fd-today">';
   out+='<h1 class="fd-today__h1">'+greeting+'</h1>';
   out+='<p class="fd-today__sub">'+sub+'</p>';
+  out+=fdPilotFeedback();
   out+=fdConsistency(st.activityDays, nowMs);
   out+='<div class="fd-today__cols"><div class="fd-today__main">';
 

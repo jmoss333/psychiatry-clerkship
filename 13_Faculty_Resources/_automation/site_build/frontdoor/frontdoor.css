@@ -177,6 +177,20 @@
 .fd-today{animation:fdFadeUp .24s cubic-bezier(.2,.8,.2,1)}
 .fd-today__h1{margin:0 0 2px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:var(--fd-font-3xl);line-height:1.2;letter-spacing:.2px;color:var(--fd-text)}
 .fd-today__sub{margin:0 0 22px;font-size:var(--fd-font-md);color:var(--fd-text-mid)}
+.fd-pilot{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:var(--fd-space-6);
+  margin:0 0 calc(var(--fd-space-8) + var(--fd-space-1));padding:var(--fd-space-7);
+  background:linear-gradient(120deg,var(--fd-teal-wash),var(--fd-surface));
+  border:1px solid var(--fd-line);border-left:4px solid var(--fd-teal);border-radius:var(--fd-radius-md);
+}
+.fd-pilot__eyebrow{
+  align-self:start;padding:var(--fd-space-2) var(--fd-space-4);border-radius:var(--fd-radius-pill);
+  background:var(--fd-teal);color:var(--fd-surface);font-size:var(--fd-font-2xs);
+  font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
+}
+.fd-pilot__title{margin:0 0 var(--fd-space-1);font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-lg);line-height:1.25;color:var(--fd-text)}
+.fd-pilot__copy p{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.45}
+.fd-pilot__button{white-space:nowrap;margin:0}
 /* Seven-day activity strip (fdConsistency). Sits between the subhead and the columns; the
  * negative top margin closes the subhead's 22px to a 10px gap only when the strip renders, so a
  * fresh device (strip absent) keeps the prototype's spacing unchanged. Dot colours are the
@@ -918,6 +932,11 @@
 @media (max-width:390px){
   .fd-shell{overflow-x:hidden}
   .fd-main{padding-left:14px;padding-right:14px;overflow-x:hidden}
+  /* Linux and macOS system fonts wrap the optional pilot sentence differently. Keep the
+   * active-testing title and 44px feedback action in the first viewport; the form repeats the
+   * longer guidance immediately after the learner opens it. */
+  .fd-pilot__copy p{display:none}
+  .fd-pilot{margin-bottom:var(--fd-space-6)}
   .fd-continue{padding:15px 14px;gap:var(--fd-space-5)}
   .fd-continue__meta{display:none}
   .fd-ring{width:46px;height:46px}
@@ -932,6 +951,9 @@
 /* A narrow header cannot safely compress the full brand, search field, and three utility controls
  * into one row. Keep the useful labels visible and reflow utilities below them instead. */
 @media (max-width:640px){
+  .fd-pilot{grid-template-columns:1fr;gap:var(--fd-space-4);padding:calc(var(--fd-space-6) + var(--fd-space-1))}
+  .fd-pilot__eyebrow{justify-self:start}
+  .fd-pilot__button{width:100%;min-height:44px}
   .fd-header__bar{
     padding:10px 12px 0;display:grid;grid-template-columns:minmax(0,1fr) 96px;
     column-gap:8px;row-gap:6px;
