@@ -127,6 +127,21 @@ test('the greeting varies by time of day, derived from state.nowMs', () => {
   assert.match(F.fdToday(IDX, s({ nowMs: evening })), /Evening, there<\/h1>/);
 });
 
+test('Today visibly invites feedback while the shared site is in active testing', () => {
+  const html = F.fdToday(IDX, s({}));
+  assert.match(html, /class="fd-pilot"/);
+  assert.match(html, /This learning site is in active testing/);
+  assert.match(html, /official rotation materials and supervision/);
+  assert.match(html, /class="[^"]*pgfb-b[^"]*"[^>]*data-fb-context="Today landing page"/);
+  assert.match(html, />Share feedback</);
+});
+
+test('the active-testing invitation is audience-neutral', () => {
+  const banner = F.fdToday(IDX, s({})).match(/<section class="fd-pilot"[\s\S]*?<\/section>/);
+  assert.ok(banner, 'the invitation renders as one labelled section');
+  assert.doesNotMatch(banner[0], AUDIENCE_TOKEN_RE);
+});
+
 // ---- accessibility (Fresh Eyes Audit A2/A6) --------------------------------------------------
 
 test('the greeting ends with the role, not a dangling dash', () => {
