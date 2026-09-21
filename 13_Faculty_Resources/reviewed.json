@@ -220,14 +220,14 @@
     "contentHash": "3ec92b36500373cab09492b3bfcc20da179b7445"
   },
   "cotw_20260709_ssnms_res.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-07-23",
-    "by": "Pending faculty review"
+    "at": "2026-09-21",
+    "by": "Joshua Moss, MD",
+    "contentHash": "29e6c6867a963203f6a2e2cb5e46b809ae9d9971"
   },
   "cotw_20260713_agitation_res.md": {
     "status": "reviewed",
