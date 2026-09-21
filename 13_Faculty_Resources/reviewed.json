@@ -488,9 +488,9 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-07-01",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
-    "contentHash": "1b4b2653f088b3ae376297868e5e3c1c3d4f37e2"
+    "contentHash": "79925a54efb806287f38e3b4e8ae4c38ef3199ad"
   },
   "t_eating.md": {
     "status": "reviewed",
