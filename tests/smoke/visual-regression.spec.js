@@ -42,6 +42,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { essentialsResources } from './essentials-inventory.js';
 
 const FROZEN_NOW = new Date('2026-08-17T12:00:00-04:00');
 const VIEWPORTS = [
@@ -174,8 +175,9 @@ for (const site of ['ms3', 'res']) {
           const base = site === 'ms3' ? process.env.MS3_BASE_URL || 'http://localhost:4200' : process.env.RES_BASE_URL || 'http://localhost:4201';
           await page.goto(`${base}/?tab=${view === 'today' ? 'today' : 'library'}${view === 'full' ? '&library=full' : ''}`);
           await waitForStableFrontDoor(page, view === 'today' ? '.fd-today' : '.fd-library');
-          if (view !== 'today') await expect(page.locator(view === 'full' ? '.fd-collink' : '.fd-kit [data-fd-open]')).toHaveCount(
-            view === 'full' ? (site === 'ms3' ? 83 : 93) : (site === 'ms3' ? 30 : 35));
+          if (view !== 'today') await expect(
+            view === 'full' ? page.locator('.fd-collink') : essentialsResources(page),
+          ).toHaveCount(view === 'full' ? (site === 'ms3' ? 83 : 93) : (site === 'ms3' ? 30 : 35));
           await expect(page).toHaveScreenshot(`essentials-${site}-${view}-${viewport.label}.png`);
         });
       }

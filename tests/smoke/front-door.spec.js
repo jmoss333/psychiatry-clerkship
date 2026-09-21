@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
 import { isResidentProject } from './audience.js';
+import { essentialsResourceRefs, essentialsResources } from './essentials-inventory.js';
 
 const FROZEN_NOW = new Date('2026-08-17T12:00:00-04:00');
 const PHONE = { width: 390, height: 844 };
@@ -1812,7 +1813,7 @@ test('phone chrome: tabs dock to the bottom, yield to the reader action bar, and
   await page.locator('[data-fd-tab="library"]').click();
   await expect(page.locator('.fd-library')).toBeVisible();
   // A bottom bar must not cover the last Library row once the page is scrolled to its end.
-  const lastRow = page.locator('.fd-collink').last();
+  const lastRow = essentialsResources(page).last();
   await lastRow.scrollIntoViewIfNeeded();
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   const rowBox = await lastRow.boundingBox();
@@ -1906,8 +1907,6 @@ test('returning from a Library resource restores the list position and focuses t
 // Essentials Phase 2: exercise rendered controls against the actual audience payload.
 test.describe('Essentials Phase 2', () => {
   const rows = page => page.locator('.fd-kit [data-fd-open], .fd-library:not(.fd-kit) .fd-collink[data-fd-open]');
-  const kitChoices = page => page.locator('.fd-kit__reading, .fd-kit__tool-tab');
-  const choiceRefs = locator => locator.evaluateAll(nodes => nodes.map(node => node.dataset.fdOpen || node.dataset.fdKitTool));
   const full = page => page.locator('[data-fd-library-view="full"]');
   const kit = page => page.locator('[data-fd-library-view="essentials"]');
   const kitCount = info => audience(info).role === 'student' ? 30 : 35;
@@ -1927,8 +1926,8 @@ test.describe('Essentials Phase 2', () => {
     await seedApp(page, info);
     await page.goto('/?tab=library');
     await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
-    await expect(kitChoices(page)).toHaveCount(kitCount(info));
-    expect(await choiceRefs(kitChoices(page))).toEqual([...expectedKit(info).filter(ref => !ref.endsWith('.html')), ...expectedKit(info).filter(ref => ref.endsWith('.html'))]);
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
+    expect(await essentialsResourceRefs(page)).toEqual([...expectedKit(info).filter(ref => !ref.endsWith('.html')), ...expectedKit(info).filter(ref => ref.endsWith('.html'))]);
     await full(page).click();
     await expect(rows(page)).toHaveCount(audience(info).libraryCount);
     await expect(page).toHaveURL(/tab=library&library=full/);
@@ -1941,15 +1940,15 @@ test.describe('Essentials Phase 2', () => {
     await page.locator('.fd-reader__back[data-fd-back]').first().click();
     await expect(rows(page)).toHaveCount(audience(info).libraryCount);
     await kit(page).click();
-    await expect(kitChoices(page)).toHaveCount(kitCount(info));
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
     await page.goBack();
     await expect(rows(page)).toHaveCount(audience(info).libraryCount);
     await page.goForward();
-    await expect(kitChoices(page)).toHaveCount(kitCount(info));
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
     await page.goto('/?library=full');
     await expect(rows(page)).toHaveCount(audience(info).libraryCount);
     await page.locator('[data-fd-tab="library"]').click();
-    await expect(kitChoices(page)).toHaveCount(kitCount(info));
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
     expect(new URL(page.url()).searchParams.has('library')).toBe(false);
     await expectHealthy(page);
   });
@@ -1965,7 +1964,7 @@ test.describe('Essentials Phase 2', () => {
     await expect(groups).toHaveCount(student ? 8 : 7);
     await expect(sectionButtons).toHaveCount(student ? 10 : 9);
     await expect(page.locator('.fd-kit__reading')).toHaveCount(student ? 23 : 26);
-    const allRefs = await choiceRefs(kitChoices(page));
+    const allRefs = await essentialsResourceRefs(page);
     expect([...allRefs].sort()).toEqual([...expectedKit(info)].sort());
     const storage = () => page.evaluate(() => ({local: {...localStorage}, session: {...sessionStorage}}));
     const before = await storage(); const url = page.url();
@@ -1979,7 +1978,7 @@ test.describe('Essentials Phase 2', () => {
       const button=rail.locator(`[data-fd-kit-section="${values[i]}"]`);
       await button.click();
       await expect(button).toBeFocused(); await expect(groups).toHaveCount(1);
-      expect(await choiceRefs(kitChoices(page))).toEqual(expected[i]);
+      expect(await essentialsResourceRefs(page)).toEqual(expected[i]);
       expect(page.url()).toBe(url); expect(await storage()).toEqual(before);
     }
     await rail.locator('[data-fd-kit-section="all"]').click();
@@ -2053,7 +2052,7 @@ test.describe('Essentials Phase 2', () => {
     await readyReader(page, ref);
     await page.locator('[data-fd-back]:visible').first().click();
     await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
-    await expect(kitChoices(page)).toHaveCount(kitCount(info));
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
     await rail.locator('[data-fd-kit-section="week"]').click();
     await page.reload();
     await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
@@ -2073,7 +2072,7 @@ test.describe('Essentials Phase 2', () => {
     await expect(page.locator('[data-fd-change-week]')).toContainText('Set week');
     await expect(page.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
     await expect(page.locator('[data-fd-kit-section="week"]')).toHaveCount(0);
-    await expect(kitChoices(page)).toHaveCount(kitCount(info));
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
     await expectHealthy(page);
   });
   test('late Essentials section return resets All and keeps focus visible through Back and reload', async ({ page }, info) => {
@@ -2196,7 +2195,7 @@ test.describe('Essentials Phase 2', () => {
     test.setTimeout(240_000);
     await seedApp(page, info);
     await page.goto('/?tab=library');
-    const selected = new Set(await choiceRefs(kitChoices(page)));
+    const selected = new Set(await essentialsResourceRefs(page));
     expect(selected.size).toBe(kitCount(info));
     await full(page).click();
     const all = await rows(page).evaluateAll(nodes => nodes.map(n => n.dataset.fdOpen));
@@ -2231,7 +2230,7 @@ test.describe('Essentials Phase 2', () => {
   test('L6: view toggles add no storage keys or stored view, and tool openLibrary resets to kit', async ({ page }, info) => {
     await seedApp(page, info);
     await page.goto('/?tab=library');
-    await expect(kitChoices(page)).toHaveCount(kitCount(info));
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
     // Settle the existing persisted tab/openId fields before comparing view-only actions.
     await page.locator('[data-fd-tab="library"]').click();
     const snapshot = () => page.evaluate(() => ({
@@ -2253,7 +2252,7 @@ test.describe('Essentials Phase 2', () => {
     const frame = await page.locator('.fd-article iframe').elementHandle();
     await (await frame.contentFrame()).evaluate(() => parent.postMessage({ type: 'openLibrary' }, location.origin));
     await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
-    await expect(kitChoices(page)).toHaveCount(kitCount(info));
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
   });
   test('A2: an entirely unresolved built kit falls back to the complete Library', async ({ page }, info) => {
     await seedApp(page, info);
