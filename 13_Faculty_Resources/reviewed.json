@@ -437,9 +437,9 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-08-11",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
-    "contentHash": "d9b256e58de4d753bcda7483f43a5725ef70a939"
+    "contentHash": "25ae6c975dc9d024329468c4f1414806eae60330"
   },
   "t_anxiety.md": {
     "status": "reviewed",
