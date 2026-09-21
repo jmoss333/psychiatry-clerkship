@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
 import { isResidentProject } from './audience.js';
+import { essentialsResourceRefs, essentialsResources } from './essentials-inventory.js';
 
 const FROZEN_NOW = new Date('2026-08-17T12:00:00-04:00');
 const PHONE = { width: 390, height: 844 };
@@ -1812,7 +1813,7 @@ test('phone chrome: tabs dock to the bottom, yield to the reader action bar, and
   await page.locator('[data-fd-tab="library"]').click();
   await expect(page.locator('.fd-library')).toBeVisible();
   // A bottom bar must not cover the last Library row once the page is scrolled to its end.
-  const lastRow = page.locator('.fd-collink').last();
+  const lastRow = essentialsResources(page).last();
   await lastRow.scrollIntoViewIfNeeded();
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   const rowBox = await lastRow.boundingBox();
@@ -1925,8 +1926,8 @@ test.describe('Essentials Phase 2', () => {
     await seedApp(page, info);
     await page.goto('/?tab=library');
     await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
-    await expect(rows(page)).toHaveCount(kitCount(info));
-    expect(await rows(page).evaluateAll(nodes => nodes.map(node => node.dataset.fdOpen))).toEqual([...expectedKit(info).filter(ref => !ref.endsWith('.html')), ...expectedKit(info).filter(ref => ref.endsWith('.html'))]);
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
+    expect(await essentialsResourceRefs(page)).toEqual([...expectedKit(info).filter(ref => !ref.endsWith('.html')), ...expectedKit(info).filter(ref => ref.endsWith('.html'))]);
     await full(page).click();
     await expect(rows(page)).toHaveCount(audience(info).libraryCount);
     await expect(page).toHaveURL(/tab=library&library=full/);
@@ -1939,15 +1940,15 @@ test.describe('Essentials Phase 2', () => {
     await page.locator('.fd-reader__back[data-fd-back]').first().click();
     await expect(rows(page)).toHaveCount(audience(info).libraryCount);
     await kit(page).click();
-    await expect(rows(page)).toHaveCount(kitCount(info));
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
     await page.goBack();
     await expect(rows(page)).toHaveCount(audience(info).libraryCount);
     await page.goForward();
-    await expect(rows(page)).toHaveCount(kitCount(info));
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
     await page.goto('/?library=full');
     await expect(rows(page)).toHaveCount(audience(info).libraryCount);
     await page.locator('[data-fd-tab="library"]').click();
-    await expect(rows(page)).toHaveCount(kitCount(info));
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
     expect(new URL(page.url()).searchParams.has('library')).toBe(false);
     await expectHealthy(page);
   });
@@ -1957,39 +1958,41 @@ test.describe('Essentials Phase 2', () => {
     await page.locator('[data-fd-tab="library"]').click();
     await expect(page.locator('[data-fd-tab="library"]')).toHaveText('The Essentials');
     const student = audience(info).role === 'student';
-    const select = page.locator('[data-fd-kit-section]');
+    const rail = page.locator('.fd-kit__index');
+    const sectionButtons = rail.locator('[data-fd-kit-section]');
     const groups = page.locator('.fd-kit__group');
     await expect(groups).toHaveCount(student ? 8 : 7);
-    await expect(select.locator('option:not([value="week"])')).toHaveCount(student ? 9 : 8);
+    await expect(sectionButtons).toHaveCount(student ? 10 : 9);
     await expect(page.locator('.fd-kit__reading')).toHaveCount(student ? 23 : 26);
-    const allRefs = await rows(page).evaluateAll(ns => ns.map(n => n.dataset.fdOpen));
+    const allRefs = await essentialsResourceRefs(page);
     expect([...allRefs].sort()).toEqual([...expectedKit(info)].sort());
     const storage = () => page.evaluate(() => ({local: {...localStorage}, session: {...sessionStorage}}));
     const before = await storage(); const url = page.url();
-    const expected = await groups.evaluateAll(ns => ns.map(n => [...n.querySelectorAll('[data-fd-open]')].map(x => x.dataset.fdOpen)));
-    const values = await select.locator('option').evaluateAll(ns => ns.slice(1).filter(n => n.value !== 'week').map(n => n.value));
+    const expected = await groups.evaluateAll(ns => ns.map(n => [...n.querySelectorAll('.fd-kit__reading, [data-fd-kit-tool]')].map(x => x.dataset.fdOpen || x.dataset.fdKitTool)));
+    const values = await sectionButtons.evaluateAll(ns => ns.slice(1).map(n => n.dataset.fdKitSection).filter(value => value !== 'week'));
     const summary = groups.first().locator('summary');
     await summary.focus(); await summary.press('Enter');
     await expect(groups.first()).not.toHaveAttribute('open', '');
     await summary.press('Space'); await expect(groups.first()).toHaveAttribute('open', '');
     for (let i = 0; i < values.length; i++) {
-      await select.selectOption(values[i]);
-      await expect(select).toBeFocused(); await expect(groups).toHaveCount(1);
-      expect(await rows(page).evaluateAll(ns => ns.map(n => n.dataset.fdOpen))).toEqual(expected[i]);
+      const button=rail.locator(`[data-fd-kit-section="${values[i]}"]`);
+      await button.click();
+      await expect(button).toBeFocused(); await expect(groups).toHaveCount(1);
+      expect(await essentialsResourceRefs(page)).toEqual(expected[i]);
       expect(page.url()).toBe(url); expect(await storage()).toEqual(before);
     }
-    await select.selectOption('all');
+    await rail.locator('[data-fd-kit-section="all"]').click();
     await groups.first().locator('summary').click();
-    await select.selectOption(values[0]); await select.selectOption('all');
+    await rail.locator(`[data-fd-kit-section="${values[0]}"]`).click(); await rail.locator('[data-fd-kit-section="all"]').click();
     await expect(page.locator('.fd-kit__group[open]')).toHaveCount(student ? 8 : 7);
-    await select.selectOption(values[0]);
+    await rail.locator(`[data-fd-kit-section="${values[0]}"]`).click();
     await page.locator('.fd-kit__reading').first().click();
     await expect(page.locator('.fd-reader .loading')).toHaveCount(0);
     await page.locator('.fd-reader__back[data-fd-back]').first().click();
-    await expect(select).toHaveValue('all');
-    await select.selectOption('tools'); await page.reload(); await expect(select).toHaveValue('all');
-    await select.selectOption('tools'); await page.locator('[data-fd-tab="today"]').click();
-    await page.locator('[data-fd-tab="library"]').click(); await expect(select).toHaveValue('all');
+    await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
+    await rail.locator('[data-fd-kit-section="tools"]').click(); await page.reload(); await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
+    await rail.locator('[data-fd-kit-section="tools"]').click(); await page.locator('[data-fd-tab="today"]').click();
+    await page.locator('[data-fd-tab="library"]').click(); await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
     const dots = page.locator('.fd-kit__pending');
     expect(await dots.count()).toBeGreaterThan(0);
     await expect(page.locator('.fd-kit .governance-badge')).toHaveCount(0);
@@ -2028,13 +2031,13 @@ test.describe('Essentials Phase 2', () => {
     await page.locator('[data-fd-view-week="2"]').click();
     await expect(page.locator('[data-fd-change-week]')).toContainText('Week 1');
     await page.locator('[data-fd-tab="library"]').click();
-    const select = page.locator('[data-fd-kit-section]');
-    await expect(select).toHaveValue('all');
-    await expect(select.locator('[value="week"]')).toHaveText(`This week · ${expectedWeek(1).length}`);
+    const rail = page.locator('.fd-kit__index');
+    await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
+    await expect(rail.locator('[data-fd-kit-section="week"] .fd-kit__index-count')).toHaveText(String(expectedWeek(1).length));
     const snapshot = () => page.evaluate(() => ({url: location.href, local: {...localStorage}, session: {...sessionStorage}}));
     const before = await snapshot();
-    await select.selectOption('week');
-    await expect(select).toBeFocused();
+    await rail.locator('[data-fd-kit-section="week"]').click();
+    await expect(rail.locator('[data-fd-kit-section="week"]')).toBeFocused();
     expect(await rows(page).evaluateAll(nodes => nodes.map(node => node.dataset.fdOpen))).toEqual(expectedWeek(1));
     await expect(page.locator('.fd-kit__tools')).toHaveCount(0);
     expect(await snapshot()).toEqual(before);
@@ -2048,16 +2051,16 @@ test.describe('Essentials Phase 2', () => {
     await page.locator(`.fd-kit__reading[data-fd-open="${ref}"]`).click();
     await readyReader(page, ref);
     await page.locator('[data-fd-back]:visible').first().click();
-    await expect(select).toHaveValue('all');
-    await expect(rows(page)).toHaveCount(kitCount(info));
-    await select.selectOption('week');
+    await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
+    await rail.locator('[data-fd-kit-section="week"]').click();
     await page.reload();
-    await expect(select).toHaveValue('all');
+    await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
     await page.locator('[data-fd-change-week]').click();
     await page.locator('[data-fd-week="2"]').click();
     await page.locator('[data-fd-tab="library"]').click();
-    await select.selectOption('week');
-    await expect(select.locator('[value="week"]')).toHaveText(`This week · ${expectedWeek(2).length}`);
+    await rail.locator('[data-fd-kit-section="week"]').click();
+    await expect(rail.locator('[data-fd-kit-section="week"] .fd-kit__index-count')).toHaveText(String(expectedWeek(2).length));
     expect(await rows(page).evaluateAll(nodes => nodes.map(node => node.dataset.fdOpen))).toEqual(expectedWeek(2));
     await full(page).click();
     await expect(rows(page)).toHaveCount(audience(info).libraryCount);
@@ -2067,20 +2070,20 @@ test.describe('Essentials Phase 2', () => {
     await seedApp(page, info, {storage: {cw_rotation_start: ''}});
     await page.goto('/?tab=library');
     await expect(page.locator('[data-fd-change-week]')).toContainText('Set week');
-    await expect(page.locator('[data-fd-kit-section]')).toHaveValue('all');
-    await expect(page.locator('[data-fd-kit-section] [value="week"]')).toHaveCount(0);
-    await expect(rows(page)).toHaveCount(kitCount(info));
+    await expect(page.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
+    await expect(page.locator('[data-fd-kit-section="week"]')).toHaveCount(0);
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
     await expectHealthy(page);
   });
   test('late Essentials section return resets All and keeps focus visible through Back and reload', async ({ page }, info) => {
     await page.setViewportSize(PHONE);
     await seedApp(page, info);
     await page.goto('/?tab=library');
-    const select=page.locator('[data-fd-kit-section]');
-    const lateSection=await select.locator('option').evaluateAll(options =>
-      options.map(option=>option.value).filter(value=>value!=='all'&&value!=='tools').at(-1));
+    const rail=page.locator('.fd-kit__index');
+    const lateSection=await rail.locator('[data-fd-kit-section]').evaluateAll(buttons =>
+      buttons.map(button=>button.dataset.fdKitSection).filter(value=>value!=='all'&&value!=='week'&&value!=='tools').at(-1));
     const openLateReading=async()=>{
-      await select.selectOption(lateSection);
+      await rail.locator(`[data-fd-kit-section="${lateSection}"]`).click();
       const opener=page.locator('.fd-kit__reading').first();
       const ref=await opener.getAttribute('data-fd-open');
       await opener.click();
@@ -2088,7 +2091,7 @@ test.describe('Essentials Phase 2', () => {
       return {opener:page.locator(`.fd-kit__reading[data-fd-open="${ref}"]`),ref};
     };
     const expectVisibleReturn=async opener=>{
-      await expect(select).toHaveValue('all');
+      await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
       await expect(opener).toBeFocused();
       const geometry=await opener.evaluate(element=>{
         const box=element.getBoundingClientRect();
@@ -2124,6 +2127,30 @@ test.describe('Essentials Phase 2', () => {
     await expectVisibleReturn(opened.opener);
     await expectHealthy(page);
   });
+  test('tool preview cards update one shared pane without changing saved learner state', async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.goto('/?tab=library');
+    await page.locator('[data-fd-kit-section="tools"]').click();
+    const tabs = page.locator('.fd-kit__tool-tabs [data-fd-kit-tool]');
+    const panel = page.locator('.fd-kit__tool-preview[role="tabpanel"]');
+    await expect(tabs).toHaveCount(audience(info).role === 'student' ? 7 : 9);
+    await expect(panel).toHaveCount(1);
+    await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
+    await expect(panel.locator('h3')).toHaveText((await tabs.first().innerText()).trim());
+    const before = await page.evaluate(() => ({url: location.href, local: {...localStorage}, session: {...sessionStorage}}));
+    const ref = await tabs.nth(1).getAttribute('data-fd-kit-tool');
+    const title = (await tabs.nth(1).innerText()).trim();
+    await tabs.nth(1).click();
+    await expect(tabs.nth(1)).toBeFocused();
+    await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
+    await expect(panel.locator('h3')).toHaveText(title);
+    await expect(panel.locator('p')).not.toBeEmpty();
+    await expect(panel.locator('[data-fd-open]')).toHaveAttribute('data-fd-open', ref);
+    expect(await page.evaluate(() => ({url: location.href, local: {...localStorage}, session: {...sessionStorage}}))).toEqual(before);
+    await panel.locator('[data-fd-open]').click();
+    await readyReader(page, ref);
+    await expectHealthy(page);
+  });
   test('readings-first responsive targets and actual desktop and phone evidence', async ({ page }, info) => {
     await seedApp(page, info);
     for (const width of [390, 640, 641, 1280]) {
@@ -2134,7 +2161,7 @@ test.describe('Essentials Phase 2', () => {
       const readings = await page.locator('.fd-kit__readings').boundingBox();
       if (width <= 640) expect(tools.y + tools.height).toBeLessThanOrEqual(readings.y);
       if (width >= 1000) expect(tools.x).toBeGreaterThanOrEqual(readings.x + readings.width);
-      for (const control of await page.locator('.fd-kit__reading, .fd-kit__tool-list button, .fd-kit__group > summary, [data-fd-kit-section]').all()) {
+      for (const control of await page.locator('.fd-kit__reading, .fd-kit__tool-tab, .fd-kit__tool-preview [data-fd-open], .fd-kit__group > summary, [data-fd-kit-section]').all()) {
         await control.focus(); await expect(control).toBeFocused();
         const box = await control.boundingBox();
         // Chromium can report a CSS 44px target as 43.999984px after scrolling.
@@ -2142,19 +2169,20 @@ test.describe('Essentials Phase 2', () => {
         expect(Math.round(box.width * 1000) / 1000).toBeGreaterThanOrEqual(44);
         expect(box.x).toBeGreaterThanOrEqual(0); expect(box.x + box.width).toBeLessThanOrEqual(width);
       }
-      const toolButtons = page.locator('.fd-kit__tool-list button');
-      await toolButtons.first().focus();
+      const toolTabs = page.locator('.fd-kit__tool-tabs [data-fd-kit-tool]');
+      await toolTabs.first().focus();
       const stable = await page.evaluate(() => ({url: location.href, local: {...localStorage}, session: {...sessionStorage}}));
-      for (let i = 1; i < await toolButtons.count(); i++) {
-        await page.keyboard.press('Tab'); await expect(toolButtons.nth(i)).toBeFocused();
-        const box = await toolButtons.nth(i).boundingBox();
-        const strip = await page.locator('.fd-kit__tool-list').boundingBox();
+      for (let i = 1; i < await toolTabs.count(); i++) {
+        await page.keyboard.press('ArrowRight'); await expect(toolTabs.nth(i)).toBeFocused();
+        await expect(toolTabs.nth(i)).toHaveAttribute('aria-selected', 'true');
+        const box = await toolTabs.nth(i).boundingBox();
+        const strip = await page.locator('.fd-kit__tool-tabs').boundingBox();
         expect(box.x).toBeGreaterThanOrEqual(strip.x);
         expect(box.x + box.width).toBeLessThanOrEqual(strip.x + strip.width);
         expect(await page.evaluate(() => ({url: location.href, local: {...localStorage}, session: {...sessionStorage}}))).toEqual(stable);
       }
       if (width === 390 || width === 1280) {
-        await page.evaluate(() => {document.activeElement.blur(); document.querySelector('.fd-kit__tool-list').scrollLeft = 0; window.scrollTo(0, 0);});
+        await page.evaluate(() => {document.activeElement.blur(); document.querySelector('.fd-kit__tool-tabs').scrollLeft = 0; window.scrollTo(0, 0);});
         await page.evaluate(() => document.fonts.ready);
         const path=info.outputPath(`essentials-${audience(info).role}-${width}.png`);
         await page.screenshot({path,animations:'disabled'});
@@ -2167,7 +2195,7 @@ test.describe('Essentials Phase 2', () => {
     test.setTimeout(240_000);
     await seedApp(page, info);
     await page.goto('/?tab=library');
-    const selected = new Set(await rows(page).evaluateAll(nodes => nodes.map(n => n.dataset.fdOpen)));
+    const selected = new Set(await essentialsResourceRefs(page));
     expect(selected.size).toBe(kitCount(info));
     await full(page).click();
     const all = await rows(page).evaluateAll(nodes => nodes.map(n => n.dataset.fdOpen));
@@ -2202,7 +2230,7 @@ test.describe('Essentials Phase 2', () => {
   test('L6: view toggles add no storage keys or stored view, and tool openLibrary resets to kit', async ({ page }, info) => {
     await seedApp(page, info);
     await page.goto('/?tab=library');
-    await expect(rows(page)).toHaveCount(kitCount(info));
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
     // Settle the existing persisted tab/openId fields before comparing view-only actions.
     await page.locator('[data-fd-tab="library"]').click();
     const snapshot = () => page.evaluate(() => ({
@@ -2224,7 +2252,7 @@ test.describe('Essentials Phase 2', () => {
     const frame = await page.locator('.fd-article iframe').elementHandle();
     await (await frame.contentFrame()).evaluate(() => parent.postMessage({ type: 'openLibrary' }, location.origin));
     await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
-    await expect(rows(page)).toHaveCount(kitCount(info));
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
   });
   test('A2: an entirely unresolved built kit falls back to the complete Library', async ({ page }, info) => {
     await seedApp(page, info);
