@@ -84,6 +84,33 @@ test('capture triage escapes every interpolated value and exposes only valid mat
   assert.doesNotMatch(noQuiz, /data-cap-review=/);
 });
 
+test('capture inbox keeps unresolved questions visible with a compact status and action group', () => {
+  const out = F.fdCaptureTriage([{
+    id: 'c1',
+    text: 'How should I distinguish delirium from psychosis?',
+    status: 'scheduled',
+    match: { ref: 't_delirium.md', title: 'Delirium', hasQuiz: true },
+  }]);
+  assert.match(out, /class="fd-capture__item" data-cap-status="scheduled"/);
+  assert.match(out, /class="fd-capture__status">Review scheduled</);
+  assert.match(out, /class="fd-capture__match"/);
+  assert.match(out, /class="fd-capture__actions"/);
+  assert.match(out, /data-cap-open="c1"/);
+  assert.match(out, /data-cap-review="c1"/);
+  assert.match(out, /data-cap-supervise="c1"/);
+  assert.match(out, /data-cap-drop="c1"/);
+});
+
+test('capture inbox renders supervision state without hiding the question', () => {
+  const out = F.fdCaptureTriage([{
+    id: 'c2', text: 'What should I ask next?', status: 'supervision', match: null,
+  }]);
+  assert.match(out, /data-cap-status="supervision"/);
+  assert.match(out, />For supervision</);
+  assert.match(out, /What should I ask next\?/);
+  assert.match(out, /data-cap-supervise="c2"/);
+});
+
 test('fd_due stays ES5, audience-neutral, and does not introduce storage', () => {
   assert.doesNotMatch(due, /\b(?:const|let)\s|=>|`/);
   assert.doesNotMatch(due, /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i);

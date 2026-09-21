@@ -160,10 +160,11 @@ test('the header bar keeps its own bottom padding once the tabs leave the flow',
   assert.match(rule(phoneBlock(), `${TOP_LEVEL} .fd-header__bar`), /padding-bottom:\d+px/);
 });
 
-test('the capture launcher keeps its 44px target and loses only its top margin on a phone', () => {
-  const m = shell.match(/@media\(max-width:640px\)\{#fdCaptureMount\{margin-top:(\d+)(?:px)?\}\}/);
-  assert.ok(m, 'spa_index.html must tighten #fdCaptureMount on phones');
-  assert.ok(Number(m[1]) <= 8, `margin-top ${m[1]} is not a tightening`);
+test('the capture launcher becomes a persistent phone action without shrinking its target', () => {
+  const m = shell.match(/@media\(max-width:640px\)\{#fdCaptureMount\{([^}]*)\}/);
+  assert.ok(m, 'spa_index.html must define the persistent phone capture mount');
+  assert.match(m[1], /position:fixed/);
+  assert.match(m[1], /bottom:calc\([^)]*env\(safe-area-inset-bottom/);
   assert.doesNotMatch(shell, /#fdCaptureMount \.fd-capture-launch\{[^}]*min-height:(?:[0-3]\d|4[0-3])px/,
     'the launcher target must stay at least 44px');
 });

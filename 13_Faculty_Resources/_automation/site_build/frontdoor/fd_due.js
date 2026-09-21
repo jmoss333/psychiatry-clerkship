@@ -79,7 +79,7 @@ function fdLastReadRow(item, primary){
 function fdCaptureTriage(items){
   var list=items||[], open=[];
   for(var i=0;i<list.length;i++){
-    if(list[i]&&list[i].triaged!==true) open.push(list[i]);
+    if(list[i]) open.push(list[i]);
   }
   if(!open.length) return '';
   var out='<section class="fd-capture"><div class="fd-capture__head">'+
@@ -88,18 +88,25 @@ function fdCaptureTriage(items){
     '<p class="fd-capture__purpose">'+fdEsc(FD_CAPTURE_PURPOSE)+'</p>';
   for(var j=0;j<open.length;j++){
     var item=open[j]||{}, id=fdEsc(item.id||''), match=item.match;
-    out+='<div class="fd-capture__item"><p class="fd-capture__question">'+fdEsc(item.text||'')+'</p>';
+    var status=/^(?:new|scheduled|supervision)$/.test(item.status)?item.status:'new';
+    var statusLabel=status==='scheduled'?'Review scheduled':(status==='supervision'?'For supervision':'New');
+    out+='<div class="fd-capture__item" data-cap-status="'+status+'"><div class="fd-capture__meta">'+
+      '<span class="fd-capture__status">'+statusLabel+'</span></div>'+
+      '<p class="fd-capture__question">'+fdEsc(item.text||'')+'</p>';
     if(match&&match.ref){
       var ref=fdEsc(match.ref);
-      out+='<button type="button" class="fd-capture__action" data-cap-open="'+id+'" data-cap-ref="'+ref+'">'+
-        '<span>'+fdEsc(match.title||match.ref)+'</span><span>Open →</span></button>';
+      out+='<div class="fd-capture__match"><span>Suggested page</span><strong>'+fdEsc(match.title||match.ref)+'</strong></div>';
+    }
+    out+='<div class="fd-capture__actions">';
+    if(match&&match.ref){
+      out+='<button type="button" class="fd-capture__action" data-cap-open="'+id+'" data-cap-ref="'+ref+'">Open now</button>';
       if(match.hasQuiz){
         out+='<button type="button" class="fd-capture__action" data-cap-review="'+id+'" data-cap-ref="'+ref+'">'+
-          '<span>Review this topic</span><span>Schedule →</span></button>';
+          'Review later</button>';
       }
     }
-    out+='<button type="button" class="fd-capture__action" data-cap-drop="'+id+'">'+
-      '<span>Done with this one</span><span>Dismiss</span></button></div>';
+    out+='<button type="button" class="fd-capture__action" data-cap-supervise="'+id+'">Bring to supervision</button>'+
+      '<button type="button" class="fd-capture__action fd-capture__action--done" data-cap-drop="'+id+'">Done</button></div></div>';
   }
   out+='<button type="button" class="fd-capture__copy" data-cap-copy="1">Ask my attending</button>';
   return out+'</section>';
