@@ -9,12 +9,13 @@ from pathlib import Path
 from urllib.parse import unquote
 
 try:
-    from jsonschema import Draft7Validator
+    from jsonschema import Draft7Validator, FormatChecker
     from jsonschema.exceptions import SchemaError
     from referencing import Registry
     from referencing.exceptions import Unresolvable
 except ImportError:  # pragma: no cover - exercised only before dependency installation
     Draft7Validator = None
+    FormatChecker = None
     Registry = None
     SchemaError = Exception
     Unresolvable = Exception
@@ -343,7 +344,11 @@ def validate_root(root: Path) -> tuple[list[str], bool]:
 
         try:
             errors = sorted(
-                Draft7Validator(schema, registry=Registry()).iter_errors(document),
+                Draft7Validator(
+                    schema,
+                    registry=Registry(),
+                    format_checker=FormatChecker(),
+                ).iter_errors(document),
                 key=lambda error: (
                     json_pointer(error.absolute_path),
                     error.message,

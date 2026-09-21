@@ -79,6 +79,12 @@
             "oneOf": [
               { "required": ["revisitBy"] },
               { "required": ["permanent"] }
+            ],
+            "allOf": [
+              {
+                "if": { "required": ["revisitBy"] },
+                "then": { "required": ["revisitTrigger"] }
+              }
             ]
           }
         }
