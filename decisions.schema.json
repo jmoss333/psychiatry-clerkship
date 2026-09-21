@@ -5,7 +5,7 @@
   "required": ["schemaVersion", "decisions"],
   "additionalProperties": false,
   "properties": {
-    "schemaVersion": { "type": "integer", "const": 1 },
+    "schemaVersion": { "type": "integer", "const": 2 },
     "_note": { "type": "string" },
     "decisions": {
       "type": "array",
@@ -37,6 +37,26 @@
           "description": "Where the reasoning lives — a doc path, a commit, a README section. The registry records WHAT was decided and its status; it never replaces the prose that says why."
         },
         "note": { "type": "string" },
+        "decisionBasis": {
+          "enum": ["accepted-limitation"],
+          "description": "Marks a faculty-accepted limitation. These entries carry an explicit lifecycle so silence cannot make a temporary limitation permanent."
+        },
+        "acceptedOn": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "revisitTrigger": { "type": "string", "minLength": 3 },
+        "revisitBy": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Advisory review backstop. Passing this date does not invalidate the registry or fail CI."
+        },
+        "permanent": {
+          "const": true,
+          "description": "Explicit faculty ruling that this accepted limitation has no scheduled revisit."
+        },
         "supersedes": {
           "type": "array",
           "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
@@ -47,7 +67,22 @@
           "items": { "type": "string", "minLength": 1 },
           "description": "Repo-relative paths whose code enforces this decision. Each must carry a `DECISION: <id>` marker; bin/check_decision_drift.py checks both directions."
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "decisionBasis": { "const": "accepted-limitation" } },
+            "required": ["decisionBasis"]
+          },
+          "then": {
+            "required": ["acceptedOn"],
+            "oneOf": [
+              { "required": ["revisitBy"] },
+              { "required": ["permanent"] }
+            ]
+          }
+        }
+      ]
     }
   }
 }
