@@ -366,9 +366,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-06-30",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
-    "contentHash": "62db77a0cb109fe7771b7e878c658805699455ea"
+    "contentHash": "71cbd5c954ab002b701b6ef4470054678d806c23"
   },
   "withdrawal.html": {
     "status": "reviewed",
