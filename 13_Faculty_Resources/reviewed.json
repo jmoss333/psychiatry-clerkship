@@ -1306,13 +1306,13 @@
     "contentHash": "c2c01ed9241fdb6c2daa1b5b41339655d624bb50"
   },
   "rp-post-event-huddle.html": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-09-21",
-    "by": "Joshua Moss, MD",
-    "contentHash": "2492ec1251573fceca52bfd4419f8928c4d62a33"
+    "reason": "Event 2 (a discharge whose follow-up never reached the patient) added to the attested V1 tool; its event text, twelve debriefs and boundary wording await faculty attestation. Event 1 attested 2026-09-04.",
+    "at": "2026-09-05",
+    "by": "Pending faculty review"
   }
 }
