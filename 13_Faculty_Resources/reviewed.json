@@ -508,9 +508,9 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-07-03",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
-    "contentHash": "a346776a85111aa9cff259d75e2dd0e029929128"
+    "contentHash": "b3b10db05db142b14bad904f7c76c47639d38901"
   },
   "agitation.md": {
     "status": "reviewed",
