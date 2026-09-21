@@ -1105,9 +1105,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-09",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
-    "contentHash": "e52ec10f47bdeb7876c0188e21b78bb3f762635a"
+    "contentHash": "b06316268cc8b4f6f96e7ced9f1ee1c0acb0f347"
   },
   "diagnostic-reasoning.html": {
     "status": "reviewed",
