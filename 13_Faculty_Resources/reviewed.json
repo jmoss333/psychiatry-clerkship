@@ -1289,10 +1289,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-08-23",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
     "note": "AI-drafted, faculty-reviewed. Attested 2026-08-23 against 20ea0a29ce; citations completed the 2026-08-21 canonical verification pass.",
-    "contentHash": "5f019911ec4ec8d5c9f689138883482b19213120"
+    "contentHash": "574b52916239972ee14bd26a89deb56a8b3d4302"
   },
   "therapy_reading_room.md": {
     "status": "reviewed",
