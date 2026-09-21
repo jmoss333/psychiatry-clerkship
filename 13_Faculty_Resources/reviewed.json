@@ -1151,15 +1151,15 @@
     "contentHash": "3c15b00743d615e40ba0a89f21ebc80c087ab35b"
   },
   "rp-brief-psych.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "local-policy",
       "level": "high"
     },
-    "reason": "Draft resident tool: some institution-specific fields still show placeholder text pending faculty completion and review.",
-    "at": "2026-07-07",
-    "by": "Pending faculty review",
-    "note": "Resident prototype ships with draft-pending-attestation pack and unresolved LOCAL_POLICY tokens."
+    "at": "2026-09-21",
+    "by": "Joshua Moss, MD",
+    "note": "Resident prototype ships with draft-pending-attestation pack and unresolved LOCAL_POLICY tokens.",
+    "contentHash": "cf5cee8ed779dedd61b4e55b9916a2f159ad42b5"
   },
   "collateral_workflow.md": {
     "status": "reviewed",
