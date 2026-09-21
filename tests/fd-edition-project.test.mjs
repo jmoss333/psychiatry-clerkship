@@ -155,7 +155,7 @@ for (const audience of ['ms3','resident']) {
     assert.equal(render.kit(projected.index),render.kit(before));
     const week = audience === 'ms3' ? 1 : 4;
     const weekly = render.kit(projected.index,{week,kitSection:'week'});
-    assert.match(weekly,/<option value="week" selected>This week · 1<\/option>/);
+    assert.match(weekly,/data-fd-kit-section="week"[^>]*aria-pressed="true"[^>]*><span>This week<\/span><span class="fd-kit__index-count">1<\/span>/);
     assert.equal((weekly.match(/data-fd-open="library\/example"/g)||[]).length,1);
     assert.doesNotMatch(render.kit(before,{week,kitSection:'week'}),/value="week"/,
       'weekly readings follow the edition placements, not the canonical Path');

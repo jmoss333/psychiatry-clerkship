@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
+import { essentialsResourceRefs, essentialsResources } from './essentials-inventory.js';
 import {
   ROTATION_CURATOR_PATH,
   ROTATION_EDITION_AFFIRMATIONS,
@@ -739,9 +740,9 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
   await expect(page.locator('.fd-library')).toBeVisible();
   // A4: the real Curator-generated edition opens the trainee Library at The Essentials.
   await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
-  await expect(page.locator('.fd-kit [data-fd-open]')).toHaveCount(audience === 'ms3' ? 30 : 35);
+  await expect(essentialsResources(page)).toHaveCount(audience === 'ms3' ? 30 : 35);
   const essentials = JSON.parse(readFileSync(new URL('../../curriculum.json', import.meta.url), 'utf8')).essentials;
-  expect((await page.locator('.fd-kit [data-fd-open]').evaluateAll(nodes => nodes.map(n => n.dataset.fdOpen))).sort())
+  expect((await essentialsResourceRefs(page)).sort())
     .toEqual(essentials[audience === 'ms3' ? 'ms3' : 'resident'].flatMap(column => column.refs).sort());
   await expect(page.locator('[data-fd-tab="library"]')).toHaveText('The Essentials');
   await keyboardActivate(page.locator('[data-fd-library-view="full"]'));

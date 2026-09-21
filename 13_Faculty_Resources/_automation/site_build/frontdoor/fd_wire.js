@@ -3,8 +3,8 @@
    pure; browser effects live in fdWire and fdOpenResource behind explicit options so the same
    decisions can be tested without a DOM. */
 
-/* Every attribute the controller gives a meaning to. The exam-date input and section select
-   commit on change and are deliberately absent from FD_ACTION_SELECTOR below. */
+/* Every attribute the controller gives a meaning to. The exam-date input commits on change and
+   is deliberately absent from FD_ACTION_SELECTOR below. */
 var FD_HANDLED_ATTRS=[
   'data-fd-open','data-fd-sheet','data-fd-safety','data-fd-toggle','data-fd-tab',
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
@@ -12,7 +12,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-theme','data-fd-settings','data-fd-analytics','data-fd-exam-date',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
-  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section'
+  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section','data-fd-kit-tool'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -23,6 +23,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-tab':'open top-level tab',
   'data-fd-library-view':'choose Library view',
   'data-fd-kit-section':'filter Essentials sections',
+  'data-fd-kit-tool':'preview an Essentials tool',
   'data-fd-week':'select setup week',
   'data-fd-view-week':'preview path week',
   'data-fd-setweek':'adopt previewed week',
@@ -411,6 +412,9 @@ function fdDispatch(attrs, context, state){
 
   if(fdOwn(a,'data-fd-kit-section')){
     return {patch:{kitSection:String(a['data-fd-kit-section']||'all')},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-kit-tool')){
+    return {patch:{kitToolPreview:String(a['data-fd-kit-tool']||'')},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-library-view')){
     var view=String(a['data-fd-library-view']||'');
@@ -814,7 +818,7 @@ function fdTrapFocus(event, dialog){
    opens the native picker and -- the attribute being valueless in the markup -- dispatches an
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
-var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],'+
+var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],'+
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
@@ -1016,7 +1020,7 @@ function fdWire(root, initialState, opts){
     return raw||'';
   }
   function baseChanged(before, after){
-    var keys=['openId','tab','screen','libraryView','kitSection'];
+    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview'];
     for(var i=0;i<keys.length;i++){
       if(baseValue(before,keys[i])!==baseValue(after,keys[i])) return true;
     }
@@ -1343,7 +1347,11 @@ function fdWire(root, initialState, opts){
         }
       }catch(_){}
     }
-    fdSave(state);
+    /* A section-only filter belongs just to this Essentials visit. Other navigation patches also
+       reset kitSection to All; those still carry durable route state and must be saved normally. */
+    var kitOnly=fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview');
+    for(var saveKey in patch) if(fdOwn(patch,saveKey)&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview') kitOnly=false;
+    if(!kitOnly) fdSave(state);
     if(!fromHistory){
       var pushed=routeTo(result.route,result.history==='replace');
       if(!pushed&&beforeHistory!==historyValue()) replaceHistorySnapshot();
@@ -1352,6 +1360,12 @@ function fdWire(root, initialState, opts){
     else renderTransient(state,detail);
     fdApplyEffect(result.effect,fromHistory,generation);
     focusPostTransition(before,result,changedBase);
+    /* The Essentials rail rebuilds with the filtered results. Keep keyboard focus on the exact
+       section button the learner chose, which also scrolls a clipped phone rail into view. */
+    if((fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview'))&&!afterOverlay&&!beforeHadOverlay){
+      var rebuiltFilter=equivalentControl(invoker,root);
+      if(rebuiltFilter&&rebuiltFilter.focus) try{rebuiltFilter.focus();}catch(_){}
+    }
     if(before.openId&&!state.openId) restoreOrigin(before);
     if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
@@ -1400,14 +1414,14 @@ function fdWire(root, initialState, opts){
     if(event.preventDefault) event.preventDefault();
     apply(fdDispatch(attrs,context({inSheet:!!state.sheet}),state),target,false);
   }
-  /* Chromium can focus a partly visible button in the native details tool strip without
+  /* Chromium can focus a partly visible button in either horizontal Essentials strip without
      scrolling it fully into view. Move only that strip, preserving the page and route. */
   function focusHandler(event){
     if(destroyed||!startupCommitted||previewActive()) return;
     var target=event&&event.target;
-    var control=target&&target.closest?target.closest('.fd-kit__tool-list [data-fd-open]'):null;
+    var control=target&&target.closest?target.closest('.fd-kit__tool-tabs [data-fd-kit-tool],.fd-kit__index-track [data-fd-kit-section]'):null;
     if(!control) return;
-    var strip=control.closest('.fd-kit__tool-list');
+    var strip=control.closest('.fd-kit__tool-tabs,.fd-kit__index-track');
     if(!strip||!strip.getBoundingClientRect||!control.getBoundingClientRect) return;
     var frame=strip.getBoundingClientRect(), box=control.getBoundingClientRect();
     var style=win&&win.getComputedStyle?win.getComputedStyle(strip):null;
@@ -1477,23 +1491,12 @@ function fdWire(root, initialState, opts){
     if(destroyed) return;
     var target=event&&event.target;
     if(!target||!target.hasAttribute) return;
-    var kitChange=target.hasAttribute('data-fd-kit-section');
-    if(!kitChange&&!target.hasAttribute('data-fd-exam-date')) return;
+    if(!target.hasAttribute('data-fd-exam-date')) return;
     /* No preventDefault() on the pre-commit bail, unlike the click and key handlers: a change
        event is not cancelable, so calling it would only look like a guard. Dropping the write is
        the guard, and the field keeps showing what the learner typed either way. */
     if(!startupCommitted) return;
     if(previewActive()){ lockPreview(); return; }
-    if(kitChange){
-      /* The selection belongs only to this visit: no save, route, or history snapshot. */
-      var before=fdClone(state);
-      var selection=fdDispatch({'data-fd-kit-section':String(target.value||'all')},context(),state);
-      state.kitSection=selection.patch.kitSection;
-      render(state,absorbStaleBase(transitionDetail(before,selection.patch,null,true)));
-      var select=root.querySelector('[data-fd-kit-section]');
-      if(select&&select.focus) select.focus();
-      return;
-    }
     var result=fdDispatch(
       {'data-fd-exam-date':String(target.value||'')},context(),state
     );
@@ -1508,6 +1511,21 @@ function fdWire(root, initialState, opts){
     if(externalModalOpen()) return;
     var d=dialog();
     if(d&&fdTrapFocus(event,d)) return;
+    var toolTab=event.target&&event.target.closest?event.target.closest('[data-fd-kit-tool]'):null;
+    if(toolTab&&(event.key==='ArrowRight'||event.key==='ArrowDown'||event.key==='ArrowLeft'||event.key==='ArrowUp'||event.key==='Home'||event.key==='End')){
+      var toolTabs=root&&root.querySelectorAll?root.querySelectorAll('[data-fd-kit-tool]'):[], current=-1, ti;
+      for(ti=0;ti<toolTabs.length;ti++) if(toolTabs[ti]===toolTab) current=ti;
+      if(current>=0&&toolTabs.length){
+        var next=current;
+        if(event.key==='Home') next=0;
+        else if(event.key==='End') next=toolTabs.length-1;
+        else if(event.key==='ArrowRight'||event.key==='ArrowDown') next=(current+1)%toolTabs.length;
+        else next=(current+toolTabs.length-1)%toolTabs.length;
+        if(event.preventDefault) event.preventDefault();
+        apply(fdDispatch({'data-fd-kit-tool':toolTabs[next].getAttribute('data-fd-kit-tool')},context(),state),toolTabs[next],false);
+      }
+      return;
+    }
     if(event.key==='Escape'&&(state.searchOpen||state.sheet)){
       if(event.preventDefault) event.preventDefault();
       apply(fdDispatch({close:true},context(),state),event.target,false);

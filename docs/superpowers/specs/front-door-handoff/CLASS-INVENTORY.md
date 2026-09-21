@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(324 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
+(330 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -316,8 +316,10 @@ this subtree:
 ```
 .fd-library.fd-kit
   .fd-library__head
-  .fd-kit__filter
-    label + select[data-fd-kit-section]   (native section picker)
+  nav.fd-kit__index                      (scrollable section index)
+    .fd-kit__index-track
+      button.fd-kit__index-item[data-fd-kit-section] ×N
+        .fd-kit__index-count
   .fd-kit__review
     details / summary                    (native review explanation)
   .fd-kit__layout
@@ -326,16 +328,20 @@ this subtree:
         summary
         .fd-kit__reading <button> ×N
           .fd-kit__title / .fd-kit__pending / .fd-kit__summary / .fd-kit__minutes
-    aside.fd-kit__tools                  (tool rail)
+    aside.fd-kit__tools                  (tool preview rail)
       details.fd-kit__group.fd-kit__tool-group
         summary
-        .fd-kit__tool-list
-          .fd-collink <button> ×N
+        .fd-kit__tool-switcher
+          .fd-kit__tool-tabs [role=tablist]
+            .fd-kit__tool-tab <button role=tab> ×N
+          .fd-kit__tool-preview [role=tabpanel]
+            h3 / p / .fd-btn[data-fd-open]
 ```
 
 At 1000px and wider, `.fd-kit__layout` is a 3:1 readings/tool-rail grid. From 641–999px the
 readings and tools stack in document order. At 640px and narrower, the tool rail moves above the
-readings and `.fd-kit__tool-list` becomes a horizontally scrolling row. The section picker and
+readings and `.fd-kit__tool-tabs` becomes a horizontally scrolling row above its shared preview pane. Arrow
+keys move the selected tool tab; only the preview pane's button opens a tool. The section picker and
 both group types remain native `select`/`details` controls at every width.
 
 | Class | Notes |

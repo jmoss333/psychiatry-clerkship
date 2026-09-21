@@ -581,7 +581,10 @@ test('fdWire reports a partial window registration failure and unwinds every ins
 function actionTarget(attrs, extra = {}) {
   return {
     tagName: 'BUTTON', isContentEditable: false, isConnected: true,
-    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-analytics],[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
+    closest(selector) {
+      if(selector==='[data-fd-kit-tool]'&&Object.hasOwn(attrs,'data-fd-kit-tool')) return this;
+      return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-analytics],[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null;
+    },
     hasAttribute(name) { return Object.hasOwn(attrs, name); },
     getAttribute(name) { return Object.hasOwn(attrs, name) ? attrs[name] : null; },
     focus() { this.focused = (this.focused || 0) + 1; },
@@ -3051,16 +3054,16 @@ test('plain Today Progress keeps its existing route while Path keeps its return 
 });
 
 
-test('Essentials section change rerenders and focuses the select without writing storage or history', () => {
+test('Essentials section button rerenders and focuses its rebuilt rail control without writing storage or history', () => {
   const storage=memStorage(), local=make(storage), routes=[], renders=[], focused=[];
-  const select={focus(){focused.push(true);}};
+  const fresh={focus(){focused.push(true);}};
   const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials'}, {
     F:local,route:(...a)=>routes.push(a),render:(...a)=>renders.push(a),
-    querySelector:sel=>sel==='[data-fd-kit-section]'?select:null
+    querySelector:sel=>sel==='[data-fd-kit-section="tools"]'?fresh:null
   });
   let writes=0; storage.setItem=()=>{writes++;}; storage.removeItem=()=>{writes++;};
   const before=storage.dump(); routes.length=0; renders.length=0;
-  h.rootHandlers.change({target:{hasAttribute:k=>k==='data-fd-kit-section',value:'tools'}});
+  h.rootHandlers.click({target:actionTarget({'data-fd-kit-section':'tools'}),preventDefault(){}});
   assert.equal(h.controller.getState().kitSection,'tools');
   assert.equal(renders.length,1); assert.equal(renders[0][1].surfaces.base,true);
   assert.equal(focused.length,1); assert.equal(writes,0);
@@ -3072,17 +3075,52 @@ test('Essentials section change rerenders and focuses the select without writing
   assert.equal(local.fdResolveState('/?tab=library&kitSection=tools',filtered).kitSection,'all');
 });
 
-test('Essentials select respects startup and faculty preview guards', () => {
+test('Essentials section rail respects startup and faculty preview guards', () => {
   for(const options of [{commitStartup:false},{facultyPreview:()=>true}]){
     const storage=memStorage(), renders=[];
     const h=fakeHarness({...roleContext,screen:'app',tab:'library',kitSection:'all'}, {
       F:make(storage),render:(...a)=>renders.push(a),...options
     });
     const before=storage.dump(); renders.length=0;
-    h.rootHandlers.change({target:{hasAttribute:k=>k==='data-fd-kit-section',value:'tools'}});
+    h.rootHandlers.click({target:actionTarget({'data-fd-kit-section':'tools'}),preventDefault(){}});
     assert.equal(h.controller.getState().kitSection,'all'); assert.equal(renders.length,0);
     assert.deepEqual(storage.dump(),before);
   }
+});
+
+test('Essentials tool preview selection rerenders and focuses its rebuilt card without persistence or routing', () => {
+  const storage=memStorage(), local=make(storage), routes=[], renders=[], focused=[];
+  const fresh={focus(){focused.push(true);}};
+  const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials'}, {
+    F:local,route:(...args)=>routes.push(args),render:(...args)=>renders.push(args),
+    querySelector:selector=>selector==='[data-fd-kit-tool="second.html"]'?fresh:null
+  });
+  let writes=0; storage.setItem=()=>{writes++;}; storage.removeItem=()=>{writes++;};
+  const before=storage.dump(); routes.length=0; renders.length=0;
+  h.rootHandlers.click({target:actionTarget({'data-fd-kit-tool':'second.html'}),preventDefault(){}});
+  assert.equal(h.controller.getState().kitToolPreview,'second.html');
+  assert.equal(renders.length,1); assert.equal(renders[0][1].surfaces.base,true);
+  assert.equal(focused.length,1); assert.equal(writes,0);
+  assert.deepEqual(storage.dump(),before); assert.deepEqual(routes,[]);
+});
+
+test('Essentials tool preview tabs move with arrow, Home, and End keys', () => {
+  const local=make(memStorage()), renders=[], focused=[];
+  const refs=['first.html','second.html','third.html'];
+  const makeTab=ref=>actionTarget({'data-fd-kit-tool':ref},{focus(){focused.push(ref);}});
+  let liveTabs=refs.map(makeTab);
+  const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials'}, {
+    F:local,render:(...args)=>{renders.push(args);liveTabs=refs.map(makeTab);},
+    querySelector:selector=>liveTabs.find(tab=>selector===`[data-fd-kit-tool="${tab.getAttribute('data-fd-kit-tool')}"]`)||null,
+    querySelectorAll:selector=>selector==='[data-fd-kit-tool]'?liveTabs:[]
+  });
+  const press=(key,index)=>h.windowHandlers.keydown({key,target:liveTabs[index],preventDefault(){}});
+  press('ArrowRight',0); assert.equal(h.controller.getState().kitToolPreview,'second.html');
+  press('ArrowLeft',1); assert.equal(h.controller.getState().kitToolPreview,'first.html');
+  press('End',0); assert.equal(h.controller.getState().kitToolPreview,'third.html');
+  press('Home',2); assert.equal(h.controller.getState().kitToolPreview,'first.html');
+  assert.deepEqual(focused,['second.html','first.html','third.html','first.html']);
+  assert.equal(renders.length,4);
 });
 
 
@@ -3098,7 +3136,7 @@ test('explicit Essentials revisit rerenders even when All was already selected',
   assert.equal(renders.length,2);
 });
 
-test('Essentials tool focus reveals both clipped edges without route, state, storage, or page scrolling', () => {
+test('Essentials horizontal controls reveal both clipped edges without route, state, storage, or page scrolling', () => {
   const storage=memStorage(), routes=[], scrolls=[];
   const h=fakeHarness({...roleContext,screen:'app',tab:'library'}, {
     F:make(storage),route:(...args)=>routes.push(args),scrollTo:(...args)=>scrolls.push(args)
@@ -3106,7 +3144,7 @@ test('Essentials tool focus reveals both clipped edges without route, state, sto
   h.fakeWindow.getComputedStyle=node=>node===strip ? {paddingLeft:'6px',paddingRight:'6px'} : {outlineWidth:'2px',outlineOffset:'2px'};
   const strip={scrollLeft:0,clientLeft:0,clientWidth:362,getBoundingClientRect:()=>({left:14,right:376})};
   let bounds={left:308,right:588};
-  const target={closest:selector=>selector==='.fd-kit__tool-list [data-fd-open]'?target:strip,getBoundingClientRect:()=>bounds};
+  const target={closest:selector=>selector==='.fd-kit__tool-tabs [data-fd-kit-tool],.fd-kit__index-track [data-fd-kit-section]'?target:strip,getBoundingClientRect:()=>bounds};
   const state=JSON.stringify(h.controller.getState()), saved=storage.dump(); routes.length=0;
   assert.equal(typeof h.rootHandlers.focusin,'function');
   h.rootHandlers.focusin({target}); assert.equal(strip.scrollLeft,218);
