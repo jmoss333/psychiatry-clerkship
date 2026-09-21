@@ -608,9 +608,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-07-03",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
-    "contentHash": "a7c975e48454028a9d9b99f4dfd6beac32ff4e1b"
+    "contentHash": "e04a13137e2bf27906fb85ea20ec44b147684072"
   },
   "ethics_legal.md": {
     "status": "reviewed",
