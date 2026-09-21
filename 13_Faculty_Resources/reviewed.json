@@ -1300,10 +1300,10 @@
       "kind": "clinical",
       "level": "low"
     },
-    "at": "2026-08-23",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
     "note": "AI-drafted annotations, faculty-reviewed. Attested 2026-08-23 against 20ea0a29ce; every identifier resolved and retraction-checked in the 2026-08-21 canonical pass.",
-    "contentHash": "7a820bd526a268ba630272f281bc1629e03d52bc"
+    "contentHash": "c2c01ed9241fdb6c2daa1b5b41339655d624bb50"
   },
   "rp-post-event-huddle.html": {
     "status": "pending",
