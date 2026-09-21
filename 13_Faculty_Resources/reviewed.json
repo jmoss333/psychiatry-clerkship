@@ -356,9 +356,9 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-06-30",
+    "at": "2026-09-21",
     "by": "Joshua Moss, MD",
-    "contentHash": "9e84bce53a7fc876ebf629e42e5280b85d79724a"
+    "contentHash": "a940127ede86400c61106e6c5091f61f8d0e2054"
   },
   "screeners.html": {
     "status": "reviewed",
