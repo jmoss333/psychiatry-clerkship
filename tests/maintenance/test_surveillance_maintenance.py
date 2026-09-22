@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -110,26 +111,42 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
         path.write_text(json.dumps([finding]), encoding="utf-8")
         return path
 
-    def run_sync(self, *, findings, checked_sources, out_dir, job):
+    def surveillance_sandbox(self):
+        """A copy of the surveillance tree whose lib_surveillance derives its own history/.
+
+        A test that omits --out-dir is asking where the default points, so it must not point
+        into the repository. Copying is what relocates it: Python realpath-resolves
+        sys.path[0], so a symlinked bin/ would still import the repository's lib_surveillance
+        and write the repository's history/ -- passing while dirtying the tree.
+        """
+        sandbox = self.temp_dir / "surveillance"
+        sandbox.mkdir()
+        shutil.copytree(BIN, sandbox / "bin", ignore=shutil.ignore_patterns("__pycache__"))
+        shutil.copytree(SURV / "config", sandbox / "config")
+        return sandbox
+
+    def run_sync(self, *, findings, checked_sources, out_dir, job, bin_dir=BIN):
+        """out_dir=None omits the flag -- the shape every scheduled workflow passes."""
         findings_path = self.temp_dir / "findings.json"
         findings_path.write_text(json.dumps(findings), encoding="utf-8")
         issues_out = self.temp_dir / "issue-state.json"
+        command = [
+            sys.executable,
+            str(bin_dir / "sync_findings.py"),
+            "--findings",
+            str(findings_path),
+            "--job",
+            job,
+            "--checked-sources",
+            str(checked_sources),
+            "--issues-out",
+            str(issues_out),
+            "--dry-run",
+        ]
+        if out_dir is not None:
+            command += ["--out-dir", str(out_dir)]
         return subprocess.run(
-            [
-                sys.executable,
-                str(BIN / "sync_findings.py"),
-                "--findings",
-                str(findings_path),
-                "--job",
-                job,
-                "--checked-sources",
-                str(checked_sources),
-                "--issues-out",
-                str(issues_out),
-                "--dry-run",
-                "--out-dir",
-                str(out_dir),
-            ],
+            command,
             cwd=ROOT,
             text=True,
             capture_output=True,
@@ -212,6 +229,36 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
                 f"{path.name} passes --out-dir; the production default is no longer exercised",
             )
         self.assertEqual(len(callers), 4, f"expected 4 surveillance callers, got {callers}")
+
+    def test_sync_completes_end_to_end_on_the_production_flag_set(self):
+        """The two pins above read the parsed value and the workflow files; neither RUNS the
+        line that crashed. #711's os.makedirs(args.out_dir) was reached only after the issues
+        had been created, so the failure was a partial completion, and a default that parses
+        correctly but resolves somewhere unwritable would still lose every report.
+
+        This one executes the whole production flag set and checks where the output landed.
+        --dry-run is the single addition, to stay off the network; the absence of --out-dir is
+        the variable under test. Break it by restoring the undefaulted add_argument, or by
+        pointing the default anywhere but lib_surveillance's own history/.
+        """
+        sandbox = self.surveillance_sandbox()
+        checked = self.temp_dir / "checked.json"
+        checked.write_text('["apa-practice-guidelines"]', encoding="utf-8")
+
+        result = self.run_sync(
+            findings=[],
+            checked_sources=checked,
+            out_dir=None,
+            job="citation-monitor",
+            bin_dir=sandbox / "bin",
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        history = sandbox / "history"
+        snapshot = history / "issue_snapshot.json"
+        self.assertTrue(snapshot.is_file(), f"no issue_snapshot.json under {history}")
+        self.assertEqual(json.loads(snapshot.read_text(encoding="utf-8"))["schemaVersion"], 1)
+        self.assertTrue((history / "last_run.json").is_file())
 
     def test_checked_source_contract_rejects_malformed_duplicate_and_blank_values(self):
         invalid_values = (
