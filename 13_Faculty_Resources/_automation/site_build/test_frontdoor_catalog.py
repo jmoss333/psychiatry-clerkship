@@ -58,9 +58,40 @@ def _catalog(refs, governance_by_ref=None):
     ]}]
 
 
+def _app_pathway():
+    return {
+        "intro": "Choose the starting route that fits what you want to revisit.",
+        "bridges": {
+            "pa": {
+                "name": "PA psychiatry bridge", "summary": "First route",
+                "refs": ["shared-%02d.md" % number for number in range(1, 9)],
+                "selfCheck": {"prompt": "Choose a private next step.",
+                              "actions": ["revisit", "supervisor", "another"]},
+            },
+            "pmhnp": {
+                "name": "PMHNP medical-systems bridge", "summary": "Second route",
+                "refs": ["shared-%02d.md" % number for number in range(9, 17)],
+                "selfCheck": {"prompt": "Choose a private next step.",
+                              "actions": ["revisit", "supervisor", "another"]},
+            },
+        },
+        "activities": [
+            {"id": activity_id, "name": name, "purpose": "Prepare for supervision.",
+             "refs": ["shared-%02d.md" % number],
+             "actions": ["prepare", "rehearse", "observe"]}
+            for activity_id, name, number in (
+                ("initial-evaluation", "Initial psychiatric evaluation and presentation", 1),
+                ("medication-follow-through", "Medication plan and follow-through", 2),
+                ("collateral-transition", "Collateral and safe transition", 3),
+            )
+        ],
+    }
+
+
 def _curriculum():
     shared = ["shared-%02d.md" % number for number in range(1, 82)]
     return {
+        "appPathway": _app_pathway(),
         "learningPaths": {
             "ms3": {"id": "ms3-six-week", "weeks": [
                 {"n": n, "title": "M%d" % n, "theme": "MT%d" % n,
@@ -265,6 +296,17 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertEqual(ms3["roles"], self.curriculum["roles"]["ms3"])
         self.assertEqual(resident["roles"], self.curriculum["roles"]["resident"])
         self.assertNotEqual(ms3["roles"], resident["roles"])
+        self.assertNotIn("appPathway", ms3["curriculum"])
+        self.assertEqual(resident["curriculum"]["appPathway"], self.curriculum["appPathway"])
+        app_refs = {
+            ref
+            for bridge in resident["curriculum"]["appPathway"]["bridges"].values()
+            for ref in bridge["refs"]
+        }
+        manifest_refs = {
+            entry[1] for group in resident["manifest"].values() for entry in group
+        }
+        self.assertTrue(app_refs.issubset(manifest_refs))
         self.assertTrue(all(isinstance(ref, str)
                             for column in resident["curriculum"]["libraryColumns"]
                             for ref in column["refs"]))

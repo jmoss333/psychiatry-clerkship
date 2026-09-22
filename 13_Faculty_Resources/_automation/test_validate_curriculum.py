@@ -201,7 +201,37 @@ def _shipped_with(target, **changes):
 
 
 def _curriculum(items):
+    resident_refs = [
+        page["slug"] for page in _shipped_document()["pages"] if "res" in page["sites"]
+    ][:16]
     return {
+        "appPathway": {
+            "intro": "Choose a route.",
+            "bridges": {
+                "pa": {
+                    "name": "PA psychiatry bridge", "summary": "First route",
+                    "refs": resident_refs[:8],
+                    "selfCheck": {"prompt": "Choose a private next step.",
+                                  "actions": ["revisit", "supervisor", "another"]},
+                },
+                "pmhnp": {
+                    "name": "PMHNP medical-systems bridge", "summary": "Second route",
+                    "refs": resident_refs[8:16],
+                    "selfCheck": {"prompt": "Choose a private next step.",
+                                  "actions": ["revisit", "supervisor", "another"]},
+                },
+            },
+            "activities": [
+                {"id": activity_id, "name": name, "purpose": "Prepare for supervision.",
+                 "refs": [resident_refs[index]],
+                 "actions": ["prepare", "rehearse", "observe"]}
+                for index, (activity_id, name) in enumerate((
+                    ("initial-evaluation", "Initial psychiatric evaluation and presentation"),
+                    ("medication-follow-through", "Medication plan and follow-through"),
+                    ("collateral-transition", "Collateral and safe transition"),
+                ))
+            ],
+        },
         "learningPaths": {
             "ms3": {"id": "ms3-six-week", "weeks": _weeks(6, items, landing_refs=True)},
             "resident": {"id": "resident-four-week", "weeks": _weeks(4)},
@@ -229,7 +259,10 @@ def _curriculum(items):
             {"ref": ref, "sub": "Protocol " + str(index + 1), "triggers": ["safety"]}
             for index, ref in enumerate(SAFETY_REFS)
         ],
-        "roles": {"ms3": [], "resident": []},
+        "roles": {
+            "ms3": [],
+            "resident": [{"id": "app", "name": "APP", "desc": "Preview role"}],
+        },
         "synonyms": {},
         "siteLibrary": {
             "ms3": {"additions": [], "exclusions": []},
@@ -246,6 +279,33 @@ def _curriculum(items):
 
 
 class ValidateCurriculumTest(unittest.TestCase):
+    def test_app_pathway_requires_two_eight_resource_bridges_and_three_activities(self):
+        mutations = (
+            lambda pathway: pathway["bridges"]["pa"]["refs"].append(
+                pathway["bridges"]["pa"]["refs"][0]),
+            lambda pathway: pathway["bridges"]["pa"]["refs"].__setitem__(
+                0, "orientation-video.html"),
+            lambda pathway: pathway["activities"][0].__setitem__(
+                "actions", ["prepare", "score", "observe"]),
+        )
+        for mutate in mutations:
+            with self.subTest(mutate=mutate), tempfile.TemporaryDirectory() as tmp:
+                curriculum = _curriculum([])
+                mutate(curriculum["appPathway"])
+                c, root = _write(tmp, curriculum)
+                result = _run(c, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("appPathway", result.stdout)
+
+    def test_app_pathway_is_required(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            curriculum = _curriculum([])
+            del curriculum["appPathway"]
+            c, root = _write(tmp, curriculum)
+            result = _run(c, root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("appPathway", result.stdout)
+
     def test_search_aliases_reject_unknown_refs_empty_values_and_duplicate_vocabulary(self):
         for aliases in ({"ghost.md": ["ghost"]}, {"mse.html": []},
                         {"mse.html": ["mse", "mse"]}, {"mse.html": [" MSE "]}):
@@ -1208,7 +1268,8 @@ class RolesTest(unittest.TestCase):
                      {"id": "staff", "name": "Nursing · SW · family",
                       "desc": "Unit staff and families", "hint": ""}],
                 resident=[{"id": "pgy1", "name": "PGY-1",
-                           "desc": "First year on inpatient psychiatry", "hint": "most common"}]))
+                           "desc": "First year on inpatient psychiatry", "hint": "most common"},
+                          {"id": "app", "name": "APP", "desc": "Preview role", "hint": ""}]))
             r = _run(c, root)
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
 
