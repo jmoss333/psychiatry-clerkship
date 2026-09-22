@@ -1355,6 +1355,29 @@ function fdWire(root, initialState, opts){
       if(heading&&heading.focus) try{heading.focus({preventScroll:true});}catch(_){try{heading.focus();}catch(__){}}
     }
   }
+  /* APP practice repaints its whole visit-only player. Keep keyboard focus at the next step,
+     or on the equivalent rebuilt control, so Tab continues where the learner left off. */
+  function focusAppPractice(invoker,before){
+    if(!invoker||!invoker.hasAttribute||!root||!root.querySelector) return;
+    var selector='',target=null,pack,id;
+    if(invoker.hasAttribute('data-fd-app-practice-open')||
+       invoker.hasAttribute('data-fd-app-practice-reset')){
+      selector='[data-fd-app-practice-reveal]';
+    } else if(invoker.hasAttribute('data-fd-app-practice-reveal')){
+      selector='[data-fd-app-practice-classify]';
+    } else if(invoker.hasAttribute('data-fd-app-practice-classify')||
+              invoker.hasAttribute('data-fd-app-practice-question')){
+      target=equivalentControl(invoker,root);
+    } else if(invoker.hasAttribute('data-fd-app-practice-close')){
+      pack=before.appPractice&&before.appPractice.pack;
+      id=pack&&pack.id;
+      if(typeof id==='string'&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)){
+        selector='[data-fd-app-practice-open="'+id+'"]';
+      }
+    }
+    if(!target&&selector) target=root.querySelector(selector);
+    if(target&&target.focus) try{target.focus();}catch(_){}
+  }
   function apply(result, invoker, fromHistory){
     if(destroyed) return state;
     if(previewActive()&&meaningfulResult(result)){
@@ -1442,6 +1465,9 @@ function fdWire(root, initialState, opts){
     else renderTransient(state,detail);
     fdApplyEffect(result.effect,fromHistory,generation);
     focusPostTransition(before,result,changedBase);
+    if(fdOwn(patch,'appPractice')&&!afterOverlay&&!beforeHadOverlay){
+      focusAppPractice(invoker,before);
+    }
     /* The Essentials rail rebuilds with the filtered results. Keep keyboard focus on the exact
        section button the learner chose, which also scrolls a clipped phone rail into view. */
     if((fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview'))&&!afterOverlay&&!beforeHadOverlay){

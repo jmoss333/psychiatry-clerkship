@@ -320,6 +320,67 @@ test('APP practice actions advance only transient immutable state', () => {
     { role: 'app', appPractice: session }).patch, { appPractice: null });
 });
 
+test('APP practice repaint moves or restores focus within the keyboard sequence', () => {
+  const pack = CUR.appPathway.practicePacks[0];
+  const openSelector = `[data-fd-app-practice-open="${pack.id}"]`;
+  let controls = new Map();
+  let focused = null;
+  function add(attrs) {
+    const node = actionTarget(attrs, { focus() { focused = this; } });
+    for (const [name, value] of Object.entries(attrs)) {
+      controls.set(`[${name}="${value}"]`, node);
+      if (!controls.has(`[${name}]`)) controls.set(`[${name}]`, node);
+    }
+    return node;
+  }
+  function repaint(state) {
+    controls = new Map();
+    add({ 'data-fd-app-practice-open': pack.id });
+    if (!state.appPractice) return;
+    add({ 'data-fd-app-practice-close': '' });
+    if (!state.appPractice.revealed) {
+      add({ 'data-fd-app-practice-reveal': '' });
+      return;
+    }
+    for (const statement of pack.statements) {
+      for (const category of ['still-known', 'changed', 'clarify']) {
+        add({ 'data-fd-app-practice-classify': `${statement.id}:${category}` });
+      }
+    }
+    add({ 'data-fd-app-practice-reset': '' });
+    if (Object.keys(state.appPractice.classifications).length === pack.statements.length) {
+      for (const question of pack.supervisorQuestions) {
+        add({ 'data-fd-app-practice-question': question.id });
+      }
+    }
+  }
+  repaint({});
+  const h = fakeHarness({ role: 'app', screen: 'app', tab: 'today' }, {
+    F, appPracticePacks: CUR.appPathway.practicePacks,
+    querySelector: (selector) => controls.get(selector) || null,
+    renderTransient: (state) => repaint(state),
+  });
+  function activate(selector, expectedFocus) {
+    const target = controls.get(selector);
+    assert.ok(target, `missing ${selector}`);
+    focused = target;
+    h.rootHandlers.click({ target, preventDefault() {} });
+    assert.equal(focused, controls.get(expectedFocus), `focus after ${selector}`);
+  }
+  activate(openSelector, '[data-fd-app-practice-reveal]');
+  activate('[data-fd-app-practice-reveal]', '[data-fd-app-practice-classify]');
+  for (const value of [
+    'review-time:still-known', 'source-status:changed', 'verification-owner:clarify',
+  ]) {
+    const selector = `[data-fd-app-practice-classify="${value}"]`;
+    activate(selector, selector);
+  }
+  activate('[data-fd-app-practice-question="confirm-owner"]',
+    '[data-fd-app-practice-question="confirm-owner"]');
+  activate('[data-fd-app-practice-reset]', '[data-fd-app-practice-reveal]');
+  activate('[data-fd-app-practice-close]', openSelector);
+});
+
 test('APP resource starts reuse the canonical reader route and preserve On shift as origin', () => {
   const result = F.fdDispatch({ 'data-fd-app-start': 'pg_interview.md' }, { search: '' }, {
     role: 'app', tab: 'today', appBridge: 'pa',
@@ -712,6 +773,7 @@ function fakeHarness(initial, options = {}) {
     facultyPreview: options.facultyPreview,
     facultyPreviewLock: options.facultyPreviewLock,
     externalModalOpen: options.externalModalOpen,
+    appPracticePacks: options.appPracticePacks,
     releaseStartupGate: options.releaseStartupGate,
     loadBlock: options.loadBlock,
   });
