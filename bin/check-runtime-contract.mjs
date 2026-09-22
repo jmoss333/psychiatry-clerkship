@@ -40,13 +40,14 @@ function contractAt(root) {
   return value;
 }
 
-function setupNodeVersions(source) {
+function setupActionVersions(source, action, versionPattern) {
   const lines = source.split(/\r?\n/);
   const steps = [];
+  const usesPattern = new RegExp(`uses:\\s*actions\\/${action}@`);
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
-    if (line.trimStart().startsWith('#') || !/uses:\s*actions\/setup-node@/.test(line)) continue;
+    if (line.trimStart().startsWith('#') || !usesPattern.test(line)) continue;
     const usesIndent = line.match(/^\s*/)[0].length;
     const inlineStep = line.match(/^(\s*)-\s+uses:/);
     const stepIndent = inlineStep ? inlineStep[1].length : Math.max(0, usesIndent - 2);
@@ -57,8 +58,8 @@ function setupNodeVersions(source) {
       if (candidate.trimStart().startsWith('#') || candidate.trim() === '') continue;
       const nextStep = candidate.match(/^(\s*)-\s+/);
       if (nextStep && nextStep[1].length <= stepIndent) break;
-      const match = candidate.match(/^\s*node-version:\s*["']?(\d+)["']?\s*(?:#.*)?$/);
-      if (match) versions.push(Number(match[1]));
+      const match = candidate.match(versionPattern);
+      if (match) versions.push(match[1]);
     }
     steps.push(versions);
   }
@@ -66,8 +67,12 @@ function setupNodeVersions(source) {
 }
 
 export function nodeDeclarationErrors(label, source, expectedMajor) {
-  const steps = setupNodeVersions(source);
-  const found = steps.flat();
+  const steps = setupActionVersions(
+    source,
+    'setup-node',
+    /^\s*node-version:\s*["']?(\d+)["']?\s*(?:#.*)?$/,
+  );
+  const found = steps.flat().map(Number);
   const errors = [];
   if (found.length !== steps.length) {
     errors.push(`${label} has ${steps.length} setup-node step(s) but ${found.length} literal node-version declaration(s)`);
@@ -80,6 +85,39 @@ export function nodeDeclarationErrors(label, source, expectedMajor) {
   return errors;
 }
 
+export function pythonDeclarationErrors(label, source, expectedVersion) {
+  const steps = setupActionVersions(
+    source,
+    'setup-python',
+    /^\s*python-version:\s*["']?([0-9]+\.[0-9]+)["']?\s*(?:#.*)?$/,
+  );
+  const found = steps.flat();
+  const errors = [];
+  if (found.length !== steps.length) {
+    errors.push(`${label} has ${steps.length} setup-python step(s) but ${found.length} literal python-version declaration(s)`);
+  } else if (steps.some((versions) => versions.length !== 1)) {
+    errors.push(`${label} must bind exactly one literal python-version to each setup-python step`);
+  }
+  errors.push(...found
+    .filter((version) => version !== expectedVersion)
+    .map((version) => `${label} declares Python ${version}; expected ${expectedVersion}`));
+  return errors;
+}
+
+export function netlifyNodeDeclarationErrors(label, source, expectedMajor) {
+  const found = source.split(/\r?\n/).flatMap((line) => {
+    if (line.trimStart().startsWith('#')) return [];
+    const match = line.match(/^\s*NODE_VERSION\s*=\s*"(\d+)"\s*(?:#.*)?$/);
+    return match ? [Number(match[1])] : [];
+  });
+  if (found.length !== 1) {
+    return [`${label} has ${found.length} active NODE_VERSION declarations; expected exactly 1`];
+  }
+  return found[0] === expectedMajor
+    ? []
+    : [`${label} declares Node ${found[0]}; expected Node ${expectedMajor}`];
+}
+
 export function declaredRuntimeErrors(root = ROOT) {
   const contract = contractAt(root);
   const errors = [];
@@ -89,26 +127,13 @@ export function declaredRuntimeErrors(root = ROOT) {
     const relative = `.github/workflows/${name}`;
     const source = readFileSync(resolve(root, relative), 'utf8');
     errors.push(...nodeDeclarationErrors(relative, source, contract.nodeMajor));
-    const setupPythonCount = (source.match(/uses:\s*actions\/setup-python@/g) || []).length;
-    const pythonVersions = [...source.matchAll(/python-version:\s*["']?([0-9]+\.[0-9]+)/g)].map((match) => match[1]);
-    if (pythonVersions.length !== setupPythonCount) {
-      errors.push(`${relative} has ${setupPythonCount} setup-python step(s) but ${pythonVersions.length} literal python-version declaration(s)`);
-    }
-    for (const version of pythonVersions) {
-      if (version !== contract.pythonMajorMinor) {
-        errors.push(`${relative} declares Python ${version}; expected ${contract.pythonMajorMinor}`);
-      }
-    }
+    errors.push(...pythonDeclarationErrors(relative, source, contract.pythonMajorMinor));
   }
 
   for (const relative of NETLIFY_FILES) {
     const source = readFileSync(resolve(root, relative), 'utf8');
-    const match = source.match(/NODE_VERSION\s*=\s*"(\d+)"/);
     const expected = contract.nodeExceptions[relative] ?? contract.nodeMajor;
-    if (!match) errors.push(`${relative} has no NODE_VERSION`);
-    else if (Number(match[1]) !== expected) {
-      errors.push(`${relative} declares Node ${match[1]}; expected Node ${expected}`);
-    }
+    errors.push(...netlifyNodeDeclarationErrors(relative, source, expected));
   }
 
   const engine = `>=${contract.nodeMajor} <${contract.nodeMajor + 1}`;

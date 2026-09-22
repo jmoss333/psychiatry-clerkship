@@ -6,6 +6,8 @@ import { dirname, resolve } from 'node:path';
 import {
   declaredRuntimeErrors,
   nodeDeclarationErrors,
+  pythonDeclarationErrors,
+  netlifyNodeDeclarationErrors,
   currentRuntimeErrors,
 } from '../bin/check-runtime-contract.mjs';
 
@@ -41,6 +43,64 @@ test('a commented node-version cannot satisfy a setup-node step', () => {
       22,
     ),
     ['fixture.yml has 1 setup-node step(s) but 0 literal node-version declaration(s)'],
+  );
+});
+
+test('a commented python-version cannot satisfy a setup-python step', () => {
+  assert.deepEqual(
+    pythonDeclarationErrors(
+      'fixture.yml',
+      '- uses: actions/setup-python@sha\n  with:\n    # python-version: "3.11"\n',
+      '3.11',
+    ),
+    ['fixture.yml has 1 setup-python step(s) but 0 literal python-version declaration(s)'],
+  );
+});
+
+test('a setup-python step without a literal version fails closed', () => {
+  assert.deepEqual(
+    pythonDeclarationErrors('fixture.yml', '- uses: actions/setup-python@sha\n', '3.11'),
+    ['fixture.yml has 1 setup-python step(s) but 0 literal python-version declaration(s)'],
+  );
+});
+
+test('a wrong Python declaration is a hard mismatch', () => {
+  assert.deepEqual(
+    pythonDeclarationErrors(
+      'fixture.yml',
+      '- uses: actions/setup-python@sha\n  with:\n    python-version: "3.12"\n',
+      '3.11',
+    ),
+    ['fixture.yml declares Python 3.12; expected 3.11'],
+  );
+});
+
+test('duplicate Python declarations fail closed', () => {
+  assert.deepEqual(
+    pythonDeclarationErrors(
+      'fixture.yml',
+      '- uses: actions/setup-python@sha\n  with:\n    python-version: "3.11"\n    python-version: "3.11"\n',
+      '3.11',
+    ),
+    ['fixture.yml has 1 setup-python step(s) but 2 literal python-version declaration(s)'],
+  );
+});
+
+test('commented and missing Netlify Node declarations fail closed', () => {
+  assert.deepEqual(
+    netlifyNodeDeclarationErrors('netlify.toml', '# NODE_VERSION = "22"\n', 22),
+    ['netlify.toml has 0 active NODE_VERSION declarations; expected exactly 1'],
+  );
+});
+
+test('duplicate Netlify Node declarations fail closed', () => {
+  assert.deepEqual(
+    netlifyNodeDeclarationErrors(
+      'netlify.toml',
+      'NODE_VERSION = "22"\nNODE_VERSION = "22"\n',
+      22,
+    ),
+    ['netlify.toml has 2 active NODE_VERSION declarations; expected exactly 1'],
   );
 });
 

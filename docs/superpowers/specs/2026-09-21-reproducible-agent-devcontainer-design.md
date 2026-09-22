@@ -1,7 +1,7 @@
 # Reproducible Agent Dev Container Design
 
 **Date:** 2026-09-21
-**Status:** approved in conversation; implementation not started
+**Status:** approved in conversation; Task 1 implemented, Tasks 2–4 pending
 
 ## Decision
 

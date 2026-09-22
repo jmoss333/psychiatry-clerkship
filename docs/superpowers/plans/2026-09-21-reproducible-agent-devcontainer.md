@@ -94,6 +94,7 @@
 
 **Interfaces:**
 - Produces: `declaredRuntimeErrors(root: string): string[]`
+- Produces: `nodeDeclarationErrors`, `pythonDeclarationErrors`, and `netlifyNodeDeclarationErrors`, each rejecting missing, commented, duplicate, dynamic, or wrong-version declarations.
 - Produces: `currentRuntimeErrors(contract: object, observed: object, expectedPlaywright: string): string[]`
 - Produces: CLI `node bin/check-runtime-contract.mjs [--current]`, exit `0` clean, `1` mismatch, `2` unreadable contract/environment.
 - Consumes: active workflow YAML, Netlify TOML, package manifests, and `runtime_versions.json`.
@@ -232,16 +233,72 @@ function contractAt(root) {
   return value;
 }
 
-export function nodeDeclarationErrors(label, source, expectedMajor, expectedCount) {
-  const found = [...source.matchAll(/node-version:\s*["']?(\d+)/g)].map((match) => Number(match[1]));
+function setupActionVersions(source, action, versionPattern) {
+  const lines = source.split(/\r?\n/);
+  const steps = [];
+  const usesPattern = new RegExp(`uses:\\s*actions\\/${action}@`);
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (line.trimStart().startsWith('#') || !usesPattern.test(line)) continue;
+    const usesIndent = line.match(/^\s*/)[0].length;
+    const inlineStep = line.match(/^(\s*)-\s+uses:/);
+    const stepIndent = inlineStep ? inlineStep[1].length : Math.max(0, usesIndent - 2);
+    const versions = [];
+
+    for (let cursor = index + 1; cursor < lines.length; cursor += 1) {
+      const candidate = lines[cursor];
+      if (candidate.trimStart().startsWith('#') || candidate.trim() === '') continue;
+      const nextStep = candidate.match(/^(\s*)-\s+/);
+      if (nextStep && nextStep[1].length <= stepIndent) break;
+      const match = candidate.match(versionPattern);
+      if (match) versions.push(match[1]);
+    }
+    steps.push(versions);
+  }
+  return steps;
+}
+
+export function nodeDeclarationErrors(label, source, expectedMajor) {
+  const steps = setupActionVersions(source, 'setup-node', /^\s*node-version:\s*["']?(\d+)["']?\s*(?:#.*)?$/);
+  const found = steps.flat().map(Number);
   const errors = [];
-  if (expectedCount !== undefined && found.length !== expectedCount) {
-    errors.push(`${label} has ${expectedCount} setup-node step(s) but ${found.length} literal node-version declaration(s)`);
+  if (found.length !== steps.length) {
+    errors.push(`${label} has ${steps.length} setup-node step(s) but ${found.length} literal node-version declaration(s)`);
+  } else if (steps.some((versions) => versions.length !== 1)) {
+    errors.push(`${label} must bind exactly one literal node-version to each setup-node step`);
   }
   errors.push(...found
     .filter((major) => major !== expectedMajor)
     .map((major) => `${label} declares Node ${major}; expected Node ${expectedMajor}`));
   return errors;
+}
+
+export function pythonDeclarationErrors(label, source, expectedVersion) {
+  const steps = setupActionVersions(source, 'setup-python', /^\s*python-version:\s*["']?([0-9]+\.[0-9]+)["']?\s*(?:#.*)?$/);
+  const found = steps.flat();
+  const errors = [];
+  if (found.length !== steps.length) {
+    errors.push(`${label} has ${steps.length} setup-python step(s) but ${found.length} literal python-version declaration(s)`);
+  } else if (steps.some((versions) => versions.length !== 1)) {
+    errors.push(`${label} must bind exactly one literal python-version to each setup-python step`);
+  }
+  errors.push(...found
+    .filter((version) => version !== expectedVersion)
+    .map((version) => `${label} declares Python ${version}; expected ${expectedVersion}`));
+  return errors;
+}
+
+export function netlifyNodeDeclarationErrors(label, source, expectedMajor) {
+  const found = source.split(/\r?\n/).flatMap((line) => {
+    if (line.trimStart().startsWith('#')) return [];
+    const match = line.match(/^\s*NODE_VERSION\s*=\s*"(\d+)"\s*(?:#.*)?$/);
+    return match ? [Number(match[1])] : [];
+  });
+  if (found.length !== 1) {
+    return [`${label} has ${found.length} active NODE_VERSION declarations; expected exactly 1`];
+  }
+  return found[0] === expectedMajor ? [] : [`${label} declares Node ${found[0]}; expected Node ${expectedMajor}`];
 }
 
 export function declaredRuntimeErrors(root = ROOT) {
@@ -252,28 +309,14 @@ export function declaredRuntimeErrors(root = ROOT) {
   for (const name of readdirSync(workflowDir).filter((value) => /\.ya?ml$/.test(value)).sort()) {
     const relative = `.github/workflows/${name}`;
     const source = readFileSync(resolve(root, relative), 'utf8');
-    const setupNodeCount = (source.match(/uses:\s*actions\/setup-node@/g) || []).length;
-    errors.push(...nodeDeclarationErrors(relative, source, contract.nodeMajor, setupNodeCount));
-    const setupPythonCount = (source.match(/uses:\s*actions\/setup-python@/g) || []).length;
-    const pythonVersions = [...source.matchAll(/python-version:\s*["']?([0-9]+\.[0-9]+)/g)].map((match) => match[1]);
-    if (pythonVersions.length !== setupPythonCount) {
-      errors.push(`${relative} has ${setupPythonCount} setup-python step(s) but ${pythonVersions.length} literal python-version declaration(s)`);
-    }
-    for (const version of pythonVersions) {
-      if (version !== contract.pythonMajorMinor) {
-        errors.push(`${relative} declares Python ${version}; expected ${contract.pythonMajorMinor}`);
-      }
-    }
+    errors.push(...nodeDeclarationErrors(relative, source, contract.nodeMajor));
+    errors.push(...pythonDeclarationErrors(relative, source, contract.pythonMajorMinor));
   }
 
   for (const relative of NETLIFY_FILES) {
     const source = readFileSync(resolve(root, relative), 'utf8');
-    const match = source.match(/NODE_VERSION\s*=\s*"(\d+)"/);
     const expected = contract.nodeExceptions[relative] ?? contract.nodeMajor;
-    if (!match) errors.push(`${relative} has no NODE_VERSION`);
-    else if (Number(match[1]) !== expected) {
-      errors.push(`${relative} declares Node ${match[1]}; expected Node ${expected}`);
-    }
+    errors.push(...netlifyNodeDeclarationErrors(relative, source, expected));
   }
 
   const engine = `>=${contract.nodeMajor} <${contract.nodeMajor + 1}`;
@@ -301,7 +344,9 @@ export function currentRuntimeErrors(contract, observed, expectedPlaywright) {
   if (observed.python !== contract.pythonMajorMinor) {
     errors.push(`current Python is ${observed.python}; expected ${contract.pythonMajorMinor}`);
   }
-  if (Number(observed.bash) < contract.bashMinimumMajor) {
+  if (!/^\d+$/.test(String(observed.bash))) {
+    errors.push(`current Bash is ${observed.bash}; expected an integer major of ${contract.bashMinimumMajor} or later`);
+  } else if (Number(observed.bash) < contract.bashMinimumMajor) {
     errors.push(`current Bash is ${observed.bash}; expected major ${contract.bashMinimumMajor} or later`);
   }
   if (!observed.gitLfs) errors.push('Git LFS is unavailable');
@@ -466,25 +511,9 @@ bash _prototypes/sp-interview/tests/run-all.sh
 
 Expected: all commands exit `0`; `node bin/check-runtime-contract.mjs` reports Node 22 as the declared contract. Do not use `--current` on the host Mac because its host runtime is not the target environment.
 
-- [ ] **Step 10: Run every current Node test surface under Node 22**
+- [ ] **Step 10: Commit the runtime migration candidate**
 
-Use a full local probe clone. Mounting a linked worktree alone leaves its `.git` file pointing at a host path that is absent inside the container, while the root Node suite also shells out to Python validators and therefore needs the repository's locked Python dependencies. LFS smudging is unnecessary for these Node surfaces:
-
-```bash
-repo_root="$(git rev-parse --show-toplevel)"
-probe_dir="$(mktemp -d "$(dirname "$repo_root")/runtime-node22.XXXXXX")"
-GIT_LFS_SKIP_SMUDGE=1 git clone --no-hardlinks . "$probe_dir/repo"
-
-docker run --rm \
-  -v "$probe_dir/repo:/repo" \
-  -w /repo \
-  node:22-bookworm \
-  bash -lc 'export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends python3-venv git-lfs && python3 -m venv /tmp/venv && /tmp/venv/bin/pip install --disable-pip-version-check --requirement requirements.txt --requirement requirements-dev.txt PyYAML==6.0.2 && export PATH="/tmp/venv/bin:$PATH" && npm --prefix metrics ci && npm --prefix metrics test && npm --prefix sp-proxy ci --include=dev && npm --prefix sp-proxy test && npm --prefix sp-preview ci --include=dev && npm --prefix sp-preview test && npm --prefix sp-preview run build && npm --prefix tests/smoke ci && node --test tests/*.test.mjs && node tests/contrast-check.mjs && node --test faculty-console/*.test.mjs && node faculty-console/check_pending_visible.mjs && bash _prototypes/sp-interview/tests/run-all.sh && node bin/redteam-offline.mjs && node bin/redteam-offline.mjs --coverage'
-```
-
-Expected: metrics, proxy, preview, root, faculty-console, Interview Room, contrast, and offline red-team suites pass. The smoke browser itself is installed and exercised in Task 3.
-
-- [ ] **Step 11: Commit the runtime migration**
+The clean-clone proof in Step 11 must be bound to the exact candidate revision, not to the previous commit while Task 1 changes remain only in the working tree:
 
 ```bash
 git add runtime_versions.json bin/check-runtime-contract.mjs tests/runtime-contract.test.mjs \
@@ -507,6 +536,35 @@ git add runtime_versions.json bin/check-runtime-contract.mjs tests/runtime-contr
   13_Faculty_Resources/_automation/maintenance/validate_scheduled_workflows.py
 git commit -m "chore(runtime): standardize supported Node 22"
 ```
+
+- [ ] **Step 11: Run every current Node test surface under Node 22**
+
+Use a full local probe clone. Mounting a linked worktree alone leaves its `.git` file pointing at a host path that is absent inside the container, while the root Node suite also shells out to Python validators and therefore needs the repository's locked Python dependencies. LFS smudging is unnecessary for these Node surfaces:
+
+```bash
+repo_root="$(git rev-parse --show-toplevel)"
+probe_dir="$(mktemp -d "$(dirname "$repo_root")/runtime-node22.XXXXXX")"
+case "$probe_dir" in
+  "$(dirname "$repo_root")"/runtime-node22.*) ;;
+  *) echo "unsafe probe directory: $probe_dir" >&2; exit 2 ;;
+esac
+trap 'chmod -R u+rw "$probe_dir" 2>/dev/null || true; rm -rf -- "$probe_dir"' EXIT
+expected_sha="$(git rev-parse HEAD)"
+GIT_LFS_SKIP_SMUDGE=1 git clone --no-hardlinks . "$probe_dir/repo"
+actual_sha="$(git -C "$probe_dir/repo" rev-parse HEAD)"
+test "$actual_sha" = "$expected_sha"
+printf 'Testing committed revision %s\n' "$actual_sha"
+
+docker run --rm \
+  -v "$probe_dir/repo:/repo" \
+  -w /repo \
+  node:22-bookworm \
+  bash -lc 'export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends python3-venv git-lfs && python3 -m venv /tmp/venv && /tmp/venv/bin/pip install --disable-pip-version-check --requirement requirements.txt --requirement requirements-dev.txt PyYAML==6.0.2 && export PATH="/tmp/venv/bin:$PATH" && npm --prefix metrics ci && npm --prefix metrics test && npm --prefix sp-proxy ci --include=dev && npm --prefix sp-proxy test && npm --prefix sp-preview ci --include=dev && npm --prefix sp-preview test && npm --prefix sp-preview run build && npm --prefix tests/smoke ci && node --test tests/*.test.mjs && node tests/contrast-check.mjs && node --test faculty-console/*.test.mjs && node faculty-console/check_pending_visible.mjs && bash _prototypes/sp-interview/tests/run-all.sh && node bin/redteam-offline.mjs && node bin/redteam-offline.mjs --coverage'
+```
+
+Expected: metrics, proxy, preview, root, faculty-console, Interview Room, contrast, and offline red-team suites pass. The smoke browser itself is installed and exercised in Task 3.
+
+If Step 11 exposes a defect, fix it, rerun Step 9, amend the candidate commit, and recreate the probe clone before rerunning Step 11. Do not reuse proof from a different SHA.
 
 ---
 
