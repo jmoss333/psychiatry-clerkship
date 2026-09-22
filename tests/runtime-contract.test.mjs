@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { tmpdir } from 'node:os';
+import { spawnSync } from 'node:child_process';
 
 import {
   declaredRuntimeErrors,
@@ -141,4 +144,106 @@ test('live version comparison rejects malformed Bash output', () => {
   }, '1.63.0'), [
     'current Bash is not-a-version; expected an integer major of 5 or later',
   ]);
+});
+
+test('devcontainer declares no secret or host-control mounts', () => {
+  const config = JSON.parse(readFileSync(resolve(ROOT, '.devcontainer/devcontainer.json'), 'utf8'));
+  const serialized = JSON.stringify(config);
+  assert.equal(config.remoteUser, 'node');
+  assert.equal(config.postCreateCommand, 'bash .devcontainer/post-create.sh');
+  assert.equal(config.mounts, undefined);
+  assert.doesNotMatch(serialized, /docker\.sock|SSH_AUTH_SOCK|TOKEN|SECRET|PASSWORD|API_KEY/i);
+});
+
+test('container bootstrap installs every locked dependency lane and verifies the live contract', () => {
+  const source = readFileSync(resolve(ROOT, '.devcontainer/post-create.sh'), 'utf8');
+  for (const token of [
+    'requirements.txt',
+    'requirements-dev.txt',
+    'PyYAML==6.0.2',
+    'npm --prefix metrics ci',
+    'npm --prefix sp-proxy ci',
+    'npm --prefix sp-preview ci',
+    'npm --prefix tests/smoke ci',
+    'playwright install chromium',
+    'check_lfs_media.py --worktree-stubs',
+    'SSH_AUTH_SOCK',
+    'credential.helper',
+    'check-runtime-contract.mjs --current',
+  ]) assert.match(source, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+});
+
+test('container image bakes the locked Chromium dependency', () => {
+  const source = readFileSync(resolve(ROOT, '.devcontainer/Dockerfile'), 'utf8');
+  assert.match(source, /COPY tests\/smoke\/package\.json tests\/smoke\/package-lock\.json/);
+  assert.match(source, /PLAYWRIGHT_BROWSERS_PATH=\/ms-playwright/);
+  assert.match(source, /npx playwright install chromium --with-deps/);
+});
+
+test('container verifier composes existing gates and never mutates visual baselines', () => {
+  const source = readFileSync(resolve(ROOT, 'bin/verify-devcontainer.sh'), 'utf8');
+  assert.match(source, /check-runtime-contract\.mjs --current/);
+  assert.match(source, /bash bin\/verify\.sh/);
+  assert.match(source, /bash bin\/verify-smoke\.sh/);
+  assert.doesNotMatch(source, /update-snapshots|update-baselines|test:visual/);
+});
+
+test('container verifier uses the virtualenv created by container bootstrap', () => {
+  const source = readFileSync(resolve(ROOT, 'bin/verify-devcontainer.sh'), 'utf8');
+  assert.match(source, /VIRTUAL_ENV=.*\.venv/);
+  assert.match(source, /PATH=.*VIRTUAL_ENV\/bin/);
+});
+
+test('container verifier clears inherited smoke selectors before its authoritative smoke stage', () => {
+  const fixture = mkdtempSync(resolve(tmpdir(), 'verify-devcontainer-'));
+  const trace = resolve(fixture, 'trace.log');
+  const fakeBin = resolve(fixture, 'fake-bin');
+
+  try {
+    mkdirSync(resolve(fixture, 'bin'), { recursive: true });
+    mkdirSync(resolve(fixture, '.venv/bin'), { recursive: true });
+    mkdirSync(fakeBin);
+    writeFileSync(
+      resolve(fixture, 'bin/verify-devcontainer.sh'),
+      readFileSync(resolve(ROOT, 'bin/verify-devcontainer.sh')),
+    );
+    writeFileSync(resolve(fixture, '.venv/bin/python3'), '');
+    writeFileSync(resolve(fakeBin, 'node'), '#!/bin/sh\nprintf "runtime\\n" >> "$TRACE"\n');
+    writeFileSync(resolve(fakeBin, 'bash'), `#!/bin/sh
+printf '%s:%s\\n' "$1" "\${SPECS-<unset>}" >> "$TRACE"
+case "$1" in
+  bin/verify.sh) exit 0 ;;
+  bin/verify-smoke.sh) test "\${SPECS+x}" != x ;;
+  *) exec /bin/bash "$@" ;;
+esac
+`);
+    for (const path of [
+      resolve(fixture, 'bin/verify-devcontainer.sh'),
+      resolve(fixture, '.venv/bin/python3'),
+      resolve(fakeBin, 'node'),
+      resolve(fakeBin, 'bash'),
+    ]) chmodSync(path, 0o755);
+
+    const result = spawnSync('/bin/bash', ['bin/verify-devcontainer.sh'], {
+      cwd: fixture,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        CLERKSHIP_DEVCONTAINER: '1',
+        PATH: `${fakeBin}:${process.env.PATH}`,
+        SPECS: 'visual.spec.js --update-snapshots',
+        TRACE: trace,
+      },
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /DEV CONTAINER VERIFIED/);
+    assert.deepEqual(readFileSync(trace, 'utf8').trim().split('\n'), [
+      'runtime',
+      'bin/verify.sh:visual.spec.js --update-snapshots',
+      'bin/verify-smoke.sh:<unset>',
+    ]);
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
 });

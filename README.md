@@ -42,6 +42,13 @@ references it. Internal RSS/RSSM naming is retained here; a public mirror would 
 Content never forks. `14_Tracks/<audience>/` holds only a short ordered list of links into the shared body.
 MS3 is the default build; later tracks are overlays.
 
+## Development
+
+For a reproducible local environment, reopen the repository in its [VS Code Dev Container](.devcontainer/devcontainer.json).
+Initial setup installs the locked dependencies and Chromium; run
+`bash bin/verify-devcontainer.sh` inside the container for the full local proof. This is a
+local Docker workflow, not GitHub Codespaces, and it does not deploy anything.
+
 ## Operations and maintenance
 
 The [scheduled maintenance operations runbook](13_Faculty_Resources/_automation/maintenance/README.md)

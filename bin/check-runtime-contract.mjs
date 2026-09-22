@@ -150,6 +150,31 @@ export function declaredRuntimeErrors(root = ROOT) {
     errors.push('tests/smoke/package.json must pin @playwright/test to an exact version');
   }
 
+  const dockerfile = readFileSync(resolve(root, '.devcontainer/Dockerfile'), 'utf8');
+  const expectedDevcontainerImage = 'javascript-node:1-' + contract.nodeMajor + '-bookworm';
+  if (!dockerfile.includes(expectedDevcontainerImage)) {
+    errors.push('.devcontainer/Dockerfile does not use Node ' + contract.nodeMajor + ' Bookworm');
+  }
+  if (!dockerfile.includes('COPY tests/smoke/package.json tests/smoke/package-lock.json')) {
+    errors.push('.devcontainer/Dockerfile must consume the locked smoke package metadata');
+  }
+  if (!dockerfile.includes('npx playwright install chromium --with-deps')) {
+    errors.push('.devcontainer/Dockerfile must install the locked Chromium runtime');
+  }
+
+  const devcontainer = json(resolve(root, '.devcontainer/devcontainer.json'));
+  if (devcontainer.remoteUser !== 'node') errors.push('.devcontainer/devcontainer.json must run as node');
+  if (devcontainer.postCreateCommand !== 'bash .devcontainer/post-create.sh') {
+    errors.push('.devcontainer/devcontainer.json must run the tracked post-create script');
+  }
+  if (Object.hasOwn(devcontainer, 'mounts')) {
+    errors.push('.devcontainer/devcontainer.json must not declare host mounts');
+  }
+  const serialized = JSON.stringify(devcontainer);
+  if (/docker\.sock|SSH_AUTH_SOCK|TOKEN|SECRET|PASSWORD|API_KEY/i.test(serialized)) {
+    errors.push('.devcontainer/devcontainer.json contains a forbidden credential or host-control declaration');
+  }
+
   return errors;
 }
 
