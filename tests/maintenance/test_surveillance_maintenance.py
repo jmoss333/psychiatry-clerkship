@@ -515,6 +515,87 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
             ["source::modified::label-removed"],
         )
 
+    def test_open_issue_is_reconciled_when_fresh_severity_is_lower(self):
+        fingerprint = "fda-drug-safety::broken-link::7415e355b41cccda"
+        finding = {
+            "finding_id": fingerprint,
+            "fingerprint": fingerprint,
+            "job": "link-source-monitor",
+            "source_id": "fda-drug-safety",
+            "source_name": "FDA Drug Safety Communications",
+            "source_url": "https://www.fda.gov/drugs/example",
+            "source_type": "html",
+            "detected_at": "2026-09-22T10:43:02+00:00",
+            "change_type": "broken-link",
+            "severity": "P1",
+            "severity_cap": "P1",
+            "summary": "FDA citation issue (broken-link)",
+            "evidence": {"http_status": 404},
+            "affects": ["04_Acute_and_Safety/suicide-risk.md"],
+            "recommended_action": "Verify from a non-runner network.",
+            "status": "new",
+        }
+        findings_path = self.temp_dir / "findings.json"
+        findings_path.write_text(json.dumps([finding]), encoding="utf-8")
+        checked_path = self.temp_dir / "checked.json"
+        checked_path.write_text(json.dumps(["fda-drug-safety"]), encoding="utf-8")
+        issues_out = self.temp_dir / "issues.json"
+        history = self.temp_dir / "history"
+        existing_issue = {
+            "number": 721,
+            "url": "https://github.com/owner/repo/issues/721",
+            "state": "OPEN",
+            "closedAt": None,
+            "fingerprint": fingerprint,
+            "labels": ["P0", "faculty-review", "link-source-monitor", "surveillance"],
+        }
+        calls = []
+
+        def fake_gh(method, url, token, data=None):
+            calls.append((method, url, token, data))
+            return {
+                "number": 721,
+                "html_url": "https://github.com/owner/repo/issues/721",
+                "state": "open",
+                "closed_at": None,
+                "title": data["title"],
+                "body": data["body"],
+                "labels": [{"name": label} for label in data["labels"]],
+            }, {}
+
+        argv = [
+            "sync_findings.py",
+            "--findings", str(findings_path),
+            "--job", "citation-monitor",
+            "--checked-sources", str(checked_path),
+            "--issues-out", str(issues_out),
+            "--repo", "owner/repo",
+            "--out-dir", str(history),
+        ]
+        with (
+            mock.patch.object(sys, "argv", argv),
+            mock.patch.object(sync_findings, "fetch_issue_snapshot", return_value=[existing_issue]),
+            mock.patch.object(sync_findings, "_gh", side_effect=fake_gh),
+            mock.patch.object(L, "load_dismissed", return_value={}),
+            mock.patch.dict(sync_findings.os.environ, {"GITHUB_TOKEN": "token"}),
+        ):
+            sync_findings.main()
+
+        self.assertEqual(len(calls), 1)
+        method, url, token, data = calls[0]
+        self.assertEqual(method, "PATCH")
+        self.assertTrue(url.endswith("/repos/owner/repo/issues/721"))
+        self.assertEqual(token, "token")
+        self.assertTrue(data["title"].startswith("[P1][fda-drug-safety]"))
+        self.assertIn("**Severity:** P1", data["body"])
+        self.assertNotIn("**Severity:** P0", data["body"])
+        self.assertEqual(
+            data["labels"],
+            ["P1", "faculty-review", "link-source-monitor", "surveillance"],
+        )
+        saved = json.loads(issues_out.read_text(encoding="utf-8"))
+        self.assertEqual(saved[0]["labels"], data["labels"])
+
     def test_acute_path_escalation_respects_explicit_severity_cap(self):
         finding = {
             "severity": "P1",

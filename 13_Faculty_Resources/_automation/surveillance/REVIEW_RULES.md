@@ -21,11 +21,14 @@ the bump cannot exceed that cap. A browser-required source returning a runner-on
 ## 2. Idempotency (no duplicate issues)
 
 - Every finding carries a stable `fingerprint = hash(source_id + change_type + change_signature)`.
-- Before opening an issue, the sync **searches open+closed issues** for that
-  fingerprint (carried in a hidden `<!-- surveillance:fp=... -->` marker and a label).
-  - Match found & open → **comment/update**, do not create.
-  - Match found & **dismissed/closed-as-wontfix** → **do nothing** (a dismissed
-    fingerprint is not reopened; the source must produce a *new* signature to re-fire).
+- Before opening an issue, the sync reads all issues for the hidden
+  `<!-- surveillance:fp=... -->` fingerprint and loads `config/dismissed.json`.
+  - Match found & open → do not create a duplicate. If fresh routing changes the
+    automation-managed severity/job labels, replace those labels and refresh the
+    generated title/body while preserving human-added labels and comments.
+  - Match found & closed → treat a fresh detection as a recurrence and open a new issue.
+  - Fingerprint registered in `config/dismissed.json` → **do nothing**; this is the
+    only permanent suppression and records the human reason.
 - Issue title format (also aids human dedup): `[P0][fda-drug-safety] <summary>`.
 
 ## 3. Human gate (hard rule)
