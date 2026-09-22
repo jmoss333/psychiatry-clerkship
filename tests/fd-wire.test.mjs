@@ -247,6 +247,28 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     'item:scale.html');
 });
 
+test('choosing APP enters the On shift workspace without asking for a rotation week', () => {
+  assert.deepEqual(F.fdDispatch({ 'data-fd-role': 'app' }, { search: '' }, {
+    ...roleContext, role: null, screen: 'setup-role', week: undefined,
+  }), {
+    patch: {
+      role: 'app', screen: 'app', tab: 'today', week: null, browsing: true,
+      openId: null, searchOpen: false,
+    },
+    route: '/',
+    effect: { type: 'browse-without-rotation' },
+  });
+});
+
+test('a stored APP never re-enters the rotation wizard or restores the Path tab', () => {
+  assert.deepEqual(F.fdResolveState('/?tab=path', {
+    role: 'app', tab: 'path', browsing: true, viewWeek: 3,
+  }), {
+    role: 'app', tab: 'today', libraryView: 'essentials', kitSection: 'all',
+    viewWeek: 3, autoAdvance: true, browsing: true, screen: 'app',
+  });
+});
+
 test('change-week uses a reader origin only while a reader is open', () => {
   const reader = F.fdDispatch({ 'data-fd-change-week': '' }, { search: '?case=c1' }, {
     ...roleContext, tab: 'library', fromTab: 'path', openId: 'pending.md',

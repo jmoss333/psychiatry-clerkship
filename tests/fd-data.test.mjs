@@ -22,6 +22,12 @@ const F = make();
 
 const readJson = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const CUR = readJson('../curriculum.json');
+
+test('the resident audience offers APPs an explicit role without changing MS3 choices', () => {
+  assert.deepEqual(CUR.roles.ms3.map((role) => role.id), ['student', 'subi', 'staff']);
+  assert.deepEqual(CUR.roles.resident.map((role) => role.id), ['pgy1', 'pgy2', 'app', 'staff']);
+  assert.equal(CUR.roles.resident.find((role) => role.id === 'app').name, 'APP / PA / NP');
+});
 // The SOURCE topic_meta.json. The BUILT copy may demote a drifted page's facultyReview to
 // `pending` (attestation_hash.project_topic_meta_faculty_review), so the attestation premises
 // below are facts about the faculty's own record, not about what either site serves today.

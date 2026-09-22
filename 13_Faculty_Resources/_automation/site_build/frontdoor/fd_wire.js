@@ -147,7 +147,7 @@ function fdResolveState(url, stored){
      (__progress__ is the device's own dashboard) keep the setup gate below. */
   if(!out.role&&routedRef&&!fdIsLegacyRouteAlias(routedRef)&&routedRef.indexOf('__')!==0){ out.guest=true; out.screen='app'; }
   else if(!out.role) out.screen='setup-role';
-  else if(src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
+  else if(out.role==='app'||src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
   else out.screen='setup-week';
   if(routedRef&&fdIsLegacyRouteAlias(routedRef)){
     if(routedRef==='__home__'){
@@ -165,6 +165,7 @@ function fdResolveState(url, stored){
       delete out.openId;
     }
   }
+  if(out.role==='app'&&out.tab==='path') out.tab='today';
   return out;
 }
 
@@ -438,6 +439,12 @@ function fdDispatch(attrs, context, state){
        the wizard reaches here with screen==='setup-role', so that is the fork -- and leaving the
        rest of the state alone is what keeps the panel open on the chip it just filled. */
     picked=String(a['data-fd-role']||'');
+    if(picked==='app'){
+      return {
+        patch:{role:'app',screen:'app',tab:'today',week:null,browsing:true,openId:null,searchOpen:false},
+        route:fdRouteForTab('today',c.search),effect:{type:'browse-without-rotation'}
+      };
+    }
     if(s.screen==='setup-role'){
       return {patch:{role:picked,screen:'setup-week'},route:null,effect:null};
     }
@@ -1548,7 +1555,7 @@ function fdWire(root, initialState, opts){
     var action=fdKeyAction(event.key,{
       typing:fdIsTypingTarget(event.target),screen:state.screen||'app',
       searchOpen:!!state.searchOpen,sheetOpen:!!state.sheet,reading:!!state.openId,
-      meta:!!(event.metaKey||event.ctrlKey)
+      meta:!!(event.metaKey||event.ctrlKey),appMode:state.role==='app'
     });
     if(!action) return;
     var attrs={};

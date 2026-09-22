@@ -153,6 +153,8 @@
   color:var(--fd-text-mid);font-size:var(--fd-font-sm);font-weight:600;cursor:pointer;white-space:nowrap;
 }
 .fd-weekpill:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
+.fd-weekpill--identity{justify-content:center;cursor:default}
+.fd-weekpill--identity:hover{border-color:var(--fd-line-strong);color:var(--fd-text-mid);background:var(--fd-surface)}
 .fd-safetybtn{
   display:inline-flex;align-items:center;gap:var(--fd-space-3);padding:7px 14px;border-radius:var(--fd-radius-pill);
   background:var(--fd-danger);border:1.5px solid var(--fd-danger);color:var(--fd-on-accent);

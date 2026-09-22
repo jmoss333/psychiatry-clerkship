@@ -352,6 +352,7 @@
     "resident": [
       { "id": "pgy1", "name": "PGY-1", "desc": "First year on inpatient psychiatry", "hint": "most common" },
       { "id": "pgy2", "name": "PGY-2 and above", "desc": "Senior on the unit", "hint": "" },
+      { "id": "app", "name": "APP / PA / NP", "desc": "Clinical practice on the inpatient unit", "hint": "" },
       { "id": "staff", "name": "Nursing · SW · family", "desc": "Unit staff and families", "hint": "" }
     ]
   },
