@@ -172,6 +172,17 @@ test('saved-question dialog opens its suggested page without losing the question
   await expect(page.locator('.cap-list')).toContainText('How should I distinguish delirium from psychosis?');
 });
 
+test('deleting a just-saved question clears its suggested actions', async ({ page }) => {
+  await page.goto('/');
+  await captureLauncher(page).click();
+  await page.locator('#capText').fill('How should I distinguish delirium from psychosis?');
+  await page.locator('#capSave').click();
+  await expect(page.locator('.cap-next')).toBeVisible();
+  await page.locator('[data-cap-del]').click();
+  await expect(page.locator('.cap-next')).toHaveCount(0);
+  await expect(page.locator('.cap-list li')).toHaveCount(0);
+});
+
 test('Today capture clears a prior Reader context without corrupting the learner bookmark', async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.goto('/?page=orientation.md');

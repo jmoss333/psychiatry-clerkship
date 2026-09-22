@@ -111,6 +111,13 @@ test('capture inbox renders supervision state without hiding the question', () =
   assert.match(out, /data-cap-supervise="c2"/);
 });
 
+test('capture inbox preserves the status of questions triaged before the upgrade', () => {
+  const out = F.fdCaptureTriage([{ id: 'old', text: 'An older question', status: 'triaged', match: null }]);
+  assert.match(out, /data-cap-status="triaged"/);
+  assert.match(out, />Triaged</);
+  assert.doesNotMatch(out, />New</);
+});
+
 test('fd_due stays ES5, audience-neutral, and does not introduce storage', () => {
   assert.doesNotMatch(due, /\b(?:const|let)\s|=>|`/);
   assert.doesNotMatch(due, /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i);

@@ -1553,13 +1553,15 @@
   function capRefreshNext(){
     var next=capSheet&&capSheet.querySelector('[data-cap-next]');
     if(!next)return;
-    var id=next.getAttribute('data-cap-next'), items=capRead().items;
+    var id=next.getAttribute('data-cap-next'), items=capRead().items, hold=capSheet.querySelector('#capHold');
     for(var i=0;i<items.length;i++){
-      if(items[i].id===id){ var hold=capSheet.querySelector('#capHold'); if(hold)hold.innerHTML=capNextHtml(id,items[i].text); return; }
+      if(items[i].id===id){ if(hold)hold.innerHTML=capNextHtml(id,items[i].text); return; }
     }
+    if(hold)hold.innerHTML='';
   }
   function capRefreshAfterMutation(){
     capRenderBody();
+    capRefreshNext();
     try{ specialRefresh(); }
     finally{
       var ta=capSheet&&capSheet.querySelector('#capText');

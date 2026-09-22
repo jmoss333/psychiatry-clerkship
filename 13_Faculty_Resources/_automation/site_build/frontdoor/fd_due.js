@@ -88,8 +88,8 @@ function fdCaptureTriage(items){
     '<p class="fd-capture__purpose">'+fdEsc(FD_CAPTURE_PURPOSE)+'</p>';
   for(var j=0;j<open.length;j++){
     var item=open[j]||{}, id=fdEsc(item.id||''), match=item.match;
-    var status=/^(?:new|scheduled|supervision)$/.test(item.status)?item.status:'new';
-    var statusLabel=status==='scheduled'?'Review scheduled':(status==='supervision'?'For supervision':'New');
+    var status=/^(?:new|scheduled|supervision|triaged)$/.test(item.status)?item.status:'new';
+    var statusLabel=status==='scheduled'?'Review scheduled':(status==='supervision'?'For supervision':(status==='triaged'?'Triaged':'New'));
     out+='<div class="fd-capture__item" data-cap-status="'+status+'"><div class="fd-capture__meta">'+
       '<span class="fd-capture__status">'+statusLabel+'</span></div>'+
       '<p class="fd-capture__question">'+fdEsc(item.text||'')+'</p>';
