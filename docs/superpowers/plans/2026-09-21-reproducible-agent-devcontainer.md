@@ -331,14 +331,15 @@ function observeCurrent() {
 function main() {
   let contract;
   let errors;
+  let expectedPlaywright;
   try {
     contract = contractAt(ROOT);
     errors = declaredRuntimeErrors(ROOT);
+    expectedPlaywright = json(resolve(ROOT, 'tests/smoke/package.json')).devDependencies['@playwright/test'];
   } catch (error) {
     console.error(`runtime contract unreadable: ${error.message}`);
     return 2;
   }
-  const expectedPlaywright = json(resolve(ROOT, 'tests/smoke/package.json')).devDependencies['@playwright/test'];
   if (process.argv.includes('--current')) {
     try {
       errors = errors.concat(currentRuntimeErrors(contract, observeCurrent(), expectedPlaywright));
@@ -390,6 +391,15 @@ Add this static check immediately after the root Node suite in `bin/verify.sh`:
 ```bash
 step "runtime contract"                     node bin/check-runtime-contract.mjs
 ```
+
+Before changing lockfiles or workflow digests, prove the two coupled Node 20 test fixtures were updated with the runtime declarations:
+
+```bash
+bash _prototypes/sp-interview/tests/run-all.sh
+python3 -m unittest discover -s tests/maintenance -p 'test_*.py' -v
+```
+
+Expected: both exit `0`. A failure at this point bisects to the small runtime/test-anchor edit rather than to later mechanical lockfile or digest changes.
 
 - [ ] **Step 7: Refresh only lockfile root metadata**
 
@@ -531,6 +541,7 @@ test('container bootstrap installs every locked dependency lane and verifies the
     'npm --prefix sp-proxy ci',
     'npm --prefix sp-preview ci',
     'npm --prefix tests/smoke ci',
+    'playwright install chromium',
     'check_lfs_media.py --worktree-stubs',
     'SSH_AUTH_SOCK',
     'credential.helper',
@@ -598,7 +609,7 @@ RUN cd /tmp/smoke \
     && npm ci \
     && npx playwright install chromium --with-deps \
     && rm -rf /tmp/smoke /var/lib/apt/lists/* \
-    && chmod -R a+rX /ms-playwright
+    && chown -R node:node /ms-playwright
 
 USER node
 ```
@@ -657,6 +668,11 @@ npm --prefix metrics ci
 npm --prefix sp-proxy ci
 npm --prefix sp-preview ci
 npm --prefix tests/smoke ci
+
+(
+  cd tests/smoke
+  npx playwright install chromium
+)
 
 python3 13_Faculty_Resources/_automation/site_build/check_lfs_media.py --worktree-stubs . || {
   echo "Dev Container setup requires materialized LFS media. Run 'git lfs pull' in a full clone, then rebuild the container." >&2
@@ -735,7 +751,10 @@ Then run:
 ```bash
 probe_dir="$(mktemp -d)"
 git clone --no-hardlinks . "$probe_dir/repo"
-git -C "$probe_dir/repo" lfs pull
+shared_lfs="$(cd "$(git rev-parse --git-common-dir)" && pwd)/lfs"
+git -C "$probe_dir/repo" config lfs.storage "$shared_lfs"
+git -C "$probe_dir/repo" lfs checkout
+python3 13_Faculty_Resources/_automation/site_build/check_lfs_media.py --worktree-stubs "$probe_dir/repo"
 docker build \
   --file "$probe_dir/repo/.devcontainer/Dockerfile" \
   --tag psychiatry-clerkship-devcontainer:local \
@@ -753,7 +772,7 @@ Expected final line:
 runtime contract OK — Node 22, Python 3.11, Bash 5+, Playwright 1.63.0
 ```
 
-The host-side `git lfs pull` runs while the probe clone can still resolve its local-origin path and normally reuses the primary repository's LFS object cache. If the local cache lacks an object and Git LFS would contact GitHub, record that network/bandwidth dependency before proceeding; do not describe the probe as zero-bandwidth.
+The probe points at the current repository's derived Git-common LFS object store and uses `git lfs checkout`, which materializes only already-cached objects and never falls back to GitHub. The explicit stub scan fails if an object is absent. Do not replace this with `git lfs pull` in the probe: a pull can contact GitHub and consume the account's metered LFS bandwidth. No machine-specific `/Users/...` path is committed.
 
 Do not push the image to a registry.
 
@@ -840,7 +859,10 @@ git commit -m "test(dev): add one-command container verification"
 ```bash
 probe_dir="$(mktemp -d)"
 git clone --no-hardlinks . "$probe_dir/repo"
-git -C "$probe_dir/repo" lfs pull
+shared_lfs="$(cd "$(git rev-parse --git-common-dir)" && pwd)/lfs"
+git -C "$probe_dir/repo" config lfs.storage "$shared_lfs"
+git -C "$probe_dir/repo" lfs checkout
+python3 13_Faculty_Resources/_automation/site_build/check_lfs_media.py --worktree-stubs "$probe_dir/repo"
 docker run --rm \
   -v "$probe_dir/repo:/workspaces/psychiatry-clerkship" \
   -w /workspaces/psychiatry-clerkship \
@@ -961,7 +983,10 @@ Create a fresh clean clone at the final committed `HEAD`, then use the local con
 ```bash
 final_probe_dir="$(mktemp -d)"
 git clone --no-hardlinks . "$final_probe_dir/repo"
-git -C "$final_probe_dir/repo" lfs pull
+shared_lfs="$(cd "$(git rev-parse --git-common-dir)" && pwd)/lfs"
+git -C "$final_probe_dir/repo" config lfs.storage "$shared_lfs"
+git -C "$final_probe_dir/repo" lfs checkout
+python3 13_Faculty_Resources/_automation/site_build/check_lfs_media.py --worktree-stubs "$final_probe_dir/repo"
 docker run --rm \
   -v "$final_probe_dir/repo:/workspaces/psychiatry-clerkship" \
   -w /workspaces/psychiatry-clerkship \

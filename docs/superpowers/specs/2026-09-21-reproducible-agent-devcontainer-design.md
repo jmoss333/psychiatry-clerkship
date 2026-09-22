@@ -28,7 +28,7 @@ The current repository is reproducible in CI but not on the primary Mac:
 - Git LFS availability changes whether media appear as false modifications.
 
 Preserving both Node 20 and Node 22 in the container would reproduce the mismatch rather than fix
-it. Node 20 reached end of life on 2026-03-24 and receives no security fixes. Node 22 is already
+it. Node 20 reached end of life on 2026-04-30 and receives no security fixes. Node 22 is already
 used by the hosted Interview Room preview and remains supported through April 2027. Node 24 would
 provide a longer support window, but adopting it across the application/tooling lane would broaden
 this task beyond the already-proven Node 22 path; the faculty console remains on its separately
@@ -119,7 +119,8 @@ The post-create script:
 2. installs `requirements.txt`, `requirements-dev.txt`, and the CI PyYAML pin;
 3. runs `npm ci` in `metrics`, `sp-proxy`, `sp-preview`, and `tests/smoke`;
 4. uses the image-baked Chromium build and Linux dependencies matching the locked Playwright
-   package;
+   package, then idempotently ensures that exact browser is present after dependency installation
+   so a lockfile change cannot leave package and browser versions out of sync;
 5. fails early with an explicit `git lfs pull` instruction if the mounted checkout contains LFS
    pointer stubs, instead of allowing the much longer repository gate to fail later;
 6. reports whether a host SSH agent or Git credential helper is visible inside the running
