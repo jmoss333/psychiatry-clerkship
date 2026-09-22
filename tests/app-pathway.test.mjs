@@ -17,7 +17,7 @@ const makeApp = new Function(`
     return value ? '<span data-test-governance="'+fdEsc(value.status)+'"></span>' : '';
   }
   ${appSrc}
-  return { fdAppModel: fdAppModel, fdApp: fdApp };
+  return { fdAppModel: fdAppModel, fdAppWorkspace: fdAppWorkspace };
 `);
 const APP = makeApp();
 
@@ -91,7 +91,7 @@ function appIndex(pathway = CUR.appPathway) {
 }
 
 test('the APP renderer shows one active bridge, eight canonical resources, and both route choices', () => {
-  const html = APP.fdApp(appIndex(), CUR.appPathway, { appBridge: 'pa' });
+  const html = APP.fdAppWorkspace(appIndex(), CUR.appPathway, { appBridge: 'pa' });
   assert.match(html, /PA psychiatry bridge/);
   assert.equal((html.match(/data-fd-app-bridge=/g) || []).length, 2);
   assert.equal((html.match(/class="fd-app__resource"/g) || []).length, 8);
@@ -101,7 +101,7 @@ test('the APP renderer shows one active bridge, eight canonical resources, and b
 });
 
 test('the APP renderer distinguishes prepare, rehearse, and observation on all three work tasks', () => {
-  const html = APP.fdApp(appIndex(), CUR.appPathway, { appBridge: 'pmhnp' });
+  const html = APP.fdAppWorkspace(appIndex(), CUR.appPathway, { appBridge: 'pmhnp' });
   assert.equal((html.match(/data-fd-app-shift=/g) || []).length, 3);
   assert.equal((html.match(/>Prepare independently</g) || []).length, 3);
   assert.equal((html.match(/>Rehearse here</g) || []).length, 3);
@@ -110,7 +110,7 @@ test('the APP renderer distinguishes prepare, rehearse, and observation on all t
 });
 
 test('private reflection has only the three formative choices and no evaluative output', () => {
-  const html = APP.fdApp(appIndex(), CUR.appPathway, {
+  const html = APP.fdAppWorkspace(appIndex(), CUR.appPathway, {
     appBridge: 'pa', appReflection: 'supervisor',
   });
   assert.equal((html.match(/data-fd-app-reflect=/g) || []).length, 3);
@@ -125,7 +125,7 @@ test('a missing configured resource is named instead of silently shortening a br
   delete index.byRef['pg_interview.md'];
   const model = APP.fdAppModel(index, CUR.appPathway, { appBridge: 'pa' });
   assert.deepEqual(model.missing, ['pg_interview.md']);
-  const html = APP.fdApp(index, CUR.appPathway, { appBridge: 'pa' });
+  const html = APP.fdAppWorkspace(index, CUR.appPathway, { appBridge: 'pa' });
   assert.match(html, /role="alert"/);
   assert.match(html, /Configured resource unavailable: pg_interview\.md/);
   assert.equal((html.match(/class="fd-app__resource"/g) || []).length, 7);

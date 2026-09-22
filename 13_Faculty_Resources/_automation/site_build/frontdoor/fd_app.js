@@ -132,7 +132,9 @@ function fdAppActivity(activity, selected){
   return out+'</div></article>';
 }
 
-function fdApp(index, pathway, state){
+/* Keep this name distinct from the fdApp DOM-root variable in spa_index.html. The shell renders
+   inside an IIFE where that local binding intentionally shadows globals. */
+function fdAppWorkspace(index, pathway, state){
   var model=fdAppModel(index,pathway,state), out='';
   if(!model.valid){
     return '<div class="fd-fallback" data-fd-fallback="app" role="alert">'+fdEsc(model.message)+'</div>';
