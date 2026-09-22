@@ -177,3 +177,17 @@ test('container image bakes the locked Chromium dependency', () => {
   assert.match(source, /PLAYWRIGHT_BROWSERS_PATH=\/ms-playwright/);
   assert.match(source, /npx playwright install chromium --with-deps/);
 });
+
+test('container verifier composes existing gates and never mutates visual baselines', () => {
+  const source = readFileSync(resolve(ROOT, 'bin/verify-devcontainer.sh'), 'utf8');
+  assert.match(source, /check-runtime-contract\.mjs --current/);
+  assert.match(source, /bash bin\/verify\.sh/);
+  assert.match(source, /bash bin\/verify-smoke\.sh/);
+  assert.doesNotMatch(source, /update-snapshots|update-baselines|test:visual/);
+});
+
+test('container verifier uses the virtualenv created by container bootstrap', () => {
+  const source = readFileSync(resolve(ROOT, 'bin/verify-devcontainer.sh'), 'utf8');
+  assert.match(source, /VIRTUAL_ENV=.*\.venv/);
+  assert.match(source, /PATH=.*VIRTUAL_ENV\/bin/);
+});
