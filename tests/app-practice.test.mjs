@@ -80,8 +80,11 @@ test('all three statements must be classified before a fixed question is chosen'
   session = F.fdAppPracticeClassify(session, 'verification-owner', 'clarify');
   const complete = F.fdAppPracticeChooseQuestion(session, 'confirm-owner');
   assert.equal(complete.questionId, 'confirm-owner');
-  assert.match(F.fdAppPracticeRender(complete), /Who should confirm the source note/);
-  assert.doesNotMatch(F.fdAppPracticeRender(complete), /score|pass|fail|correct|answer key/i);
+  const rendered = F.fdAppPracticeRender(complete);
+  assert.match(rendered, /Who should confirm the source note/);
+  assert.match(rendered, /Private rehearsal\. No score, no saved response, and nothing is sent\./);
+  assert.equal((rendered.match(/score/gi) || []).length, 1);
+  assert.doesNotMatch(rendered, /pass|fail|correct|answer key/i);
 });
 
 test('reclassification replaces one category and reset clears the session', () => {

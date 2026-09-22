@@ -227,6 +227,6 @@ function fdAppPracticeRender(session){
     }
     out+='<button type="button" class="fd-app-practice__reset" data-fd-app-practice-reset>Start again</button>';
   }
-  out+='<p class="fd-app-practice__privacy">Private rehearsal. No saved response, and nothing is sent.</p>';
+  out+='<p class="fd-app-practice__privacy">Private rehearsal. No score, no saved response, and nothing is sent.</p>';
   return out+'</section>';
 }
