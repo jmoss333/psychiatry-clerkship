@@ -11,10 +11,12 @@ const today = read('frontdoor/fd_today.js');
 const block = read('frontdoor/fd_block.js');
 const reader = read('frontdoor/fd_reader.js');
 const shell = read('frontdoor/fd_shell.js');
+const practice = read('frontdoor/fd_app_practice.js');
 const wire = read('frontdoor/fd_wire.js');
+const CUR = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 
 // eslint-disable-next-line no-new-func
-const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${today}\n${block}\n${reader}\n${shell}\n${wire}\nreturn {
+const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${wire}\nreturn {
   fdResolveState: fdResolveState,
   fdDispatch: fdDispatch,
   fdIsTypingTarget: fdIsTypingTarget,
@@ -276,8 +278,9 @@ test('APP bridge persists while work-task and private reflection choices remain 
   }).appBridge, 'pmhnp');
   assert.deepEqual(F.fdDispatch({ 'data-fd-app-bridge': 'pmhnp' }, { search: '' }, {
     role: 'app', appBridge: 'pa', appActivity: 'initial-evaluation', appReflection: 'revisit',
+    appPractice: { pack: { id: 'training-briefing' } },
   }), {
-    patch: { appBridge: 'pmhnp', appActivity: null, appReflection: null },
+    patch: { appBridge: 'pmhnp', appActivity: null, appReflection: null, appPractice: null },
     route: null, effect: null,
   });
   assert.deepEqual(F.fdDispatch({ 'data-fd-app-shift': 'collateral-transition' }, {}, {
@@ -288,7 +291,33 @@ test('APP bridge persists while work-task and private reflection choices remain 
   }).patch, { appReflection: 'supervisor' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-app-reset': '' }, {}, {
     role: 'app', appActivity: 'collateral-transition', appReflection: 'supervisor',
-  }).patch, { appActivity: null, appReflection: null });
+    appPractice: { pack: { id: 'training-briefing' } },
+  }).patch, { appActivity: null, appReflection: null, appPractice: null });
+});
+
+test('APP practice actions advance only transient immutable state', () => {
+  const packs = CUR.appPathway.practicePacks;
+  const opened = F.fdDispatch(
+    { 'data-fd-app-practice-open': 'training-briefing' },
+    { appPracticePacks: packs }, { role: 'app' });
+  assert.equal(opened.patch.appPractice.pack.id, 'training-briefing');
+  assert.equal(opened.patch.appPractice.revealed, false);
+
+  let session = F.fdDispatch({ 'data-fd-app-practice-reveal': '' }, {},
+    { role: 'app', appPractice: opened.patch.appPractice }).patch.appPractice;
+  for (const value of [
+    'review-time:still-known', 'source-status:changed', 'verification-owner:clarify',
+  ]) {
+    session = F.fdDispatch({ 'data-fd-app-practice-classify': value }, {},
+      { role: 'app', appPractice: session }).patch.appPractice;
+  }
+  session = F.fdDispatch({ 'data-fd-app-practice-question': 'confirm-owner' }, {},
+    { role: 'app', appPractice: session }).patch.appPractice;
+  assert.equal(session.questionId, 'confirm-owner');
+  assert.equal(F.fdDispatch({ 'data-fd-app-practice-reset': '' }, {},
+    { role: 'app', appPractice: session }).patch.appPractice.revealed, false);
+  assert.deepEqual(F.fdDispatch({ 'data-fd-app-practice-close': '' }, {},
+    { role: 'app', appPractice: session }).patch, { appPractice: null });
 });
 
 test('APP resource starts reuse the canonical reader route and preserve On shift as origin', () => {
@@ -637,7 +666,7 @@ function actionTarget(attrs, extra = {}) {
     tagName: 'BUTTON', isContentEditable: false, isConnected: true,
     closest(selector) {
       if(selector==='[data-fd-kit-tool]'&&Object.hasOwn(attrs,'data-fd-kit-tool')) return this;
-      return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],[data-fd-app-bridge],[data-fd-app-shift],[data-fd-app-start],[data-fd-app-reflect],[data-fd-app-reset],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-analytics],[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null;
+      return Object.keys(attrs).some((name) => selector.includes(`[${name}]`)) ? this : null;
     },
     hasAttribute(name) { return Object.hasOwn(attrs, name); },
     getAttribute(name) { return Object.hasOwn(attrs, name) ? attrs[name] : null; },

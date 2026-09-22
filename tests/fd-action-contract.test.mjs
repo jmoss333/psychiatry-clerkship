@@ -124,14 +124,15 @@ test('APP practice engine is injected before APP and the controller', () => {
   assert.match(common, /"\/\*__FD_APP_PRACTICE__\*\/"\s*:\s*"frontdoor\/fd_app_practice\.js"/);
 });
 
-test('APP practice actions are reserved with distinct controller meanings', () => {
+test('all six emitted APP practice actions have distinct controller meanings', () => {
   const practiceActions = [
     'data-fd-app-practice-open', 'data-fd-app-practice-reveal',
     'data-fd-app-practice-classify', 'data-fd-app-practice-question',
     'data-fd-app-practice-reset', 'data-fd-app-practice-close',
   ];
   for (const attr of practiceActions) {
-    assert.ok(F.handled.includes(attr), `${attr} must be reserved before the engine ships`);
+    assert.ok(emittedAttributes().includes(attr), `${attr} must be emitted by the APP renderer`);
+    assert.ok(F.handled.includes(attr), `${attr} must be handled`);
     assert.equal(typeof F.semantic(attr), 'string');
   }
   assert.equal(new Set(practiceActions.map(F.semantic)).size, practiceActions.length);

@@ -290,7 +290,7 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-app-bridge')){
     picked=String(a['data-fd-app-bridge']||'');
     if(picked!=='pa'&&picked!=='pmhnp') return {patch:{},route:null,effect:null};
-    return {patch:{appBridge:picked,appActivity:null,appReflection:null},route:null,effect:null};
+    return {patch:{appBridge:picked,appActivity:null,appReflection:null,appPractice:null},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-app-shift')){
     picked=String(a['data-fd-app-shift']||'');
@@ -307,7 +307,38 @@ function fdDispatch(attrs, context, state){
     return {patch:{appReflection:picked},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-app-reset')){
-    return {patch:{appActivity:null,appReflection:null},route:null,effect:null};
+    return {patch:{appActivity:null,appReflection:null,appPractice:null},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-app-practice-open')){
+    picked=String(a['data-fd-app-practice-open']||'');
+    var pack=fdAppPracticeFind(c.appPracticePacks,picked);
+    if(!pack) return {patch:{},route:null,effect:null};
+    try{return {patch:{appPractice:fdAppPracticeStart(pack)},route:null,effect:null};}
+    catch(ignorePracticeOpen){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-reveal')){
+    try{return {patch:{appPractice:fdAppPracticeReveal(s.appPractice)},route:null,effect:null};}
+    catch(ignorePracticeReveal){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-classify')){
+    picked=String(a['data-fd-app-practice-classify']||'');
+    var split=picked.indexOf(':');
+    if(split<1) return {patch:{},route:null,effect:null};
+    try{return {patch:{appPractice:fdAppPracticeClassify(
+      s.appPractice,picked.slice(0,split),picked.slice(split+1))},route:null,effect:null};}
+    catch(ignorePracticeClassify){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-question')){
+    try{return {patch:{appPractice:fdAppPracticeChooseQuestion(
+      s.appPractice,String(a['data-fd-app-practice-question']||''))},route:null,effect:null};}
+    catch(ignorePracticeQuestion){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-reset')){
+    try{return {patch:{appPractice:fdAppPracticeReset(s.appPractice)},route:null,effect:null};}
+    catch(ignorePracticeReset){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-close')){
+    return {patch:{appPractice:null},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-app-start')){
     return fdDispatch({'data-fd-open':String(a['data-fd-app-start']||'')},c,s);
@@ -1445,7 +1476,8 @@ function fdWire(root, initialState, opts){
     var c={
       nowMs:Date.now(),theme:currentTheme(),
       search:(win&&win.location&&win.location.search)||'',
-      progressRaw:progressRaw(),weekItems:fdItemsForWeek(index,fdProgressWeek(state,index)),index:index
+      progressRaw:progressRaw(),weekItems:fdItemsForWeek(index,fdProgressWeek(state,index)),index:index,
+      appPracticePacks:o.appPracticePacks||[]
     };
     var add=extra||{};
     for(var k in add){ if(fdOwn(add,k)) c[k]=add[k]; }
