@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(374 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
+(393 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -526,6 +526,22 @@ content. The high-risk governance focus rule outranks passage arrival focus.
         .fd-app__stages
           .fd-app__stage <section> ×3
             .fd-app__step-link <button> ×N
+            .fd-app__practice-open <button> (rehearsal stage, when a pack resolves)
+            .fd-app__practice-error <p role=alert> (when a pack cannot resolve)
+    .fd-app__practice-host (sibling of .fd-app__tasks, when practice is open)
+      .fd-app-practice <section> (+ .is-revealed after reveal)
+        .fd-app-practice__head
+          .fd-app-practice__close <button>
+        .fd-app-practice__snapshot
+        .fd-app-practice__action <button> (reveal, before change)
+        .fd-app-practice__change (after reveal)
+          .fd-app-practice__before / .fd-app-practice__seam / .fd-app-practice__now
+        .fd-app-practice__row ×3 (after reveal)
+          .fd-app-practice__choices [role=group] (three fixed-category buttons)
+        .fd-app-practice__summary / .fd-app-practice__questions [role=group] (after all three classifications)
+        .fd-app-practice__recap (after a fixed question is selected)
+        .fd-app-practice__reset <button> (after reveal)
+        .fd-app-practice__privacy
 ```
 
 | Class | Notes |
@@ -535,6 +551,13 @@ content. The high-risk governance focus rule outranks passage arrival focus.
 | `.fd-app__reflection` | Visit-only formative choice. The controller may repaint it but only `appBridge` belongs to `FD_KEYS`; reflection and activity state never survive reload. |
 | `.fd-app__task` | Shared work-preparation card. Each card visibly retains all three stages: prepare independently, rehearse here, arrange observation. |
 | `.fd-app__step-link` | Opens an existing governed resource. It is not a completion or supervisor-approval control. |
+| `.fd-app__practice-open`, `.fd-app__practice-error` | The button opens the mapped pack; an invalid pack produces a scoped alert while preparation resources stay available. The open button has a touch-sized target and visible keyboard focus. |
+| `.fd-app__practice-host`, `.fd-app-practice` | The visit-only player follows the task grid. It uses one enclosing surface, with no saved response, route, score, or separate card stack. |
+| `.fd-app-practice__change`, `.fd-app-practice__before`, `.fd-app-practice__seam`, `.fd-app-practice__now` | The revealed before/now pair sits side by side at wide widths and stacks at 640px and below. The seam's brief reveal animation is removed under reduced motion; both text panels remain. |
+| `.fd-app-practice__choices`, `.fd-app-practice__questions` | Fixed button groups use `aria-pressed`, readable labels, touch-sized targets, and visible focus. The question group appears only after all three statements have a category. |
+| `.fd-app-practice__head`, `.fd-app-practice__snapshot`, `.fd-app-practice__row` | Heading, starting facts, and statement rows carry the sequence in plain text. The changed detail is absent until reveal. |
+| `.fd-app-practice__action`, `.fd-app-practice__close`, `.fd-app-practice__reset` | Reveal, close, and start-again are buttons. Reset clears the visit-only practice session. |
+| `.fd-app-practice__summary`, `.fd-app-practice__recap`, `.fd-app-practice__privacy` | Text and counts report progress without a grade. The privacy sentence says no score, saved response, or transmission. |
 
 ⚠ The observation stage is explanatory only. It never collects a supervisor name, feedback,
 patient information, or an attestation, and it never turns a website action into clinical authority.

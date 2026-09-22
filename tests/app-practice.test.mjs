@@ -8,8 +8,11 @@ import path from 'node:path';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const playerPath = path.join(root,
   '13_Faculty_Resources/_automation/site_build/frontdoor/fd_app_practice.js');
+const cssPath = path.join(root,
+  '13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css');
 const curriculumPath = path.join(root, 'curriculum.json');
 const playerSource = fs.readFileSync(playerPath, 'utf8');
+const cssSource = fs.readFileSync(cssPath, 'utf8');
 const CUR = JSON.parse(fs.readFileSync(curriculumPath, 'utf8'));
 const pack = CUR.appPathway.practicePacks[0];
 const sandbox = {};
@@ -18,6 +21,23 @@ vm.runInContext(playerSource, sandbox);
 const F = sandbox;
 
 function clone(value) { return JSON.parse(JSON.stringify(value)); }
+
+test('APP change seam has responsive, touch, focus, and reduced-motion styles', () => {
+  const mobileStart = cssSource.indexOf('@media (max-width:640px){', cssSource.indexOf('@keyframes fdAppChangeSeam'));
+  const reducedStart = cssSource.indexOf('@media (prefers-reduced-motion:reduce){', mobileStart);
+  const mobileRules = cssSource.slice(mobileStart, reducedStart);
+  assert.match(cssSource, /\.fd-app-practice\s*\{[^}]*position:relative/s);
+  assert.match(cssSource, /\.fd-app-practice__change\s*\{[^}]*grid-template-columns:minmax\(0,1fr\) auto minmax\(0,1fr\)/s);
+  assert.match(cssSource, /\.fd-app-practice__before,\.fd-app-practice__now\s*\{/);
+  assert.match(cssSource, /\.fd-app-practice\.is-revealed \.fd-app-practice__seam\s*\{[^}]*animation:fdAppChangeSeam/s);
+  assert.match(cssSource, /@keyframes fdAppChangeSeam\s*\{/);
+  assert.match(cssSource, /\.fd-app__practice-open\s*\{[^}]*min-height:var\(--fd-target-touch\)/s);
+  assert.match(cssSource, /\.fd-app-practice__choices button,\.fd-app-practice__questions button,\.fd-app-practice__action\s*\{[^}]*min-height:var\(--fd-target-touch\)/s);
+  assert.match(cssSource, /\.fd-app__practice-open:focus-visible,\.fd-app-practice button:focus-visible\s*\{[^}]*outline:3px solid var\(--fd-focus\)/s);
+  assert.ok(mobileStart >= 0 && reducedStart > mobileStart);
+  assert.match(mobileRules, /\.fd-app-practice__change\s*\{[^}]*grid-template-columns:minmax\(0,1fr\)/s);
+  assert.match(cssSource, /@media \(prefers-reduced-motion:reduce\)\s*\{[^}]*\.fd-app-practice\.is-revealed \.fd-app-practice__seam\s*\{[^}]*animation:none/s);
+});
 
 test('canonical APP practice packs validate and resolve by id', () => {
   assert.equal(F.fdAppPracticeValidate(pack), true);
