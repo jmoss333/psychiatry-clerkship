@@ -51,11 +51,15 @@ State vocabulary: **implemented** means software exists and has focused test evi
 
 ## Verification boundary
 
-Focused verification recorded so far:
+Verification recorded at commit `3ca16f1`:
 
 - APP curriculum/schema/catalog contracts and both bridge resource resolution.
 - Pure APP renderer, controller, persistence allowlist, action registry, style-token, and class-inventory contracts.
 - Development-only practice engine validation, ordered reveal, reset, immutability, privacy, and build-registration exclusion.
 - Documentation totality and unshipped draft-scenario contracts.
+- Sequential `build_and_check.sh ms3` and `build_and_check.sh res` runs completed with no hard failures; both media preflights found 104 real media files and no LFS pointer stubs.
+- `bin/verify.sh` completed with `ALL CHECKS PASSED`, including the full 2,450-test Node contract run, both audience builds, governance separation, privacy, accessibility, and design-system drift gates.
+- The APP Playwright suite completed for both audience projects: 5 tests passed and 3 MS3-only skips were expected because the APP workspace is intentionally absent there. It covered resident entry, both bridges, canonical-resource return, persistence/privacy boundaries, and a 390-pixel phone viewport.
+- Three local visual receipts were inspected but not committed: `app-on-shift-pa-desktop.png`, `app-on-shift-pmhnp-desktop.png`, and `app-on-shift-reflection-phone.png`.
 
-Both-site builds, browser screenshots, full repository verification, pull-request CI, and merge evidence must be added only after they actually occur. None of those later gates can resolve clinical, policy, observation, pilot, or accreditation decisions.
+Pull-request CI and merge evidence remain pending. None of these software gates can resolve clinical, policy, observation, pilot, or accreditation decisions.
