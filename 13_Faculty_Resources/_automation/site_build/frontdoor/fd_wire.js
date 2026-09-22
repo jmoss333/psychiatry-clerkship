@@ -110,8 +110,8 @@ function fdLegacyRouteResult(ref, context, state){
   return null;
 }
 
-function fdResolveState(url, stored){
-  var src=stored||{}, out={};
+function fdResolveState(url, stored, options){
+  var src=stored||{}, opts=options||{}, out={};
   if(typeof src.role==='string'&&src.role) out.role=src.role;
   if(src.appBridge==='pa'||src.appBridge==='pmhnp') out.appBridge=src.appBridge;
   out.tab=fdValidTab(src.tab)?src.tab:'today';
@@ -134,6 +134,10 @@ function fdResolveState(url, stored){
   var parsed, routedRef=null;
   try{ parsed=new URL(String(url||''),'https://frontdoor.invalid/'); }catch(_){ parsed=null; }
   if(parsed){
+    var audienceValues=parsed.searchParams.getAll('audience');
+    if(opts.allowAppInvite===true&&audienceValues.length===1&&audienceValues[0]==='app'){
+      out.appInvite=true;
+    }
     var routedTab=parsed.searchParams.get('tab');
     routedRef=parsed.searchParams.get('page')||parsed.searchParams.get('tool');
     if(parsed.searchParams.get('library')==='full'&&(!fdValidTab(routedTab)||routedTab==='library')){
@@ -160,9 +164,10 @@ function fdResolveState(url, stored){
      the wizard from step 1. The flag is per-boot state, never persisted (see FD_KEYS). Only a
      real page or tool admits a guest: the legacy aliases and every other __name__ pseudo-route
      (__progress__ is the device's own dashboard) keep the setup gate below. */
-  if(!out.role&&routedRef&&!fdIsLegacyRouteAlias(routedRef)&&routedRef.indexOf('__')!==0){ out.guest=true; out.screen='app'; }
+  if(out.appInvite===true) out.screen='app';
+  else if(!out.role&&routedRef&&!fdIsLegacyRouteAlias(routedRef)&&routedRef.indexOf('__')!==0){ out.guest=true; out.screen='app'; }
   else if(!out.role) out.screen='setup-role';
-  else if(out.role==='app'||src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
+  else if(fdAppMode(out)||src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
   else out.screen='setup-week';
   if(routedRef&&fdIsLegacyRouteAlias(routedRef)){
     if(routedRef==='__home__'){
@@ -180,7 +185,7 @@ function fdResolveState(url, stored){
       delete out.openId;
     }
   }
-  if(out.role==='app'&&out.tab==='path') out.tab='today';
+  if(fdAppMode(out)&&out.tab==='path') out.tab='today';
   return out;
 }
 
@@ -1657,7 +1662,7 @@ function fdWire(root, initialState, opts){
     var action=fdKeyAction(event.key,{
       typing:fdIsTypingTarget(event.target),screen:state.screen||'app',
       searchOpen:!!state.searchOpen,sheetOpen:!!state.sheet,reading:!!state.openId,
-      meta:!!(event.metaKey||event.ctrlKey),appMode:state.role==='app'
+      meta:!!(event.metaKey||event.ctrlKey),appMode:fdAppMode(state)
     });
     if(!action) return;
     var attrs={};
@@ -1704,7 +1709,7 @@ function fdWire(root, initialState, opts){
     } else {
       merged.roles=o.roles||merged.roles;
       merged.rotationStart=o.rotationStart||merged.rotationStart;
-      merged=fdResolveState(win.location.href,merged);
+      merged=fdResolveState(win.location.href,merged,{allowAppInvite:o.allowAppInvite===true});
       var params=new URLSearchParams(win.location.search||'');
       if(!params.get('page')&&!params.get('tool')&&!params.get('tab')&&params.get('library')!=='full'){
         merged.tab='today';

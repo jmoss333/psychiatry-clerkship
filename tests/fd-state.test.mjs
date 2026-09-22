@@ -94,6 +94,7 @@ test('APP bridge is the only APP choice persisted; reflection, work-task, and pr
   const ls = memStorage();
   const { fdSave, fdLoad } = make(ls);
   fdSave({ role: 'app', appBridge: 'pmhnp', appActivity: 'initial-evaluation',
+    appInvite: true,
     appReflection: 'supervisor', appPractice: { pack: { id: 'training-briefing' }, revealed: true,
       classifications: { 'review-time': 'still-known' }, questionId: 'confirm-owner' } });
   assert.deepEqual(fdLoad(), { role: 'app', appBridge: 'pmhnp' });

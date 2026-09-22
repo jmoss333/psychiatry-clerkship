@@ -90,6 +90,33 @@ test('URL page/tool/tab values beat persisted Front Door state', () => {
   assert.equal(F.fdResolveState('/', { ...stored, toolExpanded: false }).toolExpanded, false);
 });
 
+test('the resident APP invitation is transient and leaves the stored identity intact', () => {
+  const invited = F.fdResolveState('/?audience=app', {
+    role: 'first-role', tab: 'path', week: 2, appBridge: 'pmhnp',
+  }, { allowAppInvite: true });
+  assert.equal(invited.role, 'first-role');
+  assert.equal(invited.appInvite, true);
+  assert.equal(invited.screen, 'app');
+  assert.equal(invited.tab, 'today');
+  assert.equal(invited.appBridge, 'pmhnp');
+
+  const firstVisit = F.fdResolveState('/?audience=app', {}, { allowAppInvite: true });
+  assert.equal(firstVisit.role, undefined);
+  assert.equal(firstVisit.appInvite, true);
+  assert.equal(firstVisit.screen, 'app');
+});
+
+test('APP invitation is opt-in, exact, and cannot expose the APP route on another audience build', () => {
+  for (const url of [
+    '/?audience=app', '/?audience=APP', '/?audience=app&audience=app', '/?audience=resident',
+  ]) {
+    const options = url === '/?audience=app' ? {} : { allowAppInvite: true };
+    const resolved = F.fdResolveState(url, {}, options);
+    assert.equal(resolved.appInvite, undefined, url);
+    assert.equal(resolved.screen, 'setup-role', url);
+  }
+});
+
 test('legacy special-route aliases resolve to canonical Front Door state without becoming resources', () => {
   const complete = {
     role: 'first-role', roles: [{ id: 'first-role' }], rotationStart: '2026-08-17',

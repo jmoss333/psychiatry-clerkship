@@ -14,7 +14,8 @@ const make = new Function(`
   ${read('frontdoor/fd_shell.js')}
   return { fdHeader: fdHeader, fdTabs: fdTabs, fdSetupRole: fdSetupRole,
            fdSetupWeek: fdSetupWeek, fdKeyAction: fdKeyAction,
-           fdThemeMode: fdThemeMode, fdThemeAttr: fdThemeAttr };
+           fdThemeMode: fdThemeMode, fdThemeAttr: fdThemeAttr,
+           fdAppMode: fdAppMode };
 `);
 const F = make();
 
@@ -112,6 +113,15 @@ test('the APP header replaces rotation chrome with an On shift workspace', () =>
   assert.match(html, /data-fd-tab="library"[^>]*>The Essentials</);
   assert.doesNotMatch(html, /data-fd-tab="path"|data-fd-change-week|Set week|Week \d/);
   assert.match(html, /class="fd-weekpill[^>]*>APP</);
+});
+
+test('a transient APP invitation gets APP chrome without replacing the learner identity', () => {
+  const state = { roleId: 'resident', appInvite: true, tab: 'today' };
+  assert.equal(F.fdAppMode(state), true);
+  const html = F.fdHeader(state);
+  assert.match(html, /data-fd-tab="today"[^>]*>On shift</);
+  assert.doesNotMatch(html, /data-fd-tab="path"|data-fd-change-week/);
+  assert.equal(state.roleId, 'resident');
 });
 
 // Supersedes 'the compact header theme toggle has an explicit accessible name': that test pinned

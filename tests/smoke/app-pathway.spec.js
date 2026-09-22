@@ -47,6 +47,35 @@ test('APP entry is absent from MS3 and available only on the resident preview', 
   await expect(page.locator('[data-fd-tab="path"]')).toHaveCount(0);
 });
 
+test('audience=app is a resident-only invitation and never replaces stored identity', async ({ page }, testInfo) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('cw_frontdoor_v1', JSON.stringify({ role: 'resident', tab: 'path' }));
+  });
+  await page.goto('/?audience=app');
+
+  if (!isResidentProject(testInfo.project.name)) {
+    await expect(page.locator('.fd-app')).toHaveCount(0);
+    await expect(page.locator('[data-fd-role="app"]')).toHaveCount(0);
+    return;
+  }
+
+  await expect(page.locator('.fd-app')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'On shift', exact: true })).toBeVisible();
+  await expect(page.locator('[data-fd-tab="path"]')).toHaveCount(0);
+  await expect(page.locator('[data-fd-tab="today"]')).toHaveText('On shift');
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}'));
+  expect(stored.role).toBe('resident');
+  expect(Object.hasOwn(stored, 'appInvite')).toBe(false);
+
+  await page.locator('[data-fd-app-start="pg_interview.md"]').first().click();
+  await expect(page.locator('.governance-notice')).toHaveCount(1);
+  await expect(page.locator('.fd-reader__back')).toContainText('On shift');
+  expect(new URL(page.url()).searchParams.get('audience')).toBe('app');
+
+  await page.goto('/');
+  await expect(page.locator('.fd-app')).toHaveCount(0);
+});
+
 test('APP change practice is keyboard-operable, non-evaluative, and private', async ({ page }, testInfo) => {
   test.skip(!isResidentProject(testInfo.project.name), 'APP practice is resident-build only');
   const writes = [];

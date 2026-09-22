@@ -62,8 +62,8 @@ var FD_READER_TAB_LABELS={ today:'Today', path:'Path', library:'Library' };
    that tab", which fd_shell.js's data-fd-back handler reads from state.fromTab directly (this
    file never needs to know the URL/routing mechanics, only the label). Defaults to 'Today',
    matching fd_shell.js's fdTabs() fallback for an unrecognised tab id. */
-function fdReaderBackLabel(fromTab, roleId){
-  if(fromTab==='today'&&roleId==='app') return 'On shift';
+function fdReaderBackLabel(fromTab, roleId, appMode){
+  if(fromTab==='today'&&(roleId==='app'||appMode===true)) return 'On shift';
   return FD_READER_TAB_LABELS[fromTab]||'Today';
 }
 
@@ -332,7 +332,7 @@ function fdReader(index, state, bodyHtml){
   var neighbours=fdReaderNeighbours(idx, item.ref, readerWeek);
   var nextAfter=inWeek?fdReaderNextUnread(weekItems, item.ref, doneMap):null;
   var isDone=!!doneMap[item.ref];
-  var backLabel=fdReaderBackLabel(st.fromTab,st.roleId);
+  var backLabel=fdReaderBackLabel(st.fromTab,st.roleId,st.appMode);
   var doneLabel=fdReaderDoneLabel(isDone, nextAfter, backLabel);
   var blockHandoff=typeof fdBlockPageHandoff==='function'
     ?fdBlockPageHandoff(st.block, item.ref, doneMap):null;
