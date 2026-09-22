@@ -106,6 +106,17 @@ FOCUS_CATEGORIES = frozenset({
     "anxiety", "childdev", "ethics", "mood", "neurocog", "otherdx",
     "personality", "pharm", "psychosis", "relational", "safety", "substance",
 })
+APP_BRIDGE_NAMES = {
+    "pa": "PA psychiatry bridge",
+    "pmhnp": "PMHNP medical-systems bridge",
+}
+APP_SELF_CHECK_ACTIONS = ["revisit", "supervisor", "another"]
+APP_ACTIVITY_ACTIONS = ["prepare", "rehearse", "observe"]
+APP_ACTIVITIES = [
+    ("initial-evaluation", "Initial psychiatric evaluation and presentation"),
+    ("medication-follow-through", "Medication plan and follow-through"),
+    ("collateral-transition", "Collateral and safe transition"),
+]
 
 
 def main(argv):
@@ -548,6 +559,74 @@ def main(argv):
             bad("safetyKit %s" % ref,
                 "evidenceIds contains no canonical evidence ID (got %r)" % refs)
 
+    # ---- APP pathway: exactly two resident-preview bridges and three shared activities ----
+    app_pathway = cur.get("appPathway")
+    if not isinstance(app_pathway, dict):
+        bad("appPathway", "must be an object")
+        app_pathway = {}
+    if not isinstance(app_pathway.get("intro"), str) or not app_pathway.get("intro", "").strip():
+        bad("appPathway.intro", "must be a non-empty string")
+    bridges = app_pathway.get("bridges")
+    if not isinstance(bridges, dict) or set(bridges) != set(APP_BRIDGE_NAMES):
+        bad("appPathway.bridges", "must contain exactly pa and pmhnp")
+        bridges = bridges if isinstance(bridges, dict) else {}
+    for bridge_id, expected_name in APP_BRIDGE_NAMES.items():
+        bridge = bridges.get(bridge_id)
+        label = "appPathway.bridges.%s" % bridge_id
+        if not isinstance(bridge, dict):
+            bad(label, "must be an object")
+            continue
+        if bridge.get("name") != expected_name:
+            bad(label, "name must be %r" % expected_name)
+        if not isinstance(bridge.get("summary"), str) or not bridge.get("summary", "").strip():
+            bad(label, "summary must be a non-empty string")
+        refs = bridge.get("refs")
+        if not isinstance(refs, list) or len(refs) != 8:
+            bad(label, "refs must contain exactly eight entries")
+            refs = refs if isinstance(refs, list) else []
+        if len({ref for ref in refs if isinstance(ref, str)}) != len(refs):
+            bad(label, "refs must be unique strings")
+        for ref in refs:
+            if not isinstance(ref, str) or ref not in site_shipped["resident"]:
+                bad(label, "ref %r is not shipped on resident" % ref)
+        self_check = bridge.get("selfCheck")
+        if not isinstance(self_check, dict):
+            bad(label, "selfCheck must be an object")
+        else:
+            if (not isinstance(self_check.get("prompt"), str)
+                    or not self_check.get("prompt", "").strip()):
+                bad(label, "selfCheck.prompt must be a non-empty string")
+            if self_check.get("actions") != APP_SELF_CHECK_ACTIONS:
+                bad(label, "selfCheck.actions must be %r" % APP_SELF_CHECK_ACTIONS)
+
+    activities = app_pathway.get("activities")
+    if not isinstance(activities, list) or len(activities) != len(APP_ACTIVITIES):
+        bad("appPathway.activities", "must contain exactly three activities")
+        activities = activities if isinstance(activities, list) else []
+    for index, (expected_id, expected_name) in enumerate(APP_ACTIVITIES):
+        label = "appPathway.activities[%d]" % index
+        if index >= len(activities) or not isinstance(activities[index], dict):
+            bad(label, "must be an object")
+            continue
+        activity = activities[index]
+        if activity.get("id") != expected_id:
+            bad(label, "id must be %r" % expected_id)
+        if activity.get("name") != expected_name:
+            bad(label, "name must be %r" % expected_name)
+        if not isinstance(activity.get("purpose"), str) or not activity.get("purpose", "").strip():
+            bad(label, "purpose must be a non-empty string")
+        refs = activity.get("refs")
+        if not isinstance(refs, list) or not refs:
+            bad(label, "refs must be a non-empty list")
+            refs = refs if isinstance(refs, list) else []
+        if len({ref for ref in refs if isinstance(ref, str)}) != len(refs):
+            bad(label, "refs must be unique strings")
+        for ref in refs:
+            if not isinstance(ref, str) or ref not in site_shipped["resident"]:
+                bad(label, "ref %r is not shipped on resident" % ref)
+        if activity.get("actions") != APP_ACTIVITY_ACTIONS:
+            bad(label, "actions must be %r" % APP_ACTIVITY_ACTIONS)
+
     # ---- roles: id/name/desc non-empty, and the displayed text is audience-neutral ----
     # curriculum.json is one document read by both site builds, so a role's displayed name/desc
     # (id is an identifier, not copy, and is exempt) must not carry an audience-specific token —
@@ -574,6 +653,14 @@ def main(argv):
                 val = r.get(field)
                 if isinstance(val, str) and ROLE_AUDIENCE_TOKEN_RE.search(val):
                     bad(label, "'%s' contains an audience-specific token: %r" % (field, val))
+    ms3_role_ids = [role.get("id") for role in roles.get("ms3", []) if isinstance(role, dict)]
+    resident_role_ids = [
+        role.get("id") for role in roles.get("resident", []) if isinstance(role, dict)
+    ]
+    if "app" in ms3_role_ids:
+        bad("roles.ms3", "must not expose the APP preview")
+    if resident_role_ids.count("app") != 1:
+        bad("roles.resident", "must contain exactly one app role")
 
     if errs:
         print("curriculum.json INVALID — %d issue(s):" % len(errs))

@@ -96,6 +96,12 @@ test('the back link and the bottom ghost button name the originating tab', () =>
     'an unrecognised fromTab falls back to Today, matching fd_shell.js\'s fdTabs() fallback');
 });
 
+test('an APP returns to On shift rather than the hidden Today label', () => {
+  const html = F.fdReader(IDX, s({ fromTab: 'today', roleId: 'app' }), '');
+  assert.match(html, /fd-reader__back" data-fd-back>‹ On shift</);
+  assert.match(html, /fd-btn fd-btn--ghost" data-fd-back>On shift</);
+});
+
 // ---- attested pill --------------------------------------------------------------------------
 
 test('the attested pill appears only when item.attested', () => {

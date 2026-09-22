@@ -48,6 +48,12 @@ test('1/2/3 switch tabs only when nothing is layered above the page', () => {
   assert.equal(F.fdKeyAction('1', o({ sheetOpen: true })), null);
 });
 
+test('APP keyboard shortcuts follow the two visible destinations', () => {
+  assert.deepEqual(F.fdKeyAction('1', o({ appMode: true })), { type: 'tab', tab: 'today' });
+  assert.deepEqual(F.fdKeyAction('2', o({ appMode: true })), { type: 'tab', tab: 'library' });
+  assert.equal(F.fdKeyAction('3', o({ appMode: true })), null);
+});
+
 test('arrows move between items only while reading', () => {
   assert.deepEqual(F.fdKeyAction('ArrowLeft', o({ reading: true })), { type: 'nav', dir: -1 });
   assert.deepEqual(F.fdKeyAction('ArrowRight', o({ reading: true })), { type: 'nav', dir: 1 });
@@ -98,6 +104,14 @@ test('the header renders the safety button and the week pill', () => {
   const html = F.fdHeader({ week: 4 });
   assert.match(html, /data-fd-safety/);
   assert.match(html, /Week 4/);
+});
+
+test('the APP header replaces rotation chrome with an On shift workspace', () => {
+  const html = F.fdHeader({ roleId: 'app', tab: 'today' });
+  assert.match(html, /data-fd-tab="today"[^>]*>On shift</);
+  assert.match(html, /data-fd-tab="library"[^>]*>The Essentials</);
+  assert.doesNotMatch(html, /data-fd-tab="path"|data-fd-change-week|Set week|Week \d/);
+  assert.match(html, /class="fd-weekpill[^>]*>APP</);
 });
 
 // Supersedes 'the compact header theme toggle has an explicit accessible name': that test pinned

@@ -810,6 +810,7 @@ SNIPPET_MARKERS = {
     "/*__FD_TODAY__*/": "frontdoor/fd_today.js",
     "/*__FD_DUE__*/": "frontdoor/fd_due.js",
     "/*__FD_BLOCK__*/": "frontdoor/fd_block.js",
+    "/*__FD_APP__*/": "frontdoor/fd_app.js",
     "/*__FD_SHELL__*/": "frontdoor/fd_shell.js",
     "/*__FD_PATH__*/": "frontdoor/fd_path.js",
     "/*__FD_LIBRARY__*/": "frontdoor/fd_library.js",

@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(335 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
+(374 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -504,7 +504,44 @@ content. The high-risk governance focus rule outranks passage arrival focus.
 
 ---
 
-## 7. Search overlay
+## 7. APP On shift workspace
+
+```
+.fd-app
+  .fd-app__intro
+    .fd-app__eyebrow / h1 / .fd-app__boundary
+  .fd-app__bridge-picker [role=group]
+    .fd-app__bridge-choice <button> ×2   (+ .is-active)
+  .fd-app__bridge
+    .fd-app__bridge-head / .fd-app__bridge-copy
+    .fd-app__resources
+      .fd-app__resource <button> ×8
+    .fd-app__reflection
+      .fd-app__reflection-actions [role=group]
+        .fd-app__reflection-choice <button> ×3
+  .fd-app__work
+    .fd-app__tasks
+      .fd-app__task <article> ×3          (+ .is-active)
+        .fd-app__task-head <button>
+        .fd-app__stages
+          .fd-app__stage <section> ×3
+            .fd-app__step-link <button> ×N
+```
+
+| Class | Notes |
+|---|---|
+| `.fd-app__bridge-choice` | Optional starting route, never an identity claim or competence tier. `.is-active` and `aria-pressed` move together. |
+| `.fd-app__resource` | Canonical resource title and governance badge from the joined index; the APP data stores only refs. Missing refs render `.fd-app__error`, never a shortened sequence. |
+| `.fd-app__reflection` | Visit-only formative choice. The controller may repaint it but only `appBridge` belongs to `FD_KEYS`; reflection and activity state never survive reload. |
+| `.fd-app__task` | Shared work-preparation card. Each card visibly retains all three stages: prepare independently, rehearse here, arrange observation. |
+| `.fd-app__step-link` | Opens an existing governed resource. It is not a completion or supervisor-approval control. |
+
+⚠ The observation stage is explanatory only. It never collects a supervisor name, feedback,
+patient information, or an attestation, and it never turns a website action into clinical authority.
+
+---
+
+## 8. Search overlay
 
 ```
 .fd-search                          (fixed, full-screen scrim + flex host; click = close)
@@ -533,7 +570,7 @@ content. The high-risk governance focus rule outranks passage arrival focus.
 
 ---
 
-## 8. Side sheet and nudge
+## 9. Side sheet and nudge
 
 ```
 .fd-sheetbackdrop                   (fixed, z-90, separate element)
@@ -628,7 +665,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 
 | State | Applied to | Meaning |
 |---|---|---|
-| `.is-active` | `.fd-tab`, `.fd-seg__btn`, `.fd-choices__btn` | current tab / chosen segment / chosen chip |
+| `.is-active` | `.fd-tab`, `.fd-seg__btn`, `.fd-choices__btn`, `.fd-app__bridge-choice`, `.fd-app__task`, `.fd-app__reflection-choice` | current tab / chosen segment / chosen chip / APP route, task, or private reflection |
 | `.is-sel` | `.fd-weektile`, `.fd-timeline__row` | chosen / viewed |
 | `.is-current` | `.fd-dot`, `.fd-railnav__row` | "you are here" |
 | `.is-done` | `.fd-check`, `.fd-dot`, `.fd-row__title`, `.fd-railnav__dot`, `.fd-railnav__title` | completed |

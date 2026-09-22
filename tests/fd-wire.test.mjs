@@ -247,6 +247,60 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     'item:scale.html');
 });
 
+test('choosing APP enters the On shift workspace without asking for a rotation week', () => {
+  assert.deepEqual(F.fdDispatch({ 'data-fd-role': 'app' }, { search: '' }, {
+    ...roleContext, role: null, screen: 'setup-role', week: undefined,
+  }), {
+    patch: {
+      role: 'app', screen: 'app', tab: 'today', week: null, browsing: true,
+      openId: null, searchOpen: false,
+    },
+    route: '/',
+    effect: { type: 'browse-without-rotation' },
+  });
+});
+
+test('a stored APP never re-enters the rotation wizard or restores the Path tab', () => {
+  assert.deepEqual(F.fdResolveState('/?tab=path', {
+    role: 'app', tab: 'path', browsing: true, viewWeek: 3,
+  }), {
+    role: 'app', tab: 'today', libraryView: 'essentials', kitSection: 'all',
+    viewWeek: 3, autoAdvance: true, browsing: true, screen: 'app',
+  });
+});
+
+test('APP bridge persists while work-task and private reflection choices remain controller-only', () => {
+  assert.deepEqual(F.fdResolveState('/', {
+    role: 'app', browsing: true, appBridge: 'pmhnp', appActivity: 'initial-evaluation',
+    appReflection: 'supervisor',
+  }).appBridge, 'pmhnp');
+  assert.deepEqual(F.fdDispatch({ 'data-fd-app-bridge': 'pmhnp' }, { search: '' }, {
+    role: 'app', appBridge: 'pa', appActivity: 'initial-evaluation', appReflection: 'revisit',
+  }), {
+    patch: { appBridge: 'pmhnp', appActivity: null, appReflection: null },
+    route: null, effect: null,
+  });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-app-shift': 'collateral-transition' }, {}, {
+    role: 'app', appActivity: null,
+  }).patch, { appActivity: 'collateral-transition', appReflection: null });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-app-reflect': 'supervisor' }, {}, {
+    role: 'app', appReflection: null,
+  }).patch, { appReflection: 'supervisor' });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-app-reset': '' }, {}, {
+    role: 'app', appActivity: 'collateral-transition', appReflection: 'supervisor',
+  }).patch, { appActivity: null, appReflection: null });
+});
+
+test('APP resource starts reuse the canonical reader route and preserve On shift as origin', () => {
+  const result = F.fdDispatch({ 'data-fd-app-start': 'pg_interview.md' }, { search: '' }, {
+    role: 'app', tab: 'today', appBridge: 'pa',
+  });
+  assert.deepEqual(result, {
+    patch: { openId: 'pg_interview.md', fromTab: 'today', searchOpen: false, sheet: null },
+    route: '?page=pg_interview.md', effect: { type: 'open-resource', ref: 'pg_interview.md' },
+  });
+});
+
 test('change-week uses a reader origin only while a reader is open', () => {
   const reader = F.fdDispatch({ 'data-fd-change-week': '' }, { search: '?case=c1' }, {
     ...roleContext, tab: 'library', fromTab: 'path', openId: 'pending.md',
@@ -583,7 +637,7 @@ function actionTarget(attrs, extra = {}) {
     tagName: 'BUTTON', isContentEditable: false, isConnected: true,
     closest(selector) {
       if(selector==='[data-fd-kit-tool]'&&Object.hasOwn(attrs,'data-fd-kit-tool')) return this;
-      return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-analytics],[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null;
+      return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],[data-fd-app-bridge],[data-fd-app-shift],[data-fd-app-start],[data-fd-app-reflect],[data-fd-app-reset],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-analytics],[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null;
     },
     hasAttribute(name) { return Object.hasOwn(attrs, name); },
     getAttribute(name) { return Object.hasOwn(attrs, name) ? attrs[name] : null; },

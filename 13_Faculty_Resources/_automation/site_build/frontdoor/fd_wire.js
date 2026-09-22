@@ -10,6 +10,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
   'data-fd-back','data-fd-home','data-fd-search','data-fd-change-week','data-fd-progress',
   'data-fd-theme','data-fd-settings','data-fd-analytics','data-fd-exam-date',
+  'data-fd-app-bridge','data-fd-app-shift','data-fd-app-start','data-fd-app-reflect','data-fd-app-reset',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section','data-fd-kit-tool'
@@ -38,6 +39,11 @@ var FD_ACTION_SEMANTICS={
   'data-fd-settings':'open settings panel',
   'data-fd-analytics':'set usage measurement',
   'data-fd-exam-date':'set exam date',
+  'data-fd-app-bridge':'choose APP starting route',
+  'data-fd-app-shift':'choose APP work task',
+  'data-fd-app-start':'open APP preparation resource',
+  'data-fd-app-reflect':'choose private APP reflection',
+  'data-fd-app-reset':'reset private APP reflection',
   'data-fd-clear-ask':'arm device data erase',
   'data-fd-clear-cancel':'cancel device data erase',
   'data-fd-clear-confirm':'erase device data',
@@ -99,6 +105,7 @@ function fdLegacyRouteResult(ref, context, state){
 function fdResolveState(url, stored){
   var src=stored||{}, out={};
   if(typeof src.role==='string'&&src.role) out.role=src.role;
+  if(src.appBridge==='pa'||src.appBridge==='pmhnp') out.appBridge=src.appBridge;
   out.tab=fdValidTab(src.tab)?src.tab:'today';
   out.libraryView='essentials';
   out.kitSection='all';
@@ -147,7 +154,7 @@ function fdResolveState(url, stored){
      (__progress__ is the device's own dashboard) keep the setup gate below. */
   if(!out.role&&routedRef&&!fdIsLegacyRouteAlias(routedRef)&&routedRef.indexOf('__')!==0){ out.guest=true; out.screen='app'; }
   else if(!out.role) out.screen='setup-role';
-  else if(src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
+  else if(out.role==='app'||src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
   else out.screen='setup-week';
   if(routedRef&&fdIsLegacyRouteAlias(routedRef)){
     if(routedRef==='__home__'){
@@ -165,6 +172,7 @@ function fdResolveState(url, stored){
       delete out.openId;
     }
   }
+  if(out.role==='app'&&out.tab==='path') out.tab='today';
   return out;
 }
 
@@ -269,6 +277,32 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-close-sheet')) return fdCloseSheet(s);
   if(fdOwn(a,'data-fd-close-nudge')){
     return {patch:{nudge:null},route:null,effect:null};
+  }
+
+  if(fdOwn(a,'data-fd-app-bridge')){
+    picked=String(a['data-fd-app-bridge']||'');
+    if(picked!=='pa'&&picked!=='pmhnp') return {patch:{},route:null,effect:null};
+    return {patch:{appBridge:picked,appActivity:null,appReflection:null},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-app-shift')){
+    picked=String(a['data-fd-app-shift']||'');
+    if(picked!=='initial-evaluation'&&picked!=='medication-follow-through'&&picked!=='collateral-transition'){
+      return {patch:{},route:null,effect:null};
+    }
+    return {patch:{appActivity:picked,appReflection:null},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-app-reflect')){
+    picked=String(a['data-fd-app-reflect']||'');
+    if(picked!=='revisit'&&picked!=='supervisor'&&picked!=='another'){
+      return {patch:{},route:null,effect:null};
+    }
+    return {patch:{appReflection:picked},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-app-reset')){
+    return {patch:{appActivity:null,appReflection:null},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-app-start')){
+    return fdDispatch({'data-fd-open':String(a['data-fd-app-start']||'')},c,s);
   }
 
   if(fdOwn(a,'data-fd-view-week')){
@@ -438,6 +472,12 @@ function fdDispatch(attrs, context, state){
        the wizard reaches here with screen==='setup-role', so that is the fork -- and leaving the
        rest of the state alone is what keeps the panel open on the chip it just filled. */
     picked=String(a['data-fd-role']||'');
+    if(picked==='app'){
+      return {
+        patch:{role:'app',screen:'app',tab:'today',week:null,browsing:true,openId:null,searchOpen:false},
+        route:fdRouteForTab('today',c.search),effect:{type:'browse-without-rotation'}
+      };
+    }
     if(s.screen==='setup-role'){
       return {patch:{role:picked,screen:'setup-week'},route:null,effect:null};
     }
@@ -819,6 +859,7 @@ function fdTrapFocus(event, dialog){
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
 var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],'+
+  '[data-fd-app-bridge],[data-fd-app-shift],[data-fd-app-start],[data-fd-app-reflect],[data-fd-app-reset],'+
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
@@ -1548,7 +1589,7 @@ function fdWire(root, initialState, opts){
     var action=fdKeyAction(event.key,{
       typing:fdIsTypingTarget(event.target),screen:state.screen||'app',
       searchOpen:!!state.searchOpen,sheetOpen:!!state.sheet,reading:!!state.openId,
-      meta:!!(event.metaKey||event.ctrlKey)
+      meta:!!(event.metaKey||event.ctrlKey),appMode:state.role==='app'
     });
     if(!action) return;
     var attrs={};

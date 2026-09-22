@@ -12,7 +12,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // because it went red: you (or a concurrent PR) changed a shared ceiling — bump the pins below
 // IN THE SAME DIFF as the change, after confirming the other agent's PRs in flight.
 
-const EXPECTED_MARKER_COUNT = 30; // +1 (2026-09-15): learner field-guide DOM enhancement (fd_guide.js).
+// +1 (2026-09-22): resident-preview APP On shift renderer (fd_app.js).
+const EXPECTED_MARKER_COUNT = 31;
 
 test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
   const src = fs.readFileSync(

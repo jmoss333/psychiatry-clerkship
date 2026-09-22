@@ -527,6 +527,17 @@ class RegistrySchemaGateTests(unittest.TestCase):
         self.assertIn("curriculum.json: INVALID at /", result.stdout)
         self.assertIn("synonyms", result.stdout)
 
+    def test_curriculum_requires_the_strict_app_pathway_contract(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "curriculum.json").read_text(encoding="utf-8"))
+            document.pop("appPathway", None)
+            (root / "curriculum.json").write_text(json.dumps(document), encoding="utf-8")
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("curriculum.json: INVALID at /", result.stdout)
+
     def test_curriculum_rejects_malformed_synonyms(self) -> None:
         with self.make_registry_copy() as temporary:
             root = Path(temporary)

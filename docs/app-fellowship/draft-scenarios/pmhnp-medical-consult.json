@@ -1,0 +1,56 @@
+{
+  "id": "pmhnp-medical-consult-draft",
+  "status": "faculty-review-draft",
+  "learnerRelease": false,
+  "clinicalFeedbackStatus": "withheld-pending-faculty-review",
+  "gapIds": [
+    "G10",
+    "G11",
+    "G12",
+    "G17",
+    "G18",
+    "G27"
+  ],
+  "intendedUse": "Define a source-linked synthetic consultation sequence for faculty review without producing a clearance or capacity judgment.",
+  "canonicalResourceRefs": [
+    "medical_workup.md",
+    "ddx.md",
+    "diagnostic-reasoning.html",
+    "exp_consult.md"
+  ],
+  "policyDependencies": [
+    "authorized focused assessment",
+    "medical consultation and escalation workflow",
+    "documentation and continuing responsibility"
+  ],
+  "stageShells": [
+    {
+      "id": "initial-consult-question",
+      "clinicalDataStatus": "not-authored",
+      "promptStatus": "not-authored"
+    },
+    {
+      "id": "one-detail-changes",
+      "clinicalDataStatus": "not-authored",
+      "promptStatus": "not-authored"
+    },
+    {
+      "id": "reframe-and-communicate-uncertainty",
+      "clinicalDataStatus": "not-authored",
+      "promptStatus": "not-authored"
+    }
+  ],
+  "facultyQuestions": [
+    "What is the exact educational question and which initial uncertainty should remain explicit?",
+    "Which faculty-authored change should require the consult framing to be revisited?",
+    "What assessment or escalation language is generalizable and what is local?",
+    "Which exact sources support the findings and explanatory statements?"
+  ],
+  "releaseDependencies": [
+    "faculty-authored synthetic data and explanatory feedback",
+    "source and evidence review",
+    "applicable examination, consultation, and escalation policy",
+    "qualified observation arrangement",
+    "governance registration and faculty disposition"
+  ]
+}

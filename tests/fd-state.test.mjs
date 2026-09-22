@@ -90,6 +90,14 @@ test('fdSave persists only whitelisted keys, never done/streak/week', () => {
   assert.equal(out.week, undefined);
 });
 
+test('APP bridge is the only APP choice persisted; reflection and work-task state stay in memory', () => {
+  const ls = memStorage();
+  const { fdSave, fdLoad } = make(ls);
+  fdSave({ role: 'app', appBridge: 'pmhnp', appActivity: 'initial-evaluation',
+    appReflection: 'supervisor' });
+  assert.deepEqual(fdLoad(), { role: 'app', appBridge: 'pmhnp' });
+});
+
 // A resource may recur in the plan; doing its practice once must not complete every week.
 const PRACTICE_INDEX = {
   byRef: { 'practice.html': { kind: 'tool' }, 'guide.md': { kind: 'read' },

@@ -20,9 +20,11 @@
    fragments naively concatenated would land .fd-tabs outside <header> and silently break that.
    fdTabs stays separately exported/callable for anything that only needs to re-render the row. */
 
-function fdTabs(tab){
+function fdTabs(tab, appMode){
   var cur=(tab==='path'||tab==='library')?tab:'today';
-  var defs=[{id:'today',label:'Today'},{id:'path',label:'Path'},{id:'library',label:'The Essentials'}];
+  var defs=appMode
+    ?[{id:'today',label:'On shift'},{id:'library',label:'The Essentials'}]
+    :[{id:'today',label:'Today'},{id:'path',label:'Path'},{id:'library',label:'The Essentials'}];
   var out='<nav class="fd-tabs">';
   for(var i=0;i<defs.length;i++){
     var t=defs[i];
@@ -37,6 +39,7 @@ function fdTabs(tab){
 
 function fdHeader(state){
   var s=state||{};
+  var appMode=s.roleId==='app';
   var weekLabel=(typeof s.week==='number'&&!isNaN(s.week))?('Week '+fdEsc(s.week)):'Set week';
   var out='<header class="fd-header"><div class="fd-header__bar">';
   out+='<button type="button" class="fd-brand" data-fd-home>'+
@@ -51,14 +54,15 @@ function fdHeader(state){
     '<span class="fd-kbd">⌘K</span>'+
     '</button>';
   out+='<div class="fd-header__actions">'+
+    (appMode?'<span class="fd-weekpill fd-weekpill--identity">APP</span>':
     '<button type="button" class="fd-weekpill" data-fd-change-week title="Change week">'+
-    weekLabel+' ▾</button>'+
+    weekLabel+' ▾</button>')+
     '<button type="button" class="fd-safetybtn" data-fd-safety>✚ Safety</button>'+
     '<button type="button" class="fd-settingsbtn" data-fd-settings '+
     'aria-label="Settings">⚙</button>'+
     '</div>';
   out+='</div>';
-  out+=fdTabs(s.tab);
+  out+=fdTabs(s.tab,appMode);
   out+='</header>';
   return out;
 }
@@ -146,7 +150,8 @@ function fdKeyAction(key, opts){
     return {type:'nav', dir:(key==='ArrowLeft')?-1:1};
   }
   if(key==='1'||key==='2'||key==='3'){
-    var tabs=['today','path','library'];
+    var tabs=o.appMode?['today','library']:['today','path','library'];
+    if(parseInt(key,10)>tabs.length) return null;
     return {type:'tab', tab:tabs[parseInt(key,10)-1]};
   }
   return null;

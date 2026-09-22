@@ -343,6 +343,70 @@
       "triggers": ["delirious", "confused", "confusion", "disoriented", "altered mental status",
         "ams", "sundowning", "waxing and waning", "inattentive", "not making sense"] }
   ],
+  "appPathway": {
+    "intro": "Choose the starting route that fits what you want to revisit. You can use either route.",
+    "bridges": {
+      "pa": {
+        "name": "PA psychiatry bridge",
+        "summary": "Start with interviewing, formulation, communication, medication foundations, and presentation.",
+        "refs": [
+          "pg_interview.md",
+          "case_formulation.md",
+          "communication-practice.html",
+          "psychopharm_primer.md",
+          "adv_psychopharm.md",
+          "one-patient-six-weeks.html",
+          "systems_medlegal.md",
+          "oral.html"
+        ],
+        "selfCheck": {
+          "prompt": "After a synthetic case, privately choose what to revisit before supervised practice.",
+          "actions": ["revisit", "supervisor", "another"]
+        }
+      },
+      "pmhnp": {
+        "name": "PMHNP medical-systems bridge",
+        "summary": "Start with medical assessment, differential diagnosis, monitoring, consultation, and transitions.",
+        "refs": [
+          "medical_workup.md",
+          "ddx.md",
+          "diagnostic-reasoning.html",
+          "med_monitoring.md",
+          "interaction-cards.html",
+          "exp_consult.md",
+          "toxidromes.md",
+          "exp_family.md"
+        ],
+        "selfCheck": {
+          "prompt": "After a synthetic case, privately choose what to revisit before supervised practice.",
+          "actions": ["revisit", "supervisor", "another"]
+        }
+      }
+    },
+    "activities": [
+      {
+        "id": "initial-evaluation",
+        "name": "Initial psychiatric evaluation and presentation",
+        "purpose": "Prepare a focused work sample and a question for supervision.",
+        "refs": ["pg_interview.md", "case_formulation.md", "diagnostic-reasoning.html", "oral.html"],
+        "actions": ["prepare", "rehearse", "observe"]
+      },
+      {
+        "id": "medication-follow-through",
+        "name": "Medication plan and follow-through",
+        "purpose": "Prepare to explain a plan, follow-through responsibilities, and questions for supervision.",
+        "refs": ["psychopharm_primer.md", "adv_psychopharm.md", "med_monitoring.md", "interaction-cards.html"],
+        "actions": ["prepare", "rehearse", "observe"]
+      },
+      {
+        "id": "collateral-transition",
+        "name": "Collateral and safe transition",
+        "purpose": "Prepare to gather, organize, and transfer information with supervised follow-through.",
+        "refs": ["collateral_workflow.md", "family-systems.html", "exp_family.md"],
+        "actions": ["prepare", "rehearse", "observe"]
+      }
+    ]
+  },
   "roles": {
     "ms3": [
       { "id": "student", "name": "Core rotation", "desc": "The six-week inpatient rotation", "hint": "most common" },
@@ -352,6 +416,7 @@
     "resident": [
       { "id": "pgy1", "name": "PGY-1", "desc": "First year on inpatient psychiatry", "hint": "most common" },
       { "id": "pgy2", "name": "PGY-2 and above", "desc": "Senior on the unit", "hint": "" },
+      { "id": "app", "name": "APP / PA / NP", "desc": "Clinical practice on the inpatient unit", "hint": "" },
       { "id": "staff", "name": "Nursing · SW · family", "desc": "Unit staff and families", "hint": "" }
     ]
   },

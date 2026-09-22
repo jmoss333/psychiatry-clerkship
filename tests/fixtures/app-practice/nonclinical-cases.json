@@ -1,0 +1,72 @@
+{
+  "id": "community-event-handoff",
+  "title": "Community event handoff rehearsal",
+  "evidenceRefs": [
+    "fixture:closed-loop-communication"
+  ],
+  "policyDependencies": [],
+  "stages": [
+    {
+      "id": "initial-message",
+      "detail": "A volunteer says the welcome table is ready.",
+      "prompt": "What would you clarify before accepting the handoff?",
+      "policyDependencies": [],
+      "choices": [
+        {
+          "id": "clarify-owner",
+          "label": "Clarify who owns the remaining setup",
+          "feedbackRef": "clarify-owner"
+        },
+        {
+          "id": "assume-complete",
+          "label": "Assume the setup is complete",
+          "feedbackRef": "assume-complete"
+        }
+      ]
+    },
+    {
+      "id": "one-detail-changes",
+      "detail": "One detail changes: the accessibility signs have not arrived.",
+      "prompt": "What should be revisited in the handoff?",
+      "policyDependencies": [],
+      "choices": [
+        {
+          "id": "reopen-plan",
+          "label": "Reopen the plan and confirm a new owner",
+          "feedbackRef": "reopen-plan"
+        },
+        {
+          "id": "leave-note",
+          "label": "Leave a note without confirming receipt",
+          "feedbackRef": "leave-note"
+        }
+      ]
+    }
+  ],
+  "feedback": {
+    "clarify-owner": {
+      "summary": "Clarifying the remaining work makes responsibility visible before the handoff closes.",
+      "evidenceRefs": [
+        "fixture:closed-loop-communication"
+      ]
+    },
+    "assume-complete": {
+      "summary": "A status statement does not establish who owns unfinished work.",
+      "evidenceRefs": [
+        "fixture:closed-loop-communication"
+      ]
+    },
+    "reopen-plan": {
+      "summary": "A changed detail is a reason to revisit the plan and confirm the next owner.",
+      "evidenceRefs": [
+        "fixture:closed-loop-communication"
+      ]
+    },
+    "leave-note": {
+      "summary": "Writing a recommendation is not the same as confirming responsibility transfer.",
+      "evidenceRefs": [
+        "fixture:closed-loop-communication"
+      ]
+    }
+  }
+}
