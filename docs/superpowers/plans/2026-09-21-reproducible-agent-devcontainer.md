@@ -87,6 +87,7 @@
 - Modify: `metrics/netlify/functions/ev.mjs:7-9`
 - Modify: `_prototypes/sp-interview/tests/ops-docs.test.mjs:54-58`
 - Modify: `_prototypes/sp-interview/tests/ci-build-contract.test.mjs:336-343`
+- Modify: `_prototypes/sp-interview/tests/conversation-live-server.test.mjs:450-462`
 - Modify: `tests/maintenance/test_scheduled_workflows.py:446-463`
 - Modify: `13_Faculty_Resources/_automation/maintenance/validate_scheduled_workflows.py:395-430`
 - Modify: `bin/verify.sh` immediately after the root `node --test tests/*.test.mjs` step.
@@ -383,6 +384,7 @@ Make these exact semantic edits:
 - Change `sp-proxy/README.md` and `faculty-console/README.md` to remove their stale Node 20 statements while preserving the console's Node 24 deployment fact.
 - Rewrite the stale comment at the top of `metrics/netlify/functions/ev.mjs` to state that Node 22 is the supported runtime; do not change function behavior or logging.
 - Rename the proxy operations test to Node 22 and change its `NODE_VERSION` assertion from `"20"` to `"22"`.
+- Make the concurrent speech-budget test wait until the first request has reached the actor provider before starting the second request. Both actors remain in flight together, while the test no longer assumes that two concurrently issued HTTP requests reach the server in call-site order.
 - Change both Node-version literals in `tests/maintenance/test_scheduled_workflows.py`'s mutation-anchor pair from `"20"` to `"22"`; do not change the test's purpose.
 
 Do not edit historical implementation plans that accurately record Node 20 at the time they were written.
@@ -466,14 +468,18 @@ Expected: all commands exit `0`; `node bin/check-runtime-contract.mjs` reports N
 
 - [ ] **Step 10: Run every current Node test surface under Node 22**
 
-Use the implementation worktree directly. `npm ci` writes only ignored dependency/build outputs and does not rewrite lockfiles:
+Use a full local probe clone. Mounting a linked worktree alone leaves its `.git` file pointing at a host path that is absent inside the container, while the root Node suite also shells out to Python validators and therefore needs the repository's locked Python dependencies. LFS smudging is unnecessary for these Node surfaces:
 
 ```bash
+repo_root="$(git rev-parse --show-toplevel)"
+probe_dir="$(mktemp -d "$(dirname "$repo_root")/runtime-node22.XXXXXX")"
+GIT_LFS_SKIP_SMUDGE=1 git clone --no-hardlinks . "$probe_dir/repo"
+
 docker run --rm \
-  -v "$PWD:/repo" \
+  -v "$probe_dir/repo:/repo" \
   -w /repo \
   node:22-bookworm \
-  bash -lc 'npm --prefix metrics ci && npm --prefix metrics test && npm --prefix sp-proxy ci --include=dev && npm --prefix sp-proxy test && npm --prefix sp-preview ci --include=dev && npm --prefix sp-preview test && npm --prefix sp-preview run build && npm --prefix tests/smoke ci && node --test tests/*.test.mjs && node tests/contrast-check.mjs && node --test faculty-console/*.test.mjs && node faculty-console/check_pending_visible.mjs && bash _prototypes/sp-interview/tests/run-all.sh && node bin/redteam-offline.mjs && node bin/redteam-offline.mjs --coverage'
+  bash -lc 'export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends python3-venv git-lfs && python3 -m venv /tmp/venv && /tmp/venv/bin/pip install --disable-pip-version-check --requirement requirements.txt --requirement requirements-dev.txt PyYAML==6.0.2 && export PATH="/tmp/venv/bin:$PATH" && npm --prefix metrics ci && npm --prefix metrics test && npm --prefix sp-proxy ci --include=dev && npm --prefix sp-proxy test && npm --prefix sp-preview ci --include=dev && npm --prefix sp-preview test && npm --prefix sp-preview run build && npm --prefix tests/smoke ci && node --test tests/*.test.mjs && node tests/contrast-check.mjs && node --test faculty-console/*.test.mjs && node faculty-console/check_pending_visible.mjs && bash _prototypes/sp-interview/tests/run-all.sh && node bin/redteam-offline.mjs && node bin/redteam-offline.mjs --coverage'
 ```
 
 Expected: metrics, proxy, preview, root, faculty-console, Interview Room, contrast, and offline red-team suites pass. The smoke browser itself is installed and exercised in Task 3.
@@ -494,6 +500,7 @@ git add runtime_versions.json bin/check-runtime-contract.mjs tests/runtime-contr
   tests/smoke/package.json tests/smoke/package-lock.json \
   sp-proxy/README.md faculty-console/README.md metrics/netlify/functions/ev.mjs \
   _prototypes/sp-interview/tests/ci-build-contract.test.mjs \
+  _prototypes/sp-interview/tests/conversation-live-server.test.mjs \
   _prototypes/sp-interview/tests/ops-docs.test.mjs \
   tests/maintenance/test_scheduled_workflows.py \
   bin/verify.sh \
