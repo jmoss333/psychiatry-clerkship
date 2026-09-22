@@ -39,7 +39,7 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
   // now its only emitter.
   assert.deepEqual(emitted, [
     'data-fd-analytics', 'data-fd-app-bridge', 'data-fd-app-practice-classify',
-    'data-fd-app-practice-close', 'data-fd-app-practice-question', 'data-fd-app-practice-reset',
+    'data-fd-app-practice-close', 'data-fd-app-practice-open', 'data-fd-app-practice-question', 'data-fd-app-practice-reset',
     'data-fd-app-practice-reveal', 'data-fd-app-reflect', 'data-fd-app-reset',
     'data-fd-app-shift', 'data-fd-app-start', 'data-fd-back', 'data-fd-change-week',
     'data-fd-clear-ask', 'data-fd-clear-cancel', 'data-fd-clear-confirm', 'data-fd-close-nudge',
@@ -114,6 +114,14 @@ test('APP actions are distinct, registered, and injected before the controller',
   assert.equal(shell.split('/*__FD_APP__*/').length - 1, 1);
   assert.ok(shell.indexOf('/*__FD_APP__*/') < shell.indexOf('/*__FD_WIRE__*/'));
   assert.match(common, /"\/\*__FD_APP__\*\/"\s*:\s*"frontdoor\/fd_app\.js"/);
+});
+
+test('APP practice engine is injected before APP and the controller', () => {
+  const marker = '/*__FD_APP_PRACTICE__*/';
+  assert.equal(shell.split(marker).length - 1, 1);
+  assert.ok(shell.indexOf(marker) < shell.indexOf('/*__FD_APP__*/'));
+  assert.ok(shell.indexOf(marker) < shell.indexOf('/*__FD_WIRE__*/'));
+  assert.match(common, /"\/\*__FD_APP_PRACTICE__\*\/"\s*:\s*"frontdoor\/fd_app_practice\.js"/);
 });
 
 test('APP practice actions are reserved with distinct controller meanings', () => {

@@ -7,6 +7,7 @@ const readJson = (path) => JSON.parse(readFileSync(new URL(path, ROOT), 'utf8'))
 const CUR = readJson('curriculum.json');
 const SHIPPED = readJson('13_Faculty_Resources/_automation/site_build/shipped_pages.json');
 const BUILD = new URL('../13_Faculty_Resources/_automation/site_build/', import.meta.url);
+const practiceSrc = readFileSync(new URL('frontdoor/fd_app_practice.js', BUILD), 'utf8');
 const appSrc = readFileSync(new URL('frontdoor/fd_app.js', BUILD), 'utf8');
 const dataSrc = readFileSync(new URL('frontdoor/fd_data.js', BUILD), 'utf8');
 
@@ -16,8 +17,13 @@ const makeApp = new Function(`
   function governanceBadge(value){
     return value ? '<span data-test-governance="'+fdEsc(value.status)+'"></span>' : '';
   }
+  ${practiceSrc}
   ${appSrc}
-  return { fdAppModel: fdAppModel, fdAppWorkspace: fdAppWorkspace };
+  return {
+    fdAppModel: fdAppModel,
+    fdAppWorkspace: fdAppWorkspace,
+    fdAppPracticeStart: fdAppPracticeStart
+  };
 `);
 const APP = makeApp();
 
@@ -125,6 +131,34 @@ test('the APP renderer distinguishes prepare, rehearse, and observation on all t
   assert.match(html, /This site does not record supervisor observation/);
 });
 
+test('each workplace task opens its mapped practice pack', () => {
+  const html = APP.fdAppWorkspace(appIndex(), CUR.appPathway, { appBridge: 'pa' });
+  assert.equal((html.match(/data-fd-app-practice-open=/g) || []).length, 3);
+  for (const id of PRACTICE_IDS) {
+    assert.match(html, new RegExp(`data-fd-app-practice-open="${id}"`));
+  }
+});
+
+test('an active session renders once after the task grid without evaluative copy', () => {
+  const session = APP.fdAppPracticeStart(CUR.appPathway.practicePacks[0]);
+  const html = APP.fdAppWorkspace(appIndex(), CUR.appPathway,
+    { appBridge: 'pa', appPractice: session });
+  assert.equal((html.match(/<section class="fd-app-practice"/g) || []).length, 1);
+  assert.ok(html.indexOf('fd-app__tasks') < html.indexOf('fd-app__practice-host'));
+  const privacy = 'Private rehearsal. No score, no saved response, and nothing is sent.';
+  assert.equal(html.split(privacy).length - 1, 1);
+  assert.equal((html.match(/No score/g) || []).length, 1);
+  assert.doesNotMatch(html, /grade|pass|fail|correct|competent|entrust/i);
+});
+
+test('an invalid mapped pack leaves resources usable and shows a scoped alert', () => {
+  const pathway = structuredClone(CUR.appPathway);
+  pathway.activities[0].practiceId = 'missing-pack';
+  const html = APP.fdAppWorkspace(appIndex(pathway), pathway, { appBridge: 'pa' });
+  assert.match(html, /Practice unavailable\. Your preparation resources are still available\./);
+  assert.match(html, /Canonical pg_interview\.md/);
+});
+
 test('private reflection has only the three formative choices and no evaluative output', () => {
   const html = APP.fdAppWorkspace(appIndex(), CUR.appPathway, {
     appBridge: 'pa', appReflection: 'supervisor',
@@ -150,5 +184,5 @@ test('a missing configured resource is named instead of silently shortening a br
 test('the APP renderer is pure ES5 with no storage, network, analytics, model, or clock access', () => {
   assert.doesNotMatch(appSrc, /\b(?:const|let)\s|=>|`/);
   assert.doesNotMatch(appSrc,
-    /localStorage|sessionStorage|fetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|cwAnalytics|postMessage|Date\s*\(|performance\.|AI service/i);
+    /localStorage|sessionStorage|fetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|cwAnalytics|postMessage|\bDate\s*\(|performance\.|AI service/i);
 });
