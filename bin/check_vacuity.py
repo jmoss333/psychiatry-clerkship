@@ -410,6 +410,40 @@ def covered_by_gates() -> tuple[set[str], set[str], list[str]]:
     return hard, soft - hard, unresolved
 
 
+SELF_TEST_CALL = re.compile(r"\.self_test\s*\(")
+# The repo's one way of loading a tool inside a test:
+#   importlib.util.spec_from_file_location("x", ROOT / "bin" / "x.py")
+SPEC_LOAD = re.compile(r"spec_from_file_location\([^)]*\)", re.S)
+
+
+def driven_by(path: str, covered: set[str]) -> str | None:
+    """A `--self-test` mode can be run by a COVERED test file instead of by a gate step.
+
+    tests/maintenance/test_verify_citations.py loads bin/verify_citations.py and asserts
+    that self_test() returns 0, and `unittest discover -s tests/maintenance` runs it in
+    both verify.sh and ci.yml — so the falsification does execute, and reporting it as
+    an orphan would be this checker's own false positive. The credit is narrow on
+    purpose: the driver must be a file the gates already run, it must name this exact
+    path, and it must call self_test(). An import alone is not coverage.
+    """
+    base = os.path.basename(path)
+    for driver in sorted(covered):
+        if not FALSIFIER.search(driver):
+            continue
+        try:
+            text = (REPO / driver).read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        if not SELF_TEST_CALL.search(text):
+            continue
+        # The file must be LOADED, not merely mentioned: this test file also names
+        # bin/verify.sh, to assert the gate is deliberately NOT wired in, and that must
+        # never read as running it.
+        if any(base in m.group(0) for m in SPEC_LOAD.finditer(text)):
+            return driver
+    return None
+
+
 def exempt_reason(path: str) -> str | None:
     for prefix, reason in EXEMPT.items():
         if path.startswith(prefix):
@@ -423,7 +457,8 @@ def orphans(files: list[str] | None = None) -> tuple[list[str], list[str], list[
     every = falsifiers(tracked)
     hard, soft, unresolved = covered_by_gates()
     missed = [f for f in every
-              if f not in hard and f not in soft and not exempt_reason(f)]
+              if f not in hard and f not in soft and not exempt_reason(f)
+              and not driven_by(f, hard)]
     toothless = [f for f in every if f in soft and not exempt_reason(f)]
     return missed, toothless, unresolved, len(every)
 
@@ -527,6 +562,17 @@ def self_test() -> int:
     cases.append(("naming a test in an echo is not counted as running it", not ran))
     ran, _s, _ok = _resolve_command(["node", "--test", "tests/*.test.mjs"], REPO)
     cases.append((f"a real node --test glob IS counted ({len(ran)} files)", len(ran) > 10))
+
+    # --- credit for a --self-test a covered TEST drives, and its limits ------------
+    driver = "tests/maintenance/test_verify_citations.py"
+    cases.append(("a covered test that loads a tool and calls self_test() is credit",
+                  driven_by("bin/verify_citations.py", {driver}) == driver))
+    cases.append(("a driver the gates do NOT run is not credit",
+                  driven_by("bin/verify_citations.py", set()) is None))
+    cases.append(("naming a tool without calling self_test() is not credit",
+                  driven_by("bin/verify.sh", {driver}) is None))
+    cases.append(("a covered NON-test file is never a driver",
+                  driven_by("bin/verify_citations.py", {"bin/verify.sh"}) is None))
 
     real = globals()["GATES"]
     try:
