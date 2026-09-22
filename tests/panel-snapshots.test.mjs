@@ -102,6 +102,14 @@ test('the snapshot format only inserts line breaks — no render change can hide
 // resident_section.py:318). Rather than leave that in a comment for someone to not read, the gap
 // is asserted against shipped_pages.json — the derived universe ADR-002 requires code to ask,
 // instead of the producers. A new page-producing route lands in `unexplained` and fails here.
+//
+// PART OF THAT GAP IS NOW CLOSED ELSEWHERE, and this file is no longer the whole story. The
+// resident audience has its own corpus — tests/__panels__/res/, 87 panels rendered from
+// _build/res/index.html by tests/panel_build_gate.mjs, gated from build_and_check.sh after the
+// build. The counts below are unaffected: they measure what THIS source-registry render covers,
+// which is unchanged. What is still uncovered by anything is the 13 MS3 Case-of-the-Week
+// panels; closing that means moving this corpus onto the build-rendered path too, which
+// requires rewriting bin/render_panels.mjs and ships separately.
 
 const SHIPPED = JSON.parse(
   readFileSync(new URL('../13_Faculty_Resources/_automation/site_build/shipped_pages.json', import.meta.url), 'utf8'),
@@ -146,6 +154,10 @@ test('the snapshots record the MS3 payload, which is not what the resident site 
   // "Board-Style Question Bank"; the source manifest this harness reads calls it
   // "Shelf Mode — Exam Simulation". Seeing the MS3 string here is CORRECT for these snapshots
   // and is exactly why they must not be read as covering the resident site.
+  //
+  // The resident site IS covered now — by tests/__panels__/res/, rendered from the resident
+  // build's own payload, where this same tool carries the resident title. That is a different
+  // corpus, not this one; this assertion stays because it is what makes the two distinguishable.
   const withShelf = panels.filter(([, html]) => html.includes('?tool=shelf-mode.html'));
   assert.ok(withShelf.length > 0, 'no panel links shelf-mode.html; this caveat needs rechecking');
   assert.equal(manifestTitle('shelf-mode.html'), 'Shelf Mode — Exam Simulation',

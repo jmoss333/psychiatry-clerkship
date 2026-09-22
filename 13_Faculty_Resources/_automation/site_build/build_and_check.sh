@@ -19,6 +19,15 @@
 #   ADR-002: the one listing every new consumer reads cannot drift from reality without
 #   the build going red, in either direction (a tracked slug the build did not produce,
 #   or a published slug nothing tracks and therefore nobody can attest).
+# - tests/panel_build_gate.mjs re-renders every "On the Unit Practice and Tools" panel THIS
+#   build publishes and compares it against tests/__panels__/<site>/. It runs HERE, not in the
+#   node suite above, because it needs the build: that suite runs before build_deploy.py, so a
+#   build-dependent assertion there skips in CI and a red one would abort the build that
+#   repairs it. Running after the build also leaves _build/ current, so the render stays
+#   re-runnable with no rebuild. Repair with
+#   `node tests/panel_build_gate.mjs --site <site> --write` and commit the diff — that diff IS
+#   the learner-visible change. Only `res` has a build-rendered corpus; tests/__panels__/ms3/
+#   is the SOURCE-registry render and is maintained by `node bin/render_panels.mjs`.
 #
 # HARD findings (broken nav/search targets,
 # dose literals in rp-*/-trainer tools, invalid JSON, missing <title>/viewport,
@@ -97,6 +106,8 @@ case "$SITE" in
     python3 "$HERE/check_search_quality.py" "$RES_OUT" resident
     echo "── Shipped-pages parity: $RES_OUT"
     python3 "$HERE/shipped_pages.py" --check-build "$RES_OUT" --site res
+    echo "── Panel snapshots: $RES_OUT"
+    node "$LIB/tests/panel_build_gate.mjs" --site res
     echo "── Anki decks → $RES_OUT/anki (fail-soft)"
     bash "$HERE/build_anki.sh" "$RES_OUT" || true
     ;;
