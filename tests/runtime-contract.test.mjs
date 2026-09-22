@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
@@ -141,4 +142,38 @@ test('live version comparison rejects malformed Bash output', () => {
   }, '1.63.0'), [
     'current Bash is not-a-version; expected an integer major of 5 or later',
   ]);
+});
+
+test('devcontainer declares no secret or host-control mounts', () => {
+  const config = JSON.parse(readFileSync(resolve(ROOT, '.devcontainer/devcontainer.json'), 'utf8'));
+  const serialized = JSON.stringify(config);
+  assert.equal(config.remoteUser, 'node');
+  assert.equal(config.postCreateCommand, 'bash .devcontainer/post-create.sh');
+  assert.equal(config.mounts, undefined);
+  assert.doesNotMatch(serialized, /docker\.sock|SSH_AUTH_SOCK|TOKEN|SECRET|PASSWORD|API_KEY/i);
+});
+
+test('container bootstrap installs every locked dependency lane and verifies the live contract', () => {
+  const source = readFileSync(resolve(ROOT, '.devcontainer/post-create.sh'), 'utf8');
+  for (const token of [
+    'requirements.txt',
+    'requirements-dev.txt',
+    'PyYAML==6.0.2',
+    'npm --prefix metrics ci',
+    'npm --prefix sp-proxy ci',
+    'npm --prefix sp-preview ci',
+    'npm --prefix tests/smoke ci',
+    'playwright install chromium',
+    'check_lfs_media.py --worktree-stubs',
+    'SSH_AUTH_SOCK',
+    'credential.helper',
+    'check-runtime-contract.mjs --current',
+  ]) assert.match(source, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+});
+
+test('container image bakes the locked Chromium dependency', () => {
+  const source = readFileSync(resolve(ROOT, '.devcontainer/Dockerfile'), 'utf8');
+  assert.match(source, /COPY tests\/smoke\/package\.json tests\/smoke\/package-lock\.json/);
+  assert.match(source, /PLAYWRIGHT_BROWSERS_PATH=\/ms-playwright/);
+  assert.match(source, /npx playwright install chromium --with-deps/);
 });

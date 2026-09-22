@@ -1,0 +1,9 @@
+*
+!.devcontainer/
+!.devcontainer/Dockerfile
+!tests/
+tests/*
+!tests/smoke/
+tests/smoke/*
+!tests/smoke/package.json
+!tests/smoke/package-lock.json
