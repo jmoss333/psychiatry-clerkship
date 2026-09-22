@@ -14,6 +14,9 @@ governance layer for `config/finding.schema.json`.
 
 Escalation override: any finding whose `affects[]` includes a path in
 `04_Acute_and_Safety/**` is bumped one level (P2→P1, P1→P0).
+When a collector records an explicit `severity_cap` for lower-confidence evidence,
+the bump cannot exceed that cap. A browser-required source returning a runner-only
+4xx therefore remains P1 until it is verified from a non-runner network.
 
 ## 2. Idempotency (no duplicate issues)
 

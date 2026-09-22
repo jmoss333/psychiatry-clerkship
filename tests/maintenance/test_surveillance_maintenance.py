@@ -515,6 +515,43 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
             ["source::modified::label-removed"],
         )
 
+    def test_acute_path_escalation_respects_explicit_severity_cap(self):
+        finding = {
+            "severity": "P1",
+            "severity_cap": "P1",
+            "affects": ["04_Acute_and_Safety/suicide-risk.md"],
+        }
+
+        self.assertEqual(L.escalate(finding), "P1")
+        self.assertNotIn("_escalation", finding)
+
+    def test_browser_required_404_carries_its_p1_cap_into_sync(self):
+        source = {
+            "id": "fda-drug-safety",
+            "name": "FDA Drug Safety Communications",
+            "url": "https://www.fda.gov/drugs/example",
+            "type": "html",
+            "severity_default": "P0",
+            "link_check": "browser_required",
+        }
+        with (
+            mock.patch.object(L, "load_registry", return_value={"sources": [source]}),
+            mock.patch.object(
+                run_citation_check,
+                "classify",
+                return_value=(False, "broken-link", 404, None, "http 404"),
+            ),
+            mock.patch.object(run_citation_check.time, "sleep"),
+        ):
+            findings = run_citation_check.check_registry_sources()
+
+        self.assertEqual(len(findings), 1)
+        finding = findings[0]
+        self.assertEqual(finding["severity"], "P1")
+        self.assertEqual(finding["severity_cap"], "P1")
+        finding["affects"] = ["04_Acute_and_Safety/suicide-risk.md"]
+        self.assertEqual(L.escalate(finding), "P1")
+
     def test_closed_issue_overrides_historical_open_status(self):
         self.write_report_fixture(
             fingerprint="source::modified::abc",
@@ -1475,4 +1512,3 @@ class GuidelinePdfSourceTests(unittest.TestCase):
                 run_guideline_surv.main()
             self.assertEqual(sorted(calls), [("apify", "h"), ("pdf", "p")])
             self.assertEqual(json.loads((Path(tmp) / "c.json").read_text()), ["h", "p"])
-
