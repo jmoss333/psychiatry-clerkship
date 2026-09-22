@@ -39,13 +39,28 @@ const REQUEST = Object.freeze({
   maximumUsage: Object.freeze({ inputTokens: 100, outputTokens: 0 }),
 });
 
+// `adapterWrites` is THIS repository's contract: how many times the ledger calls
+// store.set — one attempt for a hard failure, five for the 412 contention loop.
+// It is pinned exactly.
+//
+// How many HTTP attempts the SDK makes underneath each of those writes is
+// @netlify/blobs' private retry policy, and it is deliberately NOT pinned. It
+// moved under a MINOR bump: 11.1.0 made 403 retryable on a signed URL and
+// re-mints the signed URL on every retry, so 403/429/500 went from 1 upload to
+// 6 and from 1 signing call to 6 — an upstream fix for expired signed URLs that
+// changed no observable outcome here. Pinning a vendor's retry shape turns every
+// SDK bump into a red gate that reads like a safety regression (PR #728).
+//
+// What IS asserted, over every attempt the SDK makes: each one carries the
+// correct conditional header, none yields a usable ETag, and the ledger never
+// advances. See assertConditionalRequests for the bounds that keep those
+// `every()` checks from passing vacuously over an empty list.
 const FAILURE_MATRIX = Object.freeze([
-  Object.freeze({ status: 401, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 1 }),
-  Object.freeze({ status: 403, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 1 }),
-  // The pinned SDK performs the initial request plus its five retries for 429 and 5xx.
-  Object.freeze({ status: 429, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 6 }),
-  Object.freeze({ status: 500, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 6 }),
-  Object.freeze({ status: 412, code: 'budget_contention', adapterWrites: 5, httpAttempts: 5 }),
+  Object.freeze({ status: 401, code: 'budget_unavailable', adapterWrites: 1 }),
+  Object.freeze({ status: 403, code: 'budget_unavailable', adapterWrites: 1 }),
+  Object.freeze({ status: 429, code: 'budget_unavailable', adapterWrites: 1 }),
+  Object.freeze({ status: 500, code: 'budget_unavailable', adapterWrites: 1 }),
+  Object.freeze({ status: 412, code: 'budget_contention', adapterWrites: 5 }),
 ]);
 
 function clone(value) {
@@ -159,18 +174,36 @@ function operationStatus(harness) {
 
 function assertConditionalRequests(harness, {
   adapterWrites,
-  httpAttempts,
   condition,
 }) {
-  assert.equal(harness.apiRequests.length, adapterWrites);
+  // The ledger's own write loop: pinned exactly.
   assert.equal(harness.observedResults.length, adapterWrites);
-  assert.equal(harness.signedRequests.length, httpAttempts);
+
+  // The SDK's retry policy: bounded, not pinned. Every ledger write produces at
+  // least one upload and at least one signed-URL mint, and no upload attempt is
+  // made without one. The lower bounds are what keep the `every()` check below
+  // from passing vacuously over an empty request list.
+  assert.ok(
+    harness.signedRequests.length >= adapterWrites,
+    `expected >= ${adapterWrites} upload attempts, saw ${harness.signedRequests.length}`,
+  );
+  assert.ok(
+    harness.apiRequests.length >= adapterWrites,
+    `expected >= ${adapterWrites} signing calls, saw ${harness.apiRequests.length}`,
+  );
+  assert.ok(
+    harness.apiRequests.length <= harness.signedRequests.length,
+    `signing calls (${harness.apiRequests.length}) must not exceed upload attempts`
+    + ` (${harness.signedRequests.length})`,
+  );
+
+  // The CAS safety property, over EVERY attempt the SDK made — retries included.
   assert.equal(harness.signedRequests.every((request) => (
     request.options.headers[condition.name] === condition.value
   )), true);
 }
 
-test('Netlify Blobs 10.7.9 reserve matrix fails closed except for HTTP 200 with an ETag', async (t) => {
+test('Netlify Blobs reserve matrix fails closed except for HTTP 200 with an ETag', async (t) => {
   for (const entry of FAILURE_MATRIX) {
     await t.test(`HTTP ${entry.status}`, async () => {
       const harness = makeAdapterHarness({
@@ -210,7 +243,6 @@ test('Netlify Blobs 10.7.9 reserve matrix fails closed except for HTTP 200 with 
     assert.equal(operationStatus(harness), 'reserved');
     assertConditionalRequests(harness, {
       adapterWrites: 1,
-      httpAttempts: 1,
       condition: { name: 'if-none-match', value: '*' },
     });
     assert.equal(harness.observedResults[0].modified, true);
@@ -218,7 +250,7 @@ test('Netlify Blobs 10.7.9 reserve matrix fails closed except for HTTP 200 with 
   });
 });
 
-test('Netlify Blobs 10.7.9 provider-start matrix never authorizes HTTP failures or 412', async (t) => {
+test('Netlify Blobs provider-start matrix never authorizes HTTP failures or 412', async (t) => {
   for (const entry of FAILURE_MATRIX) {
     await t.test(`HTTP ${entry.status}`, async () => {
       const harness = makeAdapterHarness({ rotationId: `mark-${entry.status}` });
