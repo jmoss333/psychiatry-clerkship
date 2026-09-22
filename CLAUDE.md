@@ -97,6 +97,32 @@ cd tests/smoke && npm ci && npx playwright test
   derived listing, `site_build/shipped_pages.json` — `load_shipped_pages()` in `shipped_pages.py`
   (Python) or `deriveContentUniverse()` in `faculty-console/content-universe.mjs` (JS) — never the
   manifest alone. See the gotcha below.
+- `site_build/frontdoor/` — **the Front Door: the learner shell both sites run.** Twenty `fd_*.js`
+  modules plus `frontdoor.css`, assembled into `site_build/spa_index.html` at build time. The
+  modules are the surfaces: `fd_today.js` (the Today landing page and its one primary action),
+  `fd_library.js` (the Library and **The Essentials**), `fd_reader.js`, `fd_search.js`,
+  `fd_path.js` + `fd_edition_*.js` (rotation weeks and curator editions), `fd_wire.js` (the
+  controller that binds them), `fd_state.js` (`cw_*` / `rp_*` storage). Everything else is
+  support. **The Essentials** (shipped 2026-09-19→21 across #706 #713 #716 #717 #719) is a
+  readings-first view of the Library: a section index, a `This week · N` filter that follows the
+  active Path including curator editions, and selectable tool preview cards sharing one
+  description/action pane. Selection is **transient** — it is not persisted, not in the URL, and
+  a new filter must not change that. Contracts: `tests/fd-library.test.mjs`,
+  `fd-edition-project.test.mjs`, `fd-action-contract.test.mjs`, `fd-wire.test.mjs`, and the
+  browser suite `tests/smoke/front-door.spec.js` with its `essentials-inventory.js` helper.
+  **`docs/superpowers/specs/front-door-handoff/CLASS-INVENTORY.md` is the CSS contract** — 335
+  `fd-*` selectors and 22 `is-*` state classes, with the load-bearing nesting and the traps called
+  out per surface. It is a **human** contract, not a gate: nothing fails a build when markup
+  misses a rule, the page just renders wrong while tests stay green. Read the surface's entry
+  before writing its markup, and update the inventory in the same PR that changes the stylesheet —
+  every recent Front Door PR does.
+- `13_Faculty_Resources/Feedback/feedback.html` + the Today banner in `fd_today.js` — the
+  **active-testing feedback channel** (#726, 2026-09-21): an audience-neutral banner inviting
+  trainee feedback during site testing, routed to the private form with page context prefilled.
+  Contact is optional; the **no-PHI** rule and the "this is not the official rotation evaluation"
+  boundary are load-bearing, not copy. It is a *pilot* surface: when testing ends, retiring the
+  banner is a deliberate edit, not something that expires on its own. Pinned by
+  `tests/fd-today.test.mjs` and `tests/feedback-form.test.mjs`.
 - `NN_Category/` (00–14, 99) — curriculum **content source**, not build output. `14_Tracks/<audience>/`
   are link-only overlays; content never forks (see README).
 - Root data + schemas: `question_bank.json`, `topic_meta.json`, `communication_cases.json`, etc. —
@@ -246,6 +272,28 @@ cd tests/smoke && npm ci && npx playwright test
   viewport-height frame; `tests/tool-frame.test.mjs` pins the set of such tools and
   `tool-expand.spec.js` measures the live frame. Surveyed before the default flipped (2026-09-19):
   no shipped tool sets html/body height or overflow, so the html box is the content height.
+- **A test may not depend on live governance state.** An assertion that reads the real
+  `reviewed.json` — "some page is pending", "the pending count is nonzero", "this dot is
+  visible" — is a test of the faculty's queue, not of the code, and **faculty draining that
+  queue turns it red**. That is exactly what happened on 2026-09-21: Josh attested 101 pages in
+  #725, the learner UI correctly stopped showing pending notices, and four `front-door.spec.js`
+  assertions failed for being right. #729 fixed them by pinning each branch with a **controlled
+  governance fixture** and leaving the deterministic pending-dot coverage to the unit and
+  governance suites. Write the fixture; never assert a live count. The inverse also holds — a
+  test that passes only while a backlog exists retires itself silently when the backlog clears.
+- **An optional flag every test passes and production never passes is an untested production
+  path.** `sync_findings.py --out-dir` was documented "used by tests", had no default, and #711
+  then added an unconditional `os.makedirs(args.out_dir)`. Every test in
+  `tests/maintenance/test_surveillance_maintenance.py` passes `--out-dir`; all four scheduled
+  surveillance workflows pass none. So the suite stayed green while every scheduled run of the
+  citation, link, guideline and resource-intake jobs died with `TypeError: expected str, bytes
+  or os.PathLike object, not NoneType` — after creating issues and before writing `STATUS.md`,
+  so the monitors looked like they were reporting and the offline `issue_snapshot.json` the
+  cadence guard reads was never produced at all. A test-only flag therefore takes the
+  **production value as its `default=`** (`build_status.py` is the pattern), and the pin is two
+  assertions, not one: the default is what production uses, **and** production still takes the
+  default. This is §D of `docs/SILENT_SHRINK_CHECKLIST.md` in its cheapest disguise — the check
+  never ran the path it claims to cover.
 - **Crisis contacts (988 etc.) live in `crisis_resources.json` only.** Never hard-code a crisis
   number in a content page or tool. A page opts in with a `<!-- crisis-block -->` marker
   (`<!-- crisis-block-html -->` in tools); `site_build/crisis_block.py` renders it and

@@ -134,7 +134,7 @@ def create_issue(repo, token, f):
     return res
 
 
-def main():
+def build_parser():
     ap = argparse.ArgumentParser()
     ap.add_argument("--findings", required=True, help="JSON array of findings")
     ap.add_argument("--job", required=True,
@@ -147,7 +147,18 @@ def main():
     ap.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPO))
     ap.add_argument("--dry-run", action="store_true", help="No GitHub calls; print intended actions")
     ap.add_argument("--existing-fixture", help="(dry-run) JSON array of fingerprints to treat as already-issued")
-    ap.add_argument("--out-dir", help="Override history/ output dir (used by tests)")
+    # DEFAULTS TO THE REAL history/ DIR, never None. Every scheduled workflow invokes this
+    # script WITHOUT --out-dir while every test passes one, so a None default is a code path
+    # only production takes — which is exactly what happened: from #711 (2026-09-19) until
+    # this fix, `os.makedirs(args.out_dir)` below raised TypeError on every scheduled run of
+    # all four surveillance jobs while the suite stayed green. Same shape as build_status.py.
+    ap.add_argument("--out-dir", default=L.HISTORY,
+                    help="Override history/ output dir (used by tests); defaults to history/")
+    return ap
+
+
+def main():
+    ap = build_parser()
     args = ap.parse_args()
 
     with open(args.findings, encoding="utf-8") as fh:
