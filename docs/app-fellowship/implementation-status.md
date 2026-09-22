@@ -51,7 +51,7 @@ State vocabulary: **implemented** means software exists and has focused test evi
 
 ## Verification boundary
 
-Verification recorded at commit `3ca16f1`:
+Verification evidence recorded for this branch:
 
 - APP curriculum/schema/catalog contracts and both bridge resource resolution.
 - Pure APP renderer, controller, persistence allowlist, action registry, style-token, and class-inventory contracts.
