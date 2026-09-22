@@ -254,6 +254,7 @@ step "production rotation edition locked"   python3 bin/check-rotation-edition-l
 # Scoped to the *.test.mjs glob on purpose: tests/smoke/*.spec.js is a separate Playwright
 # suite with its own deps and is not runnable from repo root.
 step "node --test tests/*.test.mjs"         bash -c 'node --test tests/*.test.mjs'
+step "runtime contract"                     node bin/check-runtime-contract.mjs
 step "contrast-check"                       node tests/contrast-check.mjs
 
 # --- "what ships" is one derived file, and it must be current (ADR-002) ---

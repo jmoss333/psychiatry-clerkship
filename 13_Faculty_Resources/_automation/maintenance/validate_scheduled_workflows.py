@@ -396,9 +396,9 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "674b60ea33bcf8545c60ce5094fc0aa64fc27c241db417e74ed26c5842670677"
     ),
-    "ci.yml": "ac309354549f9258a2420175f22b85b988ee7c673edaa2c8ebbbaa69b2c29f28",
+    "ci.yml": "7fa63af6e13596c88439756807a48713e35984887ada0fbe9950330d68b32224",
     "maintenance-governance-digest.yml": (
-        "b6cc2dcf41eec62131c18bca73f235b8599241234b0d26e5c406f635435b521e"
+        "3642bbcc45b6321dcaaf1f172c8ece91483494bec04647a31ec1f0e0ee3eb12b"
     ),
     "maintenance-heartbeat.yml": (
         "2fd18edc8a3d3cf15ea82c4838e28fb4d075513f027fd751b995dee3ea887261"
@@ -407,10 +407,10 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "acd1fe78364baf65ac9842ffb62a5abacaa8c70110a254106166130985fc9689"
     ),
     "maintenance-queue-runner.yml": (
-        "ae4482d9b23810d6866e31371bce5d011c30b7450acc0a2ff83aa4eb8b1ce814"
+        "2044dc589d3df7e1f850fca0468637fa2aa8e6798012cc1fda481b8c6d0fbf65"
     ),
     "maintenance-production-canary.yml": (
-        "d2b848a52ea19f9e68d2afff370e763291f319798d8f3c0d869c944fb6ef39df"
+        "d4c32a08473580eb3ecea8eecad2c7a7202d52e3532541b697500305874e78a0"
     ),
     "maintenance-rotation-readiness.yml": (
         "655504ee205ce4f27ddc63dc2a819dc1d1eb7987f56bbacbbfc452d1cc48476a"

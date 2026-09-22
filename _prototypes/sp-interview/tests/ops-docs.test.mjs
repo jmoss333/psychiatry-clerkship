@@ -51,11 +51,11 @@ test('operations guide names every managed-voice control without embedding value
   assert.doesNotMatch(readme, /falls back automatically/i);
 });
 
-test('proxy deployment pins Node 20 and the runbook matches immutable actor settings', () => {
+test('proxy deployment pins Node 22 and the runbook matches immutable actor settings', () => {
   const netlify = fs.readFileSync(NETLIFY, 'utf8');
   const readme = fs.readFileSync(README, 'utf8');
 
-  assert.match(netlify, /\[build\.environment\][\s\S]*\bNODE_VERSION\s*=\s*"20"/);
+  assert.match(netlify, /\[build\.environment\][\s\S]*\bNODE_VERSION\s*=\s*"22"/);
   for (const deadVariable of [
     'SP_MODEL_ACTOR',
     'SP_MODEL_EVALUATOR',

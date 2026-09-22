@@ -4,11 +4,10 @@ import { isoWeek, increment } from './_shared/counters.mjs';
 
 // Runtime read + JSON.parse, resolved relative to this module's own URL.
 // NOT `import allowlistJson from '../../allowlist.json' with { type: 'json' }` —
-// import attributes are Node 22 syntax. Local dev runs Node 22, so that line
-// would pass every local test, but the deploy target for this function is
-// Node 20 (a later task adds metrics/netlify.toml pinning NODE_VERSION 20),
-// where the same syntax can fail to parse and the function never boots.
-// fs.readFileSync + JSON.parse works identically on any Node version
+// import attributes are supported by the Node 22 runtime pinned in
+// metrics/netlify.toml, but they also couple this function to JSON-module and
+// bundler behavior that is unnecessary for a local allowlist. fs.readFileSync
+// + JSON.parse works identically across the supported runtime and bundler
 // (readFileSync has accepted `file:` URL objects since Node 7.6) and survives
 // esbuild's function bundler, which special-cases exactly this
 // `new URL(..., import.meta.url)` pattern to carry the referenced file along

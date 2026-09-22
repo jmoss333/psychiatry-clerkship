@@ -30,7 +30,7 @@
   ignore = 'bash ../13_Faculty_Resources/_automation/site_build/netlify_ignore_scoped.sh metrics'
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "22"
 
 # node_bundler = "nft" (NOT "esbuild"). ev.mjs loads its allowlist at module scope via
 # `readFileSync(new URL('../../allowlist.json', import.meta.url))`. esbuild only rewrites a

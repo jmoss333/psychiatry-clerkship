@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "nodeMajor": 22,
+  "pythonMajorMinor": "3.11",
+  "bashMinimumMajor": 5,
+  "nodeExceptions": {
+    "faculty-console/netlify.toml": 24
+  },
+  "nodeReviewBy": "2027-02-01"
+}

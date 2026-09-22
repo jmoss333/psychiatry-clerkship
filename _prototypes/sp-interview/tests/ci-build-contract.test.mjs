@@ -337,7 +337,7 @@ const SMOKE_LAUNCHER_COMMAND = 'bash tests/smoke/start-local-servers.sh';
 const SMOKE_CONFIGURATION_PATTERN = /\bSMOKE_[A-Z0-9_]+\b/;
 const MANAGED_GATE_ORDER = [
   '- uses: actions/setup-node',
-  'node-version: "20"',
+  'node-version: "22"',
   'run: npm --prefix sp-proxy ci',
   'npm --prefix sp-proxy test',
   'bash _prototypes/sp-interview/tests/run-all.sh',
