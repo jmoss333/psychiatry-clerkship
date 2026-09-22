@@ -175,6 +175,44 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
             {"apa-practice-guidelines", "doi:10.1/example"},
         )
 
+    def test_out_dir_defaults_to_history_because_production_never_passes_it(self):
+        # #711 added an unconditional os.makedirs(args.out_dir) while --out-dir had no
+        # default. Every test here passes --out-dir and every scheduled workflow does not,
+        # so the suite stayed green while all four surveillance jobs crashed nightly with
+        # "TypeError: expected str, bytes or os.PathLike object, not NoneType". Break this
+        # test by restoring `ap.add_argument("--out-dir", help=...)` with no default.
+        args = sync_findings.build_parser().parse_args(
+            [
+                "--findings", "f.json",
+                "--job", "citation-monitor",
+                "--checked-sources", "c.json",
+                "--issues-out", "i.json",
+                "--dry-run",
+            ]
+        )
+        self.assertIsNotNone(args.out_dir)
+        self.assertEqual(str(args.out_dir), str(L.HISTORY))
+
+    def test_every_scheduled_workflow_invokes_sync_findings_without_out_dir(self):
+        # The assertion above only means something while production really takes the
+        # default. If a workflow starts passing --out-dir, that job leaves the defaulted
+        # path and this pin has to be re-argued rather than silently weakened.
+        workflows = sorted((ROOT / ".github" / "workflows").glob("surveillance-*.yml"))
+        self.assertTrue(workflows, "no surveillance workflows found")
+        callers = []
+        for path in workflows:
+            text = path.read_text(encoding="utf-8")
+            if "sync_findings.py" not in text:
+                continue
+            callers.append(path.name)
+            block = text.split("sync_findings.py", 1)[1].split("\n      - ", 1)[0]
+            self.assertNotIn(
+                "--out-dir",
+                block,
+                f"{path.name} passes --out-dir; the production default is no longer exercised",
+            )
+        self.assertEqual(len(callers), 4, f"expected 4 surveillance callers, got {callers}")
+
     def test_checked_source_contract_rejects_malformed_duplicate_and_blank_values(self):
         invalid_values = (
             {"not": "an array"},
