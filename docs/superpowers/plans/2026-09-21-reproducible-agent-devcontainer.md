@@ -86,6 +86,7 @@
 - Modify: `faculty-console/README.md:130`
 - Modify: `metrics/netlify/functions/ev.mjs:7-9`
 - Modify: `_prototypes/sp-interview/tests/ops-docs.test.mjs:54-58`
+- Modify: `_prototypes/sp-interview/tests/ci-build-contract.test.mjs:336-343`
 - Modify: `tests/maintenance/test_scheduled_workflows.py:446-463`
 - Modify: `13_Faculty_Resources/_automation/maintenance/validate_scheduled_workflows.py:395-430`
 - Modify: `bin/verify.sh` immediately after the root `node --test tests/*.test.mjs` step.
@@ -392,14 +393,13 @@ Add this static check immediately after the root Node suite in `bin/verify.sh`:
 step "runtime contract"                     node bin/check-runtime-contract.mjs
 ```
 
-Before changing lockfiles or workflow digests, prove the two coupled Node 20 test fixtures were updated with the runtime declarations:
+Before changing lockfiles or workflow digests, prove the Interview Room's coupled Node 20 test fixtures were updated with the runtime declarations:
 
 ```bash
 bash _prototypes/sp-interview/tests/run-all.sh
-python3 -m unittest discover -s tests/maintenance -p 'test_*.py' -v
 ```
 
-Expected: both exit `0`. A failure at this point bisects to the small runtime/test-anchor edit rather than to later mechanical lockfile or digest changes.
+Expected: exit `0`. A failure at this point bisects to the small runtime/test-fixture edit rather than to later mechanical lockfile or digest changes. The full maintenance suite runs after the scheduled-workflow digests are recomputed in Step 8; running it before then correctly fails closed on stale workflow contracts.
 
 - [ ] **Step 7: Refresh only lockfile root metadata**
 
@@ -493,6 +493,7 @@ git add runtime_versions.json bin/check-runtime-contract.mjs tests/runtime-contr
   sp-preview/package.json sp-preview/package-lock.json \
   tests/smoke/package.json tests/smoke/package-lock.json \
   sp-proxy/README.md faculty-console/README.md metrics/netlify/functions/ev.mjs \
+  _prototypes/sp-interview/tests/ci-build-contract.test.mjs \
   _prototypes/sp-interview/tests/ops-docs.test.mjs \
   tests/maintenance/test_scheduled_workflows.py \
   bin/verify.sh \

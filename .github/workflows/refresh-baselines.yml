@@ -38,7 +38,7 @@ jobs:
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "20"
+          node-version: "22"
 
       # build_and_check.sh runs the Python validators first; jsonschema became a
       # validator dependency in #253, after this workflow was written (same

@@ -1,6 +1,9 @@
 {
   "name": "sp-proxy",
   "private": true,
+  "engines": {
+    "node": ">=22 <23"
+  },
   "version": "0.1.0",
   "description": "Netlify function proxy for The Interview Room (LLM standardized patient). Key stays server-side.",
   "scripts": {

@@ -127,7 +127,7 @@ npm ci
 npx playwright test --project=faculty-console
 ```
 
-CI uses Node 20. On this repository, local Node 25 has stalled in Playwright; Node 22 is the verified local fallback.
+CI uses Node 22. The faculty-console Netlify site remains on its separately tested Node 24 runtime. On this repository, local Node 25 has stalled in Playwright; Node 22 is the verified local fallback.
 
 ## One-time setup (≈10 minutes, all in the Netlify + GitHub UIs)
 

@@ -450,7 +450,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
                     "      - uses: actions/setup-node@"
                     "820762786026740c76f36085b0efc47a31fe5020 # v7\n"
                     "        with:\n"
-                    "          node-version: \"20\"\n\n"
+                    "          node-version: \"22\"\n\n"
                 ),
                 (
                     "          lfs: false\n"
@@ -458,7 +458,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
                     "      - uses: actions/setup-node@"
                     "820762786026740c76f36085b0efc47a31fe5020\n"
                     "        with:\n"
-                    "          node-version: \"20\"\n\n"
+                    "          node-version: \"22\"\n\n"
                 ),
             ),
             (
