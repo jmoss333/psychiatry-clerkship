@@ -112,6 +112,9 @@ function fdAppPracticeValidateSession(session){
   fdAppPracticeValidate(session.pack);
   if(typeof session.revealed!=='boolean') throw new Error('Practice session revealed must be boolean');
   if(!fdAppPracticeObject(session.classifications)) throw new Error('Practice session classifications must be an object');
+  if(!session.revealed&&(Object.keys(session.classifications).length||session.questionId!==null)){
+    throw new Error('Unrevealed practice session cannot contain classifications or a question');
+  }
   for(var id in session.classifications){
     if(!fdAppPracticeOwn(session.classifications,id)) continue;
     if(!fdAppPracticeHasId(session.pack.statements,id)) throw new Error('Unknown statement '+id);

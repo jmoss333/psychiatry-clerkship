@@ -95,6 +95,17 @@ test('reclassification replaces one category and reset clears the session', () =
   assert.equal(reset.questionId, null);
 });
 
+test('unrevealed sessions reject supplied classifications or questions', () => {
+  const classified = F.fdAppPracticeStart(pack);
+  classified.classifications['review-time'] = 'changed';
+  assert.throws(() => F.fdAppPracticeReveal(classified), /unrevealed/i);
+
+  const questioned = F.fdAppPracticeStart(pack);
+  questioned.questionId = 'confirm-owner';
+  assert.throws(() => F.fdAppPracticeReveal(questioned), /unrevealed/i);
+  assert.throws(() => F.fdAppPracticeChooseQuestion(questioned, 'confirm-owner'), /unrevealed/i);
+});
+
 test('unknown statements, categories, and questions cannot alter the session', () => {
   const session = F.fdAppPracticeReveal(F.fdAppPracticeStart(pack));
   assert.throws(() => F.fdAppPracticeClassify(session, 'missing-statement', 'changed'), /statement/i);
