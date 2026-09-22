@@ -167,6 +167,11 @@ def escalate(finding):
     if any(a.startswith(ACUTE_PREFIXES) for a in affects):
         old = finding["severity"]
         new = _bump(old, 1)
+        cap = finding.get("severity_cap")
+        if cap is not None:
+            if cap not in SEVERITY_ORDER:
+                raise ValueError("severity_cap must be one of %s" % ", ".join(SEVERITY_ORDER))
+            new = SEVERITY_ORDER[min(SEVERITY_ORDER.index(new), SEVERITY_ORDER.index(cap))]
         if new != old:
             finding["severity"] = new
             finding["_escalation"] = f"{old}->{new} (acute-safety path affected)"
