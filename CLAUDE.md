@@ -59,6 +59,30 @@ bash bin/verify.sh            # --quick for the fast subset
 # Playwright smoke suite (nav crawl · LFS integrity · visual regression)
 cd tests/smoke && npm ci && npx playwright test
 ```
+
+### Local Dev Container
+
+VS Code can reopen this repository in `.devcontainer/`, which supplies Node 22,
+Python 3.11, Bash 5+, Git LFS, the locked NPM dependencies, and Chromium. Container
+creation runs `.devcontainer/post-create.sh`; it installs dependencies and checks the
+runtime contract but deliberately does not run the long full gate. Open a full clone,
+not a linked worktree whose Git directory is outside the mounted workspace, and materialize
+LFS files with `git lfs pull` before reopening it in the container.
+
+```bash
+node bin/check-runtime-contract.mjs --current  # fast environment proof
+bash bin/verify-devcontainer.sh                # full gate + nonvisual smoke suite
+```
+
+The container declares no repository-managed credential or Docker-socket mount. VS Code
+may still forward the host SSH agent or Git credential helper; setup reports either state.
+It does not prove deployment, provider behavior, microphone/headphone behavior,
+VoiceOver, faculty approval, clinical correctness, local LFS browser coverage, or Ubuntu
+visual-baseline parity. The local LFS Playwright project skips without a deploy URL.
+Never regenerate visual baselines from it; use the existing workflow_dispatch job. A push
+made from the host Mac still runs its pre-push gate under host Bash 3.2; run the push from
+the container when the Bash 5 environment is part of the evidence.
+
 - CI (`.github/workflows/ci.yml`) runs on every PR: path-lint → media/topic_meta/longitudinal
   validators → build+QA gate (ms3 & res) → smoke tests. It mirrors Netlify, so breakage turns a PR
   red instead of only failing at deploy.
