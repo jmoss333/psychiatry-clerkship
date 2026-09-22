@@ -45,6 +45,11 @@ RESIDENT_EXTRAS = [
 
 
 DEFAULT_GOVERNANCE = {"status": "reviewed", "riskKind": "general", "riskLevel": "low"}
+PRACTICE_IDS = [
+    "training-briefing",
+    "workshop-equipment-checkout",
+    "community-event-handoff",
+]
 
 
 def _catalog(refs, governance_by_ref=None):
@@ -58,9 +63,69 @@ def _catalog(refs, governance_by_ref=None):
     ]}]
 
 
+def _practice_packs():
+    return [
+        {
+            "id": "training-briefing", "title": "Training-room briefing",
+            "snapshot": [
+                "A facilitator asks you to prepare a two-minute update from a shared brief.",
+                "The update has a named owner and a scheduled review time.",
+            ],
+            "change": "A source note is now marked unconfirmed.",
+            "statements": [
+                {"id": "review-time", "text": "The scheduled review time has not changed."},
+                {"id": "source-status", "text": "Every source in the brief is confirmed."},
+                {"id": "verification-owner", "text": "The person responsible for checking the source note is clear."},
+            ],
+            "supervisorQuestions": [
+                {"id": "name-uncertainty", "text": "Which uncertainty should I name in the update?"},
+                {"id": "confirm-owner", "text": "Who should confirm the source note?"},
+                {"id": "prepare-review", "text": "What should I prepare before we review it together?"},
+            ],
+        },
+        {
+            "id": "workshop-equipment-checkout", "title": "Workshop equipment checkout",
+            "snapshot": [
+                "A workshop kit has a named setup owner.",
+                "The delivery window is listed on the shared schedule.",
+            ],
+            "change": "The delivery window moves to after the setup owner leaves.",
+            "statements": [
+                {"id": "setup-owner", "text": "The setup owner is still named."},
+                {"id": "delivery-window", "text": "The kit will arrive during the original delivery window."},
+                {"id": "new-time-owner", "text": "The person who will receive the kit at the new time is clear."},
+            ],
+            "supervisorQuestions": [
+                {"id": "handoff-owner", "text": "Who should own the handoff at the new time?"},
+                {"id": "plan-parts", "text": "Which parts of the original plan still hold?"},
+                {"id": "confirm-before-start", "text": "What needs confirmation before the workshop starts?"},
+            ],
+        },
+        {
+            "id": "community-event-handoff", "title": "Community event handoff",
+            "snapshot": [
+                "A volunteer says the welcome table is set up.",
+                "One volunteer owns the remaining setup checklist.",
+            ],
+            "change": "The accessibility signs have not arrived.",
+            "statements": [
+                {"id": "table-status", "text": "The welcome table is set up."},
+                {"id": "item-status", "text": "Every setup item has arrived."},
+                {"id": "sign-owner", "text": "The person who will obtain the signs is clear."},
+            ],
+            "supervisorQuestions": [
+                {"id": "remaining-owner", "text": "Who should own the remaining setup?"},
+                {"id": "handoff-check", "text": "Which part of the handoff needs confirmation?"},
+                {"id": "opening-check", "text": "What should be checked before the event opens?"},
+            ],
+        },
+    ]
+
+
 def _app_pathway():
     return {
         "intro": "Choose the starting route that fits what you want to revisit.",
+        "practicePacks": _practice_packs(),
         "bridges": {
             "pa": {
                 "name": "PA psychiatry bridge", "summary": "First route",
@@ -76,14 +141,15 @@ def _app_pathway():
             },
         },
         "activities": [
-            {"id": activity_id, "name": name, "purpose": "Prepare for supervision.",
+            {"id": activity_id, "name": name, "practiceId": PRACTICE_IDS[index],
+             "purpose": "Prepare for supervision.",
              "refs": ["shared-%02d.md" % number],
              "actions": ["prepare", "rehearse", "observe"]}
-            for activity_id, name, number in (
+            for index, (activity_id, name, number) in enumerate((
                 ("initial-evaluation", "Initial psychiatric evaluation and presentation", 1),
                 ("medication-follow-through", "Medication plan and follow-through", 2),
                 ("collateral-transition", "Collateral and safe transition", 3),
-            )
+            ))
         ],
     }
 
@@ -297,6 +363,10 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertEqual(resident["roles"], self.curriculum["roles"]["resident"])
         self.assertNotEqual(ms3["roles"], resident["roles"])
         self.assertNotIn("appPathway", ms3["curriculum"])
+        self.assertEqual(
+            [pack["id"] for pack in resident["curriculum"]["appPathway"]["practicePacks"]],
+            ["training-briefing", "workshop-equipment-checkout", "community-event-handoff"],
+        )
         self.assertEqual(resident["curriculum"]["appPathway"], self.curriculum["appPathway"])
         app_refs = {
             ref

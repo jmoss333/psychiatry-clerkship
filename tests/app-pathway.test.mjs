@@ -36,6 +36,11 @@ const ACTIVITY_NAMES = [
   'Medication plan and follow-through',
   'Collateral and safe transition',
 ];
+const PRACTICE_IDS = [
+  'training-briefing',
+  'workshop-equipment-checkout',
+  'community-event-handoff',
+];
 
 test('the canonical APP pathway has the two approved bridge names and exact resource sequences', () => {
   const pathway = CUR.appPathway;
@@ -55,6 +60,17 @@ test('the shared On shift structure has exactly three stable preparation activit
   assert.ok(activities.every((activity) => activity.refs.length > 0));
   assert.ok(activities.every((activity) =>
     JSON.stringify(activity.actions) === JSON.stringify(['prepare', 'rehearse', 'observe'])));
+});
+
+test('each APP activity resolves one unique nonclinical practice pack', () => {
+  const { activities, practicePacks } = CUR.appPathway;
+  assert.deepEqual(activities.map((activity) => activity.practiceId), PRACTICE_IDS);
+  assert.deepEqual(practicePacks.map((pack) => pack.id), PRACTICE_IDS);
+  assert.equal(new Set(practicePacks.map((pack) => pack.id)).size, 3);
+  assert.ok(practicePacks.every((pack) =>
+    pack.statements.length === 3 && pack.supervisorQuestions.length === 3));
+  assert.doesNotMatch(JSON.stringify(practicePacks),
+    /clinical|patient|diagnos|medicat|dose|treatment|capacity|suicide|agitation|symptom|disease|disorder|score|pass|fail|correct|answer|competent|entrust|ready/i);
 });
 
 test('every APP resource resolves on the resident preview without duplicating clinical metadata', () => {

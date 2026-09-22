@@ -117,7 +117,7 @@
     },
     "appPathway": {
       "type": "object",
-      "required": ["intro", "bridges", "activities"],
+      "required": ["intro", "bridges", "activities", "practicePacks"],
       "additionalProperties": false,
       "properties": {
         "intro": { "type": "string", "minLength": 1 },
@@ -145,6 +145,12 @@
           "minItems": 3,
           "maxItems": 3,
           "items": { "$ref": "#/definitions/appActivity" }
+        },
+        "practicePacks": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "$ref": "#/definitions/appPracticePack" }
         }
       }
     },
@@ -285,12 +291,16 @@
     },
     "appActivity": {
       "type": "object",
-      "required": ["id", "name", "purpose", "refs", "actions"],
+      "required": ["id", "name", "practiceId", "purpose", "refs", "actions"],
       "additionalProperties": false,
       "properties": {
         "id": {
           "type": "string",
           "enum": ["initial-evaluation", "medication-follow-through", "collateral-transition"]
+        },
+        "practiceId": {
+          "type": "string",
+          "enum": ["training-briefing", "workshop-equipment-checkout", "community-event-handoff"]
         },
         "name": { "type": "string", "minLength": 1 },
         "purpose": { "type": "string", "minLength": 1 },
@@ -301,6 +311,37 @@
         "actions": {
           "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true,
           "items": { "type": "string", "enum": ["prepare", "rehearse", "observe"] }
+        }
+      }
+    },
+    "appPracticeText": {
+      "type": "object",
+      "required": ["id", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "text": { "type": "string", "minLength": 1 }
+      }
+    },
+    "appPracticePack": {
+      "type": "object",
+      "required": ["id", "title", "snapshot", "change", "statements", "supervisorQuestions"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "title": { "type": "string", "minLength": 1 },
+        "snapshot": {
+          "type": "array", "minItems": 2, "maxItems": 3,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "change": { "type": "string", "minLength": 1 },
+        "statements": {
+          "type": "array", "minItems": 3, "maxItems": 3,
+          "items": { "$ref": "#/definitions/appPracticeText" }
+        },
+        "supervisorQuestions": {
+          "type": "array", "minItems": 3, "maxItems": 3,
+          "items": { "$ref": "#/definitions/appPracticeText" }
         }
       }
     },
