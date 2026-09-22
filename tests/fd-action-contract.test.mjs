@@ -38,7 +38,9 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
   // with the settings panel's Appearance segmented control (fd_sheet.js's fdSettingsSeg), which is
   // now its only emitter.
   assert.deepEqual(emitted, [
-    'data-fd-analytics', 'data-fd-app-bridge', 'data-fd-app-reflect', 'data-fd-app-reset',
+    'data-fd-analytics', 'data-fd-app-bridge', 'data-fd-app-practice-classify',
+    'data-fd-app-practice-close', 'data-fd-app-practice-question', 'data-fd-app-practice-reset',
+    'data-fd-app-practice-reveal', 'data-fd-app-reflect', 'data-fd-app-reset',
     'data-fd-app-shift', 'data-fd-app-start', 'data-fd-back', 'data-fd-change-week',
     'data-fd-clear-ask', 'data-fd-clear-cancel', 'data-fd-clear-confirm', 'data-fd-close-nudge',
     'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-exam-date', 'data-fd-expand-tool',
@@ -112,4 +114,17 @@ test('APP actions are distinct, registered, and injected before the controller',
   assert.equal(shell.split('/*__FD_APP__*/').length - 1, 1);
   assert.ok(shell.indexOf('/*__FD_APP__*/') < shell.indexOf('/*__FD_WIRE__*/'));
   assert.match(common, /"\/\*__FD_APP__\*\/"\s*:\s*"frontdoor\/fd_app\.js"/);
+});
+
+test('APP practice actions are reserved with distinct controller meanings', () => {
+  const practiceActions = [
+    'data-fd-app-practice-open', 'data-fd-app-practice-reveal',
+    'data-fd-app-practice-classify', 'data-fd-app-practice-question',
+    'data-fd-app-practice-reset', 'data-fd-app-practice-close',
+  ];
+  for (const attr of practiceActions) {
+    assert.ok(F.handled.includes(attr), `${attr} must be reserved before the engine ships`);
+    assert.equal(typeof F.semantic(attr), 'string');
+  }
+  assert.equal(new Set(practiceActions.map(F.semantic)).size, practiceActions.length);
 });

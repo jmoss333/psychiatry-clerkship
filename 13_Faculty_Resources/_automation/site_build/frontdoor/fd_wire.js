@@ -11,6 +11,8 @@ var FD_HANDLED_ATTRS=[
   'data-fd-back','data-fd-home','data-fd-search','data-fd-change-week','data-fd-progress',
   'data-fd-theme','data-fd-settings','data-fd-analytics','data-fd-exam-date',
   'data-fd-app-bridge','data-fd-app-shift','data-fd-app-start','data-fd-app-reflect','data-fd-app-reset',
+  'data-fd-app-practice-open','data-fd-app-practice-reveal','data-fd-app-practice-classify',
+  'data-fd-app-practice-question','data-fd-app-practice-reset','data-fd-app-practice-close',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section','data-fd-kit-tool'
@@ -44,6 +46,12 @@ var FD_ACTION_SEMANTICS={
   'data-fd-app-start':'open APP preparation resource',
   'data-fd-app-reflect':'choose private APP reflection',
   'data-fd-app-reset':'reset private APP reflection',
+  'data-fd-app-practice-open':'open private APP change rehearsal',
+  'data-fd-app-practice-reveal':'reveal one APP practice change',
+  'data-fd-app-practice-classify':'classify APP practice statement',
+  'data-fd-app-practice-question':'choose APP practice supervision question',
+  'data-fd-app-practice-reset':'reset APP change rehearsal',
+  'data-fd-app-practice-close':'close APP change rehearsal',
   'data-fd-clear-ask':'arm device data erase',
   'data-fd-clear-cancel':'cancel device data erase',
   'data-fd-clear-confirm':'erase device data',
@@ -860,6 +868,8 @@ function fdTrapFocus(event, dialog){
    committed on a change event instead; see changeHandler. */
 var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],'+
   '[data-fd-app-bridge],[data-fd-app-shift],[data-fd-app-start],[data-fd-app-reflect],[data-fd-app-reset],'+
+  '[data-fd-app-practice-open],[data-fd-app-practice-reveal],[data-fd-app-practice-classify],'+
+  '[data-fd-app-practice-question],[data-fd-app-practice-reset],[data-fd-app-practice-close],'+
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+

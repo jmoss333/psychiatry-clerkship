@@ -8,9 +8,10 @@ import path from 'node:path';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const playerPath = path.join(root,
   '13_Faculty_Resources/_automation/site_build/frontdoor/fd_app_practice.js');
-const fixturePath = path.join(root, 'tests/fixtures/app-practice/nonclinical-cases.json');
+const curriculumPath = path.join(root, 'curriculum.json');
 const playerSource = fs.readFileSync(playerPath, 'utf8');
-const fixture = JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
+const CUR = JSON.parse(fs.readFileSync(curriculumPath, 'utf8'));
+const pack = CUR.appPathway.practicePacks[0];
 const sandbox = {};
 vm.createContext(sandbox);
 vm.runInContext(playerSource, sandbox);
@@ -18,91 +19,106 @@ const F = sandbox;
 
 function clone(value) { return JSON.parse(JSON.stringify(value)); }
 
-test('the development fixture is valid and contains only nonclinical rehearsal data', () => {
-  assert.equal(F.fdAppPracticeValidate(fixture), true);
-  assert.doesNotMatch(JSON.stringify(fixture),
-    /patient|diagnos|medicat|dose|treatment|capacity|suicide|agitation/i);
+test('canonical APP practice packs validate and resolve by id', () => {
+  assert.equal(F.fdAppPracticeValidate(pack), true);
+  assert.equal(F.fdAppPracticeFind(CUR.appPathway.practicePacks, pack.id), pack);
+  assert.equal(F.fdAppPracticeFind(CUR.appPathway.practicePacks, 'missing-pack'), null);
 });
 
-test('validation rejects empty packs and incomplete stage or feedback contracts', () => {
-  assert.throws(() => F.fdAppPracticeValidate({ stages: [] }), /stage/i);
+test('validation rejects incomplete exact pack shapes and invalid ids', () => {
+  const missingChange = clone(pack);
+  delete missingChange.change;
+  assert.throws(() => F.fdAppPracticeValidate(missingChange), /exactly/i);
 
-  const missingFeedback = clone(fixture);
-  delete missingFeedback.feedback['clarify-owner'];
-  assert.throws(() => F.fdAppPracticeValidate(missingFeedback), /clarify-owner.*feedback/i);
+  const extraProperty = clone(pack);
+  extraProperty.extra = true;
+  assert.throws(() => F.fdAppPracticeValidate(extraProperty), /exactly/i);
 
-  const missingEvidence = clone(fixture);
-  missingEvidence.feedback['clarify-owner'].evidenceRefs = [];
-  assert.throws(() => F.fdAppPracticeValidate(missingEvidence), /evidence/i);
+  const invalidPackId = clone(pack);
+  invalidPackId.id = 'Not kebab case';
+  assert.throws(() => F.fdAppPracticeValidate(invalidPackId), /kebab/i);
 
-  const missingPolicyDeclaration = clone(fixture);
-  delete missingPolicyDeclaration.stages[0].policyDependencies;
-  assert.throws(() => F.fdAppPracticeValidate(missingPolicyDeclaration), /policyDependencies/i);
+  const duplicateStatement = clone(pack);
+  duplicateStatement.statements[1].id = duplicateStatement.statements[0].id;
+  assert.throws(() => F.fdAppPracticeValidate(duplicateStatement), /duplicate/i);
+
+  const incompleteQuestions = clone(pack);
+  incompleteQuestions.supervisorQuestions.pop();
+  assert.throws(() => F.fdAppPracticeValidate(incompleteQuestions), /three/i);
 });
 
-test('validation recursively rejects answer keys, evaluation, dose, free-text, and proprietary fields', () => {
+test('validation recursively rejects evaluative, answer-key, dose, free-text, and proprietary fields', () => {
   const forbidden = [
     ['score', 1], ['threshold', 2], ['correct', true], ['answerKey', 'x'],
+    ['expectedCategory', 'changed'], ['result', 'x'], ['evaluation', true],
     ['dose', 'x'], ['dosage', 'x'], ['freeText', true], ['textInput', true],
     ['proprietaryItem', 'x'], ['itemText', 'x'], ['patientName', 'x'], ['mrn', 'x'],
   ];
   for (const [key, value] of forbidden) {
-    const pack = clone(fixture);
-    pack.stages[0].choices[0].metadata = { [key]: value };
-    assert.throws(() => F.fdAppPracticeValidate(pack), new RegExp(key, 'i'), key);
+    const invalid = clone(pack);
+    invalid.statements[0].metadata = { [key]: value };
+    assert.throws(() => F.fdAppPracticeValidate(invalid), new RegExp(key, 'i'), key);
   }
 });
 
-test('ordered reveal exposes only the current detail and advances one stage without mutation', () => {
-  const session = F.fdAppPracticeStart(fixture);
+test('one change is hidden until an immutable reveal', () => {
+  const session = F.fdAppPracticeStart(pack);
   const before = JSON.stringify(session);
-  const first = F.fdAppPracticeRender(session);
-  assert.match(first, /welcome table is ready/i);
-  assert.doesNotMatch(first, /accessibility signs/i);
-
-  const next = F.fdAppPracticeAdvance(session, 'clarify-owner');
-  assert.equal(JSON.stringify(session), before, 'advance must leave caller-owned session state untouched');
-  assert.equal(next.stageIndex, 1);
-  assert.equal(next.selections.length, 1);
-  const second = F.fdAppPracticeRender(next);
-  assert.match(second, /accessibility signs have not arrived/i);
-  assert.match(second, /Clarifying the remaining work/i);
+  assert.match(F.fdAppPracticeRender(session), /two-minute update/i);
+  assert.doesNotMatch(F.fdAppPracticeRender(session), /marked unconfirmed/i);
+  const revealed = F.fdAppPracticeReveal(session);
+  assert.equal(JSON.stringify(session), before);
+  assert.equal(revealed.revealed, true);
+  assert.match(F.fdAppPracticeRender(revealed), /marked unconfirmed/i);
 });
 
-test('the final choice completes without a score and reset clears every response', () => {
-  const one = F.fdAppPracticeAdvance(F.fdAppPracticeStart(fixture), 'clarify-owner');
-  const done = F.fdAppPracticeAdvance(one, 'reopen-plan');
-  assert.equal(done.complete, true);
-  assert.equal(done.stageIndex, 1);
-  assert.doesNotMatch(F.fdAppPracticeRender(done), /score|pass|fail|competent|entrust|ready/i);
-
-  const reset = F.fdAppPracticeReset(done);
-  assert.equal(reset.stageIndex, 0);
-  assert.deepEqual(Array.from(reset.selections), []);
-  assert.equal(reset.complete, false);
-  assert.equal(reset.lastFeedback, null);
+test('all three statements must be classified before a fixed question is chosen', () => {
+  let session = F.fdAppPracticeReveal(F.fdAppPracticeStart(pack));
+  assert.throws(() => F.fdAppPracticeChooseQuestion(session, 'confirm-owner'), /classify/i);
+  session = F.fdAppPracticeClassify(session, 'review-time', 'still-known');
+  session = F.fdAppPracticeClassify(session, 'source-status', 'changed');
+  session = F.fdAppPracticeClassify(session, 'verification-owner', 'clarify');
+  const complete = F.fdAppPracticeChooseQuestion(session, 'confirm-owner');
+  assert.equal(complete.questionId, 'confirm-owner');
+  assert.match(F.fdAppPracticeRender(complete), /Who should confirm the source note/);
+  assert.doesNotMatch(F.fdAppPracticeRender(complete), /score|pass|fail|correct|answer key/i);
 });
 
-test('unknown choices cannot advance or silently shorten the sequence', () => {
-  const session = F.fdAppPracticeStart(fixture);
-  assert.throws(() => F.fdAppPracticeAdvance(session, 'not-a-choice'), /not-a-choice/i);
-  assert.equal(session.stageIndex, 0);
+test('reclassification replaces one category and reset clears the session', () => {
+  let session = F.fdAppPracticeReveal(F.fdAppPracticeStart(pack));
+  session = F.fdAppPracticeClassify(session, 'review-time', 'changed');
+  session = F.fdAppPracticeClassify(session, 'review-time', 'still-known');
+  assert.deepEqual({ ...session.classifications }, { 'review-time': 'still-known' });
+  const reset = F.fdAppPracticeReset(session);
+  assert.equal(reset.revealed, false);
+  assert.deepEqual({ ...reset.classifications }, {});
+  assert.equal(reset.questionId, null);
+});
+
+test('unknown statements, categories, and questions cannot alter the session', () => {
+  const session = F.fdAppPracticeReveal(F.fdAppPracticeStart(pack));
+  assert.throws(() => F.fdAppPracticeClassify(session, 'missing-statement', 'changed'), /statement/i);
+  assert.throws(() => F.fdAppPracticeClassify(session, 'review-time', 'missing-category'), /category/i);
+  assert.throws(() => F.fdAppPracticeChooseQuestion(session, 'missing-question'), /classify/i);
+  assert.deepEqual({ ...session.classifications }, {});
+});
+
+test('renderer escapes canonical-value-shaped pack content', () => {
+  const escaped = clone(pack);
+  escaped.title = '<script>title</script>';
+  escaped.snapshot[0] = 'one & <two>';
+  escaped.change = '"quoted"';
+  escaped.statements[0].text = "apostrophe '";
+  const session = F.fdAppPracticeReveal(F.fdAppPracticeStart(escaped));
+  const html = F.fdAppPracticeRender(session);
+  assert.match(html, /&lt;script&gt;title&lt;\/script&gt;/);
+  assert.match(html, /one &amp; &lt;two&gt;/);
+  assert.match(html, /&quot;quoted&quot;/);
+  assert.match(html, /apostrophe &#39;/);
 });
 
 test('the player is pure ES5 and has no DOM, storage, network, clock, analytics, or model access', () => {
   assert.doesNotMatch(playerSource, /^\s*(?:const|let|class)\s|\basync\s+function\b|\bawait\s|=>|`/m);
   assert.doesNotMatch(playerSource,
     /\bdocument\b|\bwindow\b|localStorage|sessionStorage|fetch|XMLHttpRequest|sendBeacon|WebSocket|postMessage|cwAnalytics|\bDate\b|performance|AI service/i);
-});
-
-test('development fixtures and the player have no learner-build registration surface', () => {
-  const common = fs.readFileSync(path.join(root,
-    '13_Faculty_Resources/_automation/site_build/common.py'), 'utf8');
-  const shell = fs.readFileSync(path.join(root,
-    '13_Faculty_Resources/_automation/site_build/spa_index.html'), 'utf8');
-  const manifest = fs.readFileSync(path.join(root,
-    '13_Faculty_Resources/_automation/site_build/site_manifest.json'), 'utf8');
-  for (const shipped of [common, shell, manifest]) {
-    assert.doesNotMatch(shipped, /fd_app_practice|nonclinical-cases|app-practice/i);
-  }
 });
