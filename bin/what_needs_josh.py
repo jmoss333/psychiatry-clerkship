@@ -26,6 +26,7 @@ Report-only. Exits 0 always. Not a gate, not in CI, not in verify.sh -- a report
 fails a push is a report nobody keeps.
 """
 import argparse
+import importlib.util
 import json
 import os
 import subprocess
@@ -149,6 +150,32 @@ def measure_instrument_decisions():
     return len(provisional), len(instruments)
 
 
+def measure_citation_adjudications():
+    """Citations NCBI could not decide, waiting on a clinician to say which they are.
+
+    bin/verify_citations.py rules `ambiguous` when the search ran and could not settle
+    the claim — grey literature, a book in the journal slot, an author PubMed does not
+    index. Per the 2026-09-21 ruling those pass the gate, so if nobody ever reads them
+    the gate is vacuous for that slice. Only a person can close one, by recording the
+    decision in bin/data/citation_adjudications.json; no agent output satisfies this
+    predicate, which is the trap `isbn-verify` fell into.
+
+    A citation that is `unavailable` (the search could not run) is NOT counted here —
+    that is reachability, and nothing is waiting on Josh for it.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "verify_citations", ROOT / "bin" / "verify_citations.py")
+    vc = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(vc)
+    cites, _unparsed, _files = vc.collect(ROOT)
+    cache = vc.load_cache()
+    adjudged = vc.load_adjudications()
+    ambiguous = [c for c in cites if vc.judge(c, cache.get(c.key))["verdict"] == "ambiguous"]
+    if not ambiguous:
+        return 0, 0
+    return sum(1 for c in ambiguous if c.key not in adjudged), len(ambiguous)
+
+
 def _gh_json(args):
     out = subprocess.run(["gh", *args], capture_output=True, text=True, timeout=60)
     if out.returncode != 0:
@@ -242,6 +269,22 @@ ROWS = [
                "or lift it.",
         "do": "record the outcome in the audit decision table "
               "(docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md)",
+    },
+    {
+        "key": "citation-adjudication",
+        "title": "Say what the citations NCBI could not settle actually are",
+        "needs": None,
+        "measure": measure_citation_adjudications,
+        "unit": "ambiguous citation verdicts with no recorded faculty decision",
+        "why": "#640/#672 added 85 citations and 53 of the 74 checkable ones were "
+               "wrong. bin/verify_citations.py hard-fails a contradiction, but a "
+               "citation the search cannot decide PASSES by ruling (2026-09-21) — "
+               "grey literature and books legitimately land there. If nobody reads "
+               "that queue the gate is vacuous for exactly the slice #672 exploited. "
+               "An agent cannot close one: the decision is whether a source is what "
+               "it claims to be.",
+        "do": "python3 bin/verify_citations.py --findings-out /tmp/cites.json  "
+              "# then record each decision in bin/data/citation_adjudications.json",
     },
     {
         "key": "merge-decisions",

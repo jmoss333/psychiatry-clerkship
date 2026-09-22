@@ -1,0 +1,10 @@
+{
+  "_note": "Faculty adjudications of `ambiguous` citation verdicts — the do-not-refile list, in the shape of docs/curriculum-review/findings/rejected.json. bin/verify_citations.py reads it and never writes it. An entry says a named person looked at that exact citation and accepted it as it stands (a book, a guideline, a journal PubMed does not index). It is keyed by `citationKey`, a hash of the citation's own text, so the adjudication stops applying the moment the citation is edited — which is the point. It does NOT suppress a `mismatch`: a contradicted citation is fixed, not adjudicated.",
+  "_schema": {
+    "citationKey": "16 hex chars; `python3 bin/verify_citations.py --findings-out F` prints it in each finding's `toAccept` line",
+    "reason": "why this citation is acceptable as cited",
+    "by": "the person who decided",
+    "at": "YYYY-MM-DD"
+  },
+  "adjudications": []
+}
