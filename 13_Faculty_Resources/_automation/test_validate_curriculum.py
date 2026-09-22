@@ -371,6 +371,7 @@ class ValidateCurriculumTest(unittest.TestCase):
             lambda p: p["activities"][0].__setitem__("practiceId", "missing-pack"),
             lambda p: p["practicePacks"][1].__setitem__("id", p["practicePacks"][0]["id"]),
             lambda p: p["practicePacks"][0]["statements"].pop(),
+            lambda p: p["practicePacks"][0].__setitem__("statements", 1),
             lambda p: p["practicePacks"][0].__setitem__("change", "A patient detail changed."),
             lambda p: p["practicePacks"][0].__setitem__("score", 1),
         )

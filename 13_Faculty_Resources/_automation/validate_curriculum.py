@@ -629,11 +629,13 @@ def main(argv):
         snapshot_values = snapshot if isinstance(snapshot, list) else []
         if not isinstance(snapshot, list) or not 2 <= len(snapshot) <= 3:
             bad(label, "snapshot must contain two or three strings")
+        practice_text_rows = []
         for field in ("statements", "supervisorQuestions"):
             rows = pack.get(field)
             if not isinstance(rows, list) or len(rows) != 3:
                 bad(label, "%s must contain exactly three entries" % field)
                 rows = rows if isinstance(rows, list) else []
+            practice_text_rows.extend(rows)
             row_ids = []
             for row in rows:
                 if not isinstance(row, dict) or set(row) != APP_PRACTICE_TEXT_KEYS:
@@ -647,8 +649,7 @@ def main(argv):
             if len(set(row_ids)) != len(row_ids):
                 bad(label, "%s ids must be unique" % field)
         for value in [pack.get("title"), pack.get("change")] + snapshot_values + [
-            row.get("text") for field in ("statements", "supervisorQuestions")
-            for row in (pack.get(field) or []) if isinstance(row, dict)
+            row.get("text") for row in practice_text_rows if isinstance(row, dict)
         ]:
             if not isinstance(value, str) or not value.strip():
                 bad(label, "display strings must be non-empty")
