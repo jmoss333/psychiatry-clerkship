@@ -529,7 +529,7 @@ content. The high-risk governance focus rule outranks passage arrival focus.
             .fd-app__practice-open <button> (rehearsal stage, when a pack resolves)
             .fd-app__practice-error <p role=alert> (when a pack cannot resolve)
     .fd-app__practice-host (sibling of .fd-app__tasks, when practice is open)
-      .fd-app-practice <section> (+ .is-revealed after reveal)
+      .fd-app-practice <section> (+ .is-revealing only until the first classification)
         .fd-app-practice__head
           .fd-app-practice__close <button>
         .fd-app-practice__snapshot
@@ -537,7 +537,7 @@ content. The high-risk governance focus rule outranks passage arrival focus.
         .fd-app-practice__change (after reveal)
           .fd-app-practice__before / .fd-app-practice__seam / .fd-app-practice__now
         .fd-app-practice__row ×3 (after reveal)
-          .fd-app-practice__choices [role=group] (three fixed-category buttons)
+          .fd-app-practice__choices [role=group] (named by its statement; three fixed-category buttons)
         .fd-app-practice__summary / .fd-app-practice__questions [role=group] (after all three classifications)
         .fd-app-practice__recap (after a fixed question is selected)
         .fd-app-practice__reset <button> (after reveal)
@@ -553,8 +553,8 @@ content. The high-risk governance focus rule outranks passage arrival focus.
 | `.fd-app__step-link` | Opens an existing governed resource. It is not a completion or supervisor-approval control. |
 | `.fd-app__practice-open`, `.fd-app__practice-error` | The button opens the mapped pack; an invalid pack produces a scoped alert while preparation resources stay available. The open button has a touch-sized target and visible keyboard focus. |
 | `.fd-app__practice-host`, `.fd-app-practice` | The visit-only player follows the task grid. It uses one enclosing surface, with no saved response, route, score, or separate card stack. |
-| `.fd-app-practice__change`, `.fd-app-practice__before`, `.fd-app-practice__seam`, `.fd-app-practice__now` | The revealed before/now pair sits side by side at wide widths and stacks at 640px and below. The seam's brief reveal animation is removed under reduced motion; both text panels remain. |
-| `.fd-app-practice__choices`, `.fd-app-practice__questions` | Fixed button groups use `aria-pressed`, readable labels, touch-sized targets, and visible focus. The question group appears only after all three statements have a category. |
+| `.fd-app-practice__change`, `.fd-app-practice__before`, `.fd-app-practice__seam`, `.fd-app-practice__now` | The revealed before/now pair sits side by side at wide widths and stacks at 640px and below. `.is-revealing` animates the seam on reveal and clears after the first classification; reduced motion removes animation while both text panels remain. |
+| `.fd-app-practice__choices`, `.fd-app-practice__questions` | Fixed button groups use `aria-pressed`, readable labels, touch-sized targets, and visible focus. Each classification group is named by its statement's stable ID. The question group appears only after all three statements have a category. |
 | `.fd-app-practice__head`, `.fd-app-practice__snapshot`, `.fd-app-practice__row` | Heading, starting facts, and statement rows carry the sequence in plain text. The changed detail is absent until reveal. |
 | `.fd-app-practice__action`, `.fd-app-practice__close`, `.fd-app-practice__reset` | Reveal, close, and start-again are buttons. Reset clears the visit-only practice session. |
 | `.fd-app-practice__summary`, `.fd-app-practice__recap`, `.fd-app-practice__privacy` | Text and counts report progress without a grade. The privacy sentence says no score, saved response, or transmission. |

@@ -183,7 +183,8 @@ function fdAppPracticeCategoryLabel(category){
 function fdAppPracticeRender(session){
   fdAppPracticeValidateSession(session);
   var pack=session.pack,out='<section class="fd-app-practice'+
-    (session.revealed?' is-revealed':'')+'" aria-labelledby="fd-app-practice-title">';
+    (session.revealed&&Object.keys(session.classifications).length===0?' is-revealing':'')+
+    '" aria-labelledby="fd-app-practice-title">';
   out+='<div class="fd-app-practice__head"><div><span>One detail changes</span>'+
     '<h2 id="fd-app-practice-title">'+fdAppPracticeEsc(pack.title)+'</h2></div>'+
     '<button type="button" class="fd-app-practice__close" data-fd-app-practice-close>Close</button></div>';
@@ -200,8 +201,10 @@ function fdAppPracticeRender(session){
       '<div class="fd-app-practice__now"><strong>Now</strong><p>'+fdAppPracticeEsc(pack.change)+'</p></div></div>';
     for(var s=0;s<pack.statements.length;s++){
       var statement=pack.statements[s],selected=session.classifications[statement.id]||'';
-      out+='<div class="fd-app-practice__row"><p>'+fdAppPracticeEsc(statement.text)+'</p>'+
-        '<div class="fd-app-practice__choices" role="group" aria-label="Classify statement '+(s+1)+'">';
+      var statementId=fdAppPracticeEsc('fd-app-practice-statement-'+pack.id+'-'+statement.id);
+      out+='<div class="fd-app-practice__row"><p id="'+statementId+'">'+
+        fdAppPracticeEsc(statement.text)+'</p>'+
+        '<div class="fd-app-practice__choices" role="group" aria-labelledby="'+statementId+'">';
       for(var c=0;c<FD_APP_PRACTICE_CATEGORIES.length;c++){
         var category=FD_APP_PRACTICE_CATEGORIES[c];
         out+='<button type="button" data-fd-app-practice-classify="'+

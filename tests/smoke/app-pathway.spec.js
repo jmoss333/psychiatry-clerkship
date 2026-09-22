@@ -21,13 +21,20 @@ async function tabTo(page, selector, maxTabs = 160) {
 }
 
 test('APP entry is absent from MS3 and available only on the resident preview', async ({ page }, testInfo) => {
-  await page.goto('/');
+  const response = await page.goto('/');
   const appChoice = page.locator('[data-fd-role="app"]');
   if (!isResidentProject(testInfo.project.name)) {
     await expect(appChoice).toHaveCount(0);
     await expect(page.locator('[data-fd-app-practice-open]')).toHaveCount(0);
     await expect(page.locator('.fd-app-practice')).toHaveCount(0);
-    expect(await page.evaluate(() => Object.hasOwn(window.FD_CURRICULUM || {}, 'appPathway'))).toBe(false);
+    const html = await response.text();
+    const prefix = 'var FD_CURRICULUM=';
+    const start = html.indexOf(prefix);
+    const end = html.indexOf(';\n  var FD_TOPIC_META=', start);
+    expect(start, 'embedded curriculum payload must exist').toBeGreaterThanOrEqual(0);
+    expect(end, 'embedded curriculum payload must have its expected boundary').toBeGreaterThan(start);
+    const curriculum = JSON.parse(html.slice(start + prefix.length, end));
+    expect(Object.hasOwn(curriculum, 'appPathway')).toBe(false);
     return;
   }
 
@@ -62,6 +69,21 @@ test('APP change practice is keyboard-operable, non-evaluative, and private', as
   await expect(reveal).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(practice).toContainText('marked unconfirmed');
+  await expect(page.locator('.fd-app-practice__seam')).toHaveCSS('animation-name', 'fdAppChangeSeam');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('.fd-app-practice__seam')).toHaveCSS('animation-name', 'none');
+  await expect(page.locator('.fd-app-practice__before')).toBeVisible();
+  await expect(page.locator('.fd-app-practice__before')).toContainText('The update has a named owner and a scheduled review time.');
+  await expect(page.locator('.fd-app-practice__now')).toBeVisible();
+  await expect(page.locator('.fd-app-practice__now')).toContainText('A source note is now marked unconfirmed.');
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  for (const statement of [
+    'The scheduled review time has not changed.',
+    'Every source in the brief is confirmed.',
+    'The person responsible for checking the source note is clear.',
+  ]) {
+    await expect(practice.getByRole('group', { name: statement, exact: true })).toHaveCount(1);
+  }
   await expect(page.locator('[data-fd-app-practice-classify="review-time:still-known"]')).toBeFocused();
   const before = await page.locator('.fd-app-practice__before').boundingBox();
   const now = await page.locator('.fd-app-practice__now').boundingBox();
@@ -76,6 +98,7 @@ test('APP change practice is keyboard-operable, non-evaluative, and private', as
     await page.keyboard.press('Enter');
     await expect(choice).toHaveAttribute('aria-pressed', 'true');
     await expect(choice).toBeFocused();
+    await expect(page.locator('.fd-app-practice__seam')).toHaveCSS('animation-name', 'none');
   }
   const question = await tabTo(page, '[data-fd-app-practice-question="confirm-owner"]');
   await page.keyboard.press('Enter');
@@ -92,13 +115,6 @@ test('APP change practice is keyboard-operable, non-evaluative, and private', as
   const phoneNow = await page.locator('.fd-app-practice__now').boundingBox();
   expect(phoneBefore && phoneNow && phoneBefore.y + phoneBefore.height <= phoneNow.y).toBe(true);
   await expect(page.locator('[data-fd-app-practice-classify]').first()).toHaveCSS('min-height', '44px');
-
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect(page.locator('.fd-app-practice__seam')).toHaveCSS('animation-name', 'none');
-  await expect(page.locator('.fd-app-practice__before')).toBeVisible();
-  await expect(page.locator('.fd-app-practice__before')).toContainText('The update has a named owner and a scheduled review time.');
-  await expect(page.locator('.fd-app-practice__now')).toBeVisible();
-  await expect(page.locator('.fd-app-practice__now')).toContainText('A source note is now marked unconfirmed.');
 
   const stored = await page.evaluate(() => localStorage.getItem('cw_frontdoor_v1') || '');
   expect(stored).not.toMatch(/training-briefing|review-time|source-status|verification-owner|still-known|changed|clarify|confirm-owner/);

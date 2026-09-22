@@ -29,14 +29,14 @@ test('APP change seam has responsive, touch, focus, and reduced-motion styles', 
   assert.match(cssSource, /\.fd-app-practice\s*\{[^}]*position:relative/s);
   assert.match(cssSource, /\.fd-app-practice__change\s*\{[^}]*grid-template-columns:minmax\(0,1fr\) auto minmax\(0,1fr\)/s);
   assert.match(cssSource, /\.fd-app-practice__before,\.fd-app-practice__now\s*\{/);
-  assert.match(cssSource, /\.fd-app-practice\.is-revealed \.fd-app-practice__seam\s*\{[^}]*animation:fdAppChangeSeam/s);
+  assert.match(cssSource, /\.fd-app-practice\.is-revealing \.fd-app-practice__seam\s*\{[^}]*animation:fdAppChangeSeam/s);
   assert.match(cssSource, /@keyframes fdAppChangeSeam\s*\{/);
   assert.match(cssSource, /\.fd-app__practice-open\s*\{[^}]*min-height:var\(--fd-target-touch\)/s);
   assert.match(cssSource, /\.fd-app-practice__choices button,\.fd-app-practice__questions button,\.fd-app-practice__action\s*\{[^}]*min-height:var\(--fd-target-touch\)/s);
   assert.match(cssSource, /\.fd-app__practice-open:focus-visible,\.fd-app-practice button:focus-visible\s*\{[^}]*outline:3px solid var\(--fd-focus\)/s);
   assert.ok(mobileStart >= 0 && reducedStart > mobileStart);
   assert.match(mobileRules, /\.fd-app-practice__change\s*\{[^}]*grid-template-columns:minmax\(0,1fr\)/s);
-  assert.match(cssSource, /@media \(prefers-reduced-motion:reduce\)\s*\{[^}]*\.fd-app-practice\.is-revealed \.fd-app-practice__seam\s*\{[^}]*animation:none/s);
+  assert.match(cssSource, /@media \(prefers-reduced-motion:reduce\)\s*\{[^}]*\.fd-app-practice\.is-revealing \.fd-app-practice__seam\s*\{[^}]*animation:none/s);
 });
 
 test('canonical APP practice packs validate and resolve by id', () => {
@@ -90,6 +90,35 @@ test('one change is hidden until an immutable reveal', () => {
   assert.equal(JSON.stringify(session), before);
   assert.equal(revealed.revealed, true);
   assert.match(F.fdAppPracticeRender(revealed), /marked unconfirmed/i);
+});
+
+test('each classification group is named by its own escaped statement', () => {
+  const custom = clone(pack);
+  custom.statements[0].text = 'Ask <which> source & when?';
+  const html = F.fdAppPracticeRender(F.fdAppPracticeReveal(F.fdAppPracticeStart(custom)));
+  for (const statement of custom.statements) {
+    const id = `fd-app-practice-statement-${custom.id}-${statement.id}`;
+    const escaped = statement.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    assert.ok(html.includes(`<p id="${id}">${escaped}</p>`), `statement ${statement.id} has a stable ID`);
+    assert.ok(html.includes(`role="group" aria-labelledby="${id}"`),
+      `classification group ${statement.id} names its statement`);
+  }
+  assert.equal((html.match(/role="group" aria-labelledby="fd-app-practice-statement-/g) || []).length, 3);
+});
+
+test('the seam animates on reveal and not after classification or question selection', () => {
+  const snapshot = F.fdAppPracticeStart(pack);
+  assert.doesNotMatch(F.fdAppPracticeRender(snapshot), /is-revealing/);
+  const revealed = F.fdAppPracticeReveal(snapshot);
+  assert.match(F.fdAppPracticeRender(revealed), /class="fd-app-practice is-revealing"/);
+  let session = F.fdAppPracticeClassify(revealed, 'review-time', 'still-known');
+  assert.doesNotMatch(F.fdAppPracticeRender(session), /is-revealing/);
+  session = F.fdAppPracticeClassify(session, 'source-status', 'changed');
+  session = F.fdAppPracticeClassify(session, 'verification-owner', 'clarify');
+  session = F.fdAppPracticeChooseQuestion(session, 'confirm-owner');
+  assert.doesNotMatch(F.fdAppPracticeRender(session), /is-revealing/);
+  assert.match(F.fdAppPracticeRender(session), /fd-app-practice__before/);
+  assert.match(F.fdAppPracticeRender(session), /fd-app-practice__now/);
 });
 
 test('all three statements must be classified before a fixed question is chosen', () => {
