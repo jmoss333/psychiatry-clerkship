@@ -1566,7 +1566,7 @@
       if(ta){ try{ ta.focus(); }catch(_){ } }
     }
   }
-  function capOpen(invoker){
+  function capOpen(invoker,onAction){
     if(capSheet)return;
     capInvoker=invoker||null;
     capBackdrop=document.createElement('div'); capBackdrop.className='cap-backdrop';
@@ -1600,6 +1600,9 @@
     var ta=capSheet.querySelector('#capText'); if(ta){ try{ ta.focus(); }catch(_){ } }
     capSheet.addEventListener('click',function(e){
       var t=e.target;
+      /* The dialog is mounted under body, outside fdApp's delegated click listener. */
+      var action=t.closest&&t.closest('[data-cap-open],[data-cap-review],[data-cap-supervise]');
+      if(action&&typeof onAction==='function'){e.preventDefault();onAction(action);return;}
       var starter=t.closest&&t.closest('[data-cap-starter]');
       if(starter){ var starterText=capSheet.querySelector('#capText'); if(starterText&&!starterText.value.trim())starterText.value=starter.getAttribute('data-cap-starter')||''; if(starterText)starterText.focus(); return; }
       if(t.id==='capCancel'){ capClose(); return; }
@@ -2633,7 +2636,7 @@
       return;
     }
     el=target.closest&&target.closest('[data-capture-open]');
-    if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el);return;}
+    if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el,fdCaptureAction);return;}
     el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-supervise],[data-cap-drop],[data-cap-copy]');
     if(el){event.preventDefault();fdCaptureAction(el);return;}
     el=target.closest&&target.closest('.pt-opt');

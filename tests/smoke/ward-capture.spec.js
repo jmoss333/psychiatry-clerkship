@@ -142,6 +142,36 @@ test('the global capture control remains in the viewport after a long reader scr
   expect(box.y + box.height).toBeLessThanOrEqual(PHONE.height);
 });
 
+for (const [action, status] of [['Review later', 'Review scheduled'], ['Bring to supervision', 'For supervision']]) {
+  test(`saved-question dialog executes ${action}`, async ({ page }) => {
+    await page.setViewportSize(PHONE);
+    await page.goto('/');
+    await captureLauncher(page).click();
+    await page.locator('#capText').fill('How should I distinguish delirium from psychosis?');
+    await page.locator('#capSave').click();
+    await page.locator('.cap-next').getByRole('button', { name: action, exact: true }).click();
+    await expect(page.locator('.cap-sheet')).toHaveCount(0);
+    const question = page.locator('.fd-capture__item').filter({ hasText: 'How should I distinguish delirium from psychosis?' });
+    await expect(question.locator('.fd-capture__status')).toHaveText(status);
+    await page.reload();
+    await expect(question.locator('.fd-capture__status')).toHaveText(status);
+  });
+}
+
+test('saved-question dialog opens its suggested page without losing the question', async ({ page }) => {
+  await page.goto('/');
+  await captureLauncher(page).click();
+  await page.locator('#capText').fill('How should I distinguish delirium from psychosis?');
+  await page.locator('#capSave').click();
+  const open = page.locator('.cap-next [data-cap-open]');
+  const ref = await open.getAttribute('data-cap-ref');
+  await open.click();
+  await expect(page.locator('.cap-sheet')).toHaveCount(0);
+  await expect.poll(() => new URL(page.url()).searchParams.get('page')).toBe(ref);
+  await captureLauncher(page).click();
+  await expect(page.locator('.cap-list')).toContainText('How should I distinguish delirium from psychosis?');
+});
+
 test('Today capture clears a prior Reader context without corrupting the learner bookmark', async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.goto('/?page=orientation.md');
