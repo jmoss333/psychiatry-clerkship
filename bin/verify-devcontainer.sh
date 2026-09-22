@@ -18,6 +18,6 @@ export PATH="$VIRTUAL_ENV/bin:$PATH"
 
 node bin/check-runtime-contract.mjs --current
 bash bin/verify.sh
-bash bin/verify-smoke.sh
+env -u SPECS bash bin/verify-smoke.sh
 
 echo "DEV CONTAINER VERIFIED — runtime, full gate, and nonvisual smoke suite passed"
