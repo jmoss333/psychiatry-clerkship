@@ -38,7 +38,8 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
   // with the settings panel's Appearance segmented control (fd_sheet.js's fdSettingsSeg), which is
   // now its only emitter.
   assert.deepEqual(emitted, [
-    'data-fd-analytics', 'data-fd-back', 'data-fd-change-week',
+    'data-fd-analytics', 'data-fd-app-bridge', 'data-fd-app-reflect', 'data-fd-app-reset',
+    'data-fd-app-shift', 'data-fd-app-start', 'data-fd-back', 'data-fd-change-week',
     'data-fd-clear-ask', 'data-fd-clear-cancel', 'data-fd-clear-confirm', 'data-fd-close-nudge',
     'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-exam-date', 'data-fd-expand-tool',
     'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-open',
@@ -96,4 +97,19 @@ test('FD_WIRE is registered, injected last, and activated as the sole shell cont
 test('Library view has a distinct registered semantic', () => {
   assert.equal(F.semantic('data-fd-library-view'), 'choose Library view');
   assert.match(wire, /\[data-fd-library-view\]/);
+});
+
+test('APP actions are distinct, registered, and injected before the controller', () => {
+  const actions = [
+    'data-fd-app-bridge', 'data-fd-app-shift', 'data-fd-app-start',
+    'data-fd-app-reflect', 'data-fd-app-reset',
+  ];
+  for (const attr of actions) {
+    assert.ok(F.handled.includes(attr), `${attr} must be handled`);
+    assert.equal(typeof F.semantic(attr), 'string', `${attr} needs a semantic`);
+  }
+  assert.equal(new Set(actions.map(F.semantic)).size, actions.length);
+  assert.equal(shell.split('/*__FD_APP__*/').length - 1, 1);
+  assert.ok(shell.indexOf('/*__FD_APP__*/') < shell.indexOf('/*__FD_WIRE__*/'));
+  assert.match(common, /"\/\*__FD_APP__\*\/"\s*:\s*"frontdoor\/fd_app\.js"/);
 });

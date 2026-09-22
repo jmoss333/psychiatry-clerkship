@@ -19,7 +19,7 @@ var FD_STORE='cw_frontdoor_v1';
    not clinical progress or route state, so this store is its single home. browsing is the
    learner's explicit "not on rotation" choice (#425): with no rotation start left to derive a
    week from, it is the only thing that says the app -- not week setup -- is where a reload lands. */
-var FD_KEYS=['role','tab','viewWeek','openId','fromTab','scrollPos','toolExpanded','browsing'];
+var FD_KEYS=['role','tab','viewWeek','openId','fromTab','scrollPos','toolExpanded','browsing','appBridge'];
 
 function fdLoad(){
   try{ return JSON.parse(localStorage.getItem(FD_STORE)||'{}')||{}; }catch(_){ return {}; }

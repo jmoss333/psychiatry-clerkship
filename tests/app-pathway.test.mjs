@@ -6,6 +6,20 @@ const ROOT = new URL('../', import.meta.url);
 const readJson = (path) => JSON.parse(readFileSync(new URL(path, ROOT), 'utf8'));
 const CUR = readJson('curriculum.json');
 const SHIPPED = readJson('13_Faculty_Resources/_automation/site_build/shipped_pages.json');
+const BUILD = new URL('../13_Faculty_Resources/_automation/site_build/', import.meta.url);
+const appSrc = readFileSync(new URL('frontdoor/fd_app.js', BUILD), 'utf8');
+const dataSrc = readFileSync(new URL('frontdoor/fd_data.js', BUILD), 'utf8');
+
+// eslint-disable-next-line no-new-func
+const makeApp = new Function(`
+  ${dataSrc}
+  function governanceBadge(value){
+    return value ? '<span data-test-governance="'+fdEsc(value.status)+'"></span>' : '';
+  }
+  ${appSrc}
+  return { fdAppModel: fdAppModel, fdApp: fdApp };
+`);
+const APP = makeApp();
 
 const PA_REFS = [
   'pg_interview.md', 'case_formulation.md', 'communication-practice.html',
@@ -62,4 +76,63 @@ test('every APP resource resolves on the resident preview without duplicating cl
 test('APP navigation copy does not claim readiness, authority, or entrustment', () => {
   assert.doesNotMatch(JSON.stringify(CUR.appPathway),
     /competent|entrusted|safe independently|pass|fail|ready for independent|supervisor approved/i);
+});
+
+function appIndex(pathway = CUR.appPathway) {
+  const refs = [
+    ...Object.values(pathway.bridges).flatMap((bridge) => bridge.refs),
+    ...pathway.activities.flatMap((activity) => activity.refs),
+  ];
+  return { byRef: Object.fromEntries([...new Set(refs)].map((ref, index) => [ref, {
+    ref, title: `Canonical ${ref}`, kind: ref.endsWith('.html') ? 'tool' : 'read',
+    minutes: ref.endsWith('.html') ? null : 5,
+    governance: { status: index % 2 ? 'pending' : 'reviewed' },
+  }])) };
+}
+
+test('the APP renderer shows one active bridge, eight canonical resources, and both route choices', () => {
+  const html = APP.fdApp(appIndex(), CUR.appPathway, { appBridge: 'pa' });
+  assert.match(html, /PA psychiatry bridge/);
+  assert.equal((html.match(/data-fd-app-bridge=/g) || []).length, 2);
+  assert.equal((html.match(/class="fd-app__resource"/g) || []).length, 8);
+  assert.match(html, /Canonical pg_interview\.md/);
+  assert.match(html, /data-test-governance="reviewed"/);
+  assert.doesNotMatch(html, />pg_interview\.md</, 'the canonical title must replace the slug');
+});
+
+test('the APP renderer distinguishes prepare, rehearse, and observation on all three work tasks', () => {
+  const html = APP.fdApp(appIndex(), CUR.appPathway, { appBridge: 'pmhnp' });
+  assert.equal((html.match(/data-fd-app-shift=/g) || []).length, 3);
+  assert.equal((html.match(/>Prepare independently</g) || []).length, 3);
+  assert.equal((html.match(/>Rehearse here</g) || []).length, 3);
+  assert.equal((html.match(/>Arrange observation</g) || []).length, 3);
+  assert.match(html, /This site does not record supervisor observation/);
+});
+
+test('private reflection has only the three formative choices and no evaluative output', () => {
+  const html = APP.fdApp(appIndex(), CUR.appPathway, {
+    appBridge: 'pa', appReflection: 'supervisor',
+  });
+  assert.equal((html.match(/data-fd-app-reflect=/g) || []).length, 3);
+  assert.match(html, /Discuss with my supervisor/);
+  assert.match(html, /Saved only for this visit on this device/);
+  assert.match(html, /data-fd-app-reset/);
+  assert.doesNotMatch(html, /score|grade|pass|fail|competent|entrust|readiness|certificate/i);
+});
+
+test('a missing configured resource is named instead of silently shortening a bridge', () => {
+  const index = appIndex();
+  delete index.byRef['pg_interview.md'];
+  const model = APP.fdAppModel(index, CUR.appPathway, { appBridge: 'pa' });
+  assert.deepEqual(model.missing, ['pg_interview.md']);
+  const html = APP.fdApp(index, CUR.appPathway, { appBridge: 'pa' });
+  assert.match(html, /role="alert"/);
+  assert.match(html, /Configured resource unavailable: pg_interview\.md/);
+  assert.equal((html.match(/class="fd-app__resource"/g) || []).length, 7);
+});
+
+test('the APP renderer is pure ES5 with no storage, network, analytics, model, or clock access', () => {
+  assert.doesNotMatch(appSrc, /\b(?:const|let)\s|=>|`/);
+  assert.doesNotMatch(appSrc,
+    /localStorage|sessionStorage|fetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|cwAnalytics|postMessage|Date\s*\(|performance\.|AI service/i);
 });
