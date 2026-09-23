@@ -731,7 +731,8 @@
    Two-class selectors (0,2,x) deliberately outrank the `.fd-article__body h2/h3/ol/li` (0,1,1)
    reader rules above, which otherwise win the cascade and silently discard this spacing. */
 [data-fd-compass-root]{display:grid;gap:var(--fd-space-7);margin:0 0 24px}
-[data-fd-compass-root] a{scroll-margin-block:6rem calc(6rem + env(safe-area-inset-bottom))}
+/* Native keyboard scrolling must clear both the action bar and the capture launcher above it. */
+[data-fd-compass-root] a{scroll-margin-block:6rem calc(6rem + var(--fd-target-touch) + var(--fd-space-6) + env(safe-area-inset-bottom))}
 [data-fd-compass-safety]{margin:0;padding:14px 16px;border:1px solid var(--fd-line-strong);border-left:4px solid var(--fd-danger);border-radius:var(--fd-radius-md);background:var(--fd-danger-wash);color:var(--fd-text)}
 [data-fd-compass-safety] p,[data-fd-compass-scope],[data-fd-compass-prompt]{margin:0}
 .fd-compass{container:fd-compass / inline-size}

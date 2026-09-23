@@ -387,7 +387,7 @@ test('malformed built protocol fails closed with every canonical crisis resource
   await expectHealthy(page);
 });
 
-test('Compass native Tab sequence keeps every link above the mobile action bar', async ({ page }, testInfo) => {
+test('Compass native Tab sequence keeps every link above the mobile action bar and capture launcher', async ({ page }, testInfo) => {
   test.skip(audience(testInfo).role !== 'student', 'The Compass belongs to the student Welcome');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -403,9 +403,10 @@ test('Compass native Tab sequence keeps every link above the mobile action bar',
     const focus = await links.nth(index).evaluate(link => {
       const box = link.getBoundingClientRect();
       const bar = document.querySelector('.fd-actionbar').getBoundingClientRect();
+      const capture = document.querySelector('#fdCaptureMount').getBoundingClientRect();
       const corners = [[box.left + 2, box.top + 2], [box.right - 2, box.bottom - 2]];
       return {
-        top: box.top, bottom: box.bottom, barTop: bar.top, viewport: innerHeight,
+        top: box.top, bottom: box.bottom, barTop: Math.min(bar.top, capture.top), viewport: innerHeight,
         unobscured: corners.every(([x, y]) => link.contains(document.elementFromPoint(x, y))),
       };
     });
