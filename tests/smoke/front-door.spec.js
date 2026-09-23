@@ -173,10 +173,13 @@ test('adaptive mobile dock: standard audience routes, dialogs, reader forwarding
   await expect(browse).toBeVisible();
   await browse.click();
   await expect(page.locator('.fd-library')).toBeVisible();
-  const finalResource = essentialsResources(page).last();
-  await finalResource.scrollIntoViewIfNeeded();
-  await finalResource.focus();
-  const clearance = await finalResource.evaluate(el => {
+  // The helper also includes tool tabs, which CSS places above the readings on phones. Check
+  // the actual last reading rather than the last element in the shared inventory selector.
+  const finalReading = page.locator('.fd-kit__reading[data-fd-open]').last();
+  await expect(finalReading).toBeVisible();
+  await finalReading.scrollIntoViewIfNeeded();
+  await finalReading.focus();
+  const clearance = await finalReading.evaluate(el => {
     const row = el.getBoundingClientRect();
     const dock = document.querySelector('.fd-dock').getBoundingClientRect();
     const x = row.left + Math.min(8, row.width / 2);
@@ -193,17 +196,36 @@ test('adaptive mobile dock: resident APP invitation substitutes slots without ch
   test.skip(!isResidentProject(testInfo.project.name), 'APP invitation exists only on the resident build');
   await page.setViewportSize(DOCK_PHONE);
   await seedApp(page, testInfo);
-  await page.goto('/?audience=app');
+  await page.goto('/?tab=library');
+  await expect(page.locator('.fd-library')).toBeVisible();
+  // Settle the normal Library navigation write before comparing invitation-mode storage.
+  await page.locator('.fd-dock [data-fd-search]:visible').click();
+  await page.getByRole('dialog', { name: 'Search' }).getByRole('button', { name: 'Browse the Library' }).click();
+  await expect(page.locator('.fd-library')).toBeVisible();
+  // Prevent the fixture's load-time seeding from masking an APP-mode storage write on reload.
+  await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+  const storageSnapshot = () => page.evaluate(() => {
+    const values = store => Object.fromEntries(Object.keys(store)
+      .filter(key => key.startsWith('cw_') || key.startsWith('rp_'))
+      .sort().map(key => [key, store.getItem(key)]));
+    return { local: values(localStorage), session: values(sessionStorage) };
+  });
+  const beforeInvite = await storageSnapshot();
+  await page.goto('/?audience=app&tab=today');
   await expect(page.locator('.fd-app')).toBeVisible();
   const dock = await expectAdaptiveDock(page, 'On shift', 'The Essentials');
   await dock.locator('[data-fd-tab="library"]:visible').first().click();
   await expect(page.locator('.fd-library')).toBeVisible();
   await expectAdaptiveDock(page, 'On shift', 'The Essentials');
   await expectDockDialogs(page, dock);
-  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')));
-  expect(stored.role).toBe('pgy1');
-  expect(Object.hasOwn(stored, 'appInvite')).toBe(false);
+  expect(await storageSnapshot()).toEqual(beforeInvite);
   await page.screenshot({ path: testInfo.outputPath('adaptive-mobile-dock-app.png') });
+  await page.goto('/?tab=library');
+  await page.reload();
+  await expect(page.locator('.fd-library')).toBeVisible();
+  await expectAdaptiveDock(page, 'Today', 'Path');
+  expect(await storageSnapshot()).toEqual(beforeInvite);
+  expect(JSON.parse(beforeInvite.local.cw_frontdoor_v1).role).toBe('pgy1');
   await expectHealthy(page);
 });
 
