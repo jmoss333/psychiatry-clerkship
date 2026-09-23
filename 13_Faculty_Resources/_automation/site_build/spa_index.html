@@ -628,6 +628,7 @@
 <div id="fdApp" class="fd-shell" aria-busy="true" inert>
   <div id="fdChromeMount"></div>
   <span id="routeStatus" class="vh-live" aria-live="polite"></span>
+  <span id="careNavigatorStatus" class="vh-live" role="status" aria-live="polite" aria-atomic="true"></span>
   <div id="fdCaptureMount"></div>
   <main id="content" class="fd-main" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></main>
   <div id="governanceMount"></div>
@@ -2423,6 +2424,15 @@
     fdGuideSession=null;
   }
 
+  function fdUpdateCareNavigatorStatus(state){
+    var status=document.getElementById('careNavigatorStatus');
+    if(!status)return;
+    var selected=state&&state.screen==='app'&&state.tab==='care'&&!state.openId&&contentEl&&
+      contentEl.querySelector('.fd-care-navigator__result');
+    var next=selected?fdCareNavigatorAnnouncement(FD_INDEX,state.careIntentId):'';
+    if(status.textContent!==next)status.textContent=next;
+  }
+
   function fdRender(state,detail){
     var app=state.screen==='app',hydrate=detail&&detail.kind==='hydrate';
     fdPrepareRoute(state,detail);
@@ -2433,6 +2443,7 @@
     fdRenderCapture(state);
     fdRenderOverlays(state);
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
+    fdUpdateCareNavigatorStatus(state);
   }
 
   function fdPatchCompletion(state){
@@ -2487,6 +2498,7 @@
     }
     if(surfaces.layout)fdPatchToolLayout(state);
     fdRenderOverlays(state);
+    fdUpdateCareNavigatorStatus(state);
   }
 
   function fdOpenProgress(state,opts){

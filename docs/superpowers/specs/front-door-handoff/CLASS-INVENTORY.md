@@ -308,7 +308,8 @@ Omitting it collapses the rail underneath.
 | `.fd-care-navigator` | Fixed-choice task map between the notice and full resource groups. The groups remain visible as siblings below it; no navigator class participates in completion or attestation. |
 | `.fd-care-navigator__choices` | Two columns at wider widths, one column at ≤640px; each native choice button has a 44px minimum target and wrapping text. |
 | `.fd-care-navigator__choice.is-selected` | Only the active choice owns `.is-selected` (no rule) and `aria-pressed="true"`; the attribute paints the visible checkmark and inset rule so selection is not color-only. Other choices keep `aria-pressed="false"`. |
-| `.fd-care-navigator__result` | Appears only with a selection, has a labeled heading and a separate polite status announcement; primary and alternative links use canonical external destinations. |
+| `.fd-care-navigator__result` | Appears only with a selection and has a labeled heading; primary and alternative links use canonical external destinations. It does not own the live announcement because this subtree is replaced after every choice. |
+| `.vh-live` (`#careNavigatorStatus`) | Persistent, initially empty shell status beside `#routeStatus`, outside replaceable `#content`. The shell updates its polite, atomic text after a valid Care choice and clears it when the choice or Care surface ends. It keeps the same DOM node through Care re-renders. |
 | `.fd-care-navigator__alternatives` | Zero to two secondary links; shares the responsive one-column phone layout. |
 | `.fd-care-navigator__clear` | Native button returns to the unselected task map without changing the resource groups. |
 | `.fd-care-page__groups` | Two-column shelf at larger widths and one column at ≤640px. The support shelf holds Resource Finder and Recovery Meeting Calendar; education holds the patient library, Podcast Navigator, and Relational Bibliotherapy book shelf. |

@@ -54,6 +54,11 @@ function fdCareNavigatorSelection(index,selectedIntentId){
   return null;
 }
 
+function fdCareNavigatorAnnouncement(index,selectedIntentId){
+  var selected=fdCareNavigatorSelection(index,selectedIntentId);
+  return selected?'Selected '+selected.label+'. Best starting point: '+selected.primary.title+'.':'';
+}
+
 function fdCareNavigatorLink(item,kicker){
   return '<a class="fd-care-navigator__link" data-care-recommendation="'+fdEsc(item.id)+'" '+
     'data-care-resource="'+fdEsc(item.id)+'" href="'+fdEsc(item.url)+'" target="_blank" '+
@@ -78,9 +83,7 @@ function fdCareNavigator(index,selectedIntentId){
   }
   out+='</div>';
   if(selected){
-    out+='<span class="fd-visually-hidden" role="status" aria-live="polite">Selected '+
-      fdEsc(selected.label)+'. Best starting point: '+fdEsc(selected.primary.title)+'.</span>'+
-      '<section class="fd-care-navigator__result" aria-labelledby="fd-care-navigator-result-title">'+
+    out+='<section class="fd-care-navigator__result" aria-labelledby="fd-care-navigator-result-title">'+
       '<div class="fd-care-navigator__result-head"><h3 id="fd-care-navigator-result-title">Your starting point</h3>'+
       '<p>'+fdEsc(selected.explanation)+'</p></div>'+
       fdCareNavigatorLink(selected.primary,'Best starting point');

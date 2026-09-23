@@ -23,6 +23,8 @@ if (careSrc) {
       fdCareNavigator: typeof fdCareNavigator === 'function' ? fdCareNavigator : null,
       fdCareNavigatorEntries: typeof fdCareNavigatorEntries === 'function' ? fdCareNavigatorEntries : null,
       fdCareNavigatorSelection: typeof fdCareNavigatorSelection === 'function' ? fdCareNavigatorSelection : null,
+      fdCareNavigatorAnnouncement: typeof fdCareNavigatorAnnouncement === 'function'
+        ? fdCareNavigatorAnnouncement : null,
     };
   `)();
 }
@@ -82,6 +84,16 @@ test('the navigator renders six fixed choices and no initial result', () => {
   assert.equal((html.match(/aria-pressed="false"/g) || []).length, 6);
   assert.match(html, /Choose the task—not patient details/);
   assert.doesNotMatch(html, /Best starting point|data-fd-care-clear/);
+});
+
+test('the pure navigator supplies announcement text without a disposable live region', () => {
+  const index = { careResources: curriculum.careResources,
+    careNavigator: curriculum.careNavigator };
+  assert.equal(F.fdCareNavigatorAnnouncement(index, 'services'),
+    'Selected Find community services. Best starting point: Find services and community supports.');
+  assert.equal(F.fdCareNavigatorAnnouncement(index, ''), '');
+  assert.equal(F.fdCareNavigatorAnnouncement(index, 'unknown'), '');
+  assert.doesNotMatch(F.fdCareNavigator(index, 'services'), /role="status"|aria-live=/);
 });
 
 test('every intent resolves canonical primary and alternative records', () => {

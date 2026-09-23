@@ -1844,6 +1844,14 @@ test('Patient care resources is a safe, responsive fourth destination and search
   ])));
   const choices = page.locator('[data-fd-care-intent]');
   await expect(choices).toHaveCount(6);
+  const careStatus = page.locator('#careNavigatorStatus');
+  await expect(careStatus).toHaveCount(1);
+  await expect(careStatus).toHaveText('');
+  expect(await page.evaluate(() => {
+    const status = document.getElementById('careNavigatorStatus');
+    window.__careStatusBeforeChoice = status;
+    return !document.getElementById('content').contains(status);
+  })).toBe(true);
   expect(await choices.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-fd-care-intent'))))
     .toEqual(navigatorCases.map(([id]) => id));
   expect(await choices.evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-pressed'))))
@@ -1886,8 +1894,10 @@ test('Patient care resources is a safe, responsive fourth destination and search
       .toEqual([primaryId, ...alternativeIds].map(id => canonicalTitleById[id]));
     await expect(recommendations.first()).toContainText('Best starting point');
     const selectedLabel = await choice.locator('span:last-child').textContent();
-    await expect(page.locator('.fd-care-navigator [role="status"]'))
+    await expect(careStatus)
       .toHaveText(`Selected ${selectedLabel}. Best starting point: ${canonicalTitleById[primaryId]}.`);
+    expect(await page.evaluate(() => window.__careStatusBeforeChoice
+      === document.getElementById('careNavigatorStatus'))).toBe(true);
     expect(await links.evaluateAll(nodes =>
       nodes.map(node => node.getAttribute('data-care-resource')))).toEqual(fullListOrder);
   }
@@ -1934,16 +1944,19 @@ test('Patient care resources is a safe, responsive fourth destination and search
   await expect(page.locator('.fd-reader,.fd-search')).toHaveCount(0);
   expect(page.url()).toBe(originalUrl);
   await page.locator('[data-fd-care-clear]').click();
+  await expect(careStatus).toHaveText('');
   await expect(choices.first()).toBeFocused();
   await expect(page.locator('.fd-care-navigator__result')).toHaveCount(0);
 
   await page.keyboard.press('Space');
   await expect(choices.first()).toHaveAttribute('aria-pressed', 'true');
   await page.locator('[data-fd-tab="library"]').click();
+  await expect(careStatus).toHaveText('');
   await page.locator('[data-fd-tab="care"]').click();
   await expect(page.locator('.fd-care-navigator__result')).toHaveCount(0);
   await choices.first().click();
   await page.reload();
+  await expect(page.locator('#careNavigatorStatus')).toHaveText('');
   await expect(page.locator('.fd-care-navigator__result')).toHaveCount(0);
   expect(await links.evaluateAll(nodes =>
     nodes.map(node => node.getAttribute('data-care-resource')))).toEqual(fullListOrder);
@@ -2018,10 +2031,43 @@ test('Patient care resources is a safe, responsive fourth destination and search
   careFixture = 'no-navigator';
   await page.reload();
   await expect(page.locator('.fd-care-navigator')).toHaveCount(0);
+  await expect(page.locator('#careNavigatorStatus')).toHaveText('');
   await expect(links).toHaveCount(5);
   expect(await links.evaluateAll(nodes => nodes.map(node => ({
     id: node.getAttribute('data-care-resource'), href: node.href,
   })))).toEqual(fullListOrder.map((id, index) => ({ id, href: expectedUrls[index] })));
+  await expectHealthy(page);
+});
+
+test('Care status clears on Home, browser history, and resource opening', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=care');
+  const status = page.locator('#careNavigatorStatus');
+  await expect(status).toHaveText('');
+
+  await page.locator('[data-fd-care-intent="services"]').click();
+  await expect(status).toHaveText(
+    'Selected Find community services. Best starting point: Find services and community supports.');
+  await page.locator('[data-fd-home]').click();
+  await expect(status).toHaveText('');
+  await page.locator('[data-fd-tab="care"]').click();
+  await expect(status).toHaveText('');
+
+  await page.locator('[data-fd-care-intent="meetings"]').click();
+  await expect(status).toContainText('Selected ');
+  await page.goBack();
+  await expect(status).toHaveText('');
+  await page.goForward();
+  await expect(status).toHaveText('');
+
+  await page.locator('[data-fd-care-intent="services"]').click();
+  await page.locator('[data-fd-search]').click();
+  await page.locator('.fd-searchpanel__input').fill('patient refuses medication');
+  const resource = page.locator('.fd-result[data-fd-open="capacity.html"]');
+  await expect(resource).toBeVisible();
+  await resource.click();
+  await expect(page.locator('.fd-reader')).toBeVisible();
+  await expect(status).toHaveText('');
   await expectHealthy(page);
 });
 
