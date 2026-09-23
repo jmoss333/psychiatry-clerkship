@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
 import { isResidentProject } from './audience.js';
 import { essentialsResourceRefs, essentialsResources } from './essentials-inventory.js';
@@ -9,6 +11,255 @@ const PHONE = { width: 390, height: 844 };
 const DOCK_PHONE = { width: 375, height: 812 };
 const FAILURE_COPY = 'This safety protocol is unavailable right now—do not rely on this page for clinical guidance; use the crisis resources below and contact your supervising clinician.';
 const runtimeErrors = new WeakMap();
+const READING_REF = 't_mood.md';
+const READING_SUCCESS = 'Reading place saved on this device only';
+const READING_FAILURE = 'Reading place could not be saved on this device';
+
+// Three synthetic sections keep this an ordinary reading (the field-guide enhancer owns H2s).
+// Long neutral paragraphs make the second and third anchors reachable at phone height.
+async function controlledReading(page, ref = READING_REF) {
+  const filler = 'A short note about organizing study time. '.repeat(28);
+  const markdown = '# Study notes\n\n' + [1, 2, 3].map(n =>
+    `### Section ${n}\n\n${filler}\n\n${filler}\n`).join('\n');
+  await page.route(`**/content/${ref}`, route => route.fulfill({
+    contentType: 'text/markdown', body: markdown,
+  }));
+}
+
+async function readingReady(page, ref = READING_REF) {
+  const reader = page.locator('.fd-reader:visible');
+  await expect(reader.locator('.fd-src')).toHaveText(ref);
+  await expect(reader.locator('.fd-article__body h3')).toHaveCount(3);
+  await expect(reader.locator('[data-fd-reading-status]')).toHaveCount(1);
+  await expect(reader).not.toHaveClass(/fd-reader--guide/);
+  return reader;
+}
+
+async function readingPlaces(page) {
+  return page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}').readingPlaces || {});
+}
+
+async function scrollReadingTo(page, index, offset = 85) {
+  await page.locator('.fd-article__body h3').nth(index).evaluate((heading, delta) => {
+    window.scrollTo(0, heading.getBoundingClientRect().top + window.scrollY + delta);
+    window.dispatchEvent(new Event('scroll'));
+  }, offset);
+}
+
+async function expectReadingAnchor(page, index, ref = READING_REF) {
+  const id = await page.locator('.fd-article__body h3').nth(index).getAttribute('id');
+  await expect.poll(async () => (await readingPlaces(page))[ref]?.heading).toBe(id);
+  await expect.poll(() => page.locator(`#${id}`).evaluate(heading => {
+    const delta = window.scrollY - (heading.getBoundingClientRect().top + window.scrollY);
+    return window.scrollY > 0 && delta >= 0 && delta < 400;
+  })).toBe(true);
+}
+
+test('reading place: reload and phone reflow restore the second heading; Start at top stays cleared', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 900, height: 650 });
+  await seedApp(page, testInfo);
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}`);
+  const reader = await readingReady(page);
+  await expect(reader.locator('[data-fd-reading-status]')).toBeEmpty();
+  await scrollReadingTo(page, 1);
+  await expect.poll(async () => (await readingPlaces(page))[READING_REF]?.heading).toBe(
+    await reader.locator('.fd-article__body h3').nth(1).getAttribute('id'));
+  const saved = (await readingPlaces(page))[READING_REF];
+  expect(saved.offset).toBeGreaterThan(0);
+  await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+  await page.reload();
+  await readingReady(page);
+  await expectReadingAnchor(page, 1);
+  await page.screenshot({ path: join(tmpdir(), `device-reading-place-${audience(testInfo).role}-desktop.png`) });
+  await page.setViewportSize(PHONE);
+  await expectReadingAnchor(page, 1);
+  await page.reload();
+  await readingReady(page);
+  await expectReadingAnchor(page, 1);
+  await page.screenshot({ path: join(tmpdir(), `device-reading-place-${audience(testInfo).role}-phone.png`) });
+  await expect(reader.locator('[data-fd-reading-top]')).toBeVisible();
+  await reader.locator('[data-fd-reading-top]').click();
+  await expect.poll(async () => (await readingPlaces(page))[READING_REF]).toBeUndefined();
+  await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+  expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
+  await page.reload();
+  await readingReady(page);
+  expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
+  await scrollReadingTo(page, 2);
+  await expect.poll(async () => (await readingPlaces(page))[READING_REF]?.heading).toBe(
+    await reader.locator('.fd-article__body h3').nth(2).getAttribute('id'));
+  await expectHealthy(page);
+});
+
+test('reading place: a removed heading opens at top and deletes only that reading', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}`);
+  await readingReady(page);
+  await page.locator('.fd-reader__back:visible').click();
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await page.evaluate(ref => {
+    sessionStorage.setItem('__fd_test_preserve_seed', '1');
+    const state = JSON.parse(localStorage.getItem('cw_frontdoor_v1'));
+    state.readingPlaces = {
+      [ref]: { heading: 'fd-reading-removed-heading', offset: 120, updatedAt: 100 },
+      'other.md': { heading: 'fd-reading-other', offset: 42, updatedAt: 101 },
+    };
+    localStorage.setItem('cw_frontdoor_v1', JSON.stringify(state));
+  }, READING_REF);
+  await page.goto(`/?page=${READING_REF}`);
+  const reader = await readingReady(page);
+  await expect.poll(async () => (await readingPlaces(page))[READING_REF]).toBeUndefined();
+  expect((await readingPlaces(page))['other.md']).toEqual({ heading: 'fd-reading-other', offset: 42, updatedAt: 101 });
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThan(20);
+  await expect(reader.locator('[data-fd-reading-top]')).toBeHidden();
+  await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+  expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
+  await expectHealthy(page);
+});
+
+test('reading place: Today Continue focuses once; Library and Search restore scroll without focus theft', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  const continueButton = page.locator('[data-fd-reading-resume="1"]:visible').first();
+  await expect(continueButton).toBeVisible();
+  const ref = await continueButton.getAttribute('data-fd-open');
+  const searchTitle = (await continueButton.locator('.fd-continue__title,.fd-lastread__title').textContent())
+    .replace(/^You were reading:\s*/, '').trim();
+  await controlledReading(page, ref);
+  await continueButton.click();
+  await readingReady(page, ref);
+  await scrollReadingTo(page, 1);
+  await expect.poll(async () => (await readingPlaces(page))[ref]?.heading).toBe(
+    await page.locator('.fd-article__body h3').nth(1).getAttribute('id'));
+  await page.locator('.fd-reader__back:visible').click();
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await page.evaluate(() => {
+    window.__readingFocusCalls = 0;
+    const focus = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function(...args) {
+      if (this.id?.startsWith('fd-reading-')) window.__readingFocusCalls++;
+      return focus.apply(this, args);
+    };
+  });
+  await page.locator(`[data-fd-reading-resume="1"][data-fd-open="${ref}"]:visible`).first().click();
+  await readingReady(page, ref);
+  await expectReadingAnchor(page, 1, ref);
+  await expect(page.locator('.fd-article__body h3').nth(1)).toBeFocused();
+  expect(await page.evaluate(() => window.__readingFocusCalls)).toBe(1);
+  await page.locator('.fd-reader__back:visible').click();
+  await page.locator('.fd-dock [data-fd-search]:visible').click();
+  await page.getByRole('dialog', { name: 'Search' }).getByRole('button', { name: 'Browse the Library' }).click();
+  const full = page.locator('[data-fd-library-view="full"]:visible');
+  if (await full.count()) await full.click();
+  const libraryLink = page.locator(`[data-fd-open="${ref}"]:visible`).first();
+  await expect(libraryLink).toBeVisible();
+  await libraryLink.click();
+  await readingReady(page, ref);
+  await expectReadingAnchor(page, 1, ref);
+  await expect(page.locator('.fd-article__body h3').nth(1)).not.toBeFocused();
+  expect(await page.evaluate(() => window.__readingFocusCalls)).toBe(1);
+  await page.locator('.fd-dock [data-fd-search]:visible').click();
+  const dialog = page.getByRole('dialog', { name: 'Search' });
+  await expect(dialog.getByRole('textbox', { name: 'Search resources' })).toBeFocused();
+  await expect(page.locator('.fd-article__body h3').nth(1)).not.toBeFocused();
+  await dialog.getByRole('textbox', { name: 'Search resources' }).fill(searchTitle);
+  await dialog.locator(`[data-fd-open="${ref}"]:visible`).first().click();
+  await readingReady(page, ref);
+  await expectReadingAnchor(page, 1, ref);
+  await expect(page.locator('.fd-article__body h3').nth(1)).not.toBeFocused();
+  expect(await page.evaluate(() => window.__readingFocusCalls)).toBe(1);
+  await expectHealthy(page);
+});
+
+test('reading place: Back flushes pending scroll and failed device write shows failure copy', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}`);
+  const reader = await readingReady(page);
+  const thirdId = await reader.locator('.fd-article__body h3').nth(2).getAttribute('id');
+  await scrollReadingTo(page, 2);
+  await page.evaluate(() => document.querySelector('.fd-reader__back').click());
+  await expect.poll(async () => (await readingPlaces(page))[READING_REF]?.heading).toBe(thirdId);
+  await page.goto(`/?page=${READING_REF}`);
+  await readingReady(page);
+  await page.evaluate(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function(key, value) {
+      if (key === 'cw_frontdoor_v1') throw new Error('simulated quota error');
+      return original.call(this, key, value);
+    };
+  });
+  await scrollReadingTo(page, 1);
+  await expect(reader.locator('[data-fd-reading-status]')).toHaveText(READING_FAILURE);
+  await expect(reader.locator('[data-fd-reading-status]')).not.toHaveText(READING_SUCCESS);
+  await expectHealthy(page);
+});
+
+test('reading place: Settings erase survives reload and pagehide', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}`);
+  await readingReady(page);
+  await scrollReadingTo(page, 1);
+  await expect.poll(async () => Boolean((await readingPlaces(page))[READING_REF])).toBe(true);
+  await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+  await page.locator('.fd-settingsbtn:visible').click();
+  await page.locator('[data-fd-clear-ask]:visible').click();
+  await Promise.all([
+    page.waitForEvent('load'),
+    page.locator('[data-fd-clear-confirm]:visible').click(),
+  ]);
+  expect(await page.evaluate(() => localStorage.getItem('cw_frontdoor_v1'))).toBeNull();
+  await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+  expect(await page.evaluate(() => localStorage.getItem('cw_frontdoor_v1'))).toBeNull();
+  await expectHealthy(page);
+});
+
+test('reading place: guest, guide, tool, and faculty preview cannot claim a saved ordinary reading', async ({ page }, testInfo) => {
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}`);
+  const guest = await readingReady(page);
+  await expect(guest.locator('[data-fd-reading-status]')).toHaveText(READING_FAILURE);
+  await scrollReadingTo(page, 1);
+  expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
+  await page.evaluate(role => {
+    localStorage.setItem('cw_rotation_start', '2026-08-17');
+    localStorage.setItem('cw_frontdoor_v1', JSON.stringify({ role, tab: 'today', viewWeek: 1 }));
+  }, audience(testInfo).role);
+  await page.goto('/?page=orientation.md');
+  await expect(page.locator('.fd-reader--guide')).toBeVisible();
+  await expect(page.locator('[data-fd-reading-status]')).toHaveCount(0);
+  await page.goto('/?tool=question-bank-practice.html');
+  await expect(page.locator('.fd-reader--tool')).toBeVisible();
+  await expect(page.locator('[data-fd-reading-status]')).toHaveCount(0);
+  const beforePreview = await page.evaluate(() => localStorage.getItem('cw_frontdoor_v1'));
+  await page.goto(`/?page=${READING_REF}&reviewKey=page:${READING_REF}&reviewToken=${'a'.repeat(32)}`);
+  await expect(page.locator('#content h3')).toHaveCount(3);
+  await expect(page.locator('[data-fd-reading-status]')).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('cw_frontdoor_v1'))).toBe(beforePreview);
+  await expectHealthy(page);
+});
+
+test('reading place: APP practice choices never enter the Front Door store', async ({ page }, testInfo) => {
+  test.skip(!isResidentProject(testInfo.project.name), 'APP practice exists only on the resident build');
+  await page.goto('/');
+  await page.locator('[data-fd-role="app"]:visible').click();
+  await expect(page.locator('.fd-app')).toBeVisible();
+  await page.locator('[data-fd-app-practice-open="training-briefing"]:visible').click();
+  await expect(page.locator('.fd-app-practice')).toBeVisible();
+  await page.locator('[data-fd-app-practice-reveal]:visible').click();
+  for (const choice of ['review-time:still-known', 'source-status:changed', 'verification-owner:clarify']) {
+    await page.locator(`[data-fd-app-practice-classify="${choice}"]:visible`).click();
+  }
+  await page.locator('[data-fd-app-practice-question="confirm-owner"]:visible').click();
+  const stored = await page.evaluate(() => localStorage.getItem('cw_frontdoor_v1') || '');
+  expect(stored).not.toMatch(/training-briefing|source-status|changed|confirm-owner/);
+  await expect(page.locator('[data-fd-reading-status]')).toHaveCount(0);
+  await expectHealthy(page);
+});
 
 function audience(testInfo) {
   const resident = isResidentProject(testInfo.project.name);
