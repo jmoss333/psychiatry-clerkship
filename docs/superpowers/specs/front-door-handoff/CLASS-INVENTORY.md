@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(477 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(478 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -269,7 +269,7 @@ ancestor; there is no modifier class for it.
 | `.fd-list` | Supplies the 8px gap between `.fd-row`s — rows have no sibling margin. |
 | `.fd-consistency` | Seven-day activity strip (2026-09-02, not in the prototype). Replaces the subhead's `· N days in a row` clause, which only Daily Review could write. Derived at render time by `fdActivityDays` from the timestamps every tool already stores; nothing new is persisted. Carries a `-12px` top margin so the subhead's 22px gap closes only when the strip is present. |
 | `.fd-pilot` | Shared active-testing invitation (2026-09-21). Its `.fd-pilot__button` uses the existing `.pgfb-b` launcher and adds `data-fb-context="Today landing page"`; no second form or submission channel is introduced. |
-| `.fd-offline` | One in-flow cache receipt after Today's actual primary card and inside the APP starting-route section after its canonical resource links. The Care entry stays in flow at ≤640px; the five-item dock is unchanged. State classes `.is-checking`, `.is-ready`, `.is-update`, and `.is-not-ready` change border shape/color and surface wash while visible text carries the meaning. It uses the existing warm palette tokens in light and dark themes; all controls meet `--fd-target-touch`. |
+| `.fd-offline` | One in-flow cache receipt after Today's actual primary card, or immediately after the APP's marked primary resource inside its starting-route resources or selected task's Prepare links. The Care entry stays in flow at ≤640px; the five-item dock is unchanged. State classes `.is-checking`, `.is-ready`, `.is-update`, and `.is-not-ready` change border shape/color and surface wash while visible text carries the meaning. It uses the existing warm palette tokens in light and dark themes; all controls meet `--fd-target-touch`. |
 | `.fd-offline__status`, `.fd-offline__detail`, `.fd-offline__scope`, `.fd-offline__checked` | Detailed state, reason, current route, and current-session verification timestamp. `Checked just now` is emitted only for a validated active-worker response. |
 | `.fd-offline__inventory` | Counts present and missing eligible reading, tool, shell/navigation, and search-data files. Device-only Reading place/Capture and connection-required media, live services, external links, and email delivery are always separate lines. Only this response subtree is replaced after a cache reply; focused controls are siblings outside it. |
 | `.fd-offline__refresh-status` | Stable live text for update-check success/failure or the offline explanation. The existing worker Refresh/Later prompt remains the sole reload decision. |
@@ -705,9 +705,9 @@ content. The high-risk governance focus rule outranks passage arrival focus.
     .fd-app__bridge-choice <button> ×2   (+ .is-active)
   .fd-app__bridge
     .fd-app__bridge-head / .fd-app__bridge-copy
-    .fd-app__resources
+    .fd-app__resources (+ .fd-app__resources--with-offline when this route owns the primary)
       .fd-app__resource <button> ×8
-    .fd-offline                        after starting-route resources
+      .fd-offline                      immediately after the marked first resource when no task owns primary
     .fd-app__reflection
       .fd-app__reflection-actions [role=group]
         .fd-app__reflection-choice <button> ×3
@@ -718,6 +718,7 @@ content. The high-risk governance focus rule outranks passage arrival focus.
         .fd-app__stages
           .fd-app__stage <section> ×3
             .fd-app__step-link <button> ×N
+            .fd-offline                immediately after the marked first Prepare link in the selected task
             .fd-app__practice-open <button> (rehearsal stage, when a pack resolves)
             .fd-app__practice-error <p role=alert> (when a pack cannot resolve)
     .fd-app__practice-host (sibling of .fd-app__tasks, when practice is open)
@@ -740,6 +741,7 @@ content. The high-risk governance focus rule outranks passage arrival focus.
 |---|---|
 | `.fd-app__bridge-choice` | Optional starting route, never an identity claim or competence tier. `.is-active` and `aria-pressed` move together. |
 | `.fd-app__resource` | Canonical resource title and governance badge from the joined index; the APP data stores only refs. Missing refs render `.fd-app__error`, never a shortened sequence. |
+| `.fd-app__resources--with-offline` | Makes the first starting-route button and its immediately following readiness receipt span the resource grid so they remain vertically adjacent on desktop and phone. Other resource buttons keep their existing order. |
 | `.fd-app__reflection` | Visit-only formative choice. The controller may repaint it but only `appBridge` belongs to `FD_KEYS`; reflection and activity state never survive reload. |
 | `.fd-app__task` | Shared work-preparation card. Each card visibly retains all three stages: prepare independently, rehearse here, arrange observation. |
 | `.fd-app__step-link` | Opens an existing governed resource. It is not a completion or supervisor-approval control. |

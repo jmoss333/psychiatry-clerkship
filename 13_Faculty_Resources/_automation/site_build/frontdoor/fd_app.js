@@ -121,7 +121,7 @@ function fdAppReflection(bridge, selected){
   return out+'</section>';
 }
 
-function fdAppActivity(activity, selected){
+function fdAppActivity(activity, selected, offlineHtml){
   var resources=activity.resources||[], active=activity.id===selected, out='';
   var rehearsal=null;
   for(var r=0;r<resources.length;r++) if(!rehearsal&&resources[r].kind==='tool') rehearsal=resources[r];
@@ -136,7 +136,10 @@ function fdAppActivity(activity, selected){
   out+='<section class="fd-app__stage"><span class="fd-app__stage-n">1</span>'+
     '<h3>Prepare independently</h3><p>Open a useful canonical resource before the work.</p>'+
     '<div class="fd-app__step-links">';
-  for(var i=0;i<resources.length;i++) out+=fdAppResource(resources[i],true,active&&i===0);
+  for(var i=0;i<resources.length;i++){
+    out+=fdAppResource(resources[i],true,active&&i===0);
+    if(active&&i===0&&offlineHtml)out+=offlineHtml;
+  }
   out+='</div></section>';
   out+='<section class="fd-app__stage"><span class="fd-app__stage-n">2</span>'+
     '<h3>Rehearse here</h3><p>Use synthetic practice to prepare a question for supervision.</p>'+
@@ -166,19 +169,22 @@ function fdAppWorkspace(index, pathway, state, captureHtml, offlineHtml){
   if(captureHtml)out+=captureHtml;
   out+='<button type="button" class="fd-care-entry" data-fd-tab="care">Patient care resources<span aria-hidden="true">→</span></button>';
   out+=fdAppBridgePicker(pathway,model.bridgeId);
+  var selectedHasResource=false;
+  for(var a=0;a<model.activities.length;a++){
+    if(model.activities[a].id===model.activityId&&model.activities[a].resources.length) selectedHasResource=true;
+  }
   out+='<section class="fd-app__bridge" aria-labelledby="fd-app-bridge-title">'+
     '<div class="fd-app__bridge-head"><div><span class="fd-app__kicker">Starting route</span>'+
     '<h2 id="fd-app-bridge-title">'+fdEsc(model.bridge.name)+'</h2></div>'+
     '<span class="fd-app__count">8 canonical resources</span></div>'+
     '<p class="fd-app__bridge-copy">'+fdEsc(model.bridge.summary)+'</p>'+
-    '<div class="fd-app__resources">';
-  var selectedHasResource=false;
-  for(var a=0;a<model.activities.length;a++){
-    if(model.activities[a].id===model.activityId&&model.activities[a].resources.length) selectedHasResource=true;
+    '<div class="fd-app__resources'+(offlineHtml&&!selectedHasResource&&model.resources.length?' fd-app__resources--with-offline':'')+'">';
+  for(var i=0;i<model.resources.length;i++){
+    out+=fdAppResource(model.resources[i],false,!selectedHasResource&&i===0);
+    if(!selectedHasResource&&i===0&&offlineHtml)out+=offlineHtml;
   }
-  for(var i=0;i<model.resources.length;i++) out+=fdAppResource(model.resources[i],false,!selectedHasResource&&i===0);
   out+='</div>';
-  if(offlineHtml&&!selectedHasResource)out+=offlineHtml;
+  if(offlineHtml&&!selectedHasResource&&!model.resources.length)out+=offlineHtml;
   for(var m=0;m<model.missing.length;m++){
     out+='<p class="fd-app__error" role="alert">Configured resource unavailable: '+fdEsc(model.missing[m])+'</p>';
   }
@@ -188,9 +194,9 @@ function fdAppWorkspace(index, pathway, state, captureHtml, offlineHtml){
     '<h2 id="fd-app-work-title">Choose a workplace task</h2>'+
     '<p>Prepare, rehearse, then arrange observation through your local process.</p></div>'+
     '<div class="fd-app__tasks">';
-  for(var a=0;a<model.activities.length;a++) out+=fdAppActivity(model.activities[a],model.activityId);
+  for(var a=0;a<model.activities.length;a++) out+=fdAppActivity(model.activities[a],model.activityId,
+    selectedHasResource?offlineHtml:'');
   out+='</div>';
-  if(offlineHtml&&selectedHasResource)out+=offlineHtml;
   if(model.practiceSession){
     try{
       out+='<div class="fd-app__practice-host">'+fdAppPracticeRender(model.practiceSession)+'</div>';
