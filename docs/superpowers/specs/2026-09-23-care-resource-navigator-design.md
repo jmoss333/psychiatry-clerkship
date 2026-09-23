@@ -1,7 +1,7 @@
 # Care Resource Navigator Design
 
 **Date:** 2026-09-23
-**Status:** approved in conversation; awaiting written-spec review
+**Status:** approved
 
 ## Decision
 
