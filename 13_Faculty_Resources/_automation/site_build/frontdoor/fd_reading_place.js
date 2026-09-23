@@ -1,6 +1,6 @@
 var FD_READING_PLACE_LIMIT=50;
 var FD_READING_OFFSET_MAX=100000;
-var FD_READING_HEADING_SLUG_MAX=140;
+var FD_READING_HEADING_SLUG_MAX=120;
 var FD_READING_OWN=Object.prototype.hasOwnProperty;
 
 function fdReadingRef(ref){
@@ -85,32 +85,55 @@ function fdReadingPlaceDrop(places,ref){
   return out;
 }
 
+function fdReadingHeadingSource(label,index){
+  if(typeof label==='string')return label;
+  if(label===null)return 'null';
+  if(typeof label==='number'||typeof label==='boolean')return typeof label+':'+String(label);
+  return 'non-string:'+index;
+}
+
+function fdReadingHeadingFingerprint(value){
+  var first=2166136261,second=5381,i,code,hex1,hex2;
+  for(i=0;i<value.length;i++){
+    code=value.charCodeAt(i);
+    first^=code;
+    first=(first+(first<<1)+(first<<4)+(first<<7)+(first<<8)+(first<<24))>>>0;
+    second=(((second<<5)+second)^code)>>>0;
+  }
+  second=(second+(second<<3))>>>0;
+  second^=second>>>11;
+  second=(second+(second<<15))>>>0;
+  hex1=(first>>>0).toString(16);
+  hex2=(second>>>0).toString(16);
+  while(hex1.length<8)hex1='0'+hex1;
+  while(hex2.length<8)hex2='0'+hex2;
+  return hex1+hex2;
+}
+
 function fdReadingHeadingIds(labels){
-  var out=[],seen={},counts={},occurrences={},i,label,labelKey,slug,id,base,suffix,count,occurrence;
+  var out=[],seen={},counts={},occurrences={},i,label,source,labelKey,slug,id,base,suffix,count,occurrence;
   if(!Array.isArray(labels))return out;
   for(i=0;i<labels.length;i++){
-    label=FD_READING_OWN.call(labels,i)&&typeof labels[i]==='string'?labels[i]:null;
-    if(label===null)continue;
-    labelKey='label:'+label;
+    label=FD_READING_OWN.call(labels,i)?labels[i]:undefined;
+    source=fdReadingHeadingSource(label,i);
+    labelKey='label:'+source;
     if(FD_READING_OWN.call(counts,labelKey))counts[labelKey]++;
     else counts[labelKey]=1;
   }
   for(i=0;i<labels.length;i++){
-    label=FD_READING_OWN.call(labels,i)&&typeof labels[i]==='string'?labels[i]:null;
-    labelKey=label===null?'':('label:'+label);
-    count=label===null?1:counts[labelKey];
-    if(label===null)occurrence=1;
-    else{
-      occurrence=(FD_READING_OWN.call(occurrences,labelKey)?occurrences[labelKey]:0)+1;
-      occurrences[labelKey]=occurrence;
-    }
-    label=label===null?'':label.toLowerCase();
+    label=FD_READING_OWN.call(labels,i)?labels[i]:undefined;
+    source=fdReadingHeadingSource(label,i);
+    labelKey='label:'+source;
+    count=counts[labelKey];
+    occurrence=(FD_READING_OWN.call(occurrences,labelKey)?occurrences[labelKey]:0)+1;
+    occurrences[labelKey]=occurrence;
+    label=typeof label==='string'?label.toLowerCase():'';
     slug=label.replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
-    slug=slug||('section-'+(i+1));
+    slug=slug||'section';
     slug=slug.slice(0,FD_READING_HEADING_SLUG_MAX).replace(/-+$/g,'');
-    if(!slug)slug='section-'+(i+1);
-    base='fd-reading-'+slug;
-    if(count>1)base+='-'+occurrence+'of'+count;
+    if(!slug)slug='section';
+    base='fd-reading-'+slug+'--'+fdReadingHeadingFingerprint(source);
+    if(count>1)base+='--'+occurrence+'of'+count;
     id=base;
     suffix=2;
     while(FD_READING_OWN.call(seen,id)){

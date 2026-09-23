@@ -71,8 +71,11 @@ test('reading places reject malformed records and keep the newest fifty', () => 
 });
 
 test('heading ids are deterministic and unique', () => {
-  assert.deepEqual(F.fdReadingHeadingIds(['Thought Process','Thought Process','...']),
-    ['fd-reading-thought-process-1of2','fd-reading-thought-process-2of2','fd-reading-section-3']);
+  const ids = F.fdReadingHeadingIds(['Thought Process','Thought Process','...']);
+  assert.match(ids[0], /^fd-reading-thought-process--[0-9a-f]{16}--1of2$/);
+  assert.match(ids[1], /^fd-reading-thought-process--[0-9a-f]{16}--2of2$/);
+  assert.equal(ids[0].split('--')[1], ids[1].split('--')[1]);
+  assert.match(ids[2], /^fd-reading-section--[0-9a-f]{16}$/);
 });
 
 test('resume rejects a heading removed by a content update', () => {
@@ -109,12 +112,15 @@ function fdReadingPlaceUpdate(places,ref,heading,offset,nowMs){
 }
 ```
 
-Heading slugging must normalize to lowercase ASCII letters/digits/hyphens, prefix every id with
-`fd-reading-`, fall back to `section-N`, and keep every generated id within the record validator's
-200-character limit. A unique heading keeps the simple slug. Every member of an exact duplicate-label
-group encodes its occurrence and the group's cardinality (`-1of2`, `-2of2`), so changing the group
-invalidates all its old bookmarks instead of shifting one onto another duplicate. If distinct
-labels still collide after normalization or truncation, append `-2`, `-3`, etc. in document order.
+Every id starts with `fd-reading-`, includes a readable slug capped at 120 characters, and includes
+a 16-hex-character fingerprint made from two independent 32-bit hashes of the full original label.
+The slug is diagnostic; the fingerprint keeps distinct labels stable when case folding, punctuation
+normalization, or truncation makes their slugs equal. Punctuation-only labels use the stable readable
+fallback `section` and still receive a label-derived fingerprint. Each exact duplicate-label group
+shares one fingerprint and appends its occurrence and group cardinality (`--1of2`, `--2of2`), so
+membership edits invalidate all old bookmarks in that group. A final deterministic numeric suffix
+resolves the unlikely event of an actual fingerprint collision and guarantees unique ids within one
+generated list. The bounded shape leaves room below the record validator's 200-character limit.
 The prefix prevents collisions with authored anchors and shell ids.
 
 - [ ] **Step 4: Run the suite and verify GREEN**

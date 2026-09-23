@@ -79,31 +79,61 @@ test('breaks tied eviction timestamps by ref deterministically', () => {
 
 test('heading ids normalize punctuation, handle empty labels, and resolve collisions in order', () => {
   const F = make();
-  assert.deepEqual(F.fdReadingHeadingIds([
+  const ids = F.fdReadingHeadingIds([
     'Thought Process', 'Thought Process', '...', '!!!', 'A & B', 'A B', 'café', 'Café',
     'Earlier', 'section 11', '???',
-  ]), [
-    'fd-reading-thought-process-1of2', 'fd-reading-thought-process-2of2',
-    'fd-reading-section-3', 'fd-reading-section-4', 'fd-reading-a-b', 'fd-reading-a-b-2',
-    'fd-reading-caf', 'fd-reading-caf-2', 'fd-reading-earlier',
-    'fd-reading-section-11', 'fd-reading-section-11-2',
   ]);
-  assert.deepEqual(F.fdReadingHeadingIds(['', null, 42]), [
-    'fd-reading-section-1', 'fd-reading-section-2', 'fd-reading-section-3',
-  ]);
+  assert.match(ids[0], /^fd-reading-thought-process--[0-9a-f]{16}--1of2$/);
+  assert.match(ids[1], /^fd-reading-thought-process--[0-9a-f]{16}--2of2$/);
+  assert.equal(ids[0].split('--')[1], ids[1].split('--')[1]);
+  assert.match(ids[2], /^fd-reading-section--[0-9a-f]{16}$/);
+  assert.match(ids[3], /^fd-reading-section--[0-9a-f]{16}$/);
+  assert.notEqual(ids[2], ids[3]);
+  assert.notEqual(ids[4], ids[5], 'different full labels keep separate ids after normalization');
+  assert.notEqual(ids[6], ids[7], 'case-different full labels keep separate ids');
+  assert.match(ids[10], /^fd-reading-section--[0-9a-f]{16}$/);
+  const nonStringIds = F.fdReadingHeadingIds(['', null, 42]);
+  assert.equal(new Set(nonStringIds).size, 3);
+  assert.ok(nonStringIds.every((id) => id.length <= 200));
 });
 
 test('removing one duplicate heading invalidates every bookmark from its old duplicate group', () => {
   const F = make();
   const oldIds = F.fdReadingHeadingIds(['Thought Process', 'Thought Process']);
   const currentIds = F.fdReadingHeadingIds(['Thought Process']);
-  assert.deepEqual(oldIds, [
-    'fd-reading-thought-process-1of2', 'fd-reading-thought-process-2of2',
-  ]);
+  assert.match(oldIds[0], /^fd-reading-thought-process--[0-9a-f]{16}--1of2$/);
+  assert.match(oldIds[1], /^fd-reading-thought-process--[0-9a-f]{16}--2of2$/);
   for (let i = 0; i < oldIds.length; i += 1) {
     const saved = F.fdReadingPlaceUpdate({}, `duplicate-${i}.md`, oldIds[i], 12, 100 + i);
     assert.equal(F.fdReadingResume(saved[`duplicate-${i}.md`], currentIds), null);
   }
+});
+
+test('duplicate suffix syntax cannot reassign a duplicate bookmark to a distinct heading', () => {
+  const F = make();
+  const oldIds = F.fdReadingHeadingIds(['X', 'X', 'X-1of2']);
+  const currentIds = F.fdReadingHeadingIds(['X', 'X-1of2']);
+  assert.notEqual(oldIds[0], currentIds[1]);
+  const saved = F.fdReadingPlaceUpdate({}, 'old-x.md', oldIds[0], 4, 7);
+  assert.equal(F.fdReadingResume(saved['old-x.md'], currentIds), null);
+  assert.equal(currentIds[1], oldIds[2], 'the unchanged distinct label keeps its id');
+});
+
+test('normalized-label collisions keep the remaining label id stable', () => {
+  const F = make();
+  const oldIds = F.fdReadingHeadingIds(['A & B', 'A B']);
+  const currentIds = F.fdReadingHeadingIds(['A B']);
+  assert.notEqual(oldIds[0], oldIds[1]);
+  assert.equal(currentIds[0], oldIds[1]);
+  const saved = F.fdReadingPlaceUpdate({}, 'removed.md', oldIds[0], 4, 7);
+  assert.equal(F.fdReadingResume(saved['removed.md'], currentIds), null);
+});
+
+test('punctuation-only ids stay stable when neighboring headings change order', () => {
+  const F = make();
+  const before = F.fdReadingHeadingIds(['!!!', 'Introduction']);
+  const after = F.fdReadingHeadingIds(['Introduction', '!!!']);
+  assert.equal(before[0], after[1]);
 });
 
 test('generated ids stay bounded, unique after truncation, and round-trip through save and resume', () => {
@@ -114,6 +144,7 @@ test('generated ids stay bounded, unique after truncation, and round-trip throug
     longPrefix + 'alpha', longPrefix + 'beta',
   ];
   const ids = F.fdReadingHeadingIds(labels);
+  assert.deepEqual(F.fdReadingHeadingIds(labels), ids, 'an unchanged list has unchanged IDs');
   assert.equal(new Set(ids).size, ids.length);
   assert.ok(ids.every((id) => id.length <= 200));
   for (let i = 0; i < ids.length; i += 1) {
@@ -123,6 +154,8 @@ test('generated ids stay bounded, unique after truncation, and round-trip throug
       heading: ids[i], offset: i, updatedAt: 1000 + i,
     });
   }
+  const withoutFirstLongHeading = F.fdReadingHeadingIds(labels.slice(0, -2).concat(labels[6]));
+  assert.equal(withoutFirstLongHeading[withoutFirstLongHeading.length - 1], ids[6]);
 });
 
 test('resume returns a valid place only while its heading id is still available', () => {
