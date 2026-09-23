@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(440 distinct `fd-*` selector names, 24 `is-*` state classes). Every class below has a rule in that file unless
+(464 distinct `fd-*` selector names, 25 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -304,8 +304,7 @@ invoker or the editor.
 | `.cap-email-affirm`, `.cap-email-status` | Required no-PHI checkbox and live handoff/failure message. Disabled Open draft uses the shared `.cap-btn` style. |
 | `.cap-email-fallback` | Revealed after clipboard absence/rejection or a URI too long to open. `[hidden]` wins over the layout rule; its read-only textarea keeps the complete selectable text. |
 
-The new selectors have `cap-*` names, so the 396 `fd-*` selector and 23 `is-*` state-class totals
-above do not change. The email overlay has no new `is-*` state class.
+The email overlay selectors have `cap-*` names and add no `fd-*` or `is-*` classes to the totals above.
 
 ⚠ **`.fd-ring` needs `--fd-ring-pct` set inline** (e.g. `style="--fd-ring-pct:62%"`). It defaults to
 `0%`, so a ring rendered without it silently shows an empty track. This is the one custom property
@@ -348,6 +347,32 @@ Omitting it collapses the rail underneath.
       .fd-care-navigator__alternatives
         .fd-care-navigator__link <a> ×0–2
       .fd-care-navigator__clear <button>
+  .fd-care-pack
+    .fd-care-pack__head
+      h2 / p
+      .fd-care-pack__included           + .is-unavailable on fail-closed state
+    .fd-care-pack__workbench
+      .fd-care-pack__picker
+        .fd-care-pack__choices
+          .fd-care-pack__choice <button> ×5
+            .fd-care-pack__check
+          .fd-care-pack__choice.is-selected [aria-pressed="true"]
+        .fd-care-pack__picker-foot
+          #fd-care-pack-limit / .fd-care-pack__clear <button>
+      .fd-care-pack__sheet
+        .fd-care-pack__sheet-head
+        .fd-care-pack__resources
+          .fd-care-pack__resource ×0–3
+            .fd-care-pack__resource-copy
+            .fd-care-pack__scan
+              .fd-care-pack__qr <svg> | .fd-care-pack__qr-fallback
+        .fd-care-pack__empty
+        details.fd-care-pack__crisis
+          summary / .crisis-block
+        .fd-care-pack__crisis-failure   role="alert"; fail-closed alternative
+        .fd-care-pack__provenance
+    .fd-care-pack__actions
+      p / .fd-care-pack__print <button>
   .fd-care-page__groups
     .fd-care-group ×2                 support / education
       .fd-care-group__head
@@ -371,6 +396,11 @@ Omitting it collapses the rail underneath.
 | `.vh-live` (`#careNavigatorStatus`) | Persistent, initially empty shell status beside `#routeStatus`, outside replaceable `#content`. The shell updates its polite, atomic text after a valid Care choice and clears it when the choice or Care surface ends. It keeps the same DOM node through Care re-renders. |
 | `.fd-care-navigator__alternatives` | Zero to two secondary links; shares the responsive one-column phone layout. |
 | `.fd-care-navigator__clear` | Native button returns to the unselected task map without changing the resource groups. |
+| `.fd-care-pack__workbench` | Transient two-column builder: a flat choice list beside a paper-like preview, stacking to one column at ≤640px. It accepts only canonical `careResources` records and has no patient fields, route state, storage, analytics, or network request. |
+| `.fd-care-pack__choice.is-selected` | The active choice pairs `.is-selected` with `aria-pressed="true"`; its visible check and inset rule keep selection non-color-only. A fourth unselected choice disables until one of the three is removed. |
+| `.fd-care-pack__sheet` | The only printable surface. It contains zero to three exact canonical links with locally generated QR SVGs; controls and the surrounding shell are excluded by `@media print`. |
+| `.fd-care-pack__crisis` | Owns the exact build-injected crisis block derived from `crisis_resources.json`. It is collapsed on screen and forced fully visible in Print. Missing governed HTML renders `.fd-care-pack__crisis-failure` and disables Print; the renderer never invents contacts. |
+| `.fd-care-pack__actions` | States that choices stay on screen only. Print is enabled only when at least one valid resource and the governed crisis block are both present. |
 | `.fd-care-page__groups` | Two-column shelf at larger widths and one column at ≤640px. The support shelf holds Resource Finder and Recovery Meeting Calendar; education holds the patient library, Podcast Navigator, and Relational Bibliotherapy book shelf. |
 | `.fd-carelink` | Static external anchor with an explicit new-tab mark and visible title/description. |
 
@@ -859,6 +889,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 | `.is-tool-expanded` | `.fd-main`, `.fd-reader--tool` | saved desktop tool workspace width |
 | `.is-primary` | `.fd-due`, `.fd-resume`, `.fd-lastread` | this row is Today's primary action (kicker copy changes; the visual treatment comes from the `.fd-primary` wrapper) |
 | `.is-secondary` | `.fd-continue` | a device-store row won the primary slot; the Continue card drops its gradient and top accent |
+| `.is-unavailable` | `.fd-care-pack__included` | the governed crisis block is absent, so the handout truthfully reports the failure and Print remains disabled |
 
 ## Keyframes
 

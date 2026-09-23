@@ -610,6 +610,58 @@
 .fd-carelink__title{display:block;font-size:var(--fd-font-sm);font-weight:750;line-height:1.35}
 .fd-carelink__description{display:block;margin-top:2px;color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:1.4}
 
+/* Patient resource pack: a quiet picker beside a paper-like handout preview. The choices are
+ * visit-only controls; the sheet is the sole print surface. */
+.fd-care-pack{margin:0 0 var(--fd-space-10);padding:var(--fd-space-6);border:var(--fd-space-1) solid var(--fd-line);border-radius:var(--fd-radius-lg);background:var(--fd-callout)}
+.fd-care-pack__head{display:flex;align-items:start;justify-content:space-between;gap:var(--fd-space-6);margin-bottom:var(--fd-space-6)}
+.fd-care-pack__head h2{margin:0 0 var(--fd-space-2);font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-xl);line-height:var(--fd-leading-snug)}
+.fd-care-pack__head p{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:var(--fd-leading-normal)}
+.fd-care-pack__included{display:inline-flex;align-items:center;gap:var(--fd-space-2);flex:0 0 auto;padding:var(--fd-space-2) var(--fd-space-4);border:var(--fd-space-1) solid var(--fd-olive);border-radius:var(--fd-radius-pill);background:var(--fd-olive-wash);color:var(--fd-olive-deep) !important;font-size:var(--fd-font-xs) !important;font-weight:750}
+.fd-care-pack__included.is-unavailable{border-color:var(--fd-danger);background:var(--fd-danger-wash);color:var(--fd-danger) !important}
+.fd-care-pack__workbench{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--fd-space-7);align-items:start}
+.fd-care-pack__picker{min-width:0;padding-top:var(--fd-space-4);border-top:var(--fd-space-2) solid var(--fd-olive)}
+.fd-care-pack__picker h3{margin:0 0 var(--fd-space-4);font-size:var(--fd-font-lg)}
+.fd-care-pack__choices{display:grid;gap:var(--fd-space-3)}
+.fd-care-pack__choice{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:var(--fd-space-3);width:100%;min-height:var(--fd-target-touch);padding:var(--fd-space-3) var(--fd-space-4);border:var(--fd-space-1) solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:transparent;color:var(--fd-text);font:inherit;text-align:left;cursor:pointer}
+.fd-care-pack__choice:hover:not(:disabled){border-color:var(--fd-olive);background:var(--fd-olive-wash)}
+.fd-care-pack__choice:focus-visible,.fd-care-pack__clear:focus-visible,.fd-care-pack__print:focus-visible{outline:var(--fd-space-2) solid var(--fd-focus);outline-offset:var(--fd-space-1)}
+.fd-care-pack__choice:disabled,.fd-care-pack__clear:disabled,.fd-care-pack__print:disabled{opacity:.55;cursor:not-allowed}
+.fd-care-pack__check{display:grid;place-items:center;width:var(--fd-space-6);height:var(--fd-space-6);border:var(--fd-space-1) solid var(--fd-line-strong);border-radius:var(--fd-radius-circle);color:transparent;font-weight:800}
+.fd-care-pack__choice>span:last-child{min-width:0}
+.fd-care-pack__choice strong,.fd-care-pack__choice small{display:block;overflow-wrap:anywhere}
+.fd-care-pack__choice strong{font-size:var(--fd-font-sm);line-height:var(--fd-leading-snug)}
+.fd-care-pack__choice small{margin-top:var(--fd-space-1);color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:var(--fd-leading-normal)}
+.fd-care-pack__choice[aria-pressed="true"]{border-color:var(--fd-olive-deep);background:var(--fd-olive-wash);box-shadow:inset var(--fd-space-1) 0 0 var(--fd-olive-deep)}
+.fd-care-pack__choice[aria-pressed="true"] .fd-care-pack__check{border-color:var(--fd-olive-deep);background:var(--fd-olive-deep);color:var(--fd-on-accent)}
+.fd-care-pack__picker-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-4);margin-top:var(--fd-space-4)}
+.fd-care-pack__picker-foot p{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-xs)}
+.fd-care-pack__clear{min-height:var(--fd-target-touch);padding:var(--fd-space-2) var(--fd-space-3);border:0;background:transparent;color:var(--fd-olive-deep);font:inherit;font-size:var(--fd-font-sm);font-weight:750;text-decoration:underline;text-underline-offset:var(--fd-space-1);cursor:pointer}
+.fd-care-pack__sheet{min-width:0;padding:var(--fd-space-6);border:var(--fd-space-1) solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);box-shadow:var(--fd-shadow-card)}
+.fd-care-pack__sheet-head{padding-bottom:var(--fd-space-5);border-bottom:var(--fd-space-2) solid var(--fd-olive)}
+.fd-care-pack__sheet-head p{margin:0 0 var(--fd-space-1);color:var(--fd-olive-deep);font-size:var(--fd-font-xs);font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.fd-care-pack__sheet-head h3{margin:0 0 var(--fd-space-2);font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-xl);line-height:var(--fd-leading-tight)}
+.fd-care-pack__sheet-head span{display:block;color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:var(--fd-leading-normal)}
+.fd-care-pack__resources{display:grid}
+.fd-care-pack__resource{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--fd-space-4);align-items:center;padding:var(--fd-space-5) 0;border-bottom:var(--fd-space-1) solid var(--fd-line)}
+.fd-care-pack__resource-copy{min-width:0}
+.fd-care-pack__resource h4{margin:0 0 var(--fd-space-2);font-size:var(--fd-font-sm);line-height:var(--fd-leading-snug)}
+.fd-care-pack__resource p{margin:0 0 var(--fd-space-2);color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:var(--fd-leading-normal)}
+.fd-care-pack__resource a{display:block;font-size:var(--fd-font-2xs);line-height:var(--fd-leading-snug);overflow-wrap:anywhere}
+.fd-care-pack__scan{display:grid;justify-items:center;gap:var(--fd-space-1);color:var(--fd-text-dim);font-size:var(--fd-font-2xs);text-align:center}
+.fd-care-pack__qr{width:calc(var(--fd-space-10) * 2 + var(--fd-space-4));max-width:100%;padding:var(--fd-space-1);border:var(--fd-space-1) solid var(--fd-line);background:var(--fd-surface)}
+.fd-care-pack__qr svg{display:block;width:100%;height:auto}
+.fd-care-pack__qr-fallback{max-width:calc(var(--fd-space-10) * 2);padding:var(--fd-space-2);border:var(--fd-space-1) solid var(--fd-line);border-radius:var(--fd-radius-xs)}
+.fd-care-pack__empty{margin:var(--fd-space-7) 0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);text-align:center}
+.fd-care-pack__crisis{margin-top:var(--fd-space-5);padding-top:var(--fd-space-4);border-top:var(--fd-space-1) solid var(--fd-line)}
+.fd-care-pack__crisis>summary{min-height:var(--fd-target-touch);align-content:center;color:var(--fd-danger);font-size:var(--fd-font-sm);font-weight:750;cursor:pointer}
+.fd-care-pack__crisis .crisis-block{margin-top:var(--fd-space-4)}
+.fd-care-pack__crisis-failure{margin:var(--fd-space-5) 0 0;padding:var(--fd-space-4);border:var(--fd-space-1) solid var(--fd-danger);border-radius:var(--fd-radius-sm);background:var(--fd-danger-wash);color:var(--fd-text);font-size:var(--fd-font-sm)}
+.fd-care-pack__provenance{margin-top:var(--fd-space-5);padding-top:var(--fd-space-4);border-top:var(--fd-space-1) solid var(--fd-line);color:var(--fd-text-dim);font-size:var(--fd-font-2xs);line-height:var(--fd-leading-normal)}
+.fd-care-pack__actions{display:flex;align-items:center;justify-content:flex-end;gap:var(--fd-space-5);margin-top:var(--fd-space-6)}
+.fd-care-pack__actions p{margin:0;color:var(--fd-text-dim);font-size:var(--fd-font-xs)}
+.fd-care-pack__print{min-height:var(--fd-target-touch);padding:var(--fd-space-3) var(--fd-space-6);border:var(--fd-space-1) solid var(--fd-olive);border-radius:var(--fd-radius-sm);background:var(--fd-olive);color:var(--fd-on-accent);font:inherit;font-size:var(--fd-font-sm);font-weight:750;cursor:pointer}
+.fd-care-pack__print:hover:not(:disabled){border-color:var(--fd-olive-deep);background:var(--fd-olive-deep)}
+
 .fd-kitcard{
   display:flex;align-items:center;gap:var(--fd-space-5);width:100%;text-align:left;
   padding:11px 13px;background:var(--fd-surface);
@@ -1641,6 +1693,14 @@
   .fd-care-page__notice{grid-template-columns:minmax(0,1fr);gap:var(--fd-space-2)}
   .fd-care-navigator{padding:var(--fd-space-5)}
   .fd-care-navigator__choices,.fd-care-navigator__alternatives{grid-template-columns:minmax(0,1fr)}
+  .fd-care-pack{padding:var(--fd-space-5)}
+  .fd-care-pack__head,.fd-care-pack__actions{align-items:stretch;flex-direction:column}
+  .fd-care-pack__included{align-self:flex-start}
+  .fd-care-pack__workbench{grid-template-columns:minmax(0,1fr)}
+  .fd-care-pack__sheet{padding:var(--fd-space-5)}
+  .fd-care-pack__resource{grid-template-columns:minmax(0,1fr)}
+  .fd-care-pack__scan{justify-items:start;text-align:left}
+  .fd-care-pack__print{width:100%}
 }
 
 /* Essentials uses the reading typography and existing Clinical Warm tokens. */
@@ -1729,6 +1789,21 @@
   .fd-reader--guide thead{display:table-header-group}
   .fd-reader--guide tr{break-inside:avoid-page;page-break-inside:avoid}
   .fd-reader--guide .fd-article__body a[href^="http"]::after{content:" (" attr(href) ")";font-size:var(--fd-font-xs);font-weight:400;overflow-wrap:anywhere}
+  body:has(.fd-care-pack__sheet){--fd-care-print-ink:CanvasText;--fd-care-print-paper:Canvas;color-scheme:light;background:var(--fd-care-print-paper) !important;color:var(--fd-care-print-ink) !important}
+  body:has(.fd-care-pack__sheet) :is(.fd-header,.fd-tabs,.fd-actionbar,.fd-sheet,.fd-sheetbackdrop,.fd-search,.fd-nudge,#fdCaptureMount){display:none !important}
+  body:has(.fd-care-pack__sheet) :is(.fd-shell,.fd-main){display:block;min-height:0;width:auto;max-width:none;padding:0;margin:0;overflow:visible;background:var(--fd-care-print-paper) !important}
+  .fd-care-page:has(.fd-care-pack__sheet)>:not(.fd-care-pack){display:none !important}
+  .fd-care-pack{display:block;margin:0;padding:0;border:0;background:transparent}
+  .fd-care-pack>:not(.fd-care-pack__workbench){display:none !important}
+  .fd-care-pack__workbench{display:block}
+  .fd-care-pack__picker{display:none !important}
+  .fd-care-pack__sheet{display:block !important;width:auto;max-width:none;margin:0;padding:0;border:0;border-radius:0;background:var(--fd-care-print-paper) !important;box-shadow:none !important;color:var(--fd-care-print-ink) !important}
+  .fd-care-pack__sheet *{color:var(--fd-care-print-ink) !important;box-shadow:none !important;text-shadow:none !important}
+  .fd-care-pack__resource{break-inside:avoid-page;page-break-inside:avoid}
+  .fd-care-pack__crisis{display:block !important;break-before:auto}
+  .fd-care-pack__crisis>summary{display:none !important}
+  .fd-care-pack__crisis>:not(summary){display:block !important;height:auto !important;content-visibility:visible !important}
+  .fd-care-pack__crisis::details-content{display:block !important;height:auto !important;content-visibility:visible !important}
 }
 /* ---- One Thing First (2026-09-16): one primary slot, demoted rows under "Also today" ----------
  * Appended after every base rule on purpose: tests/fd-tokens resolves a selector by FIRST textual

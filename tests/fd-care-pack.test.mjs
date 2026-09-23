@@ -6,6 +6,9 @@ const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const packUrl = new URL(`${BUILD}/frontdoor/fd_care_pack.js`, import.meta.url);
 const packSrc = existsSync(packUrl) ? readFileSync(packUrl, 'utf8') : '';
 const dataSrc = readFileSync(new URL(`${BUILD}/frontdoor/fd_data.js`, import.meta.url), 'utf8');
+const css = readFileSync(new URL(`${BUILD}/frontdoor/frontdoor.css`, import.meta.url), 'utf8');
+const inventory = readFileSync(new URL(
+  '../docs/superpowers/specs/front-door-handoff/CLASS-INVENTORY.md', import.meta.url), 'utf8');
 const qrSrc = readFileSync(new URL(
   `${BUILD}/vendor/qrcode-generator-1.4.4.js`, import.meta.url), 'utf8');
 const curriculum = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
@@ -168,4 +171,37 @@ test('the pure module is ES5, browser-global free, and contains no crisis contac
     assert.doesNotMatch(packSrc,
       new RegExp(resource.contact.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
+});
+
+test('the workbench uses an accessible two-column picker and paper hierarchy', () => {
+  assert.match(css, /\.fd-care-pack__workbench\{[^}]*grid-template-columns:minmax\(0,7fr\) minmax\(0,5fr\)/);
+  assert.match(css, /\.fd-care-pack__choice\{[^}]*min-height:var\(--fd-target-touch\)/);
+  assert.match(css, /\.fd-care-pack__choice\[aria-pressed="true"\]\{[^}]*box-shadow:inset/);
+  assert.match(css, /\.fd-care-pack__choice\[aria-pressed="true"\] \.fd-care-pack__check\{[^}]*color:var\(--fd-on-accent\)/);
+  assert.match(css, /\.fd-care-pack__choice:disabled[^}]*\{[^}]*cursor:not-allowed/);
+  assert.match(css, /\.fd-care-pack__(?:choice|clear|print):focus-visible/);
+  assert.match(css, /\.fd-care-pack__qr\{[^}]*width:calc\(var\(--fd-space-10\) \* 2 \+ var\(--fd-space-4\)\)/);
+  assert.match(css, /@media \(max-width:640px\)\{[\s\S]*?\.fd-care-pack__workbench\{grid-template-columns:minmax\(0,1fr\)\}/);
+});
+
+test('print isolates the paper sheet and forces the governed crisis details open', () => {
+  assert.equal((css.match(/\{/g) || []).length, (css.match(/\}/g) || []).length,
+    'frontdoor.css must keep every media query closed');
+  const print = css.slice(css.indexOf('@media print'));
+  assert.match(print, /body:has\(\.fd-care-pack__sheet\)[\s\S]*?\.fd-header[\s\S]*?display:none !important/);
+  assert.match(print, /\.fd-care-pack__picker\{display:none !important\}/);
+  assert.match(print, /\.fd-care-pack__sheet\{[^}]*display:block !important/);
+  assert.match(print, /\.fd-care-pack__crisis>:not\(summary\)\{display:block !important/);
+  assert.match(print, /\.fd-care-pack__crisis::details-content\{[^}]*content-visibility:visible !important/);
+  assert.match(print, /\.fd-care-pack__resource\{[^}]*break-inside:avoid-page/);
+});
+
+test('the human class contract documents transient state, crisis ownership, and print behavior', () => {
+  for (const phrase of [
+    '.fd-care-pack__workbench',
+    '.fd-care-pack__choice.is-selected',
+    'crisis_resources.json',
+    'transient',
+    'Print',
+  ]) assert.match(inventory, new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 });
