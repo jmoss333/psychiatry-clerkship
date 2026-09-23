@@ -677,7 +677,9 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
       await keyboardActivate(page.locator('.fd-header .fd-searchbtn[data-fd-search]:visible'));
       await keyboardActivate(page.getByRole('dialog', { name: 'Search' })
         .getByRole('button', { name: 'Browse the Library' }));
+      const currentLibraryTab = page.locator('.fd-tabs .fd-tab[data-fd-tab="library"]');
       await expect(page.locator('.fd-library')).toBeVisible();
+      await expect(currentLibraryTab).toHaveAttribute('aria-current', 'page');
     } else {
       const dockTab = page.locator(`.fd-dock [data-fd-tab="${tab}"]:visible`);
       await keyboardActivate(dockTab);
