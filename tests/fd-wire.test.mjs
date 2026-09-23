@@ -8,17 +8,19 @@ const phase = read('phase_policy.js');
 const state = read('frontdoor/fd_state.js');
 const readingPlace = read('frontdoor/fd_reading_place.js');
 const data = read('frontdoor/fd_data.js');
+const careNavigator = read('frontdoor/fd_care_navigator.js');
 const today = read('frontdoor/fd_today.js');
 const block = read('frontdoor/fd_block.js');
 const reader = read('frontdoor/fd_reader.js');
 const shell = read('frontdoor/fd_shell.js');
 const practice = read('frontdoor/fd_app_practice.js');
+const path = read('frontdoor/fd_path.js');
 const wire = read('frontdoor/fd_wire.js');
 const spa = read('spa_index.html');
 const CUR = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 
 // eslint-disable-next-line no-new-func
-const make = new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n${data}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${wire}\nreturn {
+const make = new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n${data}\n${careNavigator}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${wire}\nreturn {
   fdResolveState: fdResolveState,
   fdDispatch: fdDispatch,
   fdIsTypingTarget: fdIsTypingTarget,
@@ -84,11 +86,57 @@ test('dock click forwards to the source; a removed source browses Library', () =
   assert.equal(h.controller.getState().tab, 'library');
 });
 const FOUR_INDEX = { weeks: [1, 2, 3, 4].map((n) => ({ n, items: [] })) };
+const CARE_INDEX = {
+  byRef: {}, weeks: FOUR_INDEX.weeks,
+  careResources: [
+    { id: 'resource-finder', title: 'Find services', description: 'Find support',
+      url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html' },
+    { id: 'meeting-calendar', title: 'Find meetings', description: 'Find recovery meetings',
+      url: 'https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html' },
+  ],
+  careNavigator: [
+    { id: 'services', label: 'Find community services', explanation: 'Start with services.',
+      primaryResourceId: 'resource-finder', alternativeResourceIds: ['meeting-calendar'] },
+  ],
+};
 const roleContext = {
   roles: [{ id: 'first-role' }, { id: 'second-role' }],
   role: 'first-role',
   week: 2,
 };
+
+test('care intent selection and clear are route-free visit-only patches', () => {
+  assert.deepEqual(F.fdDispatch({ 'data-fd-care-intent': 'services' },
+    { index: CARE_INDEX }, { ...roleContext, tab: 'care' }), {
+    patch: { careIntentId: 'services' }, route: null, effect: null,
+  });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-care-intent': 'missing' },
+    { index: CARE_INDEX }, { ...roleContext, tab: 'care' }), {
+    patch: { careIntentId: '' }, route: null, effect: null,
+  });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-care-clear': '' },
+    { index: CARE_INDEX }, { ...roleContext, tab: 'care', careIntentId: 'services' }), {
+    patch: { careIntentId: '' }, route: null, effect: null,
+  });
+});
+
+test('dispatch rejects non-string Care selections instead of coercing them', () => {
+  for (const value of [['services'], { toString: () => 'services' }]) {
+    assert.deepEqual(F.fdDispatch({ 'data-fd-care-intent': value },
+      { index: CARE_INDEX }, { ...roleContext, tab: 'care' }), {
+      patch: { careIntentId: '' }, route: null, effect: null,
+    });
+  }
+});
+
+test('leaving Care clears a transient intent while Care-to-Care does not invent one', () => {
+  const away = F.fdDispatch({ 'data-fd-tab': 'library' }, { search: '?tab=care' },
+    { ...roleContext, tab: 'care', careIntentId: 'services' });
+  assert.equal(away.patch.careIntentId, '');
+  const enter = F.fdDispatch({ 'data-fd-tab': 'care' }, { search: '?tab=library' },
+    { ...roleContext, tab: 'library' });
+  assert.equal(Object.hasOwn(enter.patch, 'careIntentId'), false);
+});
 
 test('guide context never leaks into another resource or a practice iframe', () => {
   const context = { search: '?page=source.md&guideFind=private+query&guideSection=one&case=c1' };
@@ -285,7 +333,12 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     { ...roleContext, screen: 'setup-role' }).patch,
   { role: 'second-role', screen: 'setup-week' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'library' }, {}, roleContext).patch,
-    { tab: 'library', openId: null, searchOpen: false, libraryView: 'essentials', kitSection: 'all' });
+    { tab: 'library', openId: null, searchOpen: false, careIntentId: '',
+      libraryView: 'essentials', kitSection: 'all' });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'care' }, {}, roleContext), {
+    patch: { tab: 'care', openId: null, searchOpen: false },
+    route: '?tab=care', effect: null,
+  });
   assert.equal(F.fdDispatch({ 'data-fd-back': '' }, {}, { ...roleContext, openId: 'x.md', fromTab: 'path' }).route,
     '?tab=path');
   assert.equal(F.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).route, '/');
@@ -313,6 +366,16 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     { stepsDone: { 2: false } });
   assert.equal(F.fdDispatch({ 'data-fd-try-now': 'scale.html' }, {}, roleContext).patch.sheet,
     'item:scale.html');
+});
+
+test('the patient-care destination survives direct links and reader return context', () => {
+  const direct = F.fdResolveState('/?tab=care', { role: 'first-role' });
+  assert.equal(direct.screen, 'app');
+  assert.equal(direct.tab, 'care');
+  const opened = F.fdDispatch({ 'data-fd-open': 'a.md' }, { search: '?tab=care' }, direct);
+  assert.equal(opened.patch.fromTab, 'care');
+  assert.equal(new URLSearchParams(opened.route).get('tab'), 'care');
+  assert.equal(F.fdReader({ weeks: [] }, { ref: 'a.md', fromTab: 'care' }, '<p>x</p>').includes('Patient care resources'), true);
 });
 
 test('choosing APP enters the On shift workspace without asking for a rotation week', () => {
@@ -693,7 +756,7 @@ test('Tab trapping wraps at both ends of a dialog', () => {
   assert.equal(prevented, 2);
 });
 
-test('fdWire registers and destroys one delegated click/input/change/focusin/keydown/popstate listener for the live shell', () => {
+test('fdWire registers and destroys delegated root and window listeners for the live shell', () => {
   const rootCalls = [];
   const windowCalls = [];
   const rootRemoves = [];
@@ -711,7 +774,7 @@ test('fdWire registers and destroys one delegated click/input/change/focusin/key
   assert.equal(controller.ok, true);
   // 'change' is the settings panel's date field -- the one control not on the delegated click
   // path. Registered through listen() like the rest, so destroy() takes it down too.
-  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input', 'change', 'focusin']);
+  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input', 'change', 'focusin', 'keydown']);
   assert.deepEqual(windowCalls.map(([type]) => type), ['keydown', 'popstate']);
   controller.destroy();
   assert.deepEqual(rootRemoves, rootCalls.slice().reverse());
@@ -848,6 +911,86 @@ function fakeHarness(initial, options = {}) {
   if (options.commitStartup !== false) controller.commitStartup();
   return { root, rootHandlers, fakeWindow, windowHandlers, controller };
 }
+
+test('care selection rerenders, stays out of storage and history, and restores focus', () => {
+  const storage = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'care' }) });
+  const LocalF = make(storage);
+  const renders = [];
+  const historyCalls = [];
+  const selected = { focused: 0, focus() { this.focused += 1; } };
+  const first = { focused: 0, focus() { this.focused += 1; } };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'care' }, {
+    F: LocalF,
+    index: CARE_INDEX,
+    render: (...args) => renders.push(args),
+    querySelector: (selector) => {
+      if (selector === '[data-fd-care-intent="services"]') return selected;
+      if (selector === '[data-fd-care-intent]') return first;
+      return null;
+    },
+    history: {
+      replaceState: (...args) => historyCalls.push(['replace', ...args]),
+      pushState: (...args) => historyCalls.push(['push', ...args]),
+    },
+  });
+  const initialHistoryCount = historyCalls.length;
+  const beforeStorage = storage.dump();
+
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-care-intent': 'services' }), preventDefault() {},
+  });
+  assert.equal(h.controller.getState().careIntentId, 'services');
+  assert.equal(renders.length, 1);
+  assert.deepEqual(storage.dump(), beforeStorage);
+  assert.equal(historyCalls.length, initialHistoryCount);
+  assert.equal(selected.focused, 1);
+
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-care-clear': '' }), preventDefault() {},
+  });
+  assert.equal(h.controller.getState().careIntentId, '');
+  assert.equal(first.focused, 1);
+});
+
+test('Home discards the visit-only Care intent', () => {
+  const home = fakeHarness({ ...roleContext, screen: 'app', tab: 'care',
+    careIntentId: 'services' }, { F, index: CARE_INDEX });
+  home.rootHandlers.click({ target: actionTarget({ 'data-fd-home': '' }), preventDefault() {} });
+  assert.equal(home.controller.getState().tab, 'today');
+  assert.equal(home.controller.getState().careIntentId, '');
+});
+
+test('browser history discards the visit-only Care intent even when returning to Care', () => {
+  const location = { href: 'https://example.test/?tab=care', pathname: '/', search: '?tab=care' };
+  const history = fakeHarness({ ...roleContext, screen: 'app', tab: 'care',
+    careIntentId: 'services' }, { F, index: CARE_INDEX, location });
+  history.windowHandlers.popstate({ state: { fd: true, state: { tab: 'care', openId: null } } });
+  assert.equal(history.controller.getState().tab, 'care');
+  assert.equal(history.controller.getState().careIntentId, '',
+    'history cannot revive a selection it does not own');
+});
+
+test('Path arrow navigation activates the projected adjacent week and prevents page scrolling', () => {
+  let clicked = 0;
+  let prevented = 0;
+  const next = { click() { clicked += 1; } };
+  const current = actionTarget({ 'data-fd-view-week': '2' });
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'path', viewWeek: 2 }, {
+    F,
+    index: FOUR_INDEX,
+    querySelector: (selector) => selector.includes('data-fd-view-week="3"') ? next : null,
+  });
+  h.rootHandlers.keydown({
+    key: 'ArrowRight', target: current, preventDefault() { prevented += 1; },
+  });
+  assert.equal(clicked, 1);
+  assert.equal(prevented, 1);
+  h.rootHandlers.keydown({
+    key: 'Enter', target: current, preventDefault() { prevented += 1; },
+  });
+  assert.equal(clicked, 1, 'ordinary button activation remains native');
+  assert.equal(prevented, 1);
+});
 
 test('pre-commit handlers prevent click, input, keyboard, and popstate without changing ownership', () => {
   const storage = memStorage();
@@ -999,6 +1142,44 @@ test('live search input rerenders and Enter opens the first ordinary result dire
   assert.equal(h.controller.getState().searchOpen, false);
   assert.equal(prevented, 1);
   assert.ok(renders.length >= 2);
+});
+
+test('Enter activates the exact first external care result without routing or forwarding the query', () => {
+  let clicked = 0;
+  let selected = '';
+  let prevented = 0;
+  const routes = [];
+  const careLink = { click() { clicked += 1; } };
+  const h = fakeHarness({ ...roleContext, searchOpen: true, query: 'housing help' }, {
+    F,
+    route: (value) => routes.push(value),
+    querySelector: (selector) => {
+      selected = selector;
+      return selector === '.fd-result.is-care[data-care-resource="resource-finder"]' ? careLink : null;
+    },
+    searchResults: () => [{
+      kind: 'care',
+      item: {
+        id: 'resource-finder',
+        url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html',
+      },
+    }],
+  });
+  const input = {
+    tagName: 'INPUT', isContentEditable: false, value: 'housing help',
+    matches: (selector) => selector === '.fd-searchpanel__input',
+  };
+
+  h.windowHandlers.keydown({
+    key: 'Enter', target: input, preventDefault() { prevented += 1; },
+  });
+
+  assert.equal(selected, '.fd-result.is-care[data-care-resource="resource-finder"]');
+  assert.equal(clicked, 1);
+  assert.equal(prevented, 1);
+  assert.deepEqual(routes, []);
+  assert.equal(h.controller.getState().query, 'housing help');
+  assert.equal(h.controller.getState().openId, undefined);
 });
 
 test('opening and closing a dialog captures, focuses, and restores the connected invoker', () => {

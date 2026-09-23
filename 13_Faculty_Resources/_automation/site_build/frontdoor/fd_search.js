@@ -186,6 +186,17 @@ function fdSearchTriggerHit(triggers, paddedQuery){
   return false;
 }
 
+/* Care vocabulary is deliberately separate from synonyms and safety triggers. A match only
+   selects a static, canonical URL; the typed phrase never becomes a query parameter or fragment. */
+function fdSearchCareHit(resource, normalizedQuery){
+  var padded=' '+normalizedQuery+' ', terms=resource.searchTerms||[];
+  for(var i=0;i<terms.length;i++){
+    var term=fdSearchNormalize(terms[i]);
+    if(term&&padded.indexOf(' '+term+' ')!==-1) return true;
+  }
+  return false;
+}
+
 function fdSearchItemMeta(item){
   /* Say so in the result row itself: a learner searching "catatonia scale" mid-shift should learn
      from the list, not from opening the page, that the scale is not reproduced here. Checked
@@ -302,6 +313,13 @@ function fdSearchResults(index, query, synonyms, state){
     }
   }
 
+  var careResults=[], care=idx.careResources||[];
+  for(var ci=0;ci<care.length;ci++){
+    if(fdSearchCareHit(care[ci],normalizedQuery)){
+      careResults.push({item:care[ci],kind:'care',meta:'ReConnect · external care resource'});
+    }
+  }
+
   /* Refs are sorted first so the sort below is deterministic across engines: equal scores keep
      alphabetical order, matching fd_data.js's fdLibraryOnlyReads precedent. */
   var refs=[];
@@ -348,12 +366,17 @@ function fdSearchResults(index, query, synonyms, state){
   });
   for(var hq=0;hq<hayProtocols.length;hq++){ delete hayProtocols[hq]._score; }
 
-  return protoResults.concat(aliasItems, hayProtocols, rest).slice(0,8);
+  return protoResults.concat(careResults, aliasItems, hayProtocols, rest).slice(0,8);
 }
 
 /* Protocol rows keep the safety panel; ordinary results open the resource directly. */
 function fdSearchResultRow(r){
   var it=r.item;
+  if(r.kind==='care'){
+    return '<a class="fd-result is-care" data-care-resource="'+fdEsc(it.id)+'" href="'+fdEsc(it.url)+'" target="_blank" rel="noopener noreferrer">'+
+      '<span class="fd-result__dot is-care"></span><span class="fd-result__title">'+fdEsc(it.title)+'</span>'+
+      '<span class="fd-result__meta">'+fdEsc(r.meta)+'</span></a>';
+  }
   var isProto=(r.kind==='protocol');
   var dotCls='fd-result__dot';
   if(isProto) dotCls+=' is-safety';
@@ -407,7 +430,7 @@ function fdSearchOverlay(index, query, synonyms, state){
     for(var i=0;i<results.length;i++){ out+=fdSearchResultRow(results[i]); }
   }
   out+='</div>';
-  out+='<div class="fd-searchpanel__foot">Choose a result to open it. Safety protocols open in a quick-access panel.</div>';
+  out+='<div class="fd-searchpanel__foot">Choose a result to open it. Safety protocols open in a quick-access panel. External care resources open in a new tab.</div>';
   out+='</div>';
   out+='</div>';
   return out;

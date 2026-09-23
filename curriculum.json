@@ -273,6 +273,117 @@
     { "ref": "canon_200.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
     { "ref": "cl_reference.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" }
   ],
+  "careResources": [
+    {
+      "id": "resource-finder",
+      "group": "support",
+      "title": "Find services and community supports",
+      "description": "Treatment, housing, food, transportation, and family supports.",
+      "url": "https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html",
+      "searchTerms": [
+        "resource finder", "community resources", "treatment resources",
+        "substance use treatment", "detox", "rehab", "housing", "housing help",
+        "food assistance", "transportation", "transportation help", "family support"
+      ]
+    },
+    {
+      "id": "meeting-calendar",
+      "group": "support",
+      "title": "Find a recovery meeting",
+      "description": "Current recovery-meeting options from ReConnect.",
+      "url": "https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html",
+      "searchTerms": [
+        "recovery meeting", "meeting near me", "aa meeting", "na meeting",
+        "peer support meeting", "twelve step meeting"
+      ]
+    },
+    {
+      "id": "education-library",
+      "group": "education",
+      "title": "Patient and family education",
+      "description": "Plain-language guides to diagnoses, treatment, recovery, and family support.",
+      "url": "https://mental-health-education-library.netlify.app/patient",
+      "searchTerms": [
+        "patient education", "family education", "diagnosis handout",
+        "psychoeducation", "patient guide", "family guide"
+      ]
+    },
+    {
+      "id": "podcast-navigator",
+      "group": "education",
+      "title": "Find a podcast to share",
+      "description": "Curated psychiatric listening organized by topic and audience.",
+      "url": "https://reconnect-tools.netlify.app/tools/podcast-navigator.html",
+      "searchTerms": [
+        "podcast navigator", "mental health podcast", "psychiatry podcast",
+        "patient podcast", "family podcast", "recommended podcast"
+      ]
+    },
+    {
+      "id": "book-shelf",
+      "group": "education",
+      "title": "Browse recommended books",
+      "description": "Curated books organized by topic, reader, and relationship pattern.",
+      "url": "https://reconnect-tools.netlify.app/tools/relational-bibliotherapy.html",
+      "searchTerms": [
+        "book shelf", "bookshelf", "recommended books", "mental health books", "psychiatry books",
+        "books for patients", "books for families", "bibliotherapy"
+      ]
+    }
+  ],
+  "careNavigator": [
+    {
+      "id": "services",
+      "label": "Find community services",
+      "explanation": "Start with the Resource Finder to review practical and treatment supports by need.",
+      "primaryResourceId": "resource-finder",
+      "alternativeResourceIds": ["meeting-calendar"]
+    },
+    {
+      "id": "meetings",
+      "label": "Locate recovery meetings",
+      "explanation": "Start with the meeting calendar when the immediate task is locating recovery support.",
+      "primaryResourceId": "meeting-calendar",
+      "alternativeResourceIds": ["resource-finder"]
+    },
+    {
+      "id": "explain",
+      "label": "Explain something to a patient or family",
+      "explanation": "Start with the education library for plain-language information patients and families can review.",
+      "primaryResourceId": "education-library",
+      "alternativeResourceIds": ["book-shelf", "podcast-navigator"]
+    },
+    {
+      "id": "listen",
+      "label": "Find a podcast or listening resource",
+      "explanation": "Start with Podcast Navigator to find curated listening by topic and audience.",
+      "primaryResourceId": "podcast-navigator",
+      "alternativeResourceIds": ["education-library", "book-shelf"]
+    },
+    {
+      "id": "books",
+      "label": "Recommend a book",
+      "explanation": "Start with Recommended Books to browse curated reading by topic, reader, and relationship pattern.",
+      "primaryResourceId": "book-shelf",
+      "alternativeResourceIds": ["education-library", "podcast-navigator"]
+    },
+    {
+      "id": "family-conversation",
+      "label": "Prepare for a family conversation",
+      "explanation": "Start with the education library for material that can support a clear, shared family conversation.",
+      "primaryResourceId": "education-library",
+      "alternativeResourceIds": ["book-shelf", "podcast-navigator"]
+    }
+  ],
+  "teachingResources": [
+    {
+      "id": "family-therapy-companion",
+      "title": "Family Therapy Seminar Companion",
+      "description": "Practice family-meeting structure with de-identified teaching cases.",
+      "url": "https://family-therapy-seminar-companion.netlify.app/",
+      "note": "Answers stay on this device. Do not enter names or identifying details."
+    }
+  ],
   "siteLibrary": {
     "ms3": {
       "additions": [],

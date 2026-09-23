@@ -141,12 +141,14 @@ test('fdSave persists only whitelisted keys, never done/streak/week', () => {
   const { fdSave, fdLoad } = make(ls);
   // done lives in cw_progress_v1, streak in cw_srs_v1, week in cw_rotation_start.
   // Duplicating them here is exactly the desync the spec forbids.
-  fdSave({ role: 'ms3', done: { 'x.md': true }, streak: 9, week: 3 });
+  fdSave({ role: 'ms3', done: { 'x.md': true }, streak: 9, week: 3,
+    careIntentId: 'services' });
   const out = fdLoad();
   assert.equal(out.role, 'ms3');
   assert.equal(out.done, undefined);
   assert.equal(out.streak, undefined);
   assert.equal(out.week, undefined);
+  assert.equal(out.careIntentId, undefined);
 });
 
 test('APP bridge is the only APP choice persisted; reflection, work-task, and practice state stay in memory', () => {

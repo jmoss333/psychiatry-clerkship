@@ -1,0 +1,19 @@
+{
+  "name": "clerkship-devcontainer-receipt-status",
+  "displayName": "Clerkship Dev Container Verification",
+  "description": "Shows commit-bound local verification status for this repository.",
+  "version": "0.1.0",
+  "publisher": "clerkship-local",
+  "private": true,
+  "engines": { "vscode": "^1.105.0" },
+  "categories": ["Other"],
+  "activationEvents": ["workspaceContains:.devcontainer/devcontainer.json"],
+  "main": "./extension.cjs",
+  "contributes": {
+    "commands": [
+      { "command": "clerkship.verifyDevContainer", "title": "Verify Dev Container" }
+    ]
+  },
+  "scripts": { "package": "vsce package" },
+  "devDependencies": { "@vscode/vsce": "4.0.0" }
+}

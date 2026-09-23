@@ -41,10 +41,11 @@ test('escape closes search first, then the sheet', () => {
   assert.equal(F.fdKeyAction('Escape', o()), null, 'escape with nothing open does nothing');
 });
 
-test('1/2/3 switch tabs only when nothing is layered above the page', () => {
+test('1/2/3/4 switch tabs only when nothing is layered above the page', () => {
   assert.deepEqual(F.fdKeyAction('1', o()), { type: 'tab', tab: 'today' });
   assert.deepEqual(F.fdKeyAction('2', o()), { type: 'tab', tab: 'path' });
   assert.deepEqual(F.fdKeyAction('3', o()), { type: 'tab', tab: 'library' });
+  assert.deepEqual(F.fdKeyAction('4', o()), { type: 'tab', tab: 'care' });
   assert.equal(F.fdKeyAction('1', o({ searchOpen: true })), null);
   assert.equal(F.fdKeyAction('1', o({ sheetOpen: true })), null);
 });
@@ -52,7 +53,8 @@ test('1/2/3 switch tabs only when nothing is layered above the page', () => {
 test('APP keyboard shortcuts follow the two visible destinations', () => {
   assert.deepEqual(F.fdKeyAction('1', o({ appMode: true })), { type: 'tab', tab: 'today' });
   assert.deepEqual(F.fdKeyAction('2', o({ appMode: true })), { type: 'tab', tab: 'library' });
-  assert.equal(F.fdKeyAction('3', o({ appMode: true })), null);
+  assert.deepEqual(F.fdKeyAction('3', o({ appMode: true })), { type: 'tab', tab: 'care' });
+  assert.equal(F.fdKeyAction('4', o({ appMode: true })), null);
 });
 
 test('arrows move between items only while reading', () => {
@@ -101,6 +103,18 @@ test('the active tab is marked for both CSS and assistive tech', () => {
   assert.equal((html.match(/is-active/g) || []).length, 1, 'exactly one tab is active');
 });
 
+test('responsive tab labels render once even before navigation CSS loads', () => {
+  const html = F.fdTabs('care');
+  const visibleTextWithoutCss = html.replace(/<[^>]+>/g, ' ');
+  assert.match(html, /class="[^"]*fd-tab--care[^"]*is-active[^"]*"[^>]*data-fd-tab="care"/);
+  assert.match(html, /aria-label="Patient care resources"/);
+  assert.match(html, /fd-tab__label" data-compact="Care">Patient care resources<\/span>/);
+  assert.match(html, /fd-tab__label" data-compact="Essentials">The Essentials<\/span>/);
+  assert.equal((visibleTextWithoutCss.match(/The Essentials/g) || []).length, 1);
+  assert.equal((visibleTextWithoutCss.match(/Patient care resources/g) || []).length, 1);
+  assert.ok(html.indexOf('data-fd-tab="care"') > html.indexOf('data-fd-tab="library"'));
+});
+
 test('the header renders the safety button and the week pill', () => {
   const html = F.fdHeader({ week: 4 });
   assert.match(html, /data-fd-safety/);
@@ -110,7 +124,8 @@ test('the header renders the safety button and the week pill', () => {
 test('the APP header replaces rotation chrome with an On shift workspace', () => {
   const html = F.fdHeader({ roleId: 'app', tab: 'today' });
   assert.match(html, /data-fd-tab="today"[^>]*>On shift</);
-  assert.match(html, /data-fd-tab="library"[^>]*>The Essentials</);
+  assert.match(html, /data-fd-tab="library"[^>]*>[\s\S]*?fd-tab__label" data-compact="Essentials">The Essentials</);
+  assert.match(html, /data-fd-tab="care"/);
   assert.doesNotMatch(html, /data-fd-tab="path"|data-fd-change-week|Set week|Week \d/);
   assert.match(html, /class="fd-weekpill[^>]*>APP</);
 });

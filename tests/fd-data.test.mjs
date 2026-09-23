@@ -54,6 +54,32 @@ const FIX_CUR = {
   ],
   libraryColumns: [{ name: 'Col', accent: 'topic', refs: ['a.md', 'b.md'] }],
   libraryExclude: [],
+  careResources: [
+    { id: 'resource-finder', title: 'Find services and community supports',
+      description: 'Treatment, housing, food, transportation, and family supports.',
+      group: 'support',
+      url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html',
+      searchTerms: ['community resources', 'housing help', 'transportation help'] },
+    { id: 'meeting-calendar', title: 'Find a recovery meeting',
+      description: 'Current recovery-meeting options from ReConnect.',
+      group: 'support',
+      url: 'https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html',
+      searchTerms: ['recovery meeting', 'aa meeting', 'na meeting'] },
+  ],
+  careNavigator: [
+    { id: 'services', label: 'Find community services',
+      explanation: 'Start with the Resource Finder to review practical and treatment supports by need.',
+      primaryResourceId: 'resource-finder', alternativeResourceIds: ['meeting-calendar'] },
+    { id: 'meetings', label: 'Locate recovery meetings',
+      explanation: 'Start with the meeting calendar when the immediate task is locating recovery support.',
+      primaryResourceId: 'meeting-calendar', alternativeResourceIds: ['resource-finder'] },
+  ],
+  teachingResources: [
+    { id: 'family-therapy-companion', title: 'Family Therapy Seminar Companion',
+      description: 'Practice family-meeting structure with de-identified teaching cases.',
+      url: 'https://family-therapy-seminar-companion.netlify.app/',
+      note: 'Answers stay on this device. Do not enter names or identifying details.' },
+  ],
   safetyKit: [{ ref: 'a.md', sub: 'Sub line' }],
   roles: { ms3: [], resident: [] },
   synonyms: {},
@@ -186,6 +212,75 @@ test('the kit carries its subtitle alongside the resolved item', () => {
   const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
   assert.equal(idx.kit[0].sub, 'Sub line');
   assert.equal(idx.kit[0].item.ref, 'a.md');
+});
+
+test('patient-care resources join as a defensive copy outside the shipped-page inventory', () => {
+  const cur = structuredClone(FIX_CUR);
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.deepEqual(idx.careResources, FIX_CUR.careResources);
+  assert.notStrictEqual(idx.careResources, cur.careResources);
+  assert.notStrictEqual(idx.careResources[0].searchTerms, cur.careResources[0].searchTerms);
+  assert.equal(idx.careResources[0].group, 'support');
+  assert.equal(idx.byRef['resource-finder'], undefined,
+    'an external link must not masquerade as a shipped or attestable Clerkship page');
+  idx.careResources[0].searchTerms.push('mutated');
+  assert.doesNotMatch(JSON.stringify(cur), /mutated/);
+});
+
+test('care navigator intents join defensively outside content inventories', () => {
+  const cur = structuredClone(FIX_CUR);
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.deepEqual(idx.careNavigator, FIX_CUR.careNavigator);
+  assert.notStrictEqual(idx.careNavigator, cur.careNavigator);
+  assert.notStrictEqual(idx.careNavigator[0].alternativeResourceIds,
+    cur.careNavigator[0].alternativeResourceIds);
+  assert.equal(idx.byRef.services, undefined);
+  assert.equal(idx.known.services, undefined);
+  idx.careNavigator[0].alternativeResourceIds.push('mutated');
+  assert.doesNotMatch(JSON.stringify(cur), /mutated/);
+});
+
+test('malformed navigator records cannot break index construction', () => {
+  const cur = structuredClone(FIX_CUR);
+  cur.careNavigator = [null, { id: 'services', label: 'Find community services',
+    explanation: 'Start with the Resource Finder.', primaryResourceId: 'resource-finder',
+    alternativeResourceIds: 'not-an-array' }];
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.equal(idx.careNavigator.length, 1);
+  assert.deepEqual(idx.careNavigator[0].alternativeResourceIds, []);
+  assert.equal(idx.careResources.length, FIX_CUR.careResources.length);
+});
+
+test('external teaching resources join defensively without becoming shipped pages', () => {
+  const cur = structuredClone(FIX_CUR);
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.deepEqual(idx.teachingResources, FIX_CUR.teachingResources);
+  assert.notStrictEqual(idx.teachingResources, cur.teachingResources);
+  assert.equal(idx.byRef['family-therapy-companion'], undefined);
+});
+
+test('the real curriculum exposes the same five canonical care resources to both site projections', () => {
+  for (const site of ['ms3', 'resident']) {
+    const sourcePath = CUR.learningPaths[site];
+    const projected = { ...CUR, path: { id: sourcePath.id, weekCount: sourcePath.weeks.length },
+      weeks: sourcePath.weeks };
+    const idx = F.fdBuildIndex(projected, META, TOOLS, MAN);
+    assert.deepEqual(idx.careResources.map(({ id, url }) => ({ id, url })), [
+      { id: 'resource-finder', url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html' },
+      { id: 'meeting-calendar', url: 'https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html' },
+      { id: 'education-library', url: 'https://mental-health-education-library.netlify.app/patient' },
+      { id: 'podcast-navigator', url: 'https://reconnect-tools.netlify.app/tools/podcast-navigator.html' },
+      { id: 'book-shelf', url: 'https://reconnect-tools.netlify.app/tools/relational-bibliotherapy.html' },
+    ], site);
+    assert.deepEqual(idx.careNavigator.map(({ id, primaryResourceId }) => (
+      { id, primaryResourceId }
+    )), CUR.careNavigator.map(({ id, primaryResourceId }) => (
+      { id, primaryResourceId }
+    )), site);
+    assert.deepEqual(idx.teachingResources.map(({ id, url }) => ({ id, url })), [
+      { id: 'family-therapy-companion', url: 'https://family-therapy-seminar-companion.netlify.app/' },
+    ], site);
+  }
 });
 
 test('fdItemsForWeek returns that week only, and [] for an unknown week', () => {

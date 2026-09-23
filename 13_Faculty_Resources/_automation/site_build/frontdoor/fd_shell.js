@@ -26,17 +26,21 @@ function fdAppMode(state){
 }
 
 function fdTabs(tab, appMode){
-  var cur=(tab==='path'||tab==='library')?tab:'today';
+  var cur=(tab==='path'||tab==='library'||tab==='care')?tab:'today';
   var defs=appMode
-    ?[{id:'today',label:'On shift'},{id:'library',label:'The Essentials'}]
-    :[{id:'today',label:'Today'},{id:'path',label:'Path'},{id:'library',label:'The Essentials'}];
+    ?[{id:'today',label:'On shift'},{id:'library',label:'The Essentials',short:'Essentials'},
+      {id:'care',label:'Patient care resources',short:'Care'}]
+    :[{id:'today',label:'Today'},{id:'path',label:'Path'},
+      {id:'library',label:'The Essentials',short:'Essentials'},
+      {id:'care',label:'Patient care resources',short:'Care'}];
   var out='<nav class="fd-tabs">';
   for(var i=0;i<defs.length;i++){
     var t=defs[i];
     var active=(t.id===cur);
-    var cls=active?'fd-tab is-active':'fd-tab';
+    var cls='fd-tab'+(t.id==='care'?' fd-tab--care':'')+(active?' is-active':'');
     out+='<button type="button" class="'+cls+'" data-fd-tab="'+t.id+'"'+
-      (active?' aria-current="page"':'')+'>'+t.label+'</button>';
+      (active?' aria-current="page"':'')+(t.short?' aria-label="'+fdEsc(t.label)+'"':'')+'>'+
+      (t.short?'<span class="fd-tab__label" data-compact="'+fdEsc(t.short)+'">'+fdEsc(t.label)+'</span>':fdEsc(t.label))+'</button>';
   }
   out+='</nav>';
   return out;
@@ -189,8 +193,8 @@ function fdKeyAction(key, opts){
     if(!o.reading) return null;
     return {type:'nav', dir:(key==='ArrowLeft')?-1:1};
   }
-  if(key==='1'||key==='2'||key==='3'){
-    var tabs=o.appMode?['today','library']:['today','path','library'];
+  if(key==='1'||key==='2'||key==='3'||key==='4'){
+    var tabs=o.appMode?['today','library','care']:['today','path','library','care'];
     if(parseInt(key,10)>tabs.length) return null;
     return {type:'tab', tab:tabs[parseInt(key,10)-1]};
   }

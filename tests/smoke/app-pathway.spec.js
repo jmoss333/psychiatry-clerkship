@@ -217,4 +217,20 @@ test('APP workspace stacks without horizontal overflow at phone width', async ({
   expect(await page.locator('.fd-app').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
   await expect(page.locator('.fd-app__tasks')).toHaveCSS('grid-template-columns', /\d+px/);
   await expect(page.locator('.fd-app__reflection-choice').first()).toHaveCSS('min-height', '44px');
+
+  const appTabs = page.locator('.fd-tab');
+  expect(await appTabs.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-fd-tab'))))
+    .toEqual(['today', 'library', 'care']);
+  const careTab = page.locator('[data-fd-tab="care"]');
+  const careBox = await careTab.boundingBox();
+  expect(careBox.height).toBeGreaterThanOrEqual(44);
+  await careTab.click();
+  await expect(page.locator('.fd-care-page')).toBeVisible();
+  await expect(page.locator('[data-fd-care-intent]')).toHaveCount(6);
+  await page.locator('[data-fd-care-intent="meetings"]').click();
+  await expect(page.locator('.fd-care-navigator__link').first())
+    .toHaveAttribute('data-care-resource', 'meeting-calendar');
+  await expect(page.locator('.fd-carelink')).toHaveCount(5);
+  expect(await page.locator('.fd-tabs').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+  expect(await page.locator('.fd-care-page').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
 });

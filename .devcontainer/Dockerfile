@@ -25,4 +25,10 @@ RUN cd /tmp/smoke \
     && rm -rf /tmp/smoke /var/lib/apt/lists/* \
     && chown -R node:node /ms-playwright
 
+COPY .devcontainer/receipt-status /tmp/receipt-status
+RUN cd /tmp/receipt-status \
+    && npm ci --ignore-scripts \
+    && npx vsce package --out /opt/clerkship-devcontainer-receipt-status.vsix \
+    && rm -rf /tmp/receipt-status
+
 USER node

@@ -25,6 +25,7 @@ set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 2
 REPO="$PWD"
 SPECS="${SPECS:-nav-crawl.spec.js aria-live.spec.js lfs-integrity.spec.js prototypes.spec.js}"
+PLAYWRIGHT_OUTPUT_DIR="${PLAYWRIGHT_OUTPUT_DIR:-test-results/artifacts}"
 
 for d in _build/ms3 _build/res; do
   [ -d "$d" ] || { echo "missing $d — run bin/verify.sh (or build_and_check.sh) first"; exit 2; }
@@ -61,7 +62,7 @@ echo "servers up: 4200 (ms3) 4201 (res) 4202 (faculty-console)"
 [ -d tests/smoke/node_modules ] || (cd tests/smoke && npm ci >/dev/null 2>&1)
 
 # shellcheck disable=SC2086
-(cd tests/smoke && npx playwright test $SPECS --reporter=list)
+(cd tests/smoke && npx playwright test $SPECS --reporter=list --output "$PLAYWRIGHT_OUTPUT_DIR")
 rc=$?
 echo "───────────────────────────────────────────────"
 [ $rc -eq 0 ] && echo "SMOKE PASSED (non-visual: $SPECS)" || echo "SMOKE FAILED (exit $rc)"

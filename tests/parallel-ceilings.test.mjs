@@ -15,7 +15,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // +1 (2026-09-22): APP one-detail practice engine (fd_app_practice.js).
 // +1 (2026-09-23): device reading-place helper (fd_reading_place.js).
 // +1 (2026-09-23): pure Capture faculty email builder (fd_capture_email.js).
-const EXPECTED_MARKER_COUNT = 34;
+// +1 (2026-09-23): Patient care resources destination (fd_care.js).
+// +1 (2026-09-23): Fixed-choice Care navigator (fd_care_navigator.js).
+const EXPECTED_MARKER_COUNT = 36;
 
 test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
   const src = fs.readFileSync(

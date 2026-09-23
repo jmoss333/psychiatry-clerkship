@@ -76,6 +76,33 @@ test('protocols rank ahead of ordinary items for the same query', () => {
     'a student typing "suicide" mid-shift needs the protocol first, not a topic page');
 });
 
+test('care-intent searches surface the matching ReConnect resource without forwarding the query', () => {
+  const housing = F.fdSearchResults(REAL_INDEX, 'housing help', SYN, {});
+  assert.equal(housing[0].kind, 'care');
+  assert.equal(housing[0].item.id, 'resource-finder');
+  const meeting = F.fdSearchResults(REAL_INDEX, 'aa meeting near me', SYN, {});
+  assert.equal(meeting[0].kind, 'care');
+  assert.equal(meeting[0].item.id, 'meeting-calendar');
+  const books = F.fdSearchResults(REAL_INDEX, 'book shelf', SYN, {});
+  assert.equal(books[0].kind, 'care');
+  assert.equal(books[0].item.id, 'book-shelf');
+
+  const html = F.fdSearchOverlay(REAL_INDEX, 'housing help', SYN, {});
+  const row = html.match(/<a class="fd-result is-care"[^>]*>[\s\S]*?<\/a>/)?.[0] || '';
+  assert.match(row, /data-care-resource="resource-finder"/);
+  assert.match(row, /href="https:\/\/reconnect-tools\.netlify\.app\/tools\/reconnect-resource-finder-v7\.html"/);
+  assert.match(row, /target="_blank" rel="noopener noreferrer"/);
+  assert.doesNotMatch(row, /housing|\?/i,
+    'the destination is static; the learner query and patient context never cross sites');
+  assert.match(html, /External care resources open in a new tab/);
+});
+
+test('care suggestions never outrank an explicit safety trigger', () => {
+  const results = F.fdSearchResults(REAL_INDEX, 'suicide recovery meeting', SYN, {});
+  assert.equal(results[0].kind, 'protocol');
+  assert.ok(results.some((result) => result.kind === 'care' && result.item.id === 'meeting-calendar'));
+});
+
 test('results are capped at 8 however many match', () => {
   assert.ok(F.fdSearchResults(REAL_INDEX, 'a', SYN, {}).length <= 8);
 });

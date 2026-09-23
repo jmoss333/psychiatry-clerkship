@@ -631,6 +631,7 @@
 <div id="fdApp" class="fd-shell" aria-busy="true" inert>
   <div id="fdChromeMount"></div>
   <span id="routeStatus" class="vh-live" aria-live="polite"></span>
+  <span id="careNavigatorStatus" class="vh-live" role="status" aria-live="polite" aria-atomic="true"></span>
   <div id="fdCaptureMount"></div>
   <div id="fdDockMount"></div>
   <main id="content" class="fd-main" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></main>
@@ -1285,6 +1286,7 @@
     if(s.openId)return null;
     if(s.tab==='path')return {f:'__path__',t:'Path',k:'special'};
     if(s.tab==='library')return {f:'__library__',t:'Library',k:'special'};
+    if(s.tab==='care')return {f:'__care__',t:'Patient care resources',k:'special'};
     return {f:'__home__',t:'Today',k:'special'};
   }
   function fdAdoptSpecialContext(state){
@@ -2092,6 +2094,10 @@
 
   /*__FD_LIBRARY__*/
 
+  /*__FD_CARE_NAVIGATOR__*/
+
+  /*__FD_CARE__*/
+
   /*__FD_READER__*/
 
   /*__FD_GUIDE__*/
@@ -2634,6 +2640,7 @@
     }
     if(state.tab==='path') return fdSurface('path',function(){ return fdPath(FD_INDEX,live); });
     if(state.tab==='library') return fdSurface('library',function(){ return state.libraryView==='full'?fdLibrary(FD_INDEX):fdEssentials(FD_INDEX,{kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,week:live.week}); });
+    if(state.tab==='care') return fdSurface('care',function(){ return fdCare(FD_INDEX,state.careIntentId||''); });
     if(fdAppMode(state)) return fdSurface('today',function(){ return fdAppWorkspace(
       FD_INDEX,FD_CURRICULUM.appPathway,live,
       facultyPreviewRequest?'':fdCaptureTriage(fdCaptureRows())); });
@@ -2741,6 +2748,15 @@
     fdGuideSession=null;
   }
 
+  function fdUpdateCareNavigatorStatus(state){
+    var status=document.getElementById('careNavigatorStatus');
+    if(!status)return;
+    var selected=state&&state.screen==='app'&&state.tab==='care'&&!state.openId&&contentEl&&
+      contentEl.querySelector('.fd-care-navigator__result');
+    var next=selected?fdCareNavigatorAnnouncement(FD_INDEX,state.careIntentId):'';
+    if(status.textContent!==next)status.textContent=next;
+  }
+
   function fdRender(state,detail){
     var app=state.screen==='app',hydrate=detail&&detail.kind==='hydrate';
     fdPrepareRoute(state,detail);
@@ -2752,6 +2768,7 @@
     fdRenderDock(state);
     fdRenderOverlays(state);
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
+    fdUpdateCareNavigatorStatus(state);
   }
 
   function fdPatchCompletion(state){
@@ -2809,6 +2826,7 @@
     if(surfaces.layout)fdPatchToolLayout(state);
     if(surfaces.base||surfaces.completion)fdRenderDock(state,true);
     fdRenderOverlays(state);
+    fdUpdateCareNavigatorStatus(state);
   }
 
   function fdOpenProgress(state,opts){
