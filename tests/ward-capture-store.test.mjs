@@ -40,9 +40,10 @@ function memStorage(throwOnWrite = false) {
 
 const storeCode = slice(shell, 'var CAP_MAX=', '/* ---- end ward capture store ---- */');
 
-function makeStore({ throwOnWrite = false, currentItem = { k: 'page', f: 't_mood.md' }, storage = null } = {}) {
+function makeStore({ throwOnWrite = false, currentItem = { k: 'page', f: 't_mood.md' }, storage = null,
+  now = null, random = null } = {}) {
   // eslint-disable-next-line no-new-func
-  const factory = new Function('localStorage', 'currentItem', `
+  const factory = new Function('localStorage', 'currentItem', 'Date', 'Math', `
     ${phi}
     ${storeCode}
     return { capRead: capRead, capWrite: capWrite, capAdd: capAdd, capRemove: capRemove,
@@ -52,7 +53,9 @@ function makeStore({ throwOnWrite = false, currentItem = { k: 'page', f: 't_mood
       capOldestUnrouted: typeof capOldestUnrouted==='function'?capOldestUnrouted:null,
       capClipboardText: capClipboardText, capCtx: capCtx, CAP_MAX: CAP_MAX, CAP_LIMIT: CAP_LIMIT };
   `);
-  return factory(storage || memStorage(throwOnWrite), currentItem);
+  const fixedDate = now === null ? Date : { now: () => now };
+  const fixedMath = random === null ? Math : Object.assign(Object.create(Math), { random });
+  return factory(storage || memStorage(throwOnWrite), currentItem, fixedDate, fixedMath);
 }
 
 test('T4a: text is hard-capped at 280 characters on write', () => {
@@ -159,6 +162,7 @@ test('capture status rejects unknown values and preserves the current state', ()
   const s = makeStore();
   const id = s.capAdd('A safe question');
   assert.equal(s.capSetStatus(id, 'invented'), false);
+  assert.equal(s.capSetStatus(id, { toString: () => 'scheduled' }), false);
   assert.equal(s.capRead().items[0].status, 'new');
 });
 
@@ -212,6 +216,41 @@ test('save writes an unrouted open v2 question before any route mutation', () =>
   assert.equal(Object.hasOwn(raw.items[0], 'triaged'), false);
   assert.equal(s.capSetRoute(id, 'rounds'), true);
   assert.equal(s.capRead().items[0].route, 'rounds');
+});
+
+test('two captures with identical clock and random values get distinct retained ids', () => {
+  const ls = memStorage();
+  const s = makeStore({ storage: ls, now: 1000, random: () => 0.25 });
+  const first = s.capAdd('first question');
+  const second = s.capAdd('second question');
+  assert.equal(typeof first, 'string');
+  assert.equal(typeof second, 'string');
+  assert.notEqual(second, first);
+  assert.deepEqual(s.capRead().items.map((x) => [x.id, x.text]), [
+    [first, 'first question'], [second, 'second question'],
+  ]);
+  assert.equal(s.capSetRoute(second, 'rounds'), true);
+  assert.deepEqual(s.capRead().items.map((x) => x.route), [null, 'rounds']);
+});
+
+test('an unusable id generator reports failure without changing stored captures', () => {
+  const ls = memStorage();
+  const s = makeStore({ storage: ls, now: 1000, random: () => { throw new Error('unavailable'); } });
+  assert.equal(s.capAdd('a safe question'), false);
+  assert.equal(ls.getItem('cw_capture_v1'), null);
+});
+
+test('a full inbox keeps the newly saved question if the device clock moved backward', () => {
+  const ls = memStorage();
+  ls.setItem('cw_capture_v1', JSON.stringify({ v: 2, items: Array.from({ length: 50 }, (_, i) => ({
+    id: `u${i}`, text: `older capture ${i}`, at: 5000 + i, ctx: null, route: null, state: 'open',
+  })) }));
+  const s = makeStore({ storage: ls, now: 1000, random: () => 0.25 });
+  const saved = s.capAdd('new question after clock reset');
+  assert.equal(typeof saved, 'string');
+  assert.equal(s.capRead().items.length, 50);
+  assert.ok(s.capRead().items.some((x) => x.id === saved && x.text === 'new question after clock reset'));
+  assert.ok(!s.capRead().items.some((x) => x.id === 'u0'));
 });
 
 test('route changes accept only the three destinations or explicit null', () => {

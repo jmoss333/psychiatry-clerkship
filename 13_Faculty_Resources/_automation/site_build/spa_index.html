@@ -1470,8 +1470,9 @@
        previous real page, so capture context must consult currentItem rather than stale cw_last. */
     try{ if(!currentItem||currentItem.k==='special')return null; return currentItem.f||null; }catch(_){ return null; }
   }
-  function capEvict(items){
-    while(items.length>CAP_LIMIT){ var idx=-1, havePriority=false;
+  function capEvict(items,limit){
+    if(limit===undefined)limit=CAP_LIMIT;
+    while(items.length>limit){ var idx=-1, havePriority=false;
       for(var i=0;i<items.length;i++){
         var priority=items[i].route!==null||items[i].state==='done';
         if(idx<0||(priority&&!havePriority)||(priority===havePriority&&capOlder(items[i],items[idx]))){
@@ -1492,10 +1493,30 @@
     }
     return oldest;
   }
+  function capNewId(items,at){
+    try{
+      var random=Math.random();
+      if(typeof random!=='number'||!isFinite(random)||random<0||random>=1)return null;
+      var base='c_'+random.toString(36).slice(2,8)+at.toString(36).slice(-3);
+      if(!capValidId(base))return null;
+      /* At most CAP_LIMIT ids are retained, so base plus CAP_LIMIT suffixes has a free slot. */
+      for(var suffix=0;suffix<=CAP_LIMIT;suffix++){
+        var id=suffix?base+'_'+suffix:base, used=false;
+        for(var i=0;i<items.length;i++){ if(items[i].id===id){ used=true; break; } }
+        if(!used)return id;
+      }
+    }catch(_){ }
+    return null;
+  }
   function capAdd(text){
-    var d=capRead(), id='c_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-3);
-    d.items.push({id:id,text:String(text).slice(0,CAP_MAX),at:Date.now(),ctx:capCtx(),route:null,state:'open'});
-    capEvict(d.items);
+    var d=capRead(), at;
+    try{ at=Date.now(); }catch(_){ return false; }
+    if(capTime(at)!==at)return false;
+    var id=capNewId(d.items,at);
+    if(!id)return false;
+    /* Reserve the incoming item before writing; a backward clock must not evict the new save. */
+    capEvict(d.items,CAP_LIMIT-1);
+    d.items.push({id:id,text:String(text).slice(0,CAP_MAX),at:at,ctx:capCtx(),route:null,state:'open'});
     return capWrite(d)?id:false;
   }
   function capRemove(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items.splice(i,1); break; } } if(d.items.length) capWrite(d); else capEraseAll(); }
@@ -1508,7 +1529,7 @@
     return false;
   }
   function capSetStatus(id,status){
-    if(!/^(?:new|scheduled|supervision|triaged)$/.test(status))return false;
+    if(typeof status!=='string'||!/^(?:new|scheduled|supervision|triaged)$/.test(status))return false;
     var d=capRead(), found=false;
     for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){
       d.items[i].route=status==='scheduled'?'later':(status==='supervision'?'supervision':null);
