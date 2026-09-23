@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(433 distinct `fd-*` selector names, 24 `is-*` state classes). Every class below has a rule in that file unless
+(442 distinct `fd-*` selector names, 24 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -323,6 +323,21 @@ Omitting it collapses the rail underneath.
 .fd-path
   .fd-path__h1
   .fd-path__intro
+  nav.fd-pathroute
+    svg.fd-pathroute__curve[aria-hidden="true"]
+      path.fd-pathroute__connector
+    .fd-pathroute__weeks.fd-pathroute__weeks--{4|6}  [role="tablist"]
+      button.fd-timeline__row  [role="tab"] ×4 or ×6
+        .fd-timeline__gutter
+          .fd-dot
+          .fd-timeline__line
+        .fd-timeline__body
+          .fd-timeline__n
+          .fd-timeline__number
+          .fd-timeline__title
+          .fd-timeline__theme
+          .fd-timeline__status        (current and/or complete only)
+        .fd-timeline__count
   .fd-path__cols
     .fd-detail
       .fd-detail__head
@@ -332,29 +347,35 @@ Omitting it collapses the rail underneath.
       .fd-detail__list
         .fd-row.is-compact ×N
       .fd-btn.fd-btn--accent           ("Set as my week")
-    .fd-timeline
-      .fd-timeline__row   <button> ×6
-        .fd-timeline__gutter
-          .fd-dot
-          .fd-timeline__line
-        .fd-timeline__body
-          .fd-timeline__n / .fd-timeline__title
-        .fd-timeline__count
 ```
 
 | Class | Notes |
 |---|---|
-| `.fd-timeline__row.is-sel` | Selected week: `--fd-selected` background. |
+| `.fd-pathroute__connector` | One decorative, neutral stroke. It never gains selected, current, complete, or progress state. |
+| `.fd-pathroute__weeks--4` / `--6` | Matches the audience-projected canonical week count. |
+| `.fd-timeline__row.is-sel` | Selected week: `--fd-selected` background, double-ring number, `aria-selected="true"`, and the only `tabindex="0"`. |
 | `.fd-dot.is-done` | Filled success. |
-| `.fd-dot.is-current` | Terracotta + 4px `--fd-selected` halo. |
+| `.fd-dot.is-current` | Terracotta ring around the route marker. |
+| `.fd-timeline__status` | Visible non-colour state text: Current, Complete, or Complete · Current. |
+| `.fd-timeline__theme` | Canonical curriculum theme; shown for the selected node, including immediately on the phone rail. |
 | `.fd-detail__here` | "you are here" pill. |
 
-⚠ `.fd-timeline__row.is-sel .fd-timeline__title` — the title recolours only via its **selected
-ancestor row**. Adding `is-sel` to the title itself does nothing.
+⚠ The route is a roving tab set. Arrow Left/Right/Up/Down wraps, Home/End jump to the audience's
+real endpoints, and the rebuilt selected control regains focus with `preventScroll`. Keep
+`data-fd-view-week`, `role="tab"`, `aria-selected`, `aria-controls`, and the detail panel's
+`aria-labelledby` paired when changing markup.
+
+⚠ Selected, current, and completed are separate states. `is-sel` follows transient `viewWeek`;
+`aria-current="step"`, `.is-current`, and “Current” follow the actual `week`; `.is-done` and
+“Complete” follow the saved activity result. The neutral connector never derives from any of them.
+
+⚠ At `max-width:640px` the SVG curve is hidden and `.fd-pathroute__weeks::before` becomes the
+vertical rail. Every row's transform is reset. The selected theme must remain inside its node—do
+not move it exclusively into the detail panel.
 
 ⚠ `.fd-timeline__row:last-child .fd-timeline__line` is `display:none`. **Always emit
 `.fd-timeline__line` on every row**, including the last — do not conditionally omit it. The
-selector handles the final connector, and skipping it on other rows breaks the spine.
+legacy selector handles the final connector and the phone route retains the complete row shape.
 
 ⚠ `.fd-detail .fd-row.is-compact` — compact rows regain a 1px border **only inside `.fd-detail`**.
 A compact row used elsewhere is borderless.

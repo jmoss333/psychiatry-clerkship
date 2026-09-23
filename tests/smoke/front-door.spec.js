@@ -112,6 +112,44 @@ test('Path projects each audience duration without mobile overflow', async ({ pa
   await expectHealthy(page);
 });
 
+test('Path route keeps selection, current week, keyboard focus, and mobile rail distinct', async ({ page }, testInfo) => {
+  const site = audience(testInfo);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await page.locator('[data-fd-tab="path"]').click();
+
+  const tabs = page.getByRole('tab');
+  await expect(tabs).toHaveCount(site.weekCount);
+  await expect(page.locator('.fd-pathroute__curve')).toBeVisible();
+  await expect(page.locator('.fd-pathroute__connector')).toHaveCount(1);
+  await expect(page.locator('[data-fd-view-week="1"]')).toHaveAttribute('aria-current', 'step');
+
+  const week2 = page.locator('[data-fd-view-week="2"]');
+  await week2.click();
+  await expect(week2).toBeFocused();
+  await expect(week2).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('#fd-path-detail .fd-eyebrow')).toHaveText('Week 2');
+  await expect(page.locator('[data-fd-view-week="1"]')).toHaveAttribute('aria-current', 'step');
+
+  const beforeArrow = await page.evaluate(() => window.scrollY);
+  await page.keyboard.press('ArrowRight');
+  const week3 = page.locator('[data-fd-view-week="3"]');
+  await expect(week3).toBeFocused();
+  await expect(week3).toHaveAttribute('aria-selected', 'true');
+  expect(await page.evaluate(() => window.scrollY)).toBe(beforeArrow);
+
+  await page.keyboard.press('Home');
+  await expect(page.locator('[data-fd-view-week="1"]')).toBeFocused();
+  await page.keyboard.press('End');
+  await expect(page.locator(`[data-fd-view-week="${site.weekCount}"]`)).toBeFocused();
+
+  await page.setViewportSize(PHONE);
+  await expect(page.locator('.fd-pathroute__curve')).toBeHidden();
+  await expect(page.locator(`[data-fd-view-week="${site.weekCount}"] .fd-timeline__theme`)).toBeVisible();
+  expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await expectHealthy(page);
+});
+
 // The 390px check above passed on macOS both before and after the .fd-row__title fix, because
 // macOS font metrics happened to land just under the floor a max-content-sized title imposed
 // (339px on res / 324px on ms3, against 362px available). Ubuntu's wider defaults did not, so CI

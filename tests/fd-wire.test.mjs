@@ -13,11 +13,12 @@ const block = read('frontdoor/fd_block.js');
 const reader = read('frontdoor/fd_reader.js');
 const shell = read('frontdoor/fd_shell.js');
 const practice = read('frontdoor/fd_app_practice.js');
+const path = read('frontdoor/fd_path.js');
 const wire = read('frontdoor/fd_wire.js');
 const CUR = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 
 // eslint-disable-next-line no-new-func
-const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${careNavigator}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${wire}\nreturn {
+const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${careNavigator}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${wire}\nreturn {
   fdResolveState: fdResolveState,
   fdDispatch: fdDispatch,
   fdIsTypingTarget: fdIsTypingTarget,
@@ -716,7 +717,7 @@ test('Tab trapping wraps at both ends of a dialog', () => {
   assert.equal(prevented, 2);
 });
 
-test('fdWire registers and destroys one delegated click/input/change/focusin/keydown/popstate listener for the live shell', () => {
+test('fdWire registers and destroys delegated root and window listeners for the live shell', () => {
   const rootCalls = [];
   const windowCalls = [];
   const rootRemoves = [];
@@ -734,7 +735,7 @@ test('fdWire registers and destroys one delegated click/input/change/focusin/key
   assert.equal(controller.ok, true);
   // 'change' is the settings panel's date field -- the one control not on the delegated click
   // path. Registered through listen() like the rest, so destroy() takes it down too.
-  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input', 'change', 'focusin']);
+  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input', 'change', 'focusin', 'keydown']);
   assert.deepEqual(windowCalls.map(([type]) => type), ['keydown', 'popstate']);
   controller.destroy();
   assert.deepEqual(rootRemoves, rootCalls.slice().reverse());
@@ -926,6 +927,28 @@ test('browser history discards the visit-only Care intent even when returning to
   assert.equal(history.controller.getState().tab, 'care');
   assert.equal(history.controller.getState().careIntentId, '',
     'history cannot revive a selection it does not own');
+});
+
+test('Path arrow navigation activates the projected adjacent week and prevents page scrolling', () => {
+  let clicked = 0;
+  let prevented = 0;
+  const next = { click() { clicked += 1; } };
+  const current = actionTarget({ 'data-fd-view-week': '2' });
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'path', viewWeek: 2 }, {
+    F,
+    index: FOUR_INDEX,
+    querySelector: (selector) => selector.includes('data-fd-view-week="3"') ? next : null,
+  });
+  h.rootHandlers.keydown({
+    key: 'ArrowRight', target: current, preventDefault() { prevented += 1; },
+  });
+  assert.equal(clicked, 1);
+  assert.equal(prevented, 1);
+  h.rootHandlers.keydown({
+    key: 'Enter', target: current, preventDefault() { prevented += 1; },
+  });
+  assert.equal(clicked, 1, 'ordinary button activation remains native');
+  assert.equal(prevented, 1);
 });
 
 test('pre-commit handlers prevent click, input, keyboard, and popstate without changing ownership', () => {
