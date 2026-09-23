@@ -134,6 +134,27 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 ⚠ `.fd-tabs` is a **sibling** of `.fd-header__bar` inside `.fd-header`, not a child of it.
 ⚠ Rails stick to `top:106px`, which assumes the full header (bar + tabs) is present and sticky.
 
+### Adaptive dock — markup contract (Task 1)
+
+```
+.fd-dock                 <nav aria-label="Learning actions">
+  .fd-dock__item         <button> ×2   (Today + Path, or On shift + The Essentials)
+  .fd-dock__item.fd-dock__item--context
+                         <button>      (primary action, or Library Browse fallback)
+  .fd-dock__item         <button> ×2   (Search + Capture)
+```
+
+| Class | Notes |
+|---|---|
+| `.fd-dock` | `<nav aria-label="Learning actions">`; dock renderer root. *(no rule — Task 1 markup only)* |
+| `.fd-dock__item` | `<button>`; four ordinary items, with the contextual button also carrying this class. *(no rule — Task 1 markup only)* |
+| `.fd-dock__item--context` | Modifier on the center `.fd-dock__item` button. It forwards to the supplied source ID or falls back to the Library browse tab. *(no rule — Task 1 markup only)* |
+
+The renderer inserts the context button after the two leading destinations, making it the third
+of five buttons. APP changes the first two labels and routes its second item to Library; Search
+and Capture remain the final two. This entry records emitted markup and destinations only; it
+does not specify responsive visibility, geometry, or interactive styling.
+
 ---
 
 ## 2. Setup wizard (first-run, steps 1 and 2)

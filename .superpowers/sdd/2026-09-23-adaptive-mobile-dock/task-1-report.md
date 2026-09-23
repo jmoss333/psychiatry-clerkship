@@ -78,3 +78,30 @@ The dock is not mounted yet, and `data-fd-dock-forward` has no click-dispatch be
 ## Sequencing note
 
 The first full-suite run found that the emitted-attribute inventory rejected the new forward hook before Task 2 could add dispatch. The parent task owner ruled that Task 1 should reserve the emitted attribute and its unique controller meaning now, while leaving selector/dispatch/forwarding behavior to Task 2. The inventory and vocabulary were updated accordingly, and the final full suite is green.
+
+## Review fix — class inventory (round 1)
+
+Updated `docs/superpowers/specs/front-door-handoff/CLASS-INVENTORY.md` with the dock's known
+markup hierarchy, accessible nav label, button roles, standard/APP destination labels, and center
+action fallback. The three dock classes are marked as having no stylesheet rule yet. The entry
+explicitly leaves responsive visibility, geometry, and interactive styling unspecified for later
+tasks.
+
+Changed files:
+
+- `docs/superpowers/specs/front-door-handoff/CLASS-INVENTORY.md`
+- `.superpowers/sdd/2026-09-23-adaptive-mobile-dock/task-1-report.md`
+
+Verification:
+
+```text
+$ node --test tests/fd-shell.test.mjs tests/fd-action-contract.test.mjs
+ℹ tests 35
+ℹ pass 35
+ℹ fail 0
+exit_code=0
+
+$ git diff --check
+(no output)
+exit_code=0
+```
