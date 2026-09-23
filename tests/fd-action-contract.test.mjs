@@ -42,7 +42,8 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     'data-fd-app-practice-close', 'data-fd-app-practice-open', 'data-fd-app-practice-question', 'data-fd-app-practice-reset',
     'data-fd-app-practice-reveal', 'data-fd-app-reflect', 'data-fd-app-reset',
     'data-fd-app-shift', 'data-fd-app-start', 'data-fd-back', 'data-fd-care-clear',
-    'data-fd-care-intent', 'data-fd-change-week',
+    'data-fd-care-intent', 'data-fd-care-pack', 'data-fd-care-pack-clear',
+    'data-fd-care-pack-print', 'data-fd-change-week',
     'data-fd-clear-ask', 'data-fd-clear-cancel', 'data-fd-clear-confirm', 'data-fd-close-nudge',
     'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-dock-forward', 'data-fd-exam-date', 'data-fd-expand-tool',
     'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-open',
@@ -84,6 +85,17 @@ test('Care navigator actions are distinct visit-only controller semantics', () =
   assert.equal(F.semantic('data-fd-care-intent'), 'choose a transient Care navigator task');
   assert.equal(F.semantic('data-fd-care-clear'), 'clear the transient Care navigator task');
   assert.notEqual(F.semantic('data-fd-care-intent'), F.semantic('data-fd-care-clear'));
+});
+
+test('Care pack actions have distinct transient controller semantics', () => {
+  assert.equal(F.semantic('data-fd-care-pack'), 'toggle a transient patient resource pack item');
+  assert.equal(F.semantic('data-fd-care-pack-clear'), 'clear the transient patient resource pack');
+  assert.equal(F.semantic('data-fd-care-pack-print'), 'print the transient patient resource pack');
+  assert.equal(new Set([
+    F.semantic('data-fd-care-pack'),
+    F.semantic('data-fd-care-pack-clear'),
+    F.semantic('data-fd-care-pack-print'),
+  ]).size, 3);
 });
 
 test('setup week and browse-only week preview are distinct semantics', () => {

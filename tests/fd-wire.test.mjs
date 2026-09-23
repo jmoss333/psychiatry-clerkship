@@ -333,7 +333,7 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     { ...roleContext, screen: 'setup-role' }).patch,
   { role: 'second-role', screen: 'setup-week' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'library' }, {}, roleContext).patch,
-    { tab: 'library', openId: null, searchOpen: false, careIntentId: '',
+    { tab: 'library', openId: null, searchOpen: false, careIntentId: '', carePackIds: [],
       libraryView: 'essentials', kitSection: 'all' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'care' }, {}, roleContext), {
     patch: { tab: 'care', openId: null, searchOpen: false },

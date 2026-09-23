@@ -16,7 +16,9 @@ var FD_HANDLED_ATTRS=[
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge','data-fd-dock-forward',
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section','data-fd-kit-tool',
-  'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear'
+  'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear',
+  'data-fd-care-pack','data-fd-care-pack-clear',
+  'data-fd-care-pack-print'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -30,6 +32,9 @@ var FD_ACTION_SEMANTICS={
   'data-fd-kit-tool':'preview an Essentials tool',
   'data-fd-care-intent':'choose a transient Care navigator task',
   'data-fd-care-clear':'clear the transient Care navigator task',
+  'data-fd-care-pack':'toggle a transient patient resource pack item',
+  'data-fd-care-pack-clear':'clear the transient patient resource pack',
+  'data-fd-care-pack-print':'print the transient patient resource pack',
   'data-fd-week':'select setup week',
   'data-fd-view-week':'preview path week',
   'data-fd-setweek':'adopt previewed week',
@@ -510,6 +515,18 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-care-clear')){
     return {patch:{careIntentId:''},route:null,effect:null};
   }
+  if(fdOwn(a,'data-fd-care-pack')){
+    return {patch:{carePackIds:fdCarePackToggle(
+      c.index||{},s.carePackIds||[],a['data-fd-care-pack'])},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-care-pack-clear')){
+    return {patch:{carePackIds:[]},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-care-pack-print')){
+    var printablePackIds=fdCarePackIds(c.index||{},s.carePackIds||[]);
+    return {patch:{},route:null,effect:s.tab==='care'&&!s.openId&&printablePackIds.length
+      ?{type:'print-care-pack'}:null};
+  }
   if(fdOwn(a,'data-fd-library-view')){
     var view=String(a['data-fd-library-view']||'');
     if(view!=='essentials'&&view!=='full') return {patch:{},route:null,effect:null};
@@ -522,7 +539,7 @@ function fdDispatch(attrs, context, state){
     tab=String(a['data-fd-tab']||'');
     if(!fdValidTab(tab)) return {patch:{},route:null,effect:null};
     patch={tab:tab,openId:null,searchOpen:false};
-    if(tab!=='care') patch.careIntentId='';
+    if(tab!=='care'){ patch.careIntentId=''; patch.carePackIds=[]; }
     if(tab==='library'){ patch.libraryView='essentials'; patch.kitSection='all'; }
     return {patch:patch,route:fdRouteForTab(tab,c.search),effect:null};
   }
@@ -920,7 +937,7 @@ function fdTrapFocus(event, dialog){
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
 var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],'+
-  '[data-fd-care-intent],[data-fd-care-clear],'+
+  '[data-fd-care-intent],[data-fd-care-clear],[data-fd-care-pack],[data-fd-care-pack-clear],[data-fd-care-pack-print],'+
   '[data-fd-app-bridge],[data-fd-app-shift],[data-fd-app-start],[data-fd-app-reflect],[data-fd-app-reset],'+
   '[data-fd-app-practice-open],[data-fd-app-practice-reveal],[data-fd-app-practice-classify],'+
   '[data-fd-app-practice-question],[data-fd-app-practice-reset],[data-fd-app-practice-close],'+
@@ -1298,7 +1315,7 @@ function fdWire(root, initialState, opts){
     return raw||'';
   }
   function baseChanged(before, after){
-    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview','careIntentId'];
+    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview','careIntentId','carePackIds'];
     for(var i=0;i<keys.length;i++){
       if(baseValue(before,keys[i])!==baseValue(after,keys[i])) return true;
     }
@@ -1422,6 +1439,8 @@ function fdWire(root, initialState, opts){
          itself cannot be named in this file: the controller's copy rule bans its audience token
          file-wide (tests/fd-action-contract.test.mjs), comments included. */
       fdStoreExamDate(effect.date);
+    } else if(effect.type==='print-care-pack'){
+      if(win&&typeof win.print==='function') try{win.print();}catch(_){}
     } else if(effect.type==='nudge-timeout'&&setTimer){
       if(nudgeTimer&&clearTimer) clearTimer(nudgeTimer);
       nudgeTimer=setTimer(function(){
@@ -1587,7 +1606,10 @@ function fdWire(root, initialState, opts){
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
-    if(state.tab!=='care'||state.openId) state.careIntentId='';
+    if(state.tab!=='care'||state.openId){
+      state.careIntentId='';
+      if(state.carePackIds&&state.carePackIds.length) state.carePackIds=[];
+    }
     /* Where the learner was when they opened a resource (#427). Recorded by the controller, not
        by fdDispatch: the scroll offset is a browser fact and dispatch stays pure. A reader that
        opens another reader keeps the origin -- "back" still means the tab it all started from. */
@@ -1653,10 +1675,10 @@ function fdWire(root, initialState, opts){
     /* A section-only filter belongs just to this Essentials visit. Other navigation patches also
        reset kitSection to All; those still carry durable route state and must be saved normally. */
     var visitOnly=fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||
-      fdOwn(patch,'careIntentId');
+      fdOwn(patch,'careIntentId')||fdOwn(patch,'carePackIds');
     for(var saveKey in patch){
       if(fdOwn(patch,saveKey)&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview'&&
-         saveKey!=='careIntentId') visitOnly=false;
+         saveKey!=='careIntentId'&&saveKey!=='carePackIds') visitOnly=false;
     }
     if(!visitOnly) fdSave(state);
     if(!fromHistory){
@@ -1682,6 +1704,11 @@ function fdWire(root, initialState, opts){
         ?root.querySelector('[data-fd-care-intent="'+state.careIntentId+'"]')
         :root.querySelector('[data-fd-care-intent]');
       if(careFocus&&careFocus.focus) try{careFocus.focus();}catch(_){}
+    }
+    if(fdOwn(patch,'carePackIds')&&!afterOverlay&&!beforeHadOverlay&&root&&root.querySelector){
+      var packFocus=invoker&&invoker.hasAttribute&&invoker.hasAttribute('data-fd-care-pack-clear')
+        ?root.querySelector('[data-fd-care-pack]'):equivalentControl(invoker,root);
+      if(packFocus&&packFocus.focus) try{packFocus.focus();}catch(_){}
     }
     if(before.openId&&!state.openId) restoreOrigin(before);
     if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
@@ -1935,6 +1962,7 @@ function fdWire(root, initialState, opts){
     var before=fdClone(state);
     var merged=fdClone(state), snap=event&&event.state&&event.state.fd&&event.state.state;
     merged.careIntentId='';
+    merged.carePackIds=[];
     merged.searchOpen=false;
     merged.query='';
     merged.sheet=null;
