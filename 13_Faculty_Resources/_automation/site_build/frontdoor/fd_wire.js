@@ -1151,7 +1151,7 @@ function fdWire(root, initialState, opts){
   var doc=o.document||(typeof document!=='undefined'?document:null);
   var state=fdClone(initialState||{}), invokers=[], nudgeTimer=null, navGeneration=0;
   var destroyed=false, registrations=[], startupPrepared=false, startupCommitted=false;
-  var offlineRefreshPending=false;
+  var offlineRefreshPending=false,offlineRefreshTimer=null,offlineRefreshGeneration=0;
   var baseStale=false;
   var render=o.render||function(){};
   var renderTransient=o.renderTransient||function(next,detail){
@@ -1161,6 +1161,19 @@ function fdWire(root, initialState, opts){
   var clearTimer=o.clearTimer||(typeof clearTimeout==='function'?clearTimeout:null);
   var index=o.index||fdDefaultIndex();
   var previewRouteBase=previewActive()?currentRoute():null;
+
+  function offlineRefreshScope(value){
+    var s=value||{};
+    if(s.screen!=='app'||s.tab!=='today'||s.openId||s.offlineOpen!==true)return '';
+    return [String(s.roleId||s.role||''),String(s.week),String(s.rotationStart||''),
+      s.appMode===true?'app':'week',String(s.appBridge||'')].join('|');
+  }
+  function cancelOfflineRefresh(){
+    offlineRefreshGeneration++;
+    offlineRefreshPending=false;
+    if(offlineRefreshTimer!==null&&clearTimer)try{clearTimer(offlineRefreshTimer);}catch(_){}
+    offlineRefreshTimer=null;
+  }
 
   function overlayIdentity(value){
     var s=value||{};
@@ -1461,24 +1474,38 @@ function fdWire(root, initialState, opts){
     } else if(effect.type==='refresh-offline'){
       if(offlineRefreshPending)return;
       var report=typeof o.reportOfflineRefresh==='function'?o.reportOfflineRefresh:function(){};
+      var scope=offlineRefreshScope(state);
+      if(!scope)return;
       var current=typeof o.offlineStatus==='function'?o.offlineStatus():null;
       var model=typeof fdOfflineStatus==='function'?fdOfflineStatus(current):{kind:'not-ready'};
       var verified=model.kind==='ready'||model.kind==='update';
       var online=typeof o.online==='function'?o.online():!!(win&&win.navigator&&win.navigator.onLine!==false);
       if(!online){report(fdOfflineRefreshMessage(false,verified));return;}
+      if(!setTimer||!clearTimer){report(fdOfflineRefreshMessage(true,false));return;}
+      var timeoutMs=typeof o.offlineRefreshTimeoutMs==='number'&&isFinite(o.offlineRefreshTimeoutMs)&&
+        o.offlineRefreshTimeoutMs>0?o.offlineRefreshTimeoutMs:8000;
+      var token=++offlineRefreshGeneration;
+      function finish(success,timedOut){
+        if(token!==offlineRefreshGeneration)return;
+        offlineRefreshGeneration++;
+        offlineRefreshPending=false;
+        if(offlineRefreshTimer!==null)try{clearTimer(offlineRefreshTimer);}catch(_){}
+        offlineRefreshTimer=null;
+        if(destroyed||offlineRefreshScope(state)!==scope)return;
+        report(timedOut===true?'Update check timed out. Try again with a connection.':
+          fdOfflineRefreshMessage(true,success===true));
+      }
       offlineRefreshPending=true;
       report('Checking for a newer offline copy…');
+      try{offlineRefreshTimer=setTimer(function(){finish(false,true);},timeoutMs);}
+      catch(_){finish(false,false);return;}
       var update=typeof o.requestSWUpdate==='function'?o.requestSWUpdate:function(){return Promise.resolve(false);};
       var updateResult;
-      try{updateResult=update();}catch(_){updateResult=Promise.resolve(false);}
+      try{updateResult=update();}catch(_){finish(false,false);return;}
       Promise.resolve(updateResult).then(function(success){
-        offlineRefreshPending=false;
-        if(!destroyed&&state.screen==='app'&&state.tab==='today'&&state.offlineOpen)
-          report(fdOfflineRefreshMessage(true,success===true));
+        finish(success===true,false);
       },function(){
-        offlineRefreshPending=false;
-        if(!destroyed&&state.screen==='app'&&state.tab==='today'&&state.offlineOpen)
-          report(fdOfflineRefreshMessage(true,false));
+        finish(false,false);
       });
     } else if(effect.type==='nudge-timeout'&&setTimer){
       if(nudgeTimer&&clearTimer) clearTimer(nudgeTimer);
@@ -1640,12 +1667,14 @@ function fdWire(root, initialState, opts){
       return state;
     }
     var before=fdClone(state), beforeOverlay=overlayIdentity(state);
+    var beforeRefreshScope=offlineRefreshScope(state);
     var beforeHistory=historyValue();
     var patch=result.patch||{};
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
     if(state.screen!=='app'||state.tab!=='today'||state.openId)state.offlineOpen=false;
+    if(beforeRefreshScope&&beforeRefreshScope!==offlineRefreshScope(state))cancelOfflineRefresh();
     if(state.tab!=='care'||state.openId){
       state.careIntentId='';
       if(state.carePackIds&&state.carePackIds.length) state.carePackIds=[];
@@ -2002,6 +2031,7 @@ function fdWire(root, initialState, opts){
       if(currentRoute()!==previewRouteBase) lockPreview();
       return;
     }
+    cancelOfflineRefresh();
     /* Flush the outgoing reader while its state is still current. The next save clones this map. */
     if(o.disposeReadingPlace)o.disposeReadingPlace();
     var before=fdClone(state);
@@ -2157,6 +2187,7 @@ function fdWire(root, initialState, opts){
       destroy:function(){
         if(destroyed&&registrations.length===0) return;
         destroyed=true;
+        cancelOfflineRefresh();
         navGeneration++;
         removeRegistrations();
         if(nudgeTimer&&clearTimer) try{clearTimer(nudgeTimer);}catch(ignoreTimer){ }

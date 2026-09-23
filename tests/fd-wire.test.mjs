@@ -162,6 +162,64 @@ test('an update failure reports failure without closing the detailed check', asy
   h.controller.destroy();
 });
 
+test('a stalled update times out, permits retry, and ignores its late completion', async () => {
+  const messages = [], timers = new Map(), resolves = [];
+  let timerId = 0, updates = 0;
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', offlineOpen: true }, {
+    F, online: () => true,
+    setTimer(fn, ms) { const id = ++timerId; timers.set(id, { fn, ms }); return id; },
+    clearTimer(id) { timers.delete(id); },
+    reportOfflineRefresh: (message) => messages.push(message),
+    requestSWUpdate() { updates += 1; return new Promise((resolve) => resolves.push(resolve)); },
+  });
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  assert.equal(updates, 1, 'one worker update request while pending');
+  assert.equal([...timers.values()][0].ms, 8000);
+  [...timers.values()][0].fn();
+  assert.match(messages.at(-1), /timed out/i);
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  assert.equal(updates, 2, 'timeout releases the control for retry');
+  const beforeLate = messages.length;
+  resolves[0](true);
+  await Promise.resolve();
+  assert.equal(messages.length, beforeLate, 'late result cannot replace retry status');
+  resolves[1](true);
+  await Promise.resolve();
+  assert.match(messages.at(-1), /Update check complete/);
+  assert.equal(timers.size, 0);
+  h.controller.destroy();
+});
+
+test('closing details, changing APP route, and teardown cancel late update messages', async () => {
+  for (const transition of ['close', 'route', 'destroy']) {
+    const messages = [], timers = new Map(), resolves = [];
+    let timerId = 0;
+    const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today',
+      appBridge: 'pa', offlineOpen: true }, {
+      F, online: () => true,
+      setTimer(fn) { const id = ++timerId; timers.set(id, fn); return id; },
+      clearTimer(id) { timers.delete(id); },
+      reportOfflineRefresh: (message) => messages.push(message),
+      requestSWUpdate: () => new Promise((resolve, reject) => resolves.push({ resolve, reject })),
+    });
+    h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+    if (transition === 'close') h.controller.dispatch({ 'data-fd-offline-close': '' });
+    else if (transition === 'route') h.controller.dispatch({ 'data-fd-app-bridge': 'pmhnp' });
+    else h.controller.destroy();
+    assert.equal(timers.size, 0, `${transition} clears the timeout`);
+    const count = messages.length;
+    resolves[0].reject(new Error('late network failure'));
+    await Promise.resolve();
+    assert.equal(messages.length, count, `${transition} ignores late rejection`);
+    if (transition === 'route') {
+      h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+      assert.equal(resolves.length, 2, 'new route permits a fresh update check');
+    }
+    h.controller.destroy();
+  }
+});
+
 test('offline details move focus to Close and return it to the disclosure', () => {
   const storage = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'today' }) });
   const initial = storage.dump().cw_frontdoor_v1;
@@ -1040,6 +1098,7 @@ function fakeHarness(initial, options = {}) {
     online: options.online,
     reportOfflineRefresh: options.reportOfflineRefresh,
     requestSWUpdate: options.requestSWUpdate,
+    offlineRefreshTimeoutMs: options.offlineRefreshTimeoutMs,
   });
   if (options.commitStartup !== false) controller.commitStartup();
   return { root, rootHandlers, fakeWindow, windowHandlers, controller };

@@ -215,7 +215,7 @@ test('detailed check counts only the active response and names every dependency'
   assert.match(ready, /1 tool/);
   assert.match(ready, /shell|navigation/i);
   assert.match(ready, /search data/i);
-  assert.match(ready, /Reading place and captured questions.*device only/i);
+  assert.match(ready, /Reading place and captured questions use device-only storage when saved/i);
   for (const phrase of ['audio and video', 'Interview Room', 'external links', 'email sending']) {
     assert.match(ready, new RegExp(phrase, 'i'));
   }
@@ -225,6 +225,21 @@ test('detailed check counts only the active response and names every dependency'
   assert.match(partial, /2 missing/);
   assert.match(partial, /lesson\.md/);
   assert.match(partial, /practice\.html/);
+});
+
+test('all detailed states describe device-only storage without claiming a save succeeded', () => {
+  const states = [
+    { checking: true, expected: EXPECTED },
+    { response: complete, expected: EXPECTED },
+    { response: complete, expected: EXPECTED, waiting: true },
+    { reason: 'timeout', expected: EXPECTED },
+  ];
+  for (const state of states) {
+    const detail = F.fdOfflineCard(state, 'Week 2');
+    assert.match(detail, /device-only storage when saved/i);
+    assert.match(detail, /this cache check does not verify them/i);
+    assert.doesNotMatch(detail, /\bare saved\b|\bhave been saved\b/i);
+  }
 });
 
 test('entry offers a disclosure with controls outside the replaceable status body', () => {
