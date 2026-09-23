@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(398 distinct `fd-*` selector names, 23 `is-*` state classes). Every class below has a rule in that file unless
+(420 distinct `fd-*` selector names, 24 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -120,7 +120,9 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
       .fd-safetybtn        <button>
       .fd-settingsbtn      <button>          (compact settings-panel gear)
   .fd-tabs                 <nav>
-    .fd-tab                <button> ×3
+    .fd-tab                <button> ×4 standard / ×3 APP
+      .fd-tab__label[data-compact]       (Essentials and Care labels only)
+    .fd-tab.fd-tab--care   <button>      (far-right Patient care resources destination)
 ```
 
 | Class | Notes |
@@ -130,6 +132,8 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | `.fd-header__actions` | `margin-left:auto` in the flex layout; at 640px and below it spans grid row two, resets the margin, and aligns right. |
 | `.fd-settingsbtn` | Compact icon-only header gear opening the settings panel; `aria-label` names the action. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
+| `.fd-tab--care` | Uses `margin-left:auto` plus a quiet divider to keep Patient care resources visually separate at the far right. At ≤640px the divider and auto margin disappear. |
+| `.fd-tab__label[data-compact]` | One resilient text node per responsive tab. At ≤640px CSS paints the short `data-compact` value while the full button `aria-label` remains accessible; an older or briefly stale stylesheet still shows one full label instead of concatenating two labels. |
 
 ⚠ `.fd-tabs` is a **sibling** of `.fd-header__bar` inside `.fd-header`, not a child of it.
 ⚠ Rails stick to `top:106px`, which assumes the full header (bar + tabs) is present and sticky.
@@ -257,6 +261,38 @@ Omitting it collapses the rail underneath.
 
 ---
 
+## 3a. Patient care resources
+
+```
+.fd-care-page
+  .fd-care-page__head
+    .fd-care-page__source
+    h1 / .fd-care-page__intro
+    .fd-care-page__provenance
+      strong / span
+  .fd-care-page__notice               role="note"
+    strong / span
+  .fd-care-page__groups
+    .fd-care-group ×2                 support / education
+      .fd-care-group__head
+        h2 / p
+      .fd-care-group__list
+        .fd-carelink <a> ×2 or ×3     fixed external URL; new tab
+          .fd-carelink__mark
+          .fd-carelink__copy
+            .fd-carelink__title / .fd-carelink__description
+```
+
+| Class | Notes |
+|---|---|
+| `.fd-care-page` | Top-level, shared learner destination rendered by `fd_care.js`; it is navigation, not a completion or attestation item. |
+| `.fd-care-page__provenance` | Names the creator and the several-year, personally curated ReConnect database origin without implying that the Clerkship attests the linked apps. |
+| `.fd-care-page__notice` | Current-information and no-PHI boundary. The page never appends a query, route state, search text, or patient context to an external URL. |
+| `.fd-care-page__groups` | Two-column shelf at larger widths and one column at ≤640px. The support shelf holds Resource Finder and Recovery Meeting Calendar; education holds the patient library, Podcast Navigator, and Relational Bibliotherapy book shelf. |
+| `.fd-carelink` | Static external anchor with an explicit new-tab mark and visible title/description. |
+
+---
+
 ## 4. Path
 
 ```
@@ -342,6 +378,11 @@ this subtree:
             .fd-kit__tool-tab <button role=tab> ×N
           .fd-kit__tool-preview [role=tabpanel]
             h3 / p / .fd-btn[data-fd-open]
+      .fd-kit__teaching                  (external teaching companion)
+        h3
+        .fd-teachinglink <a>
+          .fd-teachinglink__title / .fd-teachinglink__description
+        .fd-teachinglink__note
 ```
 
 At 1000px and wider, `.fd-kit__layout` is a 3:1 readings/tool-rail grid. From 641–999px the
@@ -357,6 +398,7 @@ both group types remain native `select`/`details` controls at every width.
 | `.fd-col__name` | Column heading: uppercase terracotta with a bottom rule. |
 | `.fd-collink__dot.is-tool` | Teal dot; default is olive (a read). |
 | `.fd-collink__hint` | One line under a tool's label, from `curriculum.libraryHints` (2026-09-16). The row wraps (`flex-wrap`) and the hint takes the full width, indented past the dot. Omitted from the markup, not emptied, when an item has none — every read row renders exactly as before. |
+| `.fd-kit__teaching` | Keeps the Family Therapy Seminar Companion with teaching tools rather than patient-facing care links. Its fixed external link opens in a new tab; the note preserves its local-browser/no-identifiers boundary. |
 
 `.fd-col` gained its first rule on 2026-09-19 (`break-inside:avoid` + the section gap): it is the
 unit the multi-column flow keeps whole, and the wrapper that groups a heading with its links.
@@ -574,8 +616,8 @@ patient information, or an attestation, and it never turns a website action into
       .fd-searchpanel__input   <input>
       .fd-searchpanel__esc     <button>esc</button>
     .fd-searchpanel__body
-      .fd-result <button> ×N
-        .fd-result__dot         + .is-tool | .is-safety
+      .fd-result <button|a> ×N
+        .fd-result__dot         + .is-tool | .is-safety | .is-care
         .fd-result__title
         .fd-result__meta
       .fd-searchpanel__empty          (no-results state, replaces the results)
@@ -586,7 +628,8 @@ patient information, or an attestation, and it never turns a website action into
 |---|---|
 | `.fd-search` | Carries the scrim **and** the centring — it is not a separate backdrop element (unlike the sheet). |
 | `.fd-searchpanel__body` | `max-height:46vh` + scroll. The scroll container. |
-| `.fd-result__dot` | Default olive (read); `.is-tool` teal; `.is-safety` danger. |
+| `.fd-result__dot` | Default olive (read); `.is-tool` teal; `.is-safety` danger; `.is-care` olive-deep. |
+| `.fd-result.is-care` | Static external ReConnect result rendered as an anchor. Curated search terms are matched locally; the learner's query is never added to the URL or sent to ReConnect. Explicit safety results still sort first. |
 
 ⚠ The search overlay uses **one** element for scrim + layout. The sheet uses **two**
 (`.fd-sheetbackdrop` + `.fd-sheet`). Do not mirror one pattern onto the other.
@@ -698,6 +741,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 | `.is-compact` | `.fd-row` | Path detail density |
 | `.is-tool` | `.fd-chip`, `.fd-collink__dot`, `.fd-result__dot` | item is a tool, not a read |
 | `.is-safety` | `.fd-result__dot` | search hit is a safety protocol |
+| `.is-care` | `.fd-result`, `.fd-result__dot` | search hit is an external ReConnect patient-care resource |
 | `.is-next` | `.fd-prevnext__btn` | right-aligned variant |
 | `.is-nav-next` / `.is-nav-prev` | `.fd-reader` | slide direction |
 | `.is-tool-expanded` | `.fd-main`, `.fd-reader--tool` | saved desktop tool workspace width |

@@ -247,6 +247,10 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
   { role: 'second-role', screen: 'setup-week' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'library' }, {}, roleContext).patch,
     { tab: 'library', openId: null, searchOpen: false, libraryView: 'essentials', kitSection: 'all' });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'care' }, {}, roleContext), {
+    patch: { tab: 'care', openId: null, searchOpen: false },
+    route: '?tab=care', effect: null,
+  });
   assert.equal(F.fdDispatch({ 'data-fd-back': '' }, {}, { ...roleContext, openId: 'x.md', fromTab: 'path' }).route,
     '?tab=path');
   assert.equal(F.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).route, '/');
@@ -274,6 +278,16 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     { stepsDone: { 2: false } });
   assert.equal(F.fdDispatch({ 'data-fd-try-now': 'scale.html' }, {}, roleContext).patch.sheet,
     'item:scale.html');
+});
+
+test('the patient-care destination survives direct links and reader return context', () => {
+  const direct = F.fdResolveState('/?tab=care', { role: 'first-role' });
+  assert.equal(direct.screen, 'app');
+  assert.equal(direct.tab, 'care');
+  const opened = F.fdDispatch({ 'data-fd-open': 'a.md' }, { search: '?tab=care' }, direct);
+  assert.equal(opened.patch.fromTab, 'care');
+  assert.equal(new URLSearchParams(opened.route).get('tab'), 'care');
+  assert.equal(F.fdReader({ weeks: [] }, { ref: 'a.md', fromTab: 'care' }, '<p>x</p>').includes('Patient care resources'), true);
 });
 
 test('choosing APP enters the On shift workspace without asking for a rotation week', () => {

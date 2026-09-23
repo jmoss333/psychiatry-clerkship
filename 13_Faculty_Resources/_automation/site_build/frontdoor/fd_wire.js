@@ -68,7 +68,7 @@ function fdActionSemantic(attr){
 
 function fdOwn(o,k){ return !!o&&Object.prototype.hasOwnProperty.call(o,k); }
 
-function fdValidTab(tab){ return tab==='path'||tab==='library'||tab==='today'; }
+function fdValidTab(tab){ return tab==='path'||tab==='library'||tab==='care'||tab==='today'; }
 
 function fdClone(o){
   var out={}, src=o||{};
@@ -167,7 +167,7 @@ function fdResolveState(url, stored, options){
   if(out.appInvite===true) out.screen='app';
   else if(!out.role&&routedRef&&!fdIsLegacyRouteAlias(routedRef)&&routedRef.indexOf('__')!==0){ out.guest=true; out.screen='app'; }
   else if(!out.role) out.screen='setup-role';
-  else if(fdAppMode(out)||src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
+  else if(fdAppMode(out)||src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library'||out.tab==='care') out.screen='app';
   else out.screen='setup-week';
   if(routedRef&&fdIsLegacyRouteAlias(routedRef)){
     if(routedRef==='__home__'){

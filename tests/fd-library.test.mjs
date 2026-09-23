@@ -320,7 +320,9 @@ test('every real tool row carries a hint span, and no real hint carries an audie
 // ---- Essentials renderer -------------------------------------------------------------------
 
 test('Essentials uses reading rows, open native groups, a section index rail and a separate tool group', () => {
-  const idx = {columns: IDX.columns, essentials:[{name:'First <group>',items:[
+  const idx = {columns: IDX.columns, teachingResources:[
+    {id:'family-therapy-companion',title:'Family Therapy Seminar Companion',description:'Practice a structured family meeting with de-identified teaching cases.',url:'https://family-therapy-seminar-companion.netlify.app/',note:'Answers stay on this device. Do not enter names or identifying details.'},
+  ], essentials:[{name:'First <group>',items:[
     {ref:'read.md',title:'Title <one>',summary:'A & B',minutes:7,kind:'md',governance:{status:'pending'}},
     {ref:'tool.html',title:'Tool <one>',hint:'Use this when A & B.',kind:'tool'},
     {ref:'second.html',title:'Second tool',hint:'Compare the next step.',kind:'tool'}]}]};
@@ -348,6 +350,12 @@ test('Essentials uses reading rows, open native groups, a section index rail and
   assert.match(html, /Title &lt;one&gt;/); assert.match(html,/A &amp; B/); assert.match(html,/7 min/);
   assert.match(html, /Faculty re-review in progress — 1 of 1 readings changed since they were last attested ·/); assert.match(html, /<summary>What that means<\/summary>/);
   assert.match(html, /Everything \(10 pages\) →/);
+  assert.doesNotMatch(html, /fd-kit__care|Patient care resources/);
+  assert.match(html, /class="fd-kit__teaching"[^>]*aria-label="External teaching companion"/);
+  assert.match(html, /href="https:\/\/family-therapy-seminar-companion\.netlify\.app\/"/);
+  assert.match(html, /target="_blank" rel="noopener noreferrer"/);
+  assert.match(html, /Family Therapy Seminar Companion/);
+  assert.match(html, /Answers stay on this device\. Do not enter names or identifying details\./);
   assert.deepEqual(calls[0][1],{compact:true});
   const filtered=G.fdEssentials(idx,{kitSection:'0'});
   assert.match(filtered,/data-fd-kit-section="0"[^>]*aria-pressed="true"/);
