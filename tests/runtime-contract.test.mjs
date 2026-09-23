@@ -156,6 +156,18 @@ test('devcontainer declares no secret or host-control mounts', () => {
   assert.doesNotMatch(serialized, /docker\.sock|SSH_AUTH_SOCK|TOKEN|SECRET|PASSWORD|API_KEY/i);
 });
 
+test('container builds and installs only the repository-owned receipt status VSIX', () => {
+  const dockerfile = readFileSync(resolve(ROOT, '.devcontainer/Dockerfile'), 'utf8');
+  const bootstrap = readFileSync(resolve(ROOT, '.devcontainer/post-create.sh'), 'utf8');
+  const dockerignore = readFileSync(resolve(ROOT, '.dockerignore'), 'utf8');
+  assert.match(dockerfile, /COPY \.devcontainer\/receipt-status/);
+  assert.match(dockerfile, /npm ci --ignore-scripts/);
+  assert.match(dockerfile, /npx vsce package --out \/opt\/clerkship-devcontainer-receipt-status\.vsix/);
+  assert.match(bootstrap, /code --install-extension \/opt\/clerkship-devcontainer-receipt-status\.vsix --force/);
+  assert.match(dockerignore, /!\.devcontainer\/receipt-status\//);
+  assert.doesNotMatch(`${dockerfile}\n${bootstrap}`, /marketplace|https?:\/\//i);
+});
+
 test('dependency installer replaces stale venv contents only inside the Dev Container', () => {
   const dockerfile = readFileSync(resolve(ROOT, '.devcontainer/Dockerfile'), 'utf8');
   const bootstrap = readFileSync(resolve(ROOT, '.devcontainer/post-create.sh'), 'utf8');

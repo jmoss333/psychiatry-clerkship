@@ -1,6 +1,8 @@
 *
 !.devcontainer/
 !.devcontainer/Dockerfile
+!.devcontainer/receipt-status/
+!.devcontainer/receipt-status/**
 !tests/
 tests/*
 !tests/smoke/
