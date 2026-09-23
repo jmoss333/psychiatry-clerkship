@@ -1551,8 +1551,27 @@ function fdWire(root, initialState, opts){
       return;
     }
     var attrs=fdAttrsFromTarget(target);
+    var retainPathFocus=target.hasAttribute&&target.hasAttribute('data-fd-view-week');
     if(event.preventDefault) event.preventDefault();
     apply(fdDispatch(attrs,context({inSheet:!!state.sheet}),state),target,false);
+    /* Path rerenders its route and detail together, so the activated tab no longer exists after
+       apply(). Restore its equivalent without scrolling the learner away from the route. */
+    if(retainPathFocus){
+      var rebuiltPath=equivalentControl(target,root);
+      if(rebuiltPath&&rebuiltPath.focus){
+        try{rebuiltPath.focus({preventScroll:true});}catch(_){try{rebuiltPath.focus();}catch(__){}}
+      }
+    }
+  }
+  function pathKeyHandler(event){
+    if(destroyed||!startupCommitted||previewActive()) return;
+    var target=event&&event.target&&event.target.closest?event.target.closest('.fd-pathroute [data-fd-view-week]'):null;
+    if(!target) return;
+    var next=fdPathMoveWeek(index,state.viewWeek,event.key);
+    if(next===null) return;
+    if(event.preventDefault) event.preventDefault();
+    var control=root&&root.querySelector?root.querySelector('.fd-pathroute [data-fd-view-week="'+next+'"]'):null;
+    if(control&&control.click) control.click();
   }
   /* Chromium can focus a partly visible button in either horizontal Essentials strip without
      scrolling it fully into view. Move only that strip, preserving the page and route. */
@@ -1882,6 +1901,7 @@ function fdWire(root, initialState, opts){
 
   if(!listen(root,'click',clickHandler,false)||!listen(root,'input',inputHandler,false)||
      !listen(root,'change',changeHandler,false)||!listen(root,'focusin',focusHandler,false)||
+     !listen(root,'keydown',pathKeyHandler,false)||
      !listen(win,'keydown',keyHandler,false)||!listen(win,'popstate',popstateHandler,false)){
       removeRegistrations();
       destroyed=true;
