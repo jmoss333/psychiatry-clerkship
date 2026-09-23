@@ -254,8 +254,9 @@ Append after `.fd-article__source` and before reader actions:
 </button>
 ```
 
-On install, the runtime immediately persists the current top/nearest-heading record. Only a verified
-successful `fdSave` sets `Reading place saved on this device only`; a failed or disallowed write sets
+On install, the runtime immediately verifies storage by saving the unchanged sanitized reading-place
+map, without inventing a top-of-page bookmark. Only a verified successful `fdSave` sets
+`Reading place saved on this device only`; a failed or disallowed write sets
 `Reading place could not be saved on this device`. Do not use a success icon because the status can
 change.
 
@@ -267,12 +268,14 @@ After markdown and enhancements mount:
    `.fd-article__body h2,h3,h4`, so even a reading saved above its first body heading has a stable
    top anchor;
 2. if learner storage is allowed, restore the sanitized page record with `requestAnimationFrame`
-   after layout, then write the resolved current record once to establish truthful success/failure
+   after layout, then save the unchanged sanitized map once to establish truthful success/failure
    status; if storage is not allowed, show failure copy and install no persistence listeners;
 3. expose Start at top only when restoration occurred;
-4. on debounced scroll (150 ms), find the final heading whose top is at/before the reading line,
-   compute a clamped relative offset, update `state.readingPlaces`, and call `fdSave(state)`;
-5. flush on `pagehide` and destroy listeners/timers before another resource mounts.
+4. after more than 4 px of learner movement, capture the heading whose top is at/before the reading
+   line and its clamped relative offset; debounce the write by 150 ms, preserving a pending position
+   across responsive resize before restoring it against the new layout;
+5. flush meaningful movement on `pagehide` and destroy; untouched pagehide/reload cycles must not
+   create a bookmark, and listeners/timers are removed before another resource mounts.
 
 Do not announce automatic writes. `data-fd-reading-top` scrolls to the article heading, drops that
 page's record, persists, and focuses the `<h1>` with `preventScroll` after the explicit scroll.

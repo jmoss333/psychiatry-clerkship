@@ -964,7 +964,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
   var save=o.save||fdSave, now=o.now||Date.now;
   var timerSet=o.setTimer||setTimeout, timerClear=o.clearTimer||clearTimeout;
   var frame=o.requestAnimationFrame||(win&&win.requestAnimationFrame?function(fn){win.requestAnimationFrame(fn);}:function(fn){timerSet(fn,0);});
-  var active=true, timer=null, ready=false, suppressedY=null, resizeSeq=0, ids, i;
+  var active=true, timer=null, ready=false, suppressedY=null, resizeSeq=0, baselineY=0, pendingPosition=null, ids, i;
   function empty(){ }
   if(!status||!top||!nodes.length||!win||!fdReadingRef(ref))return {destroy:empty,startAtTop:empty};
   ids=fdReadingHeadingIds(nodes.map(function(node){return node.textContent||'';}));
@@ -988,8 +988,11 @@ function fdInstallReadingPlace(reader,ref,state,options){
   }
   function capture(){
     if(!active||!ready||suppressedY!==null)return;
-    var position=current();
+    if(!pendingPosition&&Math.abs(scrollY()-baselineY)<=4)return;
+    var position=pendingPosition||current();
+    pendingPosition=null;
     write(fdReadingPlaceUpdate(state.readingPlaces,ref,position.heading,position.offset,now()));
+    baselineY=scrollY();
   }
   function onScroll(){
     if(!active||!ready)return;
@@ -997,6 +1000,8 @@ function fdInstallReadingPlace(reader,ref,state,options){
       if(Math.abs(scrollY()-suppressedY)<=4)return;
       suppressedY=null;
     }
+    if(Math.abs(scrollY()-baselineY)<=4)return;
+    pendingPosition=current();
     if(timer!==null)timerClear(timer);
     timer=timerSet(function(){timer=null;capture();},150);
   }
@@ -1006,7 +1011,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
   }
   function onResize(){
     if(!active||!ready)return;
-    if(timer!==null){timerClear(timer);timer=null;}
+    if(timer!==null){timerClear(timer);timer=null;capture();}
     ready=false;
     var sequence=++resizeSeq;
     frame(function(){
@@ -1015,14 +1020,15 @@ function fdInstallReadingPlace(reader,ref,state,options){
       var resolved=place&&fdReadingResume(place,ids), target=null, j;
       if(resolved){
         for(j=0;j<nodes.length;j++)if(nodes[j].id===resolved.heading){target=nodes[j];break;}
-        if(target){win.scrollTo(0,absoluteTop(target)+resolved.offset);suppressedY=scrollY();}
+        if(target){win.scrollTo(0,absoluteTop(target)+resolved.offset);suppressedY=scrollY();baselineY=scrollY();}
       }
       ready=true;
     });
   }
   function destroy(){
     if(!active)return;
-    if(timer!==null){timerClear(timer);timer=null;capture();}
+    if(timer!==null){timerClear(timer);timer=null;}
+    capture();
     active=false;
     win.removeEventListener('scroll',onScroll);
     win.removeEventListener('pagehide',onPagehide);
@@ -1031,8 +1037,10 @@ function fdInstallReadingPlace(reader,ref,state,options){
   function startAtTop(){
     if(!active||!ready||top.hidden)return;
     if(timer!==null){timerClear(timer);timer=null;}
+    pendingPosition=null;
     win.scrollTo(0,absoluteTop(nodes[0]));
     suppressedY=scrollY();
+    baselineY=scrollY();
     write(fdReadingPlaceDrop(state.readingPlaces,ref));
     top.hidden=true;
     nodes[0].setAttribute('tabindex','-1');
@@ -1049,11 +1057,13 @@ function fdInstallReadingPlace(reader,ref,state,options){
     if(place&&!resolved){
       win.scrollTo(0,0);
       suppressedY=scrollY();
+      baselineY=scrollY();
       write(fdReadingPlaceDrop(state.readingPlaces,ref));
     }else{
       if(resolved){
         for(var j=0;j<nodes.length;j++)if(nodes[j].id===resolved.heading){target=nodes[j];break;}
         win.scrollTo(0,absoluteTop(target)+resolved.offset);
+        suppressedY=scrollY();
         top.hidden=false;
         if(o.focusOnRestore===true&&(!o.canFocusOnRestore||o.canFocusOnRestore()===true)){
           target.setAttribute('tabindex','-1');
@@ -1061,7 +1071,12 @@ function fdInstallReadingPlace(reader,ref,state,options){
         }
       }
       ready=true;
-      if(resolved)capture();
+      baselineY=scrollY();
+      write(state.readingPlaces);
+      if(o.focusOnRestore!==true&&(!o.canFocusOnRestore||o.canFocusOnRestore()===true)){
+        nodes[0].setAttribute('tabindex','-1');
+        try{nodes[0].focus({preventScroll:true});}catch(_){nodes[0].focus();}
+      }
     }
     ready=true;
     win.addEventListener('scroll',onScroll);

@@ -3031,7 +3031,8 @@ test('reading place assigns deterministic heading ids, saves the latest debounce
   h.flush();
   assert.equal(new Set(h.headings.map((node) => node.id)).size, 4);
   assert.match(h.headings[3].id, /^fd-reading-section--[0-9a-f]{16}$/);
-  assert.equal(h.status.textContent, '', 'a fresh reading has no verified place yet');
+  assert.equal(h.status.textContent, 'Reading place saved on this device only', 'fresh storage is verified without inventing a place');
+  assert.equal(h.state.readingPlaces['a.md'], undefined);
   h.setScroll(500); h.listeners.get('scroll')();
   h.setScroll(960); h.listeners.get('scroll')();
   h.flush();
@@ -3050,13 +3051,53 @@ test('reading place keeps its heading through responsive reflow without treating
   h.setScroll(500); h.listeners.get('scroll')(); h.flush();
   const heading = h.state.readingPlaces['a.md'].heading;
   h.setHeadingTop(1, 600);
-  h.setScroll(300); h.listeners.get('scroll')();
   h.listeners.get('resize')(); h.flush();
   assert.equal(h.scrollY, 650);
   assert.equal(h.state.readingPlaces['a.md'].heading, heading);
 });
 
-test('reading place restores relative to the heading after layout and focuses only for Continue', () => {
+test('reading place flushes a pending learner scroll before responsive reflow', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  const oldHeading = h.state.readingPlaces['a.md'].heading;
+  h.setScroll(960); h.listeners.get('scroll')(); // 150 ms has not elapsed
+  h.setHeadingTop(2, 1100);
+  h.listeners.get('resize')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[2].id);
+  assert.notEqual(h.state.readingPlaces['a.md'].heading, oldHeading);
+  assert.equal(h.state.readingPlaces['a.md'].offset, 60);
+  assert.equal(h.scrollY, 1160, 'new relative position follows the reflowed heading');
+  const writes = h.writes.length;
+  h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.writes.length, writes, 'programmatic reflow makes no write loop');
+  assert.equal(h.headings[2].focused, undefined, 'resize does not take focus');
+});
+
+test('Start at top stays clear through two untouched exits, then learner movement saves again', () => {
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  const restored = readingPlaceHarness({ 'a.md': { heading: seed.headings[1].id, offset: 40, updatedAt: 8 } });
+  const first = restored.install(); restored.flush();
+  first.startAtTop(); restored.listeners.get('pagehide')(); first.destroy();
+  let saved = restored.state.readingPlaces;
+  assert.equal(saved['a.md'], undefined);
+  for (let cycle = 0; cycle < 2; cycle++) {
+    const h = readingPlaceHarness(saved);
+    const session = h.install(); h.flush();
+    assert.equal(h.status.textContent, 'Reading place saved on this device only');
+    assert.deepEqual(h.writes.at(-1), saved, 'verification writes the unchanged map');
+    assert.equal(h.state.readingPlaces['a.md'], undefined);
+    h.listeners.get('pagehide')(); session.destroy();
+    assert.equal(h.state.readingPlaces['a.md'], undefined);
+    saved = h.state.readingPlaces;
+  }
+  const h = readingPlaceHarness(saved);
+  h.install(); h.flush();
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[1].id);
+});
+
+test('reading place restores relative to the heading and focuses the section only for Continue', () => {
   const seed = readingPlaceHarness(); seed.install(); seed.flush();
   const id = seed.headings[1].id;
   const h = readingPlaceHarness({ 'a.md': { heading: id, offset: 75, updatedAt: 9 } });
@@ -3071,6 +3112,11 @@ test('reading place restores relative to the heading after layout and focuses on
   const ordinary = readingPlaceHarness({ 'a.md': { heading: id, offset: 75, updatedAt: 9 } });
   ordinary.install(false); ordinary.flush();
   assert.equal(ordinary.headings[1].focused, undefined);
+  assert.deepEqual(ordinary.headings[0].focused, { preventScroll: true }, 'ordinary open retains document-heading focus');
+  const owned = readingPlaceHarness({ 'a.md': { heading: id, offset: 75, updatedAt: 9 } },
+    { canFocusOnRestore: () => false });
+  owned.install(false); owned.flush();
+  assert.equal(owned.headings[0].focused, undefined, 'a foreground focus owner is not stolen');
 });
 
 test('stale heading clears only its page and Start at top clears a restored place', () => {
@@ -3201,15 +3247,16 @@ test('disallowed and throwing storage show failure and install no false success'
   assert.equal(guest.writes.length, 0);
   const failure = readingPlaceHarness({}, { save: () => false });
   failure.install(); failure.flush();
+  assert.equal(failure.status.textContent, 'Reading place could not be saved on this device');
   failure.setScroll(480); failure.listeners.get('scroll')(); failure.flush();
   assert.equal(failure.status.textContent, 'Reading place could not be saved on this device');
   const throwing = readingPlaceHarness({}, { save: () => { throw new Error('quota'); } });
   throwing.install(); throwing.flush();
+  assert.equal(throwing.status.textContent, 'Reading place could not be saved on this device');
   throwing.setScroll(480); throwing.listeners.get('scroll')(); throwing.flush();
   assert.equal(throwing.status.textContent, 'Reading place could not be saved on this device');
   const changing = readingPlaceHarness({}, { save: (() => { let n = 0; return () => ++n === 1; })() });
   changing.install(); changing.flush();
-  changing.setScroll(480); changing.listeners.get('scroll')(); changing.flush();
   assert.equal(changing.status.textContent, 'Reading place saved on this device only');
   changing.setScroll(480); changing.listeners.get('scroll')(); changing.flush();
   assert.equal(changing.status.textContent, 'Reading place could not be saved on this device');

@@ -49,10 +49,13 @@ async function scrollReadingTo(page, index, offset = 85) {
 async function expectReadingAnchor(page, index, ref = READING_REF) {
   const id = await page.locator('.fd-article__body h3').nth(index).getAttribute('id');
   await expect.poll(async () => (await readingPlaces(page))[ref]?.heading).toBe(id);
-  await expect.poll(() => page.locator(`#${id}`).evaluate(heading => {
-    const delta = window.scrollY - (heading.getBoundingClientRect().top + window.scrollY);
-    return window.scrollY > 0 && delta >= 0 && delta < 400;
-  })).toBe(true);
+  const expectedOffset = (await readingPlaces(page))[ref].offset;
+  expect(expectedOffset).toBeGreaterThanOrEqual(79);
+  expect(expectedOffset).toBeLessThanOrEqual(91);
+  await expect.poll(() => page.locator(`#${id}`).evaluate(heading =>
+    window.scrollY - (heading.getBoundingClientRect().top + window.scrollY))).toBeGreaterThan(expectedOffset - 12);
+  await expect.poll(() => page.locator(`#${id}`).evaluate(heading =>
+    window.scrollY - (heading.getBoundingClientRect().top + window.scrollY))).toBeLessThan(expectedOffset + 12);
 }
 
 test('reading place: reload and phone reflow restore the second heading; Start at top stays cleared', async ({ page }, testInfo) => {
@@ -61,12 +64,14 @@ test('reading place: reload and phone reflow restore the second heading; Start a
   await controlledReading(page);
   await page.goto(`/?page=${READING_REF}`);
   const reader = await readingReady(page);
-  await expect(reader.locator('[data-fd-reading-status]')).toBeEmpty();
+  await expect(reader.locator('[data-fd-reading-status]')).toHaveText(READING_SUCCESS);
+  expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await scrollReadingTo(page, 1);
   await expect.poll(async () => (await readingPlaces(page))[READING_REF]?.heading).toBe(
     await reader.locator('.fd-article__body h3').nth(1).getAttribute('id'));
   const saved = (await readingPlaces(page))[READING_REF];
-  expect(saved.offset).toBeGreaterThan(0);
+  expect(saved.offset).toBeGreaterThanOrEqual(79);
+  expect(saved.offset).toBeLessThanOrEqual(91);
   await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
   await page.reload();
   await readingReady(page);
@@ -86,6 +91,10 @@ test('reading place: reload and phone reflow restore the second heading; Start a
   await page.reload();
   await readingReady(page);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
+  await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+  await page.reload();
+  await readingReady(page);
+  expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await scrollReadingTo(page, 2);
   await expect.poll(async () => (await readingPlaces(page))[READING_REF]?.heading).toBe(
     await reader.locator('.fd-article__body h3').nth(2).getAttribute('id'));
@@ -97,7 +106,7 @@ test('reading place: a removed heading opens at top and deletes only that readin
   await controlledReading(page);
   await page.goto(`/?page=${READING_REF}`);
   await readingReady(page);
-  await page.locator('.fd-reader__back:visible').click();
+  await page.locator('.fd-reader__back:visible').evaluate(button => button.click());
   await expect(page.locator('.fd-today')).toBeVisible();
   await page.evaluate(ref => {
     sessionStorage.setItem('__fd_test_preserve_seed', '1');
@@ -119,13 +128,30 @@ test('reading place: a removed heading opens at top and deletes only that readin
   await expectHealthy(page);
 });
 
+test('reading place: pending scroll survives resize before the debounce', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 900, height: 650 });
+  await seedApp(page, testInfo);
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}`);
+  await readingReady(page);
+  await scrollReadingTo(page, 1);
+  await expectReadingAnchor(page, 1);
+  await page.clock.install();
+  await scrollReadingTo(page, 2);
+  await page.setViewportSize(PHONE);
+  await page.clock.fastForward(200);
+  await expectReadingAnchor(page, 2);
+  await expectHealthy(page);
+});
+
 test('reading place: Today Continue focuses once; Library and Search restore scroll without focus theft', async ({ page }, testInfo) => {
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
+  const ref = isResidentProject(testInfo.project.name) ? 'pg_interview.md' : 'welcome.md';
+  await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
   await page.goto('/?tab=today');
-  const continueButton = page.locator('[data-fd-reading-resume="1"]:visible').first();
+  const continueButton = page.locator(`[data-fd-reading-resume="1"][data-fd-open="${ref}"]:visible`).first();
   await expect(continueButton).toBeVisible();
-  const ref = await continueButton.getAttribute('data-fd-open');
   const searchTitle = (await continueButton.locator('.fd-continue__title,.fd-lastread__title').textContent())
     .replace(/^You were reading:\s*/, '').trim();
   await controlledReading(page, ref);
@@ -134,22 +160,23 @@ test('reading place: Today Continue focuses once; Library and Search restore scr
   await scrollReadingTo(page, 1);
   await expect.poll(async () => (await readingPlaces(page))[ref]?.heading).toBe(
     await page.locator('.fd-article__body h3').nth(1).getAttribute('id'));
-  await page.locator('.fd-reader__back:visible').click();
+  const resumeId = (await readingPlaces(page))[ref].heading;
+  await page.locator('.fd-reader__back:visible').evaluate(button => button.click());
   await expect(page.locator('.fd-today')).toBeVisible();
-  await page.evaluate(() => {
+  await page.evaluate(id => {
     window.__readingFocusCalls = 0;
     const focus = HTMLElement.prototype.focus;
     HTMLElement.prototype.focus = function(...args) {
-      if (this.id?.startsWith('fd-reading-')) window.__readingFocusCalls++;
+      if (this.id === id) window.__readingFocusCalls++;
       return focus.apply(this, args);
     };
-  });
+  }, resumeId);
   await page.locator(`[data-fd-reading-resume="1"][data-fd-open="${ref}"]:visible`).first().click();
   await readingReady(page, ref);
   await expectReadingAnchor(page, 1, ref);
   await expect(page.locator('.fd-article__body h3').nth(1)).toBeFocused();
   expect(await page.evaluate(() => window.__readingFocusCalls)).toBe(1);
-  await page.locator('.fd-reader__back:visible').click();
+  await page.locator('.fd-reader__back:visible').evaluate(button => button.click());
   await page.locator('.fd-dock [data-fd-search]:visible').click();
   await page.getByRole('dialog', { name: 'Search' }).getByRole('button', { name: 'Browse the Library' }).click();
   const full = page.locator('[data-fd-library-view="full"]:visible');
@@ -159,7 +186,7 @@ test('reading place: Today Continue focuses once; Library and Search restore scr
   await libraryLink.click();
   await readingReady(page, ref);
   await expectReadingAnchor(page, 1, ref);
-  await expect(page.locator('.fd-article__body h3').nth(1)).not.toBeFocused();
+  await expect(page.locator('.fd-reader:visible .fd-article__h1')).toBeFocused();
   expect(await page.evaluate(() => window.__readingFocusCalls)).toBe(1);
   await page.locator('.fd-dock [data-fd-search]:visible').click();
   const dialog = page.getByRole('dialog', { name: 'Search' });
@@ -169,7 +196,7 @@ test('reading place: Today Continue focuses once; Library and Search restore scr
   await dialog.locator(`[data-fd-open="${ref}"]:visible`).first().click();
   await readingReady(page, ref);
   await expectReadingAnchor(page, 1, ref);
-  await expect(page.locator('.fd-article__body h3').nth(1)).not.toBeFocused();
+  await expect(page.locator('.fd-reader:visible .fd-article__h1')).toBeFocused();
   expect(await page.evaluate(() => window.__readingFocusCalls)).toBe(1);
   await expectHealthy(page);
 });
@@ -195,6 +222,23 @@ test('reading place: Back flushes pending scroll and failed device write shows f
   await scrollReadingTo(page, 1);
   await expect(reader.locator('[data-fd-reading-status]')).toHaveText(READING_FAILURE);
   await expect(reader.locator('[data-fd-reading-status]')).not.toHaveText(READING_SUCCESS);
+  await expectHealthy(page);
+});
+
+test('reading place: fresh storage failure is shown immediately without a bookmark', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await controlledReading(page);
+  await page.addInitScript(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function(key, value) {
+      if (key === 'cw_frontdoor_v1') throw new Error('simulated quota error');
+      return original.call(this, key, value);
+    };
+  });
+  await page.goto(`/?page=${READING_REF}`);
+  const reader = await readingReady(page);
+  await expect(reader.locator('[data-fd-reading-status]')).toHaveText(READING_FAILURE);
+  expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await expectHealthy(page);
 });
 
