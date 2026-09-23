@@ -83,6 +83,38 @@ test('build injection emits one reading-place module after state and before cons
   }
 });
 
+test('build injection emits one faculty email builder after capture and state helpers', () => {
+  const marker = '/*__FD_CAPTURE_EMAIL__*/';
+  assert.equal(count(marker), 1, 'one source marker');
+  const directory = mkdtempSync(join(tmpdir(), 'fd-capture-email-injection-'));
+  const output = join(directory, 'index.html');
+  try {
+    copyFileSync(new URL('../13_Faculty_Resources/_automation/site_build/spa_index.html', import.meta.url), output);
+    const script = [
+      'import sys',
+      'sys.path.insert(0, sys.argv[1])',
+      'import common',
+      'assert common.inject_shared_snippets(sys.argv[2])',
+    ].join('\n');
+    const result = spawnSync('python3', ['-c', script,
+      new URL('../13_Faculty_Resources/_automation/site_build/', import.meta.url).pathname, output],
+    { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    const emitted = readFileSync(output, 'utf8');
+    const module = readFileSync(new URL(
+      '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_capture_email.js', import.meta.url,
+    ), 'utf8');
+    assert.equal(emitted.includes(marker), false, 'marker was replaced');
+    assert.equal(emitted.split(module).length - 1, 1, 'one canonical email builder is present');
+    assert.ok(emitted.indexOf('function capRead()') < emitted.indexOf(module)
+      && emitted.indexOf(stateModule) < emitted.indexOf(module)
+      && emitted.indexOf(module) < emitted.indexOf('var FD_CURRICULUM='),
+    'capture store and state load before email builder and Front Door consumers');
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 function shellFunction(name) {
   const match = source.match(new RegExp(`  function ${name}\\([^]*?\\n  \\}`));
   assert.ok(match, `${name} is available for behavioral tests`);
