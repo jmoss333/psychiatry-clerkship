@@ -4,7 +4,7 @@ import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, wr
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 
 import {
   declaredRuntimeErrors,
@@ -13,6 +13,7 @@ import {
   netlifyNodeDeclarationErrors,
   currentRuntimeErrors,
 } from '../bin/check-runtime-contract.mjs';
+import { evaluateReceipt } from '../bin/devcontainer-receipt.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -297,4 +298,103 @@ esac
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }
+});
+
+function withVerifierFixture(run) {
+  const fixture = mkdtempSync(resolve(tmpdir(), 'verify-receipt-'));
+  const receiptPath = resolve(fixture, 'output/devcontainer/verification-receipt.json');
+  const trace = resolve(fixture, 'trace.log');
+  const marker = resolve(fixture, 'gate-started.marker');
+  try {
+    mkdirSync(resolve(fixture, 'bin'), { recursive: true });
+    mkdirSync(resolve(fixture, '.devcontainer'), { recursive: true });
+    mkdirSync(resolve(fixture, '.venv/bin'), { recursive: true });
+    mkdirSync(resolve(fixture, 'tests/smoke'), { recursive: true });
+    writeFileSync(resolve(fixture, 'bin/verify-devcontainer.sh'), readFileSync(resolve(ROOT, 'bin/verify-devcontainer.sh')));
+    writeFileSync(resolve(fixture, 'bin/devcontainer-receipt.mjs'), readFileSync(resolve(ROOT, 'bin/devcontainer-receipt.mjs')));
+    writeFileSync(resolve(fixture, 'tests/smoke/package.json'), JSON.stringify({ devDependencies: { '@playwright/test': '1.63.0' } }));
+    writeFileSync(resolve(fixture, '.venv/bin/python3'), '#!/bin/sh\necho "Python 3.11.9"\n');
+    writeFileSync(resolve(fixture, '.devcontainer/install-dependencies.sh'), '#!/bin/bash\necho dependencies >> "$TRACE"\nif [ "${FAIL_STAGE:-}" = dependencies ]; then exit 1; fi\n');
+    writeFileSync(resolve(fixture, 'bin/check-runtime-contract.mjs'), 'import { appendFileSync } from "node:fs";\nappendFileSync(process.env.TRACE, "runtime-contract\\n");\nif (process.env.FAIL_STAGE === "runtime-contract") process.exit(1);\n');
+    writeFileSync(resolve(fixture, 'bin/verify.sh'), '#!/bin/bash\necho full-gate >> "$TRACE"\nif [ "${HANG_STAGE:-}" = full-gate ]; then touch "$MARKER"; exec sleep 30; fi\nif [ "${FAIL_STAGE:-}" = full-gate ]; then exit 1; fi\n');
+    writeFileSync(resolve(fixture, 'bin/verify-smoke.sh'), '#!/bin/bash\nprintf "nonvisual-smoke:%s\\n" "${SPECS-<unset>}" >> "$TRACE"\nif [ "${FAIL_STAGE:-}" = nonvisual-smoke ]; then exit 1; fi\n');
+    for (const path of [
+      'bin/verify-devcontainer.sh', '.venv/bin/python3', '.devcontainer/install-dependencies.sh',
+      'bin/verify.sh', 'bin/verify-smoke.sh',
+    ]) chmodSync(resolve(fixture, path), 0o755);
+    execFileSync('git', ['init', '-q', fixture]);
+    execFileSync('git', ['config', 'user.name', 'Synthetic Tester'], { cwd: fixture });
+    execFileSync('git', ['config', 'user.email', 'synthetic@example.invalid'], { cwd: fixture });
+    execFileSync('git', ['add', '.'], { cwd: fixture });
+    execFileSync('git', ['commit', '-qm', 'fixture'], { cwd: fixture });
+    const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: fixture, encoding: 'utf8' }).trim();
+    const env = { ...process.env, CLERKSHIP_DEVCONTAINER: '1', TRACE: trace, MARKER: marker, SPECS: 'visual.spec.js --update-snapshots' };
+    const args = ['bin/verify-devcontainer.sh', '--refresh-deps', '--receipt', receiptPath];
+    const result = run({ fixture, receiptPath, trace, marker, head, env, args });
+    if (result && typeof result.then === 'function') {
+      return result.finally(() => rmSync(fixture, { recursive: true, force: true }));
+    }
+    rmSync(fixture, { recursive: true, force: true });
+    return result;
+  } catch (error) {
+    rmSync(fixture, { recursive: true, force: true });
+    throw error;
+  }
+}
+
+test('receipt-enabled verifier records success only after every authoritative stage', () => withVerifierFixture(({ fixture, receiptPath, trace, env, args }) => {
+  const result = spawnSync('/bin/bash', args, { cwd: fixture, env, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+  assert.equal(receipt.status, 'passed');
+  assert.equal(receipt.stage, 'complete');
+  assert.equal(receipt.exitCode, 0);
+  assert.deepEqual(receipt.proof, {
+    runtimeContract: 'passed', fullGate: 'passed', nonvisualSmoke: 'passed',
+    deployLfsBrowserCoverage: 'not-proved-without-deploy-url',
+  });
+  assert.deepEqual(readFileSync(trace, 'utf8').trim().split('\n'), [
+    'dependencies', 'runtime-contract', 'full-gate', 'nonvisual-smoke:<unset>',
+  ]);
+}));
+
+test('receipt-enabled verifier overwrites old green with the exact failed stage', () => withVerifierFixture(({ fixture, receiptPath, head, env, args }) => {
+  const first = spawnSync('/bin/bash', args, { cwd: fixture, env, encoding: 'utf8' });
+  assert.equal(first.status, 0, first.stderr);
+  const result = spawnSync('/bin/bash', args, { cwd: fixture, env: { ...env, FAIL_STAGE: 'full-gate' }, encoding: 'utf8' });
+  assert.notEqual(result.status, 0);
+  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+  assert.equal(receipt.status, 'failed');
+  assert.equal(receipt.stage, 'full-gate');
+  assert.equal(receipt.exitCode, 1);
+  assert.equal(evaluateReceipt({ receipt, head, trackedDirty: false }).state, 'failed');
+}));
+
+test('receipt-enabled verifier leaves interrupted attempts running and gray', async () => withVerifierFixture(async ({ fixture, receiptPath, marker, head, env, args }) => {
+  const child = spawn('/bin/bash', args, { cwd: fixture, env: { ...env, HANG_STAGE: 'full-gate' }, detached: true, stdio: 'ignore' });
+  try {
+    const deadline = Date.now() + 10000;
+    while (!existsSync(marker) && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 25));
+    assert.ok(existsSync(marker), 'full gate must start before termination');
+    process.kill(-child.pid, 'SIGTERM');
+    await new Promise((resolve) => child.once('close', resolve));
+    const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+    assert.equal(receipt.status, 'running');
+    const evaluated = evaluateReceipt({ receipt, head, trackedDirty: false });
+    assert.equal(evaluated.state, 'stale');
+    assert.equal(evaluated.reason, 'verification-running');
+  } finally {
+    if (child.exitCode === null && child.signalCode === null) process.kill(-child.pid, 'SIGTERM');
+  }
+}));
+
+test('VS Code exposes one manual default task for receipt-enabled full verification', () => {
+  const tasks = JSON.parse(readFileSync(resolve(ROOT, '.vscode/tasks.json'), 'utf8'));
+  const matching = tasks.tasks.filter((entry) => entry.label === 'Verify Dev Container');
+  assert.equal(matching.length, 1);
+  const task = matching[0];
+  assert.equal(task.type, 'shell');
+  assert.equal(task.command, 'bash bin/verify-devcontainer.sh --refresh-deps --receipt output/devcontainer/verification-receipt.json');
+  assert.deepEqual(task.group, { kind: 'test', isDefault: true });
+  assert.equal(task.runOptions?.runOn, undefined);
 });
