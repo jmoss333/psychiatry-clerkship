@@ -327,7 +327,7 @@ function fdOfflineCard(state,routeLabel){
     for(var i=0;i<missing.length;i++)out+='<li>'+fdOfflineEsc(missing[i])+'</li>';
     out+='</ul>';
   }
-  return out+'<p>Reading place and captured questions are saved on this device only; this cache check does not verify them.</p>'+
+  return out+'<p>Reading place and captured questions use device-only storage when saved; this cache check does not verify them.</p>'+
     '<p>Connection required: audio and video, live services including the Interview Room, external links, and actual email sending.</p>'+
     '</div>';
 }
