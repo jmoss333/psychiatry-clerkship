@@ -1804,6 +1804,14 @@ test('Patient care resources is a safe, responsive fourth destination and search
     'https://reconnect-tools.netlify.app/tools/podcast-navigator.html',
     'https://reconnect-tools.netlify.app/tools/relational-bibliotherapy.html',
   ];
+  const navigatorCases = [
+    ['services', 'resource-finder', ['meeting-calendar']],
+    ['meetings', 'meeting-calendar', ['resource-finder']],
+    ['explain', 'education-library', ['book-shelf', 'podcast-navigator']],
+    ['listen', 'podcast-navigator', ['education-library', 'book-shelf']],
+    ['books', 'book-shelf', ['education-library', 'podcast-navigator']],
+    ['family-conversation', 'education-library', ['book-shelf', 'podcast-navigator']],
+  ];
   await page.setViewportSize({ width: 1280, height: 800 });
   await seedApp(page, testInfo);
   await page.goto('/?tab=care');
@@ -1826,6 +1834,94 @@ test('Patient care resources is a safe, responsive fourth destination and search
   })))).toEqual(expectedUrls.map(href => ({ href, target: '_blank', rel: 'noopener noreferrer' })));
   await expect(page.locator('[data-teaching-resource="family-therapy-companion"]')).toHaveCount(0);
   expect(await page.locator('.fd-care-page').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+
+  const fullListOrder = await links.evaluateAll(nodes =>
+    nodes.map(node => node.getAttribute('data-care-resource')));
+  const fixedUrlById = Object.fromEntries(fullListOrder.map((id, index) => [id, expectedUrls[index]]));
+  const choices = page.locator('[data-fd-care-intent]');
+  await expect(choices).toHaveCount(6);
+  expect(await choices.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-fd-care-intent'))))
+    .toEqual(navigatorCases.map(([id]) => id));
+  expect(await choices.evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-pressed'))))
+    .toEqual(navigatorCases.map(() => 'false'));
+  await expect(page.locator('.fd-care-navigator__result')).toHaveCount(0);
+  const originalUrl = page.url();
+  const storageBefore = await page.evaluate(() => ({
+    local: Object.fromEntries(Object.keys(localStorage).map(key => [key, localStorage.getItem(key)])),
+    session: Object.fromEntries(Object.keys(sessionStorage).map(key => [key, sessionStorage.getItem(key)])),
+  }));
+  const cookiesBefore = await page.context().cookies();
+
+  for (const [intentId, primaryId, alternativeIds] of navigatorCases) {
+    const choice = page.locator(`[data-fd-care-intent="${intentId}"]`);
+    await choice.focus();
+    await page.keyboard.press('Enter');
+    await expect(choice).toBeFocused();
+    await expect(choice).toHaveAttribute('aria-pressed', 'true');
+    expect(await choices.evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-pressed'))))
+      .toEqual(navigatorCases.map(([id]) => id === intentId ? 'true' : 'false'));
+    await expect(choice.locator('.fd-care-navigator__check')).toHaveText('✓');
+    await expect(page.locator('.fd-care-navigator__result')).toBeVisible();
+    const recommendations = page.locator('.fd-care-navigator__link');
+    expect(await recommendations.evaluateAll(nodes => nodes.map(node => ({
+      id: node.getAttribute('data-care-resource'), href: node.href,
+      target: node.target, rel: node.rel,
+    })))).toEqual([primaryId, ...alternativeIds].map(id => ({
+      id, href: fixedUrlById[id], target: '_blank', rel: 'noopener noreferrer',
+    })));
+    await expect(recommendations.first()).toContainText('Best starting point');
+    const selectedLabel = await choice.locator('span:last-child').textContent();
+    const primaryTitle = await recommendations.first().locator('.fd-care-navigator__link-title').textContent();
+    await expect(page.locator('.fd-care-navigator [role="status"]'))
+      .toHaveText(`Selected ${selectedLabel}. Best starting point: ${primaryTitle}.`);
+    expect(await links.evaluateAll(nodes =>
+      nodes.map(node => node.getAttribute('data-care-resource')))).toEqual(fullListOrder);
+  }
+
+  const storageAfter = await page.evaluate(() => ({
+    local: Object.fromEntries(Object.keys(localStorage).map(key => [key, localStorage.getItem(key)])),
+    session: Object.fromEntries(Object.keys(sessionStorage).map(key => [key, sessionStorage.getItem(key)])),
+  }));
+  expect(storageAfter).toEqual(storageBefore);
+  expect(await page.context().cookies()).toEqual(cookiesBefore);
+  expect(page.url()).toBe(originalUrl);
+
+  await choices.first().focus();
+  for (let index = 0; index < navigatorCases.length; index += 1) {
+    await expect(choices.nth(index)).toBeFocused();
+    await page.keyboard.press('Tab');
+  }
+  await expect(page.locator('.fd-care-navigator__link').first()).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('.fd-care-navigator__alternatives .fd-care-navigator__link').first()).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('.fd-care-navigator__alternatives .fd-care-navigator__link').last()).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('[data-fd-care-clear]')).toBeFocused();
+
+  await page.locator('[data-fd-care-intent="services"]').click();
+  const recommendationPopup = page.waitForEvent('popup');
+  await page.locator('[data-care-recommendation="resource-finder"]').click();
+  const recommendationPage = await recommendationPopup;
+  await expect.poll(() => recommendationPage.url()).toBe(expectedUrls[0]);
+  await recommendationPage.close();
+  await expect(careTab).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.fd-reader,.fd-search')).toHaveCount(0);
+  expect(page.url()).toBe(originalUrl);
+  await page.locator('[data-fd-care-clear]').click();
+  await expect(choices.first()).toBeFocused();
+  await expect(page.locator('.fd-care-navigator__result')).toHaveCount(0);
+
+  await page.keyboard.press('Space');
+  await expect(choices.first()).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('[data-fd-tab="library"]').click();
+  await page.locator('[data-fd-tab="care"]').click();
+  await expect(page.locator('.fd-care-navigator__result')).toHaveCount(0);
+  await choices.first().click();
+  await page.reload();
+  await expect(page.locator('.fd-care-navigator__result')).toHaveCount(0);
+  expect(await links.evaluateAll(nodes =>
+    nodes.map(node => node.getAttribute('data-care-resource')))).toEqual(fullListOrder);
 
   await page.locator('[data-fd-search]').click();
   const input = page.locator('.fd-searchpanel__input');
@@ -1853,6 +1949,54 @@ test('Patient care resources is a safe, responsive fourth destination and search
   await page.locator('[data-fd-tab="library"]').click();
   const teaching = page.locator('[data-teaching-resource="family-therapy-companion"]');
   await expect(teaching).toHaveAccessibleName(/Family Therapy Seminar Companion.*opens in a new tab/);
+
+  // Modify only this browser's served HTML, before its in-script index is built.
+  // The Front Door script keeps FD_INDEX private, so page.evaluate cannot reach it.
+  let careFixture = 'long-copy';
+  await page.route(/\/(?:\?[^/]*)?$/, async route => {
+    const response = await routeFetchWithRetry(route);
+    const needle = '  var FD_INDEX=FD_CANONICAL_INDEX;';
+    const original = await response.text();
+    expect(original.split(needle)).toHaveLength(2);
+    const mutation = careFixture === 'long-copy'
+      ? '  var careServices=FD_INDEX.careNavigator.find(function(intent){return intent.id==="services";});\n'
+        + '  careServices.label="W".repeat(64);careServices.explanation="W".repeat(160);'
+      : '  FD_INDEX.careNavigator=[];';
+    await route.fulfill({ response, body: original.replace(needle, `${needle}\n${mutation}`) });
+  });
+  await page.goto('/?tab=care');
+  await choices.first().click();
+  await page.setViewportSize({ width: 320, height: 844 });
+  const firstChoice = await choices.nth(0).boundingBox();
+  const secondChoice = await choices.nth(1).boundingBox();
+  expect(firstChoice).not.toBeNull();
+  expect(secondChoice).not.toBeNull();
+  expect(Math.abs(secondChoice.x - firstChoice.x)).toBeLessThan(1);
+  expect(secondChoice.y).toBeGreaterThan(firstChoice.y);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await choices.nth(2).click();
+  const selectedControls = page.locator('.fd-care-navigator [data-fd-care-intent]:visible, '
+    + '.fd-care-navigator__result .fd-care-navigator__link:visible, '
+    + '.fd-care-navigator__result [data-fd-care-clear]:visible');
+  await expect(selectedControls).toHaveCount(10);
+  for (const control of await selectedControls.all()) {
+    const box = await control.boundingBox();
+    expect(box.height).toBeGreaterThanOrEqual(44);
+  }
+  await choices.first().click();
+
+  await page.setViewportSize({ width: 640, height: 844 });
+  await page.evaluate(() => { document.documentElement.style.zoom = '2'; });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.evaluate(() => { document.documentElement.style.zoom = ''; });
+
+  careFixture = 'no-navigator';
+  await page.reload();
+  await expect(page.locator('.fd-care-navigator')).toHaveCount(0);
+  await expect(links).toHaveCount(5);
+  expect(await links.evaluateAll(nodes => nodes.map(node => ({
+    id: node.getAttribute('data-care-resource'), href: node.href,
+  })))).toEqual(fullListOrder.map((id, index) => ({ id, href: expectedUrls[index] })));
   await expectHealthy(page);
 });
 
