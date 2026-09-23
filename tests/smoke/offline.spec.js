@@ -31,22 +31,32 @@ async function canonicalOfflineInventory(page, route) {
     ...manifest.md.map(row => [row[1], 'read']),
     ...manifest.tools.map(row => [row[1], 'tool']),
   ]);
-  const rights = new Set(curriculum.rightsReferences);
   const rawRefs = route.bridge
     ? [...curriculum.appPathway.bridges[route.bridge].refs,
       ...curriculum.appPathway.activities.flatMap(activity => activity.refs)]
     : (() => {
       const week = curriculum.weeks.find(item => item.n === route.week);
       expect(week, 'requested week exists in canonical curriculum').toBeTruthy();
-      return [week.landingRef, ...week.items.map(item => item.ref)];
+      return [...(Object.hasOwn(week, 'landingRef') ? [week.landingRef] : []),
+        ...week.items];
     })();
   const urls = new Set(['/', '/search-index.json']);
   for (const refOrItem of rawRefs) {
     const ref = typeof refOrItem === 'string' ? refOrItem : refOrItem?.ref;
-    if (typeof ref !== 'string' || rights.has(ref)) continue;
+    expect(typeof ref).toBe('string');
+    if (/^[A-Za-z0-9][A-Za-z0-9._-]*\.(?:mp3|m4a|wav|mp4|vtt)$/.test(ref)) continue;
     const kind = shipped.get(ref);
-    if (kind === 'read' && /^[A-Za-z0-9][A-Za-z0-9._-]*\.md$/.test(ref)) urls.add('/content/' + ref);
-    if (kind === 'tool' && /^[A-Za-z0-9][A-Za-z0-9._-]*\.html$/.test(ref)) urls.add('/tools/' + ref);
+    expect(kind, `${ref} must be a shipped local route`).toBeTruthy();
+    if (typeof refOrItem === 'object') expect(refOrItem.kind).toBe(kind);
+    expect(ref).toMatch(/^[A-Za-z0-9][A-Za-z0-9._-]*\.(?:md|html)$/);
+    expect(ref).not.toContain('..');
+    if (kind === 'read') {
+      expect(ref).toMatch(/\.md$/);
+      urls.add('/content/' + ref);
+    } else {
+      expect(ref).toMatch(/\.html$/);
+      urls.add('/tools/' + ref);
+    }
   }
   expect(urls.size, 'canonical route must have substantial offline content').toBeGreaterThan(3);
   return [...urls];
@@ -160,6 +170,18 @@ test('offline readiness: empty week and APP routes cannot ask the worker or show
     const monitor = model.fdOfflineMonitor({ serviceWorker: sw, MessageChannel });
     monitor.sync(idx, { screen: 'app', tab: 'today', week: 1 });
     const week = model.fdOfflineStatus(monitor.status()).kind;
+    const invalidIndex = { weeks: [{ n: 1, items: [
+      { ref: 'safe.md', kind: 'read' }, { ref: 'missing.md', kind: 'read' },
+    ] }], byRef: { 'safe.md': { ref: 'safe.md', kind: 'read' } } };
+    monitor.sync(invalidIndex, { screen: 'app', tab: 'today', week: 1 });
+    const missingLocal = model.fdOfflineStatus(monitor.status()).kind;
+    const rightsIndex = { weeks: [{ n: 1, items: [
+      { ref: 'safe.md', kind: 'read' }, { ref: 'cssrs.html', kind: 'tool' },
+    ] }], byRef: { 'safe.md': { ref: 'safe.md', kind: 'read' },
+      'cssrs.html': { ref: 'cssrs.html', kind: 'tool', rights: true } } };
+    monitor.sync(rightsIndex, { screen: 'app', tab: 'today', week: 1 });
+    const rightsRequest = messages.at(-1)?.urls;
+    // Return to an invalid route before inspecting final Not ready status.
     monitor.sync(idx, { screen: 'app', tab: 'today', appMode: true,
       appPathway: { bridges: { pa: { refs: [] } }, activities: [] } });
     const app = model.fdOfflineStatus(monitor.status()).kind;
@@ -167,9 +189,11 @@ test('offline readiness: empty week and APP routes cannot ask the worker or show
     const forged = model.fdOfflineStatus({ expected: shell,
       response: { version: 'v1', ready: true, present: shell, missing: [] } }).kind;
     monitor.destroy();
-    return { week, app, forged, messages };
+    return { week, missingLocal, app, forged, rightsRequest, requests: messages.length };
   }, offlineModelSource);
-  expect(outcome).toEqual({ week: 'not-ready', app: 'not-ready', forged: 'not-ready', messages: [] });
+  expect(outcome).toEqual({ week: 'not-ready', missingLocal: 'not-ready', app: 'not-ready',
+    forged: 'not-ready', rightsRequest: ['/', '/search-index.json', '/content/safe.md',
+      '/tools/cssrs.html'], requests: 1 });
 });
 
 test('offline readiness: controller activation preserves a live tool session', async ({ page, context }, info) => {

@@ -69,7 +69,8 @@ test('live route transitions invalidate a pending offline check before the old r
   const worker = { postMessage(value) { posts.push(value); } };
   const serviceWorker = { controller: worker, addEventListener() {}, removeEventListener() {} };
   const idx = {
-    weeks: [{ n: 2, items: [{ ref: 'two.md' }] }, { n: 3, items: [{ ref: 'three.md' }] }],
+    weeks: [{ n: 2, items: [{ ref: 'two.md', kind: 'read' }] },
+      { n: 3, items: [{ ref: 'three.md', kind: 'read' }] }],
     byRef: { 'two.md': { ref: 'two.md', kind: 'read' },
       'three.md': { ref: 'three.md', kind: 'read' } },
   };

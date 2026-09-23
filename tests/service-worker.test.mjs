@@ -85,11 +85,10 @@ test('shell and search alone are not a verifiable learning route', async () => {
 
 test('route URL model and worker accept the same safe path language', async () => {
   const idx = { weeks: [{ n: 2, landingRef: 'week2.md', items: [
-    { ref: 'lesson.md' }, { ref: 'practice.html' }, { ref: '../unsafe.md' },
+    { ref: 'lesson.md', kind: 'read' }, { ref: 'practice.html', kind: 'tool' },
   ] }], byRef: { 'week2.md': { ref: 'week2.md', kind: 'read' },
     'lesson.md': { ref: 'lesson.md', kind: 'read' },
-    'practice.html': { ref: 'practice.html', kind: 'tool' },
-    '../unsafe.md': { ref: '../unsafe.md', kind: 'read' } } };
+    'practice.html': { ref: 'practice.html', kind: 'tool' } } };
   const urls = Array.from(offlineModel.fdOfflineUrls(idx, { week: 2 }));
   assert.deepEqual(urls, ['/', '/search-index.json', '/content/week2.md',
     '/content/lesson.md', '/tools/practice.html']);
@@ -97,6 +96,10 @@ test('route URL model and worker accept the same safe path language', async () =
   const result = await w.send(urls);
   assert.deepEqual(result.messages, [{ version: 'test-v1', ready: true,
     present: urls, missing: [] }]);
+  idx.weeks[0].items.push({ ref: '../unsafe.md', kind: 'read' });
+  idx.byRef['../unsafe.md'] = { ref: '../unsafe.md', kind: 'read' };
+  assert.deepEqual(Array.from(offlineModel.fdOfflineUrls(idx, { week: 2 })), [],
+    'a malformed local route ref invalidates the whole inventory');
   for (const invalid of ['/content/nested/a.md', '/content/a.mp3',
     '/content/a.md?x=1', '//elsewhere/a.md', '/content/../a.md']) {
     assert.equal(offlineModel.fdOfflineUrl(invalid), false, invalid);
@@ -275,7 +278,7 @@ function readinessBridge({ lateRegistration = false } = {}) {
   const context = { navigator: { serviceWorker }, MessageChannel, Promise, URLSearchParams,
     setTimeout, clearTimeout, location: { search: '', reload() {} }, document };
   vm.runInNewContext(`${registerSource}\n${offlineModelSource}`, context);
-  const index = { weeks: [{ n: 2, items: [{ ref: 'lesson.md' }] }],
+  const index = { weeks: [{ n: 2, items: [{ ref: 'lesson.md', kind: 'read' }] }],
     byRef: { 'lesson.md': { ref: 'lesson.md', kind: 'read' } } };
   const route = { screen: 'app', tab: 'today', roleId: 'ms3', week: 2 };
   const states = [];

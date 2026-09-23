@@ -51,7 +51,7 @@ test('all six real MS3 weeks include their separately linked landing pages', () 
   }
 });
 
-test('landing page is deduped with assignments and invalid landing refs are excluded', () => {
+test('landing page is deduped; a missing or malformed local landing ref invalidates the route', () => {
   const idx = index([item('landing.md'), item('lesson.md')]);
   idx.weeks[1].landingRef = 'landing.md';
   assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), [
@@ -59,12 +59,14 @@ test('landing page is deduped with assignments and invalid landing refs are excl
   ]);
   idx.weeks[1].items = [item('lesson.md')];
   for (const landingRef of ['../escape.md', 'https://example.md', '//host.md',
-    'audio.mp3', 'bad.md?x=1', 'bad.md#fragment', 'missing.md']) {
+    'bad.md?x=1', 'bad.md#fragment', 'missing.md']) {
     idx.weeks[1].landingRef = landingRef;
-    assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), [
-      '/', '/search-index.json', '/content/lesson.md',
-    ], landingRef);
+    assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), [], landingRef);
   }
+  idx.weeks[1].landingRef = 'audio.mp3';
+  assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), [
+    '/', '/search-index.json', '/content/lesson.md',
+  ], 'a local media file is explicitly connection-required');
   idx.weeks[1].landingRef = 'landing.md';
   assert.deepEqual(F.fdOfflineUrls(idx, { week: 99 }), []);
 });
@@ -106,29 +108,40 @@ test('empty or ineligible week and APP routes cannot verify only shell and searc
       activities: [{ refs: ['audio.mp3'] }] } }), []);
 });
 
-test('unsafe, media, rights, mismatched, and unindexed refs are excluded', () => {
-  const refs = [
-    item('good.md'), item('rights.html', 'tool', { rights: true }),
-    item('audio.mp3', 'read'), item('video.mp4', 'tool'),
-    item('outside.md?x=1'), item('frag.md#x'), item('../escape.md'),
-    item('/absolute.md'), item('//host.md'), item('https:bad.md'),
-    item('nested/page.md'), item('tool.md', 'tool'), item('page.html', 'read'),
-    item('not-indexed.md'),
-  ];
-  const idx = index(refs);
-  delete idx.byRef['not-indexed.md'];
+test('canonical rights references remain tool routes while local media is connection-required', () => {
+  const idx = index([item('good.md'), item('cssrs.html', 'tool', { rights: true }),
+    item('bfcrs.html', 'tool', { rights: true }), item('audio.mp3', 'read'),
+    item('video.mp4', 'tool')]);
   assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), [
-    '/', '/search-index.json', '/content/good.md',
+    '/', '/search-index.json', '/content/good.md', '/tools/cssrs.html', '/tools/bfcrs.html',
   ]);
+});
+
+test('one bad local or protocol ref invalidates the whole route rather than certifying a subset', () => {
+  for (const bad of [
+    'outside.md?x=1', 'frag.md#x', '../escape.md', '/absolute.md', '//host.md',
+    'https:bad.md', 'https://external.test/lesson.md', 'nested/page.md',
+    'tool.md', 'page.html', 'not-indexed.md', 'audio.mp3?x=1',
+  ]) {
+    const idx = index([item('good.md'), item(bad)]);
+    if (bad === 'tool.md') idx.byRef[bad] = item(bad, 'tool');
+    if (bad === 'page.html') idx.byRef[bad] = item(bad, 'read');
+    if (bad === 'not-indexed.md') delete idx.byRef[bad];
+    assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), [], bad);
+  }
+  const idx = index([item('good.md'), item('other.md')]);
+  idx.byRef['other.md'] = item('wrong.md');
+  assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), []);
+  idx.byRef['other.md'] = item('other.md');
+  idx.weeks[1].items[1].kind = 'tool';
+  assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), []);
 });
 
 test('inherited lookup entries and prototype keys cannot become URLs', () => {
   const idx = index([item('safe.md'), item('constructor.md')]);
   idx.byRef = Object.create({ 'ghost.md': item('ghost.md') });
   idx.byRef['safe.md'] = item('safe.md');
-  assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), [
-    '/', '/search-index.json', '/content/safe.md',
-  ]);
+  assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), []);
 });
 
 test('inherited route refs and status claims do not become trusted input', () => {
@@ -136,7 +149,7 @@ test('inherited route refs and status claims do not become trusted input', () =>
   idx.weeks[1].items = [item('safe.md')];
   idx.weeks[1].items.length = 2;
   Object.setPrototypeOf(idx.weeks[1].items, Object.assign([], { 1: item('ghost.md') }));
-  assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), ['/', '/search-index.json', '/content/safe.md']);
+  assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), []);
   const inheritedResponse = Object.create({ response: complete, expected: EXPECTED });
   assert.equal(F.fdOfflineStatus(inheritedResponse).kind, 'not-ready');
 });
@@ -150,9 +163,7 @@ test('APP ignores inherited array refs when composing its route inventory', () =
     bridges: { pa: { refs: bridgeRefs } },
     activities: [{ refs: ['task.html'] }],
   };
-  assert.deepEqual(F.fdOfflineUrls(idx, { appMode: true, appPathway }), [
-    '/', '/search-index.json', '/content/pa.md', '/tools/task.html',
-  ]);
+  assert.deepEqual(F.fdOfflineUrls(idx, { appMode: true, appPathway }), []);
 });
 
 test('overlarge route is uncheckable rather than silently truncated', () => {
@@ -435,6 +446,18 @@ test('empty week and APP route monitors send no worker request and stay Not read
     appPathway: { bridges: { pa: { refs: [] } }, activities: [] } });
   assert.equal(h.posts.length, 0);
   assert.equal(F.fdOfflineStatus(monitor.status()).kind, 'not-ready');
+  monitor.destroy();
+});
+
+test('one missing local route page prevents any worker request and Ready claim', () => {
+  const h = offlineHarness();
+  const idx = index([item('safe.md'), item('missing.md')]);
+  delete idx.byRef['missing.md'];
+  const monitor = F.fdOfflineMonitor({ ...h });
+  monitor.sync(idx, { screen: 'app', tab: 'today', week: 2 });
+  assert.equal(h.posts.length, 0);
+  assert.equal(F.fdOfflineStatus(monitor.status()).kind, 'not-ready');
+  assert.deepEqual(monitor.status().expected, []);
   monitor.destroy();
 });
 
