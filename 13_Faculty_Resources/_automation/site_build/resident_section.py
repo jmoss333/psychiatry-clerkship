@@ -24,7 +24,7 @@ OUT=os.environ.get("OUT_DIR", os.path.join(ROOT,"mmc-resident-deploy"))
 _ANALYTICS_RES = common.analytics_enabled_for("res")
 
 if os.path.exists(OUT): shutil.rmtree(OUT)
-shutil.copytree(MS3, OUT)   # start as a full copy of the polished/dark/motion MS3 build
+common.copytree_with_virtiofs_retry(MS3, OUT)   # full polished/dark/motion MS3 build
 _copied_governance=os.path.join(OUT,"tool-governance.json")
 if os.path.exists(_copied_governance): os.remove(_copied_governance)
 # Surface governance (risk-aware-publishing-warnings): same reasoning as the

@@ -14,6 +14,7 @@ to eliminate:
 """
 
 import ast
+import errno
 import json
 import os
 import re
@@ -22,6 +23,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import common  # noqa: E402
@@ -586,6 +588,115 @@ class TestCopyRequiredSources(unittest.TestCase):
             shutil.rmtree(dest)
 
 
+class TestCopytreeWithVirtiofsRetry(unittest.TestCase):
+    def helper(self):
+        helper = getattr(common, "copytree_with_virtiofs_retry", None)
+        self.assertIsNotNone(
+            helper,
+            "common.copytree_with_virtiofs_retry must protect bind-mounted build outputs",
+        )
+        return helper
+
+    def test_success_copies_normally_without_sleeping(self):
+        source = tempfile.mkdtemp()
+        destination_root = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, source, ignore_errors=True)
+        self.addCleanup(shutil.rmtree, destination_root, ignore_errors=True)
+        destination = os.path.join(destination_root, "copied")
+        with open(os.path.join(source, "asset.txt"), "w", encoding="utf-8") as handle:
+            handle.write("bytes")
+
+        def unexpected_sleep(_seconds):
+            self.fail("a successful first copy must not sleep")
+
+        result = self.helper()(source, destination, sleeper=unexpected_sleep)
+
+        self.assertEqual(result, destination)
+        with open(os.path.join(destination, "asset.txt"), encoding="utf-8") as handle:
+            self.assertEqual(handle.read(), "bytes")
+
+    def test_all_eperm_errors_wait_two_seconds_and_retry_into_partial_tree(self):
+        first_error = shutil.Error(
+            [
+                ("source/a", "destination/a", "[Errno 1] Operation not permitted"),
+                ("source/b", "destination/b", PermissionError(errno.EPERM, "denied")),
+            ]
+        )
+        calls = []
+        sleeps = []
+
+        def fake_copytree(*args, **kwargs):
+            calls.append((args, kwargs))
+            if len(calls) == 1:
+                raise first_error
+            return "destination"
+
+        with mock.patch.object(common.shutil, "copytree", side_effect=fake_copytree):
+            result = self.helper()("source", "destination", sleeper=sleeps.append)
+
+        self.assertEqual(result, "destination")
+        self.assertEqual(sleeps, [2])
+        self.assertEqual(
+            calls,
+            [
+                (("source", "destination"), {}),
+                (("source", "destination"), {"dirs_exist_ok": True}),
+            ],
+        )
+
+    def test_mixed_error_list_propagates_without_sleep_or_retry(self):
+        mixed_error = shutil.Error(
+            [
+                ("source/a", "destination/a", "[Errno 1] Operation not permitted"),
+                ("source/b", "destination/b", "[Errno 13] Permission denied"),
+            ]
+        )
+        sleeper = mock.Mock()
+        with mock.patch.object(common.shutil, "copytree", side_effect=mixed_error) as copytree:
+            with self.assertRaises(shutil.Error) as caught:
+                self.helper()("source", "destination", sleeper=sleeper)
+
+        self.assertIs(caught.exception, mixed_error)
+        self.assertEqual(copytree.call_count, 1)
+        sleeper.assert_not_called()
+
+    def test_second_failure_propagates_unchanged(self):
+        first_error = shutil.Error(
+            [("source/a", "destination/a", "[Errno 1] Operation not permitted")]
+        )
+        second_error = shutil.Error(
+            [("source/b", "destination/b", "[Errno 1] Operation not permitted")]
+        )
+        sleeper = mock.Mock()
+        with mock.patch.object(
+            common.shutil, "copytree", side_effect=[first_error, second_error]
+        ) as copytree:
+            with self.assertRaises(shutil.Error) as caught:
+                self.helper()("source", "destination", sleeper=sleeper)
+
+        self.assertIs(caught.exception, second_error)
+        self.assertEqual(copytree.call_count, 2)
+        sleeper.assert_called_once_with(2)
+
+    def test_both_bind_mounted_build_copies_use_the_retry_helper(self):
+        here = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(here, "build_deploy.py"), encoding="utf-8") as handle:
+            ms3_source = handle.read()
+        with open(os.path.join(here, "resident_section.py"), encoding="utf-8") as handle:
+            resident_source = handle.read()
+
+        self.assertIn(
+            'common.copytree_with_virtiofs_retry(_aud, OUT+"/audio")',
+            ms3_source,
+            "the MS3 Landmark audio tree must use the bounded virtiofs retry",
+        )
+        self.assertIn(
+            "common.copytree_with_virtiofs_retry(MS3, OUT)",
+            resident_source,
+            "the resident MS3 base tree must use the bounded virtiofs retry",
+        )
+
+
 class TestApplyVerifiedReplacements(unittest.TestCase):
     def test_applies_substitutions_in_order(self):
         out = common.apply_verified_replacements(
@@ -1109,7 +1220,7 @@ class TestPreviewHeaders(unittest.TestCase):
         here = os.path.dirname(os.path.abspath(__file__))
         with open(os.path.join(here, "resident_section.py"), encoding="utf-8") as fh:
             src = fh.read()
-        copytree_at = src.find("shutil.copytree(MS3, OUT)")
+        copytree_at = src.find("common.copytree_with_virtiofs_retry(MS3, OUT)")
         apply_at = src.find("common.apply_preview_headers(OUT")
         self.assertNotEqual(copytree_at, -1)
         self.assertNotEqual(
