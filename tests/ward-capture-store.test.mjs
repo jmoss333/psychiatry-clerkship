@@ -115,6 +115,26 @@ test('T4e: a failed write reports false rather than dropping the capture silentl
   assert.equal(s.capAdd('why clozapine here'), false);
 });
 
+test('deleting a retained question returns false when the remaining inbox cannot be written', () => {
+  const storage = memStorage();
+  const s = makeStore({ storage });
+  const first = s.capAdd('first question');
+  s.capAdd('second question');
+  storage.setItem = () => { throw new Error('QuotaExceededError'); };
+  assert.equal(s.capRemove(first), false);
+  assert.deepEqual(s.capRead().items.map((item) => item.text), ['first question', 'second question']);
+});
+
+test('deleting the last question and Erase all return false when removal fails', () => {
+  const storage = memStorage();
+  const s = makeStore({ storage });
+  const id = s.capAdd('only question');
+  storage.removeItem = () => { throw new Error('Storage blocked'); };
+  assert.equal(s.capRemove(id), false);
+  assert.equal(s.capEraseAll(), false);
+  assert.deepEqual(s.capRead().items.map((item) => item.text), ['only question']);
+});
+
 test('T4f: ctx is null on special routes, never a stale cw_last slug', () => {
   assert.equal(makeStore({ currentItem: { k: 'special', f: '__home__' } }).capCtx(), null);
   assert.equal(makeStore({ currentItem: null }).capCtx(), null);
@@ -197,31 +217,43 @@ test('full Capture inbox retains routed questions and escapes learner text', () 
   assert.match(html, /Erase all captures/);
 });
 
-function makeCaptureAction({ scheduleSucceeds = true, preview = false } = {}) {
-  const storage = memStorage();
-  const opened = [];
+function makeCaptureAction({ scheduleSucceeds = true, preview = false, dialog = false,
+  storage = memStorage() } = {}) {
+  const opened = [], events = [], focus = { activeElement: null };
+  const editor = { focus() { focus.activeElement = this; events.push('focus editor'); } };
   const actionCode = slice(shell, 'function fdCaptureAction(', 'function fdRefreshLocalCompletion(');
+  const focusCode = shell.includes('function capFocusEditor(')
+    ? slice(shell, 'function capFocusEditor(', 'function capOpen(') : '';
   // The real action function and store operate on the same in-memory device store. The only
   // external dependency is whether the SRS write succeeded, which this action must honor.
   // eslint-disable-next-line no-new-func
-  const action = new Function('localStorage', 'opened', 'scheduleSucceeds', 'facultyPreviewRequest', `
+  const action = new Function('localStorage', 'opened', 'events', 'focus', 'editor', 'dialog',
+    'scheduleSucceeds', 'facultyPreviewRequest', `
     ${phi}
-    var currentItem=null, capSheet=null;
+    var currentItem=null, capSheet=dialog?{
+      querySelector:function(selector){ return selector==='#capText'?editor:null; },
+      querySelectorAll:function(){ return []; }
+    }:null;
     ${storeCode}
     function capRouteLabel(v){ return v; }
-    function capRenderBody(){} function capRefreshNext(){} function specialRefresh(){}
-    function capAnnounce(){} function capRemainingText(){ return ''; }
+    function capRenderBody(){ events.push('render'); }
+    function capRefreshNext(){ events.push('refresh'); focus.activeElement=null; }
+    function specialRefresh(){ events.push('today'); }
+    function capAnnounce(message){ events.push(message); }
+    function capRemainingText(){ return ''; }
     function capClose(){} function showFacultyPreviewLockNotice(){}
     function fdOpenRef(ref){ opened.push(ref); }
     function seedSRS(){ return scheduleSucceeds; }
+    ${focusCode}
     ${actionCode}
     return {capAdd:capAdd,capRead:capRead,fdCaptureAction:fdCaptureAction};
-  `)(storage, opened, scheduleSucceeds, preview);
+  `)(storage, opened, events, focus, editor, dialog, scheduleSucceeds, preview);
   const el = (attrs) => ({
     getAttribute: (key) => attrs[key] ?? null,
     hasAttribute: (key) => Object.hasOwn(attrs, key),
+    focus() { focus.activeElement = this; },
   });
-  return { ...action, storage, opened, el };
+  return { ...action, storage, opened, events, focus, editor, el };
 }
 
 test('Open now leaves the route untouched while Schedule review assigns later only after SRS success', () => {
@@ -249,6 +281,43 @@ test('Done removes an unrouted question and faculty preview does not mutate a ro
   const id2 = preview.capAdd('Question?');
   preview.fdCaptureAction(preview.el({ 'data-cap-route': 'rounds', 'data-cap-id': id2 }));
   assert.equal(preview.capRead().items[0].route, null);
+});
+
+test('Schedule review and Done restore focus inside the open Capture dialog after replacing saved actions', () => {
+  const h = makeCaptureAction({ dialog: true });
+  const id = h.capAdd('Question?');
+  const schedule = h.el({ 'data-cap-review': id, 'data-cap-ref': 'topic.md' });
+  schedule.focus();
+  h.fdCaptureAction(schedule);
+  assert.equal(h.focus.activeElement, h.editor);
+  assert.equal(h.capRead().items[0].route, 'later');
+
+  const done = h.el({ 'data-cap-drop': id });
+  done.focus();
+  h.fdCaptureAction(done);
+  assert.equal(h.focus.activeElement, h.editor);
+  assert.deepEqual(h.capRead().items, []);
+});
+
+test('failed Done or route write keeps the dialog unchanged and announces the failure', () => {
+  const storage = memStorage();
+  const h = makeCaptureAction({ dialog: true, storage });
+  const id = h.capAdd('Question?');
+  storage.removeItem = () => { throw new Error('Storage blocked'); };
+  const done = h.el({ 'data-cap-drop': id });
+  done.focus();
+  h.fdCaptureAction(done);
+  assert.equal(h.focus.activeElement, done);
+  assert.deepEqual(h.capRead().items.map((item) => item.text), ['Question?']);
+  assert.equal(h.events.includes('render'), false);
+  assert.equal(h.events.includes('today'), false);
+  assert.ok(h.events.some((event) => /could not.*done|could not.*finish/i.test(event)));
+
+  storage.setItem = () => { throw new Error('Storage blocked'); };
+  const route = h.el({ 'data-cap-route': 'rounds', 'data-cap-id': id });
+  h.fdCaptureAction(route);
+  assert.equal(h.capRead().items[0].route, null);
+  assert.ok(h.events.some((event) => /could not.*route/i.test(event)));
 });
 
 test('SRS seeding reports write failure so a Capture route cannot imply scheduling', () => {
@@ -535,7 +604,7 @@ test('the capture key is a string literal at every call site', () => {
   const calls = [...shell.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*([^)]*)/g)]
     .map((m) => m[1].trim())
     .filter((arg) => arg.includes('cw_capture_v1'));
-  assert.equal(calls.length, 3, 'read, write, erase — and no others');
+  assert.equal(calls.length, 4, 'read, write, erase, and read-back confirmation — and no others');
   for (const arg of calls) assert.match(arg, /^'cw_capture_v1'/);
 });
 

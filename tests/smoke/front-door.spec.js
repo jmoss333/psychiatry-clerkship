@@ -371,6 +371,68 @@ async function expectHealthy(page) {
   expect(runtimeErrors.get(page)).toEqual([]);
 }
 
+test('capture persistence failure keeps questions and reports the failed Delete, Erase all, and Done actions', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await page.locator('.fd-capture-launch--global[data-capture-open]:visible').click();
+  for (const question of ['First learning question?', 'Second learning question?']) {
+    await page.locator('#capText').fill(question);
+    await page.locator('#capSave').click();
+  }
+  await expect(page.locator('.cap-list li')).toHaveCount(2);
+  await page.evaluate(() => {
+    const original = Storage.prototype.setItem;
+    window.__captureOriginalSetItem = original;
+    Storage.prototype.setItem = function (key, value) {
+      if (key === 'cw_capture_v1') throw new Error('Storage blocked');
+      return original.call(this, key, value);
+    };
+  });
+  const deleteButton = page.locator('[data-cap-del]').first();
+  await deleteButton.click();
+  await expect(page.locator('#capStatus')).toContainText('Could not delete');
+  await expect(page.locator('.cap-list li')).toHaveCount(2);
+  await page.evaluate(() => { Storage.prototype.setItem = window.__captureOriginalSetItem; });
+  await page.evaluate(() => {
+    window.confirm = () => true;
+    const original = Storage.prototype.removeItem;
+    Storage.prototype.removeItem = function (key) {
+      if (key === 'cw_capture_v1') throw new Error('Storage blocked');
+      return original.call(this, key);
+    };
+  });
+  await page.locator('#capEraseAll').click();
+  await expect(page.locator('#capStatus')).toContainText('Could not erase');
+  await expect(page.locator('.cap-list li')).toHaveCount(2);
+  await page.locator('[data-cap-del]').first().click();
+  await expect(page.locator('.cap-list li')).toHaveCount(1);
+  const done = page.locator('#capHold [data-cap-drop]');
+  await done.click();
+  await expect(page.locator('#capStatus')).toContainText('Could not finish');
+  await expect(done).toBeVisible();
+  await expect(page.locator('.cap-list li')).toHaveCount(1);
+  await expectHealthy(page);
+});
+
+test('capture Schedule review and Done move focus to the stable editor after the saved card repaints', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  const launcher = page.locator('.fd-capture-launch--global[data-capture-open]:visible');
+  await launcher.click();
+  await page.locator('#capText').fill('How should I distinguish delirium from psychosis?');
+  await page.locator('#capSave').click();
+  await page.locator('#capHold [data-cap-review]').click();
+  await expect(page.locator('#capText')).toBeFocused();
+  await expect(page.locator('.cap-list__status')).toHaveText('Look up later');
+  await page.locator('#capText').fill('Another learning question?');
+  await page.locator('#capSave').click();
+  await page.locator('#capHold [data-cap-drop]').click();
+  await expect(page.locator('#capText')).toBeFocused();
+  await page.locator('#capCancel').click();
+  await expect(launcher).toBeFocused();
+  await expectHealthy(page);
+});
+
 test.beforeEach(async ({ page }) => {
   const errors = [];
   runtimeErrors.set(page, errors);

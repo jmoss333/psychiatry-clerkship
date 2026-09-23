@@ -1456,7 +1456,12 @@
       return true;
     }catch(_){ return false; }
   }
-  function capEraseAll(){ try{ localStorage.removeItem('cw_capture_v1'); }catch(_){ } }
+  function capEraseAll(){
+    try{
+      localStorage.removeItem('cw_capture_v1');
+      return localStorage.getItem('cw_capture_v1')===null;
+    }catch(_){ return false; }
+  }
   function capCtx(){
     /* null on every Front Door special route. The learner bookmark intentionally remains the
        previous real page, so capture context must consult currentItem rather than stale cw_last. */
@@ -1511,7 +1516,14 @@
     d.items.push({id:id,text:String(text).slice(0,CAP_MAX),at:at,ctx:capCtx(),route:null,state:'open'});
     return capWrite(d)?id:false;
   }
-  function capRemove(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items.splice(i,1); break; } } if(d.items.length) capWrite(d); else capEraseAll(); }
+  function capRemove(id){
+    var d=capRead(), found=false;
+    for(var i=0;i<d.items.length;i++){
+      if(d.items[i].id===id){ d.items.splice(i,1); found=true; break; }
+    }
+    if(!found)return false;
+    return d.items.length?capWrite(d):capEraseAll();
+  }
   function capSetRoute(id,route){
     if(route!==null&&capRoute(route)!==route)return false;
     var d=capRead();
@@ -1643,14 +1655,15 @@
     }
     if(hold)hold.innerHTML='';
   }
+  function capFocusEditor(){
+    var ta=capSheet&&capSheet.querySelector('#capText');
+    if(ta){ try{ ta.focus({preventScroll:true}); }catch(_){ try{ ta.focus(); }catch(ignoreFocus){ } } }
+  }
   function capRefreshAfterMutation(){
     capRenderBody();
     capRefreshNext();
     try{ specialRefresh(); }
-    finally{
-      var ta=capSheet&&capSheet.querySelector('#capText');
-      if(ta){ try{ ta.focus(); }catch(_){ } }
-    }
+    finally{ capFocusEditor(); }
   }
   function capOpen(invoker,onAction){
     if(capSheet)return;
@@ -1695,9 +1708,19 @@
       if(t.id==='capSave'){ capSave(false); return; }
       if(t.id==='capHoldEdit'){ var hold=capSheet.querySelector('#capHold'); if(hold)hold.innerHTML=''; var tx=capSheet.querySelector('#capText'); if(tx)tx.focus(); return; }
       if(t.id==='capHoldSave'){ capSave(true); return; }
-      if(t.id==='capEraseAll'){ if(window.confirm('Erase all saved questions on this device?')){ capEraseAll(); capRefreshAfterMutation(); capAnnounce('All saved questions erased.'); } return; }
+      if(t.id==='capEraseAll'){
+        if(window.confirm('Erase all saved questions on this device?')){
+          if(capEraseAll()){ capRefreshAfterMutation(); capAnnounce('All saved questions erased.'); }
+          else capAnnounce('Could not erase saved questions on this device. Try again.');
+        }
+        return;
+      }
       var del=t.getAttribute&&t.getAttribute('data-cap-del');
-      if(del){ capRemove(del); capRefreshAfterMutation(); capAnnounce('Question deleted. '+capRemainingText()); return; }
+      if(del){
+        if(capRemove(del)){ capRefreshAfterMutation(); capAnnounce('Question deleted. '+capRemainingText()); }
+        else capAnnounce('Could not delete this question on this device. Try again.');
+        return;
+      }
     });
   }
   function capSave(force){
@@ -2770,16 +2793,25 @@
         for(var i=0;buttons&&i<buttons.length;i++){
           if(buttons[i].getAttribute('data-cap-id')===id&&buttons[i].getAttribute('data-cap-route')===route){buttons[i].focus();break;}
         }
-      }
+      }else if(capSheet)capAnnounce('Could not save this question route on this device. Try again.');
       return;
     }
     if(el.hasAttribute('data-cap-review')&&ref){
       if(seedSRS(ref)){
-        capSetRoute(id,'later');specialRefresh();if(capSheet){capRenderBody();capRefreshNext();capAnnounce('Review scheduled.');}
+        if(capSetRoute(id,'later')){
+          specialRefresh();
+          if(capSheet){capRenderBody();capRefreshNext();capAnnounce('Review scheduled.');capFocusEditor();}
+        }else if(capSheet)capAnnounce('Review scheduled, but the question route could not be saved on this device.');
       }else if(capSheet)capAnnounce('Could not schedule review on this device.');
       return;
     }
-    if(el.hasAttribute('data-cap-drop')){capRemove(id);if(capSheet){capRenderBody();capRefreshNext();capAnnounce('Question done. '+capRemainingText());}specialRefresh();return;}
+    if(el.hasAttribute('data-cap-drop')){
+      if(capRemove(id)){
+        if(capSheet){capRenderBody();capRefreshNext();capAnnounce('Question done. '+capRemainingText());}
+        specialRefresh();capFocusEditor();
+      }else if(capSheet)capAnnounce('Could not finish this question on this device. Try again.');
+      return;
+    }
     if(el.hasAttribute('data-cap-open')&&ref){if(capSheet)capClose();fdOpenRef(ref);return;}
   }
 

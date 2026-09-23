@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(404 distinct `fd-*` selector names, 23 `is-*` state classes). Every class below has a rule in that file unless
+(396 distinct `fd-*` selector names, 23 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -276,7 +276,7 @@ internal Progress. These are part of the same shipped class contract:
 | `.fd-freshset` | Ghost `.fd-btn` sibling of a completed-week `.fd-continue` that is primary: "Practice a fresh set →", opens the question bank. |
 | `.fd-capture-launch` | Full-width capture-dialog launcher. |
 | `.fd-capture-launch--global` *(no rule)* | Stable learner-route launcher hook; `#fdCaptureMount` keeps it fixed above 640px and is hidden at phone widths. The dock's Capture button opens the same dialog. |
-| `.fd-capture` | Today question inbox. Contains `.fd-capture__head`, `.fd-capture__new`, `.fd-capture__purpose`, and compact `.fd-capture__item` rows. Each row uses `.fd-capture__meta` / `__status`, `__question`, optional `__match`, and a wrapping `__actions` group of `__action` buttons; `__action--done` is the quiet trailing action. `.fd-capture__copy` retains supervised clipboard export. |
+| `.fd-capture` | Compact Today/On shift follow-up for the oldest open unrouted question only. Contains `.fd-capture__head` with a section heading, `.fd-capture__question` with escaped learner text, `.fd-capture__new` as the **View all N** dialog opener, and `.fd-capture__purpose` with the device-local privacy boundary. If no unrouted question remains, this card is omitted even while routed items remain in Capture. The full inbox, route buttons, Copy questions, Delete, and Erase all live in the portalled `.cap-sheet` styled by the shell's inline CSS (`.cap-list__row`, `.cap-route`, `.cap-next__done`); the global and dock Capture launchers still open it. The old multi-row Today selectors were removed with the markup. |
 | `.fd-progresscard` | Internal-Progress entry; contains `.fd-progresscard__title` and `.fd-progresscard__meta`. |
 | `.fd-progress-reader` | Reader modifier for the internal Progress surface. |
 
