@@ -41,7 +41,7 @@ them and let the breakpoint decide:
 |---|---|---|
 | `.fd-rail`, `.fd-railnav` | below 1000px | ≥ 1000px |
 | `.fd-actionbar`, `.fd-actionbar__spacer` | ≥ 1000px and ≤ 640px | 641–999px only; on phones their DOM remains available for dock forwarding |
-| `.fd-dock` | above 640px | ≤ 640px on learner app screens, except enhanced guides |
+| `.fd-dock` | above 640px | ≤ 640px on learner app screens, including enhanced guides |
 | `#fdCaptureMount` | ≤ 640px | above 640px on learner app screens |
 | `.fd-quicktools--pills` | ≥ 1000px | below 1000px |
 | `.fd-article__actions` | below 1000px | ≥ 1000px |
@@ -160,11 +160,15 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 The renderer inserts the context button after the two leading destinations, making it the third
 of five buttons. APP changes the first two labels and routes its second item to Library; Search
 and Capture remain the final two. Capture carries `aria-haspopup="dialog"` and an `aria-expanded`
-state that the existing Capture open/close handler updates. The shell mounts one fresh dock after each base render and
-refreshes it after completion changes and settled resource loads (including failure, only for the
-current route); `fdDockSource(contentEl)` supplies the marked action and
-the delegated controller forwards it. The dock is cleared on setup, faculty preview, enhanced
-guide, and non-app screens. Search and Capture retain their existing dialog behavior.
+state that the existing Capture open/close handler updates. The shell refreshes the dock's route
+and context controls after each base render, completion change, and settled resource load
+(including failure, only for the current route). It reuses the same Search and Capture button
+objects, preserving open-dialog invokers and Capture's expanded state without taking focus from
+the dialog. `fdDockSource(contentEl)` supplies the marked action and the delegated controller
+forwards it. The dock is cleared on setup, faculty preview, and non-app screens. Enhanced guides
+retain this single dock for completion and Capture while their inline Find, Print, Practice,
+and contents controls keep their existing behavior. Search and Capture retain their existing
+dialog focus traps and return focus to the exact dock button that opened them.
 
 ---
 

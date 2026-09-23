@@ -70,17 +70,28 @@ function dockHarness(preview = false) {
     get innerHTML() { return markup; },
     set innerHTML(value) {
       if (controls.includes(doc.activeElement)) doc.activeElement = null;
+      for (const node of controls) node.isConnected = false;
       markup = value;
       controls = [...value.matchAll(/<button\b([^>]*)>/g)].map(match => {
         const attrs = Object.fromEntries([...match[1].matchAll(/([\w-]+)="([^"]*)"/g)].map(attr => [attr[1], attr[2]]));
-        return { getAttribute: key => attrs[key] ?? null, setAttribute: (key, value) => { attrs[key] = value; },
+        return { isConnected: true, parentNode: mount,
+          getAttribute: key => attrs[key] ?? null, setAttribute: (key, value) => { attrs[key] = value; },
           focus(options) { doc.activeElement = this; this.focusOptions = options; } };
       });
     },
     contains: node => controls.includes(node),
+    replaceChild(node, old) {
+      const index = controls.indexOf(old);
+      assert.notEqual(index, -1);
+      controls[index] = node;
+      old.isConnected = false;
+      node.isConnected = true;
+      node.parentNode = mount;
+    },
     querySelector(selector) {
-      const match = selector.match(/^\[([\w-]+)="([^"]*)"\]$/);
-      return match ? controls.find(node => node.getAttribute(match[1]) === match[2]) || null : null;
+      const match = selector.match(/^\[([\w-]+)(?:="([^"]*)")?\]$/);
+      return match ? controls.find(node => match[2] === undefined
+        ? node.getAttribute(match[1]) !== null : node.getAttribute(match[1]) === match[2]) || null : null;
     },
   };
   const render = new Function('contentEl', 'fdDockMount', 'facultyPreviewRequest', 'document', `
@@ -132,6 +143,27 @@ test('dock refresh does not take focus from content, dialogs, navigation, or an 
   assert.equal(h.doc.activeElement, null, 'no equivalent action means no invented target');
 });
 
+test('dock refresh retains overlay invokers and Capture expanded state without moving dialog focus', () => {
+  const h = dockHarness(), state = { screen: 'app', tab: 'today' };
+  h.render(state);
+  const search = h.mount.querySelector('[data-fd-search]');
+  const capture = h.mount.querySelector('[data-capture-open]');
+  capture.setAttribute('aria-expanded', 'true');
+  const input = { name: 'overlay input' };
+  h.doc.activeElement = input;
+  for (const next of [state, { ...state, searchOpen: true }]) {
+    h.primary({ id: 'primary-resume', label: 'Resume' });
+    h.render(next);
+    assert.equal(h.mount.querySelector('[data-fd-search]'), search, 'Search restores the exact dock opener');
+    assert.equal(h.mount.querySelector('[data-capture-open]'), capture, 'Capture retains the exact dock opener');
+    assert.equal(search.isConnected, true);
+    assert.equal(capture.isConnected, true);
+    assert.equal(capture.getAttribute('aria-expanded'), 'true');
+    assert.equal(h.doc.activeElement, input);
+    assert.match(h.mount.innerHTML, /data-fd-dock-forward="primary-resume">Resume/);
+  }
+});
+
 test('dock refresh uses the live source and clears learner actions on excluded screens', () => {
   const h = dockHarness(), state = { screen: 'app', tab: 'today' };
   h.render(state);
@@ -144,7 +176,7 @@ test('dock refresh uses the live source and clears learner actions on excluded s
   h.primary(null); h.render(state);
   assert.match(h.mount.innerHTML, /data-fd-tab="library">Browse/);
   h.guide(true); h.render(state);
-  assert.equal(h.mount.innerHTML, '');
+  assert.match(h.mount.innerHTML, /data-capture-open/, 'enhanced guides retain the learner dock');
   h.guide(false); h.render({ screen: 'setup' });
   assert.equal(h.mount.innerHTML, '');
   const preview = dockHarness(true); preview.render(state);

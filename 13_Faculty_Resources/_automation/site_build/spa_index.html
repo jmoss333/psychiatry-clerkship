@@ -2296,8 +2296,7 @@
 
   function fdRenderDock(state,preserveFocus){
     if(!fdDockMount)return;
-    var show=state&&state.screen==='app'&&!facultyPreviewRequest&&
-      !(contentEl&&contentEl.querySelector('.fd-reader--guide'));
+    var show=state&&state.screen==='app'&&!facultyPreviewRequest;
     if(!show){fdDockMount.innerHTML='';return;}
     var source=fdDockSource(contentEl);
     var live=fdClone(fdLiveState(state));
@@ -2312,7 +2311,16 @@
         if(value!==null&&!/["\\]/.test(value)){focusSelector='['+attrs[i]+'="'+value+'"]';break;}
       }
     }
+    /* Dialog owners retain their opener objects across hydration and Capture mutations.
+       Reuse the utility controls, including Capture's live expanded state, without focusing
+       them while an overlay owns focus. The route/context controls still refresh normally. */
+    var utilities=['[data-fd-search]','[data-capture-open]'], retained=[];
+    for(var j=0;j<utilities.length;j++)retained[j]=fdDockMount.querySelector(utilities[j]);
     fdDockMount.innerHTML=fdDock(live);
+    for(var k=0;k<utilities.length;k++){
+      var replacement=fdDockMount.querySelector(utilities[k]);
+      if(retained[k]&&replacement)replacement.parentNode.replaceChild(retained[k],replacement);
+    }
     if(!state.openId){
       var current=fdDockMount.querySelector('[data-fd-tab="'+state.tab+'"]');
       if(current)current.setAttribute('aria-current','page');

@@ -44,7 +44,14 @@ function toolHost() {
         const attrs = Object.fromEntries([...match[2].matchAll(/([\w-]+)="([^"]*)"/g)].map(attr => [attr[1], attr[2]]));
         const scope = attrs['data-fd-dock-source'] ? 'fd-actionbar' : 'fd-article__actions';
         return { tagName: match[1].toUpperCase(), innerHTML: match[3], isConnected: true,
-          parentNode: { classList: { contains: name => name === scope } },
+          parentNode: { classList: { contains: name => name === scope },
+            replaceChild(node, old) {
+              const index = nodes.indexOf(old);
+              assert.notEqual(index, -1);
+              nodes[index] = node;
+              old.isConnected = false;
+              node.isConnected = true;
+            } },
           getAttribute: name => attrs[name] ?? null,
           setAttribute: (name, value) => { attrs[name] = value; },
         };

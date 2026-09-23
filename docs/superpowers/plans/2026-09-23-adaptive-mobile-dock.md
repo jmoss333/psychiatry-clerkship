@@ -234,7 +234,7 @@ git commit -m "feat: delegate dock context to primary action"
 
 **Interfaces:**
 - Consumes: `fdDock(state)` and `fdDockSource(root)` from Tasks 1-2.
-- Produces: one `#fdDockMount` with fresh markup after each base render; no phone-visible `#fdCaptureMount`, `.fd-tabs`, or `.fd-actionbar`.
+- Produces: one `#fdDockMount` with refreshed route/context controls after each base render and retained Search/Capture invokers; no phone-visible `#fdCaptureMount`, `.fd-tabs`, or `.fd-actionbar`.
 
 - [ ] **Step 1: Add failing shell and CSS contract tests**
 
@@ -261,8 +261,11 @@ Expected: FAIL because no dock mount/rules exist.
 - [ ] **Step 3: Mount and refresh the dock**
 
 Add `#fdDockMount` beside the existing portal mounts. After each base render, derive the current
-source and call `fdDock()` with a cloned live state plus `dockAction`. Hide the mount for setup,
-faculty preview, enhanced guide, and non-app screens.
+source and call `fdDock()` with a cloned live state plus `dockAction`. Retain Search and Capture
+button objects across refreshes so open dialogs preserve their invokers and Capture's expanded
+state without moving focus out of the dialog. Hide the mount for setup, faculty preview, and
+non-app screens. Enhanced guides retain the same single dock, including forwarded reader
+completion and Capture; guide-owned Find, Print, Practice, and contents controls remain inline.
 
 Do not remove desktop capture markup in this task. At phone widths, CSS hides the floating mount;
 the dock's Capture control opens the same existing dialog.

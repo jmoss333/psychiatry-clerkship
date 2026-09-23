@@ -12,6 +12,7 @@ const ROUTES = [
   ['Path tab', '/?tab=path'],
   ['Library tab', '/?tab=library'],
   ['markdown Reader', '/?page=t_mood.md'],
+  ['enhanced Orientation guide', '/?page=orientation.md'],
   ['tool Reader', '/?tool=question-bank-practice.html'],
   ['internal Progress', '/?page=__progress__'],
 ];

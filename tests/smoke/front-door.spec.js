@@ -192,6 +192,105 @@ test('adaptive mobile dock: standard audience routes, dialogs, reader forwarding
   await expectHealthy(page);
 });
 
+test('adaptive mobile dock: enhanced Orientation guide retains Capture and forwarded completion', async ({ page }, testInfo) => {
+  await page.setViewportSize(DOCK_PHONE);
+  await seedApp(page, testInfo, { state: { autoAdvance: false } });
+  await page.goto('/?page=orientation.md');
+  await expect(page.locator('.fd-reader--guide')).toBeVisible();
+  const dock = await expectAdaptiveDock(page, 'Today', 'Path');
+  await expect(dock.locator('[data-capture-open]')).toBeVisible();
+  const complete = dock.getByRole('button', { name: 'Mark done', exact: true });
+  await expect(complete).toBeVisible();
+  await expect(complete).toHaveAttribute('data-fd-dock-forward', 'primary-reader');
+  await expect(page.getByLabel('Find in this guide', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Print guide', exact: true })).toBeVisible();
+  await expect(page.locator('.fd-guide-practice[data-fd-open]')).toBeVisible();
+  const contents = page.locator('.fd-guide-contents');
+  await expect(contents.locator('summary')).toBeVisible();
+  await contents.locator('summary').click();
+  await expect(contents.getByRole('navigation', { name: 'On this page' })).toBeVisible();
+  await complete.click();
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('cw_progress_v1') || '{}')['orientation.md']?.done)).toBe(true);
+  await expectAdaptiveDock(page, 'Today', 'Path');
+  await expectHealthy(page);
+});
+
+for (const mutation of ['save', 'delete']) {
+  test(`adaptive mobile dock: Capture ${mutation} preserves expanded state and restores its exact invoker`, async ({ page }, testInfo) => {
+    await page.setViewportSize(DOCK_PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=today');
+    await expect(page.locator('.fd-today')).toBeVisible();
+    const capture = page.locator('.fd-dock [data-capture-open]:visible');
+    await capture.evaluate(el => { window.__dockCaptureInvoker = el; });
+    await expect(capture).toHaveAttribute('aria-expanded', 'false');
+    await capture.click();
+    await expect(capture).toHaveAttribute('aria-expanded', 'true');
+    const dialog = page.locator('.cap-sheet[role="dialog"]');
+    const input = dialog.locator('#capText');
+    await input.fill('How can I organize my learning questions?');
+    await dialog.locator('#capSave').click();
+    await expect(dialog.locator('.cap-list li')).toHaveCount(1);
+    if (mutation === 'delete') {
+      await dialog.getByRole('button', { name: 'Delete question: How can I organize my learning questions?', exact: true }).click();
+      await expect(dialog.locator('.cap-list li')).toHaveCount(0);
+    }
+    await expect(input).toBeFocused();
+    await expect(capture).toHaveAttribute('aria-expanded', 'true');
+    expect(await capture.evaluate(el => el === window.__dockCaptureInvoker)).toBe(true);
+    await expect(page.locator('.fd-dock:visible')).toHaveCount(1);
+    await expect(capture).toHaveCount(1);
+    // Mutation may change the last dialog control; the real first/last trap still applies.
+    const last = dialog.locator('button:visible').last();
+    await input.press('Shift+Tab');
+    await expect(last).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(input).toBeFocused();
+    if (mutation === 'save') await input.press('Escape');
+    else await dialog.locator('#capCancel').click();
+    await expect(dialog).toHaveCount(0);
+    await expect(capture).toHaveAttribute('aria-expanded', 'false');
+    await expect(capture).toBeFocused();
+    expect(await page.evaluate(() => document.activeElement === window.__dockCaptureInvoker)).toBe(true);
+    await expectHealthy(page);
+  });
+}
+
+test('adaptive mobile dock: delayed Search hydration preserves input focus and exact invoker', async ({ page }, testInfo) => {
+  let releaseIndex;
+  const delayed = new Promise(resolve => { releaseIndex = resolve; });
+  await page.route('**/search-index.json', async route => {
+    await delayed;
+    await route.continue();
+  });
+  await page.setViewportSize(DOCK_PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const search = page.locator('.fd-dock [data-fd-search]:visible');
+  await search.evaluate(el => { window.__dockSearchInvoker = el; });
+  await search.click();
+  const dialog = page.getByRole('dialog', { name: 'Search' });
+  const input = dialog.getByRole('textbox', { name: 'Search resources' });
+  await input.fill('sleep');
+  await expect(input).toBeFocused();
+  releaseIndex();
+  await expect.poll(() => page.evaluate(() => Boolean(window.SI && Object.keys(window.SI.postings).length))).toBe(true);
+  await expect(input).toBeFocused();
+  await expect(input).toHaveValue('sleep');
+  expect(await search.evaluate(el => el === window.__dockSearchInvoker)).toBe(true);
+  await expect(search).toHaveCount(1);
+  await input.press('Shift+Tab');
+  await expect(dialog.locator('button:visible').last()).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(input).toBeFocused();
+  await input.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(search).toBeFocused();
+  expect(await page.evaluate(() => document.activeElement === window.__dockSearchInvoker)).toBe(true);
+  await expectHealthy(page);
+});
+
 test('adaptive mobile dock: resident APP invitation substitutes slots without changing saved identity', async ({ page }, testInfo) => {
   test.skip(!isResidentProject(testInfo.project.name), 'APP invitation exists only on the resident build');
   await page.setViewportSize(DOCK_PHONE);
