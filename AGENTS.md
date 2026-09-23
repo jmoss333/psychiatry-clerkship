@@ -63,16 +63,24 @@ cd tests/smoke && npm ci && npx playwright test
 ### Local Dev Container
 
 VS Code can reopen this repository in `.devcontainer/`, which supplies Node 22,
-Python 3.11, Bash 5+, Git LFS, the locked NPM dependencies, and Chromium. Container
-creation runs `.devcontainer/post-create.sh`; it installs dependencies and checks the
-runtime contract but deliberately does not run the long full gate. Open a full clone,
+Python 3.11, Bash 5+, Git LFS, the locked NPM dependencies, and Chromium.
+Container creation automatically installs locked dependencies and runs only the fast runtime contract
+through `.devcontainer/post-create.sh`. The full gate is deliberately manual: run the VS Code task
+**Verify Dev Container** via **Tasks: Run Task**, or the receipt-enabled command below. Open a full clone,
 not a linked worktree whose Git directory is outside the mounted workspace, and materialize
 LFS files with `git lfs pull` before reopening it in the container.
 
 ```bash
 node bin/check-runtime-contract.mjs --current  # fast environment proof
-bash bin/verify-devcontainer.sh                # full gate + nonvisual smoke suite
+bash bin/verify-devcontainer.sh --refresh-deps --receipt output/devcontainer/verification-receipt.json
 ```
+
+A completed attempt writes `output/devcontainer/verification-receipt.json` (local, ignored by Git).
+The status bar stays visible: green means the receipt passed for the current clean tracked commit;
+red means the current commit's latest attempt failed; gray means no current proof exists
+(missing, malformed, running/interrupted, stale, a different commit, or tracked edits).
+Clicking the item runs the manual task. Without deploy URLs, the local LFS browser projects remain
+skipped: deploy-only LFS browser coverage is not proved, and the receipt says so even after a pass.
 
 The container declares no repository-managed credential or Docker-socket mount. VS Code
 may still forward the host SSH agent or Git credential helper; setup reports either state.

@@ -17,6 +17,20 @@ import { evaluateReceipt } from '../bin/devcontainer-receipt.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
+for (const file of ['README.md', 'CLAUDE.md']) {
+  test(`Dev Container receipt documentation states manual proof and status boundaries in ${file}`, () => {
+    const source = readFileSync(resolve(ROOT, file), 'utf8');
+    assert.match(source, /Verify Dev Container/);
+    assert.match(source, /output\/devcontainer\/verification-receipt\.json/);
+    assert.match(source, /full gate is deliberately manual/i);
+    assert.match(source, /automatically installs locked dependencies and runs only the fast runtime contract/i);
+    assert.match(source, /green means the receipt passed for the current clean tracked commit/i);
+    assert.match(source, /red means the current commit's latest attempt failed/i);
+    assert.match(source, /gray means no current proof exists[\s\S]*?stale[\s\S]*?different commit/i);
+    assert.match(source, /without deploy URLs[\s\S]*?LFS browser[\s\S]*?skipped[\s\S]*?not proved/i);
+  });
+}
+
 test('active repository runtime declarations match runtime_versions.json', () => {
   assert.deepEqual(declaredRuntimeErrors(ROOT), []);
 });
