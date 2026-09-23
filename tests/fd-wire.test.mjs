@@ -3031,16 +3031,29 @@ test('reading place assigns deterministic heading ids, saves the latest debounce
   h.flush();
   assert.equal(new Set(h.headings.map((node) => node.id)).size, 4);
   assert.match(h.headings[3].id, /^fd-reading-section--[0-9a-f]{16}$/);
-  assert.equal(h.status.textContent, 'Reading place saved on this device only');
+  assert.equal(h.status.textContent, '', 'a fresh reading has no verified place yet');
   h.setScroll(500); h.listeners.get('scroll')();
   h.setScroll(960); h.listeners.get('scroll')();
   h.flush();
   assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[2].id);
   assert.equal(h.state.readingPlaces['a.md'].offset, 60);
+  assert.equal(h.status.textContent, 'Reading place saved on this device only');
   h.setScroll(1000); h.listeners.get('pagehide')();
   assert.equal(h.state.readingPlaces['a.md'].offset, 100);
   session.destroy();
   assert.equal(h.listeners.size, 0);
+});
+
+test('reading place keeps its heading through responsive reflow without treating resize as learner scroll', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  const heading = h.state.readingPlaces['a.md'].heading;
+  h.setHeadingTop(1, 600);
+  h.setScroll(300); h.listeners.get('scroll')();
+  h.listeners.get('resize')(); h.flush();
+  assert.equal(h.scrollY, 650);
+  assert.equal(h.state.readingPlaces['a.md'].heading, heading);
 });
 
 test('reading place restores relative to the heading after layout and focuses only for Continue', () => {
@@ -3188,12 +3201,15 @@ test('disallowed and throwing storage show failure and install no false success'
   assert.equal(guest.writes.length, 0);
   const failure = readingPlaceHarness({}, { save: () => false });
   failure.install(); failure.flush();
+  failure.setScroll(480); failure.listeners.get('scroll')(); failure.flush();
   assert.equal(failure.status.textContent, 'Reading place could not be saved on this device');
   const throwing = readingPlaceHarness({}, { save: () => { throw new Error('quota'); } });
   throwing.install(); throwing.flush();
+  throwing.setScroll(480); throwing.listeners.get('scroll')(); throwing.flush();
   assert.equal(throwing.status.textContent, 'Reading place could not be saved on this device');
   const changing = readingPlaceHarness({}, { save: (() => { let n = 0; return () => ++n === 1; })() });
   changing.install(); changing.flush();
+  changing.setScroll(480); changing.listeners.get('scroll')(); changing.flush();
   assert.equal(changing.status.textContent, 'Reading place saved on this device only');
   changing.setScroll(480); changing.listeners.get('scroll')(); changing.flush();
   assert.equal(changing.status.textContent, 'Reading place could not be saved on this device');

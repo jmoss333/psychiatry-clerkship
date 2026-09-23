@@ -964,7 +964,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
   var save=o.save||fdSave, now=o.now||Date.now;
   var timerSet=o.setTimer||setTimeout, timerClear=o.clearTimer||clearTimeout;
   var frame=o.requestAnimationFrame||(win&&win.requestAnimationFrame?function(fn){win.requestAnimationFrame(fn);}:function(fn){timerSet(fn,0);});
-  var active=true, timer=null, ready=false, suppressedY=null, ids, i;
+  var active=true, timer=null, ready=false, suppressedY=null, resizeSeq=0, ids, i;
   function empty(){ }
   if(!status||!top||!nodes.length||!win||!fdReadingRef(ref))return {destroy:empty,startAtTop:empty};
   ids=fdReadingHeadingIds(nodes.map(function(node){return node.textContent||'';}));
@@ -1004,11 +1004,29 @@ function fdInstallReadingPlace(reader,ref,state,options){
     if(timer!==null){timerClear(timer);timer=null;}
     capture();
   }
+  function onResize(){
+    if(!active||!ready)return;
+    if(timer!==null){timerClear(timer);timer=null;}
+    ready=false;
+    var sequence=++resizeSeq;
+    frame(function(){
+      if(!active||sequence!==resizeSeq)return;
+      var place=state.readingPlaces&&state.readingPlaces[ref];
+      var resolved=place&&fdReadingResume(place,ids), target=null, j;
+      if(resolved){
+        for(j=0;j<nodes.length;j++)if(nodes[j].id===resolved.heading){target=nodes[j];break;}
+        if(target){win.scrollTo(0,absoluteTop(target)+resolved.offset);suppressedY=scrollY();}
+      }
+      ready=true;
+    });
+  }
   function destroy(){
     if(!active)return;
     if(timer!==null){timerClear(timer);timer=null;capture();}
     active=false;
-    if(ready){win.removeEventListener('scroll',onScroll);win.removeEventListener('pagehide',onPagehide);}
+    win.removeEventListener('scroll',onScroll);
+    win.removeEventListener('pagehide',onPagehide);
+    win.removeEventListener('resize',onResize);
   }
   function startAtTop(){
     if(!active||!ready||top.hidden)return;
@@ -1043,11 +1061,12 @@ function fdInstallReadingPlace(reader,ref,state,options){
         }
       }
       ready=true;
-      capture();
+      if(resolved)capture();
     }
     ready=true;
     win.addEventListener('scroll',onScroll);
     win.addEventListener('pagehide',onPagehide);
+    win.addEventListener('resize',onResize);
   });
   return {destroy:destroy,startAtTop:startAtTop};
 }
