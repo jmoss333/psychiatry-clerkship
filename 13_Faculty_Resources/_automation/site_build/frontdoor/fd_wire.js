@@ -14,7 +14,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-app-practice-open','data-fd-app-practice-reveal','data-fd-app-practice-classify',
   'data-fd-app-practice-question','data-fd-app-practice-reset','data-fd-app-practice-close',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
-  'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
+  'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge','data-fd-dock-forward',
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section','data-fd-kit-tool'
 ];
 
@@ -58,6 +58,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-close-search':'close search dialog',
   'data-fd-close-sheet':'close side sheet',
   'data-fd-close-nudge':'dismiss protocol nudge',
+  'data-fd-dock-forward':'forward contextual dock action',
   'data-fd-try-now':'preview related tool',
   'data-fd-expand-tool':'toggle saved tool workspace width'
 };

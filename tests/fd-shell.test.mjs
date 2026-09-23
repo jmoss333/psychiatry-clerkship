@@ -15,7 +15,7 @@ const make = new Function(`
   return { fdHeader: fdHeader, fdTabs: fdTabs, fdSetupRole: fdSetupRole,
            fdSetupWeek: fdSetupWeek, fdKeyAction: fdKeyAction,
            fdThemeMode: fdThemeMode, fdThemeAttr: fdThemeAttr,
-           fdAppMode: fdAppMode };
+           fdAppMode: fdAppMode, fdDockModel: fdDockModel, fdDock: fdDock };
 `);
 const F = make();
 
@@ -132,6 +132,30 @@ test('the header offers settings, not a bare theme toggle', () => {
   assert.match(h, /data-fd-settings/, 'gear must be present');
   assert.doesNotMatch(h, /data-fd-theme/, 'theme moved inside the panel');
   assert.match(h, /aria-label="Settings"/);
+});
+
+test('phone dock adapts slot two for APP without exposing Path', () => {
+  const standard = F.fdDockModel({ tab: 'today', appMode: false, dockAction: null });
+  const app = F.fdDockModel({ tab: 'today', appMode: true, dockAction: null });
+  assert.deepEqual(standard.items.map((x) => x.label), ['Today', 'Path', 'Search', 'Capture']);
+  assert.deepEqual(app.items.map((x) => x.label), ['On shift', 'The Essentials', 'Search', 'Capture']);
+  assert.equal(app.items.some((x) => x.value === 'path'), false);
+});
+
+test('dock context uses a source id or the audience browse fallback', () => {
+  assert.match(F.fdDock({ appMode: false, dockAction: { label: 'Continue', sourceId: 'primary-1' } }),
+    /data-fd-dock-forward="primary-1"[^>]*>.*Continue/s);
+  assert.match(F.fdDock({ appMode: true, dockAction: null }),
+    /data-fd-tab="library"[^>]*>.*Browse/s);
+});
+
+test('dock renders five labelled buttons with an escaped center action', () => {
+  const html = F.fdDock({ dockAction: { label: '<Continue>', sourceId: 'action&one' } });
+  assert.match(html, /^<nav class="fd-dock" aria-label="Learning actions">/);
+  assert.equal((html.match(/<button\b/g) || []).length, 5);
+  assert.match(html, /class="fd-dock__item fd-dock__item--context" data-fd-dock-forward="action&amp;one">&lt;Continue&gt;<\/button>/);
+  assert.equal(html.indexOf('fd-dock__item--context') > html.indexOf('Path'), true,
+    'the contextual action follows the two leading destinations');
 });
 
 test('the header still carries exactly three action controls', () => {

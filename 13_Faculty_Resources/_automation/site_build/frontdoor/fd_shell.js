@@ -42,6 +42,40 @@ function fdTabs(tab, appMode){
   return out;
 }
 
+/* The five-slot phone dock is a pure projection of the current audience and primary action.
+   The center item can forward to an action owned by another surface; without one, it is the
+   stable Library browse route. Rendering stays here so every dynamic value is escaped once. */
+function fdDockModel(state){
+  var s=state||{}, app=fdAppMode(s);
+  return {
+    items:[
+      {id:'today',label:app?'On shift':'Today',attr:'data-fd-tab',value:'today'},
+      {id:'structure',label:app?'The Essentials':'Path',attr:'data-fd-tab',value:app?'library':'path'},
+      {id:'search',label:'Search',attr:'data-fd-search',value:''},
+      {id:'capture',label:'Capture',attr:'data-capture-open',value:''}
+    ],
+    context:s.dockAction&&s.dockAction.sourceId
+      ?{label:s.dockAction.label,attr:'data-fd-dock-forward',value:s.dockAction.sourceId}
+      :{label:'Browse',attr:'data-fd-tab',value:'library'}
+  };
+}
+
+function fdDock(state){
+  var model=fdDockModel(state), out='<nav class="fd-dock" aria-label="Learning actions">';
+  for(var i=0;i<model.items.length;i++){
+    var item=model.items[i];
+    out+='<button type="button" class="fd-dock__item" '+item.attr+'="'+
+      fdEsc(item.value)+'">'+fdEsc(item.label)+'</button>';
+    if(i===1){
+      var context=model.context;
+      out+='<button type="button" class="fd-dock__item fd-dock__item--context" '+
+        context.attr+'="'+fdEsc(context.value)+'">'+fdEsc(context.label)+'</button>';
+    }
+  }
+  out+='</nav>';
+  return out;
+}
+
 function fdHeader(state){
   var s=state||{};
   var appMode=fdAppMode(s);
