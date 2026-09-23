@@ -609,6 +609,7 @@
 .fd-carelink__copy{min-width:0}
 .fd-carelink__title{display:block;font-size:var(--fd-font-sm);font-weight:750;line-height:1.35}
 .fd-carelink__description{display:block;margin-top:2px;color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:1.4}
+.fd-care-entry{display:none}
 
 /* Patient resource pack: a quiet picker beside a paper-like handout preview. The choices are
  * visit-only controls; the sheet is the sole print surface. */
@@ -1701,6 +1702,9 @@
   .fd-care-pack__resource{grid-template-columns:minmax(0,1fr)}
   .fd-care-pack__scan{justify-items:start;text-align:left}
   .fd-care-pack__print{width:100%}
+  .fd-care-entry{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-4);width:100%;min-height:var(--fd-target-touch);margin:var(--fd-space-5) 0;padding:var(--fd-space-3) var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm);font-weight:700;text-align:left;cursor:pointer}
+  .fd-care-entry:hover{border-color:var(--fd-olive);background:var(--fd-olive-wash)}
+  .fd-care-entry:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
 }
 
 /* Essentials uses the reading typography and existing Clinical Warm tokens. */
@@ -1790,7 +1794,7 @@
   .fd-reader--guide tr{break-inside:avoid-page;page-break-inside:avoid}
   .fd-reader--guide .fd-article__body a[href^="http"]::after{content:" (" attr(href) ")";font-size:var(--fd-font-xs);font-weight:400;overflow-wrap:anywhere}
   body:has(.fd-care-pack__sheet){--fd-care-print-ink:CanvasText;--fd-care-print-paper:Canvas;color-scheme:light;background:var(--fd-care-print-paper) !important;color:var(--fd-care-print-ink) !important}
-  body:has(.fd-care-pack__sheet) :is(.fd-header,.fd-tabs,.fd-actionbar,.fd-sheet,.fd-sheetbackdrop,.fd-search,.fd-nudge,#fdCaptureMount){display:none !important}
+  body:has(.fd-care-pack__sheet) :is(.fd-header,.fd-tabs,.fd-dock,.fd-actionbar,.fd-sheet,.fd-sheetbackdrop,.fd-search,.fd-nudge,#fdCaptureMount){display:none !important}
   body:has(.fd-care-pack__sheet) :is(.fd-shell,.fd-main){display:block;min-height:0;width:auto;max-width:none;padding:0;margin:0;overflow:visible;background:var(--fd-care-print-paper) !important}
   .fd-care-page:has(.fd-care-pack__sheet)>:not(.fd-care-pack){display:none !important}
   .fd-care-pack{display:block;margin:0;padding:0;border:0;background:transparent}

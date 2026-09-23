@@ -830,7 +830,7 @@ test('Path route keeps selection, current week, keyboard focus, and mobile rail 
   const site = audience(testInfo);
   await seedApp(page, testInfo);
   await page.goto('/');
-  await page.locator('[data-fd-tab="path"]').click();
+  await page.locator('[data-fd-tab="path"]:visible').click();
 
   const tabs = page.getByRole('tab');
   await expect(tabs).toHaveCount(site.weekCount);
@@ -2601,7 +2601,7 @@ test('Patient care resources is a safe, responsive fourth destination and search
   const careTab = page.locator('[data-fd-tab="care"]');
   await expect(careTab).toHaveAttribute('aria-current', 'page');
   await expect(careTab).toHaveAccessibleName('Patient care resources');
-  const libraryBox = await page.locator('[data-fd-tab="library"]').boundingBox();
+  const libraryBox = await page.locator('.fd-tabs [data-fd-tab="library"]:visible').boundingBox();
   const careBox = await careTab.boundingBox();
   expect(careBox.x - (libraryBox.x + libraryBox.width)).toBeGreaterThan(80);
 
@@ -2728,9 +2728,9 @@ test('Patient care resources is a safe, responsive fourth destination and search
 
   await page.keyboard.press('Space');
   await expect(choices.first()).toHaveAttribute('aria-pressed', 'true');
-  await page.locator('[data-fd-tab="library"]').click();
+  await page.locator('.fd-tabs [data-fd-tab="library"]:visible').click();
   await expect(careStatus).toHaveText('');
-  await page.locator('[data-fd-tab="care"]').click();
+  await page.locator('.fd-tabs [data-fd-tab="care"]:visible').click();
   await expect(page.locator('.fd-care-navigator__result')).toHaveCount(0);
   await choices.first().click();
   await page.reload();
@@ -2739,7 +2739,7 @@ test('Patient care resources is a safe, responsive fourth destination and search
   expect(await links.evaluateAll(nodes =>
     nodes.map(node => node.getAttribute('data-care-resource')))).toEqual(fullListOrder);
 
-  await page.locator('[data-fd-search]').click();
+  await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
   const input = page.locator('.fd-searchpanel__input');
   await input.fill('housing help');
   await expect(page.locator('.fd-result').first()).toHaveAttribute('data-care-resource', 'resource-finder');
@@ -2752,17 +2752,12 @@ test('Patient care resources is a safe, responsive fourth destination and search
   await expect(page.locator('.fd-search')).toHaveCount(0);
 
   await page.setViewportSize(PHONE);
-  await expect(careTab).toHaveAccessibleName('Patient care resources');
-  const compact = page.locator('[data-fd-tab="care"] .fd-tab__label');
-  expect(await compact.evaluate(el => getComputedStyle(el, '::after').content)).toContain('Care');
-  for (const tab of await tabs.all()) {
-    const box = await tab.boundingBox();
-    expect(box.height).toBeGreaterThanOrEqual(44);
-  }
+  await expect(careTab).toBeHidden();
+  await expect(page.locator('.fd-dock:visible button')).toHaveCount(5);
   expect(await page.locator('.fd-tabs').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
   expect(await page.locator('.fd-care-page').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
 
-  await page.locator('[data-fd-tab="library"]').click();
+  await page.locator('.fd-dock:visible [data-fd-tab="library"]').click();
   const teaching = page.locator('[data-teaching-resource="family-therapy-companion"]');
   await expect(teaching).toHaveAccessibleName(/Family Therapy Seminar Companion.*opens in a new tab/);
 
@@ -2817,6 +2812,29 @@ test('Patient care resources is a safe, responsive fourth destination and search
   await expectHealthy(page);
 });
 
+test('Patient care resources stays reachable through an in-flow phone entry and the wide tab', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  const entry = page.locator('.fd-today .fd-care-entry[data-fd-tab="care"]');
+  await expect(entry).toBeVisible();
+  await expect(entry).toHaveAccessibleName('Patient care resources');
+  expect(await entry.evaluate(el => getComputedStyle(el).position)).not.toBe('fixed');
+  expect((await entry.boundingBox()).height).toBeGreaterThanOrEqual(44);
+  await expect(page.locator('.fd-dock:visible button')).toHaveCount(5);
+  await entry.click();
+  await expect(page.locator('.fd-care-page')).toBeVisible();
+  await expect(page.locator('.fd-care-pack')).toBeVisible();
+  expect(new URL(page.url()).searchParams.get('tab')).toBe('care');
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/?tab=today');
+  await expect(page.locator('.fd-care-entry')).toBeHidden();
+  await page.locator('.fd-tabs [data-fd-tab="care"]:visible').click();
+  await expect(page.locator('.fd-care-page')).toBeVisible();
+  await expectHealthy(page);
+});
+
 test('Care status clears on Home, browser history, and resource opening', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/?tab=care');
@@ -2828,7 +2846,7 @@ test('Care status clears on Home, browser history, and resource opening', async 
     'Selected Find community services. Best starting point: Find services and community supports.');
   await page.locator('[data-fd-home]').click();
   await expect(status).toHaveText('');
-  await page.locator('[data-fd-tab="care"]').click();
+  await page.locator('.fd-tabs [data-fd-tab="care"]:visible').click();
   await expect(status).toHaveText('');
 
   await page.locator('[data-fd-care-intent="meetings"]').click();
@@ -2839,7 +2857,7 @@ test('Care status clears on Home, browser history, and resource opening', async 
   await expect(status).toHaveText('');
 
   await page.locator('[data-fd-care-intent="services"]').click();
-  await page.locator('[data-fd-search]').click();
+  await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
   await page.locator('.fd-searchpanel__input').fill('patient refuses medication');
   const resource = page.locator('.fd-result[data-fd-open="capacity.html"]');
   await expect(resource).toBeVisible();

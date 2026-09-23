@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(464 distinct `fd-*` selector names, 25 `is-*` state classes). Every class below has a rule in that file unless
+(465 distinct `fd-*` selector names, 25 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -402,6 +402,7 @@ Omitting it collapses the rail underneath.
 | `.fd-care-pack__crisis` | Owns the exact build-injected crisis block derived from `crisis_resources.json`. It is collapsed on screen and forced fully visible in Print. Missing governed HTML renders `.fd-care-pack__crisis-failure` and disables Print; the renderer never invents contacts. |
 | `.fd-care-pack__actions` | States that choices stay on screen only. Print is enabled only when at least one valid resource and the governed crisis block are both present. |
 | `.fd-care-page__groups` | Two-column shelf at larger widths and one column at ≤640px. The support shelf holds Resource Finder and Recovery Meeting Calendar; education holds the patient library, Podcast Navigator, and Relational Bibliotherapy book shelf. |
+| `.fd-care-entry` | In-flow Care route button near the top of Today and APP On shift at ≤640px. It is hidden on wider screens where the Care tab is visible; the fixed phone dock remains five items. |
 | `.fd-carelink` | Static external anchor with an explicit new-tab mark and visible title/description. |
 
 ---

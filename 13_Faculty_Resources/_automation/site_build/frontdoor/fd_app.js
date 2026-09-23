@@ -164,6 +164,7 @@ function fdAppWorkspace(index, pathway, state, captureHtml){
     '<h1 id="fd-app-title">On shift</h1><p>'+fdEsc(model.intro)+'</p></div>'+
     '<p class="fd-app__boundary"><strong>Preparation, not evaluation.</strong> Clinical scope and supervision stay with your institution.</p></header>';
   if(captureHtml)out+=captureHtml;
+  out+='<button type="button" class="fd-care-entry" data-fd-tab="care">Patient care resources<span aria-hidden="true">→</span></button>';
   out+=fdAppBridgePicker(pathway,model.bridgeId);
   out+='<section class="fd-app__bridge" aria-labelledby="fd-app-bridge-title">'+
     '<div class="fd-app__bridge-head"><div><span class="fd-app__kicker">Starting route</span>'+

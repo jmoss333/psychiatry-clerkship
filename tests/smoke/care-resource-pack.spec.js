@@ -135,6 +135,13 @@ test('builds a private three-resource handout with exact links, local QR codes, 
   for (const link of await printedResources.locator('a').all()) await expect(link).toBeVisible();
   await page.emulateMedia({ media: 'screen' });
 
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.locator('.fd-dock')).toBeHidden();
+  await expect(pack.locator('.fd-care-pack__sheet')).toBeVisible();
+  await page.emulateMedia({ media: 'screen' });
+  await page.setViewportSize({ width: 1280, height: 900 });
+
   expect(await browserState(page)).toEqual(before);
 
   await pack.locator('[data-fd-care-pack-clear]').click();
@@ -144,8 +151,8 @@ test('builds a private three-resource handout with exact links, local QR codes, 
 
   await page.keyboard.press('Space');
   await expect(choices.first()).toHaveAttribute('aria-pressed', 'true');
-  await page.locator('[data-fd-tab="library"]').click();
-  await page.locator('[data-fd-tab="care"]').click();
+  await page.locator('.fd-tabs [data-fd-tab="library"]:visible').click();
+  await page.locator('.fd-tabs [data-fd-tab="care"]:visible').click();
   await expect(pack.locator('#fd-care-pack-limit')).toHaveText('0 of 3 selected');
 
   await choices.first().click();

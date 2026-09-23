@@ -406,6 +406,7 @@ function fdToday(index, state){
   out+='<p class="fd-today__sub">'+sub+'</p>';
   out+=fdPilotFeedback();
   out+=fdConsistency(st.activityDays, nowMs);
+  out+='<button type="button" class="fd-care-entry" data-fd-tab="care">Patient care resources<span aria-hidden="true">→</span></button>';
   out+='<div class="fd-today__cols"><div class="fd-today__main">';
 
   /* One Thing First: state.primaryKind arrives from the shell's picker. The lead card is
