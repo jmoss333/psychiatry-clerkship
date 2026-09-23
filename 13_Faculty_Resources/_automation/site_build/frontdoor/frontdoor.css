@@ -1152,6 +1152,8 @@
   .fd-shell:not(:has(.fd-actionbar)) .fd-tab{flex:1;text-align:center;padding:var(--fd-space-5) var(--fd-space-4);border-bottom:none;border-top:3px solid transparent}
   .fd-shell:not(:has(.fd-actionbar)) .fd-tab.is-active{border-top-color:var(--fd-teal)}
   .fd-shell:not(:has(.fd-actionbar)) .fd-main{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  /* Let the final content scroll above the capture launcher as well as the fixed tab bar. */
+  .fd-shell:has(#fdCaptureMount:not(:empty)) .fd-main{padding-bottom:calc(var(--fd-target-touch) * 3 + var(--fd-space-6) + env(safe-area-inset-bottom))}
   /* The nudge toast is bottom-anchored too; lift it clear of the tab bar. */
   .fd-shell:not(:has(.fd-actionbar)) .fd-nudge{bottom:calc(74px + env(safe-area-inset-bottom))}
   .fd-shell:has(.fd-actionbar) .fd-reader>.fd-reader__back{display:none}

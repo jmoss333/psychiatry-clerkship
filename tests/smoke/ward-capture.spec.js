@@ -310,6 +310,23 @@ test('the global launcher stays fixed, reachable, and inside the viewport', asyn
   }
 });
 
+test('phone page endings scroll clear of the fixed capture launcher', async ({ page }) => {
+  for (const viewport of [NARROW, PHONE]) {
+    await page.setViewportSize(viewport);
+    for (const url of ['/', '/?tab=path', '/?tab=library']) {
+      await page.goto(url);
+      await expect(captureLauncher(page)).toBeVisible();
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      const geometry = await page.evaluate(() => ({
+        contentBottom: document.querySelector('#content > :last-child').getBoundingClientRect().bottom,
+        launcherTop: document.querySelector('#fdCaptureMount').getBoundingClientRect().top,
+      }));
+      expect(geometry.contentBottom, `${viewport.width}px ${url}: ${JSON.stringify(geometry)}`)
+        .toBeLessThanOrEqual(geometry.launcherTop);
+    }
+  }
+});
+
 test('faculty exact-revision preview never exposes the learner capture launcher', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await page.goto('/?page=orientation.md&reviewKey=page%3Aorientation.md&reviewToken=0123456789abcdef0123456789abcdef');
