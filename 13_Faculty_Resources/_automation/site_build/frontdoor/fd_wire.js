@@ -498,7 +498,8 @@ function fdDispatch(attrs, context, state){
     return {patch:{kitToolPreview:String(a['data-fd-kit-tool']||'')},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-care-intent')){
-    var careIntent=String(a['data-fd-care-intent']||'');
+    var careIntent=typeof a['data-fd-care-intent']==='string'
+      ?a['data-fd-care-intent']:'';
     var careChoice=typeof fdCareNavigatorSelection==='function'
       ?fdCareNavigatorSelection(c.index||{},careIntent):null;
     return {patch:{careIntentId:careChoice?careChoice.id:''},route:null,effect:null};
@@ -1409,6 +1410,7 @@ function fdWire(root, initialState, opts){
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
+    if(state.tab!=='care'||state.openId) state.careIntentId='';
     /* Where the learner was when they opened a resource (#427). Recorded by the controller, not
        by fdDispatch: the scroll offset is a browser fact and dispatch stays pure. A reader that
        opens another reader keeps the origin -- "back" still means the tab it all started from. */
@@ -1722,6 +1724,7 @@ function fdWire(root, initialState, opts){
     }
     var before=fdClone(state);
     var merged=fdClone(state), snap=event&&event.state&&event.state.fd&&event.state.state;
+    merged.careIntentId='';
     merged.searchOpen=false;
     merged.query='';
     merged.sheet=null;

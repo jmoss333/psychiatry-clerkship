@@ -96,6 +96,15 @@ test('an unknown selected intent returns the complete unselected navigator', () 
   assert.doesNotMatch(html, /Best starting point|data-fd-care-clear/);
 });
 
+test('non-string selections cannot resolve a Care intent', () => {
+  const index = { careResources: curriculum.careResources,
+    careNavigator: curriculum.careNavigator };
+  for (const selected of [['services'], { toString: () => 'services' }]) {
+    assert.equal(F.fdCareNavigatorSelection(index, selected), null);
+    assert.doesNotMatch(F.fdCareNavigator(index, selected), /Best starting point/);
+  }
+});
+
 test('malformed navigator data fails soft without hiding the five-resource shelf', () => {
   const index = { careResources: curriculum.careResources,
     careNavigator: [{ id: 'broken', label: 'Broken', explanation: 'Broken mapping',
@@ -114,6 +123,28 @@ test('invalid alternatives drop while the valid primary remains', () => {
   const selected = F.fdCareNavigatorSelection(index, 'partial');
   assert.equal(selected.primary.id, 'education-library');
   assert.deepEqual(selected.alternatives.map((item) => item.id), ['book-shelf']);
+});
+
+test('inherited and non-string primary references never create navigator links', () => {
+  for (const primaryResourceId of ['constructor', ['education-library']]) {
+    const index = { careResources: curriculum.careResources,
+      careNavigator: [{ id: 'unsafe', label: 'Unsafe choice', explanation: 'Bad reference.',
+        primaryResourceId, alternativeResourceIds: [] }] };
+    assert.deepEqual(F.fdCareNavigatorEntries(index), [], String(primaryResourceId));
+    assert.equal(F.fdCareNavigator(index, 'unsafe'), '');
+    assert.equal((F.fdCare(index, 'unsafe').match(/class="fd-carelink"/g) || []).length, 5);
+  }
+});
+
+test('inherited and non-string alternatives drop without hiding a valid primary', () => {
+  const index = { careResources: curriculum.careResources,
+    careNavigator: [{ id: 'safe', label: 'Safe choice', explanation: 'Valid primary.',
+      primaryResourceId: 'education-library',
+      alternativeResourceIds: ['constructor', ['book-shelf'], 'podcast-navigator'] }] };
+  const selected = F.fdCareNavigatorSelection(index, 'safe');
+  assert.equal(selected.primary.id, 'education-library');
+  assert.deepEqual(selected.alternatives.map((item) => item.id), ['podcast-navigator']);
+  assert.equal((F.fdCareNavigator(index, 'safe').match(/data-care-recommendation=/g) || []).length, 2);
 });
 
 test('navigator rendering escapes every supplied field and stays browser-global free', () => {

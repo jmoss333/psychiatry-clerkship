@@ -80,6 +80,15 @@ test('care intent selection and clear are route-free visit-only patches', () => 
   });
 });
 
+test('dispatch rejects non-string Care selections instead of coercing them', () => {
+  for (const value of [['services'], { toString: () => 'services' }]) {
+    assert.deepEqual(F.fdDispatch({ 'data-fd-care-intent': value },
+      { index: CARE_INDEX }, { ...roleContext, tab: 'care' }), {
+      patch: { careIntentId: '' }, route: null, effect: null,
+    });
+  }
+});
+
 test('leaving Care clears a transient intent while Care-to-Care does not invent one', () => {
   const away = F.fdDispatch({ 'data-fd-tab': 'library' }, { search: '?tab=care' },
     { ...roleContext, tab: 'care', careIntentId: 'services' });
@@ -899,6 +908,24 @@ test('care selection rerenders, stays out of storage and history, and restores f
   });
   assert.equal(h.controller.getState().careIntentId, '');
   assert.equal(first.focused, 1);
+});
+
+test('Home discards the visit-only Care intent', () => {
+  const home = fakeHarness({ ...roleContext, screen: 'app', tab: 'care',
+    careIntentId: 'services' }, { F, index: CARE_INDEX });
+  home.rootHandlers.click({ target: actionTarget({ 'data-fd-home': '' }), preventDefault() {} });
+  assert.equal(home.controller.getState().tab, 'today');
+  assert.equal(home.controller.getState().careIntentId, '');
+});
+
+test('browser history discards the visit-only Care intent even when returning to Care', () => {
+  const location = { href: 'https://example.test/?tab=care', pathname: '/', search: '?tab=care' };
+  const history = fakeHarness({ ...roleContext, screen: 'app', tab: 'care',
+    careIntentId: 'services' }, { F, index: CARE_INDEX, location });
+  history.windowHandlers.popstate({ state: { fd: true, state: { tab: 'care', openId: null } } });
+  assert.equal(history.controller.getState().tab, 'care');
+  assert.equal(history.controller.getState().careIntentId, '',
+    'history cannot revive a selection it does not own');
 });
 
 test('pre-commit handlers prevent click, input, keyboard, and popstate without changing ownership', () => {

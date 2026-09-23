@@ -2,10 +2,10 @@
 
 function fdCareNavigatorEntries(index){
   var idx=index||{}, resources=Array.isArray(idx.careResources)?idx.careResources:[];
-  var intents=Array.isArray(idx.careNavigator)?idx.careNavigator:[], byId={}, out=[];
-  var seenIntents={};
+  var intents=Array.isArray(idx.careNavigator)?idx.careNavigator:[], byId=Object.create(null), out=[];
+  var seenIntents=Object.create(null);
   var idPattern=/^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-  var i,j,intent,primary,alternatives,seen,alternative;
+  var i,j,intent,primary,alternatives,seen,alternative,alternativeIds,alternativeId;
   for(i=0;i<resources.length;i++){
     if(resources[i]&&typeof resources[i].id==='string'&&idPattern.test(resources[i].id)&&
        typeof resources[i].title==='string'&&resources[i].title&&
@@ -18,15 +18,20 @@ function fdCareNavigatorEntries(index){
     intent=intents[i];
     if(!intent||typeof intent.id!=='string'||!idPattern.test(intent.id)||
        typeof intent.label!=='string'||!intent.label||
-       typeof intent.explanation!=='string'||!intent.explanation||seenIntents[intent.id]) continue;
+       typeof intent.explanation!=='string'||!intent.explanation||seenIntents[intent.id]||
+       typeof intent.primaryResourceId!=='string'||
+       !idPattern.test(intent.primaryResourceId)) continue;
     seenIntents[intent.id]=true;
     primary=byId[intent.primaryResourceId];
     if(!primary) continue;
     alternatives=[];
-    seen={};
+    seen=Object.create(null);
     seen[primary.id]=true;
-    for(j=0;j<(intent.alternativeResourceIds||[]).length&&alternatives.length<2;j++){
-      alternative=byId[intent.alternativeResourceIds[j]];
+    alternativeIds=Array.isArray(intent.alternativeResourceIds)?intent.alternativeResourceIds:[];
+    for(j=0;j<alternativeIds.length&&alternatives.length<2;j++){
+      alternativeId=alternativeIds[j];
+      if(typeof alternativeId!=='string'||!idPattern.test(alternativeId)) continue;
+      alternative=byId[alternativeId];
       if(!alternative||seen[alternative.id]) continue;
       seen[alternative.id]=true;
       alternatives.push(alternative);
@@ -43,7 +48,8 @@ function fdCareNavigatorEntries(index){
 }
 
 function fdCareNavigatorSelection(index,selectedIntentId){
-  var entries=fdCareNavigatorEntries(index), selected=String(selectedIntentId||'');
+  if(typeof selectedIntentId!=='string') return null;
+  var entries=fdCareNavigatorEntries(index), selected=selectedIntentId;
   for(var i=0;i<entries.length;i++) if(entries[i].id===selected) return entries[i];
   return null;
 }
