@@ -8,6 +8,12 @@ const start = shell.indexOf('/* ---- faculty email dialog ---- */');
 const end = shell.indexOf('/* ---- end faculty email dialog ---- */', start);
 assert.ok(start >= 0 && end > start, 'the real embedded faculty email dialog must exist');
 const ui = shell.slice(start, end);
+const bridge = `var fdCaptureEmail={
+  address:fdEmailAddress,
+  selection:fdEmailSelection,
+  digest:function(selected){return fdEmailDigest({byRef:{}},selected,'https://example.test');},
+  mailto:fdEmailMailto
+};`;
 
 function makeHarness({ long = false, clipboard = null } = {}) {
   const clicks = [], elements = [];
@@ -23,7 +29,7 @@ function makeHarness({ long = false, clipboard = null } = {}) {
   const digest = { subject: 'Psychiatry learning questions (1)', body: 'A learner-prepared teaching digest.\nQuestion?' };
   const state = { selected: [{ id: 'one', text: 'Question?', route: null, ctx: null }], digest,
     localPart: 'faculty.name', affirmed: true };
-  const make = new Function('document', 'navigator', 'long', `var capSheet=null;\n${email}\n${ui}\nreturn {
+  const make = new Function('document', 'navigator', 'long', `var capSheet=null;\n${email}\n${bridge}\n${ui}\nreturn {
     state:capEmailState, ready:capEmailReady, handoff:capEmailHandoff,
     copy:capEmailCopy, text:capEmailText, close:capEmailClose,
     getState:function(){return capEmailState;},
@@ -69,6 +75,15 @@ test('a too-long draft never clicks an anchor and preserves the complete copy fa
   assert.equal(h.clicks.length, 0);
   assert.equal(h.elements.length, 0);
   assert.match(h.text(), /Q{3000}/);
+});
+
+test('malformed Unicode leaves the full copy fallback instead of an inert email action', () => {
+  const h = makeHarness();
+  h.state.digest.body = 'Question with \uD800 marker';
+  assert.equal(h.handoff(), 'invalid-digest');
+  assert.equal(h.clicks.length, 0);
+  assert.equal(h.state.showFallback, true);
+  assert.match(h.text(), /Question with/);
 });
 
 test('clipboard absence or rejection reveals selectable fallback text', async () => {
@@ -147,7 +162,7 @@ test('recipient input keeps the immutable domain in its screen reader descriptio
   };
   const item = { id: 'one', text: 'Question?', route: null, state: 'open', ctx: null };
   const make = new Function('document', 'capSheet', 'capRead', 'location', 'facultyPreviewRequest',
-    'FD_INDEX', `${email}\n${ui}\nreturn {open:capEmailOpen,preview:capEmailPreview,getState:function(){return capEmailState;}};`);
+    'FD_INDEX', `${email}\n${bridge}\n${ui}\nreturn {open:capEmailOpen,preview:capEmailPreview,getState:function(){return capEmailState;}};`);
   const h = make(document, capture, () => ({ items: [item] }), { origin: 'https://example.test' },
     null, { byRef: {} });
   h.open(null);

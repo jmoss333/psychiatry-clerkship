@@ -1628,6 +1628,8 @@
     if(!capSheet)return;
     var body=capSheet.querySelector('#capListWrap'); if(body)body.innerHTML=capListHtml();
   }
+  /* The Front Door script below installs this after its canonical index is ready. */
+  var fdCaptureEmail=null;
   /* ---- faculty email dialog ---- */
   var capEmailSheet=null,capEmailBackdrop=null,capEmailInvoker=null;
   var capEmailGeneration=0;
@@ -1636,12 +1638,15 @@
     return capEmailState.digest?'Subject: '+capEmailState.digest.subject+'\n\n'+capEmailState.digest.body:'';
   }
   function capEmailReady(){
-    return capEmailState.selected.length>0&&!!fdEmailAddress(capEmailState.localPart)&&capEmailState.affirmed;
+    return capEmailState.selected.length>0&&!!fdCaptureEmail.address(capEmailState.localPart)&&capEmailState.affirmed;
   }
   function capEmailHandoff(){
     if(!capEmailReady())return 'blocked';
-    var mail=fdEmailMailto(capEmailState.localPart,capEmailState.digest);
-    if(!mail.ok){ if(mail.reason==='too-long')capEmailState.showFallback=true; return mail.reason; }
+    var mail=fdCaptureEmail.mailto(capEmailState.localPart,capEmailState.digest);
+    if(!mail.ok){
+      if(mail.reason==='too-long'||mail.reason==='invalid-digest')capEmailState.showFallback=true;
+      return mail.reason;
+    }
     var anchor=document.createElement('a');
     anchor.href=mail.href;
     try{ anchor.click(); }catch(_){ capEmailState.showFallback=true; return 'unavailable'; }
@@ -1681,7 +1686,7 @@
   function capEmailPreview(message){
     if(!capEmailSheet)return;
     var field=capEmailSheet.querySelector('#capEmailLocal');
-    var valid=fdEmailAddress(capEmailState.localPart);
+    var valid=fdCaptureEmail.address(capEmailState.localPart);
     var hint=capEmailSheet.querySelector('#capEmailHint');
     hint.textContent=capEmailState.localPart&&!valid
       ?'Enter one email name before @mainehealth.org. Spaces, a second @, and recipient lists are not allowed.'
@@ -1699,25 +1704,27 @@
     if(capEmailSheet&&capEmailSheet.parentNode)capEmailSheet.parentNode.removeChild(capEmailSheet);
     capEmailSheet=null;capEmailBackdrop=null;
     document.removeEventListener('keydown',capEmailKeydown,true);
+    var restore=null;
     if(capSheet){
       capSheet.inert=false;capSheet.removeAttribute('aria-hidden');
       var boxes=capSheet.querySelectorAll('[data-cap-email-id]');
-      for(var i=0;i<boxes.length;i++)boxes[i].checked=false;
+      for(var i=0;i<boxes.length;i++){if(boxes[i].checked&&!restore)restore=boxes[i];boxes[i].checked=false;}
       var select=capSheet.querySelector('#capEmailSelect');if(select)select.disabled=true;
     }
     var inv=capEmailInvoker;capEmailInvoker=null;
     capEmailState={selected:[],digest:null,localPart:'',affirmed:false,showFallback:false};
-    if(inv&&inv.isConnected&&inv.offsetParent!==null){inv.focus();return;}
+    if(restore&&restore.isConnected&&restore.offsetParent!==null){restore.focus();return;}
+    if(inv&&!inv.disabled&&inv.isConnected&&inv.offsetParent!==null){inv.focus();return;}
     if(capSheet)capFocusEditor();
   }
   function capEmailOpen(invoker){
     if(facultyPreviewRequest||!capSheet||capEmailSheet)return;
     var boxes=capSheet.querySelectorAll('[data-cap-email-id]'),ids=[];
     for(var i=0;i<boxes.length;i++)if(boxes[i].checked)ids.push(boxes[i].getAttribute('data-cap-email-id'));
-    var selected=fdEmailSelection(capRead().items,ids);
+    var selected=fdCaptureEmail.selection(capRead().items,ids);
     if(!selected.length)return;
     capEmailGeneration++;
-    capEmailState={selected:selected,digest:fdEmailDigest(FD_INDEX,selected,location.origin),localPart:'',affirmed:false,showFallback:false};
+    capEmailState={selected:selected,digest:fdCaptureEmail.digest(selected),localPart:'',affirmed:false,showFallback:false};
     capEmailInvoker=invoker||null;
     capEmailBackdrop=document.createElement('div');capEmailBackdrop.className='cap-email-backdrop';
     capEmailBackdrop.addEventListener('click',capEmailClose);
@@ -1756,6 +1763,7 @@
         var result=capEmailHandoff();
         if(result==='opened')capEmailPreview('Your mail app may have opened. Review the recipient and message there, then press Send yourself.');
         else if(result==='too-long')capEmailPreview('This draft is too long for a mail link. Reduce the selection or copy the complete email text below.');
+        else if(result==='invalid-digest')capEmailPreview('Could not prepare a mail link from this question text. Select and copy the complete email text below.');
         else if(result==='unavailable')capEmailPreview('Could not open a mail app. Copy the complete email text below.');
         return;
       }
@@ -2316,6 +2324,14 @@
   /* ===== Governed Front Door live shell ===== */
   var FD_CANONICAL_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
   var FD_INDEX=FD_CANONICAL_INDEX;
+  /* Capture lives in the preceding script. This bridge exposes only the pure email operations;
+     its digest callback reads the current canonical/edition index at the moment of review. */
+  fdCaptureEmail={
+    address:fdEmailAddress,
+    selection:fdEmailSelection,
+    digest:function(selected){return fdEmailDigest(FD_INDEX,selected,location.origin);},
+    mailto:fdEmailMailto
+  };
   function fdRotationCatalogContext(value){
     var revision,gate,descriptor;
     try{descriptor=Object.getOwnPropertyDescriptor(value,'revision');revision=descriptor&&descriptor.enumerable&&Object.prototype.hasOwnProperty.call(descriptor,'value')&&typeof descriptor.value==='string'&&/^sha256-[A-Za-z0-9_-]{43}$/.test(descriptor.value)?descriptor.value:'';}catch(ignoreRevision){revision='';}
@@ -2617,7 +2633,9 @@
     }
     if(state.tab==='path') return fdSurface('path',function(){ return fdPath(FD_INDEX,live); });
     if(state.tab==='library') return fdSurface('library',function(){ return state.libraryView==='full'?fdLibrary(FD_INDEX):fdEssentials(FD_INDEX,{kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,week:live.week}); });
-    if(fdAppMode(state)) return fdSurface('today',function(){ return fdAppWorkspace(FD_INDEX,FD_CURRICULUM.appPathway,live); });
+    if(fdAppMode(state)) return fdSurface('today',function(){ return fdAppWorkspace(
+      FD_INDEX,FD_CURRICULUM.appPathway,live,
+      facultyPreviewRequest?'':fdCaptureTriage(fdCaptureRows())); });
     /* fdTodayLive resolves device-backed state itself. Passing an already-resolved object here
        turns the APP role id into its display label on the second pass and loses APP mode. */
     return fdSurface('today',function(){ return fdTodayLive(state); });

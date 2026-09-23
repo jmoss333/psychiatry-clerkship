@@ -22,6 +22,25 @@ const NARROW = { width: 320, height: 844 };
 const DESKTOP = { width: 1280, height: 800 };
 const captureLauncher = (page) => page.locator('.fd-dock [data-capture-open]:visible, .fd-capture-launch--global[data-capture-open]:visible');
 const desktopLauncher = (page) => page.locator('.fd-capture-launch--global[data-capture-open]:visible');
+const inbox = (page) => page.locator('.cap-sheet[role="dialog"]');
+const email = (page) => page.locator('.cap-email-sheet[role="dialog"]');
+
+async function savedItems(page) {
+  return page.evaluate(() => JSON.parse(localStorage.getItem('cw_capture_v1') || '{"items":[]}').items);
+}
+
+async function saveQuestion(page, text) {
+  await captureLauncher(page).click();
+  await inbox(page).locator('#capText').fill(text);
+  await inbox(page).locator('#capSave').click();
+  await expect(inbox(page).locator('.cap-next')).toBeVisible();
+}
+
+async function openEmailForFirstQuestion(page) {
+  await inbox(page).locator('[data-cap-email-id]').first().check();
+  await inbox(page).locator('#capEmailSelect').click();
+  await expect(email(page)).toBeVisible();
+}
 
 async function seedCompleteSetup(page) {
   await page.addInitScript(() => {
@@ -118,7 +137,7 @@ test('question starters seed the textarea without saving or replacing learner te
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_capture_v1'))).toBeNull();
 });
 
-test('saving immediately offers the best next step while keeping the question in the inbox', async ({ page }) => {
+test('route: saving persists the question before any optional route', async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.goto('/');
   await captureLauncher(page).click();
@@ -126,12 +145,12 @@ test('saving immediately offers the best next step while keeping the question in
   await page.locator('#capSave').click();
   const next = page.locator('.cap-next');
   await expect(next).toBeVisible();
-  await expect(next).toContainText('Question saved');
+  await expect(next).toContainText('Saved on this device');
   await expect(next.locator('[data-cap-open]')).toBeVisible();
   await expect(next.locator('[data-cap-review]')).toBeVisible();
-  await expect(next.locator('[data-cap-supervise]')).toBeVisible();
+  await expect(next.locator('[data-cap-route]')).toHaveCount(3);
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_capture_v1')).items[0]);
-  expect(stored.status).toBe('new');
+  expect(stored).toMatchObject({ text: 'How should I distinguish delirium from psychosis?', route: null, state: 'open' });
 });
 
 test('the dock Capture control remains in the viewport after a long reader scroll', async ({ page }) => {
@@ -144,19 +163,22 @@ test('the dock Capture control remains in the viewport after a long reader scrol
   expect(box.y + box.height).toBeLessThanOrEqual(PHONE.height);
 });
 
-for (const [action, status] of [['Review later', 'Review scheduled'], ['Bring to supervision', 'For supervision']]) {
-  test(`saved-question dialog executes ${action}`, async ({ page }) => {
+for (const [route, label] of [['rounds', 'Ask on rounds'], ['supervision', 'Discuss in supervision'], ['later', 'Look up later']]) {
+  test(`route: ${label} persists locally and leaves the retained question in View all`, async ({ page }) => {
     await page.setViewportSize(PHONE);
     await page.goto('/');
     await captureLauncher(page).click();
     await page.locator('#capText').fill('How should I distinguish delirium from psychosis?');
     await page.locator('#capSave').click();
-    await page.locator('.cap-next').getByRole('button', { name: action, exact: true }).click();
-    await expect(page.locator('.cap-sheet')).toHaveCount(0);
-    const question = page.locator('.fd-capture__item').filter({ hasText: 'How should I distinguish delirium from psychosis?' });
-    await expect(question.locator('.fd-capture__status')).toHaveText(status);
+    await page.locator('.cap-next').getByRole('button', { name: label, exact: true }).click();
+    expect((await savedItems(page))[0].route).toBe(route);
+    await expect(inbox(page).locator('.cap-list li')).toContainText([label]);
+    await inbox(page).locator('#capCancel').click();
     await page.reload();
-    await expect(question.locator('.fd-capture__status')).toHaveText(status);
+    expect((await savedItems(page))[0].route).toBe(route);
+    await captureLauncher(page).click();
+    await expect(inbox(page).locator('.cap-list li .cap-list__text')).toHaveText('How should I distinguish delirium from psychosis?');
+    await expect(inbox(page).locator('.cap-list li .cap-list__status')).toHaveText(label);
   });
 }
 
@@ -213,6 +235,7 @@ test('the interstitial holds a save that looks like it carries patient details',
   await page.locator('#capSave').click();
   await expect(page.locator('.cap-phi')).toBeVisible();
   await expect(page.locator('.cap-list li')).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('cw_capture_v1'))).toBeNull();
   // Edit returns to the textarea without writing
   await page.locator('#capHoldEdit').click();
   await expect(page.locator('.cap-phi')).toHaveCount(0);
@@ -221,6 +244,210 @@ test('the interstitial holds a save that looks like it carries patient details',
   await page.locator('#capSave').click();
   await page.locator('#capHoldSave').click();
   await expect(page.locator('.cap-list li')).toHaveCount(1);
+});
+
+test('route: reload retains the oldest unrouted question on Today and View all retains every route', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.addInitScript(() => localStorage.setItem('cw_capture_v1', JSON.stringify({
+    v: 2, items: [
+      { id: 'old', text: 'Oldest open question?', at: 100, ctx: null, route: null, state: 'open' },
+      { id: 'rounds', text: 'Already for rounds?', at: 200, ctx: null, route: 'rounds', state: 'open' },
+      { id: 'new', text: 'Newer open question?', at: 300, ctx: null, route: null, state: 'open' },
+    ],
+  })));
+  await page.goto('/');
+  const card = page.locator('.fd-capture:visible');
+  await expect(card.locator('.fd-capture__question')).toHaveText('Oldest open question?');
+  await expect(card.locator('.fd-capture__new')).toHaveText('View all 3');
+  await page.reload();
+  await expect(card.locator('.fd-capture__question')).toHaveText('Oldest open question?');
+  await card.locator('.fd-capture__new').click();
+  await expect(inbox(page).locator('.cap-list li')).toHaveCount(3);
+  await expect(inbox(page).locator('.cap-list')).toContainText('Already for rounds?');
+  await expect(inbox(page).locator('.cap-list')).toContainText('Newer open question?');
+  await expect(inbox(page).locator('.cap-email-select:checked')).toHaveCount(0);
+});
+
+test('email draft: locked domain, invalid recipient, and no-PHI affirmation gate', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.goto('/');
+  await saveQuestion(page, 'What makes a teaching explanation clear?');
+  await expect(inbox(page).locator('.cap-email-select:checked')).toHaveCount(0);
+  await expect(inbox(page).locator('#capEmailSelect')).toBeDisabled();
+  await openEmailForFirstQuestion(page);
+  const dialog = email(page);
+  const local = dialog.locator('#capEmailLocal');
+  const open = dialog.locator('#capEmailOpenDraft');
+  await expect(dialog.locator('#capEmailSuffix')).toHaveText('@mainehealth.org');
+  await expect(local).toHaveAttribute('aria-describedby', /capEmailSuffix/);
+  expect(await dialog.locator('#capEmailSuffix').evaluate(el => [el.tagName, el.isContentEditable])).toEqual(['SPAN', false]);
+  await expect(open).toBeDisabled();
+  for (const invalid of ['first@elsewhere.org', 'first,second', 'first;second', 'first name', 'first%0ABcc']) {
+    await local.fill(invalid);
+    await dialog.locator('#capEmailAffirm').check();
+    await expect(local).toHaveAttribute('aria-invalid', 'true');
+    await expect(open).toBeDisabled();
+  }
+  await local.fill('faculty.name');
+  await expect(open).toBeEnabled();
+  await dialog.locator('#capEmailAffirm').uncheck();
+  await expect(open).toBeDisabled();
+});
+
+test('email draft: selected questions and canonical source alone enter one detached mailto click', async ({ page, baseURL }) => {
+  await page.setViewportSize(PHONE);
+  await page.addInitScript(() => {
+    window.__mailClicks = [];
+    const click = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () {
+      if (this.href.startsWith('mailto:')) {
+        window.__mailClicks.push({ href: this.href, connected: this.isConnected });
+        return;
+      }
+      return click.call(this);
+    };
+  });
+  await page.goto('/?page=t_mood.md');
+  await expect(page.locator('.fd-article')).toBeVisible();
+  await saveQuestion(page, 'What distinguishes a useful mood-history question?');
+  await inbox(page).locator('.cap-next [data-cap-route="rounds"]').click();
+  await inbox(page).locator('#capCancel').click();
+  await page.goto('/');
+  await saveQuestion(page, 'This question stays private in the inbox.');
+  await inbox(page).locator('#capCancel').click();
+  await saveQuestion(page, 'What should I discuss in supervision?');
+  await inbox(page).locator('.cap-next [data-cap-route="supervision"]').click();
+  const rows = inbox(page).locator('.cap-list li');
+  await rows.filter({ hasText: 'mood-history' }).locator('.cap-email-select').check();
+  await inbox(page).getByRole('checkbox', { name: 'Select question for email: What should I discuss in supervision?' }).check();
+  const siteRequests = [];
+  page.on('request', req => { if (req.url().startsWith(baseURL)) siteRequests.push(req.url()); });
+  await inbox(page).locator('#capEmailSelect').click();
+  const dialog = email(page);
+  await expect(dialog.locator('#capEmailCount')).toHaveText('2 selected questions');
+  await expect(dialog.locator('#capEmailDigest')).not.toContainText('stays private');
+  await dialog.locator('#capEmailLocal').fill('faculty.name');
+  await dialog.locator('#capEmailAffirm').check();
+  await dialog.locator('#capEmailOpenDraft').click();
+  const clicks = await page.evaluate(() => window.__mailClicks);
+  expect(clicks).toHaveLength(1);
+  expect(clicks[0].connected).toBe(false);
+  const uri = new URL(clicks[0].href);
+  expect(uri.protocol).toBe('mailto:');
+  expect(decodeURIComponent(uri.pathname)).toBe('faculty.name@mainehealth.org');
+  expect(uri.searchParams.get('subject')).toBe('Psychiatry learning questions (2)');
+  const body = uri.searchParams.get('body');
+  expect(body).toContain('Ask on rounds\n1. What distinguishes a useful mood-history question?');
+  expect(body).toContain(`${baseURL}/?page=t_mood.md`);
+  expect(body).toContain('Discuss in supervision\n1. What should I discuss in supervision?');
+  expect(body).not.toContain('This question stays private');
+  expect(body).not.toContain('faculty.name');
+  expect(siteRequests).toEqual([]);
+  await expect(dialog.locator('#capEmailCopy')).toBeVisible();
+  await expect(dialog.locator('#capEmailStatus')).toContainText('may have opened');
+  expect((await savedItems(page)).map(item => item.route)).toEqual(['rounds', null, 'supervision']);
+});
+
+test('email draft: clipboard rejection exposes complete selectable text and close forgets private form state', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.reject(new Error('denied')) } });
+  });
+  await page.goto('/');
+  await saveQuestion(page, 'What should I ask during teaching time?');
+  await openEmailForFirstQuestion(page);
+  const dialog = email(page);
+  await expect(dialog).toHaveCSS('position', 'fixed');
+  expect(await dialog.evaluate(el => Number(getComputedStyle(el).zIndex))).toBeGreaterThan(
+    await page.locator('.cap-backdrop').evaluate(el => Number(getComputedStyle(el).zIndex)));
+  await dialog.locator('#capEmailLocal').fill('faculty.name');
+  await dialog.locator('#capEmailAffirm').check();
+  await dialog.locator('#capEmailCopy').click();
+  await expect(dialog.locator('#capEmailFallback')).toBeVisible();
+  await expect(dialog.locator('#capEmailFallbackText')).toHaveValue(/What should I ask during teaching time\?/);
+  await expect(dialog.locator('#capEmailFallbackText')).toHaveAttribute('readonly', '');
+  await dialog.locator('#capEmailClose').click();
+  await expect(email(page)).toHaveCount(0);
+  await expect(inbox(page).locator('.cap-email-select').first()).toBeFocused();
+  await expect(inbox(page).locator('.cap-email-select:checked')).toHaveCount(0);
+  await inbox(page).locator('.cap-email-select').check();
+  await inbox(page).locator('#capEmailSelect').click();
+  await expect(email(page).locator('#capEmailLocal')).toHaveValue('');
+  await expect(email(page).locator('#capEmailAffirm')).not.toBeChecked();
+  await expect(email(page).locator('#capEmailOpenDraft')).toBeDisabled();
+  await expect(email(page).locator('#capEmailFallback')).toBeHidden();
+});
+
+test('email draft: long digest is not truncated and never clicks a mailto anchor', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.addInitScript(() => {
+    const items = Array.from({ length: 8 }, (_, i) => ({
+      id: `long_${i}`, text: `Question ${i}: ${'learning point '.repeat(16)}`,
+      at: i + 1, ctx: null, route: null, state: 'open',
+    }));
+    localStorage.setItem('cw_capture_v1', JSON.stringify({ v: 2, items }));
+    window.__mailClicks = 0;
+    const click = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () {
+      if (this.href.startsWith('mailto:')) { window.__mailClicks++; return; }
+      return click.call(this);
+    };
+  });
+  await page.goto('/');
+  await captureLauncher(page).click();
+  for (const checkbox of await inbox(page).locator('.cap-email-select').all()) await checkbox.check();
+  await inbox(page).locator('#capEmailSelect').click();
+  await email(page).locator('#capEmailLocal').fill('faculty.name');
+  await email(page).locator('#capEmailAffirm').check();
+  await email(page).locator('#capEmailOpenDraft').click();
+  await expect(email(page).locator('#capEmailStatus')).toContainText('too long');
+  await expect(email(page).locator('#capEmailFallback')).toBeVisible();
+  const text = await email(page).locator('#capEmailFallbackText').inputValue();
+  expect(text).toContain('Question 0:');
+  expect(text).toContain('Question 7:');
+  expect(await page.evaluate(() => window.__mailClicks)).toBe(0);
+});
+
+test('email draft: malformed stored Unicode shows a complete copy path instead of an inert handoff', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.setViewportSize(PHONE);
+  await page.addInitScript(() => localStorage.setItem('cw_capture_v1', JSON.stringify({ v: 2, items: [
+    { id: 'surrogate', text: 'Question with \uD800 marker', at: 1, ctx: null, route: null, state: 'open' },
+  ] })));
+  await page.goto('/');
+  await captureLauncher(page).click();
+  await inbox(page).locator('[data-cap-email-id]').first().check();
+  await inbox(page).locator('#capEmailSelect').click();
+  expect(errors).toEqual([]);
+  await expect(email(page)).toBeVisible();
+  await email(page).locator('#capEmailLocal').fill('faculty.name');
+  await email(page).locator('#capEmailAffirm').check();
+  await email(page).locator('#capEmailOpenDraft').click();
+  await expect(email(page).locator('#capEmailStatus')).toContainText(/could not prepare|cannot prepare|invalid text/i);
+  await expect(email(page).locator('#capEmailFallback')).toBeVisible();
+  await expect(email(page).locator('#capEmailFallbackText')).toHaveValue(/Question with/);
+});
+
+test('email draft: APP invitation preserves stored identity and practice state while Capture remains usable', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await page.goto('/?audience=app');
+  if (testInfo.project.name.endsWith('-ms3')) {
+    await expect(page.locator('.fd-app')).toHaveCount(0);
+    return;
+  }
+  await expect(page.locator('.fd-app')).toBeVisible();
+  await captureLauncher(page).click();
+  await inbox(page).locator('#capText').fill('What makes a good supervision question?');
+  await inbox(page).locator('#capSave').click();
+  await expect(inbox(page).locator('.cap-next')).toBeVisible();
+  await inbox(page).locator('#capCancel').click();
+  await expect(page.locator('.fd-capture__question')).toHaveText('What makes a good supervision question?');
+  const state = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')));
+  expect(state.role).toBe('staff');
+  expect(state.appPractice).toBeUndefined();
+  await page.goto('/');
+  await expect(page.locator('.fd-app')).toHaveCount(0);
 });
 
 test('a legitimate clinical question full of numbers is not held', async ({ page }) => {

@@ -154,7 +154,7 @@ function fdAppActivity(activity, selected){
 
 /* Keep this name distinct from the fdApp DOM-root variable in spa_index.html. The shell renders
    inside an IIFE where that local binding intentionally shadows globals. */
-function fdAppWorkspace(index, pathway, state){
+function fdAppWorkspace(index, pathway, state, captureHtml){
   var model=fdAppModel(index,pathway,state), out='';
   if(!model.valid){
     return '<div class="fd-fallback" data-fd-fallback="app" role="alert">'+fdEsc(model.message)+'</div>';
@@ -163,6 +163,7 @@ function fdAppWorkspace(index, pathway, state){
     '<header class="fd-app__intro"><div><span class="fd-app__eyebrow">APP fellowship preview</span>'+
     '<h1 id="fd-app-title">On shift</h1><p>'+fdEsc(model.intro)+'</p></div>'+
     '<p class="fd-app__boundary"><strong>Preparation, not evaluation.</strong> Clinical scope and supervision stay with your institution.</p></header>';
+  if(captureHtml)out+=captureHtml;
   out+=fdAppBridgePicker(pathway,model.bridgeId);
   out+='<section class="fd-app__bridge" aria-labelledby="fd-app-bridge-title">'+
     '<div class="fd-app__bridge-head"><div><span class="fd-app__kicker">Starting route</span>'+

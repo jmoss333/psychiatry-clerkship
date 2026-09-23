@@ -371,6 +371,26 @@ async function expectHealthy(page) {
   expect(runtimeErrors.get(page)).toEqual([]);
 }
 
+test('route: Today shows only the oldest unrouted question while View all opens the complete inbox', async ({ page }, testInfo) => {
+  const capture = { v: 2, items: [
+    { id: 'routed', text: 'Question already set for rounds?', at: 1, ctx: null, route: 'rounds', state: 'open' },
+    { id: 'oldest', text: 'Oldest unrouted question?', at: 2, ctx: null, route: null, state: 'open' },
+    { id: 'newer', text: 'Newer unrouted question?', at: 3, ctx: null, route: null, state: 'open' },
+  ] };
+  await seedApp(page, testInfo, { storage: { cw_capture_v1: capture } });
+  await page.goto('/');
+  const card = page.locator('.fd-capture:visible');
+  await expect(card.locator('.fd-capture__question')).toHaveText('Oldest unrouted question?');
+  await expect(card).not.toContainText('Question already set for rounds?');
+  await expect(card.locator('.fd-capture__new')).toHaveText('View all 3');
+  await card.locator('.fd-capture__new').click();
+  await expect(page.locator('.cap-list li')).toHaveCount(3);
+  await expect(page.locator('.cap-list')).toContainText('Question already set for rounds?');
+  await expect(page.locator('.cap-list')).toContainText('Newer unrouted question?');
+  await expect(page.locator('.cap-email-select:checked')).toHaveCount(0);
+  await expectHealthy(page);
+});
+
 test('capture persistence failure keeps questions and reports the failed Delete, Erase all, and Done actions', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/');
