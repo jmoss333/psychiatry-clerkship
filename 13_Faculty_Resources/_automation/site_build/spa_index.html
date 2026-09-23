@@ -1630,6 +1630,7 @@
   }
   /* ---- faculty email dialog ---- */
   var capEmailSheet=null,capEmailBackdrop=null,capEmailInvoker=null;
+  var capEmailGeneration=0;
   var capEmailState={selected:[],digest:null,localPart:'',affirmed:false,showFallback:false};
   function capEmailText(){
     return capEmailState.digest?'Subject: '+capEmailState.digest.subject+'\n\n'+capEmailState.digest.body:'';
@@ -1649,12 +1650,19 @@
   }
   function capEmailCopy(){
     if(!capEmailState.digest)return Promise.resolve(false);
+    var state=capEmailState, sheet=capEmailSheet, generation=capEmailGeneration;
+    function current(){return state===capEmailState&&sheet===capEmailSheet&&generation===capEmailGeneration;}
     if(!navigator.clipboard||typeof navigator.clipboard.writeText!=='function'){
       capEmailState.showFallback=true; return Promise.resolve(false);
     }
     try{
-      return Promise.resolve(navigator.clipboard.writeText(capEmailText())).then(function(){return true;},function(){capEmailState.showFallback=true;return false;});
-    }catch(_){capEmailState.showFallback=true;return Promise.resolve(false);}
+      return Promise.resolve(navigator.clipboard.writeText(capEmailText())).then(function(){
+        return current()?true:null;
+      },function(){
+        if(!current())return null;
+        state.showFallback=true;return false;
+      });
+    }catch(_){if(current())state.showFallback=true;return Promise.resolve(current()?false:null);}
   }
   function capEmailFocusables(){
     if(!capEmailSheet)return [];
@@ -1686,6 +1694,7 @@
     if(message)capEmailSheet.querySelector('#capEmailStatus').textContent=message;
   }
   function capEmailClose(){
+    capEmailGeneration++;
     if(capEmailBackdrop&&capEmailBackdrop.parentNode)capEmailBackdrop.parentNode.removeChild(capEmailBackdrop);
     if(capEmailSheet&&capEmailSheet.parentNode)capEmailSheet.parentNode.removeChild(capEmailSheet);
     capEmailSheet=null;capEmailBackdrop=null;
@@ -1707,6 +1716,7 @@
     for(var i=0;i<boxes.length;i++)if(boxes[i].checked)ids.push(boxes[i].getAttribute('data-cap-email-id'));
     var selected=fdEmailSelection(capRead().items,ids);
     if(!selected.length)return;
+    capEmailGeneration++;
     capEmailState={selected:selected,digest:fdEmailDigest(FD_INDEX,selected,location.origin),localPart:'',affirmed:false,showFallback:false};
     capEmailInvoker=invoker||null;
     capEmailBackdrop=document.createElement('div');capEmailBackdrop.className='cap-email-backdrop';
@@ -1719,7 +1729,7 @@
       +'<p id="capEmailCount" class="cap-email-count"></p>'
       +'<pre id="capEmailDigest" class="cap-email-digest"></pre>'
       +'<label class="cap-email-label" for="capEmailLocal">Faculty recipient</label>'
-      +'<div class="cap-email-address"><input id="capEmailLocal" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="capEmailHint" maxlength="64"><span>@mainehealth.org</span></div>'
+      +'<div class="cap-email-address"><input id="capEmailLocal" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="capEmailSuffix capEmailHint" maxlength="64"><span id="capEmailSuffix">@mainehealth.org</span></div>'
       +'<p id="capEmailHint" class="cap-email-hint"></p>'
       +'<label class="cap-email-affirm"><input id="capEmailAffirm" type="checkbox"><span>I reviewed these questions and removed patient names, identifying details, and other PHI.</span></label>'
       +'<div class="cap-acts"><button type="button" class="cap-btn primary" id="capEmailOpenDraft" disabled>Open email draft</button>'
@@ -1749,9 +1759,13 @@
         else if(result==='unavailable')capEmailPreview('Could not open a mail app. Copy the complete email text below.');
         return;
       }
-      if(e.target.id==='capEmailCopy')capEmailCopy().then(function(copied){
+      if(e.target.id==='capEmailCopy'){
+        var copyGeneration=capEmailGeneration,copySheet=capEmailSheet;
+        capEmailCopy().then(function(copied){
+        if(copied===null||copyGeneration!==capEmailGeneration||copySheet!==capEmailSheet)return;
         capEmailPreview(copied?'Email text copied. Review it in your mail app before sending.':'Clipboard unavailable. Select and copy the complete text below.');
-      });
+        });
+      }
     });
   }
   /* ---- end faculty email dialog ---- */
