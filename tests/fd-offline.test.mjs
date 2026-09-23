@@ -7,6 +7,12 @@ const source = readFileSync(new URL(
 ), 'utf8');
 // eslint-disable-next-line no-new-func
 const F = new Function(`${source}\nreturn {fdOfflineUrls,fdOfflineResponse,fdOfflineStatus,fdOfflineCard};`)();
+const dataSource = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js', import.meta.url,
+), 'utf8');
+// eslint-disable-next-line no-new-func
+const { fdBuildIndex } = new Function(`${dataSource}\nreturn {fdBuildIndex};`)();
+const readJson = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
 
 const item = (ref, kind = ref.endsWith('.html') ? 'tool' : 'read', extra = {}) =>
   ({ ref, kind, ...extra });
@@ -27,6 +33,40 @@ test('duplicate week entries add one URL and never include another week', () => 
   assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), [
     '/', '/search-index.json', '/content/lesson.md', '/tools/practice.html',
   ]);
+});
+
+test('all six real MS3 weeks include their separately linked landing pages', () => {
+  const cur = readJson('../curriculum.json');
+  const projected = { ...cur, path: { id: 'ms3-six-week', weekCount: 6 },
+    weeks: cur.learningPaths.ms3.weeks };
+  const idx = fdBuildIndex(projected, readJson('../topic_meta.json'),
+    readJson('../tool_registry.json'),
+    readJson('../13_Faculty_Resources/_automation/site_build/site_manifest.json'));
+  for (let week = 1; week <= 6; week += 1) {
+    const urls = F.fdOfflineUrls(idx, { week });
+    assert.equal(urls[2], `/content/week${week}.md`, `week ${week} landing precedes assignments`);
+    assert.equal(urls.filter((url) => url === `/content/week${week}.md`).length, 1);
+    assert.equal(urls.some((url) => /^\/content\/week[1-6]\.md$/.test(url)
+      && url !== `/content/week${week}.md`), false);
+  }
+});
+
+test('landing page is deduped with assignments and invalid landing refs are excluded', () => {
+  const idx = index([item('landing.md'), item('lesson.md')]);
+  idx.weeks[1].landingRef = 'landing.md';
+  assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), [
+    '/', '/search-index.json', '/content/landing.md', '/content/lesson.md',
+  ]);
+  idx.weeks[1].items = [item('lesson.md')];
+  for (const landingRef of ['../escape.md', 'https://example.md', '//host.md',
+    'audio.mp3', 'bad.md?x=1', 'bad.md#fragment', 'missing.md']) {
+    idx.weeks[1].landingRef = landingRef;
+    assert.deepEqual(F.fdOfflineUrls(idx, { week: 2 }), [
+      '/', '/search-index.json', '/content/lesson.md',
+    ], landingRef);
+  }
+  idx.weeks[1].landingRef = 'landing.md';
+  assert.deepEqual(F.fdOfflineUrls(idx, { week: 99 }), []);
 });
 
 test('APP invitation computes bridge and all On shift activity refs afresh', () => {

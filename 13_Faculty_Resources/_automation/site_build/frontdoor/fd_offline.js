@@ -56,6 +56,8 @@ function fdOfflineUrls(index,state){
     if(w===weeks.length)return [];
     items=fdOfflineOwn(weeks[w],'items')?weeks[w].items:null;
     if(!Array.isArray(items))return [];
+    /* The week landing page is a separate Compass route, not one of week.items. */
+    if(fdOfflineOwn(weeks[w],'landingRef'))refs.push(weeks[w].landingRef);
     for(i=0;i<items.length;i++){
       if(!fdOfflineOwn(items,i)||!items[i]||!fdOfflineOwn(items[i],'ref'))continue;
       refs.push(items[i].ref);
@@ -139,7 +141,7 @@ function fdOfflineCard(state){
   return '<section class="fd-offline is-'+status.kind+'" aria-label="Shift-ready check">'+
     '<p class="fd-offline__status" role="status">'+status.label+'</p>'+
     '<p>'+status.detail+'</p>'+
-    '<p>Reading place and captured questions are saved on this device only.</p>'+
+    '<p>Device-only saved state is separate from this offline check.</p>'+
     '<p>Connection required: audio, video, live services, external links, and email sending.</p>'+
     '</section>';
 }
