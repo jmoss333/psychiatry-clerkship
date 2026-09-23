@@ -7,6 +7,7 @@ const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf
 const phase = read('phase_policy.js');
 const state = read('frontdoor/fd_state.js');
 const data = read('frontdoor/fd_data.js');
+const careNavigator = read('frontdoor/fd_care_navigator.js');
 const today = read('frontdoor/fd_today.js');
 const block = read('frontdoor/fd_block.js');
 const reader = read('frontdoor/fd_reader.js');
@@ -16,7 +17,7 @@ const wire = read('frontdoor/fd_wire.js');
 const CUR = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 
 // eslint-disable-next-line no-new-func
-const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${wire}\nreturn {
+const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${careNavigator}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${wire}\nreturn {
   fdResolveState: fdResolveState,
   fdDispatch: fdDispatch,
   fdIsTypingTarget: fdIsTypingTarget,
@@ -45,11 +46,48 @@ function memStorage(seed = {}) {
 
 const F = make(memStorage());
 const FOUR_INDEX = { weeks: [1, 2, 3, 4].map((n) => ({ n, items: [] })) };
+const CARE_INDEX = {
+  byRef: {}, weeks: FOUR_INDEX.weeks,
+  careResources: [
+    { id: 'resource-finder', title: 'Find services', description: 'Find support',
+      url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html' },
+    { id: 'meeting-calendar', title: 'Find meetings', description: 'Find recovery meetings',
+      url: 'https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html' },
+  ],
+  careNavigator: [
+    { id: 'services', label: 'Find community services', explanation: 'Start with services.',
+      primaryResourceId: 'resource-finder', alternativeResourceIds: ['meeting-calendar'] },
+  ],
+};
 const roleContext = {
   roles: [{ id: 'first-role' }, { id: 'second-role' }],
   role: 'first-role',
   week: 2,
 };
+
+test('care intent selection and clear are route-free visit-only patches', () => {
+  assert.deepEqual(F.fdDispatch({ 'data-fd-care-intent': 'services' },
+    { index: CARE_INDEX }, { ...roleContext, tab: 'care' }), {
+    patch: { careIntentId: 'services' }, route: null, effect: null,
+  });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-care-intent': 'missing' },
+    { index: CARE_INDEX }, { ...roleContext, tab: 'care' }), {
+    patch: { careIntentId: '' }, route: null, effect: null,
+  });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-care-clear': '' },
+    { index: CARE_INDEX }, { ...roleContext, tab: 'care', careIntentId: 'services' }), {
+    patch: { careIntentId: '' }, route: null, effect: null,
+  });
+});
+
+test('leaving Care clears a transient intent while Care-to-Care does not invent one', () => {
+  const away = F.fdDispatch({ 'data-fd-tab': 'library' }, { search: '?tab=care' },
+    { ...roleContext, tab: 'care', careIntentId: 'services' });
+  assert.equal(away.patch.careIntentId, '');
+  const enter = F.fdDispatch({ 'data-fd-tab': 'care' }, { search: '?tab=library' },
+    { ...roleContext, tab: 'library' });
+  assert.equal(Object.hasOwn(enter.patch, 'careIntentId'), false);
+});
 
 test('guide context never leaks into another resource or a practice iframe', () => {
   const context = { search: '?page=source.md&guideFind=private+query&guideSection=one&case=c1' };
@@ -246,7 +284,8 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     { ...roleContext, screen: 'setup-role' }).patch,
   { role: 'second-role', screen: 'setup-week' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'library' }, {}, roleContext).patch,
-    { tab: 'library', openId: null, searchOpen: false, libraryView: 'essentials', kitSection: 'all' });
+    { tab: 'library', openId: null, searchOpen: false, careIntentId: '',
+      libraryView: 'essentials', kitSection: 'all' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'care' }, {}, roleContext), {
     patch: { tab: 'care', openId: null, searchOpen: false },
     route: '?tab=care', effect: null,
@@ -821,6 +860,46 @@ function fakeHarness(initial, options = {}) {
   if (options.commitStartup !== false) controller.commitStartup();
   return { root, rootHandlers, fakeWindow, windowHandlers, controller };
 }
+
+test('care selection rerenders, stays out of storage and history, and restores focus', () => {
+  const storage = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'care' }) });
+  const LocalF = make(storage);
+  const renders = [];
+  const historyCalls = [];
+  const selected = { focused: 0, focus() { this.focused += 1; } };
+  const first = { focused: 0, focus() { this.focused += 1; } };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'care' }, {
+    F: LocalF,
+    index: CARE_INDEX,
+    render: (...args) => renders.push(args),
+    querySelector: (selector) => {
+      if (selector === '[data-fd-care-intent="services"]') return selected;
+      if (selector === '[data-fd-care-intent]') return first;
+      return null;
+    },
+    history: {
+      replaceState: (...args) => historyCalls.push(['replace', ...args]),
+      pushState: (...args) => historyCalls.push(['push', ...args]),
+    },
+  });
+  const initialHistoryCount = historyCalls.length;
+  const beforeStorage = storage.dump();
+
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-care-intent': 'services' }), preventDefault() {},
+  });
+  assert.equal(h.controller.getState().careIntentId, 'services');
+  assert.equal(renders.length, 1);
+  assert.deepEqual(storage.dump(), beforeStorage);
+  assert.equal(historyCalls.length, initialHistoryCount);
+  assert.equal(selected.focused, 1);
+
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-care-clear': '' }), preventDefault() {},
+  });
+  assert.equal(h.controller.getState().careIntentId, '');
+  assert.equal(first.focused, 1);
+});
 
 test('pre-commit handlers prevent click, input, keyboard, and popstate without changing ownership', () => {
   const storage = memStorage();

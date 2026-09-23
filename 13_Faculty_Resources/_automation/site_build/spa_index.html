@@ -1821,6 +1821,8 @@
 
   /*__FD_LIBRARY__*/
 
+  /*__FD_CARE_NAVIGATOR__*/
+
   /*__FD_CARE__*/
 
   /*__FD_READER__*/
@@ -2320,7 +2322,7 @@
     }
     if(state.tab==='path') return fdSurface('path',function(){ return fdPath(FD_INDEX,live); });
     if(state.tab==='library') return fdSurface('library',function(){ return state.libraryView==='full'?fdLibrary(FD_INDEX):fdEssentials(FD_INDEX,{kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,week:live.week}); });
-    if(state.tab==='care') return fdSurface('care',function(){ return fdCare(FD_INDEX); });
+    if(state.tab==='care') return fdSurface('care',function(){ return fdCare(FD_INDEX,state.careIntentId||''); });
     if(fdAppMode(state)) return fdSurface('today',function(){ return fdAppWorkspace(FD_INDEX,FD_CURRICULUM.appPathway,live); });
     /* fdTodayLive resolves device-backed state itself. Passing an already-resolved object here
        turns the APP role id into its display label on the second pass and loses APP mode. */

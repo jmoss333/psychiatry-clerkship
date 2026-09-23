@@ -5,6 +5,8 @@ import test from 'node:test';
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const careUrl = new URL(`${BUILD}/frontdoor/fd_care.js`, import.meta.url);
 const careSrc = existsSync(careUrl) ? readFileSync(careUrl, 'utf8') : '';
+const navigatorUrl = new URL(`${BUILD}/frontdoor/fd_care_navigator.js`, import.meta.url);
+const navigatorSrc = existsSync(navigatorUrl) ? readFileSync(navigatorUrl, 'utf8') : '';
 const dataSrc = readFileSync(new URL(`${BUILD}/frontdoor/fd_data.js`, import.meta.url), 'utf8');
 const curriculum = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 const schema = JSON.parse(readFileSync(new URL('../curriculum.schema.json', import.meta.url), 'utf8'));
@@ -14,8 +16,14 @@ if (careSrc) {
   // eslint-disable-next-line no-new-func
   F = new Function(`
     ${dataSrc}
+    ${navigatorSrc}
     ${careSrc}
-    return { fdCare: typeof fdCare === 'function' ? fdCare : null };
+    return {
+      fdCare: typeof fdCare === 'function' ? fdCare : null,
+      fdCareNavigator: typeof fdCareNavigator === 'function' ? fdCareNavigator : null,
+      fdCareNavigatorEntries: typeof fdCareNavigatorEntries === 'function' ? fdCareNavigatorEntries : null,
+      fdCareNavigatorSelection: typeof fdCareNavigatorSelection === 'function' ? fdCareNavigatorSelection : null,
+    };
   `)();
 }
 
@@ -24,6 +32,10 @@ test('the care renderer is a registered standalone Front Door module', () => {
   assert.equal(typeof F?.fdCare, 'function');
   const common = readFileSync(new URL(`${BUILD}/common.py`, import.meta.url), 'utf8');
   const shell = readFileSync(new URL(`${BUILD}/spa_index.html`, import.meta.url), 'utf8');
+  assert.match(common, /"\/\*__FD_CARE_NAVIGATOR__\*\/"\s*:\s*"frontdoor\/fd_care_navigator\.js"/);
+  assert.match(shell, /\/\*__FD_CARE_NAVIGATOR__\*\//);
+  assert.ok(common.indexOf('/*__FD_CARE_NAVIGATOR__*/') < common.indexOf('/*__FD_CARE__*/'));
+  assert.ok(shell.indexOf('/*__FD_CARE_NAVIGATOR__*/') < shell.indexOf('/*__FD_CARE__*/'));
   assert.match(common, /"\/\*__FD_CARE__\*\/"\s*:\s*"frontdoor\/fd_care\.js"/);
   assert.match(shell, /\/\*__FD_CARE__\*\//);
 });
@@ -48,6 +60,93 @@ const expectedNavigator = [
   ['books', 'book-shelf', ['education-library', 'podcast-navigator']],
   ['family-conversation', 'education-library', ['book-shelf', 'podcast-navigator']],
 ];
+
+test('the navigator renders six fixed choices and no initial result', () => {
+  const index = { careResources: curriculum.careResources,
+    careNavigator: curriculum.careNavigator };
+  const html = F.fdCareNavigator(index, '');
+  assert.equal((html.match(/data-fd-care-intent=/g) || []).length, 6);
+  assert.equal((html.match(/aria-pressed="false"/g) || []).length, 6);
+  assert.match(html, /Choose the task—not patient details/);
+  assert.doesNotMatch(html, /Best starting point|data-fd-care-clear/);
+});
+
+test('every intent resolves canonical primary and alternative records', () => {
+  const index = { careResources: curriculum.careResources,
+    careNavigator: curriculum.careNavigator };
+  for (const [id, primaryId, alternativeIds] of expectedNavigator) {
+    const selected = F.fdCareNavigatorSelection(index, id);
+    assert.equal(selected.primary.id, primaryId, id);
+    assert.deepEqual(selected.alternatives.map((item) => item.id), alternativeIds, id);
+    const html = F.fdCareNavigator(index, id);
+    assert.match(html, /Best starting point/);
+    assert.equal((html.match(/data-care-recommendation=/g) || []).length,
+      1 + alternativeIds.length);
+    assert.match(html, /target="_blank" rel="noopener noreferrer"/);
+  }
+});
+
+test('an unknown selected intent returns the complete unselected navigator', () => {
+  const index = { careResources: curriculum.careResources,
+    careNavigator: curriculum.careNavigator };
+  assert.equal(F.fdCareNavigatorSelection(index, 'not-an-intent'), null);
+  const html = F.fdCareNavigator(index, 'not-an-intent');
+  assert.equal((html.match(/data-fd-care-intent=/g) || []).length, 6);
+  assert.equal((html.match(/aria-pressed="false"/g) || []).length, 6);
+  assert.doesNotMatch(html, /Best starting point|data-fd-care-clear/);
+});
+
+test('malformed navigator data fails soft without hiding the five-resource shelf', () => {
+  const index = { careResources: curriculum.careResources,
+    careNavigator: [{ id: 'broken', label: 'Broken', explanation: 'Broken mapping',
+      primaryResourceId: 'missing', alternativeResourceIds: ['book-shelf'] }] };
+  assert.equal(F.fdCareNavigator(index, 'broken'), '');
+  const page = F.fdCare(index, 'broken');
+  assert.equal((page.match(/class="fd-carelink"/g) || []).length, 5);
+});
+
+test('invalid alternatives drop while the valid primary remains', () => {
+  const index = { careResources: curriculum.careResources,
+    careNavigator: [{ id: 'partial', label: 'Partial choice',
+      explanation: 'A valid primary remains available to the learner.',
+      primaryResourceId: 'education-library',
+      alternativeResourceIds: ['missing', 'book-shelf', 'book-shelf', 'education-library'] }] };
+  const selected = F.fdCareNavigatorSelection(index, 'partial');
+  assert.equal(selected.primary.id, 'education-library');
+  assert.deepEqual(selected.alternatives.map((item) => item.id), ['book-shelf']);
+});
+
+test('navigator rendering escapes every supplied field and stays browser-global free', () => {
+  const index = {
+    careResources: [{ id: 'safe', title: '<img src=x onerror=1>',
+      description: '<script>bad()</script>', url: 'https://example.test/&bad' }],
+    careNavigator: [{ id: 'intent', label: '<b>label</b>',
+      explanation: '<svg onload=bad()>', primaryResourceId: 'safe',
+      alternativeResourceIds: [] }],
+  };
+  const html = F.fdCareNavigator(index, 'intent');
+  assert.doesNotMatch(html, /<img|<script|<svg/);
+  assert.match(html, /&lt;b&gt;label&lt;\/b&gt;/);
+  assert.match(html, /https:\/\/example\.test\/&amp;bad/);
+  const hostileIdIndex = { careResources: index.careResources,
+    careNavigator: [{ id: 'intent" onclick="bad()', label: 'Unsafe identifier',
+      explanation: 'This malformed identifier must never enter a selector or attribute.',
+      primaryResourceId: 'safe', alternativeResourceIds: [] }] };
+  assert.equal(F.fdCareNavigator(hostileIdIndex, 'intent" onclick="bad()'), '');
+  assert.doesNotMatch(navigatorSrc,
+    /localStorage\.|sessionStorage\.|document\.|window\.|fetch\(|XMLHttpRequest|cwAnalytics|\.record\(|\bconst\s|\blet\s|=>/);
+});
+
+test('the Care page composes the selected navigator before its five-link shelf', () => {
+  const index = { careResources: curriculum.careResources,
+    careNavigator: curriculum.careNavigator };
+  const html = F.fdCare(index, 'services');
+  assert.ok(html.indexOf('fd-care-navigator') > html.indexOf('fd-care-page__notice'));
+  assert.ok(html.indexOf('fd-care-navigator') < html.indexOf('fd-care-page__groups'));
+  assert.match(html, /aria-pressed="true"/);
+  assert.equal((html.match(/class="fd-carelink"/g) || []).length, 5);
+  assert.equal((html.match(/data-care-recommendation=/g) || []).length, 2);
+});
 
 test('the curriculum carries the approved six-intent navigator map', () => {
   assert.deepEqual(curriculum.careNavigator.map((intent) => [
