@@ -47,8 +47,11 @@ def _copytree_error_is_all_eperm(error):
         if isinstance(detail, OSError):
             if detail.errno != errno.EPERM:
                 return False
-        elif "[Errno %d]" % errno.EPERM not in str(detail):
-            return False
+        else:
+            errno_token = "[Errno %d]" % errno.EPERM
+            text = str(detail)
+            if text != errno_token and not text.startswith(errno_token + " "):
+                return False
     return True
 
 

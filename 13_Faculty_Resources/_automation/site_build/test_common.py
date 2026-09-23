@@ -660,6 +660,27 @@ class TestCopytreeWithVirtiofsRetry(unittest.TestCase):
         self.assertEqual(copytree.call_count, 1)
         sleeper.assert_not_called()
 
+    def test_eperm_text_in_an_eacces_path_does_not_trigger_retry(self):
+        hostile_path_error = shutil.Error(
+            [
+                (
+                    "source/a",
+                    "destination/[Errno 1]/a",
+                    "[Errno 13] Permission denied: 'destination/[Errno 1]/a'",
+                )
+            ]
+        )
+        sleeper = mock.Mock()
+        with mock.patch.object(
+            common.shutil, "copytree", side_effect=hostile_path_error
+        ) as copytree:
+            with self.assertRaises(shutil.Error) as caught:
+                self.helper()("source", "destination", sleeper=sleeper)
+
+        self.assertIs(caught.exception, hostile_path_error)
+        self.assertEqual(copytree.call_count, 1)
+        sleeper.assert_not_called()
+
     def test_second_failure_propagates_unchanged(self):
         first_error = shutil.Error(
             [("source/a", "destination/a", "[Errno 1] Operation not permitted")]
