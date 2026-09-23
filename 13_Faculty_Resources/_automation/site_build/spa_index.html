@@ -2754,6 +2754,7 @@
     serviceWorker:fdOfflineWorker,MessageChannel:window.MessageChannel,
     facultyPreview:!!facultyPreviewRequest,
     getWaiting:function(){var reg=clerkshipSWRegistration();return !!(reg&&reg.waiting);},
+    subscribeWaiting:clerkshipSWSubscribe,
     onChange:function(status){
       fdOfflineVisitStatus=status;
       /* Task 4 owns placement. A mounted card can update without rebuilding Today, losing

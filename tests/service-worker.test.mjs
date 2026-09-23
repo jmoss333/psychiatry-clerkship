@@ -190,3 +190,152 @@ test('registration update rejection resolves false', async () => {
   await Promise.resolve();
   assert.equal(await r.context.requestClerkshipSWUpdate(), false);
 });
+
+function readinessBridge({ lateRegistration = false } = {}) {
+  let resolveRegistration;
+  const registrationPromise = new Promise((resolve) => { resolveRegistration = resolve; });
+  const registrationHandlers = new Map();
+  const installingHandlers = new Map();
+  const serviceHandlers = new Map();
+  const channels = [];
+  const posts = [];
+  const toasts = [];
+  const reg = {
+    waiting: null, installing: null,
+    addEventListener(name, handler) { registrationHandlers.set(name, handler); },
+    update() { return Promise.resolve(); },
+  };
+  const serviceWorker = {
+    controller: { postMessage(value) { posts.push(value); } },
+    register() { return lateRegistration ? registrationPromise : Promise.resolve(reg); },
+    addEventListener(name, handler) {
+      const list = serviceHandlers.get(name) || [];
+      list.push(handler);
+      serviceHandlers.set(name, list);
+    },
+    removeEventListener(name, handler) {
+      serviceHandlers.set(name, (serviceHandlers.get(name) || []).filter((item) => item !== handler));
+    },
+  };
+  function MessageChannel() {
+    this.port1 = { onmessage: null, close() {} };
+    this.port2 = { close() {} };
+    channels.push(this);
+  }
+  const document = {
+    createElement() { return { setAttribute() {}, addEventListener() {}, appendChild() {} }; },
+    body: { appendChild(node) { toasts.push(node); } },
+  };
+  const context = { navigator: { serviceWorker }, MessageChannel, Promise, URLSearchParams,
+    setTimeout, clearTimeout, location: { search: '', reload() {} }, document };
+  vm.runInNewContext(`${registerSource}\n${offlineModelSource}`, context);
+  const index = { weeks: [{ n: 2, items: [{ ref: 'lesson.md' }] }],
+    byRef: { 'lesson.md': { ref: 'lesson.md', kind: 'read' } } };
+  const route = { screen: 'app', tab: 'today', roleId: 'ms3', week: 2 };
+  const states = [];
+  function monitor(extra = {}) {
+    return context.fdOfflineMonitor({ serviceWorker, MessageChannel,
+      getWaiting: () => !!context.clerkshipSWRegistration()?.waiting,
+      subscribeWaiting: context.clerkshipSWSubscribe,
+      onChange(value) { states.push(value && {
+        checking: value.checking, waiting: value.waiting,
+        version: value.response?.version, reason: value.reason,
+      }); }, ...extra });
+  }
+  function replyReady() {
+    const urls = posts.at(-1).urls;
+    channels.at(-1).port1.onmessage({ data: { version: 'v1', ready: true,
+      present: urls, missing: [] } });
+  }
+  function installWaiting() {
+    const installing = { state: 'installing',
+      addEventListener(name, handler) { installingHandlers.set(name, handler); },
+      postMessage() {} };
+    reg.installing = installing;
+    registrationHandlers.get('updatefound')();
+    installing.state = 'installed';
+    reg.waiting = installing;
+    installingHandlers.get('statechange')();
+  }
+  return { context, reg, serviceWorker, registrationHandlers, channels, posts, states,
+    toasts, index, route, monitor, replyReady, installWaiting, resolveRegistration };
+}
+
+test('late registration with a waiting worker updates verified Ready once without a new cache request', async () => {
+  const h = readinessBridge({ lateRegistration: true });
+  const monitor = h.monitor();
+  monitor.sync(h.index, h.route);
+  h.replyReady();
+  await Promise.resolve();
+  assert.equal(h.context.fdOfflineStatus(monitor.status()).kind, 'ready');
+  const expected = monitor.status().expected;
+  h.reg.waiting = { state: 'installed' };
+  h.resolveRegistration(h.reg);
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(h.context.fdOfflineStatus(monitor.status()).kind, 'update');
+  assert.equal(monitor.status().response.version, 'v1');
+  assert.equal(monitor.status().expected, expected);
+  assert.equal(h.posts.length, 1);
+  assert.deepEqual(h.states.map((state) => state.waiting), [false, false, true]);
+  monitor.destroy();
+});
+
+test('installed waiting update changes only current Ready status and keeps toast behavior', async () => {
+  const h = readinessBridge();
+  await Promise.resolve();
+  const monitor = h.monitor();
+  monitor.sync(h.index, h.route);
+  h.replyReady();
+  await Promise.resolve();
+  const before = h.states.length;
+  h.installWaiting();
+  assert.equal(h.context.fdOfflineStatus(monitor.status()).kind, 'update');
+  assert.equal(h.states.length, before + 1);
+  assert.equal(h.posts.length, 1);
+  assert.equal(h.toasts.length, 1);
+  monitor.sync(h.index, { ...h.route, tab: 'library' });
+  const away = h.states.length;
+  h.installWaiting();
+  assert.equal(monitor.status(), null);
+  assert.equal(h.states.length, away);
+  monitor.destroy();
+  const stopped = h.states.length;
+  h.installWaiting();
+  assert.equal(h.states.length, stopped);
+});
+
+test('registration notice after controller replacement starts a fresh check', async () => {
+  const h = readinessBridge();
+  await Promise.resolve();
+  const monitor = h.monitor();
+  monitor.sync(h.index, h.route);
+  h.replyReady();
+  await Promise.resolve();
+  h.serviceWorker.controller = { postMessage(value) { h.posts.push(value); } };
+  h.reg.waiting = { state: 'installed' };
+  h.registrationHandlers.get('updatefound')();
+  assert.equal(h.posts.length, 1);
+  h.installWaiting();
+  assert.equal(h.posts.length, 2);
+  assert.equal(monitor.status().checking, true);
+  monitor.destroy();
+});
+
+test('waiting notification cannot turn Checking or a missing-file result into Ready', async () => {
+  const h = readinessBridge();
+  await Promise.resolve();
+  const monitor = h.monitor();
+  monitor.sync(h.index, h.route);
+  h.installWaiting();
+  assert.equal(h.context.fdOfflineStatus(monitor.status()).kind, 'checking');
+  const urls = h.posts[0].urls;
+  h.channels[0].port1.onmessage({ data: { version: 'v1', ready: false,
+    present: urls.filter((url) => url !== '/content/lesson.md'),
+    missing: ['/content/lesson.md'] } });
+  await Promise.resolve();
+  assert.equal(h.context.fdOfflineStatus(monitor.status()).kind, 'not-ready');
+  assert.equal(monitor.status().waiting, true);
+  assert.equal(h.posts.length, 1);
+  monitor.destroy();
+});

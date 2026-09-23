@@ -13,12 +13,28 @@
    `facultyPreviewRequest=readFacultyPreviewRequest()` runs, not at the script's very top — see
    the placement comment at the call site in spa_index.html. */
 var clerkshipSWReg=null;
+var clerkshipSWListeners=[];
 function clerkshipSWRegistration(){ return clerkshipSWReg; }
+function clerkshipSWSubscribe(listener){
+  if(typeof listener!=='function')return function(){};
+  if(clerkshipSWListeners.indexOf(listener)<0)clerkshipSWListeners.push(listener);
+  var active=true;
+  return function(){
+    if(!active)return;
+    active=false;
+    var i=clerkshipSWListeners.indexOf(listener);
+    if(i>=0)clerkshipSWListeners.splice(i,1);
+  };
+}
+function clerkshipSWNotify(){
+  clerkshipSWListeners.slice().forEach(function(listener){try{listener();}catch(_){}});
+}
 function requestClerkshipSWUpdate(){
   var reg=clerkshipSWRegistration();
   if(!reg||typeof reg.update!=='function')return Promise.resolve(false);
   try{
-    return Promise.resolve(reg.update()).then(function(){ return true; },function(){ return false; });
+    return Promise.resolve(reg.update()).then(function(){clerkshipSWNotify();return true;},
+      function(){ return false; });
   }catch(_){ return Promise.resolve(false); }
 }
 function registerClerkshipSW(){
@@ -27,9 +43,11 @@ function registerClerkshipSW(){
     if(typeof facultyPreviewRequest!=='undefined' && facultyPreviewRequest) return;
     navigator.serviceWorker.register('/sw.js').then(function(reg){
       clerkshipSWReg=reg;
+      clerkshipSWNotify();
       reg.addEventListener('updatefound', function(){
         var w=reg.installing; if(!w) return;
         w.addEventListener('statechange', function(){
+          if(w.state==='installed')clerkshipSWNotify();
           if(w.state!=='installed' || !navigator.serviceWorker.controller) return;
           if(new URLSearchParams(location.search).get('tool')) return;
           var t=document.createElement('div');
