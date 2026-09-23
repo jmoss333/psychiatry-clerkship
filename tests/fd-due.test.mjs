@@ -15,6 +15,7 @@ const make = new Function(`${read('phase_policy.js')}\n${read('frontdoor/fd_stat
   fdDueRow: fdDueRow,
   fdResumeCard: fdResumeCard,
   fdCaptureTriage: fdCaptureTriage,
+  fdCaptureSummary: fdCaptureSummary,
   fdCapsuleLeft: fdCapsuleLeft,
   fdLastReadRow: fdLastReadRow,
 };`);
@@ -72,66 +73,34 @@ test('resume card renders only a valid capsule and retains the exact resume rout
     'the route-aware retained link must not be reduced to an action that drops resume=1');
 });
 
-test('capture triage is omitted when empty and keeps the approved no-PHI warning byte-for-byte', () => {
-  assert.equal(F.fdCaptureTriage([]), '');
-  const out = F.fdCaptureTriage([{ id: 'c1', text: 'Why this choice?', match: null }]);
-  assert.match(out, /Questions you captured on the unit\. Open the matching page, schedule one for review, or copy the list to raise in supervision\. Stays on this device — no patient details\./);
-  assert.match(out, /data-cap-drop="c1"/);
-  assert.match(out, /data-cap-copy="1"/);
+test('capture summary chooses the oldest open unrouted question and counts all open items', () => {
+  const summary = F.fdCaptureSummary([
+    { id: 'newer', at: 20, route: null, state: 'open' },
+    { id: 'older', at: 10, route: null, state: 'open' },
+    { id: 'routed', at: 1, route: 'rounds', state: 'open' },
+    { id: 'done', at: 0, route: null, state: 'done' },
+  ]);
+  assert.equal(summary.oldest.id, 'older');
+  assert.equal(summary.total, 3);
+  assert.equal(summary.unrouted, 2);
 });
 
-test('capture triage escapes every interpolated value and exposes only valid matched actions', () => {
-  const out = F.fdCaptureTriage([{
-    id: 'c&quot;<id>',
-    text: '<img src=x onerror=alert(1)>',
-    match: { ref: 'topic&quot;<.md', title: '<b>Unsafe</b>', hasQuiz: true },
-  }]);
+test('capture follow-up is omitted without an unrouted question', () => {
+  assert.equal(F.fdCaptureTriage([]), '');
+  assert.equal(F.fdCaptureTriage([{ id: 'c1', at: 1, text: 'Routed', route: 'later', state: 'open' }]), '');
+});
+
+test('capture follow-up shows one escaped oldest question and View all N for every open item', () => {
+  const out = F.fdCaptureTriage([
+    { id: 'newer', at: 20, text: 'Second question', route: null, state: 'open' },
+    { id: 'older', at: 10, text: '<img src=x onerror=alert(1)>', route: null, state: 'open' },
+    { id: 'routed', at: 1, text: 'Routed question', route: 'rounds', state: 'open' },
+  ]);
   assert.doesNotMatch(out, /<img\b|<b>Unsafe/);
   assert.match(out, /&lt;img/);
-  assert.match(out, /&lt;b&gt;Unsafe&lt;\/b&gt;/);
-  assert.match(out, /data-cap-open="c&amp;quot;&lt;id&gt;"/);
-  assert.match(out, /data-cap-review="c&amp;quot;&lt;id&gt;"/);
-  assert.match(out, /data-cap-ref="topic&amp;quot;&lt;\.md"/);
-
-  const noQuiz = F.fdCaptureTriage([{
-    id: 'c2', text: 'Question', match: { ref: 'plain.md', title: 'Plain', hasQuiz: false },
-  }]);
-  assert.match(noQuiz, /data-cap-open="c2"/);
-  assert.doesNotMatch(noQuiz, /data-cap-review=/);
-});
-
-test('capture inbox keeps unresolved questions visible with a compact status and action group', () => {
-  const out = F.fdCaptureTriage([{
-    id: 'c1',
-    text: 'How should I distinguish delirium from psychosis?',
-    status: 'scheduled',
-    match: { ref: 't_delirium.md', title: 'Delirium', hasQuiz: true },
-  }]);
-  assert.match(out, /class="fd-capture__item" data-cap-status="scheduled"/);
-  assert.match(out, /class="fd-capture__status">Review scheduled</);
-  assert.match(out, /class="fd-capture__match"/);
-  assert.match(out, /class="fd-capture__actions"/);
-  assert.match(out, /data-cap-open="c1"/);
-  assert.match(out, /data-cap-review="c1"/);
-  assert.match(out, /data-cap-supervise="c1"/);
-  assert.match(out, /data-cap-drop="c1"/);
-});
-
-test('capture inbox renders supervision state without hiding the question', () => {
-  const out = F.fdCaptureTriage([{
-    id: 'c2', text: 'What should I ask next?', status: 'supervision', match: null,
-  }]);
-  assert.match(out, /data-cap-status="supervision"/);
-  assert.match(out, />For supervision</);
-  assert.match(out, /What should I ask next\?/);
-  assert.match(out, /data-cap-supervise="c2"/);
-});
-
-test('capture inbox preserves the status of questions triaged before the upgrade', () => {
-  const out = F.fdCaptureTriage([{ id: 'old', text: 'An older question', status: 'triaged', match: null }]);
-  assert.match(out, /data-cap-status="triaged"/);
-  assert.match(out, />Triaged</);
-  assert.doesNotMatch(out, />New</);
+  assert.match(out, /View all 3/);
+  assert.match(out, /data-capture-open/);
+  assert.doesNotMatch(out, /Second question|Routed question|data-cap-open|data-cap-review/);
 });
 
 test('fd_due stays ES5, audience-neutral, and does not introduce storage', () => {

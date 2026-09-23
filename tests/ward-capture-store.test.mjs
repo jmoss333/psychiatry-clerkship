@@ -39,6 +39,17 @@ function memStorage(throwOnWrite = false) {
 }
 
 const storeCode = slice(shell, 'var CAP_MAX=', '/* ---- end ward capture store ---- */');
+const captureUiCode = slice(shell, 'function capAttr(', 'function capOpen(');
+
+function makeCaptureUi(items, match = null) {
+  // These renderers are the real shell functions; only the device store and search result are inputs.
+  // eslint-disable-next-line no-new-func
+  return new Function('capRead', 'esc', 'window', `${captureUiCode}\nreturn {
+    capListHtml:capListHtml, capNextHtml:capNextHtml,
+    capRouteHtml:typeof capRouteHtml==='function'?capRouteHtml:null,
+  };`)(() => ({ v: 2, items }), (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;'), { fdCaptureMatchForQuestion: () => match });
+}
 
 function makeStore({ throwOnWrite = false, currentItem = { k: 'page', f: 't_mood.md' }, storage = null,
   now = null, random = null } = {}) {
@@ -47,8 +58,7 @@ function makeStore({ throwOnWrite = false, currentItem = { k: 'page', f: 't_mood
     ${phi}
     ${storeCode}
     return { capRead: capRead, capWrite: capWrite, capAdd: capAdd, capRemove: capRemove,
-      capMarkTriaged: capMarkTriaged, capEraseAll: capEraseAll, capRisky: capRisky,
-      capSetStatus: typeof capSetStatus==='function'?capSetStatus:null,
+      capEraseAll: capEraseAll, capRisky: capRisky,
       capSetRoute: typeof capSetRoute==='function'?capSetRoute:null,
       capOldestUnrouted: typeof capOldestUnrouted==='function'?capOldestUnrouted:null,
       capClipboardText: capClipboardText, capCtx: capCtx, CAP_MAX: CAP_MAX, CAP_LIMIT: CAP_LIMIT };
@@ -135,35 +145,119 @@ test('T4h: every clipboard payload carries the supervised-draft stamp', () => {
   assert.match(out, /- why clozapine here/);
 });
 
-test('T4i: triaged captures are excluded from the clipboard payload', () => {
+test('T4i: the clipboard payload includes every retained open route', () => {
   const s = makeStore();
   s.capAdd('first question');
   s.capAdd('second question');
-  s.capMarkTriaged(s.capRead().items[0].id);
+  s.capSetRoute(s.capRead().items[0].id, 'later');
   const out = s.capClipboardText();
-  assert.ok(!out.includes('first question'));
+  assert.ok(out.includes('first question'));
   assert.ok(out.includes('second question'));
 });
 
-test('capture status migrates legacy rows and records scheduled or supervision without deleting them', () => {
-  const s = makeStore();
-  const id = s.capAdd('How should I distinguish delirium from psychosis?');
-  assert.equal(typeof s.capSetStatus, 'function');
-  assert.equal(s.capRead().items[0].status, 'new');
-  s.capSetStatus(id, 'scheduled');
-  assert.equal(s.capRead().items[0].status, 'scheduled');
-  assert.equal(s.capRead().items[0].triaged, true, 'legacy consumers still see a triaged scheduled row');
-  s.capSetStatus(id, 'supervision');
-  assert.equal(s.capRead().items[0].status, 'supervision');
-  assert.equal(s.capRead().items.length, 1, 'changing status never removes the learner question');
-});
-
-test('capture status rejects unknown values and preserves the current state', () => {
+test('Done removes an unrouted question without assigning a route', () => {
   const s = makeStore();
   const id = s.capAdd('A safe question');
-  assert.equal(s.capSetStatus(id, 'invented'), false);
-  assert.equal(s.capSetStatus(id, { toString: () => 'scheduled' }), false);
-  assert.equal(s.capRead().items[0].status, 'new');
+  assert.equal(s.capRead().items[0].route, null);
+  s.capRemove(id);
+  assert.deepEqual(s.capRead().items, []);
+});
+
+test('saved confirmation precedes optional route choices and Done, including with a resource match', () => {
+  const ui = makeCaptureUi([{ id: 'c1', text: 'Question?', at: 1, route: null, state: 'open' }],
+    { ref: 'topic.md', title: 'Topic', hasQuiz: true });
+  assert.equal(typeof ui.capRouteHtml, 'function');
+  const html = ui.capNextHtml('c1', 'Question?');
+  const saved = html.indexOf('Saved on this device');
+  const rounds = html.indexOf('Ask on rounds');
+  const supervision = html.indexOf('Discuss in supervision');
+  const later = html.indexOf('Look up later');
+  assert.ok(saved >= 0 && saved < rounds && rounds < supervision && supervision < later);
+  assert.match(html, /data-cap-route="rounds" data-cap-id="c1"/);
+  assert.match(html, /data-cap-route="supervision" data-cap-id="c1"/);
+  assert.match(html, /data-cap-route="later" data-cap-id="c1"/);
+  assert.match(html, /data-cap-drop="c1"[^>]*>Done</);
+  assert.match(html, /data-cap-open="c1"/);
+  assert.match(html, /data-cap-review="c1"[^>]*>Schedule review</);
+});
+
+test('full Capture inbox retains routed questions and escapes learner text', () => {
+  const html = makeCaptureUi([
+    { id: 'one', text: '<img src=x onerror=alert(1)>', at: 1, route: null, state: 'open' },
+    { id: 'two', text: 'Second question', at: 2, route: 'rounds', state: 'open' },
+    { id: 'three', text: 'Third question', at: 3, route: 'supervision', state: 'open' },
+    { id: 'four', text: 'Fourth question', at: 4, route: 'later', state: 'open' },
+  ]).capListHtml();
+  for (const label of ['Unrouted', 'Ask on rounds', 'Discuss in supervision', 'Look up later'])
+    assert.match(html, new RegExp(label));
+  assert.doesNotMatch(html, /<img\b/);
+  assert.match(html, /&lt;img/);
+  assert.match(html, /data-cap-del="four"/);
+  assert.match(html, /data-cap-copy="1"[^>]*>Copy questions</);
+  assert.match(html, /Erase all captures/);
+});
+
+function makeCaptureAction({ scheduleSucceeds = true, preview = false } = {}) {
+  const storage = memStorage();
+  const opened = [];
+  const actionCode = slice(shell, 'function fdCaptureAction(', 'function fdRefreshLocalCompletion(');
+  // The real action function and store operate on the same in-memory device store. The only
+  // external dependency is whether the SRS write succeeded, which this action must honor.
+  // eslint-disable-next-line no-new-func
+  const action = new Function('localStorage', 'opened', 'scheduleSucceeds', 'facultyPreviewRequest', `
+    ${phi}
+    var currentItem=null, capSheet=null;
+    ${storeCode}
+    function capRouteLabel(v){ return v; }
+    function capRenderBody(){} function capRefreshNext(){} function specialRefresh(){}
+    function capAnnounce(){} function capRemainingText(){ return ''; }
+    function capClose(){} function showFacultyPreviewLockNotice(){}
+    function fdOpenRef(ref){ opened.push(ref); }
+    function seedSRS(){ return scheduleSucceeds; }
+    ${actionCode}
+    return {capAdd:capAdd,capRead:capRead,fdCaptureAction:fdCaptureAction};
+  `)(storage, opened, scheduleSucceeds, preview);
+  const el = (attrs) => ({
+    getAttribute: (key) => attrs[key] ?? null,
+    hasAttribute: (key) => Object.hasOwn(attrs, key),
+  });
+  return { ...action, storage, opened, el };
+}
+
+test('Open now leaves the route untouched while Schedule review assigns later only after SRS success', () => {
+  const failed = makeCaptureAction({ scheduleSucceeds: false });
+  const id = failed.capAdd('Question?');
+  failed.fdCaptureAction(failed.el({ 'data-cap-open': id, 'data-cap-ref': 'topic.md' }));
+  assert.deepEqual(failed.opened, ['topic.md']);
+  assert.equal(failed.capRead().items[0].route, null);
+  failed.fdCaptureAction(failed.el({ 'data-cap-review': id, 'data-cap-ref': 'topic.md' }));
+  assert.equal(failed.capRead().items[0].route, null);
+
+  const succeeded = makeCaptureAction();
+  const id2 = succeeded.capAdd('Question?');
+  succeeded.fdCaptureAction(succeeded.el({ 'data-cap-review': id2, 'data-cap-ref': 'topic.md' }));
+  assert.equal(succeeded.capRead().items[0].route, 'later');
+});
+
+test('Done removes an unrouted question and faculty preview does not mutate a route', () => {
+  const normal = makeCaptureAction();
+  const id = normal.capAdd('Question?');
+  normal.fdCaptureAction(normal.el({ 'data-cap-drop': id }));
+  assert.deepEqual(normal.capRead().items, []);
+
+  const preview = makeCaptureAction({ preview: true });
+  const id2 = preview.capAdd('Question?');
+  preview.fdCaptureAction(preview.el({ 'data-cap-route': 'rounds', 'data-cap-id': id2 }));
+  assert.equal(preview.capRead().items[0].route, null);
+});
+
+test('SRS seeding reports write failure so a Capture route cannot imply scheduling', () => {
+  const code = shell.match(/function seedSRS\(file\)\{[^\n]+\}/)?.[0];
+  assert.ok(code, 'seedSRS source missing');
+  // eslint-disable-next-line no-new-func
+  const seed = new Function('localStorage', 'topicHasQuiz', `${code};return seedSRS;`)(
+    memStorage(true), () => true);
+  assert.equal(seed('topic.md'), false);
 });
 
 test('v1 statuses migrate to v2 routes without inventing a destination', () => {
@@ -354,7 +448,7 @@ test('T5: the study export allow-list does not carry the capture key', () => {
 test('T11: the point-of-entry warning ships the approved copy', () => {
   assert.ok(shell.includes('<strong>The question, not the patient.</strong>'));
   assert.ok(shell.includes('No names, initials, room or bed numbers, dates, or MRNs'));
-  assert.ok(shell.includes('Saved on this device only, never sent anywhere.'));
+  assert.ok(shell.includes('Saved on this device. Nothing leaves unless you choose Copy or Email. No patient details.'));
   assert.ok(shell.includes('<b>This may contain patient details.</b>'));
   assert.ok(shell.includes('No patient details — save'));
   assert.match(shell, /aria-label="Your question, no patient identifiers"/);
@@ -369,15 +463,13 @@ test('T11b: focus return is guarded on the recorded invoker still being connecte
   assert.match(close, /aria-expanded','false'/, 'both invokers are reset on close');
 });
 
-test('T12a: the triage card offers Review only for quiz-bearing pages', () => {
-  const rows = slice(shell, 'function fdCaptureMatch(', 'function fdTodayLive(');
-  assert.match(rows, /hasQuiz:topicHasQuiz\(hit\.f\)/,
-    'the runtime adapter must normalize quiz availability before pure rendering');
-  assert.match(due, /if\(match\.hasQuiz\)/,
-    'a quizless page would make seedSRS a silent no-op — do not render the control');
-  assert.ok(!/data-f="/.test(due),
-    'triage controls must use data-cap-* only; data-f would hit the generic .hm-li branch and '
-    + 'navigate without marking the capture triaged');
+test('T12a: Schedule review is offered only for a quiz-bearing matched page', () => {
+  const items = [{ id: 'c1', text: 'Question?', at: 1, route: null, state: 'open' }];
+  const quiz = makeCaptureUi(items, { ref: 'topic.md', title: 'Topic', hasQuiz: true }).capNextHtml('c1', 'Question?');
+  const noQuiz = makeCaptureUi(items, { ref: 'page.md', title: 'Page', hasQuiz: false }).capNextHtml('c1', 'Question?');
+  assert.match(quiz, /data-cap-review="c1"[^>]*>Schedule review</);
+  assert.doesNotMatch(noQuiz, /data-cap-review=/);
+  assert.match(noQuiz, /data-cap-open="c1"/);
 });
 
 // A capture exists to be reviewed later, and topicHasQuiz gates the whole "Review this topic"
@@ -385,47 +477,46 @@ test('T12a: the triage card offers Review only for quiz-bearing pages', () => {
 // same topic outranks the topic page in search and the affordance vanishes without a word — seen
 // live on 2026-09-07 when "first-episode psychosis" displaced t_psychosis.md for a "psychosis"
 // capture. Executes the real fdCaptureRows against a stubbed index rather than pinning its text.
-function makeCaptureRows(results, quizzed) {
+function makeCaptureMatch(results, quizzed) {
   // eslint-disable-next-line no-new-func
   const factory = new Function('items', 'results', 'quizzed', `
     var SI = true;
-    function capRead(){ return { items: items }; }
     function runSearch(){ return results; }
     function topicHasQuiz(f){ return quizzed.indexOf(f) >= 0; }
     ${slice(shell, 'function fdCaptureMatch(', 'function fdTodayLive(')}
-    return fdCaptureRows();
+    return fdCaptureMatch('psychosis');
   `);
-  return factory([{ id: 'c1', text: 'psychosis', triaged: false }], results, quizzed);
+  return factory([], results, quizzed);
 }
 
 test('T12c: the capture match prefers a reviewable hit over a better-ranked quizless one', () => {
-  const rows = makeCaptureRows(
+  const match = makeCaptureMatch(
     [{ d: { f: 'cotw_20260907_fep_ms3.md', t: 'First-episode psychosis' } },
       { d: { f: 't_psychosis.md', t: 'Psychosis' } }],
     ['t_psychosis.md'],
   );
-  assert.equal(rows[0].match.ref, 't_psychosis.md',
+  assert.equal(match.ref, 't_psychosis.md',
     'a quizless Case-of-the-Week page outranking the topic page must not steal the capture');
-  assert.equal(rows[0].match.hasQuiz, true, 'the Review action must survive the collision');
+  assert.equal(match.hasQuiz, true, 'the Schedule review action must survive the collision');
 });
 
 test('T12d: it still routes somewhere when nothing in the results has a quiz', () => {
-  const rows = makeCaptureRows(
+  const match = makeCaptureMatch(
     [{ d: { f: 'cotw_20260907_fep_ms3.md', t: 'First-episode psychosis' } },
       { d: { f: 'pg_suicide.md', t: 'Suicide' } }],
     [],
   );
-  assert.equal(rows[0].match.ref, 'cotw_20260907_fep_ms3.md',
+  assert.equal(match.ref, 'cotw_20260907_fep_ms3.md',
     'with no reviewable hit the top result still wins — a capture must never lose its match');
-  assert.equal(rows[0].match.hasQuiz, false);
+  assert.equal(match.hasQuiz, false);
 });
 
 test('T12b: unavailable matching preserves captures and safe actions', () => {
-  const rows = slice(shell, 'function fdCaptureMatch(', 'function fdTodayLive(');
-  assert.match(rows, /results=SI\?runSearch\(text\):\[\]/,
-    'an unavailable index yields no match instead of throwing or dropping a capture');
-  assert.match(due, /data-cap-drop=/);
-  assert.match(due, /data-cap-copy="1"/);
+  const html = makeCaptureUi([{ id: 'c1', text: 'Question?', at: 1, route: null, state: 'open' }])
+    .capNextHtml('c1', 'Question?');
+  assert.match(html, /Your question remains in Capture/);
+  assert.match(html, /data-cap-drop="c1"/);
+  assert.match(html, /data-cap-route="supervision"/);
 });
 
 test('the search-index fetch re-renders home, so the degraded state cannot stick', () => {
@@ -461,22 +552,22 @@ test('the capture mounts are removed entirely in a faculty preview', () => {
 test('T4j: deleting the last capture removes the storage key rather than leaving an empty record', () => {
   const ls = memStorage();
   // eslint-disable-next-line no-new-func
-  const s = new Function('localStorage', 'currentItem', `${phi}\n${storeCode}\nreturn {capAdd:capAdd,capRead:capRead,capRemove:capRemove,capMarkTriaged:capMarkTriaged};`)(ls, null);
+  const s = new Function('localStorage', 'currentItem', `${phi}\n${storeCode}\nreturn {capAdd:capAdd,capRead:capRead,capRemove:capRemove,capSetRoute:capSetRoute};`)(ls, null);
   s.capAdd('first');
   s.capAdd('second');
   const [a, b] = s.capRead().items;
-  s.capMarkTriaged(b.id);
+  s.capSetRoute(b.id, 'later');
   s.capRemove(a.id);
-  assert.equal(s.capRead().items.length, 1, 'a triaged item is still a retained record');
+  assert.equal(s.capRead().items.length, 1, 'a routed item is still a retained record');
   assert.notEqual(ls.getItem('cw_capture_v1'), null);
   s.capRemove(b.id);
   assert.equal(ls.getItem('cw_capture_v1'), null, 'no records left: the key is gone, not an empty shell');
 });
 
 const listCode = slice(shell, '  /* Attribute-context escape for learner text', '  function capRenderBody(){');
-function makeList(items) {
+function makeList(items, version = 1) {
   const ls = memStorage();
-  if (items) ls.setItem('cw_capture_v1', JSON.stringify({ v: 1, items }));
+  if (items) ls.setItem('cw_capture_v1', JSON.stringify({ v: version, items }));
   // eslint-disable-next-line no-new-func
   return new Function('localStorage', 'currentItem', `
     ${phi}
@@ -487,15 +578,13 @@ function makeList(items) {
   `)(ls, null);
 }
 
-test('T13a: triaged captures are listed with their status, after the untriaged ones', () => {
+test('T13a: routed captures remain visible with their route label', () => {
   const html = makeList([
-    { id: 'c_old', text: 'when does clozapine need a wbc', at: 1, ctx: null, triaged: true },
-    { id: 'c_new', text: 'why lithium levels at 12 hours', at: 2, ctx: null, triaged: false },
-  ]).capListHtml();
-  const rows = html.match(/<li [^>]*data-cap-status="(new|triaged)"/g);
-  assert.deepEqual(rows.map((r) => r.match(/"(new|triaged)"/)[1]), ['new', 'triaged']);
-  assert.match(html, /clozapine[\s\S]*cap-list__status">Triaged</);
-  assert.match(html, /lithium[\s\S]*cap-list__status">New</);
+    { id: 'c_old', text: 'first question', at: 1, ctx: null, route: 'later', state: 'open' },
+    { id: 'c_new', text: 'second question', at: 2, ctx: null, route: null, state: 'open' },
+  ], 2).capListHtml();
+  assert.match(html, /first question[\s\S]*cap-list__status">Look up later</);
+  assert.match(html, /second question[\s\S]*cap-list__status">Unrouted</);
   assert.equal((html.match(/data-cap-del="/g) || []).length, 2, 'every retained record has its own delete control');
 });
 
@@ -512,7 +601,7 @@ test('T13c: each delete control carries the question in its accessible name, att
     { id: 'c_2', text: 'x'.repeat(90), at: 2, ctx: null, triaged: false },
   ]);
   const html = s.capListHtml();
-  const labels = [...html.matchAll(/aria-label="([^"]*)"/g)].map((m) => m[1]);
+  const labels = [...html.matchAll(/aria-label="(Delete question:[^"]*)"/g)].map((m) => m[1]);
   assert.equal(labels.length, 2);
   assert.notEqual(labels[0], labels[1], 'no two controls share a name');
   assert.equal(labels[0], 'Delete question: is &quot;QTc &gt; 500&quot; the number?');
@@ -525,7 +614,7 @@ test('T14: the sheet owns a stable live-status region and announces mutations fr
   for (const needle of [
     "capAnnounce('Question deleted. '+capRemainingText())",
     "capAnnounce('All saved questions erased.')",
-    "capAnnounce('Question saved. '+capRemainingText())",
+    "capAnnounce('Saved on this device. '+capRemainingText())",
   ]) assert.ok(shell.includes(needle), `missing announcement: ${needle}`);
 });
 

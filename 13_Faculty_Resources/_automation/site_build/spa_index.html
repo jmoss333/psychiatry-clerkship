@@ -454,17 +454,20 @@
   .cap-next{margin:var(--fd-space-7) 0 0;padding:var(--fd-space-7);border:1px solid var(--primary);border-radius:var(--fd-radius-lg);background:var(--primary-light)}
   .cap-next__saved{margin:0 0 var(--fd-space-1);color:var(--primary-dark);font-size:var(--fd-font-xs);font-weight:700}
   .cap-next h3{margin:0 0 var(--fd-space-5);color:var(--text);font-family:var(--font-head);font-size:var(--fd-font-md)}
-  .cap-next__match{display:flex;flex-direction:column;gap:var(--fd-space-1);padding:var(--fd-space-5);border-radius:var(--fd-radius-md);background:var(--surface)}
+  .cap-next__match{display:flex;flex-direction:column;gap:var(--fd-space-1);margin-top:var(--fd-space-5);padding:var(--fd-space-5);border-radius:var(--fd-radius-md);background:var(--surface)}
   .cap-next__match span{font-size:var(--fd-font-xs);color:var(--text-light)}
   .cap-next__match strong{font-size:var(--fd-font-md);color:var(--text)}
   .cap-next__actions{display:flex;gap:var(--fd-space-4);flex-wrap:wrap;margin-top:var(--fd-space-5)}
   .cap-next__empty{margin:0 0 var(--fd-space-5);font-size:var(--fd-font-sm);line-height:1.5;color:var(--text-mid)}
-  .cap-next__supervise{margin-top:var(--fd-space-4)}
+  .cap-next__done{margin-top:var(--fd-space-5);min-height:var(--fd-target-touch)}
+  .cap-route{display:flex;flex-wrap:wrap;gap:var(--fd-space-4);margin-top:var(--fd-space-4)}
+  .cap-route .cap-btn{min-height:var(--fd-target-touch)}
+  .cap-route .cap-btn[aria-pressed="true"]{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark)}
   .cap-list{list-style:none;margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--border)}
-  .cap-list li{display:flex;align-items:center;gap:var(--fd-space-4);margin:0 0 var(--fd-space-1);font-size:var(--fd-font-sm);color:var(--text)}
+  .cap-list li{margin:0 0 var(--fd-space-6);padding:0 0 var(--fd-space-6);border-bottom:1px solid var(--border);font-size:var(--fd-font-sm);color:var(--text)}
+  .cap-list__row{display:flex;align-items:center;gap:var(--fd-space-4)}
   .cap-list__text{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
   .cap-list__status{flex:0 0 auto;font-size:var(--fd-font-2xs);font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--text-light);border:1px solid var(--border);border-radius:var(--fd-radius-pill);padding:var(--fd-space-1) var(--fd-space-3);line-height:1.4}
-  .cap-list li[data-cap-status="triaged"] .cap-list__text{color:var(--text-mid)}
   /* Touch target (#428) without a taller list: the hit area is the button box, the glyph stays small. */
   .cap-list .x{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--text-light);font:inherit;font-size:var(--fd-font-lg);line-height:1;cursor:pointer;padding:0;min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);border-radius:var(--fd-radius-sm)}
   .cap-list .x:hover,.cap-list .x:focus-visible{background:var(--bg-alt);color:var(--text)}
@@ -756,7 +759,7 @@
     [].forEach.call(contentEl.querySelectorAll('.markrev'),function(el){ if(el.getAttribute('data-f')!==file)return; el.classList.toggle('on',done); el.setAttribute('aria-pressed',String(done)); el.textContent=done?'✓ Read':'Mark as read'; });
   }
   function topicHasQuiz(file){ var m=(typeof TOPIC_META!=='undefined'&&TOPIC_META)?TOPIC_META[file]:null; return !!(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length); }
-  function seedSRS(file){ try{ if(!topicHasQuiz(file))return; var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}}; } var id='TOPIC#'+file; if(!s.cards[id]){ s.cards[id]={ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; localStorage.setItem('cw_srs_v1',JSON.stringify(s)); } }catch(_){ } }
+  function seedSRS(file){ try{ if(!topicHasQuiz(file))return false; var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}}; } var id='TOPIC#'+file; if(!s.cards[id]){ s.cards[id]={ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; localStorage.setItem('cw_srs_v1',JSON.stringify(s)); } return true; }catch(_){ return false; } }
   /* One-time self-healing migration: drop never-graded TOPIC# cards whose topic has no
      servable quiz — they were seeded by the unguarded seedSRS, can never be graded in
      Daily Review, and inflate "Due today" forever. Runs whenever topic_meta loads;
@@ -1423,15 +1426,6 @@
   function capTime(v){ return typeof v==='number'&&isFinite(v)&&v>=0&&v<=8640000000000000&&Math.floor(v)===v?v:0; }
   function capContext(v){ return typeof v==='string'&&/^[A-Za-z0-9][A-Za-z0-9_./-]{0,199}$/.test(v)
     &&v.indexOf('..')<0?v:null; }
-  function capLegacyStatus(item){
-    if(typeof item.status==='string'&&/^(?:new|scheduled|supervision|triaged)$/.test(item.status))return item.status;
-    return item.triaged===true?'triaged':'new';
-  }
-  function capCompatStatus(route,state){
-    if(state==='done')return 'triaged';
-    if(route==='supervision')return 'supervision';
-    return route==='later'||route==='rounds'?'scheduled':'new';
-  }
   function capOlder(a,b){ return a.at<b.at||(a.at===b.at&&a.id<b.id); }
   function capRead(){
     var d=null; try{ d=JSON.parse(localStorage.getItem('cw_capture_v1')||'null'); }catch(_){ d=null; }
@@ -1444,10 +1438,8 @@
       seen[it.id]=true;
       var route=d.v===1?capLegacyRoute(it):capRoute(it.route);
       var state=d.v===1?'open':capState(it.state);
-      /* These two derived fields keep legacy Capture controls working until Task 2 replaces them. */
-      var status=d.v===1?capLegacyStatus(it):capCompatStatus(route,state);
       out.push({id:it.id,text:it.text.slice(0,CAP_MAX),at:capTime(it.at),ctx:capContext(it.ctx),
-        route:route,state:state,status:status,triaged:status!=='new'});
+        route:route,state:state});
       capEvict(out);
     }
     return {v:2,items:out};
@@ -1528,23 +1520,13 @@
     }
     return false;
   }
-  function capSetStatus(id,status){
-    if(typeof status!=='string'||!/^(?:new|scheduled|supervision|triaged)$/.test(status))return false;
-    var d=capRead(), found=false;
-    for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){
-      d.items[i].route=status==='scheduled'?'later':(status==='supervision'?'supervision':null);
-      d.items[i].state=status==='triaged'?'done':'open'; found=true; break;
-    } }
-    return found?capWrite(d):false;
-  }
-  function capMarkTriaged(id){ return capSetStatus(id,'triaged'); }
   /* The supervised-draft stamp travels with the one sanctioned clipboard egress. */
   var CAP_STAMP='Questions from the unit, brought to supervision. Written by a trainee for teaching discussion — contains no patient information.';
   /* P4 — the one sanctioned egress. The stamp lives inside the payload builder so every copy path
      carries it, matching the supervised-draft pattern in decisional-capacity-module.html. */
   function capClipboardText(){
     var d=capRead(), lines=[CAP_STAMP,''];
-    for(var i=0;i<d.items.length;i++){ if(d.items[i].status==='new'||d.items[i].status==='supervision') lines.push('- '+d.items[i].text); }
+    for(var i=0;i<d.items.length;i++){ if(d.items[i].state==='open') lines.push('- '+d.items[i].text); }
     return lines.join('\n');
   }
   /* ---- end ward capture store ---- */
@@ -1596,24 +1578,35 @@
     if(t.length>60) t=t.slice(0,57)+'…';
     return 'Delete question: '+t;
   }
+  function capRouteLabel(route){
+    if(route==='rounds')return 'Ask on rounds';
+    if(route==='supervision')return 'Discuss in supervision';
+    if(route==='later')return 'Look up later';
+    return 'Unrouted';
+  }
+  function capRouteHtml(id,route){
+    var options=['rounds','supervision','later'], h='<div class="cap-route" role="group" aria-label="Choose where to take this question">';
+    for(var i=0;i<options.length;i++){
+      var choice=options[i];
+      h+='<button type="button" class="cap-btn" data-cap-route="'+choice+'" data-cap-id="'+capAttr(id)+'" aria-pressed="'+(route===choice?'true':'false')+'">'+capRouteLabel(choice)+'</button>';
+    }
+    return h+'</div>';
+  }
   function capListHtml(){
-    /* Every retained capture is listed here, triaged ones included (#426). Opening or scheduling
-       a question marks it triaged and drops it from Today's card, but the text stays in
-       cw_capture_v1 -- and a learner must be able to see and delete anything the app still holds.
-       Untriaged first, so the working list reads as before; triaged after, labelled as such. */
-    var d=capRead(), items=[], i;
-    for(i=0;i<d.items.length;i++){ if(!d.items[i].triaged) items.push(d.items[i]); }
-    for(i=0;i<d.items.length;i++){ if(d.items[i].triaged) items.push(d.items[i]); }
+    /* Every retained question stays visible here, including questions already routed elsewhere. */
+    var d=capRead(), items=d.items;
     if(!items.length)return '';
     var h='<ul class="cap-list">';
     for(var j=0;j<items.length;j++){
       var it=items[j];
-      h+='<li data-cap-status="'+(it.triaged?'triaged':'new')+'"><span class="cap-list__text">'+esc(it.text)+'</span>'
-        +'<span class="cap-list__status">'+(it.triaged?'Triaged':'New')+'</span>'
-        +'<button type="button" class="x" data-cap-del="'+esc(it.id)+'" aria-label="'+capAttr(capDeleteLabel(it.text))+'">&times;</button></li>';
+      h+='<li data-cap-route-state="'+(it.route||'unrouted')+'"><div class="cap-list__row"><span class="cap-list__text">'+esc(it.text)+'</span>'
+        +'<span class="cap-list__status">'+capRouteLabel(it.route)+'</span>'
+        +'<button type="button" class="x" data-cap-del="'+capAttr(it.id)+'" aria-label="'+capAttr(capDeleteLabel(it.text))+'">&times;</button></div>'
+        +capRouteHtml(it.id,it.route)+'</li>';
     }
-    /* Erase all is offered whenever the store holds ANY record, not only untriaged ones. */
-    return h+'</ul><div class="cap-acts"><button type="button" class="cap-btn danger" id="capEraseAll">Erase all captures</button></div>';
+    /* Erase all is offered whenever the store holds any record. */
+    return h+'</ul><div class="cap-acts"><button type="button" class="cap-btn" data-cap-copy="1">Copy questions</button>'+
+      '<button type="button" class="cap-btn danger" id="capEraseAll">Erase all captures</button></div>';
   }
   function capRenderBody(){
     if(!capSheet)return;
@@ -1629,24 +1622,24 @@
     var n=capRead().items.length;
     return n===0?'No saved questions remain.':(n+' saved question'+(n===1?'':'s')+' remain'+(n===1?'s':'')+'.');
   }
-  function capNextHtml(id,text){
+  function capNextHtml(id,text,route){
     var match=typeof window.fdCaptureMatchForQuestion==='function'?window.fdCaptureMatchForQuestion(text):null;
-    var h='<section class="cap-next" data-cap-next="'+esc(id)+'" aria-labelledby="capNextHead"><p class="cap-next__saved">Question saved</p>'+
-      '<h3 id="capNextHead">What would help next?</h3>';
+    var h='<section class="cap-next" data-cap-next="'+capAttr(id)+'" aria-labelledby="capNextHead"><p class="cap-next__saved">Saved on this device</p>'+
+      '<h3 id="capNextHead">Where will you take this question?</h3>'+capRouteHtml(id,route);
     if(match&&match.ref){
       h+='<div class="cap-next__match"><span>Likely match</span><strong>'+esc(match.title||match.ref)+'</strong></div>'+
-        '<div class="cap-next__actions"><button type="button" class="cap-btn primary" data-cap-open="'+esc(id)+'" data-cap-ref="'+esc(match.ref)+'">Open now</button>';
-      if(match.hasQuiz)h+='<button type="button" class="cap-btn" data-cap-review="'+esc(id)+'" data-cap-ref="'+esc(match.ref)+'">Review later</button>';
+        '<div class="cap-next__actions"><button type="button" class="cap-btn primary" data-cap-open="'+capAttr(id)+'" data-cap-ref="'+capAttr(match.ref)+'">Open now</button>';
+      if(match.hasQuiz)h+='<button type="button" class="cap-btn" data-cap-review="'+capAttr(id)+'" data-cap-ref="'+capAttr(match.ref)+'">Schedule review</button>';
       h+='</div>';
-    }else h+='<p class="cap-next__empty">No close library match yet. Keep it in your question inbox or bring it to supervision.</p>';
-    return h+'<button type="button" class="cap-btn cap-next__supervise" data-cap-supervise="'+esc(id)+'">Bring to supervision</button></section>';
+    }else h+='<p class="cap-next__empty">No close library match yet. Your question remains in Capture.</p>';
+    return h+'<button type="button" class="cap-btn cap-next__done" data-cap-drop="'+capAttr(id)+'">Done</button></section>';
   }
   function capRefreshNext(){
     var next=capSheet&&capSheet.querySelector('[data-cap-next]');
     if(!next)return;
     var id=next.getAttribute('data-cap-next'), items=capRead().items, hold=capSheet.querySelector('#capHold');
     for(var i=0;i<items.length;i++){
-      if(items[i].id===id){ if(hold)hold.innerHTML=capNextHtml(id,items[i].text); return; }
+      if(items[i].id===id){ if(hold)hold.innerHTML=capNextHtml(id,items[i].text,items[i].route); return; }
     }
     if(hold)hold.innerHTML='';
   }
@@ -1678,7 +1671,7 @@
       + '<button type="button" data-cap-starter="What should I ask when ">What should I ask when…?</button>'
       + '<button type="button" data-cap-starter="What changes disposition for ">What changes disposition?</button></div>'
       /* P3 — always-visible disclosure, not dismissible, because storage is on by default */
-      + '<p class="cap-disclose">Saved on this device only, never sent anywhere. Erase all captures below.</p>'
+      + '<p class="cap-disclose">Saved on this device. Nothing leaves unless you choose Copy or Email. No patient details.</p>'
       + '<div id="capHold"></div>'
       + '<div class="cap-acts"><button type="button" class="cap-btn primary" id="capSave">Save</button>'
       + '<button type="button" class="cap-btn" id="capCancel">Cancel</button></div>'
@@ -1694,7 +1687,7 @@
     capSheet.addEventListener('click',function(e){
       var t=e.target;
       /* The dialog is mounted under body, outside fdApp's delegated click listener. */
-      var action=t.closest&&t.closest('[data-cap-open],[data-cap-review],[data-cap-supervise]');
+      var action=t.closest&&t.closest('[data-cap-open],[data-cap-review],[data-cap-route],[data-cap-drop],[data-cap-copy]');
       if(action&&typeof onAction==='function'){e.preventDefault();onAction(action);return;}
       var starter=t.closest&&t.closest('[data-cap-starter]');
       if(starter){ var starterText=capSheet.querySelector('#capText'); if(starterText&&!starterText.value.trim())starterText.value=starter.getAttribute('data-cap-starter')||''; if(starterText)starterText.focus(); return; }
@@ -1721,9 +1714,9 @@
     }
     if(hold)hold.innerHTML='';
     var savedId=capAdd(text);
-    if(savedId){ ta.value=''; capRefreshAfterMutation(); if(hold)hold.innerHTML=capNextHtml(savedId,text); capAnnounce('Question saved. '+capRemainingText()); }
+    if(savedId){ ta.value=''; capRefreshAfterMutation(); if(hold)hold.innerHTML=capNextHtml(savedId,text,null); capAnnounce('Saved on this device. '+capRemainingText()); }
     else { var err=document.createElement('p'); err.className='cap-err';
-      err.textContent="Couldn't save on this device. Use “Ask my attending” on the home screen to copy your questions out before you close this tab.";
+      err.textContent="Couldn't save on this device. Select and copy your question from the text box before you close this tab.";
       if(hold)hold.appendChild(err); }
   }
   /* ---------- Search (mirrors rc-search: tokenize -> synonym expand -> TF-IDF + prefix/substring bonus) ---------- */
@@ -2315,7 +2308,7 @@
     var data=capRead(), rows=[];
     for(var i=0;i<data.items.length;i++){
       var item=data.items[i];
-      rows.push({id:item.id,text:item.text,status:item.status,triaged:false,match:fdCaptureMatch(item.text)});
+      rows.push({id:item.id,text:item.text,at:item.at,route:item.route,state:item.state});
     }
     return rows;
   }
@@ -2759,7 +2752,8 @@
   }
 
   function fdCaptureAction(el){
-    var id=el.getAttribute('data-cap-open')||el.getAttribute('data-cap-review')||el.getAttribute('data-cap-supervise')||el.getAttribute('data-cap-drop');
+    if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}
+    var id=el.getAttribute('data-cap-id')||el.getAttribute('data-cap-open')||el.getAttribute('data-cap-review')||el.getAttribute('data-cap-drop');
     var ref=el.getAttribute('data-cap-ref');
     if(el.hasAttribute('data-cap-copy')){
       var payload=capClipboardText();
@@ -2767,9 +2761,25 @@
       else el.textContent='Copy unavailable';
       return;
     }
-    if(el.hasAttribute('data-cap-review')&&ref){seedSRS(ref);capSetStatus(id,'scheduled');specialRefresh();if(capSheet)capClose();return;}
-    if(el.hasAttribute('data-cap-supervise')){capSetStatus(id,'supervision');specialRefresh();if(capSheet)capClose();return;}
-    if(el.hasAttribute('data-cap-drop')){capRemove(id);specialRefresh();return;}
+    if(el.hasAttribute('data-cap-route')){
+      var route=el.getAttribute('data-cap-route');
+      var routeHost=el.closest&&el.closest('#capListWrap')?'#capListWrap':'#capHold';
+      if(capSetRoute(id,route)){
+        capRenderBody();capRefreshNext();specialRefresh();capAnnounce('Question routed: '+capRouteLabel(route)+'.');
+        var buttons=capSheet&&capSheet.querySelectorAll(routeHost+' [data-cap-route][data-cap-id]');
+        for(var i=0;buttons&&i<buttons.length;i++){
+          if(buttons[i].getAttribute('data-cap-id')===id&&buttons[i].getAttribute('data-cap-route')===route){buttons[i].focus();break;}
+        }
+      }
+      return;
+    }
+    if(el.hasAttribute('data-cap-review')&&ref){
+      if(seedSRS(ref)){
+        capSetRoute(id,'later');specialRefresh();if(capSheet){capRenderBody();capRefreshNext();capAnnounce('Review scheduled.');}
+      }else if(capSheet)capAnnounce('Could not schedule review on this device.');
+      return;
+    }
+    if(el.hasAttribute('data-cap-drop')){capRemove(id);if(capSheet){capRenderBody();capRefreshNext();capAnnounce('Question done. '+capRemainingText());}specialRefresh();return;}
     if(el.hasAttribute('data-cap-open')&&ref){if(capSheet)capClose();fdOpenRef(ref);return;}
   }
 
@@ -2806,7 +2816,7 @@
     }
     el=target.closest&&target.closest('[data-capture-open]');
     if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el,fdCaptureAction);return;}
-    el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-supervise],[data-cap-drop],[data-cap-copy]');
+    el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-route],[data-cap-drop],[data-cap-copy]');
     if(el){event.preventDefault();fdCaptureAction(el);return;}
     el=target.closest&&target.closest('.pt-opt');
     if(el){event.preventDefault();var qi=el.getAttribute('data-qi');ptAnswers[qi]=el.getAttribute('data-key');var siblings=contentEl.querySelectorAll('.pt-opt[data-qi="'+qi+'"]');for(var i=0;i<siblings.length;i++)siblings[i].classList.remove('sel');el.classList.add('sel');updatePtCount();return;}
