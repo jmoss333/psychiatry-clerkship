@@ -55,7 +55,7 @@
    Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. */
 
-var FD_READER_TAB_LABELS={ today:'Today', path:'Path', library:'Library' };
+var FD_READER_TAB_LABELS={ today:'Today', path:'Path', library:'Library', care:'Patient care resources' };
 
 /* backLabel names whichever tab the reader was opened FROM (state.fromTab), not the item's own
    week -- a page can be reached from Today, Path, or Library, and "back" always means "return to

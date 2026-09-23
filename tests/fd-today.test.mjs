@@ -77,6 +77,16 @@ const FIX_CUR = {
   ],
   libraryColumns: [{ name: 'Col', accent: 'topic', refs: ['a.md', 'b.md', 't.html'] }],
   libraryExclude: [],
+  careResources: [
+    { id: 'resource-finder', title: 'Find services and community supports',
+      description: 'Treatment, housing, food, transportation, and family supports.',
+      url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html',
+      searchTerms: ['community resources', 'housing help'] },
+    { id: 'meeting-calendar', title: 'Find a recovery meeting',
+      description: 'Current recovery-meeting options from ReConnect.',
+      url: 'https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html',
+      searchTerms: ['recovery meeting', 'aa meeting'] },
+  ],
   safetyKit: [{ ref: 'a.md', sub: 'Sub line' }],
   roles: { ms3: [], resident: [] },
   synonyms: {},
@@ -272,6 +282,13 @@ test('the rail and the pill row are both always present, for CSS to choose betwe
   assert.match(html, /fd-rail/);
   assert.match(html, /fd-kitcard/);
   assert.match(html, /fd-quicktools--pills/);
+});
+
+test('Today leaves patient-care links to the dedicated top-level destination', () => {
+  const html = F.fdToday(IDX, s({}));
+  assert.doesNotMatch(html, /aria-label="Patient care resources"|fd-carelinks|data-care-resource/);
+  assert.equal((html.match(/class="fd-quicktool"/g) || []).length, 2,
+    'the existing responsive Quick Tools remain intact');
 });
 
 test('no week set renders the setup CTA instead of the continue card', () => {
@@ -590,11 +607,12 @@ test('every new string is audience-neutral', () => {
   assert.doesNotMatch(all, AUDIENCE_TOKEN_RE);
 });
 
-test('phone pill ordering is CSS-only at 640px and desktop remains unchanged', () => {
+test('phone quick tools remain CSS-first while patient-care duplicates stay retired', () => {
   const css = read('frontdoor/frontdoor.css');
   const phone = [...css.matchAll(/@media\s*\(max-width:640px\)\s*\{([\s\S]*?)\n\}/g)].find(m=>m[1].includes('.fd-today__main{'));
   assert.ok(phone,'phone-only breakpoint exists');
   assert.match(phone[1], /\.fd-today__main\{display:flex;flex-direction:column\}/);
   assert.match(phone[1], /\.fd-today__main > \.fd-quicktools--pills\{order:-1;margin-bottom:var\(--fd-space-\d+\)\}/);
   assert.match(css, /@media \(min-width:1000px\)\{[\s\S]*?\.fd-quicktools--pills\{display:none\}/);
+  assert.doesNotMatch(css, /fd-carelinks--mobile|fd-carelinks--rail|fd-kit__care/);
 });

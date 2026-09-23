@@ -1796,6 +1796,66 @@ test('a medication-refusal search ranks Decisional Capacity first without weaken
   await expectHealthy(page);
 });
 
+test('Patient care resources is a safe, responsive fourth destination and search Enter opens its fixed URL', async ({ page }, testInfo) => {
+  const expectedUrls = [
+    'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html',
+    'https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html',
+    'https://mental-health-education-library.netlify.app/patient',
+    'https://reconnect-tools.netlify.app/tools/podcast-navigator.html',
+    'https://reconnect-tools.netlify.app/tools/relational-bibliotherapy.html',
+  ];
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=care');
+
+  const tabs = page.locator('.fd-tab');
+  await expect(tabs).toHaveCount(4);
+  expect(await tabs.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-fd-tab'))))
+    .toEqual(['today', 'path', 'library', 'care']);
+  const careTab = page.locator('[data-fd-tab="care"]');
+  await expect(careTab).toHaveAttribute('aria-current', 'page');
+  await expect(careTab).toHaveAccessibleName('Patient care resources');
+  const libraryBox = await page.locator('[data-fd-tab="library"]').boundingBox();
+  const careBox = await careTab.boundingBox();
+  expect(careBox.x - (libraryBox.x + libraryBox.width)).toBeGreaterThan(80);
+
+  const links = page.locator('.fd-carelink');
+  await expect(links).toHaveCount(5);
+  expect(await links.evaluateAll(nodes => nodes.map(node => ({
+    href: node.href, target: node.target, rel: node.rel,
+  })))).toEqual(expectedUrls.map(href => ({ href, target: '_blank', rel: 'noopener noreferrer' })));
+  await expect(page.locator('[data-teaching-resource="family-therapy-companion"]')).toHaveCount(0);
+  expect(await page.locator('.fd-care-page').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+
+  await page.locator('[data-fd-search]').click();
+  const input = page.locator('.fd-searchpanel__input');
+  await input.fill('housing help');
+  await expect(page.locator('.fd-result').first()).toHaveAttribute('data-care-resource', 'resource-finder');
+  const popupPromise = page.waitForEvent('popup');
+  await input.press('Enter');
+  const popup = await popupPromise;
+  await expect.poll(() => popup.url()).toBe(expectedUrls[0]);
+  await popup.close();
+  await input.press('Escape');
+  await expect(page.locator('.fd-search')).toHaveCount(0);
+
+  await page.setViewportSize(PHONE);
+  await expect(careTab).toHaveAccessibleName('Patient care resources');
+  const compact = page.locator('[data-fd-tab="care"] .fd-tab__label');
+  expect(await compact.evaluate(el => getComputedStyle(el, '::after').content)).toContain('Care');
+  for (const tab of await tabs.all()) {
+    const box = await tab.boundingBox();
+    expect(box.height).toBeGreaterThanOrEqual(44);
+  }
+  expect(await page.locator('.fd-tabs').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+  expect(await page.locator('.fd-care-page').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+
+  await page.locator('[data-fd-tab="library"]').click();
+  const teaching = page.locator('[data-teaching-resource="family-therapy-companion"]');
+  await expect(teaching).toHaveAccessibleName(/Family Therapy Seminar Companion.*opens in a new tab/);
+  await expectHealthy(page);
+});
+
 // ---- Phone chrome (2026-09-16) --------------------------------------------------------------------
 // Measured before the change on a 375×812 phone opening ?page=t_mood.md: header 154px, capture
 // bar bottom at 210px, article h1 top at 382px — 47% of the first screen was shell. On the
@@ -1815,7 +1875,7 @@ test('phone chrome: tabs dock to the bottom, yield to the reader action bar, and
   expect(tabsBox.y + tabsBox.height).toBeCloseTo(PHONE.height, 0);
   const headerBox = await page.locator('.fd-header').boundingBox();
   expect(headerBox.height).toBeLessThanOrEqual(120);
-  for (const tab of ['[data-fd-tab="today"]', '[data-fd-tab="path"]', '[data-fd-tab="library"]']) {
+  for (const tab of ['[data-fd-tab="today"]', '[data-fd-tab="path"]', '[data-fd-tab="library"]', '[data-fd-tab="care"]']) {
     const box = await page.locator(tab).boundingBox();
     expect(box.height, `${tab} keeps its touch target`).toBeGreaterThanOrEqual(44);
   }

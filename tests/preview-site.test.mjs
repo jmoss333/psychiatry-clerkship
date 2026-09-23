@@ -32,7 +32,9 @@ function request(port) {
 }
 
 async function waitForServer(port, child) {
-  const deadline = Date.now() + 5_000;
+  // The launcher has its own five-second startup deadline. Give the test
+  // enough time to observe that result even when the full suite is busy.
+  const deadline = Date.now() + 10_000;
   while (Date.now() < deadline) {
     if (child.exitCode !== null) throw new Error(`preview exited early with ${child.exitCode}`);
     try { return await request(port); } catch (error) {

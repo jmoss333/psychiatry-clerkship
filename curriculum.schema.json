@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "curriculum.json — front door structure",
   "type": "object",
-  "required": ["learningPaths", "libraryColumns", "essentials", "libraryExclude", "siteLibrary", "rightsReferences", "safetyKit", "appPathway", "roles", "synonyms"],
+  "required": ["learningPaths", "libraryColumns", "essentials", "libraryExclude", "careResources", "teachingResources", "siteLibrary", "rightsReferences", "safetyKit", "appPathway", "roles", "synonyms"],
   "additionalProperties": false,
   "properties": {
     "_note": { "type": "string" },
@@ -72,6 +72,56 @@
         "properties": {
           "ref": { "type": "string", "minLength": 1 },
           "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "careResources": {
+      "description": "Canonical external patient-care destinations shown on both sites. Search terms are matched locally and are never appended to the URL.",
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["id", "group", "title", "description", "url", "searchTerms"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "group": { "type": "string", "enum": ["support", "education"] },
+          "title": { "type": "string", "minLength": 8, "maxLength": 64 },
+          "description": { "type": "string", "minLength": 12, "maxLength": 120 },
+          "url": {
+            "type": "string",
+            "anyOf": [
+              { "pattern": "^https://reconnect-tools\\.netlify\\.app/tools/[a-z0-9-]+\\.html$" },
+              { "const": "https://mental-health-education-library.netlify.app/patient" }
+            ]
+          },
+          "searchTerms": {
+            "type": "array",
+            "minItems": 3,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 3, "pattern": "^[a-z0-9]+(?: [a-z0-9]+)*$" }
+          }
+        }
+      }
+    },
+    "teachingResources": {
+      "description": "Curated external teaching companions shown in The Essentials on both sites. They are navigation-only and never enter completion or attestation inventories.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "description", "url", "note"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "const": "family-therapy-companion" },
+          "title": { "type": "string", "minLength": 8, "maxLength": 64 },
+          "description": { "type": "string", "minLength": 12, "maxLength": 120 },
+          "url": { "const": "https://family-therapy-seminar-companion.netlify.app/" },
+          "note": { "type": "string", "minLength": 20, "maxLength": 120 }
         }
       }
     },
