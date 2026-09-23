@@ -94,15 +94,16 @@ function fdCarePack(index,ids,crisisHtml){
   var resources=fdCarePackResources(index),selectedIds=fdCarePackIds(index,ids);
   var selected=Object.create(null),byId=Object.create(null),limit=selectedIds.length>=FD_CARE_PACK_LIMIT;
   var hasCrisis=typeof crisisHtml==='string'&&/class=["']crisis-block["']/.test(crisisHtml);
+  var printReady=selectedIds.length>0&&hasCrisis;
   var out='',i,item,isSelected,disabled;
   for(i=0;i<selectedIds.length;i++) selected[selectedIds[i]]=true;
   for(i=0;i<resources.length;i++) byId[resources[i].id]=resources[i];
 
-  out+='<section class="fd-care-pack" aria-labelledby="fd-care-pack-title">'+
+  out+='<section class="fd-care-pack'+(printReady?' is-print-ready':'')+'" aria-labelledby="fd-care-pack-title">'+
     '<header class="fd-care-pack__head"><div><h2 id="fd-care-pack-title">Build a resource handout</h2>'+
     '<p>Choose up to three resources. No patient details are collected or saved.</p></div>'+
     (hasCrisis?'<p class="fd-care-pack__included"><span aria-hidden="true">✓</span> Crisis resources are included automatically</p>':
-      '<p class="fd-care-pack__included is-unavailable">Crisis resources are unavailable in this build</p>')+'</header>'+
+      '<p class="fd-care-pack__crisis-failure" role="alert">This handout is unavailable because its crisis-resource block did not load.</p>')+'</header>'+
     '<div class="fd-care-pack__workbench"><section class="fd-care-pack__picker" aria-labelledby="fd-care-pack-picker-title">'+
     '<h3 id="fd-care-pack-picker-title">Choose resources</h3><div class="fd-care-pack__choices">';
   for(i=0;i<resources.length;i++){
@@ -134,8 +135,6 @@ function fdCarePack(index,ids,crisisHtml){
   if(hasCrisis){
     out+='<details class="fd-care-pack__crisis"><summary>Crisis resources included automatically</summary>'+
       String(crisisHtml)+'</details>';
-  }else{
-    out+='<p class="fd-care-pack__crisis-failure" role="alert">This handout is unavailable because its crisis-resource block did not load.</p>';
   }
   out+='<footer class="fd-care-pack__provenance">Created by Joshua Moss, MD from personally curated ReConnect databases.</footer>'+
     '</article></div><div class="fd-care-pack__actions"><p>Your choices stay only on this screen.</p>'+
