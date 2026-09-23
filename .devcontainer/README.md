@@ -43,6 +43,8 @@ clone_parent="$(mktemp -d "${TMPDIR:-/tmp}/clerkship-container.XXXXXX")"
 GIT_LFS_SKIP_SMUDGE=1 git clone --no-hardlinks "$source_repo" "$clone_parent/repo"
 # This setting belongs ONLY to the newly created full clone.
 git -C "$clone_parent/repo" config --local lfs.storage lfs
+# Initialize filters in this new clone, not the primary checkout or a linked worktree.
+git -C "$clone_parent/repo" lfs install --local --skip-smudge
 source_objects="$(git -C "$source_repo" lfs env | sed -n 's/^LocalMediaDir=//p')"
 mkdir -p "$clone_parent/repo/.git/lfs/objects"
 if [ -d "$source_objects" ]; then
@@ -54,6 +56,9 @@ python3 "$clone_parent/repo/bin/devcontainer-preflight.py"
 ```
 
 `git lfs checkout` uses cached objects; it does not download missing ones. The
+clone-local initialization is needed even when the Git LFS executable is already
+installed; `--skip-smudge` prevents automatic media downloads on later checkouts.
+Run `git lfs checkout` again after changing revisions, then rerun preflight. The
 preflight still blocks if any tracked media remains a pointer or is missing. If
 the source cache is incomplete, obtain approval before `git lfs pull`: downloads
 consume the GitHub account's metered LFS bandwidth. For a local-source clone,
