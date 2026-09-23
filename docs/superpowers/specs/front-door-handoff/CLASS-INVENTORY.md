@@ -276,7 +276,26 @@ internal Progress. These are part of the same shipped class contract:
 | `.fd-freshset` | Ghost `.fd-btn` sibling of a completed-week `.fd-continue` that is primary: "Practice a fresh set →", opens the question bank. |
 | `.fd-capture-launch` | Full-width capture-dialog launcher. |
 | `.fd-capture-launch--global` *(no rule)* | Stable learner-route launcher hook; `#fdCaptureMount` keeps it fixed above 640px and is hidden at phone widths. The dock's Capture button opens the same dialog. |
-| `.fd-capture` | Compact Today/On shift follow-up for the oldest open unrouted question only. Contains `.fd-capture__head` with a section heading, `.fd-capture__question` with escaped learner text, `.fd-capture__new` as the **View all N** dialog opener, and `.fd-capture__purpose` with the device-local privacy boundary. If no unrouted question remains, this card is omitted even while routed items remain in Capture. The full inbox, route buttons, Copy questions, Delete, and Erase all live in the portalled `.cap-sheet` styled by the shell's inline CSS (`.cap-list__row`, `.cap-route`, `.cap-next__done`); the global and dock Capture launchers still open it. The old multi-row Today selectors were removed with the markup. |
+| `.fd-capture` | Compact Today/On shift follow-up for the oldest open unrouted question only. Contains `.fd-capture__head` with a section heading, `.fd-capture__question` with escaped learner text, `.fd-capture__new` as the **View all N** dialog opener, and `.fd-capture__purpose` with the device-local privacy boundary. If no unrouted question remains, this card is omitted even while routed items remain in Capture. The full inbox, route buttons, Copy questions, Delete, Erase all, and explicit email selection live in the portalled `.cap-sheet` styled by the shell's inline CSS (`.cap-list__row`, `.cap-route`, `.cap-next__done`). The global and dock Capture launchers still open it. |
+
+### Capture email review overlay
+
+The full inbox places an unchecked `.cap-email-select` checkbox beside each open question; its
+`#capEmailSelect` button remains disabled until a learner selects at least one. The separate
+`.cap-email-backdrop` and `.cap-email-sheet` are portalled under `<body>` above `.cap-sheet`.
+While the review dialog is open, the Capture sheet is `inert` and `aria-hidden`; Escape and Tab
+are owned by the email dialog's own trap. Closing it clears the checkboxes and all in-memory
+recipient, affirmation, digest, and URI state, then focuses the review button in Capture.
+
+| Class | Notes |
+|---|---|
+| `.cap-email-head`, `.cap-email-count`, `.cap-email-digest` | Heading/close row, selected count, and wrapped, escaped preview. The digest preview uses `textContent`, never learner text in `innerHTML`. |
+| `.cap-email-label`, `.cap-email-address`, `.cap-email-hint` | Input and adjacent immutable `@mainehealth.org` text. `input[aria-invalid="true"]` is the inline error state; the hint also states mailbox existence cannot be verified. |
+| `.cap-email-affirm`, `.cap-email-status` | Required no-PHI checkbox and live handoff/failure message. Disabled Open draft uses the shared `.cap-btn` style. |
+| `.cap-email-fallback` | Revealed after clipboard absence/rejection or a URI too long to open. `[hidden]` wins over the layout rule; its read-only textarea keeps the complete selectable text. |
+
+The new selectors have `cap-*` names, so the 396 `fd-*` selector and 23 `is-*` state-class totals
+above do not change. The email overlay has no new `is-*` state class.
 | `.fd-progresscard` | Internal-Progress entry; contains `.fd-progresscard__title` and `.fd-progresscard__meta`. |
 | `.fd-progress-reader` | Reader modifier for the internal Progress surface. |
 

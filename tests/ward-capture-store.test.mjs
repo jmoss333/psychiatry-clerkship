@@ -217,6 +217,19 @@ test('full Capture inbox retains routed questions and escapes learner text', () 
   assert.match(html, /Erase all captures/);
 });
 
+test('email selection is explicit, limited to open questions, and escaped in the full inbox', () => {
+  const html = makeCaptureUi([
+    { id: 'one', text: '<img src=x onerror=alert(1)>', at: 1, route: null, state: 'open' },
+    { id: 'two', text: 'Already done', at: 2, route: 'later', state: 'done' },
+  ]).capListHtml();
+  assert.match(html, /type="checkbox"[^>]*data-cap-email-id="one"/);
+  assert.doesNotMatch(html, /data-cap-email-id="two"/);
+  assert.doesNotMatch(html, /\bchecked\b/);
+  assert.match(html, /id="capEmailSelect"[^>]*disabled[^>]*>Email selected questions</);
+  assert.match(html, /Select question for email: &lt;img/);
+  assert.doesNotMatch(html, /<img\b/);
+});
+
 function makeCaptureAction({ scheduleSucceeds = true, preview = false, dialog = false,
   storage = memStorage() } = {}) {
   const opened = [], events = [], focus = { activeElement: null };

@@ -1603,3 +1603,30 @@
 }
 /* Phase 2: the Resume card's block progress line ("Block · 1 of 2 done"). */
 .fd-resume__block{display:block;font-size:var(--fd-font-xs);color:var(--fd-text-dim)}
+/* Learner-controlled Capture email draft. The Capture sheet stays mounted but inert beneath it. */
+.cap-email-select{flex:0 0 auto;width:20px;height:20px;accent-color:var(--primary-dark);cursor:pointer}
+.cap-email-select:focus-visible{outline:2px solid var(--fd-focus);outline-offset:3px}
+.cap-email-backdrop{position:fixed;inset:0;z-index:132;background:rgba(47,41,36,.5)}
+.cap-email-sheet{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:133;width:min(560px,calc(100vw - 24px));max-height:min(86vh,760px);overflow-y:auto;box-sizing:border-box;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 12px 40px rgba(59,51,44,.28);font-family:var(--font-body);color:var(--text)}
+.cap-email-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cap-email-head h2{font-family:var(--font-head);font-size:var(--fd-font-lg);color:var(--primary-dark);margin:0}
+.cap-email-count{margin:8px 0;font-size:var(--fd-font-sm);color:var(--text-mid)}
+.cap-email-digest{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:var(--fd-font-sm);line-height:1.5;max-height:30vh;overflow-y:auto;background:var(--bg-alt);border:1px solid var(--border);border-radius:9px;padding:12px;margin:10px 0 18px}
+.cap-email-label{display:block;font-weight:700;font-size:var(--fd-font-sm);margin-bottom:6px}
+.cap-email-address{display:flex;align-items:stretch;max-width:100%;border:1px solid var(--border);border-radius:9px;overflow:hidden;background:var(--surface)}
+.cap-email-address:focus-within{outline:2px solid var(--fd-focus);outline-offset:2px}
+.cap-email-address input{min-width:0;flex:1 1 auto;border:0;background:transparent;color:var(--text);font:inherit;font-size:var(--fd-font-md);padding:10px}
+.cap-email-address input:focus{outline:none}
+.cap-email-address span{display:flex;align-items:center;flex:0 0 auto;background:var(--bg-alt);border-left:1px solid var(--border);color:var(--text-mid);font-size:var(--fd-font-sm);padding:0 10px}
+.cap-email-hint,.cap-email-status{font-size:var(--fd-font-sm);line-height:1.45;color:var(--text-mid);margin:8px 0}
+.cap-email-address:has(input[aria-invalid="true"]){border-color:var(--warning)}
+.cap-email-affirm{display:flex;align-items:flex-start;gap:10px;margin:18px 0 12px;font-size:var(--fd-font-sm);line-height:1.45;cursor:pointer}
+.cap-email-affirm input{flex:0 0 auto;width:20px;height:20px;margin:0;accent-color:var(--primary-dark)}
+.cap-email-sheet .cap-acts{margin:12px 0}
+.cap-email-sheet .cap-btn{min-height:44px}
+.cap-email-sheet .cap-btn:disabled{opacity:.5;cursor:not-allowed}
+.cap-email-fallback{margin-top:14px}
+.cap-email-fallback[hidden]{display:none}
+.cap-email-fallback label{display:block;font-size:var(--fd-font-sm);font-weight:700;margin-bottom:6px}
+.cap-email-fallback textarea{display:block;width:100%;box-sizing:border-box;resize:vertical;border:1px solid var(--border);border-radius:9px;padding:10px;background:var(--bg);color:var(--text);font:inherit;font-size:var(--fd-font-sm)}
+.cap-email-sheet button:focus-visible,.cap-email-sheet input:focus-visible,.cap-email-sheet textarea:focus-visible{outline:2px solid var(--fd-focus);outline-offset:2px}
