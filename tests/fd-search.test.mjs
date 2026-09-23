@@ -116,6 +116,14 @@ test('the empty-state message escapes the user query', () => {
   assert.doesNotMatch(html, /<img/, 'the query is echoed back into the empty state');
 });
 
+test('standard Search offers Library browsing above results while APP keeps its direct Essentials dock route', () => {
+  const standard = F.fdSearchOverlay(REAL_INDEX, '', SYN, { appMode: false });
+  const app = F.fdSearchOverlay(REAL_INDEX, '', SYN, { appMode: true });
+  assert.match(standard, /data-fd-tab="library"[^>]*>Browse the Library<\/button>/);
+  assert.ok(standard.indexOf('Browse the Library') < standard.indexOf('fd-searchpanel__body'));
+  assert.doesNotMatch(app, /Browse the Library/);
+});
+
 // ---- additional coverage this task's brief asked for: matching over title + ref + summary -----
 
 test('matches via title alone (ref and summary do not contain the query)', () => {

@@ -15,11 +15,28 @@ const make = new Function(`${read('phase_policy.js')}\n${read('frontdoor/fd_stat
   fdDueRow: fdDueRow,
   fdResumeCard: fdResumeCard,
   fdCaptureTriage: fdCaptureTriage,
+  fdCaptureSummary: fdCaptureSummary,
   fdCapsuleLeft: fdCapsuleLeft,
   fdLastReadRow: fdLastReadRow,
 };`);
 
 const F = make();
+
+test('due, resume, and last-read cards mark only their primary control', () => {
+  const due = { daily: { due: 2 } };
+  const capsule = { queueIds: ['a', 'b'], idx: 0 };
+  const last = { ref: 'a.md', kind: 'read', title: '<Learner title>' };
+  for (const [primary, secondary, id] of [
+    [F.fdDueRow(due, true), F.fdDueRow(due, false), 'primary-due'],
+    [F.fdResumeCard(capsule, true), F.fdResumeCard(capsule, false), 'primary-resume'],
+    [F.fdLastReadRow(last, true), F.fdLastReadRow(last, false), 'primary-read'],
+  ]) {
+    assert.equal((primary.match(/data-fd-dock-source=/g) || []).length, 1);
+    assert.match(primary, new RegExp(`data-fd-dock-source="${id}"`));
+    assert.doesNotMatch(secondary, /data-fd-dock-source=/);
+    assert.doesNotMatch(primary, /data-fd-dock-source="[^"]*Learner/);
+  }
+});
 
 test('due row is omitted at zero and uses exact singular/plural labels', () => {
   assert.equal(F.fdDueRow({
@@ -56,66 +73,34 @@ test('resume card renders only a valid capsule and retains the exact resume rout
     'the route-aware retained link must not be reduced to an action that drops resume=1');
 });
 
-test('capture triage is omitted when empty and keeps the approved no-PHI warning byte-for-byte', () => {
-  assert.equal(F.fdCaptureTriage([]), '');
-  const out = F.fdCaptureTriage([{ id: 'c1', text: 'Why this choice?', match: null }]);
-  assert.match(out, /Questions you captured on the unit\. Open the matching page, schedule one for review, or copy the list to raise in supervision\. Stays on this device — no patient details\./);
-  assert.match(out, /data-cap-drop="c1"/);
-  assert.match(out, /data-cap-copy="1"/);
+test('capture summary chooses the oldest open unrouted question and counts all open items', () => {
+  const summary = F.fdCaptureSummary([
+    { id: 'newer', at: 20, route: null, state: 'open' },
+    { id: 'older', at: 10, route: null, state: 'open' },
+    { id: 'routed', at: 1, route: 'rounds', state: 'open' },
+    { id: 'done', at: 0, route: null, state: 'done' },
+  ]);
+  assert.equal(summary.oldest.id, 'older');
+  assert.equal(summary.total, 3);
+  assert.equal(summary.unrouted, 2);
 });
 
-test('capture triage escapes every interpolated value and exposes only valid matched actions', () => {
-  const out = F.fdCaptureTriage([{
-    id: 'c&quot;<id>',
-    text: '<img src=x onerror=alert(1)>',
-    match: { ref: 'topic&quot;<.md', title: '<b>Unsafe</b>', hasQuiz: true },
-  }]);
+test('capture follow-up is omitted without an unrouted question', () => {
+  assert.equal(F.fdCaptureTriage([]), '');
+  assert.equal(F.fdCaptureTriage([{ id: 'c1', at: 1, text: 'Routed', route: 'later', state: 'open' }]), '');
+});
+
+test('capture follow-up shows one escaped oldest question and View all N for every open item', () => {
+  const out = F.fdCaptureTriage([
+    { id: 'newer', at: 20, text: 'Second question', route: null, state: 'open' },
+    { id: 'older', at: 10, text: '<img src=x onerror=alert(1)>', route: null, state: 'open' },
+    { id: 'routed', at: 1, text: 'Routed question', route: 'rounds', state: 'open' },
+  ]);
   assert.doesNotMatch(out, /<img\b|<b>Unsafe/);
   assert.match(out, /&lt;img/);
-  assert.match(out, /&lt;b&gt;Unsafe&lt;\/b&gt;/);
-  assert.match(out, /data-cap-open="c&amp;quot;&lt;id&gt;"/);
-  assert.match(out, /data-cap-review="c&amp;quot;&lt;id&gt;"/);
-  assert.match(out, /data-cap-ref="topic&amp;quot;&lt;\.md"/);
-
-  const noQuiz = F.fdCaptureTriage([{
-    id: 'c2', text: 'Question', match: { ref: 'plain.md', title: 'Plain', hasQuiz: false },
-  }]);
-  assert.match(noQuiz, /data-cap-open="c2"/);
-  assert.doesNotMatch(noQuiz, /data-cap-review=/);
-});
-
-test('capture inbox keeps unresolved questions visible with a compact status and action group', () => {
-  const out = F.fdCaptureTriage([{
-    id: 'c1',
-    text: 'How should I distinguish delirium from psychosis?',
-    status: 'scheduled',
-    match: { ref: 't_delirium.md', title: 'Delirium', hasQuiz: true },
-  }]);
-  assert.match(out, /class="fd-capture__item" data-cap-status="scheduled"/);
-  assert.match(out, /class="fd-capture__status">Review scheduled</);
-  assert.match(out, /class="fd-capture__match"/);
-  assert.match(out, /class="fd-capture__actions"/);
-  assert.match(out, /data-cap-open="c1"/);
-  assert.match(out, /data-cap-review="c1"/);
-  assert.match(out, /data-cap-supervise="c1"/);
-  assert.match(out, /data-cap-drop="c1"/);
-});
-
-test('capture inbox renders supervision state without hiding the question', () => {
-  const out = F.fdCaptureTriage([{
-    id: 'c2', text: 'What should I ask next?', status: 'supervision', match: null,
-  }]);
-  assert.match(out, /data-cap-status="supervision"/);
-  assert.match(out, />For supervision</);
-  assert.match(out, /What should I ask next\?/);
-  assert.match(out, /data-cap-supervise="c2"/);
-});
-
-test('capture inbox preserves the status of questions triaged before the upgrade', () => {
-  const out = F.fdCaptureTriage([{ id: 'old', text: 'An older question', status: 'triaged', match: null }]);
-  assert.match(out, /data-cap-status="triaged"/);
-  assert.match(out, />Triaged</);
-  assert.doesNotMatch(out, />New</);
+  assert.match(out, /View all 3/);
+  assert.match(out, /data-capture-open/);
+  assert.doesNotMatch(out, /Second question|Routed question|data-cap-open|data-cap-review/);
 });
 
 test('fd_due stays ES5, audience-neutral, and does not introduce storage', () => {
@@ -145,8 +130,8 @@ test('fdDueRow(b, true) is the primary: is-primary plus the kicker; false or und
   assert.equal(F.fdDueRow(DUE_ONE, undefined), plain);
   assert.doesNotMatch(plain, /is-primary|fd-due__kicker/);
   const primary = F.fdDueRow(DUE_ONE, true);
-  assert.match(primary, /^<button type="button" class="fd-due is-primary" data-fd-open="review\.html"><span class="fd-due__kicker">Clear what’s due<\/span><span class="fd-due__label">1 review due<\/span>/);
-  assert.equal(primary.replace(' is-primary', '').replace('<span class="fd-due__kicker">Clear what’s due</span>', ''), plain);
+  assert.match(primary, /^<button type="button" class="fd-due is-primary" data-fd-open="review\.html" data-fd-dock-source="primary-due" data-fd-dock-label="Start review"><span class="fd-due__kicker">Clear what’s due<\/span><span class="fd-due__label">1 review due<\/span>/);
+  assert.equal(primary.replace(' is-primary', '').replace(' data-fd-dock-source="primary-due" data-fd-dock-label="Start review"', '').replace('<span class="fd-due__kicker">Clear what’s due</span>', ''), plain);
   assert.equal(F.fdDueRow({ daily: { due: 0 } }, true), '', 'nothing due renders nothing, primary or not');
 });
 
@@ -164,20 +149,26 @@ test('fdResumeCard(c, true) is the primary: is-primary and the "Pick up" heading
 test('fdLastReadRow renders "You were reading" for an undone week read, escapes the title, never for a tool', () => {
   const read = { ref: 'a&b.md', kind: 'read', title: '<Page> & Co', minutes: 6, done: false, isContinueTarget: false };
   const plain = F.fdLastReadRow(read);
-  assert.match(plain, /^<button type="button" class="fd-lastread" data-fd-open="a&amp;b\.md">/);
+  assert.match(plain, /^<button type="button" class="fd-lastread" data-fd-open="a&amp;b\.md" data-fd-reading-resume="1">/);
   assert.match(plain, /<span class="fd-lastread__title">You were reading: &lt;Page&gt; &amp; Co — 6 min<\/span>/);
   assert.match(plain, /<span class="fd-lastread__action">Open →<\/span><\/button>$/);
   assert.doesNotMatch(plain, /<Page>|fd-lastread__kicker|is-primary/);
   assert.equal(F.fdLastReadRow(read, false), plain);
 
   const primary = F.fdLastReadRow(read, true);
-  assert.match(primary, /^<button type="button" class="fd-lastread is-primary" data-fd-open="a&amp;b\.md"><span class="fd-lastread__kicker">Pick up where you left off<\/span><span class="fd-lastread__title">You were reading: /);
+  assert.match(primary, /^<button type="button" class="fd-lastread is-primary" data-fd-open="a&amp;b\.md" data-fd-reading-resume="1" data-fd-dock-source="primary-read" data-fd-dock-label="Open →"><span class="fd-lastread__kicker">Pick up where you left off<\/span><span class="fd-lastread__title">You were reading: /);
 
   assert.equal(F.fdLastReadRow(Object.assign({}, read, { kind: 'tool' }), true), '', 'a tool is not reading');
   assert.equal(F.fdLastReadRow(null, true), '');
   assert.equal(F.fdLastReadRow({ ref: '', kind: 'read' }), '');
   assert.match(F.fdLastReadRow({ ref: 'x.md', kind: 'read', title: 'X', minutes: null }), /You were reading: X<\/span>/,
     'no minutes, no dash');
+});
+
+test('last-read action marks a reading resume without marking question-bank resume', () => {
+  assert.match(F.fdLastReadRow({ ref: 'a.md', kind: 'read', title: 'A' }),
+    /data-fd-open="a\.md" data-fd-reading-resume="1"/);
+  assert.doesNotMatch(F.fdResumeCard({ queueIds: ['q1'], idx: 0 }), /data-fd-reading-resume/);
 });
 
 test('the primary variants are audience-neutral', () => {

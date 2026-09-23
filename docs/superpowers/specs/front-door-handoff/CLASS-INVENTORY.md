@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(442 distinct `fd-*` selector names, 24 `is-*` state classes). Every class below has a rule in that file unless
+(465 distinct `fd-*` selector names, 25 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -26,7 +26,7 @@ just looks wrong. Read the surface you are building before writing its markup.
 | Class | Element | Notes |
 |---|---|---|
 | `.fd-shell` | outermost wrapper | **Required.** Paints `--fd-bg`/`--fd-text`, sets the font stack, and scopes three descendant rules: `a` / `a:hover` colours, `*{box-sizing:border-box}`, and its `:focus-visible` outline. Non-overlay content outside `.fd-shell` loses all four. |
-| `.fd-main` | `<main>` | `max-width:1200px`, page padding. Sibling of `.fd-header`, child of `.fd-shell`. |
+| `.fd-main` | `<main>` | `max-width:1200px`, page padding. Sibling of `#fdDockMount` and `#fdChromeMount` (which contains `.fd-header`), child of `.fd-shell`. At phone widths, its bottom padding and viewport scroll padding clear the one fixed dock, including the safe area. |
 
 ⚠ **The four overlay surfaces are portalled outside `.fd-shell`** (`.fd-search`, `.fd-sheet`,
 `.fd-sheetbackdrop`, `.fd-nudge`) — they are `position:fixed` and listed *separately* in the
@@ -40,10 +40,14 @@ them and let the breakpoint decide:
 | Class | Hidden | Shown |
 |---|---|---|
 | `.fd-rail`, `.fd-railnav` | below 1000px | ≥ 1000px |
-| `.fd-actionbar`, `.fd-actionbar__spacer`, `.fd-quicktools--pills` | ≥ 1000px | below 1000px |
+| `.fd-actionbar`, `.fd-actionbar__spacer` | ≥ 1000px and ≤ 640px | 641–999px only; on phones their DOM remains available for dock forwarding |
+| `.fd-dock` | above 640px | ≤ 640px on learner app screens, including enhanced guides |
+| `#fdCaptureMount` | ≤ 640px | above 640px on learner app screens |
+| `.fd-quicktools--pills` | ≥ 1000px | below 1000px |
 | `.fd-article__actions` | below 1000px | ≥ 1000px |
 | `.fd-article .fd-tip` (Reader's keyboard hint **only** — the wizard's `.fd-tip--setup` line is a different subtree and stays visible) | below 1000px | ≥ 1000px |
-| `.fd-tabs`, `.fd-weekpill`, `.fd-settingsbtn` — on a **reader** only (`.fd-shell:has(.fd-actionbar)`; frontdoor.css "Phone chrome", 2026-09-18). The action bar's `‹` is the route to all three. `.fd-brand__name` is clipped there, never `display:none`, so the home button keeps its accessible name. | ≤ 640px | above 640px, and at every width on Today / Path / Library / Progress / not-found |
+| `.fd-tabs` | ≤ 640px on every route | above 640px; still emitted inside `.fd-header` to preserve tablet/desktop behavior |
+| `.fd-weekpill`, `.fd-settingsbtn` on a **reader** (`.fd-shell:has(.fd-actionbar)`). `.fd-brand__name` is clipped there, never `display:none`, so the home button keeps its accessible name. | ≤ 640px | above 640px, and at every width on Today / Path / Library / Progress / not-found |
 | `.fd-article__head` and an empty `.fd-article__lead` on a **tool** (`.fd-reader--tool`); `.fd-article__h1` is clipped there, never `display:none`. Not a breakpoint: a tool supplies its own `<h1>` (calibrated on every shipped tool 2026-09-19; `tool-expand.spec.js` opens each one and asserts it), so the shell's masthead yields at every width. | every width | never on a tool |
 
 The enhanced `.fd-reader--guide` is a scoped exception: its week `.fd-railnav` remains
@@ -119,10 +123,13 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
       .fd-weekpill         <button>
       .fd-safetybtn        <button>
       .fd-settingsbtn      <button>          (compact settings-panel gear)
-  .fd-tabs                 <nav>
+  .fd-tabs                 <nav>          (hidden ≤640px)
     .fd-tab                <button> ×4 standard / ×3 APP
       .fd-tab__label[data-compact]       (Essentials and Care labels only)
     .fd-tab.fd-tab--care   <button>      (far-right Patient care resources destination)
+#fdDockMount               <div>          (sibling of #fdChromeMount and .fd-main)
+  .fd-dock                <nav aria-label="Learning actions"> (≤640px only)
+    .fd-dock__item        <button> ×5
 ```
 
 | Class | Notes |
@@ -132,11 +139,42 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | `.fd-header__actions` | `margin-left:auto` in the flex layout; at 640px and below it spans grid row two, resets the margin, and aligns right. |
 | `.fd-settingsbtn` | Compact icon-only header gear opening the settings panel; `aria-label` names the action. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
+| `.fd-tab--care` | Uses `margin-left:auto` plus a quiet divider to keep Patient care resources visually separate at the far right on tablet and desktop. |
+| `.fd-tab__label[data-compact]` | One resilient text node per responsive tab. Its full button `aria-label` remains accessible. |
 | `.fd-tab--care` | Uses `margin-left:auto` plus a quiet divider to keep Patient care resources visually separate at the far right. At ≤640px the divider and auto margin disappear. |
 | `.fd-tab__label[data-compact]` | One resilient text node per responsive tab. At ≤640px CSS paints the short `data-compact` value while the full button `aria-label` remains accessible; an older or briefly stale stylesheet still shows one full label instead of concatenating two labels. |
 
 ⚠ `.fd-tabs` is a **sibling** of `.fd-header__bar` inside `.fd-header`, not a child of it.
 ⚠ Rails stick to `top:106px`, which assumes the full header (bar + tabs) is present and sticky.
+
+### Adaptive dock — mounted phone contract
+
+```
+.fd-dock                 <nav aria-label="Learning actions">
+  .fd-dock__item         <button> ×2   (Today + Path, or On shift + The Essentials)
+  .fd-dock__item.fd-dock__item--context
+                         <button>      (primary action, or Library Browse fallback)
+  .fd-dock__item         <button> ×2   (Search + Capture)
+```
+
+| Class | Notes |
+|---|---|
+| `.fd-dock` | `<nav aria-label="Learning actions">`; fixed five-column phone grid under `#fdDockMount`. Its safe-area padding is the only phone bottom-edge action surface. Hidden above 640px. |
+| `.fd-dock__item` | `<button>`; four ordinary items and the contextual button. Every phone target has at least 44×44 CSS pixels and visible text. Height is bounded to 60px with three visible lines so a long reader title cannot exceed the 84px content clearance; the full text remains the accessible name. `[aria-current="page"]` marks the active top-level destination; `:disabled` dims an unavailable item. |
+| `.fd-dock__item--context` | Modifier on the center button. A marked primary source forwards its existing click through `data-fd-dock-forward` and is raised; absent or stale source opens Library Browse as a flat **Browse** item. The reader's marked source stays in the hidden legacy action bar solely to own its behavior; Today sources remain visible in their cards. |
+
+The renderer inserts the context button after the two leading destinations, making it the third
+of five buttons. APP changes the first two labels and routes its second item to Library; Search
+and Capture remain the final two. Capture carries `aria-haspopup="dialog"` and an `aria-expanded`
+state that the existing Capture open/close handler updates. The shell refreshes the dock's route
+and context controls after each base render, completion change, and settled resource load
+(including failure, only for the current route). It reuses the same Search and Capture button
+objects, preserving open-dialog invokers and Capture's expanded state without taking focus from
+the dialog. `fdDockSource(contentEl)` supplies the marked action and the delegated controller
+forwards it. The dock is cleared on setup, faculty preview, and non-app screens. Enhanced guides
+retain this single dock for completion and Capture while their inline Find, Print, Practice,
+and contents controls keep their existing behavior. Search and Capture retain their existing
+dialog focus traps and return focus to the exact dock button that opened them.
 
 ---
 
@@ -243,10 +281,30 @@ internal Progress. These are part of the same shipped class contract:
 | `.fd-due__kicker` | "Clear what's due" line, present only when the due row is the primary (`.fd-due.is-primary`). |
 | `.fd-freshset` | Ghost `.fd-btn` sibling of a completed-week `.fd-continue` that is primary: "Practice a fresh set →", opens the question bank. |
 | `.fd-capture-launch` | Full-width capture-dialog launcher. |
-| `.fd-capture-launch--global` | Stable learner-route launcher hook; `#fdCaptureMount` keeps it fixed above phone navigation and clear of the desktop tool dock. When mounted on a phone, `.fd-main` reserves bottom space so the final content can scroll above it. *(no rule)* |
-| `.fd-capture` | Today question inbox. Contains `.fd-capture__head`, `.fd-capture__new`, `.fd-capture__purpose`, and compact `.fd-capture__item` rows. Each row uses `.fd-capture__meta` / `__status`, `__question`, optional `__match`, and a wrapping `__actions` group of `__action` buttons; `__action--done` is the quiet trailing action. `.fd-capture__copy` retains supervised clipboard export. |
+| `.fd-capture-launch--global` *(no rule)* | Stable learner-route launcher hook; `#fdCaptureMount` keeps it fixed above 640px and is hidden at phone widths. The dock's Capture button opens the same dialog. |
+| `.fd-capture` | Compact Today/On shift follow-up for the oldest open unrouted question only. Contains `.fd-capture__head` with a section heading, `.fd-capture__question` with escaped learner text, `.fd-capture__new` as the **View all N** dialog opener, and `.fd-capture__purpose` with the device-local privacy boundary. If no unrouted question remains, this card is omitted even while routed items remain in Capture. The full inbox, route buttons, Copy questions, Delete, Erase all, and explicit email selection live in the portalled `.cap-sheet` styled by the shell's inline CSS (`.cap-list__row`, `.cap-route`, `.cap-next__done`). The global and dock Capture launchers still open it. |
 | `.fd-progresscard` | Internal-Progress entry; contains `.fd-progresscard__title` and `.fd-progresscard__meta`. |
 | `.fd-progress-reader` | Reader modifier for the internal Progress surface. |
+
+### Capture email review overlay
+
+The full inbox places an unchecked `.cap-email-select` checkbox beside each open question; its
+`#capEmailSelect` button remains disabled until a learner selects at least one. The separate
+`.cap-email-backdrop` and `.cap-email-sheet` are portalled under `<body>` above `.cap-sheet`.
+While the review dialog is open, the Capture sheet is `inert` and `aria-hidden`; Escape and Tab
+are owned by the email dialog's own trap. Closing it clears the checkboxes and all in-memory
+recipient, affirmation, digest, and URI state, then focuses the first previously selected
+question checkbox in Capture. If that checkbox is unavailable, focus falls back to a still-enabled
+invoker or the editor.
+
+| Class | Notes |
+|---|---|
+| `.cap-email-head`, `.cap-email-count`, `.cap-email-digest` | Heading/close row, selected count, and wrapped, escaped preview. The digest preview uses `textContent`, never learner text in `innerHTML`. |
+| `.cap-email-label`, `.cap-email-address`, `.cap-email-hint` | Input and adjacent immutable `@mainehealth.org` text. The suffix has `id="capEmailSuffix"`; the input's `aria-describedby` names the suffix and the validation hint, including when invalid. `input[aria-invalid="true"]` is the inline error state; the hint also states mailbox existence cannot be verified. |
+| `.cap-email-affirm`, `.cap-email-status` | Required no-PHI checkbox and live handoff/failure message. Disabled Open draft uses the shared `.cap-btn` style. |
+| `.cap-email-fallback` | Revealed after clipboard absence/rejection or a URI too long to open. `[hidden]` wins over the layout rule; its read-only textarea keeps the complete selectable text. |
+
+The email overlay selectors have `cap-*` names and add no `fd-*` or `is-*` classes to the totals above.
 
 ⚠ **`.fd-ring` needs `--fd-ring-pct` set inline** (e.g. `style="--fd-ring-pct:62%"`). It defaults to
 `0%`, so a ring rendered without it silently shows an empty track. This is the one custom property
@@ -289,6 +347,32 @@ Omitting it collapses the rail underneath.
       .fd-care-navigator__alternatives
         .fd-care-navigator__link <a> ×0–2
       .fd-care-navigator__clear <button>
+  .fd-care-pack
+    .fd-care-pack__head
+      h2 / p
+      .fd-care-pack__included           + .is-unavailable on fail-closed state
+    .fd-care-pack__workbench
+      .fd-care-pack__picker
+        .fd-care-pack__choices
+          .fd-care-pack__choice <button> ×5
+            .fd-care-pack__check
+          .fd-care-pack__choice.is-selected [aria-pressed="true"]
+        .fd-care-pack__picker-foot
+          #fd-care-pack-limit / .fd-care-pack__clear <button>
+      .fd-care-pack__sheet
+        .fd-care-pack__sheet-head
+        .fd-care-pack__resources
+          .fd-care-pack__resource ×0–3
+            .fd-care-pack__resource-copy
+            .fd-care-pack__scan
+              .fd-care-pack__qr <svg> | .fd-care-pack__qr-fallback
+        .fd-care-pack__empty
+        details.fd-care-pack__crisis
+          summary / .crisis-block
+        .fd-care-pack__crisis-failure   role="alert"; fail-closed alternative
+        .fd-care-pack__provenance
+    .fd-care-pack__actions
+      p / .fd-care-pack__print <button>
   .fd-care-page__groups
     .fd-care-group ×2                 support / education
       .fd-care-group__head
@@ -312,7 +396,13 @@ Omitting it collapses the rail underneath.
 | `.vh-live` (`#careNavigatorStatus`) | Persistent, initially empty shell status beside `#routeStatus`, outside replaceable `#content`. The shell updates its polite, atomic text after a valid Care choice and clears it when the choice or Care surface ends. It keeps the same DOM node through Care re-renders. |
 | `.fd-care-navigator__alternatives` | Zero to two secondary links; shares the responsive one-column phone layout. |
 | `.fd-care-navigator__clear` | Native button returns to the unselected task map without changing the resource groups. |
+| `.fd-care-pack__workbench` | Transient two-column builder: a flat choice list beside a paper-like preview, stacking to one column at ≤640px. It accepts only canonical `careResources` records and has no patient fields, route state, storage, analytics, or network request. |
+| `.fd-care-pack__choice.is-selected` | The active choice pairs `.is-selected` with `aria-pressed="true"`; its visible check and inset rule keep selection non-color-only. A fourth unselected choice disables until one of the three is removed. |
+| `.fd-care-pack__sheet` | The only printable surface. It contains zero to three exact canonical links with locally generated QR SVGs; controls and the surrounding shell are excluded by `@media print`. |
+| `.fd-care-pack__crisis` | Owns the exact build-injected crisis block derived from `crisis_resources.json`. It is collapsed on screen and forced fully visible in Print. Missing governed HTML renders `.fd-care-pack__crisis-failure` and disables Print; the renderer never invents contacts. |
+| `.fd-care-pack__actions` | States that choices stay on screen only. Print is enabled only when at least one valid resource and the governed crisis block are both present. |
 | `.fd-care-page__groups` | Two-column shelf at larger widths and one column at ≤640px. The support shelf holds Resource Finder and Recovery Meeting Calendar; education holds the patient library, Podcast Navigator, and Relational Bibliotherapy book shelf. |
+| `.fd-care-entry` | In-flow Care route button near the top of Today and APP On shift at ≤640px. It is hidden on wider screens where the Care tab is visible; the fixed phone dock remains five items. |
 | `.fd-carelink` | Static external anchor with an explicit new-tab mark and visible title/description. |
 
 ---
@@ -476,6 +566,8 @@ unit the multi-column flow keeps whole, and the wrapper that groups a heading wi
         .fd-trynow__icon / .fd-trynow__title / .fd-trynow__sub
       .fd-article__source
         <span>Source:</span> .fd-src
+      .fd-reading-place                    (read only; empty until a verified write or failure)
+      .fd-reading-place__top <button hidden> (read only; shown after a valid restoration)
       .fd-article__actions                (≥1000px)
         .fd-btn.fd-btn--primary / .fd-btn.fd-btn--ghost
       .fd-prevnext
@@ -490,8 +582,8 @@ unit the multi-column flow keeps whole, and the wrapper that groups a heading wi
           .fd-railnav__dot                + .is-done
           .fd-railnav__title              + .is-done
           .fd-visually-hidden             (done rows only: "Completed")
-  .fd-actionbar__spacer                   (below 1000px)
-.fd-actionbar                             (below 1000px, fixed)
+  .fd-actionbar__spacer                   (641–999px)
+.fd-actionbar                             (641–999px, fixed; hidden source on phones)
   .fd-btn.fd-btn--ghost
   .fd-btn.fd-btn--primary
     <span>label</span>
@@ -503,19 +595,22 @@ unit the multi-column flow keeps whole, and the wrapper that groups a heading wi
 | `.fd-reader--tool.is-tool-expanded` | Tool-only wide workspace state. The same state is mirrored on `.fd-main`; neither class is applied to reads. |
 | `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
 | `.fd-article__body` | Base long-form markdown typography: `--fd-font-lg` (17px), 1.72 line-height, 62ch measure. Enhanced field guides use the scoped type treatment in §6a. |
-| `.fd-compass` | Six-Week Compass, build-injected into `.fd-article__body` on the six-week Welcome (`welcome_compass.py`). Children: `.fd-compass__title`, `.fd-compass__weeks` (`<ol>`, markerless card grid), `.fd-compass__week` (`<li>` card), `.fd-compass__heading` (`<h3>`), `.fd-compass__kicker` (the `Week N` span inside that heading), `.fd-compass__link` *(no rule)*. Every rule but the root is written as a two-class selector so it outranks the `.fd-article__body` element rules it sits inside. Links reserve bottom scroll margin for both the mobile action bar and the fixed capture launcher, so native Tab focus stays unobscured. |
+| `.fd-reading-place` | Under `.fd-article` after Source, before actions. Ordinary readings only; initially empty. Runtime writes the exact device-only success copy after a successful store write, or the failure copy when storage is disallowed or fails. No live region or status badge. Tools, Progress, not-found, setup, faculty preview, and enhanced guides do not retain it. |
+| `.fd-reading-place__top` | Sibling button following the status, initially `hidden`. Runtime reveals it only for a valid restored heading; activation clears this page's record, scrolls and focuses its H1, then hides it again. `[hidden]` explicitly wins over the button's display rule. |
+| `.fd-compass` | Six-Week Compass, build-injected into `.fd-article__body` on the six-week Welcome (`welcome_compass.py`). Children: `.fd-compass__title`, `.fd-compass__weeks` (`<ol>`, markerless card grid), `.fd-compass__week` (`<li>` card), `.fd-compass__heading` (`<h3>`), `.fd-compass__kicker` (the `Week N` span inside that heading), `.fd-compass__link` *(no rule)*. Every rule but the root is written as a two-class selector so it outranks the `.fd-article__body` element rules it sits inside. Links reserve bottom scroll margin for the phone dock and tablet action bar, so native Tab focus stays unobscured. |
 | `.fd-visually-hidden` | Accessible completion suffix on done rail rows; never use `aria-pressed` for navigation. |
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |
-| `.fd-article__actions` | Desktop-only primary/ghost pair. **Always emit it** (no `desk` JS branch) — `.fd-actionbar` at the bottom of this tree is the mobile equivalent; the breakpoint hides this one and shows that one, never both. |
+| `.fd-article__actions` | Desktop-only primary/ghost pair. **Always emit it** (no `desk` JS branch). At 641–999px the fixed action bar supplies the same actions. At phone widths the dock forwards to the hidden action bar's primary, while the reader header retains Back. |
 | `.fd-tip` (Reader instance) | The `←`/`→`/`1`/`2`/`3` keyboard hint. Hidden below 1000px via the descendant selector `.fd-article .fd-tip` — **do not** hide the bare `.fd-tip` class, which would also blank the wizard's `.fd-tip--setup` line (§2). |
 
 ⚠ **`.fd-actionbar .fd-btn--primary` requires its label wrapped in a bare `<span>`**
 (`.fd-actionbar .fd-btn--primary span` supplies the ellipsis). A text-only child overflows on
 narrow screens.
 
-⚠ `.fd-actionbar` is `position:fixed` — it must be a **sibling of `.fd-reader`, not inside it**, or
+⚠ `.fd-actionbar` is `position:fixed` at tablet widths — it must be a **sibling of `.fd-reader`, not inside it**, or
 the article's stacking context traps it. `.fd-actionbar__spacer` goes **inside** `.fd-reader` as the
-last child to reserve scroll room.
+last child to reserve tablet scroll room. At phone widths both are hidden, but the marked primary
+button stays in the DOM for dock forwarding; the reader's Back and tool toolbar remain visible.
 
 ⚠ `.fd-railnav__row.is-current .fd-railnav__dot` and `… .fd-railnav__title` recolour from the
 **row's** state. `.fd-railnav__dot.is-done` and `.fd-railnav__title.is-done` are separate,
@@ -660,6 +755,8 @@ patient information, or an attestation, and it never turns a website action into
       <svg>
       .fd-searchpanel__input   <input>
       .fd-searchpanel__esc     <button>esc</button>
+    .fd-searchpanel__browse
+      .fd-btn[data-fd-tab="library"] <button>Browse the Library</button> (standard mode only)
     .fd-searchpanel__body
       .fd-result <button|a> ×N
         .fd-result__dot         + .is-tool | .is-safety | .is-care
@@ -672,6 +769,7 @@ patient information, or an attestation, and it never turns a website action into
 | Class | Notes |
 |---|---|
 | `.fd-search` | Carries the scrim **and** the centring — it is not a separate backdrop element (unlike the sheet). |
+| `.fd-searchpanel__browse` | Standard MS3/resident Search offers an explicit Library route above results. APP already has The Essentials in dock slot 2, so this row is absent. |
 | `.fd-searchpanel__body` | `max-height:46vh` + scroll. The scroll container. |
 | `.fd-result__dot` | Default olive (read); `.is-tool` teal; `.is-safety` danger; `.is-care` olive-deep. |
 | `.fd-result.is-care` | Static external ReConnect result rendered as an anchor. `data-care-resource` pairs the visible first result with the controller's Enter shortcut, so keyboard activation clicks that exact fixed anchor. Curated search terms are matched locally; the learner's query is never added to the URL or sent to ReConnect. Explicit safety results still sort first. |
@@ -792,6 +890,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 | `.is-tool-expanded` | `.fd-main`, `.fd-reader--tool` | saved desktop tool workspace width |
 | `.is-primary` | `.fd-due`, `.fd-resume`, `.fd-lastread` | this row is Today's primary action (kicker copy changes; the visual treatment comes from the `.fd-primary` wrapper) |
 | `.is-secondary` | `.fd-continue` | a device-store row won the primary slot; the Continue card drops its gradient and top accent |
+| `.is-unavailable` | `.fd-care-pack__included` | the governed crisis block is absent, so the handout truthfully reports the failure and Print remains disabled |
 
 ## Keyframes
 

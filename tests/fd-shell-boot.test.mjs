@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
 
 const source = readFileSync(new URL(
@@ -19,6 +22,9 @@ const capsule = readFileSync(new URL(
 ), 'utf8');
 const stateModule = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_state.js', import.meta.url,
+), 'utf8');
+const readingPlaceModule = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_reading_place.js', import.meta.url,
 ), 'utf8');
 const todayModule = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_today.js', import.meta.url,
@@ -49,6 +55,243 @@ const activeLearningPathConsumers = [
 
 function count(needle) { return source.split(needle).length - 1; }
 
+test('build injection emits one reading-place module after state and before consumers', () => {
+  const marker = '/*__FD_READING_PLACE__*/';
+  assert.equal(count(marker), 1, 'one source marker');
+  const directory = mkdtempSync(join(tmpdir(), 'fd-reading-place-injection-'));
+  const output = join(directory, 'index.html');
+  try {
+    copyFileSync(new URL('../13_Faculty_Resources/_automation/site_build/spa_index.html', import.meta.url), output);
+    const script = [
+      'import sys',
+      'sys.path.insert(0, sys.argv[1])',
+      'import common',
+      'assert common.inject_shared_snippets(sys.argv[2])',
+    ].join('\n');
+    const result = spawnSync('python3', ['-c', script,
+      new URL('../13_Faculty_Resources/_automation/site_build/', import.meta.url).pathname, output],
+    { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    const emitted = readFileSync(output, 'utf8');
+    assert.equal(emitted.includes(marker), false, 'marker was replaced');
+    assert.equal(emitted.split(readingPlaceModule).length - 1, 1, 'exact canonical module bytes emitted once');
+    assert.ok(emitted.indexOf(stateModule) < emitted.indexOf(readingPlaceModule)
+      && emitted.indexOf(readingPlaceModule) < emitted.indexOf('var FD_CURRICULUM='),
+    'state, reading-place helper, then Front Door consumers');
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('build injection emits one faculty email builder after capture and state helpers', () => {
+  const marker = '/*__FD_CAPTURE_EMAIL__*/';
+  assert.equal(count(marker), 1, 'one source marker');
+  const directory = mkdtempSync(join(tmpdir(), 'fd-capture-email-injection-'));
+  const output = join(directory, 'index.html');
+  try {
+    copyFileSync(new URL('../13_Faculty_Resources/_automation/site_build/spa_index.html', import.meta.url), output);
+    const script = [
+      'import sys',
+      'sys.path.insert(0, sys.argv[1])',
+      'import common',
+      'assert common.inject_shared_snippets(sys.argv[2])',
+    ].join('\n');
+    const result = spawnSync('python3', ['-c', script,
+      new URL('../13_Faculty_Resources/_automation/site_build/', import.meta.url).pathname, output],
+    { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    const emitted = readFileSync(output, 'utf8');
+    const module = readFileSync(new URL(
+      '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_capture_email.js', import.meta.url,
+    ), 'utf8');
+    assert.equal(emitted.includes(marker), false, 'marker was replaced');
+    assert.equal(emitted.split(module).length - 1, 1, 'one canonical email builder is present');
+    assert.ok(emitted.indexOf('function capRead()') < emitted.indexOf(module)
+      && emitted.indexOf(stateModule) < emitted.indexOf(module)
+      && emitted.indexOf(module) < emitted.indexOf('var FD_CURRICULUM='),
+    'capture store and state load before email builder and Front Door consumers');
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+function shellFunction(name) {
+  const match = source.match(new RegExp(`  function ${name}\\([^]*?\\n  \\}`));
+  assert.ok(match, `${name} is available for behavioral tests`);
+  return match[0];
+}
+
+function dockHarness(preview = false) {
+  let primary = { id: 'primary-reader', label: 'Mark done' }, guide = false;
+  const host = { querySelector(selector) {
+    if (selector === '.fd-reader--guide') return guide ? {} : null;
+    if (selector === '[data-fd-dock-source]' && primary) return {
+      getAttribute: key => key === 'data-fd-dock-source' ? primary.id : primary.label,
+    };
+    return null;
+  } };
+  const doc = { activeElement: null };
+  let markup = '', controls = [];
+  const mount = {
+    get innerHTML() { return markup; },
+    set innerHTML(value) {
+      if (controls.includes(doc.activeElement)) doc.activeElement = null;
+      for (const node of controls) node.isConnected = false;
+      markup = value;
+      controls = [...value.matchAll(/<button\b([^>]*)>/g)].map(match => {
+        const attrs = Object.fromEntries([...match[1].matchAll(/([\w-]+)="([^"]*)"/g)].map(attr => [attr[1], attr[2]]));
+        return { isConnected: true, parentNode: mount,
+          getAttribute: key => attrs[key] ?? null, setAttribute: (key, value) => { attrs[key] = value; },
+          focus(options) { doc.activeElement = this; this.focusOptions = options; } };
+      });
+    },
+    contains: node => controls.includes(node),
+    replaceChild(node, old) {
+      const index = controls.indexOf(old);
+      assert.notEqual(index, -1);
+      controls[index] = node;
+      old.isConnected = false;
+      node.isConnected = true;
+      node.parentNode = mount;
+    },
+    querySelector(selector) {
+      const match = selector.match(/^\[([\w-]+)(?:="([^"]*)")?\]$/);
+      return match ? controls.find(node => match[2] === undefined
+        ? node.getAttribute(match[1]) !== null : node.getAttribute(match[1]) === match[2]) || null : null;
+    },
+  };
+  const render = new Function('contentEl', 'fdDockMount', 'facultyPreviewRequest', 'document', `
+    ${stateModule}
+    function fdClone(state){return JSON.parse(JSON.stringify(state));}
+    function fdEsc(value){return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+    ${shellModule}
+    ${wireModule.slice(wireModule.indexOf('function fdDockSource('), wireModule.indexOf('function fdForwardDockAction('))}
+    function fdLiveState(state){return state;}
+    ${shellFunction('fdRenderDock')}
+    return fdRenderDock;
+  `)(host, mount, preview, doc);
+  return { host, mount, render, doc, primary(value) { primary = value; }, guide(value) { guide = value; } };
+}
+
+test('same-route dock refresh preserves the focused action without scrolling', () => {
+  const h = dockHarness(), state = { screen: 'app', tab: 'today', openId: 'a.md' };
+  h.render(state);
+  const old = h.mount.querySelector('[data-fd-dock-forward="primary-reader"]');
+  old.focus();
+  h.primary({ id: 'primary-reader', label: 'Next: Page B →' });
+  h.render(state, true);
+  const fresh = h.mount.querySelector('[data-fd-dock-forward="primary-reader"]');
+  assert.notEqual(fresh, old);
+  assert.equal(h.doc.activeElement, fresh);
+  assert.deepEqual(fresh.focusOptions, { preventScroll: true });
+});
+
+test('dock refresh does not take focus from content, dialogs, navigation, or an absent successor', () => {
+  const state = { screen: 'app', tab: 'today', openId: 'a.md' };
+  for (const outside of ['content', 'Search', 'Capture', 'overlay']) {
+    const h = dockHarness(); h.render(state);
+    const focused = { name: outside }; h.doc.activeElement = focused;
+    h.render(state, true);
+    assert.equal(h.doc.activeElement, focused);
+  }
+  for (const overlay of [{ searchOpen: true }, { sheet: 'safety' }]) {
+    const h = dockHarness(); h.render(state);
+    h.mount.querySelector('[data-fd-dock-forward="primary-reader"]').focus();
+    h.render({ ...state, ...overlay }, true);
+    assert.equal(h.doc.activeElement, null, 'overlay owns its focus transition');
+  }
+  const h = dockHarness(); h.render(state);
+  h.mount.querySelector('[data-fd-dock-forward="primary-reader"]').focus();
+  h.render({ ...state, openId: 'b.md' });
+  assert.equal(h.doc.activeElement, null, 'full navigation owns focus');
+  h.mount.querySelector('[data-fd-dock-forward="primary-reader"]').focus();
+  h.primary(null); h.render(state, true);
+  assert.equal(h.doc.activeElement, null, 'no equivalent action means no invented target');
+});
+
+test('dock refresh retains overlay invokers and Capture expanded state without moving dialog focus', () => {
+  const h = dockHarness(), state = { screen: 'app', tab: 'today' };
+  h.render(state);
+  const search = h.mount.querySelector('[data-fd-search]');
+  const capture = h.mount.querySelector('[data-capture-open]');
+  capture.setAttribute('aria-expanded', 'true');
+  const input = { name: 'overlay input' };
+  h.doc.activeElement = input;
+  for (const next of [state, { ...state, searchOpen: true }]) {
+    h.primary({ id: 'primary-resume', label: 'Resume' });
+    h.render(next);
+    assert.equal(h.mount.querySelector('[data-fd-search]'), search, 'Search restores the exact dock opener');
+    assert.equal(h.mount.querySelector('[data-capture-open]'), capture, 'Capture retains the exact dock opener');
+    assert.equal(search.isConnected, true);
+    assert.equal(capture.isConnected, true);
+    assert.equal(capture.getAttribute('aria-expanded'), 'true');
+    assert.equal(h.doc.activeElement, input);
+    assert.match(h.mount.innerHTML, /data-fd-dock-forward="primary-resume">Resume/);
+  }
+});
+
+test('dock refresh uses the live source and clears learner actions on excluded screens', () => {
+  const h = dockHarness(), state = { screen: 'app', tab: 'today' };
+  h.render(state);
+  assert.match(h.mount.innerHTML, /data-fd-dock-forward="primary-reader">Mark done/);
+  h.primary({ id: 'primary-resume', label: 'Resume' });
+  h.render(state);
+  assert.match(h.mount.innerHTML, /data-fd-dock-forward="primary-resume">Resume/);
+  assert.doesNotMatch(h.mount.innerHTML, /primary-reader/);
+  assert.equal(state.dockAction, undefined, 'derived action never mutates live state');
+  h.primary(null); h.render(state);
+  assert.match(h.mount.innerHTML, /data-fd-tab="library">Browse/);
+  h.guide(true); h.render(state);
+  assert.match(h.mount.innerHTML, /data-capture-open/, 'enhanced guides retain the learner dock');
+  h.guide(false); h.render({ screen: 'setup' });
+  assert.equal(h.mount.innerHTML, '');
+  const preview = dockHarness(true); preview.render(state);
+  assert.equal(preview.mount.innerHTML, '');
+});
+
+test('completion patch updates the dock label with the preserved reader control', () => {
+  const button = (label) => ({
+    attrs: { 'data-fd-toggle': 'a.md', 'data-fd-dock-label': label, 'aria-pressed': label === 'Mark done' ? 'false' : 'true' },
+    innerHTML: `<span>${label}</span>`,
+    parentNode: { classList: { contains: name => name === 'fd-actionbar' } },
+    getAttribute(key) { return this.attrs[key] ?? null; },
+    setAttribute(key, value) { this.attrs[key] = value; },
+  });
+  const current = button('Mark done'), fresh = button('Next: Page B →');
+  const host = { querySelectorAll: () => [current], querySelector: () => null };
+  const doc = { createElement: () => ({ querySelectorAll: () => [fresh], querySelector: () => null }) };
+  const patch = new Function('contentEl', 'document', 'fdLiveState', 'fdReader', 'FD_INDEX',
+    `${shellFunction('fdPatchCompletion')} return fdPatchCompletion;`)(host, doc, state => ({ ...state }), () => '', {});
+  patch({ openId: 'a.md' });
+  assert.equal(current.getAttribute('data-fd-dock-label'), 'Next: Page B →');
+  assert.equal(current.getAttribute('aria-pressed'), 'true');
+});
+
+for (const ok of [true, false]) test(`resource ${ok ? 'tool mount' : 'load failure'} refreshes the dock from the final DOM`, async () => {
+  const h = dockHarness();
+  const state = { screen: 'app', openId: 'tool.html', tab: 'today' };
+  h.render(state);
+  const open = new Function('contentEl', 'fdRenderDock', 'fdOpenResource', `
+    var FD_INDEX={byRef:{'tool.html':{kind:'tool',title:'Tool'}}}, facultyPreviewRequest=null;
+    var fdController=null, fdGuideBookmark=null, currentItem=null, location={search:''};
+    var localStorage={setItem:function(){}}, facultyPreviewMatchesItem=null, showFacultyPreviewLockNotice=null, postFacultyPreviewStatus=null;
+    function fdDisposeGuide(){} function fdDisposeReadingPlace(){} function fdLiveState(s){return s;} function fdPracticeLaunchSearch(){return '';}
+    function fdLegacyItem(item,ref){return {f:ref};} function renderGovernanceNotice(){return '';}
+    function setLearnerTitle(){} function announceRoute(){} function focusGovernanceNotice(){}
+    ${shellFunction('fdOpenResourceLive')}
+    return fdOpenResourceLive;
+  `)(h.host, h.render, async () => {
+    h.primary(ok ? { id: 'primary-reader', label: 'Next: Page B →' } : null);
+    return ok;
+  });
+  assert.equal(await open('tool.html', { state }), ok);
+  if (ok) assert.match(h.mount.innerHTML, />Next: Page B →<\/button>/);
+  else {
+    assert.doesNotMatch(h.mount.innerHTML, /data-fd-dock-forward/);
+    assert.match(h.mount.innerHTML, />Browse<\/button>/);
+  }
+});
+
 test('the source body is the single live Front Door shell', () => {
   assert.equal(count('class="fd-shell"'), 1, 'one shell root');
   assert.equal((source.match(/<main\b/g) || []).length, 1, 'one main landmark');
@@ -57,7 +300,24 @@ test('the source body is the single live Front Door shell', () => {
   assert.equal(count('id="governanceMount"'), 1, 'one stable governance mount');
   assert.equal(count('id="fdOverlayMount"'), 1, 'one overlay mount');
   assert.equal(count('id="fdNudgeMount"'), 1, 'one nudge mount');
+  assert.equal(count('id="fdDockMount"'), 1, 'one stable dock mount');
   assert.doesNotMatch(source, /<aside id="side"|id="modetoggle"|id="modeCompanion"/);
+});
+
+test('the learner dock follows each base render and refreshes after a completion patch', () => {
+  const mount = source.indexOf('id="fdDockMount"');
+  const main = source.indexOf('id="content"');
+  assert.ok(mount > -1 && mount < main, 'dock mount is a shell sibling before main');
+  const helper = source.slice(source.indexOf('function fdRenderDock('), source.indexOf('function fdProgressMarkup(state)'));
+  assert.match(helper, /state\.screen==='app'&&!facultyPreviewRequest/);
+  assert.match(helper, /fdDockSource\(contentEl\)/);
+  assert.match(helper, /fdClone\(fdLiveState\(state\)\)/);
+  assert.match(helper, /fdDock\(live\)/);
+  const base = source.slice(source.indexOf('function fdRender(state,detail)'), source.indexOf('function fdPatchCompletion(state)'));
+  assert.ok(base.indexOf('contentEl.innerHTML=fdBaseMarkup(state)') < base.indexOf('fdRenderDock(state)'),
+    'dock reads the newly rendered source');
+  const transient = source.slice(source.indexOf('function fdRenderTransient(state,detail)'), source.indexOf('function fdOpenProgress(state,opts)'));
+  assert.match(transient, /if\(surfaces\.base\|\|surfaces\.completion\)fdRenderDock\(state,true\)/);
 });
 
 test('the shell has one build-replaced edition context and ordered v2 catalog modules', () => {

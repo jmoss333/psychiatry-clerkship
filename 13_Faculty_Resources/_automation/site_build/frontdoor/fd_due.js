@@ -2,7 +2,7 @@
    resolves capture matches; this module only receives normalized values and returns escaped,
    audience-neutral markup. */
 
-var FD_CAPTURE_PURPOSE='Questions you captured on the unit. Open the matching page, schedule one for review, or copy the list to raise in supervision. Stays on this device — no patient details.';
+var FD_CAPTURE_PURPOSE='Saved on this device. Nothing leaves unless you choose Copy or Email. No patient details.';
 
 function fdDueCount(breakdown){
   var b=breakdown||{}, names=['daily','qb','fam','comm','reason','other'], total=0;
@@ -24,7 +24,8 @@ function fdDueRow(breakdown, primary){
   if(b.comm&&b.comm.due) parts.push(b.comm.due+' communication');
   if(b.reason&&b.reason.due) parts.push(b.reason.due+' reasoning');
   if(b.other&&b.other.due) parts.push(b.other.due+' other');
-  return '<button type="button" class="'+(isPrimary?'fd-due is-primary':'fd-due')+'" data-fd-open="review.html">'+
+  return '<button type="button" class="'+(isPrimary?'fd-due is-primary':'fd-due')+'" data-fd-open="review.html"'+
+    (isPrimary?' data-fd-dock-source="primary-due" data-fd-dock-label="Start review"':'')+'>'+
     (isPrimary?'<span class="fd-due__kicker">Clear what’s due</span>':'')+
     '<span class="fd-due__label">'+total+' review'+(total===1?'':'s')+' due</span>'+
     '<span class="fd-due__breakdown">'+fdEsc(parts.join(' · '))+'</span>'+
@@ -55,7 +56,8 @@ function fdResumeCard(capsule, primary, block){
   var blockLine=resumeSearch?'<span class="fd-resume__block">Block · '+b.done+' of '+b.total+' done</span>':'';
   return '<section class="'+(isPrimary?'fd-resume is-primary':'fd-resume')+'">'+
     '<h2 class="fd-sectionhead">'+(isPrimary?'Pick up where you left off':'Continue where you left off')+'</h2>'+
-    '<a class="fd-resume__link" href="'+href+'">'+
+    '<a class="fd-resume__link" href="'+href+'"'+
+      (isPrimary?' data-fd-dock-source="primary-resume" data-fd-dock-label="Resume question bank"':'')+'>'+
       '<span>Resume question bank — '+left+' left, ~'+minutes+' min'+blockLine+'</span>'+
       '<span>Resume →</span>'+
     '</a></section>';
@@ -69,45 +71,33 @@ function fdLastReadRow(item, primary){
   var it=item||{}, isPrimary=primary===true;
   if(typeof it.ref!=='string'||!it.ref||it.kind!=='read') return '';
   var min=(typeof it.minutes==='number')?(' — '+it.minutes+' min'):'';
-  return '<button type="button" class="'+(isPrimary?'fd-lastread is-primary':'fd-lastread')+'" data-fd-open="'+fdEsc(it.ref)+'">'+
+  return '<button type="button" class="'+(isPrimary?'fd-lastread is-primary':'fd-lastread')+'" data-fd-open="'+fdEsc(it.ref)+'" data-fd-reading-resume="1"'+
+    (isPrimary?' data-fd-dock-source="primary-read" data-fd-dock-label="Open →"':'')+'>'+
     (isPrimary?'<span class="fd-lastread__kicker">Pick up where you left off</span>':'')+
     '<span class="fd-lastread__title">You were reading: '+fdEsc(it.title||it.ref)+fdEsc(min)+'</span>'+
     '<span class="fd-lastread__action">Open →</span>'+
   '</button>';
 }
 
-function fdCaptureTriage(items){
-  var list=items||[], open=[];
+function fdCaptureSummary(items){
+  var list=Object.prototype.toString.call(items)==='[object Array]'?items:[], oldest=null, total=0, unrouted=0;
   for(var i=0;i<list.length;i++){
-    if(list[i]) open.push(list[i]);
+    var item=list[i];
+    if(!item||item.state!=='open')continue;
+    total++;
+    if(item.route!==null)continue;
+    unrouted++;
+    if(!oldest||item.at<oldest.at||(item.at===oldest.at&&String(item.id)<String(oldest.id)))oldest=item;
   }
-  if(!open.length) return '';
-  var out='<section class="fd-capture"><div class="fd-capture__head">'+
-    '<h2 class="fd-sectionhead">Questions from the unit</h2>'+
-    '<button type="button" class="fd-capture__new" data-capture-open>+ Capture</button></div>'+
-    '<p class="fd-capture__purpose">'+fdEsc(FD_CAPTURE_PURPOSE)+'</p>';
-  for(var j=0;j<open.length;j++){
-    var item=open[j]||{}, id=fdEsc(item.id||''), match=item.match;
-    var status=/^(?:new|scheduled|supervision|triaged)$/.test(item.status)?item.status:'new';
-    var statusLabel=status==='scheduled'?'Review scheduled':(status==='supervision'?'For supervision':(status==='triaged'?'Triaged':'New'));
-    out+='<div class="fd-capture__item" data-cap-status="'+status+'"><div class="fd-capture__meta">'+
-      '<span class="fd-capture__status">'+statusLabel+'</span></div>'+
-      '<p class="fd-capture__question">'+fdEsc(item.text||'')+'</p>';
-    if(match&&match.ref){
-      var ref=fdEsc(match.ref);
-      out+='<div class="fd-capture__match"><span>Suggested page</span><strong>'+fdEsc(match.title||match.ref)+'</strong></div>';
-    }
-    out+='<div class="fd-capture__actions">';
-    if(match&&match.ref){
-      out+='<button type="button" class="fd-capture__action" data-cap-open="'+id+'" data-cap-ref="'+ref+'">Open now</button>';
-      if(match.hasQuiz){
-        out+='<button type="button" class="fd-capture__action" data-cap-review="'+id+'" data-cap-ref="'+ref+'">'+
-          'Review later</button>';
-      }
-    }
-    out+='<button type="button" class="fd-capture__action" data-cap-supervise="'+id+'">Bring to supervision</button>'+
-      '<button type="button" class="fd-capture__action fd-capture__action--done" data-cap-drop="'+id+'">Done</button></div></div>';
-  }
-  out+='<button type="button" class="fd-capture__copy" data-cap-copy="1">Ask my attending</button>';
-  return out+'</section>';
+  return {oldest:oldest,total:total,unrouted:unrouted};
+}
+
+function fdCaptureTriage(items){
+  var summary=fdCaptureSummary(items), item=summary.oldest;
+  if(!item)return '';
+  return '<section class="fd-capture"><div class="fd-capture__head">'+
+    '<h2 class="fd-sectionhead">Questions from the unit</h2></div>'+
+    '<p class="fd-capture__question">'+fdEsc(item.text||'')+'</p>'+
+    '<button type="button" class="fd-capture__new" data-capture-open aria-haspopup="dialog" aria-expanded="false">View all '+summary.total+'</button>'+
+    '<p class="fd-capture__purpose">'+fdEsc(FD_CAPTURE_PURPOSE)+'</p></section>';
 }

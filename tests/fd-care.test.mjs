@@ -5,6 +5,8 @@ import test from 'node:test';
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const careUrl = new URL(`${BUILD}/frontdoor/fd_care.js`, import.meta.url);
 const careSrc = existsSync(careUrl) ? readFileSync(careUrl, 'utf8') : '';
+const packUrl = new URL(`${BUILD}/frontdoor/fd_care_pack.js`, import.meta.url);
+const packSrc = existsSync(packUrl) ? readFileSync(packUrl, 'utf8') : '';
 const navigatorUrl = new URL(`${BUILD}/frontdoor/fd_care_navigator.js`, import.meta.url);
 const navigatorSrc = existsSync(navigatorUrl) ? readFileSync(navigatorUrl, 'utf8') : '';
 const dataSrc = readFileSync(new URL(`${BUILD}/frontdoor/fd_data.js`, import.meta.url), 'utf8');
@@ -17,6 +19,7 @@ if (careSrc) {
   F = new Function(`
     ${dataSrc}
     ${navigatorSrc}
+    ${packSrc}
     ${careSrc}
     return {
       fdCare: typeof fdCare === 'function' ? fdCare : null,
@@ -25,6 +28,7 @@ if (careSrc) {
       fdCareNavigatorSelection: typeof fdCareNavigatorSelection === 'function' ? fdCareNavigatorSelection : null,
       fdCareNavigatorAnnouncement: typeof fdCareNavigatorAnnouncement === 'function'
         ? fdCareNavigatorAnnouncement : null,
+      fdCarePack: typeof fdCarePack === 'function' ? fdCarePack : null,
     };
   `)();
 }
@@ -40,6 +44,10 @@ test('the care renderer is a registered standalone Front Door module', () => {
   assert.ok(shell.indexOf('/*__FD_CARE_NAVIGATOR__*/') < shell.indexOf('/*__FD_CARE__*/'));
   assert.match(common, /"\/\*__FD_CARE__\*\/"\s*:\s*"frontdoor\/fd_care\.js"/);
   assert.match(shell, /\/\*__FD_CARE__\*\//);
+  assert.match(common, /"\/\*__FD_CARE_PACK__\*\/"\s*:\s*"frontdoor\/fd_care_pack\.js"/);
+  assert.match(shell, /\/\*__FD_CARE_PACK__\*\//);
+  assert.ok(common.indexOf('/*__FD_CARE_PACK__*/') < common.indexOf('/*__FD_CARE__*/'));
+  assert.ok(shell.indexOf('/*__FD_CARE_PACK__*/') < shell.indexOf('/*__FD_CARE__*/'));
 });
 
 test('the real curriculum carries five curated resources in two purposeful groups', () => {
@@ -196,9 +204,10 @@ test('navigator rendering escapes every supplied field and stays browser-global 
 test('the Care page composes the selected navigator before its five-link shelf', () => {
   const index = { careResources: curriculum.careResources,
     careNavigator: curriculum.careNavigator };
-  const html = F.fdCare(index, 'services');
+  const html = F.fdCare(index, 'services', [], '<section class="crisis-block">Crisis</section>');
   assert.ok(html.indexOf('fd-care-navigator') > html.indexOf('fd-care-page__notice'));
-  assert.ok(html.indexOf('fd-care-navigator') < html.indexOf('fd-care-page__groups'));
+  assert.ok(html.indexOf('fd-care-navigator') < html.indexOf('fd-care-pack'));
+  assert.ok(html.indexOf('fd-care-pack') < html.indexOf('fd-care-page__groups'));
   assert.match(html, /aria-pressed="true"/);
   assert.equal((html.match(/class="fd-carelink"/g) || []).length, 5);
   assert.equal((html.match(/data-care-recommendation=/g) || []).length, 2);

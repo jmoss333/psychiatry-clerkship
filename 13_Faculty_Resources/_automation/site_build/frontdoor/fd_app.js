@@ -72,10 +72,11 @@ function fdAppModel(index, pathway, state){
   };
 }
 
-function fdAppResource(item, compact){
+function fdAppResource(item, compact, primary){
   var meta=item.kind==='tool'?'Interactive tool':(item.minutes?fdEsc(item.minutes)+' min read':'Reading');
   return '<button type="button" class="'+(compact?'fd-app__step-link':'fd-app__resource')+'" '+
-    'data-fd-app-start="'+fdEsc(item.ref)+'">'+
+    'data-fd-app-start="'+fdEsc(item.ref)+'"'+
+    (primary?' data-fd-dock-source="primary-app" data-fd-dock-label="'+fdEsc(item.title)+'"':'')+'>'+
     '<span class="fd-app__resource-title">'+fdEsc(item.title)+'</span>'+
     governanceBadge(item.governance,{compact:compact===true})+
     '<span class="fd-app__resource-meta">'+meta+'</span>'+
@@ -135,7 +136,7 @@ function fdAppActivity(activity, selected){
   out+='<section class="fd-app__stage"><span class="fd-app__stage-n">1</span>'+
     '<h3>Prepare independently</h3><p>Open a useful canonical resource before the work.</p>'+
     '<div class="fd-app__step-links">';
-  for(var i=0;i<resources.length;i++) out+=fdAppResource(resources[i],true);
+  for(var i=0;i<resources.length;i++) out+=fdAppResource(resources[i],true,active&&i===0);
   out+='</div></section>';
   out+='<section class="fd-app__stage"><span class="fd-app__stage-n">2</span>'+
     '<h3>Rehearse here</h3><p>Use synthetic practice to prepare a question for supervision.</p>'+
@@ -153,7 +154,7 @@ function fdAppActivity(activity, selected){
 
 /* Keep this name distinct from the fdApp DOM-root variable in spa_index.html. The shell renders
    inside an IIFE where that local binding intentionally shadows globals. */
-function fdAppWorkspace(index, pathway, state){
+function fdAppWorkspace(index, pathway, state, captureHtml){
   var model=fdAppModel(index,pathway,state), out='';
   if(!model.valid){
     return '<div class="fd-fallback" data-fd-fallback="app" role="alert">'+fdEsc(model.message)+'</div>';
@@ -162,6 +163,8 @@ function fdAppWorkspace(index, pathway, state){
     '<header class="fd-app__intro"><div><span class="fd-app__eyebrow">APP fellowship preview</span>'+
     '<h1 id="fd-app-title">On shift</h1><p>'+fdEsc(model.intro)+'</p></div>'+
     '<p class="fd-app__boundary"><strong>Preparation, not evaluation.</strong> Clinical scope and supervision stay with your institution.</p></header>';
+  if(captureHtml)out+=captureHtml;
+  out+='<button type="button" class="fd-care-entry" data-fd-tab="care">Patient care resources<span aria-hidden="true">→</span></button>';
   out+=fdAppBridgePicker(pathway,model.bridgeId);
   out+='<section class="fd-app__bridge" aria-labelledby="fd-app-bridge-title">'+
     '<div class="fd-app__bridge-head"><div><span class="fd-app__kicker">Starting route</span>'+
@@ -169,7 +172,11 @@ function fdAppWorkspace(index, pathway, state){
     '<span class="fd-app__count">8 canonical resources</span></div>'+
     '<p class="fd-app__bridge-copy">'+fdEsc(model.bridge.summary)+'</p>'+
     '<div class="fd-app__resources">';
-  for(var i=0;i<model.resources.length;i++) out+=fdAppResource(model.resources[i],false);
+  var selectedHasResource=false;
+  for(var a=0;a<model.activities.length;a++){
+    if(model.activities[a].id===model.activityId&&model.activities[a].resources.length) selectedHasResource=true;
+  }
+  for(var i=0;i<model.resources.length;i++) out+=fdAppResource(model.resources[i],false,!selectedHasResource&&i===0);
   out+='</div>';
   for(var m=0;m<model.missing.length;m++){
     out+='<p class="fd-app__error" role="alert">Configured resource unavailable: '+fdEsc(model.missing[m])+'</p>';

@@ -6,6 +6,7 @@ const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf8');
 const phase = read('phase_policy.js');
 const state = read('frontdoor/fd_state.js');
+const readingPlace = read('frontdoor/fd_reading_place.js');
 const data = read('frontdoor/fd_data.js');
 const careNavigator = read('frontdoor/fd_care_navigator.js');
 const today = read('frontdoor/fd_today.js');
@@ -15,10 +16,11 @@ const shell = read('frontdoor/fd_shell.js');
 const practice = read('frontdoor/fd_app_practice.js');
 const path = read('frontdoor/fd_path.js');
 const wire = read('frontdoor/fd_wire.js');
+const spa = read('spa_index.html');
 const CUR = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 
 // eslint-disable-next-line no-new-func
-const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${careNavigator}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${wire}\nreturn {
+const make = new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n${data}\n${careNavigator}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${wire}\nreturn {
   fdResolveState: fdResolveState,
   fdDispatch: fdDispatch,
   fdIsTypingTarget: fdIsTypingTarget,
@@ -26,6 +28,10 @@ const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${careNa
   fdOpenResource: fdOpenResource,
   fdReader: fdReader,
   fdWire: fdWire,
+  fdInstallReadingPlace: fdInstallReadingPlace,
+  fdReadingFocusAllowed: fdReadingFocusAllowed,
+  fdDockSource: typeof fdDockSource === 'function' ? fdDockSource : null,
+  fdForwardDockAction: typeof fdForwardDockAction === 'function' ? fdForwardDockAction : null,
   fdThemeMode: fdThemeMode,
   fdClearDeviceData: fdClearDeviceData,
 };`);
@@ -46,6 +52,39 @@ function memStorage(seed = {}) {
 }
 
 const F = make(memStorage());
+
+test('dock forwards once to the current connected source and rejects a stale id', () => {
+  let clicks = 0;
+  const source = { isConnected: true, click() { clicks++; },
+    getAttribute(name) { return name === 'data-fd-dock-label' ? 'Continue' : 'primary-week'; } };
+  const root = { querySelector() { return source; }, querySelectorAll() { return [source]; } };
+  assert.deepEqual(F.fdDockSource(root), { id: 'primary-week', label: 'Continue' });
+  assert.equal(F.fdForwardDockAction(root, 'primary-week'), true);
+  assert.equal(clicks, 1);
+  assert.equal(F.fdForwardDockAction(root, 'stale-id'), false);
+  assert.equal(clicks, 1);
+  source.isConnected = false;
+  assert.equal(F.fdDockSource(root), null);
+  assert.equal(F.fdForwardDockAction(root, 'primary-week'), false);
+  assert.equal(clicks, 1);
+});
+
+test('dock click forwards to the source; a removed source browses Library', () => {
+  let clicks = 0;
+  const source = actionTarget({ 'data-fd-dock-source': 'primary-week', 'data-fd-dock-label': 'Continue' },
+    { click() { clicks++; } });
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F, querySelectorAll: () => [source],
+  });
+  const dock = actionTarget({ 'data-fd-dock-forward': 'primary-week' });
+  h.rootHandlers.click({ target: dock, preventDefault() {} });
+  assert.equal(clicks, 1);
+  assert.equal(h.controller.getState().tab, 'today');
+  source.isConnected = false;
+  h.rootHandlers.click({ target: dock, preventDefault() {} });
+  assert.equal(clicks, 1);
+  assert.equal(h.controller.getState().tab, 'library');
+});
 const FOUR_INDEX = { weeks: [1, 2, 3, 4].map((n) => ({ n, items: [] })) };
 const CARE_INDEX = {
   byRef: {}, weeks: FOUR_INDEX.weeks,
@@ -294,7 +333,7 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     { ...roleContext, screen: 'setup-role' }).patch,
   { role: 'second-role', screen: 'setup-week' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'library' }, {}, roleContext).patch,
-    { tab: 'library', openId: null, searchOpen: false, careIntentId: '',
+    { tab: 'library', openId: null, searchOpen: false, careIntentId: '', carePackIds: [],
       libraryView: 'essentials', kitSection: 'all' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'care' }, {}, roleContext), {
     patch: { tab: 'care', openId: null, searchOpen: false },
@@ -836,7 +875,7 @@ function fakeHarness(initial, options = {}) {
     ...(options.querySelectorAll ? { querySelectorAll: options.querySelectorAll } : {}),
     matches: options.matches || (() => false),
   };
-  const fakeWindow = {
+  const fakeWindow = options.window || {
     addEventListener(type, fn) { windowHandlers[type] = fn; },
     removeEventListener() {},
     location: options.location || { href: 'https://example.test/', search: '', pathname: '/' },
@@ -852,6 +891,8 @@ function fakeHarness(initial, options = {}) {
     renderTransient: options.renderTransient,
     searchResults: options.searchResults,
     openResource: options.openResource,
+    readingPlaceSession: options.readingPlaceSession,
+    disposeReadingPlace: options.disposeReadingPlace,
     route: options.route,
     document: options.document,
     setTimer: options.setTimer,
@@ -3101,6 +3142,442 @@ test('fdResolveState carries a persisted scroll offset through startup, and drop
     'a reload while reading keeps the offset the open recorded');
   assert.equal(F.fdResolveState('https://example.test/', { role: 'ms3', tab: 'library', scrollPos: -1 }).scrollPos, undefined);
   assert.equal(F.fdResolveState('https://example.test/', { role: 'ms3', tab: 'library', scrollPos: '640' }).scrollPos, undefined);
+});
+
+test('a reloaded reading place survives an ordinary navigation save', () => {
+  const store = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'today', browsing: true,
+    readingPlaces: { 'a.md': { heading: 'heading-1', offset: 28, updatedAt: 8 } } }) });
+  const LocalF = make(store);
+  const restored = LocalF.fdResolveState('https://example.test/?page=a.md', JSON.parse(store.getItem('cw_frontdoor_v1')));
+  const h = fakeHarness(restored, { F: LocalF });
+  h.controller.dispatch({ 'data-fd-tab': 'library' });
+  assert.deepEqual(JSON.parse(store.getItem('cw_frontdoor_v1')).readingPlaces,
+    { 'a.md': { heading: 'heading-1', offset: 28, updatedAt: 8 } });
+});
+
+function readingPlaceHarness(saved = {}, options = {}) {
+  let y = 0;
+  const listeners = new Map();
+  const pending = new Map();
+  let nextTimer = 1;
+  const win = {
+    get scrollY() { return y; },
+    scrollTo(_x, next) { y = next; },
+    addEventListener(type, fn) { listeners.set(type, fn); },
+    removeEventListener(type) { listeners.delete(type); },
+    requestAnimationFrame(fn) { pending.set(`frame-${nextTimer++}`, fn); },
+  };
+  const heights = options.heights || [100, 450, 900, 1400];
+  const labels = options.labels || ['A reading', 'Thought process', 'Thought process', '...'];
+  const headings = labels.map((textContent, i) => ({
+    id: (options.authoredIds || [])[i] || '', textContent, tagName: i ? 'H2' : 'H1',
+    getBoundingClientRect() { return { top: heights[i] - y }; },
+    focus(opts) { this.focused = opts; },
+    setAttribute(name, value) { this[name] = value; },
+    getAttribute(name) { return name === 'id' ? this.id : this[name] || null; },
+  }));
+  const status = { textContent: '' };
+  const top = { hidden: true };
+  const reader = {
+    querySelectorAll(selector) {
+      assert.equal(selector, '.fd-article > .fd-article__h1,.fd-article__body h2,.fd-article__body h3,.fd-article__body h4');
+      return headings;
+    },
+    querySelector(selector) {
+      if (selector === '[data-fd-reading-status]') return status;
+      if (selector === '[data-fd-reading-top]') return top;
+      return null;
+    },
+  };
+  const state = { role: 'first-role', screen: 'app', readingPlaces: saved };
+  const writes = [];
+  const save = options.save || ((value) => { writes.push(JSON.parse(JSON.stringify(value.readingPlaces))); return true; });
+  const install = (focusOnRestore = false, liveState = state) => F.fdInstallReadingPlace(reader, 'a.md', liveState, {
+    window: win, allowStorage: options.allowStorage !== false, focusOnRestore,
+    canFocusOnRestore: options.canFocusOnRestore,
+    save, now: () => 1000 + writes.length,
+    setTimer(fn, delay) { assert.equal(delay, 150); const id = nextTimer++; pending.set(id, fn); return id; },
+    clearTimer(id) { pending.delete(id); },
+    requestAnimationFrame(fn) { pending.set(`frame-${nextTimer++}`, fn); },
+  });
+  const flush = () => { const jobs = [...pending.values()]; pending.clear(); jobs.forEach((fn) => fn()); };
+  return { install, flush, listeners, headings, status, top, state, writes, win,
+    setScroll(next) { y = next; }, setHeadingTop(index, next) { heights[index] = next; },
+    get scrollY() { return y; },
+  };
+}
+
+test('reading place assigns deterministic heading ids, saves the latest debounced heading, and flushes pagehide', () => {
+  const h = readingPlaceHarness();
+  const session = h.install();
+  h.flush();
+  assert.equal(new Set(h.headings.map((node) => node.id)).size, 4);
+  assert.match(h.headings[3].id, /^fd-reading-section--[0-9a-f]{16}$/);
+  assert.equal(h.status.textContent, 'Reading place saved on this device only', 'fresh storage is verified without inventing a place');
+  assert.equal(h.state.readingPlaces['a.md'], undefined);
+  h.setScroll(500); h.listeners.get('scroll')();
+  h.setScroll(960); h.listeners.get('scroll')();
+  h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[2].id);
+  assert.equal(h.state.readingPlaces['a.md'].offset, 60);
+  assert.equal(h.status.textContent, 'Reading place saved on this device only');
+  h.setScroll(1000); h.listeners.get('pagehide')();
+  assert.equal(h.state.readingPlaces['a.md'].offset, 100);
+  session.destroy();
+  assert.equal(h.listeners.size, 0);
+});
+
+test('Compass labelled section keeps its authored H2 id while private anchors drive save and restore', () => {
+  // Welcome renders <section aria-labelledby="fd-compass-title"> with this authored H2;
+  // the browser test checks the real component, while this drives the installer directly.
+  const options = {
+    labels: ['Welcome', 'Six-Week Compass', 'Week 1 Foundations & the MSE',
+      'Week 1 Foundations & the MSE', '!!!'],
+    authoredIds: ['', 'fd-compass-title', '', '', ''],
+    heights: [100, 450, 900, 1400, 1800],
+  };
+  const h = readingPlaceHarness({}, options);
+  h.install(); h.flush();
+  const section = { labelledBy: 'fd-compass-title' };
+  assert.equal(h.headings[1].id, 'fd-compass-title');
+  assert.equal(h.headings.find(node => node.id === section.labelledBy)?.textContent, 'Six-Week Compass');
+  const anchors = h.headings.map(node => node.getAttribute('data-fd-reading-anchor'));
+  assert.match(anchors[1], /^fd-reading-six-week-compass--[0-9a-f]{16}$/);
+  assert.notEqual(anchors[1], h.headings[1].id);
+  assert.equal(new Set(anchors).size, anchors.length, 'duplicate headings retain distinct bookmark identities');
+  assert.equal(h.headings[2].id, anchors[2], 'a heading without an authored id remains linkable');
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, anchors[1], 'the authored H2 saves its private identity');
+  const compassRestored = readingPlaceHarness(h.state.readingPlaces, options);
+  compassRestored.install(); compassRestored.flush();
+  assert.equal(compassRestored.scrollY, 500);
+  assert.equal(compassRestored.headings[1].id, 'fd-compass-title');
+  h.setScroll(960); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, anchors[2]);
+  h.setScroll(1460); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, anchors[3]);
+
+  const restored = readingPlaceHarness(h.state.readingPlaces, options);
+  restored.install(); restored.flush();
+  assert.equal(restored.scrollY, 1460, 'duplicate bookmark restores relative to its own heading');
+  assert.equal(restored.headings[1].id, 'fd-compass-title');
+  assert.equal(restored.headings[3].getAttribute('data-fd-reading-anchor'), anchors[3]);
+
+  const stale = readingPlaceHarness({ 'a.md': { heading: 'fd-compass-title', offset: 10, updatedAt: 1 } }, options);
+  stale.install(); stale.flush();
+  assert.equal(stale.state.readingPlaces['a.md'], undefined, 'an authored DOM id is not a bookmark identity');
+  assert.equal(stale.headings[1].id, 'fd-compass-title');
+
+  const collision = readingPlaceHarness({}, { ...options, authoredIds: ['', anchors[2], '', '', ''] });
+  collision.install(); collision.flush();
+  assert.equal(collision.headings[1].id, anchors[2], 'an authored id is never displaced by a generated one');
+  assert.equal(collision.headings[2].id, '', 'a colliding generated DOM id is omitted');
+  assert.equal(collision.headings[2].getAttribute('data-fd-reading-anchor'), anchors[2]);
+
+  const guest = readingPlaceHarness({}, { ...options, allowStorage: false });
+  guest.install(); guest.flush();
+  assert.equal(guest.headings[1].id, 'fd-compass-title', 'guest install also preserves the label target');
+  assert.equal(guest.headings[1].getAttribute('data-fd-reading-anchor'), anchors[1]);
+  assert.equal(guest.writes.length, 0);
+});
+
+test('reading place keeps its heading through responsive reflow without treating resize as learner scroll', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  const heading = h.state.readingPlaces['a.md'].heading;
+  h.setHeadingTop(1, 600);
+  h.listeners.get('resize')(); h.flush();
+  assert.equal(h.scrollY, 650);
+  assert.equal(h.state.readingPlaces['a.md'].heading, heading);
+});
+
+test('reading place flushes a pending learner scroll before responsive reflow', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  const oldHeading = h.state.readingPlaces['a.md'].heading;
+  h.setScroll(960); h.listeners.get('scroll')(); // 150 ms has not elapsed
+  h.setHeadingTop(2, 1100);
+  h.listeners.get('resize')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[2].id);
+  assert.notEqual(h.state.readingPlaces['a.md'].heading, oldHeading);
+  assert.equal(h.state.readingPlaces['a.md'].offset, 60);
+  assert.equal(h.scrollY, 1160, 'new relative position follows the reflowed heading');
+  const writes = h.writes.length;
+  h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.writes.length, writes, 'programmatic reflow makes no write loop');
+  assert.equal(h.headings[2].focused, undefined, 'resize does not take focus');
+});
+
+test('returning to the fresh baseline cancels the pending debounce without blocking a later move', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  const writes = h.writes.length;
+  h.setScroll(960); h.listeners.get('scroll')();
+  h.setScroll(0); h.listeners.get('scroll')();
+  h.flush();
+  assert.equal(h.state.readingPlaces['a.md'], undefined, 'abandoned section is not saved');
+  assert.equal(h.writes.length, writes, 'debounce does not write after the reversal');
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[1].id,
+    'a later meaningful scroll still saves normally');
+});
+
+test('returning to the fresh baseline cannot be flushed by resize or pagehide', () => {
+  for (const exit of ['resize', 'pagehide']) {
+    const h = readingPlaceHarness();
+    h.install(); h.flush();
+    const writes = h.writes.length;
+    h.setScroll(960); h.listeners.get('scroll')();
+    h.setScroll(0); h.listeners.get('scroll')();
+    h.listeners.get(exit)(); h.flush();
+    assert.equal(h.state.readingPlaces['a.md'], undefined, `${exit} cannot persist the abandoned section`);
+    assert.equal(h.writes.length, writes, `${exit} makes no stale write`);
+    assert.equal(h.scrollY, 0, `${exit} cannot restore the abandoned section`);
+  }
+});
+
+test('pagehide drops a pending position when the return scroll event has not fired yet', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  const writes = h.writes.length;
+  h.setScroll(960); h.listeners.get('scroll')();
+  h.setScroll(0); // the browser may coalesce this scroll event with pagehide
+  h.listeners.get('pagehide')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'], undefined);
+  assert.equal(h.writes.length, writes);
+});
+
+test('returning to an earlier position after a settled save is still meaningful movement', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  h.setScroll(960); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[2].id);
+  h.setScroll(0); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[0].id);
+  assert.equal(h.state.readingPlaces['a.md'].offset, 0);
+});
+
+test('Start at top stays clear through two untouched exits, then learner movement saves again', () => {
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  const restored = readingPlaceHarness({ 'a.md': { heading: seed.headings[1].id, offset: 40, updatedAt: 8 } });
+  const first = restored.install(); restored.flush();
+  first.startAtTop(); restored.listeners.get('pagehide')(); first.destroy();
+  let saved = restored.state.readingPlaces;
+  assert.equal(saved['a.md'], undefined);
+  for (let cycle = 0; cycle < 2; cycle++) {
+    const h = readingPlaceHarness(saved);
+    const session = h.install(); h.flush();
+    assert.equal(h.status.textContent, 'Reading place saved on this device only');
+    assert.deepEqual(h.writes.at(-1), saved, 'verification writes the unchanged map');
+    assert.equal(h.state.readingPlaces['a.md'], undefined);
+    h.listeners.get('pagehide')(); session.destroy();
+    assert.equal(h.state.readingPlaces['a.md'], undefined);
+    saved = h.state.readingPlaces;
+  }
+  const h = readingPlaceHarness(saved);
+  h.install(); h.flush();
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[1].id);
+});
+
+test('reading place restores relative to the heading and focuses the section only for Continue', () => {
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  const id = seed.headings[1].id;
+  const h = readingPlaceHarness({ 'a.md': { heading: id, offset: 75, updatedAt: 9 } });
+  h.install(true);
+  assert.equal(h.scrollY, 0, 'restore waits for a layout frame');
+  assert.equal(h.status.textContent, '', 'no success claim before the verified write');
+  h.setHeadingTop(1, 600);
+  h.flush();
+  assert.equal(h.scrollY, 675, 'the stored offset follows the heading after reflow');
+  assert.deepEqual(h.headings[1].focused, { preventScroll: true });
+  assert.equal(h.top.hidden, false);
+  const ordinary = readingPlaceHarness({ 'a.md': { heading: id, offset: 75, updatedAt: 9 } });
+  ordinary.install(false); ordinary.flush();
+  assert.equal(ordinary.headings[1].focused, undefined);
+  assert.deepEqual(ordinary.headings[0].focused, { preventScroll: true }, 'ordinary open retains document-heading focus');
+  const owned = readingPlaceHarness({ 'a.md': { heading: id, offset: 75, updatedAt: 9 } },
+    { canFocusOnRestore: () => false });
+  owned.install(false); owned.flush();
+  assert.equal(owned.headings[0].focused, undefined, 'a foreground focus owner is not stolen');
+});
+
+test('stale heading clears only its page and Start at top clears a restored place', () => {
+  const other = { heading: 'other', offset: 4, updatedAt: 3 };
+  const stale = readingPlaceHarness({ 'a.md': { heading: 'missing', offset: 80, updatedAt: 8 }, 'b.md': other });
+  stale.install(); stale.flush();
+  assert.equal(stale.scrollY, 0);
+  assert.deepEqual(stale.state.readingPlaces, { 'b.md': other });
+  assert.deepEqual(stale.writes.at(-1), { 'b.md': other }, 'stale cleanup reaches the device store');
+  assert.equal(stale.top.hidden, true);
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  const restored = readingPlaceHarness({ 'a.md': { heading: seed.headings[1].id, offset: 40, updatedAt: 8 }, 'b.md': other });
+  const session = restored.install(); restored.flush();
+  session.startAtTop();
+  assert.equal(restored.scrollY, 100);
+  assert.deepEqual(restored.state.readingPlaces, { 'b.md': other });
+  assert.equal(restored.top.hidden, true);
+  assert.deepEqual(restored.headings[0].focused, { preventScroll: true });
+});
+
+test('dropped reading places stay dropped through queued scroll and pagehide, then a real move saves again', () => {
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  for (const stale of [false, true]) {
+    const h = readingPlaceHarness({ 'a.md': { heading: stale ? 'missing' : seed.headings[1].id, offset: 40, updatedAt: 8 } });
+    const session = h.install(); h.flush();
+    if (!stale) session.startAtTop();
+    h.listeners.get('scroll')(); // scrollTo's queued programmatic scroll event
+    h.listeners.get('pagehide')();
+    assert.equal(h.state.readingPlaces['a.md'], undefined, 'page exit must not recreate the dropped place');
+    h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+    assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[1].id,
+      'a later learner movement resumes normal capture');
+    session.destroy();
+  }
+});
+
+test('restore focus checks the live owner at the frame, not only the Continue click', () => {
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  const place = { 'a.md': { heading: seed.headings[1].id, offset: 40, updatedAt: 8 } };
+  const base = { ref: 'a.md', currentRef: 'a.md', readerConnected: true };
+  const owners = [
+    ['pending-high', {}, { pendingHigh: true }],
+    ['search', { searchOpen: true }, {}],
+    ['settings', { sheet: 'settings' }, {}],
+    ['capture', {}, { externalModal: true }],
+  ];
+  for (const [owner, statePatch, contextPatch] of owners) {
+    let state = { screen: 'app' }, context = base;
+    const h = readingPlaceHarness(place, { canFocusOnRestore: () => F.fdReadingFocusAllowed(state, context) });
+    h.install(true);
+    state = { ...state, ...statePatch };
+    context = { ...context, ...contextPatch }; // owner takes focus during fetch or before layout
+    h.flush();
+    assert.equal(h.scrollY, 490, `${owner} still gets reading-place scroll restore`);
+    assert.equal(h.headings[1].focused, undefined, `${owner} retains focus`);
+  }
+  const clear = readingPlaceHarness(place, { canFocusOnRestore: () => F.fdReadingFocusAllowed({ screen: 'app' }, base) });
+  clear.install(true); clear.flush();
+  assert.deepEqual(clear.headings[1].focused, { preventScroll: true });
+  assert.equal(F.fdReadingFocusAllowed({ screen: 'app' }, { ...base, readerConnected: false }), false);
+  assert.equal(F.fdReadingFocusAllowed({ screen: 'app' }, { ...base, currentRef: 'else.md' }), false);
+});
+
+test('the live reader install supplies current overlays and governance to the focus guard', () => {
+  assert.match(spa, /canFocusOnRestore:function\(\)\{\s*return fdReadingFocusAllowed\(readState\(\),\{/);
+  assert.match(spa, /externalModal:!!capSheet/);
+  assert.match(spa, /pendingHigh:!!contentEl\.querySelector\('\.governance-notice\.pending-high'\)/);
+  assert.match(spa, /readerConnected:document\.documentElement\.contains\(mountedReader\)/);
+});
+
+test('erase dispatch disposes the live reader before pagehide can resurrect its storage', () => {
+  const store = memStorage();
+  const LocalF = make(store);
+  const reading = readingPlaceHarness({}, { save(value) {
+    store.setItem('cw_frontdoor_v1', JSON.stringify(value)); return true;
+  } });
+  let live;
+  let reloaded = 0;
+  reading.win.location = { href: 'https://example.test/?page=a.md', search: '?page=a.md', pathname: '/', reload() { reloaded++; } };
+  reading.win.history = { replaceState() {}, pushState() {} };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', openId: 'a.md' }, {
+    F: LocalF, window: reading.win, renderTransient() {},
+    disposeReadingPlace() { if (live) { live.destroy(); live = null; } },
+  });
+  assert.equal(h.controller.startupCommitted(), true, 'integrated erase harness must finish startup');
+  assert.equal(h.fakeWindow, reading.win);
+  live = reading.install(false, h.controller.getState()); reading.flush();
+  reading.setScroll(520); reading.listeners.get('scroll')();
+  assert.deepEqual(LocalF.fdDispatch({ 'data-fd-clear-confirm': '' }, {}, h.controller.getState()).effect,
+    { type: 'clear-device-data' });
+  h.controller.dispatch({ 'data-fd-clear-confirm': '' });
+  assert.equal(h.controller.getState().settingsConfirmClear, false);
+  const pagehide = reading.listeners.get('pagehide');
+  if (pagehide) pagehide();
+  assert.equal(reloaded, 1);
+  assert.deepEqual(store.dump(), {}, 'erase must survive the browser pagehide fired by reload');
+});
+
+test('Back flushes pending reading scroll before cloning and saving the next state', () => {
+  const store = memStorage();
+  const LocalF = make(store);
+  const reading = readingPlaceHarness({}, { save(value) {
+    store.setItem('cw_frontdoor_v1', JSON.stringify(value)); return true;
+  } });
+  let live;
+  reading.win.location = { href: 'https://example.test/', search: '', pathname: '/' };
+  reading.win.history = { replaceState() {}, pushState() {} };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', openId: 'a.md' }, {
+    F: LocalF, window: reading.win,
+    render() { if (live) { live.destroy(); live = null; } },
+    disposeReadingPlace() { if (live) { live.destroy(); live = null; } },
+  });
+  assert.equal(h.controller.startupCommitted(), true, 'integrated Back harness must finish startup');
+  live = reading.install(false, h.controller.getState()); reading.flush();
+  reading.setScroll(960); reading.listeners.get('scroll')(); // do not run the 150 ms timer
+  reading.listeners.get('popstate')({ state: { fd: true, state: { tab: 'today', openId: null } } });
+  assert.equal(h.controller.getState().readingPlaces['a.md'].heading, reading.headings[2].id);
+  assert.equal(h.controller.getState().readingPlaces['a.md'].offset, 60);
+  assert.deepEqual(JSON.parse(store.getItem('cw_frontdoor_v1')).readingPlaces,
+    h.controller.getState().readingPlaces);
+});
+
+test('disallowed and throwing storage show failure and install no false success', () => {
+  const guest = readingPlaceHarness({}, { allowStorage: false });
+  guest.install(); guest.flush();
+  assert.equal(guest.status.textContent, 'Reading place could not be saved on this device');
+  assert.equal(guest.listeners.size, 0);
+  assert.equal(guest.writes.length, 0);
+  const failure = readingPlaceHarness({}, { save: () => false });
+  failure.install(); failure.flush();
+  assert.equal(failure.status.textContent, 'Reading place could not be saved on this device');
+  failure.setScroll(480); failure.listeners.get('scroll')(); failure.flush();
+  assert.equal(failure.status.textContent, 'Reading place could not be saved on this device');
+  const throwing = readingPlaceHarness({}, { save: () => { throw new Error('quota'); } });
+  throwing.install(); throwing.flush();
+  assert.equal(throwing.status.textContent, 'Reading place could not be saved on this device');
+  throwing.setScroll(480); throwing.listeners.get('scroll')(); throwing.flush();
+  assert.equal(throwing.status.textContent, 'Reading place could not be saved on this device');
+  const changing = readingPlaceHarness({}, { save: (() => { let n = 0; return () => ++n === 1; })() });
+  changing.install(); changing.flush();
+  assert.equal(changing.status.textContent, 'Reading place saved on this device only');
+  changing.setScroll(480); changing.listeners.get('scroll')(); changing.flush();
+  assert.equal(changing.status.textContent, 'Reading place could not be saved on this device');
+});
+
+test('destroy flushes the last scroll once and removes listeners before replacing the reader', () => {
+  const h = readingPlaceHarness();
+  const session = h.install(); h.flush();
+  const writesBefore = h.writes.length;
+  h.setScroll(800); h.listeners.get('scroll')();
+  session.destroy(); h.flush();
+  assert.equal(h.writes.length, writesBefore + 1);
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[1].id);
+  assert.equal(h.listeners.size, 0);
+});
+
+test('Continue focus metadata applies to one resource open and does not leak into ordinary opens', () => {
+  const opens = [];
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F, openResource: (_ref, opts) => opens.push(opts),
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'a.md', 'data-fd-reading-resume': '1' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'b.md' }), preventDefault() {} });
+  assert.deepEqual(opens.map((opts) => opts.focusOnRestore), [true, false]);
+});
+
+test('Start at top acts on the live reading session without changing the route', () => {
+  let starts = 0;
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', openId: 'a.md' }, {
+    F, readingPlaceSession: () => ({ startAtTop() { starts++; } }),
+  });
+  let prevented = 0;
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-reading-top': '' }), preventDefault() { prevented++; } });
+  assert.equal(starts, 1);
+  assert.equal(prevented, 1);
+  assert.equal(h.controller.getState().openId, 'a.md');
 });
 
 test('a hidden duplicate of the opener is skipped in favour of one that is shown (#427)', () => {

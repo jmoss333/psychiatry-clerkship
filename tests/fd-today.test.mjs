@@ -116,6 +116,20 @@ const BASE_STATE = { week: 1, role: 'there', done: {}, streak: 0, ringPct: 50,
 const s = (over) => Object.assign({}, BASE_STATE, over);
 const fourState = (over) => Object.assign({}, BASE_STATE, over);
 
+test('Today marks only the winning Continue or setup control as a dock source', () => {
+  const week = F.fdToday(IDX, s({}));
+  assert.equal((week.match(/data-fd-dock-source=/g) || []).length, 1);
+  assert.match(week, /data-fd-dock-source="primary-week" data-fd-dock-label="Continue"/);
+  const ahead = F.fdToday(IDX, s({ done: { 'a.md': true, 't.html': true } }));
+  assert.match(ahead, /data-fd-dock-source="primary-ahead" data-fd-dock-label="Preview week"/);
+  assert.equal((ahead.match(/data-fd-dock-source=/g) || []).length, 1);
+  const setup = F.fdToday(IDX, s({ week: null }));
+  assert.match(setup, /data-fd-dock-source="primary-setup" data-fd-dock-label="Set rotation week"/);
+  assert.equal((setup.match(/data-fd-dock-source=/g) || []).length, 1);
+  assert.equal((F.fdToday(IDX, s({ primaryKind: 'due' })).match(/data-fd-dock-source=/g) || []).length, 0);
+  assert.equal((F.fdToday(IDX, s({ week: null, primaryKind: 'resume' })).match(/data-fd-dock-source=/g) || []).length, 0);
+});
+
 test('Today counts repeated practice for the current week even when another Path week was viewed', () => {
   const cur = { ...FIX_CUR, weeks: FIX_CUR.weeks.map((w) => ({ ...w,
     items: [{ ref: 't.html', kind: 'tool' }],
@@ -531,14 +545,22 @@ test('fdContinue: primary undefined renders exactly what primary=true renders, a
   const a = F.fdContinue(IDX, s({}), WK1, PROG({}));
   const b = F.fdContinue(IDX, s({}), WK1, PROG({}), true);
   assert.equal(a, b);
-  assert.match(a, /^<button type="button" class="fd-continue" data-fd-open="a\.md">/);
+  assert.match(a, /^<button type="button" class="fd-continue" data-fd-open="a\.md" data-fd-reading-resume="1" data-fd-dock-source="primary-week" data-fd-dock-label="Continue">/);
   assert.doesNotMatch(a, /is-secondary|fd-freshset/);
+});
+
+test('Continue marks only a reading open for one-shot restored-heading focus', () => {
+  const reading = F.fdContinue(IDX, s({}), WK1, PROG({}));
+  assert.match(reading, /data-fd-open="a\.md" data-fd-reading-resume="1"/);
+  const tool = F.fdContinue(IDX, s({}), WK1, PROG({ 'a.md': true }));
+  assert.doesNotMatch(tool, /data-fd-reading-resume/);
 });
 
 test('fdContinue: primary=false adds is-secondary and changes nothing else', () => {
   const secondary = F.fdContinue(IDX, s({}), WK1, PROG({}), false);
-  assert.match(secondary, /^<button type="button" class="fd-continue is-secondary" data-fd-open="a\.md">/);
-  assert.equal(secondary.replace(' is-secondary', ''), F.fdContinue(IDX, s({}), WK1, PROG({})));
+  assert.match(secondary, /^<button type="button" class="fd-continue is-secondary" data-fd-open="a\.md" data-fd-reading-resume="1">/);
+  assert.equal(secondary.replace(' is-secondary', '').replace(/(<button[^>]+)(>)/,
+    '$1 data-fd-dock-source="primary-week" data-fd-dock-label="Continue"$2'), F.fdContinue(IDX, s({}), WK1, PROG({})));
 });
 
 test('fdContinue names the kind of the next item with the same chip rule as the week rows', () => {

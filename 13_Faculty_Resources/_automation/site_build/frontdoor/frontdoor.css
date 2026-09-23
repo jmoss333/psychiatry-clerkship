@@ -165,6 +165,7 @@
 .fd-settingsbtn:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
 
 .fd-tabs{max-width:1200px;margin:0 auto;padding:4px 20px 0;display:flex;gap:var(--fd-space-1)}
+.fd-dock{display:none}
 .fd-tab{
   padding:10px 16px;background:none;border:none;cursor:pointer;font:inherit;font-size:var(--fd-font-md);
   border-radius:0;font-weight:500;color:var(--fd-text-mid);border-bottom:3px solid transparent;
@@ -608,6 +609,59 @@
 .fd-carelink__copy{min-width:0}
 .fd-carelink__title{display:block;font-size:var(--fd-font-sm);font-weight:750;line-height:1.35}
 .fd-carelink__description{display:block;margin-top:2px;color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:1.4}
+.fd-care-entry{display:none}
+
+/* Patient resource pack: a quiet picker beside a paper-like handout preview. The choices are
+ * visit-only controls; the sheet is the sole print surface. */
+.fd-care-pack{margin:0 0 var(--fd-space-10);padding:var(--fd-space-6);border:var(--fd-space-1) solid var(--fd-line);border-radius:var(--fd-radius-lg);background:var(--fd-callout)}
+.fd-care-pack__head{display:flex;align-items:start;justify-content:space-between;gap:var(--fd-space-6);margin-bottom:var(--fd-space-6)}
+.fd-care-pack__head h2{margin:0 0 var(--fd-space-2);font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-xl);line-height:var(--fd-leading-snug)}
+.fd-care-pack__head p{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:var(--fd-leading-normal)}
+.fd-care-pack__included{display:inline-flex;align-items:center;gap:var(--fd-space-2);flex:0 0 auto;padding:var(--fd-space-2) var(--fd-space-4);border:var(--fd-space-1) solid var(--fd-olive);border-radius:var(--fd-radius-pill);background:var(--fd-olive-wash);color:var(--fd-olive-deep) !important;font-size:var(--fd-font-xs) !important;font-weight:750}
+.fd-care-pack__included.is-unavailable{border-color:var(--fd-danger);background:var(--fd-danger-wash);color:var(--fd-danger) !important}
+.fd-care-pack__workbench{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--fd-space-7);align-items:start}
+.fd-care-pack__picker{min-width:0;padding-top:var(--fd-space-4);border-top:var(--fd-space-2) solid var(--fd-olive)}
+.fd-care-pack__picker h3{margin:0 0 var(--fd-space-4);font-size:var(--fd-font-lg)}
+.fd-care-pack__choices{display:grid;gap:var(--fd-space-3)}
+.fd-care-pack__choice{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:var(--fd-space-3);width:100%;min-height:var(--fd-target-touch);padding:var(--fd-space-3) var(--fd-space-4);border:var(--fd-space-1) solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:transparent;color:var(--fd-text);font:inherit;text-align:left;cursor:pointer}
+.fd-care-pack__choice:hover:not(:disabled){border-color:var(--fd-olive);background:var(--fd-olive-wash)}
+.fd-care-pack__choice:focus-visible,.fd-care-pack__clear:focus-visible,.fd-care-pack__print:focus-visible{outline:var(--fd-space-2) solid var(--fd-focus);outline-offset:var(--fd-space-1)}
+.fd-care-pack__choice:disabled,.fd-care-pack__clear:disabled,.fd-care-pack__print:disabled{opacity:.55;cursor:not-allowed}
+.fd-care-pack__check{display:grid;place-items:center;width:var(--fd-space-6);height:var(--fd-space-6);border:var(--fd-space-1) solid var(--fd-line-strong);border-radius:var(--fd-radius-circle);color:transparent;font-weight:800}
+.fd-care-pack__choice>span:last-child{min-width:0}
+.fd-care-pack__choice strong,.fd-care-pack__choice small{display:block;overflow-wrap:anywhere}
+.fd-care-pack__choice strong{font-size:var(--fd-font-sm);line-height:var(--fd-leading-snug)}
+.fd-care-pack__choice small{margin-top:var(--fd-space-1);color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:var(--fd-leading-normal)}
+.fd-care-pack__choice[aria-pressed="true"]{border-color:var(--fd-olive-deep);background:var(--fd-olive-wash);box-shadow:inset var(--fd-space-1) 0 0 var(--fd-olive-deep)}
+.fd-care-pack__choice[aria-pressed="true"] .fd-care-pack__check{border-color:var(--fd-olive-deep);background:var(--fd-olive-deep);color:var(--fd-on-accent)}
+.fd-care-pack__picker-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-4);margin-top:var(--fd-space-4)}
+.fd-care-pack__picker-foot p{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-xs)}
+.fd-care-pack__clear{min-height:var(--fd-target-touch);padding:var(--fd-space-2) var(--fd-space-3);border:0;background:transparent;color:var(--fd-olive-deep);font:inherit;font-size:var(--fd-font-sm);font-weight:750;text-decoration:underline;text-underline-offset:var(--fd-space-1);cursor:pointer}
+.fd-care-pack__sheet{min-width:0;padding:var(--fd-space-6);border:var(--fd-space-1) solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);box-shadow:var(--fd-shadow-card)}
+.fd-care-pack__sheet-head{padding-bottom:var(--fd-space-5);border-bottom:var(--fd-space-2) solid var(--fd-olive)}
+.fd-care-pack__sheet-head p{margin:0 0 var(--fd-space-1);color:var(--fd-olive-deep);font-size:var(--fd-font-xs);font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.fd-care-pack__sheet-head h3{margin:0 0 var(--fd-space-2);font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-xl);line-height:var(--fd-leading-tight)}
+.fd-care-pack__sheet-head span{display:block;color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:var(--fd-leading-normal)}
+.fd-care-pack__resources{display:grid}
+.fd-care-pack__resource{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--fd-space-4);align-items:center;padding:var(--fd-space-5) 0;border-bottom:var(--fd-space-1) solid var(--fd-line)}
+.fd-care-pack__resource-copy{min-width:0}
+.fd-care-pack__resource h4{margin:0 0 var(--fd-space-2);font-size:var(--fd-font-sm);line-height:var(--fd-leading-snug)}
+.fd-care-pack__resource p{margin:0 0 var(--fd-space-2);color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:var(--fd-leading-normal)}
+.fd-care-pack__resource a{display:block;font-size:var(--fd-font-2xs);line-height:var(--fd-leading-snug);overflow-wrap:anywhere}
+.fd-care-pack__scan{display:grid;justify-items:center;gap:var(--fd-space-1);color:var(--fd-text-dim);font-size:var(--fd-font-2xs);text-align:center}
+.fd-care-pack__qr{width:calc(var(--fd-space-10) * 2 + var(--fd-space-4));max-width:100%;padding:var(--fd-space-1);border:var(--fd-space-1) solid var(--fd-line);background:var(--fd-surface)}
+.fd-care-pack__qr svg{display:block;width:100%;height:auto}
+.fd-care-pack__qr-fallback{max-width:calc(var(--fd-space-10) * 2);padding:var(--fd-space-2);border:var(--fd-space-1) solid var(--fd-line);border-radius:var(--fd-radius-xs)}
+.fd-care-pack__empty{margin:var(--fd-space-7) 0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);text-align:center}
+.fd-care-pack__crisis{margin-top:var(--fd-space-5);padding-top:var(--fd-space-4);border-top:var(--fd-space-1) solid var(--fd-line)}
+.fd-care-pack__crisis>summary{min-height:var(--fd-target-touch);align-content:center;color:var(--fd-danger);font-size:var(--fd-font-sm);font-weight:750;cursor:pointer}
+.fd-care-pack__crisis .crisis-block{margin-top:var(--fd-space-4)}
+.fd-care-pack__crisis-failure{margin:var(--fd-space-5) 0 0;padding:var(--fd-space-4);border:var(--fd-space-1) solid var(--fd-danger);border-radius:var(--fd-radius-sm);background:var(--fd-danger-wash);color:var(--fd-text);font-size:var(--fd-font-sm)}
+.fd-care-pack__provenance{margin-top:var(--fd-space-5);padding-top:var(--fd-space-4);border-top:var(--fd-space-1) solid var(--fd-line);color:var(--fd-text-dim);font-size:var(--fd-font-2xs);line-height:var(--fd-leading-normal)}
+.fd-care-pack__actions{display:flex;align-items:center;justify-content:flex-end;gap:var(--fd-space-5);margin-top:var(--fd-space-6)}
+.fd-care-pack__actions p{margin:0;color:var(--fd-text-dim);font-size:var(--fd-font-xs)}
+.fd-care-pack__print{min-height:var(--fd-target-touch);padding:var(--fd-space-3) var(--fd-space-6);border:var(--fd-space-1) solid var(--fd-olive);border-radius:var(--fd-radius-sm);background:var(--fd-olive);color:var(--fd-on-accent);font:inherit;font-size:var(--fd-font-sm);font-weight:750;cursor:pointer}
+.fd-care-pack__print:hover:not(:disabled){border-color:var(--fd-olive-deep);background:var(--fd-olive-deep)}
 
 .fd-kitcard{
   display:flex;align-items:center;gap:var(--fd-space-5);width:100%;text-align:left;
@@ -878,6 +932,10 @@
 @media (pointer:coarse){[data-fd-compass-safety] a,[data-fd-compass-link],[data-fd-compass-orientation]{min-inline-size:44px;min-block-size:44px}}
 
 .fd-article__source{display:flex;align-items:center;gap:var(--fd-space-4);font-size:var(--fd-font-sm);color:var(--fd-text-dim);padding:10px 0;border-top:1px solid var(--fd-line)}
+.fd-reading-place{margin:var(--fd-space-6) 0 0;font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-dim)}
+.fd-reading-place__top{display:inline-flex;align-items:center;min-height:var(--fd-target-touch);margin:var(--fd-space-1) 0 0;padding:var(--fd-space-4) 0;border:0;background:transparent;color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-sm);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.fd-reading-place__top[hidden]{display:none}
+.fd-reading-place__top:focus-visible{outline:2px solid var(--fd-teal-deep);outline-offset:3px}
 .fd-article__actions{display:flex;gap:var(--fd-space-5);margin-top:16px;flex-wrap:wrap}
 
 .fd-keypoints{
@@ -962,6 +1020,7 @@
 .fd-searchpanel__head{display:flex;align-items:center;gap:var(--fd-space-5);padding:15px 18px;border-bottom:1px solid var(--fd-line)}
 .fd-searchpanel__input{flex:1;border:none;outline:none;font-size:var(--fd-font-base);color:var(--fd-text);background:transparent;font-family:inherit}
 .fd-searchpanel__esc{border:1px solid var(--fd-line-strong);background:none;border-radius:var(--fd-radius-xs);font-size:var(--fd-font-2xs);font-weight:600;color:var(--fd-text-dim);padding:2px 7px;cursor:pointer}
+.fd-searchpanel__browse{padding:var(--fd-space-2) var(--fd-space-5);border-bottom:1px solid var(--fd-line);background:var(--fd-callout)}
 .fd-searchpanel__body{max-height:46vh;overflow-y:auto;padding:8px}
 .fd-searchpanel__foot{padding:9px 18px;border-top:1px solid var(--fd-line);background:var(--fd-callout);font-size:var(--fd-font-xs);color:var(--fd-text-dim)}
 .fd-searchpanel__empty{padding:22px;text-align:center;font-size:var(--fd-font-md);color:var(--fd-text-dim)}
@@ -1122,7 +1181,7 @@
 .fd-progresscard{justify-content:space-between;margin:16px 0}
 .fd-progresscard__meta{margin-left:auto}
 
-.fd-capture-launch,.fd-capture__new,.fd-capture__copy,.fd-capture__action{
+.fd-capture-launch,.fd-capture__new{
   min-height:44px;border:1px solid var(--fd-line);border-radius:var(--fd-radius-md);background:var(--fd-surface);
   color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-sm);font-weight:600;cursor:pointer;
 }
@@ -1131,24 +1190,9 @@
 .fd-capture__head{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-6)}
 .fd-capture__head .fd-sectionhead{margin:0}
 .fd-capture__new{padding:8px 12px;color:var(--fd-teal-deep)}
-.fd-capture__purpose{margin:8px 0 12px;font-size:var(--fd-font-xs);line-height:1.5;color:var(--fd-text-dim)}
-.fd-capture__item{padding:var(--fd-space-6) 0;border-top:1px solid var(--fd-line)}
-.fd-capture__meta{display:flex;align-items:center;justify-content:flex-end;margin-bottom:var(--fd-space-2)}
-.fd-capture__status{font-size:var(--fd-font-2xs);font-weight:700;color:var(--fd-text-dim);border:1px solid var(--fd-line);border-radius:var(--fd-radius-pill);padding:var(--fd-space-1) var(--fd-space-4);background:var(--fd-surface)}
-.fd-capture__item[data-cap-status="scheduled"] .fd-capture__status{color:var(--fd-teal-deep);border-color:var(--fd-teal)}
-.fd-capture__item[data-cap-status="supervision"] .fd-capture__status{color:var(--fd-terracotta-dark);border-color:var(--fd-terracotta)}
-.fd-capture__question{margin:0 0 var(--fd-space-4);font-size:var(--fd-font-md);font-weight:650;line-height:1.5;color:var(--fd-text)}
-.fd-capture__match{display:grid;grid-template-columns:auto 1fr;gap:var(--fd-space-4);align-items:baseline;padding:var(--fd-space-4) var(--fd-space-5);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
-.fd-capture__match span{font-size:var(--fd-font-2xs);color:var(--fd-text-dim)}
-.fd-capture__match strong{font-size:var(--fd-font-sm);color:var(--fd-text);font-weight:650}
-.fd-capture__actions{display:flex;gap:var(--fd-space-4);flex-wrap:wrap;margin-top:var(--fd-space-4)}
-.fd-capture__action{width:auto;padding:var(--fd-space-4) var(--fd-space-5);text-align:center}
-.fd-capture__action--done{margin-left:auto;color:var(--fd-text-dim)}
-.fd-capture__action:hover,.fd-capture__new:hover,.fd-capture__copy:hover,.fd-capture-launch:hover{border-color:var(--fd-line-hover);background:var(--fd-selected)}
-.fd-capture__copy{width:100%;padding:9px 12px;margin-top:10px;color:var(--fd-teal-deep)}
-@media (max-width:430px){
-  .fd-capture__actions .fd-capture__action{flex:1 1 calc(50% - var(--fd-space-4));margin-left:0}
-}
+.fd-capture__question{margin:var(--fd-space-5) 0;font-size:var(--fd-font-md);font-weight:650;line-height:1.5;color:var(--fd-text);overflow-wrap:anywhere}
+.fd-capture__purpose{margin:var(--fd-space-4) 0 0;font-size:var(--fd-font-xs);line-height:1.5;color:var(--fd-text-dim)}
+.fd-capture__new:hover,.fd-capture-launch:hover{border-color:var(--fd-line-hover);background:var(--fd-selected)}
 .fd-progress-reader{max-width:940px;margin:0 auto}
 .fd-progress-reader > .hm{max-width:none;padding:0}
 
@@ -1245,56 +1289,37 @@
 }
 
 /* ═══ Phone chrome ═══════════════════════════════════════════════════════════
- * Measured 2026-09-16 on a 375×812 phone opening a topic page: header 154px, capture bar
- * bottom at 210px, article h1 top at 382px — nearly half the first screen was shell. The
- * two-row header above stays exactly as the 2026-08 audit pinned it on the TOP-LEVEL screens
- * (brand name visible, search label >= 44px, five 44×44 controls, no collisions). What moves
- * there is the tab row: on Today, Path and Library it docks to the bottom of the viewport as a
- * tab bar, where a thumb reaches it.
- * A READER (2026-09-18) collapses the header to ONE row instead: ψ home tile, the search field
- * grown to fill, ✚ Safety. It carries the fixed action bar, whose `‹` returns to the tab it was
- * opened from, so the tab row, the week pill and the settings gear are each one tap away and
- * leave the header; the brand name is clipped rather than removed so the home button keeps its
- * accessible name. Measured before this on ?page=suicide.md at 375×812: header 154px (three
- * rows — brand+search, week+safety+gear, tabs), title at 258px: 32% of the screen was shell
- * before the first word of the page. The 2026-09-16 cut kept the reader's tab row because
- * rotation-edition-v2.spec.js's keyboard matrix switched tabs from an open reader at 390px;
- * that matrix now presses the action bar's Back first when the tab row is hidden, which is the
- * route a learner has. Two fixed bars still cannot share the bottom edge, so the reader's tabs
- * are hidden, not docked. The reader also gives up its top-of-page back link and the tool
- * toolbar, because the action bar's `‹` is the same control.
- * Guarded on :has(.fd-actionbar), never on .fd-reader alone: the Progress page and the
- * not-found surface render a .fd-reader with NO action bar, keep the full header, and their
- * top back link is the only way back.
- * .fd-tabs stays a child of .fd-header in the markup (CLASS-INVENTORY's sticky contract); a
- * position:fixed descendant of a sticky ancestor is still viewport-fixed as long as no
- * ancestor transforms, and .fd-header has none. Overlays (search, sheets) are body-mounted
- * at z-index 90+, above the header's own stacking context, so they still cover the bar.
- * .fd-article keeps its 20px sides: 16px pushed the Welcome Compass from two tracks to three
- * at 561px (front-door.spec.js's width buckets); only the vertical padding tightens.
- * tests/fd-phone-chrome.test.mjs pins this block; tests/smoke/front-door.spec.js ("phone
- * chrome …" and "320-641px header controls …") measures the rendered result.
+ * The dock is the only fixed phone action surface. Hidden legacy controls stay in the DOM so
+ * the center slot can forward to their existing behavior; the reader's Back stays in its header.
+ * Content and keyboard scrolling reserve the same safe-area-aware dock clearance on every route.
  */
 @media (max-width:640px){
-  .fd-shell:not(:has(.fd-actionbar)) .fd-header__bar{padding-bottom:8px}
-  .fd-shell:not(:has(.fd-actionbar)) .fd-tabs{
-    position:fixed;left:0;right:0;bottom:0;z-index:50;max-width:none;margin:0;
-    padding:0 var(--fd-space-4) env(safe-area-inset-bottom);
+  html{scroll-padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  .fd-main{padding-top:8px;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  .fd-tabs,#fdCaptureMount,.fd-actionbar,.fd-actionbar__spacer{display:none}
+  .fd-header__bar{padding-bottom:8px}
+  .fd-dock{
+    position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;gap:var(--fd-space-1);
+    padding:var(--fd-space-2) var(--fd-space-1) calc(var(--fd-space-2) + env(safe-area-inset-bottom));
     background:var(--fd-surface-warm);border-top:1px solid var(--fd-line);box-shadow:var(--fd-shadow-bar);
   }
-  .fd-shell:not(:has(.fd-actionbar)) .fd-tab{flex:1;text-align:center;padding:var(--fd-space-5) var(--fd-space-4);border-bottom:none;border-top:3px solid transparent}
-  .fd-shell:not(:has(.fd-actionbar)) .fd-tab.is-active{border-top-color:var(--fd-teal)}
-  .fd-shell:not(:has(.fd-actionbar)) .fd-main{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
-  /* Let the final content scroll above the capture launcher as well as the fixed tab bar. */
-  .fd-shell:has(#fdCaptureMount:not(:empty)) .fd-main{padding-bottom:calc(var(--fd-target-touch) * 3 + var(--fd-space-6) + env(safe-area-inset-bottom))}
-  /* The nudge toast is bottom-anchored too; lift it clear of the tab bar. */
-  .fd-shell:not(:has(.fd-actionbar)) .fd-nudge{bottom:calc(74px + env(safe-area-inset-bottom))}
-  .fd-shell:has(.fd-actionbar) .fd-reader>.fd-reader__back{display:none}
-  .fd-shell:has(.fd-actionbar) .fd-reader__toolbar{display:none}
-  /* A practice tool opened from a clinical field guide inserts its only `Return to guide` control
-     into this toolbar (spa_index.html's guide-bookmark branch), and the action bar's `‹` does not
-     restore that bookmark. The toolbar therefore comes back whenever that control is in it. */
-  .fd-shell:has(.fd-actionbar) .fd-reader__toolbar:has(.fd-guide-return){display:flex}
+  .fd-dock__item{
+    min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);
+    height:60px;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
+    padding:var(--fd-space-2);border:0;border-radius:var(--fd-radius-sm);
+    background:transparent;color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-xs);
+    font-weight:700;line-height:1.15;text-align:center;overflow-wrap:anywhere;cursor:pointer;
+  }
+  .fd-dock__item[aria-current="page"]{color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
+  .fd-dock__item:disabled{opacity:.45;cursor:default}
+  .fd-dock__item--context[data-fd-dock-forward]{
+    transform:translateY(calc(-1 * var(--fd-space-3)));transition:transform .18s ease;
+    background:var(--fd-terracotta);color:var(--fd-on-accent);box-shadow:var(--fd-shadow-lift);
+  }
+  .fd-nudge{bottom:calc(80px + env(safe-area-inset-bottom))}
+  .fd-reader>.fd-reader__back{display:inline-flex}
+  .fd-reader__toolbar{display:flex}
   /* Reader: one row. The bar leaves the two-row grid, the search field takes the width the
      utilities held, and the brand name is clipped (never display:none) so the home button keeps
      its accessible name; min-width keeps the bare tile a 44px target. */
@@ -1303,8 +1328,7 @@
   .fd-shell:has(.fd-actionbar) .fd-brand__name{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
   .fd-shell:has(.fd-actionbar) .fd-searchbtn{width:auto;flex:1;max-width:none}
   .fd-shell:has(.fd-actionbar) .fd-header__actions{margin-left:0;flex:0 0 auto}
-  .fd-shell:has(.fd-actionbar) .fd-tabs,.fd-shell:has(.fd-actionbar) .fd-weekpill,.fd-shell:has(.fd-actionbar) .fd-settingsbtn{display:none}
-  .fd-main{padding-top:8px}
+  .fd-shell:has(.fd-actionbar) .fd-weekpill,.fd-shell:has(.fd-actionbar) .fd-settingsbtn{display:none}
   .fd-article{padding:var(--fd-space-6) var(--fd-space-8)}
 }
 
@@ -1670,6 +1694,17 @@
   .fd-care-page__notice{grid-template-columns:minmax(0,1fr);gap:var(--fd-space-2)}
   .fd-care-navigator{padding:var(--fd-space-5)}
   .fd-care-navigator__choices,.fd-care-navigator__alternatives{grid-template-columns:minmax(0,1fr)}
+  .fd-care-pack{padding:var(--fd-space-5)}
+  .fd-care-pack__head,.fd-care-pack__actions{align-items:stretch;flex-direction:column}
+  .fd-care-pack__included{align-self:flex-start}
+  .fd-care-pack__workbench{grid-template-columns:minmax(0,1fr)}
+  .fd-care-pack__sheet{padding:var(--fd-space-5)}
+  .fd-care-pack__resource{grid-template-columns:minmax(0,1fr)}
+  .fd-care-pack__scan{justify-items:start;text-align:left}
+  .fd-care-pack__print{width:100%}
+  .fd-care-entry{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-4);width:100%;min-height:var(--fd-target-touch);margin:var(--fd-space-5) 0;padding:var(--fd-space-3) var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm);font-weight:700;text-align:left;cursor:pointer}
+  .fd-care-entry:hover{border-color:var(--fd-olive);background:var(--fd-olive-wash)}
+  .fd-care-entry:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
 }
 
 /* Essentials uses the reading typography and existing Clinical Warm tokens. */
@@ -1735,7 +1770,7 @@
   /* System print ink/paper tokens remain legible even when the screen is in dark mode. */
   body:has(.fd-reader--guide){--fd-guide-print-ink:CanvasText;--fd-guide-print-paper:Canvas;color-scheme:light;background:var(--fd-guide-print-paper) !important;color:var(--fd-guide-print-ink) !important}
   .fd-shell:has(.fd-reader--guide),.fd-main:has(.fd-reader--guide){display:block;min-height:0;width:auto;max-width:none;padding:0;margin:0;overflow:visible;background:var(--fd-guide-print-paper) !important}
-  body:has(.fd-reader--guide) :is(.fd-header,.fd-tabs,.fd-actionbar,.fd-sheet,.fd-sheetbackdrop,.fd-search,.fd-nudge,#fdCaptureMount){display:none !important}
+  body:has(.fd-reader--guide) :is(.fd-header,.fd-tabs,.fd-dock,.fd-actionbar,.fd-sheet,.fd-sheetbackdrop,.fd-search,.fd-nudge,#fdCaptureMount){display:none !important}
   .fd-reader--guide :is(.fd-reader__back,.fd-guide-margin,.fd-railnav,.fd-article__actions,.fd-prevnext,.fd-trynow,.fd-tip,.fd-actionbar__spacer,.pgfb,.sec-toolbar,.sec-chev,.fd-guide-arrival,.fd-guide-return,.fd-guide-table-controls,.fd-guide-table-rows,.table-scroll-hint){display:none !important}
   .fd-reader--guide{font-size:var(--fd-font-base);animation:none !important;transform:none !important}
   .fd-reader--guide *{color:var(--fd-guide-print-ink) !important;background:transparent !important;box-shadow:none !important;text-shadow:none !important;overflow-wrap:anywhere}
@@ -1758,6 +1793,22 @@
   .fd-reader--guide thead{display:table-header-group}
   .fd-reader--guide tr{break-inside:avoid-page;page-break-inside:avoid}
   .fd-reader--guide .fd-article__body a[href^="http"]::after{content:" (" attr(href) ")";font-size:var(--fd-font-xs);font-weight:400;overflow-wrap:anywhere}
+  body:has(.fd-care-pack__sheet){--fd-care-print-ink:CanvasText;--fd-care-print-paper:Canvas;color-scheme:light;background:var(--fd-care-print-paper) !important;color:var(--fd-care-print-ink) !important}
+  body:has(.fd-care-pack__sheet) :is(.fd-header,.fd-tabs,.fd-dock,.fd-actionbar,.fd-sheet,.fd-sheetbackdrop,.fd-search,.fd-nudge,#fdCaptureMount){display:none !important}
+  body:has(.fd-care-pack__sheet) :is(.fd-shell,.fd-main){display:block;min-height:0;width:auto;max-width:none;padding:0;margin:0;overflow:visible;background:var(--fd-care-print-paper) !important}
+  .fd-care-page:has(.fd-care-pack__sheet)>:not(.fd-care-pack){display:none !important}
+  .fd-care-pack{display:block;margin:0;padding:0;border:0;background:transparent}
+  .fd-care-pack>:not(.fd-care-pack__workbench){display:none !important}
+  .fd-care-pack__workbench{display:block}
+  .fd-care-pack__picker{display:none !important}
+  .fd-care-pack__sheet{display:block !important;width:auto;max-width:none;margin:0;padding:0;border:0;border-radius:0;background:var(--fd-care-print-paper) !important;box-shadow:none !important;color:var(--fd-care-print-ink) !important}
+  .fd-care-pack__sheet *{color:var(--fd-care-print-ink) !important;box-shadow:none !important;text-shadow:none !important}
+  .fd-care-pack__resource{break-inside:avoid-page;page-break-inside:avoid}
+  .fd-care-pack__crisis{display:block !important;break-before:auto}
+  .fd-care-pack__crisis>summary{display:none !important}
+  .fd-care-pack__crisis>:not(summary){display:block !important;height:auto !important;content-visibility:visible !important}
+  .fd-care-pack__crisis::details-content{display:block !important;height:auto !important;content-visibility:visible !important}
+}
 /* ---- One Thing First (2026-09-16): one primary slot, demoted rows under "Also today" ----------
  * Appended after every base rule on purpose: tests/fd-tokens resolves a selector by FIRST textual
  * match, so an override placed above the rule it overrides would be read as the base.
@@ -1783,3 +1834,30 @@
 }
 /* Phase 2: the Resume card's block progress line ("Block · 1 of 2 done"). */
 .fd-resume__block{display:block;font-size:var(--fd-font-xs);color:var(--fd-text-dim)}
+/* Learner-controlled Capture email draft. The Capture sheet stays mounted but inert beneath it. */
+.cap-email-select{flex:0 0 auto;width:20px;height:20px;accent-color:var(--primary-dark);cursor:pointer}
+.cap-email-select:focus-visible{outline:2px solid var(--fd-focus);outline-offset:3px}
+.cap-email-backdrop{position:fixed;inset:0;z-index:132;background:var(--fd-backdrop)}
+.cap-email-sheet{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:133;width:min(560px,calc(100vw - 24px));max-height:min(86vh,760px);overflow-y:auto;box-sizing:border-box;background:var(--surface);border:1px solid var(--border);border-radius:var(--fd-radius-xl);padding:var(--fd-space-8);box-shadow:var(--fd-shadow-over);font-family:var(--font-body);color:var(--text)}
+.cap-email-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--fd-space-6)}
+.cap-email-head h2{font-family:var(--font-head);font-size:var(--fd-font-lg);color:var(--primary-dark);margin:0}
+.cap-email-count{margin:var(--fd-space-4) 0;font-size:var(--fd-font-sm);color:var(--text-mid)}
+.cap-email-digest{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:var(--fd-font-sm);line-height:1.5;max-height:30vh;overflow-y:auto;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--fd-radius-md);padding:var(--fd-space-6);margin:var(--fd-space-5) 0 var(--fd-space-8)}
+.cap-email-label{display:block;font-weight:700;font-size:var(--fd-font-sm);margin-bottom:var(--fd-space-3)}
+.cap-email-address{display:flex;align-items:stretch;max-width:100%;border:1px solid var(--border);border-radius:var(--fd-radius-md);overflow:hidden;background:var(--surface)}
+.cap-email-address:focus-within{outline:2px solid var(--fd-focus);outline-offset:2px}
+.cap-email-address input{min-width:0;flex:1 1 auto;border:0;background:transparent;color:var(--text);font:inherit;font-size:var(--fd-font-md);padding:var(--fd-space-5)}
+.cap-email-address input:focus{outline:none}
+.cap-email-address span{display:flex;align-items:center;flex:0 0 auto;background:var(--bg-alt);border-left:1px solid var(--border);color:var(--text-mid);font-size:var(--fd-font-sm);padding:0 var(--fd-space-5)}
+.cap-email-hint,.cap-email-status{font-size:var(--fd-font-sm);line-height:1.45;color:var(--text-mid);margin:var(--fd-space-4) 0}
+.cap-email-address:has(input[aria-invalid="true"]){border-color:var(--warning)}
+.cap-email-affirm{display:flex;align-items:flex-start;gap:var(--fd-space-5);margin:var(--fd-space-8) 0 var(--fd-space-6);font-size:var(--fd-font-sm);line-height:1.45;cursor:pointer}
+.cap-email-affirm input{flex:0 0 auto;width:20px;height:20px;margin:0;accent-color:var(--primary-dark)}
+.cap-email-sheet .cap-acts{margin:var(--fd-space-6) 0}
+.cap-email-sheet .cap-btn{min-height:44px}
+.cap-email-sheet .cap-btn:disabled{opacity:.5;cursor:not-allowed}
+.cap-email-fallback{margin-top:var(--fd-space-7)}
+.cap-email-fallback[hidden]{display:none}
+.cap-email-fallback label{display:block;font-size:var(--fd-font-sm);font-weight:700;margin-bottom:var(--fd-space-3)}
+.cap-email-fallback textarea{display:block;width:100%;box-sizing:border-box;resize:vertical;border:1px solid var(--border);border-radius:var(--fd-radius-md);padding:var(--fd-space-5);background:var(--bg);color:var(--text);font:inherit;font-size:var(--fd-font-sm)}
+.cap-email-sheet button:focus-visible,.cap-email-sheet input:focus-visible,.cap-email-sheet textarea:focus-visible{outline:2px solid var(--fd-focus);outline-offset:2px}

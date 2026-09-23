@@ -19,30 +19,80 @@ function reservePort() {
   });
 }
 
-function request(port) {
+function request(port, timeoutMs = 2_000, child) {
   return new Promise((resolve, reject) => {
+    let timeout;
+    let settled = false;
+    const finish = (complete, value) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      child?.off('exit', onChildExit);
+      complete(value);
+    };
+    const onChildExit = () => {
+      const error = new Error('preview process exited during request');
+      error.code = 'ECHILDEXIT';
+      req.destroy(error);
+    };
     const req = http.get(`http://127.0.0.1:${port}/`, (res) => {
       let body = '';
       res.setEncoding('utf8');
       res.on('data', (chunk) => { body += chunk; });
-      res.on('end', () => resolve({ status: res.statusCode, body }));
+      res.once('end', () => finish(resolve, { status: res.statusCode, body }));
+      res.once('error', (error) => finish(reject, error));
     });
-    req.once('error', reject);
+    req.once('error', (error) => finish(reject, error));
+    timeout = setTimeout(() => {
+      const error = new Error('preview request timed out');
+      error.code = 'ETIMEDOUT';
+      req.destroy(error);
+    }, Math.max(1, timeoutMs));
+    child?.once('exit', onChildExit);
+    if (child && (child.exitCode !== null || child.signalCode !== null)) onChildExit();
   });
 }
 
-async function waitForServer(port, child) {
-  // The launcher has its own five-second startup deadline. Give the test
-  // enough time to observe that result even when the full suite is busy.
-  const deadline = Date.now() + 10_000;
+function previewStartupError(message, readOutput) {
+  if (!readOutput) return new Error(message);
+  const { stdout = '', stderr = '' } = readOutput();
+  return new Error(`${message}\nstdout (last 2000 characters): ${stdout.slice(-2_000) || '[empty]'}\nstderr (last 2000 characters): ${stderr.slice(-2_000) || '[empty]'}`);
+}
+
+function waitBrieflyForChildExit(child, timeoutMs) {
+  return new Promise((resolve) => {
+    const onExit = () => {
+      clearTimeout(timer);
+      child.off('exit', onExit);
+      resolve();
+    };
+    const timer = setTimeout(onExit, timeoutMs);
+    child.once('exit', onExit);
+    if (child.exitCode !== null || child.signalCode !== null) onExit();
+  });
+}
+
+async function waitForServer(port, child, readOutput, maxWaitMs = 20_000) {
+  // The launcher makes up to 50 readiness attempts, each with a 200 ms request
+  // timeout and a 100 ms pause. Allow that cycle plus process startup overhead.
+  const deadline = Date.now() + maxWaitMs;
   while (Date.now() < deadline) {
-    if (child.exitCode !== null) throw new Error(`preview exited early with ${child.exitCode}`);
-    try { return await request(port); } catch (error) {
-      if (error.code !== 'ECONNREFUSED') throw error;
+    if (child.exitCode !== null || child.signalCode !== null) {
+      throw previewStartupError(`preview exited early with ${child.exitCode ?? child.signalCode}`, readOutput);
+    }
+    try { return await request(port, deadline - Date.now(), child); } catch (error) {
+      // The socket can close just before Node reports the child exit.
+      if (error.code === 'ECONNRESET' && child.exitCode === null && child.signalCode === null) {
+        await waitBrieflyForChildExit(child, Math.min(200, Math.max(1, deadline - Date.now())));
+      }
+      if (child.exitCode !== null || child.signalCode !== null) {
+        throw previewStartupError(`preview exited early with ${child.exitCode ?? child.signalCode}`, readOutput);
+      }
+      if (error.code !== 'ECONNREFUSED' && error.code !== 'ETIMEDOUT') throw error;
     }
     await new Promise((resolve) => setTimeout(resolve, 25));
   }
-  throw new Error(`preview did not become ready on ${port}`);
+  throw previewStartupError(`preview did not become ready on ${port}`, readOutput);
 }
 
 async function waitForFile(file) {
@@ -98,7 +148,7 @@ test('preview launcher serves the selected built site and stops its owned server
     fs.rmSync(temporary, { recursive: true, force: true });
   });
 
-  const response = await waitForServer(port, child);
+  const response = await waitForServer(port, child, () => ({ stdout, stderr }));
   assert.equal(response.status, 200);
   assert.match(response.body, /preview-marker/);
   await waitForOutput(() => stdout, new RegExp(`Preview ready: http://127\\.0\\.0\\.1:${port}/`));
@@ -131,4 +181,105 @@ test('preview launcher rejects unknown audiences before building', () => {
   const result = spawnSync('/bin/bash', [PREVIEW, 'faculty'], { cwd: os.tmpdir(), encoding: 'utf8' });
   assert.equal(result.status, 2);
   assert.match(result.stderr, /audience must be ms3 or res/);
+});
+
+test('preview readiness accepts a healthy server starting after five seconds', async (t) => {
+  const reservation = await reservePort();
+  const port = reservation.address().port;
+  await new Promise((resolve) => reservation.close(resolve));
+  const child = spawn(process.execPath, ['-e', `
+    const http = require('node:http');
+    setTimeout(() => {
+      http.createServer((_request, response) => response.end('delayed-preview'))
+        .listen(${port}, '127.0.0.1');
+    }, 5_250);
+  `], { stdio: 'ignore' });
+  t.after(() => { if (child.exitCode === null) child.kill('SIGTERM'); });
+
+  const response = await waitForServer(port, child);
+  assert.equal(response.status, 200);
+  assert.equal(response.body, 'delayed-preview');
+});
+
+test('preview startup errors include bounded child output', async () => {
+  const reservation = await reservePort();
+  const port = reservation.address().port;
+  await new Promise((resolve) => reservation.close(resolve));
+  const child = spawn(process.execPath, ['-e', `
+    process.stdout.write('startup diagnostics');
+    process.stderr.write('HEAD-' + 'x'.repeat(3_000) + '-TAIL');
+    process.exit(7);
+  `], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let stdout = '';
+  let stderr = '';
+  child.stdout.setEncoding('utf8');
+  child.stderr.setEncoding('utf8');
+  child.stdout.on('data', (chunk) => { stdout += chunk; });
+  child.stderr.on('data', (chunk) => { stderr += chunk; });
+  await new Promise((resolve) => child.once('close', resolve));
+
+  const error = await waitForServer(port, child, () => ({ stdout, stderr })).then(
+    () => assert.fail('exited child should not become ready'),
+    (failure) => failure,
+  );
+  assert.match(error.message, /preview exited early with 7[\s\S]*startup diagnostics/);
+  assert.match(error.message, /-TAIL/);
+  assert.doesNotMatch(error.message, /HEAD-/);
+});
+
+test('preview readiness deadline interrupts a server that accepts without responding', async (t) => {
+  const reservation = await reservePort();
+  const port = reservation.address().port;
+  await new Promise((resolve) => reservation.close(resolve));
+  const child = spawn(process.execPath, ['-e', `
+    const http = require('node:http');
+    http.createServer(() => {}).listen(${port}, '127.0.0.1', () => console.log('LISTENING'));
+  `], { stdio: ['ignore', 'pipe', 'pipe'] });
+  let stdout = '';
+  child.stdout.setEncoding('utf8');
+  child.stdout.on('data', (chunk) => { stdout += chunk; });
+  t.after(() => { if (child.exitCode === null) child.kill('SIGTERM'); });
+  await waitForOutput(() => stdout, /LISTENING/);
+
+  const wait = waitForServer(port, child, () => ({ stdout, stderr: '' }), 150).then(
+    () => 'ready',
+    (error) => error,
+  );
+  let watchdog;
+  const stalled = new Promise((resolve) => { watchdog = setTimeout(() => resolve('stalled'), 800); });
+  const result = await Promise.race([wait, stalled]);
+  clearTimeout(watchdog);
+  assert.ok(result instanceof Error, `readiness wait ${result} after its deadline`);
+  assert.match(result.message, /preview did not become ready/);
+});
+
+test('preview readiness reports child exit while a response is pending', async (t) => {
+  const reservation = await reservePort();
+  const port = reservation.address().port;
+  await new Promise((resolve) => reservation.close(resolve));
+  const child = spawn(process.execPath, ['-e', `
+    const http = require('node:http');
+    http.createServer(() => {
+      console.error('accepted then exited');
+      setTimeout(() => process.exit(9), 75);
+    }).listen(${port}, '127.0.0.1', () => console.log('LISTENING'));
+  `], { stdio: ['ignore', 'pipe', 'pipe'] });
+  let stdout = '';
+  let stderr = '';
+  child.stdout.setEncoding('utf8');
+  child.stderr.setEncoding('utf8');
+  child.stdout.on('data', (chunk) => { stdout += chunk; });
+  child.stderr.on('data', (chunk) => { stderr += chunk; });
+  t.after(() => { if (child.exitCode === null) child.kill('SIGTERM'); });
+  await waitForOutput(() => stdout, /LISTENING/);
+
+  const started = Date.now();
+  const error = await waitForServer(port, child, () => ({ stdout, stderr }), 2_000).then(
+    () => assert.fail('exited child should not become ready'),
+    (failure) => failure,
+  );
+  assert.match(error.message, /preview exited early with 9[\s\S]*accepted then exited/);
+  assert.ok(Date.now() - started < 1_000, 'child exit should interrupt the pending request promptly');
 });
