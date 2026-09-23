@@ -1,5 +1,6 @@
 var FD_READING_PLACE_LIMIT=50;
 var FD_READING_OFFSET_MAX=100000;
+var FD_READING_HEADING_SLUG_MAX=140;
 var FD_READING_OWN=Object.prototype.hasOwnProperty;
 
 function fdReadingRef(ref){
@@ -85,12 +86,31 @@ function fdReadingPlaceDrop(places,ref){
 }
 
 function fdReadingHeadingIds(labels){
-  var out=[],seen={},i,label,slug,id,base,suffix;
+  var out=[],seen={},counts={},occurrences={},i,label,labelKey,slug,id,base,suffix,count,occurrence;
   if(!Array.isArray(labels))return out;
   for(i=0;i<labels.length;i++){
-    label=FD_READING_OWN.call(labels,i)&&typeof labels[i]==='string'?labels[i].toLowerCase():'';
+    label=FD_READING_OWN.call(labels,i)&&typeof labels[i]==='string'?labels[i]:null;
+    if(label===null)continue;
+    labelKey='label:'+label;
+    if(FD_READING_OWN.call(counts,labelKey))counts[labelKey]++;
+    else counts[labelKey]=1;
+  }
+  for(i=0;i<labels.length;i++){
+    label=FD_READING_OWN.call(labels,i)&&typeof labels[i]==='string'?labels[i]:null;
+    labelKey=label===null?'':('label:'+label);
+    count=label===null?1:counts[labelKey];
+    if(label===null)occurrence=1;
+    else{
+      occurrence=(FD_READING_OWN.call(occurrences,labelKey)?occurrences[labelKey]:0)+1;
+      occurrences[labelKey]=occurrence;
+    }
+    label=label===null?'':label.toLowerCase();
     slug=label.replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
-    base='fd-reading-'+(slug||('section-'+(i+1)));
+    slug=slug||('section-'+(i+1));
+    slug=slug.slice(0,FD_READING_HEADING_SLUG_MAX).replace(/-+$/g,'');
+    if(!slug)slug='section-'+(i+1);
+    base='fd-reading-'+slug;
+    if(count>1)base+='-'+occurrence+'of'+count;
     id=base;
     suffix=2;
     while(FD_READING_OWN.call(seen,id)){

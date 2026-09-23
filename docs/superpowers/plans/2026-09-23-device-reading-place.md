@@ -72,7 +72,7 @@ test('reading places reject malformed records and keep the newest fifty', () => 
 
 test('heading ids are deterministic and unique', () => {
   assert.deepEqual(F.fdReadingHeadingIds(['Thought Process','Thought Process','...']),
-    ['fd-reading-thought-process','fd-reading-thought-process-2','fd-reading-section-3']);
+    ['fd-reading-thought-process-1of2','fd-reading-thought-process-2of2','fd-reading-section-3']);
 });
 
 test('resume rejects a heading removed by a content update', () => {
@@ -110,8 +110,12 @@ function fdReadingPlaceUpdate(places,ref,heading,offset,nowMs){
 ```
 
 Heading slugging must normalize to lowercase ASCII letters/digits/hyphens, prefix every id with
-`fd-reading-`, fall back to `section-N`, and append `-2`, `-3`, etc. for collisions in document
-order. The prefix prevents collisions with authored anchors and shell ids.
+`fd-reading-`, fall back to `section-N`, and keep every generated id within the record validator's
+200-character limit. A unique heading keeps the simple slug. Every member of an exact duplicate-label
+group encodes its occurrence and the group's cardinality (`-1of2`, `-2of2`), so changing the group
+invalidates all its old bookmarks instead of shifting one onto another duplicate. If distinct
+labels still collide after normalization or truncation, append `-2`, `-3`, etc. in document order.
+The prefix prevents collisions with authored anchors and shell ids.
 
 - [ ] **Step 4: Run the suite and verify GREEN**
 

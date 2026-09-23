@@ -83,7 +83,7 @@ test('heading ids normalize punctuation, handle empty labels, and resolve collis
     'Thought Process', 'Thought Process', '...', '!!!', 'A & B', 'A B', 'café', 'Café',
     'Earlier', 'section 11', '???',
   ]), [
-    'fd-reading-thought-process', 'fd-reading-thought-process-2',
+    'fd-reading-thought-process-1of2', 'fd-reading-thought-process-2of2',
     'fd-reading-section-3', 'fd-reading-section-4', 'fd-reading-a-b', 'fd-reading-a-b-2',
     'fd-reading-caf', 'fd-reading-caf-2', 'fd-reading-earlier',
     'fd-reading-section-11', 'fd-reading-section-11-2',
@@ -91,6 +91,38 @@ test('heading ids normalize punctuation, handle empty labels, and resolve collis
   assert.deepEqual(F.fdReadingHeadingIds(['', null, 42]), [
     'fd-reading-section-1', 'fd-reading-section-2', 'fd-reading-section-3',
   ]);
+});
+
+test('removing one duplicate heading invalidates every bookmark from its old duplicate group', () => {
+  const F = make();
+  const oldIds = F.fdReadingHeadingIds(['Thought Process', 'Thought Process']);
+  const currentIds = F.fdReadingHeadingIds(['Thought Process']);
+  assert.deepEqual(oldIds, [
+    'fd-reading-thought-process-1of2', 'fd-reading-thought-process-2of2',
+  ]);
+  for (let i = 0; i < oldIds.length; i += 1) {
+    const saved = F.fdReadingPlaceUpdate({}, `duplicate-${i}.md`, oldIds[i], 12, 100 + i);
+    assert.equal(F.fdReadingResume(saved[`duplicate-${i}.md`], currentIds), null);
+  }
+});
+
+test('generated ids stay bounded, unique after truncation, and round-trip through save and resume', () => {
+  const F = make();
+  const longPrefix = 'Long heading ' + 'a'.repeat(240) + ' ';
+  const labels = [
+    'Thought Process', 'Thought Process', '...', 'Section 11', '???',
+    longPrefix + 'alpha', longPrefix + 'beta',
+  ];
+  const ids = F.fdReadingHeadingIds(labels);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.ok(ids.every((id) => id.length <= 200));
+  for (let i = 0; i < ids.length; i += 1) {
+    const ref = `round-trip-${i}.md`;
+    const saved = F.fdReadingPlaceUpdate({}, ref, ids[i], i, 1000 + i);
+    assert.deepEqual(F.fdReadingResume(saved[ref], ids), {
+      heading: ids[i], offset: i, updatedAt: 1000 + i,
+    });
+  }
 });
 
 test('resume returns a valid place only while its heading id is still available', () => {
