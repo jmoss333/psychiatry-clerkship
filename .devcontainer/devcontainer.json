@@ -7,8 +7,7 @@
   "remoteUser": "node",
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "remoteEnv": {
-    "VIRTUAL_ENV": "${containerWorkspaceFolder}/.venv",
-    "PATH": "${containerWorkspaceFolder}/.venv/bin:${containerEnv:PATH}"
+    "VIRTUAL_ENV": "${containerWorkspaceFolder}/.venv"
   },
   "customizations": {
     "vscode": {

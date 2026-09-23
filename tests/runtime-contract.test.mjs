@@ -170,6 +170,13 @@ test('devcontainer declares no secret or host-control mounts', () => {
   assert.doesNotMatch(serialized, /docker\.sock|SSH_AUTH_SOCK|TOKEN|SECRET|PASSWORD|API_KEY/i);
 });
 
+test('Dev Container preserves VS Code injected CLI PATH during bootstrap', () => {
+  const config = JSON.parse(readFileSync(resolve(ROOT, '.devcontainer/devcontainer.json'), 'utf8'));
+  assert.equal(config.remoteEnv.PATH, undefined, 'remoteEnv must not replace VS Code remote CLI PATH');
+  assert.equal(config.remoteEnv.VIRTUAL_ENV, '${containerWorkspaceFolder}/.venv');
+  assert.equal(config.customizations.vscode.settings['python.defaultInterpreterPath'], '${containerWorkspaceFolder}/.venv/bin/python3');
+});
+
 test('container builds and installs only the repository-owned receipt status VSIX', () => {
   const dockerfile = readFileSync(resolve(ROOT, '.devcontainer/Dockerfile'), 'utf8');
   const bootstrap = readFileSync(resolve(ROOT, '.devcontainer/post-create.sh'), 'utf8');
