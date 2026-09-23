@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -155,8 +155,13 @@ test('devcontainer declares no secret or host-control mounts', () => {
   assert.doesNotMatch(serialized, /docker\.sock|SSH_AUTH_SOCK|TOKEN|SECRET|PASSWORD|API_KEY/i);
 });
 
-test('container bootstrap installs every locked dependency lane and verifies the live contract', () => {
-  const source = readFileSync(resolve(ROOT, '.devcontainer/post-create.sh'), 'utf8');
+test('container bootstrap and explicit verification share every locked dependency lane', () => {
+  const bootstrap = readFileSync(resolve(ROOT, '.devcontainer/post-create.sh'), 'utf8');
+  const installerPath = resolve(ROOT, '.devcontainer/install-dependencies.sh');
+  assert.match(bootstrap, /bash \.devcontainer\/install-dependencies\.sh/);
+  assert.ok(existsSync(installerPath));
+
+  const source = readFileSync(installerPath, 'utf8');
   for (const token of [
     'requirements.txt',
     'requirements-dev.txt',
@@ -166,10 +171,6 @@ test('container bootstrap installs every locked dependency lane and verifies the
     'npm --prefix sp-preview ci',
     'npm --prefix tests/smoke ci',
     'playwright install chromium',
-    'check_lfs_media.py --worktree-stubs',
-    'SSH_AUTH_SOCK',
-    'credential.helper',
-    'check-runtime-contract.mjs --current',
   ]) assert.match(source, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 });
 

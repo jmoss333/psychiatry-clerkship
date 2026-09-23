@@ -204,7 +204,10 @@ class TestPagePasses(_SiteFixture):
 # .../13_Faculty_Resources/_automation/site_build/test_common.py -> the repository root.
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
-_SKIP_DIRS = {".git", ".claude", "_build", "node_modules", "__pycache__", ".venv"}
+_SKIP_DIRS = {
+    ".git", ".claude", ".worktrees", "worktrees", "_build",
+    "node_modules", "__pycache__", ".venv",
+}
 
 _SCRIPT_RX = re.compile(r"<script[^>]*>([\s\S]*?)</script>", re.I)
 # The boot is recognised by what it DOES, never by how it spells it. The predecessor of this
@@ -366,6 +369,20 @@ class TestThemeInit(unittest.TestCase):
     def test_the_shell_and_the_injection_agree_scenario_for_scenario(self):
         """Byte-equality above is the guard; this proves the bytes they share are the right ones."""
         self.assertEqual(self._paint(_shell_boot()), EXPECTED_PAINT)
+
+    def test_boot_census_ignores_repository_management_worktrees(self):
+        with tempfile.TemporaryDirectory() as root:
+            for directory in (".worktrees", "worktrees"):
+                nested = os.path.join(root, directory, "old-branch")
+                os.makedirs(nested)
+                with open(os.path.join(nested, "stale.html"), "w", encoding="utf-8") as fh:
+                    fh.write("<html><head><script>"
+                             "localStorage.getItem('cw_theme');"
+                             "document.documentElement.setAttribute('data-theme','stale');"
+                             "</script></head></html>")
+
+            labels = [label for label, _ in _boot_census(root)]
+            self.assertEqual(labels, ["common.py:THEME_INIT"])
 
     def test_every_pre_paint_theme_boot_in_the_tree_carries_the_shell_bytes(self):
         """One assertion for both directions of drift, because both are the same defect.
