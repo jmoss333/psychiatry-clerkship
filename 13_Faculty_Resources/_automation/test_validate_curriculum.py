@@ -99,6 +99,73 @@ SAFETY_REFS = (
     "t_sud.md",
     "delirium.md",
 )
+PRACTICE_IDS = (
+    "training-briefing",
+    "workshop-equipment-checkout",
+    "community-event-handoff",
+)
+
+
+def _practice_packs():
+    return [
+        {
+            "id": "training-briefing",
+            "title": "Training-room briefing",
+            "snapshot": [
+                "A facilitator asks you to prepare a two-minute update from a shared brief.",
+                "The update has a named owner and a scheduled review time.",
+            ],
+            "change": "A source note is now marked unconfirmed.",
+            "statements": [
+                {"id": "review-time", "text": "The scheduled review time has not changed."},
+                {"id": "source-status", "text": "Every source in the brief is confirmed."},
+                {"id": "verification-owner", "text": "The person responsible for checking the source note is clear."},
+            ],
+            "supervisorQuestions": [
+                {"id": "name-uncertainty", "text": "Which uncertainty should I name in the update?"},
+                {"id": "confirm-owner", "text": "Who should confirm the source note?"},
+                {"id": "prepare-review", "text": "What should I prepare before we review it together?"},
+            ],
+        },
+        {
+            "id": "workshop-equipment-checkout",
+            "title": "Workshop equipment checkout",
+            "snapshot": [
+                "A workshop kit has a named setup owner.",
+                "The delivery window is listed on the shared schedule.",
+            ],
+            "change": "The delivery window moves to after the setup owner leaves.",
+            "statements": [
+                {"id": "setup-owner", "text": "The setup owner is still named."},
+                {"id": "delivery-window", "text": "The kit will arrive during the original delivery window."},
+                {"id": "new-time-owner", "text": "The person who will receive the kit at the new time is clear."},
+            ],
+            "supervisorQuestions": [
+                {"id": "handoff-owner", "text": "Who should own the handoff at the new time?"},
+                {"id": "plan-parts", "text": "Which parts of the original plan still hold?"},
+                {"id": "confirm-before-start", "text": "What needs confirmation before the workshop starts?"},
+            ],
+        },
+        {
+            "id": "community-event-handoff",
+            "title": "Community event handoff",
+            "snapshot": [
+                "A volunteer says the welcome table is set up.",
+                "One volunteer owns the remaining setup checklist.",
+            ],
+            "change": "The accessibility signs have not arrived.",
+            "statements": [
+                {"id": "table-status", "text": "The welcome table is set up."},
+                {"id": "item-status", "text": "Every setup item has arrived."},
+                {"id": "sign-owner", "text": "The person who will obtain the signs is clear."},
+            ],
+            "supervisorQuestions": [
+                {"id": "remaining-owner", "text": "Who should own the remaining setup?"},
+                {"id": "handoff-check", "text": "Which part of the handoff needs confirmation?"},
+                {"id": "opening-check", "text": "What should be checked before the event opens?"},
+            ],
+        },
+    ]
 
 
 def _safety_column():
@@ -207,6 +274,7 @@ def _curriculum(items):
     return {
         "appPathway": {
             "intro": "Choose a route.",
+            "practicePacks": _practice_packs(),
             "bridges": {
                 "pa": {
                     "name": "PA psychiatry bridge", "summary": "First route",
@@ -222,7 +290,8 @@ def _curriculum(items):
                 },
             },
             "activities": [
-                {"id": activity_id, "name": name, "purpose": "Prepare for supervision.",
+                {"id": activity_id, "name": name, "practiceId": PRACTICE_IDS[index],
+                 "purpose": "Prepare for supervision.",
                  "refs": [resident_refs[index]],
                  "actions": ["prepare", "rehearse", "observe"]}
                 for index, (activity_id, name) in enumerate((
@@ -296,6 +365,24 @@ class ValidateCurriculumTest(unittest.TestCase):
                 result = _run(c, root)
             self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
             self.assertIn("appPathway", result.stdout)
+
+    def test_app_practice_requires_unique_resolved_nonclinical_packs(self):
+        mutations = (
+            lambda p: p["activities"][0].__setitem__("practiceId", "missing-pack"),
+            lambda p: p["practicePacks"][1].__setitem__("id", p["practicePacks"][0]["id"]),
+            lambda p: p["practicePacks"][0]["statements"].pop(),
+            lambda p: p["practicePacks"][0].__setitem__("statements", 1),
+            lambda p: p["practicePacks"][0].__setitem__("change", "A patient detail changed."),
+            lambda p: p["practicePacks"][0].__setitem__("score", 1),
+        )
+        for mutate in mutations:
+            with self.subTest(mutate=mutate), tempfile.TemporaryDirectory() as tmp:
+                curriculum = _curriculum([])
+                mutate(curriculum["appPathway"])
+                cpath, root = _write(tmp, curriculum)
+                result = _run(cpath, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("appPathway.practicePacks", result.stdout)
 
     def test_app_pathway_is_required(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -628,6 +715,9 @@ class CurriculumSchemaEssentialsTest(unittest.TestCase):
             "ms3": [{"name": "Kit", "accent": "safety", "refs": ["mse.html"]}],
             "resident": [{"name": "Tools", "accent": "tool", "refs": ["mse.html"]}],
         }
+        document["appPathway"]["practicePacks"] = _practice_packs()
+        for index, activity in enumerate(document["appPathway"]["activities"]):
+            activity["practiceId"] = PRACTICE_IDS[index]
         return document
 
     def _errors(self, document):
@@ -660,6 +750,26 @@ class CurriculumSchemaEssentialsTest(unittest.TestCase):
         self.assertEqual(self._errors(document), [])
         document["unexpectedRootKey"] = True
         self.assertIn("unexpectedRootKey", self._render(self._errors(document)))
+
+    def test_curriculum_practice_packs_use_the_closed_three_item_contract(self):
+        document = self._document()
+        self.assertEqual(self._errors(document), [])
+        cases = [
+            (lambda c: c["appPathway"]["practicePacks"][0].pop("change"),
+             "/appPathway/practicePacks/0"),
+            (lambda c: c["appPathway"]["practicePacks"][0].__setitem__("score", 1),
+             "/appPathway/practicePacks/0"),
+            (lambda c: c["appPathway"]["practicePacks"][0].__setitem__(
+                "statements", c["appPathway"]["practicePacks"][0]["statements"][:2]),
+             "/appPathway/practicePacks/0/statements"),
+            (lambda c: c["appPathway"]["practicePacks"][0].__setitem__(
+                "supervisorQuestions", c["appPathway"]["practicePacks"][0]["supervisorQuestions"] + [
+                    {"id": "extra-question", "text": "What should I share?"}]),
+             "/appPathway/practicePacks/0/supervisorQuestions"),
+        ]
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
 
     def test_curriculum_essentials_requires_both_audiences(self):
         cases = [

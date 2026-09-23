@@ -27,6 +27,10 @@ function fdAppResolveRefs(index, refs, missing){
 
 function fdAppModel(index, pathway, state){
   var p=pathway||{}, bridges=p.bridges||{}, st=state||{}, missing=[];
+  var packs=p.practicePacks||[], practicesById={};
+  for(var pIndex=0;pIndex<packs.length;pIndex++){
+    if(packs[pIndex]&&packs[pIndex].id) practicesById[packs[pIndex].id]=packs[pIndex];
+  }
   var bridgeId=fdAppValidBridge(st.appBridge);
   var bridge=bridges[bridgeId]||null;
   if(!bridge){
@@ -35,13 +39,23 @@ function fdAppModel(index, pathway, state){
   }
   var activities=[], source=p.activities||[];
   for(var i=0;i<source.length;i++){
-    var activity=source[i]||{};
+    var activity=source[i]||{}, practice=null, practiceError=false;
+    try{
+      practice=practicesById[activity.practiceId]||null;
+      if(!practice) throw new Error('Practice pack unavailable');
+      fdAppPracticeValidate(practice);
+    }catch(ignorePractice){
+      practice=null;
+      practiceError=true;
+    }
     activities.push({
       id:activity.id||'',
       name:activity.name||'',
       purpose:activity.purpose||'',
       actions:(activity.actions||[]).slice(),
-      resources:fdAppResolveRefs(index,activity.refs||[],missing)
+      resources:fdAppResolveRefs(index,activity.refs||[],missing),
+      practice:practice,
+      practiceError:practiceError
     });
   }
   return {
@@ -53,7 +67,8 @@ function fdAppModel(index, pathway, state){
     activities:activities,
     missing:missing,
     reflection:st.appReflection||'',
-    activityId:st.appActivity||''
+    activityId:st.appActivity||'',
+    practiceSession:st.appPractice||null
   };
 }
 
@@ -125,6 +140,10 @@ function fdAppActivity(activity, selected){
   out+='<section class="fd-app__stage"><span class="fd-app__stage-n">2</span>'+
     '<h3>Rehearse here</h3><p>Use synthetic practice to prepare a question for supervision.</p>'+
     (rehearsal?fdAppResource(rehearsal,true):'<p class="fd-app__stage-note">No rehearsal resource is available.</p>')+
+    (activity.practice?'<button type="button" class="fd-app__practice-open" data-fd-app-practice-open="'+
+      fdEsc(activity.practice.id)+'">Practice one change</button>':
+      (activity.practiceError?'<p class="fd-app__practice-error" role="alert">Practice unavailable. '+
+        'Your preparation resources are still available.</p>':''))+
     '</section>';
   out+='<section class="fd-app__stage"><span class="fd-app__stage-n">3</span>'+
     '<h3>Arrange observation</h3><p>Use your institution\'s approved process to arrange supervised practice and feedback.</p>'+
@@ -162,5 +181,14 @@ function fdAppWorkspace(index, pathway, state){
     '<p>Prepare, rehearse, then arrange observation through your local process.</p></div>'+
     '<div class="fd-app__tasks">';
   for(var a=0;a<model.activities.length;a++) out+=fdAppActivity(model.activities[a],model.activityId);
-  return out+'</div></section></section>';
+  out+='</div>';
+  if(model.practiceSession){
+    try{
+      out+='<div class="fd-app__practice-host">'+fdAppPracticeRender(model.practiceSession)+'</div>';
+    }catch(ignorePractice){
+      out+='<p class="fd-app__practice-error" role="alert">Practice unavailable. '+
+        'Your preparation resources are still available.</p>';
+    }
+  }
+  return out+'</section></section>';
 }

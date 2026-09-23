@@ -15,11 +15,10 @@ G01–G07, G40–G42.
 
 ## Canonical repository sources
 
-- `curriculum.json` — APP bridge and activity structure; nonclinical navigation copy only.
+- `curriculum.json` — APP bridge and activity structure plus canonical nonclinical practice-pack data.
 - `13_Faculty_Resources/_automation/site_build/frontdoor/fd_app.js` — preparation boundary, private choices, and arrange-observation copy.
 - `14_Tracks/Resident/supervision_teaching.md` — existing supervision teaching.
-- `13_Faculty_Resources/_automation/site_build/frontdoor/fd_app_practice.js` — development-only, unshipped player.
-- `tests/fixtures/app-practice/nonclinical-cases.json` — nonclinical behavior fixture.
+- `13_Faculty_Resources/_automation/site_build/frontdoor/fd_app_practice.js` — shipped pure nonclinical practice engine for private, learner-owned classification without evaluation or storage.
 
 ## Authoritative sources rechecked
 

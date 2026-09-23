@@ -90,11 +90,13 @@ test('fdSave persists only whitelisted keys, never done/streak/week', () => {
   assert.equal(out.week, undefined);
 });
 
-test('APP bridge is the only APP choice persisted; reflection and work-task state stay in memory', () => {
+test('APP bridge is the only APP choice persisted; reflection, work-task, and practice state stay in memory', () => {
   const ls = memStorage();
   const { fdSave, fdLoad } = make(ls);
   fdSave({ role: 'app', appBridge: 'pmhnp', appActivity: 'initial-evaluation',
-    appReflection: 'supervisor' });
+    appInvite: true,
+    appReflection: 'supervisor', appPractice: { pack: { id: 'training-briefing' }, revealed: true,
+      classifications: { 'review-time': 'still-known' }, questionId: 'confirm-owner' } });
   assert.deepEqual(fdLoad(), { role: 'app', appBridge: 'pmhnp' });
 });
 
