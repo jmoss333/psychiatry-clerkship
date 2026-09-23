@@ -247,6 +247,10 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
   { role: 'second-role', screen: 'setup-week' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'library' }, {}, roleContext).patch,
     { tab: 'library', openId: null, searchOpen: false, libraryView: 'essentials', kitSection: 'all' });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'care' }, {}, roleContext), {
+    patch: { tab: 'care', openId: null, searchOpen: false },
+    route: '?tab=care', effect: null,
+  });
   assert.equal(F.fdDispatch({ 'data-fd-back': '' }, {}, { ...roleContext, openId: 'x.md', fromTab: 'path' }).route,
     '?tab=path');
   assert.equal(F.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).route, '/');
@@ -274,6 +278,16 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     { stepsDone: { 2: false } });
   assert.equal(F.fdDispatch({ 'data-fd-try-now': 'scale.html' }, {}, roleContext).patch.sheet,
     'item:scale.html');
+});
+
+test('the patient-care destination survives direct links and reader return context', () => {
+  const direct = F.fdResolveState('/?tab=care', { role: 'first-role' });
+  assert.equal(direct.screen, 'app');
+  assert.equal(direct.tab, 'care');
+  const opened = F.fdDispatch({ 'data-fd-open': 'a.md' }, { search: '?tab=care' }, direct);
+  assert.equal(opened.patch.fromTab, 'care');
+  assert.equal(new URLSearchParams(opened.route).get('tab'), 'care');
+  assert.equal(F.fdReader({ weeks: [] }, { ref: 'a.md', fromTab: 'care' }, '<p>x</p>').includes('Patient care resources'), true);
 });
 
 test('choosing APP enters the On shift workspace without asking for a rotation week', () => {
@@ -958,6 +972,44 @@ test('live search input rerenders and Enter opens the first ordinary result dire
   assert.equal(h.controller.getState().searchOpen, false);
   assert.equal(prevented, 1);
   assert.ok(renders.length >= 2);
+});
+
+test('Enter activates the exact first external care result without routing or forwarding the query', () => {
+  let clicked = 0;
+  let selected = '';
+  let prevented = 0;
+  const routes = [];
+  const careLink = { click() { clicked += 1; } };
+  const h = fakeHarness({ ...roleContext, searchOpen: true, query: 'housing help' }, {
+    F,
+    route: (value) => routes.push(value),
+    querySelector: (selector) => {
+      selected = selector;
+      return selector === '.fd-result.is-care[data-care-resource="resource-finder"]' ? careLink : null;
+    },
+    searchResults: () => [{
+      kind: 'care',
+      item: {
+        id: 'resource-finder',
+        url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html',
+      },
+    }],
+  });
+  const input = {
+    tagName: 'INPUT', isContentEditable: false, value: 'housing help',
+    matches: (selector) => selector === '.fd-searchpanel__input',
+  };
+
+  h.windowHandlers.keydown({
+    key: 'Enter', target: input, preventDefault() { prevented += 1; },
+  });
+
+  assert.equal(selected, '.fd-result.is-care[data-care-resource="resource-finder"]');
+  assert.equal(clicked, 1);
+  assert.equal(prevented, 1);
+  assert.deepEqual(routes, []);
+  assert.equal(h.controller.getState().query, 'housing help');
+  assert.equal(h.controller.getState().openId, undefined);
 });
 
 test('opening and closing a dialog captures, focuses, and restores the connected invoker', () => {

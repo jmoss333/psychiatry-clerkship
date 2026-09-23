@@ -68,7 +68,7 @@ function fdActionSemantic(attr){
 
 function fdOwn(o,k){ return !!o&&Object.prototype.hasOwnProperty.call(o,k); }
 
-function fdValidTab(tab){ return tab==='path'||tab==='library'||tab==='today'; }
+function fdValidTab(tab){ return tab==='path'||tab==='library'||tab==='care'||tab==='today'; }
 
 function fdClone(o){
   var out={}, src=o||{};
@@ -167,7 +167,7 @@ function fdResolveState(url, stored, options){
   if(out.appInvite===true) out.screen='app';
   else if(!out.role&&routedRef&&!fdIsLegacyRouteAlias(routedRef)&&routedRef.indexOf('__')!==0){ out.guest=true; out.screen='app'; }
   else if(!out.role) out.screen='setup-role';
-  else if(fdAppMode(out)||src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
+  else if(fdAppMode(out)||src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library'||out.tab==='care') out.screen='app';
   else out.screen='setup-week';
   if(routedRef&&fdIsLegacyRouteAlias(routedRef)){
     if(routedRef==='__home__'){
@@ -1650,6 +1650,14 @@ function fdWire(root, initialState, opts){
       var results=searcher(index,state.query||'',o.synonyms||{},state)||[];
       if(results.length){
         var first=results[0], attrs={};
+        if(first.kind==='care'){
+          var careId=first.item&&first.item.id;
+          var careLink=careId&&root&&root.querySelector?
+            root.querySelector('.fd-result.is-care[data-care-resource="'+careId+'"]'):null;
+          if(event.preventDefault) event.preventDefault();
+          if(careLink&&careLink.click) careLink.click();
+          return;
+        }
         if(first.kind==='protocol') attrs['data-fd-safety']=first.item.ref;
         else{
           attrs['data-fd-open']=first.item.ref;

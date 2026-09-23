@@ -115,6 +115,19 @@ function fdKitToolShelf(tools, requested){
     '<button type="button" class="fd-btn fd-btn--ghost" data-fd-open="'+fdEsc(selected.ref)+'" aria-label="Open '+fdEsc(selected.title)+'">Open tool</button></section></div>';
   return out;
 }
+
+function fdEssentialsTeaching(resources){
+  var rows=Array.isArray(resources)?resources:[];
+  if(!rows.length) return '';
+  var out='<section class="fd-kit__teaching" aria-label="External teaching companion"><h3>Teaching companion</h3>';
+  for(var i=0;i<rows.length;i++){
+    out+='<a class="fd-teachinglink" data-teaching-resource="'+fdEsc(rows[i].id)+'" href="'+fdEsc(rows[i].url)+'" target="_blank" rel="noopener noreferrer">'+
+      '<span class="fd-teachinglink__title">'+fdEsc(rows[i].title)+' <span class="fd-visually-hidden">(opens in a new tab)</span> <span aria-hidden="true">↗</span></span>'+
+      '<span class="fd-teachinglink__description">'+fdEsc(rows[i].description)+'</span></a>'+
+      '<p class="fd-teachinglink__note">'+fdEsc(rows[i].note)+'</p>';
+  }
+  return out+'</section>';
+}
 function fdEssentials(index, opts){
   var idx=index||{columns:[],essentials:[]}, cols=idx.essentials||[];
   var groups=[], tools=[], readings=0, pending=0, fullCount=0, all=idx.columns||[];
@@ -173,9 +186,12 @@ function fdEssentials(index, opts){
     }
     out+='</div>';
   }
-  if(tools.length&&(selected==='all'||selected==='tools')){
-    out+='<aside class="fd-kit__tools" aria-label="Tools"><details class="fd-kit__group fd-kit__tool-group" open><summary>Tools <span class="fd-kit__group-count">'+tools.length+' tools</span><span class="fd-kit__chevron" aria-hidden="true">⌄</span></summary>'+
-      fdKitToolShelf(tools,opts&&opts.kitToolPreview)+'</details></aside>';
+  if((tools.length||(idx.teachingResources||[]).length)&&(selected==='all'||selected==='tools')){
+    out+='<aside class="fd-kit__tools" aria-label="Tools">';
+    if(tools.length) out+='<details class="fd-kit__group fd-kit__tool-group" open><summary>Tools <span class="fd-kit__group-count">'+tools.length+' tools</span><span class="fd-kit__chevron" aria-hidden="true">⌄</span></summary>'+
+      fdKitToolShelf(tools,opts&&opts.kitToolPreview)+'</details>';
+    out+=fdEssentialsTeaching(idx.teachingResources);
+    out+='</aside>';
   }
   out+='</div><div class="fd-library__footer"><button type="button" class="fd-btn fd-btn--ghost" data-fd-library-view="full">Everything ('+fullCount+' pages) →</button></div></section>';
   return out;

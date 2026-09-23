@@ -13,7 +13,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // IN THE SAME DIFF as the change, after confirming the other agent's PRs in flight.
 
 // +1 (2026-09-22): APP one-detail practice engine (fd_app_practice.js).
-const EXPECTED_MARKER_COUNT = 32;
+// +1 (2026-09-23): Patient care resources destination (fd_care.js).
+const EXPECTED_MARKER_COUNT = 33;
 
 test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
   const src = fs.readFileSync(
