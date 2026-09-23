@@ -1,71 +1,321 @@
-/**
- * Check — Offline shell.
- *
- * Verifies the service worker registered by the SW_REGISTER snippet
- * (13_Faculty_Resources/_automation/site_build/sw_register.js, emitted per-site by
- * common.py emit_service_worker() as sw.js) actually delivers on the offline promise made
- * by the Start-page A2HS sentence: once the worker has installed and taken control, the
- * shell keeps working with the network cut.
- *
- * Runs against the MS3 site only (nav-ms3's baseURL, port 4200) via playwright.config.js's
- * `offline` project — the shell/SW code is identical across sites, so one site is sufficient
- * and keeps the check fast.
- *
- * HARD FAIL: SW never controls the page, the versioned precache never appears, or a
- * precached page/tool can't be reached with the browser context offline.
- */
-
+/** Browser proof of the emitted worker and Shift-ready check on both built sites. */
 import { test, expect } from '@playwright/test';
 
-test('service worker installs, takes control, and serves the shell offline', async ({ page, context, baseURL }) => {
-  // 1. First load: registerClerkshipSW() (sw_register.js) fires and registers /sw.js.
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await page.evaluate(() => navigator.serviceWorker.ready);
+const entry = page => page.locator('[data-fd-offline-entry]');
+const status = page => entry(page).locator('[data-fd-offline-label]');
+const resident = info => info.project.name === 'offline-res';
 
-  // 2. Reload so the now-installed worker becomes the CONTROLLING worker for this page
-  // (a page that merely registered the SW in its own load is not yet controlled by it —
-  // controllerchange/clients only take effect from the next navigation).
+async function observeMessages(page, hold = false) {
+  await page.addInitScript(shouldHold => {
+    window.__offlineRequests = [];
+    window.__offlineHeld = [];
+    window.__offlineHold = shouldHold;
+    localStorage.setItem('cw_capture_v1', 'PRIVATE_OFFLINE_CANARY');
+    const original = ServiceWorker.prototype.postMessage;
+    ServiceWorker.prototype.postMessage = function (message, transfer) {
+      if (message && message.type === 'CW_OFFLINE_VERIFY') {
+        window.__offlineRequests.push(JSON.parse(JSON.stringify(message)));
+        if (window.__offlineHold) {
+          window.__offlineHeld.push({ worker: this, message, transfer });
+          return;
+        }
+      }
+      return original.call(this, message, transfer);
+    };
+    window.__offlineRelease = () => {
+      window.__offlineHold = false;
+      for (const held of window.__offlineHeld.splice(0)) {
+        original.call(held.worker, held.message, held.transfer);
+      }
+    };
+  }, hold);
+}
+
+async function install(page, info, url = '/') {
+  await page.goto(url, { waitUntil: 'domcontentloaded' });
+  if (url === '/') {
+    const role = resident(info) ? 'pgy1' : 'student';
+    const choice = page.locator('[data-fd-role="' + role + '"]:visible');
+    if (await choice.count()) await choice.click();
+    const week = page.locator('[data-fd-week="1"]:visible');
+    if (await week.count()) await week.click();
+  }
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  if (!(await page.evaluate(() => !!navigator.serviceWorker.controller))) {
+    await page.reload({ waitUntil: 'domcontentloaded' });
+  }
+  await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller), {
+    message: 'built site must be controlled by its installed worker', timeout: 15_000,
+  }).toBe(true);
+  await expect(entry(page)).toBeVisible();
+}
+
+async function openReady(page) {
+  await entry(page).locator('[data-fd-offline-open]').click();
+  await expect(entry(page).locator('[data-fd-offline-card]')).toBeVisible();
+  await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+  const requested = await page.evaluate(() => window.__offlineRequests?.at(-1)?.urls);
+  expect(requested, 'the active worker must receive current-route URLs').toBeTruthy();
+  expect(requested.length).toBeGreaterThan(2);
+  expect(new Set(requested).size).toBe(requested.length);
+  await expect(entry(page).locator('[data-fd-offline-card]'))
+    .toContainText(requested.length + ' verified, 0 missing of ' + requested.length + ' eligible files.');
+  return requested;
+}
+
+async function expectConnectionRequired(page) {
+  await expect(entry(page).locator('[data-fd-offline-card]')).toContainText(
+    'Connection required: audio and video, live services including the Interview Room, external links, and actual email sending.');
+}
+
+test('offline readiness: Checking cannot become Ready before the active worker responds', async ({ page }, info) => {
+  await observeMessages(page, true);
+  await install(page, info);
+  await expect(status(page)).toHaveText('Checking');
+  expect(await page.evaluate(() => window.__offlineHeld.length)).toBeGreaterThan(0);
+  await page.evaluate(() => window.__offlineRelease());
+  await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+  await entry(page).locator('[data-fd-offline-open]').click();
+  await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('Checked just now');
+});
+
+test('offline readiness: first uncontrolled visit does not claim the installed cache', async ({ page }, info) => {
+  await page.goto('/');
+  await page.locator('[data-fd-role="' + (resident(info) ? 'pgy1' : 'student') + '"]:visible').click();
+  await page.locator('[data-fd-week="1"]:visible').click();
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  expect(await page.evaluate(() => navigator.serviceWorker.controller)).toBeNull();
+  await expect(status(page)).toHaveText('Not ready');
+  await entry(page).locator('[data-fd-offline-open]').click();
+  await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('not controlled');
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.evaluate(() => navigator.serviceWorker.ready);
+  await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+});
 
-  const controller = await page.evaluate(() => !!navigator.serviceWorker.controller);
-  expect(controller, 'navigator.serviceWorker.controller must be set after the post-registration reload').toBe(true);
-
-  // 3. The versioned precache (cw-precache-<VERSION>, see sw_template.js) must exist and be
-  // non-empty — this is the artifact that makes offline navigation possible at all.
-  const precache = await page.evaluate(async () => {
-    const keys = await caches.keys();
-    const cacheKey = keys.find((k) => k.indexOf('cw-precache-') === 0);
-    if (!cacheKey) return { cacheKey: null, count: 0 };
-    const cache = await caches.open(cacheKey);
-    const entries = await cache.keys();
-    return { cacheKey, count: entries.length };
+test('offline readiness: active worker verifies route and cached reading, tool, search and navigation survive offline', async ({ page, context, baseURL }, info) => {
+  const outbound = [];
+  page.on('request', request => {
+    if (request.method() !== 'GET' || request.url().includes('/api/ev')) {
+      outbound.push(request.url() + ' ' + (request.postData() || ''));
+    }
   });
-  expect(precache.cacheKey, 'a cw-precache-<VERSION> cache must exist').not.toBeNull();
-  expect(precache.count, 'the precache must contain entries').toBeGreaterThan(0);
+  await observeMessages(page);
+  await install(page, info);
+  const requested = await openReady(page);
+  expect(requested).toContain('/');
+  expect(requested).toContain('/search-index.json');
+  expect(requested.every(url => url === '/' || url === '/search-index.json'
+    || /^\/(?:content|tools)\/[A-Za-z0-9._-]+$/.test(url))).toBe(true);
+  const messages = await page.evaluate(() => window.__offlineRequests);
+  expect(messages.every(message => Object.keys(message).sort().join(',') === 'type,urls')).toBe(true);
+  expect(JSON.stringify(messages)).not.toContain('PRIVATE_OFFLINE_CANARY');
+  expect(JSON.stringify(outbound)).not.toContain('PRIVATE_OFFLINE_CANARY');
+  await expectConnectionRequired(page);
 
-  // 4. Cut the network at the browser-context level (real offline, not a route mock — this
-  // is what a plane-mode / A2HS learner actually experiences) and confirm the shell still
-  // serves a content page and a tool from cache.
+  const cacheState = await page.evaluate(async () => {
+    const key = (await caches.keys()).find(value => value.startsWith('cw-precache-'));
+    const cache = key && await caches.open(key);
+    return { key, urls: cache ? (await cache.keys()).map(request => new URL(request.url).pathname) : [] };
+  });
+  expect(cacheState.key).toBeTruthy();
+  expect(cacheState.urls.length).toBeGreaterThan(requested.length);
+  expect(cacheState.urls.some(url => /\.(?:m4a|mp3|mp4|wav|vtt)$/i.test(url))).toBe(false);
+  const reading = requested.find(url => url.startsWith('/content/'));
+  const tool = requested.find(url => url.startsWith('/tools/')) || '/tools/mse.html';
+  expect(reading).toBeTruthy();
+  expect(cacheState.urls).toContain(reading);
+  expect(cacheState.urls).toContain(tool);
+
   await context.setOffline(true);
   try {
-    await page.goto(`${baseURL}/?page=t_mood.md`, { waitUntil: 'domcontentloaded', timeout: 20_000 });
-    await page.waitForFunction(
-      () => {
-        const el = document.querySelector('#content');
-        return !!el && !el.querySelector('.skel') && !el.querySelector('.error');
-      },
-      { timeout: 15_000 },
-    );
-    const contentText = await page.locator('#content').innerText();
-    expect(contentText.trim().length, 'offline content page must render real text, not the error/skeleton state')
-      .toBeGreaterThan(80);
+    await page.goto(baseURL + '/?page=' + encodeURIComponent(reading.split('/').at(-1)), { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible({ timeout: 15_000 });
+    expect((await page.locator('.fd-reader .fd-article__body').innerText()).trim().length).toBeGreaterThan(80);
 
-    await page.goto(`${baseURL}/?tool=mse.html`, { waitUntil: 'domcontentloaded', timeout: 20_000 });
-    const iframe = page.locator('#content iframe.toolframe');
-    await expect(iframe, 'offline tool route must render the tool iframe from cache').toBeVisible({ timeout: 10_000 });
+    await page.goto(baseURL + '/?tool=' + encodeURIComponent(tool.split('/').at(-1)), { waitUntil: 'domcontentloaded' });
+    const frame = page.locator('#content iframe.toolframe');
+    await expect(frame).toBeVisible({ timeout: 15_000 });
+    await expect(frame.contentFrame().locator('body')).not.toBeEmpty();
+
+    await page.goto(baseURL + '/', { waitUntil: 'domcontentloaded' });
+    await page.locator('[data-fd-tab="today"]:visible').first().click();
+    await expect(entry(page)).toBeVisible();
+    await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+    await entry(page).locator('[data-fd-offline-open]').click();
+    await expectConnectionRequired(page);
+    await page.locator('[data-fd-search]:visible').first().click();
+    await expect(page.locator('.fd-search')).toBeVisible();
+    await page.locator('.fd-searchpanel__input:visible').fill('mood');
+    await expect(page.locator('.fd-result').first()).toBeVisible();
+    const mediaResult = await page.evaluate(async () => {
+      const response = await fetch('/media/day-in-the-life.mp4', { headers: { Range: 'bytes=0-127' } }).catch(() => null);
+      return response && response.status;
+    });
+    expect(mediaResult).toBeNull();
   } finally {
-    // Always restore network state — this context may be reused by later tests/projects.
     await context.setOffline(false);
   }
+});
+
+test('offline readiness: deleting one exact requested cache file fails closed', async ({ page }, info) => {
+  await observeMessages(page);
+  await install(page, info);
+  const requested = await openReady(page);
+  const missing = requested.find(url => url.startsWith('/content/'));
+  expect(missing).toBeTruthy();
+  const deleted = await page.evaluate(async url => {
+    const key = (await caches.keys()).find(value => value.startsWith('cw-precache-'));
+    return (await caches.open(key)).delete(url);
+  }, missing);
+  expect(deleted).toBe(true);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(status(page)).toHaveText('Not ready', { timeout: 10_000 });
+  await entry(page).locator('[data-fd-offline-open]').click();
+  await expect(entry(page).locator('[data-fd-offline-card]')).toContainText(missing);
+  await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('1 missing');
+});
+
+test('offline readiness: Refresh respects offline state, bounds a stalled update, then permits retry', async ({ page, context }, info) => {
+  await observeMessages(page);
+  await install(page, info);
+  await openReady(page);
+  await page.evaluate(() => {
+    window.__refreshCalls = 0;
+    ServiceWorkerRegistration.prototype.update = function () {
+      window.__refreshCalls += 1;
+      return new Promise(() => {});
+    };
+  });
+  const url = page.url();
+  await context.setOffline(true);
+  try {
+    await entry(page).locator('[data-fd-offline-refresh]').click();
+    await expect(entry(page).locator('[data-fd-offline-refresh-status]'))
+      .toContainText('Refresh needs a connection; your verified copy remains available.');
+    expect(await page.evaluate(() => window.__refreshCalls)).toBe(0);
+  } finally {
+    await context.setOffline(false);
+  }
+  await entry(page).locator('[data-fd-offline-refresh]').click();
+  await expect(entry(page).locator('[data-fd-offline-refresh-status]'))
+    .toContainText('Checking for a newer offline copy');
+  await expect(entry(page).locator('[data-fd-offline-refresh-status]'))
+    .toContainText('Update check timed out. Try again with a connection.', { timeout: 11_000 });
+  expect(await page.evaluate(() => window.__refreshCalls)).toBe(1);
+  await page.evaluate(() => {
+    ServiceWorkerRegistration.prototype.update = function () {
+      window.__refreshCalls += 1;
+      return Promise.resolve();
+    };
+  });
+  await entry(page).locator('[data-fd-offline-refresh]').click();
+  await expect(entry(page).locator('[data-fd-offline-refresh-status]'))
+    .toContainText('Update check complete', { timeout: 10_000 });
+  expect(await page.evaluate(() => window.__refreshCalls)).toBe(2);
+  expect(page.url()).toBe(url);
+  await expect(status(page)).toHaveText('Ready');
+});
+
+test('offline readiness: unsupported and timed-out checks never retain stale Ready', async ({ page, context }, info) => {
+  await observeMessages(page);
+  await install(page, info);
+  await openReady(page);
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: null });
+  });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(status(page)).toHaveText('Not ready', { timeout: 10_000 });
+  await entry(page).locator('[data-fd-offline-open]').click();
+  await expect(entry(page).locator('[data-fd-offline-card]')).not.toContainText('Checked just now');
+
+  // Browser-only fixture: a controller accepts the request but never replies.
+  const timeoutPage = await context.newPage();
+  await timeoutPage.addInitScript(() => {
+    const silentController = { postMessage() {} };
+    Object.defineProperty(navigator, 'serviceWorker', { configurable: true,
+      value: { controller: silentController, addEventListener() {}, removeEventListener() {} } });
+  });
+  await timeoutPage.goto('/');
+  await expect(status(timeoutPage)).toHaveText('Not ready', { timeout: 6_000 });
+  await entry(timeoutPage).locator('[data-fd-offline-open]').click();
+  await expect(entry(timeoutPage).locator('[data-fd-offline-card]')).toContainText('timed out');
+});
+
+test('offline readiness: waiting-worker callback preserves active tool and current cache', async ({ page }, info) => {
+  await observeMessages(page);
+  await install(page, info);
+  await openReady(page);
+  await page.goto('/?tool=mse.html', { waitUntil: 'domcontentloaded' });
+  const frame = page.locator('#content iframe.toolframe');
+  await expect(frame).toBeVisible();
+  await frame.evaluate(element => { element.dataset.offlineSession = 'unchanged'; });
+  const originalUrl = page.url();
+
+  // Exercise the production registration's updatefound/statechange callback path.
+  // A genuine second worker install cannot be deterministic against an immutable local build.
+  const lifecycle = await page.evaluate(async () => {
+    const registration = await navigator.serviceWorker.getRegistration();
+    const waiting = new EventTarget();
+    waiting.state = 'installed';
+    try {
+      Object.defineProperty(registration, 'installing', { configurable: true, get: () => waiting });
+      Object.defineProperty(registration, 'waiting', { configurable: true, get: () => waiting });
+      registration.dispatchEvent(new Event('updatefound'));
+      waiting.dispatchEvent(new Event('statechange'));
+      return { simulated: true, waiting: !!registration.waiting };
+    } catch (error) {
+      return { simulated: false, error: String(error) };
+    }
+  });
+  expect(lifecycle.simulated, lifecycle.error).toBe(true);
+  expect(lifecycle.waiting).toBe(true);
+  expect(page.url()).toBe(originalUrl);
+  await expect(frame).toHaveAttribute('data-offline-session', 'unchanged');
+  await expect(frame).toBeVisible();
+  await expect(page.locator('.sw-toast')).toHaveCount(0);
+
+  await page.locator('.fd-reader__back').click();
+  await expect(status(page)).toHaveText('Update available', { timeout: 10_000 });
+  await entry(page).locator('[data-fd-offline-open]').click();
+  await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('The current copy is ready');
+});
+
+test('offline readiness: fresh week and APP PA/PMHNP route inventories never persist an invitation', async ({ page }, info) => {
+  await observeMessages(page);
+  await install(page, info);
+  const first = await openReady(page);
+  await entry(page).locator('[data-fd-offline-close]').click();
+  await page.locator('[data-fd-change-week]').click();
+  await page.locator('[data-fd-week="2"]:visible').click();
+  await page.locator('[data-fd-tab="today"]:visible').first().click();
+  await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+  const second = await page.evaluate(() => window.__offlineRequests?.at(-1)?.urls);
+  expect(second).not.toEqual(first);
+
+  if (!resident(info)) {
+    await page.goto('/?audience=app');
+    await expect(page.locator('.fd-app')).toHaveCount(0);
+    await expect(page.locator('[data-fd-role="app"]')).toHaveCount(0);
+    return;
+  }
+  const before = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}').role);
+  await page.goto('/?audience=app');
+  await expect(page.locator('.fd-app')).toBeVisible();
+  await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+  const pa = await page.evaluate(() => window.__offlineRequests?.at(-1)?.urls);
+  expect(pa).not.toEqual(second);
+  await entry(page).locator('[data-fd-offline-open]').click();
+  await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('APP PA route');
+  await expect(entry(page).locator('[data-fd-offline-card]'))
+    .toContainText(pa.length + ' verified, 0 missing of ' + pa.length + ' eligible files.');
+  await page.locator('[data-fd-app-bridge="pmhnp"]').click();
+  await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+  const pmhnp = await page.evaluate(() => window.__offlineRequests?.at(-1)?.urls);
+  expect(pmhnp).not.toEqual(pa);
+  await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('APP PMHNP route');
+  await expect(entry(page).locator('[data-fd-offline-card]'))
+    .toContainText(pmhnp.length + ' verified, 0 missing of ' + pmhnp.length + ' eligible files.');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}').role)).toBe(before);
+  await page.goto('/');
+  await expect(page.locator('.fd-app')).toHaveCount(0);
 });

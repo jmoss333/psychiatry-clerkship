@@ -376,7 +376,7 @@ jobs:
       - name: "Check 4: offline shell — service worker"
         run: |
           cd tests/smoke
-          npx playwright test --project=offline
+          npx playwright test --project=offline-ms3 --project=offline-res
 
       # Needs no server: prototypes are driven over file:// and the spec blocks the network
       # itself, so this behaves identically here and in a sandbox. It covers the gap nav-crawl
