@@ -1838,6 +1838,10 @@ test('Patient care resources is a safe, responsive fourth destination and search
   const fullListOrder = await links.evaluateAll(nodes =>
     nodes.map(node => node.getAttribute('data-care-resource')));
   const fixedUrlById = Object.fromEntries(fullListOrder.map((id, index) => [id, expectedUrls[index]]));
+  const canonicalTitleById = Object.fromEntries(await links.evaluateAll(nodes => nodes.map(node => [
+    node.getAttribute('data-care-resource'),
+    node.querySelector('.fd-carelink__title').textContent.trim(),
+  ])));
   const choices = page.locator('[data-fd-care-intent]');
   await expect(choices).toHaveCount(6);
   expect(await choices.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-fd-care-intent'))))
@@ -1860,7 +1864,15 @@ test('Patient care resources is a safe, responsive fourth destination and search
     await expect(choice).toHaveAttribute('aria-pressed', 'true');
     expect(await choices.evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-pressed'))))
       .toEqual(navigatorCases.map(([id]) => id === intentId ? 'true' : 'false'));
-    await expect(choice.locator('.fd-care-navigator__check')).toHaveText('✓');
+    const selectedCheck = choice.locator('.fd-care-navigator__check');
+    await expect(selectedCheck).toBeVisible();
+    await expect(selectedCheck).toHaveText('✓');
+    const checkPaint = await selectedCheck.evaluate(el => ({
+      color: getComputedStyle(el).color,
+      background: getComputedStyle(el).backgroundColor,
+    }));
+    expect(checkPaint.color).not.toBe('rgba(0, 0, 0, 0)');
+    expect(checkPaint.color).not.toBe(checkPaint.background);
     await expect(page.locator('.fd-care-navigator__result')).toBeVisible();
     const recommendations = page.locator('.fd-care-navigator__link');
     expect(await recommendations.evaluateAll(nodes => nodes.map(node => ({
@@ -1869,11 +1881,13 @@ test('Patient care resources is a safe, responsive fourth destination and search
     })))).toEqual([primaryId, ...alternativeIds].map(id => ({
       id, href: fixedUrlById[id], target: '_blank', rel: 'noopener noreferrer',
     })));
+    expect(await recommendations.evaluateAll(nodes => nodes.map(node =>
+      node.querySelector('.fd-care-navigator__link-title').textContent.trim())))
+      .toEqual([primaryId, ...alternativeIds].map(id => canonicalTitleById[id]));
     await expect(recommendations.first()).toContainText('Best starting point');
     const selectedLabel = await choice.locator('span:last-child').textContent();
-    const primaryTitle = await recommendations.first().locator('.fd-care-navigator__link-title').textContent();
     await expect(page.locator('.fd-care-navigator [role="status"]'))
-      .toHaveText(`Selected ${selectedLabel}. Best starting point: ${primaryTitle}.`);
+      .toHaveText(`Selected ${selectedLabel}. Best starting point: ${canonicalTitleById[primaryId]}.`);
     expect(await links.evaluateAll(nodes =>
       nodes.map(node => node.getAttribute('data-care-resource')))).toEqual(fullListOrder);
   }
@@ -1900,10 +1914,21 @@ test('Patient care resources is a safe, responsive fourth destination and search
   await expect(page.locator('[data-fd-care-clear]')).toBeFocused();
 
   await page.locator('[data-fd-care-intent="services"]').click();
+  const externalNavigations = [];
+  await page.context().route(expectedUrls[0], route => {
+    expect(route.request().isNavigationRequest()).toBe(true);
+    externalNavigations.push(route.request().url());
+    return route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: '<!doctype html><title>Resource Finder destination fixture</title>',
+    });
+  });
   const recommendationPopup = page.waitForEvent('popup');
   await page.locator('[data-care-recommendation="resource-finder"]').click();
   const recommendationPage = await recommendationPopup;
   await expect.poll(() => recommendationPage.url()).toBe(expectedUrls[0]);
+  expect(externalNavigations).toEqual([expectedUrls[0]]);
   await recommendationPage.close();
   await expect(careTab).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('.fd-reader,.fd-search')).toHaveCount(0);
