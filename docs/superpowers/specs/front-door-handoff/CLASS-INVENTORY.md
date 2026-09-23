@@ -287,7 +287,9 @@ The full inbox places an unchecked `.cap-email-select` checkbox beside each open
 `.cap-email-backdrop` and `.cap-email-sheet` are portalled under `<body>` above `.cap-sheet`.
 While the review dialog is open, the Capture sheet is `inert` and `aria-hidden`; Escape and Tab
 are owned by the email dialog's own trap. Closing it clears the checkboxes and all in-memory
-recipient, affirmation, digest, and URI state, then focuses the review button in Capture.
+recipient, affirmation, digest, and URI state, then focuses the first previously selected
+question checkbox in Capture. If that checkbox is unavailable, focus falls back to a still-enabled
+invoker or the editor.
 
 | Class | Notes |
 |---|---|

@@ -2157,6 +2157,20 @@ test('One Thing First A1: everything pending — exactly one primary, and it is 
   await expectHealthy(page);
 });
 
+test('One Thing First screen overrides style the primary and demote Continue outside print', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo, { storage: { cw_sess_v1: OTF.capsule, cw_block_v1: OTF.block, cw_srs_v1: OTF.srs } });
+  await page.goto('/');
+  await otfExpectOnePrimary(page);
+  const styles = await page.evaluate(() => {
+    const primary = getComputedStyle(document.querySelector('.fd-primary .fd-resume__link'));
+    const secondary = getComputedStyle(document.querySelector('.fd-continue.is-secondary'));
+    return { primaryBorder: primary.borderTopWidth, secondaryBorder: secondary.borderTopWidth };
+  });
+  expect(styles).toEqual({ primaryBorder: '3px', secondaryBorder: '1px' });
+  await expectHealthy(page);
+});
+
 test('One Thing First A2: remove the capsule and the live block wins', async ({ page }, testInfo) => {
   await seedApp(page, testInfo, { storage: { cw_block_v1: OTF.block, cw_srs_v1: OTF.srs, cw_capture_v1: OTF.capture } });
   await page.goto('/');

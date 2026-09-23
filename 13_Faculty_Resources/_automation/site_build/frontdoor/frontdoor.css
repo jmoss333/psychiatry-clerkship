@@ -1578,6 +1578,7 @@
   .fd-reader--guide thead{display:table-header-group}
   .fd-reader--guide tr{break-inside:avoid-page;page-break-inside:avoid}
   .fd-reader--guide .fd-article__body a[href^="http"]::after{content:" (" attr(href) ")";font-size:var(--fd-font-xs);font-weight:400;overflow-wrap:anywhere}
+}
 /* ---- One Thing First (2026-09-16): one primary slot, demoted rows under "Also today" ----------
  * Appended after every base rule on purpose: tests/fd-tokens resolves a selector by FIRST textual
  * match, so an override placed above the rule it overrides would be read as the base.
@@ -1603,7 +1604,6 @@
 }
 /* Phase 2: the Resume card's block progress line ("Block · 1 of 2 done"). */
 .fd-resume__block{display:block;font-size:var(--fd-font-xs);color:var(--fd-text-dim)}
-}
 /* Learner-controlled Capture email draft. The Capture sheet stays mounted but inert beneath it. */
 .cap-email-select{flex:0 0 auto;width:20px;height:20px;accent-color:var(--primary-dark);cursor:pointer}
 .cap-email-select:focus-visible{outline:2px solid var(--fd-focus);outline-offset:3px}

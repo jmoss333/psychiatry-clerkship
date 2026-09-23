@@ -151,6 +151,18 @@ test('route: saving persists the question before any optional route', async ({ p
   await expect(next.locator('[data-cap-route]')).toHaveCount(3);
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_capture_v1')).items[0]);
   expect(stored).toMatchObject({ text: 'How should I distinguish delirium from psychosis?', route: null, state: 'open' });
+  await page.locator('#capCancel').click();
+  await page.reload();
+  const card = page.locator('.fd-capture:visible');
+  await expect(card.locator('.fd-capture__question')).toHaveText('How should I distinguish delirium from psychosis?');
+  await card.locator('.fd-capture__new').click();
+  const row = page.locator('.cap-list li[data-cap-route-state="unrouted"]');
+  await expect(row.locator('.cap-list__text')).toHaveText('How should I distinguish delirium from psychosis?');
+  await expect(row.locator('.cap-list__status')).toHaveText('Unrouted');
+  await expect(row.locator('[data-cap-route][aria-pressed="true"]')).toHaveCount(0);
+  expect((await savedItems(page))[0]).toMatchObject({ route: null, state: 'open' });
+  await row.locator('[data-cap-route="rounds"]').click();
+  expect((await savedItems(page))[0]).toMatchObject({ route: 'rounds', state: 'open' });
 });
 
 test('the dock Capture control remains in the viewport after a long reader scroll', async ({ page }) => {
