@@ -14,7 +14,7 @@ const make = new Function(`${wire}\nreturn {
   semantic: fdActionSemantic,
 };`);
 const F = make();
-const NON_ACTION_ATTRS = new Set(['data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label']);
+const NON_ACTION_ATTRS = new Set(['data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label', 'data-fd-reading-resume', 'data-fd-reading-status']);
 const AUX_ACTION_ATTRS = new Set(['data-fd-local-toggle']);
 
 function emittedAttributes() {
@@ -45,7 +45,7 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     'data-fd-clear-ask', 'data-fd-clear-cancel', 'data-fd-clear-confirm', 'data-fd-close-nudge',
     'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-dock-forward', 'data-fd-exam-date', 'data-fd-expand-tool',
     'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-open',
-    'data-fd-progress', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-settings',
+    'data-fd-progress', 'data-fd-reading-top', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-settings',
     'data-fd-setweek', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle',
     'data-fd-view-week', 'data-fd-week',
   ]);
@@ -64,6 +64,12 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
   const controllerActions = emitted.filter((attr) => !AUX_ACTION_ATTRS.has(attr));
   assert.equal(new Set(controllerActions.map(F.semantic)).size, controllerActions.length,
     'two emitted attributes accidentally share an action meaning');
+});
+
+test('reading resume is metadata on a normal open, while Start at top is its own action', () => {
+  assert.equal(F.semantic('data-fd-reading-resume'), null);
+  assert.equal(F.handled.includes('data-fd-reading-resume'), false);
+  assert.equal(F.semantic('data-fd-reading-top'), 'clear this reading place and focus the article heading');
 });
 
 test('the complete controller vocabulary includes planned Progress and Try-now actions', () => {

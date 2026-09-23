@@ -180,20 +180,26 @@ test('fdResumeCard(c, true) is the primary: is-primary and the "Pick up" heading
 test('fdLastReadRow renders "You were reading" for an undone week read, escapes the title, never for a tool', () => {
   const read = { ref: 'a&b.md', kind: 'read', title: '<Page> & Co', minutes: 6, done: false, isContinueTarget: false };
   const plain = F.fdLastReadRow(read);
-  assert.match(plain, /^<button type="button" class="fd-lastread" data-fd-open="a&amp;b\.md">/);
+  assert.match(plain, /^<button type="button" class="fd-lastread" data-fd-open="a&amp;b\.md" data-fd-reading-resume="1">/);
   assert.match(plain, /<span class="fd-lastread__title">You were reading: &lt;Page&gt; &amp; Co — 6 min<\/span>/);
   assert.match(plain, /<span class="fd-lastread__action">Open →<\/span><\/button>$/);
   assert.doesNotMatch(plain, /<Page>|fd-lastread__kicker|is-primary/);
   assert.equal(F.fdLastReadRow(read, false), plain);
 
   const primary = F.fdLastReadRow(read, true);
-  assert.match(primary, /^<button type="button" class="fd-lastread is-primary" data-fd-open="a&amp;b\.md" data-fd-dock-source="primary-read" data-fd-dock-label="Open →"><span class="fd-lastread__kicker">Pick up where you left off<\/span><span class="fd-lastread__title">You were reading: /);
+  assert.match(primary, /^<button type="button" class="fd-lastread is-primary" data-fd-open="a&amp;b\.md" data-fd-reading-resume="1" data-fd-dock-source="primary-read" data-fd-dock-label="Open →"><span class="fd-lastread__kicker">Pick up where you left off<\/span><span class="fd-lastread__title">You were reading: /);
 
   assert.equal(F.fdLastReadRow(Object.assign({}, read, { kind: 'tool' }), true), '', 'a tool is not reading');
   assert.equal(F.fdLastReadRow(null, true), '');
   assert.equal(F.fdLastReadRow({ ref: '', kind: 'read' }), '');
   assert.match(F.fdLastReadRow({ ref: 'x.md', kind: 'read', title: 'X', minutes: null }), /You were reading: X<\/span>/,
     'no minutes, no dash');
+});
+
+test('last-read action marks a reading resume without marking question-bank resume', () => {
+  assert.match(F.fdLastReadRow({ ref: 'a.md', kind: 'read', title: 'A' }),
+    /data-fd-open="a\.md" data-fd-reading-resume="1"/);
+  assert.doesNotMatch(F.fdResumeCard({ queueIds: ['q1'], idx: 0 }), /data-fd-reading-resume/);
 });
 
 test('the primary variants are audience-neutral', () => {

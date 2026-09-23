@@ -71,7 +71,7 @@ function fdLastReadRow(item, primary){
   var it=item||{}, isPrimary=primary===true;
   if(typeof it.ref!=='string'||!it.ref||it.kind!=='read') return '';
   var min=(typeof it.minutes==='number')?(' — '+it.minutes+' min'):'';
-  return '<button type="button" class="'+(isPrimary?'fd-lastread is-primary':'fd-lastread')+'" data-fd-open="'+fdEsc(it.ref)+'"'+
+  return '<button type="button" class="'+(isPrimary?'fd-lastread is-primary':'fd-lastread')+'" data-fd-open="'+fdEsc(it.ref)+'" data-fd-reading-resume="1"'+
     (isPrimary?' data-fd-dock-source="primary-read" data-fd-dock-label="Open →"':'')+'>'+
     (isPrimary?'<span class="fd-lastread__kicker">Pick up where you left off</span>':'')+
     '<span class="fd-lastread__title">You were reading: '+fdEsc(it.title||it.ref)+fdEsc(min)+'</span>'+

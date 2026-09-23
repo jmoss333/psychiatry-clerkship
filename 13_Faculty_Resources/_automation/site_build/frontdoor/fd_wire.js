@@ -15,7 +15,8 @@ var FD_HANDLED_ATTRS=[
   'data-fd-app-practice-question','data-fd-app-practice-reset','data-fd-app-practice-close',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge','data-fd-dock-forward',
-  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section','data-fd-kit-tool'
+  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section','data-fd-kit-tool',
+  'data-fd-reading-top'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -60,7 +61,8 @@ var FD_ACTION_SEMANTICS={
   'data-fd-close-nudge':'dismiss protocol nudge',
   'data-fd-dock-forward':'forward contextual dock action',
   'data-fd-try-now':'preview related tool',
-  'data-fd-expand-tool':'toggle saved tool workspace width'
+  'data-fd-expand-tool':'toggle saved tool workspace width',
+  'data-fd-reading-top':'clear this reading place and focus the article heading'
 };
 
 function fdActionSemantic(attr){
@@ -131,6 +133,7 @@ function fdResolveState(url, stored, options){
      persisted the offset and then dropped it here, so the one return that most needs it -- an
      interrupted read -- scrolled to the top. */
   if(typeof src.scrollPos==='number'&&isFinite(src.scrollPos)&&src.scrollPos>=0) out.scrollPos=src.scrollPos;
+  if(src.readingPlaces!==undefined) out.readingPlaces=fdReadingPlaces(src.readingPlaces);
 
   var parsed, routedRef=null;
   try{ parsed=new URL(String(url||''),'https://frontdoor.invalid/'); }catch(_){ parsed=null; }
@@ -912,7 +915,7 @@ var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-f
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
   '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
   '[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
-  '[data-fd-try-now],[data-fd-expand-tool],[data-fd-dock-forward]';
+  '[data-fd-try-now],[data-fd-expand-tool],[data-fd-dock-forward],[data-fd-reading-top]';
 
 function fdDockSource(root){
   var el=root&&root.querySelector?root.querySelector('[data-fd-dock-source]'):null;
@@ -943,6 +946,102 @@ function fdAttrsFromTarget(target){
     if(target&&target.hasAttribute&&target.hasAttribute(name)) out[name]=target.getAttribute(name)||'';
   }
   return out;
+}
+
+/* The rendered reader owns this lease; its listeners are removed before the next resource. */
+function fdInstallReadingPlace(reader,ref,state,options){
+  var o=options||{}, win=o.window||(typeof window!=='undefined'?window:null);
+  var status=reader&&reader.querySelector?reader.querySelector('[data-fd-reading-status]'):null;
+  var top=reader&&reader.querySelector?reader.querySelector('[data-fd-reading-top]'):null;
+  var nodes=reader&&reader.querySelectorAll?Array.prototype.slice.call(reader.querySelectorAll('.fd-article > .fd-article__h1,.fd-article__body h2,.fd-article__body h3,.fd-article__body h4')):[];
+  var save=o.save||fdSave, now=o.now||Date.now;
+  var timerSet=o.setTimer||setTimeout, timerClear=o.clearTimer||clearTimeout;
+  var frame=o.requestAnimationFrame||(win&&win.requestAnimationFrame?function(fn){win.requestAnimationFrame(fn);}:function(fn){timerSet(fn,0);});
+  var active=true, timer=null, ready=false, suppressTop=false, ids, i;
+  function empty(){ }
+  if(!status||!top||!nodes.length||!win||!fdReadingRef(ref))return {destroy:empty,startAtTop:empty};
+  ids=fdReadingHeadingIds(nodes.map(function(node){return node.textContent||'';}));
+  for(i=0;i<nodes.length;i++)nodes[i].id=ids[i];
+  function scrollY(){return typeof win.scrollY==='number'&&isFinite(win.scrollY)?Math.max(0,win.scrollY):0;}
+  function absoluteTop(node){return node.getBoundingClientRect().top+scrollY();}
+  function current(){
+    var y=scrollY(), chosen=nodes[0], pos=absoluteTop(chosen), j, next;
+    for(j=1;j<nodes.length;j++){
+      next=absoluteTop(nodes[j]);
+      if(next<=y&&next>=pos){chosen=nodes[j];pos=next;}
+    }
+    return {heading:chosen.id,offset:Math.max(0,y-pos)};
+  }
+  function write(places){
+    state.readingPlaces=places;
+    var ok=false;
+    try{ok=save(state)===true;}catch(_){ok=false;}
+    status.textContent=ok?'Reading place saved on this device only':
+      'Reading place could not be saved on this device';
+  }
+  function capture(){
+    if(!active||!ready)return;
+    var position=current();
+    write(fdReadingPlaceUpdate(state.readingPlaces,ref,position.heading,position.offset,now()));
+  }
+  function onScroll(){
+    if(!active||!ready)return;
+    if(suppressTop){
+      if(scrollY()<=absoluteTop(nodes[0]))return;
+      suppressTop=false;
+    }
+    if(timer!==null)timerClear(timer);
+    timer=timerSet(function(){timer=null;capture();},150);
+  }
+  function onPagehide(){
+    if(timer!==null){timerClear(timer);timer=null;}
+    capture();
+  }
+  function destroy(){
+    if(!active)return;
+    if(timer!==null){timerClear(timer);timer=null;capture();}
+    active=false;
+    if(ready){win.removeEventListener('scroll',onScroll);win.removeEventListener('pagehide',onPagehide);}
+  }
+  function startAtTop(){
+    if(!active||!ready||top.hidden)return;
+    if(timer!==null){timerClear(timer);timer=null;}
+    suppressTop=true;
+    win.scrollTo(0,absoluteTop(nodes[0]));
+    write(fdReadingPlaceDrop(state.readingPlaces,ref));
+    top.hidden=true;
+    nodes[0].setAttribute('tabindex','-1');
+    try{nodes[0].focus({preventScroll:true});}catch(_){nodes[0].focus();}
+  }
+  if(o.allowStorage!==true){
+    status.textContent='Reading place could not be saved on this device';
+    return {destroy:destroy,startAtTop:startAtTop};
+  }
+  frame(function(){
+    if(!active)return;
+    state.readingPlaces=fdReadingPlaces(state.readingPlaces);
+    var place=state.readingPlaces[ref], resolved=place&&fdReadingResume(place,ids), target=null;
+    if(place&&!resolved){
+      win.scrollTo(0,0);
+      write(fdReadingPlaceDrop(state.readingPlaces,ref));
+    }else{
+      if(resolved){
+        for(var j=0;j<nodes.length;j++)if(nodes[j].id===resolved.heading){target=nodes[j];break;}
+        win.scrollTo(0,absoluteTop(target)+resolved.offset);
+        top.hidden=false;
+        if(o.focusOnRestore===true){
+          target.setAttribute('tabindex','-1');
+          try{target.focus({preventScroll:true});}catch(_){target.focus();}
+        }
+      }
+      ready=true;
+      capture();
+    }
+    ready=true;
+    win.addEventListener('scroll',onScroll);
+    win.addEventListener('pagehide',onPagehide);
+  });
+  return {destroy:destroy,startAtTop:startAtTop};
 }
 
 function fdWire(root, initialState, opts){
@@ -1215,7 +1314,7 @@ function fdWire(root, initialState, opts){
     if(!detail.preserveResource) baseStale=false;
     return detail;
   }
-  function fdApplyEffect(effect, fromHistory, generation){
+  function fdApplyEffect(effect, fromHistory, generation, focusOnRestore){
     if(!effect) return;
     /* set-rotation and browse-without-rotation write their key in apply(), ABOVE the render --
        see the comment there. Nothing is left for them to do once the page has painted. */
@@ -1267,7 +1366,7 @@ function fdWire(root, initialState, opts){
       var opener=o.openResource||fdOpenResource;
       opener(effect.ref,{
         index:index,state:state,search:(win&&win.location&&win.location.search)||'',
-        fromHistory:!!fromHistory,host:freshResourceHost(),
+        fromHistory:!!fromHistory,host:freshResourceHost(),focusOnRestore:focusOnRestore===true,
         getState:function(){ return state; },
         isCurrent:function(){
           return !destroyed&&generation===navGeneration&&state.openId===effect.ref;
@@ -1491,7 +1590,8 @@ function fdWire(root, initialState, opts){
     }
     if(changedBase) render(state,detail);
     else renderTransient(state,detail);
-    fdApplyEffect(result.effect,fromHistory,generation);
+    fdApplyEffect(result.effect,fromHistory,generation,
+      !!(invoker&&invoker.getAttribute&&invoker.getAttribute('data-fd-reading-resume')==='1'));
     focusPostTransition(before,result,changedBase);
     if(fdOwn(patch,'appPractice')&&!afterOverlay&&!beforeHadOverlay){
       focusAppPractice(invoker,before);
@@ -1549,6 +1649,12 @@ function fdWire(root, initialState, opts){
     }
     var attrs=fdAttrsFromTarget(target);
     if(event.preventDefault) event.preventDefault();
+    if(fdOwn(attrs,'data-fd-reading-top')){
+      if(previewActive()){lockPreview();return;}
+      var readingSession=o.readingPlaceSession&&o.readingPlaceSession();
+      if(readingSession)readingSession.startAtTop();
+      return;
+    }
     if(fdOwn(attrs,'data-fd-dock-forward')){
       if(fdForwardDockAction(root,attrs['data-fd-dock-forward'])) return;
       apply(fdDispatch({'data-fd-tab':'library'},context(),state),target,false);

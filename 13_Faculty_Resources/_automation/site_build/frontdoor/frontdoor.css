@@ -748,6 +748,10 @@
 @media (pointer:coarse){[data-fd-compass-safety] a,[data-fd-compass-link],[data-fd-compass-orientation]{min-inline-size:44px;min-block-size:44px}}
 
 .fd-article__source{display:flex;align-items:center;gap:var(--fd-space-4);font-size:var(--fd-font-sm);color:var(--fd-text-dim);padding:10px 0;border-top:1px solid var(--fd-line)}
+.fd-reading-place{margin:12px 0 0;font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-dim)}
+.fd-reading-place__top{display:inline-flex;align-items:center;min-height:var(--fd-target-touch);margin:2px 0 0;padding:8px 0;border:0;background:transparent;color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-sm);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.fd-reading-place__top[hidden]{display:none}
+.fd-reading-place__top:focus-visible{outline:2px solid var(--fd-teal-deep);outline-offset:3px}
 .fd-article__actions{display:flex;gap:var(--fd-space-5);margin-top:16px;flex-wrap:wrap}
 
 .fd-keypoints{

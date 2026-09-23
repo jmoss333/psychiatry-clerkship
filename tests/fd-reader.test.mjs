@@ -83,6 +83,16 @@ const FIX_MAN = {
 const IDX = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
 
 const BASE_STATE = { ref: 'a.md', week: 1, fromTab: 'today', done: {}, desk: true };
+
+test('ordinary reading has an empty device status and hidden Start at top, while tools do not', () => {
+  const reading = F.fdReader(IDX, BASE_STATE, '<h2>Body</h2>');
+  assert.match(reading, /class="fd-reading-place" data-fd-reading-status><\/p>/);
+  assert.match(reading, /class="fd-reading-place__top" data-fd-reading-top hidden>Start at top<\/button>/);
+  assert.ok(reading.indexOf('data-fd-reading-status') > reading.indexOf('fd-article__source'));
+  assert.ok(reading.indexOf('data-fd-reading-status') < reading.indexOf('fd-article__actions'));
+  assert.doesNotMatch(F.fdReader(IDX, { ...BASE_STATE, ref: 'tool.html' }, '<iframe></iframe>'), /fd-reading-place/);
+  assert.doesNotMatch(F.fdReader(IDX, { ...BASE_STATE, ref: 'a.md', readingPlaceEligible: false }, '<h2>Body</h2>'), /fd-reading-place/);
+});
 const s = (over) => Object.assign({}, BASE_STATE, over);
 
 test('reader marks its mobile primary action once with its visible label', () => {

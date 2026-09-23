@@ -84,7 +84,7 @@ test('a mounted tool projects its real primary into the dock and completion pres
     var facultyPreviewRequest=null, fdController=null, fdGuideBookmark=null, currentItem=null;
     var localStorage={setItem:function(){}}, location={search:'?tool=tool.html&resume=1'};
     var facultyPreviewMatchesItem=null, showFacultyPreviewLockNotice=null, postFacultyPreviewStatus=null;
-    function fdDisposeGuide(){} function fdLiveState(state){return state;}
+    function fdDisposeGuide(){} function fdDisposeReadingPlace(){} function fdLiveState(state){return state;}
     function fdPracticeLaunchSearch(ref,search){return search;}
     function renderGovernanceNotice(){return '';}
     function setLearnerTitle(){} function announceRoute(){} function focusGovernanceNotice(){}

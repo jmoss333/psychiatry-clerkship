@@ -202,7 +202,8 @@ function fdContinue(index, state, wk, progress, primary){
   var titleText, openAttrs, chip='', dockLabel='Continue';
   if(progress.next){
     titleText=progress.next.title;
-    openAttrs=' data-fd-open="'+fdEsc(progress.next.ref)+'"';
+    openAttrs=' data-fd-open="'+fdEsc(progress.next.ref)+'"'+
+      (progress.next.kind==='read'?' data-fd-reading-resume="1"':'');
     /* Same chip rule as fdRow: a rights reference reads "reference", never "tool". */
     var nx=progress.next;
     chip='<span class="'+((nx.kind==='tool')?'fd-chip is-tool':'fd-chip')+'">'+

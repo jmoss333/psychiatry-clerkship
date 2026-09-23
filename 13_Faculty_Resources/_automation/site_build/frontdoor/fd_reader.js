@@ -370,6 +370,10 @@ function fdReader(index, state, bodyHtml){
   article+=fdReaderTryNow(item, idx);
   article+='<div class="fd-article__source"><span>Source:</span>'+
     '<span class="fd-src">'+fdEsc(item.ref)+'</span></div>';
+  if(!isTool&&st.readingPlaceEligible!==false){
+    article+='<p class="fd-reading-place" data-fd-reading-status></p>'+
+      '<button type="button" class="fd-reading-place__top" data-fd-reading-top hidden>Start at top</button>';
+  }
   article+=fdReaderActions(item, doneLabel, backLabel, isDone);
   article+=fdReaderPrevNext(neighbours);
   article+='</div>'; /* .fd-article */

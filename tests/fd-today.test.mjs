@@ -528,13 +528,20 @@ test('fdContinue: primary undefined renders exactly what primary=true renders, a
   const a = F.fdContinue(IDX, s({}), WK1, PROG({}));
   const b = F.fdContinue(IDX, s({}), WK1, PROG({}), true);
   assert.equal(a, b);
-  assert.match(a, /^<button type="button" class="fd-continue" data-fd-open="a\.md" data-fd-dock-source="primary-week" data-fd-dock-label="Continue">/);
+  assert.match(a, /^<button type="button" class="fd-continue" data-fd-open="a\.md" data-fd-reading-resume="1" data-fd-dock-source="primary-week" data-fd-dock-label="Continue">/);
   assert.doesNotMatch(a, /is-secondary|fd-freshset/);
+});
+
+test('Continue marks only a reading open for one-shot restored-heading focus', () => {
+  const reading = F.fdContinue(IDX, s({}), WK1, PROG({}));
+  assert.match(reading, /data-fd-open="a\.md" data-fd-reading-resume="1"/);
+  const tool = F.fdContinue(IDX, s({}), WK1, PROG({ 'a.md': true }));
+  assert.doesNotMatch(tool, /data-fd-reading-resume/);
 });
 
 test('fdContinue: primary=false adds is-secondary and changes nothing else', () => {
   const secondary = F.fdContinue(IDX, s({}), WK1, PROG({}), false);
-  assert.match(secondary, /^<button type="button" class="fd-continue is-secondary" data-fd-open="a\.md">/);
+  assert.match(secondary, /^<button type="button" class="fd-continue is-secondary" data-fd-open="a\.md" data-fd-reading-resume="1">/);
   assert.equal(secondary.replace(' is-secondary', '').replace(/(<button[^>]+)(>)/,
     '$1 data-fd-dock-source="primary-week" data-fd-dock-label="Continue"$2'), F.fdContinue(IDX, s({}), WK1, PROG({})));
 });

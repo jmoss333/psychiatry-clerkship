@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(402 distinct `fd-*` selector names, 23 `is-*` state classes). Every class below has a rule in that file unless
+(404 distinct `fd-*` selector names, 23 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -425,6 +425,8 @@ unit the multi-column flow keeps whole, and the wrapper that groups a heading wi
         .fd-trynow__icon / .fd-trynow__title / .fd-trynow__sub
       .fd-article__source
         <span>Source:</span> .fd-src
+      .fd-reading-place                    (read only; empty until a verified write or failure)
+      .fd-reading-place__top <button hidden> (read only; shown after a valid restoration)
       .fd-article__actions                (≥1000px)
         .fd-btn.fd-btn--primary / .fd-btn.fd-btn--ghost
       .fd-prevnext
@@ -452,6 +454,8 @@ unit the multi-column flow keeps whole, and the wrapper that groups a heading wi
 | `.fd-reader--tool.is-tool-expanded` | Tool-only wide workspace state. The same state is mirrored on `.fd-main`; neither class is applied to reads. |
 | `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
 | `.fd-article__body` | Base long-form markdown typography: `--fd-font-lg` (17px), 1.72 line-height, 62ch measure. Enhanced field guides use the scoped type treatment in §6a. |
+| `.fd-reading-place` | Under `.fd-article` after Source, before actions. Ordinary readings only; initially empty. Runtime writes the exact device-only success copy after a successful store write, or the failure copy when storage is disallowed or fails. No live region or status badge. Tools, Progress, not-found, setup, faculty preview, and enhanced guides do not retain it. |
+| `.fd-reading-place__top` | Sibling button following the status, initially `hidden`. Runtime reveals it only for a valid restored heading; activation clears this page's record, scrolls and focuses its H1, then hides it again. `[hidden]` explicitly wins over the button's display rule. |
 | `.fd-compass` | Six-Week Compass, build-injected into `.fd-article__body` on the six-week Welcome (`welcome_compass.py`). Children: `.fd-compass__title`, `.fd-compass__weeks` (`<ol>`, markerless card grid), `.fd-compass__week` (`<li>` card), `.fd-compass__heading` (`<h3>`), `.fd-compass__kicker` (the `Week N` span inside that heading), `.fd-compass__link` *(no rule)*. Every rule but the root is written as a two-class selector so it outranks the `.fd-article__body` element rules it sits inside. Links reserve bottom scroll margin for the phone dock and tablet action bar, so native Tab focus stays unobscured. |
 | `.fd-visually-hidden` | Accessible completion suffix on done rail rows; never use `aria-pressed` for navigation. |
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |

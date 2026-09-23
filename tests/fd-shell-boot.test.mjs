@@ -243,7 +243,7 @@ for (const ok of [true, false]) test(`resource ${ok ? 'tool mount' : 'load failu
     var FD_INDEX={byRef:{'tool.html':{kind:'tool',title:'Tool'}}}, facultyPreviewRequest=null;
     var fdController=null, fdGuideBookmark=null, currentItem=null, location={search:''};
     var localStorage={setItem:function(){}}, facultyPreviewMatchesItem=null, showFacultyPreviewLockNotice=null, postFacultyPreviewStatus=null;
-    function fdDisposeGuide(){} function fdLiveState(s){return s;} function fdPracticeLaunchSearch(){return '';}
+    function fdDisposeGuide(){} function fdDisposeReadingPlace(){} function fdLiveState(s){return s;} function fdPracticeLaunchSearch(){return '';}
     function fdLegacyItem(item,ref){return {f:ref};} function renderGovernanceNotice(){return '';}
     function setLearnerTitle(){} function announceRoute(){} function focusGovernanceNotice(){}
     ${shellFunction('fdOpenResourceLive')}
