@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(393 distinct `fd-*` selector names, 22 `is-*` state classes). Every class below has a rule in that file unless
+(398 distinct `fd-*` selector names, 23 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -239,8 +239,8 @@ internal Progress. These are part of the same shipped class contract:
 | `.fd-due__kicker` | "Clear what's due" line, present only when the due row is the primary (`.fd-due.is-primary`). |
 | `.fd-freshset` | Ghost `.fd-btn` sibling of a completed-week `.fd-continue` that is primary: "Practice a fresh set →", opens the question bank. |
 | `.fd-capture-launch` | Full-width capture-dialog launcher. |
-| `.fd-capture-launch--global` | Stable learner-route launcher hook; its in-flow utility-row positioning comes from `#fdCaptureMount`, so it cannot cover Reader or Today content. *(no rule)* |
-| `.fd-capture` | Today triage section; contains `.fd-capture__head`, `.fd-capture__new`, `.fd-capture__purpose`, `.fd-capture__item`, `.fd-capture__question`, `.fd-capture__action`, and `.fd-capture__copy`. |
+| `.fd-capture-launch--global` | Stable learner-route launcher hook; `#fdCaptureMount` keeps it fixed above phone navigation and clear of the desktop tool dock. When mounted on a phone, `.fd-main` reserves bottom space so the final content can scroll above it. *(no rule)* |
+| `.fd-capture` | Today question inbox. Contains `.fd-capture__head`, `.fd-capture__new`, `.fd-capture__purpose`, and compact `.fd-capture__item` rows. Each row uses `.fd-capture__meta` / `__status`, `__question`, optional `__match`, and a wrapping `__actions` group of `__action` buttons; `__action--done` is the quiet trailing action. `.fd-capture__copy` retains supervised clipboard export. |
 | `.fd-progresscard` | Internal-Progress entry; contains `.fd-progresscard__title` and `.fd-progresscard__meta`. |
 | `.fd-progress-reader` | Reader modifier for the internal Progress surface. |
 
@@ -416,7 +416,7 @@ unit the multi-column flow keeps whole, and the wrapper that groups a heading wi
 | `.fd-reader--tool.is-tool-expanded` | Tool-only wide workspace state. The same state is mirrored on `.fd-main`; neither class is applied to reads. |
 | `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
 | `.fd-article__body` | Base long-form markdown typography: `--fd-font-lg` (17px), 1.72 line-height, 62ch measure. Enhanced field guides use the scoped type treatment in §6a. |
-| `.fd-compass` | Six-Week Compass, build-injected into `.fd-article__body` on the six-week Welcome (`welcome_compass.py`). Children: `.fd-compass__title`, `.fd-compass__weeks` (`<ol>`, markerless card grid), `.fd-compass__week` (`<li>` card), `.fd-compass__heading` (`<h3>`), `.fd-compass__kicker` (the `Week N` span inside that heading), `.fd-compass__link` *(no rule)*. Every rule but the root is written as a two-class selector so it outranks the `.fd-article__body` element rules it sits inside. |
+| `.fd-compass` | Six-Week Compass, build-injected into `.fd-article__body` on the six-week Welcome (`welcome_compass.py`). Children: `.fd-compass__title`, `.fd-compass__weeks` (`<ol>`, markerless card grid), `.fd-compass__week` (`<li>` card), `.fd-compass__heading` (`<h3>`), `.fd-compass__kicker` (the `Week N` span inside that heading), `.fd-compass__link` *(no rule)*. Every rule but the root is written as a two-class selector so it outranks the `.fd-article__body` element rules it sits inside. Links reserve bottom scroll margin for both the mobile action bar and the fixed capture launcher, so native Tab focus stays unobscured. |
 | `.fd-visually-hidden` | Accessible completion suffix on done rail rows; never use `aria-pressed` for navigation. |
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |
 | `.fd-article__actions` | Desktop-only primary/ghost pair. **Always emit it** (no `desk` JS branch) — `.fd-actionbar` at the bottom of this tree is the mobile equivalent; the breakpoint hides this one and shows that one, never both. |

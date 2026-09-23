@@ -731,7 +731,8 @@
    Two-class selectors (0,2,x) deliberately outrank the `.fd-article__body h2/h3/ol/li` (0,1,1)
    reader rules above, which otherwise win the cascade and silently discard this spacing. */
 [data-fd-compass-root]{display:grid;gap:var(--fd-space-7);margin:0 0 24px}
-[data-fd-compass-root] a{scroll-margin-block:6rem calc(6rem + env(safe-area-inset-bottom))}
+/* Native keyboard scrolling must clear both the action bar and the capture launcher above it. */
+[data-fd-compass-root] a{scroll-margin-block:6rem calc(6rem + var(--fd-target-touch) + var(--fd-space-6) + env(safe-area-inset-bottom))}
 [data-fd-compass-safety]{margin:0;padding:14px 16px;border:1px solid var(--fd-line-strong);border-left:4px solid var(--fd-danger);border-radius:var(--fd-radius-md);background:var(--fd-danger-wash);color:var(--fd-text)}
 [data-fd-compass-safety] p,[data-fd-compass-scope],[data-fd-compass-prompt]{margin:0}
 .fd-compass{container:fd-compass / inline-size}
@@ -998,11 +999,23 @@
 .fd-capture__head .fd-sectionhead{margin:0}
 .fd-capture__new{padding:8px 12px;color:var(--fd-teal-deep)}
 .fd-capture__purpose{margin:8px 0 12px;font-size:var(--fd-font-xs);line-height:1.5;color:var(--fd-text-dim)}
-.fd-capture__item{padding:11px 0;border-top:1px solid var(--fd-line)}
-.fd-capture__question{margin:0 0 8px;font-size:var(--fd-font-md);line-height:1.5;color:var(--fd-text)}
-.fd-capture__action{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-5);width:100%;padding:9px 11px;margin-top:6px;text-align:left}
+.fd-capture__item{padding:var(--fd-space-6) 0;border-top:1px solid var(--fd-line)}
+.fd-capture__meta{display:flex;align-items:center;justify-content:flex-end;margin-bottom:var(--fd-space-2)}
+.fd-capture__status{font-size:var(--fd-font-2xs);font-weight:700;color:var(--fd-text-dim);border:1px solid var(--fd-line);border-radius:var(--fd-radius-pill);padding:var(--fd-space-1) var(--fd-space-4);background:var(--fd-surface)}
+.fd-capture__item[data-cap-status="scheduled"] .fd-capture__status{color:var(--fd-teal-deep);border-color:var(--fd-teal)}
+.fd-capture__item[data-cap-status="supervision"] .fd-capture__status{color:var(--fd-terracotta-dark);border-color:var(--fd-terracotta)}
+.fd-capture__question{margin:0 0 var(--fd-space-4);font-size:var(--fd-font-md);font-weight:650;line-height:1.5;color:var(--fd-text)}
+.fd-capture__match{display:grid;grid-template-columns:auto 1fr;gap:var(--fd-space-4);align-items:baseline;padding:var(--fd-space-4) var(--fd-space-5);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
+.fd-capture__match span{font-size:var(--fd-font-2xs);color:var(--fd-text-dim)}
+.fd-capture__match strong{font-size:var(--fd-font-sm);color:var(--fd-text);font-weight:650}
+.fd-capture__actions{display:flex;gap:var(--fd-space-4);flex-wrap:wrap;margin-top:var(--fd-space-4)}
+.fd-capture__action{width:auto;padding:var(--fd-space-4) var(--fd-space-5);text-align:center}
+.fd-capture__action--done{margin-left:auto;color:var(--fd-text-dim)}
 .fd-capture__action:hover,.fd-capture__new:hover,.fd-capture__copy:hover,.fd-capture-launch:hover{border-color:var(--fd-line-hover);background:var(--fd-selected)}
 .fd-capture__copy{width:100%;padding:9px 12px;margin-top:10px;color:var(--fd-teal-deep)}
+@media (max-width:430px){
+  .fd-capture__actions .fd-capture__action{flex:1 1 calc(50% - var(--fd-space-4));margin-left:0}
+}
 .fd-progress-reader{max-width:940px;margin:0 auto}
 .fd-progress-reader > .hm{max-width:none;padding:0}
 
@@ -1139,6 +1152,8 @@
   .fd-shell:not(:has(.fd-actionbar)) .fd-tab{flex:1;text-align:center;padding:var(--fd-space-5) var(--fd-space-4);border-bottom:none;border-top:3px solid transparent}
   .fd-shell:not(:has(.fd-actionbar)) .fd-tab.is-active{border-top-color:var(--fd-teal)}
   .fd-shell:not(:has(.fd-actionbar)) .fd-main{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  /* Let the final content scroll above the capture launcher as well as the fixed tab bar. */
+  .fd-shell:has(#fdCaptureMount:not(:empty)) .fd-main{padding-bottom:calc(var(--fd-target-touch) * 3 + var(--fd-space-6) + env(safe-area-inset-bottom))}
   /* The nudge toast is bottom-anchored too; lift it clear of the tab bar. */
   .fd-shell:not(:has(.fd-actionbar)) .fd-nudge{bottom:calc(74px + env(safe-area-inset-bottom))}
   .fd-shell:has(.fd-actionbar) .fd-reader>.fd-reader__back{display:none}

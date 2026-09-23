@@ -430,14 +430,17 @@
      stylesheet here would trip fd-shell-boot's single-reference count, which exists to keep this
      document from acquiring a second competing link to it.) */
   #fdChromeMount{display:contents}
-  #fdCaptureMount{width:100%;max-width:1200px;margin:12px auto 0;padding:0 20px;display:flex;justify-content:flex-end}
+  #fdCaptureMount{position:fixed;right:calc(var(--fd-space-8) + var(--fd-target-touch) + var(--fd-space-9));bottom:var(--fd-space-8);z-index:28;display:flex;justify-content:flex-end}
   #fdCaptureMount:empty{display:none}
-  #fdCaptureMount .fd-capture-launch{width:min(230px,100%);margin:0}
-  @media(max-width:999px){#fdCaptureMount .fd-capture-launch{width:min(210px,100%)}}
-  /* Phone chrome (see the front-door stylesheet's block of that name): the launcher keeps its
-     44px target and gives up only the gap above it, so the first phone screen has more page. */
-  @media(max-width:640px){#fdCaptureMount{margin-top:0}}
+  #fdCaptureMount .fd-capture-launch{width:auto;margin:0;box-shadow:var(--fd-shadow-lift);border-style:solid}
+  @media(max-width:1000px){#fdCaptureMount{right:var(--fd-space-6);bottom:calc(env(safe-area-inset-bottom,0px) + var(--fd-target-touch) + var(--fd-space-10) + var(--fd-space-2))}}
+  @media(max-width:640px){#fdCaptureMount{position:fixed;left:var(--fd-space-4);right:var(--fd-space-4);bottom:calc(env(safe-area-inset-bottom,0px) + var(--fd-target-touch) + var(--fd-space-10) + var(--fd-space-2))}#fdCaptureMount .fd-capture-launch{width:100%}}
   .cap-disclose{font-size:var(--fd-font-xs);color:var(--text-light);margin:8px 0 0}
+  .cap-starters{display:flex;align-items:center;gap:var(--fd-space-3);flex-wrap:wrap;margin:var(--fd-space-4) 0 0}
+  .cap-starters span{font-size:var(--fd-font-xs);color:var(--text-light)}
+  .cap-starters button{min-height:var(--fd-target-touch);border:1px solid var(--border);border-radius:var(--fd-radius-pill);background:var(--surface);color:var(--primary-dark);padding:var(--fd-space-3) var(--fd-space-5);font:inherit;font-size:var(--fd-font-xs);cursor:pointer}
+  .cap-starters button:hover{background:var(--primary-light);border-color:var(--primary)}
+  .cap-starters button:focus-visible{outline:var(--fd-space-1) solid var(--fd-focus);outline-offset:var(--fd-space-1)}
   .cap-acts{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 0}
   .cap-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:8px 14px;font:inherit;font-size:var(--fd-font-sm);font-weight:600;cursor:pointer}
   .cap-btn.primary{background:var(--primary-dark);border-color:var(--primary-dark);color:#fff}
@@ -448,6 +451,15 @@
   .cap-purpose{margin:0 0 10px;font-size:var(--fd-font-md);line-height:1.45;color:var(--text-mid);max-width:70ch}
   .cap-phi{margin:12px 0 0;padding:12px;background:var(--warning-light);border:1px solid var(--warning);border-radius:9px;font-size:var(--fd-font-sm);color:var(--warning)}
   .cap-phi b{display:block;margin:0 0 4px}
+  .cap-next{margin:var(--fd-space-7) 0 0;padding:var(--fd-space-7);border:1px solid var(--primary);border-radius:var(--fd-radius-lg);background:var(--primary-light)}
+  .cap-next__saved{margin:0 0 var(--fd-space-1);color:var(--primary-dark);font-size:var(--fd-font-xs);font-weight:700}
+  .cap-next h3{margin:0 0 var(--fd-space-5);color:var(--text);font-family:var(--font-head);font-size:var(--fd-font-md)}
+  .cap-next__match{display:flex;flex-direction:column;gap:var(--fd-space-1);padding:var(--fd-space-5);border-radius:var(--fd-radius-md);background:var(--surface)}
+  .cap-next__match span{font-size:var(--fd-font-xs);color:var(--text-light)}
+  .cap-next__match strong{font-size:var(--fd-font-md);color:var(--text)}
+  .cap-next__actions{display:flex;gap:var(--fd-space-4);flex-wrap:wrap;margin-top:var(--fd-space-5)}
+  .cap-next__empty{margin:0 0 var(--fd-space-5);font-size:var(--fd-font-sm);line-height:1.5;color:var(--text-mid)}
+  .cap-next__supervise{margin-top:var(--fd-space-4)}
   .cap-list{list-style:none;margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--border)}
   .cap-list li{display:flex;align-items:center;gap:var(--fd-space-4);margin:0 0 var(--fd-space-1);font-size:var(--fd-font-sm);color:var(--text)}
   .cap-list__text{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
@@ -1404,7 +1416,8 @@
     var out=[]; for(var i=0;i<d.items.length;i++){ var it=d.items[i];
       if(!it||typeof it.text!=='string')continue;
       /* clamp on read as well as write — a hand-edited store must not widen the cap */
-      out.push({id:String(it.id||''),text:it.text.slice(0,CAP_MAX),at:+it.at||0,ctx:it.ctx||null,triaged:!!it.triaged}); }
+      var status=/^(?:new|scheduled|supervision|triaged)$/.test(it.status)?it.status:(it.triaged?'triaged':'new');
+      out.push({id:String(it.id||''),text:it.text.slice(0,CAP_MAX),at:+it.at||0,ctx:it.ctx||null,status:status,triaged:status!=='new'}); }
     return {v:1,items:out};
   }
   function capWrite(d){ try{ localStorage.setItem('cw_capture_v1',JSON.stringify(d)); return true; }catch(_){ return false; } }
@@ -1421,21 +1434,26 @@
     return items;
   }
   function capAdd(text){
-    var d=capRead();
-    d.items.push({id:'c_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-3),
-      text:String(text).slice(0,CAP_MAX),at:Date.now(),ctx:capCtx(),triaged:false});
+    var d=capRead(), id='c_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-3);
+    d.items.push({id:id,text:String(text).slice(0,CAP_MAX),at:Date.now(),ctx:capCtx(),status:'new',triaged:false});
     capEvict(d.items);
-    return capWrite(d);
+    return capWrite(d)?id:false;
   }
   function capRemove(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items.splice(i,1); break; } } if(d.items.length) capWrite(d); else capEraseAll(); }
-  function capMarkTriaged(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items[i].triaged=true; break; } } capWrite(d); }
+  function capSetStatus(id,status){
+    if(!/^(?:new|scheduled|supervision|triaged)$/.test(status))return false;
+    var d=capRead(), found=false;
+    for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items[i].status=status; d.items[i].triaged=status!=='new'; found=true; break; } }
+    return found?capWrite(d):false;
+  }
+  function capMarkTriaged(id){ return capSetStatus(id,'triaged'); }
   /* The supervised-draft stamp travels with the one sanctioned clipboard egress. */
   var CAP_STAMP='Questions from the unit, brought to supervision. Written by a trainee for teaching discussion — contains no patient information.';
   /* P4 — the one sanctioned egress. The stamp lives inside the payload builder so every copy path
      carries it, matching the supervised-draft pattern in decisional-capacity-module.html. */
   function capClipboardText(){
     var d=capRead(), lines=[CAP_STAMP,''];
-    for(var i=0;i<d.items.length;i++){ if(!d.items[i].triaged) lines.push('- '+d.items[i].text); }
+    for(var i=0;i<d.items.length;i++){ if(d.items[i].status==='new'||d.items[i].status==='supervision') lines.push('- '+d.items[i].text); }
     return lines.join('\n');
   }
   /* ---- end ward capture store ---- */
@@ -1520,15 +1538,37 @@
     var n=capRead().items.length;
     return n===0?'No saved questions remain.':(n+' saved question'+(n===1?'':'s')+' remain'+(n===1?'s':'')+'.');
   }
+  function capNextHtml(id,text){
+    var match=typeof window.fdCaptureMatchForQuestion==='function'?window.fdCaptureMatchForQuestion(text):null;
+    var h='<section class="cap-next" data-cap-next="'+esc(id)+'" aria-labelledby="capNextHead"><p class="cap-next__saved">Question saved</p>'+
+      '<h3 id="capNextHead">What would help next?</h3>';
+    if(match&&match.ref){
+      h+='<div class="cap-next__match"><span>Likely match</span><strong>'+esc(match.title||match.ref)+'</strong></div>'+
+        '<div class="cap-next__actions"><button type="button" class="cap-btn primary" data-cap-open="'+esc(id)+'" data-cap-ref="'+esc(match.ref)+'">Open now</button>';
+      if(match.hasQuiz)h+='<button type="button" class="cap-btn" data-cap-review="'+esc(id)+'" data-cap-ref="'+esc(match.ref)+'">Review later</button>';
+      h+='</div>';
+    }else h+='<p class="cap-next__empty">No close library match yet. Keep it in your question inbox or bring it to supervision.</p>';
+    return h+'<button type="button" class="cap-btn cap-next__supervise" data-cap-supervise="'+esc(id)+'">Bring to supervision</button></section>';
+  }
+  function capRefreshNext(){
+    var next=capSheet&&capSheet.querySelector('[data-cap-next]');
+    if(!next)return;
+    var id=next.getAttribute('data-cap-next'), items=capRead().items, hold=capSheet.querySelector('#capHold');
+    for(var i=0;i<items.length;i++){
+      if(items[i].id===id){ if(hold)hold.innerHTML=capNextHtml(id,items[i].text); return; }
+    }
+    if(hold)hold.innerHTML='';
+  }
   function capRefreshAfterMutation(){
     capRenderBody();
+    capRefreshNext();
     try{ specialRefresh(); }
     finally{
       var ta=capSheet&&capSheet.querySelector('#capText');
       if(ta){ try{ ta.focus(); }catch(_){ } }
     }
   }
-  function capOpen(invoker){
+  function capOpen(invoker,onAction){
     if(capSheet)return;
     capInvoker=invoker||null;
     capBackdrop=document.createElement('div'); capBackdrop.className='cap-backdrop';
@@ -1541,6 +1581,11 @@
       /* P1 — point-of-entry warning, approved copy, verbatim */
       + '<p class="cap-warn"><strong>The question, not the patient.</strong> No names, initials, room or bed numbers, dates, or MRNs — write what you want to understand, not who you saw. Stays on this device.</p>'
       + '<textarea id="capText" maxlength="280" rows="4" aria-label="Your question, no patient identifiers" placeholder="What did you want to look up later?"></textarea>'
+      + '<div class="cap-starters" aria-label="Question starters"><span>Start with</span>'
+      + '<button type="button" data-cap-starter="Why would we ">Why would we…?</button>'
+      + '<button type="button" data-cap-starter="How can I distinguish ">How can I distinguish…?</button>'
+      + '<button type="button" data-cap-starter="What should I ask when ">What should I ask when…?</button>'
+      + '<button type="button" data-cap-starter="What changes disposition for ">What changes disposition?</button></div>'
       /* P3 — always-visible disclosure, not dismissible, because storage is on by default */
       + '<p class="cap-disclose">Saved on this device only, never sent anywhere. Erase all captures below.</p>'
       + '<div id="capHold"></div>'
@@ -1557,6 +1602,11 @@
     var ta=capSheet.querySelector('#capText'); if(ta){ try{ ta.focus(); }catch(_){ } }
     capSheet.addEventListener('click',function(e){
       var t=e.target;
+      /* The dialog is mounted under body, outside fdApp's delegated click listener. */
+      var action=t.closest&&t.closest('[data-cap-open],[data-cap-review],[data-cap-supervise]');
+      if(action&&typeof onAction==='function'){e.preventDefault();onAction(action);return;}
+      var starter=t.closest&&t.closest('[data-cap-starter]');
+      if(starter){ var starterText=capSheet.querySelector('#capText'); if(starterText&&!starterText.value.trim())starterText.value=starter.getAttribute('data-cap-starter')||''; if(starterText)starterText.focus(); return; }
       if(t.id==='capCancel'){ capClose(); return; }
       if(t.id==='capSave'){ capSave(false); return; }
       if(t.id==='capHoldEdit'){ var hold=capSheet.querySelector('#capHold'); if(hold)hold.innerHTML=''; var tx=capSheet.querySelector('#capText'); if(tx)tx.focus(); return; }
@@ -1579,7 +1629,8 @@
       return;
     }
     if(hold)hold.innerHTML='';
-    if(capAdd(text)){ ta.value=''; capRefreshAfterMutation(); capAnnounce('Question saved. '+capRemainingText()); }
+    var savedId=capAdd(text);
+    if(savedId){ ta.value=''; capRefreshAfterMutation(); if(hold)hold.innerHTML=capNextHtml(savedId,text); capAnnounce('Question saved. '+capRemainingText()); }
     else { var err=document.createElement('p'); err.className='cap-err';
       err.textContent="Couldn't save on this device. Use “Ask my attending” on the home screen to copy your questions out before you close this tab.";
       if(hold)hold.appendChild(err); }
@@ -1593,7 +1644,7 @@
   }
   /* SI===null means "failed" OR "not yet resolved". Refresh the guarded Today surface after
      the index settles so captures can gain matches without a reload. */
-  fetch('search-index.json').then(function(r){return r.json()}).then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); specialRefresh(); })
+  fetch('search-index.json').then(function(r){return r.json()}).then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); specialRefresh(); capRefreshNext(); })
     .catch(function(){ SI=null; VOCAB=[]; });
 
   function idf(t){ return Math.log(1 + SI.n/((SI.df[t]||1))); }
@@ -2154,23 +2205,23 @@
     return out;
   }
 
+  function fdCaptureMatch(text){
+    var results=SI?runSearch(text):[];
+    if(!results.length)return null;
+    /* Prefer a result the learner can also schedule for review; otherwise keep the top hit. */
+    var hit=results[0].d;
+    for(var q=0;q<results.length;q++){ if(topicHasQuiz(results[q].d.f)){ hit=results[q].d; break; } }
+    return {ref:hit.f,title:hit.t,hasQuiz:topicHasQuiz(hit.f)};
+  }
+  /* The capture dialog lives in the legacy shell script above while search-to-resource matching
+     lives in this Front Door closure. Expose only the normalized result, never the index itself. */
+  if(typeof window!=="undefined") window.fdCaptureMatchForQuestion=fdCaptureMatch;
+
   function fdCaptureRows(){
     var data=capRead(), rows=[];
     for(var i=0;i<data.items.length;i++){
       var item=data.items[i];
-      if(item.triaged)continue;
-      var match=null, results=SI?runSearch(item.text):[];
-      if(results.length){
-        /* Prefer the best-ranked hit the learner can actually revisit. topicHasQuiz gates the
-           "Review this topic" action (fd_due.js), and Case-of-the-Week pages are not in TOPIC_META,
-           so a case named for the same topic outranks the topic page and the affordance vanishes
-           silently -- "first-episode psychosis" displaced t_psychosis.md on 2026-09-07. Falls back
-           to the top hit when nothing reviewable matched, so a capture never loses its match. */
-        var hit=results[0].d;
-        for(var q=0;q<results.length;q++){ if(topicHasQuiz(results[q].d.f)){ hit=results[q].d; break; } }
-        match={ref:hit.f,title:hit.t,hasQuiz:topicHasQuiz(hit.f)};
-      }
-      rows.push({id:item.id,text:item.text,triaged:false,match:match});
+      rows.push({id:item.id,text:item.text,status:item.status,triaged:false,match:fdCaptureMatch(item.text)});
     }
     return rows;
   }
@@ -2238,7 +2289,7 @@
       for(var i=1;i<launchers.length;i++)launchers[i].parentNode.removeChild(launchers[i]);
       return;
     }
-    fdCaptureMount.innerHTML='<button type="button" class="fd-capture-launch fd-capture-launch--global" data-capture-open aria-haspopup="dialog" aria-expanded="false">+ Capture a question</button>';
+    fdCaptureMount.innerHTML='<button type="button" class="fd-capture-launch fd-capture-launch--global" data-capture-open aria-haspopup="dialog" aria-expanded="false"><span aria-hidden="true">＋</span> Ask a question</button>';
   }
 
   function fdProgressMarkup(state){
@@ -2544,7 +2595,7 @@
   }
 
   function fdCaptureAction(el){
-    var id=el.getAttribute('data-cap-open')||el.getAttribute('data-cap-review')||el.getAttribute('data-cap-drop');
+    var id=el.getAttribute('data-cap-open')||el.getAttribute('data-cap-review')||el.getAttribute('data-cap-supervise')||el.getAttribute('data-cap-drop');
     var ref=el.getAttribute('data-cap-ref');
     if(el.hasAttribute('data-cap-copy')){
       var payload=capClipboardText();
@@ -2552,9 +2603,10 @@
       else el.textContent='Copy unavailable';
       return;
     }
-    if(el.hasAttribute('data-cap-review')&&ref){seedSRS(ref);capMarkTriaged(id);specialRefresh();return;}
+    if(el.hasAttribute('data-cap-review')&&ref){seedSRS(ref);capSetStatus(id,'scheduled');specialRefresh();if(capSheet)capClose();return;}
+    if(el.hasAttribute('data-cap-supervise')){capSetStatus(id,'supervision');specialRefresh();if(capSheet)capClose();return;}
     if(el.hasAttribute('data-cap-drop')){capRemove(id);specialRefresh();return;}
-    if(el.hasAttribute('data-cap-open')&&ref){capMarkTriaged(id);fdOpenRef(ref);return;}
+    if(el.hasAttribute('data-cap-open')&&ref){if(capSheet)capClose();fdOpenRef(ref);return;}
   }
 
   function fdRefreshLocalCompletion(identity,kind,id){
@@ -2589,8 +2641,8 @@
       return;
     }
     el=target.closest&&target.closest('[data-capture-open]');
-    if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el);return;}
-    el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-drop],[data-cap-copy]');
+    if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el,fdCaptureAction);return;}
+    el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-supervise],[data-cap-drop],[data-cap-copy]');
     if(el){event.preventDefault();fdCaptureAction(el);return;}
     el=target.closest&&target.closest('.pt-opt');
     if(el){event.preventDefault();var qi=el.getAttribute('data-qi');ptAnswers[qi]=el.getAttribute('data-key');var siblings=contentEl.querySelectorAll('.pt-opt[data-qi="'+qi+'"]');for(var i=0;i<siblings.length;i++)siblings[i].classList.remove('sel');el.classList.add('sel');updatePtCount();return;}

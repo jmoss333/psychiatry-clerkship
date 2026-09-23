@@ -2609,10 +2609,9 @@ test('corrupt saved plan without placement opens placement and preserves progres
 });
 
 // ---- #426 / #428: every retained capture stays visible, named, deletable and announced --------
-// Opening or scheduling a question from Today marks it triaged. Before this fix that removed it
-// from every visible surface while cw_capture_v1 still held the text, and with no untriaged item
-// left the sheet also dropped Erase all -- the learner could no longer see or delete what the app
-// retained. The Capture sheet is now the management surface for the WHOLE store.
+// Legacy triaged questions and newly scheduled questions must remain inspectable and deletable.
+// The status-aware Today inbox and Capture sheet both retain them; opening a resource alone
+// does not mark a question complete. Erase all remains available for the WHOLE store.
 
 function captureErrors(page) {
   const runtimeErrors = [];
@@ -2638,10 +2637,10 @@ test('a triaged capture stays listed and deletable, each control named, 44px, an
     },
   });
   await page.goto('/');
-  // Today's triage card keeps its meaning: only the untriaged question is offered for triage.
+  // The status-aware Today inbox retains both new and previously triaged questions.
   const card = page.locator('.fd-capture', { hasText: 'Questions from the unit' });
   await expect(card).toContainText('lithium');
-  await expect(card).not.toContainText('clozapine');
+  await expect(card.locator('.fd-capture__item').filter({ hasText: 'clozapine' }).locator('.fd-capture__status')).toHaveText('Triaged');
 
   await page.locator(CAPTURE).click();
   const rows = page.locator('.cap-list li');
@@ -2692,7 +2691,7 @@ test('Erase all stays available while only triaged captures remain (#426)', asyn
     },
   });
   await page.goto('/');
-  await expect(page.locator('.fd-capture', { hasText: 'Questions from the unit' })).toHaveCount(0);
+  await expect(page.locator('.fd-capture__item').filter({ hasText: 'clozapine' }).locator('.fd-capture__status')).toHaveText('Triaged');
   await page.locator(CAPTURE).click();
   await expect(page.locator('.cap-list li[data-cap-status="triaged"]')).toHaveCount(1);
   const erase = page.locator('#capEraseAll');
@@ -2721,12 +2720,13 @@ test('Capture -> Open keeps the opened question inspectable and deletable in the
   await expect(triage).toContainText('psychosis');
   await triage.locator('[data-cap-open]').click();
   await expect(page.locator('.fd-article')).toBeVisible();
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_capture_v1')).items[0].triaged)).toBe(true);
+  // Opening a suggested resource does not claim the learner finished the question.
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_capture_v1')).items[0].triaged)).toBe(false);
 
   await page.locator(CAPTURE).click();
   const row = page.locator('.cap-list li');
   await expect(row).toHaveCount(1);
-  await expect(row).toHaveAttribute('data-cap-status', 'triaged');
+  await expect(row).toHaveAttribute('data-cap-status', 'new');
   await expect(row).toContainText('psychosis');
   await expect(page.locator('#capEraseAll')).toBeVisible();
   await row.locator('[data-cap-del]').click();
