@@ -1,5 +1,10 @@
 # Dev Container Verification Receipt and VS Code Status Implementation Plan
 
+**Completed:** Tasks 1–5 merged in #745 on 2026-09-23. The native VS Code task then passed
+on merged commit `4df9c6e` (68 browser tests passed; two deploy-only LFS tests skipped).
+Checkboxes and examples below are historical instructions, not an open work queue.
+Current onboarding is in `.devcontainer/README.md`; verification does not assert remote-main freshness.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a manual VS Code task that performs the complete Dev Container verification, records a commit-bound machine-readable attempt receipt, and shows verified, failed, or stale state in the container's VS Code status bar.
