@@ -25,6 +25,7 @@ the build script's source to assert the learner CSP, so it must remain a single
 statically-inspectable literal in that file.
 """
 
+import errno
 import glob
 import hashlib
 import json
@@ -32,6 +33,42 @@ import os
 import re
 import shutil
 import sys
+import time
+
+
+def _copytree_error_is_all_eperm(error):
+    """Return whether a shutil.Error contains only EPERM copy failures."""
+    if not error.args or not isinstance(error.args[0], (list, tuple)) or not error.args[0]:
+        return False
+    for item in error.args[0]:
+        if not isinstance(item, (list, tuple)) or len(item) < 3:
+            return False
+        detail = item[2]
+        if isinstance(detail, OSError):
+            if detail.errno != errno.EPERM:
+                return False
+        else:
+            errno_token = "[Errno %d]" % errno.EPERM
+            text = str(detail)
+            if text != errno_token and not text.startswith(errno_token + " "):
+                return False
+    return True
+
+
+def copytree_with_virtiofs_retry(source, destination, *, sleeper=time.sleep):
+    """Copy a tree, retrying once after transient virtiofs EPERM metadata errors.
+
+    Colima virtiofs can briefly expose newly created bind-mounted output entries
+    with host ownership after their bytes have already copied.  Only that
+    aggregate EPERM shape is retried; mixed and subsequent errors remain fatal.
+    """
+    try:
+        return shutil.copytree(source, destination)
+    except shutil.Error as error:
+        if not _copytree_error_is_all_eperm(error):
+            raise
+    sleeper(2)
+    return shutil.copytree(source, destination, dirs_exist_ok=True)
 
 # ---------------------------------------------------------------------------
 # Tokenizer (was duplicated: build_deploy.py + resident_section.py)

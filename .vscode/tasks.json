@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Verify Dev Container",
+      "type": "shell",
+      "command": "bash bin/verify-devcontainer.sh --refresh-deps --receipt output/devcontainer/verification-receipt.json",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true,
+        "showReuseMessage": true
+      }
+    }
+  ]
+}
