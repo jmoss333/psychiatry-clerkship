@@ -285,17 +285,72 @@ function fdOfflineStatus(input){
   if(reason==='timeout')detail='The offline check timed out. Try again when the app responds.';
   else if(reason==='unsupported')detail='This browser does not support the offline check.';
   else if(reason==='uncontrolled')detail='This page is not controlled by an offline copy yet.';
+  else if(reason==='invalid-request')detail='This route cannot be verified from the current resource list.';
+  else if(reason==='post-failed')detail='The offline check could not reach this device’s cache.';
   else if(response&&response.missing.length)detail='Some current-route resources are missing from this device cache.';
   return {kind:'not-ready',label:'Not ready',detail:detail,
     missing:response?response.missing.slice():[]};
 }
 
-function fdOfflineCard(state){
-  var status=fdOfflineStatus(state);
-  return '<section class="fd-offline is-'+status.kind+'" aria-label="Shift-ready check">'+
-    '<p class="fd-offline__status" role="status">'+status.label+'</p>'+
-    '<p>'+status.detail+'</p>'+
-    '<p>Device-only saved state is separate from this offline check.</p>'+
-    '<p>Connection required: audio, video, live services, external links, and email sending.</p>'+
-    '</section>';
+function fdOfflineEsc(value){
+  return String(value===undefined||value===null?'':value).replace(/[&<>"']/g,function(ch){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+  });
+}
+
+function fdOfflineCount(urls,pattern){
+  var count=0,list=Array.isArray(urls)?urls:[];
+  for(var i=0;i<list.length;i++)if(fdOfflineOwn(list,i)&&pattern.test(list[i]))count++;
+  return count;
+}
+
+function fdOfflineCard(state,routeLabel){
+  var status=fdOfflineStatus(state),expected=state&&Array.isArray(state.expected)?state.expected:[];
+  var response=state&&fdOfflineResponse(state.response,expected);
+  var present=response?response.present:[],missing=response?response.missing:[];
+  var reads=fdOfflineCount(present,/^\/content\//),tools=fdOfflineCount(present,/^\/tools\//);
+  var out='<div class="fd-offline__inventory">'+
+    '<p class="fd-offline__status" role="status">'+fdOfflineEsc(status.label)+'</p>'+
+    '<p class="fd-offline__detail">'+fdOfflineEsc(status.detail)+'</p>'+
+    '<p class="fd-offline__scope">Current route: '+fdOfflineEsc(routeLabel||'current learning route')+'</p>';
+  if(response){
+    out+='<p class="fd-offline__checked">Checked just now</p>'+
+      '<p>'+present.length+' verified, '+missing.length+' missing of '+expected.length+' eligible files.</p>'+
+      '<p>'+reads+' reading'+(reads===1?'':'s')+' and '+tools+' tool'+(tools===1?'':'s')+' present.</p>'+
+      '<p>Shell and navigation: '+(present.indexOf('/')>=0?'present':'missing')+'. ' +
+      'Search data: '+(present.indexOf('/search-index.json')>=0?'present':'missing')+'.</p>';
+  }else{
+    out+='<p>'+expected.length+' eligible files requested; none verified yet.</p>';
+  }
+  if(missing.length){
+    out+='<p>Missing from this route:</p><ul>';
+    for(var i=0;i<missing.length;i++)out+='<li>'+fdOfflineEsc(missing[i])+'</li>';
+    out+='</ul>';
+  }
+  return out+'<p>Reading place and captured questions are saved on this device only; this cache check does not verify them.</p>'+
+    '<p>Connection required: audio and video, live services including the Interview Room, external links, and actual email sending.</p>'+
+    '</div>';
+}
+
+function fdOfflineEntry(state,routeLabel,open){
+  var status=fdOfflineStatus(state),expanded=open===true;
+  return '<section class="fd-offline is-'+status.kind+'" data-fd-offline-entry aria-label="Shift-ready check">'+
+    '<button type="button" class="fd-offline__open" data-fd-offline-open aria-controls="fdOfflineDetails" aria-expanded="'+expanded+'">'+
+      '<span>Shift-ready check</span><strong data-fd-offline-label role="status">'+fdOfflineEsc(status.label)+'</strong></button>'+
+    '<div class="fd-offline__details" id="fdOfflineDetails"'+(expanded?'':' hidden')+'>'+
+      '<div data-fd-offline-card>'+fdOfflineCard(state,routeLabel)+'</div>'+
+      '<div class="fd-offline__actions">'+
+        '<button type="button" class="fd-offline__refresh" data-fd-offline-refresh>Refresh offline copy</button>'+
+        '<button type="button" class="fd-offline__close" data-fd-offline-close>Close details</button></div>'+
+      '<p class="fd-offline__refresh-status" data-fd-offline-refresh-status role="status"></p>'+
+    '</div></section>';
+}
+
+function fdOfflineRefreshMessage(online,verifiedOrSucceeded){
+  if(online!==true)return verifiedOrSucceeded===true
+    ?'Refresh needs a connection; your verified copy remains available.'
+    :'Refresh needs a connection. This device has no verified current copy.';
+  return verifiedOrSucceeded===true
+    ?'Update check complete. If a newer copy is available, use the existing Refresh prompt when you are ready.'
+    :'Could not check for a newer offline copy. Try again with a connection.';
 }

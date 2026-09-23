@@ -18,7 +18,8 @@ var FD_HANDLED_ATTRS=[
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section','data-fd-kit-tool',
   'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear',
   'data-fd-care-pack','data-fd-care-pack-clear',
-  'data-fd-care-pack-print'
+  'data-fd-care-pack-print',
+  'data-fd-offline-open','data-fd-offline-close','data-fd-offline-refresh'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -35,6 +36,9 @@ var FD_ACTION_SEMANTICS={
   'data-fd-care-pack':'toggle a transient patient resource pack item',
   'data-fd-care-pack-clear':'clear the transient patient resource pack',
   'data-fd-care-pack-print':'print the transient patient resource pack',
+  'data-fd-offline-open':'show verified shift readiness details',
+  'data-fd-offline-close':'close verified shift readiness details',
+  'data-fd-offline-refresh':'check for a newer offline copy',
   'data-fd-week':'select setup week',
   'data-fd-view-week':'preview path week',
   'data-fd-setweek':'adopt previewed week',
@@ -301,6 +305,17 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-close-sheet')) return fdCloseSheet(s);
   if(fdOwn(a,'data-fd-close-nudge')){
     return {patch:{nudge:null},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-offline-open')){
+    return s.screen==='app'&&s.tab==='today'&&!s.openId
+      ?{patch:{offlineOpen:true},route:null,effect:null}:{patch:{},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-offline-close')){
+    return {patch:{offlineOpen:false},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-offline-refresh')){
+    return s.screen==='app'&&s.tab==='today'&&!s.openId&&s.offlineOpen===true
+      ?{patch:{},route:null,effect:{type:'refresh-offline'}}:{patch:{},route:null,effect:null};
   }
 
   if(fdOwn(a,'data-fd-app-bridge')){
@@ -938,6 +953,7 @@ function fdTrapFocus(event, dialog){
    committed on a change event instead; see changeHandler. */
 var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],'+
   '[data-fd-care-intent],[data-fd-care-clear],[data-fd-care-pack],[data-fd-care-pack-clear],[data-fd-care-pack-print],'+
+  '[data-fd-offline-open],[data-fd-offline-close],[data-fd-offline-refresh],'+
   '[data-fd-app-bridge],[data-fd-app-shift],[data-fd-app-start],[data-fd-app-reflect],[data-fd-app-reset],'+
   '[data-fd-app-practice-open],[data-fd-app-practice-reveal],[data-fd-app-practice-classify],'+
   '[data-fd-app-practice-question],[data-fd-app-practice-reset],[data-fd-app-practice-close],'+
@@ -1135,6 +1151,7 @@ function fdWire(root, initialState, opts){
   var doc=o.document||(typeof document!=='undefined'?document:null);
   var state=fdClone(initialState||{}), invokers=[], nudgeTimer=null, navGeneration=0;
   var destroyed=false, registrations=[], startupPrepared=false, startupCommitted=false;
+  var offlineRefreshPending=false;
   var baseStale=false;
   var render=o.render||function(){};
   var renderTransient=o.renderTransient||function(next,detail){
@@ -1315,7 +1332,7 @@ function fdWire(root, initialState, opts){
     return raw||'';
   }
   function baseChanged(before, after){
-    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview','careIntentId','carePackIds'];
+    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview','careIntentId','carePackIds','offlineOpen'];
     for(var i=0;i<keys.length;i++){
       if(baseValue(before,keys[i])!==baseValue(after,keys[i])) return true;
     }
@@ -1441,6 +1458,28 @@ function fdWire(root, initialState, opts){
       fdStoreExamDate(effect.date);
     } else if(effect.type==='print-care-pack'){
       if(win&&typeof win.print==='function') try{win.print();}catch(_){}
+    } else if(effect.type==='refresh-offline'){
+      if(offlineRefreshPending)return;
+      var report=typeof o.reportOfflineRefresh==='function'?o.reportOfflineRefresh:function(){};
+      var current=typeof o.offlineStatus==='function'?o.offlineStatus():null;
+      var model=typeof fdOfflineStatus==='function'?fdOfflineStatus(current):{kind:'not-ready'};
+      var verified=model.kind==='ready'||model.kind==='update';
+      var online=typeof o.online==='function'?o.online():!!(win&&win.navigator&&win.navigator.onLine!==false);
+      if(!online){report(fdOfflineRefreshMessage(false,verified));return;}
+      offlineRefreshPending=true;
+      report('Checking for a newer offline copy…');
+      var update=typeof o.requestSWUpdate==='function'?o.requestSWUpdate:function(){return Promise.resolve(false);};
+      var updateResult;
+      try{updateResult=update();}catch(_){updateResult=Promise.resolve(false);}
+      Promise.resolve(updateResult).then(function(success){
+        offlineRefreshPending=false;
+        if(!destroyed&&state.screen==='app'&&state.tab==='today'&&state.offlineOpen)
+          report(fdOfflineRefreshMessage(true,success===true));
+      },function(){
+        offlineRefreshPending=false;
+        if(!destroyed&&state.screen==='app'&&state.tab==='today'&&state.offlineOpen)
+          report(fdOfflineRefreshMessage(true,false));
+      });
     } else if(effect.type==='nudge-timeout'&&setTimer){
       if(nudgeTimer&&clearTimer) clearTimer(nudgeTimer);
       nudgeTimer=setTimer(function(){
@@ -1606,6 +1645,7 @@ function fdWire(root, initialState, opts){
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
+    if(state.screen!=='app'||state.tab!=='today'||state.openId)state.offlineOpen=false;
     if(state.tab!=='care'||state.openId){
       state.careIntentId='';
       if(state.carePackIds&&state.carePackIds.length) state.carePackIds=[];
@@ -1675,10 +1715,11 @@ function fdWire(root, initialState, opts){
     /* A section-only filter belongs just to this Essentials visit. Other navigation patches also
        reset kitSection to All; those still carry durable route state and must be saved normally. */
     var visitOnly=fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||
-      fdOwn(patch,'careIntentId')||fdOwn(patch,'carePackIds');
+      fdOwn(patch,'careIntentId')||fdOwn(patch,'carePackIds')||fdOwn(patch,'offlineOpen')||
+      !!(result.effect&&result.effect.type==='refresh-offline');
     for(var saveKey in patch){
       if(fdOwn(patch,saveKey)&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview'&&
-         saveKey!=='careIntentId'&&saveKey!=='carePackIds') visitOnly=false;
+         saveKey!=='careIntentId'&&saveKey!=='carePackIds'&&saveKey!=='offlineOpen') visitOnly=false;
     }
     if(!visitOnly) fdSave(state);
     if(!fromHistory){
@@ -1709,6 +1750,10 @@ function fdWire(root, initialState, opts){
       var packFocus=invoker&&invoker.hasAttribute&&invoker.hasAttribute('data-fd-care-pack-clear')
         ?root.querySelector('[data-fd-care-pack]'):equivalentControl(invoker,root);
       if(packFocus&&packFocus.focus) try{packFocus.focus();}catch(_){}
+    }
+    if(fdOwn(patch,'offlineOpen')&&!afterOverlay&&!beforeHadOverlay&&root&&root.querySelector){
+      var offlineFocus=root.querySelector(state.offlineOpen?'[data-fd-offline-close]':'[data-fd-offline-open]');
+      if(offlineFocus&&offlineFocus.focus)try{offlineFocus.focus();}catch(_){}
     }
     if(before.openId&&!state.openId) restoreOrigin(before);
     if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
@@ -1963,6 +2008,7 @@ function fdWire(root, initialState, opts){
     var merged=fdClone(state), snap=event&&event.state&&event.state.fd&&event.state.state;
     merged.careIntentId='';
     merged.carePackIds=[];
+    merged.offlineOpen=false;
     merged.searchOpen=false;
     merged.query='';
     merged.sheet=null;

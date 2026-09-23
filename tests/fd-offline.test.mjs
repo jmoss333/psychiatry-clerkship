@@ -6,7 +6,7 @@ const source = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_offline.js', import.meta.url,
 ), 'utf8');
 // eslint-disable-next-line no-new-func
-const F = new Function(`${source}\nreturn {fdOfflineUrls,fdOfflineResponse,fdOfflineStatus,fdOfflineCard,fdCheckOffline,fdOfflineMonitor};`)();
+const F = new Function(`${source}\nreturn {fdOfflineUrls,fdOfflineResponse,fdOfflineStatus,fdOfflineCard,fdOfflineEntry:typeof fdOfflineEntry==='function'?fdOfflineEntry:null,fdOfflineRefreshMessage:typeof fdOfflineRefreshMessage==='function'?fdOfflineRefreshMessage:null,fdCheckOffline,fdOfflineMonitor};`)();
 const dataSource = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js', import.meta.url,
 ), 'utf8');
@@ -203,6 +203,70 @@ test('card names current cache status and connection-required exceptions', () =>
   }
   assert.match(F.fdOfflineCard({ response: complete, expected: EXPECTED, waiting: true }), /Update available/);
   assert.match(F.fdOfflineCard({ reason: 'timeout' }), /Not ready/);
+});
+
+test('detailed check counts only the active response and names every dependency', () => {
+  const checking = F.fdOfflineCard({ checking: true, expected: EXPECTED }, 'Week 2');
+  assert.match(checking, /Week 2/);
+  assert.doesNotMatch(checking, /Checked just now|>Ready</);
+  const ready = F.fdOfflineCard({ response: complete, expected: EXPECTED }, 'Week 2');
+  assert.match(ready, /Checked just now/);
+  assert.match(ready, /1 reading/);
+  assert.match(ready, /1 tool/);
+  assert.match(ready, /shell|navigation/i);
+  assert.match(ready, /search data/i);
+  assert.match(ready, /Reading place and captured questions.*device only/i);
+  for (const phrase of ['audio and video', 'Interview Room', 'external links', 'email sending']) {
+    assert.match(ready, new RegExp(phrase, 'i'));
+  }
+  const partial = F.fdOfflineCard({ response: { version: 'abc', ready: false,
+    present: ['/', '/search-index.json'], missing: ['/content/lesson.md', '/tools/practice.html'] },
+    expected: EXPECTED }, 'Week 2');
+  assert.match(partial, /2 missing/);
+  assert.match(partial, /lesson\.md/);
+  assert.match(partial, /practice\.html/);
+});
+
+test('entry offers a disclosure with controls outside the replaceable status body', () => {
+  const entry = F.fdOfflineEntry({ response: complete, expected: EXPECTED }, 'Week 2', true);
+  assert.match(entry, /data-fd-offline-open[^>]*aria-expanded="true"/);
+  assert.match(entry, /data-fd-offline-card/);
+  assert.match(entry, /data-fd-offline-refresh/);
+  assert.match(entry, /data-fd-offline-close/);
+  const body = entry.match(/<div data-fd-offline-card>([\s\S]*?)<\/div><div class="fd-offline__actions">/);
+  assert.ok(body, 'the response-only body precedes independent controls');
+  assert.doesNotMatch(body[1], /data-fd-offline-(?:refresh|close)/);
+});
+
+test('refresh copy is truthful when disconnected and when update check finishes', () => {
+  assert.equal(F.fdOfflineRefreshMessage(false, true),
+    'Refresh needs a connection; your verified copy remains available.');
+  assert.notEqual(F.fdOfflineRefreshMessage(false, false),
+    'Refresh needs a connection; your verified copy remains available.');
+  assert.match(F.fdOfflineRefreshMessage(true, true), /Update check complete/);
+  assert.match(F.fdOfflineRefreshMessage(true, false), /could not check/i);
+});
+
+test('four readiness states have visible text and distinct CSS treatments', () => {
+  const css = readFileSync(new URL(
+    '../13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css', import.meta.url,
+  ), 'utf8');
+  const inventory = readFileSync(new URL(
+    '../docs/superpowers/specs/front-door-handoff/CLASS-INVENTORY.md', import.meta.url,
+  ), 'utf8');
+  const states = [
+    [{ checking: true, expected: EXPECTED }, 'Checking', 'is-checking'],
+    [{ response: complete, expected: EXPECTED }, 'Ready', 'is-ready'],
+    [{ response: complete, expected: EXPECTED, waiting: true }, 'Update available', 'is-update'],
+    [{ reason: 'timeout', expected: EXPECTED }, 'Not ready', 'is-not-ready'],
+  ];
+  for (const [state, label, cls] of states) {
+    const entry = F.fdOfflineEntry(state, 'Week 2', false);
+    assert.match(entry, new RegExp(`class="fd-offline ${cls}"`));
+    assert.match(entry, new RegExp(`>${label}</strong>`));
+    assert.match(css, new RegExp(`\\.fd-offline\\.${cls}`));
+    assert.match(inventory, new RegExp(`\\.${cls}`));
+  }
 });
 
 function offlineHarness() {
