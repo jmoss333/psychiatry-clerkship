@@ -187,7 +187,7 @@ test('fdLastReadRow renders "You were reading" for an undone week read, escapes 
   assert.equal(F.fdLastReadRow(read, false), plain);
 
   const primary = F.fdLastReadRow(read, true);
-  assert.match(primary, /^<button type="button" class="fd-lastread is-primary" data-fd-open="a&amp;b\.md" data-fd-dock-source="primary-read" data-fd-dock-label="Open reading"><span class="fd-lastread__kicker">Pick up where you left off<\/span><span class="fd-lastread__title">You were reading: /);
+  assert.match(primary, /^<button type="button" class="fd-lastread is-primary" data-fd-open="a&amp;b\.md" data-fd-dock-source="primary-read" data-fd-dock-label="Open →"><span class="fd-lastread__kicker">Pick up where you left off<\/span><span class="fd-lastread__title">You were reading: /);
 
   assert.equal(F.fdLastReadRow(Object.assign({}, read, { kind: 'tool' }), true), '', 'a tool is not reading');
   assert.equal(F.fdLastReadRow(null, true), '');

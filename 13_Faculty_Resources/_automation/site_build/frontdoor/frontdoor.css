@@ -165,6 +165,7 @@
 .fd-settingsbtn:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
 
 .fd-tabs{max-width:1200px;margin:0 auto;padding:4px 20px 0;display:flex;gap:var(--fd-space-1)}
+.fd-dock{display:none}
 .fd-tab{
   padding:10px 16px;background:none;border:none;cursor:pointer;font:inherit;font-size:var(--fd-font-md);
   border-radius:0;font-weight:500;color:var(--fd-text-mid);border-bottom:3px solid transparent;
@@ -1112,56 +1113,37 @@
 }
 
 /* ═══ Phone chrome ═══════════════════════════════════════════════════════════
- * Measured 2026-09-16 on a 375×812 phone opening a topic page: header 154px, capture bar
- * bottom at 210px, article h1 top at 382px — nearly half the first screen was shell. The
- * two-row header above stays exactly as the 2026-08 audit pinned it on the TOP-LEVEL screens
- * (brand name visible, search label >= 44px, five 44×44 controls, no collisions). What moves
- * there is the tab row: on Today, Path and Library it docks to the bottom of the viewport as a
- * tab bar, where a thumb reaches it.
- * A READER (2026-09-18) collapses the header to ONE row instead: ψ home tile, the search field
- * grown to fill, ✚ Safety. It carries the fixed action bar, whose `‹` returns to the tab it was
- * opened from, so the tab row, the week pill and the settings gear are each one tap away and
- * leave the header; the brand name is clipped rather than removed so the home button keeps its
- * accessible name. Measured before this on ?page=suicide.md at 375×812: header 154px (three
- * rows — brand+search, week+safety+gear, tabs), title at 258px: 32% of the screen was shell
- * before the first word of the page. The 2026-09-16 cut kept the reader's tab row because
- * rotation-edition-v2.spec.js's keyboard matrix switched tabs from an open reader at 390px;
- * that matrix now presses the action bar's Back first when the tab row is hidden, which is the
- * route a learner has. Two fixed bars still cannot share the bottom edge, so the reader's tabs
- * are hidden, not docked. The reader also gives up its top-of-page back link and the tool
- * toolbar, because the action bar's `‹` is the same control.
- * Guarded on :has(.fd-actionbar), never on .fd-reader alone: the Progress page and the
- * not-found surface render a .fd-reader with NO action bar, keep the full header, and their
- * top back link is the only way back.
- * .fd-tabs stays a child of .fd-header in the markup (CLASS-INVENTORY's sticky contract); a
- * position:fixed descendant of a sticky ancestor is still viewport-fixed as long as no
- * ancestor transforms, and .fd-header has none. Overlays (search, sheets) are body-mounted
- * at z-index 90+, above the header's own stacking context, so they still cover the bar.
- * .fd-article keeps its 20px sides: 16px pushed the Welcome Compass from two tracks to three
- * at 561px (front-door.spec.js's width buckets); only the vertical padding tightens.
- * tests/fd-phone-chrome.test.mjs pins this block; tests/smoke/front-door.spec.js ("phone
- * chrome …" and "320-641px header controls …") measures the rendered result.
+ * The dock is the only fixed phone action surface. Hidden legacy controls stay in the DOM so
+ * the center slot can forward to their existing behavior; the reader's Back stays in its header.
+ * Content and keyboard scrolling reserve the same safe-area-aware dock clearance on every route.
  */
 @media (max-width:640px){
-  .fd-shell:not(:has(.fd-actionbar)) .fd-header__bar{padding-bottom:8px}
-  .fd-shell:not(:has(.fd-actionbar)) .fd-tabs{
-    position:fixed;left:0;right:0;bottom:0;z-index:50;max-width:none;margin:0;
-    padding:0 var(--fd-space-4) env(safe-area-inset-bottom);
+  html{scroll-padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  .fd-main{padding-top:8px;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  .fd-tabs,#fdCaptureMount,.fd-actionbar,.fd-actionbar__spacer{display:none}
+  .fd-header__bar{padding-bottom:8px}
+  .fd-dock{
+    position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;gap:var(--fd-space-1);
+    padding:var(--fd-space-2) var(--fd-space-1) calc(var(--fd-space-2) + env(safe-area-inset-bottom));
     background:var(--fd-surface-warm);border-top:1px solid var(--fd-line);box-shadow:var(--fd-shadow-bar);
   }
-  .fd-shell:not(:has(.fd-actionbar)) .fd-tab{flex:1;text-align:center;padding:var(--fd-space-5) var(--fd-space-4);border-bottom:none;border-top:3px solid transparent}
-  .fd-shell:not(:has(.fd-actionbar)) .fd-tab.is-active{border-top-color:var(--fd-teal)}
-  .fd-shell:not(:has(.fd-actionbar)) .fd-main{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
-  /* Let the final content scroll above the capture launcher as well as the fixed tab bar. */
-  .fd-shell:has(#fdCaptureMount:not(:empty)) .fd-main{padding-bottom:calc(var(--fd-target-touch) * 3 + var(--fd-space-6) + env(safe-area-inset-bottom))}
-  /* The nudge toast is bottom-anchored too; lift it clear of the tab bar. */
-  .fd-shell:not(:has(.fd-actionbar)) .fd-nudge{bottom:calc(74px + env(safe-area-inset-bottom))}
-  .fd-shell:has(.fd-actionbar) .fd-reader>.fd-reader__back{display:none}
-  .fd-shell:has(.fd-actionbar) .fd-reader__toolbar{display:none}
-  /* A practice tool opened from a clinical field guide inserts its only `Return to guide` control
-     into this toolbar (spa_index.html's guide-bookmark branch), and the action bar's `‹` does not
-     restore that bookmark. The toolbar therefore comes back whenever that control is in it. */
-  .fd-shell:has(.fd-actionbar) .fd-reader__toolbar:has(.fd-guide-return){display:flex}
+  .fd-dock__item{
+    min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);
+    height:60px;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
+    padding:var(--fd-space-2);border:0;border-radius:var(--fd-radius-sm);
+    background:transparent;color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-xs);
+    font-weight:700;line-height:1.15;text-align:center;overflow-wrap:anywhere;cursor:pointer;
+  }
+  .fd-dock__item[aria-current="page"]{color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
+  .fd-dock__item:disabled{opacity:.45;cursor:default}
+  .fd-dock__item--context[data-fd-dock-forward]{
+    transform:translateY(calc(-1 * var(--fd-space-3)));transition:transform .18s ease;
+    background:var(--fd-terracotta);color:var(--fd-on-accent);box-shadow:var(--fd-shadow-lift);
+  }
+  .fd-nudge{bottom:calc(80px + env(safe-area-inset-bottom))}
+  .fd-reader>.fd-reader__back{display:inline-flex}
+  .fd-reader__toolbar{display:flex}
   /* Reader: one row. The bar leaves the two-row grid, the search field takes the width the
      utilities held, and the brand name is clipped (never display:none) so the home button keeps
      its accessible name; min-width keeps the bare tile a 44px target. */
@@ -1170,8 +1152,7 @@
   .fd-shell:has(.fd-actionbar) .fd-brand__name{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
   .fd-shell:has(.fd-actionbar) .fd-searchbtn{width:auto;flex:1;max-width:none}
   .fd-shell:has(.fd-actionbar) .fd-header__actions{margin-left:0;flex:0 0 auto}
-  .fd-shell:has(.fd-actionbar) .fd-tabs,.fd-shell:has(.fd-actionbar) .fd-weekpill,.fd-shell:has(.fd-actionbar) .fd-settingsbtn{display:none}
-  .fd-main{padding-top:8px}
+  .fd-shell:has(.fd-actionbar) .fd-weekpill,.fd-shell:has(.fd-actionbar) .fd-settingsbtn{display:none}
   .fd-article{padding:var(--fd-space-6) var(--fd-space-8)}
 }
 
@@ -1584,7 +1565,7 @@
   /* System print ink/paper tokens remain legible even when the screen is in dark mode. */
   body:has(.fd-reader--guide){--fd-guide-print-ink:CanvasText;--fd-guide-print-paper:Canvas;color-scheme:light;background:var(--fd-guide-print-paper) !important;color:var(--fd-guide-print-ink) !important}
   .fd-shell:has(.fd-reader--guide),.fd-main:has(.fd-reader--guide){display:block;min-height:0;width:auto;max-width:none;padding:0;margin:0;overflow:visible;background:var(--fd-guide-print-paper) !important}
-  body:has(.fd-reader--guide) :is(.fd-header,.fd-tabs,.fd-actionbar,.fd-sheet,.fd-sheetbackdrop,.fd-search,.fd-nudge,#fdCaptureMount){display:none !important}
+  body:has(.fd-reader--guide) :is(.fd-header,.fd-tabs,.fd-dock,.fd-actionbar,.fd-sheet,.fd-sheetbackdrop,.fd-search,.fd-nudge,#fdCaptureMount){display:none !important}
   .fd-reader--guide :is(.fd-reader__back,.fd-guide-margin,.fd-railnav,.fd-article__actions,.fd-prevnext,.fd-trynow,.fd-tip,.fd-actionbar__spacer,.pgfb,.sec-toolbar,.sec-chev,.fd-guide-arrival,.fd-guide-return,.fd-guide-table-controls,.fd-guide-table-rows,.table-scroll-hint){display:none !important}
   .fd-reader--guide{font-size:var(--fd-font-base);animation:none !important;transform:none !important}
   .fd-reader--guide *{color:var(--fd-guide-print-ink) !important;background:transparent !important;box-shadow:none !important;text-shadow:none !important;overflow-wrap:anywhere}

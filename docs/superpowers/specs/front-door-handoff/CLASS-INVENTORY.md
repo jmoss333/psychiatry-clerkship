@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(398 distinct `fd-*` selector names, 23 `is-*` state classes). Every class below has a rule in that file unless
+(401 distinct `fd-*` selector names, 23 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -26,7 +26,7 @@ just looks wrong. Read the surface you are building before writing its markup.
 | Class | Element | Notes |
 |---|---|---|
 | `.fd-shell` | outermost wrapper | **Required.** Paints `--fd-bg`/`--fd-text`, sets the font stack, and scopes three descendant rules: `a` / `a:hover` colours, `*{box-sizing:border-box}`, and its `:focus-visible` outline. Non-overlay content outside `.fd-shell` loses all four. |
-| `.fd-main` | `<main>` | `max-width:1200px`, page padding. Sibling of `.fd-header`, child of `.fd-shell`. |
+| `.fd-main` | `<main>` | `max-width:1200px`, page padding. Sibling of `#fdDockMount` and `#fdChromeMount` (which contains `.fd-header`), child of `.fd-shell`. At phone widths, its bottom padding and viewport scroll padding clear the one fixed dock, including the safe area. |
 
 ⚠ **The four overlay surfaces are portalled outside `.fd-shell`** (`.fd-search`, `.fd-sheet`,
 `.fd-sheetbackdrop`, `.fd-nudge`) — they are `position:fixed` and listed *separately* in the
@@ -40,10 +40,14 @@ them and let the breakpoint decide:
 | Class | Hidden | Shown |
 |---|---|---|
 | `.fd-rail`, `.fd-railnav` | below 1000px | ≥ 1000px |
-| `.fd-actionbar`, `.fd-actionbar__spacer`, `.fd-quicktools--pills` | ≥ 1000px | below 1000px |
+| `.fd-actionbar`, `.fd-actionbar__spacer` | ≥ 1000px and ≤ 640px | 641–999px only; on phones their DOM remains available for dock forwarding |
+| `.fd-dock` | above 640px | ≤ 640px on learner app screens, except enhanced guides |
+| `#fdCaptureMount` | ≤ 640px | above 640px on learner app screens |
+| `.fd-quicktools--pills` | ≥ 1000px | below 1000px |
 | `.fd-article__actions` | below 1000px | ≥ 1000px |
 | `.fd-article .fd-tip` (Reader's keyboard hint **only** — the wizard's `.fd-tip--setup` line is a different subtree and stays visible) | below 1000px | ≥ 1000px |
-| `.fd-tabs`, `.fd-weekpill`, `.fd-settingsbtn` — on a **reader** only (`.fd-shell:has(.fd-actionbar)`; frontdoor.css "Phone chrome", 2026-09-18). The action bar's `‹` is the route to all three. `.fd-brand__name` is clipped there, never `display:none`, so the home button keeps its accessible name. | ≤ 640px | above 640px, and at every width on Today / Path / Library / Progress / not-found |
+| `.fd-tabs` | ≤ 640px on every route | above 640px; still emitted inside `.fd-header` to preserve tablet/desktop behavior |
+| `.fd-weekpill`, `.fd-settingsbtn` on a **reader** (`.fd-shell:has(.fd-actionbar)`). `.fd-brand__name` is clipped there, never `display:none`, so the home button keeps its accessible name. | ≤ 640px | above 640px, and at every width on Today / Path / Library / Progress / not-found |
 | `.fd-article__head` and an empty `.fd-article__lead` on a **tool** (`.fd-reader--tool`); `.fd-article__h1` is clipped there, never `display:none`. Not a breakpoint: a tool supplies its own `<h1>` (calibrated on every shipped tool 2026-09-19; `tool-expand.spec.js` opens each one and asserts it), so the shell's masthead yields at every width. | every width | never on a tool |
 
 The enhanced `.fd-reader--guide` is a scoped exception: its week `.fd-railnav` remains
@@ -119,8 +123,11 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
       .fd-weekpill         <button>
       .fd-safetybtn        <button>
       .fd-settingsbtn      <button>          (compact settings-panel gear)
-  .fd-tabs                 <nav>
+  .fd-tabs                 <nav>          (hidden ≤640px)
     .fd-tab                <button> ×3
+#fdDockMount               <div>          (sibling of #fdChromeMount and .fd-main)
+  .fd-dock                <nav aria-label="Learning actions"> (≤640px only)
+    .fd-dock__item        <button> ×5
 ```
 
 | Class | Notes |
@@ -134,7 +141,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 ⚠ `.fd-tabs` is a **sibling** of `.fd-header__bar` inside `.fd-header`, not a child of it.
 ⚠ Rails stick to `top:106px`, which assumes the full header (bar + tabs) is present and sticky.
 
-### Adaptive dock — markup contract (Task 1)
+### Adaptive dock — mounted phone contract
 
 ```
 .fd-dock                 <nav aria-label="Learning actions">
@@ -146,14 +153,17 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 
 | Class | Notes |
 |---|---|
-| `.fd-dock` | `<nav aria-label="Learning actions">`; dock renderer root. *(no rule — Task 1 markup only)* |
-| `.fd-dock__item` | `<button>`; four ordinary items, with the contextual button also carrying this class. *(no rule — Task 1 markup only)* |
-| `.fd-dock__item--context` | Modifier on the center `.fd-dock__item` button. A current source ID activates its marked primary control once; a missing or stale source opens Library Browse. *(no rule — Task 1 markup only)* |
+| `.fd-dock` | `<nav aria-label="Learning actions">`; fixed five-column phone grid under `#fdDockMount`. Its safe-area padding is the only phone bottom-edge action surface. Hidden above 640px. |
+| `.fd-dock__item` | `<button>`; four ordinary items and the contextual button. Every phone target has at least 44×44 CSS pixels and visible text. Height is bounded to 60px with three visible lines so a long reader title cannot exceed the 84px content clearance; the full text remains the accessible name. `[aria-current="page"]` marks the active top-level destination; `:disabled` dims an unavailable item. |
+| `.fd-dock__item--context` | Modifier on the center button. A marked primary source forwards its existing click through `data-fd-dock-forward` and is raised; absent or stale source opens Library Browse as a flat **Browse** item. The reader's marked source stays in the hidden legacy action bar solely to own its behavior; Today sources remain visible in their cards. |
 
 The renderer inserts the context button after the two leading destinations, making it the third
 of five buttons. APP changes the first two labels and routes its second item to Library; Search
-and Capture remain the final two. This entry records emitted markup and destinations only; it
-does not specify responsive visibility, geometry, or interactive styling.
+and Capture remain the final two. The shell mounts one fresh dock after each base render and
+refreshes it after completion changes and settled resource loads (including failure, only for the
+current route); `fdDockSource(contentEl)` supplies the marked action and
+the delegated controller forwards it. The dock is cleared on setup, faculty preview, enhanced
+guide, and non-app screens. Search and Capture retain their existing dialog behavior.
 
 ---
 
@@ -260,7 +270,7 @@ internal Progress. These are part of the same shipped class contract:
 | `.fd-due__kicker` | "Clear what's due" line, present only when the due row is the primary (`.fd-due.is-primary`). |
 | `.fd-freshset` | Ghost `.fd-btn` sibling of a completed-week `.fd-continue` that is primary: "Practice a fresh set →", opens the question bank. |
 | `.fd-capture-launch` | Full-width capture-dialog launcher. |
-| `.fd-capture-launch--global` | Stable learner-route launcher hook; `#fdCaptureMount` keeps it fixed above phone navigation and clear of the desktop tool dock. When mounted on a phone, `.fd-main` reserves bottom space so the final content can scroll above it. *(no rule)* |
+| `.fd-capture-launch--global` | Stable learner-route launcher hook; `#fdCaptureMount` keeps it fixed above 640px and is hidden at phone widths. The dock's Capture button opens the same dialog. |
 | `.fd-capture` | Today question inbox. Contains `.fd-capture__head`, `.fd-capture__new`, `.fd-capture__purpose`, and compact `.fd-capture__item` rows. Each row uses `.fd-capture__meta` / `__status`, `__question`, optional `__match`, and a wrapping `__actions` group of `__action` buttons; `__action--done` is the quiet trailing action. `.fd-capture__copy` retains supervised clipboard export. |
 | `.fd-progresscard` | Internal-Progress entry; contains `.fd-progresscard__title` and `.fd-progresscard__meta`. |
 | `.fd-progress-reader` | Reader modifier for the internal Progress surface. |
@@ -424,8 +434,8 @@ unit the multi-column flow keeps whole, and the wrapper that groups a heading wi
           .fd-railnav__dot                + .is-done
           .fd-railnav__title              + .is-done
           .fd-visually-hidden             (done rows only: "Completed")
-  .fd-actionbar__spacer                   (below 1000px)
-.fd-actionbar                             (below 1000px, fixed)
+  .fd-actionbar__spacer                   (641–999px)
+.fd-actionbar                             (641–999px, fixed; hidden source on phones)
   .fd-btn.fd-btn--ghost
   .fd-btn.fd-btn--primary
     <span>label</span>
@@ -437,19 +447,20 @@ unit the multi-column flow keeps whole, and the wrapper that groups a heading wi
 | `.fd-reader--tool.is-tool-expanded` | Tool-only wide workspace state. The same state is mirrored on `.fd-main`; neither class is applied to reads. |
 | `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
 | `.fd-article__body` | Base long-form markdown typography: `--fd-font-lg` (17px), 1.72 line-height, 62ch measure. Enhanced field guides use the scoped type treatment in §6a. |
-| `.fd-compass` | Six-Week Compass, build-injected into `.fd-article__body` on the six-week Welcome (`welcome_compass.py`). Children: `.fd-compass__title`, `.fd-compass__weeks` (`<ol>`, markerless card grid), `.fd-compass__week` (`<li>` card), `.fd-compass__heading` (`<h3>`), `.fd-compass__kicker` (the `Week N` span inside that heading), `.fd-compass__link` *(no rule)*. Every rule but the root is written as a two-class selector so it outranks the `.fd-article__body` element rules it sits inside. Links reserve bottom scroll margin for both the mobile action bar and the fixed capture launcher, so native Tab focus stays unobscured. |
+| `.fd-compass` | Six-Week Compass, build-injected into `.fd-article__body` on the six-week Welcome (`welcome_compass.py`). Children: `.fd-compass__title`, `.fd-compass__weeks` (`<ol>`, markerless card grid), `.fd-compass__week` (`<li>` card), `.fd-compass__heading` (`<h3>`), `.fd-compass__kicker` (the `Week N` span inside that heading), `.fd-compass__link` *(no rule)*. Every rule but the root is written as a two-class selector so it outranks the `.fd-article__body` element rules it sits inside. Links reserve bottom scroll margin for the phone dock and tablet action bar, so native Tab focus stays unobscured. |
 | `.fd-visually-hidden` | Accessible completion suffix on done rail rows; never use `aria-pressed` for navigation. |
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |
-| `.fd-article__actions` | Desktop-only primary/ghost pair. **Always emit it** (no `desk` JS branch) — `.fd-actionbar` at the bottom of this tree is the mobile equivalent; the breakpoint hides this one and shows that one, never both. |
+| `.fd-article__actions` | Desktop-only primary/ghost pair. **Always emit it** (no `desk` JS branch). At 641–999px the fixed action bar supplies the same actions. At phone widths the dock forwards to the hidden action bar's primary, while the reader header retains Back. |
 | `.fd-tip` (Reader instance) | The `←`/`→`/`1`/`2`/`3` keyboard hint. Hidden below 1000px via the descendant selector `.fd-article .fd-tip` — **do not** hide the bare `.fd-tip` class, which would also blank the wizard's `.fd-tip--setup` line (§2). |
 
 ⚠ **`.fd-actionbar .fd-btn--primary` requires its label wrapped in a bare `<span>`**
 (`.fd-actionbar .fd-btn--primary span` supplies the ellipsis). A text-only child overflows on
 narrow screens.
 
-⚠ `.fd-actionbar` is `position:fixed` — it must be a **sibling of `.fd-reader`, not inside it**, or
+⚠ `.fd-actionbar` is `position:fixed` at tablet widths — it must be a **sibling of `.fd-reader`, not inside it**, or
 the article's stacking context traps it. `.fd-actionbar__spacer` goes **inside** `.fd-reader` as the
-last child to reserve scroll room.
+last child to reserve tablet scroll room. At phone widths both are hidden, but the marked primary
+button stays in the DOM for dock forwarding; the reader's Back and tool toolbar remain visible.
 
 ⚠ `.fd-railnav__row.is-current .fd-railnav__dot` and `… .fd-railnav__title` recolour from the
 **row's** state. `.fd-railnav__dot.is-done` and `.fd-railnav__title.is-done` are separate,
