@@ -12,7 +12,7 @@ const STALE_REASONS = {
   'verification-running': 'Verification is running',
   'unknown-status': 'The recorded status is unknown',
 };
-const FAILURE_STAGES = new Set(['startup', 'dependencies', 'runtime-contract', 'full-gate', 'nonvisual-smoke', 'complete']);
+const FAILURE_STAGES = new Set(['startup', 'preflight', 'dependencies', 'runtime-contract', 'full-gate', 'nonvisual-smoke', 'complete']);
 const RUNTIME_PATTERNS = {
   node: /^v\d+\.\d+\.\d+$/,
   python: /^Python \d+\.\d+\.\d+$/,

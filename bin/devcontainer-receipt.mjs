@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 export const SCHEMA_VERSION = 1;
 export const REQUIRED_PROOF = ['runtimeContract', 'fullGate', 'nonvisualSmoke'];
 const RUNTIME_KEYS = ['node', 'python', 'bash', 'playwright'];
-const STAGES = new Set(['startup', 'dependencies', 'runtime-contract', 'full-gate', 'nonvisual-smoke', 'complete']);
+const STAGES = new Set(['startup', 'preflight', 'dependencies', 'runtime-contract', 'full-gate', 'nonvisual-smoke', 'complete']);
 const DEPLOY_PROOF = 'not-proved-without-deploy-url';
 const COMMIT_PATTERN = /^[0-9a-f]{40}$/;
 const RECEIPT_KEYS = ['schemaVersion', 'status', 'commit', 'startedAt', 'completedAt', 'stage', 'exitCode', 'runtimes', 'proof'];

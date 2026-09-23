@@ -31,6 +31,7 @@ test('status presentation maps verified, failed, and stale without ambiguous col
   assert.match(failed.tooltip, /full-gate.*2026-09-23T12:00:00Z/);
   assert.match(failed.tooltip, /Node v22.20.0 · Python 3.11.14 · GNU bash 5.2.37 · Playwright 1.63.0/);
   assert.equal(presentationFor({ state: 'failed', shortCommit: '1234567', reason: 'full-gate' }).color, 'testing.iconFailed');
+  assert.equal(presentationFor({ state: 'failed', shortCommit: '1234567', reason: 'preflight' }).color, 'testing.iconFailed');
   assert.equal(presentationFor({ state: 'stale', shortCommit: '89abcde', reason: 'commit-mismatch' }).color, 'disabledForeground');
 });
 
