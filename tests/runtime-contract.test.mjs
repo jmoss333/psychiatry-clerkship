@@ -184,9 +184,48 @@ test('container builds and installs only the repository-owned receipt status VSI
   assert.match(dockerfile, /COPY \.devcontainer\/receipt-status/);
   assert.match(dockerfile, /npm ci --ignore-scripts/);
   assert.match(dockerfile, /npx vsce package --out \/opt\/clerkship-devcontainer-receipt-status\.vsix/);
-  assert.match(bootstrap, /code --install-extension \/opt\/clerkship-devcontainer-receipt-status\.vsix --force/);
+  assert.match(bootstrap, /bash \.devcontainer\/install-local-extension\.sh/);
   assert.match(dockerignore, /!\.devcontainer\/receipt-status\//);
   assert.doesNotMatch(`${dockerfile}\n${bootstrap}`, /marketplace|https?:\/\//i);
+});
+
+test('local extension installer bypasses broken PATH shims and refuses missing or ambiguous server CLIs', () => {
+  const fixture = mkdtempSync(resolve(tmpdir(), 'local-vsix-'));
+  const serverRoot = resolve(fixture, 'server with spaces');
+  const fakeBin = resolve(fixture, 'fake-bin');
+  const trace = resolve(fixture, 'trace');
+  const installer = resolve(ROOT, '.devcontainer/install-local-extension.sh');
+  const env = { ...process.env, CLERKSHIP_DEVCONTAINER: '1', VSCODE_AGENT_FOLDER: serverRoot, TRACE: trace, PATH: `${fakeBin}:${process.env.PATH}` };
+  const run = () => spawnSync('/bin/bash', [installer], { env, encoding: 'utf8' });
+  try {
+    mkdirSync(fakeBin);
+    writeFileSync(resolve(fakeBin, 'code'), '#!/bin/sh\necho broken-shim >> "$TRACE"\nexit 127\n');
+    chmodSync(resolve(fakeBin, 'code'), 0o755);
+    let result = run();
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /No VS Code server CLI/);
+    const addServer = (id) => {
+      const bin = resolve(serverRoot, 'bin', id, 'bin');
+      mkdirSync(bin, { recursive: true });
+      writeFileSync(resolve(bin, 'code-server'), '#!/bin/sh\nprintf "%s\\n" "$@" >> "$TRACE"\n');
+      chmodSync(resolve(bin, 'code-server'), 0o755);
+    };
+    addServer('current');
+    result = run();
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(readFileSync(trace, 'utf8').trim().split('\n'), [
+      '--extensions-dir', resolve(serverRoot, 'extensions'),
+      '--install-extension', '/opt/clerkship-devcontainer-receipt-status.vsix', '--force',
+    ]);
+    const before = readFileSync(trace, 'utf8');
+    addServer('other');
+    result = run();
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Ambiguous VS Code server CLI/);
+    assert.equal(readFileSync(trace, 'utf8'), before);
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
 });
 
 test('dependency installer replaces stale venv contents only inside the Dev Container', () => {
