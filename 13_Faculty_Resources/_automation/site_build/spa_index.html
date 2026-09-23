@@ -2070,6 +2070,8 @@
 
   /*__FD_DATA__*/
 
+  /*__FD_OFFLINE__*/
+
   /*__FD_EDITION_CATALOG__*/
 
   /*__FD_EDITION_CONTRACT__*/
@@ -2745,6 +2747,27 @@
 
   var fdGuideSession=null, fdGuideBookmark=null, fdGuideReturning=false;
   var fdReadingPlaceSession=null;
+  var fdOfflineVisitStatus=null;
+  var fdOfflineWorker=null;
+  try{fdOfflineWorker=navigator.serviceWorker||null;}catch(ignoreOfflineWorker){ }
+  var fdOfflineVisit=fdOfflineMonitor({
+    serviceWorker:fdOfflineWorker,MessageChannel:window.MessageChannel,
+    facultyPreview:!!facultyPreviewRequest,
+    getWaiting:function(){var reg=clerkshipSWRegistration();return !!(reg&&reg.waiting);},
+    onChange:function(status){
+      fdOfflineVisitStatus=status;
+      /* Task 4 owns placement. A mounted card can update without rebuilding Today, losing
+         focus, or re-running the route check. */
+      var mount=contentEl&&contentEl.querySelector('[data-fd-offline-card]');
+      if(mount&&status)mount.innerHTML=fdOfflineCard(status);
+    }
+  });
+  function fdSyncOfflineVisit(state){
+    if(fdEditionBootState!=='started')return;
+    var route=fdLiveState(state);
+    route.appPathway=FD_CURRICULUM.appPathway;
+    fdOfflineVisit.sync(FD_INDEX,route);
+  }
   function fdDisposeReadingPlace(){
     if(fdReadingPlaceSession)fdReadingPlaceSession.destroy();
     fdReadingPlaceSession=null;
@@ -2775,6 +2798,7 @@
     fdRenderOverlays(state);
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
     fdUpdateCareNavigatorStatus(state);
+    fdSyncOfflineVisit(state);
   }
 
   function fdPatchCompletion(state){
@@ -2833,6 +2857,7 @@
     if(surfaces.base||surfaces.completion)fdRenderDock(state,true);
     fdRenderOverlays(state);
     fdUpdateCareNavigatorStatus(state);
+    fdSyncOfflineVisit(state);
   }
 
   function fdOpenProgress(state,opts){
@@ -3199,6 +3224,7 @@
     });
   }
   function fdEditionCleanupWiring(){
+    fdOfflineVisit.destroy();
     for(var i=fdEditionStartupTeardowns.length-1;i>=0;i--)
       try{fdEditionStartupTeardowns[i]();}catch(ignoreTeardown){ }
     fdEditionStartupTeardowns=[];
@@ -3503,6 +3529,7 @@
   fdEditionStartupStorageDirty=false;
   fdEditionStartupHistoryDirty=false;
   fdEditionBootState='started';
+  fdSyncOfflineVisit(fdController.getState());
   return {ok:true,code:'STARTED'};
   }
 
