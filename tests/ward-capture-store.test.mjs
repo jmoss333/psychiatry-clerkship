@@ -40,7 +40,7 @@ function memStorage(throwOnWrite = false) {
 
 const storeCode = slice(shell, 'var CAP_MAX=', '/* ---- end ward capture store ---- */');
 
-function makeStore({ throwOnWrite = false, currentItem = { k: 'page', f: 't_mood.md' } } = {}) {
+function makeStore({ throwOnWrite = false, currentItem = { k: 'page', f: 't_mood.md' }, storage = null } = {}) {
   // eslint-disable-next-line no-new-func
   const factory = new Function('localStorage', 'currentItem', `
     ${phi}
@@ -48,9 +48,11 @@ function makeStore({ throwOnWrite = false, currentItem = { k: 'page', f: 't_mood
     return { capRead: capRead, capWrite: capWrite, capAdd: capAdd, capRemove: capRemove,
       capMarkTriaged: capMarkTriaged, capEraseAll: capEraseAll, capRisky: capRisky,
       capSetStatus: typeof capSetStatus==='function'?capSetStatus:null,
+      capSetRoute: typeof capSetRoute==='function'?capSetRoute:null,
+      capOldestUnrouted: typeof capOldestUnrouted==='function'?capOldestUnrouted:null,
       capClipboardText: capClipboardText, capCtx: capCtx, CAP_MAX: CAP_MAX, CAP_LIMIT: CAP_LIMIT };
   `);
-  return factory(memStorage(throwOnWrite), currentItem);
+  return factory(storage || memStorage(throwOnWrite), currentItem);
 }
 
 test('T4a: text is hard-capped at 280 characters on write', () => {
@@ -71,17 +73,17 @@ test('T4b: text is re-clamped on read, so a hand-edited store cannot widen the c
   assert.equal(s.capRead().items[0].text.length, 280);
 });
 
-test('T4c: the store caps at 50 items and evicts triaged entries first', () => {
+test('T4c: the store caps at 50 items and evicts routed entries first', () => {
   const s = makeStore();
   for (let i = 0; i < 50; i += 1) s.capAdd(`question ${i}`);
-  // mark an early one triaged; it must be the first evicted, not the oldest untriaged
+  // Route an early question; it must be evicted before an older unrouted question.
   const early = s.capRead().items[3];
-  s.capMarkTriaged(early.id);
+  s.capSetRoute(early.id, 'rounds');
   s.capAdd('the fifty-first question');
   const items = s.capRead().items;
   assert.equal(items.length, 50, 'FIFO cap holds at CAP_LIMIT');
-  assert.ok(!items.some((it) => it.id === early.id), 'the triaged item was evicted first');
-  assert.ok(items.some((it) => it.text === 'question 0'), 'the oldest untriaged item survived');
+  assert.ok(!items.some((it) => it.id === early.id), 'the routed item was evicted first');
+  assert.ok(items.some((it) => it.text === 'question 0'), 'the oldest unrouted item survived');
   assert.ok(items.some((it) => it.text === 'the fifty-first question'));
 });
 
@@ -91,7 +93,7 @@ test('T4d: a corrupt or non-object store resets instead of throwing past the rea
     ls.setItem('cw_capture_v1', bad);
     // eslint-disable-next-line no-new-func
     const s = new Function('localStorage', 'currentItem', `${phi}\n${storeCode}\nreturn {capRead:capRead};`)(ls, null);
-    assert.deepEqual(s.capRead(), { v: 1, items: [] }, `reset on: ${bad}`);
+    assert.deepEqual(s.capRead(), { v: 2, items: [] }, `reset on: ${bad}`);
   }
 });
 
@@ -158,6 +160,147 @@ test('capture status rejects unknown values and preserves the current state', ()
   const id = s.capAdd('A safe question');
   assert.equal(s.capSetStatus(id, 'invented'), false);
   assert.equal(s.capRead().items[0].status, 'new');
+});
+
+test('v1 statuses migrate to v2 routes without inventing a destination', () => {
+  const ls = memStorage();
+  ls.setItem('cw_capture_v1', JSON.stringify({ v: 1, items: [
+    { id: 'a', text: 'one', status: 'new', at: 11, ctx: 't_mood.md' },
+    { id: 'b', text: 'two', status: 'supervision', at: 12, ctx: null },
+    { id: 'c', text: 'three', status: 'scheduled', at: 13, ctx: 'pg_interview.md' },
+    { id: 'd', text: 'four', status: 'triaged', at: 14, ctx: null },
+  ] }));
+  const items = makeStore({ storage: ls }).capRead().items;
+  assert.deepEqual(items.map((x) => [x.route, x.state]), [
+    [null, 'open'], ['supervision', 'open'], ['later', 'open'], [null, 'open'],
+  ]);
+  assert.deepEqual(items.map((x) => [x.id, x.text, x.at, x.ctx]), [
+    ['a', 'one', 11, 't_mood.md'], ['b', 'two', 12, null],
+    ['c', 'three', 13, 'pg_interview.md'], ['d', 'four', 14, null],
+  ]);
+  assert.equal(makeStore({ storage: ls }).capRead().v, 2);
+});
+
+test('a legacy scheduled capture leaves existing SRS bytes untouched through migration and first write', () => {
+  const ls = memStorage();
+  const srs = '{"v":1,"cards":{"t_mood.md":{"due":123,"box":2}}}';
+  ls.setItem('cw_srs_v1', srs);
+  ls.setItem('cw_capture_v1', JSON.stringify({ v: 1, items: [
+    { id: 'scheduled', text: 'Which source next?', status: 'scheduled', at: 77, ctx: 't_mood.md' },
+  ] }));
+  const legacyBytes = ls.getItem('cw_capture_v1');
+  const s = makeStore({ storage: ls });
+  assert.equal(s.capRead().items[0].route, 'later');
+  assert.equal(ls.getItem('cw_capture_v1'), legacyBytes, 'read-only migration leaves the old bytes intact');
+  assert.equal(ls.getItem('cw_srs_v1'), srs);
+  assert.equal(s.capSetRoute('scheduled', 'supervision'), true);
+  assert.equal(JSON.parse(ls.getItem('cw_capture_v1')).v, 2);
+  assert.equal(ls.getItem('cw_srs_v1'), srs);
+  assert.deepEqual(s.capRead().items.map((x) => [x.route, x.at, x.ctx]), [
+    ['supervision', 77, 't_mood.md'],
+  ]);
+});
+
+test('save writes an unrouted open v2 question before any route mutation', () => {
+  const ls = memStorage();
+  const s = makeStore({ storage: ls });
+  const id = s.capAdd('How should I organize this learning question?');
+  const raw = JSON.parse(ls.getItem('cw_capture_v1'));
+  assert.equal(raw.v, 2);
+  assert.deepEqual(raw.items.map((x) => [x.id, x.route, x.state]), [[id, null, 'open']]);
+  assert.equal(Object.hasOwn(raw.items[0], 'status'), false);
+  assert.equal(Object.hasOwn(raw.items[0], 'triaged'), false);
+  assert.equal(s.capSetRoute(id, 'rounds'), true);
+  assert.equal(s.capRead().items[0].route, 'rounds');
+});
+
+test('route changes accept only the three destinations or explicit null', () => {
+  const s = makeStore();
+  const id = s.capAdd('A safe question');
+  for (const bad of ['scheduled', 'triaged', '', 'RoundS', '__proto__', undefined, {}, ['rounds']]) {
+    assert.equal(s.capSetRoute(id, bad), false, String(bad));
+    assert.equal(s.capRead().items[0].route, null);
+  }
+  assert.equal(s.capSetRoute('missing', 'rounds'), false);
+  for (const good of ['rounds', 'supervision', 'later', null]) {
+    assert.equal(s.capSetRoute(id, good), true, String(good));
+    assert.equal(s.capRead().items[0].route, good);
+  }
+});
+
+test('malformed versions and prototype-like rows cannot become saved captures', () => {
+  const ls = memStorage();
+  const s = makeStore({ storage: ls });
+  for (const v of [0, 3, '1', '2', null]) {
+    ls.setItem('cw_capture_v1', JSON.stringify({ v, items: [{ id: 'good', text: 'question' }] }));
+    assert.deepEqual(s.capRead(), { v: 2, items: [] }, String(v));
+  }
+  ls.setItem('cw_capture_v1', JSON.stringify({ v: 2, items: [
+    { id: '__proto__', text: 'must not survive' },
+    { id: 'constructor', text: 'must not survive' },
+    { text: 'missing id' },
+    JSON.parse('{"id":"good","text":"kept","route":"rounds","state":"done","at":21,"ctx":"t_mood.md","__proto__":{"hacked":true}}'),
+    { id: 'good', text: 'duplicate id' },
+    { id: 'blank', text: '   ' },
+    { id: 'object', text: { toString: 'trap' } },
+  ] }));
+  const items = s.capRead().items;
+  assert.deepEqual(items.map((x) => [x.id, x.text, x.route, x.state, x.at, x.ctx]), [
+    ['good', 'kept', 'rounds', 'done', 21, 't_mood.md'],
+  ]);
+  assert.equal({}.hacked, undefined);
+});
+
+test('v2 read normalizes invalid routes, states, timestamps, and context without throwing', () => {
+  const ls = memStorage();
+  ls.setItem('cw_capture_v1', JSON.stringify({ v: 2, items: [
+    { id: 'a', text: 'x'.repeat(400), route: '__proto__', state: 'bogus', at: 'not a date', ctx: { ref: 't_mood.md' } },
+    { id: 'b', text: 'second', route: { toString: 'trap' }, state: {}, at: -4, ctx: 't_mood.md' },
+  ] }));
+  const items = makeStore({ storage: ls }).capRead().items;
+  assert.deepEqual(items.map((x) => [x.id, x.route, x.state, x.at, x.ctx]), [
+    ['a', null, 'open', 0, null], ['b', null, 'open', 0, 't_mood.md'],
+  ]);
+  assert.equal(items[0].text.length, 280);
+});
+
+test('oldest unrouted selection ignores routed and done captures with timestamp and id tie-breaking', () => {
+  const s = makeStore();
+  assert.equal(typeof s.capOldestUnrouted, 'function');
+  const rows = [
+    { id: 'newer', route: null, state: 'open', at: 30 },
+    { id: 'routed', route: 'later', state: 'open', at: 1 },
+    { id: 'b', route: null, state: 'open', at: 10 },
+    { id: 'done', route: null, state: 'done', at: 1 },
+    { id: 'a', route: null, state: 'open', at: 10 },
+  ];
+  assert.equal(s.capOldestUnrouted(rows).id, 'a');
+  assert.equal(s.capOldestUnrouted(rows.filter((x) => x.route || x.state === 'done')), null);
+});
+
+test('over-limit read and a new save evict the oldest routed item by timestamp then id', () => {
+  const ls = memStorage();
+  const items = Array.from({ length: 48 }, (_, i) => ({
+    id: `u${i}`, text: `unrouted ${i}`, at: i + 1, route: null, state: 'open', ctx: null,
+  }));
+  items.push(
+    { id: 'r_b', text: 'routed b', at: 5, route: 'later', state: 'open', ctx: null },
+    { id: 'r_a', text: 'routed a', at: 5, route: 'rounds', state: 'open', ctx: null },
+  );
+  ls.setItem('cw_capture_v1', JSON.stringify({ v: 2, items: [
+    ...items, { id: 'r_old', text: 'older routed', at: 2, route: 'supervision', state: 'open' },
+  ] }));
+  const s = makeStore({ storage: ls });
+  assert.equal(s.capRead().items.length, 50);
+  assert.ok(!s.capRead().items.some((x) => x.id === 'r_old'));
+  s.capAdd('fifty-first');
+  assert.ok(!s.capRead().items.some((x) => x.id === 'r_a'));
+  assert.ok(s.capRead().items.some((x) => x.id === 'r_b'));
+  s.capAdd('fifty-second');
+  assert.ok(!s.capRead().items.some((x) => x.id === 'r_b'));
+  assert.ok(s.capRead().items.some((x) => x.id === 'u0'));
+  s.capAdd('fifty-third');
+  assert.ok(!s.capRead().items.some((x) => x.id === 'u0'));
 });
 
 test('T5: the study export allow-list does not carry the capture key', () => {

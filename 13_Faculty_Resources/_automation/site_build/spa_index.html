@@ -1411,17 +1411,59 @@
      tests/ward-capture.test.mjs T3b. Scoping it here keeps the shared file untouched. */
   var CAP_WARD_LOC=/\b(?:bed|room|rm)\s*#?\s*\d+/i;
   function capRisky(t){ return looksLikePhi(t) || CAP_WARD_LOC.test(t); }
+  function capRoute(v){ return typeof v==='string'&&/^(?:rounds|supervision|later)$/.test(v)?v:null; }
+  function capState(v){ return v==='done'?'done':'open'; }
+  function capLegacyRoute(item){
+    if(item.status==='supervision')return 'supervision';
+    if(item.status==='scheduled')return 'later';
+    return null;
+  }
+  function capValidId(v){ return typeof v==='string'&&/^[A-Za-z0-9_-]{1,64}$/.test(v)
+    &&v!=='__proto__'&&v!=='constructor'&&v!=='prototype'; }
+  function capTime(v){ return typeof v==='number'&&isFinite(v)&&v>=0&&v<=8640000000000000&&Math.floor(v)===v?v:0; }
+  function capContext(v){ return typeof v==='string'&&/^[A-Za-z0-9][A-Za-z0-9_./-]{0,199}$/.test(v)
+    &&v.indexOf('..')<0?v:null; }
+  function capLegacyStatus(item){
+    if(typeof item.status==='string'&&/^(?:new|scheduled|supervision|triaged)$/.test(item.status))return item.status;
+    return item.triaged===true?'triaged':'new';
+  }
+  function capCompatStatus(route,state){
+    if(state==='done')return 'triaged';
+    if(route==='supervision')return 'supervision';
+    return route==='later'||route==='rounds'?'scheduled':'new';
+  }
+  function capOlder(a,b){ return a.at<b.at||(a.at===b.at&&a.id<b.id); }
   function capRead(){
     var d=null; try{ d=JSON.parse(localStorage.getItem('cw_capture_v1')||'null'); }catch(_){ d=null; }
-    if(!d||typeof d!=='object'||Object.prototype.toString.call(d.items)!=='[object Array]') return {v:1,items:[]};
-    var out=[]; for(var i=0;i<d.items.length;i++){ var it=d.items[i];
-      if(!it||typeof it.text!=='string')continue;
-      /* clamp on read as well as write — a hand-edited store must not widen the cap */
-      var status=/^(?:new|scheduled|supervision|triaged)$/.test(it.status)?it.status:(it.triaged?'triaged':'new');
-      out.push({id:String(it.id||''),text:it.text.slice(0,CAP_MAX),at:+it.at||0,ctx:it.ctx||null,status:status,triaged:status!=='new'}); }
-    return {v:1,items:out};
+    if(!d||typeof d!=='object'||(d.v!==1&&d.v!==2)
+       ||Object.prototype.toString.call(d.items)!=='[object Array]')return {v:2,items:[]};
+    var out=[], seen=Object.create(null);
+    for(var i=0;i<d.items.length;i++){ var it=d.items[i];
+      if(!it||typeof it!=='object'||!capValidId(it.id)||seen[it.id]
+         ||typeof it.text!=='string'||!it.text.trim())continue;
+      seen[it.id]=true;
+      var route=d.v===1?capLegacyRoute(it):capRoute(it.route);
+      var state=d.v===1?'open':capState(it.state);
+      /* These two derived fields keep legacy Capture controls working until Task 2 replaces them. */
+      var status=d.v===1?capLegacyStatus(it):capCompatStatus(route,state);
+      out.push({id:it.id,text:it.text.slice(0,CAP_MAX),at:capTime(it.at),ctx:capContext(it.ctx),
+        route:route,state:state,status:status,triaged:status!=='new'});
+      capEvict(out);
+    }
+    return {v:2,items:out};
   }
-  function capWrite(d){ try{ localStorage.setItem('cw_capture_v1',JSON.stringify(d)); return true; }catch(_){ return false; } }
+  function capWrite(d){
+    try{
+      var items=[];
+      for(var i=0;i<d.items.length;i++){
+        var it=d.items[i];
+        items.push({id:it.id,text:it.text.slice(0,CAP_MAX),at:capTime(it.at),ctx:capContext(it.ctx),
+          route:capRoute(it.route),state:capState(it.state)});
+      }
+      localStorage.setItem('cw_capture_v1',JSON.stringify({v:2,items:capEvict(items)}));
+      return true;
+    }catch(_){ return false; }
+  }
   function capEraseAll(){ try{ localStorage.removeItem('cw_capture_v1'); }catch(_){ } }
   function capCtx(){
     /* null on every Front Door special route. The learner bookmark intentionally remains the
@@ -1429,22 +1471,49 @@
     try{ if(!currentItem||currentItem.k==='special')return null; return currentItem.f||null; }catch(_){ return null; }
   }
   function capEvict(items){
-    while(items.length>CAP_LIMIT){ var idx=0;
-      for(var i=0;i<items.length;i++){ if(items[i].triaged){ idx=i; break; } }
-      items.splice(idx,1); }
+    while(items.length>CAP_LIMIT){ var idx=-1, havePriority=false;
+      for(var i=0;i<items.length;i++){
+        var priority=items[i].route!==null||items[i].state==='done';
+        if(idx<0||(priority&&!havePriority)||(priority===havePriority&&capOlder(items[i],items[idx]))){
+          idx=i; havePriority=priority;
+        }
+      }
+      items.splice(idx,1);
+    }
     return items;
+  }
+  function capOldestUnrouted(items){
+    if(Object.prototype.toString.call(items)!=='[object Array]')return null;
+    var oldest=null;
+    for(var i=0;i<items.length;i++){
+      var it=items[i];
+      if(!it||it.route!==null||it.state!=='open')continue;
+      if(!oldest||capOlder(it,oldest))oldest=it;
+    }
+    return oldest;
   }
   function capAdd(text){
     var d=capRead(), id='c_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-3);
-    d.items.push({id:id,text:String(text).slice(0,CAP_MAX),at:Date.now(),ctx:capCtx(),status:'new',triaged:false});
+    d.items.push({id:id,text:String(text).slice(0,CAP_MAX),at:Date.now(),ctx:capCtx(),route:null,state:'open'});
     capEvict(d.items);
     return capWrite(d)?id:false;
   }
   function capRemove(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items.splice(i,1); break; } } if(d.items.length) capWrite(d); else capEraseAll(); }
+  function capSetRoute(id,route){
+    if(route!==null&&capRoute(route)!==route)return false;
+    var d=capRead();
+    for(var i=0;i<d.items.length;i++){
+      if(d.items[i].id===id){ d.items[i].route=route; return capWrite(d); }
+    }
+    return false;
+  }
   function capSetStatus(id,status){
     if(!/^(?:new|scheduled|supervision|triaged)$/.test(status))return false;
     var d=capRead(), found=false;
-    for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items[i].status=status; d.items[i].triaged=status!=='new'; found=true; break; } }
+    for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){
+      d.items[i].route=status==='scheduled'?'later':(status==='supervision'?'supervision':null);
+      d.items[i].state=status==='triaged'?'done':'open'; found=true; break;
+    } }
     return found?capWrite(d):false;
   }
   function capMarkTriaged(id){ return capSetStatus(id,'triaged'); }
