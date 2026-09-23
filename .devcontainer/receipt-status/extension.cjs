@@ -38,11 +38,13 @@ function createController({ vscode, execFile, root, intervalMs = 15000 }) {
         completed = true;
         if (disposed || current !== generation) return;
         pending = undefined;
-        let status = UNAVAILABLE;
-        if (!error) {
-          try { status = JSON.parse(stdout); } catch { /* Keep the visible unavailable state. */ }
+        try {
+          render(error ? UNAVAILABLE : JSON.parse(stdout));
+        } catch {
+          // The callback runs after execFile returns: parsing and presentation
+          // need their own boundary so malformed data cannot escape to VS Code.
+          try { render(UNAVAILABLE); } catch { /* The editor may already be shutting down. */ }
         }
-        render(status);
       });
       if (!completed) pending = child;
     } catch {

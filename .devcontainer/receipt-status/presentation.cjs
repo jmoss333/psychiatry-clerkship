@@ -28,23 +28,34 @@ function unavailable() {
   };
 }
 
+function isRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
 function recordedDetails(receipt) {
-  const time = typeof receipt?.completedAt === 'string'
-    && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{3})?Z$/.test(receipt.completedAt)
-    && Number.isFinite(Date.parse(receipt.completedAt)) ? ` at ${receipt.completedAt}` : '';
+  if (receipt != null && !isRecord(receipt)) return null;
+  const { completedAt, runtimes } = receipt ?? {};
+  if (completedAt != null && (typeof completedAt !== 'string'
+    || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{3})?Z$/.test(completedAt)
+    || !Number.isFinite(Date.parse(completedAt)))) return null;
+  if (runtimes !== undefined && !isRecord(runtimes)) return null;
+  const time = completedAt ? ` at ${completedAt}` : '';
   const versions = [];
   for (const [key, prefix] of [['node', 'Node '], ['python', ''], ['bash', ''], ['playwright', 'Playwright ']]) {
-    const value = receipt?.runtimes?.[key];
-    if (typeof value === 'string' && value.length <= 120 && RUNTIME_PATTERNS[key].test(value)) versions.push(prefix + value);
+    const value = runtimes?.[key];
+    if (value === undefined) continue;
+    if (typeof value !== 'string' || value.length > 120 || !RUNTIME_PATTERNS[key].test(value)) return null;
+    versions.push(prefix + value);
   }
   return { time, complete: versions.length === 4, runtimes: versions.length ? ` Runtimes: ${versions.join(' · ')}.` : '' };
 }
 
 function presentationFor(status) {
-  if (!status || typeof status !== 'object' || Array.isArray(status)
+  if (!isRecord(status) || typeof status.state !== 'string' || typeof status.reason !== 'string'
     || typeof status.shortCommit !== 'string' || !/^(?:[0-9a-f]{7})?$/.test(status.shortCommit)) return unavailable();
   const { shortCommit, reason } = status;
   const details = recordedDetails(status.receipt);
+  if (!details) return unavailable();
   switch (status.state) {
     case 'verified':
       if (!shortCommit || reason !== 'current-clean-pass' || !details.time || !details.complete) return unavailable();

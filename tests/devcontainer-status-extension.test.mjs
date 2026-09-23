@@ -38,6 +38,12 @@ test('unknown or malformed status is gray and never displays arbitrary fields', 
     undefined, null, [], {}, 'verified', { state: 'future' }, { state: 'verified' },
     { ...verified, receipt: { ...verified.receipt, runtimes: { node: 'v22.20.0' } } },
     { ...verified, receipt: { ...verified.receipt, runtimes: { ...verified.receipt.runtimes, node: 'v22.20.0\nPRIVATE OUTPUT' } } },
+    { ...verified, state: ['verified'] },
+    { ...verified, shortCommit: { toString: null } },
+    { ...verified, state: 'failed', reason: 'full-gate', receipt: [] },
+    { ...verified, state: 'failed', reason: 'full-gate', receipt: { completedAt: { toString: null } } },
+    { ...verified, state: 'failed', reason: 'full-gate', receipt: { runtimes: [] } },
+    { ...verified, state: 'failed', reason: 'full-gate', receipt: { runtimes: { node: { toString: null } } } },
   ]) {
     assert.equal(presentationFor(value).color, 'disabledForeground');
     assert.match(presentationFor(value).tooltip, /Verification status unavailable/);
@@ -45,6 +51,14 @@ test('unknown or malformed status is gray and never displays arbitrary fields', 
   const view = presentationFor({ ...verified, receipt: { ...verified.receipt, output: 'PRIVATE OUTPUT', token: 'PRIVATE TOKEN' } });
   assert.doesNotMatch(view.tooltip, /PRIVATE/);
   assert.doesNotMatch(presentationFor({ state: 'stale', shortCommit: '', reason: 'PRIVATE OUTPUT' }).tooltip, /PRIVATE/);
+});
+
+test('presentation rejects nonstring reasons before property lookup', () => {
+  for (const reason of [{ toString: null }, ['commit-mismatch'], null, 42]) {
+    const view = presentationFor({ state: 'stale', shortCommit: '1234567', reason });
+    assert.equal(view.color, 'disabledForeground');
+    assert.match(view.tooltip, /unavailable/i);
+  }
 });
 
 test('local extension manifest activates only for this workspace and contributes one command', () => {
@@ -130,6 +144,36 @@ for (const [name, error, stdout] of [
     assert.deepEqual(f.executed, [['workbench.action.tasks.runTask', 'Verify Dev Container']]);
   });
 }
+
+test('asynchronous malformed object reason leaves visible gray without throwing', async (t) => {
+  let callback;
+  const f = editorFixture(t, (_command, _args, _options, done) => { callback = done; });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.doesNotThrow(() => callback(null, '{ "state":"stale", "shortCommit":"1234567", "reason": { "toString": null } }'));
+  assert.equal(f.item.showCalls, 1);
+  assert.equal(f.item.color.id, 'disabledForeground');
+  assert.match(f.item.text, /Dev Container/);
+  assert.match(f.item.tooltip, /unavailable/i);
+});
+
+test('asynchronous rendering exception falls back to gray without escaping the callback', async (t) => {
+  let callback;
+  const f = editorFixture(t, (_command, _args, _options, done) => { callback = done; });
+  let tooltip = f.item.tooltip;
+  Object.defineProperty(f.item, 'tooltip', {
+    get() { return tooltip; },
+    set(value) {
+      if (value.includes('verified for')) throw new Error('editor rejected the presentation');
+      tooltip = value;
+    },
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.doesNotThrow(() => callback(null, JSON.stringify(verified)));
+  assert.equal(f.item.showCalls, 1);
+  assert.equal(f.item.color.id, 'disabledForeground');
+  assert.match(f.item.text, /Dev Container/);
+  assert.match(f.item.tooltip, /unavailable/i);
+});
 
 test('receipt events, focus and the 15-second timer reevaluate status and dispose cleanly', (t) => {
   let calls = 0;
