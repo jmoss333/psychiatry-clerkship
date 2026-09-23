@@ -156,6 +156,11 @@ test('devcontainer declares no secret or host-control mounts', () => {
 });
 
 test('dependency installer replaces stale venv contents only inside the Dev Container', () => {
+  const dockerfile = readFileSync(resolve(ROOT, '.devcontainer/Dockerfile'), 'utf8');
+  const bootstrap = readFileSync(resolve(ROOT, '.devcontainer/post-create.sh'), 'utf8');
+  assert.match(dockerfile, /^ENV CLERKSHIP_DEVCONTAINER=1 \\/m);
+  assert.doesNotMatch(bootstrap, /\b(?:export\s+)?CLERKSHIP_DEVCONTAINER\s*=/);
+
   const fixture = mkdtempSync(resolve(tmpdir(), 'install-dependencies-'));
   const fakeBin = resolve(fixture, 'fake-bin');
   const installerPath = resolve(fixture, '.devcontainer/install-dependencies.sh');

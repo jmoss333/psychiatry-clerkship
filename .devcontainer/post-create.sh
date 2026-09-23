@@ -3,7 +3,6 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-export CLERKSHIP_DEVCONTAINER=1
 bash .devcontainer/install-dependencies.sh
 
 python3 13_Faculty_Resources/_automation/site_build/check_lfs_media.py --worktree-stubs . || {
