@@ -964,11 +964,20 @@ function fdInstallReadingPlace(reader,ref,state,options){
   var save=o.save||fdSave, now=o.now||Date.now;
   var timerSet=o.setTimer||setTimeout, timerClear=o.clearTimer||clearTimeout;
   var frame=o.requestAnimationFrame||(win&&win.requestAnimationFrame?function(fn){win.requestAnimationFrame(fn);}:function(fn){timerSet(fn,0);});
-  var active=true, timer=null, ready=false, suppressedY=null, resizeSeq=0, baselineY=0, pendingPosition=null, ids, i;
+  var active=true, timer=null, ready=false, suppressedY=null, resizeSeq=0, baselineY=0, pendingPosition=null, anchors, authored={}, i;
   function empty(){ }
   if(!status||!top||!nodes.length||!win||!fdReadingRef(ref))return {destroy:empty,startAtTop:empty};
-  ids=fdReadingHeadingIds(nodes.map(function(node){return node.textContent||'';}));
-  for(i=0;i<nodes.length;i++)nodes[i].id=ids[i];
+  anchors=fdReadingHeadingIds(nodes.map(function(node){return node.textContent||'';}));
+  for(i=0;i<nodes.length;i++)if(nodes[i].id)authored[nodes[i].id]=true;
+  for(i=0;i<nodes.length;i++){
+    nodes[i].setAttribute('data-fd-reading-anchor',anchors[i]);
+    /* Keep component ids (and aria-labelledby / fragment links) intact. A heading without one
+       may retain the generated DOM id unless it would collide with authored content. */
+    if(!nodes[i].id&&!authored[anchors[i]]&&
+       (!nodes[i].ownerDocument||!nodes[i].ownerDocument.getElementById(anchors[i])))nodes[i].id=anchors[i];
+  }
+  function anchor(node){return node.getAttribute('data-fd-reading-anchor');}
+  function availableAnchors(){return nodes.map(anchor);}
   function scrollY(){return typeof win.scrollY==='number'&&isFinite(win.scrollY)?Math.max(0,win.scrollY):0;}
   function absoluteTop(node){return node.getBoundingClientRect().top+scrollY();}
   function current(){
@@ -977,7 +986,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
       next=absoluteTop(nodes[j]);
       if(next<=y&&next>=pos){chosen=nodes[j];pos=next;}
     }
-    return {heading:chosen.id,offset:Math.max(0,y-pos)};
+    return {heading:anchor(chosen),offset:Math.max(0,y-pos)};
   }
   function write(places){
     state.readingPlaces=places;
@@ -1021,9 +1030,9 @@ function fdInstallReadingPlace(reader,ref,state,options){
     frame(function(){
       if(!active||sequence!==resizeSeq)return;
       var place=state.readingPlaces&&state.readingPlaces[ref];
-      var resolved=place&&fdReadingResume(place,ids), target=null, j;
+      var resolved=place&&fdReadingResume(place,availableAnchors()), target=null, j;
       if(resolved){
-        for(j=0;j<nodes.length;j++)if(nodes[j].id===resolved.heading){target=nodes[j];break;}
+        for(j=0;j<nodes.length;j++)if(anchor(nodes[j])===resolved.heading){target=nodes[j];break;}
         if(target){win.scrollTo(0,absoluteTop(target)+resolved.offset);suppressedY=scrollY();baselineY=scrollY();}
       }
       ready=true;
@@ -1057,7 +1066,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
   frame(function(){
     if(!active)return;
     state.readingPlaces=fdReadingPlaces(state.readingPlaces);
-    var place=state.readingPlaces[ref], resolved=place&&fdReadingResume(place,ids), target=null;
+    var place=state.readingPlaces[ref], resolved=place&&fdReadingResume(place,availableAnchors()), target=null;
     if(place&&!resolved){
       win.scrollTo(0,0);
       suppressedY=scrollY();
@@ -1065,7 +1074,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
       write(fdReadingPlaceDrop(state.readingPlaces,ref));
     }else{
       if(resolved){
-        for(var j=0;j<nodes.length;j++)if(nodes[j].id===resolved.heading){target=nodes[j];break;}
+        for(var j=0;j<nodes.length;j++)if(anchor(nodes[j])===resolved.heading){target=nodes[j];break;}
         win.scrollTo(0,absoluteTop(target)+resolved.offset);
         suppressedY=scrollY();
         top.hidden=false;

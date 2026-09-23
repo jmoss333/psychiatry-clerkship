@@ -128,7 +128,7 @@ Extend the existing `cw_frontdoor_v1` state through its `FD_KEYS` allowlist with
 ```json
 {
   "page-ref.md": {
-    "heading": "deterministic-heading-id",
+    "heading": "deterministic-private-heading-anchor",
     "offset": 184,
     "updatedAt": 1790160000000
   }
@@ -136,8 +136,8 @@ Extend the existing `cw_frontdoor_v1` state through its `FD_KEYS` allowlist with
 ```
 
 - Key by canonical shipped page reference, never by title or learner text.
-- Store the nearest deterministic heading id plus a clamped offset from that heading; raw viewport
-  pixels alone are too fragile across phone sizes and font settings.
+- Store the nearest deterministic private heading identity plus a clamped offset from that heading;
+  raw viewport pixels alone are too fragile across phone sizes and font settings.
 - Keep at most 50 page records, evicting the least recently updated record first.
 - Write on a debounced scroll/visibility boundary and page exit, not on every scroll event.
 - If the heading no longer exists after a content update, discard that page's place and open at
@@ -151,10 +151,11 @@ list position and has different semantics.
 
 ### Rendering and announcement
 
-The build/runtime assigns deterministic ids to rendered headings without changing authored
-markdown. Automatic saves are silent; an `aria-live` announcement on every scroll would be
-disruptive. Restoration moves focus only when initiated through Continue. Ordinary page opening
-restores scroll without stealing focus from the document heading.
+The runtime assigns deterministic private bookmark identities to rendered headings without
+replacing authored DOM ids or breaking their label and link targets. Automatic saves are silent;
+an `aria-live` announcement on every scroll would be disruptive. Restoration moves focus only when
+initiated through Continue. Ordinary page opening restores scroll without stealing focus from the
+document heading.
 
 ## Decision 3 — save first, then route captured questions
 
@@ -378,8 +379,8 @@ console.
   and storage-failure result.
 - `fd_shell` / `fd_wire`: audience-specific slot 2, one context-action source, Search/Capture
   dispatch, APP mode, and no simultaneous mobile fixed bars.
-- `fd_reader`: footer success/failure copy, deterministic heading ids, restoration timing, Start at
-  top, and no practice-answer persistence.
+- `fd_reader`: footer success/failure copy, deterministic private heading identities, authored-id
+  preservation, restoration timing, Start at top, and no practice-answer persistence.
 - capture store: v1→v2 migration, route allowlist, save-before-route, oldest-unrouted selection,
   bounds, escape behavior, and malformed-store recovery.
 - email builder: no default selection, fixed domain, single-recipient validation, encoding,

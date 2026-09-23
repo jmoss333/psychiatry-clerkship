@@ -2986,13 +2986,14 @@ function readingPlaceHarness(saved = {}, options = {}) {
     removeEventListener(type) { listeners.delete(type); },
     requestAnimationFrame(fn) { pending.set(`frame-${nextTimer++}`, fn); },
   };
-  const heights = [100, 450, 900, 1400];
-  const labels = ['A reading', 'Thought process', 'Thought process', '...'];
+  const heights = options.heights || [100, 450, 900, 1400];
+  const labels = options.labels || ['A reading', 'Thought process', 'Thought process', '...'];
   const headings = labels.map((textContent, i) => ({
-    id: '', textContent, tagName: i ? 'H2' : 'H1',
+    id: (options.authoredIds || [])[i] || '', textContent, tagName: i ? 'H2' : 'H1',
     getBoundingClientRect() { return { top: heights[i] - y }; },
     focus(opts) { this.focused = opts; },
     setAttribute(name, value) { this[name] = value; },
+    getAttribute(name) { return name === 'id' ? this.id : this[name] || null; },
   }));
   const status = { textContent: '' };
   const top = { hidden: true };
@@ -3043,6 +3044,60 @@ test('reading place assigns deterministic heading ids, saves the latest debounce
   assert.equal(h.state.readingPlaces['a.md'].offset, 100);
   session.destroy();
   assert.equal(h.listeners.size, 0);
+});
+
+test('Compass labelled section keeps its authored H2 id while private anchors drive save and restore', () => {
+  // Welcome renders <section aria-labelledby="fd-compass-title"> with this authored H2;
+  // the browser test checks the real component, while this drives the installer directly.
+  const options = {
+    labels: ['Welcome', 'Six-Week Compass', 'Week 1 Foundations & the MSE',
+      'Week 1 Foundations & the MSE', '!!!'],
+    authoredIds: ['', 'fd-compass-title', '', '', ''],
+    heights: [100, 450, 900, 1400, 1800],
+  };
+  const h = readingPlaceHarness({}, options);
+  h.install(); h.flush();
+  const section = { labelledBy: 'fd-compass-title' };
+  assert.equal(h.headings[1].id, 'fd-compass-title');
+  assert.equal(h.headings.find(node => node.id === section.labelledBy)?.textContent, 'Six-Week Compass');
+  const anchors = h.headings.map(node => node.getAttribute('data-fd-reading-anchor'));
+  assert.match(anchors[1], /^fd-reading-six-week-compass--[0-9a-f]{16}$/);
+  assert.notEqual(anchors[1], h.headings[1].id);
+  assert.equal(new Set(anchors).size, anchors.length, 'duplicate headings retain distinct bookmark identities');
+  assert.equal(h.headings[2].id, anchors[2], 'a heading without an authored id remains linkable');
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, anchors[1], 'the authored H2 saves its private identity');
+  const compassRestored = readingPlaceHarness(h.state.readingPlaces, options);
+  compassRestored.install(); compassRestored.flush();
+  assert.equal(compassRestored.scrollY, 500);
+  assert.equal(compassRestored.headings[1].id, 'fd-compass-title');
+  h.setScroll(960); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, anchors[2]);
+  h.setScroll(1460); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, anchors[3]);
+
+  const restored = readingPlaceHarness(h.state.readingPlaces, options);
+  restored.install(); restored.flush();
+  assert.equal(restored.scrollY, 1460, 'duplicate bookmark restores relative to its own heading');
+  assert.equal(restored.headings[1].id, 'fd-compass-title');
+  assert.equal(restored.headings[3].getAttribute('data-fd-reading-anchor'), anchors[3]);
+
+  const stale = readingPlaceHarness({ 'a.md': { heading: 'fd-compass-title', offset: 10, updatedAt: 1 } }, options);
+  stale.install(); stale.flush();
+  assert.equal(stale.state.readingPlaces['a.md'], undefined, 'an authored DOM id is not a bookmark identity');
+  assert.equal(stale.headings[1].id, 'fd-compass-title');
+
+  const collision = readingPlaceHarness({}, { ...options, authoredIds: ['', anchors[2], '', '', ''] });
+  collision.install(); collision.flush();
+  assert.equal(collision.headings[1].id, anchors[2], 'an authored id is never displaced by a generated one');
+  assert.equal(collision.headings[2].id, '', 'a colliding generated DOM id is omitted');
+  assert.equal(collision.headings[2].getAttribute('data-fd-reading-anchor'), anchors[2]);
+
+  const guest = readingPlaceHarness({}, { ...options, allowStorage: false });
+  guest.install(); guest.flush();
+  assert.equal(guest.headings[1].id, 'fd-compass-title', 'guest install also preserves the label target');
+  assert.equal(guest.headings[1].getAttribute('data-fd-reading-anchor'), anchors[1]);
+  assert.equal(guest.writes.length, 0);
 });
 
 test('reading place keeps its heading through responsive reflow without treating resize as learner scroll', () => {

@@ -1066,6 +1066,19 @@ for (const [number, title] of [
   });
 }
 
+test('MS3 Welcome Compass region keeps its authored accessible name after reading-place install', async ({ page }, testInfo) => {
+  test.skip(audience(testInfo).role !== 'student', 'The Compass belongs to the student Welcome');
+  await seedApp(page, testInfo);
+  await page.goto('/?page=welcome.md');
+  const compass = page.locator('section[data-fd-compass]');
+  await expect(compass).toBeVisible();
+  await expect(compass).toHaveAttribute('aria-labelledby', 'fd-compass-title');
+  await expect(compass.locator('h2#fd-compass-title')).toHaveText('Six-Week Compass');
+  await expect(page.getByRole('region', { name: 'Six-Week Compass' })).toHaveCount(1);
+  await expect(compass.locator('h2')).toHaveAttribute('data-fd-reading-anchor', /^fd-reading-six-week-compass--[0-9a-f]{16}$/);
+  await expectHealthy(page);
+});
+
 test('Welcome preserves audience scope and gives the MS3 Compass responsive keyboard and touch behavior', async ({ page, browser }, testInfo) => {
   const site = audience(testInfo);
   await seedApp(page, testInfo);

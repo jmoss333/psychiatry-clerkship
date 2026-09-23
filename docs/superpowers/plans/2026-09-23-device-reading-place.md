@@ -4,7 +4,7 @@
 
 **Goal:** Quietly remember and restore each reading's position on the current device, with one truthful status line at the bottom of the page and no inline stopping markers.
 
-**Architecture:** Add a focused pure module for sanitizing, updating, bounding, and resolving reading-place records. Persist the bounded map inside the existing `cw_frontdoor_v1` allowlisted state, while DOM wiring in the shell assigns deterministic heading ids, records a debounced heading-relative offset, and restores only after the reading has rendered.
+**Architecture:** Add a focused pure module for sanitizing, updating, bounding, and resolving reading-place records. Persist the bounded map inside the existing `cw_frontdoor_v1` allowlisted state, while DOM wiring assigns each heading a deterministic private bookmark identity without replacing authored DOM ids, records a debounced heading-relative offset, and restores only after the reading has rendered.
 
 **Tech Stack:** ES5 browser JavaScript, localStorage, DOM scroll/visibility APIs, Node `node:test`, Playwright.
 
@@ -14,7 +14,7 @@
 
 - The only success copy is `Reading place saved on this device only`, at the bottom of readings.
 - No “safe to stop” markers, save buttons, progress celebrations, or repeated live-region announcements.
-- Store page ref, deterministic heading id, clamped heading-relative offset, and update time only.
+- Store page ref, deterministic private heading identity, clamped heading-relative offset, and update time only.
 - Cap records at 50 and evict least-recently-updated first.
 - `scrollPos` continues to mean originating-list position and is not reused.
 - Never persist tool inputs, question/practice answers, APP calibration, or clinical responses.
@@ -24,7 +24,7 @@
 ## Review Focus
 
 - A heading renamed or removed by a content update must open at top and delete only that stale page record.
-- A page with duplicate or punctuation-only headings must still receive deterministic, unique ids.
+- A page with duplicate or punctuation-only headings must still receive deterministic, unique bookmark identities; authored DOM ids and their accessibility/link references remain intact.
 - A localStorage quota/security failure must change the footer to failure copy and never retain a false success state.
 - Restoring after responsive reflow must use heading plus offset, not the old absolute scroll pixel.
 - A guest deep link without learner setup may read normally but must not persist a reading place until learner storage is allowed by the existing shell mode.
@@ -121,7 +121,8 @@ shares one fingerprint and appends its occurrence and group cardinality (`--1of2
 membership edits invalidate all old bookmarks in that group. A final deterministic numeric suffix
 resolves the unlikely event of an actual fingerprint collision and guarantees unique ids within one
 generated list. The bounded shape leaves room below the record validator's 200-character limit.
-The prefix prevents collisions with authored anchors and shell ids.
+The prefix namespaces the private bookmark identity; generated DOM ids are added only to headings
+without an authored id and only when they do not collide with an existing DOM id.
 
 - [ ] **Step 4: Run the suite and verify GREEN**
 
@@ -225,8 +226,9 @@ assert.doesNotMatch(appPractice, /fd-reading-place/);
 
 - [ ] **Step 2: Add failing DOM lifecycle tests**
 
-Use a fake reader with three headings and fake scroll positions. Cover deterministic id assignment,
-debounced latest-position writes, restore after body render, stale heading drop, Start at top, page
+Use a fake reader with three headings and fake scroll positions. Cover deterministic private bookmark
+identity assignment without replacing authored DOM ids, debounced latest-position writes, restore
+after body render, stale heading drop, Start at top, page
 switch cleanup, pagehide flush, guest/faculty-preview no-write, and throwing storage. Assert a
 successful first write sets the exact approved success copy and a failed/disallowed write sets only
 the failure copy.
@@ -264,9 +266,11 @@ change.
 
 After markdown and enhancements mount:
 
-1. assign deterministic ids across the shell-rendered `.fd-article > .fd-h1` plus
-   `.fd-article__body h2,h3,h4`, so even a reading saved above its first body heading has a stable
-   top anchor;
+1. assign deterministic private bookmark identities across the shell-rendered `.fd-article > .fd-h1`
+   plus `.fd-article__body h2,h3,h4`, preserving every authored/component DOM id and its
+   `aria-labelledby` or fragment target; a heading without an authored id may also receive its
+   generated DOM id if it does not collide, so even a reading saved above its first body heading
+   has a stable top anchor;
 2. if learner storage is allowed, restore the sanitized page record with `requestAnimationFrame`
    after layout, then save the unchanged sanitized map once to establish truthful success/failure
    status; if storage is not allowed, show failure copy and install no persistence listeners;
@@ -311,8 +315,8 @@ git commit -m "feat: restore device reading place"
 
 Add controlled pages with at least three headings. Scroll into heading 2, wait for the bounded
 debounce, reload, and assert the heading-relative position is restored. Change viewport width and
-assert the same heading remains the anchor. Replace the stored heading with a missing id and assert
-top-of-page recovery plus record deletion.
+assert the same heading remains the anchor. Replace the stored heading with a missing private
+identity and assert top-of-page recovery plus record deletion.
 
 Open that page once through Today Continue and assert restored-heading focus; open it again through
 Library and search and assert the scroll restores without moving focus away from the document
