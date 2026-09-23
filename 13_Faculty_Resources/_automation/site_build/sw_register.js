@@ -64,7 +64,10 @@ function registerClerkshipSW(){
       });
       var reloaded=false;
       navigator.serviceWorker.addEventListener('controllerchange', function(){
-        if(reloaded) return; reloaded=true; location.reload();
+        /* Activation may come from this tab or another tab while a tool is open. Defer
+           reloading that session; a later event on a safe route can reload once. */
+        if(reloaded || new URLSearchParams(location.search).get('tool')) return;
+        reloaded=true; location.reload();
       });
     }).catch(function(){});
   }catch(_){ }

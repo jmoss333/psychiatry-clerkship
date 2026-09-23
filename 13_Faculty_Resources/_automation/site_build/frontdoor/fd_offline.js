@@ -77,11 +77,11 @@ function fdOfflineUrls(index,state){
     out.push(url);
     if(out.length>FD_OFFLINE_MAX)return [];
   }
-  return out;
+  return out.length>2?out:[];
 }
 
 function fdOfflineResponse(value,expected){
-  var wanted={},found={},i,url,present,missing,ready;
+  var wanted={},found={},i,url,present,missing,ready,hasRouteResource=false;
   if(!value||typeof value!=='object'||Array.isArray(value)||
      !fdOfflineOwn(value,'version')||typeof value.version!=='string'||
      !/^[A-Za-z0-9._-]{1,128}$/.test(value.version)||
@@ -94,7 +94,9 @@ function fdOfflineResponse(value,expected){
     url=expected[i];
     if(!fdOfflineUrl(url)||fdOfflineOwn(wanted,url))return null;
     wanted[url]=true;
+    if(url.indexOf('/content/')===0||url.indexOf('/tools/')===0)hasRouteResource=true;
   }
+  if(!hasRouteResource)return null;
   present=value.present;
   missing=value.missing;
   if(present.length+missing.length!==expected.length)return null;
@@ -279,7 +281,7 @@ function fdOfflineStatus(input){
     if(fdOfflineOwn(state,'waiting')&&state.waiting===true)return {kind:'update',label:'Update available',
       detail:'The current copy is ready on this device. A newer copy is available.',missing:[]};
     return {kind:'ready',label:'Ready',
-      detail:'Verified readings and tools are available from the current device cache.',missing:[]};
+      detail:'Verified current-route files are available from the current device cache.',missing:[]};
   }
   var detail='Could not verify every resource in this device’s current offline copy.';
   if(reason==='timeout')detail='The offline check timed out. Try again when the app responds.';

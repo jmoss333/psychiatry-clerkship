@@ -93,6 +93,19 @@ test('invalid or absent week and absent APP pathway are uncheckable', () => {
   assert.deepEqual(F.fdOfflineUrls(idx, { appMode: true, appPathway: { bridges: {} } }), []);
 });
 
+test('empty or ineligible week and APP routes cannot verify only shell and search', () => {
+  const empty = index([]);
+  assert.deepEqual(F.fdOfflineUrls(empty, { week: 2 }), []);
+  assert.deepEqual(F.fdOfflineUrls(empty, { appMode: true,
+    appPathway: { bridges: { pa: { refs: [] } }, activities: [] } }), []);
+  const excluded = index([item('restricted.md', 'read', { rights: true }),
+    item('../bad.md'), item('audio.mp3')]);
+  assert.deepEqual(F.fdOfflineUrls(excluded, { week: 2 }), []);
+  assert.deepEqual(F.fdOfflineUrls(excluded, { appMode: true,
+    appPathway: { bridges: { pa: { refs: ['restricted.md', '../bad.md'] } },
+      activities: [{ refs: ['audio.mp3'] }] } }), []);
+});
+
 test('unsafe, media, rights, mismatched, and unindexed refs are excluded', () => {
   const refs = [
     item('good.md'), item('rights.html', 'tool', { rights: true }),
@@ -178,6 +191,26 @@ test('response rejects omitted, unexpected, duplicate, overlap, and invalid read
   sparseExpected.length = 2;
   Object.setPrototypeOf(sparseExpected, Object.assign([], { 1: '/content/ghost.md' }));
   assert.equal(F.fdOfflineResponse(complete, sparseExpected), null);
+});
+
+test('a complete shell-only reply cannot produce route Ready', () => {
+  const shell = ['/', '/search-index.json'];
+  const reply = { version: 'abc', ready: true, present: shell, missing: [] };
+  assert.equal(F.fdOfflineResponse(reply, shell), null);
+  assert.equal(F.fdOfflineStatus({ response: reply, expected: shell }).kind, 'not-ready');
+  assert.equal(F.fdOfflineStatus({ response: reply, expected: shell, waiting: true }).kind, 'not-ready');
+});
+
+test('Ready text describes verified route files even when route has only one category', () => {
+  for (const path of ['/content/reading.md', '/tools/practice.html']) {
+    const expected = ['/', '/search-index.json', path];
+    const reply = { version: 'abc', ready: true, present: expected, missing: [] };
+    const status = F.fdOfflineStatus({ response: reply, expected });
+    assert.equal(status.kind, 'ready');
+    assert.doesNotMatch(status.detail, /readings and tools/i);
+    const card = F.fdOfflineCard({ response: reply, expected });
+    assert.match(card, path.startsWith('/content/') ? /1 reading and 0 tools present/ : /0 readings and 1 tool present/);
+  }
 });
 
 test('status treats malformed and truthy values as not ready', () => {
@@ -388,6 +421,20 @@ test('route monitor discards old week reply and requests the new APP invitation 
   await Promise.resolve();
   assert.equal(F.fdOfflineStatus(monitor.status()).kind, 'ready');
   assert.equal(states.some((value) => value.response?.version === 'old'), false);
+  monitor.destroy();
+});
+
+test('empty week and APP route monitors send no worker request and stay Not ready', () => {
+  const h = offlineHarness();
+  const idx = index([]);
+  const monitor = F.fdOfflineMonitor({ ...h });
+  monitor.sync(idx, { screen: 'app', tab: 'today', week: 2 });
+  assert.equal(h.posts.length, 0);
+  assert.equal(F.fdOfflineStatus(monitor.status()).kind, 'not-ready');
+  monitor.sync(idx, { screen: 'app', tab: 'today', appMode: true,
+    appPathway: { bridges: { pa: { refs: [] } }, activities: [] } });
+  assert.equal(h.posts.length, 0);
+  assert.equal(F.fdOfflineStatus(monitor.status()).kind, 'not-ready');
   monitor.destroy();
 });
 
