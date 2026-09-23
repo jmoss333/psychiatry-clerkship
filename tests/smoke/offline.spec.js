@@ -307,13 +307,28 @@ test('offline readiness: waiting-worker callback updates the same Today mount wh
   await observeMessages(page);
   await install(page, info);
   await openReady(page, await canonicalOfflineInventory(page, { week: 1 }));
-  await page.evaluate(() => { window.__todayVisit = 'still-mounted'; });
   const card = entry(page).locator('[data-fd-offline-card]');
   const toolPage = await context.newPage();
   await toolPage.goto('/?tool=mse.html', { waitUntil: 'domcontentloaded' });
   const frame = toolPage.locator('#content iframe.toolframe');
   await expect(frame).toBeVisible();
-  await frame.evaluate(element => { element.dataset.offlineSession = 'unchanged'; });
+  await frame.evaluate(element => {
+    window.__offlineToolFrame = element;
+    window.__offlineToolVisit = 'still-loaded';
+    element.contentWindow.__offlineToolSession = 'unchanged';
+  });
+  const before = await page.evaluate(() => {
+    const mounted = document.querySelector('[data-fd-offline-entry]');
+    window.__offlineBeforeUpdate = {
+      entry: mounted,
+      count: window.__offlineRequests.length,
+      payload: JSON.stringify(window.__offlineRequests),
+    };
+    window.__todayVisit = 'still-mounted';
+    return { connected: mounted.isConnected, count: window.__offlineRequests.length };
+  });
+  expect(before.connected).toBe(true);
+  expect(before.count).toBeGreaterThan(0);
   const todayUrl = page.url();
   const toolUrl = toolPage.url();
 
@@ -339,8 +354,25 @@ test('offline readiness: waiting-worker callback updates the same Today mount wh
   await expect(card).toContainText('The current copy is ready');
   expect(page.url()).toBe(todayUrl);
   expect(await page.evaluate(() => window.__todayVisit)).toBe('still-mounted');
+  const after = await page.evaluate(() => ({
+    sameEntry: window.__offlineBeforeUpdate.entry === document.querySelector('[data-fd-offline-entry]'),
+    originalConnected: window.__offlineBeforeUpdate.entry.isConnected,
+    requestCount: window.__offlineRequests.length,
+    requestPayload: JSON.stringify(window.__offlineRequests),
+    previousCount: window.__offlineBeforeUpdate.count,
+    previousPayload: window.__offlineBeforeUpdate.payload,
+  }));
+  expect(after.sameEntry, 'waiting callback must preserve the exact mounted Shift-ready entry').toBe(true);
+  expect(after.originalConnected).toBe(true);
+  expect(after.requestCount, 'waiting callback must not start a second verification').toBe(after.previousCount);
+  expect(after.requestPayload, 'waiting callback must not change the verification request').toBe(after.previousPayload);
   expect(toolPage.url()).toBe(toolUrl);
-  await expect(frame).toHaveAttribute('data-offline-session', 'unchanged');
+  expect(await toolPage.evaluate(() => ({
+    sameFrame: window.__offlineToolFrame === document.querySelector('#content iframe.toolframe'),
+    originalConnected: window.__offlineToolFrame.isConnected,
+    visit: window.__offlineToolVisit,
+    toolSession: window.__offlineToolFrame.contentWindow.__offlineToolSession,
+  }))).toEqual({ sameFrame: true, originalConnected: true, visit: 'still-loaded', toolSession: 'unchanged' });
   await expect(frame).toBeVisible();
   await expect(toolPage.locator('.sw-toast')).toHaveCount(0);
 });
