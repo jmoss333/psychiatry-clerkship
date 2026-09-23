@@ -373,7 +373,7 @@ function fdSearchResults(index, query, synonyms, state){
 function fdSearchResultRow(r){
   var it=r.item;
   if(r.kind==='care'){
-    return '<a class="fd-result is-care" href="'+fdEsc(it.url)+'" target="_blank" rel="noopener noreferrer">'+
+    return '<a class="fd-result is-care" data-care-resource="'+fdEsc(it.id)+'" href="'+fdEsc(it.url)+'" target="_blank" rel="noopener noreferrer">'+
       '<span class="fd-result__dot is-care"></span><span class="fd-result__title">'+fdEsc(it.title)+'</span>'+
       '<span class="fd-result__meta">'+fdEsc(r.meta)+'</span></a>';
   }

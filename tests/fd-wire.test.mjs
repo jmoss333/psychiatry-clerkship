@@ -974,6 +974,44 @@ test('live search input rerenders and Enter opens the first ordinary result dire
   assert.ok(renders.length >= 2);
 });
 
+test('Enter activates the exact first external care result without routing or forwarding the query', () => {
+  let clicked = 0;
+  let selected = '';
+  let prevented = 0;
+  const routes = [];
+  const careLink = { click() { clicked += 1; } };
+  const h = fakeHarness({ ...roleContext, searchOpen: true, query: 'housing help' }, {
+    F,
+    route: (value) => routes.push(value),
+    querySelector: (selector) => {
+      selected = selector;
+      return selector === '.fd-result.is-care[data-care-resource="resource-finder"]' ? careLink : null;
+    },
+    searchResults: () => [{
+      kind: 'care',
+      item: {
+        id: 'resource-finder',
+        url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html',
+      },
+    }],
+  });
+  const input = {
+    tagName: 'INPUT', isContentEditable: false, value: 'housing help',
+    matches: (selector) => selector === '.fd-searchpanel__input',
+  };
+
+  h.windowHandlers.keydown({
+    key: 'Enter', target: input, preventDefault() { prevented += 1; },
+  });
+
+  assert.equal(selected, '.fd-result.is-care[data-care-resource="resource-finder"]');
+  assert.equal(clicked, 1);
+  assert.equal(prevented, 1);
+  assert.deepEqual(routes, []);
+  assert.equal(h.controller.getState().query, 'housing help');
+  assert.equal(h.controller.getState().openId, undefined);
+});
+
 test('opening and closing a dialog captures, focuses, and restores the connected invoker', () => {
   let current = { ...roleContext };
   const searchInput = { focusCount: 0, focus() { this.focusCount += 1; } };

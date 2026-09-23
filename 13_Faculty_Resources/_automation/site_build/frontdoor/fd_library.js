@@ -122,7 +122,7 @@ function fdEssentialsTeaching(resources){
   var out='<section class="fd-kit__teaching" aria-label="External teaching companion"><h3>Teaching companion</h3>';
   for(var i=0;i<rows.length;i++){
     out+='<a class="fd-teachinglink" data-teaching-resource="'+fdEsc(rows[i].id)+'" href="'+fdEsc(rows[i].url)+'" target="_blank" rel="noopener noreferrer">'+
-      '<span class="fd-teachinglink__title">'+fdEsc(rows[i].title)+' <span aria-hidden="true">↗</span></span>'+
+      '<span class="fd-teachinglink__title">'+fdEsc(rows[i].title)+' <span class="fd-visually-hidden">(opens in a new tab)</span> <span aria-hidden="true">↗</span></span>'+
       '<span class="fd-teachinglink__description">'+fdEsc(rows[i].description)+'</span></a>'+
       '<p class="fd-teachinglink__note">'+fdEsc(rows[i].note)+'</p>';
   }

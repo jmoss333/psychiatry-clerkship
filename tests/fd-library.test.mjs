@@ -353,6 +353,7 @@ test('Essentials uses reading rows, open native groups, a section index rail and
   assert.doesNotMatch(html, /fd-kit__care|Patient care resources/);
   assert.match(html, /class="fd-kit__teaching"[^>]*aria-label="External teaching companion"/);
   assert.match(html, /href="https:\/\/family-therapy-seminar-companion\.netlify\.app\/"/);
+  assert.match(html, /Family Therapy Seminar Companion <span class="fd-visually-hidden">\(opens in a new tab\)<\/span>/);
   assert.match(html, /target="_blank" rel="noopener noreferrer"/);
   assert.match(html, /Family Therapy Seminar Companion/);
   assert.match(html, /Answers stay on this device\. Do not enter names or identifying details\./);

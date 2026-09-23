@@ -398,7 +398,7 @@ both group types remain native `select`/`details` controls at every width.
 | `.fd-col__name` | Column heading: uppercase terracotta with a bottom rule. |
 | `.fd-collink__dot.is-tool` | Teal dot; default is olive (a read). |
 | `.fd-collink__hint` | One line under a tool's label, from `curriculum.libraryHints` (2026-09-16). The row wraps (`flex-wrap`) and the hint takes the full width, indented past the dot. Omitted from the markup, not emptied, when an item has none — every read row renders exactly as before. |
-| `.fd-kit__teaching` | Keeps the Family Therapy Seminar Companion with teaching tools rather than patient-facing care links. Its fixed external link opens in a new tab; the note preserves its local-browser/no-identifiers boundary. |
+| `.fd-kit__teaching` | Keeps the Family Therapy Seminar Companion with teaching tools rather than patient-facing care links. Its fixed external link opens in a new tab, names that behavior with `.fd-visually-hidden` text, and preserves its local-browser/no-identifiers boundary in the note. |
 
 `.fd-col` gained its first rule on 2026-09-19 (`break-inside:avoid` + the section gap): it is the
 unit the multi-column flow keeps whole, and the wrapper that groups a heading with its links.
@@ -629,7 +629,7 @@ patient information, or an attestation, and it never turns a website action into
 | `.fd-search` | Carries the scrim **and** the centring — it is not a separate backdrop element (unlike the sheet). |
 | `.fd-searchpanel__body` | `max-height:46vh` + scroll. The scroll container. |
 | `.fd-result__dot` | Default olive (read); `.is-tool` teal; `.is-safety` danger; `.is-care` olive-deep. |
-| `.fd-result.is-care` | Static external ReConnect result rendered as an anchor. Curated search terms are matched locally; the learner's query is never added to the URL or sent to ReConnect. Explicit safety results still sort first. |
+| `.fd-result.is-care` | Static external ReConnect result rendered as an anchor. `data-care-resource` pairs the visible first result with the controller's Enter shortcut, so keyboard activation clicks that exact fixed anchor. Curated search terms are matched locally; the learner's query is never added to the URL or sent to ReConnect. Explicit safety results still sort first. |
 
 ⚠ The search overlay uses **one** element for scrim + layout. The sheet uses **two**
 (`.fd-sheetbackdrop` + `.fd-sheet`). Do not mirror one pattern onto the other.

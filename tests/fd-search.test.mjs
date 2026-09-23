@@ -89,6 +89,7 @@ test('care-intent searches surface the matching ReConnect resource without forwa
 
   const html = F.fdSearchOverlay(REAL_INDEX, 'housing help', SYN, {});
   const row = html.match(/<a class="fd-result is-care"[^>]*>[\s\S]*?<\/a>/)?.[0] || '';
+  assert.match(row, /data-care-resource="resource-finder"/);
   assert.match(row, /href="https:\/\/reconnect-tools\.netlify\.app\/tools\/reconnect-resource-finder-v7\.html"/);
   assert.match(row, /target="_blank" rel="noopener noreferrer"/);
   assert.doesNotMatch(row, /housing|\?/i,
