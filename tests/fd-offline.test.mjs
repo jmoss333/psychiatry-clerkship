@@ -6,7 +6,7 @@ const source = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_offline.js', import.meta.url,
 ), 'utf8');
 // eslint-disable-next-line no-new-func
-const F = new Function(`${source}\nreturn {fdOfflineUrls,fdOfflineResponse,fdOfflineStatus,fdOfflineCard};`)();
+const F = new Function(`${source}\nreturn {fdOfflineUrls,fdOfflineResponse,fdOfflineStatus,fdOfflineCard,fdCheckOffline,fdOfflineMonitor};`)();
 const dataSource = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js', import.meta.url,
 ), 'utf8');
@@ -203,4 +203,138 @@ test('card names current cache status and connection-required exceptions', () =>
   }
   assert.match(F.fdOfflineCard({ response: complete, expected: EXPECTED, waiting: true }), /Update available/);
   assert.match(F.fdOfflineCard({ reason: 'timeout' }), /Not ready/);
+});
+
+function offlineHarness() {
+  const posts = [];
+  const timers = new Map();
+  const channels = [];
+  const listeners = new Map();
+  let nextTimer = 0;
+  const serviceWorker = {
+    controller: { postMessage(value, transfer) { posts.push({ value, transfer }); } },
+    addEventListener(type, handler) { listeners.set(type, handler); },
+    removeEventListener(type, handler) { if (listeners.get(type) === handler) listeners.delete(type); },
+  };
+  function MessageChannel() {
+    const makePort = () => ({ closed: false, onmessage: null, close() { this.closed = true; } });
+    this.port1 = makePort();
+    this.port2 = makePort();
+    channels.push(this);
+  }
+  return {
+    posts, timers, channels, listeners, serviceWorker, MessageChannel,
+    setTimer(fn, ms) { const id = ++nextTimer; timers.set(id, { fn, ms }); return id; },
+    clearTimer(id) { timers.delete(id); },
+  };
+}
+
+test('check sends one exact URL message and accepts only a normalized complete reply', async () => {
+  const h = offlineHarness();
+  const urls = ['/', '/content/lesson.md'];
+  const pending = F.fdCheckOffline(urls, { ...h, controller: h.serviceWorker.controller });
+  assert.equal(h.posts.length, 1);
+  assert.deepEqual(h.posts[0].value, { type: 'CW_OFFLINE_VERIFY', urls });
+  assert.equal(h.posts[0].transfer[0], h.channels[0].port2);
+  assert.equal([...h.timers.values()][0].ms, 1500);
+  h.channels[0].port1.onmessage({ data: { version: 'abc', ready: true, present: urls, missing: [] } });
+  assert.deepEqual(await pending, { version: 'abc', ready: true, present: urls, missing: [] });
+  assert.equal(h.timers.size, 0);
+  assert.equal(h.channels[0].port1.closed, true);
+  assert.equal(h.channels[0].port2.closed, true);
+});
+
+test('timeout settles once, closes ports, and ignores late worker replies', async () => {
+  const h = offlineHarness();
+  const pending = F.fdCheckOffline(['/'], { ...h, controller: h.serviceWorker.controller });
+  const late = h.channels[0].port1.onmessage;
+  [...h.timers.values()][0].fn();
+  assert.deepEqual(await pending, { reason: 'timeout' });
+  late({ data: { version: 'abc', ready: true, present: ['/'], missing: [] } });
+  assert.equal(h.timers.size, 0);
+  assert.equal(h.channels[0].port1.closed, true);
+});
+
+test('unsupported, uncontrolled, malformed, post failure, and controller change fail closed', async () => {
+  const h = offlineHarness();
+  assert.deepEqual(await F.fdCheckOffline(['/'], { ...h, controller: null }), { reason: 'uncontrolled' });
+  assert.deepEqual(await F.fdCheckOffline(['/'], { ...h, controller: h.serviceWorker.controller,
+    MessageChannel: null }), { reason: 'unsupported' });
+  const malformed = F.fdCheckOffline(['/'], { ...h, controller: h.serviceWorker.controller });
+  h.channels.at(-1).port1.onmessage({ data: { version: 'abc', ready: true, present: [], missing: [] } });
+  assert.deepEqual(await malformed, { reason: 'malformed' });
+  const changed = F.fdCheckOffline(['/'], { ...h, controller: h.serviceWorker.controller });
+  h.serviceWorker.controller = { postMessage() {} };
+  h.listeners.get('controllerchange')();
+  assert.deepEqual(await changed, { reason: 'uncontrolled' });
+  assert.equal(h.listeners.size, 0);
+  assert.deepEqual(await F.fdCheckOffline(['/'], { ...h,
+    controller: { postMessage() { throw new Error('blocked'); } } }), { reason: 'post-failed' });
+});
+
+test('a sparse URL request never reaches the worker', async () => {
+  const h = offlineHarness();
+  const urls = ['/'];
+  urls.length = 2;
+  assert.deepEqual(await F.fdCheckOffline(urls, { ...h,
+    controller: h.serviceWorker.controller }), { reason: 'invalid-request' });
+  assert.equal(h.posts.length, 0);
+});
+
+test('a reply from an old controller fails closed even before controllerchange fires', async () => {
+  const h = offlineHarness();
+  const oldController = h.serviceWorker.controller;
+  const pending = F.fdCheckOffline(['/'], { ...h, controller: oldController });
+  h.serviceWorker.controller = { postMessage() {} };
+  h.channels[0].port1.onmessage({ data: { version: 'old', ready: true,
+    present: ['/'], missing: [] } });
+  assert.deepEqual(await pending, { reason: 'uncontrolled' });
+});
+
+test('route monitor discards old week reply and requests the new APP invitation scope', async () => {
+  const h = offlineHarness();
+  const states = [];
+  const idx = index([item('week.md'), item('pa.md')]);
+  const appPathway = { bridges: { pa: { refs: ['pa.md'] } }, activities: [] };
+  const monitor = F.fdOfflineMonitor({ ...h, onChange: (value) => states.push(value) });
+  monitor.sync(idx, { screen: 'app', tab: 'today', week: 2, appMode: false });
+  const oldReply = h.channels[0].port1.onmessage;
+  monitor.sync(idx, { screen: 'app', tab: 'today', appMode: true, appPathway });
+  assert.equal(h.posts.length, 2);
+  assert.deepEqual(h.posts[1].value.urls, ['/', '/search-index.json', '/content/pa.md']);
+  oldReply({ data: { version: 'old', ready: true, present: h.posts[0].value.urls, missing: [] } });
+  assert.equal(monitor.status().checking, true);
+  h.channels[1].port1.onmessage({ data: { version: 'new', ready: true,
+    present: h.posts[1].value.urls, missing: [] } });
+  await Promise.resolve();
+  assert.equal(F.fdOfflineStatus(monitor.status()).kind, 'ready');
+  assert.equal(states.some((value) => value.response?.version === 'old'), false);
+  monitor.destroy();
+});
+
+test('monitor skips faculty preview and non-Today routes, and invalidates on teardown', async () => {
+  const h = offlineHarness();
+  const monitor = F.fdOfflineMonitor({ ...h, facultyPreview: true });
+  monitor.sync(index(route), { screen: 'app', tab: 'today', week: 2 });
+  assert.equal(h.posts.length, 0);
+  assert.equal(monitor.status(), null);
+  monitor.destroy();
+  const live = F.fdOfflineMonitor({ ...h });
+  live.sync(index(route), { screen: 'app', tab: 'today', week: 2 });
+  live.sync(index(route), { screen: 'app', tab: 'library', week: 2 });
+  assert.equal(live.status(), null);
+  assert.equal(h.channels.at(-1).port1.closed, true);
+  live.destroy();
+  assert.equal(h.listeners.size, 0);
+});
+
+test('changing learner role rechecks the active cache even when week URLs coincide', () => {
+  const h = offlineHarness();
+  const monitor = F.fdOfflineMonitor({ ...h });
+  const idx = index(route);
+  monitor.sync(idx, { screen: 'app', tab: 'today', roleId: 'ms3', week: 2 });
+  monitor.sync(idx, { screen: 'app', tab: 'today', roleId: 'resident', week: 2 });
+  assert.equal(h.posts.length, 2);
+  assert.equal(h.channels[0].port1.closed, true);
+  monitor.destroy();
 });

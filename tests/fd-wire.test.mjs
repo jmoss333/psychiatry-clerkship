@@ -16,6 +16,7 @@ const shell = read('frontdoor/fd_shell.js');
 const practice = read('frontdoor/fd_app_practice.js');
 const path = read('frontdoor/fd_path.js');
 const wire = read('frontdoor/fd_wire.js');
+const offline = read('frontdoor/fd_offline.js');
 const spa = read('spa_index.html');
 const CUR = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 
@@ -52,6 +53,49 @@ function memStorage(seed = {}) {
 }
 
 const F = make(memStorage());
+// eslint-disable-next-line no-new-func
+const Offline = new Function(`${offline}\nreturn { fdOfflineMonitor };`)();
+
+test('live route transitions invalidate a pending offline check before the old reply arrives', async () => {
+  const posts = [];
+  const channels = [];
+  const timers = new Map();
+  let timerId = 0;
+  function MessageChannel() {
+    this.port1 = { onmessage: null, close() {} };
+    this.port2 = { close() {} };
+    channels.push(this);
+  }
+  const worker = { postMessage(value) { posts.push(value); } };
+  const serviceWorker = { controller: worker, addEventListener() {}, removeEventListener() {} };
+  const idx = {
+    weeks: [{ n: 2, items: [{ ref: 'two.md' }] }, { n: 3, items: [{ ref: 'three.md' }] }],
+    byRef: { 'two.md': { ref: 'two.md', kind: 'read' },
+      'three.md': { ref: 'three.md', kind: 'read' } },
+  };
+  const monitor = Offline.fdOfflineMonitor({ serviceWorker, MessageChannel,
+    setTimer(fn) { const id = ++timerId; timers.set(id, fn); return id; },
+    clearTimer(id) { timers.delete(id); } });
+  const sync = (state) => monitor.sync(idx, { ...state, appMode: false });
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F, index: idx, render: sync, renderTransient: sync,
+  });
+  sync(h.controller.getState());
+  const oldReply = channels[0].port1.onmessage;
+  h.controller.dispatch({ 'data-fd-setweek': '3' });
+  assert.deepEqual(posts[0].urls, ['/', '/search-index.json', '/content/two.md']);
+  assert.deepEqual(posts[1].urls, ['/', '/search-index.json', '/content/three.md']);
+  oldReply({ data: { version: 'old', ready: true, present: posts[0].urls, missing: [] } });
+  assert.equal(monitor.status().checking, true);
+  channels[1].port1.onmessage({ data: { version: 'new', ready: true,
+    present: posts[1].urls, missing: [] } });
+  await Promise.resolve();
+  assert.equal(monitor.status().response.version, 'new');
+  h.controller.dispatch({ 'data-fd-tab': 'library' });
+  assert.equal(monitor.status(), null);
+  monitor.destroy();
+  h.controller.destroy();
+});
 
 test('dock forwards once to the current connected source and rejects a stale id', () => {
   let clicks = 0;

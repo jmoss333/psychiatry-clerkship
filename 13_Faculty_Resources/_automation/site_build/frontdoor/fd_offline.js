@@ -114,6 +114,145 @@ function fdOfflineResponse(value,expected){
   return {version:value.version,ready:ready,present:present.slice(),missing:missing.slice()};
 }
 
+/* A single bounded exchange with the active worker. The worker's response is untrusted until
+   the exact requested set is accounted for by fdOfflineResponse. */
+function fdCheckOffline(urls,options){
+  var o=options||{},worker=o.controller,ServiceChannel=fdOfflineOwn(o,'MessageChannel')
+    ?o.MessageChannel:(typeof MessageChannel==='function'?MessageChannel:null);
+  var sw=o.serviceWorker||null,signal=o.signal||null;
+  var seen={},i,url;
+  var setTimer=o.setTimer||(typeof setTimeout==='function'?setTimeout:null);
+  var clearTimer=o.clearTimer||(typeof clearTimeout==='function'?clearTimeout:null);
+  var timeout=typeof o.timeoutMs==='number'&&isFinite(o.timeoutMs)&&o.timeoutMs>0
+    ?o.timeoutMs:1500;
+  if(!Array.isArray(urls)||urls.length<1||urls.length>FD_OFFLINE_MAX)
+    return Promise.resolve({reason:'invalid-request'});
+  for(i=0;i<urls.length;i++){
+    if(!fdOfflineOwn(urls,i))return Promise.resolve({reason:'invalid-request'});
+    url=urls[i];
+    if(!fdOfflineUrl(url)||fdOfflineOwn(seen,url))
+      return Promise.resolve({reason:'invalid-request'});
+    seen[url]=true;
+  }
+  if(!worker||typeof worker.postMessage!=='function')return Promise.resolve({reason:'uncontrolled'});
+  if(typeof ServiceChannel!=='function'||typeof setTimer!=='function'||typeof clearTimer!=='function')
+    return Promise.resolve({reason:'unsupported'});
+  return new Promise(function(resolve){
+    var channel=null,timer=null,settled=false;
+    function finish(value){
+      if(settled)return;
+      settled=true;
+      if(timer!==null)try{clearTimer(timer);}catch(_){}
+      if(channel){
+        if(channel.port1){channel.port1.onmessage=null;channel.port1.onmessageerror=null;
+          try{channel.port1.close();}catch(_){} }
+        if(channel.port2)try{channel.port2.close();}catch(_){}
+      }
+      if(sw&&sw.removeEventListener)try{sw.removeEventListener('controllerchange',changed);}catch(_){}
+      if(signal&&signal.removeEventListener)try{signal.removeEventListener('abort',aborted);}catch(_){}
+      resolve(value);
+    }
+    function changed(){if(sw.controller!==worker)finish({reason:'uncontrolled'});}
+    function aborted(){finish({reason:'cancelled'});}
+    try{
+      if(signal&&signal.aborted){finish({reason:'cancelled'});return;}
+      channel=new ServiceChannel();
+      if(!channel.port1||!channel.port2)throw new Error('MessageChannel unavailable');
+      channel.port1.onmessage=function(event){
+        if(sw&&sw.controller!==worker){finish({reason:'uncontrolled'});return;}
+        var normalized=fdOfflineResponse(event&&event.data,urls);
+        finish(normalized||{reason:'malformed'});
+      };
+      channel.port1.onmessageerror=function(){finish({reason:'malformed'});};
+      if(channel.port1.start)channel.port1.start();
+      if(sw&&sw.addEventListener)sw.addEventListener('controllerchange',changed);
+      if(signal&&signal.addEventListener)signal.addEventListener('abort',aborted);
+      timer=setTimer(function(){finish({reason:'timeout'});},timeout);
+      worker.postMessage({type:'CW_OFFLINE_VERIFY',urls:urls.slice()},[channel.port2]);
+    }catch(_){finish({reason:'post-failed'});}
+  });
+}
+
+/* One visit-only route scope. Changing week, APP invitation, controller, or leaving Today
+   invalidates the previous response before a late promise can paint it. */
+function fdOfflineMonitor(options){
+  var o=options||{},sw=o.serviceWorker||null,active=true,generation=0;
+  var currentKey='',currentController=null,currentIndex=null,currentRoute=null;
+  var currentStatus=null,cancel=null;
+  function notify(){if(typeof o.onChange==='function')try{o.onChange(currentStatus);}catch(_){} }
+  function waiting(){try{return typeof o.getWaiting==='function'&&o.getWaiting()===true;}catch(_){return false;} }
+  function stop(){
+    generation++;
+    if(cancel){cancel();cancel=null;}
+  }
+  function sync(index,route,force){
+    if(!active)return null;
+    currentIndex=index;currentRoute=route;
+    var eligible=o.facultyPreview!==true&&route&&route.screen==='app'&&
+      route.tab==='today'&&!route.openId;
+    if(!eligible){
+      if(currentKey||currentStatus){stop();currentKey='';currentController=null;currentStatus=null;notify();}
+      return null;
+    }
+    var urls=fdOfflineUrls(index,route);
+    if(!urls.length){
+      stop();currentKey='';currentController=null;
+      currentStatus={reason:'invalid-request',expected:[],waiting:false};notify();
+      return currentStatus;
+    }
+    var controller=sw&&sw.controller||null;
+    var key=String(route.roleId||route.role||'')+'|'+
+      (route.appMode===true?'app:'+String(route.appBridge||'pa'):'week:'+String(route.week))+
+      '|'+urls.join('|');
+    var hasWaiting=waiting();
+    if(force!==true&&currentKey===key&&currentController===controller){
+      if(currentStatus&&currentStatus.waiting!==hasWaiting){
+        currentStatus.waiting=hasWaiting;notify();
+      }
+      return currentStatus;
+    }
+    stop();
+    currentKey=key;currentController=controller;
+    var thisGeneration=generation;
+    currentStatus={checking:true,expected:urls,waiting:hasWaiting};notify();
+    var listeners=[],signal={aborted:false,
+      addEventListener:function(type,handler){if(type==='abort')listeners.push(handler);},
+      removeEventListener:function(type,handler){if(type==='abort'){
+        var i=listeners.indexOf(handler);if(i>=0)listeners.splice(i,1);
+      }}
+    };
+    cancel=function(){
+      signal.aborted=true;
+      listeners.slice().forEach(function(handler){handler();});
+      listeners=[];
+    };
+    fdCheckOffline(urls,{
+      controller:controller,serviceWorker:sw,signal:signal,
+      MessageChannel:o.MessageChannel,setTimer:o.setTimer,clearTimer:o.clearTimer,
+      timeoutMs:o.timeoutMs
+    }).then(function(result){
+      if(!active||thisGeneration!==generation)return;
+      cancel=null;
+      currentStatus={expected:urls,waiting:waiting()};
+      if(result&&fdOfflineOwn(result,'reason'))currentStatus.reason=result.reason;
+      else currentStatus.response=result;
+      notify();
+    });
+    return currentStatus;
+  }
+  function controllerChanged(){sync(currentIndex,currentRoute,true);}
+  if(sw&&sw.addEventListener)try{sw.addEventListener('controllerchange',controllerChanged);}catch(_){}
+  return {
+    sync:sync,
+    status:function(){return currentStatus;},
+    destroy:function(){
+      if(!active)return;
+      active=false;stop();currentStatus=null;currentKey='';
+      if(sw&&sw.removeEventListener)try{sw.removeEventListener('controllerchange',controllerChanged);}catch(_){}
+    }
+  };
+}
+
 function fdOfflineStatus(input){
   var state=input&&typeof input==='object'&&!Array.isArray(input)?input:{};
   var response=fdOfflineResponse(fdOfflineOwn(state,'response')?state.response:null,
