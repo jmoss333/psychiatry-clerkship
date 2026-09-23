@@ -155,6 +155,51 @@ test('devcontainer declares no secret or host-control mounts', () => {
   assert.doesNotMatch(serialized, /docker\.sock|SSH_AUTH_SOCK|TOKEN|SECRET|PASSWORD|API_KEY/i);
 });
 
+test('dependency installer replaces stale venv contents only inside the Dev Container', () => {
+  const fixture = mkdtempSync(resolve(tmpdir(), 'install-dependencies-'));
+  const fakeBin = resolve(fixture, 'fake-bin');
+  const installerPath = resolve(fixture, '.devcontainer/install-dependencies.sh');
+  const staleMarker = resolve(fixture, '.venv/lib/stale-host-package.marker');
+
+  try {
+    mkdirSync(resolve(fixture, '.devcontainer'), { recursive: true });
+    mkdirSync(resolve(fixture, '.venv/lib'), { recursive: true });
+    mkdirSync(fakeBin);
+    for (const lane of ['metrics', 'sp-proxy', 'sp-preview', 'tests/smoke']) {
+      mkdirSync(resolve(fixture, lane), { recursive: true });
+    }
+    writeFileSync(installerPath, readFileSync(resolve(ROOT, '.devcontainer/install-dependencies.sh')));
+    writeFileSync(staleMarker, 'stale host package');
+
+    writeFileSync(resolve(fakeBin, 'python3'), [
+      '#!/usr/bin/env bash',
+      'set -euo pipefail',
+      'if [[ "${1:-}" == "-m" && "${2:-}" == "venv" ]]; then',
+      '  mkdir -p .venv/bin',
+      '  printf "#!/usr/bin/env bash\\nexit 0\\n" > .venv/bin/python',
+      '  chmod +x .venv/bin/python',
+      'fi',
+    ].join('\n'));
+    writeFileSync(resolve(fakeBin, 'npm'), '#!/usr/bin/env bash\nexit 0\n');
+    writeFileSync(resolve(fakeBin, 'npx'), '#!/usr/bin/env bash\nexit 0\n');
+    for (const command of ['python3', 'npm', 'npx']) chmodSync(resolve(fakeBin, command), 0o755);
+
+    const baseEnv = { ...process.env, PATH: `${fakeBin}:${process.env.PATH}`, CLERKSHIP_DEVCONTAINER: '' };
+    const outside = spawnSync('bash', [installerPath], { env: baseEnv, encoding: 'utf8' });
+    assert.notEqual(outside.status, 0, 'installer must refuse venv cleanup outside the Dev Container');
+    assert.ok(existsSync(staleMarker), 'refusal must preserve the existing venv');
+
+    const inside = spawnSync('bash', [installerPath], {
+      env: { ...baseEnv, CLERKSHIP_DEVCONTAINER: '1' },
+      encoding: 'utf8',
+    });
+    assert.equal(inside.status, 0, inside.stderr);
+    assert.equal(existsSync(staleMarker), false, 'a container install must discard stale venv contents');
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
 test('container bootstrap and explicit verification share every locked dependency lane', () => {
   const bootstrap = readFileSync(resolve(ROOT, '.devcontainer/post-create.sh'), 'utf8');
   const installerPath = resolve(ROOT, '.devcontainer/install-dependencies.sh');
