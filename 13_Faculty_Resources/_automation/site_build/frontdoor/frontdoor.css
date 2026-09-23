@@ -643,7 +643,6 @@
 .fd-care-pack__head h2{margin:0 0 var(--fd-space-2);font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-xl);line-height:var(--fd-leading-snug)}
 .fd-care-pack__head p{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:var(--fd-leading-normal)}
 .fd-care-pack__included{display:inline-flex;align-items:center;gap:var(--fd-space-2);flex:0 0 auto;padding:var(--fd-space-2) var(--fd-space-4);border:var(--fd-space-1) solid var(--fd-olive);border-radius:var(--fd-radius-pill);background:var(--fd-olive-wash);color:var(--fd-olive-deep) !important;font-size:var(--fd-font-xs) !important;font-weight:750}
-.fd-care-pack__included.is-unavailable{border-color:var(--fd-danger);background:var(--fd-danger-wash);color:var(--fd-danger) !important}
 .fd-care-pack__workbench{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--fd-space-7);align-items:start}
 .fd-care-pack__picker{min-width:0;padding-top:var(--fd-space-4);border-top:var(--fd-space-2) solid var(--fd-olive)}
 .fd-care-pack__picker h3{margin:0 0 var(--fd-space-4);font-size:var(--fd-font-lg)}
@@ -1818,21 +1817,23 @@
   .fd-reader--guide thead{display:table-header-group}
   .fd-reader--guide tr{break-inside:avoid-page;page-break-inside:avoid}
   .fd-reader--guide .fd-article__body a[href^="http"]::after{content:" (" attr(href) ")";font-size:var(--fd-font-xs);font-weight:400;overflow-wrap:anywhere}
-  body:has(.fd-care-pack__sheet){--fd-care-print-ink:CanvasText;--fd-care-print-paper:Canvas;color-scheme:light;background:var(--fd-care-print-paper) !important;color:var(--fd-care-print-ink) !important}
-  body:has(.fd-care-pack__sheet) :is(.fd-header,.fd-tabs,.fd-dock,.fd-actionbar,.fd-sheet,.fd-sheetbackdrop,.fd-search,.fd-nudge,#fdCaptureMount){display:none !important}
-  body:has(.fd-care-pack__sheet) :is(.fd-shell,.fd-main){display:block;min-height:0;width:auto;max-width:none;padding:0;margin:0;overflow:visible;background:var(--fd-care-print-paper) !important}
-  .fd-care-page:has(.fd-care-pack__sheet)>:not(.fd-care-pack){display:none !important}
-  .fd-care-pack{display:block;margin:0;padding:0;border:0;background:transparent}
-  .fd-care-pack>:not(.fd-care-pack__workbench){display:none !important}
-  .fd-care-pack__workbench{display:block}
-  .fd-care-pack__picker{display:none !important}
-  .fd-care-pack__sheet{display:block !important;width:auto;max-width:none;margin:0;padding:0;border:0;border-radius:0;background:var(--fd-care-print-paper) !important;box-shadow:none !important;color:var(--fd-care-print-ink) !important}
-  .fd-care-pack__sheet *{color:var(--fd-care-print-ink) !important;box-shadow:none !important;text-shadow:none !important}
-  .fd-care-pack__resource{break-inside:avoid-page;page-break-inside:avoid}
-  .fd-care-pack__crisis{display:block !important;break-before:auto}
-  .fd-care-pack__crisis>summary{display:none !important}
-  .fd-care-pack__crisis>:not(summary){display:block !important;height:auto !important;content-visibility:visible !important}
-  .fd-care-pack__crisis::details-content{display:block !important;height:auto !important;content-visibility:visible !important}
+  /* Native Print may bypass the disabled button. Invalid packs remain ordinary Care pages. */
+  .fd-care-pack:not(.is-print-ready) .fd-care-pack__sheet{display:none !important}
+  body:has(.fd-care-pack.is-print-ready){--fd-care-print-ink:CanvasText;--fd-care-print-paper:Canvas;color-scheme:light;background:var(--fd-care-print-paper) !important;color:var(--fd-care-print-ink) !important}
+  body:has(.fd-care-pack.is-print-ready) :is(.fd-header,.fd-tabs,.fd-dock,.fd-actionbar,.fd-sheet,.fd-sheetbackdrop,.fd-search,.fd-nudge,#fdCaptureMount){display:none !important}
+  body:has(.fd-care-pack.is-print-ready) :is(.fd-shell,.fd-main){display:block;min-height:0;width:auto;max-width:none;padding:0;margin:0;overflow:visible;background:var(--fd-care-print-paper) !important}
+  .fd-care-page:has(.fd-care-pack.is-print-ready)>:not(.fd-care-pack){display:none !important}
+  .fd-care-pack.is-print-ready{display:block;margin:0;padding:0;border:0;background:transparent}
+  .fd-care-pack.is-print-ready>:not(.fd-care-pack__workbench){display:none !important}
+  .fd-care-pack.is-print-ready .fd-care-pack__workbench{display:block}
+  .fd-care-pack.is-print-ready .fd-care-pack__picker{display:none !important}
+  .fd-care-pack.is-print-ready .fd-care-pack__sheet{display:block !important;width:auto;max-width:none;margin:0;padding:0;border:0;border-radius:0;background:var(--fd-care-print-paper) !important;box-shadow:none !important;color:var(--fd-care-print-ink) !important}
+  .fd-care-pack.is-print-ready .fd-care-pack__sheet *{color:var(--fd-care-print-ink) !important;box-shadow:none !important;text-shadow:none !important}
+  .fd-care-pack.is-print-ready .fd-care-pack__resource{break-inside:avoid-page;page-break-inside:avoid}
+  .fd-care-pack.is-print-ready .fd-care-pack__crisis{display:block !important;break-before:auto}
+  .fd-care-pack.is-print-ready .fd-care-pack__crisis>summary{display:none !important}
+  .fd-care-pack.is-print-ready .fd-care-pack__crisis>:not(summary){display:block !important;height:auto !important;content-visibility:visible !important}
+  .fd-care-pack.is-print-ready .fd-care-pack__crisis::details-content{display:block !important;height:auto !important;content-visibility:visible !important}
 }
 /* ---- One Thing First (2026-09-16): one primary slot, demoted rows under "Also today" ----------
  * Appended after every base rule on purpose: tests/fd-tokens resolves a selector by FIRST textual

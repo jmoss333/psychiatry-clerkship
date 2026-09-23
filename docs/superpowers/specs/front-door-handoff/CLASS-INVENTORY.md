@@ -356,10 +356,11 @@ Omitting it collapses the rail underneath.
       .fd-care-navigator__alternatives
         .fd-care-navigator__link <a> ×0–2
       .fd-care-navigator__clear <button>
-  .fd-care-pack
+  .fd-care-pack                     + .is-print-ready only with 1–3 choices and governed crisis HTML
     .fd-care-pack__head
       h2 / p
-      .fd-care-pack__included           + .is-unavailable on fail-closed state
+      .fd-care-pack__included           valid governed crisis content only
+      .fd-care-pack__crisis-failure      role="alert" in the header when crisis content is missing
     .fd-care-pack__workbench
       .fd-care-pack__picker
         .fd-care-pack__choices
@@ -378,7 +379,6 @@ Omitting it collapses the rail underneath.
         .fd-care-pack__empty
         details.fd-care-pack__crisis
           summary / .crisis-block
-        .fd-care-pack__crisis-failure   role="alert"; fail-closed alternative
         .fd-care-pack__provenance
     .fd-care-pack__actions
       p / .fd-care-pack__print <button>
@@ -407,8 +407,9 @@ Omitting it collapses the rail underneath.
 | `.fd-care-navigator__clear` | Native button returns to the unselected task map without changing the resource groups. |
 | `.fd-care-pack__workbench` | Transient two-column builder: a flat choice list beside a paper-like preview, stacking to one column at ≤640px. It accepts only canonical `careResources` records and has no patient fields, route state, storage, analytics, or network request. |
 | `.fd-care-pack__choice.is-selected` | The active choice pairs `.is-selected` with `aria-pressed="true"`; its visible check and inset rule keep selection non-color-only. A fourth unselected choice disables until one of the three is removed. |
-| `.fd-care-pack__sheet` | The only printable surface. It contains zero to three exact canonical links with locally generated QR SVGs; controls and the surrounding shell are excluded by `@media print`. |
-| `.fd-care-pack__crisis` | Owns the exact build-injected crisis block derived from `crisis_resources.json`. It is collapsed on screen and forced fully visible in Print. Missing governed HTML renders `.fd-care-pack__crisis-failure` and disables Print; the renderer never invents contacts. |
+| `.fd-care-pack.is-print-ready` | Added only when one to three canonical resources and the governed crisis block are both present. Every handout-only print selector, including shell hiding, requires this class. Native Print on an invalid pack retains the ordinary Care page and hides the empty or crisis-free preview sheet. |
+| `.fd-care-pack__sheet` | The paper preview. It becomes the isolated printable handout only in `.is-print-ready` state; invalid native Print hides the sheet. A ready handout contains one to three exact canonical links with locally generated QR SVGs. |
+| `.fd-care-pack__crisis` | Owns the exact build-injected crisis block derived from `crisis_resources.json`. It is collapsed on screen and forced fully visible on a ready handout. Missing governed HTML renders `.fd-care-pack__crisis-failure` in the ordinary Care header and disables Print; the renderer never invents contacts. |
 | `.fd-care-pack__actions` | States that choices stay on screen only. Print is enabled only when at least one valid resource and the governed crisis block are both present. |
 | `.fd-care-page__groups` | Two-column shelf at larger widths and one column at ≤640px. The support shelf holds Resource Finder and Recovery Meeting Calendar; education holds the patient library, Podcast Navigator, and Relational Bibliotherapy book shelf. |
 | `.fd-care-entry` | In-flow Care route button near the top of Today and APP On shift at ≤640px. It is hidden on wider screens where the Care tab is visible; the fixed phone dock remains five items. |
@@ -902,7 +903,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 | `.is-tool-expanded` | `.fd-main`, `.fd-reader--tool` | saved desktop tool workspace width |
 | `.is-primary` | `.fd-due`, `.fd-resume`, `.fd-lastread` | this row is Today's primary action (kicker copy changes; the visual treatment comes from the `.fd-primary` wrapper) |
 | `.is-secondary` | `.fd-continue` | a device-store row won the primary slot; the Continue card drops its gradient and top accent |
-| `.is-unavailable` | `.fd-care-pack__included` | the governed crisis block is absent, so the handout truthfully reports the failure and Print remains disabled |
+| `.is-print-ready` | `.fd-care-pack` | one to three valid resources and the governed crisis block are present; only this state activates isolated handout print styling |
 | `.is-checking` / `.is-ready` / `.is-update` / `.is-not-ready` | `.fd-offline` | Worker check pending / all current-route eligible files verified / verified current copy with a waiting update / verification failed or files missing. Never color-only: compact and detailed text name each state. |
 
 ## Keyframes

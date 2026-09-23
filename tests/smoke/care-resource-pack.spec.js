@@ -79,6 +79,7 @@ test('builds a private three-resource handout with exact links, local QR codes, 
   await expect(choices).toHaveCount(5);
   await expect(pack.locator('#fd-care-pack-limit')).toHaveText('0 of 3 selected');
   await expect(print).toBeDisabled();
+  await expect(pack).not.toHaveClass(/is-print-ready/);
   await expect(pack.locator('input,textarea,[contenteditable]')).toHaveCount(0);
 
   const before = await browserState(page);
@@ -123,6 +124,7 @@ test('builds a private three-resource handout with exact links, local QR codes, 
   expect(await pack.locator('.fd-care-pack__crisis').getAttribute('open')).toBeNull();
 
   await expect(print).toBeEnabled();
+  await expect(pack).toHaveClass(/is-print-ready/);
   await print.click();
   expect(await page.evaluate(() => window.__carePackPrintCalls)).toBe(1);
 
@@ -190,5 +192,42 @@ test('fails closed when the governed crisis template is unavailable', async ({ p
     'This handout is unavailable because its crisis-resource block did not load.');
   await expect(page.locator('[data-fd-care-pack-print]')).toBeDisabled();
   await expect(page.locator('.fd-care-pack__crisis .crisis-block')).toHaveCount(0);
+  await expectHealthy(page);
+});
+
+test('native print with no selection keeps ordinary Care and omits the empty sheet', async ({ page }, testInfo) => {
+  await seedCare(page, testInfo);
+  await page.goto('/?tab=care');
+  const pack = page.locator('.fd-care-pack');
+  await expect(pack.locator('[data-fd-care-pack-print]')).toBeDisabled();
+  await expect(pack).not.toHaveClass(/is-print-ready/);
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.locator('.fd-care-page__head')).toBeVisible();
+  await expect(pack.locator('.fd-care-pack__picker')).toBeVisible();
+  await expect(pack.locator('.fd-care-pack__sheet')).toBeHidden();
+  await expect(page.locator('.fd-care-page__groups')).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('native print without governed crisis content keeps failure UI and omits the sheet', async ({ page }, testInfo) => {
+  await seedCare(page, testInfo);
+  await page.route(url => url.pathname === '/' && url.search === '?tab=care', async route => {
+    const response = await route.fetch();
+    const html = await response.text();
+    const crisisTemplate = /<template id="fdCrisisTemplate">[\s\S]*?<\/template>/;
+    expect(html).toMatch(crisisTemplate);
+    await route.fulfill({ response,
+      body: html.replace(crisisTemplate, '<template id="fdCrisisTemplate"></template>') });
+  });
+  await page.goto('/?tab=care');
+  const pack = page.locator('.fd-care-pack');
+  await pack.locator('[data-fd-care-pack="resource-finder"]').click();
+  await expect(pack.locator('[data-fd-care-pack-print]')).toBeDisabled();
+  await expect(pack).not.toHaveClass(/is-print-ready/);
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.locator('.fd-care-page__head')).toBeVisible();
+  await expect(pack.locator('.fd-care-pack__picker')).toBeVisible();
+  await expect(pack.locator('.fd-care-pack__crisis-failure')).toBeVisible();
+  await expect(pack.locator('.fd-care-pack__sheet')).toBeHidden();
   await expectHealthy(page);
 });
