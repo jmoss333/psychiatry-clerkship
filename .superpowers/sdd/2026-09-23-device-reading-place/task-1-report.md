@@ -35,3 +35,17 @@
   save time, and prove that storage errors return failure.
 - Brainstormed idea: a later browser fixture could rename one of two duplicate headings between
   visits and verify that the old bookmark is discarded without affecting other page bookmarks.
+
+## Fix round 1/5 — generated heading id stability
+
+- Base: `f832b75419e2d90a906593993aa0e0852a851db8`
+- Implementation head: `635c734ac37815ece005e615d9af1093903dad54`
+- RED: the focused suite had 3 failing cases: duplicate ids lacked group cardinality, removing a
+  duplicate did not invalidate the group bookmarks, and long generated ids exceeded the 200
+  character record limit.
+- GREEN: `node --test tests/fd-reading-place.test.mjs` — 10 passed, including a save/resume
+  round-trip for every generated id and uniqueness after truncation collisions. `git diff --check`
+  — clean.
+- Change: IDs now cap the slug at 140 characters before deterministic collision suffixes; exact
+  duplicate labels include each occurrence and group count. The implementation plan example and
+  contract now reflect this behavior.
