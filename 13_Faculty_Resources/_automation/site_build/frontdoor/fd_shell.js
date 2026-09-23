@@ -20,6 +20,11 @@
    fragments naively concatenated would land .fd-tabs outside <header> and silently break that.
    fdTabs stays separately exported/callable for anything that only needs to re-render the row. */
 
+function fdAppMode(state){
+  var s=state||{};
+  return s.appMode===true||s.appInvite===true||s.roleId==='app'||s.role==='app';
+}
+
 function fdTabs(tab, appMode){
   var cur=(tab==='path'||tab==='library')?tab:'today';
   var defs=appMode
@@ -39,7 +44,7 @@ function fdTabs(tab, appMode){
 
 function fdHeader(state){
   var s=state||{};
-  var appMode=s.roleId==='app';
+  var appMode=fdAppMode(s);
   var weekLabel=(typeof s.week==='number'&&!isNaN(s.week))?('Week '+fdEsc(s.week)):'Set week';
   var out='<header class="fd-header"><div class="fd-header__bar">';
   out+='<button type="button" class="fd-brand" data-fd-home>'+

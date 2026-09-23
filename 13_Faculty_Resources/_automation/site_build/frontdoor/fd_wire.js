@@ -11,6 +11,8 @@ var FD_HANDLED_ATTRS=[
   'data-fd-back','data-fd-home','data-fd-search','data-fd-change-week','data-fd-progress',
   'data-fd-theme','data-fd-settings','data-fd-analytics','data-fd-exam-date',
   'data-fd-app-bridge','data-fd-app-shift','data-fd-app-start','data-fd-app-reflect','data-fd-app-reset',
+  'data-fd-app-practice-open','data-fd-app-practice-reveal','data-fd-app-practice-classify',
+  'data-fd-app-practice-question','data-fd-app-practice-reset','data-fd-app-practice-close',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section','data-fd-kit-tool'
@@ -44,6 +46,12 @@ var FD_ACTION_SEMANTICS={
   'data-fd-app-start':'open APP preparation resource',
   'data-fd-app-reflect':'choose private APP reflection',
   'data-fd-app-reset':'reset private APP reflection',
+  'data-fd-app-practice-open':'open private APP change rehearsal',
+  'data-fd-app-practice-reveal':'reveal one APP practice change',
+  'data-fd-app-practice-classify':'classify APP practice statement',
+  'data-fd-app-practice-question':'choose APP practice supervision question',
+  'data-fd-app-practice-reset':'reset APP change rehearsal',
+  'data-fd-app-practice-close':'close APP change rehearsal',
   'data-fd-clear-ask':'arm device data erase',
   'data-fd-clear-cancel':'cancel device data erase',
   'data-fd-clear-confirm':'erase device data',
@@ -102,8 +110,8 @@ function fdLegacyRouteResult(ref, context, state){
   return null;
 }
 
-function fdResolveState(url, stored){
-  var src=stored||{}, out={};
+function fdResolveState(url, stored, options){
+  var src=stored||{}, opts=options||{}, out={};
   if(typeof src.role==='string'&&src.role) out.role=src.role;
   if(src.appBridge==='pa'||src.appBridge==='pmhnp') out.appBridge=src.appBridge;
   out.tab=fdValidTab(src.tab)?src.tab:'today';
@@ -126,6 +134,10 @@ function fdResolveState(url, stored){
   var parsed, routedRef=null;
   try{ parsed=new URL(String(url||''),'https://frontdoor.invalid/'); }catch(_){ parsed=null; }
   if(parsed){
+    var audienceValues=parsed.searchParams.getAll('audience');
+    if(opts.allowAppInvite===true&&audienceValues.length===1&&audienceValues[0]==='app'){
+      out.appInvite=true;
+    }
     var routedTab=parsed.searchParams.get('tab');
     routedRef=parsed.searchParams.get('page')||parsed.searchParams.get('tool');
     if(parsed.searchParams.get('library')==='full'&&(!fdValidTab(routedTab)||routedTab==='library')){
@@ -152,9 +164,10 @@ function fdResolveState(url, stored){
      the wizard from step 1. The flag is per-boot state, never persisted (see FD_KEYS). Only a
      real page or tool admits a guest: the legacy aliases and every other __name__ pseudo-route
      (__progress__ is the device's own dashboard) keep the setup gate below. */
-  if(!out.role&&routedRef&&!fdIsLegacyRouteAlias(routedRef)&&routedRef.indexOf('__')!==0){ out.guest=true; out.screen='app'; }
+  if(out.appInvite===true) out.screen='app';
+  else if(!out.role&&routedRef&&!fdIsLegacyRouteAlias(routedRef)&&routedRef.indexOf('__')!==0){ out.guest=true; out.screen='app'; }
   else if(!out.role) out.screen='setup-role';
-  else if(out.role==='app'||src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
+  else if(fdAppMode(out)||src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
   else out.screen='setup-week';
   if(routedRef&&fdIsLegacyRouteAlias(routedRef)){
     if(routedRef==='__home__'){
@@ -172,7 +185,7 @@ function fdResolveState(url, stored){
       delete out.openId;
     }
   }
-  if(out.role==='app'&&out.tab==='path') out.tab='today';
+  if(fdAppMode(out)&&out.tab==='path') out.tab='today';
   return out;
 }
 
@@ -282,7 +295,7 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-app-bridge')){
     picked=String(a['data-fd-app-bridge']||'');
     if(picked!=='pa'&&picked!=='pmhnp') return {patch:{},route:null,effect:null};
-    return {patch:{appBridge:picked,appActivity:null,appReflection:null},route:null,effect:null};
+    return {patch:{appBridge:picked,appActivity:null,appReflection:null,appPractice:null},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-app-shift')){
     picked=String(a['data-fd-app-shift']||'');
@@ -299,7 +312,38 @@ function fdDispatch(attrs, context, state){
     return {patch:{appReflection:picked},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-app-reset')){
-    return {patch:{appActivity:null,appReflection:null},route:null,effect:null};
+    return {patch:{appActivity:null,appReflection:null,appPractice:null},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-app-practice-open')){
+    picked=String(a['data-fd-app-practice-open']||'');
+    var pack=fdAppPracticeFind(c.appPracticePacks,picked);
+    if(!pack) return {patch:{},route:null,effect:null};
+    try{return {patch:{appPractice:fdAppPracticeStart(pack)},route:null,effect:null};}
+    catch(ignorePracticeOpen){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-reveal')){
+    try{return {patch:{appPractice:fdAppPracticeReveal(s.appPractice)},route:null,effect:null};}
+    catch(ignorePracticeReveal){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-classify')){
+    picked=String(a['data-fd-app-practice-classify']||'');
+    var split=picked.indexOf(':');
+    if(split<1) return {patch:{},route:null,effect:null};
+    try{return {patch:{appPractice:fdAppPracticeClassify(
+      s.appPractice,picked.slice(0,split),picked.slice(split+1))},route:null,effect:null};}
+    catch(ignorePracticeClassify){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-question')){
+    try{return {patch:{appPractice:fdAppPracticeChooseQuestion(
+      s.appPractice,String(a['data-fd-app-practice-question']||''))},route:null,effect:null};}
+    catch(ignorePracticeQuestion){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-reset')){
+    try{return {patch:{appPractice:fdAppPracticeReset(s.appPractice)},route:null,effect:null};}
+    catch(ignorePracticeReset){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-close')){
+    return {patch:{appPractice:null},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-app-start')){
     return fdDispatch({'data-fd-open':String(a['data-fd-app-start']||'')},c,s);
@@ -860,6 +904,8 @@ function fdTrapFocus(event, dialog){
    committed on a change event instead; see changeHandler. */
 var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],'+
   '[data-fd-app-bridge],[data-fd-app-shift],[data-fd-app-start],[data-fd-app-reflect],[data-fd-app-reset],'+
+  '[data-fd-app-practice-open],[data-fd-app-practice-reveal],[data-fd-app-practice-classify],'+
+  '[data-fd-app-practice-question],[data-fd-app-practice-reset],[data-fd-app-practice-close],'+
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
@@ -1314,6 +1360,29 @@ function fdWire(root, initialState, opts){
       if(heading&&heading.focus) try{heading.focus({preventScroll:true});}catch(_){try{heading.focus();}catch(__){}}
     }
   }
+  /* APP practice repaints its whole visit-only player. Keep keyboard focus at the next step,
+     or on the equivalent rebuilt control, so Tab continues where the learner left off. */
+  function focusAppPractice(invoker,before){
+    if(!invoker||!invoker.hasAttribute||!root||!root.querySelector) return;
+    var selector='',target=null,pack,id;
+    if(invoker.hasAttribute('data-fd-app-practice-open')||
+       invoker.hasAttribute('data-fd-app-practice-reset')){
+      selector='[data-fd-app-practice-reveal]';
+    } else if(invoker.hasAttribute('data-fd-app-practice-reveal')){
+      selector='[data-fd-app-practice-classify]';
+    } else if(invoker.hasAttribute('data-fd-app-practice-classify')||
+              invoker.hasAttribute('data-fd-app-practice-question')){
+      target=equivalentControl(invoker,root);
+    } else if(invoker.hasAttribute('data-fd-app-practice-close')){
+      pack=before.appPractice&&before.appPractice.pack;
+      id=pack&&pack.id;
+      if(typeof id==='string'&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)){
+        selector='[data-fd-app-practice-open="'+id+'"]';
+      }
+    }
+    if(!target&&selector) target=root.querySelector(selector);
+    if(target&&target.focus) try{target.focus();}catch(_){}
+  }
   function apply(result, invoker, fromHistory){
     if(destroyed) return state;
     if(previewActive()&&meaningfulResult(result)){
@@ -1401,6 +1470,9 @@ function fdWire(root, initialState, opts){
     else renderTransient(state,detail);
     fdApplyEffect(result.effect,fromHistory,generation);
     focusPostTransition(before,result,changedBase);
+    if(fdOwn(patch,'appPractice')&&!afterOverlay&&!beforeHadOverlay){
+      focusAppPractice(invoker,before);
+    }
     /* The Essentials rail rebuilds with the filtered results. Keep keyboard focus on the exact
        section button the learner chose, which also scrolls a clipped phone rail into view. */
     if((fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview'))&&!afterOverlay&&!beforeHadOverlay){
@@ -1435,7 +1507,8 @@ function fdWire(root, initialState, opts){
     var c={
       nowMs:Date.now(),theme:currentTheme(),
       search:(win&&win.location&&win.location.search)||'',
-      progressRaw:progressRaw(),weekItems:fdItemsForWeek(index,fdProgressWeek(state,index)),index:index
+      progressRaw:progressRaw(),weekItems:fdItemsForWeek(index,fdProgressWeek(state,index)),index:index,
+      appPracticePacks:o.appPracticePacks||[]
     };
     var add=extra||{};
     for(var k in add){ if(fdOwn(add,k)) c[k]=add[k]; }
@@ -1589,7 +1662,7 @@ function fdWire(root, initialState, opts){
     var action=fdKeyAction(event.key,{
       typing:fdIsTypingTarget(event.target),screen:state.screen||'app',
       searchOpen:!!state.searchOpen,sheetOpen:!!state.sheet,reading:!!state.openId,
-      meta:!!(event.metaKey||event.ctrlKey),appMode:state.role==='app'
+      meta:!!(event.metaKey||event.ctrlKey),appMode:fdAppMode(state)
     });
     if(!action) return;
     var attrs={};
@@ -1636,7 +1709,7 @@ function fdWire(root, initialState, opts){
     } else {
       merged.roles=o.roles||merged.roles;
       merged.rotationStart=o.rotationStart||merged.rotationStart;
-      merged=fdResolveState(win.location.href,merged);
+      merged=fdResolveState(win.location.href,merged,{allowAppInvite:o.allowAppInvite===true});
       var params=new URLSearchParams(win.location.search||'');
       if(!params.get('page')&&!params.get('tool')&&!params.get('tab')&&params.get('library')!=='full'){
         merged.tab='today';

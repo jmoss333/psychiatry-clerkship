@@ -111,11 +111,15 @@ test('preview launcher serves the selected built site and stops its owned server
 });
 
 test('preview launcher rejects an occupied port instead of trusting another server', async (t) => {
+  const site = fs.mkdtempSync(path.join(os.tmpdir(), 'preview-site-occupied-'));
+  t.after(() => fs.rmSync(site, { recursive: true, force: true }));
+  fs.writeFileSync(path.join(site, 'index.html'), '<h1>occupied-port fixture</h1>\n');
   const reservation = await reservePort();
   t.after(() => reservation.close());
   const port = reservation.address().port;
   const result = spawnSync('/bin/bash', [PREVIEW, 'res', '--no-build', '--no-open', '--port', String(port)], {
     cwd: os.tmpdir(), encoding: 'utf8',
+    env: { ...process.env, PREVIEW_SITE_DIR: site },
   });
   assert.equal(result.status, 1);
   assert.match(result.stderr, new RegExp(`port ${port} is already in use`));

@@ -1810,6 +1810,8 @@
 
   /*__FD_BLOCK__*/
 
+  /*__FD_APP_PRACTICE__*/
+
   /*__FD_APP__*/
 
   /*__FD_SHELL__*/
@@ -2182,6 +2184,7 @@
         :((FD_INDEX.weeks[0]||{}).n);
     }
     out.done=fdProgressDoneMap(raw,FD_INDEX,fdProgressWeek(out,FD_INDEX));
+    out.appMode=out.appInvite===true||out.role==='app';
     /* ORDER IS LOAD-BEARING. The next line replaces out.role with the DISPLAY NAME for every
        renderer downstream, so the settings panel -- which marks its active chip by comparing
        against the chip's raw data-fd-role id -- has to be handed that id first, under its own
@@ -2290,7 +2293,7 @@
   }
 
   function fdProgressMarkup(state){
-    var label=fdReaderBackLabel(state&&state.fromTab,state&&state.roleId);
+    var label=fdReaderBackLabel(state&&state.fromTab,state&&state.roleId,fdAppMode(state));
     return '<article class="fd-reader fd-progress-reader">'+
       '<button type="button" class="fd-reader__back" data-fd-back>‹ '+fdEsc(label)+'</button>'+
       fdSurface('progress',function(){ return window.renderProgress?window.renderProgress():'<div class="fd-fallback">Progress is unavailable.</div>'; })+
@@ -2314,7 +2317,7 @@
     }
     if(state.tab==='path') return fdSurface('path',function(){ return fdPath(FD_INDEX,live); });
     if(state.tab==='library') return fdSurface('library',function(){ return state.libraryView==='full'?fdLibrary(FD_INDEX):fdEssentials(FD_INDEX,{kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,week:live.week}); });
-    if(state.role==='app') return fdSurface('today',function(){ return fdAppWorkspace(FD_INDEX,FD_CURRICULUM.appPathway,live); });
+    if(fdAppMode(state)) return fdSurface('today',function(){ return fdAppWorkspace(FD_INDEX,FD_CURRICULUM.appPathway,live); });
     /* fdTodayLive resolves device-backed state itself. Passing an already-resolved object here
        turns the APP role id into its display label on the second pass and loses APP mode. */
     return fdSurface('today',function(){ return fdTodayLive(state); });
@@ -2844,7 +2847,9 @@
       if(fdPrereleaseRef&&!fdIsLegacyRouteAlias(fdPrereleaseRef)&&!fdPrereleaseStored.role){
         fdPrereleaseStored.browsing=true;
       }
-      var fdPrereleaseInitial=fdResolveState(location.href,fdPrereleaseStored);
+      var fdPrereleaseInitial=fdResolveState(location.href,fdPrereleaseStored,{
+        allowAppInvite:FD_AUDIENCE==='resident'&&!!FD_CURRICULUM.appPathway
+      });
       fdPrereleaseInitial.done=fdProgressDoneMap(progLoad());
       fdPrereleaseInitial.rotationStart=fdPrereleaseRotation;
       fdRender(fdPrereleaseInitial);
@@ -2910,7 +2915,9 @@
     if(fdIncomingRef&&!fdIsLegacyRouteAlias(fdIncomingRef)&&!fdStored.role){
       fdStored.browsing=true;
     }
-    fdInitial=fdResolveState(location.href,fdStored);
+    fdInitial=fdResolveState(location.href,fdStored,{
+      allowAppInvite:FD_AUDIENCE==='resident'&&!!FD_CURRICULUM.appPathway
+    });
     fdInitial.done=fdProgressDoneMap(progLoad());
     fdInitial.rotationStart=fdRotation;
     if(FD_RUNTIME_WIRING_OK!==true||!fdEditionRuntimePreflightWiring(window,document,fdApp)){
@@ -2925,7 +2932,9 @@
       loadBlock:blockLoad,
       facultyPreview:function(){return !!facultyPreviewRequest;},
       facultyPreviewLock:showFacultyPreviewLockNotice,
+      allowAppInvite:FD_AUDIENCE==='resident'&&!!FD_CURRICULUM.appPathway,
       synonyms:FD_CURRICULUM.synonyms||{},
+      appPracticePacks:(FD_CURRICULUM.appPathway&&FD_CURRICULUM.appPathway.practicePacks)||[],
       releaseStartupGate:function(){return fdEditionRuntimeReleaseGate(fdApp);}
     });
   }catch(ignoreStartupWiring){fdController=null;}
