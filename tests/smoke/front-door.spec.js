@@ -144,6 +144,28 @@ test('reading place: pending scroll survives resize before the debounce', async 
   await expectHealthy(page);
 });
 
+test('reading place: returning to the fresh position cancels an abandoned pending section', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 900, height: 650 });
+  await seedApp(page, testInfo);
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}`);
+  const reader = await readingReady(page);
+  await expect(reader.locator('[data-fd-reading-status]')).toHaveText(READING_SUCCESS);
+  await page.clock.install();
+  await scrollReadingTo(page, 2);
+  await page.evaluate(() => { window.scrollTo(0, 0); window.dispatchEvent(new Event('scroll')); });
+  await page.clock.fastForward(200);
+  expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
+  await page.setViewportSize(PHONE);
+  await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+  expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  await scrollReadingTo(page, 1);
+  await page.clock.fastForward(200);
+  await expectReadingAnchor(page, 1);
+  await expectHealthy(page);
+});
+
 test('reading place: Today Continue focuses once; Library and Search restore scroll without focus theft', async ({ page }, testInfo) => {
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);

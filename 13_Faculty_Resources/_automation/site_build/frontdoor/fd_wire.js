@@ -988,7 +988,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
   }
   function capture(){
     if(!active||!ready||suppressedY!==null)return;
-    if(!pendingPosition&&Math.abs(scrollY()-baselineY)<=4)return;
+    if(Math.abs(scrollY()-baselineY)<=4){pendingPosition=null;return;}
     var position=pendingPosition||current();
     pendingPosition=null;
     write(fdReadingPlaceUpdate(state.readingPlaces,ref,position.heading,position.offset,now()));
@@ -1000,7 +1000,11 @@ function fdInstallReadingPlace(reader,ref,state,options){
       if(Math.abs(scrollY()-suppressedY)<=4)return;
       suppressedY=null;
     }
-    if(Math.abs(scrollY()-baselineY)<=4)return;
+    if(Math.abs(scrollY()-baselineY)<=4){
+      if(timer!==null){timerClear(timer);timer=null;}
+      pendingPosition=null;
+      return;
+    }
     pendingPosition=current();
     if(timer!==null)timerClear(timer);
     timer=timerSet(function(){timer=null;capture();},150);

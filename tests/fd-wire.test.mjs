@@ -3074,6 +3074,55 @@ test('reading place flushes a pending learner scroll before responsive reflow', 
   assert.equal(h.headings[2].focused, undefined, 'resize does not take focus');
 });
 
+test('returning to the fresh baseline cancels the pending debounce without blocking a later move', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  const writes = h.writes.length;
+  h.setScroll(960); h.listeners.get('scroll')();
+  h.setScroll(0); h.listeners.get('scroll')();
+  h.flush();
+  assert.equal(h.state.readingPlaces['a.md'], undefined, 'abandoned section is not saved');
+  assert.equal(h.writes.length, writes, 'debounce does not write after the reversal');
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[1].id,
+    'a later meaningful scroll still saves normally');
+});
+
+test('returning to the fresh baseline cannot be flushed by resize or pagehide', () => {
+  for (const exit of ['resize', 'pagehide']) {
+    const h = readingPlaceHarness();
+    h.install(); h.flush();
+    const writes = h.writes.length;
+    h.setScroll(960); h.listeners.get('scroll')();
+    h.setScroll(0); h.listeners.get('scroll')();
+    h.listeners.get(exit)(); h.flush();
+    assert.equal(h.state.readingPlaces['a.md'], undefined, `${exit} cannot persist the abandoned section`);
+    assert.equal(h.writes.length, writes, `${exit} makes no stale write`);
+    assert.equal(h.scrollY, 0, `${exit} cannot restore the abandoned section`);
+  }
+});
+
+test('pagehide drops a pending position when the return scroll event has not fired yet', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  const writes = h.writes.length;
+  h.setScroll(960); h.listeners.get('scroll')();
+  h.setScroll(0); // the browser may coalesce this scroll event with pagehide
+  h.listeners.get('pagehide')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'], undefined);
+  assert.equal(h.writes.length, writes);
+});
+
+test('returning to an earlier position after a settled save is still meaningful movement', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  h.setScroll(960); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[2].id);
+  h.setScroll(0); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[0].id);
+  assert.equal(h.state.readingPlaces['a.md'].offset, 0);
+});
+
 test('Start at top stays clear through two untouched exits, then learner movement saves again', () => {
   const seed = readingPlaceHarness(); seed.install(); seed.flush();
   const restored = readingPlaceHarness({ 'a.md': { heading: seed.headings[1].id, offset: 40, updatedAt: 8 } });
