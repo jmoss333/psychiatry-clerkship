@@ -17,6 +17,15 @@ import { evaluateReceipt } from '../bin/devcontainer-receipt.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
+test('full-clone onboarding initializes only clone-local LFS filters, never inherited hooks', () => {
+  const guide = readFileSync(resolve(ROOT, '.devcontainer/README.md'), 'utf8');
+  const install = guide.match(/^git -C .* lfs install (.+)$/m);
+  assert.ok(install, 'onboarding must initialize LFS filters');
+  assert.deepEqual(install[1].trim().split(/\s+/).sort(), ['--local', '--skip-repo', '--skip-smudge']);
+  assert.match(guide, /GIT_LFS_SKIP_SMUDGE=1 git -c core\.hooksPath="\$clone_parent\/repo\/\.git\/hooks" clone --no-hardlinks/);
+  assert.match(guide, /git -C "\$clone_parent\/repo" -c core\.hooksPath="\$clone_parent\/repo\/\.git\/hooks" lfs checkout/);
+});
+
 for (const file of ['README.md', 'CLAUDE.md']) {
   test(`Dev Container receipt documentation states manual proof and status boundaries in ${file}`, () => {
     const source = readFileSync(resolve(ROOT, file), 'utf8');

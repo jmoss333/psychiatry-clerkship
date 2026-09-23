@@ -23,6 +23,8 @@ root = Path.cwd()
 spec = importlib.util.spec_from_file_location('preflight', root / 'bin/devcontainer-preflight.py')
 p = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(p)
+LFS_LIST_COMMAND = ('git', '-c', 'filter.lfs.process=', '-c', 'filter.lfs.clean=',
+                    '-c', 'filter.lfs.smudge=', '-c', 'filter.lfs.required=false', 'lfs', 'ls-files', '--json')
 
 class Probes:
     def __init__(self, root):
@@ -33,7 +35,7 @@ class Probes:
             ('git', 'rev-parse', '--path-format=absolute', '--git-common-dir'): str(root / '.git'),
             ('git', 'config', '--get', 'lfs.storage'): (1, ''),
             ('git', 'lfs', 'version'): 'git-lfs/3.7.1',
-            ('git', 'lfs', 'ls-files', '--json'): json.dumps({'files': [
+            LFS_LIST_COMMAND: json.dumps({'files': [
                 {'name': 'sample.mp3', 'checkout': True, 'downloaded': True, 'size': 8}
             ]}),
             ('git', 'config', '--null', '--get-regexp', r'^credential(\..*)?\.helper$'): (1, ''),
@@ -88,20 +90,20 @@ class Preflight(unittest.TestCase):
     def test_stub_or_missing_media_blocks_setup(self):
         for item in [{'name': 'sample.mp3', 'checkout': False}, {'name': 'missing.mp3', 'checkout': True}]:
             with self.subTest(item=item):
-                self.probes.values[('git', 'lfs', 'ls-files', '--json')] = json.dumps({'files': [item]})
+                self.probes.values[LFS_LIST_COMMAND] = json.dumps({'files': [item]})
                 self.assertEqual(self.report()['exitCode'], 1)
     def test_empty_malformed_and_wrong_type_lfs_inventory_are_unknown(self):
         for value in ['not json', '{}', '{"files": []}', '{"files": {}}', '{"files": [{"name":"sample.mp3"}]}',
                       '{"files": [{"name":"sample.mp3","checkout":"true"}]}',
                       '{"files": [{"name":"../escape.mp3","checkout":true}]}']:
             with self.subTest(value=value):
-                self.probes.values[('git', 'lfs', 'ls-files', '--json')] = value
+                self.probes.values[LFS_LIST_COMMAND] = value
                 self.assertEqual(self.report()['exitCode'], 2)
     def test_external_lfs_storage_is_blocked_before_lfs_inspection(self):
         self.probes.values[('git', 'config', '--get', 'lfs.storage')] = str(self.root.parent / 'host-cache')
         result = self.report()
         self.assertEqual(result['exitCode'], 1)
-        self.assertNotIn(('git', 'lfs', 'ls-files', '--json'), self.probes.calls)
+        self.assertNotIn(LFS_LIST_COMMAND, self.probes.calls)
     def test_missing_lfs_tool_is_blocked_and_downloads_nothing(self):
         self.probes.values[('git', 'lfs', 'version')] = (1, '')
         self.assertEqual(self.report()['exitCode'], 1)
@@ -167,6 +169,29 @@ class Preflight(unittest.TestCase):
         result = subprocess.run(['python3', str(root / 'bin/devcontainer-preflight.py'), '--root', str(empty / 'missing'), '--json'], capture_output=True, text=True)
         self.assertEqual(result.returncode, 2)
         self.assertEqual(json.loads(result.stdout)['status'], 'unknown')
+    def test_real_lfs_inventory_does_not_refresh_inherited_hooks(self):
+        env = {**os.environ, 'GIT_CONFIG_NOSYSTEM': '1', 'GIT_CONFIG_GLOBAL': str(self.root / 'fixture-global'),
+               'GIT_OPTIONAL_LOCKS': '0'}
+        def runner(args, cwd):
+            return subprocess.run(args, cwd=cwd, env=env, capture_output=True, text=True, timeout=10)
+        def git(*args):
+            result = runner(['git', *args], self.root)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            return result.stdout
+        if runner(['git', 'lfs', 'version'], self.root).returncode:
+            self.skipTest('real Git LFS unavailable; classifier fixtures still run')
+        git('init', '-q')
+        git('lfs', 'install', '--local', '--skip-repo', '--skip-smudge')
+        git('add', '.gitattributes', 'sample.mp3')
+        git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.test', 'commit', '-qm', 'fixture')
+        hooks = self.root / 'shared-hooks'
+        hooks.mkdir()
+        git('config', '--global', 'core.hooksPath', str(hooks))
+        rows = []
+        p.lfs_check(self.root, self.root / '.git', rows, runner)
+        self.assertEqual(rows[0]['status'], 'pass')
+        self.assertEqual(rows[0]['count'], 1)
+        self.assertEqual(list(hooks.iterdir()), [], 'read-only inventory must not invoke LFS filters that install hooks')
 
 unittest.main(argv=['preflight-tests'], verbosity=2)
 `;
