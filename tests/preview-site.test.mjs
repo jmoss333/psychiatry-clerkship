@@ -31,16 +31,26 @@ function request(port) {
   });
 }
 
-async function waitForServer(port, child) {
-  const deadline = Date.now() + 5_000;
+function previewStartupError(message, readOutput) {
+  if (!readOutput) return new Error(message);
+  const { stdout = '', stderr = '' } = readOutput();
+  return new Error(`${message}\nstdout (last 2000 characters): ${stdout.slice(-2_000) || '[empty]'}\nstderr (last 2000 characters): ${stderr.slice(-2_000) || '[empty]'}`);
+}
+
+async function waitForServer(port, child, readOutput) {
+  // The launcher makes up to 50 readiness attempts, each with a 200 ms request
+  // timeout and a 100 ms pause. Allow that cycle plus process startup overhead.
+  const deadline = Date.now() + 20_000;
   while (Date.now() < deadline) {
-    if (child.exitCode !== null) throw new Error(`preview exited early with ${child.exitCode}`);
+    if (child.exitCode !== null || child.signalCode !== null) {
+      throw previewStartupError(`preview exited early with ${child.exitCode ?? child.signalCode}`, readOutput);
+    }
     try { return await request(port); } catch (error) {
       if (error.code !== 'ECONNREFUSED') throw error;
     }
     await new Promise((resolve) => setTimeout(resolve, 25));
   }
-  throw new Error(`preview did not become ready on ${port}`);
+  throw previewStartupError(`preview did not become ready on ${port}`, readOutput);
 }
 
 async function waitForFile(file) {
@@ -96,7 +106,7 @@ test('preview launcher serves the selected built site and stops its owned server
     fs.rmSync(temporary, { recursive: true, force: true });
   });
 
-  const response = await waitForServer(port, child);
+  const response = await waitForServer(port, child, () => ({ stdout, stderr }));
   assert.equal(response.status, 200);
   assert.match(response.body, /preview-marker/);
   await waitForOutput(() => stdout, new RegExp(`Preview ready: http://127\\.0\\.0\\.1:${port}/`));
@@ -129,4 +139,50 @@ test('preview launcher rejects unknown audiences before building', () => {
   const result = spawnSync('/bin/bash', [PREVIEW, 'faculty'], { cwd: os.tmpdir(), encoding: 'utf8' });
   assert.equal(result.status, 2);
   assert.match(result.stderr, /audience must be ms3 or res/);
+});
+
+test('preview readiness accepts a healthy server starting after five seconds', async (t) => {
+  const reservation = await reservePort();
+  const port = reservation.address().port;
+  await new Promise((resolve) => reservation.close(resolve));
+  const child = spawn(process.execPath, ['-e', `
+    const http = require('node:http');
+    setTimeout(() => {
+      http.createServer((_request, response) => response.end('delayed-preview'))
+        .listen(${port}, '127.0.0.1');
+    }, 5_250);
+  `], { stdio: 'ignore' });
+  t.after(() => { if (child.exitCode === null) child.kill('SIGTERM'); });
+
+  const response = await waitForServer(port, child);
+  assert.equal(response.status, 200);
+  assert.equal(response.body, 'delayed-preview');
+});
+
+test('preview startup errors include bounded child output', async () => {
+  const reservation = await reservePort();
+  const port = reservation.address().port;
+  await new Promise((resolve) => reservation.close(resolve));
+  const child = spawn(process.execPath, ['-e', `
+    process.stdout.write('startup diagnostics');
+    process.stderr.write('HEAD-' + 'x'.repeat(3_000) + '-TAIL');
+    process.exit(7);
+  `], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let stdout = '';
+  let stderr = '';
+  child.stdout.setEncoding('utf8');
+  child.stderr.setEncoding('utf8');
+  child.stdout.on('data', (chunk) => { stdout += chunk; });
+  child.stderr.on('data', (chunk) => { stderr += chunk; });
+  await new Promise((resolve) => child.once('close', resolve));
+
+  const error = await waitForServer(port, child, () => ({ stdout, stderr })).then(
+    () => assert.fail('exited child should not become ready'),
+    (failure) => failure,
+  );
+  assert.match(error.message, /preview exited early with 7[\s\S]*startup diagnostics/);
+  assert.match(error.message, /-TAIL/);
+  assert.doesNotMatch(error.message, /HEAD-/);
 });
