@@ -61,6 +61,19 @@ const expectedNavigator = [
   ['family-conversation', 'education-library', ['book-shelf', 'podcast-navigator']],
 ];
 
+test('the navigator stylesheet and class inventory pin responsive accessible behavior', () => {
+  const css = readFileSync(new URL(`${BUILD}/frontdoor/frontdoor.css`, import.meta.url), 'utf8');
+  const inventory = readFileSync(new URL(
+    '../docs/superpowers/specs/front-door-handoff/CLASS-INVENTORY.md', import.meta.url), 'utf8');
+  assert.match(css, /\.fd-care-navigator__choice\{[^}]*min-height:var\(--fd-target-touch\)/);
+  assert.match(css, /\.fd-care-navigator__choice\[aria-pressed="true"\]/);
+  assert.match(css, /\.fd-care-navigator__choice\[aria-pressed="true"\] \.fd-care-navigator__check\{[^}]*color:var\(--fd-on-accent\)/);
+  assert.match(css, /\.fd-care-navigator__choice>span:last-child\{[^}]*overflow-wrap:anywhere/);
+  assert.match(css, /@media \(max-width:640px\)[\s\S]*\.fd-care-navigator__choices(?:,\.fd-care-navigator__alternatives)?\{grid-template-columns:minmax\(0,1fr\)\}/);
+  assert.match(inventory, /\.fd-care-navigator__choice/);
+  assert.match(inventory, /\.fd-care-navigator__choice\.is-selected/);
+});
+
 test('the navigator renders six fixed choices and no initial result', () => {
   const index = { careResources: curriculum.careResources,
     careNavigator: curriculum.careNavigator };

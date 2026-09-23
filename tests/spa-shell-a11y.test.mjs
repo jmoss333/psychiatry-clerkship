@@ -29,6 +29,10 @@ const frontdoorCss = fs.readFileSync(
   path.join(repo, '13_Faculty_Resources', '_automation', 'site_build', 'frontdoor', 'frontdoor.css'),
   'utf8',
 );
+const navigatorSrc = fs.readFileSync(
+  path.join(repo, '13_Faculty_Resources', '_automation', 'site_build', 'frontdoor', 'fd_care_navigator.js'),
+  'utf8',
+);
 const shellCss = shell.slice(shell.indexOf('<style>'), shell.indexOf('</style>'));
 
 function cssRuleHas(css, selector, declaration) {
@@ -60,6 +64,13 @@ test('Today, Path, The Essentials, and Patient care resources are navigation tab
   assert.match(fdShell, /\{id:'care',label:'Patient care resources',short:'Care'\}/);
   assert.match(fdShell, /active\?' aria-current="page"'/);
   assert.doesNotMatch(fdShell, /id:'progress',label:'Progress'/);
+});
+
+test('Care navigator uses native choices and announces its labeled result', () => {
+  assert.match(navigatorSrc, /<button type="button" class="fd-care-navigator__choice/);
+  assert.match(navigatorSrc, /aria-pressed=/);
+  assert.match(navigatorSrc, /role="status" aria-live="polite"/);
+  assert.match(navigatorSrc, /aria-labelledby="fd-care-navigator-result-title"/);
 });
 
 // Review finding (WS4 batch 4): the desktop #routeStatus live region must stay hidden on

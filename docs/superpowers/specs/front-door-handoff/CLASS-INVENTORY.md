@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(420 distinct `fd-*` selector names, 24 `is-*` state classes). Every class below has a rule in that file unless
+(433 distinct `fd-*` selector names, 24 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -272,6 +272,23 @@ Omitting it collapses the rail underneath.
       strong / span
   .fd-care-page__notice               role="note"
     strong / span
+  .fd-care-navigator
+    .fd-care-navigator__head
+      h2 / p
+    .fd-care-navigator__choices
+      .fd-care-navigator__choice <button> ×6
+        .fd-care-navigator__check
+        span
+      .fd-care-navigator__choice.is-selected [aria-pressed="true"] (is-selected has no rule)
+    .fd-visually-hidden role="status" aria-live="polite"
+    .fd-care-navigator__result
+      .fd-care-navigator__result-head
+        h3 / p
+      .fd-care-navigator__link <a> primary
+        .fd-care-navigator__kicker / __link-title / __link-description
+      .fd-care-navigator__alternatives
+        .fd-care-navigator__link <a> ×0–2
+      .fd-care-navigator__clear <button>
   .fd-care-page__groups
     .fd-care-group ×2                 support / education
       .fd-care-group__head
@@ -288,6 +305,12 @@ Omitting it collapses the rail underneath.
 | `.fd-care-page` | Top-level, shared learner destination rendered by `fd_care.js`; it is navigation, not a completion or attestation item. |
 | `.fd-care-page__provenance` | Names the creator and the several-year, personally curated ReConnect database origin without implying that the Clerkship attests the linked apps. |
 | `.fd-care-page__notice` | Current-information and no-PHI boundary. The page never appends a query, route state, search text, or patient context to an external URL. |
+| `.fd-care-navigator` | Fixed-choice task map between the notice and full resource groups. The groups remain visible as siblings below it; no navigator class participates in completion or attestation. |
+| `.fd-care-navigator__choices` | Two columns at wider widths, one column at ≤640px; each native choice button has a 44px minimum target and wrapping text. |
+| `.fd-care-navigator__choice.is-selected` | Only the active choice owns `.is-selected` (no rule) and `aria-pressed="true"`; the attribute paints the visible checkmark and inset rule so selection is not color-only. Other choices keep `aria-pressed="false"`. |
+| `.fd-care-navigator__result` | Appears only with a selection, has a labeled heading and a separate polite status announcement; primary and alternative links use canonical external destinations. |
+| `.fd-care-navigator__alternatives` | Zero to two secondary links; shares the responsive one-column phone layout. |
+| `.fd-care-navigator__clear` | Native button returns to the unselected task map without changing the resource groups. |
 | `.fd-care-page__groups` | Two-column shelf at larger widths and one column at ≤640px. The support shelf holds Resource Finder and Recovery Meeting Calendar; education holds the patient library, Podcast Navigator, and Relational Bibliotherapy book shelf. |
 | `.fd-carelink` | Static external anchor with an explicit new-tab mark and visible title/description. |
 
