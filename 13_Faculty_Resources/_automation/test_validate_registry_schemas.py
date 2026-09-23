@@ -128,6 +128,75 @@ class RegistrySchemaGateTests(unittest.TestCase):
         self.assertNotIn("Traceback", result.stderr)
         return result.stdout
 
+    def _mutated_curriculum(self, root: Path, mutate) -> str:
+        document = json.loads((root / "curriculum.json").read_text(encoding="utf-8"))
+        mutate(document)
+        (root / "curriculum.json").write_text(
+            json.dumps(document, indent=2) + "\n", encoding="utf-8"
+        )
+        result = run_validator(root)
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        return result.stdout
+
+    def test_care_navigator_rejects_unknown_resource_reference(self) -> None:
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_curriculum(
+                Path(temporary),
+                lambda document: document["careNavigator"][0].update(
+                    {"primaryResourceId": "missing-resource"}
+                ),
+            )
+        self.assertIn("unknown care resource 'missing-resource'", stdout)
+
+    def test_care_navigator_rejects_duplicate_alternatives(self) -> None:
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_curriculum(
+                Path(temporary),
+                lambda document: document["careNavigator"][2].update(
+                    {"alternativeResourceIds": ["book-shelf", "book-shelf"]}
+                ),
+            )
+        self.assertIn("duplicates alternative 'book-shelf'", stdout)
+
+    def test_care_navigator_rejects_primary_repeated_as_alternative(self) -> None:
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_curriculum(
+                Path(temporary),
+                lambda document: document["careNavigator"][1].update(
+                    {"alternativeResourceIds": ["meeting-calendar"]}
+                ),
+            )
+        self.assertIn("repeats its primary resource", stdout)
+
+    def test_care_navigator_requires_every_approved_intent_once(self) -> None:
+        def remove_family_intent(document):
+            document["careNavigator"] = [
+                intent for intent in document["careNavigator"]
+                if intent["id"] != "family-conversation"
+            ]
+
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_curriculum(Path(temporary), remove_family_intent)
+        self.assertIn("missing intent 'family-conversation'", stdout)
+
+    def test_care_navigator_rejects_duplicate_intent_ids(self) -> None:
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_curriculum(
+                Path(temporary),
+                lambda document: document["careNavigator"][-1].update({"id": "services"}),
+            )
+        self.assertIn("'services' duplicates /careNavigator/0", stdout)
+
+    def test_care_navigator_invalid_shapes_report_schema_error_without_traceback(self) -> None:
+        for field in ("careNavigator", "careResources"):
+            with self.subTest(field=field), self.make_registry_copy() as temporary:
+                stdout = self._mutated_curriculum(
+                    Path(temporary),
+                    lambda document: document.update({field: None}),
+                )
+            self.assertIn(f"curriculum.json: INVALID at /{field}", stdout)
+
     def test_pairings_dangling_page_reference_fails(self) -> None:
         def mutate(document):
             document["pairings"][0]["items"][0]["ref"] = "no_such_page.md"

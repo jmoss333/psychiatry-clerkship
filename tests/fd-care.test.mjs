@@ -40,6 +40,29 @@ test('the real curriculum carries five curated resources in two purposeful group
     'https://reconnect-tools.netlify.app/tools/relational-bibliotherapy.html');
 });
 
+const expectedNavigator = [
+  ['services', 'resource-finder', ['meeting-calendar']],
+  ['meetings', 'meeting-calendar', ['resource-finder']],
+  ['explain', 'education-library', ['book-shelf', 'podcast-navigator']],
+  ['listen', 'podcast-navigator', ['education-library', 'book-shelf']],
+  ['books', 'book-shelf', ['education-library', 'podcast-navigator']],
+  ['family-conversation', 'education-library', ['book-shelf', 'podcast-navigator']],
+];
+
+test('the curriculum carries the approved six-intent navigator map', () => {
+  assert.deepEqual(curriculum.careNavigator.map((intent) => [
+    intent.id, intent.primaryResourceId, intent.alternativeResourceIds,
+  ]), expectedNavigator);
+  assert.ok(schema.required.includes('careNavigator'));
+  const navigatorSchema = schema.properties.careNavigator;
+  assert.equal(navigatorSchema.minItems, 6);
+  assert.equal(navigatorSchema.maxItems, 6);
+  assert.equal(navigatorSchema.items.additionalProperties, false);
+  assert.deepEqual(navigatorSchema.items.properties.id.enum,
+    expectedNavigator.map(([id]) => id));
+  assert.equal(navigatorSchema.items.properties.alternativeResourceIds.maxItems, 2);
+});
+
 test('the care page renders five static external links without forwarding context', () => {
   assert.ok(F?.fdCare, 'fdCare must exist before its behavior can be tested');
   const html = F.fdCare({ careResources: curriculum.careResources });
