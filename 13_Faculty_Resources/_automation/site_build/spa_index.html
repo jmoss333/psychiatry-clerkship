@@ -2294,7 +2294,7 @@
     fdCaptureMount.innerHTML='<button type="button" class="fd-capture-launch fd-capture-launch--global" data-capture-open aria-haspopup="dialog" aria-expanded="false"><span aria-hidden="true">＋</span> Ask a question</button>';
   }
 
-  function fdRenderDock(state){
+  function fdRenderDock(state,preserveFocus){
     if(!fdDockMount)return;
     var show=state&&state.screen==='app'&&!facultyPreviewRequest&&
       !(contentEl&&contentEl.querySelector('.fd-reader--guide'));
@@ -2302,11 +2302,23 @@
     var source=fdDockSource(contentEl);
     var live=fdClone(fdLiveState(state));
     live.dockAction=source?{sourceId:source.id,label:source.label}:null;
+    /* Only same-route refreshes may retain dock focus. Full navigation and dialogs own their
+       focus transitions. Match the old action, never an arbitrary button or a page control. */
+    var active=document.activeElement, focusSelector=null;
+    if(preserveFocus&&!state.searchOpen&&!state.sheet&&active&&fdDockMount.contains(active)){
+      var attrs=['data-fd-dock-forward','data-fd-tab','data-fd-search','data-capture-open'];
+      for(var i=0;i<attrs.length;i++){
+        var value=active.getAttribute(attrs[i]);
+        if(value!==null&&!/["\\]/.test(value)){focusSelector='['+attrs[i]+'="'+value+'"]';break;}
+      }
+    }
     fdDockMount.innerHTML=fdDock(live);
     if(!state.openId){
       var current=fdDockMount.querySelector('[data-fd-tab="'+state.tab+'"]');
       if(current)current.setAttribute('aria-current','page');
     }
+    var successor=focusSelector&&fdDockMount.querySelector(focusSelector);
+    if(successor&&!successor.disabled)successor.focus({preventScroll:true});
   }
 
   function fdProgressMarkup(state){
@@ -2500,7 +2512,7 @@
       if(contentEl){fdDisposeGuide();contentEl.className='fd-main';contentEl.innerHTML=fdBaseMarkup(state);}
     }
     if(surfaces.layout)fdPatchToolLayout(state);
-    if(surfaces.base||surfaces.completion)fdRenderDock(state);
+    if(surfaces.base||surfaces.completion)fdRenderDock(state,true);
     fdRenderOverlays(state);
   }
 
@@ -2605,7 +2617,7 @@
       }
       /* Resource loading replaces the source controls, including on failure. Refresh only for
          the still-current route; a late response must never overwrite the next route's dock. */
-      if(!facultyPreviewRequest&&(!options.isCurrent||options.isCurrent(ref)!==false))fdRenderDock(readState());
+      if(!facultyPreviewRequest&&(!options.isCurrent||options.isCurrent(ref)!==false))fdRenderDock(readState(),true);
       return ok;
     });
   }

@@ -64,8 +64,26 @@ function dockHarness(preview = false) {
     };
     return null;
   } };
-  const mount = { innerHTML: '', querySelector: () => null };
-  const render = new Function('contentEl', 'fdDockMount', 'facultyPreviewRequest', `
+  const doc = { activeElement: null };
+  let markup = '', controls = [];
+  const mount = {
+    get innerHTML() { return markup; },
+    set innerHTML(value) {
+      if (controls.includes(doc.activeElement)) doc.activeElement = null;
+      markup = value;
+      controls = [...value.matchAll(/<button\b([^>]*)>/g)].map(match => {
+        const attrs = Object.fromEntries([...match[1].matchAll(/([\w-]+)="([^"]*)"/g)].map(attr => [attr[1], attr[2]]));
+        return { getAttribute: key => attrs[key] ?? null, setAttribute: (key, value) => { attrs[key] = value; },
+          focus(options) { doc.activeElement = this; this.focusOptions = options; } };
+      });
+    },
+    contains: node => controls.includes(node),
+    querySelector(selector) {
+      const match = selector.match(/^\[([\w-]+)="([^"]*)"\]$/);
+      return match ? controls.find(node => node.getAttribute(match[1]) === match[2]) || null : null;
+    },
+  };
+  const render = new Function('contentEl', 'fdDockMount', 'facultyPreviewRequest', 'document', `
     ${stateModule}
     function fdClone(state){return JSON.parse(JSON.stringify(state));}
     function fdEsc(value){return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
@@ -74,9 +92,45 @@ function dockHarness(preview = false) {
     function fdLiveState(state){return state;}
     ${shellFunction('fdRenderDock')}
     return fdRenderDock;
-  `)(host, mount, preview);
-  return { host, mount, render, primary(value) { primary = value; }, guide(value) { guide = value; } };
+  `)(host, mount, preview, doc);
+  return { host, mount, render, doc, primary(value) { primary = value; }, guide(value) { guide = value; } };
 }
+
+test('same-route dock refresh preserves the focused action without scrolling', () => {
+  const h = dockHarness(), state = { screen: 'app', tab: 'today', openId: 'a.md' };
+  h.render(state);
+  const old = h.mount.querySelector('[data-fd-dock-forward="primary-reader"]');
+  old.focus();
+  h.primary({ id: 'primary-reader', label: 'Next: Page B →' });
+  h.render(state, true);
+  const fresh = h.mount.querySelector('[data-fd-dock-forward="primary-reader"]');
+  assert.notEqual(fresh, old);
+  assert.equal(h.doc.activeElement, fresh);
+  assert.deepEqual(fresh.focusOptions, { preventScroll: true });
+});
+
+test('dock refresh does not take focus from content, dialogs, navigation, or an absent successor', () => {
+  const state = { screen: 'app', tab: 'today', openId: 'a.md' };
+  for (const outside of ['content', 'Search', 'Capture', 'overlay']) {
+    const h = dockHarness(); h.render(state);
+    const focused = { name: outside }; h.doc.activeElement = focused;
+    h.render(state, true);
+    assert.equal(h.doc.activeElement, focused);
+  }
+  for (const overlay of [{ searchOpen: true }, { sheet: 'safety' }]) {
+    const h = dockHarness(); h.render(state);
+    h.mount.querySelector('[data-fd-dock-forward="primary-reader"]').focus();
+    h.render({ ...state, ...overlay }, true);
+    assert.equal(h.doc.activeElement, null, 'overlay owns its focus transition');
+  }
+  const h = dockHarness(); h.render(state);
+  h.mount.querySelector('[data-fd-dock-forward="primary-reader"]').focus();
+  h.render({ ...state, openId: 'b.md' });
+  assert.equal(h.doc.activeElement, null, 'full navigation owns focus');
+  h.mount.querySelector('[data-fd-dock-forward="primary-reader"]').focus();
+  h.primary(null); h.render(state, true);
+  assert.equal(h.doc.activeElement, null, 'no equivalent action means no invented target');
+});
 
 test('dock refresh uses the live source and clears learner actions on excluded screens', () => {
   const h = dockHarness(), state = { screen: 'app', tab: 'today' };
@@ -156,7 +210,7 @@ test('the learner dock follows each base render and refreshes after a completion
   const mount = source.indexOf('id="fdDockMount"');
   const main = source.indexOf('id="content"');
   assert.ok(mount > -1 && mount < main, 'dock mount is a shell sibling before main');
-  const helper = source.slice(source.indexOf('function fdRenderDock(state)'), source.indexOf('function fdProgressMarkup(state)'));
+  const helper = source.slice(source.indexOf('function fdRenderDock('), source.indexOf('function fdProgressMarkup(state)'));
   assert.match(helper, /state\.screen==='app'&&!facultyPreviewRequest/);
   assert.match(helper, /fdDockSource\(contentEl\)/);
   assert.match(helper, /fdClone\(fdLiveState\(state\)\)/);
@@ -165,7 +219,7 @@ test('the learner dock follows each base render and refreshes after a completion
   assert.ok(base.indexOf('contentEl.innerHTML=fdBaseMarkup(state)') < base.indexOf('fdRenderDock(state)'),
     'dock reads the newly rendered source');
   const transient = source.slice(source.indexOf('function fdRenderTransient(state,detail)'), source.indexOf('function fdOpenProgress(state,opts)'));
-  assert.match(transient, /if\(surfaces\.base\|\|surfaces\.completion\)fdRenderDock\(state\)/);
+  assert.match(transient, /if\(surfaces\.base\|\|surfaces\.completion\)fdRenderDock\(state,true\)/);
 });
 
 test('the shell has one build-replaced edition context and ordered v2 catalog modules', () => {
