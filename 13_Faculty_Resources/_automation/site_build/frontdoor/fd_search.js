@@ -384,6 +384,10 @@ function fdSearchOverlay(index, query, synonyms, state){
     'aria-label="Search resources" placeholder="Symptom, drug, tool, or task…">';
   out+='<button type="button" class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">esc</button>';
   out+='</div>';
+  if(!(state&&state.appMode===true)){
+    out+='<div class="fd-searchpanel__browse">'+
+      '<button type="button" class="fd-btn" data-fd-tab="library">Browse the Library</button></div>';
+  }
   /* Results replace themselves on every keystroke with no visual transition a screen reader can
      observe, so the region announces its own size. aria-label carries the count rather than a
      visually-hidden node: the panel is rebuilt wholesale on each render, and an attribute cannot
@@ -396,7 +400,6 @@ function fdSearchOverlay(index, query, synonyms, state){
   if(trimmed&&!results.length){
     out+='<div class="fd-searchpanel__empty">Nothing for “'+fdEsc(trimmed)+'” '+
       '— try a symptom, scale, or drug class.</div>';
-    out+='<button type="button" class="fd-btn" data-fd-tab="library">Browse Library</button>';
   } else {
     if(/\bcalculator\b/i.test(q)&&!results.some(function(r){
       return /\bcalculator\b/i.test(fdSearchHaystack(r.item));

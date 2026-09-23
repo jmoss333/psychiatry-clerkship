@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(401 distinct `fd-*` selector names, 23 `is-*` state classes). Every class below has a rule in that file unless
+(402 distinct `fd-*` selector names, 23 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -159,7 +159,8 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 
 The renderer inserts the context button after the two leading destinations, making it the third
 of five buttons. APP changes the first two labels and routes its second item to Library; Search
-and Capture remain the final two. The shell mounts one fresh dock after each base render and
+and Capture remain the final two. Capture carries `aria-haspopup="dialog"` and an `aria-expanded`
+state that the existing Capture open/close handler updates. The shell mounts one fresh dock after each base render and
 refreshes it after completion changes and settled resource loads (including failure, only for the
 current route); `fdDockSource(contentEl)` supplies the marked action and
 the delegated controller forwards it. The dock is cleared on setup, faculty preview, enhanced
@@ -605,6 +606,8 @@ patient information, or an attestation, and it never turns a website action into
       <svg>
       .fd-searchpanel__input   <input>
       .fd-searchpanel__esc     <button>esc</button>
+    .fd-searchpanel__browse
+      .fd-btn[data-fd-tab="library"] <button>Browse the Library</button> (standard mode only)
     .fd-searchpanel__body
       .fd-result <button> ×N
         .fd-result__dot         + .is-tool | .is-safety
@@ -617,6 +620,7 @@ patient information, or an attestation, and it never turns a website action into
 | Class | Notes |
 |---|---|
 | `.fd-search` | Carries the scrim **and** the centring — it is not a separate backdrop element (unlike the sheet). |
+| `.fd-searchpanel__browse` | Standard MS3/resident Search offers an explicit Library route above results. APP already has The Essentials in dock slot 2, so this row is absent. |
 | `.fd-searchpanel__body` | `max-height:46vh` + scroll. The scroll container. |
 | `.fd-result__dot` | Default olive (read); `.is-tool` teal; `.is-safety` danger. |
 

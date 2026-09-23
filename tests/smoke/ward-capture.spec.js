@@ -1,8 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-// Ward question capture: one stable Front Door launcher must remain reachable on every learner
-// surface and breakpoint. Today alone also owns the triage card; navigation may replace #content
-// but must never replace the launcher mount.
+// Ward question capture: the phone dock and desktop global launcher give every learner route
+// one visible way to open the same device-local dialog. Today also owns the triage card.
 //
 // No page.route in this file. The config sets serviceWorkers:'block' for every project except
 // the dedicated `offline` one, but route interception is blind once a SW controls the page, so
@@ -12,7 +11,7 @@ const ROUTES = [
   ['Today tab', '/'],
   ['Path tab', '/?tab=path'],
   ['Library tab', '/?tab=library'],
-  ['markdown Reader', '/?page=orientation.md'],
+  ['markdown Reader', '/?page=t_mood.md'],
   ['tool Reader', '/?tool=question-bank-practice.html'],
   ['internal Progress', '/?page=__progress__'],
 ];
@@ -20,7 +19,8 @@ const ROUTES = [
 const PHONE = { width: 390, height: 844 };
 const NARROW = { width: 320, height: 844 };
 const DESKTOP = { width: 1280, height: 800 };
-const captureLauncher = (page) => page.locator('.fd-capture-launch--global[data-capture-open]');
+const captureLauncher = (page) => page.locator('.fd-dock [data-capture-open]:visible, .fd-capture-launch--global[data-capture-open]:visible');
+const desktopLauncher = (page) => page.locator('.fd-capture-launch--global[data-capture-open]:visible');
 
 async function seedCompleteSetup(page) {
   await page.addInitScript(() => {
@@ -45,6 +45,7 @@ test.describe('capture affordance is route- and breakpoint-persistent', () => {
       const btn = captureLauncher(page);
       await expect(btn).toBeVisible();
       await expect(btn).toHaveCount(1);
+      await expect(page.locator('.fd-capture-launch--global:visible')).toHaveCount(0);
       await expect(btn).toHaveAttribute('aria-expanded', 'false');
       await btn.click();
       await expect(page.locator('.cap-sheet')).toBeVisible();
@@ -56,7 +57,7 @@ test.describe('capture affordance is route- and breakpoint-persistent', () => {
     test(`T9 desktop: capture button is usable on ${label}`, async ({ page }) => {
       await page.setViewportSize(DESKTOP);
       await page.goto(url);
-      const btn = captureLauncher(page);
+      const btn = desktopLauncher(page);
       await expect(btn).toBeVisible();
       await expect(btn).toHaveCount(1);
       await btn.click();
@@ -132,7 +133,7 @@ test('saving immediately offers the best next step while keeping the question in
   expect(stored.status).toBe('new');
 });
 
-test('the global capture control remains in the viewport after a long reader scroll', async ({ page }) => {
+test('the dock Capture control remains in the viewport after a long reader scroll', async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.goto('/?page=t_mood.md');
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
@@ -191,9 +192,7 @@ test('Today capture clears a prior Reader context without corrupting the learner
 
   await page.locator('[data-fd-home]').first().click();
   await expect(page.locator('.fd-today')).toBeVisible();
-  // Use the pre-cutover-compatible hook here so the RED run reaches the stale-context bug;
-  // the route matrix above independently requires the new stable launcher class.
-  await page.locator('[data-capture-open]').first().click();
+  await captureLauncher(page).click();
   await page.locator('#capText').fill('what should I review after rounds');
   await page.locator('#capSave').click();
 
@@ -257,11 +256,11 @@ test('T12: a capture is never exported with the study data', async ({ page }) =>
   expect(payload).not.toContain('why clozapine here');
 });
 
-test('T10: the stable launcher adds no horizontal overflow and stays outside the Reader action bar', async ({ page }) => {
+test('T10: the phone dock adds no horizontal overflow and replaces the Reader action bar', async ({ page }) => {
   await page.setViewportSize(NARROW);
   await page.goto('/?page=t_mood.md');
   await expect(captureLauncher(page)).toBeVisible();
-  await expect(page.locator('.fd-actionbar .fd-capture-launch--global')).toHaveCount(0);
+  await expect(page.locator('.fd-actionbar:visible,#fdCaptureMount:visible')).toHaveCount(0);
   const widths = await page.evaluate(() => ({
     scroll: document.documentElement.scrollWidth,
     client: document.documentElement.clientWidth,
@@ -269,7 +268,7 @@ test('T10: the stable launcher adds no horizontal overflow and stays outside the
   expect(widths.scroll).toBeLessThanOrEqual(widths.client);
 });
 
-test('the global launcher stays fixed, reachable, and inside the viewport', async ({ page }) => {
+test('the visible Capture launcher stays fixed, reachable, and inside the viewport', async ({ page }) => {
   const cases = [
     { label: 'Today', url: '/', ready: '.fd-today' },
     { label: 'Reader', url: '/?page=t_mood.md', ready: '.fd-reader .fd-article__body' },
@@ -281,8 +280,9 @@ test('the global launcher stays fixed, reachable, and inside the viewport', asyn
       await expect(page.locator(surface.ready)).toBeVisible();
       await expect(captureLauncher(page)).toBeVisible();
       const geometry = await page.evaluate(() => {
-        const mount = document.querySelector('#fdCaptureMount');
-        const button = mount.querySelector('.fd-capture-launch--global');
+        const mount = window.innerWidth <= 640
+          ? document.querySelector('.fd-dock') : document.querySelector('#fdCaptureMount');
+        const button = mount.querySelector('[data-capture-open]');
         const mountBox = mount.getBoundingClientRect();
         const buttonBox = button.getBoundingClientRect();
         return {
@@ -310,7 +310,7 @@ test('the global launcher stays fixed, reachable, and inside the viewport', asyn
   }
 });
 
-test('phone page endings scroll clear of the fixed capture launcher', async ({ page }) => {
+test('phone page endings scroll clear of the fixed dock', async ({ page }) => {
   for (const viewport of [NARROW, PHONE]) {
     await page.setViewportSize(viewport);
     for (const url of ['/', '/?tab=path', '/?tab=library']) {
@@ -319,7 +319,7 @@ test('phone page endings scroll clear of the fixed capture launcher', async ({ p
       await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
       const geometry = await page.evaluate(() => ({
         contentBottom: document.querySelector('#content > :last-child').getBoundingClientRect().bottom,
-        launcherTop: document.querySelector('#fdCaptureMount').getBoundingClientRect().top,
+        launcherTop: document.querySelector('.fd-dock').getBoundingClientRect().top,
       }));
       expect(geometry.contentBottom, `${viewport.width}px ${url}: ${JSON.stringify(geometry)}`)
         .toBeLessThanOrEqual(geometry.launcherTop);

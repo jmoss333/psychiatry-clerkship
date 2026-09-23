@@ -65,7 +65,8 @@ function fdDock(state){
   for(var i=0;i<model.items.length;i++){
     var item=model.items[i];
     out+='<button type="button" class="fd-dock__item" '+item.attr+'="'+
-      fdEsc(item.value)+'">'+fdEsc(item.label)+'</button>';
+      fdEsc(item.value)+'"'+(item.id==='capture'?' aria-haspopup="dialog" aria-expanded="false"':'')+
+      '>'+fdEsc(item.label)+'</button>';
     if(i===1){
       var context=model.context;
       out+='<button type="button" class="fd-dock__item fd-dock__item--context" '+

@@ -832,6 +832,7 @@
 .fd-searchpanel__head{display:flex;align-items:center;gap:var(--fd-space-5);padding:15px 18px;border-bottom:1px solid var(--fd-line)}
 .fd-searchpanel__input{flex:1;border:none;outline:none;font-size:var(--fd-font-base);color:var(--fd-text);background:transparent;font-family:inherit}
 .fd-searchpanel__esc{border:1px solid var(--fd-line-strong);background:none;border-radius:var(--fd-radius-xs);font-size:var(--fd-font-2xs);font-weight:600;color:var(--fd-text-dim);padding:2px 7px;cursor:pointer}
+.fd-searchpanel__browse{padding:var(--fd-space-2) var(--fd-space-5);border-bottom:1px solid var(--fd-line);background:var(--fd-callout)}
 .fd-searchpanel__body{max-height:46vh;overflow-y:auto;padding:8px}
 .fd-searchpanel__foot{padding:9px 18px;border-top:1px solid var(--fd-line);background:var(--fd-callout);font-size:var(--fd-font-xs);color:var(--fd-text-dim)}
 .fd-searchpanel__empty{padding:22px;text-align:center;font-size:var(--fd-font-md);color:var(--fd-text-dim)}

@@ -153,6 +153,7 @@ test('dock renders five labelled buttons with an escaped center action', () => {
   const html = F.fdDock({ dockAction: { label: '<Continue>', sourceId: 'action&one' } });
   assert.match(html, /^<nav class="fd-dock" aria-label="Learning actions">/);
   assert.equal((html.match(/<button\b/g) || []).length, 5);
+  assert.match(html, /data-capture-open="" aria-haspopup="dialog" aria-expanded="false">Capture<\/button>/);
   assert.match(html, /class="fd-dock__item fd-dock__item--context" data-fd-dock-forward="action&amp;one">&lt;Continue&gt;<\/button>/);
   assert.equal(html.indexOf('fd-dock__item--context') > html.indexOf('Path'), true,
     'the contextual action follows the two leading destinations');
