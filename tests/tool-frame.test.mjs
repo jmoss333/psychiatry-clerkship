@@ -70,7 +70,7 @@ function toolHost() {
 
 test('a mounted tool projects its real primary into the dock and completion preserves its frame', async () => {
   const host = toolHost(), dock = toolHost();
-  const document = { activeElement: null, createElement: toolHost };
+  const document = { activeElement: null, createElement: toolHost, getElementById: () => null };
   const runtime = new Function('contentEl', 'fdDockMount', 'document', `
     ${read('phase_policy.js')}
     ${read('frontdoor/fd_state.js')}
@@ -89,6 +89,7 @@ test('a mounted tool projects its real primary into the dock and completion pres
     function renderGovernanceNotice(){return '';}
     function setLearnerTitle(){} function announceRoute(){} function focusGovernanceNotice(){}
     function fdRenderOverlays(){}
+    ${shellFunction('fdUpdateCareNavigatorStatus')}
     ${shellFunction('fdRenderDock')}
     ${shellFunction('fdPatchCompletion')}
     ${shellFunction('fdRenderTransient')}
