@@ -1598,10 +1598,11 @@
     return 'Unrouted';
   }
   function capRouteHtml(id,route){
-    var options=['rounds','supervision','later'], h='<div class="cap-route" role="group" aria-label="Choose where to take this question">';
+    var questionId='cap-question-'+capAttr(id);
+    var options=['rounds','supervision','later'], h='<div class="cap-route" role="group" aria-label="Choose where to take this question" aria-describedby="'+questionId+'">';
     for(var i=0;i<options.length;i++){
       var choice=options[i];
-      h+='<button type="button" class="cap-btn" data-cap-route="'+choice+'" data-cap-id="'+capAttr(id)+'" aria-pressed="'+(route===choice?'true':'false')+'">'+capRouteLabel(choice)+'</button>';
+      h+='<button type="button" class="cap-btn" data-cap-route="'+choice+'" data-cap-id="'+capAttr(id)+'" aria-pressed="'+(route===choice?'true':'false')+'" aria-describedby="'+questionId+'">'+capRouteLabel(choice)+'</button>';
     }
     return h+'</div>';
   }
@@ -1614,7 +1615,7 @@
       var it=items[j];
       h+='<li data-cap-route-state="'+(it.route||'unrouted')+'"><div class="cap-list__row">'
         +(it.state==='open'?'<input type="checkbox" class="cap-email-select" data-cap-email-id="'+capAttr(it.id)+'" aria-label="Select question for email: '+capAttr(it.text.replace(/\s+/g,' ').slice(0,60))+'">':'')
-        +'<span class="cap-list__text">'+esc(it.text)+'</span>'
+        +'<span class="cap-list__text" id="cap-question-'+capAttr(it.id)+'">'+esc(it.text)+'</span>'
         +'<span class="cap-list__status">'+capRouteLabel(it.route)+'</span>'
         +'<button type="button" class="x" data-cap-del="'+capAttr(it.id)+'" aria-label="'+capAttr(capDeleteLabel(it.text))+'">&times;</button></div>'
         +capRouteHtml(it.id,it.route)+'</li>';
@@ -2959,8 +2960,11 @@
     if(el.hasAttribute('data-cap-route')){
       var route=el.getAttribute('data-cap-route');
       var routeHost=el.closest&&el.closest('#capListWrap')?'#capListWrap':'#capHold';
-      if(capSetRoute(id,route)){
-        capRenderBody();capRefreshNext();specialRefresh();capAnnounce('Question routed: '+capRouteLabel(route)+'.');
+      var currentRoute=null, routeItems=capRead().items;
+      for(var r=0;r<routeItems.length;r++){ if(routeItems[r].id===id){ currentRoute=routeItems[r].route; break; } }
+      var nextRoute=currentRoute===route?null:route;
+      if(capSetRoute(id,nextRoute)){
+        capRenderBody();capRefreshNext();specialRefresh();capAnnounce(nextRoute===null?'Question route cleared. Unrouted.':'Question routed: '+capRouteLabel(nextRoute)+'.');
         var buttons=capSheet&&capSheet.querySelectorAll(routeHost+' [data-cap-route][data-cap-id]');
         for(var i=0;buttons&&i<buttons.length;i++){
           if(buttons[i].getAttribute('data-cap-id')===id&&buttons[i].getAttribute('data-cap-route')===route){buttons[i].focus();break;}

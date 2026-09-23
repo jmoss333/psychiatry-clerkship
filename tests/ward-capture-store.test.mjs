@@ -217,6 +217,26 @@ test('full Capture inbox retains routed questions and escapes learner text', () 
   assert.match(html, /Erase all captures/);
 });
 
+test('each repeated route choice describes its own escaped question', () => {
+  const html = makeCaptureUi([
+    { id: 'first', text: '<img src=x onerror=alert(1)>?', at: 1, route: null, state: 'open' },
+    { id: 'second', text: 'Second question?', at: 2, route: 'rounds', state: 'open' },
+  ]).capListHtml();
+  const rows = [...html.matchAll(/<li data-cap-route-state="[^"]+">([\s\S]*?)<\/li>/g)].map((match) => match[1]);
+  assert.equal(rows.length, 2);
+  for (const [row, id, text] of [
+    [rows[0], 'first', '&lt;img src=x onerror=alert(1)&gt;?'],
+    [rows[1], 'second', 'Second question?'],
+  ]) {
+    assert.match(row, new RegExp(`<span class="cap-list__text" id="cap-question-${id}">${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</span>`));
+    assert.match(row, new RegExp(`<div class="cap-route"[^>]*aria-describedby="cap-question-${id}"`));
+    for (const route of ['rounds', 'supervision', 'later'])
+      assert.match(row, new RegExp(`data-cap-route="${route}"[^>]*aria-describedby="cap-question-${id}"`));
+    assert.doesNotMatch(row, new RegExp(`aria-describedby="cap-question-${id === 'first' ? 'second' : 'first'}"`));
+  }
+  assert.doesNotMatch(html, /<img\b/);
+});
+
 test('email selection is explicit, limited to open questions, and escaped in the full inbox', () => {
   const html = makeCaptureUi([
     { id: 'one', text: '<img src=x onerror=alert(1)>', at: 1, route: null, state: 'open' },
@@ -294,6 +314,18 @@ test('Done removes an unrouted question and faculty preview does not mutate a ro
   const id2 = preview.capAdd('Question?');
   preview.fdCaptureAction(preview.el({ 'data-cap-route': 'rounds', 'data-cap-id': id2 }));
   assert.equal(preview.capRead().items[0].route, null);
+});
+
+test('choosing the selected route again persists an unrouted question without touching SRS', () => {
+  const h = makeCaptureAction();
+  const id = h.capAdd('Question?');
+  const rounds = h.el({ 'data-cap-route': 'rounds', 'data-cap-id': id });
+  h.fdCaptureAction(rounds);
+  assert.equal(h.capRead().items[0].route, 'rounds');
+  h.fdCaptureAction(rounds);
+  assert.equal(h.capRead().items[0].route, null);
+  assert.equal(h.storage.getItem('cw_srs_v1'), null);
+  assert.equal(h.events.filter((event) => event === 'today').length, 2);
 });
 
 test('Schedule review and Done restore focus inside the open Capture dialog after replacing saved actions', () => {

@@ -165,6 +165,52 @@ test('route: saving persists the question before any optional route', async ({ p
   expect((await savedItems(page))[0]).toMatchObject({ route: 'rounds', state: 'open' });
 });
 
+test('route: every retained row gives its choices that question as accessible context', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.goto('/');
+  await saveQuestion(page, '<First learning question?>');
+  await inbox(page).locator('#capText').fill('Second learning question?');
+  await inbox(page).locator('#capSave').click();
+  const rows = inbox(page).locator('.cap-list li');
+  await expect(rows).toHaveCount(2);
+  const questionIds = [];
+  for (let index = 0; index < 2; index++) {
+    const row = rows.nth(index);
+    const questionId = await row.locator('.cap-list__text').getAttribute('id');
+    expect(questionId).toMatch(/^cap-question-[A-Za-z0-9_-]+$/);
+    questionIds.push(questionId);
+    await expect(row.locator('.cap-route')).toHaveAttribute('aria-describedby', questionId);
+    for (const button of await row.locator('[data-cap-route]').all())
+      await expect(button).toHaveAttribute('aria-describedby', questionId);
+  }
+  expect(questionIds[0]).not.toBe(questionIds[1]);
+  await expect(rows.first().locator('.cap-list__text')).toHaveText('<First learning question?>');
+  await expect(page.locator('.cap-list img')).toHaveCount(0);
+});
+
+test('route: selecting an active destination clears it and restores the Today reminder after reload', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.goto('/');
+  await saveQuestion(page, 'A question to take on rounds?');
+  const rounds = inbox(page).locator('#capHold [data-cap-route="rounds"]');
+  await rounds.click();
+  await expect(rounds).toHaveAttribute('aria-pressed', 'true');
+  await expect(inbox(page).locator('.cap-list__status')).toHaveText('Ask on rounds');
+  expect((await savedItems(page))[0].route).toBe('rounds');
+  await rounds.click();
+  await expect(rounds).toHaveAttribute('aria-pressed', 'false');
+  await expect(inbox(page).locator('.cap-list__status')).toHaveText('Unrouted');
+  expect((await savedItems(page))[0].route).toBeNull();
+  await inbox(page).locator('#capCancel').click();
+  await expect(page.locator('.fd-capture:visible .fd-capture__question')).toHaveText('A question to take on rounds?');
+  await page.reload();
+  await expect(page.locator('.fd-capture:visible .fd-capture__question')).toHaveText('A question to take on rounds?');
+  await captureLauncher(page).click();
+  await expect(inbox(page).locator('.cap-list__status')).toHaveText('Unrouted');
+  await expect(inbox(page).locator('.cap-list [data-cap-route][aria-pressed="true"]')).toHaveCount(0);
+  expect((await savedItems(page))[0].route).toBeNull();
+});
+
 test('the dock Capture control remains in the viewport after a long reader scroll', async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.goto('/?page=t_mood.md');
