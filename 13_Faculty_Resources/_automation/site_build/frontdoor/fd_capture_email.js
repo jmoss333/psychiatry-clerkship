@@ -66,18 +66,22 @@ function fdEmailCanonicalOrigin(origin){
 }
 
 function fdEmailSource(index,ctx,origin){
-  var byRef,entry,base;
+  var byRef,entry,base,kind,parameter;
   if(!index||typeof index!=='object'||!FD_EMAIL_OWN.call(index,'byRef')
      ||typeof ctx!=='string'||!FD_EMAIL_OWN.call(index.byRef||{},ctx)
-     ||!/^(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9][A-Za-z0-9._-]*\.md$/.test(ctx)
+     ||!(/^(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9][A-Za-z0-9._-]*\.md$/.test(ctx)
+       ||/^[A-Za-z0-9][A-Za-z0-9._-]*\.html$/.test(ctx))
      ||ctx.indexOf('..')!==-1)return null;
   byRef=index.byRef;
   entry=byRef[ctx];
   base=fdEmailCanonicalOrigin(origin);
   if(!base||!entry||typeof entry!=='object'||!FD_EMAIL_OWN.call(entry,'ref')
-     ||!FD_EMAIL_OWN.call(entry,'title')||entry.ref!==ctx
+     ||!FD_EMAIL_OWN.call(entry,'kind')||!FD_EMAIL_OWN.call(entry,'title')||entry.ref!==ctx
      ||typeof entry.title!=='string'||!entry.title.trim())return null;
-  return {title:entry.title,url:base+'/?page='+encodeURIComponent(ctx)};
+  kind=ctx.slice(-5)==='.html'?'tool':'read';
+  if(entry.kind!==kind)return null;
+  parameter=kind==='tool'?'tool':'page';
+  return {title:entry.title,url:base+'/?'+parameter+'='+encodeURIComponent(ctx)};
 }
 
 function fdEmailDigest(index,items,origin){

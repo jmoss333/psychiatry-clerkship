@@ -39,7 +39,7 @@ test('selection includes only explicitly chosen open items and deduplicates ids'
 });
 
 test('digest groups exactly selected questions and derives source only from canonical index', () => {
-  const index = { byRef: { 'page.md': { ref: 'page.md', title: 'Interview structure' } } };
+  const index = { byRef: { 'page.md': { ref: 'page.md', kind: 'read', title: 'Interview structure' } } };
   const items = [
     { id: 'z', text: 'Unrouted?', route: null, ctx: 'missing.md', title: 'Forged', url: 'https://evil.test' },
     { id: 'b', text: 'Later?', route: 'later', ctx: 'page.md', title: 'Forged', url: 'https://evil.test' },
@@ -64,15 +64,66 @@ test('digest rejects inherited, noncanonical, and non-same-origin source metadat
   const index = { byRef: inherited };
   const items = [{ id: 'a', text: 'Question?', route: null, ctx: 'page.md' }];
   assert.doesNotMatch(F.fdEmailDigest(index, items, 'https://example.test').body, /Inherited title|\?page=/);
-  index.byRef = { 'page.md': { ref: 'other.md', title: 'Wrong key' } };
+  index.byRef = { 'page.md': { ref: 'other.md', kind: 'read', title: 'Wrong key' } };
   assert.doesNotMatch(F.fdEmailDigest(index, items, 'https://example.test').body, /Wrong key|\?page=/);
-  index.byRef = { 'page.md': { ref: 'page.md', title: 'Canonical title' } };
+  index.byRef = { 'page.md': { ref: 'page.md', kind: 'read', title: 'Canonical title' } };
   for (const badOrigin of ['https://example.test/elsewhere', 'https://evil.test/?next=https://example.test', 'file:///tmp/site', 'javascript:alert(1)']) {
     assert.doesNotMatch(F.fdEmailDigest(index, items, badOrigin).body, /\?page=/);
   }
   const traversal = F.fdEmailDigest({ byRef: { '../page.md': { ref: '../page.md', title: 'Traversal' } } },
     [{ id: 'x', text: 'Question?', route: null, ctx: '../page.md' }], 'https://example.test');
   assert.doesNotMatch(traversal.body, /Traversal|\?page=/);
+});
+
+test('tool context uses the canonical public tool route and title', () => {
+  const index = { byRef: {
+    'question-bank-practice.html': {
+      ref: 'question-bank-practice.html', kind: 'tool', title: 'Practice Questions — Question Bank',
+    },
+  } };
+  const selected = F.fdEmailSelection([{
+    id: 'tool-question', text: 'Which question should I revisit?', route: 'later', state: 'open',
+    ctx: 'question-bank-practice.html', title: 'Forged title', url: 'https://evil.test',
+  }], ['tool-question']);
+  const body = F.fdEmailDigest(index, selected, 'https://example.test').body;
+  assert.match(body, /Source: Practice Questions — Question Bank — https:\/\/example\.test\/\?tool=question-bank-practice\.html/);
+  assert.doesNotMatch(body, /Forged title|evil\.test|\?page=question-bank-practice\.html/);
+  const rights = F.fdEmailDigest({ byRef: { 'cssrs.html': {
+    ref: 'cssrs.html', kind: 'tool', rights: true, title: 'Official C-SSRS reference',
+  } } }, [{ id: 'rights', text: 'Where is the official form?', route: null, ctx: 'cssrs.html' }],
+  'https://example.test').body;
+  assert.match(rights, /Official C-SSRS reference — https:\/\/example\.test\/\?tool=cssrs\.html/);
+});
+
+test('tool context rejects mismatched kinds, refs, unsafe paths, and untrusted origins', () => {
+  const ctx = 'question-bank-practice.html';
+  const item = { id: 'a', text: 'Question?', route: null, ctx };
+  const canonical = { ref: ctx, kind: 'tool', title: 'Canonical title' };
+  for (const bad of [
+    { ...canonical, kind: 'read' },
+    { ...canonical, ref: 'another.html' },
+    { ...canonical, title: '' },
+  ]) {
+    const body = F.fdEmailDigest({ byRef: { [ctx]: bad } }, [item], 'https://example.test').body;
+    assert.doesNotMatch(body, /Source:|\?tool=/);
+  }
+  for (const unsafe of ['../tool.html', 'nested/tool.html', '//evil.html', 'tool.html?x=1',
+    'tool.html#x', 'https://evil.test/tool.html', '__proto__.html']) {
+    const body = F.fdEmailDigest({ byRef: { [unsafe]: { ref: unsafe, kind: 'tool', title: 'Unsafe' } } },
+      [{ ...item, ctx: unsafe }], 'https://example.test').body;
+    assert.doesNotMatch(body, /Source:|\?tool=/, unsafe);
+  }
+  const external = F.fdEmailDigest({ byRef: { [ctx]: canonical } }, [item], 'https://evil.test/path').body;
+  assert.doesNotMatch(external, /Source:|\?tool=/);
+});
+
+test('canonical nested reading context keeps its existing page route', () => {
+  const ctx = 'module/page.md';
+  const body = F.fdEmailDigest({ byRef: { [ctx]: {
+    ref: ctx, kind: 'read', title: 'Module reading',
+  } } }, [{ id: 'nested', text: 'What should I review?', route: null, ctx }],
+  'https://example.test').body;
+  assert.match(body, /Module reading — https:\/\/example\.test\/\?page=module%2Fpage\.md/);
 });
 
 test('mailto URI encodes recipient, subject, and body and refuses overlong drafts intact', () => {
