@@ -62,6 +62,49 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+test('dock forwards a rendered resume anchor through its href once and a button once', async ({ page }) => {
+  let resumeRequests = 0;
+  await page.route('https://dock.test/**', async (route) => {
+    if (route.request().url().includes('tool=question-bank-practice.html')) resumeRequests++;
+    await route.fulfill({ contentType: 'text/html', body: '<main>Dock target</main>' });
+  });
+  await page.goto('https://dock.test/');
+  const snippets = ['fd_data.js', 'fd_due.js', 'fd_wire.js'].map((name) =>
+    readFileSync(new URL(`../../13_Faculty_Resources/_automation/site_build/frontdoor/${name}`, import.meta.url), 'utf8'));
+  for (const content of snippets) await page.addScriptTag({ content });
+  await page.evaluate(() => {
+    document.body.innerHTML =
+      fdResumeCard({ queueIds: ['a', 'b', 'c'], idx: 1 }, true) +
+      '<button type="button" data-fd-dock-source="primary-week" data-fd-dock-label="Continue">Continue</button>';
+    window.buttonClicks = 0;
+    document.querySelector('[data-fd-dock-source="primary-week"]').addEventListener('click', () => window.buttonClicks++);
+    document.querySelector('[data-fd-dock-source="primary-resume"]').addEventListener('click', () =>
+      sessionStorage.setItem('resumeClicks', String(Number(sessionStorage.getItem('resumeClicks') || 0) + 1)));
+    sessionStorage.removeItem('routeWrites');
+    for (const name of ['pushState', 'replaceState']) {
+      const original = history[name];
+      history[name] = function (...args) {
+        sessionStorage.setItem('routeWrites', String(Number(sessionStorage.getItem('routeWrites') || 0) + 1));
+        return original.apply(this, args);
+      };
+    }
+  });
+  const anchor = page.locator('a[data-fd-dock-source="primary-resume"]');
+  await expect(anchor).toHaveAttribute('href', '?tool=question-bank-practice.html&resume=1');
+  expect(await page.evaluate(() => fdForwardDockAction(document, 'primary-week'))).toBe(true);
+  expect(await page.evaluate(() => window.buttonClicks)).toBe(1);
+  expect(page.url()).toBe('https://dock.test/');
+  const destination = 'https://dock.test/?tool=question-bank-practice.html&resume=1';
+  await Promise.all([
+    page.waitForURL(destination, { timeout: 3_000 }),
+    page.evaluate(() => fdForwardDockAction(document, 'primary-resume')),
+  ]);
+  expect(page.url()).toBe(destination);
+  expect(resumeRequests).toBe(1);
+  expect(await page.evaluate(() => sessionStorage.getItem('resumeClicks'))).toBe('1');
+  expect(await page.evaluate(() => sessionStorage.getItem('routeWrites'))).toBeNull();
+});
+
 test('first run reaches Today; browse mode exposes the exact audience Library', async ({ page }, testInfo) => {
   const site = audience(testInfo);
   await freezeTime(page);
