@@ -11,6 +11,7 @@ import test from 'node:test';
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const phase = readFileSync(new URL(`${BUILD}/phase_policy.js`, import.meta.url), 'utf8');
 const fdState = readFileSync(new URL(`${BUILD}/frontdoor/fd_state.js`, import.meta.url), 'utf8');
+const readingPlace = readFileSync(new URL(`${BUILD}/frontdoor/fd_reading_place.js`, import.meta.url), 'utf8');
 
 function memStorage() {
   const m = new Map();
@@ -25,6 +26,7 @@ function memStorage() {
 const make = new Function('localStorage', `
   ${phase}
   ${fdState}
+  ${readingPlace}
   return {
     FD_STORE: FD_STORE,
     fdLoad: fdLoad,
@@ -75,6 +77,63 @@ test('fdSave round-trips through fdLoad', () => {
   fdSave({ role: 'ms3', tab: 'path', viewWeek: 4, toolExpanded: false });
   assert.equal(fdLoad().toolExpanded, false,
     'the focused preference must overwrite an earlier expanded preference');
+});
+
+test('fdSave retains other allowlisted state while persisting bounded reading places', () => {
+  const ls = memStorage();
+  const { fdSave, fdLoad } = make(ls);
+  const readingPlaces = {};
+  for (let i = 0; i < 51; i++) {
+    readingPlaces[`page-${i}.md`] = { heading: `heading-${i}`, offset: i, updatedAt: i };
+  }
+  assert.equal(fdSave({ role: 'ms3', tab: 'path', viewWeek: 4, scrollPos: 120, readingPlaces }), true);
+  const loaded = fdLoad();
+  assert.equal(loaded.role, 'ms3');
+  assert.equal(loaded.tab, 'path');
+  assert.equal(loaded.viewWeek, 4);
+  assert.equal(loaded.scrollPos, 120);
+  assert.equal(Object.keys(loaded.readingPlaces).length, 50);
+  assert.equal(loaded.readingPlaces['page-0.md'], undefined);
+  assert.deepEqual(loaded.readingPlaces['page-50.md'], {
+    heading: 'heading-50', offset: 50, updatedAt: 50,
+  });
+});
+
+test('fdSave drops malformed and prototype-like reading-place entries before writing', () => {
+  const ls = memStorage();
+  const { fdSave } = make(ls);
+  const readingPlaces = {
+    'good.md': { heading: 'chapter-one', offset: 4, updatedAt: 7 },
+    'bad.md': { heading: '', offset: -2 },
+    'wrong.md': { heading: 'chapter-two', offset: Infinity, updatedAt: 8 },
+  };
+  Object.defineProperty(readingPlaces, '__proto__', {
+    value: { heading: 'injected', offset: 1, updatedAt: 9 }, enumerable: true,
+  });
+  readingPlaces.constructor = { heading: 'injected', offset: 1, updatedAt: 9 };
+  assert.equal(fdSave({ tab: 'today', readingPlaces }), true);
+  assert.deepEqual(JSON.parse(ls.getItem('cw_frontdoor_v1')), {
+    tab: 'today', readingPlaces: {
+      'good.md': { heading: 'chapter-one', offset: 4, updatedAt: 7 },
+    },
+  });
+  assert.equal(fdSave({ tab: 'today', readingPlaces: { 'bad.md': { heading: '', offset: -2 } } }), true);
+  assert.deepEqual(JSON.parse(ls.getItem('cw_frontdoor_v1')), { tab: 'today', readingPlaces: {} });
+});
+
+test('fdSave reports a failed write without changing the previously stored value', () => {
+  const ls = memStorage();
+  const first = make(ls);
+  assert.equal(first.fdSave({ tab: 'path' }), true);
+  const prior = ls.getItem('cw_frontdoor_v1');
+  const failingStorage = {
+    getItem: key => ls.getItem(key),
+    setItem: () => { throw new Error('QuotaExceededError'); },
+  };
+  assert.equal(make(failingStorage).fdSave({ tab: 'today', readingPlaces: {
+    'good.md': { heading: 'chapter-one', offset: 4, updatedAt: 7 },
+  } }), false);
+  assert.equal(ls.getItem('cw_frontdoor_v1'), prior);
 });
 
 test('fdSave persists only whitelisted keys, never done/streak/week', () => {

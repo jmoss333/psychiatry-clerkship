@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
 
 const source = readFileSync(new URL(
@@ -19,6 +22,9 @@ const capsule = readFileSync(new URL(
 ), 'utf8');
 const stateModule = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_state.js', import.meta.url,
+), 'utf8');
+const readingPlaceModule = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_reading_place.js', import.meta.url,
 ), 'utf8');
 const todayModule = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_today.js', import.meta.url,
@@ -48,6 +54,34 @@ const activeLearningPathConsumers = [
 ].map((relative) => [relative, readFileSync(new URL(relative, import.meta.url), 'utf8')]);
 
 function count(needle) { return source.split(needle).length - 1; }
+
+test('build injection emits one reading-place module after state and before consumers', () => {
+  const marker = '/*__FD_READING_PLACE__*/';
+  assert.equal(count(marker), 1, 'one source marker');
+  const directory = mkdtempSync(join(tmpdir(), 'fd-reading-place-injection-'));
+  const output = join(directory, 'index.html');
+  try {
+    copyFileSync(new URL('../13_Faculty_Resources/_automation/site_build/spa_index.html', import.meta.url), output);
+    const script = [
+      'import sys',
+      'sys.path.insert(0, sys.argv[1])',
+      'import common',
+      'assert common.inject_shared_snippets(sys.argv[2])',
+    ].join('\n');
+    const result = spawnSync('python3', ['-c', script,
+      new URL('../13_Faculty_Resources/_automation/site_build/', import.meta.url).pathname, output],
+    { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    const emitted = readFileSync(output, 'utf8');
+    assert.equal(emitted.includes(marker), false, 'marker was replaced');
+    assert.equal(emitted.split(readingPlaceModule).length - 1, 1, 'exact canonical module bytes emitted once');
+    assert.ok(emitted.indexOf(stateModule) < emitted.indexOf(readingPlaceModule)
+      && emitted.indexOf(readingPlaceModule) < emitted.indexOf('var FD_CURRICULUM='),
+    'state, reading-place helper, then Front Door consumers');
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 function shellFunction(name) {
   const match = source.match(new RegExp(`  function ${name}\\([^]*?\\n  \\}`));
