@@ -12,11 +12,21 @@
    that runs before its assignment executes. So the marker must be placed AFTER
    `facultyPreviewRequest=readFacultyPreviewRequest()` runs, not at the script's very top — see
    the placement comment at the call site in spa_index.html. */
+var clerkshipSWReg=null;
+function clerkshipSWRegistration(){ return clerkshipSWReg; }
+function requestClerkshipSWUpdate(){
+  var reg=clerkshipSWRegistration();
+  if(!reg||typeof reg.update!=='function')return Promise.resolve(false);
+  try{
+    return Promise.resolve(reg.update()).then(function(){ return true; },function(){ return false; });
+  }catch(_){ return Promise.resolve(false); }
+}
 function registerClerkshipSW(){
   try{
     if(!('serviceWorker' in navigator)) return;
     if(typeof facultyPreviewRequest!=='undefined' && facultyPreviewRequest) return;
     navigator.serviceWorker.register('/sw.js').then(function(reg){
+      clerkshipSWReg=reg;
       reg.addEventListener('updatefound', function(){
         var w=reg.installing; if(!w) return;
         w.addEventListener('statechange', function(){
