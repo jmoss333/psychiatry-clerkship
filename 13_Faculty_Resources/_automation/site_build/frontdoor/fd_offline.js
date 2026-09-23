@@ -14,7 +14,7 @@ function fdOfflineUrl(value){
 }
 
 function fdOfflineRef(ref,kind){
-  if(typeof ref!=='string'||typeof kind!=='string')return '';
+  if(typeof ref!=='string'||typeof kind!=='string'||ref.indexOf('..')!==-1)return '';
   if(kind==='read'&&/^[A-Za-z0-9][A-Za-z0-9._-]*\.md$/.test(ref))return '/content/'+ref;
   if(kind==='tool'&&/^[A-Za-z0-9][A-Za-z0-9._-]*\.html$/.test(ref))return '/tools/'+ref;
   return '';
@@ -22,8 +22,17 @@ function fdOfflineRef(ref,kind){
 
 function fdOfflineAppendOwnRefs(target,source){
   for(var i=0;i<source.length;i++){
-    if(fdOfflineOwn(source,i))target.push(source[i]);
+    if(!fdOfflineOwn(source,i)||typeof source[i]!=='string')return false;
+    target.push(source[i]);
   }
+  return true;
+}
+
+/* Audio/video links are explicitly outside the cache claim. A malformed local ref or an
+   external URL is not a declared route exemption and must invalidate the route instead. */
+function fdOfflineMediaRef(ref){
+  return typeof ref==='string'&&ref.indexOf('..')===-1&&
+    /^[A-Za-z0-9][A-Za-z0-9._-]*\.(?:mp3|m4a|wav|mp4|vtt)$/.test(ref);
 }
 
 function fdOfflineUrls(index,state){
@@ -39,13 +48,13 @@ function fdOfflineUrls(index,state){
     bridge=fdOfflineOwn(st,'appBridge')&&st.appBridge==='pmhnp'?'pmhnp':'pa';
     if(!fdOfflineOwn(bridges,bridge)||!bridges[bridge]||
        !fdOfflineOwn(bridges[bridge],'refs')||!Array.isArray(bridges[bridge].refs))return [];
-    fdOfflineAppendOwnRefs(refs,bridges[bridge].refs);
+    if(!fdOfflineAppendOwnRefs(refs,bridges[bridge].refs))return [];
     activities=pathway&&fdOfflineOwn(pathway,'activities')?pathway.activities:null;
     if(!Array.isArray(activities))return [];
     for(i=0;i<activities.length;i++){
       if(!fdOfflineOwn(activities,i)||!activities[i]||
          !fdOfflineOwn(activities[i],'refs')||!Array.isArray(activities[i].refs))return [];
-      fdOfflineAppendOwnRefs(refs,activities[i].refs);
+      if(!fdOfflineAppendOwnRefs(refs,activities[i].refs))return [];
     }
   }else{
     if(!Array.isArray(weeks)||!fdOfflineOwn(st,'week')||
@@ -59,20 +68,24 @@ function fdOfflineUrls(index,state){
     /* The week landing page is a separate Compass route, not one of week.items. */
     if(fdOfflineOwn(weeks[w],'landingRef'))refs.push(weeks[w].landingRef);
     for(i=0;i<items.length;i++){
-      if(!fdOfflineOwn(items,i)||!items[i]||!fdOfflineOwn(items[i],'ref'))continue;
-      refs.push(items[i].ref);
+      if(!fdOfflineOwn(items,i)||!items[i]||typeof items[i]!=='object'||
+         !fdOfflineOwn(items[i],'ref')||!fdOfflineOwn(items[i],'kind'))return [];
+      refs.push(items[i]);
     }
   }
   for(j=0;j<refs.length;j++){
-    if(!fdOfflineOwn(refs,j))continue;
+    if(!fdOfflineOwn(refs,j))return [];
     entry=refs[j];
     ref=typeof entry==='string'?entry:entry&&fdOfflineOwn(entry,'ref')?entry.ref:null;
-    if(typeof ref!=='string'||!fdOfflineOwn(byRef,ref))continue;
+    if(fdOfflineMediaRef(ref))continue;
+    if(typeof ref!=='string'||!fdOfflineOwn(byRef,ref))return [];
     item=byRef[ref];
     if(!item||typeof item!=='object'||!fdOfflineOwn(item,'ref')||item.ref!==ref||
-       !fdOfflineOwn(item,'kind')||item.rights===true)continue;
+       !fdOfflineOwn(item,'kind')||
+       (typeof entry==='object'&&(!fdOfflineOwn(entry,'kind')||entry.kind!==item.kind)))return [];
     url=fdOfflineRef(ref,item.kind);
-    if(!url||!fdOfflineUrl(url)||fdOfflineOwn(seen,url))continue;
+    if(!url||!fdOfflineUrl(url))return [];
+    if(fdOfflineOwn(seen,url))continue;
     seen[url]=true;
     out.push(url);
     if(out.length>FD_OFFLINE_MAX)return [];
