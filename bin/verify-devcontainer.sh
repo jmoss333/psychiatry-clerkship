@@ -37,14 +37,6 @@ if [ "${CLERKSHIP_DEVCONTAINER:-}" != "1" ]; then
   exit 2
 fi
 
-if [ ! -x .venv/bin/python3 ]; then
-  echo "verify-devcontainer.sh requires the virtualenv from .devcontainer/post-create.sh." >&2
-  exit 2
-fi
-
-export VIRTUAL_ENV="$PWD/.venv"
-export PATH="$VIRTUAL_ENV/bin:$PATH"
-
 stage="startup"
 started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
@@ -68,6 +60,14 @@ record running 0
 if [ "$refresh_deps" = 1 ]; then
   bash .devcontainer/install-dependencies.sh
 fi
+if [ ! -x .venv/bin/python3 ]; then
+  echo "verify-devcontainer.sh requires the virtualenv from .devcontainer/post-create.sh." >&2
+  record failed 2 || true
+  exit 2
+fi
+
+export VIRTUAL_ENV="$PWD/.venv"
+export PATH="$VIRTUAL_ENV/bin:$PATH"
 
 stage="runtime-contract"
 node bin/check-runtime-contract.mjs --current

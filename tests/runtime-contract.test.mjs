@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -301,7 +301,7 @@ esac
 });
 
 function withVerifierFixture(run) {
-  const fixture = mkdtempSync(resolve(tmpdir(), 'verify-receipt-'));
+  const fixture = realpathSync(mkdtempSync(resolve(tmpdir(), 'verify-receipt-')));
   const receiptPath = resolve(fixture, 'output/devcontainer/verification-receipt.json');
   const trace = resolve(fixture, 'trace.log');
   const marker = resolve(fixture, 'gate-started.marker');
@@ -312,9 +312,10 @@ function withVerifierFixture(run) {
     mkdirSync(resolve(fixture, 'tests/smoke'), { recursive: true });
     writeFileSync(resolve(fixture, 'bin/verify-devcontainer.sh'), readFileSync(resolve(ROOT, 'bin/verify-devcontainer.sh')));
     writeFileSync(resolve(fixture, 'bin/devcontainer-receipt.mjs'), readFileSync(resolve(ROOT, 'bin/devcontainer-receipt.mjs')));
+    writeFileSync(resolve(fixture, '.gitignore'), '.venv/\noutput/\ntrace.log\ngate-started.marker\n');
     writeFileSync(resolve(fixture, 'tests/smoke/package.json'), JSON.stringify({ devDependencies: { '@playwright/test': '1.63.0' } }));
     writeFileSync(resolve(fixture, '.venv/bin/python3'), '#!/bin/sh\necho "Python 3.11.9"\n');
-    writeFileSync(resolve(fixture, '.devcontainer/install-dependencies.sh'), '#!/bin/bash\necho dependencies >> "$TRACE"\nif [ "${FAIL_STAGE:-}" = dependencies ]; then exit 1; fi\n');
+    writeFileSync(resolve(fixture, '.devcontainer/install-dependencies.sh'), '#!/bin/bash\necho dependencies >> "$TRACE"\nif [ "${FAIL_STAGE:-}" = dependencies ]; then exit 1; fi\nmkdir -p .venv/bin\nprintf "#!/bin/sh\\necho Python 3.11.9\\n" > .venv/bin/python3\nchmod +x .venv/bin/python3\n');
     writeFileSync(resolve(fixture, 'bin/check-runtime-contract.mjs'), 'import { appendFileSync } from "node:fs";\nappendFileSync(process.env.TRACE, "runtime-contract\\n");\nif (process.env.FAIL_STAGE === "runtime-contract") process.exit(1);\n');
     writeFileSync(resolve(fixture, 'bin/verify.sh'), '#!/bin/bash\necho full-gate >> "$TRACE"\nif [ "${HANG_STAGE:-}" = full-gate ]; then touch "$MARKER"; exec sleep 30; fi\nif [ "${FAIL_STAGE:-}" = full-gate ]; then exit 1; fi\n');
     writeFileSync(resolve(fixture, 'bin/verify-smoke.sh'), '#!/bin/bash\nprintf "nonvisual-smoke:%s\\n" "${SPECS-<unset>}" >> "$TRACE"\nif [ "${FAIL_STAGE:-}" = nonvisual-smoke ]; then exit 1; fi\n');
@@ -340,6 +341,13 @@ function withVerifierFixture(run) {
     rmSync(fixture, { recursive: true, force: true });
     throw error;
   }
+}
+
+function receiptStatus(fixture, receiptPath) {
+  const result = spawnSync(process.execPath, [resolve(fixture, 'bin/devcontainer-receipt.mjs'),
+    'status', '--path', receiptPath, '--root', fixture], { cwd: fixture, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  return JSON.parse(result.stdout);
 }
 
 test('receipt-enabled verifier records success only after every authoritative stage', () => withVerifierFixture(({ fixture, receiptPath, trace, env, args }) => {
@@ -368,6 +376,42 @@ test('receipt-enabled verifier overwrites old green with the exact failed stage'
   assert.equal(receipt.stage, 'full-gate');
   assert.equal(receipt.exitCode, 1);
   assert.equal(evaluateReceipt({ receipt, head, trackedDirty: false }).state, 'failed');
+}));
+
+test('receipt-enabled verifier rejects missing virtualenv and replaces current green', () => withVerifierFixture(({ fixture, receiptPath, env, args }) => {
+  const first = spawnSync('/bin/bash', args, { cwd: fixture, env, encoding: 'utf8' });
+  assert.equal(first.status, 0, first.stderr);
+  assert.equal(receiptStatus(fixture, receiptPath).state, 'verified');
+  rmSync(resolve(fixture, '.venv/bin/python3'));
+  assert.equal(receiptStatus(fixture, receiptPath).state, 'verified', 'the ignored venv is not tracked evidence');
+
+  const result = spawnSync('/bin/bash', ['bin/verify-devcontainer.sh', '--receipt', receiptPath], {
+    cwd: fixture, env, encoding: 'utf8',
+  });
+  assert.equal(result.status, 2, result.stderr);
+  assert.match(result.stderr, /requires the virtualenv/);
+  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+  assert.equal(receipt.status, 'failed');
+  assert.equal(receipt.stage, 'dependencies');
+  assert.equal(receipt.exitCode, 2);
+  assert.notEqual(receiptStatus(fixture, receiptPath).state, 'verified');
+
+  const refreshed = spawnSync('/bin/bash', args, { cwd: fixture, env, encoding: 'utf8' });
+  assert.equal(refreshed.status, 0, refreshed.stderr);
+  assert.ok(existsSync(resolve(fixture, '.venv/bin/python3')));
+  assert.equal(receiptStatus(fixture, receiptPath).state, 'verified');
+}));
+
+test('receipt-enabled verifier refuses outside-container calls without touching prior receipt', () => withVerifierFixture(({ fixture, receiptPath, env, args }) => {
+  const first = spawnSync('/bin/bash', args, { cwd: fixture, env, encoding: 'utf8' });
+  assert.equal(first.status, 0, first.stderr);
+  const before = readFileSync(receiptPath, 'utf8');
+  const result = spawnSync('/bin/bash', ['bin/verify-devcontainer.sh', '--receipt', receiptPath], {
+    cwd: fixture, env: { ...env, CLERKSHIP_DEVCONTAINER: '' }, encoding: 'utf8',
+  });
+  assert.equal(result.status, 2, result.stderr);
+  assert.equal(readFileSync(receiptPath, 'utf8'), before);
+  assert.equal(receiptStatus(fixture, receiptPath).state, 'verified');
 }));
 
 test('receipt-enabled verifier leaves interrupted attempts running and gray', async () => withVerifierFixture(async ({ fixture, receiptPath, marker, head, env, args }) => {
