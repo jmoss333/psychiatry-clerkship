@@ -22,6 +22,11 @@ GIB = 1024**3
 # 5 GiB, not at an asserted universal minimum. The real failure was at 2 GiB.
 MEMORY_WARNING_BYTES = 5 * GIB
 PROBE_ERRORS = (OSError, ValueError, subprocess.SubprocessError)
+# ls-files may ask Git to diff the worktree, invoking the LFS clean filter;
+# that filter installs hooks. Disable LFS filters for this read-only probe only.
+LFS_LIST_COMMAND = ["git", "-c", "filter.lfs.process=", "-c", "filter.lfs.clean=",
+                    "-c", "filter.lfs.smudge=", "-c", "filter.lfs.required=false",
+                    "lfs", "ls-files", "--json"]
 
 
 def run_command(args, cwd):
@@ -85,7 +90,7 @@ def lfs_check(root, common, rows, runner):
             return
         # Git LFS owns pointer recognition and the tracked-file inventory; do not
         # walk nested worktrees or maintain another list of media extensions.
-        inventory = json.loads(output(runner, ["git", "lfs", "ls-files", "--json"], root))
+        inventory = json.loads(output(runner, LFS_LIST_COMMAND, root))
         files = inventory.get("files") if isinstance(inventory, dict) else None
         if not isinstance(files, list) or not files:
             raise ValueError("missing LFS inventory")
