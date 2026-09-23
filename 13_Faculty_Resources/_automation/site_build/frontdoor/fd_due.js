@@ -24,7 +24,8 @@ function fdDueRow(breakdown, primary){
   if(b.comm&&b.comm.due) parts.push(b.comm.due+' communication');
   if(b.reason&&b.reason.due) parts.push(b.reason.due+' reasoning');
   if(b.other&&b.other.due) parts.push(b.other.due+' other');
-  return '<button type="button" class="'+(isPrimary?'fd-due is-primary':'fd-due')+'" data-fd-open="review.html">'+
+  return '<button type="button" class="'+(isPrimary?'fd-due is-primary':'fd-due')+'" data-fd-open="review.html"'+
+    (isPrimary?' data-fd-dock-source="primary-due" data-fd-dock-label="Start review"':'')+'>'+
     (isPrimary?'<span class="fd-due__kicker">Clear what’s due</span>':'')+
     '<span class="fd-due__label">'+total+' review'+(total===1?'':'s')+' due</span>'+
     '<span class="fd-due__breakdown">'+fdEsc(parts.join(' · '))+'</span>'+
@@ -55,7 +56,8 @@ function fdResumeCard(capsule, primary, block){
   var blockLine=resumeSearch?'<span class="fd-resume__block">Block · '+b.done+' of '+b.total+' done</span>':'';
   return '<section class="'+(isPrimary?'fd-resume is-primary':'fd-resume')+'">'+
     '<h2 class="fd-sectionhead">'+(isPrimary?'Pick up where you left off':'Continue where you left off')+'</h2>'+
-    '<a class="fd-resume__link" href="'+href+'">'+
+    '<a class="fd-resume__link" href="'+href+'"'+
+      (isPrimary?' data-fd-dock-source="primary-resume" data-fd-dock-label="Resume question bank"':'')+'>'+
       '<span>Resume question bank — '+left+' left, ~'+minutes+' min'+blockLine+'</span>'+
       '<span>Resume →</span>'+
     '</a></section>';
@@ -69,7 +71,8 @@ function fdLastReadRow(item, primary){
   var it=item||{}, isPrimary=primary===true;
   if(typeof it.ref!=='string'||!it.ref||it.kind!=='read') return '';
   var min=(typeof it.minutes==='number')?(' — '+it.minutes+' min'):'';
-  return '<button type="button" class="'+(isPrimary?'fd-lastread is-primary':'fd-lastread')+'" data-fd-open="'+fdEsc(it.ref)+'">'+
+  return '<button type="button" class="'+(isPrimary?'fd-lastread is-primary':'fd-lastread')+'" data-fd-open="'+fdEsc(it.ref)+'"'+
+    (isPrimary?' data-fd-dock-source="primary-read" data-fd-dock-label="Open reading"':'')+'>'+
     (isPrimary?'<span class="fd-lastread__kicker">Pick up where you left off</span>':'')+
     '<span class="fd-lastread__title">You were reading: '+fdEsc(it.title||it.ref)+fdEsc(min)+'</span>'+
     '<span class="fd-lastread__action">Open →</span>'+

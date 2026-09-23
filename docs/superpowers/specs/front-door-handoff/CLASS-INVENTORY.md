@@ -148,7 +148,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 |---|---|
 | `.fd-dock` | `<nav aria-label="Learning actions">`; dock renderer root. *(no rule — Task 1 markup only)* |
 | `.fd-dock__item` | `<button>`; four ordinary items, with the contextual button also carrying this class. *(no rule — Task 1 markup only)* |
-| `.fd-dock__item--context` | Modifier on the center `.fd-dock__item` button. It forwards to the supplied source ID or falls back to the Library browse tab. *(no rule — Task 1 markup only)* |
+| `.fd-dock__item--context` | Modifier on the center `.fd-dock__item` button. A current source ID activates its marked primary control once; a missing or stale source opens Library Browse. *(no rule — Task 1 markup only)* |
 
 The renderer inserts the context button after the two leading destinations, making it the third
 of five buttons. APP changes the first two labels and routes its second item to Library; Search

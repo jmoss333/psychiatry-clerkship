@@ -85,6 +85,14 @@ const IDX = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
 const BASE_STATE = { ref: 'a.md', week: 1, fromTab: 'today', done: {}, desk: true };
 const s = (over) => Object.assign({}, BASE_STATE, over);
 
+test('reader marks its mobile primary action once with its visible label', () => {
+  const html = F.fdReader(IDX, s({ ref: 'a.md' }), '');
+  assert.equal((html.match(/data-fd-dock-source=/g) || []).length, 1);
+  assert.match(html, /data-fd-dock-source="primary-reader" data-fd-dock-label="Mark done/);
+  const done = F.fdReader(IDX, s({ ref: 'a.md', done: { 'a.md': true } }), '');
+  assert.match(done, /data-fd-dock-source="primary-reader" data-fd-dock-label="Next/);
+});
+
 // ---- back link ----------------------------------------------------------------------------
 
 test('the back link and the bottom ghost button name the originating tab', () => {
@@ -162,7 +170,7 @@ test('a block page names its promised question step in both primary actions', ()
   ] };
   for (const done of [{}, { 'a.md': true }]) {
     const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1, block, done }), 'Reading body');
-    assert.equal((html.match(/Continue to your 2 questions →/g) || []).length, 2);
+    assert.equal((html.match(/Continue to your 2 questions →(?:<\/span>)?<\/button>/g) || []).length, 2);
     assert.doesNotMatch(html, /Mark done · Next:/);
     assert.match(html, /Reading body/);
   }
@@ -175,7 +183,7 @@ test('a block page names its promised question step in both primary actions', ()
 test('the final page in a block offers a finish action', () => {
   const block = { minutes: 5, steps: [{ kind: 'page', ref: 'a.md', title: 'Page A', min: 5 }] };
   const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1, block, done: {} }), '');
-  assert.equal((html.match(/Finish block →/g) || []).length, 2);
+  assert.equal((html.match(/Finish block →(?:<\/span>)?<\/button>/g) || []).length, 2);
 });
 
 test('a Path reader uses the viewed week for its rail and practice completion', () => {
@@ -218,7 +226,7 @@ test('the mobile action bar\'s primary label is wrapped in a bare <span>', () =>
   const html = F.fdReader(IDX, s({ ref: 'a.md' }), '');
   const bar = html.slice(html.indexOf('class="fd-actionbar"'));
   assert.match(bar,
-    /fd-btn fd-btn--primary" data-fd-toggle="a\.md" aria-pressed="(?:true|false)"><span>[^<]*<\/span><\/button>/);
+    /fd-btn fd-btn--primary" data-fd-toggle="a\.md" aria-pressed="(?:true|false)" data-fd-dock-source="primary-reader" data-fd-dock-label="[^"]+"><span>[^<]*<\/span><\/button>/);
 });
 
 test('the icon-only mobile back control has an explicit accessible name', () => {

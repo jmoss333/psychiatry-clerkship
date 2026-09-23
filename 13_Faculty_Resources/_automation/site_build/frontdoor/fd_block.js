@@ -197,7 +197,9 @@ function fdBlockCard(plan, minutes, block, doneMap, opts){
       /* opts.resume={left,n}: the shell found a capsule this block wrote, so Continue reads as
          picking the set back up rather than starting the step over. */
       var resume=(o.resume&&typeof o.resume.left==='number'&&typeof o.resume.n==='number')?o.resume:null;
-      out+='<button type="button" class="'+actionCls+'" data-block-continue="1">'+
+      var continueLabel=resume?('Resume: '+resume.left+' of '+resume.n+' questions left'):('Continue: '+status.next.title);
+      out+='<button type="button" class="'+actionCls+'" data-block-continue="1"'+
+        (isPrimary?' data-fd-dock-source="primary-block" data-fd-dock-label="'+fdEsc(continueLabel)+'"':'')+'>'+
         (resume?('Resume: '+resume.left+' of '+resume.n+' questions left →'):('Continue: '+fdEsc(status.next.title)+' →'))+'</button>';
     }else{
       out+='<span class="fd-block__doneline">'+(status.total===1?'The one step is done.':'All '+status.total+' steps done.')+' Tomorrow’s block will be built from tomorrow’s dues.</span>';
@@ -227,7 +229,9 @@ function fdBlockCard(plan, minutes, block, doneMap, opts){
       h+='<div class="fd-block__step">'+fdBlockDot(step.kind)+'<span class="fd-block__title">'+fdEsc(step.title)+'</span><span class="fd-block__min">~'+fdEsc(step.min)+' min</span></div>';
     }
     h+='</div><div class="fd-block__actions">';
-    h+='<button type="button" class="'+actionCls+'" data-block-start="'+budget+'">Start the '+budget+'-minute block</button>';
+    h+='<button type="button" class="'+actionCls+'" data-block-start="'+budget+'"'+
+      (isPrimary?' data-fd-dock-source="primary-block" data-fd-dock-label="Start the '+budget+'-minute block"':'')+
+      '>Start the '+budget+'-minute block</button>';
     h+='<span class="fd-block__hint">Runs as one session. Each step is marked done as you finish it — the page when you mark it, the questions by the receipt at the end.</span>';
     h+='</div>';
   }

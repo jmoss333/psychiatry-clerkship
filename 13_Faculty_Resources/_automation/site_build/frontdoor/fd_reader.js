@@ -263,7 +263,7 @@ function fdReaderActionBar(item, doneLabel, isDone, backLabel){
   return '<div class="fd-actionbar">'+
     '<button type="button" class="fd-btn fd-btn--ghost" data-fd-back aria-label="Back to '+fdEsc(backLabel)+'">‹</button>'+
     '<button type="button" class="fd-btn fd-btn--primary" data-fd-toggle="'+fdEsc(item.ref)+'" '+
-      'aria-pressed="'+(isDone?'true':'false')+'">'+
+      'aria-pressed="'+(isDone?'true':'false')+'" data-fd-dock-source="primary-reader" data-fd-dock-label="'+fdEsc(doneLabel)+'">'+
       '<span>'+fdEsc(doneLabel)+'</span></button>'+
   '</div>';
 }

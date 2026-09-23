@@ -21,6 +21,22 @@ const make = new Function(`${read('phase_policy.js')}\n${read('frontdoor/fd_stat
 
 const F = make();
 
+test('due, resume, and last-read cards mark only their primary control', () => {
+  const due = { daily: { due: 2 } };
+  const capsule = { queueIds: ['a', 'b'], idx: 0 };
+  const last = { ref: 'a.md', kind: 'read', title: '<Learner title>' };
+  for (const [primary, secondary, id] of [
+    [F.fdDueRow(due, true), F.fdDueRow(due, false), 'primary-due'],
+    [F.fdResumeCard(capsule, true), F.fdResumeCard(capsule, false), 'primary-resume'],
+    [F.fdLastReadRow(last, true), F.fdLastReadRow(last, false), 'primary-read'],
+  ]) {
+    assert.equal((primary.match(/data-fd-dock-source=/g) || []).length, 1);
+    assert.match(primary, new RegExp(`data-fd-dock-source="${id}"`));
+    assert.doesNotMatch(secondary, /data-fd-dock-source=/);
+    assert.doesNotMatch(primary, /data-fd-dock-source="[^"]*Learner/);
+  }
+});
+
 test('due row is omitted at zero and uses exact singular/plural labels', () => {
   assert.equal(F.fdDueRow({
     daily: { due: 0 }, qb: { due: 0 }, fam: { due: 0 }, other: { due: 0 },
@@ -145,8 +161,8 @@ test('fdDueRow(b, true) is the primary: is-primary plus the kicker; false or und
   assert.equal(F.fdDueRow(DUE_ONE, undefined), plain);
   assert.doesNotMatch(plain, /is-primary|fd-due__kicker/);
   const primary = F.fdDueRow(DUE_ONE, true);
-  assert.match(primary, /^<button type="button" class="fd-due is-primary" data-fd-open="review\.html"><span class="fd-due__kicker">Clear what’s due<\/span><span class="fd-due__label">1 review due<\/span>/);
-  assert.equal(primary.replace(' is-primary', '').replace('<span class="fd-due__kicker">Clear what’s due</span>', ''), plain);
+  assert.match(primary, /^<button type="button" class="fd-due is-primary" data-fd-open="review\.html" data-fd-dock-source="primary-due" data-fd-dock-label="Start review"><span class="fd-due__kicker">Clear what’s due<\/span><span class="fd-due__label">1 review due<\/span>/);
+  assert.equal(primary.replace(' is-primary', '').replace(' data-fd-dock-source="primary-due" data-fd-dock-label="Start review"', '').replace('<span class="fd-due__kicker">Clear what’s due</span>', ''), plain);
   assert.equal(F.fdDueRow({ daily: { due: 0 } }, true), '', 'nothing due renders nothing, primary or not');
 });
 
@@ -171,7 +187,7 @@ test('fdLastReadRow renders "You were reading" for an undone week read, escapes 
   assert.equal(F.fdLastReadRow(read, false), plain);
 
   const primary = F.fdLastReadRow(read, true);
-  assert.match(primary, /^<button type="button" class="fd-lastread is-primary" data-fd-open="a&amp;b\.md"><span class="fd-lastread__kicker">Pick up where you left off<\/span><span class="fd-lastread__title">You were reading: /);
+  assert.match(primary, /^<button type="button" class="fd-lastread is-primary" data-fd-open="a&amp;b\.md" data-fd-dock-source="primary-read" data-fd-dock-label="Open reading"><span class="fd-lastread__kicker">Pick up where you left off<\/span><span class="fd-lastread__title">You were reading: /);
 
   assert.equal(F.fdLastReadRow(Object.assign({}, read, { kind: 'tool' }), true), '', 'a tool is not reading');
   assert.equal(F.fdLastReadRow(null, true), '');

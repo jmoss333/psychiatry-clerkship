@@ -24,6 +24,8 @@ const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${today}
   fdOpenResource: fdOpenResource,
   fdReader: fdReader,
   fdWire: fdWire,
+  fdDockSource: typeof fdDockSource === 'function' ? fdDockSource : null,
+  fdForwardDockAction: typeof fdForwardDockAction === 'function' ? fdForwardDockAction : null,
   fdThemeMode: fdThemeMode,
   fdClearDeviceData: fdClearDeviceData,
 };`);
@@ -44,6 +46,39 @@ function memStorage(seed = {}) {
 }
 
 const F = make(memStorage());
+
+test('dock forwards once to the current connected source and rejects a stale id', () => {
+  let clicks = 0;
+  const source = { isConnected: true, click() { clicks++; },
+    getAttribute(name) { return name === 'data-fd-dock-label' ? 'Continue' : 'primary-week'; } };
+  const root = { querySelector() { return source; }, querySelectorAll() { return [source]; } };
+  assert.deepEqual(F.fdDockSource(root), { id: 'primary-week', label: 'Continue' });
+  assert.equal(F.fdForwardDockAction(root, 'primary-week'), true);
+  assert.equal(clicks, 1);
+  assert.equal(F.fdForwardDockAction(root, 'stale-id'), false);
+  assert.equal(clicks, 1);
+  source.isConnected = false;
+  assert.equal(F.fdDockSource(root), null);
+  assert.equal(F.fdForwardDockAction(root, 'primary-week'), false);
+  assert.equal(clicks, 1);
+});
+
+test('dock click forwards to the source; a removed source browses Library', () => {
+  let clicks = 0;
+  const source = actionTarget({ 'data-fd-dock-source': 'primary-week', 'data-fd-dock-label': 'Continue' },
+    { click() { clicks++; } });
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F, querySelectorAll: () => [source],
+  });
+  const dock = actionTarget({ 'data-fd-dock-forward': 'primary-week' });
+  h.rootHandlers.click({ target: dock, preventDefault() {} });
+  assert.equal(clicks, 1);
+  assert.equal(h.controller.getState().tab, 'today');
+  source.isConnected = false;
+  h.rootHandlers.click({ target: dock, preventDefault() {} });
+  assert.equal(clicks, 1);
+  assert.equal(h.controller.getState().tab, 'library');
+});
 const FOUR_INDEX = { weeks: [1, 2, 3, 4].map((n) => ({ n, items: [] })) };
 const roleContext = {
   roles: [{ id: 'first-role' }, { id: 'second-role' }],

@@ -912,7 +912,29 @@ var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-f
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
   '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
   '[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
-  '[data-fd-try-now],[data-fd-expand-tool]';
+  '[data-fd-try-now],[data-fd-expand-tool],[data-fd-dock-forward]';
+
+function fdDockSource(root){
+  var el=root&&root.querySelector?root.querySelector('[data-fd-dock-source]'):null;
+  if(!el||el.isConnected===false) return null;
+  var id=el.getAttribute('data-fd-dock-source');
+  var label=el.getAttribute('data-fd-dock-label');
+  return id&&label?{id:id,label:label}:null;
+}
+
+function fdForwardDockAction(root,id){
+  if(!id) return false;
+  var nodes=root&&root.querySelectorAll?root.querySelectorAll('[data-fd-dock-source]'):[], i, el;
+  for(i=0;i<nodes.length;i++){
+    el=nodes[i];
+    if(el.getAttribute('data-fd-dock-source')===id&&
+       el.isConnected!==false&&typeof el.click==='function'){
+      el.click();
+      return true;
+    }
+  }
+  return false;
+}
 
 function fdAttrsFromTarget(target){
   var out={};
@@ -1527,6 +1549,11 @@ function fdWire(root, initialState, opts){
     }
     var attrs=fdAttrsFromTarget(target);
     if(event.preventDefault) event.preventDefault();
+    if(fdOwn(attrs,'data-fd-dock-forward')){
+      if(fdForwardDockAction(root,attrs['data-fd-dock-forward'])) return;
+      apply(fdDispatch({'data-fd-tab':'library'},context(),state),target,false);
+      return;
+    }
     apply(fdDispatch(attrs,context({inSheet:!!state.sheet}),state),target,false);
   }
   /* Chromium can focus a partly visible button in either horizontal Essentials strip without

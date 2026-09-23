@@ -27,6 +27,19 @@ const makeApp = new Function(`
 `);
 const APP = makeApp();
 
+test('APP marks one current preparation control and no secondary resource', () => {
+  const pathway = CUR.appPathway;
+  const index = appIndex(pathway);
+  const start = APP.fdAppWorkspace(index, pathway, { appBridge: 'pa' });
+  assert.equal((start.match(/data-fd-dock-source=/g) || []).length, 1);
+  assert.match(start, /data-fd-dock-source="primary-app"/);
+  const selected = APP.fdAppWorkspace(index, pathway, { appBridge: 'pa', appActivity: 'initial-evaluation' });
+  assert.equal((selected.match(/data-fd-dock-source=/g) || []).length, 1);
+  assert.match(selected, /data-fd-dock-source="primary-app"/);
+  const unavailable = APP.fdAppWorkspace({ byRef: {} }, pathway, { appBridge: 'pa' });
+  assert.doesNotMatch(unavailable, /data-fd-dock-source=/);
+});
+
 const PA_REFS = [
   'pg_interview.md', 'case_formulation.md', 'communication-practice.html',
   'psychopharm_primer.md', 'adv_psychopharm.md', 'one-patient-six-weeks.html',
