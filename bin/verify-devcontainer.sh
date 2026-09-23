@@ -39,12 +39,13 @@ fi
 
 stage="startup"
 started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+attempt_commit=""
 
 record() {
   [ -n "$receipt_path" ] || return 0
   node bin/devcontainer-receipt.mjs record \
     --path "$receipt_path" --status "$1" --stage "$stage" \
-    --exit-code "$2" --started-at "$started_at"
+    --exit-code "$2" --started-at "$started_at" --commit "$attempt_commit"
 }
 
 on_error() {
@@ -53,10 +54,21 @@ on_error() {
   record failed "$exit_code" || true
   exit "$exit_code"
 }
+
+if [ -n "$receipt_path" ]; then
+  if attempt_commit="$(node bin/devcontainer-receipt.mjs record \
+    --path "$receipt_path" --status running --stage "$stage" \
+    --exit-code 0 --started-at "$started_at")"; then
+    :
+  else
+    start_exit=$?
+    exit "$start_exit"
+  fi
+fi
+
 trap on_error ERR
 
 stage="dependencies"
-record running 0
 if [ "$refresh_deps" = 1 ]; then
   bash .devcontainer/install-dependencies.sh
 fi

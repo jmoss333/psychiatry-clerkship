@@ -23,6 +23,7 @@ const UNKNOWN_RUNTIMES = Object.freeze({
 });
 
 class UsageError extends Error {}
+class AttemptStateError extends Error {}
 
 function onlyKeys(value, allowed) {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -123,7 +124,7 @@ export function collectRuntimes(root) {
 
 function parseFlags(command, args) {
   const allowed = command === 'record'
-    ? new Set(['path', 'status', 'stage', 'exit-code', 'started-at'])
+    ? new Set(['path', 'status', 'stage', 'exit-code', 'started-at', 'commit'])
     : new Set(['path', 'root']);
   const required = command === 'record'
     ? ['path', 'status', 'stage', 'exit-code']
@@ -165,6 +166,9 @@ function validateRecordFlags(flags) {
   if (!['running', 'passed', 'failed'].includes(status) || !STAGES.has(stage)
     || !/^\d+$/.test(flags['exit-code']) || !Number.isSafeInteger(exitCode)
     || (flags['started-at'] !== undefined && !isIso(flags['started-at']))
+    || (flags.commit !== undefined && !COMMIT_PATTERN.test(flags.commit))
+    || (status === 'running' && flags.commit !== undefined)
+    || (status !== 'running' && flags.commit === undefined)
     || (status === 'passed' && (stage !== 'complete' || exitCode !== 0))
     || (status === 'failed' && exitCode === 0)
     || (status === 'running' && exitCode !== 0)) throw new UsageError('invalid record arguments');
@@ -174,15 +178,40 @@ function validateRecordFlags(flags) {
 function record(flags) {
   const { status, stage, exitCode } = validateRecordFlags(flags);
   const root = process.cwd();
-  const prior = readReceipt(flags.path);
   const markerStart = flags['started-at'] ?? new Date().toISOString();
-  writeReceiptAtomic(flags.path, {
-    status: 'running', commit: UNKNOWN_COMMIT, startedAt: markerStart, completedAt: null,
-    stage, exitCode: 0, runtimes: UNKNOWN_RUNTIMES, proof: {},
-  });
-  const commit = git(root, ['rev-parse', 'HEAD']);
-  const startedAt = flags['started-at'] ?? (prior?.commit === commit && prior?.status === 'running' && isIso(prior.startedAt)
-    ? prior.startedAt : markerStart);
+  if (status === 'running') {
+    writeReceiptAtomic(flags.path, {
+      status: 'running', commit: UNKNOWN_COMMIT, startedAt: markerStart, completedAt: null,
+      stage, exitCode: 0, runtimes: UNKNOWN_RUNTIMES, proof: {},
+    });
+    const commit = git(root, ['rev-parse', 'HEAD']);
+    const runtimes = collectRuntimes(root);
+    if (isDirty(root, ['diff', '--quiet']) || isDirty(root, ['diff', '--cached', '--quiet'])) {
+      writeReceiptAtomic(flags.path, {
+        status: 'failed', commit, startedAt: markerStart, completedAt: new Date().toISOString(),
+        stage, exitCode: 3, runtimes, proof: {},
+      });
+      throw new AttemptStateError('tracked tree was dirty when verification began');
+    }
+    writeReceiptAtomic(flags.path, {
+      status, commit, startedAt: markerStart, completedAt: null,
+      stage, exitCode, runtimes, proof: {},
+    });
+    process.stdout.write(`${commit}\n`);
+    return;
+  }
+
+  const prior = readReceipt(flags.path);
+  let safePrior;
+  try { safePrior = buildReceipt(prior); } catch { throw new AttemptStateError('attempt receipt is unavailable'); }
+  const commit = flags.commit;
+  if (safePrior.commit !== commit
+    || (status === 'passed' && safePrior.status !== 'running')
+    || (flags['started-at'] !== undefined && safePrior.startedAt !== flags['started-at'])) {
+    throw new AttemptStateError('attempt binding does not match');
+  }
+  const startedAt = safePrior.startedAt;
+  const runtimes = safePrior.runtimes;
   const completedAt = status === 'running' ? null : new Date().toISOString();
   const proof = {};
   if (status === 'passed') {
@@ -196,8 +225,17 @@ function record(flags) {
     }[stage] ?? [];
     for (const key of completed) proof[key] = 'passed';
   }
-  const receipt = buildReceipt({ status, commit, startedAt, completedAt, stage, exitCode,
-    runtimes: collectRuntimes(root), proof });
+  if (status === 'passed') {
+    const currentCommit = git(root, ['rev-parse', 'HEAD']);
+    const trackedDirty = isDirty(root, ['diff', '--quiet']) || isDirty(root, ['diff', '--cached', '--quiet']);
+    if (currentCommit !== commit || trackedDirty) {
+      writeReceiptAtomic(flags.path, buildReceipt({
+        status: 'failed', commit, startedAt, completedAt, stage, exitCode: 3, runtimes, proof,
+      }));
+      throw new AttemptStateError('repository changed during verification');
+    }
+  }
+  const receipt = buildReceipt({ status, commit, startedAt, completedAt, stage, exitCode, runtimes, proof });
   writeReceiptAtomic(flags.path, receipt);
 }
 

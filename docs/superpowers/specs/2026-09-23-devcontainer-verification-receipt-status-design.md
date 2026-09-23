@@ -38,7 +38,9 @@ The receipt writer records both outcomes:
 - failure from an error trap, including the current stage and exit code;
 - atomic replacement so readers never observe partial JSON.
 
-The receipt is written beneath ignored `output/devcontainer/`. A new attempt first records an in-progress state or removes the previous current-attempt result so an interrupted run cannot leave a prior green result looking current. An interrupted or terminated attempt resolves to stale, never verified.
+The receipt is written beneath ignored `output/devcontainer/`. A new attempt first records an in-progress state, binds the attempt to the clean tracked `HEAD` present at its start, and then reuses that binding for the final outcome. A dirty start fails before the gates run, and a different or dirty tracked `HEAD` at completion cannot produce a pass. An interrupted or terminated attempt resolves to stale, never verified.
+
+Atomic same-directory replacement ensures a reader sees either the last complete JSON object or the next complete one, never a partial file. It cannot revoke old evidence when the receipt directory is wholly unwritable: the verifier exits nonzero, but the last complete receipt may remain readable until the directory is repaired or repository freshness changes. Unlinking first would discard the last complete record without making an unwritable directory writable, so the writer retains atomic replace and this limitation is explicit.
 
 ### 2. Receipt schema
 
@@ -108,7 +110,7 @@ The extension is packaged reproducibly during the container image build using a 
 - presentation: dedicated, revealed terminal output;
 - no `runOn: folderOpen` or equivalent automatic execution.
 
-The verifier already refuses to run outside the container through `CLERKSHIP_DEVCONTAINER=1`. The task therefore cannot create a misleading host-Mac receipt.
+The verifier checks `CLERKSHIP_DEVCONTAINER=1` as an accidental-invocation guard. The image supplies it and the normal VS Code task runs inside that image, but the variable is forgeable by a deliberate host caller and is not authentication or cryptographic proof of container origin. The receipt proves the recorded runtime versions and completed gates, subject to its freshness rules; it does not prove which host process invoked them.
 
 ## Known gate findings and boundaries
 

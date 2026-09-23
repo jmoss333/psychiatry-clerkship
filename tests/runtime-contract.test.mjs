@@ -189,6 +189,14 @@ test('container builds and installs only the repository-owned receipt status VSI
   assert.doesNotMatch(`${dockerfile}\n${bootstrap}`, /marketplace|https?:\/\//i);
 });
 
+test('container bootstrap retains LFS, forwarded-credential, and final runtime checks', () => {
+  const bootstrap = readFileSync(resolve(ROOT, '.devcontainer/post-create.sh'), 'utf8');
+  assert.match(bootstrap, /check_lfs_media\.py --worktree-stubs \./);
+  assert.match(bootstrap, /SSH_AUTH_SOCK/);
+  assert.match(bootstrap, /git config --get-all credential\.helper/);
+  assert.match(bootstrap, /check-runtime-contract\.mjs --current/);
+});
+
 test('local extension installer bypasses broken PATH shims and refuses missing or ambiguous server CLIs', () => {
   const fixture = mkdtempSync(resolve(tmpdir(), 'local-vsix-'));
   const serverRoot = resolve(fixture, 'server with spaces');
@@ -389,7 +397,7 @@ function withVerifierFixture(run) {
     writeFileSync(resolve(fixture, '.venv/bin/python3'), '#!/bin/sh\necho "Python 3.11.9"\n');
     writeFileSync(resolve(fixture, '.devcontainer/install-dependencies.sh'), '#!/bin/bash\necho dependencies >> "$TRACE"\nif [ "${FAIL_STAGE:-}" = dependencies ]; then exit 1; fi\nmkdir -p .venv/bin\nprintf "#!/bin/sh\\necho Python 3.11.9\\n" > .venv/bin/python3\nchmod +x .venv/bin/python3\n');
     writeFileSync(resolve(fixture, 'bin/check-runtime-contract.mjs'), 'import { appendFileSync } from "node:fs";\nappendFileSync(process.env.TRACE, "runtime-contract\\n");\nif (process.env.FAIL_STAGE === "runtime-contract") process.exit(1);\n');
-    writeFileSync(resolve(fixture, 'bin/verify.sh'), '#!/bin/bash\necho full-gate >> "$TRACE"\nif [ "${HANG_STAGE:-}" = full-gate ]; then touch "$MARKER"; exec sleep 30; fi\nif [ "${FAIL_STAGE:-}" = full-gate ]; then exit 1; fi\n');
+    writeFileSync(resolve(fixture, 'bin/verify.sh'), '#!/bin/bash\necho full-gate >> "$TRACE"\nif [ "${HANG_STAGE:-}" = full-gate ]; then touch "$MARKER"; exec sleep 30; fi\nif [ "${CHANGE_HEAD:-}" = full-gate ]; then git commit --allow-empty -qm changed-during-attempt; fi\nif [ "${FAIL_STAGE:-}" = full-gate ]; then exit 1; fi\n');
     writeFileSync(resolve(fixture, 'bin/verify-smoke.sh'), '#!/bin/bash\nprintf "nonvisual-smoke:%s\\n" "${SPECS-<unset>}" >> "$TRACE"\nif [ "${FAIL_STAGE:-}" = nonvisual-smoke ]; then exit 1; fi\n');
     for (const path of [
       'bin/verify-devcontainer.sh', '.venv/bin/python3', '.devcontainer/install-dependencies.sh',
@@ -436,6 +444,32 @@ test('receipt-enabled verifier records success only after every authoritative st
   assert.deepEqual(readFileSync(trace, 'utf8').trim().split('\n'), [
     'dependencies', 'runtime-contract', 'full-gate', 'nonvisual-smoke:<unset>',
   ]);
+}));
+
+test('receipt-enabled verifier cannot certify a dirty start after the tracked file is restored', () => withVerifierFixture(({ fixture, receiptPath, head, env, args }) => {
+  const tracked = resolve(fixture, 'bin/verify.sh');
+  const original = readFileSync(tracked, 'utf8');
+  writeFileSync(tracked, `${original}\n# dirty before verification\n`);
+  const result = spawnSync('/bin/bash', args, { cwd: fixture, env, encoding: 'utf8' });
+  assert.notEqual(result.status, 0);
+  writeFileSync(tracked, original);
+  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+  assert.equal(receipt.commit, head);
+  assert.equal(receipt.status, 'failed');
+  assert.notEqual(receiptStatus(fixture, receiptPath).state, 'verified');
+}));
+
+test('receipt-enabled verifier cannot certify a commit created during the attempt', () => withVerifierFixture(({ fixture, receiptPath, head, env, args }) => {
+  const result = spawnSync('/bin/bash', args, {
+    cwd: fixture, env: { ...env, CHANGE_HEAD: 'full-gate' }, encoding: 'utf8',
+  });
+  assert.notEqual(result.status, 0);
+  const current = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: fixture, encoding: 'utf8' }).trim();
+  assert.notEqual(current, head);
+  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+  assert.equal(receipt.commit, head);
+  assert.notEqual(receipt.status, 'passed');
+  assert.notEqual(receiptStatus(fixture, receiptPath).state, 'verified');
 }));
 
 test('receipt-enabled verifier overwrites old green with the exact failed stage', () => withVerifierFixture(({ fixture, receiptPath, head, env, args }) => {

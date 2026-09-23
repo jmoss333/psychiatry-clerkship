@@ -223,7 +223,8 @@ git commit -m "fix(dev): isolate container dependency and source checks"
 - Produces: `writeReceiptAtomic(path, receipt) -> void` using same-directory temporary file plus rename.
 - Produces: `evaluateReceipt({ receipt, head, trackedDirty }) -> { state, reason, shortCommit, receipt }`, where `state` is `verified | failed | stale`.
 - Produces CLI:
-  - `node bin/devcontainer-receipt.mjs record --path PATH --status running|passed|failed --stage NAME --exit-code N [--started-at ISO]`
+  - `node bin/devcontainer-receipt.mjs record --path PATH --status running --stage NAME --exit-code 0 [--started-at ISO]` starts a clean-tree attempt and prints its bound commit.
+  - Final `passed|failed` records use the same command plus `--commit COMMIT`; a pass requires the prior bound attempt to still be running and the tracked `HEAD` to remain clean and unchanged.
   - `node bin/devcontainer-receipt.mjs status --path PATH --root ROOT`
 - Consumes: Git `HEAD`, `git diff --quiet`, and `git diff --cached --quiet` only for `status`; never reads untracked files.
 
@@ -362,7 +363,7 @@ export function collectRuntimes(root) {
 }
 ```
 
-Implement a strict `--key value` parser that rejects unknown, duplicate, or missing flags with exit `2`. `record` obtains the commit with `execFileSync('git', ['rev-parse', 'HEAD'])`, reads a prior same-commit `running` receipt only to preserve `startedAt`, builds an allowlisted receipt, and writes atomically. `status` reads JSON defensively, obtains `HEAD`, sets `trackedDirty` when either `git diff --quiet` or `git diff --cached --quiet` exits `1`, and prints exactly one normalized JSON object. A Git/read/parse/tool failure prints a stale object and exits `0`; an invalid CLI invocation exits `2`.
+Implement a strict `--key value` parser that rejects unknown, duplicate, or missing flags with exit `2`. The initial `running` record obtains the commit with `execFileSync('git', ['rev-parse', 'HEAD'])`, rejects a dirty tracked tree, writes the bound in-progress receipt, and prints that commit. Final records require `--commit` and reuse the bound receipt's commit, start time, and runtimes instead of re-reading them. A pass additionally requires the prior state to remain `running` and the current tracked `HEAD` to be clean and unchanged. `status` reads JSON defensively, obtains `HEAD`, sets `trackedDirty` when either `git diff --quiet` or `git diff --cached --quiet` exits `1`, and prints exactly one normalized JSON object. A Git/read/parse/tool failure prints a stale object and exits `0`; an invalid CLI invocation exits `2`.
 
 - [ ] **Step 8: Ignore the receipt directory and run the full receipt suite GREEN**
 
@@ -459,12 +460,13 @@ receipt_path=""
 refresh_deps=0
 stage="startup"
 started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+attempt_commit=""
 
 record() {
   [ -n "$receipt_path" ] || return 0
   node bin/devcontainer-receipt.mjs record \
     --path "$receipt_path" --status "$1" --stage "$stage" \
-    --exit-code "$2" --started-at "$started_at"
+    --exit-code "$2" --started-at "$started_at" --commit "$attempt_commit"
 }
 
 on_error() {
@@ -473,10 +475,15 @@ on_error() {
   record failed "$exit_code" || true
   exit "$exit_code"
 }
+
+if [ -n "$receipt_path" ]; then
+  attempt_commit="$(node bin/devcontainer-receipt.mjs record \
+    --path "$receipt_path" --status running --stage "$stage" \
+    --exit-code 0 --started-at "$started_at")"
+fi
 trap on_error ERR
 
 stage="dependencies"
-record running 0
 if [ "$refresh_deps" = 1 ]; then
   bash .devcontainer/install-dependencies.sh
 fi

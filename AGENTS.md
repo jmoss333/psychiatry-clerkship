@@ -81,6 +81,10 @@ red means the current commit's latest attempt failed; gray means no current proo
 (missing, malformed, running/interrupted, stale, a different commit, or tracked edits).
 Clicking the item runs the manual task. Without deploy URLs, the local LFS browser projects remain
 skipped: deploy-only LFS browser coverage is not proved, and the receipt says so even after a pass.
+The image-supplied `CLERKSHIP_DEVCONTAINER=1` check prevents accidental host invocation; it is a
+forgeable environment guard, not authentication or proof that a deliberate caller used the container.
+If the receipt directory is wholly unwritable, the task fails but the last atomically completed receipt
+may remain readable until permissions or repository freshness change.
 
 The container declares no repository-managed credential or Docker-socket mount. VS Code
 may still forward the host SSH agent or Git credential helper; setup reports either state.

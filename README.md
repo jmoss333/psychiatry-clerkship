@@ -57,6 +57,10 @@ A completed attempt writes `output/devcontainer/verification-receipt.json`. The 
 visible: green means the receipt passed for the current clean tracked commit; red means the current commit's latest attempt failed;
 gray means no current proof exists (missing, malformed, running/interrupted, stale, a different commit,
 or tracked edits). A gray item can be clicked to run the task; the receipt is local and ignored by Git.
+The image-supplied `CLERKSHIP_DEVCONTAINER=1` check prevents accidental host invocation; it is a
+forgeable environment guard, not authentication or proof that a deliberate caller used the container.
+If the receipt directory is wholly unwritable, the task fails but the last atomically completed receipt
+may remain readable until permissions or repository freshness change.
 Without deploy URLs, the local LFS browser projects remain skipped: deploy-only LFS browser coverage
 is not proved, and the receipt says so even when the local task passes.
 

@@ -10,7 +10,9 @@ receipt for the current commit and tracked working tree:
 Clicking the item runs the manual **Verify Dev Container** task. Opening the
 workspace only reads status; it does not start verification. Status refreshes on
 receipt creation, change, or deletion, on window focus, and every 15 seconds.
-The item is available only inside the repository's Dev Container.
+Every tooltip names `output/devcontainer/verification-receipt.json`. The item is
+installed for the repository's Dev Container; its environment check prevents accidental
+host activation but is not authentication against a deliberate caller.
 
 The image packages this source with pinned `@vscode/vsce` and post-create installs
 the resulting local `/opt/clerkship-devcontainer-receipt-status.vsix`. There is no

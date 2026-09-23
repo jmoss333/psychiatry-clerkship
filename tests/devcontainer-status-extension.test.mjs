@@ -8,6 +8,7 @@ import { dirname, resolve } from 'node:path';
 const require = createRequire(import.meta.url);
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const EXTENSION = resolve(ROOT, '.devcontainer/receipt-status');
+const RECEIPT_RELATIVE = 'output/devcontainer/verification-receipt.json';
 const { presentationFor } = require(resolve(EXTENSION, 'presentation.cjs'));
 const verified = {
   state: 'verified',
@@ -23,7 +24,7 @@ test('status presentation maps verified, failed, and stale without ambiguous col
   assert.deepEqual(presentationFor(verified), {
     text: '$(pass-filled) Dev Container 1234567',
     color: 'testing.iconPassed',
-    tooltip: 'Dev Container verified for 1234567 at 2026-09-23T12:00:00Z. Runtimes: Node v22.20.0 · Python 3.11.14 · GNU bash 5.2.37 · Playwright 1.63.0. Click to verify again.',
+    tooltip: `Dev Container verified for 1234567 at 2026-09-23T12:00:00Z. Receipt: ${RECEIPT_RELATIVE}. Runtimes: Node v22.20.0 · Python 3.11.14 · GNU bash 5.2.37 · Playwright 1.63.0. Click to verify again.`,
   });
   const failed = presentationFor({ ...verified, state: 'failed', reason: 'full-gate' });
   assert.equal(failed.color, 'testing.iconFailed');
@@ -31,6 +32,15 @@ test('status presentation maps verified, failed, and stale without ambiguous col
   assert.match(failed.tooltip, /Node v22.20.0 · Python 3.11.14 · GNU bash 5.2.37 · Playwright 1.63.0/);
   assert.equal(presentationFor({ state: 'failed', shortCommit: '1234567', reason: 'full-gate' }).color, 'testing.iconFailed');
   assert.equal(presentationFor({ state: 'stale', shortCommit: '89abcde', reason: 'commit-mismatch' }).color, 'disabledForeground');
+});
+
+test('every status tooltip names the fixed verification receipt path', () => {
+  for (const status of [
+    verified,
+    { ...verified, state: 'failed', reason: 'full-gate' },
+    { state: 'stale', shortCommit: '1234567', reason: 'tracked-tree-changed' },
+    undefined,
+  ]) assert.match(presentationFor(status).tooltip, new RegExp(RECEIPT_RELATIVE.replaceAll('/', '\\/')));
 });
 
 test('unknown or malformed status is gray and never displays arbitrary fields', () => {

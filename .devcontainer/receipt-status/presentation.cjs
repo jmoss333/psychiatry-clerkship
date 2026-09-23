@@ -19,12 +19,13 @@ const RUNTIME_PATTERNS = {
   bash: /^GNU bash(?:, version)? \d+\.\d+(?:\.\d+)?(?:\(\d+\))?(?:-[A-Za-z0-9_.-]+)?(?: \([A-Za-z0-9_.-]+\))?$/,
   playwright: /^\d+\.\d+\.\d+$/,
 };
+const RECEIPT_PATH = 'output/devcontainer/verification-receipt.json';
 
 function unavailable() {
   return {
     text: '$(question) Dev Container',
     color: 'disabledForeground',
-    tooltip: 'Verification status unavailable. Click to verify again.',
+    tooltip: `Verification status unavailable. Receipt: ${RECEIPT_PATH}. Click to verify again.`,
   };
 }
 
@@ -62,21 +63,21 @@ function presentationFor(status) {
       return {
         text: `$(pass-filled) Dev Container ${shortCommit}`,
         color: 'testing.iconPassed',
-        tooltip: `Dev Container verified for ${shortCommit}${details.time}.${details.runtimes} Click to verify again.`,
+        tooltip: `Dev Container verified for ${shortCommit}${details.time}. Receipt: ${RECEIPT_PATH}.${details.runtimes} Click to verify again.`,
       };
     case 'failed':
       if (!shortCommit || !FAILURE_STAGES.has(reason)) return unavailable();
       return {
         text: `$(error) Dev Container ${shortCommit}`,
         color: 'testing.iconFailed',
-        tooltip: `Dev Container verification failed for ${shortCommit} (${reason})${details.time}.${details.runtimes} Click to verify again.`,
+        tooltip: `Dev Container verification failed for ${shortCommit} (${reason})${details.time}. Receipt: ${RECEIPT_PATH}.${details.runtimes} Click to verify again.`,
       };
     case 'stale':
       if (!Object.hasOwn(STALE_REASONS, reason)) return unavailable();
       return {
         text: `$(circle-slash) Dev Container${shortCommit ? ` ${shortCommit}` : ''}`,
         color: 'disabledForeground',
-        tooltip: `${STALE_REASONS[reason]}. Verification is stale. Click to verify again.`,
+        tooltip: `${STALE_REASONS[reason]}. Verification is stale. Receipt: ${RECEIPT_PATH}. Click to verify again.`,
       };
     default:
       return unavailable();

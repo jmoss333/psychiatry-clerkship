@@ -145,20 +145,46 @@ test('status command detects both unstaged and staged tracked changes', () => wi
   assert.equal(runStatus(repo, receiptPath).reason, 'tracked-tree-changed');
 }));
 
-test('record preserves the attempt time, captures runtimes, and omits environment values', () => withRepo((repo) => {
+test('record preserves the attempt commit and time, captures runtimes, and omits environment values', () => withRepo((repo, head) => {
   const receiptPath = resolve(repo, 'receipt.json');
   const startedAt = '2026-09-23T11:00:00Z';
   let result = runRecord(repo, receiptPath, 'running', 'dependencies', 0, { flags: ['--started-at', startedAt] });
   assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), head);
   assert.equal(JSON.parse(readFileSync(receiptPath, 'utf8')).startedAt, startedAt);
 
-  result = runRecord(repo, receiptPath, 'passed', 'complete', 0);
+  result = runRecord(repo, receiptPath, 'passed', 'complete', 0, { flags: ['--commit', head] });
   assert.equal(result.status, 0, result.stderr);
   const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
   assert.equal(receipt.startedAt, startedAt);
   assert.deepEqual(Object.keys(receipt.runtimes), ['node', 'python', 'bash', 'playwright']);
   assert.equal(receipt.proof.nonvisualSmoke, 'passed');
   assert.equal(readFileSync(receiptPath, 'utf8').includes('never-write-this-value'), false);
+}));
+
+test('a dirty-start failure cannot later be promoted to passed after restoration', () => withRepo((repo, head) => {
+  const receiptPath = resolve(repo, 'receipt.json');
+  writeFileSync(resolve(repo, 'tracked.txt'), 'dirty at start\n');
+  let result = runRecord(repo, receiptPath, 'running', 'startup', 0);
+  assert.notEqual(result.status, 0);
+  writeFileSync(resolve(repo, 'tracked.txt'), 'original\n');
+
+  result = runRecord(repo, receiptPath, 'passed', 'complete', 0, { flags: ['--commit', head] });
+  assert.notEqual(result.status, 0);
+  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+  assert.equal(receipt.status, 'failed');
+  assert.notEqual(runStatus(repo, receiptPath).state, 'verified');
+}));
+
+test('a controlled failed fixture may replace passed evidence but cannot create a pass', () => withRepo((repo, head) => {
+  const receiptPath = resolve(repo, 'receipt.json');
+  writeReceiptAtomic(receiptPath, validReceipt({ commit: head }));
+  const result = runRecord(repo, receiptPath, 'failed', 'full-gate', 23, { flags: ['--commit', head] });
+  assert.equal(result.status, 0, result.stderr);
+  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+  assert.equal(receipt.status, 'failed');
+  assert.equal(receipt.exitCode, 23);
+  assert.equal(runStatus(repo, receiptPath).state, 'failed');
 }));
 
 test('CLI rejects unknown and duplicate flags and degrades Git errors to stale', () => withRepo((repo) => {
@@ -186,7 +212,7 @@ test('a failed runtime probe invalidates an earlier verified receipt and exits a
   assert.equal(runStatus(repo, receiptPath).state, 'verified');
   writeFileSync(resolve(repo, 'tests/smoke/package.json'), '{}');
 
-  const result = runRecord(repo, receiptPath, 'passed', 'complete', 0);
+  const result = runRecord(repo, receiptPath, 'running', 'startup', 0);
   assert.equal(result.status, 1, result.stderr);
   assert.doesNotMatch(result.stderr, /usage|invalid.*argument/i);
   const residue = JSON.parse(readFileSync(receiptPath, 'utf8'));
@@ -204,7 +230,7 @@ test('a failed Git probe also leaves an in-progress stale receipt', () => withRe
   writeFileSync(fakeGit, '#!/bin/sh\nexit 127\n');
   chmodSync(fakeGit, 0o755);
 
-  const result = runRecord(repo, receiptPath, 'failed', 'full-gate', 1, { env: { PATH: `${fakeBin}:${process.env.PATH}` } });
+  const result = runRecord(repo, receiptPath, 'running', 'startup', 0, { env: { PATH: `${fakeBin}:${process.env.PATH}` } });
   assert.equal(result.status, 1, result.stderr);
   assert.equal(JSON.parse(readFileSync(receiptPath, 'utf8')).status, 'running');
   assert.equal(runStatus(repo, receiptPath).state, 'stale');
