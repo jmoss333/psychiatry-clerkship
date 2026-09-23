@@ -14,6 +14,7 @@ const reader = read('frontdoor/fd_reader.js');
 const shell = read('frontdoor/fd_shell.js');
 const practice = read('frontdoor/fd_app_practice.js');
 const wire = read('frontdoor/fd_wire.js');
+const spa = read('spa_index.html');
 const CUR = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 
 // eslint-disable-next-line no-new-func
@@ -26,6 +27,7 @@ const make = new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n
   fdReader: fdReader,
   fdWire: fdWire,
   fdInstallReadingPlace: fdInstallReadingPlace,
+  fdReadingFocusAllowed: fdReadingFocusAllowed,
   fdDockSource: typeof fdDockSource === 'function' ? fdDockSource : null,
   fdForwardDockAction: typeof fdForwardDockAction === 'function' ? fdForwardDockAction : null,
   fdThemeMode: fdThemeMode,
@@ -810,7 +812,7 @@ function fakeHarness(initial, options = {}) {
     ...(options.querySelectorAll ? { querySelectorAll: options.querySelectorAll } : {}),
     matches: options.matches || (() => false),
   };
-  const fakeWindow = {
+  const fakeWindow = options.window || {
     addEventListener(type, fn) { windowHandlers[type] = fn; },
     removeEventListener() {},
     location: options.location || { href: 'https://example.test/', search: '', pathname: '/' },
@@ -827,6 +829,7 @@ function fakeHarness(initial, options = {}) {
     searchResults: options.searchResults,
     openResource: options.openResource,
     readingPlaceSession: options.readingPlaceSession,
+    disposeReadingPlace: options.disposeReadingPlace,
     route: options.route,
     document: options.document,
     setTimer: options.setTimer,
@@ -2994,7 +2997,10 @@ function readingPlaceHarness(saved = {}, options = {}) {
   const status = { textContent: '' };
   const top = { hidden: true };
   const reader = {
-    querySelectorAll(selector) { return selector.includes('.fd-article__body') ? headings : []; },
+    querySelectorAll(selector) {
+      assert.equal(selector, '.fd-article > .fd-article__h1,.fd-article__body h2,.fd-article__body h3,.fd-article__body h4');
+      return headings;
+    },
     querySelector(selector) {
       if (selector === '[data-fd-reading-status]') return status;
       if (selector === '[data-fd-reading-top]') return top;
@@ -3004,15 +3010,16 @@ function readingPlaceHarness(saved = {}, options = {}) {
   const state = { role: 'first-role', screen: 'app', readingPlaces: saved };
   const writes = [];
   const save = options.save || ((value) => { writes.push(JSON.parse(JSON.stringify(value.readingPlaces))); return true; });
-  const install = (focusOnRestore = false) => F.fdInstallReadingPlace(reader, 'a.md', state, {
+  const install = (focusOnRestore = false, liveState = state) => F.fdInstallReadingPlace(reader, 'a.md', liveState, {
     window: win, allowStorage: options.allowStorage !== false, focusOnRestore,
+    canFocusOnRestore: options.canFocusOnRestore,
     save, now: () => 1000 + writes.length,
     setTimer(fn, delay) { assert.equal(delay, 150); const id = nextTimer++; pending.set(id, fn); return id; },
     clearTimer(id) { pending.delete(id); },
     requestAnimationFrame(fn) { pending.set(`frame-${nextTimer++}`, fn); },
   });
   const flush = () => { const jobs = [...pending.values()]; pending.clear(); jobs.forEach((fn) => fn()); };
-  return { install, flush, listeners, headings, status, top, state, writes,
+  return { install, flush, listeners, headings, status, top, state, writes, win,
     setScroll(next) { y = next; }, setHeadingTop(index, next) { heights[index] = next; },
     get scrollY() { return y; },
   };
@@ -3069,6 +3076,108 @@ test('stale heading clears only its page and Start at top clears a restored plac
   assert.deepEqual(restored.state.readingPlaces, { 'b.md': other });
   assert.equal(restored.top.hidden, true);
   assert.deepEqual(restored.headings[0].focused, { preventScroll: true });
+});
+
+test('dropped reading places stay dropped through queued scroll and pagehide, then a real move saves again', () => {
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  for (const stale of [false, true]) {
+    const h = readingPlaceHarness({ 'a.md': { heading: stale ? 'missing' : seed.headings[1].id, offset: 40, updatedAt: 8 } });
+    const session = h.install(); h.flush();
+    if (!stale) session.startAtTop();
+    h.listeners.get('scroll')(); // scrollTo's queued programmatic scroll event
+    h.listeners.get('pagehide')();
+    assert.equal(h.state.readingPlaces['a.md'], undefined, 'page exit must not recreate the dropped place');
+    h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+    assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[1].id,
+      'a later learner movement resumes normal capture');
+    session.destroy();
+  }
+});
+
+test('restore focus checks the live owner at the frame, not only the Continue click', () => {
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  const place = { 'a.md': { heading: seed.headings[1].id, offset: 40, updatedAt: 8 } };
+  const base = { ref: 'a.md', currentRef: 'a.md', readerConnected: true };
+  const owners = [
+    ['pending-high', {}, { pendingHigh: true }],
+    ['search', { searchOpen: true }, {}],
+    ['settings', { sheet: 'settings' }, {}],
+    ['capture', {}, { externalModal: true }],
+  ];
+  for (const [owner, statePatch, contextPatch] of owners) {
+    let state = { screen: 'app' }, context = base;
+    const h = readingPlaceHarness(place, { canFocusOnRestore: () => F.fdReadingFocusAllowed(state, context) });
+    h.install(true);
+    state = { ...state, ...statePatch };
+    context = { ...context, ...contextPatch }; // owner takes focus during fetch or before layout
+    h.flush();
+    assert.equal(h.scrollY, 490, `${owner} still gets reading-place scroll restore`);
+    assert.equal(h.headings[1].focused, undefined, `${owner} retains focus`);
+  }
+  const clear = readingPlaceHarness(place, { canFocusOnRestore: () => F.fdReadingFocusAllowed({ screen: 'app' }, base) });
+  clear.install(true); clear.flush();
+  assert.deepEqual(clear.headings[1].focused, { preventScroll: true });
+  assert.equal(F.fdReadingFocusAllowed({ screen: 'app' }, { ...base, readerConnected: false }), false);
+  assert.equal(F.fdReadingFocusAllowed({ screen: 'app' }, { ...base, currentRef: 'else.md' }), false);
+});
+
+test('the live reader install supplies current overlays and governance to the focus guard', () => {
+  assert.match(spa, /canFocusOnRestore:function\(\)\{\s*return fdReadingFocusAllowed\(readState\(\),\{/);
+  assert.match(spa, /externalModal:!!capSheet/);
+  assert.match(spa, /pendingHigh:!!contentEl\.querySelector\('\.governance-notice\.pending-high'\)/);
+  assert.match(spa, /readerConnected:document\.documentElement\.contains\(mountedReader\)/);
+});
+
+test('erase dispatch disposes the live reader before pagehide can resurrect its storage', () => {
+  const store = memStorage();
+  const LocalF = make(store);
+  const reading = readingPlaceHarness({}, { save(value) {
+    store.setItem('cw_frontdoor_v1', JSON.stringify(value)); return true;
+  } });
+  let live;
+  let reloaded = 0;
+  reading.win.location = { href: 'https://example.test/?page=a.md', search: '?page=a.md', pathname: '/', reload() { reloaded++; } };
+  reading.win.history = { replaceState() {}, pushState() {} };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', openId: 'a.md' }, {
+    F: LocalF, window: reading.win, renderTransient() {},
+    disposeReadingPlace() { if (live) { live.destroy(); live = null; } },
+  });
+  assert.equal(h.controller.startupCommitted(), true, 'integrated erase harness must finish startup');
+  assert.equal(h.fakeWindow, reading.win);
+  live = reading.install(false, h.controller.getState()); reading.flush();
+  reading.setScroll(520); reading.listeners.get('scroll')();
+  assert.deepEqual(LocalF.fdDispatch({ 'data-fd-clear-confirm': '' }, {}, h.controller.getState()).effect,
+    { type: 'clear-device-data' });
+  h.controller.dispatch({ 'data-fd-clear-confirm': '' });
+  assert.equal(h.controller.getState().settingsConfirmClear, false);
+  const pagehide = reading.listeners.get('pagehide');
+  if (pagehide) pagehide();
+  assert.equal(reloaded, 1);
+  assert.deepEqual(store.dump(), {}, 'erase must survive the browser pagehide fired by reload');
+});
+
+test('Back flushes pending reading scroll before cloning and saving the next state', () => {
+  const store = memStorage();
+  const LocalF = make(store);
+  const reading = readingPlaceHarness({}, { save(value) {
+    store.setItem('cw_frontdoor_v1', JSON.stringify(value)); return true;
+  } });
+  let live;
+  reading.win.location = { href: 'https://example.test/', search: '', pathname: '/' };
+  reading.win.history = { replaceState() {}, pushState() {} };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', openId: 'a.md' }, {
+    F: LocalF, window: reading.win,
+    render() { if (live) { live.destroy(); live = null; } },
+    disposeReadingPlace() { if (live) { live.destroy(); live = null; } },
+  });
+  assert.equal(h.controller.startupCommitted(), true, 'integrated Back harness must finish startup');
+  live = reading.install(false, h.controller.getState()); reading.flush();
+  reading.setScroll(960); reading.listeners.get('scroll')(); // do not run the 150 ms timer
+  reading.listeners.get('popstate')({ state: { fd: true, state: { tab: 'today', openId: null } } });
+  assert.equal(h.controller.getState().readingPlaces['a.md'].heading, reading.headings[2].id);
+  assert.equal(h.controller.getState().readingPlaces['a.md'].offset, 60);
+  assert.deepEqual(JSON.parse(store.getItem('cw_frontdoor_v1')).readingPlaces,
+    h.controller.getState().readingPlaces);
 });
 
 test('disallowed and throwing storage show failure and install no false success', () => {

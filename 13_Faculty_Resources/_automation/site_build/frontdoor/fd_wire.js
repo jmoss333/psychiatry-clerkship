@@ -948,6 +948,13 @@ function fdAttrsFromTarget(target){
   return out;
 }
 
+/* Focus belongs to the live foreground surface, not to a stale Continue intent. */
+function fdReadingFocusAllowed(state,context){
+  var s=state||{}, c=context||{};
+  return s.screen==='app'&&!s.searchOpen&&!s.sheet&&!c.facultyPreview&&!c.externalModal&&
+    !c.pendingHigh&&c.readerConnected===true&&!!c.ref&&c.currentRef===c.ref;
+}
+
 /* The rendered reader owns this lease; its listeners are removed before the next resource. */
 function fdInstallReadingPlace(reader,ref,state,options){
   var o=options||{}, win=o.window||(typeof window!=='undefined'?window:null);
@@ -957,7 +964,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
   var save=o.save||fdSave, now=o.now||Date.now;
   var timerSet=o.setTimer||setTimeout, timerClear=o.clearTimer||clearTimeout;
   var frame=o.requestAnimationFrame||(win&&win.requestAnimationFrame?function(fn){win.requestAnimationFrame(fn);}:function(fn){timerSet(fn,0);});
-  var active=true, timer=null, ready=false, suppressTop=false, ids, i;
+  var active=true, timer=null, ready=false, suppressedY=null, ids, i;
   function empty(){ }
   if(!status||!top||!nodes.length||!win||!fdReadingRef(ref))return {destroy:empty,startAtTop:empty};
   ids=fdReadingHeadingIds(nodes.map(function(node){return node.textContent||'';}));
@@ -980,15 +987,15 @@ function fdInstallReadingPlace(reader,ref,state,options){
       'Reading place could not be saved on this device';
   }
   function capture(){
-    if(!active||!ready)return;
+    if(!active||!ready||suppressedY!==null)return;
     var position=current();
     write(fdReadingPlaceUpdate(state.readingPlaces,ref,position.heading,position.offset,now()));
   }
   function onScroll(){
     if(!active||!ready)return;
-    if(suppressTop){
-      if(scrollY()<=absoluteTop(nodes[0]))return;
-      suppressTop=false;
+    if(suppressedY!==null){
+      if(Math.abs(scrollY()-suppressedY)<=4)return;
+      suppressedY=null;
     }
     if(timer!==null)timerClear(timer);
     timer=timerSet(function(){timer=null;capture();},150);
@@ -1006,8 +1013,8 @@ function fdInstallReadingPlace(reader,ref,state,options){
   function startAtTop(){
     if(!active||!ready||top.hidden)return;
     if(timer!==null){timerClear(timer);timer=null;}
-    suppressTop=true;
     win.scrollTo(0,absoluteTop(nodes[0]));
+    suppressedY=scrollY();
     write(fdReadingPlaceDrop(state.readingPlaces,ref));
     top.hidden=true;
     nodes[0].setAttribute('tabindex','-1');
@@ -1023,13 +1030,14 @@ function fdInstallReadingPlace(reader,ref,state,options){
     var place=state.readingPlaces[ref], resolved=place&&fdReadingResume(place,ids), target=null;
     if(place&&!resolved){
       win.scrollTo(0,0);
+      suppressedY=scrollY();
       write(fdReadingPlaceDrop(state.readingPlaces,ref));
     }else{
       if(resolved){
         for(var j=0;j<nodes.length;j++)if(nodes[j].id===resolved.heading){target=nodes[j];break;}
         win.scrollTo(0,absoluteTop(target)+resolved.offset);
         top.hidden=false;
-        if(o.focusOnRestore===true){
+        if(o.focusOnRestore===true&&(!o.canFocusOnRestore||o.canFocusOnRestore()===true)){
           target.setAttribute('tabindex','-1');
           try{target.focus({preventScroll:true});}catch(_){target.focus();}
         }
@@ -1345,6 +1353,7 @@ function fdWire(root, initialState, opts){
          restoring role, week and route with no second confirmation. Reloading is what makes the
          page agree with the store. It follows the render deliberately: whether the browser
          honours it or not, nothing is left on screen claiming data that is gone. */
+      if(o.disposeReadingPlace)o.disposeReadingPlace();
       fdClearDeviceData(localStorage);
       if(win&&win.location&&win.location.reload) win.location.reload();
     } else if(effect.type==='set-exam-date'){
@@ -1822,6 +1831,8 @@ function fdWire(root, initialState, opts){
       if(currentRoute()!==previewRouteBase) lockPreview();
       return;
     }
+    /* Flush the outgoing reader while its state is still current. The next save clones this map. */
+    if(o.disposeReadingPlace)o.disposeReadingPlace();
     var before=fdClone(state);
     var merged=fdClone(state), snap=event&&event.state&&event.state.fd&&event.state.state;
     merged.searchOpen=false;

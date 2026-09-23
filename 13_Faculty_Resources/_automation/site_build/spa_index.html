@@ -2628,7 +2628,15 @@
             if(mountedReader&&readingState)fdReadingPlaceSession=fdInstallReadingPlace(mountedReader,ref,readingState,{
               window:window,
               allowStorage:readingState.screen==='app'&&!!readingState.role&&!readingState.guest&&!facultyPreviewRequest,
-              focusOnRestore:options.focusOnRestore===true
+              focusOnRestore:options.focusOnRestore===true,
+              canFocusOnRestore:function(){
+                return fdReadingFocusAllowed(readState(),{
+                  ref:ref,currentRef:currentItem&&currentItem.f,
+                  facultyPreview:!!facultyPreviewRequest,externalModal:!!capSheet,
+                  pendingHigh:!!contentEl.querySelector('.governance-notice.pending-high'),
+                  readerConnected:document.documentElement.contains(mountedReader)
+                });
+              }
             });
           }
           fdGuideReturning=false;
@@ -2995,6 +3003,7 @@
       render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
       openResource:fdOpenResourceLive,openProgress:fdOpenProgress,
       readingPlaceSession:function(){return fdReadingPlaceSession;},
+      disposeReadingPlace:fdDisposeReadingPlace,
       externalModalOpen:function(){return !!capSheet;},
       loadBlock:blockLoad,
       facultyPreview:function(){return !!facultyPreviewRequest;},
