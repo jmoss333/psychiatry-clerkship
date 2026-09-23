@@ -17,6 +17,12 @@ const RUNTIME_PATTERNS = {
   bash: /^GNU bash, version \d+\.\d+(?:\.\d+)?(?:\(\d+\))?(?:-[A-Za-z0-9_.-]+)?(?: \([A-Za-z0-9_.-]+\))?$/,
   playwright: /^\d+\.\d+\.\d+$/,
 };
+const UNKNOWN_COMMIT = '0'.repeat(40);
+const UNKNOWN_RUNTIMES = Object.freeze({
+  node: 'v0.0.0', python: 'Python 0.0.0', bash: 'GNU bash, version 0.0.0', playwright: '0.0.0',
+});
+
+class UsageError extends Error {}
 
 function onlyKeys(value, allowed) {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -127,10 +133,10 @@ function parseFlags(command, args) {
     const flag = args[i];
     const value = args[i + 1];
     if (!flag?.startsWith('--') || !allowed.has(flag.slice(2)) || Object.hasOwn(flags, flag.slice(2))
-      || value === undefined || value === '' || value.startsWith('--')) throw new TypeError('invalid CLI flags');
+      || value === undefined || value === '' || value.startsWith('--')) throw new UsageError('invalid CLI flags');
     flags[flag.slice(2)] = value;
   }
-  if (required.some((key) => !Object.hasOwn(flags, key))) throw new TypeError('missing CLI flag');
+  if (required.some((key) => !Object.hasOwn(flags, key))) throw new UsageError('missing CLI flag');
   return flags;
 }
 
@@ -152,16 +158,31 @@ function readReceipt(path) {
   try { return JSON.parse(readFileSync(path, 'utf8')); } catch { return null; }
 }
 
-function record(flags) {
-  const root = process.cwd();
-  const commit = git(root, ['rev-parse', 'HEAD']);
-  const prior = readReceipt(flags.path);
-  const startedAt = flags['started-at'] ?? (prior?.commit === commit && prior?.status === 'running' && isIso(prior.startedAt)
-    ? prior.startedAt : new Date().toISOString());
+function validateRecordFlags(flags) {
   const status = flags.status;
-  const exitCode = Number(flags['exit-code']);
-  if (!/^\d+$/.test(flags['exit-code']) || !Number.isSafeInteger(exitCode)) throw new TypeError('invalid exit code');
   const stage = flags.stage;
+  const exitCode = Number(flags['exit-code']);
+  if (!['running', 'passed', 'failed'].includes(status) || !STAGES.has(stage)
+    || !/^\d+$/.test(flags['exit-code']) || !Number.isSafeInteger(exitCode)
+    || (flags['started-at'] !== undefined && !isIso(flags['started-at']))
+    || (status === 'passed' && (stage !== 'complete' || exitCode !== 0))
+    || (status === 'failed' && exitCode === 0)
+    || (status === 'running' && exitCode !== 0)) throw new UsageError('invalid record arguments');
+  return { status, stage, exitCode };
+}
+
+function record(flags) {
+  const { status, stage, exitCode } = validateRecordFlags(flags);
+  const root = process.cwd();
+  const prior = readReceipt(flags.path);
+  const markerStart = flags['started-at'] ?? new Date().toISOString();
+  writeReceiptAtomic(flags.path, {
+    status: 'running', commit: UNKNOWN_COMMIT, startedAt: markerStart, completedAt: null,
+    stage, exitCode: 0, runtimes: UNKNOWN_RUNTIMES, proof: {},
+  });
+  const commit = git(root, ['rev-parse', 'HEAD']);
+  const startedAt = flags['started-at'] ?? (prior?.commit === commit && prior?.status === 'running' && isIso(prior.startedAt)
+    ? prior.startedAt : markerStart);
   const completedAt = status === 'running' ? null : new Date().toISOString();
   const proof = {};
   if (status === 'passed') {
@@ -207,8 +228,13 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       if (command === 'record') record(flags);
       else status(flags);
     } catch (error) {
-      process.stderr.write(`receipt ${command} failed: ${error.message}\n`);
-      process.exitCode = error instanceof TypeError ? 2 : 1;
+      if (error instanceof UsageError) {
+        process.stderr.write('invalid receipt arguments\n');
+        process.exitCode = 2;
+      } else {
+        process.stderr.write(`receipt ${command} failed: tool or filesystem error\n`);
+        process.exitCode = 1;
+      }
     }
   }
 }

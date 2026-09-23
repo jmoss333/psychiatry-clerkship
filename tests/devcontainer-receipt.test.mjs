@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -127,7 +127,7 @@ function runStatus(repo, receiptPath) {
 function runRecord(repo, receiptPath, status, stage, exitCode, extra = {}) {
   return spawnSync(process.execPath, [RECEIPT_CLI, 'record', '--path', receiptPath, '--status', status,
     '--stage', stage, '--exit-code', String(exitCode), ...extra.flags ?? []], {
-    cwd: repo, encoding: 'utf8', env: { ...process.env, SECRET_SENTINEL: 'never-write-this-value' },
+    cwd: repo, encoding: 'utf8', env: { ...process.env, SECRET_SENTINEL: 'never-write-this-value', ...extra.env },
   });
 }
 
@@ -178,4 +178,44 @@ test('status never republishes malformed or unsupported receipt content', () => 
   assert.equal(result.state, 'stale');
   assert.equal(result.reason, 'unsupported-schema');
   assert.equal(result.receipt, null);
+}));
+
+test('a failed runtime probe invalidates an earlier verified receipt and exits as a tool failure', () => withRepo((repo, head) => {
+  const receiptPath = resolve(repo, 'receipt.json');
+  writeReceiptAtomic(receiptPath, validReceipt({ commit: head }));
+  assert.equal(runStatus(repo, receiptPath).state, 'verified');
+  writeFileSync(resolve(repo, 'tests/smoke/package.json'), '{}');
+
+  const result = runRecord(repo, receiptPath, 'passed', 'complete', 0);
+  assert.equal(result.status, 1, result.stderr);
+  assert.doesNotMatch(result.stderr, /usage|invalid.*argument/i);
+  const residue = JSON.parse(readFileSync(receiptPath, 'utf8'));
+  assert.equal(residue.schemaVersion, 1);
+  assert.equal(residue.status, 'running');
+  assert.equal(runStatus(repo, receiptPath).state, 'stale');
+}));
+
+test('a failed Git probe also leaves an in-progress stale receipt', () => withRepo((repo, head) => {
+  const receiptPath = resolve(repo, 'receipt.json');
+  writeReceiptAtomic(receiptPath, validReceipt({ commit: head }));
+  const fakeBin = resolve(repo, 'fake-bin');
+  mkdirSync(fakeBin);
+  const fakeGit = resolve(fakeBin, 'git');
+  writeFileSync(fakeGit, '#!/bin/sh\nexit 127\n');
+  chmodSync(fakeGit, 0o755);
+
+  const result = runRecord(repo, receiptPath, 'failed', 'full-gate', 1, { env: { PATH: `${fakeBin}:${process.env.PATH}` } });
+  assert.equal(result.status, 1, result.stderr);
+  assert.equal(JSON.parse(readFileSync(receiptPath, 'utf8')).status, 'running');
+  assert.equal(runStatus(repo, receiptPath).state, 'stale');
+}));
+
+test('invalid record arguments leave prior verified evidence untouched', () => withRepo((repo, head) => {
+  const receiptPath = resolve(repo, 'receipt.json');
+  writeReceiptAtomic(receiptPath, validReceipt({ commit: head }));
+  const before = readFileSync(receiptPath, 'utf8');
+  const result = runRecord(repo, receiptPath, 'passed', 'complete', 0, { flags: ['--started-at', 'not-a-date'] });
+  assert.equal(result.status, 2, result.stderr);
+  assert.equal(readFileSync(receiptPath, 'utf8'), before);
+  assert.equal(runStatus(repo, receiptPath).state, 'verified');
 }));
