@@ -2226,7 +2226,7 @@ test('same-route data hydration preserves focused header and Today controls', as
       && !document.querySelector('#content').matches(':focus-visible')
   ))).toBe(true);
 
-  const search = page.locator('[data-fd-search]');
+  const search = page.locator('.fd-header .fd-searchbtn[data-fd-search]');
   await search.focus();
   await page.evaluate(() => { window.__hydrationSearch = document.activeElement; });
 
@@ -2561,9 +2561,9 @@ test('document title resets for tabs and updates for successful resources and in
   });
   await page.goto('/');
   await expect(page).toHaveTitle(/^Today — /);
-  await page.locator('[data-fd-tab="path"]').click();
+  await page.locator('[data-fd-tab="path"]:visible').click();
   await expect(page).toHaveTitle(/^Path — /);
-  await page.locator('[data-fd-tab="library"]').click();
+  await page.locator('[data-fd-tab="library"]:visible').click();
   await expect(page).toHaveTitle(/^Library — /);
   await page.goto('/?page=welcome.md');
   await expect(page.locator('.fd-article')).toBeVisible();

@@ -667,18 +667,22 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
     expect(week).toBeLessThanOrEqual(weekMaximum);
   }
   const activateTab = async (name) => {
-    const control = page.locator(`.fd-tab[data-fd-tab="${name.toLowerCase()}"]`);
-    // On a phone a reader collapses its header to one row and hides the tab row (frontdoor.css
-    // "Phone chrome", 2026-09-18); the action bar's Back is the route a learner has to the tabs,
-    // so the matrix takes it too before reaching for the tab. Top-level screens and desktop
-    // readers keep the tab row and skip this.
-    if (!(await control.isVisible())) {
-      const back = page.locator('.fd-actionbar [data-fd-back]');
-      if (await back.isVisible()) await keyboardActivate(back);
+    const tab = name.toLowerCase();
+    const desktopTab = page.locator(`.fd-tabs .fd-tab[data-fd-tab="${tab}"]:visible`);
+    if (await desktopTab.count()) {
+      await keyboardActivate(desktopTab);
+      await expect(desktopTab).toHaveAttribute('aria-current', 'page');
+    } else if (tab === 'library') {
+      // The phone dock keeps Path in slot two; Library is reached through Search.
+      await keyboardActivate(page.locator('.fd-header .fd-searchbtn[data-fd-search]:visible'));
+      await keyboardActivate(page.getByRole('dialog', { name: 'Search' })
+        .getByRole('button', { name: 'Browse the Library' }));
+      await expect(page.locator('.fd-library')).toBeVisible();
+    } else {
+      const dockTab = page.locator(`.fd-dock [data-fd-tab="${tab}"]:visible`);
+      await keyboardActivate(dockTab);
+      await expect(dockTab).toHaveAttribute('aria-current', 'page');
     }
-    await keyboardActivate(control);
-    await expect(page.locator(`.fd-tab[data-fd-tab="${name.toLowerCase()}"]`))
-      .toHaveAttribute('aria-current', 'page');
   };
   const placement = config.pathItems[0];
   const placementEvidence = artifact.pathEvidence.find((row) => row.instanceId === placement.instanceId);
@@ -744,7 +748,7 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
   const essentials = JSON.parse(readFileSync(new URL('../../curriculum.json', import.meta.url), 'utf8')).essentials;
   expect((await essentialsResourceRefs(page)).sort())
     .toEqual(essentials[audience === 'ms3' ? 'ms3' : 'resident'].flatMap(column => column.refs).sort());
-  await expect(page.locator('[data-fd-tab="library"]')).toHaveText('The Essentials');
+  await expect(page.locator('.fd-tabs [data-fd-tab="library"]')).toHaveText('The Essentials');
   await keyboardActivate(page.locator('[data-fd-library-view="full"]'));
   const libraryItems = await page.locator('.fd-library .fd-collink[data-fd-open]').evaluateAll((links) => (
     links.map((link) => ({

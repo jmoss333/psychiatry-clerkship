@@ -43,7 +43,7 @@ test('APP entry is absent from MS3 and available only on the resident preview', 
   await expect(page.locator('.fd-app__bridge-choice')).toHaveCount(2);
   await expect(page.locator('.fd-app__resource')).toHaveCount(8);
   await expect(page.locator('[data-fd-app-shift]')).toHaveCount(3);
-  await expect(page.locator('[data-fd-tab="today"]')).toHaveText('On shift');
+  await expect(page.locator('.fd-tabs [data-fd-tab="today"]')).toHaveText('On shift');
   await expect(page.locator('[data-fd-tab="path"]')).toHaveCount(0);
 });
 
@@ -62,7 +62,7 @@ test('audience=app is a resident-only invitation and never replaces stored ident
   await expect(page.locator('.fd-app')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'On shift', exact: true })).toBeVisible();
   await expect(page.locator('[data-fd-tab="path"]')).toHaveCount(0);
-  await expect(page.locator('[data-fd-tab="today"]')).toHaveText('On shift');
+  await expect(page.locator('.fd-tabs [data-fd-tab="today"]')).toHaveText('On shift');
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}'));
   expect(stored.role).toBe('resident');
   expect(Object.hasOwn(stored, 'appInvite')).toBe(false);

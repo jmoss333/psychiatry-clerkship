@@ -216,7 +216,7 @@ test.describe('risk-aware review status (shared shell)', () => {
     await expect(libraryBadge).toHaveText(label);
     await expect(libraryBadge).toHaveAttribute('aria-label', label);
 
-    await page.locator('[data-fd-search]').click();
+    await page.locator('.fd-header .fd-searchbtn[data-fd-search]').click();
     await page.locator('.fd-searchpanel__input').fill(target.f);
     const exactResults = page.locator('.fd-result[data-fd-open]');
     await expect(exactResults).toHaveCount(1);
