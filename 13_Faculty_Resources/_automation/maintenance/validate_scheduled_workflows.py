@@ -396,7 +396,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "674b60ea33bcf8545c60ce5094fc0aa64fc27c241db417e74ed26c5842670677"
     ),
-    "ci.yml": "7fa63af6e13596c88439756807a48713e35984887ada0fbe9950330d68b32224",
+    "ci.yml": "babeede50264b1de455e816e3ac38c353152f69a823356024b64e278187c207b",
     "maintenance-governance-digest.yml": (
         "3642bbcc45b6321dcaaf1f172c8ece91483494bec04647a31ec1f0e0ee3eb12b"
     ),

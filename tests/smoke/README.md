@@ -33,7 +33,8 @@ SP_INTERVIEW_BASE_URL=http://127.0.0.1:4200/tools/ \
     --project=nav-res \
     --project=faculty-console \
     --project=interview-room \
-    --project=offline
+    --project=offline-ms3 \
+    --project=offline-res
 ```
 
 The launcher defaults to:
@@ -61,7 +62,8 @@ SP_INTERVIEW_BASE_URL=http://127.0.0.1:4300/tools/ \
     --project=nav-res \
     --project=faculty-console \
     --project=interview-room \
-    --project=offline
+    --project=offline-ms3 \
+    --project=offline-res
 ```
 
 The LFS browser project may skip locally when no deploy-preview URL is available. The sequential

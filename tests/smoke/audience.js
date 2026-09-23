@@ -17,8 +17,8 @@
 // a helper that defaults still carries the defect it was written to remove, just one project
 // name further away. A name encoding no audience is a configuration mistake, and a loud one is
 // cheap: every spec that imports this file runs only under the audience-bearing projects
-// (nav-* and canary-*). The five audience-agnostic projects — lfs, visual, interview-room,
-// faculty-console, offline — each run a single spec that does not import this module, and
+// (nav-*, canary-*, and offline-*). The six audience-agnostic projects — lfs, visual,
+// interview-room, faculty-console, prototypes, hosted-preview — each run a single spec.
 // tests/canary-scope.test.mjs pins that invariant so the throw cannot start firing by accident.
 //
 // tests/canary-scope.test.mjs also fails if a canary spec reintroduces the exact-name comparison.
@@ -44,7 +44,7 @@ export function audienceOf(projectName) {
     `project name "${name}" encodes no audience; expected a name ending in `
       + AUDIENCE_BY_SUFFIX.map(([suffix]) => `"${suffix}"`).join(' or ')
       + '. If this is an audience-agnostic project (lfs, visual, interview-room, '
-      + 'faculty-console, offline), its spec should not be importing audience.js.',
+      + 'faculty-console, prototypes, hosted-preview), its spec should not be importing audience.js.',
   );
 }
 
