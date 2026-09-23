@@ -30,9 +30,10 @@
  *   - a shipped file that is a Git-LFS pointer stub instead of real bytes
  *   - a duplicate (or missing) item id in question_bank.json
  *   - a relative/root-local <script src> whose shipped target is absent
- *   - rotation-curator.html loads a remote script/image, exposes a browser network
- *     transport path, or ships more than the one locally vendored QR implementation
- *   - the vendored QR implementation signature appears in any other shipped HTML
+ *   - rotation-curator.html loads a remote script/image or exposes a browser network
+ *     transport path
+ *   - the vendored QR signature appears outside the curator and approved learner shell,
+ *     or appears more than once in either approved page
  *   - a live shell (index.html) literal tool map (PRACTICE_LABEL_NEUTRAL/
  *     PRACTICE_PAGE_TOOLS) referencing a tool file the build doesn't ship
  *   - a `?page=`/`?tool=` reference in shipped content/*.md that doesn't resolve
@@ -74,7 +75,7 @@ const DOSE = /\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg\/kg)\b/i;
 const CDN_HOST = /\b(?:cdnjs\.cloudflare\.com|unpkg\.com|jsdelivr\.net)\b/i;
 const DOSE_WAIVER_PREFIX = 'QA-ALLOW-DOSE';
 const QR_VENDOR_SIGNATURE = 'var qrcode = function()';
-const QR_VENDOR_ALLOWED_HTML = 'tools/rotation-curator.html';
+const QR_VENDOR_ALLOWED_HTML = new Set(['index.html', 'tools/rotation-curator.html']);
 
 function tagAttributes(tag) {
   const values = [];
@@ -177,22 +178,22 @@ for (const rawCatalogSource of ['rotation_edition_catalog.json', 'rotation_editi
   if (existsSync(p(rawCatalogSource))) H(`${rawCatalogSource} must not be published to the learner output`);
 }
 
-/* The QR implementation is intentionally a single, curator-only local dependency. A
- * second embedded copy increases the unreviewed executable surface, while a copy in the
- * learner shell would make the faculty-only generator available on every page. Scan all
- * shipped HTML (not only tools/) so index.html and future nested shells cannot bypass it.
- * Fixture curator pages without the QR engine remain valid: this is a placement and
- * uniqueness invariant, while common.py's marker contract verifies real-build presence. */
+/* The QR implementation is intentionally restricted to two reviewed local consumers: the
+ * faculty rotation curator and the learner shell's patient resource pack. A duplicate or a
+ * copy anywhere else increases the unreviewed executable surface. Scan all shipped HTML
+ * (not only tools/) so future nested pages cannot bypass the allowlist. Fixtures without the
+ * QR engine remain valid: this is a placement and per-page uniqueness invariant, while
+ * common.py's marker contracts verify real-build presence. */
 for (const { fp } of allFiles) {
   if (!fp.endsWith('.html')) continue;
   const rel = relative(SITE, fp).split('\\').join('/');
   const html = readFileSync(fp, 'utf8');
   const copies = html.split(QR_VENDOR_SIGNATURE).length - 1;
   if (!copies) continue;
-  if (rel !== QR_VENDOR_ALLOWED_HTML) {
-    H(`QR vendor signature outside rotation-curator.html: ${rel}`);
+  if (!QR_VENDOR_ALLOWED_HTML.has(rel)) {
+    H(`QR vendor signature outside approved pages: ${rel}`);
   } else if (copies !== 1) {
-    H(`QR vendor signature must appear exactly once in rotation-curator.html (found ${copies})`);
+    H(`QR vendor signature must appear exactly once in ${rel} (found ${copies})`);
   }
 }
 const parsed = {};
