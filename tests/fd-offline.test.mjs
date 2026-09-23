@@ -314,10 +314,13 @@ test('route monitor discards old week reply and requests the new APP invitation 
 
 test('monitor skips faculty preview and non-Today routes, and invalidates on teardown', async () => {
   const h = offlineHarness();
-  const monitor = F.fdOfflineMonitor({ ...h, facultyPreview: true });
+  let previewSubscriptions = 0;
+  const monitor = F.fdOfflineMonitor({ ...h, facultyPreview: true,
+    subscribeWaiting() { previewSubscriptions += 1; return () => {}; } });
   monitor.sync(index(route), { screen: 'app', tab: 'today', week: 2 });
   assert.equal(h.posts.length, 0);
   assert.equal(monitor.status(), null);
+  assert.equal(previewSubscriptions, 0);
   monitor.destroy();
   const live = F.fdOfflineMonitor({ ...h });
   live.sync(index(route), { screen: 'app', tab: 'today', week: 2 });

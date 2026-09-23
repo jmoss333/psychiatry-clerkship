@@ -178,12 +178,26 @@ function fdCheckOffline(urls,options){
 function fdOfflineMonitor(options){
   var o=options||{},sw=o.serviceWorker||null,active=true,generation=0;
   var currentKey='',currentController=null,currentIndex=null,currentRoute=null;
-  var currentStatus=null,cancel=null;
+  var currentStatus=null,cancel=null,unsubscribe=null;
   function notify(){if(typeof o.onChange==='function')try{o.onChange(currentStatus);}catch(_){} }
   function waiting(){try{return typeof o.getWaiting==='function'&&o.getWaiting()===true;}catch(_){return false;} }
   function stop(){
     generation++;
     if(cancel){cancel();cancel=null;}
+  }
+  function refreshWaiting(){
+    if(!active||!currentKey||!currentStatus)return currentStatus;
+    if((sw&&sw.controller||null)!==currentController)
+      return sync(currentIndex,currentRoute,true);
+    var hasWaiting=waiting();
+    if(currentStatus.waiting!==hasWaiting){
+      var next={expected:currentStatus.expected,waiting:hasWaiting};
+      if(currentStatus.checking===true)next.checking=true;
+      if(fdOfflineOwn(currentStatus,'response'))next.response=currentStatus.response;
+      if(fdOfflineOwn(currentStatus,'reason'))next.reason=currentStatus.reason;
+      currentStatus=next;notify();
+    }
+    return currentStatus;
   }
   function sync(index,route,force){
     if(!active)return null;
@@ -206,10 +220,7 @@ function fdOfflineMonitor(options){
       '|'+urls.join('|');
     var hasWaiting=waiting();
     if(force!==true&&currentKey===key&&currentController===controller){
-      if(currentStatus&&currentStatus.waiting!==hasWaiting){
-        currentStatus.waiting=hasWaiting;notify();
-      }
-      return currentStatus;
+      return refreshWaiting();
     }
     stop();
     currentKey=key;currentController=controller;
@@ -242,12 +253,16 @@ function fdOfflineMonitor(options){
   }
   function controllerChanged(){sync(currentIndex,currentRoute,true);}
   if(sw&&sw.addEventListener)try{sw.addEventListener('controllerchange',controllerChanged);}catch(_){}
+  if(o.facultyPreview!==true&&typeof o.subscribeWaiting==='function')
+    try{unsubscribe=o.subscribeWaiting(refreshWaiting);}catch(_){}
   return {
     sync:sync,
+    refreshWaiting:refreshWaiting,
     status:function(){return currentStatus;},
     destroy:function(){
       if(!active)return;
       active=false;stop();currentStatus=null;currentKey='';
+      if(typeof unsubscribe==='function')try{unsubscribe();}catch(_){}
       if(sw&&sw.removeEventListener)try{sw.removeEventListener('controllerchange',controllerChanged);}catch(_){}
     }
   };
