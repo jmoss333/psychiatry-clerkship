@@ -64,7 +64,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 // A missing dock, a second fixed phone bar, or a covered final reading row must fail here.
-async function expectAdaptiveDock(page, expectedFirst, expectedSecond) {
+async function expectAdaptiveDock(page, expectedFirst, expectedSecond, expectedContext) {
   const dock = page.locator('.fd-dock:visible');
   await expect(dock).toHaveCount(1);
   await expect(dock).toHaveAttribute('aria-label', 'Learning actions');
@@ -73,7 +73,12 @@ async function expectAdaptiveDock(page, expectedFirst, expectedSecond) {
   const labels = (await items.allTextContents()).map(label => label.trim());
   expect(labels[0]).toBe(expectedFirst);
   expect(labels[1]).toBe(expectedSecond);
-  expect(labels[2].length).toBeGreaterThan(0);
+  if (expectedContext) {
+    expect(labels[2]).toBe(expectedContext.label);
+    await expect(items.nth(2)).toHaveAttribute('data-fd-dock-forward', expectedContext.sourceId);
+  } else {
+    expect(labels[2].length).toBeGreaterThan(0);
+  }
   expect(labels.slice(3)).toEqual(['Search', 'Capture']);
   const geometry = await page.evaluate(() => {
     const dock = document.querySelector('.fd-dock');
@@ -147,7 +152,8 @@ test('adaptive mobile dock: standard audience routes, dialogs, reader forwarding
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');
-  let dock = await expectAdaptiveDock(page, 'Today', 'Path');
+  // The empty device stores leave the current week's next item as Today's primary.
+  let dock = await expectAdaptiveDock(page, 'Today', 'Path', { label: 'Continue', sourceId: 'primary-week' });
   await dock.locator('[data-fd-tab="path"]:visible').click();
   await expect(page.locator('.fd-path')).toBeVisible();
   dock = await expectAdaptiveDock(page, 'Today', 'Path');

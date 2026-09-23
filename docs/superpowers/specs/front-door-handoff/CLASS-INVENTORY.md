@@ -275,7 +275,7 @@ internal Progress. These are part of the same shipped class contract:
 | `.fd-due__kicker` | "Clear what's due" line, present only when the due row is the primary (`.fd-due.is-primary`). |
 | `.fd-freshset` | Ghost `.fd-btn` sibling of a completed-week `.fd-continue` that is primary: "Practice a fresh set →", opens the question bank. |
 | `.fd-capture-launch` | Full-width capture-dialog launcher. |
-| `.fd-capture-launch--global` | Stable learner-route launcher hook; `#fdCaptureMount` keeps it fixed above 640px and is hidden at phone widths. The dock's Capture button opens the same dialog. |
+| `.fd-capture-launch--global` *(no rule)* | Stable learner-route launcher hook; `#fdCaptureMount` keeps it fixed above 640px and is hidden at phone widths. The dock's Capture button opens the same dialog. |
 | `.fd-capture` | Today question inbox. Contains `.fd-capture__head`, `.fd-capture__new`, `.fd-capture__purpose`, and compact `.fd-capture__item` rows. Each row uses `.fd-capture__meta` / `__status`, `__question`, optional `__match`, and a wrapping `__actions` group of `__action` buttons; `__action--done` is the quiet trailing action. `.fd-capture__copy` retains supervised clipboard export. |
 | `.fd-progresscard` | Internal-Progress entry; contains `.fd-progresscard__title` and `.fd-progresscard__meta`. |
 | `.fd-progress-reader` | Reader modifier for the internal Progress surface. |
