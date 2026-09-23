@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(465 distinct `fd-*` selector names, 25 `is-*` state classes). Every class below has a rule in that file unless
+(477 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -240,6 +240,11 @@ ancestor; there is no modifier class for it.
           .fd-continue__count / .fd-continue__left
       .fd-setupcta    <button>         (alternative to .fd-continue when no week is set)
         .fd-setupcta__kicker / .fd-setupcta__title
+      .fd-offline     <section>        compact Shift-ready disclosure after the primary action
+        .fd-offline__open <button>      status plus aria-expanded
+        .fd-offline__details            in-flow, hidden until opened
+          .fd-offline__inventory        response-only subtree
+          .fd-offline__actions          refresh and close buttons, never inside the response subtree
       .fd-listhead
         .fd-sectionhead / .fd-listhead__theme
       .fd-list
@@ -264,6 +269,10 @@ ancestor; there is no modifier class for it.
 | `.fd-list` | Supplies the 8px gap between `.fd-row`s — rows have no sibling margin. |
 | `.fd-consistency` | Seven-day activity strip (2026-09-02, not in the prototype). Replaces the subhead's `· N days in a row` clause, which only Daily Review could write. Derived at render time by `fdActivityDays` from the timestamps every tool already stores; nothing new is persisted. Carries a `-12px` top margin so the subhead's 22px gap closes only when the strip is present. |
 | `.fd-pilot` | Shared active-testing invitation (2026-09-21). Its `.fd-pilot__button` uses the existing `.pgfb-b` launcher and adds `data-fb-context="Today landing page"`; no second form or submission channel is introduced. |
+| `.fd-offline` | One in-flow cache receipt after Today's actual primary card and inside the APP starting-route section after its canonical resource links. The Care entry stays in flow at ≤640px; the five-item dock is unchanged. State classes `.is-checking`, `.is-ready`, `.is-update`, and `.is-not-ready` change border shape/color and surface wash while visible text carries the meaning. It uses the existing warm palette tokens in light and dark themes; all controls meet `--fd-target-touch`. |
+| `.fd-offline__status`, `.fd-offline__detail`, `.fd-offline__scope`, `.fd-offline__checked` | Detailed state, reason, current route, and current-session verification timestamp. `Checked just now` is emitted only for a validated active-worker response. |
+| `.fd-offline__inventory` | Counts present and missing eligible reading, tool, shell/navigation, and search-data files. Device-only Reading place/Capture and connection-required media, live services, external links, and email delivery are always separate lines. Only this response subtree is replaced after a cache reply; focused controls are siblings outside it. |
+| `.fd-offline__refresh-status` | Stable live text for update-check success/failure or the offline explanation. The existing worker Refresh/Later prompt remains the sole reload decision. |
 
 Task 5 composes device-local activity around the pure Today renderer and reuses the Reader for
 internal Progress. These are part of the same shipped class contract:
@@ -698,6 +707,7 @@ content. The high-risk governance focus rule outranks passage arrival focus.
     .fd-app__bridge-head / .fd-app__bridge-copy
     .fd-app__resources
       .fd-app__resource <button> ×8
+    .fd-offline                        after starting-route resources
     .fd-app__reflection
       .fd-app__reflection-actions [role=group]
         .fd-app__reflection-choice <button> ×3
@@ -891,6 +901,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 | `.is-primary` | `.fd-due`, `.fd-resume`, `.fd-lastread` | this row is Today's primary action (kicker copy changes; the visual treatment comes from the `.fd-primary` wrapper) |
 | `.is-secondary` | `.fd-continue` | a device-store row won the primary slot; the Continue card drops its gradient and top accent |
 | `.is-unavailable` | `.fd-care-pack__included` | the governed crisis block is absent, so the handout truthfully reports the failure and Print remains disabled |
+| `.is-checking` / `.is-ready` / `.is-update` / `.is-not-ready` | `.fd-offline` | Worker check pending / all current-route eligible files verified / verified current copy with a waiting update / verification failed or files missing. Never color-only: compact and detailed text name each state. |
 
 ## Keyframes
 

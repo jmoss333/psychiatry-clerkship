@@ -154,7 +154,7 @@ function fdAppActivity(activity, selected){
 
 /* Keep this name distinct from the fdApp DOM-root variable in spa_index.html. The shell renders
    inside an IIFE where that local binding intentionally shadows globals. */
-function fdAppWorkspace(index, pathway, state, captureHtml){
+function fdAppWorkspace(index, pathway, state, captureHtml, offlineHtml){
   var model=fdAppModel(index,pathway,state), out='';
   if(!model.valid){
     return '<div class="fd-fallback" data-fd-fallback="app" role="alert">'+fdEsc(model.message)+'</div>';
@@ -178,6 +178,7 @@ function fdAppWorkspace(index, pathway, state, captureHtml){
   }
   for(var i=0;i<model.resources.length;i++) out+=fdAppResource(model.resources[i],false,!selectedHasResource&&i===0);
   out+='</div>';
+  if(offlineHtml&&!selectedHasResource)out+=offlineHtml;
   for(var m=0;m<model.missing.length;m++){
     out+='<p class="fd-app__error" role="alert">Configured resource unavailable: '+fdEsc(model.missing[m])+'</p>';
   }
@@ -189,6 +190,7 @@ function fdAppWorkspace(index, pathway, state, captureHtml){
     '<div class="fd-app__tasks">';
   for(var a=0;a<model.activities.length;a++) out+=fdAppActivity(model.activities[a],model.activityId);
   out+='</div>';
+  if(offlineHtml&&selectedHasResource)out+=offlineHtml;
   if(model.practiceSession){
     try{
       out+='<div class="fd-app__practice-host">'+fdAppPracticeRender(model.practiceSession)+'</div>';
