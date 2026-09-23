@@ -207,6 +207,20 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     });
   }
 
+  var careNavigator=[], cn=Array.isArray(cur.careNavigator)?cur.careNavigator:[];
+  for(var cni=0;cni<cn.length;cni++){
+    var navigatorIntent=cn[cni];
+    if(!navigatorIntent||typeof navigatorIntent!=='object') continue;
+    careNavigator.push({
+      id:navigatorIntent.id,
+      label:navigatorIntent.label,
+      explanation:navigatorIntent.explanation,
+      primaryResourceId:navigatorIntent.primaryResourceId,
+      alternativeResourceIds:Array.isArray(navigatorIntent.alternativeResourceIds)
+        ?navigatorIntent.alternativeResourceIds.slice():[]
+    });
+  }
+
   var teachingResources=[], tr=Array.isArray(cur.teachingResources)?cur.teachingResources:[];
   for(var tri=0;tri<tr.length;tri++){
     teachingResources.push({
@@ -220,7 +234,7 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
 
   return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known,
     titles:titles, essentials:essentials, essentialsDropped:essentialsDropped,
-    careResources:careResources, teachingResources:teachingResources };
+    careResources:careResources, careNavigator:careNavigator, teachingResources:teachingResources };
 }
 
 /* The browser receives exactly one projected path. Treat that small object as untrusted at the

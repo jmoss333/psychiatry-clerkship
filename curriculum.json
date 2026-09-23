@@ -331,6 +331,50 @@
       ]
     }
   ],
+  "careNavigator": [
+    {
+      "id": "services",
+      "label": "Find community services",
+      "explanation": "Start with the Resource Finder to review practical and treatment supports by need.",
+      "primaryResourceId": "resource-finder",
+      "alternativeResourceIds": ["meeting-calendar"]
+    },
+    {
+      "id": "meetings",
+      "label": "Locate recovery meetings",
+      "explanation": "Start with the meeting calendar when the immediate task is locating recovery support.",
+      "primaryResourceId": "meeting-calendar",
+      "alternativeResourceIds": ["resource-finder"]
+    },
+    {
+      "id": "explain",
+      "label": "Explain something to a patient or family",
+      "explanation": "Start with the education library for plain-language information patients and families can review.",
+      "primaryResourceId": "education-library",
+      "alternativeResourceIds": ["book-shelf", "podcast-navigator"]
+    },
+    {
+      "id": "listen",
+      "label": "Find a podcast or listening resource",
+      "explanation": "Start with Podcast Navigator to find curated listening by topic and audience.",
+      "primaryResourceId": "podcast-navigator",
+      "alternativeResourceIds": ["education-library", "book-shelf"]
+    },
+    {
+      "id": "books",
+      "label": "Recommend a book",
+      "explanation": "Start with Recommended Books to browse curated reading by topic, reader, and relationship pattern.",
+      "primaryResourceId": "book-shelf",
+      "alternativeResourceIds": ["education-library", "podcast-navigator"]
+    },
+    {
+      "id": "family-conversation",
+      "label": "Prepare for a family conversation",
+      "explanation": "Start with the education library for material that can support a clear, shared family conversation.",
+      "primaryResourceId": "education-library",
+      "alternativeResourceIds": ["book-shelf", "podcast-navigator"]
+    }
+  ],
   "teachingResources": [
     {
       "id": "family-therapy-companion",

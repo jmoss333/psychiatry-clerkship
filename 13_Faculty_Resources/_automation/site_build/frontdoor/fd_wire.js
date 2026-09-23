@@ -15,7 +15,8 @@ var FD_HANDLED_ATTRS=[
   'data-fd-app-practice-question','data-fd-app-practice-reset','data-fd-app-practice-close',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
-  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section','data-fd-kit-tool'
+  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section','data-fd-kit-tool',
+  'data-fd-care-intent','data-fd-care-clear'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -27,6 +28,8 @@ var FD_ACTION_SEMANTICS={
   'data-fd-library-view':'choose Library view',
   'data-fd-kit-section':'filter Essentials sections',
   'data-fd-kit-tool':'preview an Essentials tool',
+  'data-fd-care-intent':'choose a transient Care navigator task',
+  'data-fd-care-clear':'clear the transient Care navigator task',
   'data-fd-week':'select setup week',
   'data-fd-view-week':'preview path week',
   'data-fd-setweek':'adopt previewed week',
@@ -494,6 +497,16 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-kit-tool')){
     return {patch:{kitToolPreview:String(a['data-fd-kit-tool']||'')},route:null,effect:null};
   }
+  if(fdOwn(a,'data-fd-care-intent')){
+    var careIntent=typeof a['data-fd-care-intent']==='string'
+      ?a['data-fd-care-intent']:'';
+    var careChoice=typeof fdCareNavigatorSelection==='function'
+      ?fdCareNavigatorSelection(c.index||{},careIntent):null;
+    return {patch:{careIntentId:careChoice?careChoice.id:''},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-care-clear')){
+    return {patch:{careIntentId:''},route:null,effect:null};
+  }
   if(fdOwn(a,'data-fd-library-view')){
     var view=String(a['data-fd-library-view']||'');
     if(view!=='essentials'&&view!=='full') return {patch:{},route:null,effect:null};
@@ -506,6 +519,7 @@ function fdDispatch(attrs, context, state){
     tab=String(a['data-fd-tab']||'');
     if(!fdValidTab(tab)) return {patch:{},route:null,effect:null};
     patch={tab:tab,openId:null,searchOpen:false};
+    if(tab!=='care') patch.careIntentId='';
     if(tab==='library'){ patch.libraryView='essentials'; patch.kitSection='all'; }
     return {patch:patch,route:fdRouteForTab(tab,c.search),effect:null};
   }
@@ -903,6 +917,7 @@ function fdTrapFocus(event, dialog){
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
 var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],'+
+  '[data-fd-care-intent],[data-fd-care-clear],'+
   '[data-fd-app-bridge],[data-fd-app-shift],[data-fd-app-start],[data-fd-app-reflect],[data-fd-app-reset],'+
   '[data-fd-app-practice-open],[data-fd-app-practice-reveal],[data-fd-app-practice-classify],'+
   '[data-fd-app-practice-question],[data-fd-app-practice-reset],[data-fd-app-practice-close],'+
@@ -1107,7 +1122,7 @@ function fdWire(root, initialState, opts){
     return raw||'';
   }
   function baseChanged(before, after){
-    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview'];
+    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview','careIntentId'];
     for(var i=0;i<keys.length;i++){
       if(baseValue(before,keys[i])!==baseValue(after,keys[i])) return true;
     }
@@ -1395,6 +1410,7 @@ function fdWire(root, initialState, opts){
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
+    if(state.tab!=='care'||state.openId) state.careIntentId='';
     /* Where the learner was when they opened a resource (#427). Recorded by the controller, not
        by fdDispatch: the scroll offset is a browser fact and dispatch stays pure. A reader that
        opens another reader keeps the origin -- "back" still means the tab it all started from. */
@@ -1459,9 +1475,13 @@ function fdWire(root, initialState, opts){
     }
     /* A section-only filter belongs just to this Essentials visit. Other navigation patches also
        reset kitSection to All; those still carry durable route state and must be saved normally. */
-    var kitOnly=fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview');
-    for(var saveKey in patch) if(fdOwn(patch,saveKey)&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview') kitOnly=false;
-    if(!kitOnly) fdSave(state);
+    var visitOnly=fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||
+      fdOwn(patch,'careIntentId');
+    for(var saveKey in patch){
+      if(fdOwn(patch,saveKey)&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview'&&
+         saveKey!=='careIntentId') visitOnly=false;
+    }
+    if(!visitOnly) fdSave(state);
     if(!fromHistory){
       var pushed=routeTo(result.route,result.history==='replace');
       if(!pushed&&beforeHistory!==historyValue()) replaceHistorySnapshot();
@@ -1478,6 +1498,12 @@ function fdWire(root, initialState, opts){
     if((fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview'))&&!afterOverlay&&!beforeHadOverlay){
       var rebuiltFilter=equivalentControl(invoker,root);
       if(rebuiltFilter&&rebuiltFilter.focus) try{rebuiltFilter.focus();}catch(_){}
+    }
+    if(fdOwn(patch,'careIntentId')&&!afterOverlay&&!beforeHadOverlay&&root&&root.querySelector){
+      var careFocus=state.careIntentId
+        ?root.querySelector('[data-fd-care-intent="'+state.careIntentId+'"]')
+        :root.querySelector('[data-fd-care-intent]');
+      if(careFocus&&careFocus.focus) try{careFocus.focus();}catch(_){}
     }
     if(before.openId&&!state.openId) restoreOrigin(before);
     if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
@@ -1698,6 +1724,7 @@ function fdWire(root, initialState, opts){
     }
     var before=fdClone(state);
     var merged=fdClone(state), snap=event&&event.state&&event.state.fd&&event.state.state;
+    merged.careIntentId='';
     merged.searchOpen=false;
     merged.query='';
     merged.sheet=null;

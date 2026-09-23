@@ -571,6 +571,29 @@
 .fd-care-page__provenance strong{color:var(--fd-text);font-weight:700}
 .fd-care-page__notice{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:var(--fd-space-5);margin-bottom:var(--fd-space-10);padding:var(--fd-space-5) var(--fd-space-6);border-left:3px solid var(--fd-terracotta);background:var(--fd-callout);color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.5}
 .fd-care-page__notice strong{color:var(--fd-text)}
+.fd-care-navigator{margin:0 0 var(--fd-space-10);padding:var(--fd-space-6);border:1px solid var(--fd-line);border-radius:var(--fd-radius-lg);background:var(--fd-surface)}
+.fd-care-navigator__head{max-width:calc(var(--fd-space-10) * 15);margin-bottom:var(--fd-space-5)}
+.fd-care-navigator__head h2{margin:0 0 var(--fd-space-2);font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-xl);line-height:1.3}
+.fd-care-navigator__head p{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.5}
+.fd-care-navigator__choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--fd-space-3)}
+.fd-care-navigator__choice{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:var(--fd-space-3);min-height:var(--fd-target-touch);padding:var(--fd-space-3) var(--fd-space-4);border:1px solid var(--fd-line);border-radius:var(--fd-radius-md);background:var(--fd-bg);color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm);font-weight:700;text-align:left;cursor:pointer}
+.fd-care-navigator__choice:hover{border-color:var(--fd-olive)}
+.fd-care-navigator__choice:focus-visible,.fd-care-navigator__clear:focus-visible,.fd-care-navigator__link:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+.fd-care-navigator__check{display:grid;place-items:center;width:22px;height:22px;border:1px solid var(--fd-line);border-radius:var(--fd-radius-circle);color:transparent;font-weight:800}
+.fd-care-navigator__choice>span:last-child{min-width:0;overflow-wrap:anywhere}
+.fd-care-navigator__choice[aria-pressed="true"]{border-color:var(--fd-olive-deep);background:var(--fd-olive-wash);box-shadow:inset 3px 0 0 var(--fd-olive-deep)}
+.fd-care-navigator__choice[aria-pressed="true"] .fd-care-navigator__check{border-color:var(--fd-olive-deep);background:var(--fd-olive-deep);color:var(--fd-on-accent)}
+.fd-care-navigator__result{margin-top:var(--fd-space-6);padding-top:var(--fd-space-6);border-top:1px solid var(--fd-line)}
+.fd-care-navigator__result-head{max-width:calc(var(--fd-space-10) * 15);margin-bottom:var(--fd-space-4)}
+.fd-care-navigator__result-head h3{margin:0 0 var(--fd-space-2);font-size:var(--fd-font-lg)}
+.fd-care-navigator__result-head p{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.5;overflow-wrap:anywhere}
+.fd-care-navigator__alternatives{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--fd-space-3);margin-top:var(--fd-space-3)}
+.fd-care-navigator__link{display:block;min-height:var(--fd-target-touch);padding:var(--fd-space-4);border:1px solid var(--fd-line);border-radius:var(--fd-radius-md);color:var(--fd-text);text-decoration:none}
+.fd-care-navigator__link:hover{border-color:var(--fd-olive);background:var(--fd-bg)}
+.fd-care-navigator__kicker{display:block;margin-bottom:var(--fd-space-1);color:var(--fd-olive-deep);font-size:var(--fd-font-xs);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.fd-care-navigator__link-title{display:block;font-size:var(--fd-font-sm);font-weight:750;line-height:1.35;overflow-wrap:anywhere}
+.fd-care-navigator__link-description{display:block;margin-top:2px;color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:1.4;overflow-wrap:anywhere}
+.fd-care-navigator__clear{min-height:var(--fd-target-touch);margin-top:var(--fd-space-4);padding:var(--fd-space-2) var(--fd-space-3);border:0;background:transparent;color:var(--fd-olive-deep);font:inherit;font-size:var(--fd-font-sm);font-weight:750;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .fd-care-page__groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--fd-space-10)}
 .fd-care-group{min-width:0;border-top:3px solid var(--fd-olive)}
 .fd-care-group__head{padding:var(--fd-space-6) var(--fd-space-2) var(--fd-space-5)}
@@ -1570,6 +1593,8 @@
   .fd-tab{min-width:0;padding-inline:var(--fd-space-5);font-size:var(--fd-font-sm)}
   .fd-care-page__groups{grid-template-columns:minmax(0,1fr);gap:var(--fd-space-8)}
   .fd-care-page__notice{grid-template-columns:minmax(0,1fr);gap:var(--fd-space-2)}
+  .fd-care-navigator{padding:var(--fd-space-5)}
+  .fd-care-navigator__choices,.fd-care-navigator__alternatives{grid-template-columns:minmax(0,1fr)}
 }
 
 /* Essentials uses the reading typography and existing Clinical Warm tokens. */

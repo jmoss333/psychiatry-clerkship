@@ -20,7 +20,7 @@ function fdCareGroup(resources, group, title, intro){
   return out+'</div></section>';
 }
 
-function fdCare(index){
+function fdCare(index,selectedIntentId){
   var idx=index||{}, resources=idx.careResources||[];
   return '<section class="fd-care-page" aria-labelledby="fd-care-title">'+
     '<header class="fd-care-page__head"><p class="fd-care-page__source">ReConnect collection</p>'+
@@ -29,6 +29,7 @@ function fdCare(index){
     '<div class="fd-care-page__provenance" aria-label="Collection provenance"><strong>Created by Joshua Moss, MD</strong>'+
     '<span>Apps built from personally curated ReConnect databases developed over several years.</span></div></header>'+
     '<div class="fd-care-page__notice" role="note"><strong>Verify current details before sharing</strong><span>Resources open in a new tab. Do not enter patient-identifying information.</span></div>'+
+    fdCareNavigator(idx,selectedIntentId)+
     '<div class="fd-care-page__groups">'+
     fdCareGroup(resources,'support','Find support and follow-up','Use while planning services, recovery support, or discharge follow-up.')+
     fdCareGroup(resources,'education','Teach and share','Plain-language guides, curated listening, and books for patients and families.')+
