@@ -1,5 +1,10 @@
 /** Browser proof of the emitted worker and Shift-ready check on both built sites. */
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+
+const offlineModelSource = readFileSync(new URL(
+  '../../13_Faculty_Resources/_automation/site_build/frontdoor/fd_offline.js', import.meta.url,
+), 'utf8');
 
 const entry = page => page.locator('[data-fd-offline-entry]');
 const status = page => entry(page).locator('[data-fd-offline-label]');
@@ -140,6 +145,52 @@ test('offline readiness: Checking cannot become Ready before the active worker r
   await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
   await entry(page).locator('[data-fd-offline-open]').click();
   await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('Checked just now');
+});
+
+test('offline readiness: empty week and APP routes cannot ask the worker or show Ready', async ({ page }, info) => {
+  await install(page, info);
+  const outcome = await page.evaluate(source => {
+    // The learner shell keeps helpers in its private script scope. Exercise the same injected
+    // production module in this browser without adding a test-only global to the shipped site.
+    const model = new Function(source + '\nreturn {fdOfflineMonitor,fdOfflineStatus};')();
+    const messages = [];
+    const sw = { controller: { postMessage(value) { messages.push(value); } },
+      addEventListener() {}, removeEventListener() {} };
+    const idx = { weeks: [{ n: 1, items: [] }], byRef: {} };
+    const monitor = model.fdOfflineMonitor({ serviceWorker: sw, MessageChannel });
+    monitor.sync(idx, { screen: 'app', tab: 'today', week: 1 });
+    const week = model.fdOfflineStatus(monitor.status()).kind;
+    monitor.sync(idx, { screen: 'app', tab: 'today', appMode: true,
+      appPathway: { bridges: { pa: { refs: [] } }, activities: [] } });
+    const app = model.fdOfflineStatus(monitor.status()).kind;
+    const shell = ['/', '/search-index.json'];
+    const forged = model.fdOfflineStatus({ expected: shell,
+      response: { version: 'v1', ready: true, present: shell, missing: [] } }).kind;
+    monitor.destroy();
+    return { week, app, forged, messages };
+  }, offlineModelSource);
+  expect(outcome).toEqual({ week: 'not-ready', app: 'not-ready', forged: 'not-ready', messages: [] });
+});
+
+test('offline readiness: controller activation preserves a live tool session', async ({ page, context }, info) => {
+  await install(page, info);
+  const toolPage = await context.newPage();
+  await toolPage.goto('/?tool=mse.html', { waitUntil: 'domcontentloaded' });
+  const frame = toolPage.locator('#content iframe.toolframe');
+  await expect(frame).toBeVisible();
+  await expect.poll(() => toolPage.evaluate(() => !!clerkshipSWRegistration())).toBe(true);
+  await frame.evaluate(element => {
+    window.__toolFrameForActivation = element;
+    element.contentWindow.__toolSessionForActivation = 'alive';
+  });
+  const reload = toolPage.waitForEvent('load', { timeout: 700 }).then(() => true, () => false);
+  await toolPage.evaluate(() => navigator.serviceWorker.dispatchEvent(new Event('controllerchange')));
+  expect(await reload, 'a controller change while a tool is active must not reload').toBe(false);
+  expect(await toolPage.evaluate(() => ({
+    sameFrame: window.__toolFrameForActivation === document.querySelector('#content iframe.toolframe'),
+    session: window.__toolFrameForActivation.contentWindow.__toolSessionForActivation,
+  }))).toEqual({ sameFrame: true, session: 'alive' });
+  await expect(toolPage.locator('.sw-toast')).toHaveCount(0);
 });
 
 test('offline readiness: first uncontrolled visit does not claim the installed cache', async ({ page }, info) => {

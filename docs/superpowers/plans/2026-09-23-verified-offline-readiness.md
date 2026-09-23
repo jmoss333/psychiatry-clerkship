@@ -48,7 +48,7 @@
 - Create `tests/service-worker.test.mjs`: VM-backed request-validation/cache-result contract for `sw_template.js`.
 - Modify `13_Faculty_Resources/_automation/site_build/test_common.py`: emitted-worker/precache regression assertions.
 - Modify `tests/fd-today.test.mjs`, `tests/fd-wire.test.mjs`, `tests/fd-shell-boot.test.mjs`.
-- Modify `tests/smoke/offline.spec.js` and `tests/smoke/playwright.config.js`: service-worker-enabled MS3, resident, and APP journeys.
+- Modify `tests/smoke/offline.spec.js` and `tests/smoke/playwright.config.js`: service-worker-enabled MS3 and resident journeys, with the APP invitation exercised on the resident site; the MS3 site has no APP entry.
 
 ### Task 1: Pure route inventory and status model
 
@@ -93,10 +93,11 @@ Expected: FAIL because the module is missing.
 - [ ] **Step 3: Implement pure derivation and model**
 
 Map `.html` tool refs to `/tools/<ref>` and markdown refs to `/content/<ref>`. Include only the
-current week or APP pathway entries from build-injected canonical data. Always include `/` and
-`/search-index.json`, because the approved card explicitly claims shell/navigation and search-data
-readiness. Filter media extensions and any ref containing slash traversal, query, fragment, or a
-scheme.
+current week or APP pathway entries from build-injected canonical data. A route is checkable only
+when it contains at least one eligible canonical reading or tool. Include `/` and
+`/search-index.json` with that nonempty route, because the card explicitly claims shell/navigation
+and search-data readiness. Filter media extensions and any ref containing slash traversal, query,
+fragment, or a scheme.
 
 Normalize response sets by exact equality with the expected request set. `fdOfflineStatus` returns
 one of `checking`, `ready`, `update`, or `not-ready`; no truthy fallback maps to ready.
@@ -320,13 +321,14 @@ git commit -m "feat: show verified shift readiness"
 
 **Interfaces:**
 - Consumes: locally served built sites with secure/localhost service-worker support.
-- Produces: online-install then offline-reload evidence for both audiences and APP mode.
+- Produces: online-install then offline-reload evidence for both audiences, including resident APP mode.
 
 - [ ] **Step 1: Add failing browser journeys**
 
 Extend the existing `offline` project into `offline-ms3` and `offline-res`, both limited to
-`offline.spec.js` with `serviceWorkers:'allow'`. In the MS3 project, also run the non-persistent
-`?audience=app` journey. For those three contexts:
+`offline.spec.js` with `serviceWorkers:'allow'`. In the resident project, also run the
+non-persistent `?audience=app` journey for PA and PMHNP; the MS3 project explicitly verifies that
+APP mode is absent. For the MS3, resident, and resident APP contexts:
 
 1. load online and wait for service-worker control;
 2. open the detailed check and assert Ready only after response;

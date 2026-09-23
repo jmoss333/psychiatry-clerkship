@@ -15,14 +15,15 @@ function isMedia(pathname){
 }
 function offlineVerifyUrls(input){
   if(!Array.isArray(input)||input.length<1||input.length>200)return null;
-  var urls=[],seen=Object.create(null),url;
+  var urls=[],seen=Object.create(null),url,hasRouteResource=false;
   for(var i=0;i<input.length;i++){
     url=input[i];
     if(typeof url!=='string'||!(url==='/'||url==='/search-index.json'||
       /^\/(?:content\/[A-Za-z0-9][A-Za-z0-9._-]*\.md|tools\/[A-Za-z0-9][A-Za-z0-9._-]*\.html)$/.test(url)))return null;
+    if(url.indexOf('/content/')===0||url.indexOf('/tools/')===0)hasRouteResource=true;
     if(!seen[url]){ seen[url]=true; urls.push(url); }
   }
-  return urls;
+  return hasRouteResource?urls:null;
 }
 function raceNetwork(request){
   return new Promise(function(resolve,reject){

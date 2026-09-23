@@ -115,7 +115,9 @@ test('offline refresh stays on Today and never writes controller state', () => {
   let updates = 0;
   const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', offlineOpen: true }, {
     F: LocalF,
-    offlineStatus: () => ({ expected: ['/'], response: { version: 'v1', ready: true, present: ['/'], missing: [] } }),
+    offlineStatus: () => ({ expected: ['/', '/search-index.json', '/content/two.md'],
+      response: { version: 'v1', ready: true,
+        present: ['/', '/search-index.json', '/content/two.md'], missing: [] } }),
     online: () => false,
     reportOfflineRefresh: (message) => messages.push(message),
     requestSWUpdate: () => { updates += 1; return Promise.resolve(true); },
@@ -133,7 +135,9 @@ test('online refresh calls the existing worker update once and reports its resul
   const messages = [];
   const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', offlineOpen: true }, {
     F,
-    offlineStatus: () => ({ expected: ['/'], response: { version: 'v1', ready: true, present: ['/'], missing: [] } }),
+    offlineStatus: () => ({ expected: ['/', '/search-index.json', '/content/two.md'],
+      response: { version: 'v1', ready: true,
+        present: ['/', '/search-index.json', '/content/two.md'], missing: [] } }),
     online: () => true,
     reportOfflineRefresh: (message) => messages.push(message),
     requestSWUpdate: () => { updates += 1; return Promise.resolve(true); },

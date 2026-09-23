@@ -75,6 +75,14 @@ test('complete current cache replies ready with no missing URLs', async () => {
     present: ['/', '/search-index.json', '/content/lesson.md'], missing: [] }]);
 });
 
+test('shell and search alone are not a verifiable learning route', async () => {
+  const w = worker();
+  const result = await w.send(['/', '/search-index.json']);
+  assert.deepEqual(result.messages, [{ version: 'test-v1', ready: false,
+    present: [], missing: [] }]);
+  assert.deepEqual(w.opened, []);
+});
+
 test('route URL model and worker accept the same safe path language', async () => {
   const idx = { weeks: [{ n: 2, landingRef: 'week2.md', items: [
     { ref: 'lesson.md' }, { ref: 'practice.html' }, { ref: '../unsafe.md' },
@@ -189,6 +197,44 @@ test('registration update rejection resolves false', async () => {
   const r = registration({ update: () => Promise.reject(new Error('offline')) });
   await Promise.resolve();
   assert.equal(await r.context.requestClerkshipSWUpdate(), false);
+});
+
+test('controller activation preserves an active tool and reloads a later safe route only once', async () => {
+  const handlers = new Map();
+  let reloads = 0;
+  const reg = { addEventListener() {} };
+  const location = { search: '?tool=mse.html', reload() { reloads += 1; } };
+  const serviceWorker = { register: () => Promise.resolve(reg),
+    addEventListener(name, handler) { handlers.set(name, handler); }, controller: {} };
+  vm.runInNewContext(registerSource, { navigator: { serviceWorker }, Promise,
+    URLSearchParams, location, document: { createElement() { return {}; }, body: {} } });
+  await Promise.resolve();
+  handlers.get('controllerchange')();
+  handlers.get('controllerchange')();
+  assert.equal(reloads, 0, 'initial and repeated activation must preserve the tool session');
+  location.search = '';
+  handlers.get('controllerchange')();
+  handlers.get('controllerchange')();
+  assert.equal(reloads, 1, 'a later event on a safe route may reload once');
+});
+
+test('controller activation reloads a safe route once but defers after entering a tool', async () => {
+  const handlers = new Map();
+  let reloads = 0;
+  const reg = { addEventListener() {} };
+  const location = { search: '', reload() { reloads += 1; } };
+  const serviceWorker = { register: () => Promise.resolve(reg),
+    addEventListener(name, handler) { handlers.set(name, handler); }, controller: {} };
+  vm.runInNewContext(registerSource, { navigator: { serviceWorker }, Promise,
+    URLSearchParams, location, document: { createElement() { return {}; }, body: {} } });
+  await Promise.resolve();
+  location.search = '?tool=interview.html';
+  handlers.get('controllerchange')();
+  assert.equal(reloads, 0, 'another tab can activate the worker after this tab enters a tool');
+  location.search = '';
+  handlers.get('controllerchange')();
+  handlers.get('controllerchange')();
+  assert.equal(reloads, 1);
 });
 
 function readinessBridge({ lateRegistration = false } = {}) {
