@@ -326,6 +326,57 @@ test('container verifier uses the virtualenv created by container bootstrap', ()
   assert.match(source, /PATH=.*VIRTUAL_ENV\/bin/);
 });
 
+function withSmokeScriptFixture(outputDir) {
+  const fixture = mkdtempSync(resolve(tmpdir(), 'verify-smoke-output-'));
+  const fakeBin = resolve(fixture, 'fake-bin');
+  const trace = resolve(fixture, 'npx-args.log');
+  try {
+    mkdirSync(resolve(fixture, 'bin'), { recursive: true });
+    mkdirSync(resolve(fixture, '_build/ms3'), { recursive: true });
+    mkdirSync(resolve(fixture, '_build/res'), { recursive: true });
+    mkdirSync(resolve(fixture, 'faculty-console'), { recursive: true });
+    mkdirSync(resolve(fixture, 'tests/smoke/node_modules'), { recursive: true });
+    mkdirSync(fakeBin);
+    writeFileSync(
+      resolve(fixture, 'bin/verify-smoke.sh'),
+      readFileSync(resolve(ROOT, 'bin/verify-smoke.sh')),
+    );
+    writeFileSync(resolve(fakeBin, 'lsof'), '#!/bin/sh\nexit 1\n');
+    writeFileSync(resolve(fakeBin, 'curl'), '#!/bin/sh\nexit 0\n');
+    writeFileSync(resolve(fakeBin, 'python3'), '#!/bin/sh\nexec sleep 30\n');
+    writeFileSync(resolve(fakeBin, 'npx'), '#!/bin/sh\nprintf "%s\\n" "$@" > "$TRACE"\n');
+    for (const path of [
+      resolve(fixture, 'bin/verify-smoke.sh'),
+      resolve(fakeBin, 'lsof'),
+      resolve(fakeBin, 'curl'),
+      resolve(fakeBin, 'python3'),
+      resolve(fakeBin, 'npx'),
+    ]) chmodSync(path, 0o755);
+
+    const env = { ...process.env, PATH: `${fakeBin}:${process.env.PATH}`, TRACE: trace };
+    if (outputDir !== undefined) env.PLAYWRIGHT_OUTPUT_DIR = outputDir;
+    const result = spawnSync('/bin/bash', ['bin/verify-smoke.sh'], {
+      cwd: fixture, env, encoding: 'utf8',
+    });
+    assert.equal(result.status, 0, result.stderr);
+    return readFileSync(trace, 'utf8').trim().split('\n');
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+}
+
+test('ordinary smoke verification keeps the repository Playwright artifact directory', () => {
+  const args = withSmokeScriptFixture();
+  assert.deepEqual(args.slice(-3), [
+    '--reporter=list', '--output', 'test-results/artifacts',
+  ]);
+});
+
+test('smoke verification passes a hostile-space artifact override as one argument', () => {
+  const args = withSmokeScriptFixture('override path/[odd]');
+  assert.deepEqual(args.slice(-3), ['--reporter=list', '--output', 'override path/[odd]']);
+});
+
 test('container verifier clears inherited smoke selectors before its authoritative smoke stage', () => {
   const fixture = mkdtempSync(resolve(tmpdir(), 'verify-devcontainer-'));
   const trace = resolve(fixture, 'trace.log');
@@ -397,8 +448,8 @@ function withVerifierFixture(run) {
     writeFileSync(resolve(fixture, '.venv/bin/python3'), '#!/bin/sh\necho "Python 3.11.9"\n');
     writeFileSync(resolve(fixture, '.devcontainer/install-dependencies.sh'), '#!/bin/bash\necho dependencies >> "$TRACE"\nif [ "${FAIL_STAGE:-}" = dependencies ]; then exit 1; fi\nmkdir -p .venv/bin\nprintf "#!/bin/sh\\necho Python 3.11.9\\n" > .venv/bin/python3\nchmod +x .venv/bin/python3\n');
     writeFileSync(resolve(fixture, 'bin/check-runtime-contract.mjs'), 'import { appendFileSync } from "node:fs";\nappendFileSync(process.env.TRACE, "runtime-contract\\n");\nif (process.env.FAIL_STAGE === "runtime-contract") process.exit(1);\n');
-    writeFileSync(resolve(fixture, 'bin/verify.sh'), '#!/bin/bash\necho full-gate >> "$TRACE"\nif [ "${HANG_STAGE:-}" = full-gate ]; then touch "$MARKER"; exec sleep 30; fi\nif [ "${CHANGE_HEAD:-}" = full-gate ]; then git commit --allow-empty -qm changed-during-attempt; fi\nif [ "${FAIL_STAGE:-}" = full-gate ]; then exit 1; fi\n');
-    writeFileSync(resolve(fixture, 'bin/verify-smoke.sh'), '#!/bin/bash\nprintf "nonvisual-smoke:%s\\n" "${SPECS-<unset>}" >> "$TRACE"\nif [ "${FAIL_STAGE:-}" = nonvisual-smoke ]; then exit 1; fi\n');
+    writeFileSync(resolve(fixture, 'bin/verify.sh'), '#!/bin/bash\nprintf "full-gate:%s\\n" "${PLAYWRIGHT_OUTPUT_DIR-<unset>}" >> "$TRACE"\nif [ "${HANG_STAGE:-}" = full-gate ]; then touch "$MARKER"; exec sleep 30; fi\nif [ "${CHANGE_HEAD:-}" = full-gate ]; then git commit --allow-empty -qm changed-during-attempt; fi\nif [ "${FAIL_STAGE:-}" = full-gate ]; then exit 1; fi\n');
+    writeFileSync(resolve(fixture, 'bin/verify-smoke.sh'), '#!/bin/bash\nprintf "nonvisual-smoke:%s:%s\\n" "${SPECS-<unset>}" "${PLAYWRIGHT_OUTPUT_DIR-<unset>}" >> "$TRACE"\nif [ "${FAIL_STAGE:-}" = nonvisual-smoke ]; then exit 1; fi\n');
     for (const path of [
       'bin/verify-devcontainer.sh', '.venv/bin/python3', '.devcontainer/install-dependencies.sh',
       'bin/verify.sh', 'bin/verify-smoke.sh',
@@ -442,8 +493,11 @@ test('receipt-enabled verifier records success only after every authoritative st
     deployLfsBrowserCoverage: 'not-proved-without-deploy-url',
   });
   assert.deepEqual(readFileSync(trace, 'utf8').trim().split('\n'), [
-    'dependencies', 'runtime-contract', 'full-gate', 'nonvisual-smoke:<unset>',
+    'dependencies', 'runtime-contract', 'full-gate:<unset>',
+    'nonvisual-smoke:<unset>:/tmp/clerkship-playwright-artifacts',
   ]);
+  assert.equal(existsSync(receiptPath), true, 'the receipt must remain at its normal path');
+  assert.match(result.stdout, /Playwright artifacts: \/tmp\/clerkship-playwright-artifacts/);
 }));
 
 test('receipt-enabled verifier cannot certify a dirty start after the tracked file is restored', () => withVerifierFixture(({ fixture, receiptPath, head, env, args }) => {

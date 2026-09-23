@@ -86,7 +86,9 @@ node bin/check-runtime-contract.mjs --current
 stage="full-gate"
 bash bin/verify.sh
 stage="nonvisual-smoke"
-env -u SPECS bash bin/verify-smoke.sh
+playwright_output_dir="/tmp/clerkship-playwright-artifacts"
+echo "Playwright artifacts: $playwright_output_dir (retained on failure)"
+PLAYWRIGHT_OUTPUT_DIR="$playwright_output_dir" env -u SPECS bash bin/verify-smoke.sh
 stage="complete"
 record passed 0
 
