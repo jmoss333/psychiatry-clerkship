@@ -5,6 +5,71 @@ const entry = page => page.locator('[data-fd-offline-entry]');
 const status = page => entry(page).locator('[data-fd-offline-label]');
 const resident = info => info.project.name === 'offline-res';
 
+// The oracle reads the two canonical data projections shipped in the built shell. It does not
+// call fdOfflineUrls, inspect FD_INDEX, or derive expectations from a worker request/response.
+async function canonicalOfflineInventory(page, route) {
+  const response = await page.request.get('/');
+  expect(response.ok()).toBe(true);
+  const shell = await response.text();
+  function data(name) {
+    const marker = 'var ' + name + '=';
+    const start = shell.indexOf(marker);
+    expect(start, marker + ' must occur in the built shell').toBeGreaterThan(-1);
+    const body = shell.slice(start + marker.length);
+    const end = body.indexOf(';\n  var ');
+    expect(end, name + ' must have a bounded JSON declaration').toBeGreaterThan(-1);
+    return JSON.parse(body.slice(0, end));
+  }
+  const curriculum = data('FD_CURRICULUM');
+  const manifest = data('FD_SITE_MANIFEST');
+  const shipped = new Map([
+    ...manifest.md.map(row => [row[1], 'read']),
+    ...manifest.tools.map(row => [row[1], 'tool']),
+  ]);
+  const rights = new Set(curriculum.rightsReferences);
+  const rawRefs = route.bridge
+    ? [...curriculum.appPathway.bridges[route.bridge].refs,
+      ...curriculum.appPathway.activities.flatMap(activity => activity.refs)]
+    : (() => {
+      const week = curriculum.weeks.find(item => item.n === route.week);
+      expect(week, 'requested week exists in canonical curriculum').toBeTruthy();
+      return [week.landingRef, ...week.items.map(item => item.ref)];
+    })();
+  const urls = new Set(['/', '/search-index.json']);
+  for (const refOrItem of rawRefs) {
+    const ref = typeof refOrItem === 'string' ? refOrItem : refOrItem?.ref;
+    if (typeof ref !== 'string' || rights.has(ref)) continue;
+    const kind = shipped.get(ref);
+    if (kind === 'read' && /^[A-Za-z0-9][A-Za-z0-9._-]*\.md$/.test(ref)) urls.add('/content/' + ref);
+    if (kind === 'tool' && /^[A-Za-z0-9][A-Za-z0-9._-]*\.html$/.test(ref)) urls.add('/tools/' + ref);
+  }
+  expect(urls.size, 'canonical route must have substantial offline content').toBeGreaterThan(3);
+  return [...urls];
+}
+
+function expectExactInventory(requested, expected) {
+  expect(requested, 'the active worker must receive current-route URLs').toBeTruthy();
+  expect(new Set(requested).size).toBe(requested.length);
+  expect([...requested].sort(), 'worker request must equal the independent built route inventory')
+    .toEqual([...expected].sort());
+}
+
+function routeResources(expected) {
+  const reading = expected.find(url => url.startsWith('/content/'));
+  const tool = expected.find(url => url.startsWith('/tools/'));
+  expect(reading, 'current route must contain a canonical reading').toBeTruthy();
+  expect(tool, 'current route must contain a canonical tool').toBeTruthy();
+  return { reading, tool };
+}
+
+async function returnToAppToday(page, bridge) {
+  const back = page.locator('.fd-reader__back');
+  if (await back.isVisible()) await back.click();
+  await page.goto('/?audience=app', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.fd-app')).toBeVisible();
+  if (bridge === 'pmhnp') await page.locator('[data-fd-app-bridge="pmhnp"]').click();
+}
+
 async function observeMessages(page, hold = false) {
   await page.addInitScript(shouldHold => {
     window.__offlineRequests = [];
@@ -50,14 +115,12 @@ async function install(page, info, url = '/') {
   await expect(entry(page)).toBeVisible();
 }
 
-async function openReady(page) {
+async function openReady(page, expected) {
   await entry(page).locator('[data-fd-offline-open]').click();
   await expect(entry(page).locator('[data-fd-offline-card]')).toBeVisible();
   await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
   const requested = await page.evaluate(() => window.__offlineRequests?.at(-1)?.urls);
-  expect(requested, 'the active worker must receive current-route URLs').toBeTruthy();
-  expect(requested.length).toBeGreaterThan(2);
-  expect(new Set(requested).size).toBe(requested.length);
+  expectExactInventory(requested, expected);
   await expect(entry(page).locator('[data-fd-offline-card]'))
     .toContainText(requested.length + ' verified, 0 missing of ' + requested.length + ' eligible files.');
   return requested;
@@ -101,7 +164,8 @@ test('offline readiness: active worker verifies route and cached reading, tool, 
   });
   await observeMessages(page);
   await install(page, info);
-  const requested = await openReady(page);
+  const expected = await canonicalOfflineInventory(page, { week: 1 });
+  const requested = await openReady(page, expected);
   expect(requested).toContain('/');
   expect(requested).toContain('/search-index.json');
   expect(requested.every(url => url === '/' || url === '/search-index.json'
@@ -120,9 +184,7 @@ test('offline readiness: active worker verifies route and cached reading, tool, 
   expect(cacheState.key).toBeTruthy();
   expect(cacheState.urls.length).toBeGreaterThan(requested.length);
   expect(cacheState.urls.some(url => /\.(?:m4a|mp3|mp4|wav|vtt)$/i.test(url))).toBe(false);
-  const reading = requested.find(url => url.startsWith('/content/'));
-  const tool = requested.find(url => url.startsWith('/tools/')) || '/tools/mse.html';
-  expect(reading).toBeTruthy();
+  const { reading, tool } = routeResources(expected);
   expect(cacheState.urls).toContain(reading);
   expect(cacheState.urls).toContain(tool);
 
@@ -160,9 +222,9 @@ test('offline readiness: active worker verifies route and cached reading, tool, 
 test('offline readiness: deleting one exact requested cache file fails closed', async ({ page }, info) => {
   await observeMessages(page);
   await install(page, info);
-  const requested = await openReady(page);
-  const missing = requested.find(url => url.startsWith('/content/'));
-  expect(missing).toBeTruthy();
+  const expected = await canonicalOfflineInventory(page, { week: 1 });
+  await openReady(page, expected);
+  const { reading: missing } = routeResources(expected);
   const deleted = await page.evaluate(async url => {
     const key = (await caches.keys()).find(value => value.startsWith('cw-precache-'));
     return (await caches.open(key)).delete(url);
@@ -178,7 +240,7 @@ test('offline readiness: deleting one exact requested cache file fails closed', 
 test('offline readiness: Refresh respects offline state, bounds a stalled update, then permits retry', async ({ page, context }, info) => {
   await observeMessages(page);
   await install(page, info);
-  await openReady(page);
+  await openReady(page, await canonicalOfflineInventory(page, { week: 1 }));
   await page.evaluate(() => {
     window.__refreshCalls = 0;
     ServiceWorkerRegistration.prototype.update = function () {
@@ -219,7 +281,7 @@ test('offline readiness: Refresh respects offline state, bounds a stalled update
 test('offline readiness: unsupported and timed-out checks never retain stale Ready', async ({ page, context }, info) => {
   await observeMessages(page);
   await install(page, info);
-  await openReady(page);
+  await openReady(page, await canonicalOfflineInventory(page, { week: 1 }));
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: null });
   });
@@ -241,15 +303,19 @@ test('offline readiness: unsupported and timed-out checks never retain stale Rea
   await expect(entry(timeoutPage).locator('[data-fd-offline-card]')).toContainText('timed out');
 });
 
-test('offline readiness: waiting-worker callback preserves active tool and current cache', async ({ page }, info) => {
+test('offline readiness: waiting-worker callback updates the same Today mount while active tool survives', async ({ page, context }, info) => {
   await observeMessages(page);
   await install(page, info);
-  await openReady(page);
-  await page.goto('/?tool=mse.html', { waitUntil: 'domcontentloaded' });
-  const frame = page.locator('#content iframe.toolframe');
+  await openReady(page, await canonicalOfflineInventory(page, { week: 1 }));
+  await page.evaluate(() => { window.__todayVisit = 'still-mounted'; });
+  const card = entry(page).locator('[data-fd-offline-card]');
+  const toolPage = await context.newPage();
+  await toolPage.goto('/?tool=mse.html', { waitUntil: 'domcontentloaded' });
+  const frame = toolPage.locator('#content iframe.toolframe');
   await expect(frame).toBeVisible();
   await frame.evaluate(element => { element.dataset.offlineSession = 'unchanged'; });
-  const originalUrl = page.url();
+  const todayUrl = page.url();
+  const toolUrl = toolPage.url();
 
   // Exercise the production registration's updatefound/statechange callback path.
   // A genuine second worker install cannot be deterministic against an immutable local build.
@@ -269,27 +335,27 @@ test('offline readiness: waiting-worker callback preserves active tool and curre
   });
   expect(lifecycle.simulated, lifecycle.error).toBe(true);
   expect(lifecycle.waiting).toBe(true);
-  expect(page.url()).toBe(originalUrl);
+  await expect(status(page)).toHaveText('Update available', { timeout: 10_000 });
+  await expect(card).toContainText('The current copy is ready');
+  expect(page.url()).toBe(todayUrl);
+  expect(await page.evaluate(() => window.__todayVisit)).toBe('still-mounted');
+  expect(toolPage.url()).toBe(toolUrl);
   await expect(frame).toHaveAttribute('data-offline-session', 'unchanged');
   await expect(frame).toBeVisible();
-  await expect(page.locator('.sw-toast')).toHaveCount(0);
-
-  await page.locator('.fd-reader__back').click();
-  await expect(status(page)).toHaveText('Update available', { timeout: 10_000 });
-  await entry(page).locator('[data-fd-offline-open]').click();
-  await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('The current copy is ready');
+  await expect(toolPage.locator('.sw-toast')).toHaveCount(0);
 });
 
 test('offline readiness: fresh week and APP PA/PMHNP route inventories never persist an invitation', async ({ page }, info) => {
   await observeMessages(page);
   await install(page, info);
-  const first = await openReady(page);
+  const first = await openReady(page, await canonicalOfflineInventory(page, { week: 1 }));
   await entry(page).locator('[data-fd-offline-close]').click();
   await page.locator('[data-fd-change-week]').click();
   await page.locator('[data-fd-week="2"]:visible').click();
   await page.locator('[data-fd-tab="today"]:visible').first().click();
   await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
   const second = await page.evaluate(() => window.__offlineRequests?.at(-1)?.urls);
+  expectExactInventory(second, await canonicalOfflineInventory(page, { week: 2 }));
   expect(second).not.toEqual(first);
 
   if (!resident(info)) {
@@ -303,6 +369,7 @@ test('offline readiness: fresh week and APP PA/PMHNP route inventories never per
   await expect(page.locator('.fd-app')).toBeVisible();
   await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
   const pa = await page.evaluate(() => window.__offlineRequests?.at(-1)?.urls);
+  expectExactInventory(pa, await canonicalOfflineInventory(page, { bridge: 'pa' }));
   expect(pa).not.toEqual(second);
   await entry(page).locator('[data-fd-offline-open]').click();
   await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('APP PA route');
@@ -311,6 +378,7 @@ test('offline readiness: fresh week and APP PA/PMHNP route inventories never per
   await page.locator('[data-fd-app-bridge="pmhnp"]').click();
   await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
   const pmhnp = await page.evaluate(() => window.__offlineRequests?.at(-1)?.urls);
+  expectExactInventory(pmhnp, await canonicalOfflineInventory(page, { bridge: 'pmhnp' }));
   expect(pmhnp).not.toEqual(pa);
   await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('APP PMHNP route');
   await expect(entry(page).locator('[data-fd-offline-card]'))
@@ -319,3 +387,73 @@ test('offline readiness: fresh week and APP PA/PMHNP route inventories never per
   await page.goto('/');
   await expect(page.locator('.fd-app')).toHaveCount(0);
 });
+
+for (const bridge of ['pa', 'pmhnp']) {
+  test('offline readiness: resident APP ' + bridge.toUpperCase() + ' route survives offline and an exact missing file fails closed', async ({ page, context, baseURL }, info) => {
+    test.skip(!resident(info), 'The APP invitation exists only on the resident site.');
+    await observeMessages(page);
+    await install(page, info);
+    const savedRole = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}').role);
+    const expected = await canonicalOfflineInventory(page, { bridge });
+    const { reading, tool } = routeResources(expected);
+    await page.goto('/?audience=app');
+    if (bridge === 'pmhnp') await page.locator('[data-fd-app-bridge="pmhnp"]').click();
+    await openReady(page, expected);
+    await expectConnectionRequired(page);
+    const cached = await page.evaluate(async () => {
+      const key = (await caches.keys()).find(value => value.startsWith('cw-precache-'));
+      return { key, paths: (await (await caches.open(key)).keys()).map(request => new URL(request.url).pathname) };
+    });
+    expect(cached.key).toBeTruthy();
+    expect(cached.paths).toContain(reading);
+    expect(cached.paths).toContain(tool);
+
+    await context.setOffline(true);
+    try {
+      await page.goto(baseURL + '/?audience=app&page=' + encodeURIComponent(reading.split('/').at(-1)), { waitUntil: 'domcontentloaded' });
+      await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible({ timeout: 15_000 });
+      expect((await page.locator('.fd-reader .fd-article__body').innerText()).trim().length).toBeGreaterThan(80);
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+
+      await page.goto(baseURL + '/?audience=app&tool=' + encodeURIComponent(tool.split('/').at(-1)), { waitUntil: 'domcontentloaded' });
+      const frame = page.locator('#content iframe.toolframe');
+      await expect(frame).toBeVisible({ timeout: 15_000 });
+      expect(new URL(await frame.getAttribute('src'), baseURL).pathname).toBe(tool);
+      await expect(frame.contentFrame().locator('body')).not.toBeEmpty();
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await expect(page.locator('#content iframe.toolframe')).toBeVisible();
+
+      await returnToAppToday(page, bridge);
+      await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+      await entry(page).locator('[data-fd-offline-open]').click();
+      await expectConnectionRequired(page);
+      await page.locator('[data-fd-search]:visible').first().click();
+      await expect(page.locator('.fd-search')).toBeVisible();
+      await page.locator('.fd-searchpanel__input:visible').fill('mood');
+      await expect(page.locator('.fd-result').first()).toBeVisible();
+    } finally {
+      await context.setOffline(false);
+    }
+
+    await returnToAppToday(page, bridge);
+    await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+    const removed = await page.evaluate(async url => {
+      const key = (await caches.keys()).find(value => value.startsWith('cw-precache-'));
+      return (await caches.open(key)).delete(url);
+    }, reading);
+    expect(removed).toBe(true);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    if (bridge === 'pmhnp') await page.locator('[data-fd-app-bridge="pmhnp"]').click();
+    await expect(status(page)).toHaveText('Not ready', { timeout: 10_000 });
+    await entry(page).locator('[data-fd-offline-open]').click();
+    await expect(entry(page).locator('[data-fd-offline-card]')).toContainText(reading);
+    await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('1 missing');
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}').role)).toBe(savedRole);
+    await page.close();
+    const reopened = await context.newPage();
+    await reopened.goto('/');
+    await expect(reopened.locator('.fd-app')).toHaveCount(0);
+    expect(await reopened.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}').role)).toBe(savedRole);
+  });
+}
