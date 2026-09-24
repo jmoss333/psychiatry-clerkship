@@ -42,10 +42,10 @@ measured (no keyed option, two keyed options, an option with no text), zero live
 attested items, or a baseline that is missing or does not pin both keys. A pass over nothing
 is not a pass (docs/SILENT_SHRINK_CHECKLIST.md C4/D4).
 
-    python3 bin/check_qbank_length_cue.py                    # the gate (bin/verify.sh runs it)
-    python3 bin/check_qbank_length_cue.py --detail           # + each flagged item's key vs longest distractor
-    python3 bin/check_qbank_length_cue.py --self-test        # fixtures exit 1/2 as designed; the live bank exits 0
-    python3 bin/check_qbank_length_cue.py --update-baseline  # LOWER the pin after a reviewed reduction
+    python3 bin/check_qbank_length_cue.py                    # the gate (verify.sh runs it)
+    python3 bin/check_qbank_length_cue.py --detail           # + key vs longest distractor
+    python3 bin/check_qbank_length_cue.py --self-test        # fixtures 1/2; live bank 0
+    python3 bin/check_qbank_length_cue.py --update-baseline  # LOWER the pin (reviewed)
 
 The flagged-id listing (attested first, grouped by category) is the work list for the
 `content/qbank-cue-batch-N` PRs: each batch demotes <= 10 attested items, rewrites them, and
@@ -106,7 +106,8 @@ def item_cues(item):
         if opt.get("c"):
             keyed.append(n)
     if len(keyed) != 1:
-        raise CouldNotCheck(f"{iid}: {len(keyed)} keyed options -- exactly one `c: true` is required")
+        raise CouldNotCheck(f"{iid}: {len(keyed)} keyed options -- "
+                            f"exactly one `c: true` is required")
     k = keyed[0]
     lengths = [len(t.strip()) for t in texts]
     longest_other = max(n for i, n in enumerate(lengths) if i != k)
@@ -126,17 +127,24 @@ def measure_bank(doc):
         raise CouldNotCheck(f"items[{stray[0]}] is not an object ({len(stray)} such entr(y/ies))")
     live_items = live(items)
     attested = [it for it in items if it.get("status") == "attested"]
-    detail = {}
-    for it in {id(i): i for i in live_items + attested}.values():
+    # Keyed by OBJECT, not by id: two items sharing an id must still count as two.
+    measured = {}
+    for it in live_items + attested:
+        if id(it) in measured:
+            continue
+        if not isinstance(it.get("id"), str) or not it["id"]:
+            raise CouldNotCheck(f"an item has no string `id` (status {it.get('status')!r}) -- "
+                                f"it could be counted but never named")
         cues, key_len, other_len = item_cues(it)
-        detail[it.get("id")] = {"cues": cues, "key": key_len, "other": other_len,
-                                "category": it.get("category") or "?", "status": it.get("status")}
+        measured[id(it)] = {"cues": cues, "key": key_len, "other": other_len,
+                            "category": it.get("category") or "?", "status": it.get("status")}
     return {
         "live_n": len(live_items),
         "attested_n": len(attested),
-        "live_flagged": [it["id"] for it in live_items if detail[it.get("id")]["cues"]],
-        "attested_flagged": [it["id"] for it in attested if detail[it.get("id")]["cues"]],
-        "detail": detail,
+        "live_flagged": [it["id"] for it in live_items if measured[id(it)]["cues"]],
+        "attested_flagged": [it["id"] for it in attested if measured[id(it)]["cues"]],
+        # for printing only (--detail, category grouping); a duplicated id prints its last copy
+        "detail": {it["id"]: measured[id(it)] for it in live_items + attested},
     }
 
 
@@ -194,15 +202,18 @@ def measure_cases(doc):
             sets.append(_choice_set(cid, case["choices"], "text", is_best))
         for step in case.get("steps") or []:
             if isinstance(step, dict) and "choices" in step:
-                sets.append(_choice_set(f"{cid}/{step.get('id')}", step["choices"], "text", is_best))
+                label = f"{cid}/{step.get('id')}"
+                sets.append(_choice_set(label, step["choices"], "text", is_best))
     return _summarise(sets)
 
 
 def collect_report(root=ROOT):
     """[(label, summary or None, error or None)] for every report-only surface."""
     out = []
-    targets = [("topic_meta.json quizzes", os.path.join(root, "topic_meta.json"), measure_topic_meta)]
-    targets += [(f"{name} choice sets", os.path.join(root, name), measure_cases) for name in CASE_FILES]
+    targets = [("topic_meta.json quizzes", os.path.join(root, "topic_meta.json"),
+                measure_topic_meta)]
+    targets += [(f"{name} choice sets", os.path.join(root, name), measure_cases)
+                for name in CASE_FILES]
     for label, path, fn in targets:
         try:
             with open(path, encoding="utf-8") as fh:
@@ -255,7 +266,8 @@ def compare(counts, baseline):
         if now > was:
             fails.append(f"R  {key} rose {was} -> {now}. Trim the keyed option of the new "
                          f"item(s) above to the bare decision and move the rationale into `why` "
-                         f"(2026-07-13 decision record), or lengthen the distractors; do not re-pin.")
+                         f"(2026-07-13 decision record), or lengthen the distractors; "
+                         f"do not re-pin.")
         elif now < was:
             notes.append(f"R  {key} improved {was} -> {now} -- run `{UPDATE_HINT}` to lock the "
                          f"gain in (a DEMOTION lowers only the attested count; the live count is "
@@ -301,15 +313,19 @@ def gate(doc, baseline, out=print, report=None, detail=False):
     l, ln = len(m["live_flagged"]), m["live_n"]
     allowed = (TARGET_PCT * an) // 100
     met = "met" if a <= allowed else "NOT met"
-    out("qbank length cue -- keyed option is the UNIQUELY longest (stripped characters; ties are not cues)")
+    out("qbank length cue -- keyed option is the UNIQUELY longest "
+        "(stripped characters; ties are not cues)")
     out(f"  attested  {a} of {an} ({_pct(a, an)})   WP-7 target <= {TARGET_PCT}% "
         f"(<= {allowed} of {an}): {met}")
-    out(f"  live      {l} of {ln} ({_pct(l, ln)})   live = not retired, as check_qbank_coherence.py")
+    out(f"  live      {l} of {ln} ({_pct(l, ln)})   "
+        f"live = not retired, as check_qbank_coherence.py")
 
     attested_ids = set(m["attested_flagged"])
     rest = [i for i in m["live_flagged"] if i not in attested_ids]
-    for title, ids in ((f"flagged ATTESTED ({a}) -- the WP-7 batch work list, by category", m["attested_flagged"]),
-                       (f"flagged live, not attested ({len(rest)})", rest)):
+    sections = ((f"flagged ATTESTED ({a}) -- the WP-7 batch work list, by category",
+                 m["attested_flagged"]),
+                (f"flagged live, not attested ({len(rest)})", rest))
+    for title, ids in sections:
         out(f"\n{title}:")
         for cat, group in _by_category(ids, m["detail"]):
             out(f"  {cat} ({len(group)}): " + " ".join(group))
@@ -329,7 +345,8 @@ def gate(doc, baseline, out=print, report=None, detail=False):
             if summary["n"]:
                 line += f" ({_pct(summary['flagged_n'], summary['n'])})"
             if summary["unmeasurable"]:
-                line += f"; {len(summary['unmeasurable'])} unmeasurable: {', '.join(summary['unmeasurable'][:5])}"
+                bad = summary["unmeasurable"]
+                line += f"; {len(bad)} unmeasurable: {', '.join(bad[:5])}"
             out(line)
             if detail and summary["flagged"]:
                 out("      " + " ".join(summary["flagged"]))
@@ -399,11 +416,13 @@ def self_test():
 
     # a. the metric: strict, stripped, ties are not cues
     try:
-        expect("key uniquely longest is a cue", uniquely_longest(["long answer", "short", "tiny"], 0))
+        expect("key uniquely longest is a cue",
+               uniquely_longest(["long answer", "short", "tiny"], 0))
         expect("key shorter than a distractor is not a cue", not uniquely_longest(["ab", "abc"], 0))
         expect("a tie for longest is NOT a cue", not uniquely_longest(["abcd", "wxyz", "a"], 0))
         expect("surrounding whitespace is stripped before measuring",
-               not uniquely_longest(["   abc   ", "abcd"], 0) and uniquely_longest(["abcde", "  abcd  "], 0))
+               not uniquely_longest(["   abc   ", "abcd"], 0)
+               and uniquely_longest(["abcde", "  abcd  "], 0))
     except Exception as e:
         expect(f"metric runs ({type(e).__name__}: {e})", False)
 
@@ -435,9 +454,11 @@ def self_test():
 
     # d. a rise in EITHER key fails, naming the key
     rc, out = run(_FX, dict(pinned, attested_uniquely_longest=0))
-    expect("attested rise exits 1 naming the key", rc == 1 and "attested_uniquely_longest rose 0 -> 1" in out)
+    expect("attested rise exits 1 naming the key",
+           rc == 1 and "attested_uniquely_longest rose 0 -> 1" in out)
     rc, out = run(_FX, dict(pinned, live_uniquely_longest=1))
-    expect("live rise exits 1 naming the key", rc == 1 and "live_uniquely_longest rose 1 -> 2" in out)
+    expect("live rise exits 1 naming the key",
+           rc == 1 and "live_uniquely_longest rose 1 -> 2" in out)
 
     # e. a fall is a note naming the lowering command
     rc, out = run(_FX, {"attested_uniquely_longest": 5, "live_uniquely_longest": 9})
@@ -458,7 +479,8 @@ def self_test():
         rc, out = run(bad, pinned)
         expect(f"wrong shape ({label}) exits 2", rc == 2)
     for label, it in (
-        ("no keyed option", {"id": "qb_x_001", "status": "attested", "options": [_opt("a"), _opt("b")]}),
+        ("no keyed option", {"id": "qb_x_001", "status": "attested",
+                             "options": [_opt("a"), _opt("b")]}),
         ("two keyed options", {"id": "qb_x_001", "status": "attested",
                                "options": [_opt("a", True), _opt("b", True)]}),
         ("an option with no text", {"id": "qb_x_001", "status": "attested",
@@ -466,16 +488,28 @@ def self_test():
         ("no options", {"id": "qb_x_001", "status": "attested"}),
     ):
         rc, out = run({"items": _FX["items"] + [it]}, pinned)
-        expect(f"an unmeasurable item ({label}) exits 2 naming its id", rc == 2 and "qb_x_001" in out)
+        expect(f"an unmeasurable item ({label}) exits 2 naming its id",
+               rc == 2 and "qb_x_001" in out)
+    anonymous = {"status": "attested", "options": [_opt("a", True), _opt("b")]}
+    rc, out = run({"items": _FX["items"] + [anonymous]}, pinned)
+    expect("an item with no id exits 2 (it could be counted but never named)",
+           rc == 2 and "no string `id`" in out)
+    twin = dict(_FX["items"][0], options=[_opt("a", True), _opt("longer")])  # same id, does NOT cue
+    m = measure_bank({"items": _FX["items"] + [twin]})
+    expect("two items sharing an id are measured separately (one cues, one does not)",
+           m["attested_n"] == 4 and m["attested_flagged"] == ["qb_mood_001"])
 
     # g. baseline file contract: a missing key is an error naming it; a bool is not a count
     with tempfile.TemporaryDirectory() as td:
         p = os.path.join(td, "b.json")
         for label, payload, needle in (
-            ("missing live key", {"counts": {"attested_uniquely_longest": 1}}, "live_uniquely_longest"),
+            ("missing live key", {"counts": {"attested_uniquely_longest": 1}},
+             "live_uniquely_longest"),
             ("boolean is not a count", {"counts": {"attested_uniquely_longest": True,
-                                                   "live_uniquely_longest": 2}}, "attested_uniquely_longest"),
-            ("no counts object", {"attested_uniquely_longest": 1, "live_uniquely_longest": 2}, "counts"),
+                                                   "live_uniquely_longest": 2}},
+             "attested_uniquely_longest"),
+            ("no counts object", {"attested_uniquely_longest": 1, "live_uniquely_longest": 2},
+             "counts"),
         ):
             with open(p, "w", encoding="utf-8") as fh:
                 json.dump(payload, fh)
@@ -484,7 +518,8 @@ def self_test():
             except Exception as e:
                 counts, err = None, None
                 expect(f"load_baseline runs ({type(e).__name__}: {e})", False)
-            expect(f"baseline {label} is an error naming {needle}", counts is None and err and needle in err)
+            expect(f"baseline {label} is an error naming {needle}",
+                   counts is None and err and needle in err)
         with open(p, "w", encoding="utf-8") as fh:
             fh.write("{not json")
         try:
@@ -497,25 +532,29 @@ def self_test():
             write_baseline(p, {"attested_uniquely_longest": 7, "live_uniquely_longest": 9})
             counts, err = load_baseline(p)
             expect("write_baseline round-trips both keys",
-                   err is None and counts == {"attested_uniquely_longest": 7, "live_uniquely_longest": 9})
+                   err is None
+                   and counts == {"attested_uniquely_longest": 7, "live_uniquely_longest": 9})
         except Exception as e:
             expect(f"write_baseline runs ({type(e).__name__}: {e})", False)
 
     # h. report-only surfaces: measured, labelled, and they NEVER change the exit code
     tm = {"_note": "x",
-          "a.md": {"quiz": {"q": "?", "o": [{"t": "the long keyed answer", "c": True}, {"t": "no"}]}},
+          "a.md": {"quiz": {"q": "?", "o": [{"t": "the long keyed answer", "c": True},
+                                             {"t": "no"}]}},
           "b.md": {"quiz": {"q": "?", "o": [{"t": "yes", "c": True}, {"t": "a longer no"}]}},
           "c.md": {"title": "no quiz"}}
     cases = {"cases": [
         {"id": "comm_1", "choices": [{"id": "a", "text": "short", "quality": "missed"},
-                                     {"id": "b", "text": "the best, longest reply", "quality": "best"}]},
+                                     {"id": "b", "text": "the best, longest reply",
+                                      "quality": "best"}]},
         {"id": "reas_1", "steps": [{"id": "s1", "choices": [
             {"id": "a", "text": "best", "quality": "best"},
             {"id": "b", "text": "a longer partial", "quality": "partial"}]}]},
     ]}
     try:
         r = measure_topic_meta(tm)
-        expect("topic_meta quizzes: 1 of 2 cue", (r["flagged_n"], r["n"]) == (1, 2) and r["flagged"] == ["a.md"])
+        expect("topic_meta quizzes: 1 of 2 cue",
+               (r["flagged_n"], r["n"]) == (1, 2) and r["flagged"] == ["a.md"])
         r = measure_cases(cases)
         expect("case choice sets: 1 of 2 cue (choices and steps[].choices)",
                (r["flagged_n"], r["n"]) == (1, 2) and r["flagged"] == ["comm_1"])

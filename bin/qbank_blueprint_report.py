@@ -48,7 +48,7 @@ baseline missing or not pinning all six dimensions).
 
     python3 bin/qbank_blueprint_report.py                    # the report + ratchet
     python3 bin/qbank_blueprint_report.py --self-test        # what bin/verify.sh runs
-    python3 bin/qbank_blueprint_report.py --update-baseline  # only once every attested item is tagged
+    python3 bin/qbank_blueprint_report.py --update-baseline  # only once all attested are tagged
 """
 import argparse, json, os, sys
 
@@ -99,13 +99,15 @@ def load_bands(path=BANDS):
         d = (e.get("dimensions") or {}).get(dim) if isinstance(e.get("dimensions"), dict) else None
         cats = d.get("categories") if isinstance(d, dict) else None
         if not isinstance(cats, list) or len(cats) < 2:
-            raise CouldNotCheck(f"bands file {rel}: {exam}.{dim} is missing or has fewer than two categories")
+            raise CouldNotCheck(f"bands file {rel}: {exam}.{dim} is missing or has fewer "
+                                f"than two categories")
         seen = set()
         for c in cats:
             if not (isinstance(c, dict) and isinstance(c.get("key"), str) and c["key"]
                     and isinstance(c.get("name"), str) and c["name"]
                     and _num(c.get("min")) and _num(c.get("max"))):
-                raise CouldNotCheck(f"bands file {rel}: {exam}.{dim} has a category without key/name/min/max")
+                raise CouldNotCheck(f"bands file {rel}: {exam}.{dim} has a category without "
+                                    f"key/name/min/max")
             if not 0 <= c["min"] <= c["max"] <= 100:
                 raise CouldNotCheck(f"bands file {rel}: {exam}.{dim} '{c['key']}' band "
                                     f"{c['min']}-{c['max']} is not 0 <= min <= max <= 100")
@@ -120,7 +122,8 @@ def load_bands(path=BANDS):
     extra = sorted(f"{x}.{y}" for x, e in exams.items() if isinstance(e, dict)
                    for y in (e.get("dimensions") or {}) if (x, y) not in DIMENSIONS)
     if extra:
-        raise CouldNotCheck(f"bands file {rel} has dimension(s) this tool does not measure: {extra}")
+        raise CouldNotCheck(f"bands file {rel} has dimension(s) this tool does not measure: "
+                            f"{extra}")
     return out
 
 
@@ -149,21 +152,24 @@ def measure(doc, bands):
         raise CouldNotCheck("question bank `items` holds a non-object entry")
     attested = [it for it in items if it.get("status") == "attested"]
     known = {dim: {c["key"] for c in bands[dim]} for dim in DIMENSIONS}
-    untagged, unknown = [], []
+    untagged, unknown, bad = [], [], 0
     for it in attested:
-        missing = False
+        name = str(it.get("id") or "<item with no id>")
+        missing = invalid = False
         for dim in DIMENSIONS:
             v = _tag(it, *dim)
             if v is None:
                 missing = True
-            elif v not in known[dim]:
-                unknown.append((it.get("id"), f"{dim[0]}.{dim[1]}", v))
+            elif not (isinstance(v, str) and v in known[dim]):
+                invalid = True
+                unknown.append((name, f"{dim[0]}.{dim[1]}", v))
         if missing:
-            untagged.append(it.get("id"))
-    bad_ids = set(untagged) | {iid for iid, _, _ in unknown}
+            untagged.append(name)
+        bad += missing or invalid
     dims = {}
     for dim in DIMENSIONS:
-        tagged = [_tag(it, *dim) for it in attested if _tag(it, *dim) in known[dim]]
+        tags = (_tag(it, *dim) for it in attested)
+        tagged = [t for t in tags if isinstance(t, str) and t in known[dim]]
         n = len(tagged)
         rows, total = [], 0.0
         for c in bands[dim]:
@@ -171,14 +177,15 @@ def measure(doc, bands):
             pct = 100.0 * k / n if n else None
             gap = points_outside(pct, c["min"], c["max"]) if n else None
             total += gap or 0
-            rows.append({"key": c["key"], "n": k, "pct": pct, "min": c["min"], "max": c["max"], "gap": gap})
+            rows.append({"key": c["key"], "n": k, "pct": pct,
+                         "min": c["min"], "max": c["max"], "gap": gap})
         dims[dim] = {"n": n, "rows": rows, "points": round(total, 2) if n else None}
     return {
         "attested_n": len(attested),
-        "tagged_n": len(attested) - len(bad_ids),
+        "tagged_n": len(attested) - bad,
         "untagged": untagged,
         "unknown": unknown,
-        "complete": bool(attested) and not bad_ids,
+        "complete": bool(attested) and not bad,
         "dims": dims,
         "points": {f"{e}.{d}": dims[(e, d)]["points"] for e, d in DIMENSIONS},
     }
@@ -234,10 +241,11 @@ def _print_dims(m, out, partial):
         for r in d["rows"]:
             mid = (r["min"] + r["max"]) / 2
             mark = "in " if r["gap"] == 0 else "OUT"
-            near = "" if abs(r["pct"] - mid) <= MIDPOINT_TOLERANCE else "  (not within +/-5 of midpoint)"
+            near = ("" if abs(r["pct"] - mid) <= MIDPOINT_TOLERANCE
+                    else f"  (not within +/-{MIDPOINT_TOLERANCE} of midpoint)")
+            gap = f"  {_fmt(round(r['gap'], 2))} pts out" if r["gap"] else ""
             out(f"   {mark} {r['key'][:52]:<52} {r['n']:>4} {r['pct']:>5.1f}%  band "
-                f"{_fmt(r['min'])}-{_fmt(r['max'])}%" + (f"  {_fmt(round(r['gap'], 2))} pts out" if r["gap"] else "")
-                + near)
+                f"{_fmt(r['min'])}-{_fmt(r['max'])}%" + gap + near)
 
 
 def gate(doc, bands, baseline, out=print):
@@ -258,7 +266,8 @@ def gate(doc, bands, baseline, out=print):
     if not m["complete"]:
         _print_dims(m, out, partial=True)
         if m["unknown"]:
-            out(f"\nunknown category key(s) ({len(m['unknown'])}; keys are bin/data/exam_blueprint_bands.json's):")
+            out(f"\nunknown category key(s) ({len(m['unknown'])}; "
+                f"keys are bin/data/exam_blueprint_bands.json's):")
             for iid, dim, v in m["unknown"][:10]:
                 out(f"  {iid}: {dim} = {v!r}")
         if m["untagged"]:
@@ -269,8 +278,9 @@ def gate(doc, bands, baseline, out=print):
         return 2
     _print_dims(m, out, partial=False)
     age = next(r for r in m["dims"][("nbme", "patient_age")]["rows"] if r["key"] == "Birth to 12")
-    out(f"\nWP-8 acceptance (context, not the ratchet): every category within +/-{MIDPOINT_TOLERANCE} "
-        f"of its band midpoint; age 0-12 {age['pct']:.1f}% (target >= {AGE_0_12_FLOOR}%)")
+    out(f"\nWP-8 acceptance (context, not the ratchet): every category within "
+        f"+/-{MIDPOINT_TOLERANCE} of its band midpoint; age 0-12 {age['pct']:.1f}% "
+        f"(target >= {AGE_0_12_FLOOR}%)")
     if baseline is None:
         out(f"FAIL -- no baseline to ratchet against. Run `{UPDATE_HINT}` (reviewed) and commit "
             f"bin/qbank_blueprint_baseline.json.")
@@ -379,12 +389,16 @@ def self_test():
         p = os.path.join(td, "bands.json")
         with open(BANDS, encoding="utf-8") as fh:
             good = json.load(fh)
+        def cats(b, exam, dim):
+            return b["exams"][exam]["dimensions"][dim]["categories"]
+
         for label, mutate in (
             ("a missing dimension", lambda b: b["exams"]["nbme"]["dimensions"].pop("patient_age")),
-            ("a duplicate key", lambda b: b["exams"]["comat"]["dimensions"]["presentation"]["categories"].append(
-                dict(b["exams"]["comat"]["dimensions"]["presentation"]["categories"][0]))),
-            ("min above max", lambda b: b["exams"]["nbme"]["dimensions"]["system"]["categories"][0].update(min=50, max=10)),
-            ("bands that cannot sum to 100", lambda b: b["exams"]["nbme"]["dimensions"]["patient_age"]["categories"][0].update(min=20, max=20)),
+            ("a duplicate key", lambda b: cats(b, "comat", "presentation").append(
+                dict(cats(b, "comat", "presentation")[0]))),
+            ("min above max", lambda b: cats(b, "nbme", "system")[0].update(min=50, max=10)),
+            ("bands that cannot sum to 100",
+             lambda b: cats(b, "nbme", "patient_age")[0].update(min=20, max=20)),
             ("no source URL", lambda b: b["exams"]["comat"].pop("source_url")),
         ):
             bad = copy.deepcopy(good)
@@ -418,12 +432,13 @@ def self_test():
         # e. fully tagged, inside every band -> 0 (an untagged DRAFT is not examined)
         rc, out = run(full, bands, zero)
         expect("fully tagged pool inside every band exits 0", rc == 0 and "FAIL" not in out)
-        expect("it says what it examined: 100 of 100 attested items tagged", "100 of 100 attested" in out)
+        expect("it says what it examined: 100 of 100 attested items tagged",
+               "100 of 100 attested" in out)
 
         # f. untagged -> 2; partial -> 2 and labelled PARTIAL; an unknown key -> 2 naming it
         rc, out = run({"items": [dict(i, blueprint=None) for i in _pool()]}, bands, zero)
-        rc2, out2 = run({"items": [{k: v for k, v in i.items() if k != "blueprint"} for i in _pool()]},
-                        bands, zero)
+        bare = [{k: v for k, v in i.items() if k != "blueprint"} for i in _pool()]
+        rc2, out2 = run({"items": bare}, bands, zero)
         expect("untagged pool exits 2 and says 0 of 100",
                rc == 2 and rc2 == 2 and "0 of 100 attested" in out2)
         partial = _pool()
@@ -436,6 +451,13 @@ def self_test():
         rc, out = run({"items": unknown}, bands, zero)
         expect("an unknown category key exits 2 naming the item and the value",
                rc == 2 and "qb_fx_003" in out and "Nursing Home" in out)
+        odd = _pool()
+        odd[4]["blueprint"]["comat"]["presentation"] = ["Personality"]
+        odd[5].pop("id")
+        del odd[5]["blueprint"]["nbme"]
+        rc, out = run({"items": odd}, bands, zero)
+        expect("a non-string tag and an id-less untagged item exit 2 without crashing",
+               rc == 2 and "qb_fx_004" in out and "<item with no id>" in out and "98 of 100" in out)
 
         # g. out of band vs a zero pin -> 1 naming the dimension; the arithmetic is the band gaps
         skewed = _pool()
@@ -452,7 +474,8 @@ def self_test():
 
         # h. could-not-check: no baseline, zero attested, wrong shape
         rc, out = run(full, bands, None)
-        expect("a fully tagged pool with no baseline exits 2", rc == 2 and "--update-baseline" in out)
+        expect("a fully tagged pool with no baseline exits 2",
+               rc == 2 and "--update-baseline" in out)
         rc, out = run({"items": _pool(status="draft")}, bands, zero)
         expect("zero attested items exits 2", rc == 2 and "NO ATTESTED ITEMS" in out)
         for label, bad in (("a bare list", _pool()), ("items not a list", {"items": {}})):
@@ -463,7 +486,8 @@ def self_test():
         with tempfile.TemporaryDirectory() as td:
             p = os.path.join(td, "b.json")
             for label, payload, needle in (
-                ("missing a dimension", {"counts": {k: 0 for k in RATCHET_KEYS[:-1]}}, RATCHET_KEYS[-1]),
+                ("missing a dimension", {"counts": {k: 0 for k in RATCHET_KEYS[:-1]}},
+                 RATCHET_KEYS[-1]),
                 ("a boolean pin", {"counts": dict(zero, **{"nbme.system": True})}, "nbme.system"),
                 ("no counts object", zero, "counts"),
             ):
@@ -502,8 +526,8 @@ def main():
                     help="write the pin from the current bank -- refused unless every attested "
                          "item is tagged (the diff is in the PR)")
     ap.add_argument("--self-test", action="store_true",
-                    help="bands file, schema enums and fixture exits (untagged/partial 2, in-band 0, "
-                         "rise 1); what bin/verify.sh runs")
+                    help="bands file, schema enums and fixture exits (untagged/partial 2, "
+                         "in-band 0, rise 1); what bin/verify.sh runs")
     a = ap.parse_args()
     if a.self_test:
         return self_test()
@@ -533,12 +557,9 @@ def main():
         print(f"baseline written to {os.path.relpath(a.baseline, ROOT)}: "
               + ", ".join(f"{k}={_fmt(v)}" for k, v in m["points"].items()))
     baseline, err = load_baseline(a.baseline)
-    rc = gate(doc, bands, baseline)
-    if err and rc != 2:
-        print(f"FAIL -- {err}")
-        return 2
+    rc = gate(doc, bands, baseline)  # a None baseline is exit 2 inside gate(), whatever the pool
     if err:
-        print(f"note: {err}")
+        print(f"baseline: {err}")
     return rc
 
 
