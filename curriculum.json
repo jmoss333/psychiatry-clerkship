@@ -734,6 +734,96 @@
     "rp-post-event-huddle.html": [
       "post event debrief",
       "debrief after restraint"
+    ],
+    "med_monitoring.md": [
+      "haldol",
+      "haloperidol",
+      "zyprexa",
+      "olanzapine",
+      "seroquel",
+      "quetiapine",
+      "risperdal",
+      "risperidone",
+      "abilify",
+      "aripiprazole",
+      "geodon",
+      "ziprasidone",
+      "invega",
+      "paliperidone",
+      "clozaril",
+      "clozapine",
+      "depakote",
+      "valproate",
+      "divalproex",
+      "tegretol",
+      "carbamazepine",
+      "celexa",
+      "citalopram",
+      "lithium level",
+      "lithium levels",
+      "akathisia",
+      "eps",
+      "extrapyramidal",
+      "tardive",
+      "tardive dyskinesia",
+      "td",
+      "aims"
+    ],
+    "psychopharm_primer.md": [
+      "haldol",
+      "haloperidol",
+      "zyprexa",
+      "olanzapine",
+      "seroquel",
+      "quetiapine",
+      "risperdal",
+      "risperidone",
+      "abilify",
+      "aripiprazole",
+      "geodon",
+      "ziprasidone",
+      "invega",
+      "paliperidone",
+      "clozaril",
+      "clozapine",
+      "zoloft",
+      "sertraline",
+      "prozac",
+      "fluoxetine",
+      "lexapro",
+      "escitalopram",
+      "celexa",
+      "citalopram",
+      "paxil",
+      "paroxetine",
+      "depakote",
+      "valproate",
+      "divalproex"
+    ],
+    "toxidromes.md": [
+      "nms"
+    ],
+    "t_sleep.md": [
+      "insomnia",
+      "trouble sleeping",
+      "cannot sleep",
+      "cant sleep",
+      "can t sleep"
+    ],
+    "ect_neuromodulation.md": [
+      "tms",
+      "rtms",
+      "transcranial magnetic stimulation"
+    ],
+    "ethics_legal.md": [
+      "blue paper",
+      "involuntary hold",
+      "involuntary commitment"
+    ],
+    "systems_medlegal.md": [
+      "blue paper",
+      "involuntary hold",
+      "involuntary commitment"
     ]
   },
   "searchExclude": [
