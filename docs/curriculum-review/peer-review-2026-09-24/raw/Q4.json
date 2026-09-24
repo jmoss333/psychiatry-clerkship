@@ -1,0 +1,82 @@
+[
+  {
+    "id": "Q4-001", "chunk": "Q4", "audience": "both", "surface": "qb_sud_014", "locus": "item",
+    "severity": "Major", "category": "emergency psychiatry", "pattern": "qb-rationale-contradicts-key",
+    "quote": "Prior withdrawal seizure = highest predictor of future seizures; aggressive CIWA-Ar-guided benzodiazepines + DT monitoring is the standard.",
+    "problem": "The keyed option was corrected (after A1C3-F001) to teach prompt benzodiazepine plus front-loaded or fixed-schedule dosing, 'not score-gated dosing alone', but the pearl still teaches CIWA-Ar-guided (score-gated) dosing as the standard. The item now contradicts itself.",
+    "whyItMatters": "The pearl is the line learners remember. A resident who acts on it writes a symptom-triggered-only order for a patient admitted after a withdrawal seizure. Benzodiazepine is then withheld whenever the score dips, during the window when recurrent seizures cluster, and those seizures can occur at low CIWA-Ar scores.",
+    "evidence": "ASAM Clinical Practice Guideline on Alcohol Withdrawal Management (2020): patients with a withdrawal seizure should receive a benzodiazepine promptly, and front-loading or fixed-schedule dosing is appropriate for patients at high risk of complicated withdrawal. The item's own keyed option says the same thing.",
+    "correction": "Prior withdrawal seizure = strong predictor of future seizures; give a benzodiazepine promptly with front-loaded or fixed-schedule dosing plus symptom-triggered supplementation (not score-gated dosing alone) + DT monitoring.",
+    "confidence": "high", "verified": "recall; internal contradiction checked against keyed option in chunk", "persistsFrom": "A1C3-F001"
+  },
+  {
+    "id": "Q4-002", "chunk": "Q4", "audience": "both", "surface": "qb_sud_014", "locus": "rationale",
+    "severity": "Major", "category": "emergency psychiatry", "pattern": "qb-rationale-contradicts-key",
+    "quote": "CIWA-Ar-guided benzodiazepines are the treatment, and DT vigilance is the priority.",
+    "problem": "The rationale's closing sentence says CIWA-Ar-guided dosing is the treatment. That contradicts the corrected key, which says 'not score-gated dosing alone' for a patient with a withdrawal seizure.",
+    "whyItMatters": "The item teaches two incompatible regimens. A learner who reads the rationale as the explanation of the key will leave with the score-gated regimen, which is the unsafe one for this patient.",
+    "evidence": "ASAM Alcohol Withdrawal Management Guideline (2020), on benzodiazepine dosing after a withdrawal seizure and front-loading for high-risk patients. The keyed option in the same item agrees.",
+    "correction": "Prompt benzodiazepine with front-loaded or fixed-schedule dosing, supplemented by CIWA-Ar-triggered doses, is the treatment, and DT vigilance is the priority.",
+    "confidence": "high", "verified": "recall; internal contradiction checked against keyed option in chunk", "persistsFrom": "A1C3-F001"
+  },
+  {
+    "id": "Q4-003", "chunk": "Q4", "audience": "both", "surface": "qb_sud_005", "locus": "item",
+    "severity": "Moderate", "category": "current psychopharmacology", "pattern": "fentanyl-era-induction",
+    "quote": "before initiating buprenorphine induction — this is required to avoid precipitating withdrawal.",
+    "problem": "The keyed option says waiting for COWS ≥8–12 is 'required' to avoid precipitated withdrawal. That is true of standard induction only. Low-dose ('micro') initiation, recognised in current guidance for people using fentanyl, deliberately starts buprenorphine without waiting for withdrawal. For this stem the key is still the best answer.",
+    "whyItMatters": "Residents supervising inductions in the fentanyl era will learn that waiting for withdrawal is the only safe route. They will then not offer low-dose initiation to patients who cannot tolerate withdrawal or who precipitate despite adequate COWS scores.",
+    "evidence": "Weimer MB et al. ASAM Clinical Considerations: Buprenorphine Treatment of OUD for Individuals Using High-potency Synthetic Opioids. J Addict Med 2023;17(6):632-639, doi:10.1097/ADM.0000000000001202 (individualised initiation strategies, including low-dose initiation).",
+    "correction": "before initiating standard buprenorphine induction — this is how standard induction avoids precipitating withdrawal (low-dose initiation is a supervised alternative).",
+    "confidence": "high", "verified": "PubMed PMID 37934520 (ASAM 2023 HPSO clinical considerations)", "persistsFrom": null
+  },
+  {
+    "id": "Q4-004", "chunk": "Q4", "audience": "both", "surface": "qb_sud_005", "locus": "rationale",
+    "severity": "Moderate", "category": "current psychopharmacology", "pattern": "fentanyl-era-induction",
+    "quote": "The COWS threshold (≥8–12) ensures residual full agonist has cleared enough receptors that induction is safe.",
+    "problem": "'Ensures' overstates what the threshold does. With fentanyl, which is lipophilic and slowly released from tissue stores, precipitated withdrawal is well described in patients who already score in or above the 8–12 COWS range.",
+    "whyItMatters": "A learner who believes a threshold COWS guarantees a safe induction will not expect precipitated withdrawal in a fentanyl-exposed patient or prepare for it. Most US 'heroin' is now fentanyl.",
+    "evidence": "Weimer MB et al., J Addict Med 2023;17(6):632-639 (ASAM HPSO clinical considerations: precipitated withdrawal risk with HPSO exposure and individualised initiation).",
+    "correction": "The COWS threshold (≥8–12) makes it likely that residual full agonist has cleared enough receptors for induction to be tolerated — though with fentanyl, precipitated withdrawal can still occur at these scores.",
+    "confidence": "high", "verified": "PubMed PMID 37934520", "persistsFrom": null
+  },
+  {
+    "id": "Q4-005", "chunk": "Q4", "audience": "both", "surface": "qb_sud_016", "locus": "rationale",
+    "severity": "Moderate", "category": "current psychopharmacology", "pattern": null,
+    "quote": "Disulfiram is second-line and adherence-dependent.",
+    "problem": "The stem patient has cirrhosis, yet the rationale presents disulfiram as a routine second-line option. Disulfiram is hepatotoxic, and hepatology guidance says to avoid it in alcohol-associated liver disease or cirrhosis.",
+    "whyItMatters": "A learner would conclude that disulfiram is the next step for this patient if naltrexone or acamprosate fail, and would expose a cirrhotic patient to drug-induced hepatitis or liver failure.",
+    "evidence": "AASLD Practice Guidance on alcohol-associated liver disease (Crabb et al., Hepatology 2020): disulfiram should be avoided in ALD. EASL CPG on alcohol-related liver disease (J Hepatol 2018): disulfiram should not be used in severe ALD. The disulfiram label warns of hepatitis and hepatic failure and advises extreme caution in cirrhosis.",
+    "correction": "Disulfiram is second-line and adherence-dependent, and should be avoided in cirrhosis because of hepatotoxicity.",
+    "confidence": "medium", "verified": "recall; WebSearch surfaced the AASLD and EASL documents, but the guideline text was not opened", "persistsFrom": null
+  },
+  {
+    "id": "Q4-006", "chunk": "Q4", "audience": "both", "surface": "qb_sud_016", "locus": "rationale",
+    "severity": "Moderate", "category": "current psychopharmacology", "pattern": null,
+    "quote": "Naltrexone (reduces heavy drinking; avoid in acute hepatitis/opioid use)",
+    "problem": "The stem is built around cirrhosis, but the rationale's caution for naltrexone names only acute hepatitis and opioid use. It leaves out that naltrexone is contraindicated in liver failure or decompensated cirrhosis and needs LFT monitoring in compensated disease. That is the one teaching point the cirrhosis detail exists for.",
+    "whyItMatters": "Learners may start naltrexone in a patient with cirrhosis without checking whether the disease is decompensated and without monitoring liver tests. They also miss why acamprosate is often preferred in liver disease.",
+    "evidence": "Naltrexone FDA label: contraindicated in acute hepatitis or liver failure; boxed hepatotoxicity warning removed 2013, but use with caution in hepatic impairment. AASLD 2019/2020 ALD guidance: acamprosate is preferred and naltrexone is avoided in decompensated cirrhosis.",
+    "correction": "Naltrexone (reduces heavy drinking; avoid in acute hepatitis, decompensated cirrhosis/liver failure, or opioid use; monitor LFTs in compensated cirrhosis)",
+    "confidence": "medium", "verified": "recall", "persistsFrom": null
+  },
+  {
+    "id": "Q4-007", "chunk": "Q4", "audience": "both", "surface": "qb_sud_013", "locus": "span",
+    "severity": "Minor", "category": "citation problems", "pattern": null,
+    "quote": "(Schuckit, N Engl J Med 2014; Saitz, N Engl J Med 1998)",
+    "problem": "The only Saitz paper in NEJM in 1998 is a two-page letter ('Patients with alcohol problems', 339:130-1). It is not a source on how benzodiazepines are metabolised in cirrhosis. The review probably intended is Saitz's 2005 NEJM Clinical Practice review 'Unhealthy alcohol use'.",
+    "whyItMatters": "The item's evidence anchor points to a letter that does not support the pharmacokinetic claim. That undermines verification of an attested item.",
+    "evidence": "PubMed: PMID 9669907 is Saitz R. Patients with alcohol problems. N Engl J Med 1998;339(2):130-1 (Comment/Letter). PMID 15703424 is Saitz R. Unhealthy alcohol use. N Engl J Med 2005;352(6):596-607, doi:10.1056/NEJMcp042262.",
+    "correction": "(Schuckit, N Engl J Med 2014; Saitz, N Engl J Med 2005)",
+    "confidence": "medium", "verified": "PubMed search of Saitz R[Author] AND N Engl J Med[Journal]: 4 records, only the 1998 letter matches the year cited. Not verified that the 2005 review states the LOT-drug claim.", "persistsFrom": null
+  },
+  {
+    "id": "Q4-008", "chunk": "Q4", "audience": "both", "surface": "qb_sud_007", "locus": "rationale",
+    "severity": "Minor", "category": "factual inaccuracies", "pattern": null,
+    "quote": "Wernicke untreated progresses to Korsakoff syndrome, which is irreversible.",
+    "problem": "Korsakoff syndrome is often persistent but not uniformly irreversible. Classic series (Victor, Adams & Collins) found about a quarter of patients recovered substantially with thiamine and abstinence. The sentence also leaves out the substantial mortality of untreated Wernicke encephalopathy.",
+    "whyItMatters": "The absolute 'irreversible' could lead learners to regard Korsakoff patients as beyond benefit from thiamine and abstinence. It also understates the acute mortality that makes treatment urgent.",
+    "evidence": "Victor M, Adams RD, Collins GH. The Wernicke-Korsakoff Syndrome (2nd ed, 1989) and the original 1971 series: roughly 20-25% significant recovery. Untreated WE mortality is commonly cited around 17-20%.",
+    "correction": "Untreated Wernicke can be fatal or progress to Korsakoff syndrome, which is often permanent.",
+    "confidence": "medium", "verified": "recall", "persistsFrom": null
+  }
+]

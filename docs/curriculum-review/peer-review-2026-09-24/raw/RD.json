@@ -1,0 +1,38 @@
+[
+ {
+  "id": "RD-001",
+  "chunk": "RD",
+  "audience": "Resident",
+  "surface": "welcome.md",
+  "locus": "page",
+  "severity": "Moderate",
+  "category": "emergency psychiatry",
+  "pattern": "resident-escalation-omitted",
+  "quote": "**Your responsibilities** — Own the workup and plan for your patients; run the acute calls (suicide, violence, agitation, capacity, withdrawal, delirium, catatonia) with the bedside tools; document defensibly; and teach the student — orienting them, giving feedback, and modeling the work.",
+  "problem": "The resident welcome drops the MS3 page's only safety/escalation statement (the 'worried about immediate safety, tell the attending now' aside and the scope-of-autonomy note) and replaces it with an instruction to 'run the acute calls' with the bedside tools, with no statement anywhere on the page of which decisions require real-time attending notification.",
+  "whyItMatters": "A resident new to the unit may read 'run the acute calls ... with the bedside tools' as licence to decide restraint/seclusion, involuntary holds or medication over objection, high-risk or AMA discharge, and consequential capacity determinations without contemporaneous attending involvement — the exact decisions where a missed escalation harms patients and carries med-legal exposure.",
+  "evidence": "ACGME Common Program Requirements (Residency), Section VI.A.2 (supervision): each program must set guidelines for circumstances and events in which residents must communicate with the supervising faculty member(s). CMS Conditions of Participation 42 CFR 482.13(e) (restraint/seclusion orders and attending notification per hospital policy). The MS3 version of the same page carried an explicit escalation aside that this resident version removes.",
+  "correction": "**Your responsibilities** — Own the workup and plan for your patients; run the acute calls (suicide, violence, agitation, capacity, withdrawal, delirium, catatonia) with the bedside tools, notifying your supervising attending in real time for restraint or seclusion, involuntary holds or medication over objection, high-risk or against-medical-advice discharges, consequential capacity determinations, and any acute deterioration; document defensibly; and teach the student — orienting them, giving feedback, and modeling the work.",
+  "confidence": "medium",
+  "verified": "recall; compared - vs + hunks of the welcome.md diff in chunk",
+  "persistsFrom": null
+ },
+ {
+  "id": "RD-002",
+  "chunk": "RD",
+  "audience": "Resident",
+  "surface": "cotw_index.md",
+  "locus": "page",
+  "severity": "Minor",
+  "category": "emergency psychiatry",
+  "pattern": "resident-escalation-omitted",
+  "quote": "hyperactive vs. hypoactive delirium, workup, and pharmacologic strategy.",
+  "problem": "The resident line-up blurb for the agitation/delirium case replaces the MS3 blurb's safety sequence ('treat the driver, de-escalate before PRN, PRN before restraint') with 'pharmacologic strategy' alone, dropping de-escalation and least-restrictive framing.",
+  "whyItMatters": "Presenting the resident-level agitation case as primarily a pharmacologic exercise signals that medication is the first move for advanced learners, the opposite of the least-restrictive sequence residents are accountable for modelling and ordering.",
+  "evidence": "Project BETA consensus (Richmond et al., West J Emerg Med 2012; Holloman & Zeller 2012): verbal de-escalation first, medication offered (preferably oral) before coercive measures; CMS 42 CFR 482.13(e) least-restrictive requirement. The MS3 version of this same blurb states the sequence.",
+  "correction": "hyperactive vs. hypoactive delirium, workup, de-escalation before PRN, and pharmacologic strategy.",
+  "confidence": "medium",
+  "verified": "recall",
+  "persistsFrom": null
+ }
+]
