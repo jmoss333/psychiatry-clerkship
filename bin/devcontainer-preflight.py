@@ -14,9 +14,16 @@ from pathlib import Path
 import re
 import shlex
 import subprocess
+import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
+# Reuse the deploy gate's pointer signature; do not create a second definition.
+# Keep this read-only CLI from creating a __pycache__ in the checkout on import.
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(ROOT / '13_Faculty_Resources' / '_automation' / 'site_build'))
+from check_lfs_media import LFS_HEADER
+
 GIB = 1024**3
 # A configured 6 GiB Colima VM exposes less than 6 GiB to Linux. Warn below
 # 5 GiB, not at an asserted universal minimum. The real failure was at 2 GiB.
@@ -88,8 +95,9 @@ def lfs_check(root, common, rows, runner):
             add(rows, "lfs-media", "fail", "Git LFS is unavailable.",
                 "Install Git LFS through your approved tooling, then rerun preflight. This command installs nothing.")
             return
-        # Git LFS owns pointer recognition and the tracked-file inventory; do not
-        # walk nested worktrees or maintain another list of media extensions.
+        # Git LFS owns the tracked-file inventory; do not walk nested worktrees
+        # or maintain another list of media extensions. Its checkout flag also
+        # becomes false for legitimate edits, so inspect bytes for pointer stubs.
         inventory = json.loads(output(runner, LFS_LIST_COMMAND, root))
         files = inventory.get("files") if isinstance(inventory, dict) else None
         if not isinstance(files, list) or not files:
@@ -104,11 +112,12 @@ def lfs_check(root, common, rows, runner):
             if not name or Path(name).is_absolute() or not path.is_relative_to(root) or name in seen:
                 raise ValueError("invalid LFS path")
             seen.add(name)
-            if not path.is_file() or not item["checkout"]:
+            if not path.is_file():
                 missing += 1
             else:
                 with path.open("rb") as handle:
-                    handle.read(1)  # Unreadable bytes must not look materialized.
+                    if handle.read(len(LFS_HEADER)) == LFS_HEADER:
+                        missing += 1
         if missing:
             add(rows, "lfs-media", "fail", f"{missing} of {len(files)} tracked LFS files are missing or still pointers.",
                 "Try git lfs checkout to use cached objects. If objects are missing, authorize git lfs pull separately (metered download).",

@@ -385,21 +385,31 @@ test('smoke verification passes a hostile-space artifact override as one argumen
   assert.deepEqual(args.slice(-3), ['--reporter=list', '--output', 'override path/[odd]']);
 });
 
-test('container verifier clears inherited smoke selectors before its authoritative smoke stage', () => {
+for (const shellPython of [false, true]) test(`container verifier clears inherited smoke selectors before its authoritative smoke stage (shell Python: ${shellPython})`, () => {
   const fixture = mkdtempSync(resolve(tmpdir(), 'verify-devcontainer-'));
   const trace = resolve(fixture, 'trace.log');
   const fakeBin = resolve(fixture, 'fake-bin');
+  const inheritedBin = resolve(fixture, 'inherited-bin');
 
   try {
     mkdirSync(resolve(fixture, 'bin'), { recursive: true });
     mkdirSync(resolve(fixture, '.venv/bin'), { recursive: true });
     mkdirSync(fakeBin);
+    mkdirSync(inheritedBin);
+    if (shellPython) {
+      // Reproduce a pyenv-style launcher without requiring pyenv on this host.
+      // It resolves bash through PATH, where this test's traced bash comes first.
+      writeFileSync(resolve(inheritedBin, 'python3'), '#!/usr/bin/env bash\nexit 0\n');
+      chmodSync(resolve(inheritedBin, 'python3'), 0o755);
+    }
     writeFileSync(
       resolve(fixture, 'bin/verify-devcontainer.sh'),
       readFileSync(resolve(ROOT, 'bin/verify-devcontainer.sh')),
     );
     writeFileSync(resolve(fixture, '.venv/bin/python3'), '');
     writeFileSync(resolve(fixture, 'bin/devcontainer-preflight.py'), '');
+    // This fixture tests verifier routing, not the host's Python launcher.
+    writeFileSync(resolve(fakeBin, 'python3'), '#!/bin/sh\ntest "$#" -eq 3 && test "$1" = bin/devcontainer-preflight.py && test "$2" = --context && test "$3" = container\n');
     writeFileSync(resolve(fakeBin, 'node'), '#!/bin/sh\nprintf "runtime\\n" >> "$TRACE"\n');
     writeFileSync(resolve(fakeBin, 'bash'), `#!/bin/sh
 printf '%s:%s\\n' "$1" "\${SPECS-<unset>}" >> "$TRACE"
@@ -412,6 +422,7 @@ esac
     for (const path of [
       resolve(fixture, 'bin/verify-devcontainer.sh'),
       resolve(fixture, '.venv/bin/python3'),
+      resolve(fakeBin, 'python3'),
       resolve(fakeBin, 'node'),
       resolve(fakeBin, 'bash'),
     ]) chmodSync(path, 0o755);
@@ -422,7 +433,7 @@ esac
       env: {
         ...process.env,
         CLERKSHIP_DEVCONTAINER: '1',
-        PATH: `${fakeBin}:${process.env.PATH}`,
+        PATH: `${fakeBin}:${inheritedBin}:${process.env.PATH}`,
         SPECS: 'visual.spec.js --update-snapshots',
         TRACE: trace,
       },

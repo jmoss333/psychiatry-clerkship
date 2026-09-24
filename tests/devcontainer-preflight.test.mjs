@@ -88,10 +88,26 @@ class Preflight(unittest.TestCase):
                 self.probes.values[('git', 'rev-parse', '--absolute-git-dir')] = value
                 self.assertEqual(self.report()['exitCode'], 2)
     def test_stub_or_missing_media_blocks_setup(self):
-        for item in [{'name': 'sample.mp3', 'checkout': False}, {'name': 'missing.mp3', 'checkout': True}]:
+        (self.root / 'sample.mp3').write_bytes(b'version https://git-lfs.github.com/spec/v1\noid sha256:' + b'a' * 64 + b'\nsize 8\n')
+        for item in [{'name': 'sample.mp3', 'checkout': False}, {'name': 'sample.mp3', 'checkout': True},
+                     {'name': 'missing.mp3', 'checkout': True}]:
             with self.subTest(item=item):
                 self.probes.values[LFS_LIST_COMMAND] = json.dumps({'files': [item]})
                 self.assertEqual(self.report()['exitCode'], 1)
+    def test_edited_materialized_media_is_not_a_pointer(self):
+        self.probes.values[LFS_LIST_COMMAND] = json.dumps({'files': [
+            {'name': 'sample.mp3', 'checkout': False, 'downloaded': True, 'size': 8}
+        ]})
+        (self.root / 'sample.mp3').write_bytes(b'edited synthetic media bytes')
+        result = self.report()
+        self.assertEqual(result['exitCode'], 0)
+        self.assertEqual(self.finding(result, 'lfs-media')['status'], 'pass')
+    def test_unreadable_materialized_media_is_unknown_not_ready(self):
+        with patch.object(Path, 'open', side_effect=PermissionError('PRIVATE_SENTINEL')):
+            result = self.report()
+        self.assertEqual(result['exitCode'], 2)
+        self.assertEqual(self.finding(result, 'lfs-media')['status'], 'unknown')
+        self.assertNotIn('PRIVATE_SENTINEL', json.dumps(result))
     def test_empty_malformed_and_wrong_type_lfs_inventory_are_unknown(self):
         for value in ['not json', '{}', '{"files": []}', '{"files": {}}', '{"files": [{"name":"sample.mp3"}]}',
                       '{"files": [{"name":"sample.mp3","checkout":"true"}]}',
@@ -169,6 +185,20 @@ class Preflight(unittest.TestCase):
         result = subprocess.run(['python3', str(root / 'bin/devcontainer-preflight.py'), '--root', str(empty / 'missing'), '--json'], capture_output=True, text=True)
         self.assertEqual(result.returncode, 2)
         self.assertEqual(json.loads(result.stdout)['status'], 'unknown')
+    def test_cli_does_not_write_bytecode_for_shared_pointer_definition(self):
+        bundle = self.root / 'bundle'
+        for relative in ['bin/devcontainer-preflight.py',
+                         '13_Faculty_Resources/_automation/site_build/check_lfs_media.py']:
+            target = bundle / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((root / relative).read_bytes())
+        env = {key: value for key, value in os.environ.items()
+               if key not in ('PYTHONDONTWRITEBYTECODE', 'PYTHONPYCACHEPREFIX')}
+        result = subprocess.run(['python3', str(bundle / 'bin/devcontainer-preflight.py'),
+                                 '--root', str(bundle / 'missing'), '--json'],
+                                env=env, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(list(bundle.rglob('*.pyc')), [], 'read-only preflight must not write bytecode into the checkout')
     def test_real_lfs_inventory_does_not_refresh_inherited_hooks(self):
         env = {**os.environ, 'GIT_CONFIG_NOSYSTEM': '1', 'GIT_CONFIG_GLOBAL': str(self.root / 'fixture-global'),
                'GIT_OPTIONAL_LOCKS': '0'}
@@ -191,6 +221,14 @@ class Preflight(unittest.TestCase):
         p.lfs_check(self.root, self.root / '.git', rows, runner)
         self.assertEqual(rows[0]['status'], 'pass')
         self.assertEqual(rows[0]['count'], 1)
+        # A genuine edit changes ls-files.checkout to false without becoming a
+        # pointer. Verify the real Git/LFS boundary, not just a made-up inventory.
+        (self.root / 'sample.mp3').write_bytes(b'edited synthetic media bytes')
+        inventory = json.loads(runner(list(LFS_LIST_COMMAND), self.root).stdout)
+        self.assertFalse(inventory['files'][0]['checkout'])
+        rows = []
+        p.lfs_check(self.root, self.root / '.git', rows, runner)
+        self.assertEqual(rows[0]['status'], 'pass', rows)
         self.assertEqual(list(hooks.iterdir()), [], 'read-only inventory must not invoke LFS filters that install hooks')
 
 unittest.main(argv=['preflight-tests'], verbosity=2)
