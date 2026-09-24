@@ -5380,7 +5380,7 @@
     "points": [
       "Lead-pipe rigidity + hyporeflexia after a dopamine blocker → NMS; clonus + hyperreflexia, legs>arms, after a serotonergic agent → serotonin syndrome.",
       "Dry, flushed skin + mydriasis + urinary retention → anticholinergic toxicity; waxy flexibility/posturing without a clear drug trigger → malignant catatonia (ECT is definitive).",
-      "Reconstruct every medication change in the last 72 hours — that history usually names the syndrome."
+      "Reconstruct the medication history, especially changes in the last 72 hours (NMS can still arise on a stable dose) — that history usually names the syndrome."
     ],
     "cant": "Never give an antipsychotic to a rigid, febrile patient in NMS or malignant catatonia — antipsychotics are the cause, not the treatment; stop the offending agent, cool and support, and escalate.",
     "ruleOut": [
@@ -5390,9 +5390,11 @@
       "Serotonin syndrome",
       "Anticholinergic toxicity",
       "Malignant catatonia",
-      "Malignant hyperthermia"
+      "Malignant hyperthermia",
+      "Alcohol/sedative-hypnotic withdrawal (delirium tremens)",
+      "Sympathomimetic toxicity (cocaine, amphetamines)"
     ],
-    "firstMove": "Stop the likely offending agent, support and cool aggressively, send a CK, and rule out infection/heat stroke — then discriminate by reflexes and skin.",
+    "firstMove": "Stop the likely offending agent, support and cool aggressively, send a CK, and rule out infection, heat stroke, alcohol/sedative withdrawal, and stimulant toxicity — then discriminate by reflexes and skin.",
     "safetyLevel": "high",
     "workflowModes": [
       "ward",

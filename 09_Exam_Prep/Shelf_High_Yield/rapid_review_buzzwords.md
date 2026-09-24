@@ -48,8 +48,8 @@
 - Psychosis + movement disorder + seizures/autonomic instability → **anti-NMDA-receptor encephalitis**.
 
 ## Safety / Toxidromes
-- Dopamine blocker + **lead-pipe rigidity + hyporeflexia** + high CK → **NMS** → stop antipsychotic; dantrolene/bromocriptine. *(→ Toxidromes)*
-- Serotonergic agent + **clonus + hyperreflexia (legs)** + diaphoresis → **serotonin syndrome** → cyproheptadine.
+- Dopamine blocker + **fever + lead-pipe rigidity + hyporeflexia** + altered mental status + autonomic instability + high CK → **NMS** → stop antipsychotic + supportive care (cooling, fluids, ICU-level monitoring); benzodiazepines, dantrolene/bromocriptine as adjuncts. *(→ Toxidromes)*
+- Serotonergic agent + **clonus + hyperreflexia (legs)** + diaphoresis → **serotonin syndrome** → stop serotonergic agents, supportive care + benzodiazepines; cyproheptadine if moderate/persistent.
 - **Dry, flushed, mydriasis, retention** → **anticholinergic toxicity**.
 - Waxy flexibility/posturing/mutism → **catatonia** → **lorazepam challenge**; malignant/refractory → **ECT**. *(→ Catatonia)*
 - Strongest suicide risk factor = **prior attempt**; highest-yield prevention = **means restriction (firearms)**; highest-risk window = **post-discharge**. *(→ Suicide)*

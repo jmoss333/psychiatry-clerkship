@@ -76,7 +76,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **8. What is neuroleptic malignant syndrome (NMS)?**
 
-- **Answer:** A life-threatening reaction to dopamine-blocking agents characterized by **fever, lead-pipe rigidity, altered mental status, and autonomic instability**. CK is typically markedly elevated (often >10,000 U/L).
+- **Answer:** A life-threatening reaction to dopamine-blocking agents characterized by **fever, lead-pipe rigidity, altered mental status, and autonomic instability**. CK is usually elevated (consensus threshold ≥4× the upper limit of normal; it can exceed 10,000 U/L) but may be only modestly raised early, so a lower CK does not exclude NMS.
 
 - **Evidence:** Incidence 0.01–0.2%; virtually all cases occur within 30 days of starting or dose-changing the offending agent.
 
