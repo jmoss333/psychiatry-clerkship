@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(478 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(479 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -122,6 +122,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
     .fd-header__actions
       .fd-weekpill         <button>
       .fd-safetybtn        <button>
+      .fd-carebtn          <button>          (phone-only Patient care resources shortcut)
       .fd-settingsbtn      <button>          (compact settings-panel gear)
   .fd-tabs                 <nav>          (hidden ≤640px)
     .fd-tab                <button> ×4 standard / ×3 APP
@@ -135,8 +136,9 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | Class | Notes |
 |---|---|
 | `.fd-header` | `position:sticky; top:0; z-index:40`. |
-| `.fd-header__bar` | The 1200px-capped flex row; at 640px and below it becomes a two-row grid so brand/search and utilities cannot collide — except on a reader (`.fd-shell:has(.fd-actionbar)`), where it is one flex row again: ψ tile, search grown to fill, ✚ Safety. `.fd-header` alone has no max-width. |
-| `.fd-header__actions` | `margin-left:auto` in the flex layout; at 640px and below it spans grid row two, resets the margin, and aligns right. |
+| `.fd-header__bar` | The 1200px-capped flex row; at 640px and below it becomes a two-row grid so brand/search and utilities cannot collide — except on a reader (`.fd-shell:has(.fd-actionbar)`), where it is one flex row again: ψ tile, search grown to fill, ✚ Safety, and Care. `.fd-header` alone has no max-width. |
+| `.fd-header__actions` | `margin-left:auto` in the flex layout; at 640px and below it spans grid row two and becomes a four-column grid for week/identity, Safety, Care, and Settings. The reader override returns it to a compact flex row. |
+| `.fd-carebtn` | Hidden above 640px. On phones it is a teal, 44px-minimum shortcut beside Safety that routes to the existing Patient care resources tab; `.is-active` and `aria-current="page"` mark the current destination. |
 | `.fd-settingsbtn` | Compact icon-only header gear opening the settings panel; `aria-label` names the action. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
 | `.fd-tab--care` | Uses `margin-left:auto` plus a quiet divider to keep Patient care resources visually separate at the far right on tablet and desktop. |

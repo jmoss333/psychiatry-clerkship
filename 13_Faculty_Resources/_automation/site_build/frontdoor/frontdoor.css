@@ -161,6 +161,7 @@
   font-size:var(--fd-font-sm);font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:var(--fd-shadow-sm);
 }
 .fd-safetybtn:hover{background:var(--fd-danger-dark);border-color:var(--fd-danger-dark)}
+.fd-carebtn{display:none}
 .fd-settingsbtn{width:34px;height:34px;padding:0;border-radius:var(--fd-radius-circle);background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-glyph-sm);cursor:pointer}
 .fd-settingsbtn:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
 
@@ -1249,8 +1250,8 @@
   .fd-searchbtn,.fd-actionbar .fd-btn--ghost{min-width:44px}
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-pick,.fd-setupcta{min-height:44px}
   .fd-btn,.fd-tab,.fd-setup__back,.fd-reader__back,.fd-result,.fd-searchpanel__esc,
-  .fd-sheet__back,.fd-sheet__close,.fd-nudge__go,.fd-nudge__dismiss,.fd-settingsbtn{min-height:44px}
-  .fd-setup__back,.fd-searchpanel__esc,.fd-sheet__close,.fd-nudge__dismiss,.fd-settingsbtn{min-width:44px}
+  .fd-sheet__back,.fd-sheet__close,.fd-nudge__go,.fd-nudge__dismiss,.fd-settingsbtn,.fd-carebtn{min-height:44px}
+  .fd-setup__back,.fd-searchpanel__esc,.fd-sheet__close,.fd-nudge__dismiss,.fd-settingsbtn,.fd-carebtn{min-width:44px}
   .fd-article{padding:24px 20px}
   .fd-weekgrid{grid-template-columns:repeat(2,1fr)}
   /* The reader's desktop primary/ghost actions -- CLASS-INVENTORY.md's Reader section always
@@ -1309,7 +1310,19 @@
   /* The Library's "· press / to filter" is a keyboard affordance; a phone has no slash key and
      the header's search field is one tap up. The whole fragment goes, never .fd-kbd alone. */
   .fd-library__shortcut{display:none}
-  .fd-header__actions{grid-column:1/-1;margin-left:0;justify-content:flex-end}
+  .fd-header__actions{
+    grid-column:1/-1;margin-left:0;width:100%;display:grid;
+    grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:var(--fd-space-2);
+  }
+  .fd-weekpill{justify-self:start}
+  .fd-carebtn{
+    display:inline-flex;align-items:center;justify-content:center;padding:7px 10px;
+    border:1.5px solid var(--fd-teal);border-radius:var(--fd-radius-pill);
+    background:var(--fd-surface);color:var(--fd-teal-deep);font:inherit;
+    font-size:var(--fd-font-sm);font-weight:700;white-space:nowrap;cursor:pointer;
+  }
+  .fd-carebtn:hover{background:var(--fd-teal-wash)}
+  .fd-carebtn.is-active{background:var(--fd-teal-deep);border-color:var(--fd-teal-deep);color:var(--fd-on-accent)}
 }
 
 /* ═══ Phone chrome ═══════════════════════════════════════════════════════════
@@ -1351,7 +1364,7 @@
   .fd-shell:has(.fd-actionbar) .fd-brand{min-width:44px;justify-content:center}
   .fd-shell:has(.fd-actionbar) .fd-brand__name{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
   .fd-shell:has(.fd-actionbar) .fd-searchbtn{width:auto;flex:1;max-width:none}
-  .fd-shell:has(.fd-actionbar) .fd-header__actions{margin-left:0;flex:0 0 auto}
+  .fd-shell:has(.fd-actionbar) .fd-header__actions{margin-left:0;width:auto;display:flex;flex:0 0 auto;gap:var(--fd-space-2)}
   .fd-shell:has(.fd-actionbar) .fd-weekpill,.fd-shell:has(.fd-actionbar) .fd-settingsbtn{display:none}
   .fd-article{padding:var(--fd-space-6) var(--fd-space-8)}
 }

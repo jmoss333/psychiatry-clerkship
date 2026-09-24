@@ -102,6 +102,9 @@ function fdHeader(state){
     '<button type="button" class="fd-weekpill" data-fd-change-week title="Change week">'+
     weekLabel+' ▾</button>')+
     '<button type="button" class="fd-safetybtn" data-fd-safety>✚ Safety</button>'+
+    '<button type="button" class="fd-carebtn'+(s.tab==='care'?' is-active':'')+'" '+
+    'data-fd-tab="care" aria-label="Patient care resources"'+
+    (s.tab==='care'?' aria-current="page"':'')+'>Care</button>'+
     '<button type="button" class="fd-settingsbtn" data-fd-settings '+
     'aria-label="Settings">⚙</button>'+
     '</div>';
