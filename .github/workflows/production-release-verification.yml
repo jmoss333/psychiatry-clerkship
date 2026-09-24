@@ -22,7 +22,7 @@ concurrency:
 jobs:
   verify-release:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -68,7 +68,7 @@ jobs:
           python3 13_Faculty_Resources/_automation/maintenance/production_release_receipt.py collect \
             --release-sha "${{ steps.release.outputs.release_sha }}" \
             --repository "$GITHUB_REPOSITORY" \
-            --wait-seconds 1200 \
+            --wait-seconds 3600 \
             --poll-seconds 20 \
             --out "$RUNNER_TEMP/production-release-core.json"
           code=$?
