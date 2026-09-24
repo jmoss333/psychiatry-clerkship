@@ -8,7 +8,7 @@
 
 ## Case Stem (learner-facing)
 
-Jordan is a 19-year-old college sophomore with no prior psychiatric history, brought to the emergency department by his roommate. Over the past three months Jordan has become increasingly withdrawn, stopped attending classes, and covered his dorm window with foil "so the transmissions can't get through." For the past two weeks he has heard two voices commenting on his actions ("he's opening the door now... he knows we're watching"). He believes campus security has implanted a tracking device in his phone charger.
+Jordan is a 19-year-old college sophomore with no prior psychiatric history, brought to the emergency department by his roommate. Over the past three months Jordan has become increasingly withdrawn, stopped attending classes, and covered his dorm window with foil "so the transmissions can't get through." For the past two months he has heard two voices commenting on his actions ("he's opening the door now... he knows we're watching"). He believes campus security has implanted a tracking device in his phone charger.
 
 He is calm and cooperative but guarded. He denies any thoughts of hurting himself or anyone else. He reports smoking cannabis "a few times a month" but says he stopped six weeks ago because "it made the voices louder." He takes no medications. His roommate says Jordan was "totally normal" freshman year.
 
