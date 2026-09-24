@@ -348,7 +348,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **35. What is a mixed episode/mixed features specifier?**
 
-- **Answer:** DSM-5 replaced the DSM-IV "mixed episode" with a **"with mixed features" specifier** that can be applied to manic, hypomanic, or depressive episodes. A manic episode with mixed features includes ≥3 depressive symptoms; a depressive episode with mixed features includes ≥3 manic symptoms.
+- **Answer:** DSM-5 replaced the DSM-IV "mixed episode" with a **"with mixed features" specifier** that can be applied to manic, hypomanic, or depressive episodes. A manic episode with mixed features includes ≥3 depressive symptoms; a depressive episode with mixed features includes ≥3 manic symptoms — in both cases counting only symptoms that do not overlap between the poles (psychomotor agitation, insomnia, irritability and distractibility/indecisiveness are excluded), present nearly every day for most of the episode.
 
 - **Evidence:** Mixed features are associated with higher suicide risk, poorer treatment response, and more rapid cycling.
 

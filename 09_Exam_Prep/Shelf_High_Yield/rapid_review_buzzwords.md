@@ -13,7 +13,7 @@
 
 ## Psychosis
 - Psychosis <1 mo → **brief psychotic**; 1–6 mo → **schizophreniform**; ≥6 mo → **schizophrenia**. *(→ Psychosis)*
-- ≥2 wk psychosis *without* mood symptoms + mood episodes most of illness → **schizoaffective**; psychosis only during mood episodes → **mood disorder with psychotic features**.
+- ≥2 wk psychosis *without* a major mood episode + major mood episodes for most of the total (active + residual) illness → **schizoaffective**; psychosis only during mood episodes → **mood disorder with psychotic features**.
 - Two failed adequate antipsychotic trials → **treatment-resistant** → **clozapine** (ANC monitoring per prescribing info; REMS eliminated 2025). *(→ Psychosis, Med Monitoring)*
 - Clozapine + fever/chest pain early → **myocarditis**; + abdominal distension → **ileus**. *(→ Psychosis)*
 - First-episode psychosis → **coordinated specialty care (RAISE)** — meds + family + psychosocial.

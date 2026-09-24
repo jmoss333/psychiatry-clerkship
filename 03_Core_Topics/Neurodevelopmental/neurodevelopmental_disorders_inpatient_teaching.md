@@ -19,7 +19,7 @@
 
 | Anchor | What separates it |
 |---|---|
-| **ADHD** | Several inattentive and/or hyperactive-impulsive symptoms before age 12, lasting at least 6 months, with impairment in at least two settings; rating scales support but do not replace the clinical diagnosis |
+| **ADHD** | At least 6 inattentive and/or 6 hyperactive-impulsive symptoms (5 from age 17) for at least 6 months, several present before age 12 and several present in two or more settings, with clear functional impairment; rating scales support but do not replace the clinical diagnosis |
 | **ADHD medication** | Stimulants are first-line for core ADHD symptoms when not contraindicated; consider atomoxetine, viloxazine, or alpha-2 agonists when substance-misuse, diversion, cardiovascular, mania, or psychosis concerns change the risk-benefit balance |
 | **Autism spectrum disorder** | Deficits in all three social-communication areas plus at least two of four restricted/repetitive patterns (stereotyped behavior or speech, insistence on sameness, restricted interests, sensory hyper-/hyporeactivity), present from early development |
 | **Intellectual disability** | Deficits in intellectual and adaptive functioning with developmental-period onset; severity is based on adaptive functioning across conceptual, social, and practical domains, not IQ score alone |
