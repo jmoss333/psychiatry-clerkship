@@ -158,7 +158,7 @@
    "04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md"
   ],
   "scope": "*",
-  "pattern": "(?i)until catatonia is excluded",
+  "pattern": "(?i)until catatonia is excluded(?! or has responded)",
   "why": "M05-007 + the catatonia pearl the verifier flagged: the hold needs an end point."
  },
  {
