@@ -191,10 +191,10 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
-        "retrievedAt": "2026-08-23",
+        "retrievedAt": "2026-09-24",
         "pmid": "29998307",
         "doi": "10.1001/jamapsychiatry.2018.1776",
-        "sourceSpan": "Cohort comparison design with 6-month follow-up at 9 EDs (5 intervention sites and 4 control sites) in Veterans Health Administration hospital EDs. Of the 1640 total patients, 1186 were in the intervention group and 454 were in the comparison group. The SPI+ was associated with 45% fewer suicidal behaviors, approximately halving the odds of suicidal behavior over 6 months (odds ratio, 0.56; 95% CI, 0.33-0.95, P = .03). Intervention patients had more than double the odds of attending at least 1 outpatient mental health visit (odds ratio, 2.06; 95% CI, 1.57-2.71; P < .001)."
+        "sourceSpan": "Cohort comparison design with 6-month follow-up at 9 EDs (5 intervention sites and 4 control sites) in Veterans Health Administration hospital EDs. The intervention combines SPI and telephone follow-up. Of the 1640 total patients, 1186 were in the intervention group and 454 were in the comparison group. Patients in the SPI+ condition were less likely to engage in suicidal behavior (n = 36 of 1186; 3.03%) than those receiving usual care (n = 24 of 454; 5.29%) during the 6-month follow-up period. The SPI+ was associated with 45% fewer suicidal behaviors, approximately halving the odds of suicidal behavior over 6 months (odds ratio, 0.56; 95% CI, 0.33-0.95, P = .03). Intervention patients had more than double the odds of attending at least 1 outpatient mental health visit (odds ratio, 2.06; 95% CI, 1.57-2.71; P < .001)."
       },
       "claims": [
         {
@@ -208,6 +208,19 @@
           "usedBy": [
             "T1",
             "T3"
+          ]
+        },
+        {
+          "claimId": "spi-plus-ed-cohort-suicidal-behavior",
+          "claimText": "In a non-randomized cohort comparison at 9 VA emergency departments, the Safety Planning Intervention combined with telephone follow-up (SPI+) was associated with 45% fewer suicidal behaviors over 6 months (3.03% vs 5.29%; odds ratio 0.56).",
+          "claimTerms": [
+            "Cohort comparison design",
+            "combines SPI and telephone follow-up",
+            "45% fewer suicidal behaviors"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "AR-36"
           ]
         }
       ]
@@ -813,6 +826,208 @@
           "direction": "descriptive",
           "usedBy": [
             "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "alon-2024-sdoh-mdd-umbrella",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "38554496",
+        "doi": "10.1016/j.psychres.2024.115854",
+        "sourceSpan": "Following PRISMA guidelines, this umbrella review included 26 meta-analyses and systematic reviews that reported odds ratios, effect sizes, and/or pooled prevalence rates of MDD in samples with versus without specified SDoMHs. Childhood emotional, physical, or sexual abuse and neglect; intimate partner violence in females; and food insecurity were significantly associated with increased risk of MDD, with medium effect sizes."
+      },
+      "claims": [
+        {
+          "claimId": "umbrella-review-method",
+          "claimText": "Alon et al. (Psychiatry Research 2024) is an umbrella review of 26 meta-analyses and systematic reviews of social determinants of mental health and major depressive disorder.",
+          "claimTerms": [
+            "umbrella review included 26 meta-analyses and systematic reviews"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "AR-29"
+          ]
+        },
+        {
+          "claimId": "sdoh-medium-effect-mdd",
+          "claimText": "Childhood abuse and neglect, intimate partner violence in females, and food insecurity were significantly associated with increased risk of MDD, with medium effect sizes.",
+          "claimTerms": [
+            "food insecurity",
+            "intimate partner violence in females",
+            "with medium effect sizes"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "AR-29"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "cuijpers-2023-cbt-depression-meta",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "36640411",
+        "doi": "10.1002/wps.21069",
+        "sourceSpan": "CBT was significantly more effective than other psychotherapies, but the difference was small (g=0.06; 95% CI: 0-0.12) and became non-significant in most sensitivity analyses. Combined treatment was more effective than pharmacotherapies alone at the short (g=0.51; 95% CI: 0.19-0.84) and long term (g=0.32; 95% CI: 0.09-0.55), but it was not more effective than CBT alone at either time point."
+      },
+      "claims": [
+        {
+          "claimId": "combined-vs-pharmacotherapy-and-cbt",
+          "claimText": "Combined treatment was more effective than pharmacotherapy alone at short-term (g=0.51) and longer-term (g=0.32) follow-up, but it was not more effective than CBT alone at either time point.",
+          "claimTerms": [
+            "more effective than pharmacotherapies alone",
+            "not more effective than CBT alone at either time point"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "AR-18"
+          ]
+        },
+        {
+          "claimId": "cbt-vs-other-psychotherapies-trivial",
+          "claimText": "CBT's advantage over other psychotherapies was statistically significant but very small (g=0.06) and became non-significant in most sensitivity analyses, so it is not a robust superiority.",
+          "claimTerms": [
+            "the difference was small",
+            "became non-significant in most sensitivity analyses"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "AR-18"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "aoki-2022-cochrane-sdm",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "36367232",
+        "doi": "10.1002/14651858.CD007297.pub3",
+        "sourceSpan": "This updated review included 13 new studies, for a total of 15 RCTs. We are uncertain whether SDM interventions improve clinical outcomes, such as psychiatric symptoms, depression, anxiety, and readmission, compared with control due to very low-certainty evidence. On the other hand, SDM interventions may improve SDM-specific user-reported outcomes from encounters immediately after intervention compared with no intervention (standardised mean difference (SMD) 0.63, 95% confidence interval (CI) 0.26 to 1.01; 3 studies, 534 participants; low-certainty evidence). We are uncertain if SDM interventions improve users' overall satisfaction. However, one study (241 participants) showed that SDM interventions probably improve some aspects of users' satisfaction with received information compared with no intervention: information given was rated as helpful (risk ratio (RR) 1.33, 95% CI 1.08 to 1.65); participants expressed a strong desire to receive information this way for other treatment decisions (RR 1.35, 95% CI 1.08 to 1.68); and strongly recommended the information be shared with others in this way (RR 1.32, 95% CI 1.11 to 1.58). We are uncertain whether SDM interventions improve knowledge, treatment continuation assessed through clinic visits, medication continuation, carer participation, and the relationship between users and healthcare professionals because of very low-certainty evidence. This review update suggests that people exposed to SDM interventions may perceive greater levels of involvement immediately after an encounter compared with those in control groups."
+      },
+      "claims": [
+        {
+          "claimId": "sdm-perceived-involvement",
+          "claimText": "Across 15 RCTs, SDM interventions may improve SDM-specific user-reported outcomes immediately after the encounter, which the authors restate as perceived involvement (SMD 0.63; low-certainty evidence).",
+          "claimTerms": [
+            "total of 15 RCTs",
+            "low-certainty evidence",
+            "may perceive greater levels of involvement immediately after an encounter"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "AR-20"
+          ]
+        },
+        {
+          "claimId": "sdm-other-outcomes-uncertain",
+          "claimText": "The review was uncertain whether SDM interventions improve clinical outcomes, knowledge, overall satisfaction, treatment continuation or the relationship between users and clinicians; one study found probable gains only in some aspects of satisfaction with the information received.",
+          "claimTerms": [
+            "We are uncertain if SDM interventions improve users' overall satisfaction",
+            "the relationship between users and healthcare professionals",
+            "satisfaction with received information"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "AR-20"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "vigen-2011-catie-ad-cognition",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pmc&id=PMC3310182 (NIHMS348870 author-manuscript abstract; it carries the between-group p-values the PubMed abstract omits)",
+        "retrievedAt": "2026-09-24",
+        "pmid": "21572163",
+        "doi": "10.1176/appi.ajp.2011.08121844",
+        "sourceSpan": "Overall, patients showed steady, significant declines over time in most cognitive areas, including Mini-mental State Examination (2.4 points over 36 weeks) and Alzheimer’s Disease Assessment Scale-cog (4.4 points). Patients on antipsychotics declined more than patients on placebo on multiple cognitive measures, including the MMSE (p=0.004), BPRS cognitive subscale (p=0.05), and a cognitive summary score summarizing change on 18 cognitive tests (p=0.004). In CATIE-AD atypical antipsychotics were associated with worsening cognitive function at a magnitude consistent with one year’s deterioration compared with placebo."
+      },
+      "claims": [
+        {
+          "claimId": "whole-sample-mmse-decline",
+          "claimText": "Patients overall declined 2.4 MMSE points over 36 weeks; that figure is the decline across the whole CATIE-AD sample, not a drug-minus-placebo difference.",
+          "claimTerms": [
+            "Overall, patients showed steady, significant declines over time",
+            "2.4 points over 36 weeks"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "AR-23"
+          ]
+        },
+        {
+          "claimId": "antipsychotic-excess-cognitive-decline",
+          "claimText": "Patients on antipsychotics declined more than patients on placebo on the MMSE (p=0.004), the BPRS cognitive subscale (p=0.05) and a cognitive summary score (p=0.004), a magnitude consistent with one year's deterioration compared with placebo.",
+          "claimTerms": [
+            "declined more than patients on placebo",
+            "consistent with one year"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "AR-23"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "miklowitz-2007-stepbd-psychotherapy",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "17404119",
+        "doi": "10.1001/archpsyc.64.4.419",
+        "sourceSpan": "A total of 293 referred outpatients with bipolar I or II disorder and depression treated with protocol pharmacotherapy were randomly assigned to intensive psychotherapy (n = 163) or collaborative care (n = 130), a brief psychoeducational intervention. Intensive psychotherapy was given weekly and biweekly for up to 30 sessions in 9 months according to protocols for family-focused therapy, interpersonal and social rhythm therapy, and cognitive behavior therapy. Patients receiving intensive psychotherapy had significantly higher year-end recovery rates (64.4% vs 51.5%) and shorter times to recovery than patients in collaborative care (hazard ratio, 1.47; 95% confidence interval, 1.08-2.00; P = .01)."
+      },
+      "claims": [
+        {
+          "claimId": "intensive-psychotherapy-year-end-recovery",
+          "claimText": "In the STEP-BD psychosocial trial, patients on protocol pharmacotherapy who received intensive psychotherapy (family-focused, interpersonal and social rhythm, or cognitive behavior therapy) had significantly higher year-end recovery than those in brief collaborative care (64.4% vs 51.5%).",
+          "claimTerms": [
+            "protocol pharmacotherapy",
+            "significantly higher year-end recovery rates",
+            "collaborative care"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "AR-26"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "schneider-2005-antipsychotic-dementia-mortality",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "16234500",
+        "doi": "10.1001/jama.294.15.1934",
+        "sourceSpan": "Fifteen trials (9 unpublished), generally 10 to 12 weeks in duration, including 16 contrasts of atypical antipsychotic drugs with placebo met criteria (aripiprazole [n = 3], olanzapine [n = 5], quetiapine [n = 3], risperidone [n = 5]). Death occurred more often among patients randomized to drugs (118 [3.5%] vs 40 [2.3%]. The OR by meta-analysis was 1.54; 95% confidence interval [CI], 1.06-2.23; P = .02; and risk difference was 0.01; 95% CI, 0.004-0.02; P = .01). Atypical antipsychotic drugs may be associated with a small increased risk for death compared with placebo."
+      },
+      "claims": [
+        {
+          "claimId": "atypical-antipsychotic-dementia-mortality",
+          "claimText": "Pooled placebo-controlled trials of atypical antipsychotics in dementia found death more often with drug than placebo (3.5% vs 2.3%; OR 1.54), which the authors characterise as a small increased risk.",
+          "claimTerms": [
+            "atypical antipsychotic drugs with placebo",
+            "Death occurred more often among patients randomized to drugs",
+            "small increased risk for death"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "AR-23"
           ]
         }
       ]

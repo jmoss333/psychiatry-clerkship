@@ -5839,6 +5839,455 @@
       }
     },
     {
+      "id": "alon-2024-sdoh-mdd-umbrella",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Social determinants of mental health in major depressive disorder: Umbrella review of 26 meta-analyses and systematic reviews",
+        "authors": [
+          {
+            "family": "Alon",
+            "given": "N"
+          },
+          {
+            "family": "Macrynikola",
+            "given": "N"
+          },
+          {
+            "family": "Jester",
+            "given": "DJ"
+          },
+          {
+            "family": "Keshavan",
+            "given": "M"
+          },
+          {
+            "family": "Reynolds",
+            "given": "CF"
+          },
+          {
+            "family": "Saxena",
+            "given": "S"
+          },
+          {
+            "family": "Thomas",
+            "given": "ML"
+          },
+          {
+            "family": "Torous",
+            "given": "J"
+          },
+          {
+            "family": "Jeste",
+            "given": "DV"
+          }
+        ],
+        "organization": "",
+        "year": 2024,
+        "journal": "Psychiatry Res",
+        "volume": "335",
+        "pages": "115854",
+        "doi": "10.1016/j.psychres.2024.115854",
+        "pmid": "38554496",
+        "url": "https://doi.org/10.1016/j.psychres.2024.115854"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 38554496): title, all nine authors, journal, volume, article number and DOI match; no erratum, retraction or update in PubMed CommentsCorrections",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings AQ3-011/AQ3-012: audio-quiz deck AR-29 credited this umbrella review's method (26 meta-analyses and systematic reviews) and its medium-effect MDD associations to Kirkbride et al., World Psychiatry 2024, a narrative evidence-and-prevention roadmap. Scope: MDD only; associations from published syntheses, not causal estimates. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "umbrella review of meta-analyses and systematic reviews",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "social-determinants",
+          "depression",
+          "umbrella-review"
+        ],
+        "clerkshipRelevance": "The umbrella review behind the audio-quiz deck on social determinants (AR-29): across 26 meta-analyses and systematic reviews, childhood abuse and neglect, intimate partner violence in females and food insecurity were associated with MDD with medium effect sizes. It is about MDD only, and it is not the Kirkbride et al. World Psychiatry 2024 roadmap the deck used to name.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings AQ3-011/AQ3-012: audio-quiz deck AR-29 credited this umbrella review's method (26 meta-analyses and systematic reviews) and its medium-effect MDD associations to Kirkbride et al., World Psychiatry 2024, a narrative evidence-and-prevention roadmap. Scope: MDD only; associations from published syntheses, not causal estimates. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-3 audio-quiz decks (findings AQ3-011, AQ3-012)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cuijpers-2023-cbt-depression-meta",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Cognitive behavior therapy vs. control conditions, other psychotherapies, pharmacotherapies and combined treatment for depression: a comprehensive meta-analysis including 409 trials with 52,702 patients",
+        "authors": [
+          {
+            "family": "Cuijpers",
+            "given": "P"
+          },
+          {
+            "family": "Miguel",
+            "given": "C"
+          },
+          {
+            "family": "Harrer",
+            "given": "M"
+          },
+          {
+            "family": "Plessen",
+            "given": "CY"
+          },
+          {
+            "family": "Ciharova",
+            "given": "M"
+          },
+          {
+            "family": "Ebert",
+            "given": "D"
+          },
+          {
+            "family": "Karyotaki",
+            "given": "E"
+          }
+        ],
+        "organization": "",
+        "year": 2023,
+        "journal": "World Psychiatry",
+        "volume": "22",
+        "pages": "105-115",
+        "doi": "10.1002/wps.21069",
+        "pmid": "36640411",
+        "url": "https://doi.org/10.1002/wps.21069"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 36640411): title, all seven authors, journal, volume, pages, DOI and PMC id (PMC9840507) match; no erratum, retraction or update in PubMed CommentsCorrections",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings AQ3-016..AQ3-020: audio-quiz deck AR-18 keyed 'combined treatment is superior to either pharmacotherapy or psychotherapy alone' and taught 'no significant differences' between psychotherapies. The paper found combined treatment better than pharmacotherapy alone but not better than CBT alone, and a statistically significant but trivial CBT advantage (g=0.06) that became non-significant in most sensitivity analyses. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "depression",
+          "cbt",
+          "psychotherapy",
+          "combined-treatment"
+        ],
+        "clerkshipRelevance": "What the largest CBT-for-depression meta-analysis did and did not find: combined treatment beat pharmacotherapy alone (g=0.51 short term, 0.32 long term) but was not more effective than CBT alone at either time point, and CBT's edge over other psychotherapies was trivial (g=0.06) and not robust in sensitivity analyses.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings AQ3-016..AQ3-020: audio-quiz deck AR-18 keyed 'combined treatment is superior to either pharmacotherapy or psychotherapy alone' and taught 'no significant differences' between psychotherapies. The paper found combined treatment better than pharmacotherapy alone but not better than CBT alone, and a statistically significant but trivial CBT advantage (g=0.06) that became non-significant in most sensitivity analyses. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-3 audio-quiz decks (findings AQ3-016, AQ3-017, AQ3-018, AQ3-019, AQ3-020)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "aoki-2022-cochrane-sdm",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Shared decision-making interventions for people with mental health conditions",
+        "authors": [
+          {
+            "family": "Aoki",
+            "given": "Y"
+          },
+          {
+            "family": "Yaju",
+            "given": "Y"
+          },
+          {
+            "family": "Utsumi",
+            "given": "T"
+          },
+          {
+            "family": "Sanyaolu",
+            "given": "L"
+          },
+          {
+            "family": "Storm",
+            "given": "M"
+          },
+          {
+            "family": "Takaesu",
+            "given": "Y"
+          },
+          {
+            "family": "Watanabe",
+            "given": "K"
+          },
+          {
+            "family": "Watanabe",
+            "given": "N"
+          },
+          {
+            "family": "Duncan",
+            "given": "E"
+          },
+          {
+            "family": "Edwards",
+            "given": "AG"
+          }
+        ],
+        "organization": "",
+        "year": 2022,
+        "journal": "Cochrane Database Syst Rev",
+        "volume": "11",
+        "pages": "CD007297",
+        "doi": "10.1002/14651858.CD007297.pub3",
+        "pmid": "36367232",
+        "url": "https://doi.org/10.1002/14651858.CD007297.pub3"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 36367232): title, all ten authors, journal, volume, article number, DOI and PMC id (PMC9650912) match; no erratum, retraction or update in PubMed CommentsCorrections",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings AQ3-001..AQ3-005: audio-quiz deck AR-20 keyed 'patient satisfaction and knowledge' as the review's improved outcome and its feedback said satisfaction and engagement improve. The review was uncertain on both; the only improved primary outcome was SDM-specific user-reported involvement immediately after the encounter (low certainty). Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review (Cochrane; GRADE low to very low certainty)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "shared-decision-making",
+          "patient-engagement",
+          "cochrane"
+        ],
+        "clerkshipRelevance": "The honest summary of SDM evidence in mental health: 15 RCTs, low-certainty evidence that people perceive greater involvement immediately after the encounter (SMD 0.63), and uncertainty about knowledge, overall satisfaction, clinical outcomes, treatment continuation and the clinician relationship. SDM stays an ethical and guideline standard; the outcome claims should stay this modest.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings AQ3-001..AQ3-005: audio-quiz deck AR-20 keyed 'patient satisfaction and knowledge' as the review's improved outcome and its feedback said satisfaction and engagement improve. The review was uncertain on both; the only improved primary outcome was SDM-specific user-reported involvement immediately after the encounter (low certainty). Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-3 audio-quiz decks (findings AQ3-001, AQ3-002, AQ3-003, AQ3-004, AQ3-005)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vigen-2011-catie-ad-cognition",
+      "type": "primary-study",
+      "citation": {
+        "title": "Cognitive effects of atypical antipsychotic medications in patients with Alzheimer's disease: outcomes from CATIE-AD",
+        "authors": [
+          {
+            "family": "Vigen",
+            "given": "CL"
+          },
+          {
+            "family": "Mack",
+            "given": "WJ"
+          },
+          {
+            "family": "Keefe",
+            "given": "RS"
+          },
+          {
+            "family": "Sano",
+            "given": "M"
+          },
+          {
+            "family": "Sultzer",
+            "given": "DL"
+          },
+          {
+            "family": "Stroup",
+            "given": "TS"
+          },
+          {
+            "family": "Dagerman",
+            "given": "KS"
+          },
+          {
+            "family": "Hsiao",
+            "given": "JK"
+          },
+          {
+            "family": "Lebowitz",
+            "given": "BD"
+          },
+          {
+            "family": "Lyketsos",
+            "given": "CG"
+          },
+          {
+            "family": "Tariot",
+            "given": "PN"
+          },
+          {
+            "family": "Zheng",
+            "given": "L"
+          },
+          {
+            "family": "Schneider",
+            "given": "LS"
+          }
+        ],
+        "organization": "",
+        "year": 2011,
+        "journal": "Am J Psychiatry",
+        "volume": "168",
+        "pages": "831-9",
+        "doi": "10.1176/appi.ajp.2011.08121844",
+        "pmid": "21572163",
+        "url": "https://doi.org/10.1176/appi.ajp.2011.08121844"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 21572163): title, all thirteen authors, journal, volume, pages, DOI and PMC id (PMC3310182) match; no erratum, retraction or update in PubMed CommentsCorrections",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings AQ3-013/AQ3-014: audio-quiz deck AR-23 presented the whole-sample MMSE decline (2.4 points over 36 weeks) as the antipsychotic-minus-placebo difference. Span taken from the NIHMS author-manuscript abstract in PMC, which carries the between-group p-values (MMSE p=0.004) that the PubMed abstract omits. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "randomized trial, secondary cognitive outcomes",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "dementia",
+          "antipsychotics",
+          "cognition",
+          "catie-ad"
+        ],
+        "clerkshipRelevance": "The cognitive cost of antipsychotics in Alzheimer's disease: every group declined (MMSE 2.4 points over 36 weeks overall), and antipsychotic-treated patients declined more than placebo on the MMSE, BPRS cognitive subscale and a cognitive summary score, a magnitude the authors equated to about one year's deterioration. The 2.4 points is the whole-sample decline, not the drug-placebo difference.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings AQ3-013/AQ3-014: audio-quiz deck AR-23 presented the whole-sample MMSE decline (2.4 points over 36 weeks) as the antipsychotic-minus-placebo difference. Span taken from the NIHMS author-manuscript abstract in PMC, which carries the between-group p-values (MMSE p=0.004) that the PubMed abstract omits. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-3 audio-quiz decks (findings AQ3-013, AQ3-014)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "miklowitz-2007-stepbd-psychotherapy",
+      "type": "primary-study",
+      "citation": {
+        "title": "Psychosocial treatments for bipolar depression: a 1-year randomized trial from the Systematic Treatment Enhancement Program",
+        "authors": [
+          {
+            "family": "Miklowitz",
+            "given": "DJ"
+          },
+          {
+            "family": "Otto",
+            "given": "MW"
+          },
+          {
+            "family": "Frank",
+            "given": "E"
+          },
+          {
+            "family": "Reilly-Harrington",
+            "given": "NA"
+          },
+          {
+            "family": "Wisniewski",
+            "given": "SR"
+          },
+          {
+            "family": "Kogan",
+            "given": "JN"
+          },
+          {
+            "family": "Nierenberg",
+            "given": "AA"
+          },
+          {
+            "family": "Calabrese",
+            "given": "JR"
+          },
+          {
+            "family": "Marangell",
+            "given": "LB"
+          },
+          {
+            "family": "Gyulai",
+            "given": "L"
+          },
+          {
+            "family": "Araga",
+            "given": "M"
+          },
+          {
+            "family": "Gonzalez",
+            "given": "JM"
+          },
+          {
+            "family": "Shirley",
+            "given": "ER"
+          },
+          {
+            "family": "Thase",
+            "given": "ME"
+          },
+          {
+            "family": "Sachs",
+            "given": "GS"
+          }
+        ],
+        "organization": "",
+        "year": 2007,
+        "journal": "Arch Gen Psychiatry",
+        "volume": "64",
+        "pages": "419-26",
+        "doi": "10.1001/archpsyc.64.4.419",
+        "pmid": "17404119",
+        "url": "https://doi.org/10.1001/archpsyc.64.4.419"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 17404119): title, all fifteen authors, journal, volume, pages, DOI and PMC id (PMC3579612) match; no erratum, retraction or update in PubMed CommentsCorrections",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings AQ3-008..AQ3-010: audio-quiz deck AR-26 compared this trial's recovery rate with the separate STEP-BD antidepressant trial and called the comparator 'medication-only'. Both arms here received protocol pharmacotherapy; the comparator was brief collaborative care. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "randomized controlled trial",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "bipolar",
+          "depression",
+          "psychotherapy",
+          "step-bd"
+        ],
+        "clerkshipRelevance": "The STEP-BD psychosocial trial: with everyone on protocol pharmacotherapy, intensive psychotherapy (family-focused, interpersonal and social rhythm, or cognitive behavior therapy) produced higher year-end recovery than brief collaborative care (64.4% vs 51.5%). It is a separate randomization from the STEP-BD antidepressant trial, so the two trials' recovery rates cannot be set against each other.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings AQ3-008..AQ3-010: audio-quiz deck AR-26 compared this trial's recovery rate with the separate STEP-BD antidepressant trial and called the comparator 'medication-only'. Both arms here received protocol pharmacotherapy; the comparator was brief collaborative care. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-3 audio-quiz decks (findings AQ3-008, AQ3-009, AQ3-010)"
+          }
+        ]
+      }
+    },
+    {
       "id": "diefenbach-2025",
       "type": "primary-study",
       "citation": {
