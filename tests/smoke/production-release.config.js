@@ -1,7 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const MS3_URL = process.env.MS3_BASE_URL || 'https://une-ms3-psychiatry.netlify.app';
-const RES_URL = process.env.RES_BASE_URL || 'https://mmc-psychiatry-residents-sanford.netlify.app';
+function requiredBaseUrl(name) {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} must identify the exact production deploy permalink`);
+  return value;
+}
+
+const MS3_URL = requiredBaseUrl('MS3_BASE_URL');
+const RES_URL = requiredBaseUrl('RES_BASE_URL');
 const REPORT_PATH = process.env.RELEASE_JOURNEY_REPORT || 'test-results/production-release-journeys.json';
 
 export default defineConfig({

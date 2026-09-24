@@ -27,6 +27,12 @@ class ProductionReleaseWorkflowTests(unittest.TestCase):
         revision = self.trigger["workflow_dispatch"]["inputs"]["revision"]
         self.assertFalse(revision["required"])
         self.assertEqual(revision["type"], "string")
+        checkout = next(step for step in self.steps if str(step.get("uses", "")).startswith("actions/checkout@"))
+        self.assertEqual(
+            checkout["with"]["ref"],
+            "${{ github.sha }}",
+            "manual rechecks must use current verifier code while targeting the requested release SHA",
+        )
 
     def test_permissions_are_least_privilege_for_evidence_and_pr_comment(self):
         self.assertEqual(
@@ -64,11 +70,16 @@ class ProductionReleaseWorkflowTests(unittest.TestCase):
         )
         self.assertIn("NETLIFY_AUTH_TOKEN", self.steps[positions[1]]["env"])
         self.assertIn("GITHUB_TOKEN", self.steps[positions[1]]["env"])
+        self.assertIn('--verifier-sha "$GITHUB_SHA"', collect)
+        self.assertIn(".permalinkUrl", collect)
+        self.assertIn("ms3_url", collect)
+        self.assertIn("res_url", collect)
 
         journeys = self.steps[positions[2]]["run"]
         self.assertIn("production-release.config.js", journeys)
-        self.assertIn("MS3_BASE_URL", self.steps[positions[2]]["env"])
-        self.assertIn("RES_BASE_URL", self.steps[positions[2]]["env"])
+        journey_env = self.steps[positions[2]]["env"]
+        self.assertIn("steps.core.outputs.ms3_url", journey_env["MS3_BASE_URL"])
+        self.assertIn("steps.core.outputs.res_url", journey_env["RES_BASE_URL"])
 
         upload = self.steps[positions[4]]
         self.assertEqual(upload["if"], "always()")
@@ -88,6 +99,9 @@ class ProductionReleaseWorkflowTests(unittest.TestCase):
                 self.assertRegex(revision.split()[0], r"^[0-9a-f]{40}$", uses)
         self.assertTrue(SMOKE_CONFIG.exists())
         self.assertTrue(SMOKE_SPEC.exists())
+        smoke_source = SMOKE_CONFIG.read_text(encoding="utf-8")
+        self.assertNotIn("|| 'https://une-ms3-psychiatry.netlify.app'", smoke_source)
+        self.assertNotIn("|| 'https://mmc-psychiatry-residents-sanford.netlify.app'", smoke_source)
 
 
 if __name__ == "__main__":
