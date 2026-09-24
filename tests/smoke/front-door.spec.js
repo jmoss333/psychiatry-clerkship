@@ -2241,8 +2241,8 @@ test('One Thing First A2: clear the dues and Continue leads, with the rows below
   await otfExpectOnePrimary(page);
   await expect(page.locator('.fd-primary')).toHaveCount(0);
   await expect(page.locator('.fd-continue:not(.is-secondary)')).toHaveCount(1);
-  const order = await page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 5).map(el => el.className.split(' ')[0]));
-  expect(order).toEqual(['fd-continue', 'fd-primary__why', 'fd-sectionhead', 'fd-block', 'fd-capture']);
+  const order = await page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 6).map(el => el.className.split(' ')[0]));
+  expect(order).toEqual(['fd-continue', 'fd-offline', 'fd-primary__why', 'fd-sectionhead', 'fd-block', 'fd-capture']);
   await otfExpectPrimaryIsFirstFocusable(page);
   await otfExerciseVisitAndBack(page);
   await expectHealthy(page);

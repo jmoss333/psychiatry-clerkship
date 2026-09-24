@@ -130,6 +130,15 @@ test('Today marks only the winning Continue or setup control as a dock source', 
   assert.equal((F.fdToday(IDX, s({ week: null, primaryKind: 'resume' })).match(/data-fd-dock-source=/g) || []).length, 0);
 });
 
+test('Today keeps the Shift-ready entry below its primary action and beside in-flow Care', () => {
+  const html = F.fdToday(IDX, s({ offlineHtml: '<aside class="fd-offline" data-test-offline></aside>' }));
+  const primary = html.indexOf('data-fd-dock-source="primary-week"');
+  const readiness = html.indexOf('data-test-offline');
+  assert.ok(primary >= 0 && readiness > primary);
+  assert.match(html, /class="fd-care-entry"[^>]*data-fd-tab="care"/);
+  assert.equal((html.match(/data-test-offline/g) || []).length, 1);
+});
+
 test('Today counts repeated practice for the current week even when another Path week was viewed', () => {
   const cur = { ...FIX_CUR, weeks: FIX_CUR.weeks.map((w) => ({ ...w,
     items: [{ ref: 't.html', kind: 'tool' }],

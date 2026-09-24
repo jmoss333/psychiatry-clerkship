@@ -959,6 +959,8 @@ class TestServiceWorkerEmission(unittest.TestCase):
         self.assertIn("/tools/t.html", pre)
         self.assertTrue(all("/audio/" not in p for p in pre))
         self.assertNotIn("/sw.js", pre)
+        self.assertIn("CW_OFFLINE_VERIFY", sw)
+        self.assertIn("offlineVerifyUrls", sw)
 
     def test_version_is_deterministic_and_media_independent(self):
         d = self._site()

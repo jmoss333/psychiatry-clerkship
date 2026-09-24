@@ -1,0 +1,155 @@
+name: Production — Release verification receipt
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: Exact full commit SHA to recheck (blank uses the selected branch tip)
+        required: false
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: production-release-${{ github.event.inputs.revision || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  verify-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          lfs: false
+          ref: ${{ github.event.inputs.revision || github.sha }}
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22"
+
+      - name: Install focused browser journey dependencies
+        run: |
+          cd tests/smoke
+          npm ci
+          npx playwright install chromium --with-deps
+
+      - name: Resolve exact release revision
+        id: release
+        env:
+          RELEASE_SHA_INPUT: ${{ github.event.inputs.revision || github.sha }}
+        run: |
+          set -euo pipefail
+          release_sha="$RELEASE_SHA_INPUT"
+          if [[ ! "$release_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Exact full lowercase commit SHA required" >&2
+            exit 2
+          fi
+          git cat-file -e "${release_sha}^{commit}"
+          echo "release_sha=$release_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Collect exact CI, deploy, revision, and canary evidence
+        id: core
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          set +e
+          python3 13_Faculty_Resources/_automation/maintenance/production_release_receipt.py collect \
+            --release-sha "${{ steps.release.outputs.release_sha }}" \
+            --repository "$GITHUB_REPOSITORY" \
+            --wait-seconds 1200 \
+            --poll-seconds 20 \
+            --out "$RUNNER_TEMP/production-release-core.json"
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Run focused production browser journeys
+        id: journeys
+        env:
+          MS3_BASE_URL: https://une-ms3-psychiatry.netlify.app
+          RES_BASE_URL: https://mmc-psychiatry-residents-sanford.netlify.app
+          RELEASE_SHA: ${{ steps.release.outputs.release_sha }}
+          RELEASE_JOURNEY_REPORT: ${{ runner.temp }}/production-release-journeys.json
+        run: |
+          set +e
+          cd tests/smoke
+          npx playwright test --config=production-release.config.js
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Build consolidated release receipt
+        id: receipt
+        if: always()
+        run: |
+          set +e
+          python3 13_Faculty_Resources/_automation/maintenance/production_release_receipt.py finalize \
+            --core "$RUNNER_TEMP/production-release-core.json" \
+            --journeys "$RUNNER_TEMP/production-release-journeys.json" \
+            --release-sha "${{ steps.release.outputs.release_sha }}" \
+            --repository "$GITHUB_REPOSITORY" \
+            --trigger "$GITHUB_EVENT_NAME" \
+            --json-out "$RUNNER_TEMP/production-release-receipt.json" \
+            --markdown-out "$RUNNER_TEMP/production-release-receipt.md" \
+            --digest-out "$RUNNER_TEMP/production-release-receipt.json.sha256"
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          if [[ -f "$RUNNER_TEMP/production-release-receipt.md" ]]; then
+            cat "$RUNNER_TEMP/production-release-receipt.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit 0
+
+      - name: Upload production release receipt
+        id: upload
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: production-release-${{ steps.release.outputs.release_sha }}-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/production-release-core.json
+            ${{ runner.temp }}/production-release-journeys.json
+            ${{ runner.temp }}/production-release-receipt.json
+            ${{ runner.temp }}/production-release-receipt.md
+            ${{ runner.temp }}/production-release-receipt.json.sha256
+            tests/smoke/test-results/production-release-artifacts/
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Attach receipt to merged pull request
+        id: comment
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RECEIPT_ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+          RECEIPT_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set +e
+          python3 13_Faculty_Resources/_automation/maintenance/production_release_receipt.py comment \
+            --receipt "$RUNNER_TEMP/production-release-receipt.json" \
+            --artifact-url "$RECEIPT_ARTIFACT_URL" \
+            --run-url "$RECEIPT_RUN_URL"
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Enforce consolidated verdict
+        if: always()
+        run: |
+          receipt_code="${{ steps.receipt.outputs.exit_code }}"
+          comment_code="${{ steps.comment.outputs.exit_code }}"
+          if [[ -z "$receipt_code" ]]; then receipt_code=2; fi
+          if [[ -z "$comment_code" ]]; then comment_code=2; fi
+          if [[ "$comment_code" -ne 0 ]]; then exit 2; fi
+          exit "$receipt_code"

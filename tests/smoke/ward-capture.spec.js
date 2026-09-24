@@ -406,6 +406,43 @@ test('email draft: selected questions and canonical source alone enter one detac
   expect((await savedItems(page)).map(item => item.route)).toEqual(['rounds', null, 'supervision']);
 });
 
+test('email draft: a tool-captured question carries its canonical title and tool route', async ({ page, baseURL }) => {
+  await page.setViewportSize(PHONE);
+  await page.addInitScript(() => {
+    window.__mailClicks = [];
+    const click = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () {
+      if (this.href.startsWith('mailto:')) { window.__mailClicks.push(this.href); return; }
+      return click.call(this);
+    };
+  });
+  await page.goto('/?tool=question-bank-practice.html');
+  await expect(page.locator('#content iframe.toolframe')).toBeVisible();
+  await saveQuestion(page, 'Which practice question should I revisit?');
+  expect((await savedItems(page))[0].ctx).toBe('question-bank-practice.html');
+  await page.evaluate(() => {
+    const saved = JSON.parse(localStorage.getItem('cw_capture_v1'));
+    saved.items[0].title = 'Forged title';
+    saved.items[0].url = 'https://evil.test/route';
+    localStorage.setItem('cw_capture_v1', JSON.stringify(saved));
+  });
+  await inbox(page).locator('#capCancel').click();
+  await captureLauncher(page).click();
+  await openEmailForFirstQuestion(page);
+  const dialog = email(page);
+  await expect(dialog.locator('#capEmailDigest')).toContainText(
+    `Source: Practice Questions — Question Bank — ${baseURL}/?tool=question-bank-practice.html`);
+  await expect(dialog.locator('#capEmailDigest')).not.toContainText('Forged title');
+  await expect(dialog.locator('#capEmailDigest')).not.toContainText('evil.test');
+  await dialog.locator('#capEmailLocal').fill('faculty.name');
+  await dialog.locator('#capEmailAffirm').check();
+  await dialog.locator('#capEmailOpenDraft').click();
+  const hrefs = await page.evaluate(() => window.__mailClicks);
+  expect(hrefs).toHaveLength(1);
+  expect(new URL(hrefs[0]).searchParams.get('body')).toContain(
+    `${baseURL}/?tool=question-bank-practice.html`);
+});
+
 test('email draft: clipboard rejection exposes complete selectable text and close forgets private form state', async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.addInitScript(() => {

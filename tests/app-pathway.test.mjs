@@ -40,6 +40,34 @@ test('APP marks one current preparation control and no secondary resource', () =
   assert.doesNotMatch(unavailable, /data-fd-dock-source=/);
 });
 
+test('APP On shift nests one readiness entry immediately after the actual primary action', () => {
+  const capture = '<aside data-test-capture></aside>';
+  const offline = '<aside class="fd-offline" data-test-offline></aside>';
+  for (const activity of ['', ...ACTIVITY_IDS]) {
+    const html = APP.fdAppWorkspace(appIndex(), CUR.appPathway,
+      { appBridge: 'pa', appActivity: activity }, capture, offline);
+    const primary = html.indexOf('data-fd-dock-source="primary-app"');
+    const readiness = html.indexOf('data-test-offline');
+    assert.ok(primary >= 0 && readiness > primary, `${activity || 'starting route'} has a primary and readiness`);
+    assert.equal((html.match(/data-test-offline/g) || []).length, 1, 'no duplicate readiness mount');
+    assert.match(html, /<button[^>]*data-fd-dock-source="primary-app"[^>]*>(?:(?!<button).)*?<\/button><aside class="fd-offline" data-test-offline><\/aside>/s,
+      `${activity || 'starting route'} places readiness as the primary control's immediate sibling`);
+    assert.ok(html.indexOf('data-test-capture') < html.indexOf('class="fd-care-entry"'));
+    assert.ok(html.indexOf('class="fd-care-entry"') < primary, 'Care remains in flow before the primary');
+    if (!activity) {
+      const resources = html.indexOf('<div class="fd-app__resources');
+      assert.ok(resources < readiness && readiness < html.indexOf('</div>', resources),
+        'starting-route readiness is inside the resource group, not below eight resources');
+    } else {
+      const task = html.lastIndexOf('<article class="fd-app__task', readiness);
+      const links = html.lastIndexOf('<div class="fd-app__step-links">', readiness);
+      assert.match(html.slice(task, readiness), /^<article class="fd-app__task is-active"/);
+      assert.ok(links > task && readiness < html.indexOf('</div>', links),
+        'selected-task readiness is inside its Prepare links, not after the task grid');
+    }
+  }
+});
+
 const PA_REFS = [
   'pg_interview.md', 'case_formulation.md', 'communication-practice.html',
   'psychopharm_primer.md', 'adv_psychopharm.md', 'one-patient-six-weeks.html',

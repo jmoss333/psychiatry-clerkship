@@ -646,7 +646,7 @@ function assertSmokeLauncherContract(ci) {
     'npx playwright test --project=faculty-console',
     'npx playwright test --project=lfs',
     'npx playwright test --project=visual',
-    'npx playwright test --project=offline',
+    'npx playwright test --project=offline-ms3 --project=offline-res',
   ];
   let prior = -1;
   for (const command of ordered) {
@@ -744,7 +744,7 @@ test('smoke launcher contract ignores labels and rejects boundary drift', () => 
     'npx playwright test --project=faculty-console',
     'npx playwright test --project=lfs',
     'npx playwright test --project=visual',
-    'npx playwright test --project=offline',
+    'npx playwright test --project=offline-ms3 --project=offline-res',
   ]) {
     const movedProject = ci
       .replace(projectCommand, '')

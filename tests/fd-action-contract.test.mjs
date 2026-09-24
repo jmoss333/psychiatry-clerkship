@@ -14,7 +14,7 @@ const make = new Function(`${wire}\nreturn {
   semantic: fdActionSemantic,
 };`);
 const F = make();
-const NON_ACTION_ATTRS = new Set(['data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label', 'data-fd-reading-resume', 'data-fd-reading-status']);
+const NON_ACTION_ATTRS = new Set(['data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label', 'data-fd-reading-resume', 'data-fd-reading-status', 'data-fd-offline-entry', 'data-fd-offline-card', 'data-fd-offline-label', 'data-fd-offline-refresh-status']);
 const AUX_ACTION_ATTRS = new Set(['data-fd-local-toggle']);
 
 function emittedAttributes() {
@@ -46,7 +46,7 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     'data-fd-care-pack-print', 'data-fd-change-week',
     'data-fd-clear-ask', 'data-fd-clear-cancel', 'data-fd-clear-confirm', 'data-fd-close-nudge',
     'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-dock-forward', 'data-fd-exam-date', 'data-fd-expand-tool',
-    'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-open',
+    'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-offline-close', 'data-fd-offline-open', 'data-fd-offline-refresh', 'data-fd-open',
     'data-fd-progress', 'data-fd-reading-top', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-settings',
     'data-fd-setweek', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle',
     'data-fd-view-week', 'data-fd-week',
