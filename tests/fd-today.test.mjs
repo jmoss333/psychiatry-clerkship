@@ -401,15 +401,34 @@ function subOf(html) {
 // 2026-08-16 is the Sunday of the week whose Monday (2026-08-10) anchors fd-state's countdown
 // fixture; at week 5 that is 5 days out from the week-6 Friday.
 const SUNDAY_W5 = new Date(2026, 7, 16, 9, 0, 0).getTime();
+// The countdown belongs to the path that ends in an exam (fdPathExamCountdown, fd_state.js), so
+// these indexes carry the path ids frontdoor_catalog.py pins. IDX itself has no path id and, like
+// any path without an exam, shows no countdown unless a date is stored.
+const MS3_IDX = F.fdBuildIndex({ ...FIX_CUR, path: { id: 'ms3-six-week', weekCount: 6 } }, FIX_META, FIX_TOOLS, FIX_MAN);
+const RES_IDX = F.fdBuildIndex({ ...FIX_CUR, path: { id: 'resident-four-week', weekCount: 6 } }, FIX_META, FIX_TOOLS, FIX_MAN);
 
 test('the exam countdown joins onto the subhead with a separating space', () => {
-  assert.equal(subOf(F.fdToday(IDX, s({ week: 5, nowMs: SUNDAY_W5 }))),
+  assert.equal(subOf(F.fdToday(MS3_IDX, s({ week: 5, nowMs: SUNDAY_W5 }))),
     'Week 5 · W5 · Sunday · exam in ~5 days');
 });
 
 test('the countdown joins directly after the day name now that the streak clause is gone', () => {
-  assert.equal(subOf(F.fdToday(IDX, s({ week: 5, streak: 3, activityDays: FOUR_OF_SEVEN, nowMs: SUNDAY_W5 }))),
+  assert.equal(subOf(F.fdToday(MS3_IDX, s({ week: 5, streak: 3, activityDays: FOUR_OF_SEVEN, nowMs: SUNDAY_W5 }))),
     'Week 5 · W5 · Sunday · exam in ~5 days');
+});
+
+// Residents have no end-of-block exam. Until 2026-09-24 the countdown fired in the final two
+// weeks of ANY path, so the resident Today told residents an exam was ~N days away. Same week,
+// same clock as the MS3 pin above -- only the path differs. (A stored date re-opens it on any
+// path; tests/fd-state.test.mjs pins that half, where storage can be injected.)
+test('no exam countdown on a path that does not end in an exam', () => {
+  for (const idx of [RES_IDX, IDX]) {
+    for (const week of [5, 6]) {
+      const sub = subOf(F.fdToday(idx, s({ week, nowMs: SUNDAY_W5 })));
+      assert.doesNotMatch(sub, /exam/, `path "${idx.path.id}" week ${week}: ${sub}`);
+      assert.doesNotMatch(sub, / $/, 'and no stranded join space');
+    }
+  }
 });
 
 test('a week with no countdown leaves no trailing space behind', () => {

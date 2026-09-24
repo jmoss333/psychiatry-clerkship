@@ -398,7 +398,9 @@ function fdToday(index, state){
      The subhead no longer carries the Daily-Review-only streak clause; the seven-day
      activity strip rendered by fdConsistency directly below it replaced that clause (see
      fdActivityDays in fd_state.js for why). */
-  var countdown=fdExamCountdown(st.week,idx.weeks,nowMs,st.rotationStart);
+  /* fdPathExamCountdown is the audience gate in front of that arithmetic: no countdown on a path
+     that does not end in an exam unless the learner stored a date (fd_state.js says why). */
+  var countdown=fdPathExamCountdown(idx.path&&idx.path.id,st.week,idx.weeks,nowMs,st.rotationStart);
   if(countdown) sub+=' '+countdown;
 
   var out='<section class="fd-today">';
