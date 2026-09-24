@@ -124,7 +124,7 @@
    "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md"
   ],
   "scope": "*",
-  "pattern": "(?i)start low,? go slow",
+  "pattern": "(?i)(refeed\\w*|calori\\w*)[^.]{0,80}start low,? go slow|start low,? go slow[^.]{0,80}(phosph\\w*|refeed\\w*|calori\\w*|thiamine)",
   "why": "M04-001/002: refeeding card/pearl contradict the remediated prose (SAHM 2022). Coordinate with the architecture review's refeeding reconciliation."
  },
  {
