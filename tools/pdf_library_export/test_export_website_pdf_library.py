@@ -287,14 +287,21 @@ def test_build_pdf_uses_manifest_title_when_markdown_has_no_h1():
 
 
 def test_shipped_page_sources_exist_in_repo():
-    # 128 shipped surfaces, not the 91 the site manifest alone lists: +26 Case-of-the-Week
+    # More shipped surfaces than the site manifest alone lists: +2/week Case-of-the-Week
     # pages, +6 resident-only pages, +1 MS3 orientation video, +4 resident-only tools
-    # (ADR-002). The count moves whenever a producer does; shipped_pages.py --check is
-    # what keeps the listing honest, and this only asserts every source really exists.
+    # (ADR-002). The CotW term is derived from the registry (2026-09-24) so the weekly
+    # content PR stops editing this pin; shipped_pages.py --check is what keeps the
+    # listing honest, and this only asserts every source really exists.
     repo_root = Path(__file__).resolve().parents[2]
     md_entries, tool_entries = load_shipped_entries(repo_root)
 
-    assert len(md_entries) == 101  # 69 manifest md + 26 case-of-the-week + 6 resident
+    registry = json.loads(
+        (repo_root / "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json")
+        .read_text(encoding="utf-8")
+    )
+    cotw_pages = 2 * len(registry["weeks"])
+
+    assert len(md_entries) == 69 + cotw_pages + 6  # manifest md + case-of-the-week + resident
     assert len(tool_entries) == 27  # 22 manifest tools + 1 orientation video + 4 resident
 
 
