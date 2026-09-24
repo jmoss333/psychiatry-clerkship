@@ -1085,7 +1085,7 @@
     },
     {
       "id": "qb_oth_001",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "otherdx",
       "competency": [
@@ -1101,41 +1101,41 @@
         "label": "Open the Eating Disorders page",
         "href": "?page=t_eating.md"
       },
-      "stem": "A 16-year-old with severe anorexia nervosa has been restrictive for 4 months and is medically admitted with critically low weight. Before nutritional rehabilitation begins, which approach most directly reduces the risk of refeeding syndrome?",
+      "stem": "A 16-year-old with anorexia nervosa is medically admitted at about 75% of median BMI with a resting heart rate of 42 bpm. Potassium, phosphate, and magnesium are normal, and she has no other acute illness. Which initial nutrition plan is most appropriate?",
       "options": [
         {
           "key": "A",
-          "t": "Start full nutritional rehabilitation immediately at a standard adult caloric target to restore weight as rapidly as possible.",
+          "t": "Start at no more than 1,000 kcal/day and advance slowly over the first one to two weeks, because a low starting target is the safest way to prevent refeeding syndrome.",
           "trap": {
-            "name": "Faster is safer",
-            "note": "Rapid nutritional restoration in the severely malnourished is the trigger for refeeding syndrome — the metabolic shift to anabolism precipitates life-threatening electrolyte shifts; starting at a conservative rate is essential."
+            "name": "Underfeeding as safety",
+            "note": "Her malnutrition is moderate and she has no highest-risk features, so a low start prolongs underfeeding without making refeeding safer — refeeding risk tracks the degree of malnutrition, not the starting calories. A cautious start is kept for the highest-risk patients."
           }
         },
         {
           "key": "B",
-          "t": "Give prophylactic anxiolytics and monitor for 24 hours before introducing nutrition — anxiety increases metabolic demand in malnourished patients.",
+          "t": "Give a prophylactic anxiolytic and observe for 24 hours before introducing any nutrition, because anxiety raises metabolic demand.",
           "trap": {
             "name": "Sedation before nutrition",
-            "note": "Refeeding syndrome risk is metabolic (phosphate, potassium, and magnesium shifts), not anxiety-driven — benzodiazepines are not part of the refeeding protocol; the intervention is conservative caloric refeeding with electrolyte monitoring."
+            "note": "Refeeding risk is metabolic (phosphate, potassium, and magnesium shifts), not anxiety-driven; sedation is not part of refeeding, and delaying nutrition only prolongs starvation."
           }
         },
         {
           "key": "C",
-          "t": "Correct all electrolyte abnormalities to normal before introducing any nutrition — electrolyte imbalances worsen if nutrition begins before they are stable.",
+          "t": "Hold all nutrition until her electrolytes have been stable for 48 hours, then begin feeding.",
           "trap": {
             "name": "Normalize first",
-            "note": "Waiting for perfect electrolytes before any nutrition is not standard — some electrolyte correction runs in parallel with conservative refeeding; withholding all nutrition delays recovery without preventing the syndrome."
+            "note": "Her electrolytes are already normal, and feeding is not delayed to normalise electrolytes in any case — monitoring and repletion run alongside refeeding."
           }
         },
         {
           "key": "D",
-          "t": "Start caloric refeeding at a conservative initial target and advance slowly; administer thiamine before or with carbohydrate and check phosphate, potassium, and magnesium at least daily early in refeeding.",
+          "t": "Start at a higher-calorie target, advance daily, and check phosphate, potassium, and magnesium closely; give thiamine.",
           "c": true
         }
       ],
-      "why": "Faster is safer, Sedation before nutrition, and Normalize first all create delay or metabolic risk. The source's 'start low, go slow' principle is the safety framework: conservative start, daily electrolyte checks, and thiamine before carbohydrate to prevent Wernicke encephalopathy.",
-      "pearl": "Refeeding syndrome prevention: start low, go slow, give thiamine before carbohydrate, check phosphate daily.",
-      "evidence": "t_eating.md — Refeeding syndrome: the safe posture is 'start low, go slow': begin conservative caloric refeeding, check phosphate/potassium/magnesium at least daily early, supplement phosphate and give thiamine before or with carbohydrate, and advance calories per protocol as electrolytes stay stable."
+      "why": "Underfeeding as safety, Sedation before nutrition, and Normalize first all delay nutrition without making refeeding safer. For a medically admitted adolescent with moderate malnutrition and no highest-risk features, current guidance supports starting at a higher-calorie target and advancing daily with close phosphate, potassium, and magnesium monitoring, because refeeding risk tracks the degree of malnutrition rather than the starting calories. A cautious start is reserved for the highest-risk patients — for example adults with BMI < 13 plus acute illness or abnormal electrolytes.",
+      "pearl": "Refeeding: risk tracks malnutrition, not the starting calories — start higher unless highest-risk, check phosphate/K/Mg daily, give thiamine, and don't underfeed.",
+      "evidence": "t_eating.md — Refeeding syndrome = watch the phosphate — risk tracks the degree of malnutrition, not the starting calories; most patients can start higher with daily phosphate/K/Mg checks, and the most malnourished or medically unstable start cautiously; give thiamine."
     },
     {
       "id": "qb_oth_002",
@@ -7590,7 +7590,7 @@
     },
     {
       "id": "qb_otherdx_001",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "otherdx",
       "competency": [
@@ -7634,13 +7634,13 @@
           "t": "Thiamine deficiency — the neurological symptoms indicate Wernicke encephalopathy from B1 deficiency.",
           "trap": {
             "name": "Thiamine over phosphate",
-            "note": "Thiamine deficiency is a real risk in eating disorders and requires prophylactic replacement before carbohydrate loading, but a falling phosphate on day 3 of refeeding with weakness and confusion is the classic refeeding syndrome presentation — phosphate is the hallmark electrolyte."
+            "note": "Thiamine deficiency is a real risk in eating disorders and requires prophylactic replacement when refeeding starts, but a falling phosphate on day 3 of refeeding with weakness and confusion is the classic refeeding syndrome presentation — phosphate is the hallmark electrolyte."
           }
         }
       ],
-      "why": "Pre-existing deficiency only, Functional explanation for metabolic emergency, and Thiamine over phosphate all miss the refeeding-specific mechanism. The page calls refeeding syndrome 'the complication that kills' — hypophosphatemia is the hallmark. Note that D (thiamine) is also clinically relevant and the page specifically says 'give thiamine before or with carbohydrate' — but the presenting electrolyte abnormality and timing point to refeeding syndrome as the primary diagnosis.",
-      "pearl": "Refeeding syndrome: watch phosphate — the hallmark is hypophosphatemia after starting nutrition in the severely malnourished; start low, go slow; supplement phosphate; give thiamine before carbs.",
-      "evidence": "t_eating.md — Refeeding syndrome — the complication that kills: hypophosphatemia is the hallmark; the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Supplement phosphate and give thiamine before or with carbohydrate.",
+      "why": "Pre-existing deficiency only, Functional explanation for metabolic emergency, and Thiamine over phosphate all miss the refeeding-specific mechanism. The page calls refeeding syndrome 'the complication that kills' — hypophosphatemia is the hallmark. Note that D (thiamine) is also clinically relevant and the page specifically says to give thiamine (and other vitamins) when refeeding starts — but the presenting electrolyte abnormality and timing point to refeeding syndrome as the primary diagnosis.",
+      "pearl": "Refeeding syndrome: watch phosphate — the hallmark is hypophosphatemia after starting nutrition; risk tracks malnutrition, so monitor phosphate daily; supplement phosphate; give thiamine.",
+      "evidence": "t_eating.md — Refeeding syndrome — the complication that kills: hypophosphatemia is the hallmark; the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Supplement phosphate and give thiamine (and other vitamins) when refeeding starts.",
       "tier2": {
         "q": "Why does hypophosphatemia develop after initiating refeeding in a severely malnourished patient, rather than during the starvation period itself?",
         "options": [

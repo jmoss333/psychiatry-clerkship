@@ -1068,7 +1068,7 @@
     "points": [
       "AN, BN, BED: get weight, orthostatic vitals, temperature, and an ECG; check phosphate/K/Mg.",
       "Decide the level of care by medical instability (bradycardia, orthostasis, electrolytes, QTc), not diagnosis alone.",
-      "Refeeding syndrome — start low, go slow, watch phosphate, give thiamine."
+      "Refeeding syndrome — watch phosphate daily; start higher unless highest-risk; give thiamine."
     ],
     "cant": "Refeeding hypophosphatemia can be fatal — monitor phosphate/K/Mg daily early and advance calories per protocol; the most malnourished are highest risk.",
     "ruleOut": [
