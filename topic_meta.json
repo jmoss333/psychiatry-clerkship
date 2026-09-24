@@ -605,7 +605,8 @@
     "safetyLevel": "high",
     "evidenceIds": [
       "cipriani-2013-lithium-suicide",
-      "canmat-isbd-bipolar-2018"
+      "canmat-isbd-bipolar-2018",
+      "nolen-2019-lithium-levels"
     ],
     "facultyReview": {
       "status": "reviewed",
@@ -765,7 +766,11 @@
       "schwenker-2023",
       "bastos-maia-2025",
       "pott-2022",
-      "volkow-2016-addiction-brain-disease"
+      "volkow-2016-addiction-brain-disease",
+      "asam-oud-2020",
+      "asam-hpso-bup-2023",
+      "samhsa-tip63-2021",
+      "donofrio-2026-ed-bup"
     ],
     "relatedTools": [
       "withdrawal.html",
@@ -1145,7 +1150,9 @@
     ],
     "safetyLevel": "high",
     "evidenceIds": [
-      "apa-eating-disorders-2023"
+      "apa-eating-disorders-2023",
+      "sahm-2022-restrictive-ed",
+      "rcpsych-meed-2022"
     ],
     "facultyReview": {
       "status": "reviewed",
@@ -1676,6 +1683,9 @@
     "epa": [
       "EPA1",
       "EPA2"
+    ],
+    "evidenceIds": [
+      "winkelman-2025-aasm-rls"
     ]
   },
   "t_somatic.md": {
@@ -1958,6 +1968,10 @@
     "epa": [
       "EPA1",
       "EPA9"
+    ],
+    "evidenceIds": [
+      "selten-2020-migration-psychosis",
+      "bourque-2011-migration-psychosis"
     ]
   },
   "ect_neuromodulation.md": {
@@ -2042,6 +2056,9 @@
     "epa": [
       "EPA2",
       "EPA4"
+    ],
+    "evidenceIds": [
+      "rosenberg-2015-malignant-hyperthermia"
     ]
   },
   "t_geri.md": {
@@ -4797,6 +4814,14 @@
     },
     "epa": [
       "EPA6"
+    ],
+    "evidenceIds": [
+      "nolen-2019-lithium-levels",
+      "gurrera-2011-nms-criteria",
+      "asam-oud-2020",
+      "asam-hpso-bup-2023",
+      "samhsa-tip63-2021",
+      "donofrio-2026-ed-bup"
     ]
   },
   "omm_resources.md": {
@@ -5076,7 +5101,11 @@
           "href": "?tool=decision-aids.html"
         }
       ]
-    }
+    },
+    "evidenceIds": [
+      "decker-2015-extrip-lithium",
+      "nolen-2019-lithium-levels"
+    ]
   },
   "systems_medlegal.md": {
     "read": 7,
@@ -5424,7 +5453,8 @@
     "evidenceIds": [
       "boyer-shannon-2005-serotonin-syndrome",
       "strawn-2007-neuroleptic-malignant-syndrome",
-      "bap-catatonia-2023"
+      "bap-catatonia-2023",
+      "rosenberg-2015-malignant-hyperthermia"
     ]
   },
   "med_monitoring.md": {
@@ -5462,7 +5492,8 @@
     "evidenceIds": [
       "clozapine-rems",
       "fda-drug-safety",
-      "canmat-isbd-bipolar-2018"
+      "canmat-isbd-bipolar-2018",
+      "nolen-2019-lithium-levels"
     ]
   },
   "psychotherapy.md": {

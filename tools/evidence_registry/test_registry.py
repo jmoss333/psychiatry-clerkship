@@ -216,11 +216,32 @@ ISSUE_441_PTSD_IDS = {
     "schnurr-2024-vadod-ptsd-cpg-synopsis",
     "williams-2022-cochrane-ptsd-pharmacotherapy",
 }
+# Added by the 2026-09-24 peer-review remediation, WP-1 (joint clinical-safety PR): lithium
+# dialysis and target levels, MOUD mortality, refeeding, buprenorphine initiation and COWS,
+# RLS, malignant hyperthermia, NMS criteria and migration/psychosis. Each corrected page
+# sentence asserts what one of these found, so each enters with a stored span (MEED's is
+# held out: it has no PMID, and the span-audit cache is keyed by PMID). One set, alphabetical.
+PEER_REVIEW_WP1_2026_09_IDS = {
+    "asam-hpso-bup-2023",
+    "asam-oud-2020",
+    "bourque-2011-migration-psychosis",
+    "decker-2015-extrip-lithium",
+    "donofrio-2026-ed-bup",
+    "gurrera-2011-nms-criteria",
+    "larochelle-2018-moud-mortality",
+    "nolen-2019-lithium-levels",
+    "rcpsych-meed-2022",
+    "rosenberg-2015-malignant-hyperthermia",
+    "sahm-2022-restrictive-ed",
+    "samhsa-tip63-2021",
+    "selten-2020-migration-psychosis",
+    "winkelman-2025-aasm-rls",
+}
 
 ALL_SOURCE_IDS = (
     EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS | THERAPY_WP_T2_IDS
     | POSTDISCHARGE_CORRECTION_IDS | CURRICULUM_REVIEW_WP5A_IDS | CURRICULUM_REVIEW_WP5B_IDS
-    | CURRICULUM_REVIEW_WP5C_IDS | ISSUE_441_PTSD_IDS
+    | CURRICULUM_REVIEW_WP5C_IDS | ISSUE_441_PTSD_IDS | PEER_REVIEW_WP1_2026_09_IDS
 )
 REFERENCE_FILES = (
     "topic_meta.json",
@@ -520,7 +541,10 @@ def test_published_schema_governance_is_required_for_every_canonical_source():
     # 2026-08-21 Scholar Sidekick canonical pass and recorded in each entry's noteHistory.
     # Anything else claiming a correction status (or any expression-of-concern/retracted
     # source) still fails: the allow-list is the record of what faculty knowingly kept.
-    CORRECTED_IDS = {"abbass-2020", "linehan-2015"}
+    # asam-oud-2020 and donofrio-2026-ed-bup (WP-1, 2026-09-24) carry PubMed ErratumIn links
+    # (PMIDs 32487948 and 41915466; the JAMA one reverses Figure 2's labels only) — recorded in
+    # each entry's identity note, pending faculty review with the rest of the WP-1 sources.
+    CORRECTED_IDS = {"abbass-2020", "linehan-2015", "asam-oud-2020", "donofrio-2026-ed-bup"}
 
     registry = load_evidence_registry(REGISTRY_PATH)
     assert len(registry["sources"]) == len(ALL_SOURCE_IDS)
