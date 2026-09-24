@@ -704,7 +704,139 @@ class ValidateCurriculumTest(unittest.TestCase):
             self.assertIn("must be a string", r.stdout)
 
 
-class CurriculumSchemaEssentialsTest(unittest.TestCase):
+def _set_items(site, week_index, items):
+    """A mutation placing `items` on one week of one audience path."""
+    return lambda cur: cur["learningPaths"][site]["weeks"][week_index].__setitem__(
+        "items", copy.deepcopy(items))
+
+
+class RequiredCoreTierTest(unittest.TestCase):
+    """Decision `required-core-tier` (D2, 2026-09-24): priority / window / query on Path items.
+
+    An absent priority means `recommended`. The `required` items of one week may total at most
+    120 read-minutes, taken from topic_meta.json `read`: a required READ with no integer minutes
+    is an error (the budget cannot be checked over a page that states none), a required TOOL
+    counts 0 unless topic_meta gives it minutes. `query` is allowed only on a tool item, and
+    `window` only in week 1. Every case is a synthetic curriculum; none reads live state.
+    """
+
+    def _result(self, mutate, minutes=None):
+        cur = _curriculum([])
+        mutate(cur)
+        meta = _topic_meta()
+        for ref, value in (minutes or {}).items():
+            meta.setdefault(ref, {})["read"] = value
+        with tempfile.TemporaryDirectory() as tmp:
+            cpath, root = _write(tmp, cur, topic_meta=meta)
+            return _run(cpath, root)
+
+    def assert_ok(self, result):
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def assert_rejected(self, result, *markers):
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        for marker in markers:
+            self.assertIn(marker, result.stdout)
+
+    def test_absent_recommended_and_optional_priorities_do_not_count(self):
+        items = [
+            {"ref": "welcome.md", "kind": "read"},
+            {"ref": "agitation.md", "kind": "read", "priority": "recommended"},
+            {"ref": "delirium.md", "kind": "read", "priority": "optional"},
+        ]
+        self.assert_ok(self._result(
+            _set_items("ms3", 0, items),
+            {"welcome.md": 200, "agitation.md": 200, "delirium.md": 200}))
+
+    def test_required_minutes_pass_at_the_budget_and_fail_one_minute_over(self):
+        # The break-test for the 120-minute rule: 120 passes, 121 fails, whether the minutes
+        # come from one page or are summed across two.
+        cases = (
+            ({"welcome.md": 120}, ["welcome.md"], True),
+            ({"welcome.md": 121}, ["welcome.md"], False),
+            ({"welcome.md": 60, "agitation.md": 60}, ["welcome.md", "agitation.md"], True),
+            ({"welcome.md": 60, "agitation.md": 61}, ["welcome.md", "agitation.md"], False),
+        )
+        for minutes, refs, ok in cases:
+            items = [{"ref": ref, "kind": "read", "priority": "required"} for ref in refs]
+            with self.subTest(minutes=minutes):
+                result = self._result(_set_items("ms3", 0, items), minutes)
+                if ok:
+                    self.assert_ok(result)
+                else:
+                    self.assert_rejected(result, "learningPaths.ms3 week 1", "Required Core",
+                                         "121", "120")
+
+    def test_the_budget_is_per_week_and_applies_to_every_path(self):
+        required = [{"ref": "welcome.md", "kind": "read", "priority": "required"}]
+
+        def both_weeks(cur):
+            _set_items("ms3", 0, required)(cur)
+            _set_items("ms3", 1, required)(cur)
+
+        with self.subTest("ms3 weeks 1 and 2 at 120 each"):
+            self.assert_ok(self._result(both_weeks, {"welcome.md": 120}))
+        with self.subTest("resident week 1 at 121"):
+            self.assert_rejected(
+                self._result(_set_items("resident", 0, required), {"welcome.md": 121}),
+                "learningPaths.resident week 1", "Required Core")
+
+    def test_a_required_read_without_integer_minutes_is_an_error(self):
+        required = [{"ref": "welcome.md", "kind": "read", "priority": "required"}]
+        for label, minutes in (("no record", None), ("string", {"welcome.md": "5 min"}),
+                               ("boolean", {"welcome.md": True}),
+                               ("negative", {"welcome.md": -5})):
+            with self.subTest(label=label):
+                self.assert_rejected(self._result(_set_items("ms3", 0, required), minutes),
+                                     "learningPaths.ms3 week 1", "welcome.md", "read minutes")
+        with self.subTest("the same page, not required, is fine without minutes"):
+            self.assert_ok(self._result(_set_items("ms3", 0, [
+                {"ref": "welcome.md", "kind": "read", "priority": "recommended"}])))
+
+    def test_a_required_tool_counts_zero_unless_topic_meta_gives_minutes(self):
+        items = [
+            {"ref": "mse.html", "kind": "tool", "priority": "required"},
+            {"ref": "welcome.md", "kind": "read", "priority": "required"},
+        ]
+        with self.subTest("tool without minutes counts 0"):
+            self.assert_ok(self._result(_set_items("ms3", 0, items), {"welcome.md": 120}))
+        with self.subTest("tool with topic_meta minutes counts them"):
+            self.assert_rejected(
+                self._result(_set_items("ms3", 0, items), {"welcome.md": 120, "mse.html": 1}),
+                "Required Core", "121")
+
+    def test_rejects_an_unknown_priority_value(self):
+        # Fail closed: a misspelt `required` must not silently escape the budget.
+        for value in ("Required", "core", 1, None):
+            with self.subTest(value=value):
+                self.assert_rejected(self._result(_set_items("ms3", 0, [
+                    {"ref": "welcome.md", "kind": "read", "priority": value}])),
+                    "learningPaths.ms3 week 1", "priority")
+
+    def test_query_is_only_allowed_on_a_tool_item(self):
+        with self.subTest("tool"):
+            self.assert_ok(self._result(_set_items("ms3", 0, [
+                {"ref": "mse.html", "kind": "tool", "query": "case=demo_case_001"}])))
+        with self.subTest("read"):
+            self.assert_rejected(self._result(_set_items("ms3", 0, [
+                {"ref": "welcome.md", "kind": "read", "query": "week=1"}])),
+                "learningPaths.ms3 week 1", "welcome.md", "query")
+
+    def test_window_is_only_allowed_in_week_1(self):
+        item = [{"ref": "welcome.md", "kind": "read", "window": "days-1-3"}]
+        for site, week_index, ok in (("ms3", 0, True), ("resident", 0, True),
+                                     ("ms3", 1, False), ("resident", 2, False)):
+            with self.subTest(site=site, week=week_index + 1):
+                result = self._result(_set_items(site, week_index, item))
+                if ok:
+                    self.assert_ok(result)
+                else:
+                    self.assert_rejected(result, "learningPaths.%s week %d" %
+                                         (site, week_index + 1), "window", "week 1")
+
+
+class CurriculumSchemaCase(unittest.TestCase):
     """Exercise the checked-in Draft 7 schema directly with pinned jsonschema."""
 
     def _document(self):
@@ -741,6 +873,8 @@ class CurriculumSchemaEssentialsTest(unittest.TestCase):
         self.assertIn(marker, rendered, rendered)
         self.assertEqual(self._errors(original), [])
 
+
+class CurriculumSchemaEssentialsTest(CurriculumSchemaCase):
     def test_curriculum_accepts_essentials(self):
         document = self._document()
         document["essentials"]["ms3"].extend([
@@ -824,6 +958,92 @@ class CurriculumSchemaEssentialsTest(unittest.TestCase):
              "/essentials/ms3/0"),
             (lambda c: c["essentials"].__setitem__("faculty", []), "/essentials"),
             (lambda c: c["essentials"].__setitem__("_note", 7), "/essentials/_note"),
+        ]
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
+
+
+class CurriculumSchemaPathItemTest(CurriculumSchemaCase):
+    """The optional Path-item and week fields for decision `required-core-tier` (D2).
+
+    Every field is optional, so the curriculum with none of them set stays valid (the base
+    document asserts that before each mutation). Each field then has accepted and rejected
+    shapes. `week.practice` is an object, not the handoff's "practice (string)": it replaces
+    fd_path.js FD_PATH_PRACTICE, whose rows are {skill, feedback}, and a string would drop the
+    feedback prompt the Path renders.
+    """
+
+    ITEM = "/learningPaths/ms3/weeks/0/items/0"
+    WEEK = "/learningPaths/ms3/weeks/0"
+    PRACTICE = {"skill": "Present a focused interview and MSE",
+                "feedback": "Can you watch my MSE language today?", "card": "DO-1"}
+
+    @staticmethod
+    def _item(document):
+        return document["learningPaths"]["ms3"]["weeks"][0]["items"][0]
+
+    @staticmethod
+    def _week(document):
+        return document["learningPaths"]["ms3"]["weeks"][0]
+
+    def test_accepts_each_new_field_in_a_valid_shape(self):
+        accepted = [
+            lambda c: self._item(c).update({"priority": "required", "window": "days-1-3",
+                                            "query": "case=sp_depression_gated_si_001"}),
+            lambda c: self._item(c).update({"priority": "recommended", "query": "week=3"}),
+            lambda c: self._item(c).update({"priority": "optional", "query": "case=A-b_9"}),
+            lambda c: self._week(c).__setitem__("practice", dict(self.PRACTICE)),
+            lambda c: self._week(c).__setitem__(
+                "practice", {"skill": "Build a differential", "feedback": "Can you review it?"}),
+        ]
+        for index, mutate in enumerate(accepted):
+            with self.subTest(case=index):
+                document = self._document()
+                mutate(document)
+                self.assertEqual(self._render(self._errors(document)), "")
+
+    def test_rejects_malformed_priority_window_and_query(self):
+        cases = []
+        for value in ("mandatory", "Required", 1, None):
+            cases.append((lambda c, v=value: self._item(c).__setitem__("priority", v),
+                          self.ITEM + "/priority"))
+        for value in ("days-1-4", "", 1):
+            cases.append((lambda c, v=value: self._item(c).__setitem__("window", v),
+                          self.ITEM + "/window"))
+        for value in ("case=a b", "Case=x", "case=", "=x", "a=b&c=d", "case=x/y", "case", 3):
+            cases.append((lambda c, v=value: self._item(c).__setitem__("query", v),
+                          self.ITEM + "/query"))
+        # The Path item stays a closed shape: the three fields are the only additions.
+        cases.append((lambda c: self._item(c).__setitem__("order", 1), self.ITEM))
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
+
+    def test_week_practice_is_a_closed_skill_feedback_card_object(self):
+        def practice(**changes):
+            value = dict(self.PRACTICE)
+            for key, new in changes.items():
+                if new is None:
+                    value.pop(key)
+                else:
+                    value[key] = new
+            return lambda c: self._week(c).__setitem__("practice", value)
+
+        cases = [
+            (lambda c: self._week(c).__setitem__("practice", "Observed interview + MSE"),
+             self.WEEK + "/practice"),
+            (lambda c: self._week(c).__setitem__("practice", {}), self.WEEK + "/practice"),
+            (practice(feedback=None),
+             self.WEEK + "/practice: 'feedback' is a required property"),
+            (practice(skill=None), self.WEEK + "/practice: 'skill' is a required property"),
+            (practice(skill=""), self.WEEK + "/practice/skill"),
+            (practice(feedback=""), self.WEEK + "/practice/feedback"),
+            (practice(card="do-1"), self.WEEK + "/practice/card"),
+            (practice(card="DO-"), self.WEEK + "/practice/card"),
+            (practice(card="DO-1a"), self.WEEK + "/practice/card"),
+            (practice(card="OSCE-1"), self.WEEK + "/practice/card"),
+            (practice(rubric="pass"), self.WEEK + "/practice"),
         ]
         for mutate, marker in cases:
             with self.subTest(marker=marker):

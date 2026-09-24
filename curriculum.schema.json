@@ -308,6 +308,17 @@
         "items": {
           "type": "array",
           "items": { "$ref": "#/definitions/pathItem" }
+        },
+        "practice": {
+          "description": "The week's observable practice: one skill to practise, one feedback request to make, and optionally the direct-observation card (WP-3) it maps to. Replaces the hard-coded FD_PATH_PRACTICE rows in frontdoor/fd_path.js, which are {skill, feedback} objects — an object, not a string, so the feedback prompt the Path renders is kept. Optional: no consumer reads it yet.",
+          "type": "object",
+          "required": ["skill", "feedback"],
+          "additionalProperties": false,
+          "properties": {
+            "skill": { "type": "string", "minLength": 1 },
+            "feedback": { "type": "string", "minLength": 1 },
+            "card": { "type": "string", "pattern": "^DO-[0-9]+$" }
+          }
         }
       }
     },
@@ -317,7 +328,23 @@
       "additionalProperties": false,
       "properties": {
         "ref": { "type": "string", "minLength": 1 },
-        "kind": { "type": "string", "enum": ["read", "tool"] }
+        "kind": { "type": "string", "enum": ["read", "tool"] },
+        "priority": {
+          "description": "DECISION: required-core-tier (decisions.json). The Required Core tier, in the same three tokens as rotation_edition.schema.json's priority. Absent means recommended: `default` is an annotation only, so validate_curriculum.py applies that meaning, and it holds each week's required items to at most 120 read-minutes from topic_meta.json `read`.",
+          "type": "string",
+          "enum": ["required", "recommended", "optional"],
+          "default": "recommended"
+        },
+        "window": {
+          "description": "The Days 1-3 ward-survival set. validate_curriculum.py allows it only in week 1.",
+          "type": "string",
+          "enum": ["days-1-3"]
+        },
+        "query": {
+          "description": "One key=value pair forwarded to a tool as a deep link, e.g. case=sp_depression_gated_si_001 or week=3. validate_curriculum.py allows it only on kind 'tool'.",
+          "type": "string",
+          "pattern": "^[a-z]+=[A-Za-z0-9_-]+$"
+        }
       }
     },
     "siteLibraryEntry": {
