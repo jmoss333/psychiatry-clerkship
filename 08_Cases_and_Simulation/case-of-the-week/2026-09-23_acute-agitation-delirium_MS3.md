@@ -82,7 +82,7 @@ Tonight he is pulling at his IV line, shouting that the staff are "holding him p
 - **Common student errors to draw out:** (1) anchoring on "psych patient" and calling psychiatry before medical workup; (2) reaching for lorazepam first in a non-withdrawal delirium; (3) ordering head CT reflexively while missing the medication list; (4) forgetting the bladder scan in a man on tamsulosin + new anticholinergic.
 - **If time permits:** demonstrate a 30-second attention screen (months of the year backward; days of week backward) and mention that formal ED tools exist (Delirium Triage Screen → brief Confusion Assessment Method) with strong test characteristics [3] — students need only know that brief validated screens exist and that attention is the core deficit.
 - **Safety framing:** keep all dangerousness content on recognition, team safety, escalation to security/medication protocols, and least-restrictive interventions. No restraint technique detail.
-- **Step 2 CK hooks:** delirium vs dementia vs psychosis table; anticholinergic precipitants; benzodiazepines contraindicated in non-withdrawal delirium in the elderly; UTI/retention in older men; QTc before antipsychotics.
+- **Step 2 CK hooks:** delirium vs dementia vs psychosis table; anticholinergic precipitants; benzodiazepines generally avoided in non-withdrawal delirium in the elderly (exceptions: withdrawal, catatonia, seizures); UTI/retention in older men; QTc before antipsychotics.
 
 ---
 

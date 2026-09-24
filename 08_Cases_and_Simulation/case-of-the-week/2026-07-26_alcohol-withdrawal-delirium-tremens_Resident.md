@@ -49,7 +49,7 @@ There is also a **"kindling"** dimension: repeated withdrawal episodes progressi
 | **Delirium tremens** | Timeline (62 h), prior seizure, escalating requirement | Treat empirically while working up |
 | **Intracranial hemorrhage (SDH)** | Mechanical **fall**, platelets 128k, INR 1.3, alcohol-related cortical atrophy → bridging-vein vulnerability | **Non-contrast head CT** — low threshold, do not defer |
 | **Sepsis / post-op infection** | POD 0; T 38.6 °C is indistinguishable from DT hyperthermia | Cultures, CXR, wound exam, lactate |
-| **Wernicke encephalopathy** | Chronic AUD; classic triad present in a minority — most cases are missed | **Parenteral thiamine now**, before any dextrose |
+| **Wernicke encephalopathy** | Chronic AUD; classic triad present in a minority — most cases are missed | **Parenteral thiamine now**, before or with dextrose (never delay dextrose for hypoglycemia) |
 | **Hepatic encephalopathy** | AST:ALT 2:1, plt 128k, INR 1.3, bili 1.6 → probable cirrhosis | Ammonia is *not* diagnostic; assess clinically; sedatives can precipitate HE [7] |
 | **Serotonin syndrome / NMS / anticholinergic delirium** | Perioperative polypharmacy | Med rec; check for clonus, rigidity, mydriasis, dry skin |
 | **Opioid/benzodiazepine interaction & post-op delirium** | Fentanyl + 26 mg lorazepam | Consider iatrogenic contribution to the fluctuating sensorium |
