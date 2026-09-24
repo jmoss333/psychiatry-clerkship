@@ -46,6 +46,8 @@ He is calm, guarded, and cooperative. He denies suicidal or homicidal ideation; 
 
 *Teaching point:* Elevated suicide risk in early psychosis concentrates in the first years of illness and around insight gains post-stabilization. Assess: command hallucinations (absent here), persecutory delusions with identified persecutors, hopelessness as insight emerges, and access to means as part of collaborative safety planning. **The stem does not yet settle disposition, and the point of the question is that you notice.** He denies ideation — but a denial of suicidal ideation is one data point, not reassurance, and it carries least weight in exactly this population, where guardedness and persecutory content are part of the presentation. Before a discharge recommendation is defensible, complete the risk and functional assessment, obtain **collateral** (his account of his supports is not the same as verified supports), and establish that he can meet basic needs, that someone is actually available and willing, and that a **prompt** CSC intake — days, not weeks — exists as a confirmed appointment rather than a referral. If those hold, discharge with an explicit written safety plan naming warning signs, coping steps, contacts, and crisis resources is reasonable. If they do not, arrange a higher level of care with your attending. Escalate for command hallucinations, ideation with intent or plan, inability to care for self, or supports that cannot be verified. Keep documentation at the level of recognition, protective factors, and escalation thresholds.
 
+<!-- crisis-block -->
+
 ---
 
 ## Ranked Differential Diagnosis

@@ -49,6 +49,8 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 **Q8 (Safety).** She has **passive SI without plan/intent**. Structure the assessment and disposition.
 *Teaching point:* Conduct a structured risk assessment (ideation, intent, plan, access to means, protective factors, prior attempts, recent losses), formulate **acute vs. chronic risk**, and build a **collaborative safety plan** with means-safety counseling. Consider lithium's anti-suicidal evidence when weighing augmentation. Keep the teaching oriented to recognition, formulation, and escalation — not method detail. Reassess risk at each visit during cross-titration.
 
+<!-- crisis-block -->
+
 ---
 
 ### Ranked Differential / Diagnostic Reconsideration

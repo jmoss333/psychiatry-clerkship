@@ -13,6 +13,8 @@ All cases are synthetic. No real patient details are used.
 Conduct a focused suicide risk assessment, ask permission for collateral, and
 state an acute risk impression.
 
+<!-- crisis-block -->
+
 **Patient brief**
 
 29-year-old retail worker admitted after sending a concerning text to a sibling.

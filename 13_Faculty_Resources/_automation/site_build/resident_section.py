@@ -141,6 +141,11 @@ _CRISIS_REQUIRED_RES_MD={
     "cotw_20260827_bpd_res.md",
     # The suicide-risk case itself: assessment, safety planning, and disposition throughout.
     "cotw_20260723_suiciderisk_res.md",
+    # Q7 plans a first-episode discharge disposition with a written safety plan naming crisis
+    # resources (peer-review R02-006; author's scope call J3, 2026-09-24).
+    "cotw_20260907_fep_res.md",
+    # Q8 structures the assessment and disposition of passive SI (J3, 2026-09-24).
+    "cotw_20260720_mdd_res.md",
 }
 _crisis_res_gap=sorted(_CRISIS_REQUIRED_RES_MD-_crisis_res_done)
 if _crisis_res_gap:

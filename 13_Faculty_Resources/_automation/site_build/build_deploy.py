@@ -348,6 +348,13 @@ _CRISIS_REQUIRED_MD={
     "cotw_20260723_suiciderisk_ms3.md",
     "cotw_20260810_panic_ms3.md",
     "cotw_20260827_bpd_ms3.md",
+    # Q7 is a passive-SI assessment and safety-planning exercise, the same work the panic
+    # case's Q6 does (peer-review M11-008; author's scope call J3, 2026-09-24).
+    "cotw_20260720_mdd_ms3.md",
+    # OSCE Station 1 has the student conduct a focused suicide risk assessment and state an
+    # acute risk impression -- rehearsed risk work (M09-011; J3). The marker sits in the
+    # learner-facing Student task, not in examiner material a build-time strip may remove.
+    "osce.md",
 }
 _crisis_tools_done=set()
 for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.join(OUT,"tools")) if _f.endswith(".html")]:
