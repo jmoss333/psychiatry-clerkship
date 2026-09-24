@@ -71,7 +71,7 @@ var FD_PATH_PRACTICE=[
     feedback:'Can you watch my MSE language today?'},
   {skill:'Build a differential beyond the primary psychiatric diagnosis',
     feedback:'Can you review whether my differential shows reasoning?'},
-  {skill:'Explain why a medication and one non-medication intervention fit the formulation',
+  {skill:'Explain why one non-medication intervention fits the formulation and complete a supervised collaborative safety plan',
     feedback:'Can you review my rationale for this treatment plan?'},
   {skill:'Draft a family-meeting agenda and discharge barrier map',
     feedback:'Can you review my family-meeting agenda and discharge barriers?'},

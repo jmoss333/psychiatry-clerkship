@@ -60,7 +60,7 @@ Local times and locations should be inserted by the clerkship director.
 |---|---|---|
 | 1 | Orientation, safety recognition, interview, MSE | Present a focused interview/MSE and name what you would escalate immediately |
 | 2 | Diagnosis, differential, formulation | Build a differential beyond the primary psychiatric diagnosis |
-| 3 | Treatment | Explain why a medication and one non-medication intervention fit the formulation |
+| 3 | Psychotherapy, personality, safety planning | Explain why one non-medication intervention fits the formulation and complete a supervised collaborative safety plan |
 | 4 | Family/discharge/systems | Draft a family-meeting agenda and discharge barrier map |
 | 5 | Acute/consult psychiatry deep practice | Formulate suicide/violence risk, recognize delirium/catatonia/withdrawal, and document supervised escalation reasoning |
 | 6 | Integration | Present a full case with formulation, risk reasoning, and plan |
