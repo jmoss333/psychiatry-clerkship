@@ -78,7 +78,7 @@ class EvidenceSelectionTests(unittest.TestCase):
                 "deploy_ssl_url": "https://wrong.example",
             },
             {
-                "id": "exact",
+                "id": "0123456789abcdef01234567",
                 "context": "production",
                 "commit_ref": SHA,
                 "state": "ready",
@@ -89,12 +89,21 @@ class EvidenceSelectionTests(unittest.TestCase):
         ]
         evidence = receipt.select_deploy_evidence(site, deploys, SHA)
         self.assertEqual(evidence["status"], "PASS")
-        self.assertEqual(evidence["deployId"], "exact")
+        self.assertEqual(evidence["deployId"], "0123456789abcdef01234567")
         self.assertEqual(evidence["commitRef"], SHA)
+        self.assertEqual(
+            evidence["permalinkUrl"],
+            "https://0123456789abcdef01234567--une-ms3-psychiatry.netlify.app",
+        )
 
         deploys[1]["state"] = "error"
         evidence = receipt.select_deploy_evidence(site, deploys, SHA)
         self.assertEqual(evidence["status"], "FAIL")
+
+        deploys[1].update(state="ready", id="not-a-safe-deploy-id")
+        evidence = receipt.select_deploy_evidence(site, deploys, SHA)
+        self.assertEqual(evidence["status"], "UNKNOWN")
+        self.assertIsNone(evidence["permalinkUrl"])
 
         evidence = receipt.select_deploy_evidence(site, deploys[:1], SHA)
         self.assertEqual(evidence["status"], "UNKNOWN")
@@ -145,27 +154,63 @@ class CollectionWindowTests(unittest.TestCase):
         }
         with (
             mock.patch.object(
+                receipt,
+                "_fetch_ci",
+                return_value={"status": "PASS", "runId": 100},
+            ),
+            mock.patch.object(
+                receipt,
+                "_fetch_deploy",
+                side_effect=lambda token, site, release_sha: {
+                    "name": site["name"],
+                    "siteId": site["siteId"],
+                    "baseUrl": site["baseUrl"],
+                    "status": "PASS",
+                    "deployId": "0123456789abcdef01234567" if site["name"] == "ms3" else "89abcdef0123456701234567",
+                    "commitRef": release_sha,
+                    "permalinkUrl": (
+                        "https://0123456789abcdef01234567--une-ms3-psychiatry.netlify.app"
+                        if site["name"] == "ms3"
+                        else "https://89abcdef0123456701234567--mmc-psychiatry-residents-sanford.netlify.app"
+                    ),
+                },
+            ),
+            mock.patch.object(
                 receipt.production_revision_parity,
                 "check",
                 return_value=parity,
-            ),
+            ) as parity_check,
             mock.patch.object(
                 receipt.production_canary,
                 "probe",
                 return_value={"sites": []},
-            ),
+            ) as canary_probe,
         ):
             core = receipt.collect_core_evidence(
                 release_sha=SHA,
+                verifier_sha=OTHER_SHA,
                 repository=REPOSITORY,
                 config=config,
-                github_token=None,
-                netlify_token=None,
+                github_token="github-token",
+                netlify_token="netlify-token",
                 wait_seconds=3600,
             )
 
         self.assertEqual(core["releaseSha"], SHA)
+        self.assertEqual(core["verifierSha"], OTHER_SHA)
         self.assertEqual(core["servedRevision"]["status"], "PASS")
+        immutable_urls = {
+            "https://0123456789abcdef01234567--une-ms3-psychiatry.netlify.app",
+            "https://89abcdef0123456701234567--mmc-psychiatry-residents-sanford.netlify.app",
+        }
+        self.assertEqual(
+            {site["baseUrl"] for site in parity_check.call_args.args[0]["sites"]},
+            immutable_urls,
+        )
+        self.assertEqual(
+            {site["baseUrl"] for site in canary_probe.call_args.args[0]["sites"]},
+            immutable_urls,
+        )
 
 
 class JourneyAndReceiptTests(unittest.TestCase):
@@ -239,6 +284,7 @@ class JourneyAndReceiptTests(unittest.TestCase):
             generated_at="2026-09-23T20:05:00+00:00",
         )
         self.assertEqual(combined["status"], "UNKNOWN")
+        self.assertEqual(combined["verifierSha"], SHA)
         self.assertRegex(combined["evidenceSha256"], r"^[0-9a-f]{64}$")
         self.assertEqual(combined["releaseSha"], SHA)
 
@@ -261,7 +307,7 @@ class JourneyAndReceiptTests(unittest.TestCase):
             "deployments": {
                 "status": "PASS",
                 "sites": [
-                    {"name": "ms3", "status": "PASS", "siteId": "site-ms3", "deployId": "deploy-ms3", "commitRef": SHA, "url": "https://ms3.example"},
+                    {"name": "ms3", "status": "PASS", "siteId": "site-ms3", "deployId": "deploy-ms3", "commitRef": SHA, "permalinkUrl": "https://deploy-ms3.example"},
                     {"name": "res", "status": "PASS", "siteId": "site-res", "deployId": "deploy-res", "commitRef": SHA, "url": "https://res.example"},
                 ],
             },
@@ -278,6 +324,7 @@ class JourneyAndReceiptTests(unittest.TestCase):
         self.assertIn("Production release verification: PASS", markdown)
         self.assertIn(SHA, markdown)
         self.assertIn("deploy-ms3", markdown)
+        self.assertIn("https://deploy-ms3.example", markdown)
         self.assertIn("deploy-res", markdown)
         self.assertIn("https://github.example/runs/100", markdown)
         self.assertIn("does not establish faculty approval", markdown)

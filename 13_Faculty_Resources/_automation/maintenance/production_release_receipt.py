@@ -33,6 +33,7 @@ except ImportError:  # Direct workflow/CLI invocation.
 
 SCHEMA_VERSION = 1
 SHA_RE = re.compile(r"[0-9a-f]{40}")
+NETLIFY_DEPLOY_ID_RE = re.compile(r"[0-9a-f]{24}")
 REPOSITORY_RE = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 GITHUB_API = "https://api.github.com"
 NETLIFY_API = "https://api.netlify.com/api/v1"
@@ -148,8 +149,23 @@ def select_deploy_evidence(site, deploys, release_sha):
         }
     deploy = max(candidates, key=lambda item: str(item.get("created_at") or ""))
     state = deploy.get("state")
-    if state in {"ready", "current"}:
+    deploy_id = deploy.get("id")
+    base_url = base.get("baseUrl")
+    parsed_base = urlsplit(base_url) if isinstance(base_url, str) else None
+    permalink_url = None
+    if (
+        isinstance(deploy_id, str)
+        and NETLIFY_DEPLOY_ID_RE.fullmatch(deploy_id) is not None
+        and parsed_base is not None
+        and parsed_base.scheme == "https"
+        and parsed_base.hostname
+        and parsed_base.path in ("", "/")
+    ):
+        permalink_url = f"https://{deploy_id}--{parsed_base.hostname}"
+    if state in {"ready", "current"} and permalink_url:
         status = "PASS"
+    elif state in {"ready", "current"}:
+        status = "UNKNOWN"
     elif state == "error":
         status = "FAIL"
     else:
@@ -157,13 +173,47 @@ def select_deploy_evidence(site, deploys, release_sha):
     return {
         **base,
         "status": status,
-        "deployId": deploy.get("id"),
+        "deployId": deploy_id,
         "state": state,
         "commitRef": deploy.get("commit_ref"),
         "createdAt": deploy.get("created_at"),
         "publishedAt": deploy.get("published_at"),
+        "permalinkUrl": permalink_url,
         "url": deploy.get("deploy_ssl_url") or deploy.get("ssl_url") or deploy.get("url"),
-        "error": deploy.get("error_message") if status == "FAIL" else None,
+        "error": (
+            deploy.get("error_message")
+            if status == "FAIL"
+            else "deploy does not expose a safe atomic permalink"
+            if status == "UNKNOWN" and state in {"ready", "current"}
+            else None
+        ),
+    }
+
+
+def _immutable_deploy_config(config, deploy_rows):
+    """Replace mutable production aliases with exact deploy-ID permalinks."""
+    sites = production_canary._validate_config(config)
+    rows = {
+        row.get("name"): row
+        for row in deploy_rows
+        if isinstance(row, dict) and isinstance(row.get("name"), str)
+    }
+    if set(rows) != {site["name"] for site in sites}:
+        raise ReceiptError("exact deploy permalinks are unavailable for both learner sites")
+    immutable_sites = []
+    for site in sites:
+        row = rows[site["name"]]
+        expected_url = None
+        deploy_id = row.get("deployId")
+        if isinstance(deploy_id, str) and NETLIFY_DEPLOY_ID_RE.fullmatch(deploy_id):
+            expected_url = f"https://{deploy_id}--{urlsplit(site['baseUrl']).hostname}"
+        if row.get("status") != "PASS" or row.get("permalinkUrl") != expected_url:
+            raise ReceiptError(f"safe atomic deploy permalink unavailable for {site['name']}")
+        immutable_sites.append({**site, "baseUrl": expected_url})
+    return {
+        "schemaVersion": config.get("schemaVersion"),
+        "sites": immutable_sites,
+        "spProxy": config.get("spProxy"),
     }
 
 
@@ -278,6 +328,7 @@ def build_receipt(core, journeys, *, trigger, generated_at=None):
     if not isinstance(core, dict):
         raise ReceiptError("core evidence must be an object")
     release_sha = validate_sha(core.get("releaseSha"))
+    verifier_sha = validate_sha(core.get("verifierSha") or release_sha)
     repository = validate_repository(core.get("repository"))
     generated_at = generated_at or utc_now()
     evidence = {
@@ -305,6 +356,7 @@ def build_receipt(core, journeys, *, trigger, generated_at=None):
         "generatedAt": generated_at,
         "repository": repository,
         "releaseSha": release_sha,
+        "verifierSha": verifier_sha,
         "trigger": trigger,
         "coreCollectedAt": core.get("collectedAt"),
         "evidenceSha256": sha256(evidence_bytes).hexdigest(),
@@ -335,6 +387,7 @@ def render_markdown(receipt):
         f"# Production release verification: {status}",
         "",
         f"- Release: `{sha}`",
+        f"- Verifier: `{receipt.get('verifierSha', sha)}`",
         f"- Repository: `{receipt.get('repository', 'unknown')}`",
         f"- Generated: `{receipt.get('generatedAt', 'unknown')}`",
         f"- Evidence digest: `{receipt.get('evidenceSha256', 'unknown')}`",
@@ -345,9 +398,10 @@ def render_markdown(receipt):
         f"{_md_link('run ' + str(ci.get('runId')), ci.get('url'))} |",
     ]
     for site in deployments.get("sites", []) if isinstance(deployments.get("sites"), list) else []:
+        deploy_label = f"deploy `{site.get('deployId')}`"
         lines.append(
             f"| Netlify {site.get('name', 'site')} | **{site.get('status', 'UNKNOWN')}** | "
-            f"deploy `{site.get('deployId')}` · `{site.get('commitRef')}` |"
+            f"{_md_link(deploy_label, site.get('permalinkUrl'))} · `{site.get('commitRef')}` |"
         )
     revision_sites = revision.get("sites") if isinstance(revision.get("sites"), dict) else {}
     lines.extend(
@@ -547,6 +601,7 @@ def _fetch_deploy(token, site, release_sha):
 def collect_core_evidence(
     *,
     release_sha,
+    verifier_sha=None,
     repository,
     config,
     github_token,
@@ -558,6 +613,7 @@ def collect_core_evidence(
 ):
     """Poll CI and both deploys, then sample served content independently."""
     release_sha = validate_sha(release_sha)
+    verifier_sha = validate_sha(verifier_sha or release_sha)
     repository = validate_repository(repository)
     sites = production_canary._validate_config(config)
     if len(sites) != 2 or {site["name"] for site in sites} != {"ms3", "res"}:
@@ -612,30 +668,43 @@ def collect_core_evidence(
         sleep(min(poll_seconds, max(0, deadline - monotonic())))
 
     try:
+        immutable_config = _immutable_deploy_config(config, deploy_rows)
+    except (ReceiptError, production_canary.CanaryError) as exc:
+        immutable_config = None
+        immutable_error = str(exc)
+
+    try:
+        if immutable_config is None:
+            raise ReceiptError(immutable_error)
         parity = production_revision_parity.check(
-            config,
+            immutable_config,
             attempts=3,
             retry_delay=15,
         )
         served = served_revision_evidence(parity, release_sha)
         served["receipt"] = parity
-    except (ValueError, production_canary.CanaryError) as exc:
+    except (ReceiptError, ValueError, production_canary.CanaryError) as exc:
         served = {"status": "UNKNOWN", "sites": {}, "error": str(exc)}
 
     try:
+        if immutable_config is None:
+            raise ReceiptError(immutable_error)
         twin = production_canary.probe(
-            config,
+            immutable_config,
             opener=production_canary.build_opener(),
             now=utc_now,
             source_sha=release_sha,
         )
         static_canary = {"status": "PASS", **twin}
+    except ReceiptError as exc:
+        static_canary = {"status": "UNKNOWN", "error": str(exc)}
     except production_canary.CanaryError as exc:
         static_canary = {"status": "FAIL", "error": str(exc)}
 
     return {
         "schemaVersion": SCHEMA_VERSION,
         "releaseSha": release_sha,
+        "verifierSha": verifier_sha,
         "repository": repository,
         "collectedAt": utc_now(),
         "ci": ci,
@@ -664,6 +733,7 @@ def _fallback_core(args, error):
     return {
         "schemaVersion": SCHEMA_VERSION,
         "releaseSha": validate_sha(args.release_sha),
+        "verifierSha": validate_sha(getattr(args, "verifier_sha", None) or args.release_sha),
         "repository": validate_repository(args.repository),
         "collectedAt": utc_now(),
         "ci": {"status": "UNKNOWN", "error": error},
@@ -677,6 +747,7 @@ def _command_collect(args):
     config = production_canary._load_config(args.config)
     core = collect_core_evidence(
         release_sha=args.release_sha,
+        verifier_sha=args.verifier_sha,
         repository=args.repository,
         config=config,
         github_token=os.environ.get("GITHUB_TOKEN", ""),
@@ -745,6 +816,7 @@ def _parser():
 
     collect = subparsers.add_parser("collect", help="collect CI, deploy, revision, and canary evidence")
     collect.add_argument("--release-sha", required=True)
+    collect.add_argument("--verifier-sha")
     collect.add_argument("--repository", required=True)
     collect.add_argument("--config", type=Path, default=production_canary.DEFAULT_CONFIG_PATH)
     collect.add_argument("--out", type=Path, required=True)
