@@ -3862,7 +3862,7 @@
     "read": 5,
     "tldr": "One safety rule above all: if you are worried about immediate safety, tell the resident or attending now — do not wait, do not carry it alone; the four daily questions, PHI discipline, and student boundary rules structure everything else.",
     "points": [
-      "Escalate immediately for: current suicidal intent or new plan, threats or escalating agitation, confusion/fever/rigidity suggesting delirium or catatonia, or any withdrawal concern — these cannot wait for rounds and belong in Week 1 safety recognition.",
+      "Escalate immediately for: any new or newly disclosed suicidal or homicidal thoughts, current suicidal intent or new plan, threats or escalating agitation, confusion/fever/rigidity suggesting delirium or catatonia, or any withdrawal concern — these cannot wait for rounds and belong in Week 1 safety recognition.",
       "Use four questions for every patient: what is the syndrome? What medical/substance/sleep/medication factor is driving it? What family/social/discharge context changes the plan? What must be safer before discharge?",
       "Students may interview patients, draft notes, suggest differentials, and observe family meetings with a defined role — but may not make independent safety or discharge decisions, promise anything, or provide unsupervised therapy."
     ],
@@ -4016,7 +4016,7 @@
     "clinicalWorkflow": {
       "ask": "Open with the patient's story, then make sure suicide risk, violence risk, vulnerability, substances/withdrawal, medical contributors, and collateral needs are covered before you close.",
       "mse": "Write one concrete example for each MSE domain instead of only using adjectives.",
-      "safety": "Escalate immediately for current suicidal intent or preparation, escalating threats/agitation, delirium/catatonia signs, withdrawal concern, or any interaction that feels unsafe.",
+      "safety": "Tell the resident the same encounter about any new or newly disclosed suicidal or homicidal thoughts; escalate immediately for current suicidal intent or preparation, escalating threats/agitation, delirium/catatonia signs, withdrawal concern, or any interaction that feels unsafe.",
       "say": "You can choose what you answer. I do have to tell the team if there is an immediate safety concern, and my goal is to understand what would help.",
       "collateral": "Ask what the patient is like at baseline, what changed, when it changed, and what safety or function concerns have appeared.",
       "rounds": "Give a one-liner, the key MSE findings, the safety read, and one capacity or collateral question.",
