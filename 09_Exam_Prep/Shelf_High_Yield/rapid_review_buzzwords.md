@@ -6,7 +6,7 @@
 
 ## Mood
 - Depression ≥2 weeks, ≥5 SIGECAPS incl. mood or anhedonia → **major depressive episode** → SSRI + therapy. *(→ Mood)*
-- Manic ≥1 week (or any duration if hospitalized), elevated/irritable + DIGFAST → **bipolar I** → mood stabilizer/SGA; **antidepressant monotherapy contraindicated**. *(→ Mood)*
+- Manic ≥1 week (or any duration if hospitalized), elevated/irritable mood **plus increased activity/energy** + ≥3 DIGFAST (≥4 if only irritable) → **bipolar I** → mood stabilizer/SGA; **antidepressant monotherapy contraindicated**. *(→ Mood)*
 - Antidepressant "works" but patient becomes activated/grandiose → uncovered **bipolar** → screen for bipolarity before any antidepressant.
 - Severe, psychotic, catatonic, food-refusing, or high suicide risk → **ECT** (and preferred over drugs when that patient is pregnant). *(→ ECT)*
 - Grief-specific yearning/preoccupation >12 months, impairing → **prolonged grief disorder (DSM-5-TR)** — not normal bereavement.
@@ -22,7 +22,7 @@
 - Chronic worry ≥6 mo, multiple domains → **GAD** → SSRI/SNRI + CBT. *(→ Anxiety)*
 - Recurrent unexpected attacks + worry about attacks → **panic disorder** → SSRI + CBT; benzo bridge only.
 - Ego-dystonic obsessions + rituals → **OCD** → SSRI (higher dose) + **ERP**; clomipramine 2nd-line.
-- Trauma + re-experiencing/avoidance/hyperarousal → **PTSD** → trauma-focused therapy ± SSRI/SNRI; prazosin for nightmares; **avoid benzodiazepines**.
+- Trauma + intrusion/avoidance/negative cognition-mood/hyperarousal >1 month → **PTSD** → trauma-focused therapy ± SSRI/SNRI; prazosin for nightmares; **avoid benzodiazepines**.
 - Anxiety only when performing → **performance-type social anxiety** → PRN beta-blocker.
 
 ## Personality

@@ -4,7 +4,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 ## PSYCHOTIC DISORDERS (Questions 1–15)
 
-**1. What are the DSM-5 Criterion A symptoms of schizophrenia?**
+**1. What are the DSM-5-TR Criterion A symptoms of schizophrenia?**
 
 - **Answer:** Delusions, hallucinations, disorganized speech, grossly disorganized/catatonic behavior, and negative symptoms. At least one must be delusions, hallucinations, or disorganized speech.
 
@@ -122,7 +122,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Malaspina et al., Schizophr Res 2013.
 
-- **Pearl:** The key question is: "Has this patient ever had psychosis **without** a mood episode?" If yes → schizoaffective. If psychosis only occurs during mood episodes → mood disorder with psychotic features.
+- **Pearl:** The key question is: "Has this patient ever had psychosis **without** a mood episode?" If yes (for ≥2 weeks) → schizoaffective disorder only if mood episodes have also been present for the majority of the total illness duration (active and residual phases); otherwise schizophrenia. If psychosis only occurs during mood episodes → mood disorder with psychotic features.
 
 **13. What metabolic monitoring is required for patients on antipsychotics?**
 
@@ -156,7 +156,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 ## MOOD DISORDERS (Questions 16–35)
 
-**16. What are the DSM-5 criteria for a major depressive episode?**
+**16. What are the DSM-5-TR criteria for a major depressive episode?**
 
 - **Answer:** ≥5 of 9 symptoms during the same 2-week period, with at least one being depressed mood or anhedonia. Mnemonic: **SIG E CAPS** — Sleep, Interest (anhedonia), Guilt, Energy, Concentration, Appetite, Psychomotor changes, Suicidality.
 
@@ -216,9 +216,9 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Pearl:** The "5-week fluoxetine rule" is one of the most commonly tested pharmacology facts on shelf exams.
 
-**22. What are the DSM-5 criteria for a manic episode?**
+**22. What are the DSM-5-TR criteria for a manic episode?**
 
-- **Answer:** A distinct period of abnormally elevated, expansive, or irritable mood AND increased energy/activity lasting ≥7 days (or any duration if hospitalization required), plus ≥3 of: **DIG FAST** — Distractibility, Impulsivity/Indiscretion, Grandiosity, Flight of ideas, Activity increase, Sleep decreased, Talkativeness.
+- **Answer:** A distinct period of abnormally elevated, expansive, or irritable mood AND increased energy/activity lasting ≥7 days (or any duration if hospitalization required), plus ≥3 (≥4 if mood is only irritable) of: **DIG FAST** — Distractibility, Impulsivity/Indiscretion, Grandiosity, Flight of ideas, Activity increase, Sleep decreased, Talkativeness.
 
 - **Evidence:** Bipolar I requires at least one manic episode; bipolar II requires hypomania (≥4 days, no hospitalization/psychosis) + major depressive episode.
 
@@ -704,7 +704,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Pearl:** The cluster mnemonic: "**A** is weird, **B** is wild, **C** is worried."
 
-**70. What are the DSM-5 criteria for borderline personality disorder?**
+**70. What are the DSM-5-TR criteria for borderline personality disorder?**
 
 - **Answer:** ≥5 of 9 criteria: abandonment fears, unstable relationships (idealization/devaluation), identity disturbance, impulsivity, recurrent suicidality/self-harm, affective instability, chronic emptiness, inappropriate anger, transient paranoia/dissociation.
 
@@ -816,7 +816,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 ## NEURODEVELOPMENTAL DISORDERS (Questions 81–87)
 
-**81. What are the DSM-5 criteria for ADHD?**
+**81. What are the DSM-5-TR criteria for ADHD?**
 
 - **Answer:** ≥6 of 9 symptoms (≥5 for adults ≥17) in inattention and/or hyperactivity-impulsivity domains, persisting ≥6 months, with several symptoms present before age 12, in ≥2 settings, with functional impairment.
 
@@ -856,7 +856,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Pearl:** Hyperactivity in adults often manifests as **internal restlessness** rather than overt motor hyperactivity — ask about feeling "driven by a motor" or inability to relax.
 
-**85. What are the DSM-5 criteria for autism spectrum disorder?**
+**85. What are the DSM-5-TR criteria for autism spectrum disorder?**
 
 - **Answer:** Persistent deficits in all 3 social communication subdomains (reciprocity, nonverbal communication, relationships) PLUS ≥2 of 4 restricted/repetitive behaviors (stereotypies, insistence on sameness, fixated interests, sensory hyper/hyporeactivity).
 
@@ -878,7 +878,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **87. What is the difference between intellectual disability and autism spectrum disorder?**
 
-- **Answer:** Intellectual disability involves deficits in intellectual functioning (IQ <70) AND adaptive functioning. ASD involves social communication deficits and restricted/repetitive behaviors regardless of IQ. They frequently co-occur (~30% of ASD cases).
+- **Answer:** Intellectual developmental disorder (intellectual disability) involves deficits in intellectual functioning (typically IQ about two SDs below the mean, ~65–75 allowing for measurement error) AND adaptive functioning, with severity set by adaptive functioning. ASD involves social communication deficits and restricted/repetitive behaviors regardless of IQ. They frequently co-occur (~30% of ASD cases).
 
 - **Evidence:** Nearly one-third of individuals with ASD have intellectual disability or minimal verbal ability.
 
