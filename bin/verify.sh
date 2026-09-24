@@ -192,8 +192,14 @@ step "standards spine coverage"             python3 bin/check_standards_coverage
 step "unit — vocabulary registry"           python3 bin/check_vocabulary.py --self-test
 step "vocabulary vs code sites"             python3 bin/check_vocabulary.py
 step "unit — qbank coherence"              python3 bin/check_qbank_coherence.py --self-test
-# WP-7 (2026-09-24). The length-cue ratchet also runs for real, beside qbank coherence below.
+# WP-7 / WP-8 (2026-09-24). The length-cue ratchet also runs for real, beside qbank coherence
+# below. The blueprint report runs ONLY its --self-test: no attested item carries a blueprint
+# tag yet, so the report itself exits 2 (a PARTIAL distribution is could-not-check, never a
+# pass) and would block every push until tagging is complete. The content PR that tags the
+# last attested item pins bin/qbank_blueprint_baseline.json with --update-baseline and adds
+# the report here as its own step.
 step "unit — qbank length cue"              python3 bin/check_qbank_length_cue.py --self-test
+step "unit — qbank blueprint report"        python3 bin/qbank_blueprint_report.py --self-test
 # Four tools shipped a --self-test that NO gate invoked — found by bin/check_vacuity.py after
 # Codex pointed out it was inventorying only test FILES, not the --self-test modes its own
 # doctrine calls the paired falsification. Each passes; none needed an exemption. The guards

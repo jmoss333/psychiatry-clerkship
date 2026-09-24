@@ -6,7 +6,7 @@ gain in). A **rise fails** and blocks the push. Nobody has to drive the number t
 gate to be useful, and nobody can let it drift upward without a diff a reviewer sees. Hard
 checks — the ones that must be zero regardless — live *beside* the ratchets, never inside them.
 
-Four tools use it. Each ships its own falsification (`--self-test`) that proves a synthetic
+Five tools use it (the fifth, `bin/qbank_blueprint_report.py`, has no pin yet -- see below). Each ships its own falsification (`--self-test`) that proves a synthetic
 regression exits 1 and the live tree exits 0, and `bin/verify.sh` runs both the self-test and the
 gate, so the pre-push hook is the enforcement. None of them is in `ci.yml`: adding a step
 there trips three separate contracts (`bin/check-verify-coverage.py`, the step inventory and the
@@ -19,6 +19,7 @@ anyway. See `CLAUDE.md`, "Validate & test".
 | `bin/verify_spans.py` | `bin/verify_spans_baseline.json` | `rows_flagged`, `sentences_truncated`, `sentences_edited`, `rows_uncached` | any **REWORDED** sentence (a sentence the paper never wrote) fails whatever the baseline says |
 | `bin/check_qbank_coherence.py` | `bin/check_qbank_coherence_baseline.json` | `pairs` (0 today) | none — the pin is the floor |
 | `bin/check_qbank_length_cue.py` | `bin/qbank_length_cue_baseline.json` | `attested_uniquely_longest` (133 of 144), `live_uniquely_longest` (156 of 189) — items whose keyed option is the uniquely longest (WP-7) | none; the flagged ids it prints are the rewrite work list. Report-only lines for `topic_meta.json` quizzes and the practice-case JSONs never move the exit |
+| `bin/qbank_blueprint_report.py` | `bin/qbank_blueprint_baseline.json` — **not shipped yet** | points outside the NBME/COMAT band, per dimension, over the attested pool (WP-8) | any untagged attested item exits 2 (PARTIAL), so only `--self-test` is in `verify.sh` until tagging is complete |
 
 ## Lowering the ratchet
 
@@ -47,6 +48,11 @@ cueing item to `draft` lowers the attested count without fixing anything, and th
 does not move until the item is rewritten. Lower the attested pin after the rewritten batch is
 re-attested through the console.
 
+`qbank_blueprint_report.py --update-baseline` **refuses** (exit 2, nothing written) until every
+attested item carries a `blueprint` tag: a pin over a partial pool would ratchet a number that
+describes a different set. The content PR that tags the last attested item runs it, commits
+`bin/qbank_blueprint_baseline.json`, and adds the report itself as a `verify.sh` step.
+
 Each command rewrites its baseline from what the tool measures right now, prints the new pins,
 then runs the gate. The tool does not refuse to write a *higher* number — the diff in the PR is
 the review, and a reviewer who sees a pin go up should ask why. Never re-pin to make a red
@@ -58,7 +64,7 @@ push green: fix the row or the item the tool printed. The message on a rise says
 |---|---|---|
 | 0 | clean — every pinned count at or below its baseline, hard checks clear | a fall prints `note: … improved 6 -> 5 — run --update-baseline …` |
 | 1 | a finding | a count rose; a REWORDED sentence |
-| 2 | could not check — **not a pass** | no baseline; a baseline missing a key; zero rows carrying a span; zero live bank items; zero attested items; an item whose options cannot be measured |
+| 2 | could not check — **not a pass** | no baseline; a baseline missing a key; zero rows carrying a span; zero live bank items; zero attested items; an item whose options cannot be measured; any untagged attested item (blueprint report) |
 
 Exit 2 exists because a pass over an empty set is the defect `docs/SILENT_SHRINK_CHECKLIST.md`
 §D4 describes. Before 2026-09-16, `verify_spans.py --cache <wrong path>` printed
