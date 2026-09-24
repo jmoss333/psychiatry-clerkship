@@ -84,7 +84,7 @@ The definitive meta-analysis establishing ECT's superiority over sham (SES −0.
 
 **17. Cipriani et al., "Lithium in the Prevention of Suicide in Mood Disorders," BMJ 2013**
 
-Meta-analysis of 48 RCTs (6,674 participants) finding fewer suicides with lithium than placebo (OR 0.13, based on few events) and fewer deaths from any cause (OR 0.38). Still the main pharmacological anti-suicide signal in mood disorders, but read it with the VA Li+ Plus RCT (Katz et al., JAMA Psychiatry 2022), which was stopped for futility after lithium added to usual care did not reduce suicide-related events.
+Meta-analysis of 48 RCTs (6,674 participants) finding fewer suicides with lithium than placebo (OR 0.13, based on few events) and fewer deaths from any cause (OR 0.38). Still the main pharmacological anti-suicide signal in mood disorders, but read it with the VA Li+ plus RCT (Katz et al., JAMA Psychiatry 2022) in veterans with a recent suicide-related event, which was stopped for futility after lithium added to usual care did not reduce repeat suicide-related events.
 
 **18. BALANCE Trial — Geddes et al., "Lithium Plus Valproate Combination Therapy vs Monotherapy for Bipolar I Disorder," Lancet 2010**
 

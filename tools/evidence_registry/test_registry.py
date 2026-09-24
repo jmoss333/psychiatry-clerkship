@@ -72,6 +72,15 @@ EXISTING_IDS = {
     "project-beta-psychopharm-agitation-2012",
     "canmat-isbd-bipolar-2018",
 }
+# Added by peer-review remediation WP8 (2026-09-24): therapy_reading_room.md now cites individual
+# cohort data for handgun ownership and suicide (Studdert 2020), and canon_200.md reads Cipriani
+# 2013 beside the VA Li+ trial stopped for futility (Katz 2022). Asserting what a paper found
+# requires a stored span, so both enter the registry with one. Defined here, not at the end of the
+# file, so it cannot collide with batches appended below.
+PEER_REVIEW_WP8_2026_09_IDS = {
+    "studdert-2020-handgun-suicide",
+    "katz-2022-lithium-va",
+}
 TIER1_IDS = {
     "appelbaum-grisso-1988-capacity",
     "border-2019-candidate-gene",
@@ -218,7 +227,7 @@ ISSUE_441_PTSD_IDS = {
 }
 
 ALL_SOURCE_IDS = (
-    EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS | THERAPY_WP_T2_IDS
+    EXISTING_IDS | PEER_REVIEW_WP8_2026_09_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS | THERAPY_WP_T2_IDS
     | POSTDISCHARGE_CORRECTION_IDS | CURRICULUM_REVIEW_WP5A_IDS | CURRICULUM_REVIEW_WP5B_IDS
     | CURRICULUM_REVIEW_WP5C_IDS | ISSUE_441_PTSD_IDS
 )
