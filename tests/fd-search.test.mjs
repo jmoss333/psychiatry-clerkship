@@ -577,3 +577,72 @@ test('every multi-word synonym key is lowercase and genuinely multi-word', () =>
     assert.ok(key.split(/\s+/).length > 1, `"${key}" is not a phrase`);
   }
 });
+
+// ---- short words do not match inside other words (2026-09-24) ---------------------------------
+//
+// Every haystack test used to be a bare substring, so "im" in "haldol im" matched "claim" and
+// "time", "ect" matched every page that says "effect", and "mi" matched "family". The rule in
+// fdSearchWordIn: two characters or fewer must be a whole word; exactly three must START a word
+// (so type-ahead "del" still finds Delirium); four or more match anywhere, as before. Ordinary
+// results only -- the safety-kit pass keeps the old substring test, pinned below, because some
+// crisis phrasings reach their protocol only through it.
+
+function shortWordIndex() {
+  const mk = (ref, title, summary) => ({ ref, title, summary, kind: 'read' });
+  return {
+    byRef: {
+      'claims.md': mk('claims.md', 'Insurance claims', 'Prior authorization time limits.'),
+      'im-route.md': mk('im-route.md', 'Routes of administration', 'IM, IV and PO: onset compared.'),
+      'effects.md': mk('effects.md', 'Side effects overview', 'Common adverse effects.'),
+      'ect-page.md': mk('ect-page.md', 'ECT basics', 'Electroconvulsive therapy.'),
+      'delirium.md': mk('delirium.md', 'Delirium', 'Acute confusion.'),
+      'lithium.md': mk('lithium.md', 'Lithium', 'Levels and toxicity.'),
+      'acute-care.md': mk('acute-care.md', 'Acute care pathways', 'Emergency department flow.'),
+    },
+    kit: [{
+      item: { ref: 'kit-suicide.md', title: 'Suicide Risk Card', summary: 'Acute risk formulation.', kind: 'read' },
+      triggers: ['suicidal'],
+    }],
+    weeks: [], columns: [],
+  };
+}
+const refsOf = (rows) => rows.map((r) => r.item.ref);
+
+test('a two-letter word matches only as a whole word ("im" is not inside "claims" or "time")', () => {
+  const refs = refsOf(F.fdSearchResults(shortWordIndex(), 'im', {}, {}));
+  assert.deepEqual(refs, ['im-route.md']);
+});
+
+test('a three-letter word must start a word: "ect" finds ECT, not "effects"', () => {
+  const refs = refsOf(F.fdSearchResults(shortWordIndex(), 'ect', {}, {}));
+  assert.ok(refs.includes('ect-page.md'), refs.join(','));
+  assert.ok(!refs.includes('effects.md'), 'ect matched inside "effects"');
+});
+
+test('type-ahead keeps working on the third keystroke: "del" still finds Delirium', () => {
+  assert.equal(refsOf(F.fdSearchResults(shortWordIndex(), 'del', {}, {}))[0], 'delirium.md');
+});
+
+test('four letters or more still match anywhere, exactly as before: "lith" finds Lithium', () => {
+  assert.ok(refsOf(F.fdSearchResults(shortWordIndex(), 'lith', {}, {})).includes('lithium.md'));
+});
+
+test('a short word earns no title score from inside another word', () => {
+  const idx = shortWordIndex();
+  assert.equal(F.fdSearchScore(idx.byRef['effects.md'], 'ect', ['ect']), 0);
+  assert.ok(F.fdSearchScore(idx.byRef['ect-page.md'], 'ect', ['ect']) > 0);
+});
+
+test('the safety-kit pass keeps the substring test: "cut her wrist" still reaches the protocol', () => {
+  // "cut" sits inside "Acute" in the kit card's summary, and that is the ONLY route this phrasing
+  // has to the suicide card today. The ordinary page with "Acute" in its title must not match.
+  const rows = F.fdSearchResults(shortWordIndex(), 'cut her wrist', {}, {});
+  assert.equal(rows[0]?.kind, 'protocol');
+  assert.equal(rows[0]?.item.ref, 'kit-suicide.md');
+  assert.ok(!refsOf(rows).includes('acute-care.md'), 'an ordinary page matched "cut" inside "acute"');
+});
+
+test('on the real index, "haldol im" no longer drags in pages through "im" inside other words', () => {
+  const items = F.fdSearchResults(REAL_INDEX, 'im', SYN, {}).filter((r) => r.kind === 'item');
+  assert.deepEqual(refsOf(items), [], `"im" alone matched: ${refsOf(items).join(', ')}`);
+});
