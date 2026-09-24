@@ -551,7 +551,7 @@ def collect_core_evidence(
     config,
     github_token,
     netlify_token,
-    wait_seconds=1200,
+    wait_seconds=3600,
     poll_seconds=20,
     sleep=time.sleep,
     monotonic=time.monotonic,
@@ -562,8 +562,8 @@ def collect_core_evidence(
     sites = production_canary._validate_config(config)
     if len(sites) != 2 or {site["name"] for site in sites} != {"ms3", "res"}:
         raise ReceiptError("exactly the ms3 and res learner sites are required")
-    if wait_seconds < 0 or wait_seconds > 1800 or poll_seconds < 1 or poll_seconds > 60:
-        raise ReceiptError("wait must be 0-1800 seconds and poll interval 1-60 seconds")
+    if wait_seconds < 0 or wait_seconds > 3600 or poll_seconds < 1 or poll_seconds > 60:
+        raise ReceiptError("wait must be 0-3600 seconds and poll interval 1-60 seconds")
     deadline = monotonic() + wait_seconds
     ci = {"status": "UNKNOWN", "runId": None, "error": "GITHUB_TOKEN unavailable"}
     deploy_rows = [
@@ -748,7 +748,7 @@ def _parser():
     collect.add_argument("--repository", required=True)
     collect.add_argument("--config", type=Path, default=production_canary.DEFAULT_CONFIG_PATH)
     collect.add_argument("--out", type=Path, required=True)
-    collect.add_argument("--wait-seconds", type=int, default=1200)
+    collect.add_argument("--wait-seconds", type=int, default=3600)
     collect.add_argument("--poll-seconds", type=int, default=20)
 
     finalize = subparsers.add_parser("finalize", help="combine core evidence and browser journeys")

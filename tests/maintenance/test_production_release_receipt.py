@@ -3,6 +3,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -121,6 +122,50 @@ class EvidenceSelectionTests(unittest.TestCase):
         self.assertEqual(exact["status"], "PASS")
         self.assertEqual(exact["sites"]["ms3"], SHA)
         self.assertEqual(exact["sites"]["res"], SHA)
+
+
+class CollectionWindowTests(unittest.TestCase):
+    def test_accepts_an_hour_for_serialized_main_ci_to_reach_the_exact_sha(self):
+        config = receipt.production_canary._load_config(
+            receipt.production_canary.DEFAULT_CONFIG_PATH
+        )
+        parity = {
+            "schemaVersion": 1,
+            "status": "matched",
+            "observations": [
+                {
+                    "checkedAt": "2026-09-24T14:35:00+00:00",
+                    "status": "matched",
+                    "sites": [
+                        {"name": "ms3", "revision": SHA},
+                        {"name": "res", "revision": SHA},
+                    ],
+                }
+            ],
+        }
+        with (
+            mock.patch.object(
+                receipt.production_revision_parity,
+                "check",
+                return_value=parity,
+            ),
+            mock.patch.object(
+                receipt.production_canary,
+                "probe",
+                return_value={"sites": []},
+            ),
+        ):
+            core = receipt.collect_core_evidence(
+                release_sha=SHA,
+                repository=REPOSITORY,
+                config=config,
+                github_token=None,
+                netlify_token=None,
+                wait_seconds=3600,
+            )
+
+        self.assertEqual(core["releaseSha"], SHA)
+        self.assertEqual(core["servedRevision"]["status"], "PASS")
 
 
 class JourneyAndReceiptTests(unittest.TestCase):

@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+import re
 
 import yaml
 
@@ -48,7 +49,19 @@ class ProductionReleaseWorkflowTests(unittest.TestCase):
         self.assertEqual(positions, sorted(positions))
 
         collect = self.steps[positions[1]]["run"]
-        self.assertIn("--wait-seconds 1200", collect)
+        wait_match = re.search(r"--wait-seconds\s+(\d+)", collect)
+        self.assertIsNotNone(wait_match)
+        wait_seconds = int(wait_match.group(1))
+        self.assertGreaterEqual(
+            wait_seconds,
+            3600,
+            "serialized main CI can require a full hour before exact-SHA evidence is ready",
+        )
+        self.assertGreaterEqual(
+            self.job["timeout-minutes"] * 60,
+            wait_seconds + 600,
+            "the job must leave time after evidence collection for journeys and receipt upload",
+        )
         self.assertIn("NETLIFY_AUTH_TOKEN", self.steps[positions[1]]["env"])
         self.assertIn("GITHUB_TOKEN", self.steps[positions[1]]["env"])
 
