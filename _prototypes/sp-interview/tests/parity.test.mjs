@@ -51,6 +51,9 @@ const scenarios = [
   { c: 2, name: 'ray challenge blocks command', msgs: ["No one is poisoning you — that's not real.","Okay, but do the voices tell you to do anything?"] },
   { c: 2, name: 'ray collude flag', msgs: ["You're right, they really are after you — we need to stop them."] },
   { c: 2, name: 'ray target locked without command', msgs: ["Have you thought about hurting the neighbors?"] },
+  // ---- Ray peer-review 2026-09-24: M02-013 honest recording answer, M02-011 exposure, passive wish ----
+  { c: 2, name: 'ray honest recording answer (not a challenge)', msgs: ["No one is recording this. I'm Alex, one of the medical students.","When the voice talks, does it ever tell you to do anything?"] },
+  { c: 2, name: 'ray exposure history', msgs: ["Hi, I'm Alex — you're in control of what we talk about.","Does anyone else in the building have headaches, and is there a working carbon monoxide detector?"] },
   { c: 2, name: 'ray passive-wish', msgs: ["Do you ever wish you could go to sleep and not wake up?"] },
 ];
 

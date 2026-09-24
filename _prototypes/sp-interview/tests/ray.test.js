@@ -117,8 +117,44 @@ await run('command screen never asked → critical miss surfaces in coverage',[
   return errs;
 });
 
-// Peer-review M02-006/-012 (2026-09-24): a passive-wish question gets his passive-wish answer (the
-// wish not to wake up), and c_si stays partial until he is asked plainly about killing himself.
+// Peer-review M02-013 (2026-09-24): answering his opening question honestly — "no one is
+// recording" — is the move the case credits; it must not ALSO read as reality-testing the delusion.
+await run('honest recording answer is credited, never flagged as challenging the delusion',[
+ "No one is recording this. I'm Alex, one of the medical students."
+],(s,cov,rub,nar,replies)=>{
+  const errs=[];
+  if((s.turns[0].flags||[]).length)errs.push('honest recording answer flagged: '+s.turns[0].flags.join(','));
+  if(!s.covered['greeting_agenda'])errs.push('greeting_agenda (honest recording answer) not credited');
+  if(s.rapport<1)errs.push('rapport should rise, got '+s.rapport);
+  if((replies[0]||'').includes('done here'))errs.push('Ray shut down on an honest answer: '+replies[0]);
+  return errs;
+});
+
+// Peer-review M02-011 (2026-09-24): the c_medical hint now asks about others in the building and a
+// working carbon-monoxide detector, so Ray needs a scripted answer to that question.
+await run('exposure history — Ray can answer the building / CO-detector question',[
+ "Hi, I'm Alex, one of the medical students — and no, this isn't being recorded. You're in control of what we talk about.",
+ "We can stop whenever you want. What has this been like for you, these last few weeks?",
+ "That sounds really frightening — living like that.",
+ "Does anyone else in the building have headaches, and is there a working carbon monoxide detector in the apartment?"
+],(s,cov,rub,nar,replies)=>{
+  const errs=[];
+  if(!s.covered['exposure_screen'])errs.push('exposure_screen not recognized');
+  if(!(replies[3]||'').includes('carbon-monoxide detector'))errs.push('exposure answer missing: '+replies[3]);
+  return errs;
+});
+
+await run('a family-history question is not routed to the exposure answer',[
+ "Has anyone else in your family had symptoms like this?"
+],(s,cov,rub,nar,replies)=>{
+  const errs=[];
+  if(s.covered['exposure_screen'])errs.push('family question matched exposure_screen');
+  if(!s.covered['fhx'])errs.push('fhx not recognized');
+  return errs;
+});
+
+// Peer-review M02-012 (2026-09-24): a passive-wish question gets his passive-wish answer (the wish
+// not to wake up), and c_si stays partial until he is asked plainly about killing himself.
 await run('passive-wish question — scripted answer, c_si partial',[
  "Hi, I'm Alex, one of the medical students — and no, this isn't being recorded. You're in control of what we talk about.",
  "We can stop whenever you want. What has this been like for you, these last few weeks?",

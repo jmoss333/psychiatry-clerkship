@@ -59,7 +59,7 @@ await run('skilled containment interview',SKILLED,(s,cov,rub,nar,replies)=>{
   ['g_fear_passenger','g_spending','g_sexual','g_si_mixed'].forEach(g=>{if(!s.unlocked[g])errs.push(g+' did not unlock');});
   if(!(replies[7]||'').includes('passenger'))errs.push('fear reveal not returned: '+replies[7]);
   if(!(replies[9]||'').includes('nine hundred'))errs.push('spending reveal not returned: '+replies[9]);
-  if(!(replies[11]||'').includes('flicker'))errs.push('mixed-features SI reveal not returned: '+replies[11]);
+  if(!(replies[11]||'').includes('flicker'))errs.push('SI flicker reveal not returned: '+replies[11]);
   const missed=cov.filter(c=>c.status!=='observed');
   if(missed.length)errs.push('non-observed checklist items: '+missed.map(c=>c.id+'='+c.status).join(','));
   ['alliance','data','technique','organization'].forEach(k=>{if(rub[k]!=='observed')errs.push(k+'='+rub[k]);});
