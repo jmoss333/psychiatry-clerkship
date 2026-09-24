@@ -849,7 +849,7 @@
       "Treat comorbid depression or PTSD; medications target symptoms, not the disorder.",
       "Name and tolerate countertransference rather than acting on it."
     ],
-    "cant": "Avoid polypharmacy and reactive medication changes driven by crises — they rarely help and can harm.",
+    "cant": "Don't let a BPD label overshadow an acute mood, psychotic, substance or medical illness, or an acute rise above chronic suicide risk; avoid polypharmacy and reactive medication changes driven by crises.",
     "quiz": {
       "q": "Best inpatient response to staff splitting around a patient with borderline personality disorder?",
       "o": [
@@ -2050,7 +2050,7 @@
     "tldr": "Separate delirium vs dementia vs depression in every confused elder, treat the reversible, and deprescribe before you prescribe — the drug list is often the diagnosis.",
     "points": [
       "Inattention is the fingerprint of delirium — test it at the bedside (digit span, months backward) rather than inferring it.",
-      "Effortful 'I don't know' answers with disengagement suggest pseudodementia — treat the depression and cognition improves.",
+      "Effortful 'I don't know' answers with disengagement suggest pseudodementia — treat the depression and retest cognition; follow it after remission, because depression with cognitive impairment often precedes dementia.",
       "Beers Criteria plus anticholinergic-burden review on every med list; start low, go slow on anything new."
     ],
     "cant": "New psychosis in an older adult is delirium or another medical cause until proven otherwise — work it up before you call it psychiatric.",
@@ -3600,7 +3600,7 @@
     "points": [
       "Behavioral activation is the highest-yield, lowest cognitive-demand inpatient move for the withdrawn anhedonic patient — it works by scheduling one small valued activity, not by asking a depressed person to think their way out.",
       "Psychoeducation has strong inpatient numbers — readmission NNT 5, relapse NNT 9 (Xia 2011 Cochrane; limited-quality hospital-based trials, and the reviewers judge the true effect likely smaller) — give it as a conversation with family looped in, not a packet dump.",
-      "Safety planning with follow-up reduces suicidal behaviors by approximately 50%; no-suicide contracts have no evidence and create false reassurance — abandon them."
+      "Safety planning with follow-up was associated with ~45% fewer suicidal behaviors in a large VA ED cohort (Stanley 2018; not an RCT); no-suicide contracts have no evidence and create false reassurance — abandon them."
     ],
     "cant": "No-suicide contracts have no evidence and can create false reassurance — replace every contract with a collaborative safety plan in the patient's own words, with a scheduled follow-up contact.",
     "quiz": {
@@ -4051,7 +4051,7 @@
     "points": [
       "The skill of the week is the psychopharmacology primer — work through the top-10 inpatient classes and apply the CATIE lesson: choose antipsychotics by side-effect profile (metabolic, QTc, EPS), not by generation.",
       "Suggested landmarks: CATIE (Lieberman 2005), STAR*D (Rush 2006), and Bush 1996 (catatonia) — Journal Clubs 1 and 5 pair with these readings.",
-      "On the unit: run a Bush-Francis catatonia screen on any mute or immobile patient — the screen is diagnostic and the lorazepam challenge can be therapeutic."
+      "On the unit: run a Bush-Francis catatonia screen on any mute or immobile patient — a positive screen prompts a supervised diagnostic assessment, and a lorazepam challenge both supports the diagnosis and begins treatment."
     ],
     "cta": {
       "label": "Open the Psychopharmacology Primer",
@@ -5432,7 +5432,7 @@
     "points": [
       "Lithium: 12-h trough drawn ~5 days after any dose change; target ≈ 0.6–1.0 (up to ~1.2 in acute mania); NSAIDs/thiazides/ACE-inhibitors raise levels.",
       "Clozapine ANC weekly ×6 mo → every 2 wk ×6 mo → monthly (per prescribing information; FDA eliminated the REMS in 2025); myocarditis is the early killer.",
-      "Valproate and lithium are teratogens — β-hCG before starting; carbamazepine needs CBC/LFTs/sodium, HLA-B*1502 in at-risk ancestry, and watch for SIADH."
+      "Valproate and lithium are teratogens — β-hCG before starting; carbamazepine is also a teratogen that lowers hormonal-contraceptive levels (β-hCG, contraception counselling) and needs CBC/LFTs/sodium, HLA-B*1502 in at-risk ancestry, and watch for SIADH."
     ],
     "cant": "Do not treat monitoring as optional or after-the-fact — baseline and ongoing metabolic labs, β-hCG, and a QTc before QT-prolonging agents are part of the prescription.",
     "safetyLevel": "high",
@@ -5640,7 +5640,7 @@
     "tldr": "The admission itself is a treatment window: every patient gets the non-negotiable three — a personalized safety plan, structured psychoeducation, discharge bridging — and every encounter is a chance for a 5-minute micro-intervention matched to the presentation.",
     "points": [
       "Inpatient psychotherapy adds a real, modest benefit (SMD ~0.24-0.43, NNT ~7) and no modality is clearly superior — common factors carry the effect, which is exactly the part an MS3 can deliver from day one.",
-      "The non-negotiable three for every admission: a personalized, quality-checked safety plan (associated with ~45% fewer suicidal behaviors when paired with follow-up), structured psychoeducation (readmission NNT ~5 in psychosis), and discharge bridging — the first weeks out are the riskiest of the whole episode.",
+      "The non-negotiable three for every admission: a personalized, quality-checked safety plan (associated with ~45% fewer suicidal behaviors when paired with follow-up), structured psychoeducation (readmission NNT ~5 in psychosis, from 206 participants in limited-quality trials — likely an overestimate), and discharge bridging — the first weeks out are the riskiest of the whole episode.",
       "Match the move to the presentation: BA micro-dose for the withdrawn, one distress-tolerance skill for the flooded, MI readiness ruler for the ambivalent — and the more acute the disorganization, the more behavioral and supportive the intervention."
     ],
     "cant": "No no-suicide contracts, no trauma processing mid-crisis, no 16-session manual compressed into a 4-day stay — and don't diagnose a comorbidity out of a BPD affective storm: trigger-linked shifts lasting hours are the disorder's expected physiology, not new-onset MDD.",
