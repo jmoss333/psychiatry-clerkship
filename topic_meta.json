@@ -1169,7 +1169,7 @@
       "Normal reaction / prolonged grief",
       "Substance-induced / medical"
     ],
-    "firstMove": "Anchor the timeline to the stressor, confirm criteria for other disorders aren't met, quantify suicide risk, and start brief supportive therapy.",
+    "firstMove": "Anchor the timeline to the stressor, confirm criteria for other disorders aren't met, assess suicide risk directly and formulate it, and start brief supportive therapy.",
     "quiz": {
       "q": "Two months after a divorce, a patient has low mood and impaired work function but does not meet criteria for major depression. Best diagnosis and first-line treatment?",
       "o": [
@@ -1530,7 +1530,7 @@
       "A paraphilia (interest) becomes a paraphilic disorder only with distress/impairment or harm to non-consenting others.",
       "Gender dysphoria names the distress; use affirming care and screen the elevated suicide risk."
     ],
-    "cant": "Paraphilic disorders involving a child or non-consenting person raise safety and reporting duties.",
+    "cant": "Paraphilic disorders involving a child (or a vulnerable adult) can trigger mandated abuse reporting; with non-consenting adults, confidentiality holds unless your state's duty-to-protect law is triggered by a credible threat to an identifiable person. Check your state's statute; in Maine, see 22 M.R.S. §4011-A (children) and §3477 (incapacitated or dependent adults).",
     "ruleOut": [
       "Medication-induced (SSRI, antipsychotic, beta-blocker)",
       "Endocrine / vascular / neurologic cause",
@@ -1764,8 +1764,8 @@
     "hy": true,
     "tldr": "Confidentiality is the default — know exactly when it yields: a credible threat to an identifiable victim, suspected child/elder abuse, and danger-based commitment — and remember commitment does not equal consent to medicate.",
     "points": [
-      "Duty to protect (Tarasoff): a serious threat to a reasonably identifiable person overrides confidentiality — warn, notify police, or hospitalize.",
-      "Child and elder abuse are mandated reports on reasonable suspicion, not proof; good-faith reporters are protected.",
+      "Duty to protect (Tarasoff): a serious threat to a reasonably identifiable person can override confidentiality: warn, notify police, or hospitalize. Whether this is mandatory, permissive, or absent depends on your state's statute. In Maine, see 34-B M.R.S. §1207(6-A) (disclosure to avert a serious and imminent threat).",
+      "Child abuse is a mandated report on reasonable suspicion, not proof, and elder/dependent-adult abuse is mandated in most (not all) states; good-faith reporters are protected. Check your state's statute; in Maine, the trigger is an incapacitated or dependent adult, not age alone (22 M.R.S. §3477).",
       "Capacity is clinical and decision-specific; competence is a legal (court) determination."
     ],
     "cant": "Involuntary hospitalization does not authorize involuntary medication — refusal stands absent a true emergency or a separate legal process.",
@@ -1793,7 +1793,7 @@
           "t": "Ask his family to pass along a warning"
         }
       ],
-      "why": "A serious threat against a reasonably identifiable victim triggers the duty to protect (Tarasoff): confidentiality yields, and reasonable steps include warning the victim, notifying police, and continued hospitalization."
+      "why": "A serious threat against a reasonably identifiable victim is the classic duty-to-protect (Tarasoff) situation: confidentiality yields, and reasonable steps include warning the victim, notifying police, and continued hospitalization. Whether the duty is mandatory, permissive, or absent varies by state; check your state's statute (in Maine, 34-B M.R.S. §1207(6-A))."
     },
     "cta": [
       {
@@ -5696,7 +5696,7 @@
       "mse": "Track engagement, affect regulation, and cognitive load — the more disorganized the sensorium, the more behavioral and supportive the intervention has to be.",
       "safety": "Every admission: a personalized safety plan whose quality is checked (not a pasted template), collaborative lethal-means counseling, and discharge bridging before the highest-risk first weeks out.",
       "say": "We can use these few days: one skill, one scheduled activity, and one plan for the first week home.",
-      "collateral": "You can always listen to a family without the patient's permission — consent governs what you share, not what you hear.",
+      "collateral": "You can listen to a family without the patient's permission — but without it (and absent a recognized exception such as incapacity or emergency) don't confirm the admission or share anything back; consent governs what you share, including that they are here, not what you hear.",
       "rounds": "Name the mechanism, the 5-minute intervention delivered, the patient's response, and the discharge-bridge status.",
       "exam": "Safety planning with follow-up beats no-suicide contracts; behavioral activation matches the anergic patient; psychoeducation carries the strongest single-intervention numbers in psychosis.",
       "actions": [

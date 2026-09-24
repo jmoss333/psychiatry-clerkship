@@ -34,7 +34,7 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 **How you switch depends on the specific drug pair — there is no single default.** Cross-tapering is one strategy among several, not what almost every switch requires [5]:
 - **Direct switch** (stop one, start the other next day) is normally possible for **SSRI → another SSRI** and **SSRI → venlafaxine or duloxetine** — from any SSRI *except fluoxetine* [5].
 - **Cross-taper** is the usual route for **SSRI → mirtazapine or trazodone**, typically over 2–4 weeks and paced by tolerability [5].
-- **Taper then washout** is required whenever **fluoxetine** is the drug being left — it and its active metabolite keep causing interactions for weeks — and for any switch **to an MAOI** (7–14 days from most SSRIs; 5–6 weeks from fluoxetine) [5].
+- **Taper then washout** is required whenever **fluoxetine** is the drug being left — it and its active metabolite keep causing interactions for weeks — and for any switch **to an MAOI** (at least 14 days from most SSRIs per US labeling — UK guidance allows 7–14; at least 5 weeks from fluoxetine) [5].
 - **Cross-tapering is explicitly *not* recommended** into an MAOI, moclobemide, or clomipramine, because of the serotonin-toxicity risk [5]. This is the one that makes "always cross-taper" actively unsafe.
 
 What is true in every case is that **abrupt cessation** of a short-half-life SSRI or SNRI (paroxetine and venlafaxine are the worst offenders) causes a discontinuation syndrome — dizziness, electric-shock sensations, flu-like symptoms, irritability — that is routinely mistaken for relapse. Look the pair up in a current switching reference rather than applying a rule of thumb.
