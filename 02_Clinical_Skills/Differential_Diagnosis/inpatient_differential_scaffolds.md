@@ -19,7 +19,7 @@
 - **First move:** ensure team/exit safety; vitals + glucose; verbal de-escalation before PRN. → the agitation & restraint guidance + the Violence-Risk tool.
 
 ## 3. Depressed / suicidal
-- **Can't-miss mimics:** hypothyroidism, anemia, occult substance use, medication effects (e.g., interferon, steroids), pancreatic/CNS disease, pseudodementia in elders.
+- **Can't-miss mimics:** hypothyroidism, anemia, occult substance use, medication effects (e.g., interferon, steroids), pancreatic/CNS disease, hypoactive delirium and early neurocognitive disorder in elders.
 - **Psychiatric DDx:** MDD (± psychotic features), bipolar depression (always screen for past mania → changes treatment), adjustment disorder, persistent depressive disorder, demoralization.
 - **First move:** explicit C-SSRS + collaborative safety plan; screen for bipolarity (MDQ) before starting an antidepressant. → Suicide tools; MSE module.
 
