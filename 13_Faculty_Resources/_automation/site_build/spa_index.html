@@ -2070,6 +2070,8 @@
 
   /*__FD_DATA__*/
 
+  /*__FD_OFFLINE__*/
+
   /*__FD_EDITION_CATALOG__*/
 
   /*__FD_EDITION_CONTRACT__*/
@@ -2548,6 +2550,8 @@
       lastRead:lastRead
     });
     live.primaryKind=primary.kind;
+    var offlineHtml=facultyPreviewRequest?'':fdOfflineEntry(
+      fdOfflineDisplayState(state),fdOfflineRouteLabel(state),state.offlineOpen===true);
     var html=fdToday(FD_INDEX,live);
     if(!facultyPreviewRequest){
       var blockResume=(blockStatus&&sess&&fdBlockResumeSearch(blockStatus.next,sess))?{left:fdCapsuleLeft(sess),n:blockStatus.next.n}:null;
@@ -2567,8 +2571,8 @@
     }
     also+=captureHtml;
     var rest=fdTodayWhy()+'<h2 class="fd-sectionhead fd-also">Also today</h2>'+also;
-    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+lead+rest);
-    return html.replace(FD_TODAY_LEAD_END,rest);
+    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+lead+offlineHtml+rest);
+    return html.replace(FD_TODAY_LEAD_END,offlineHtml+rest);
   }
 
   function fdRenderCapture(state){
@@ -2649,7 +2653,9 @@
     });
     if(fdAppMode(state)) return fdSurface('today',function(){ return fdAppWorkspace(
       FD_INDEX,FD_CURRICULUM.appPathway,live,
-      facultyPreviewRequest?'':fdCaptureTriage(fdCaptureRows())); });
+      facultyPreviewRequest?'':fdCaptureTriage(fdCaptureRows()),
+      facultyPreviewRequest?'':fdOfflineEntry(fdOfflineDisplayState(state),
+        fdOfflineRouteLabel(state),state.offlineOpen===true)); });
     /* fdTodayLive resolves device-backed state itself. Passing an already-resolved object here
        turns the APP role id into its display label on the second pass and loses APP mode. */
     return fdSurface('today',function(){ return fdTodayLive(state); });
@@ -2745,6 +2751,57 @@
 
   var fdGuideSession=null, fdGuideBookmark=null, fdGuideReturning=false;
   var fdReadingPlaceSession=null;
+  var fdOfflineVisitStatus=null;
+  var fdOfflineVisitRouteKey='';
+  var fdOfflineVisitRouteLabel='';
+  function fdOfflineRouteLabel(state){
+    var live=fdLiveState(state);
+    if(fdAppMode(state))return live.appBridge==='pmhnp'?'APP PMHNP route':'APP PA route';
+    return typeof live.week==='number'?'Week '+live.week:'current learning route';
+  }
+  function fdOfflineKeyForRoute(state){
+    var route=fdLiveState(state);
+    route.appPathway=FD_CURRICULUM.appPathway;
+    var urls=fdOfflineUrls(FD_INDEX,route);
+    return String(route.roleId||route.role||'')+'|'+
+      (route.appMode===true?'app:'+String(route.appBridge||'pa'):'week:'+String(route.week))+
+      '|'+urls.join('|');
+  }
+  function fdOfflineDisplayState(state){
+    if(fdOfflineVisitStatus&&fdOfflineVisitRouteKey===fdOfflineKeyForRoute(state))return fdOfflineVisitStatus;
+    var live=fdLiveState(state);
+    live.appPathway=FD_CURRICULUM.appPathway;
+    return {checking:true,expected:fdOfflineUrls(FD_INDEX,live)};
+  }
+  var fdOfflineWorker=null;
+  try{fdOfflineWorker=navigator.serviceWorker||null;}catch(ignoreOfflineWorker){ }
+  var fdOfflineVisit=fdOfflineMonitor({
+    serviceWorker:fdOfflineWorker,MessageChannel:window.MessageChannel,
+    facultyPreview:!!facultyPreviewRequest,
+    getWaiting:function(){var reg=clerkshipSWRegistration();return !!(reg&&reg.waiting);},
+    subscribeWaiting:clerkshipSWSubscribe,
+    onChange:function(status){
+      fdOfflineVisitStatus=status;
+      /* Task 4 owns placement. A mounted card can update without rebuilding Today, losing
+         focus, or re-running the route check. */
+      var mount=contentEl&&contentEl.querySelector('[data-fd-offline-card]');
+      if(mount&&status){
+        mount.innerHTML=fdOfflineCard(status,fdOfflineVisitRouteLabel);
+        var entry=contentEl.querySelector('[data-fd-offline-entry]');
+        if(entry)entry.className='fd-offline is-'+fdOfflineStatus(status).kind;
+        var label=contentEl.querySelector('[data-fd-offline-label]');
+        if(label)label.textContent=fdOfflineStatus(status).label;
+      }
+    }
+  });
+  function fdSyncOfflineVisit(state){
+    if(fdEditionBootState!=='started')return;
+    var route=fdLiveState(state);
+    route.appPathway=FD_CURRICULUM.appPathway;
+    fdOfflineVisitRouteKey=fdOfflineKeyForRoute(state);
+    fdOfflineVisitRouteLabel=fdOfflineRouteLabel(state);
+    fdOfflineVisit.sync(FD_INDEX,route);
+  }
   function fdDisposeReadingPlace(){
     if(fdReadingPlaceSession)fdReadingPlaceSession.destroy();
     fdReadingPlaceSession=null;
@@ -2775,6 +2832,7 @@
     fdRenderOverlays(state);
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
     fdUpdateCareNavigatorStatus(state);
+    fdSyncOfflineVisit(state);
   }
 
   function fdPatchCompletion(state){
@@ -2833,6 +2891,7 @@
     if(surfaces.base||surfaces.completion)fdRenderDock(state,true);
     fdRenderOverlays(state);
     fdUpdateCareNavigatorStatus(state);
+    fdSyncOfflineVisit(state);
   }
 
   function fdOpenProgress(state,opts){
@@ -3199,6 +3258,7 @@
     });
   }
   function fdEditionCleanupWiring(){
+    fdOfflineVisit.destroy();
     for(var i=fdEditionStartupTeardowns.length-1;i>=0;i--)
       try{fdEditionStartupTeardowns[i]();}catch(ignoreTeardown){ }
     fdEditionStartupTeardowns=[];
@@ -3338,6 +3398,13 @@
       disposeReadingPlace:fdDisposeReadingPlace,
       externalModalOpen:function(){return !!capSheet;},
       loadBlock:blockLoad,
+      offlineStatus:function(){return fdOfflineVisitStatus;},
+      online:function(){return navigator.onLine!==false;},
+      requestSWUpdate:requestClerkshipSWUpdate,
+      reportOfflineRefresh:function(message){
+        var status=contentEl&&contentEl.querySelector('[data-fd-offline-refresh-status]');
+        if(status)status.textContent=message;
+      },
       facultyPreview:function(){return !!facultyPreviewRequest;},
       facultyPreviewLock:showFacultyPreviewLockNotice,
       allowAppInvite:FD_AUDIENCE==='resident'&&!!FD_CURRICULUM.appPathway,
@@ -3503,6 +3570,7 @@
   fdEditionStartupStorageDirty=false;
   fdEditionStartupHistoryDirty=false;
   fdEditionBootState='started';
+  fdSyncOfflineVisit(fdController.getState());
   return {ok:true,code:'STARTED'};
   }
 

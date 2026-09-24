@@ -161,6 +161,7 @@
   font-size:var(--fd-font-sm);font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:var(--fd-shadow-sm);
 }
 .fd-safetybtn:hover{background:var(--fd-danger-dark);border-color:var(--fd-danger-dark)}
+.fd-carebtn{display:none}
 .fd-settingsbtn{width:34px;height:34px;padding:0;border-radius:var(--fd-radius-circle);background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-glyph-sm);cursor:pointer}
 .fd-settingsbtn:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
 
@@ -242,6 +243,8 @@
 .fd-app__count{color:var(--fd-text-dim);font-size:var(--fd-font-sm);white-space:nowrap}
 .fd-app__bridge-copy{max-width:70ch;margin:var(--fd-space-4) 0 var(--fd-space-7);color:var(--fd-text-mid);line-height:1.6}
 .fd-app__resources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--fd-line-strong)}
+.fd-app__resources--with-offline>.fd-app__resource:first-child{grid-column:1/-1;border-right:0}
+.fd-app__resources>.fd-offline{grid-column:1/-1;margin:var(--fd-space-4) 0}
 .fd-app__resource{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--fd-space-2) var(--fd-space-4);min-height:82px;padding:var(--fd-space-5) var(--fd-space-6);border:0;border-bottom:1px solid var(--fd-line-strong);background:transparent;color:var(--fd-text);font:inherit;text-align:left;cursor:pointer}
 .fd-app__resource:nth-child(odd){border-right:1px solid var(--fd-line-strong)}
 .fd-app__resource:hover,.fd-app__step-link:hover{background:var(--fd-teal-wash)}
@@ -276,6 +279,7 @@
 .fd-app__stage h3{margin:var(--fd-space-3) 0 var(--fd-space-2);font-size:var(--fd-font-md)}
 .fd-app__stage p{margin:0 0 var(--fd-space-4);color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.5}
 .fd-app__step-links{display:grid;gap:var(--fd-space-2)}
+.fd-app__step-links>.fd-offline{margin:0}
 .fd-app__step-link{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px var(--fd-space-3);width:100%;padding:var(--fd-space-3);border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm);background:var(--fd-callout);color:var(--fd-text);font:inherit;text-align:left;cursor:pointer}
 .fd-app__step-link .fd-app__resource-title{font-size:var(--fd-font-sm)}
 .fd-app__step-link .fd-app__resource-meta{font-size:var(--fd-font-2xs)}
@@ -611,6 +615,28 @@
 .fd-carelink__description{display:block;margin-top:2px;color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:1.4}
 .fd-care-entry{display:none}
 
+/* One compact device-cache receipt beneath the route's primary action. The detailed panel
+ * stays in document flow, so Tab can leave it naturally and the fixed phone dock stays five items. */
+.fd-offline{margin:0 0 var(--fd-space-6);border:1px solid var(--fd-line-strong);border-left:var(--fd-space-2) solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text)}
+.fd-offline.is-checking{border-left-style:dashed;background:var(--fd-callout)}
+.fd-offline.is-ready{border-left-color:var(--fd-olive);background:var(--fd-olive-wash)}
+.fd-offline.is-update{border-left-color:var(--fd-terracotta);background:var(--fd-terracotta-wash)}
+.fd-offline.is-not-ready{border-left-color:var(--fd-danger);background:var(--fd-danger-wash)}
+.fd-offline__open{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-4);width:100%;min-height:var(--fd-target-touch);padding:var(--fd-space-3) var(--fd-space-5);border:0;background:transparent;color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm);text-align:left;cursor:pointer}
+.fd-offline__open strong{font-weight:750;white-space:nowrap}
+.fd-offline__open[aria-expanded="true"]{border-bottom:1px solid var(--fd-line-strong)}
+.fd-offline__details{padding:var(--fd-space-5)}
+.fd-offline__inventory{max-width:70ch;font-size:var(--fd-font-sm);line-height:var(--fd-leading-normal)}
+.fd-offline__inventory p{margin:0 0 var(--fd-space-3)}
+.fd-offline__inventory ul{margin:0 0 var(--fd-space-4);padding-left:var(--fd-space-6);overflow-wrap:anywhere}
+.fd-offline__status{font-size:var(--fd-font-md);font-weight:800}
+.fd-offline__detail{color:var(--fd-text)}
+.fd-offline__scope,.fd-offline__checked{color:var(--fd-text-mid)}
+.fd-offline__actions{display:flex;flex-wrap:wrap;gap:var(--fd-space-3);margin-top:var(--fd-space-4)}
+.fd-offline__refresh,.fd-offline__close{min-height:var(--fd-target-touch);padding:var(--fd-space-2) var(--fd-space-4);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm);font-weight:700;cursor:pointer}
+.fd-offline__refresh:hover,.fd-offline__close:hover{background:var(--fd-callout);border-color:var(--fd-line-hover)}
+.fd-offline__refresh-status{min-height:var(--fd-space-5);margin:var(--fd-space-3) 0 0;font-size:var(--fd-font-sm);color:var(--fd-text-mid)}
+
 /* Patient resource pack: a quiet picker beside a paper-like handout preview. The choices are
  * visit-only controls; the sheet is the sole print surface. */
 .fd-care-pack{margin:0 0 var(--fd-space-10);padding:var(--fd-space-6);border:var(--fd-space-1) solid var(--fd-line);border-radius:var(--fd-radius-lg);background:var(--fd-callout)}
@@ -618,7 +644,6 @@
 .fd-care-pack__head h2{margin:0 0 var(--fd-space-2);font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-xl);line-height:var(--fd-leading-snug)}
 .fd-care-pack__head p{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:var(--fd-leading-normal)}
 .fd-care-pack__included{display:inline-flex;align-items:center;gap:var(--fd-space-2);flex:0 0 auto;padding:var(--fd-space-2) var(--fd-space-4);border:var(--fd-space-1) solid var(--fd-olive);border-radius:var(--fd-radius-pill);background:var(--fd-olive-wash);color:var(--fd-olive-deep) !important;font-size:var(--fd-font-xs) !important;font-weight:750}
-.fd-care-pack__included.is-unavailable{border-color:var(--fd-danger);background:var(--fd-danger-wash);color:var(--fd-danger) !important}
 .fd-care-pack__workbench{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--fd-space-7);align-items:start}
 .fd-care-pack__picker{min-width:0;padding-top:var(--fd-space-4);border-top:var(--fd-space-2) solid var(--fd-olive)}
 .fd-care-pack__picker h3{margin:0 0 var(--fd-space-4);font-size:var(--fd-font-lg)}
@@ -1225,8 +1250,8 @@
   .fd-searchbtn,.fd-actionbar .fd-btn--ghost{min-width:44px}
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-pick,.fd-setupcta{min-height:44px}
   .fd-btn,.fd-tab,.fd-setup__back,.fd-reader__back,.fd-result,.fd-searchpanel__esc,
-  .fd-sheet__back,.fd-sheet__close,.fd-nudge__go,.fd-nudge__dismiss,.fd-settingsbtn{min-height:44px}
-  .fd-setup__back,.fd-searchpanel__esc,.fd-sheet__close,.fd-nudge__dismiss,.fd-settingsbtn{min-width:44px}
+  .fd-sheet__back,.fd-sheet__close,.fd-nudge__go,.fd-nudge__dismiss,.fd-settingsbtn,.fd-carebtn{min-height:44px}
+  .fd-setup__back,.fd-searchpanel__esc,.fd-sheet__close,.fd-nudge__dismiss,.fd-settingsbtn,.fd-carebtn{min-width:44px}
   .fd-article{padding:24px 20px}
   .fd-weekgrid{grid-template-columns:repeat(2,1fr)}
   /* The reader's desktop primary/ghost actions -- CLASS-INVENTORY.md's Reader section always
@@ -1285,7 +1310,19 @@
   /* The Library's "· press / to filter" is a keyboard affordance; a phone has no slash key and
      the header's search field is one tap up. The whole fragment goes, never .fd-kbd alone. */
   .fd-library__shortcut{display:none}
-  .fd-header__actions{grid-column:1/-1;margin-left:0;justify-content:flex-end}
+  .fd-header__actions{
+    grid-column:1/-1;margin-left:0;width:100%;display:grid;
+    grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:var(--fd-space-2);
+  }
+  .fd-weekpill{justify-self:start}
+  .fd-carebtn{
+    display:inline-flex;align-items:center;justify-content:center;padding:7px 10px;
+    border:1.5px solid var(--fd-teal);border-radius:var(--fd-radius-pill);
+    background:var(--fd-surface);color:var(--fd-teal-deep);font:inherit;
+    font-size:var(--fd-font-sm);font-weight:700;white-space:nowrap;cursor:pointer;
+  }
+  .fd-carebtn:hover{background:var(--fd-teal-wash)}
+  .fd-carebtn.is-active{background:var(--fd-teal-deep);border-color:var(--fd-teal-deep);color:var(--fd-on-accent)}
 }
 
 /* ═══ Phone chrome ═══════════════════════════════════════════════════════════
@@ -1327,7 +1364,7 @@
   .fd-shell:has(.fd-actionbar) .fd-brand{min-width:44px;justify-content:center}
   .fd-shell:has(.fd-actionbar) .fd-brand__name{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
   .fd-shell:has(.fd-actionbar) .fd-searchbtn{width:auto;flex:1;max-width:none}
-  .fd-shell:has(.fd-actionbar) .fd-header__actions{margin-left:0;flex:0 0 auto}
+  .fd-shell:has(.fd-actionbar) .fd-header__actions{margin-left:0;width:auto;display:flex;flex:0 0 auto;gap:var(--fd-space-2)}
   .fd-shell:has(.fd-actionbar) .fd-weekpill,.fd-shell:has(.fd-actionbar) .fd-settingsbtn{display:none}
   .fd-article{padding:var(--fd-space-6) var(--fd-space-8)}
 }
@@ -1793,21 +1830,23 @@
   .fd-reader--guide thead{display:table-header-group}
   .fd-reader--guide tr{break-inside:avoid-page;page-break-inside:avoid}
   .fd-reader--guide .fd-article__body a[href^="http"]::after{content:" (" attr(href) ")";font-size:var(--fd-font-xs);font-weight:400;overflow-wrap:anywhere}
-  body:has(.fd-care-pack__sheet){--fd-care-print-ink:CanvasText;--fd-care-print-paper:Canvas;color-scheme:light;background:var(--fd-care-print-paper) !important;color:var(--fd-care-print-ink) !important}
-  body:has(.fd-care-pack__sheet) :is(.fd-header,.fd-tabs,.fd-dock,.fd-actionbar,.fd-sheet,.fd-sheetbackdrop,.fd-search,.fd-nudge,#fdCaptureMount){display:none !important}
-  body:has(.fd-care-pack__sheet) :is(.fd-shell,.fd-main){display:block;min-height:0;width:auto;max-width:none;padding:0;margin:0;overflow:visible;background:var(--fd-care-print-paper) !important}
-  .fd-care-page:has(.fd-care-pack__sheet)>:not(.fd-care-pack){display:none !important}
-  .fd-care-pack{display:block;margin:0;padding:0;border:0;background:transparent}
-  .fd-care-pack>:not(.fd-care-pack__workbench){display:none !important}
-  .fd-care-pack__workbench{display:block}
-  .fd-care-pack__picker{display:none !important}
-  .fd-care-pack__sheet{display:block !important;width:auto;max-width:none;margin:0;padding:0;border:0;border-radius:0;background:var(--fd-care-print-paper) !important;box-shadow:none !important;color:var(--fd-care-print-ink) !important}
-  .fd-care-pack__sheet *{color:var(--fd-care-print-ink) !important;box-shadow:none !important;text-shadow:none !important}
-  .fd-care-pack__resource{break-inside:avoid-page;page-break-inside:avoid}
-  .fd-care-pack__crisis{display:block !important;break-before:auto}
-  .fd-care-pack__crisis>summary{display:none !important}
-  .fd-care-pack__crisis>:not(summary){display:block !important;height:auto !important;content-visibility:visible !important}
-  .fd-care-pack__crisis::details-content{display:block !important;height:auto !important;content-visibility:visible !important}
+  /* Native Print may bypass the disabled button. Invalid packs remain ordinary Care pages. */
+  .fd-care-pack:not(.is-print-ready) .fd-care-pack__sheet{display:none !important}
+  body:has(.fd-care-pack.is-print-ready){--fd-care-print-ink:CanvasText;--fd-care-print-paper:Canvas;color-scheme:light;background:var(--fd-care-print-paper) !important;color:var(--fd-care-print-ink) !important}
+  body:has(.fd-care-pack.is-print-ready) :is(.fd-header,.fd-tabs,.fd-dock,.fd-actionbar,.fd-sheet,.fd-sheetbackdrop,.fd-search,.fd-nudge,#fdCaptureMount){display:none !important}
+  body:has(.fd-care-pack.is-print-ready) :is(.fd-shell,.fd-main){display:block;min-height:0;width:auto;max-width:none;padding:0;margin:0;overflow:visible;background:var(--fd-care-print-paper) !important}
+  .fd-care-page:has(.fd-care-pack.is-print-ready)>:not(.fd-care-pack){display:none !important}
+  .fd-care-pack.is-print-ready{display:block;margin:0;padding:0;border:0;background:transparent}
+  .fd-care-pack.is-print-ready>:not(.fd-care-pack__workbench){display:none !important}
+  .fd-care-pack.is-print-ready .fd-care-pack__workbench{display:block}
+  .fd-care-pack.is-print-ready .fd-care-pack__picker{display:none !important}
+  .fd-care-pack.is-print-ready .fd-care-pack__sheet{display:block !important;width:auto;max-width:none;margin:0;padding:0;border:0;border-radius:0;background:var(--fd-care-print-paper) !important;box-shadow:none !important;color:var(--fd-care-print-ink) !important}
+  .fd-care-pack.is-print-ready .fd-care-pack__sheet *{color:var(--fd-care-print-ink) !important;box-shadow:none !important;text-shadow:none !important}
+  .fd-care-pack.is-print-ready .fd-care-pack__resource{break-inside:avoid-page;page-break-inside:avoid}
+  .fd-care-pack.is-print-ready .fd-care-pack__crisis{display:block !important;break-before:auto}
+  .fd-care-pack.is-print-ready .fd-care-pack__crisis>summary{display:none !important}
+  .fd-care-pack.is-print-ready .fd-care-pack__crisis>:not(summary){display:block !important;height:auto !important;content-visibility:visible !important}
+  .fd-care-pack.is-print-ready .fd-care-pack__crisis::details-content{display:block !important;height:auto !important;content-visibility:visible !important}
 }
 /* ---- One Thing First (2026-09-16): one primary slot, demoted rows under "Also today" ----------
  * Appended after every base rule on purpose: tests/fd-tokens resolves a selector by FIRST textual

@@ -89,6 +89,7 @@ test('a mounted tool projects its real primary into the dock and completion pres
     function renderGovernanceNotice(){return '';}
     function setLearnerTitle(){} function announceRoute(){} function focusGovernanceNotice(){}
     function fdRenderOverlays(){}
+    function fdSyncOfflineVisit(){}
     ${shellFunction('fdUpdateCareNavigatorStatus')}
     ${shellFunction('fdRenderDock')}
     ${shellFunction('fdPatchCompletion')}

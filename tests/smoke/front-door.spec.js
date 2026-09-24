@@ -1391,7 +1391,7 @@ test('390x844 reduced-motion Reader keeps one fixed 44px dock during scroll with
   expect(after.y + after.height).toBeCloseTo(PHONE.height, 0);
 
   const targets = await page.locator(
-    '.fd-dock:visible button:visible, .fd-searchbtn:visible, .fd-safetybtn:visible',
+    '.fd-dock:visible button:visible, .fd-searchbtn:visible, .fd-safetybtn:visible, .fd-carebtn:visible',
   ).evaluateAll(controls => controls.map(control => {
       const box = control.getBoundingClientRect();
       return { width: box.width, height: box.height };
@@ -1421,11 +1421,11 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
   const cases = [
     {
       url: '/', ready: '.fd-today', oneRow: false,
-      selectors: ['.fd-brand', '.fd-searchbtn', '.fd-weekpill', '.fd-safetybtn', '.fd-settingsbtn'],
+      selectors: ['.fd-brand', '.fd-searchbtn', '.fd-weekpill', '.fd-safetybtn', '.fd-carebtn', '.fd-settingsbtn'],
     },
     {
       url: '/?page=t_mood.md', ready: '.fd-reader .fd-article__body', oneRow: true,
-      selectors: ['.fd-brand', '.fd-searchbtn', '.fd-safetybtn'],
+      selectors: ['.fd-brand', '.fd-searchbtn', '.fd-safetybtn', '.fd-carebtn'],
     },
   ];
 
@@ -1434,6 +1434,9 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
     for (const surface of cases) {
       await page.goto(surface.url);
       await expect(page.locator(surface.ready)).toBeVisible();
+      const visibleSelectors = surface.selectors.filter(selector => (
+        selector !== '.fd-carebtn' || width <= 640
+      ));
 
       const geometry = await page.evaluate((selectors) => {
         const visible = element => {
@@ -1489,7 +1492,7 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
           viewportWidth: innerWidth,
           scrollWidth: document.documentElement.scrollWidth,
         };
-      }, surface.selectors);
+      }, visibleSelectors);
 
       expect(geometry.intersections, `${width}px ${surface.url} header collisions`).toEqual([]);
       for (const [selector, box] of Object.entries(geometry.controls)) {
@@ -1549,6 +1552,42 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
     expect.soft(browseHeader.scrollWidth).toBeLessThanOrEqual(browseHeader.viewportWidth);
     await expectHealthy(page);
   }
+});
+
+test('phone header Care shortcut sits beside Safety and opens Patient care resources', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.goto('/');
+  await expect(page.locator('.fd-today')).toBeVisible();
+
+  const safety = page.locator('.fd-safetybtn');
+  const care = page.locator('.fd-carebtn');
+  const settings = page.locator('.fd-settingsbtn');
+  await expect(care).toBeVisible();
+  await expect(care).toHaveAccessibleName('Patient care resources');
+  await expect(care).toHaveText('Care');
+  await expect(care).not.toHaveAttribute('aria-current', 'page');
+  const order = await page.evaluate(() => {
+    const box = selector => document.querySelector(selector).getBoundingClientRect();
+    return {
+      safety: box('.fd-safetybtn'),
+      care: box('.fd-carebtn'),
+      settings: box('.fd-settingsbtn'),
+    };
+  });
+  expect(order.safety.right).toBeLessThanOrEqual(order.care.left + 0.5);
+  expect(order.care.right).toBeLessThanOrEqual(order.settings.left + 0.5);
+
+  await care.click();
+  await expect(page).toHaveURL(/\?tab=care$/);
+  await expect(page.locator('.fd-care-page')).toBeVisible();
+  await expect(page.locator('.fd-carebtn')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.fd-carebtn')).toHaveClass(/is-active/);
+  await expectHealthy(page);
+
+  await page.setViewportSize({ width: 800, height: 844 });
+  await expect(page.locator('.fd-carebtn')).toBeHidden();
+  await expect(page.locator('.fd-tab--care')).toBeVisible();
 });
 
 test('wide interview table remains accessible and contained in the live Reader', async ({ page }, testInfo) => {
@@ -2240,8 +2279,8 @@ test('One Thing First A2: clear the dues and Continue leads, with the rows below
   await otfExpectOnePrimary(page);
   await expect(page.locator('.fd-primary')).toHaveCount(0);
   await expect(page.locator('.fd-continue:not(.is-secondary)')).toHaveCount(1);
-  const order = await page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 5).map(el => el.className.split(' ')[0]));
-  expect(order).toEqual(['fd-continue', 'fd-primary__why', 'fd-sectionhead', 'fd-block', 'fd-capture']);
+  const order = await page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 6).map(el => el.className.split(' ')[0]));
+  expect(order).toEqual(['fd-continue', 'fd-offline', 'fd-primary__why', 'fd-sectionhead', 'fd-block', 'fd-capture']);
   await otfExpectPrimaryIsFirstFocusable(page);
   await otfExerciseVisitAndBack(page);
   await expectHealthy(page);
@@ -2598,7 +2637,7 @@ test('Patient care resources is a safe, responsive fourth destination and search
   await expect(tabs).toHaveCount(4);
   expect(await tabs.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-fd-tab'))))
     .toEqual(['today', 'path', 'library', 'care']);
-  const careTab = page.locator('[data-fd-tab="care"]');
+  const careTab = page.locator('.fd-tabs [data-fd-tab="care"]:visible');
   await expect(careTab).toHaveAttribute('aria-current', 'page');
   await expect(careTab).toHaveAccessibleName('Patient care resources');
   const libraryBox = await page.locator('.fd-tabs [data-fd-tab="library"]:visible').boundingBox();

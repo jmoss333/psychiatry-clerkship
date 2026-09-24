@@ -416,6 +416,7 @@ function fdToday(index, state){
   var leadPrimary=(pk===undefined||pk==='week'||pk==='ahead'||pk==='setup');
   out+=hasWeek?fdContinue(idx,st, wk, progress, leadPrimary):fdSetupCta(leadPrimary);
   out+=FD_TODAY_LEAD_END;
+  if(st.offlineHtml)out+=st.offlineHtml;
 
 
   if(hasWeek){

@@ -121,6 +121,22 @@ test('the header renders the safety button and the week pill', () => {
   assert.match(html, /Week 4/);
 });
 
+test('the header places a mobile Patient care resources shortcut directly after Safety', () => {
+  const inactive = F.fdHeader({ week: 4, tab: 'today' });
+  const safety = inactive.indexOf('data-fd-safety');
+  const care = inactive.indexOf('data-fd-tab="care"', safety);
+  const settings = inactive.indexOf('data-fd-settings', care);
+  assert.ok(safety > -1 && care > safety && settings > care,
+    'Safety, Care, and Settings must retain their visual and keyboard order');
+  assert.match(inactive,
+    /class="fd-carebtn"[^>]*data-fd-tab="care"[^>]*aria-label="Patient care resources"[^>]*>Care<\/button>/);
+  assert.doesNotMatch(inactive, /class="fd-carebtn is-active"|data-fd-tab="care"[^>]*aria-current/);
+
+  const active = F.fdHeader({ week: 4, tab: 'care' });
+  assert.match(active,
+    /class="fd-carebtn is-active"[^>]*data-fd-tab="care"[^>]*aria-label="Patient care resources"[^>]*aria-current="page"/);
+});
+
 test('the APP header replaces rotation chrome with an On shift workspace', () => {
   const html = F.fdHeader({ roleId: 'app', tab: 'today' });
   assert.match(html, /data-fd-tab="today"[^>]*>On shift</);
@@ -174,13 +190,14 @@ test('dock renders five labelled buttons with an escaped center action', () => {
     'the contextual action follows the two leading destinations');
 });
 
-test('the header still carries exactly three action controls', () => {
+test('the header carries three standing controls plus one phone-only Care shortcut', () => {
   // Scoped to the actions container's own markup: everything after the marker also carries the
-  // three tab buttons fdHeader appends, which reads as 6 and makes the count say nothing.
+  // tab buttons fdHeader appends, which otherwise makes the count say nothing.
   const actions = F.fdHeader({ week: 3, tab: 'today' })
     .split('fd-header__actions')[1].split('</div>')[0];
   const buttons = actions.match(/<button/g) || [];
-  assert.equal(buttons.length, 3, 'week pill, safety, settings — a fourth costs the mobile row');
+  assert.equal(buttons.length, 4, 'week pill, safety, phone Care shortcut, settings');
+  assert.equal((actions.match(/class="fd-carebtn"/g) || []).length, 1);
 });
 
 test('the header says exam, never the site-specific word', () => {
