@@ -28,7 +28,7 @@
 - The DSM-5-TR Cultural Formulation Interview is the standardized tool — know it exists and what it covers.
 - Cultural concepts of distress (e.g., *ataque de nervios*) can mimic panic or psychosis — ask before you label.
 - Use trained interpreters, not family/children; speak directly to the patient.
-- Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against.
+- Black (and some other minority) patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against.
 - Social determinants of mental health are clinical data; address them in the formulation and plan.
 
 **Pair with** — the [Interview & MSE pocket guide](?page=pg_interview.md), the [Formulation & DDx pocket guide](?page=pg_formulation.md), [Ethics & the Law](?page=ethics_legal.md), and the <a href="tools/mse.html" target="_blank" rel="noopener">Mental Status Exam trainer</a>.
