@@ -784,7 +784,7 @@
       "medication_ambivalence_001"
     ],
     "safetySteps": [
-      "Alcohol: CIWA-Ar q4h through the risk window; step down only after sustained low scores",
+      "Alcohol: CIWA-Ar q1h while scores are at or above the treatment threshold, then q4h once below it, through the risk window; step down only after sustained low scores",
       "Thiamine before or with glucose — never delay dextrose for hypoglycemia",
       "CIWA ≥ 15 or seizure history → escalate protocol",
       "Opioid: COWS to time buprenorphine induction — typically COWS 8-12"

@@ -504,7 +504,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** The Clinical Opiate Withdrawal Scale — an 11-item clinician-administered tool (score 0–48) assessing opioid withdrawal severity. Scores 5–12: mild; 13–24: moderate; 25–36: moderately severe; >36: severe.
 
-- **Evidence:** Validated against CINA scale (Pearson r = 0.85). For buprenorphine induction, COWS should ideally be ≥10–12.
+- **Evidence:** Validated against CINA scale (Pearson r = 0.85). For buprenorphine initiation, guidelines put the start at roughly COWS ≥ 8–12 (ASAM's 2023 fentanyl guidance: ≥ 8 with at least one objective sign).
 
 - **Key paper:** Wesson & Ling, J Psychoactive Drugs 2003.
 
@@ -518,7 +518,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Nosyk et al., JAMA 2024.
 
-- **Pearl:** Buprenorphine is a **partial agonist** — it can precipitate withdrawal if given while full agonists are still present. Wait for adequate withdrawal (COWS ≥10–12) before initiating.
+- **Pearl:** Buprenorphine is a **partial agonist** — it can precipitate withdrawal if given while full agonists are still present. Start buprenorphine once objective withdrawal is present — roughly COWS ≥ 8–12 depending on the guideline (ASAM's 2023 fentanyl guidance: ≥ 8 with at least one objective sign). With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.
 
 **52. How does naloxone work and when is it used?**
 

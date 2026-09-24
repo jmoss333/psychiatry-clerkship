@@ -2845,7 +2845,7 @@
     },
     {
       "id": "qb_sud_005",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -2872,7 +2872,7 @@
         },
         {
           "key": "B",
-          "t": "Wait until objective withdrawal is established (COWS roughly ≥8–12) before initiating buprenorphine induction — this is required to avoid precipitating withdrawal.",
+          "t": "Wait until objective withdrawal is established (COWS roughly ≥8–12) before initiating standard buprenorphine induction — this is how standard induction avoids precipitating withdrawal (low-dose initiation is a separate, structured multi-day protocol, not a single test dose).",
           "c": true
         },
         {
@@ -2892,7 +2892,7 @@
           }
         }
       ],
-      "why": "Comfort-first induction in two forms is the central trap. Buprenorphine is a partial agonist with high receptor affinity — it displaces full agonists. If taken before sufficient withdrawal, it precipitates sudden, severe withdrawal. The COWS threshold (≥8–12) ensures residual full agonist has cleared enough receptors that induction is safe.",
+      "why": "Comfort-first induction in two forms is the central trap. Buprenorphine is a partial agonist with high receptor affinity — it displaces full agonists. If taken before sufficient withdrawal, it precipitates sudden, severe withdrawal. The COWS threshold (≥8–12) makes it likely that residual full agonist has cleared enough receptors for induction to be tolerated — though with fentanyl, precipitated withdrawal can still occur at these scores.",
       "pearl": "COWS ≥8–12 before buprenorphine induction — the scoring threshold prevents precipitated withdrawal, not patient readiness.",
       "evidence": "t_sud.md — Begin buprenorphine induction only once objective withdrawal is present (roughly COWS ≥8 to 12) to avoid precipitated withdrawal from displacing residual full agonist too early."
     },
@@ -3342,7 +3342,7 @@
     },
     {
       "id": "qb_sud_014",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "substance",
       "competency": [
@@ -3388,8 +3388,8 @@
           "c": true
         }
       ],
-      "why": "Underestimate the emergency in two forms, and Agitation = antipsychotic. Prior withdrawal seizure is explicitly the most robust predictor of future seizure risk. Antipsychotics lower seizure threshold and are contraindicated for seizure prevention in alcohol withdrawal. CIWA-Ar-guided benzodiazepines are the treatment, and DT vigilance is the priority.",
-      "pearl": "Prior withdrawal seizure = highest predictor of future seizures; aggressive CIWA-Ar-guided benzodiazepines + DT monitoring is the standard.",
+      "why": "Underestimate the emergency in two forms, and Agitation = antipsychotic. Prior withdrawal seizure is explicitly the most robust predictor of future seizure risk. Antipsychotics lower seizure threshold and are contraindicated for seizure prevention in alcohol withdrawal. Prompt benzodiazepine with front-loaded or fixed-schedule dosing, supplemented by CIWA-Ar-triggered doses, is the treatment, and DT vigilance is the priority.",
+      "pearl": "Prior withdrawal seizure = strong predictor of future seizures; give a benzodiazepine promptly with front-loaded or fixed-schedule dosing plus symptom-triggered supplementation (not score-gated dosing alone) + DT monitoring.",
       "evidence": "t_sud.md — Alcohol withdrawal: score serially with the CIWA-Ar and treat symptom-driven with benzodiazepines, escalating vigilance for seizures and delirium tremens in high-risk patients.",
       "tier2": {
         "q": "Why does abrupt alcohol cessation cause seizures, whereas opioid withdrawal does not?",
