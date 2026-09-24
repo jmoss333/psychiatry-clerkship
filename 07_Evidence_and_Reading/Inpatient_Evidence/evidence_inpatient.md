@@ -199,7 +199,7 @@ The **MacArthur Competence Assessment Tool for Treatment (MacCAT-T)** is the mos
 
 - Use the MacCAT-T for difficult cases or those likely to involve legal proceedings
 
-- MMSE scores <19 are highly likely to be associated with incompetence; scores ≥23–26 strongly suggest competence
+- MMSE scores <19 make incapacity likely, but a normal MMSE does not establish capacity — it does not test appreciation or reasoning, which psychosis, mania and severe depression often impair despite intact cognition
 
 - Document the specific decision, the information disclosed, and the patient's responses to each of the four criteria
 
