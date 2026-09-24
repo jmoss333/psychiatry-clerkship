@@ -532,7 +532,7 @@
     },
     {
       "id": "qb_sud_002",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -544,7 +544,7 @@
         "t_sud.md"
       ],
       "link": {
-        "label": "Score at the bedside — CIWA-Ar / COWS",
+        "label": "Withdrawal recognition card (COWS)",
         "href": "tools/withdrawal.html"
       },
       "stem": "A 52-year-old man with a history of heavy daily alcohol use is admitted in early withdrawal — tremulous and tachycardic. A nurse is about to start an IV dextrose infusion for a fingerstick glucose in the low-normal range. The most important step before administering the glucose is which of the following?",

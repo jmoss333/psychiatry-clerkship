@@ -18,7 +18,7 @@
 
 > **Reviewed and attested by Joshua Moss, MD (2026-07-09).**
 
-<a class="tl-chip" href="?tool=withdrawal.html" data-tool="withdrawal.html" data-icon="withdrawal">Score at the bedside — CIWA-Ar / COWS</a>
+<a class="tl-chip" href="?tool=withdrawal.html" data-tool="withdrawal.html" data-icon="withdrawal">Withdrawal recognition card (COWS)</a>
 
 **What the student does**
 - Perform and document serial **CIWA-Ar** or **COWS** scores at the bedside and flag trends to the team.

@@ -8,7 +8,7 @@
 
 **Recognize and screen.** The standard instrument is the **Bush-Francis Catatonia Rating Scale (BFCRS)** (Bush et al., 1996) — use its screening items to detect catatonia and its full scale to track severity over time. On exam, deliberately look for the signs it scores: immobility/stupor, mutism, staring, posturing/catalepsy, waxy flexibility, negativism, echophenomena, stereotypy, and any agitation that does not fit the environment. Naming the signs out loud forces you to actually look for them.
 
-<a class="tl-chip" href="?tool=bfcrs.html" data-tool="bfcrs.html" data-icon="bfcrs">Screen &amp; score — Bush-Francis (BFCRS)</a>
+<a class="tl-chip" href="?tool=bfcrs.html" data-tool="bfcrs.html" data-icon="bfcrs">Bush-Francis — official form &amp; how to administer</a>
 
 **The lorazepam challenge.** A test dose of lorazepam (IV or IM) is both a diagnostic maneuver and the start of treatment. A meaningful, often rapid improvement in catatonic signs after the challenge supports the diagnosis and predicts response to benzodiazepine treatment. Do **not** memorize or quote a dose — follow your institutional protocol and your supervising clinician's direction for dosing and monitoring.
 
