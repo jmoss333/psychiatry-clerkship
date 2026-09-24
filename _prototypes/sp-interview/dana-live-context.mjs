@@ -15,7 +15,7 @@ const CONTROL = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 // banks. A hash over ALL persona/response/gate/tone sources below binds their
 // meaning to that reviewed case snapshot. Any source change requires reviewing
 // the summaries and updating the hash together; never silently use stale facts.
-const FACT_SOURCE_HASH = 'bfe354e3532f2e5fe0ef9e28191dca1b8a15215119e928fabb2585110589d0b3';
+const FACT_SOURCE_HASH = '51a5192004001874e7c24cac48238f4d23e8e04661b98983954aa3e40fb54859';
 const ORDINARY_FACTS = {
   // greeting_agenda.open[1]
   preference: 'Dana hopes to leave soon and wants a say in how that happens.',
@@ -116,9 +116,9 @@ const RAY_LIMITS = {
 };
 
 const CASE_PROFILES = {
-  [DANA_CASE_ID]: {hash:FACT_SOURCE_HASH, localDraftHash:'bfe354e3532f2e5fe0ef9e28191dca1b8a15215119e928fabb2585110589d0b3', facts:ORDINARY_FACTS, limits:INFORMATION_LIMITS, name:'Dana'},
-  sp_mania_redirect_001: {hash:'e93f849e323cbc32b919bf55405a2dd07c1a1c0c094db13afb616b9f095d6b41', facts:MARCUS_FACTS, limits:MARCUS_LIMITS, name:'Marcus'},
-  sp_psychosis_paranoid_001: {hash:'b957810771d7b313fca586ad99878e06693d5ca9af6d1c43e29d1cb0a6bf4ab0', facts:RAY_FACTS, limits:RAY_LIMITS, name:'Ray'},
+  [DANA_CASE_ID]: {hash:FACT_SOURCE_HASH, localDraftHash:'51a5192004001874e7c24cac48238f4d23e8e04661b98983954aa3e40fb54859', facts:ORDINARY_FACTS, limits:INFORMATION_LIMITS, name:'Dana'},
+  sp_mania_redirect_001: {hash:'9539e32a8bea93f3ff2a82fed637df1f98f836fdd845e4c1518ef24062da1b2e', facts:MARCUS_FACTS, limits:MARCUS_LIMITS, name:'Marcus'},
+  sp_psychosis_paranoid_001: {hash:'65e4f9ce4bbf1fc2b4652fb06476fa9d56163c98e25bbb9c5027807635d068cf', facts:RAY_FACTS, limits:RAY_LIMITS, name:'Ray'},
 };
 
 const MORGAN = localCases.cases.find(item => item.id === 'sp_alcohol_ambivalence_001');

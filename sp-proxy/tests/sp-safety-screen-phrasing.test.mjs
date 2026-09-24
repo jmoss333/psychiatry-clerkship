@@ -5,6 +5,14 @@
 // learner's typed text (see _prototypes/sp-interview/sp-interview.html, the
 // MockProvider.start / _match logic); this test mirrors that compilation exactly
 // so it fails the same way the real tool would.
+//
+// 2026-09-24 (peer-review WP-5, M02-006/-007; handoff §2.4): the passive death-wish
+// phrasings these families include ("life isn't worth living", "better off without
+// you", "no point in going on", "do you want to die", "wish you weren't here", …) are
+// still recognized as SAFETY intents — but by si_passive, which grades c_si PARTIAL and
+// still opens the disclosure gate. si_direct now means a question about killing
+// oneself / ending one's life / suicide. The per-intent contracts below were re-pointed
+// accordingly; the recognition floor (some safety intent matches) is unchanged.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -166,18 +174,36 @@ test('every case routes euphemistic SI phrasings to si_euphemism, never si_direc
   }
 });
 
-// The c_si row must actually be wired to award partial credit for a euphemism —
-// without partialIfOnly the D12 grading above would silently score `missed`.
-test('every case wires c_si.partialIfOnly to si_euphemism (D12)', () => {
+// The c_si row must actually be wired to award partial credit for a euphemism and for a
+// passive-wish question — without partialIfOnly the grading above would silently score
+// `missed`, and si_passive in c_si.intents would certify a plain screen that never happened.
+test('every case wires c_si.partialIfOnly to si_euphemism and si_passive (D12; 2026-09-24)', () => {
   for (const caseDef of pack.cases) {
     const row = (caseDef.checklist || []).find((r) => r.id === 'c_si');
     assert.ok(row, `case "${caseDef.id}": no c_si checklist row`);
+    assert.deepEqual(row.intents, ['si_direct'], `case "${caseDef.id}": c_si must be earned by si_direct alone`);
     assert.deepEqual(
       row.partialIfOnly,
-      ['si_euphemism'],
-      `case "${caseDef.id}": c_si.partialIfOnly must be ["si_euphemism"] so a euphemism scores partial, not missed`,
+      ['si_euphemism', 'si_passive'],
+      `case "${caseDef.id}": c_si.partialIfOnly must be ["si_euphemism", "si_passive"] so either scores partial, not missed`,
     );
   }
+});
+
+// The other half of the 2026-09-24 split: a passive-wish question is still a real
+// question, so it must still reach the disclosure the patient actually has. Deleting the
+// stems from si_direct without this (the reviewer's first-pass correction) would have
+// made Dana and Marcus withhold the passive ideation they have.
+test('a passive-wish question still opens each SI disclosure gate (2026-09-24)', () => {
+  const gates = { sp_depression_gated_si_001: 'si_active', sp_mania_redirect_001: 'g_si_mixed' };
+  for (const [caseId, gateId] of Object.entries(gates)) {
+    const caseDef = pack.cases.find((c) => c.id === caseId);
+    const gate = caseDef.gated.find((g) => g.id === gateId);
+    assert.deepEqual(gate.requiresIntents, ['si_direct', 'si_passive'], `${caseId}: ${gateId} must open on si_direct or si_passive`);
+  }
+  // Ray has no SI gate; his passive-wish answer is a scripted response bank instead.
+  const ray = pack.cases.find((c) => c.id === 'sp_psychosis_paranoid_001');
+  assert.ok(ray.responses.si_passive?.open?.length, 'Ray needs a scripted answer to a passive-wish question');
 });
 
 // For Dana specifically: the three phrasings must match SOME safety intent (they
@@ -242,10 +268,13 @@ const NON_SAFETY_PHRASINGS = [
   'Do you have any family nearby?',
 ];
 
-// Only si_direct and si_euphemism can credit the c_si checklist row or unlock the
-// SI gates. (Declared here rather than beside the D9/D10 block below, because the
-// over-breadth guard now needs it too.)
-const C_SI_CREDITING = new Set(['si_direct', 'si_euphemism']);
+// Only si_direct, si_passive and si_euphemism can credit the c_si checklist row, and
+// si_direct / si_passive open the SI gates. (Declared here rather than beside the D9/D10
+// block below, because the over-breadth guard now needs it too.) si_passive MUST be in
+// this set: the passive/existential stems moved there on 2026-09-24, and every guard
+// below that filters to C_SI_CREDITING would otherwise stop examining them — a check
+// passing over a smaller set than it claims (docs/SILENT_SHRINK_CHECKLIST.md).
+const C_SI_CREDITING = new Set(['si_direct', 'si_passive', 'si_euphemism']);
 
 // D15 (#410 item F, faculty-ratified 2026-08-31): reasons-for-living questions are
 // a real clinical move — they belong to si_intent_protective, which D15 fills out.
@@ -336,11 +365,12 @@ const MARCUS_POINT_MUST_NOT_MATCH = [
 ];
 
 // D12 splits this family the same way in all three cases. An existential OBJECT
-// ("of going on", "of living", "of any of this") is a plain screen and credits
-// si_direct. The bare or reflected form is a euphemism — the learner has gestured
-// at hopelessness without asking the question — and credits si_euphemism, which
-// scores the c_si row `partial`. Same words, same grade, every case.
-const MARCUS_POINT_MUST_MATCH_DIRECT = [
+// ("of going on", "of living", "of any of this") is a real screen — since 2026-09-24 a
+// PASSIVE one, credited to si_passive (partial; it still opens the disclosure gate). The
+// bare or reflected form is a euphemism — the learner has gestured at hopelessness
+// without asking the question — and credits si_euphemism, which also scores the c_si row
+// `partial` but opens nothing. Same words, same grade, every case.
+const MARCUS_POINT_MUST_MATCH_EXISTENTIAL = [
   "What's the point of going on?",
   "What's the point of living?",
   "What's the point of any of this?",
@@ -379,14 +409,19 @@ test("Marcus: an ordinary \"what's the point of <thing>\" question is NOT credit
   );
 });
 
-test("existential-object \"what's the point of <living>\" credits si_direct in every case (D12)", () => {
+test("existential-object \"what's the point of <living>\" credits si_passive, never si_direct, in every case (D12; 2026-09-24)", () => {
   for (const caseDef of pack.cases) {
     const siDirect = caseDef.intents.find((it) => it.id === 'si_direct');
-    assert.ok(siDirect, `case "${caseDef.id}": no si_direct intent found`);
-    for (const phrasing of MARCUS_POINT_MUST_MATCH_DIRECT) {
+    const siPassive = caseDef.intents.find((it) => it.id === 'si_passive');
+    assert.ok(siPassive, `case "${caseDef.id}": no si_passive intent found`);
+    for (const phrasing of MARCUS_POINT_MUST_MATCH_EXISTENTIAL) {
       assert.ok(
-        siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
-        `case "${caseDef.id}": si_direct did not match ${JSON.stringify(phrasing)} — checklist row "Suicide screened plainly" would not be credited`,
+        siPassive.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_passive did not match ${JSON.stringify(phrasing)} — the c_si row would score 'missed', not 'partial'`,
+      );
+      assert.ok(
+        !siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_direct matched ${JSON.stringify(phrasing)} — a hopelessness question would certify a question about killing oneself`,
       );
     }
   }
@@ -406,18 +441,30 @@ test("bare or reflected \"what's the point\" credits si_euphemism, not si_direct
         !siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
         `case "${caseDef.id}": si_direct matched ${JSON.stringify(phrasing)} — a bare hopelessness gesture would be certified as a plain screen`,
       );
+      const siPassive = caseDef.intents.find((it) => it.id === 'si_passive');
+      assert.ok(
+        !siPassive.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_passive matched ${JSON.stringify(phrasing)} — a bare gesture would open the disclosure gate`,
+      );
     }
   }
 });
 
 // The must-match contract from the WP-B3 brief, asserted per case at the intent
-// the checklist actually scores. Marcus and Ray score "Suicide screened plainly"
-// off si_direct, so "some safety intent" is not a strong enough assertion for
-// them. Dana is checked at category:'safety' because her euphemisms route to
-// si_euphemism by design (see the pedagogy guard above).
-const MUST_MATCH = [
+// the checklist actually scores. Every case scores "Suicide screened plainly" off
+// si_direct, so "some safety intent" is not a strong enough assertion. Since
+// 2026-09-24 the contract is split: an ACTIVE question (killing yourself / ending
+// your life / suicide) credits si_direct; a PASSIVE death-wish question credits
+// si_passive — partial on c_si — and must NOT credit si_direct.
+const MUST_MATCH_DIRECT = [
   'Are you having thoughts of suicide?',
   'Have you thought about killing yourself?',
+  // The golden transcript's screening line, pinned so a stem narrowing can never
+  // take out the plainest phrasing the tool ships as its own worked example.
+  'When you say burden — have you had thoughts of killing yourself?',
+];
+
+const MUST_MATCH_PASSIVE = [
   "Have you had any thoughts that life isn't worth living?",
   "Do you ever feel like life isn't worth it anymore?",
   "Do you ever feel like you'd be better off not being here?",
@@ -432,20 +479,24 @@ const MUST_MATCH = [
   // critical miss on Dana and Marcus.
   "Do you ever feel like life isn't worth living at all?",
   "Do you ever feel like life just isn't worth living at all?",
-  // The golden transcript's screening line, pinned so a stem narrowing can never
-  // take out the plainest phrasing the tool ships as its own worked example.
-  'When you say burden — have you had thoughts of killing yourself?',
 ];
 
 // D13 (#410 items A remainder + B, faculty-ratified 2026-08-31). Each of these was
-// a critical miss in ALL THREE cases at baseline — including "Do you want to die?",
-// the plainest screen there is, and the C-SSRS screen-question wording.
-const MUST_MATCH_D13_PLAIN = [
+// a critical miss in ALL THREE cases at baseline. D13 credited them all to si_direct;
+// since 2026-09-24 the wish-to-be-dead forms (C-SSRS screen question 1 wording) credit
+// si_passive, and only "ending it all" — a question about ending one's life — stays direct.
+const MUST_MATCH_D13_DIRECT = [
+  'Any thoughts of ending it all?',
+];
+const MUST_MATCH_D13_PASSIVE = [
   'Do you want to die?',
   'Have you wanted to die?',
   'Have you had thoughts of death?',
-  'Any thoughts of ending it all?',
   "Do you ever wish you weren't here?",
+  'Do you ever wish you could go to sleep and not wake up?',
+  'Have you had thoughts of dying?',
+  "Have you ever wished you were dead?",
+  "Do you ever feel you'd be better off dead?",
 ];
 
 // D13 euphemism additions: these credit si_euphemism (partial), never si_direct.
@@ -457,15 +508,35 @@ const MUST_MATCH_EUPHEMISM = [
   'Do you ever wish you could just disappear?',
 ];
 
-test('every case credits every must-match plain screening phrasing to si_direct (D13)', () => {
+test('every case credits every must-match ACTIVE screening phrasing to si_direct (D13; 2026-09-24)', () => {
   assert.equal(pack.cases.length, EXPECTED_CASE_COUNT, 'pack case count changed');
   for (const caseDef of pack.cases) {
     const siDirect = caseDef.intents.find((it) => it.id === 'si_direct');
     assert.ok(siDirect, `case "${caseDef.id}": no si_direct intent found`);
-    for (const phrasing of [...MUST_MATCH, ...MUST_MATCH_D13_PLAIN]) {
+    for (const phrasing of [...MUST_MATCH_DIRECT, ...MUST_MATCH_D13_DIRECT]) {
       assert.ok(
         siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
         `case "${caseDef.id}": si_direct did not match ${JSON.stringify(phrasing)} — checklist row "Suicide screened plainly" would not be credited`,
+      );
+    }
+  }
+});
+
+test('every case credits every must-match PASSIVE death-wish phrasing to si_passive, never si_direct (M02-006/-007)', () => {
+  assert.equal(pack.cases.length, EXPECTED_CASE_COUNT, 'pack case count changed');
+  for (const caseDef of pack.cases) {
+    const siDirect = caseDef.intents.find((it) => it.id === 'si_direct');
+    const siPassive = caseDef.intents.find((it) => it.id === 'si_passive');
+    assert.ok(siPassive, `case "${caseDef.id}": no si_passive intent found`);
+    assert.equal(siPassive.category, 'safety', `case "${caseDef.id}": si_passive must be a safety intent`);
+    for (const phrasing of [...MUST_MATCH_PASSIVE, ...MUST_MATCH_D13_PASSIVE]) {
+      assert.ok(
+        siPassive.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_passive did not match ${JSON.stringify(phrasing)} — the c_si row would score 'missed', not 'partial'`,
+      );
+      assert.ok(
+        !siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_direct matched ${JSON.stringify(phrasing)} — a passive death-wish question would earn full critical credit`,
       );
     }
   }
@@ -642,15 +713,15 @@ test('an existential stem followed by its own object is not a suicide screen (D1
   );
 });
 
-test('genuine existential forms still credit si_direct after the D11 object closure', () => {
+test('genuine existential forms still credit si_passive after the D11 object closure', () => {
   for (const { phrasing, caseIds } of EXISTENTIAL_CLOSURE_MUST_MATCH) {
     for (const caseDef of pack.cases) {
       if (caseIds !== 'all' && !caseIds.includes(caseDef.id)) continue;
-      const siDirect = caseDef.intents.find((it) => it.id === 'si_direct');
-      assert.ok(siDirect, `case "${caseDef.id}": no si_direct intent found`);
+      const siPassive = caseDef.intents.find((it) => it.id === 'si_passive');
+      assert.ok(siPassive, `case "${caseDef.id}": no si_passive intent found`);
       assert.ok(
-        siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
-        `case "${caseDef.id}": si_direct did not match ${JSON.stringify(phrasing)} — the D11 closing context is too tight; widen the closing vocabulary rather than reopening the object branch`,
+        siPassive.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_passive did not match ${JSON.stringify(phrasing)} — the D11 closing context is too tight; widen the closing vocabulary rather than reopening the object branch`,
       );
     }
   }

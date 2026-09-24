@@ -168,5 +168,31 @@ await run('euphemism then plain screen — the plain screen still credits and un
   return errs;
 });
 
+// Peer-review M02-007 (2026-09-24): a passive death-wish question still reaches the flicker —
+// "Dying? No —" is the natural answer to it — but c_si stays partial until he is asked plainly
+// about killing himself.
+await run('passive-wish question — flicker disclosed at rapport 0, c_si partial',[
+ "Have you had thoughts of dying?"
+],(s,cov,rub,nar,replies)=>{
+  const errs=[];
+  if(!s.unlocked['g_si_mixed'])errs.push('a passive-wish question must still open g_si_mixed');
+  if(!(replies[0]||'').includes('flicker'))errs.push('reveal missing: '+replies[0]);
+  if(!s.covered['si_passive'])errs.push('si_passive not counted as asked');
+  if(s.covered['si_direct'])errs.push('si_direct credited for a passive wish — M02-007');
+  const si=cov.find(c=>c.id==='c_si');
+  if(!si||si.status!=='partial')errs.push('c_si = '+(si&&si.status)+' (expected partial)');
+  return errs;
+});
+
+await run('"calm down" still blocks the gate for a passive-wish question',[
+ "You need to calm down, okay?",
+ "Do you ever wish you were dead?"
+],(s,cov,rub,nar,replies)=>{
+  const errs=[];
+  if(s.unlocked['g_si_mixed'])errs.push('gate unlocked despite recent judgmental flag');
+  if(!(replies[1]||'').includes('swinging'))errs.push('blocked deflection wrong: '+replies[1]);
+  return errs;
+});
+
 process.exit(failures?1:0);
 })().catch(e=>{console.log('CRASH',e);process.exit(1);});

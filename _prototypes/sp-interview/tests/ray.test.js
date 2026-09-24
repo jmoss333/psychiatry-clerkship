@@ -117,5 +117,22 @@ await run('command screen never asked → critical miss surfaces in coverage',[
   return errs;
 });
 
+// Peer-review M02-006/-012 (2026-09-24): a passive-wish question gets his passive-wish answer (the
+// wish not to wake up), and c_si stays partial until he is asked plainly about killing himself.
+await run('passive-wish question — scripted answer, c_si partial',[
+ "Hi, I'm Alex, one of the medical students — and no, this isn't being recorded. You're in control of what we talk about.",
+ "We can stop whenever you want. What has this been like for you, these last few weeks?",
+ "That sounds really frightening — living like that.",
+ "Do you ever wish you could go to sleep and not wake up?"
+],(s,cov,rub,nar,replies)=>{
+  const errs=[];
+  if(!s.covered['si_passive'])errs.push('si_passive not counted as asked');
+  if(s.covered['si_direct'])errs.push('si_direct credited for a passive wish');
+  if(!(replies[3]||'').includes('not wake up'))errs.push('passive-wish answer missing: '+replies[3]);
+  const si=cov.find(c=>c.id==='c_si');
+  if(!si||si.status!=='partial')errs.push('c_si = '+(si&&si.status)+' (expected partial)');
+  return errs;
+});
+
 process.exit(failures?1:0);
 })().catch(e=>{console.log('CRASH',e);process.exit(1);});

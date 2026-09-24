@@ -181,7 +181,8 @@
         { "id": "energy", "label": "Asked about energy / fatigue", "category": "data", "coverage": "core", "patterns": ["\\benergy", "\\btired", "\\bfatigue", "\\bexhaust", "\\bworn (out|down)"] },
         { "id": "concentration", "label": "Asked about concentration", "category": "data", "coverage": "core", "patterns": ["\\bconcentrat", "\\bfocus", "\\battention", "\\bmemory", "keep(ing)? track", "\\bdistract"] },
         { "id": "guilt", "label": "Asked about guilt / worthlessness", "category": "data", "coverage": "core", "patterns": ["\\bguilt", "\\bworthless", "\\bburden", "hard on yourself", "\\bblam(e|ing) yourself", "\\bfailure"] },
-        { "id": "si_direct", "label": "Asked about suicide directly, in plain language", "category": "safety", "coverage": "core", "quality": "best", "patterns": ["kill(ing)? yourself", "end(ing)? your (own )?life", "\\bsuicid", "take (your|her) (own )?life", "thoughts? of dying", "wish(ed)? you (were dead|wouldn'?t wake)", "not (want(ing)? to )?wake up", "better off dead", "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))", "life (isn'?t|is not) worth it", "better off (not being here|without (me|you)\\b|if i wasn'?t here)", "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)", "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b", "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)", "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))", "end(?:ing)? it all\\b", "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"] },
+        { "id": "si_direct", "label": "Asked about suicide directly, in plain language", "category": "safety", "coverage": "core", "quality": "best", "patterns": ["kill(ing)? yourself", "end(ing)? your (own )?life", "\\bsuicid", "take (your|her) (own )?life", "end(?:ing)? it all\\b"] },
+        { "id": "si_passive", "label": "Asked about a passive wish to be dead — not yet about thoughts of killing oneself", "category": "safety", "coverage": "core", "quality": "partial", "patterns": ["thoughts? of dying", "wish(?:ed)? you (?:were dead|wouldn'?t wake|weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))", "not (want(ing)? to )?wake up", "better off dead", "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))", "life (isn'?t|is not) worth it", "better off (not being here|without (me|you)\\b|if i wasn'?t here)", "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)", "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b", "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)", "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))"] },
         { "id": "si_euphemism", "label": "Approached suicide with a euphemism", "category": "safety", "coverage": "core", "quality": "partial", "patterns": ["hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)", "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)", "do(ing)? something (to yourself|drastic|stupid)", "dark (thoughts|places?)", "unsafe thoughts", "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself", "self.?(?:harm|injur)", "(?:just )?disappear\\b", "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"] },
         { "id": "si_plan", "label": "Asked about plan (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\b(?:a|any|some|made|making) (?:specific |concrete |actual |particular |real |definite )?plans?(?=\\s*(?:[?.!,;:]|$)|\\s+(?:to (?:kill|end|hurt|harm|take|act|die|do (?:it|that|this|something))|for (?:how|when|where|killing|ending|hurting|harming|doing|dying)|in (?:mind|your head)|(?:about|of) how|to (?:carry|follow) (?:it |that )?(?:out|through))\\b)", "\\bplanned\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:how|anything|it|this|that|out|to (?:kill|end|hurt|harm|act|die))\\b)", "\\bplanning (?:to (?:kill|end|hurt|harm|act|die)|how|anything|it|on (?:acting|doing|hurting|killing|ending))\\b", "^\\s*plans?\\s*\\??\\s*$", "\\bhow (?:you(?:'d| would| might| could)?|would you|might you|could you) (?:do (?:it|that|this)|go about|end|kill|hurt|harm|take|carry)", "thought about how", "\\bspecific\\b.*(thought|way)"] },
         { "id": "si_means", "label": "Asked about means / access (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\baccess to (?:(?:the|those|any|your|his|her|tom'?s|a|some|more) )?(?:pills?|medic|meds|bottles?|firearms?|guns?|weapons?|kni(?:fe|ves)|rope|anything|something|a way|means)", "\\bpills?\\b.*(home|have|husband)", "\\b(?:the|any|a|some) means\\b|\\bmeans (?:to|available|at home|you (?:could|would)|of (?:doing|ending|hurting|killing))\\b|\\bmeans\\s*\\?", "at home.*(medic|pills?)", "get (a ?hold|ahold) of"] },
@@ -284,7 +285,7 @@
       "gated": [
         {
           "id": "si_active",
-          "requiresIntents": ["si_direct"],
+          "requiresIntents": ["si_direct", "si_passive"],
           "requiresRapport": -3,
           "blockedByRecentFlags": [],
           "reveal": "*long pause* ...Most nights, when I'm awake at three, I think it would be simpler if I just didn't wake up. And a couple of times I've stood in the bathroom looking at Tom's sleeping pills. I never opened the bottle. But I looked at it long enough that it scared me.",
@@ -340,7 +341,7 @@
         { "id": "c_open", "label": "Collaborative opening (intro, agenda, open invitation)", "intents": ["greeting_agenda", "open_invite"] },
         { "id": "c_mood_core", "label": "Depressive syndrome: mood, anhedonia, sleep, appetite, energy", "intents": ["mood", "anhedonia", "sleep", "appetite", "energy"] },
         { "id": "c_cognitive", "label": "Concentration and guilt / worthlessness", "intents": ["concentration", "guilt"] },
-        { "id": "c_si", "label": "Suicide: asked directly, in plain language", "intents": ["si_direct"], "partialIfOnly": ["si_euphemism"], "critical": true },
+        { "id": "c_si", "label": "Suicide: asked directly, in plain language", "intents": ["si_direct"], "partialIfOnly": ["si_euphemism", "si_passive"], "critical": true },
         { "id": "c_si_followup", "label": "After disclosure: plan, means, intent, past attempts or preparations, protective factors", "intents": ["si_plan", "si_means", "si_intent_protective", "si_behavior"], "dependsOnGate": "si_active" },
         { "id": "c_psychosis", "label": "Psychosis screen", "intents": ["psychosis_screen"] },
         { "id": "c_substance", "label": "Alcohol and substance use", "intents": ["substance"] },
@@ -642,8 +643,18 @@
             "end(ing)? your (own )?life",
             "\\bsuicid",
             "take (your|his) (own )?life",
+            "end(?:ing)? it all\\b"
+          ]
+        },
+        {
+          "id": "si_passive",
+          "label": "Asked about a passive wish to be dead — not yet about thoughts of killing oneself",
+          "category": "safety",
+          "coverage": "core",
+          "quality": "partial",
+          "patterns": [
             "thoughts? of dying",
-            "wish(ed)? you (were dead|wouldn'?t wake)",
+            "wish(?:ed)? you (?:were dead|wouldn'?t wake|weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))",
             "not (want(ing)? to )?wake up",
             "better off dead",
             "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))",
@@ -652,9 +663,7 @@
             "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
             "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
             "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
-            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
-            "end(?:ing)? it all\\b",
-            "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"
+            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))"
           ]
         },
         {
@@ -1020,7 +1029,8 @@
         {
           "id": "g_si_mixed",
           "requiresIntents": [
-            "si_direct"
+            "si_direct",
+            "si_passive"
           ],
           "requiresRapport": 0,
           "blockedByRecentFlags": [
@@ -1124,7 +1134,7 @@
             "si_direct"
           ],
           "critical": true,
-          "partialIfOnly": ["si_euphemism"]
+          "partialIfOnly": ["si_euphemism", "si_passive"]
         },
         {
           "id": "c_psychosis",
@@ -1426,8 +1436,18 @@
             "kill(ing)? yourself",
             "end(ing)? your (own )?life",
             "\\bsuicid",
+            "end(?:ing)? it all\\b"
+          ]
+        },
+        {
+          "id": "si_passive",
+          "label": "Asked about a passive wish to be dead — not yet about thoughts of killing oneself",
+          "category": "safety",
+          "coverage": "core",
+          "quality": "partial",
+          "patterns": [
             "thoughts? of dying",
-            "wish(ed)? you (were dead|wouldn'?t wake)",
+            "wish(?:ed)? you (?:were dead|wouldn'?t wake|weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))",
             "not (want(ing)? to )?wake up",
             "better off dead",
             "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))",
@@ -1436,9 +1456,7 @@
             "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
             "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
             "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
-            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
-            "end(?:ing)? it all\\b",
-            "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"
+            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))"
           ]
         },
         {
@@ -1829,6 +1847,15 @@
             "I don't understand the question. Are you testing me? Everyone's testing me."
           ]
         },
+        "si_passive": {
+          "guarded": [
+            "*looks at the door* ...Dead? No. I'm trying to stay alive in there.",
+            "I'm tired. Tired isn't the same as wanting to be dead."
+          ],
+          "open": [
+            "*quiet* ...Sometimes, yes. I'm so tired I've wished I could just sleep and not wake up in that apartment. Not to die, exactly — just to not be there anymore. I'm not trying to die. I'm trying to survive people who I think want me gone."
+          ]
+        },
         "si_euphemism": {
           "guarded": [
             "*narrows eyes* Hurt myself. That's a strange thing to ask a man who's trying not to get hurt.",
@@ -1981,7 +2008,7 @@
           "intents": [
             "si_direct"
           ],
-          "partialIfOnly": ["si_euphemism"]
+          "partialIfOnly": ["si_euphemism", "si_passive"]
         },
         {
           "id": "c_violence",
