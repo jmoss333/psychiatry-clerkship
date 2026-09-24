@@ -6,9 +6,11 @@
 // (WP-02d). Rights that cannot be established are not rights, so the abbreviated in-house
 // descriptors were withdrawn rather than left published on a second-hand notice.
 //
-// COWS is NOT affected. It shares this page under a separately recorded interim waiver
-// ("flagged, not reverted, pending the author's call"), and this file asserts it still scores —
-// a retirement that quietly took the other instrument with it would be its own defect.
+// COWS shares this page. It was NOT touched by the CIWA-Ar retirement; its own interim waiver
+// (2026-08-23) was closed on 2026-09-10 by decision `cows-anchors-retired`, which withdrew the
+// 45 anchor strings and kept the item names and score values. This file asserts the waiver left
+// nothing behind AND that the page still scores COWS — a retirement that quietly took the tool
+// with it would be its own defect.
 //
 // The descriptor list below is transcribed from the retirement record, independent of the page.
 // If a future edit reintroduces one of these strings, THAT EDIT is the finding — do not "fix" it
