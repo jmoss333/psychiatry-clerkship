@@ -186,23 +186,36 @@ def main():
             unchecked.append(fid); continue
         q, c = probe(f["quote"]), probe(f["correction"]) if f["correction"].strip() else ""
         additive = bool(c) and q in norm(f["correction"])
+        added = []
         if additive:
             # probe the ADDED text, not the retained quote — otherwise an untouched page reads FIXED
             rest = norm(f["correction"]).replace(q, " ")
             c = probe(rest) if len(norm(rest)) >= 8 else norm(f["correction"])
+            # ...and each added LINE on its own. A correction written as list lines ("- A\n- B")
+            # joins to "A - B" above, which can exist in markdown but never across separate JSON
+            # array elements (M05-001: a topic_meta ruleOut list). Requiring EVERY added line is
+            # stricter than the joined probe, so this accepts no fix the joined probe would reject
+            # on content grounds; it only stops a list-shaped fix reading OPEN for its container.
+            added = [clean_line(l) for l in f["correction"].split("\n")]
+            added = [l for l in added if len(l) >= 8 and q not in l]
         q_in, c_in, missing = [], False, []
+        added_seen = set()
         for p in files:
             hs = haystacks(reader, p)
             if hs is None:
                 missing.append(p); continue
             if c and any(c in h for h in hs):
                 c_in = True
+            added_seen.update(l for l in added if any(l in h for h in hs))
             if not additive and any(q in h for h in hs):
                 q_in.append(p)
         if missing and len(missing) == len(files):
             results[fid] = ("UNCHECKED", f"edit files missing: {missing}"); unchecked.append(fid); continue
         if additive:
-            st = ("FIXED", "additive correction present") if c_in else ("OPEN", "additive correction not found")
+            every_line = bool(added) and len(added_seen) == len(added)
+            st = (("FIXED", "additive correction present") if c_in else
+                  ("FIXED", f"additive correction present (all {len(added)} added line(s))") if every_line else
+                  ("OPEN", "additive correction not found"))
         elif q_in:
             st = ("OPEN", f"quote still in {q_in}")
         elif c_in:
