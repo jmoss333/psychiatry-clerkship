@@ -4915,7 +4915,7 @@
     "points": [
       "\"Treatment-resistant\" is a measurement claim: confirm adequate dose and duration, verify adherence, and track with a repeated scale before escalating.",
       "Two failed adequate antipsychotic trials defines treatment-resistant schizophrenia — clozapine is the only superior agent and is started too late; do not keep cycling.",
-      "Build monitoring at order entry: lithium renal/thyroid/PTH, clozapine ANC + bowel regimen, antipsychotic metabolic panel, QTc when stacking."
+      "Build monitoring at order entry: lithium levels + renal/thyroid/PTH, clozapine ANC + baseline and early troponin/CRP (myocarditis) + bowel regimen, antipsychotic metabolic panel, QTc when stacking."
     ],
     "cant": "Clozapine-associated constipation can progress to a fatal ileus — a bowel regimen is part of the prescription; and smoking induces CYP1A2, so a patient who quits at admission loses that induction, clozapine levels rise, and they may need a dose decrease, not an increase.",
     "quiz": {

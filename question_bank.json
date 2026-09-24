@@ -4782,7 +4782,7 @@
     },
     {
       "id": "qb_mood_013",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4828,7 +4828,7 @@
           }
         }
       ],
-      "why": "Psychosis = schizophrenia, All psychosis in elderly = delirium, and Concurrent = schizoaffective all misdiagnose the presentation. Psychotic depression produces mood-congruent delusions (nihilistic, guilt-laden) within the context of a severe depressive episode — the alert, attentive patient without fluctuating consciousness rules out delirium.",
+      "why": "Psychosis = schizophrenia, All psychosis in elderly = delirium, and Concurrent = schizoaffective all misdiagnose the presentation. Psychotic depression produces mood-congruent delusions (nihilistic, guilt-laden) within the context of a severe depressive episode — the alert, attentive patient makes delirium less likely — though one exam cannot exclude a fluctuating course, so reassess and complete the medical workup.",
       "pearl": "Mood-congruent psychotic features (nihilistic/guilt-laden delusions) in severe depression = psychotic depression, not schizophrenia — psychosis confined to the mood episode is the discriminator.",
       "evidence": "t_mood.md — Severe unipolar depression can include mood-congruent psychosis (nihilistic or guilt-laden delusions)."
     },
@@ -6265,7 +6265,7 @@
     },
     {
       "id": "qb_eth_007",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6281,7 +6281,7 @@
         "label": "Open the Ethics & Law page",
         "href": "?page=ethics_legal.md"
       },
-      "stem": "During an outpatient psychiatry session, a 34-year-old man with paranoid schizophrenia states, 'I have a gun at home. When John Smith gets out of prison next month, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
+      "stem": "During an outpatient psychiatry session, a 34-year-old man with schizophrenia (prominent persecutory delusions) states, 'I have a gun at home. When John Smith gets out of prison next month, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
       "options": [
         {
           "key": "A",
