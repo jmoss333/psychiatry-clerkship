@@ -192,6 +192,8 @@ step "standards spine coverage"             python3 bin/check_standards_coverage
 step "unit — vocabulary registry"           python3 bin/check_vocabulary.py --self-test
 step "vocabulary vs code sites"             python3 bin/check_vocabulary.py
 step "unit — qbank coherence"              python3 bin/check_qbank_coherence.py --self-test
+# WP-7 (2026-09-24). The length-cue ratchet also runs for real, beside qbank coherence below.
+step "unit — qbank length cue"              python3 bin/check_qbank_length_cue.py --self-test
 # Four tools shipped a --self-test that NO gate invoked — found by bin/check_vacuity.py after
 # Codex pointed out it was inventorying only test FILES, not the --self-test modes its own
 # doctrine calls the paired falsification. Each passes; none needed an exemption. The guards
@@ -230,6 +232,10 @@ step "icd-10-cm codes in force"             python3 bin/check_icd_codes.py
 # Ratchet against bin/check_qbank_coherence_baseline.json (pairs = 0 today); the pin is what
 # the --self-test step above asserts the exit code against. See the span-audit comment above.
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
+# Ratchet against bin/qbank_length_cue_baseline.json (attested 133, live 156 on 2026-09-24): an
+# item whose keyed option is the UNIQUELY longest rewards test-wiseness, not knowledge (WP-7,
+# target attested <= 35%). A rise fails; a rewrite batch lowers the pin with --update-baseline.
+step "qbank length cue (WP-7)"              python3 bin/check_qbank_length_cue.py
 step "twin parity (audience copies)"        python3 bin/check_twin_parity.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py
 step "evidence drill is regenerated"        python3 $A/generate_evidence_drill.py --check

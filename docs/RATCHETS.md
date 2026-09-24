@@ -6,9 +6,9 @@ gain in). A **rise fails** and blocks the push. Nobody has to drive the number t
 gate to be useful, and nobody can let it drift upward without a diff a reviewer sees. Hard
 checks — the ones that must be zero regardless — live *beside* the ratchets, never inside them.
 
-Three tools use it. Each ships its own falsification (`--self-test`) that proves a synthetic
+Four tools use it. Each ships its own falsification (`--self-test`) that proves a synthetic
 regression exits 1 and the live tree exits 0, and `bin/verify.sh` runs both the self-test and the
-gate, so the pre-push hook is the enforcement. None of the three is in `ci.yml`: adding a step
+gate, so the pre-push hook is the enforcement. None of them is in `ci.yml`: adding a step
 there trips three separate contracts (`bin/check-verify-coverage.py`, the step inventory and the
 workflow digest in `validate_scheduled_workflows.py`), and `verify.sh` runs before every push
 anyway. See `CLAUDE.md`, "Validate & test".
@@ -18,6 +18,7 @@ anyway. See `CLAUDE.md`, "Validate & test".
 | `bin/check_design_drift.py` | `13_Faculty_Resources/_automation/site_build/design_drift_baseline.json` | raw dimension declarations, distinct font sizes, sub-floor font sizes, non-standard breakpoints (per file) | C1–C9, see `docs/DESIGN_SYSTEM.md` §3 |
 | `bin/verify_spans.py` | `bin/verify_spans_baseline.json` | `rows_flagged`, `sentences_truncated`, `sentences_edited`, `rows_uncached` | any **REWORDED** sentence (a sentence the paper never wrote) fails whatever the baseline says |
 | `bin/check_qbank_coherence.py` | `bin/check_qbank_coherence_baseline.json` | `pairs` (0 today) | none — the pin is the floor |
+| `bin/check_qbank_length_cue.py` | `bin/qbank_length_cue_baseline.json` | `attested_uniquely_longest` (133 of 144), `live_uniquely_longest` (156 of 189) — items whose keyed option is the uniquely longest (WP-7) | none; the flagged ids it prints are the rewrite work list. Report-only lines for `topic_meta.json` quizzes and the practice-case JSONs never move the exit |
 
 ## Lowering the ratchet
 
@@ -37,18 +38,27 @@ python3 bin/verify_spans.py --update-baseline
 python3 bin/check_qbank_coherence.py --update-baseline
 ```
 
+```bash
+python3 bin/check_qbank_length_cue.py --update-baseline
+```
+
+`check_qbank_length_cue.py` pins two counts because each hides the other's shortcut: demoting a
+cueing item to `draft` lowers the attested count without fixing anything, and the live count
+does not move until the item is rewritten. Lower the attested pin after the rewritten batch is
+re-attested through the console.
+
 Each command rewrites its baseline from what the tool measures right now, prints the new pins,
 then runs the gate. The tool does not refuse to write a *higher* number — the diff in the PR is
 the review, and a reviewer who sees a pin go up should ask why. Never re-pin to make a red
 push green: fix the row or the item the tool printed. The message on a rise says so.
 
-## Exit codes (the two `bin/` tools)
+## Exit codes (the `bin/` tools)
 
 | Exit | Meaning | Examples |
 |---|---|---|
 | 0 | clean — every pinned count at or below its baseline, hard checks clear | a fall prints `note: … improved 6 -> 5 — run --update-baseline …` |
 | 1 | a finding | a count rose; a REWORDED sentence |
-| 2 | could not check — **not a pass** | no baseline; a baseline missing a key; zero rows carrying a span; zero live bank items |
+| 2 | could not check — **not a pass** | no baseline; a baseline missing a key; zero rows carrying a span; zero live bank items; zero attested items; an item whose options cannot be measured |
 
 Exit 2 exists because a pass over an empty set is the defect `docs/SILENT_SHRINK_CHECKLIST.md`
 §D4 describes. Before 2026-09-16, `verify_spans.py --cache <wrong path>` printed
