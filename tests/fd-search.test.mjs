@@ -427,17 +427,27 @@ test('"cut" and "od" triggers are phrase- and whole-word-bound, not bare substri
 // accident that leads with it for "iv fluids" and "haldol iv". A rank assertion alone would
 // therefore pass without the triggers, so this pins the TRIGGER route itself (which fails on the
 // old vocabulary) as well as the position, and pins that an ordinary IV query fires no trigger.
-test('pulling out an IV reaches the agitation sheet by explicit trigger', () => {
+// Pulling at lines is as much a hyperactive-delirium sign as an agitation one, so the same
+// phrases trigger both sheets. Trigger-matched protocols keep kit order, which puts Agitation
+// first and Delirium second. Delirium used to appear for some of these only by accident ("her"
+// inside a longer word), and a strict protocol pass would have dropped it.
+test('pulling out an IV reaches the agitation and delirium sheets by explicit trigger', () => {
   const agitation = REAL_CUR.safetyKit.find((k) => k.ref === 'agitation.md').triggers;
+  const delirium = REAL_CUR.safetyKit.find((k) => k.ref === 'delirium.md').triggers;
   for (const q of ['pulled out iv', 'pulled out her iv', 'pulling out his iv', 'pulled out IV',
     'she pulled her iv out', 'he pulled his iv', 'pt pulled out iv overnight']) {
     const padded = ` ${q.toLowerCase()} `;
     assert.ok(F.fdSearchTriggerHit(agitation, padded), `"${q}" fired no agitation trigger`);
+    assert.ok(F.fdSearchTriggerHit(delirium, padded), `"${q}" fired no delirium trigger`);
     const rows = F.fdSearchResults(REAL_INDEX, q, SYN, {});
-    assert.equal(rows[0]?.item.ref, 'agitation.md', `${q}: ${rows.map((r) => r.item.ref).join(', ')}`);
+    const refs = rows.map((r) => r.item.ref).join(', ');
+    assert.equal(rows[0]?.item.ref, 'agitation.md', `${q}: ${refs}`);
+    assert.equal(rows[1]?.item.ref, 'delirium.md', `${q}: ${refs}`);
+    assert.equal(rows[1]?.kind, 'protocol', `${q}: ${refs}`);
   }
   for (const q of ['haldol iv', 'iv fluids', 'iv access', 'iv thiamine', 'ativan iv', 'iv']) {
     assert.equal(F.fdSearchTriggerHit(agitation, ` ${q} `), false, `"${q}" fired an agitation trigger`);
+    assert.equal(F.fdSearchTriggerHit(delirium, ` ${q} `), false, `"${q}" fired a delirium trigger`);
   }
 });
 

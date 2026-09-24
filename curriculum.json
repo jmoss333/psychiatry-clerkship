@@ -460,7 +460,10 @@
         "alcohol withdrawal", "opioid withdrawal"] },
     { "ref": "delirium.md", "sub": "Vitals · meds · CAM",
       "triggers": ["delirious", "confused", "confusion", "disoriented", "altered mental status",
-        "ams", "sundowning", "waxing and waning", "inattentive", "not making sense"] }
+        "ams", "sundowning", "waxing and waning", "inattentive", "not making sense",
+        "pulled out iv", "pulled out her iv", "pulled out his iv", "pulled out their iv",
+        "pulling out iv", "pulling out her iv", "pulling out his iv", "pulling out their iv",
+        "pulled her iv", "pulled his iv", "pulled their iv"] }
   ],
   "appPathway": {
     "intro": "Choose the starting route that fits what you want to revisit. You can use either route.",
