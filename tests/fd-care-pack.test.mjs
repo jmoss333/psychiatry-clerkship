@@ -122,6 +122,7 @@ test('the empty builder shows five choices, automatic crisis inclusion, and no p
   assert.match(html, /<section class="crisis-block"/);
   assert.match(html, /data-fd-care-pack-print[^>]*disabled/);
   assert.match(html, /Choose at least one resource to prepare the handout/);
+  assert.doesNotMatch(html, /class="fd-care-pack is-print-ready"/);
   assert.doesNotMatch(html, /<input|<textarea|contenteditable/i);
 });
 
@@ -134,6 +135,7 @@ test('three selections render exact links, QR codes, a fixed count, and disabled
   assert.equal((html.match(/class="fd-care-pack__resource"/g) || []).length, 3);
   assert.equal((html.match(/class="fd-care-pack__qr"/g) || []).length, 3);
   assert.doesNotMatch(html, /data-fd-care-pack-print[^>]*disabled/);
+  assert.match(html, /class="fd-care-pack is-print-ready"/);
   for (const id of ids) {
     const item = curriculum.careResources.find((row) => row.id === id);
     assert.ok(item);
@@ -158,6 +160,8 @@ test('missing crisis HTML fails closed and disables printing without inventing c
   assert.match(html, /crisis-resource block did not load/);
   assert.doesNotMatch(html, /Crisis resources are included automatically/);
   assert.match(html, /data-fd-care-pack-print[^>]*disabled/);
+  assert.doesNotMatch(html, /class="fd-care-pack is-print-ready"/);
+  assert.match(html, /<header class="fd-care-pack__head"[\s\S]*?class="fd-care-pack__crisis-failure" role="alert"/);
   for (const resource of crisis.resources) {
     assert.doesNotMatch(html, new RegExp(resource.contact.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
@@ -184,16 +188,24 @@ test('the workbench uses an accessible two-column picker and paper hierarchy', (
   assert.match(css, /@media \(max-width:640px\)\{[\s\S]*?\.fd-care-pack__workbench\{grid-template-columns:minmax\(0,1fr\)\}/);
 });
 
-test('print isolates the paper sheet and forces the governed crisis details open', () => {
+test('print isolation requires a ready pack and invalid packs hide the sheet', () => {
   assert.equal((css.match(/\{/g) || []).length, (css.match(/\}/g) || []).length,
     'frontdoor.css must keep every media query closed');
   const print = css.slice(css.indexOf('@media print'));
-  assert.match(print, /body:has\(\.fd-care-pack__sheet\)[\s\S]*?\.fd-header[\s\S]*?display:none !important/);
-  assert.match(print, /\.fd-care-pack__picker\{display:none !important\}/);
-  assert.match(print, /\.fd-care-pack__sheet\{[^}]*display:block !important/);
-  assert.match(print, /\.fd-care-pack__crisis>:not\(summary\)\{display:block !important/);
-  assert.match(print, /\.fd-care-pack__crisis::details-content\{[^}]*content-visibility:visible !important/);
-  assert.match(print, /\.fd-care-pack__resource\{[^}]*break-inside:avoid-page/);
+  assert.match(print, /body:has\(\.fd-care-pack\.is-print-ready\)[\s\S]*?\.fd-header[\s\S]*?display:none !important/);
+  assert.match(print, /\.fd-care-pack:not\(\.is-print-ready\) \.fd-care-pack__sheet\{display:none !important\}/);
+  assert.match(print, /\.fd-care-pack\.is-print-ready \.fd-care-pack__picker\{display:none !important\}/);
+  assert.match(print, /\.fd-care-pack\.is-print-ready \.fd-care-pack__sheet\{[^}]*display:block !important/);
+  assert.match(print, /\.fd-care-pack\.is-print-ready \.fd-care-pack__crisis>:not\(summary\)\{display:block !important/);
+  assert.match(print, /\.fd-care-pack\.is-print-ready \.fd-care-pack__crisis::details-content\{[^}]*content-visibility:visible !important/);
+  assert.match(print, /\.fd-care-pack\.is-print-ready \.fd-care-pack__resource\{[^}]*break-inside:avoid-page/);
+  const handoutSelectors = [...print.matchAll(/([^{}]+)\{[^{}]*\}/g)]
+    .map(match => match[1].trim())
+    .filter(selector => selector.includes('.fd-care-pack')
+      && !selector.includes('.fd-care-pack:not(.is-print-ready)'));
+  assert.ok(handoutSelectors.length > 8);
+  assert.ok(handoutSelectors.every(selector => selector.includes('.is-print-ready')),
+    `unguarded handout print selectors: ${handoutSelectors.filter(selector => !selector.includes('.is-print-ready'))}`);
 });
 
 test('the human class contract documents transient state, crisis ownership, and print behavior', () => {

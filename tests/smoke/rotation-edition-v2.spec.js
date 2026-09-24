@@ -1230,6 +1230,8 @@ async function coreRenderSignature(page) {
       const app = document.getElementById('fdApp').cloneNode(true);
       app.querySelector('#governanceMount')?.replaceChildren();
       app.querySelector('#routeStatus')?.replaceChildren();
+      // Offline readiness updates independently; offline.spec.js owns that surface's behavior.
+      app.querySelector('[data-fd-offline-entry]')?.remove();
       return app.outerHTML;
     })(),
   }));

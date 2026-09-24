@@ -155,7 +155,7 @@ test('no canary spec identifies its audience by an exact project name', () => {
   }
 });
 
-// The seven projects whose names encode no audience. Each runs a single audience-agnostic spec,
+// The six projects whose names encode no audience. Each runs a single audience-agnostic spec,
 // and none of those specs may import audience.js — that is what makes audienceOf() safe to throw
 // on an unrecognised name instead of quietly answering 'ms3'. Defaulting is the exact shape of
 // the bug audience.js exists to fix: a name nobody taught the helper about becoming the MS3
@@ -168,7 +168,7 @@ test('no canary spec identifies its audience by an exact project name', () => {
 // 'hosted-preview' is agnostic for the same structural reason as 'prototypes': it serves
 // sp-preview/dist from the spec itself under the preview's own deployed headers, and the
 // hosted preview is not published to either learner site.
-const AUDIENCE_AGNOSTIC = ['lfs', 'visual', 'interview-room', 'faculty-console', 'offline', 'prototypes', 'hosted-preview'];
+const AUDIENCE_AGNOSTIC = ['lfs', 'visual', 'interview-room', 'faculty-console', 'prototypes', 'hosted-preview'];
 
 test('audience.js resolves every audience-bearing project name in the config', async () => {
   const { audienceOf } = await import(path.join(smokeDir, 'audience.js'));

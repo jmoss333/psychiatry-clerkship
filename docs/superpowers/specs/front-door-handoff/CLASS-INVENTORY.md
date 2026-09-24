@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(465 distinct `fd-*` selector names, 25 `is-*` state classes). Every class below has a rule in that file unless
+(478 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -240,6 +240,11 @@ ancestor; there is no modifier class for it.
           .fd-continue__count / .fd-continue__left
       .fd-setupcta    <button>         (alternative to .fd-continue when no week is set)
         .fd-setupcta__kicker / .fd-setupcta__title
+      .fd-offline     <section>        compact Shift-ready disclosure after the primary action
+        .fd-offline__open <button>      status plus aria-expanded
+        .fd-offline__details            in-flow, hidden until opened
+          .fd-offline__inventory        response-only subtree
+          .fd-offline__actions          refresh and close buttons, never inside the response subtree
       .fd-listhead
         .fd-sectionhead / .fd-listhead__theme
       .fd-list
@@ -264,6 +269,10 @@ ancestor; there is no modifier class for it.
 | `.fd-list` | Supplies the 8px gap between `.fd-row`s — rows have no sibling margin. |
 | `.fd-consistency` | Seven-day activity strip (2026-09-02, not in the prototype). Replaces the subhead's `· N days in a row` clause, which only Daily Review could write. Derived at render time by `fdActivityDays` from the timestamps every tool already stores; nothing new is persisted. Carries a `-12px` top margin so the subhead's 22px gap closes only when the strip is present. |
 | `.fd-pilot` | Shared active-testing invitation (2026-09-21). Its `.fd-pilot__button` uses the existing `.pgfb-b` launcher and adds `data-fb-context="Today landing page"`; no second form or submission channel is introduced. |
+| `.fd-offline` | One in-flow cache receipt after Today's actual primary card, or immediately after the APP's marked primary resource inside its starting-route resources or selected task's Prepare links. The Care entry stays in flow at ≤640px; the five-item dock is unchanged. State classes `.is-checking`, `.is-ready`, `.is-update`, and `.is-not-ready` change border shape/color and surface wash while visible text carries the meaning. It uses the existing warm palette tokens in light and dark themes; all controls meet `--fd-target-touch`. |
+| `.fd-offline__status`, `.fd-offline__detail`, `.fd-offline__scope`, `.fd-offline__checked` | Detailed state, reason, current route, and current-session verification timestamp. `Checked just now` is emitted only for a validated active-worker response. |
+| `.fd-offline__inventory` | Counts present and missing eligible reading, tool, shell/navigation, and search-data files. Device-only Reading place/Capture and connection-required media, live services, external links, and email delivery are always separate lines. Only this response subtree is replaced after a cache reply; focused controls are siblings outside it. |
+| `.fd-offline__refresh-status` | Stable live text for update-check success/failure or the offline explanation. The existing worker Refresh/Later prompt remains the sole reload decision. |
 
 Task 5 composes device-local activity around the pure Today renderer and reuses the Reader for
 internal Progress. These are part of the same shipped class contract:
@@ -347,10 +356,11 @@ Omitting it collapses the rail underneath.
       .fd-care-navigator__alternatives
         .fd-care-navigator__link <a> ×0–2
       .fd-care-navigator__clear <button>
-  .fd-care-pack
+  .fd-care-pack                     + .is-print-ready only with 1–3 choices and governed crisis HTML
     .fd-care-pack__head
       h2 / p
-      .fd-care-pack__included           + .is-unavailable on fail-closed state
+      .fd-care-pack__included           valid governed crisis content only
+      .fd-care-pack__crisis-failure      role="alert" in the header when crisis content is missing
     .fd-care-pack__workbench
       .fd-care-pack__picker
         .fd-care-pack__choices
@@ -369,7 +379,6 @@ Omitting it collapses the rail underneath.
         .fd-care-pack__empty
         details.fd-care-pack__crisis
           summary / .crisis-block
-        .fd-care-pack__crisis-failure   role="alert"; fail-closed alternative
         .fd-care-pack__provenance
     .fd-care-pack__actions
       p / .fd-care-pack__print <button>
@@ -398,8 +407,9 @@ Omitting it collapses the rail underneath.
 | `.fd-care-navigator__clear` | Native button returns to the unselected task map without changing the resource groups. |
 | `.fd-care-pack__workbench` | Transient two-column builder: a flat choice list beside a paper-like preview, stacking to one column at ≤640px. It accepts only canonical `careResources` records and has no patient fields, route state, storage, analytics, or network request. |
 | `.fd-care-pack__choice.is-selected` | The active choice pairs `.is-selected` with `aria-pressed="true"`; its visible check and inset rule keep selection non-color-only. A fourth unselected choice disables until one of the three is removed. |
-| `.fd-care-pack__sheet` | The only printable surface. It contains zero to three exact canonical links with locally generated QR SVGs; controls and the surrounding shell are excluded by `@media print`. |
-| `.fd-care-pack__crisis` | Owns the exact build-injected crisis block derived from `crisis_resources.json`. It is collapsed on screen and forced fully visible in Print. Missing governed HTML renders `.fd-care-pack__crisis-failure` and disables Print; the renderer never invents contacts. |
+| `.fd-care-pack.is-print-ready` | Added only when one to three canonical resources and the governed crisis block are both present. Every handout-only print selector, including shell hiding, requires this class. Native Print on an invalid pack retains the ordinary Care page and hides the empty or crisis-free preview sheet. |
+| `.fd-care-pack__sheet` | The paper preview. It becomes the isolated printable handout only in `.is-print-ready` state; invalid native Print hides the sheet. A ready handout contains one to three exact canonical links with locally generated QR SVGs. |
+| `.fd-care-pack__crisis` | Owns the exact build-injected crisis block derived from `crisis_resources.json`. It is collapsed on screen and forced fully visible on a ready handout. Missing governed HTML renders `.fd-care-pack__crisis-failure` in the ordinary Care header and disables Print; the renderer never invents contacts. |
 | `.fd-care-pack__actions` | States that choices stay on screen only. Print is enabled only when at least one valid resource and the governed crisis block are both present. |
 | `.fd-care-page__groups` | Two-column shelf at larger widths and one column at ≤640px. The support shelf holds Resource Finder and Recovery Meeting Calendar; education holds the patient library, Podcast Navigator, and Relational Bibliotherapy book shelf. |
 | `.fd-care-entry` | In-flow Care route button near the top of Today and APP On shift at ≤640px. It is hidden on wider screens where the Care tab is visible; the fixed phone dock remains five items. |
@@ -696,8 +706,9 @@ content. The high-risk governance focus rule outranks passage arrival focus.
     .fd-app__bridge-choice <button> ×2   (+ .is-active)
   .fd-app__bridge
     .fd-app__bridge-head / .fd-app__bridge-copy
-    .fd-app__resources
+    .fd-app__resources (+ .fd-app__resources--with-offline when this route owns the primary)
       .fd-app__resource <button> ×8
+      .fd-offline                      immediately after the marked first resource when no task owns primary
     .fd-app__reflection
       .fd-app__reflection-actions [role=group]
         .fd-app__reflection-choice <button> ×3
@@ -708,6 +719,7 @@ content. The high-risk governance focus rule outranks passage arrival focus.
         .fd-app__stages
           .fd-app__stage <section> ×3
             .fd-app__step-link <button> ×N
+            .fd-offline                immediately after the marked first Prepare link in the selected task
             .fd-app__practice-open <button> (rehearsal stage, when a pack resolves)
             .fd-app__practice-error <p role=alert> (when a pack cannot resolve)
     .fd-app__practice-host (sibling of .fd-app__tasks, when practice is open)
@@ -730,6 +742,7 @@ content. The high-risk governance focus rule outranks passage arrival focus.
 |---|---|
 | `.fd-app__bridge-choice` | Optional starting route, never an identity claim or competence tier. `.is-active` and `aria-pressed` move together. |
 | `.fd-app__resource` | Canonical resource title and governance badge from the joined index; the APP data stores only refs. Missing refs render `.fd-app__error`, never a shortened sequence. |
+| `.fd-app__resources--with-offline` | Makes the first starting-route button and its immediately following readiness receipt span the resource grid so they remain vertically adjacent on desktop and phone. Other resource buttons keep their existing order. |
 | `.fd-app__reflection` | Visit-only formative choice. The controller may repaint it but only `appBridge` belongs to `FD_KEYS`; reflection and activity state never survive reload. |
 | `.fd-app__task` | Shared work-preparation card. Each card visibly retains all three stages: prepare independently, rehearse here, arrange observation. |
 | `.fd-app__step-link` | Opens an existing governed resource. It is not a completion or supervisor-approval control. |
@@ -890,7 +903,8 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 | `.is-tool-expanded` | `.fd-main`, `.fd-reader--tool` | saved desktop tool workspace width |
 | `.is-primary` | `.fd-due`, `.fd-resume`, `.fd-lastread` | this row is Today's primary action (kicker copy changes; the visual treatment comes from the `.fd-primary` wrapper) |
 | `.is-secondary` | `.fd-continue` | a device-store row won the primary slot; the Continue card drops its gradient and top accent |
-| `.is-unavailable` | `.fd-care-pack__included` | the governed crisis block is absent, so the handout truthfully reports the failure and Print remains disabled |
+| `.is-print-ready` | `.fd-care-pack` | one to three valid resources and the governed crisis block are present; only this state activates isolated handout print styling |
+| `.is-checking` / `.is-ready` / `.is-update` / `.is-not-ready` | `.fd-offline` | Worker check pending / all current-route eligible files verified / verified current copy with a waiting update / verification failed or files missing. Never color-only: compact and detailed text name each state. |
 
 ## Keyframes
 

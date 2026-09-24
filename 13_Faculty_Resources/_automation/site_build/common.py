@@ -839,6 +839,7 @@ SNIPPET_MARKERS = {
     "/*__FD_READING_PLACE__*/": "frontdoor/fd_reading_place.js",
     "/*__FD_CAPTURE_EMAIL__*/": "frontdoor/fd_capture_email.js",
     "/*__FD_DATA__*/": "frontdoor/fd_data.js",
+    "/*__FD_OFFLINE__*/": "frontdoor/fd_offline.js",
     "/*__FD_EDITION_CATALOG__*/": "frontdoor/fd_edition_catalog.js",
     "/*__FD_EDITION_CONTRACT__*/": "frontdoor/fd_edition_contract.js",
     "/*__FD_EDITION_PROJECT__*/": "frontdoor/fd_edition_project.js",

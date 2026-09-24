@@ -16,11 +16,12 @@ const shell = read('frontdoor/fd_shell.js');
 const practice = read('frontdoor/fd_app_practice.js');
 const path = read('frontdoor/fd_path.js');
 const wire = read('frontdoor/fd_wire.js');
+const offline = read('frontdoor/fd_offline.js');
 const spa = read('spa_index.html');
 const CUR = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 
 // eslint-disable-next-line no-new-func
-const make = new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n${data}\n${careNavigator}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${wire}\nreturn {
+const make = new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n${data}\n${careNavigator}\n${offline}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${wire}\nreturn {
   fdResolveState: fdResolveState,
   fdDispatch: fdDispatch,
   fdIsTypingTarget: fdIsTypingTarget,
@@ -52,6 +53,197 @@ function memStorage(seed = {}) {
 }
 
 const F = make(memStorage());
+// eslint-disable-next-line no-new-func
+const Offline = new Function(`${offline}\nreturn { fdOfflineMonitor };`)();
+
+test('live route transitions invalidate a pending offline check before the old reply arrives', async () => {
+  const posts = [];
+  const channels = [];
+  const timers = new Map();
+  let timerId = 0;
+  function MessageChannel() {
+    this.port1 = { onmessage: null, close() {} };
+    this.port2 = { close() {} };
+    channels.push(this);
+  }
+  const worker = { postMessage(value) { posts.push(value); } };
+  const serviceWorker = { controller: worker, addEventListener() {}, removeEventListener() {} };
+  const idx = {
+    weeks: [{ n: 2, items: [{ ref: 'two.md', kind: 'read' }] },
+      { n: 3, items: [{ ref: 'three.md', kind: 'read' }] }],
+    byRef: { 'two.md': { ref: 'two.md', kind: 'read' },
+      'three.md': { ref: 'three.md', kind: 'read' } },
+  };
+  const monitor = Offline.fdOfflineMonitor({ serviceWorker, MessageChannel,
+    setTimer(fn) { const id = ++timerId; timers.set(id, fn); return id; },
+    clearTimer(id) { timers.delete(id); } });
+  const sync = (state) => monitor.sync(idx, { ...state, appMode: false });
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F, index: idx, render: sync, renderTransient: sync,
+  });
+  sync(h.controller.getState());
+  const oldReply = channels[0].port1.onmessage;
+  h.controller.dispatch({ 'data-fd-setweek': '3' });
+  assert.deepEqual(posts[0].urls, ['/', '/search-index.json', '/content/two.md']);
+  assert.deepEqual(posts[1].urls, ['/', '/search-index.json', '/content/three.md']);
+  oldReply({ data: { version: 'old', ready: true, present: posts[0].urls, missing: [] } });
+  assert.equal(monitor.status().checking, true);
+  channels[1].port1.onmessage({ data: { version: 'new', ready: true,
+    present: posts[1].urls, missing: [] } });
+  await Promise.resolve();
+  assert.equal(monitor.status().response.version, 'new');
+  h.controller.dispatch({ 'data-fd-tab': 'library' });
+  assert.equal(monitor.status(), null);
+  monitor.destroy();
+  h.controller.destroy();
+});
+
+test('offline disclosure actions are visit-only and refresh never changes route or resource', () => {
+  const state = { ...roleContext, screen: 'app', tab: 'today', openId: null };
+  assert.deepEqual(F.fdDispatch({ 'data-fd-offline-open': '' }, {}, state),
+    { patch: { offlineOpen: true }, route: null, effect: null });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-offline-close': '' }, {}, { ...state, offlineOpen: true }),
+    { patch: { offlineOpen: false }, route: null, effect: null });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-offline-refresh': '' }, {}, { ...state, offlineOpen: true }),
+    { patch: {}, route: null, effect: { type: 'refresh-offline' } });
+});
+
+test('offline refresh stays on Today and never writes controller state', () => {
+  const storage = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'today' }) });
+  const LocalF = make(storage);
+  const initial = storage.dump().cw_frontdoor_v1;
+  const messages = [];
+  let updates = 0;
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', offlineOpen: true }, {
+    F: LocalF,
+    offlineStatus: () => ({ expected: ['/', '/search-index.json', '/content/two.md'],
+      response: { version: 'v1', ready: true,
+        present: ['/', '/search-index.json', '/content/two.md'], missing: [] } }),
+    online: () => false,
+    reportOfflineRefresh: (message) => messages.push(message),
+    requestSWUpdate: () => { updates += 1; return Promise.resolve(true); },
+  });
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  assert.equal(updates, 0);
+  assert.deepEqual(messages, ['Refresh needs a connection; your verified copy remains available.']);
+  assert.equal(h.controller.getState().tab, 'today');
+  assert.equal(storage.dump().cw_frontdoor_v1, initial);
+  h.controller.destroy();
+});
+
+test('online refresh calls the existing worker update once and reports its result', async () => {
+  let updates = 0;
+  const messages = [];
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', offlineOpen: true }, {
+    F,
+    offlineStatus: () => ({ expected: ['/', '/search-index.json', '/content/two.md'],
+      response: { version: 'v1', ready: true,
+        present: ['/', '/search-index.json', '/content/two.md'], missing: [] } }),
+    online: () => true,
+    reportOfflineRefresh: (message) => messages.push(message),
+    requestSWUpdate: () => { updates += 1; return Promise.resolve(true); },
+  });
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(updates, 1);
+  assert.match(messages.at(-1), /Update check complete/);
+  assert.equal(h.controller.getState().offlineOpen, true);
+  h.controller.destroy();
+});
+
+test('an update failure reports failure without closing the detailed check', async () => {
+  const messages = [];
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', offlineOpen: true }, {
+    F, online: () => true,
+    reportOfflineRefresh: (message) => messages.push(message),
+    requestSWUpdate: () => Promise.reject(new Error('network unavailable')),
+  });
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.match(messages.at(-1), /Could not check/);
+  assert.equal(h.controller.getState().offlineOpen, true);
+  h.controller.destroy();
+});
+
+test('a stalled update times out, permits retry, and ignores its late completion', async () => {
+  const messages = [], timers = new Map(), resolves = [];
+  let timerId = 0, updates = 0;
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', offlineOpen: true }, {
+    F, online: () => true,
+    setTimer(fn, ms) { const id = ++timerId; timers.set(id, { fn, ms }); return id; },
+    clearTimer(id) { timers.delete(id); },
+    reportOfflineRefresh: (message) => messages.push(message),
+    requestSWUpdate() { updates += 1; return new Promise((resolve) => resolves.push(resolve)); },
+  });
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  assert.equal(updates, 1, 'one worker update request while pending');
+  assert.equal([...timers.values()][0].ms, 8000);
+  [...timers.values()][0].fn();
+  assert.match(messages.at(-1), /timed out/i);
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  assert.equal(updates, 2, 'timeout releases the control for retry');
+  const beforeLate = messages.length;
+  resolves[0](true);
+  await Promise.resolve();
+  assert.equal(messages.length, beforeLate, 'late result cannot replace retry status');
+  resolves[1](true);
+  await Promise.resolve();
+  assert.match(messages.at(-1), /Update check complete/);
+  assert.equal(timers.size, 0);
+  h.controller.destroy();
+});
+
+test('closing details, changing APP route, and teardown cancel late update messages', async () => {
+  for (const transition of ['close', 'route', 'destroy']) {
+    const messages = [], timers = new Map(), resolves = [];
+    let timerId = 0;
+    const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today',
+      appBridge: 'pa', offlineOpen: true }, {
+      F, online: () => true,
+      setTimer(fn) { const id = ++timerId; timers.set(id, fn); return id; },
+      clearTimer(id) { timers.delete(id); },
+      reportOfflineRefresh: (message) => messages.push(message),
+      requestSWUpdate: () => new Promise((resolve, reject) => resolves.push({ resolve, reject })),
+    });
+    h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+    if (transition === 'close') h.controller.dispatch({ 'data-fd-offline-close': '' });
+    else if (transition === 'route') h.controller.dispatch({ 'data-fd-app-bridge': 'pmhnp' });
+    else h.controller.destroy();
+    assert.equal(timers.size, 0, `${transition} clears the timeout`);
+    const count = messages.length;
+    resolves[0].reject(new Error('late network failure'));
+    await Promise.resolve();
+    assert.equal(messages.length, count, `${transition} ignores late rejection`);
+    if (transition === 'route') {
+      h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+      assert.equal(resolves.length, 2, 'new route permits a fresh update check');
+    }
+    h.controller.destroy();
+  }
+});
+
+test('offline details move focus to Close and return it to the disclosure', () => {
+  const storage = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'today' }) });
+  const initial = storage.dump().cw_frontdoor_v1;
+  const opener = { focused: 0, focus() { this.focused += 1; } };
+  const closer = { focused: 0, focus() { this.focused += 1; } };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F: make(storage), querySelector(selector) {
+      if (selector === '[data-fd-offline-open]') return opener;
+      if (selector === '[data-fd-offline-close]') return closer;
+      return null;
+    },
+  });
+  h.controller.dispatch({ 'data-fd-offline-open': '' });
+  assert.equal(closer.focused, 1);
+  h.controller.dispatch({ 'data-fd-offline-close': '' });
+  assert.equal(opener.focused, 1);
+  assert.equal(storage.dump().cw_frontdoor_v1, initial);
+  h.controller.destroy();
+});
 
 test('dock forwards once to the current connected source and rejects a stale id', () => {
   let clicks = 0;
@@ -907,6 +1099,11 @@ function fakeHarness(initial, options = {}) {
     appPracticePacks: options.appPracticePacks,
     releaseStartupGate: options.releaseStartupGate,
     loadBlock: options.loadBlock,
+    offlineStatus: options.offlineStatus,
+    online: options.online,
+    reportOfflineRefresh: options.reportOfflineRefresh,
+    requestSWUpdate: options.requestSWUpdate,
+    offlineRefreshTimeoutMs: options.offlineRefreshTimeoutMs,
   });
   if (options.commitStartup !== false) controller.commitStartup();
   return { root, rootHandlers, fakeWindow, windowHandlers, controller };

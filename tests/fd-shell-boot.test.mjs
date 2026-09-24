@@ -26,6 +26,9 @@ const stateModule = readFileSync(new URL(
 const readingPlaceModule = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_reading_place.js', import.meta.url,
 ), 'utf8');
+const offlineModule = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_offline.js', import.meta.url,
+), 'utf8');
 const todayModule = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_today.js', import.meta.url,
 ), 'utf8');
@@ -54,6 +57,33 @@ const activeLearningPathConsumers = [
 ].map((relative) => [relative, readFileSync(new URL(relative, import.meta.url), 'utf8')]);
 
 function count(needle) { return source.split(needle).length - 1; }
+
+test('built shell injects one offline checker after route data and before controller consumers', () => {
+  const marker = '/*__FD_OFFLINE__*/';
+  assert.equal(count(marker), 1);
+  const directory = mkdtempSync(join(tmpdir(), 'fd-offline-injection-'));
+  const output = join(directory, 'index.html');
+  try {
+    copyFileSync(new URL('../13_Faculty_Resources/_automation/site_build/spa_index.html', import.meta.url), output);
+    const script = [
+      'import sys',
+      'sys.path.insert(0, sys.argv[1])',
+      'import common',
+      'assert common.inject_shared_snippets(sys.argv[2])',
+    ].join('\n');
+    const result = spawnSync('python3', ['-c', script,
+      new URL('../13_Faculty_Resources/_automation/site_build/', import.meta.url).pathname, output],
+    { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    const emitted = readFileSync(output, 'utf8');
+    assert.equal(emitted.includes(marker), false);
+    assert.equal(emitted.split(offlineModule).length - 1, 1);
+    assert.ok(emitted.indexOf('var FD_CURRICULUM=') < emitted.indexOf(offlineModule)
+      && emitted.indexOf(offlineModule) < emitted.indexOf('function fdWire('));
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 test('build injection emits one reading-place module after state and before consumers', () => {
   const marker = '/*__FD_READING_PLACE__*/';
@@ -504,7 +534,7 @@ test('fdRender guards every live surface independently', () => {
 
 test('faculty preview ignores the learner tool-width preference', () => {
   const start = source.indexOf('function fdPatchToolLayout(state)');
-  const end = source.indexOf('function fdRender(state,detail)', start);
+  const end = source.indexOf('var fdGuideSession=', start);
   assert.ok(start > -1 && end > start, 'tool layout patch moved');
   const classes = new Set(['fd-main', 'is-tool-expanded']);
   const readerClasses = new Set(['fd-reader', 'fd-reader--tool', 'is-tool-expanded']);
