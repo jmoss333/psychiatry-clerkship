@@ -238,7 +238,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **24. What are the therapeutic levels and key toxicities of lithium?**
 
-- **Answer:** Acute mania: 0.8–1.2 mEq/L; maintenance: 0.6–0.8 mEq/L. Toxic at ≥1.5 mEq/L. Key toxicities: fine tremor, polyuria/polydipsia (nephrogenic DI), hypothyroidism, hyperparathyroidism, renal impairment.
+- **Answer:** Acute mania: 0.8–1.2 mEq/L; maintenance: 0.6–0.8 mEq/L (older adults usually 0.4–0.6). Toxic at ≥1.5 mEq/L. Key toxicities: fine tremor, polyuria/polydipsia (nephrogenic DI), hypothyroidism, hyperparathyroidism, renal impairment.
 
 - **Evidence:** Hypothyroidism occurs in ~14% of lithium-treated patients (OR 5.78 vs. placebo).
 

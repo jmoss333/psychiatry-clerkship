@@ -243,7 +243,7 @@
     },
     {
       "id": "qb_mood_002",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "mood",
       "competency": [
@@ -293,7 +293,7 @@
       ],
       "why": "Treat the number not the patient, Missing the interaction, and Wrong toxidrome are the traps. Lithium has a narrow therapeutic window; NSAIDs reduce prostaglandin-mediated renal clearance and push lithium levels into the toxic range — a textbook drug interaction. The 2-day picture of tremor, confusion, and vomiting in a lithium-maintained patient who just started an NSAID is lithium toxicity until proven otherwise.",
       "pearl": "NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push lithium levels toward toxicity — check the list when lithium patients deteriorate.",
-      "evidence": "t_mood.md 'Lithium' — lithium runs a narrow therapeutic window (~0.6–1.2 mEq/L); NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
+      "evidence": "t_mood.md 'Lithium' — lithium runs a narrow therapeutic window (acute ~0.8–1.2 mEq/L; maintenance ~0.6–0.8, lower in older adults); NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
       "tier2": {
         "q": "Why does ibuprofen raise lithium levels?",
         "options": [

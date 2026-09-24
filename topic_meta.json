@@ -4999,7 +4999,7 @@
     "points": [
       "Serotonin syndrome is fast with clonus and hyperreflexia; NMS is slow with lead-pipe rigidity and CK often >1,000 — tempo and the neuromuscular exam separate them.",
       "Catatonia: a ≥50% BFCRS drop after a 2 mg IV lorazepam challenge is diagnostic and therapeutic; avoid antipsychotics; ECT is definitive.",
-      "Lithium: toxicity generally ≥1.5 mEq/L, dialysis if >4.0 (or >2.5 with severe signs) — treat the patient, not the number, in chronic toxicity."
+      "Lithium: toxicity generally ≥1.5 mEq/L; dialysis for >4.0 with impaired kidney function, >5.0 regardless, or decreased consciousness, seizures or life-threatening dysrhythmias at any level — treat the patient, not the number, in chronic toxicity."
     ],
     "cant": "In serotonin syndrome, physical restraints are contraindicated — isometric contraction worsens hyperthermia and lactic acidosis; sedate instead.",
     "ruleOut": [
@@ -5430,7 +5430,7 @@
     "hy": true,
     "tldr": "Every psychotropic with a monitoring requirement has a baseline and an ongoing schedule; ordering the labs, β-hCG, and EKG before the first dose and tracking the next level is concrete bedside safety work.",
     "points": [
-      "Lithium: 12-h trough drawn ~5 days after any dose change; target ≈ 0.6–1.0 (up to ~1.2 in acute mania); NSAIDs/thiazides/ACE-inhibitors raise levels.",
+      "Lithium: 12-h trough drawn ~5 days after any dose change; target: acute mania 0.8–1.2, maintenance usually 0.6–0.8 (older adults ~0.4–0.6); NSAIDs/thiazides/ACE-inhibitors raise levels.",
       "Clozapine ANC weekly ×6 mo → every 2 wk ×6 mo → monthly (per prescribing information; FDA eliminated the REMS in 2025); myocarditis is the early killer.",
       "Valproate and lithium are teratogens — β-hCG before starting; carbamazepine needs CBC/LFTs/sodium, HLA-B*1502 in at-risk ancestry, and watch for SIADH."
     ],
