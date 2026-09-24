@@ -585,7 +585,7 @@
     },
     {
       "id": "qb_cog_002",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -633,8 +633,8 @@
         }
       ],
       "why": "Psychosis = schizophrenia drives the dangerous action: haloperidol in an unexcluded catatonia can precipitate NMS. Waxy flexibility (sustained posturing) is a catatonic sign — catatonia must be rated before any dopamine blocker is started. Restraint first violates least-restrictive principle; Quiet patient = stable patient defers an urgent evaluation.",
-      "pearl": "Avoid antipsychotics until catatonia is excluded — they can precipitate or worsen NMS and malignant catatonia; the lorazepam challenge is both diagnostic and therapeutic.",
-      "evidence": "catatonia.md 'Management principles' — avoid antipsychotics until catatonia is excluded — they can precipitate or worsen NMS and malignant catatonia. A positive lorazepam challenge both supports the diagnosis and begins treatment."
+      "pearl": "Avoid antipsychotics until catatonia is excluded or has responded to treatment — they can precipitate or worsen NMS and malignant catatonia; the lorazepam challenge is both diagnostic and therapeutic.",
+      "evidence": "catatonia.md 'Management principles' — avoid antipsychotics until catatonia is excluded or has responded to treatment — they can precipitate or worsen NMS and malignant catatonia; if the underlying psychosis then needs one, the team introduces it cautiously, with benzodiazepine cover. A positive lorazepam challenge both supports the diagnosis and begins treatment."
     },
     {
       "id": "qb_pha_001",
@@ -2001,7 +2001,7 @@
     },
     {
       "id": "qb_cog_014",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "neurocog",
       "competency": [
@@ -2035,7 +2035,7 @@
         },
         {
           "key": "C",
-          "t": "Stop all antipsychotics immediately, transfer to a medical unit for hemodynamic monitoring and supportive care, and obtain urgent psychiatric and neurology consultation — ECT should be considered for malignant or refractory catatonia.",
+          "t": "Stop all antipsychotics immediately, transfer to a medical unit for hemodynamic monitoring and supportive care, continue lorazepam, and obtain urgent psychiatric and neurology consultation — ECT should be considered for malignant or refractory catatonia.",
           "c": true
         },
         {
@@ -2048,7 +2048,7 @@
         }
       ],
       "why": "Underestimate the emergency and Agitation = antipsychotic are the two clinical catastrophes. This is NMS/malignant catatonia: fever, autonomic instability, lead-pipe rigidity, elevated CK after antipsychotic escalation. The correct sequence is stop all antipsychotics, transfer to a medical unit for hemodynamic monitoring, continue lorazepam — benzodiazepines remain first-line pharmacotherapy for malignant catatonia while ECT is arranged — and pursue ECT emergently if the patient does not rapidly improve; the error in option A is observation on the psychiatric unit, not the lorazepam, and certainly not more antipsychotic.",
-      "pearl": "Malignant catatonia overlaps with NMS: fever + rigidity + elevated CK + autonomic instability after antipsychotic exposure — stop antipsychotics, transfer to medical, and consider ECT urgently.",
+      "pearl": "Malignant catatonia overlaps with NMS: fever + rigidity + elevated CK + autonomic instability after antipsychotic exposure — stop antipsychotics, transfer to medical, continue lorazepam, and consider ECT urgently.",
       "evidence": "catatonia.md — The emergency you must never miss is malignant catatonia: autonomic instability, hyperthermia, and rigidity that clinically overlaps with neuroleptic malignant syndrome (NMS). ECT is the treatment for severe, malignant, or benzodiazepine-refractory catatonia and should not be delayed when the patient is deteriorating.",
       "tier2": {
         "q": "Why does ECT have a role in malignant catatonia when benzodiazepines have not been effective?",
@@ -2063,7 +2063,7 @@
           },
           {
             "key": "C",
-            "t": "ECT directly treats the catatonic syndrome regardless of etiology — it is the definitive treatment for malignant or benzodiazepine-refractory catatonia and its effectiveness does not depend on removing the antipsychotic.",
+            "t": "ECT directly treats the catatonic syndrome regardless of etiology — it is the definitive treatment for malignant or benzodiazepine-refractory catatonia and it can work before the antipsychotic has fully cleared (the antipsychotic is still stopped).",
             "c": true
           },
           {
@@ -2071,7 +2071,7 @@
             "t": "ECT is a last resort used only after a second antipsychotic trial has failed in treatment-resistant psychosis."
           }
         ],
-        "why": "ECT acts directly on the motor and autonomic systems driving catatonia — its mechanism bypasses the pharmacologic state that triggered the syndrome. The BAP 2023 catatonia guideline endorses ECT for severe, refractory, or malignant catatonia as a treatment that should not be delayed when the patient is deteriorating. The example here illustrates this: benzodiazepines are insufficient for malignant presentations; ECT can be lifesaving even when the antipsychotic cannot be fully cleared."
+        "why": "ECT acts directly on the motor and autonomic systems driving catatonia — its mechanism bypasses the pharmacologic state that triggered the syndrome. The BAP 2023 catatonia guideline endorses ECT for severe, refractory, or malignant catatonia as a treatment that should not be delayed when the patient is deteriorating. The example here illustrates this: benzodiazepines alone may be insufficient for malignant presentations, so ECT should not be delayed if lorazepam does not produce rapid improvement — the antipsychotic is still stopped, and ECT can be lifesaving before it has fully cleared."
       }
     },
     {

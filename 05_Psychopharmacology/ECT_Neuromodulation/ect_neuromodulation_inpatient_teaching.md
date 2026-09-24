@@ -33,7 +33,7 @@
 **High-yield pearls**
 - ECT is the single most effective treatment for severe/psychotic/catatonic depression and works in catatonia and NMS.
 - No absolute contraindications to ECT; raised ICP and unstable cardiac disease are the key relative ones.
-- Hold benzodiazepines/anticonvulsants before ECT (they blunt the seizure).
+- Minimise or time benzodiazepines and mood-stabilising anticonvulsants before ECT (they blunt the seizure) — but continue antiepileptics given for epilepsy.
 - rTMS: outpatient, no anesthesia, small seizure risk, for treatment-resistant depression and OCD.
 - Ketamine/esketamine act within hours on *depressive symptoms* — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.
 - Bright light therapy now has evidence as an adjunct in *nonseasonal* depression, not just SAD.
