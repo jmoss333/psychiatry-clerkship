@@ -6,7 +6,7 @@
 
 ## Electroconvulsive therapy (ECT)
 
-**Indications** — Severe major depression (especially with **psychotic features, catatonia, or high suicide risk**), treatment-resistant depression, **acute mania**, and **catatonia/neuroleptic malignant syndrome**. Choose ECT when a **rapid, definitive response is needed** — active suicidality, refusal to eat or drink, pregnancy where medications are undesirable, or prior good ECT response.
+**Indications** — Severe major depression (especially with **psychotic features, catatonia, or high suicide risk**), treatment-resistant depression, **acute mania**, and **catatonia/neuroleptic malignant syndrome**. Choose ECT when a **rapid, definitive response is needed** — active suicidality, refusal to eat or drink, or prior good ECT response (pregnancy makes ECT preferred over drugs once one of these is present).
 
 **How it works / course** — A brief generalized seizure is induced under general anesthesia with a muscle relaxant; a typical acute course is ~6–12 treatments 2–3×/week. Because relapse is high after a successful course, **continuation/maintenance** is essential — pharmacotherapy (e.g., lithium + nortriptyline reduced post-ECT relapse in the Sackeim trial) and/or maintenance ECT.
 
@@ -16,7 +16,7 @@
 
 - **Repetitive transcranial magnetic stimulation (rTMS)** — FDA-cleared for **treatment-resistant depression** (and OCD); outpatient, **no anesthesia**, no memory effects; main risk is a small seizure risk. Less potent than ECT but far better tolerated.
 - **Vagus nerve stimulation (VNS)** — an implanted device for chronic, highly treatment-resistant depression; slow onset.
-- **Deep brain stimulation (DBS)** — investigational for refractory depression and OCD.
+- **Deep brain stimulation (DBS)** — investigational for refractory depression; available for severe treatment-refractory OCD under an FDA Humanitarian Device Exemption (2009).
 
 ## Rapid-acting and light-based options
 

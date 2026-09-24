@@ -2819,7 +2819,7 @@
     "points": [
       "Antidepressants carry an FDA black-box warning for suicidality through age 24 — not just children; screen for bipolarity before starting any antidepressant, and monitor young adults closely in early weeks.",
       "Lithium has the strongest anti-suicidal evidence in its class and a narrow therapeutic window — levels, renal function, and thyroid monitoring are non-negotiable at every relevant interval.",
-      "Clozapine is uniquely effective for treatment-resistant schizophrenia and requires mandatory ANC monitoring for agranulocytosis; myocarditis, ileus, and lowered seizure threshold are additional red flags requiring immediate escalation."
+      "Clozapine is uniquely effective for treatment-resistant schizophrenia and requires ANC monitoring for agranulocytosis per its prescribing information (the REMS was eliminated in 2025); myocarditis, ileus, and lowered seizure threshold are additional red flags requiring immediate escalation."
     ],
     "cant": "Benzodiazepines left on a scheduled standing basis rather than short-term and targeted create dependence, falls, and delirium — autopilot benzodiazepines are a common and preventable inpatient harm.",
     "ruleOut": [
@@ -3758,7 +3758,7 @@
     "tldr": "A teaching index of the unit's order sets — always pull exact medications, doses, and monitoring from the live EHR order set; this page tells you which protocol applies and why, not what to prescribe.",
     "points": [
       "Withdrawal protocols use symptom-triggered scoring (CIWA-Ar for alcohol/benzo, COWS for opioids); give thiamine before or with glucose in any withdrawal or nutritional risk, never delaying dextrose for hypoglycemia.",
-      "Clozapine initiation requires mandatory ANC monitoring per the hematologic schedule — know the workflow before the patient starts, not after the first dose.",
+      "Clozapine initiation requires ANC monitoring per the prescribing-information schedule (REMS eliminated 2025) — know the workflow before the patient starts, not after the first dose.",
       "Delirium prevention bundles non-pharmacologic measures first; the restraint and agitation pathway is least-restrictive, time-limited, and always followed by a debrief."
     ],
     "cta": {

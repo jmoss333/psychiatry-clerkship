@@ -12,7 +12,7 @@
 - **Illness anxiety disorder** — preoccupation with *having or acquiring* a serious illness with minimal or no somatic symptoms; care-seeking or maladaptive avoidance. Not conscious.
 - **Functional neurological symptom disorder (conversion)** — neurologic symptoms (weakness, non-epileptic seizures, sensory loss) *incompatible* with recognized disease; diagnosis rests on **positive signs** (Hoover sign, give-way weakness, tremor entrainment, seizure with preserved awareness/eyes closed). Not conscious.
 - **Factitious disorder** — **conscious** falsification or induction of illness (self or another) motivated by assuming the sick role, **without external reward**. *Imposed on another* (formerly Munchausen by proxy) is a form of **abuse — report it** ([Ethics & the Law](?page=ethics_legal.md)).
-- **Malingering** — **conscious** feigning for an **external incentive** (money, drugs, disability, avoiding work/jail). *Not a mental disorder* — a V-code/observation.
+- **Malingering** — **conscious** feigning for an **external incentive** (money, drugs, disability, avoiding work/jail). *Not a mental disorder* — a Z-code (Z76.5) condition that may be a focus of clinical attention.
 
 **Initial workup** — Take the somatic complaint seriously and do a *focused, guideline-appropriate* evaluation — then stop escalating. Review prior records to avoid repeating negative studies. Screen for depression, anxiety, PTSD, and substance use, which are common and treatable. Ask about early adversity and current stressors. For suspected factitious disorder imposed on another, prioritize the dependent's safety and reporting duties over confrontation.
 
