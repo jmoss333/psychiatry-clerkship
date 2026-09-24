@@ -85,6 +85,7 @@ def norm(s):
 def clean_line(l):
     l = l.strip()
     l = re.sub(r"^([-+>]\s*)+", "", l)
+    l = re.sub(r"^\d{1,2}[a-z]?[.)]\s+", "", l)          # ordered-list markers ("6.", "6a.")
     l = re.sub(r"^\*\*[^*]{1,40}:\*\*\s*", "", l)          # **Label:** (transcript rendering)
     l = re.sub(r"^\*[^*]{1,40}[.:]\*\s*", "", l)             # *Rationale:* / *Prompt.*
     l = re.sub(r"^\*\*\([a-z0-9]\)\*\*\s*", "", l)          # **(a)** option labels
