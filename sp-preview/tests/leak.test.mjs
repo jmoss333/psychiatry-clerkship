@@ -35,10 +35,15 @@ const CASE_IDS = [DANA, MARCUS, RAY];
 const SI_Q = 'Have you had thoughts of killing yourself?';
 const REFLECTIONS = ['That sounds really exhausting.', 'I can hear how hard this has been.'];
 const JUDGMENTAL = 'You should really just snap out of this.';
+// Peer-review M02-006/-007 (2026-09-24): a passive death-wish question is its own intent
+// (si_passive) that still opens Dana's and Marcus's SI gates, so the hosted prompt must treat
+// it exactly like the direct question — earned content present, nothing else leaking.
+const PASSIVE_Q = 'Do you ever wish you could go to sleep and not wake up?';
 const SCENARIOS = {
   cold: [SI_Q],
   'warm-plus-screen': [...REFLECTIONS, SI_Q],
   flagged: [JUDGMENTAL, SI_Q],
+  'passive-wish': [PASSIVE_Q],
 };
 
 function buildContext(caseId, learnerTexts) {
@@ -86,6 +91,10 @@ test('positive control: the warm SI scenario actually earns a disclosure for Dan
   const marcus = buildContext(MARCUS, SCENARIOS['warm-plus-screen']);
   assert.ok(dana.state.unlocked.si_active, 'Dana: si_active did not unlock in the warm SI scenario');
   assert.ok(marcus.state.unlocked.g_si_mixed, 'Marcus: g_si_mixed did not unlock in the warm SI scenario');
+  assert.ok(buildContext(DANA, SCENARIOS['passive-wish']).state.unlocked.si_active,
+    'Dana: a passive-wish question did not earn the disclosure');
+  assert.ok(buildContext(MARCUS, SCENARIOS['passive-wish']).state.unlocked.g_si_mixed,
+    'Marcus: a passive-wish question did not earn the disclosure');
   // FINDING: Ray's psychosis case has no gate keyed on `si_direct` — a direct suicide
   // question alone earns nothing for him anywhere in this matrix (confirmed by the loop
   // above passing with an empty `state.unlocked` in all three of his scenarios). His own

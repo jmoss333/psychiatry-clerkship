@@ -4,7 +4,7 @@
 
 A residency-level reading canon: the Top 25 essential papers plus subdomain lists across psychopharmacology, psychotherapy, anxiety/OCD, PTSD, suicide, neuroscience & genetics, neuromodulation, addiction, eating disorders, and nosology. Use it across training, not in four weeks — the MS3 site's 50-paper landmark set is the starting subset.
 
-OPENEVIDENCE TOP 200
+Annotations were drafted with an AI evidence tool (OpenEvidence) and should be checked against each primary paper.
 
 ---
 
@@ -28,7 +28,7 @@ The landmark NIMH-funded trial (N=1,460) that shattered the assumption of second
 
 **3. Cipriani et al., "Comparative Efficacy and Acceptability of 21 Antidepressant Drugs," Lancet 2018**
 
-The definitive network meta-analysis (522 RCTs, 116,477 participants) establishing that all 21 antidepressants are more effective than placebo, with agomelatine, escitalopram, mirtazapine, and venlafaxine among the most efficacious. The single most cited reference for antidepressant comparative effectiveness.
+The definitive network meta-analysis (522 RCTs, 116,477 participants) establishing that all 21 antidepressants are more effective than placebo, with amitriptyline showing the largest effect versus placebo and, head-to-head, agomelatine, amitriptyline, escitalopram, mirtazapine, paroxetine, venlafaxine, and vortioxetine more effective than other antidepressants. The single most cited reference for antidepressant comparative effectiveness.
 
 **4. Felitti et al., "Relationship of Childhood Abuse and Household Dysfunction to Many of the Leading Causes of Death in Adults: The ACE Study," Am J Prev Med 1998**
 
@@ -38,7 +38,7 @@ Surveyed 9,508 adults and demonstrated a graded dose-response relationship betwe
 
 The NCS-R (N=9,282) established that 46.4% of Americans meet criteria for a mental disorder in their lifetime, with half of all cases beginning by age 14 and three-quarters by age 24. Defined the epidemiological landscape of psychiatry and underscored the critical importance of early intervention.
 
-**6. Kane et al., "Clozapine for the Treatment-Refractory Schizophrenic," Arch Gen Psychiatry 1988**
+**6. Kane et al., "Clozapine for the Treatment-Resistant Schizophrenic: A Double-blind Comparison With Chlorpromazine," Arch Gen Psychiatry 1988**
 
 The pivotal trial (N=268) demonstrating clozapine's 30% response rate vs. 4% for chlorpromazine in treatment-resistant schizophrenia. Led to FDA approval and established clozapine as the gold standard for TRS — a position it has held for nearly four decades.
 
@@ -56,7 +56,7 @@ The STEP-BD antidepressant trial (N=366) found no benefit of adjunctive antidepr
 
 **10. Linehan et al., "Two-Year Randomized Controlled Trial of DBT vs Therapy by Experts for Suicidal Behaviors and BPD," Arch Gen Psychiatry 2006**
 
-The definitive DBT trial (N=101) demonstrating that DBT halved suicide attempts compared to expert community therapy in women with BPD. Established DBT as the first empirically validated treatment for BPD and the model for manualized psychotherapy research.
+The definitive DBT trial (N=101) demonstrating that DBT halved suicide attempts compared to expert community therapy in women with BPD. Showed that DBT's benefit is specific to DBT rather than to expert psychotherapy in general, confirming the 1991 Linehan trial that first established DBT as an empirically supported treatment for BPD.
 
 **11. Schizophrenia Working Group of the PGC, "Biological Insights from 108 Schizophrenia-Associated Genetic Loci," Nature 2014**
 
@@ -84,7 +84,7 @@ The definitive meta-analysis establishing ECT's superiority over sham (SES −0.
 
 **17. Cipriani et al., "Lithium in the Prevention of Suicide in Mood Disorders," BMJ 2013**
 
-Meta-analysis of 48 RCTs (6,674 participants) demonstrating lithium reduces completed suicides (OR 0.13) and deaths from any cause (OR 0.38). The strongest evidence for any pharmacological anti-suicide intervention.
+Meta-analysis of 48 RCTs (6,674 participants) finding fewer suicides with lithium than placebo (OR 0.13, based on few events) and fewer deaths from any cause (OR 0.38). Still the main pharmacological anti-suicide signal in mood disorders, but read it with the VA Li+ plus RCT (Katz et al., JAMA Psychiatry 2022) in veterans with a recent suicide-related event, which was stopped for futility after lithium added to usual care did not reduce repeat suicide-related events.
 
 **18. BALANCE Trial — Geddes et al., "Lithium Plus Valproate Combination Therapy vs Monotherapy for Bipolar I Disorder," Lancet 2010**
 
@@ -154,7 +154,7 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 
 **40.** Zhou et al., "Comparative Efficacy of Augmentation Agents in Treatment-Resistant Depression," J Clin Psychiatry 2015 — NMA: quetiapine, aripiprazole, thyroid hormone, lithium effective augmentation
 
-**41.** Emslie et al., "Treatment of Resistant Depression in Adolescents (TORDIA)," AJP 2008–2010 — CBT augmentation superior; SSRI switch = venlafaxine switch
+**41.** Brent et al., "Switching to Another SSRI or to Venlafaxine With or Without CBT for Adolescents With SSRI-Resistant Depression (TORDIA)," JAMA 2008 (24-week outcomes: Emslie et al., AJP 2010) — CBT augmentation superior; SSRI switch = venlafaxine switch
 
 **42.** Gibbons et al., "Benefits from Antidepressants: Synthesis of Patient-Level Outcomes," Arch Gen Psychiatry 2012 — Fluoxetine/venlafaxine: 27.7% greater improvement vs. placebo; reduced suicidal ideation
 
@@ -466,7 +466,7 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 
 **178.** D'Onofrio et al., "ED-Initiated Buprenorphine/Naloxone Treatment," JAMA 2015 — 78% treatment engagement at 30 days
 
-**179.** Jonas et al., "Pharmacotherapy for Adults with AUD (AHRQ Review)," JAMA 2014 — Naltrexone NNT=12; acamprosate NNT=12
+**179.** Jonas et al., "Pharmacotherapy for Adults with AUD (AHRQ Review)," JAMA 2014 — Acamprosate NNT=12 to prevent return to any drinking; naltrexone 50 mg NNT=12 to prevent return to heavy drinking (NNT=20 for any drinking)
 
 **180.** Trivedi et al., "Bupropion and Naltrexone in Methamphetamine Use Disorder (ADAPT-2)," NEJM 2021 — First positive pharmacotherapy trial: 13.6% vs. 2.5% response
 
@@ -476,7 +476,7 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 
 **183.** Krupitsky et al., "Injectable Extended-Release Naltrexone for Opioid Dependence," Lancet 2011 — XR-NTX: 36% vs. 23% complete abstinence
 
-**184.** Project MATCH Research Group, "Matching Alcoholism Treatments to Client Heterogeneity," ACER 1997 — All three treatments effective; matching hypothesis unsupported
+**184.** Project MATCH Research Group, "Matching Alcoholism Treatments to Client Heterogeneity," J Stud Alcohol 1997 — All three treatments effective; matching hypothesis unsupported
 
 **185.** Degenhardt et al., "Buprenorphine vs Methadone for Opioid Dependence," Lancet Psychiatry 2023 — Methadone better retention; buprenorphine better safety
 
@@ -546,7 +546,7 @@ This list necessarily omits important papers in several areas that a comprehensi
 
 . Kessler RC, Berglund P, Demler O, et al. Archives of General Psychiatry. 2005;62(6):593-602. doi:10.1001/archpsyc.62.6.593.
 
-. Food and Drug Administration. Updated date: 2025-12-17.
+. Kane J, Honigfeld G, Singer J, Meltzer H. Archives of General Psychiatry. 1988;45(9):789-96. doi:10.1001/archpsyc.1988.01800330013001.
 
 . Turner EH, Matthews AM, Linardatos E, Tell RA, Rosenthal R. The New England Journal of Medicine. 2008;358(3):252-60. doi:10.1056/NEJMsa065779.
 

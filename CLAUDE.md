@@ -19,15 +19,18 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
 ```
 - **Two sites, one repo.** Build command and publish dir are set **per-site in the Netlify UI**, not
   in `netlify.toml` (kept intentionally minimal — one toml can't express two sites, and it's read
-  *after* the clone). The legacy `GIT_LFS_ENABLED` / `GIT_LFS_FETCH_INCLUDE` env vars also live
-  there and are being **retired** (next bullet but one). See `13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md`.
+  *after* the clone). The legacy `GIT_LFS_ENABLED` / `GIT_LFS_FETCH_INCLUDE` env vars were
+  **removed** from both sites on 2026-09-14 (next bullet but one). See `13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md`.
 - **The two learner sites publish from `release`, not `main`** (since 2026-09-25). A merge to
   `main` deploys nothing learner-facing: `.github/workflows/production-release-train.yml`
   fast-forwards `release` to the newest main commit whose required checks are BOTH green, at
   09:05, 15:05 and 21:05 UTC, and its "Run workflow" button is the publish-now path for an
   urgent (e.g. safety) fix. Why: every Netlify production deploy is billed (15 credits) and
   publishing per merge cost two per merge. Never push to `release` by hand except to repair it;
-  it only ever fast-forwards. The satellite sites (sp-proxy, faculty console, workforce tour)
+  it only ever fast-forwards. A scheduled run HOLDS (red) if Netlify shows more than 12
+  billable production deploys across all five sites in the last 24 h -- the spend tripwire
+  that stands in for the auto-recharge ceiling Netlify does not offer; publish-now is never
+  held. The satellite sites (sp-proxy, faculty console, workforce tour)
   still build from `main`. Deploy previews: `https://deploy-preview-{PR}--{slug}.netlify.app`.
 - **Git LFS** tracks `*.mp3 *.m4a *.wav *.mp4`. Never commit LFS **pointer stubs** (~133 B) in place
   of real media — the build's LFS gate fails the deploy. In sandboxes without LFS installed, audio
@@ -35,8 +38,12 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
 - **LFS bandwidth is metered per GitHub account (10 GB/mo).** If *every* production deploy of both
   sites fails the LFS gate while previews and CI stay green and nothing changed, it is the quota,
   not the code (2026-08-30 outage) — see `site_build/NETLIFY_LFS_RUNBOOK.md` "Incident pattern 2".
-  `site_build/lfs_pull_cached.sh` pulls media inside the build from Netlify's persistent cache so
-  a merge costs ~0 MB; it only takes effect once `GIT_LFS_ENABLED` is removed from the site's UI.
+  **The cost is per fresh clone (~455 MB), not per build or merge:** a cache-reusing production
+  build downloads nothing, so ~11 "Clear cache and deploy"s spend the month — never clear the
+  cache to retry an LFS failure. `site_build/lfs_pull_cached.sh` is shipped but **inert**:
+  removing `GIT_LFS_ENABLED` (done 2026-09-14) did not engage it, because Netlify's checkout
+  materialises LFS objects regardless — do not repeat that switch-over expecting a saving.
+  Read the deploy log's checkout gap (~2 s reused, ~70 s fresh clone), not an MB line.
 - **`CLERKSHIP_ANALYTICS=off|ms3|res|both`** gates the usage-analytics emitter (`common.py`'s
   `analytics_enabled_for()`), **default `off`**. Per the rollout in
   `docs/superpowers/specs/2026-09-04-usage-analytics-design.md`, enabling it is the repo owner's
@@ -133,6 +140,15 @@ the container when the Bash 5 environment is part of the evidence.
   empty array as unbound and aborts with an empty message (PR #469). Write
   `${ARR[@]+"${ARR[@]}"}`. Prove whose fault it is by running the failing gate on clean `main`
   before reaching for `--no-verify` (which is never the answer).
+- **Every `verify.sh` step runs with its own `TMPDIR`** — a `verify-step.*` directory removed
+  when the step ends. Anything still in it prints as `LEAK <step> N entries left … (removed):
+  <prefix>* (count), …` and fails the run; the prefix greps to the test that made the fixture.
+  Fix the test (`t.after(() => fs.rmSync(dir, { recursive: true, force: true }))`, Python
+  `addCleanup`/`TemporaryDirectory`), never the report. Why: on 2026-09-24 the Mac's shared
+  `$TMPDIR` held ~122,700 entries, ~103k of them fixtures from three test files that never
+  cleaned up; `python3` importing from that directory took ~20 s and `preview-site.test.mjs`
+  blocked pushes while no test failed. A bare `node --test` outside verify.sh is not sandboxed.
+  `bin/tmp_leak_report.sh`, pinned by `tests/verify-tmp-sandbox.test.mjs`.
 - **Visual baselines must be generated on Ubuntu/Chromium** (the CI runner), not a macOS laptop —
   regenerate via the "Refresh visual baselines" workflow_dispatch, not locally.
 

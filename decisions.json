@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "_note": "Standing faculty decisions, machine-readable. A decision that governs code carries `governs` paths, and each of those files carries a `DECISION: <id>` marker at the policy it enforces. bin/check_decision_drift.py checks the two against each other in both directions. Generalised from instrument_rights.json + instrument-rights-gate.mjs, which is this same pattern scoped to one policy. Adding a decision here does NOT create a gate; it creates a claim the drift checker can test.",
   "decisions": [
     {
@@ -155,6 +155,59 @@
       "note": "Closes the one deliberately undecided unit in the standards spine. PR 4.11.q and 6.3 place QI at program level, which is why this was arguable either way; it is ruled required because safety-event reporting, disclosure and RCA participation happen on an inpatient unit, and restraint-and-seclusion reduction and suicide-risk QI are inpatient-specific. Ruling `elsewhere` would have asserted a negative about where learning happens — the shape that failed as RQ-10 f3. The ruling creates a real content obligation and does NOT create coverage: SBP1 remains mapped to nothing and is now reported as blocked-on-vocabulary until `safety` splits into safety-risk / safety-systems. Discharging the obligation is RQ-2. All 21 units remain review: pending; this decision is a placement, not an attestation. As of the vocabulary registry, SBP1's only route to being mapped is the proposed `safety-systems` code, which is why vocabulary.json is governed by this decision too."
     },
     {
+      "id": "required-core-tier",
+      "title": "A bounded Required Core tier on the Path: at most 2 h of required reading a week, plus a Days 1–3 set",
+      "status": "active",
+      "decided": "2026-09-24",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md §2 (D2 and the decision log) and §4 WP-4 — lands via PR #766; the superseded house style is faculty decision D4a in docs/superpowers/plans/2026-08-24-faculty-decisions.md",
+      "note": "D2. Supersedes faculty decision D4a (docs/superpowers/plans/2026-08-24-faculty-decisions.md), whose house style was “suggested, not required”; D4a is not an entry here, so it is named in this note rather than in `supersedes`. The review found 0 required items and 74 of 105 surfaces on no week: novices get a bounded required minimum and everything else stays suggested. Mechanism, on curriculum.json Path items: optional `priority` (required | recommended | optional — the rotation-edition tokens; absent means recommended), `window: days-1-3` (week 1 only) and `query` (a tool deep link, tool items only). validate_curriculum.py holds each week's required items to at most 120 read-minutes from topic_meta.json `read`; a required reading with no integer minutes fails, and a required tool counts 0 unless topic_meta gives it minutes. Per-rotation editions were considered and rejected as the mechanism: they are per-attending, locally labelled, and gated by a DRAFT pilot protocol. Within a week, items are unique by (ref, query): a tool may repeat with distinct queries (the spine's week 1 opens sp-interview.html on two cases), and a read, which cannot carry a query, never repeats. Per-item progress (cw_progress_v1 in fd_state.js, keyed by ref today) is WP-4's to key by (ref, query). The schema and the rule land before any item is marked required; setting priorities is the WP-4 content PR.",
+      "governs": [
+        "curriculum.schema.json",
+        "13_Faculty_Resources/_automation/validate_curriculum.py"
+      ]
+    },
+    {
+      "id": "six-week-clinical-spine",
+      "title": "The MS3 six weeks are re-sequenced to the clinical-necessity spine",
+      "status": "active",
+      "decided": "2026-09-24",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md §4 WP-2 (the “Proposed spine (D3)” table) and §2 decision log — lands via PR #766",
+      "note": "D3: adopt the proposed spine as written — week 1 ward survival and the admission, 2 treatment on the unit, 3 the person behind the diagnosis (mid-clerkship feedback at its end), 4 beyond the unit, 5 risk, rights and disposition, 6 integration — with curriculum.json learningPaths.ms3 as the one week plan every other surface derives from. Governs no file yet: the re-sequencing is WP-2 phase 3 (content/schedule-spine), which is pending, so nothing enforces the spine today and nothing carries its marker. The schema half it needs lands with required-core-tier: `practice` on a week ({skill, feedback, optional card}), the home for the spine's per-week practice column and the replacement for fd_path.js FD_PATH_PRACTICE; nothing reads it yet. The resident path is out of scope.",
+      "governs": []
+    },
+    {
+      "id": "facilitator-material-relabel-only",
+      "title": "Facilitator and examiner material stays on learner builds, relabelled; no build-time strip",
+      "status": "active",
+      "decided": "2026-09-24",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "docs/superpowers/plans/2026-09-15-facilitator-material-release.md (Option B) and 13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md §2 (D4) — lands via PR #766",
+      "note": "D4, Option B. Closes the plan docs/superpowers/plans/2026-09-15-facilitator-material-release.md, open since 2026-09-15, whose first next step was to record this decision here. The material stays where it is and its labels are revised so they stop asserting a restriction nothing enforces; the plan's Option A (a marker-driven strip at build time) is not to be built. Scope per the 2026-09-24 handoff: Case-of-the-Week facilitator notes and answer keys, and the OSCE scored checklists, withheld actor facts and examiner note. The material is synthetic and carries no PHI, so the accepted cost is pedagogical — a learner can read the traps a case is built to spring. Implementation (WP-6, re-scoped to relabelling, including normalising the four unqualified Facilitator headings the plan counts) is pending, so this governs no file yet; the plan's own Status line still reads OPEN until that PR updates it. Neither option attests anything.",
+      "governs": []
+    },
+    {
+      "id": "review-shelf-mode-unhidden",
+      "title": "review.html and shelf-mode.html are unhidden from navigation",
+      "status": "active",
+      "decided": "2026-09-24",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md §2 (D7) and §4 WP-14 — lands via PR #766",
+      "note": "D7. Reverses the 2026-07-06 request to hide both tools from the sidebar and search (HIDDEN_TOOLS in 13_Faculty_Resources/_automation/site_build/build_deploy.py), which left them hidden while both are still listed in the Library (curriculum.json libraryColumns), review.html in The Essentials, and shelf-mode.html as a week 6 pairing (pairings.json). The spacing engine is core to the pedagogy, so the tools are shown rather than every listing removed. Implementation (WP-14: take both out of HIDDEN_TOOLS) is pending; until it lands build_deploy.py still hides them, and it carries no marker for this decision because it does not yet enforce it.",
+      "governs": []
+    },
+    {
+      "id": "dissemination-license",
+      "title": "Dissemination license: CC BY-NC-SA 4.0 for content, MIT for code",
+      "status": "active",
+      "decided": "2026-09-24",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md §2 (D8) and §4 WP-16 — lands via PR #766",
+      "note": "D8, chosen over CC BY-NC-ND and all rights reserved. Covers the library's own authored content (CC BY-NC-SA 4.0) and code (MIT); third-party assets keep their own rights, and the instrument-reproduction rule (instrument-scope-option-a) is unchanged by it. The handoff also gates WP-16 on counsel for the license. Implementation (WP-16: LICENSE and LICENSE-content, plus a README section on third-party rights) is pending, so no file carries it yet.",
+      "governs": []
+    },
+    {
       "id": "canonical-values-2026-09",
       "title": "One canonical statement each for refeeding, lithium levels, buprenorphine start, RLS, malignant hyperthermia and the cultural-psychiatry sentence",
       "status": "active",
@@ -162,6 +215,30 @@
       "decidedBy": "Joshua Moss, MD",
       "rationaleRef": "13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md §7-A–F (D1) and docs/curriculum-review/peer-review-2026-09-24/HANDOFF_CLAUDE_CODE.md §0A (J0, J1)",
       "note": "D1: the architecture review's §7-A–F statements were approved as written, and any rewording beyond fitting a sentence to its surface needs approval again. J1: the §7-C sentence is the one buprenorphine-start wording for both the architecture and the peer-review remediation. In short — refeeding: higher-calorie start with daily phosphate/K/Mg in mild–moderate malnutrition, a cautious start only for the highest risk, thiamine and other vitamins, no delay to correct electrolytes (SAHM 2022, StRONG 2021, MEED). Lithium: acute 0.8–1.2 mmol/L; maintenance 0.6–0.8 (0.4–0.6 or 0.8–1.0 by response and tolerance); older adults usually 0.4–0.6; 12-h trough about 5 days after a change (Nolen 2019, CANMAT 2018). Buprenorphine: start once objective withdrawal is present, roughly COWS ≥ 8–12 depending on the guideline, and teach no single cutoff (TIP 63, ASAM 2020, ASAM 2023 HPSO). RLS: iron when ferritin/TSAT is low, alpha-2-delta ligands first-line, dopamine agonists no longer standard (AASM 2025). Malignant hyperthermia row and succinylcholine history for ECT (Rosenberg 2015). Cultural sentence per §7-F (Selten 2020). One override is recorded with it (J0): the peer review's EXTRIP 2015 lithium-dialysis wording (R01-001/-002) replaces §7-B's note to leave the EXTRIP lines alone. Governs nothing yet: architecture WP-1b fills the pending canonical_claims.json slots, which is where these values become regex-guarded.",
+      "governs": []
+    },
+    {
+      "id": "provenance-faculty-review-pointer-only",
+      "title": "Provenance references faculty review; it never copies it",
+      "status": "active",
+      "decided": "2026-09-20",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "docs/superpowers/specs/2026-09-20-release-passport-governance-decisions.md — Entry 1",
+      "note": "Provenance artifacts — release passports and any successor format — reference faculty-review status by pointer to the governance record. They never embed a copy of it. Authority: faculty. No agent may alter the pointer target.",
+      "governs": []
+    },
+    {
+      "id": "interview-third-person-accepted-limitation",
+      "title": "The third-person scenario remains an accepted limitation",
+      "status": "active",
+      "decided": "2026-09-20",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "docs/superpowers/specs/2026-09-20-release-passport-governance-decisions.md — Entry 2",
+      "note": "Scenario `third-person` retains `decision_basis: accepted-limitation`. Its three recurring mismatches are expected output, not defects, and are excluded from defect counts. Authority: faculty only. No agent may reclassify.",
+      "decisionBasis": "accepted-limitation",
+      "acceptedOn": "2026-09-20",
+      "revisitTrigger": "faculty ruling on the c_si proposal family",
+      "revisitBy": "2027-03-31",
       "governs": []
     }
   ]

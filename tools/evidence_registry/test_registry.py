@@ -72,6 +72,15 @@ EXISTING_IDS = {
     "project-beta-psychopharm-agitation-2012",
     "canmat-isbd-bipolar-2018",
 }
+# Added by peer-review remediation WP8 (2026-09-24): therapy_reading_room.md now cites individual
+# cohort data for handgun ownership and suicide (Studdert 2020), and canon_200.md reads Cipriani
+# 2013 beside the VA Li+ trial stopped for futility (Katz 2022). Asserting what a paper found
+# requires a stored span, so both enter the registry with one. Defined here, not at the end of the
+# file, so it cannot collide with batches appended below.
+PEER_REVIEW_WP8_2026_09_IDS = {
+    "studdert-2020-handgun-suicide",
+    "katz-2022-lithium-va",
+}
 TIER1_IDS = {
     "appelbaum-grisso-1988-capacity",
     "border-2019-candidate-gene",
@@ -100,6 +109,20 @@ SURVEILLANCE_IDS = {
     "samhsa-guidelines",
     "spravato-rems",
     "uspstf-mental-health",
+}
+# Added by the 2026-09-24 peer review, WP-3 (audio-quiz decks, pattern G): the Landmark and
+# Canon Quiz decks misattributed an umbrella review to Kirkbride (AR-29, Alon 2024), inverted
+# combined-vs-CBT (AR-18, Cuijpers 2023), keyed an outcome the Cochrane review called uncertain
+# (AR-20, Aoki 2022), read a whole-sample decline as a drug effect (AR-23, Vigen 2011) and
+# compared two separate STEP-BD randomizations (AR-26, Miklowitz 2007). Each corrected item
+# asserts what one of these found, so each enters with a stored span. One set, alphabetical.
+# (The VA lithium RCT, AR-40, reuses katz-2022-lithium-va, registered by WP-8.)
+PEER_REVIEW_WP3_2026_09_IDS = {
+    "alon-2024-sdoh-mdd-umbrella",
+    "aoki-2022-cochrane-sdm",
+    "cuijpers-2023-cbt-depression-meta",
+    "miklowitz-2007-stepbd-psychotherapy",
+    "vigen-2011-catie-ad-cognition",
 }
 # Evidence added by the 2026-08-08 safety-level audit to hard-gate high-risk
 # topics (see docs/SAFETY_LEVEL_AUDIT_2026-08-08.md). One set across all batches,
@@ -160,7 +183,6 @@ THERAPY_WP_T2_IDS = {
     "modini-large-2026",
     "penzenik-2026",
     "pott-2022",
-    "sall-2019",
     "saxler-2024",
     "schefft-2019",
     "schunemann-2025",
@@ -189,6 +211,40 @@ THERAPY_WP_T2_IDS = {
 POSTDISCHARGE_CORRECTION_IDS = {
     "chung-2017-postdischarge-suicide",
     "chung-2019-first-week-month",
+}
+# Added by the 2026-09-24 peer review, WP-9 (citations and evidence, pattern H + E1). Each
+# corrected sentence asserts what one of these found, so each enters with a stored span.
+# brenner-2025-va-dod-suicide-synopsis REPLACES the Sall 2019 VA/DoD synopsis entry (E1-001:
+# the 2024 CPG superseded its guideline), in the same array position; the old id therefore
+# left THERAPY_WP_T2_IDS. One set, alphabetical. Folded into ALL_SOURCE_IDS below the
+# path constants, away from the union's own lines, so parallel batches do not collide.
+PEER_REVIEW_WP9_2026_09_IDS = {
+    "bensken-2021-social-needs-readmission",
+    "brenner-2025-va-dod-suicide-synopsis",
+    "bridge-2007-pediatric-antidepressant-risk-benefit",
+    "chawla-2022-panic-disorder-nma",
+    "cipriani-2018-antidepressant-nma",
+    "cole-2016-ketamine-vs-haloperidol",
+    "doupnik-2020-acute-care-suicide-prevention",
+    "dunkley-2003-hunter-criteria",
+    "gomes-2023-canmat-adherence-readmission",
+    "haselden-2019-family-involvement-followup",
+    "hatcher-2011-pst-self-harm",
+    "jonas-2014-aud-pharmacotherapy",
+    "linehan-2006-dbt-vs-experts",
+    "miklowitz-2021-bipolar-psychotherapy-nma",
+    "schonnop-2022-missed-delirium-ed",
+    "scull-2023-rosenhan-revisited",
+    "shaffer-2015-brief-cti",
+    "sullivan-2020-ketamine-agitation-meta",
+    "uphoff-2020-behavioural-activation",
+}
+# WP-9 sources whose PubMed record links a published erratum (ErratumIn); each entry's
+# identity note records it and correctionStatus is "corrected" pending faculty review.
+PEER_REVIEW_WP9_2026_09_CORRECTED_IDS = {
+    "haselden-2019-family-involvement-followup",
+    "linehan-2006-dbt-vs-experts",
+    "sullivan-2020-ketamine-agitation-meta",
 }
 # Added by curriculum-review remediation WP-5a (finding RSAF-F010): cl_reference.md put
 # benzodiazepine response in catatonia at "~90%" with nothing behind it. The meta-analysis
@@ -239,7 +295,7 @@ PEER_REVIEW_WP1_2026_09_IDS = {
 }
 
 ALL_SOURCE_IDS = (
-    EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS | THERAPY_WP_T2_IDS
+    EXISTING_IDS | PEER_REVIEW_WP8_2026_09_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS | THERAPY_WP_T2_IDS
     | POSTDISCHARGE_CORRECTION_IDS | CURRICULUM_REVIEW_WP5A_IDS | CURRICULUM_REVIEW_WP5B_IDS
     | CURRICULUM_REVIEW_WP5C_IDS | ISSUE_441_PTSD_IDS | PEER_REVIEW_WP1_2026_09_IDS
 )
@@ -251,6 +307,9 @@ REFERENCE_FILES = (
     "reasoning_cases_resident.json",
     "family_systems_scenarios.json",
 )
+# WP-3's set is folded in here rather than on the union's own lines, so parallel PRs that each
+# add a set do not collide on the same three lines.
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | PEER_REVIEW_WP3_2026_09_IDS
 VALIDATE = Path(__file__).with_name("validate.py")
 REGISTRY_CLI = Path(__file__).with_name("registry.py")
 ZOTERO_CONFIG_PATH = Path(__file__).with_name("zotero_config.json")
@@ -279,6 +338,8 @@ sys.path.insert(0, str(SURVEILLANCE_BIN))
 import build_status as surveillance_status
 import lib_surveillance as surveillance_library
 import run_citation_check as citation_checker
+
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | PEER_REVIEW_WP9_2026_09_IDS
 
 
 def _zotero_config() -> dict:
@@ -551,7 +612,9 @@ def test_published_schema_governance_is_required_for_every_canonical_source():
     for position, source in enumerate(registry["sources"]):
         assert source["governance"]["supersededBy"] == [], position
         expected_status = (
-            "corrected" if source["id"] in CORRECTED_IDS else "none-known"
+            "corrected"
+            if source["id"] in CORRECTED_IDS | PEER_REVIEW_WP9_2026_09_CORRECTED_IDS
+            else "none-known"
         )
         assert source["governance"]["correctionStatus"] == expected_status, position
         assert registry_library._STABLE_ID_RE.fullmatch(source["id"]), position
@@ -1519,7 +1582,9 @@ def _spawned_build_blocked() -> "str | None":
     file IS its pointer stub -- and build_deploy.py hard-fails those outside the CI and
     deploy-preview contexts. That aborts the build below for a reason no source edit can
     fix. Reporting it as a skip keeps the signal honest; any OTHER build failure still
-    hits the returncode assertions.
+    hits the returncode assertions. (Since 2026-09-25 build_deploy.py no longer aborts on
+    stubs -- its only stub gate was retired with the orientation videos -- so in a no-LFS
+    sandbox this skip is now conservative rather than necessary; CI runs it either way.)
 
     An import that cannot be resolved returns None on purpose: "cannot tell" must run the
     test and fail loudly, never silence it.

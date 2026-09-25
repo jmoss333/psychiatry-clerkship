@@ -47,8 +47,8 @@
       "id": "care-transitions",
       "label": "Care coordination, transitions and discharge",
       "status": "proposed",
-      "unblocks": ["SBP2"],
-      "rationale": "Care coordination, transitions of care, discharge planning and population health — SBP2, which is REQUIRED on this rotation and currently maps to nothing. Of the nine blocked units this is the one whose content most plainly already happens on an inpatient unit."
+      "unblocks": ["SBP2", "FC-SBP"],
+      "rationale": "Care coordination, transitions of care, discharge planning and population health — SBP2, which is REQUIRED on this rotation and currently maps to nothing. Of the nine blocked units this is the one whose content most plainly already happens on an inpatient unit. Since 2026-09-24 it also unblocks FC-SBP, the Foundational Competencies' Systems-Based Practice on the MS3 clerkship, whose subcompetency 4 (transitions and coordination of care) is the same construct at student level."
     },
     {
       "id": "health-systems",
@@ -68,8 +68,8 @@
       "id": "reflective-practice",
       "label": "Reflective practice, feedback and learning plans",
       "status": "proposed",
-      "unblocks": ["PBLI2"],
-      "rationale": "PBLI2. Adjacent to the Post-Event Learning Huddle and the faculty feedback surfaces, which are shipped but untaggable."
+      "unblocks": ["PBLI2", "FC-PBLI"],
+      "rationale": "PBLI2. Adjacent to the Post-Event Learning Huddle and the faculty feedback surfaces, which are shipped but untaggable. Since 2026-09-24 it also unblocks FC-PBLI, the Foundational Competencies' Practice-Based Learning and Improvement on the MS3 clerkship, whose subcompetencies 1-3 and 5 (seeking feedback, self-assessment, learning goals) are enacted at the clerkship midpoint feedback."
     },
     {
       "id": "wellbeing",

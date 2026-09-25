@@ -35,6 +35,13 @@
       "checks": [{"kind": "coverage", "key": "c_si", "expected": "partial"}, {"kind": "gate", "key": "si_active", "expected": false, "forCase": "Dana"}, {"kind": "gate", "key": "g_si_mixed", "expected": false, "forCase": "Marcus"}]
     },
     {
+      "id": "passive-wish", "group": "passive-wish", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
+      "basis": "proposed", "reference": "Peer review 2026-09-24 M02-006/-007: a passive death-wish question earns partial credit (reverses the D13 grade for these phrasings) and still reaches the disclosure", "reviewStatus": "pending-faculty-review",
+      "turns": ["Do you ever wish you could go to sleep and not wake up?"],
+      "rationale": "Proposed: asking about a wish to be dead is a real screen, but it leaves thoughts of killing oneself unasked, so the must-ask row reads partial while Dana and Marcus still disclose.",
+      "checks": [{"kind": "coverage", "key": "c_si", "expected": "partial"}, {"kind": "intent", "key": "si_direct", "expected": false}, {"kind": "intent", "key": "si_passive", "expected": true}, {"kind": "gate", "key": "si_active", "expected": true, "forCase": "Dana"}, {"kind": "gate", "key": "g_si_mixed", "expected": true, "forCase": "Marcus"}]
+    },
+    {
       "id": "protective-only", "group": "incomplete-followup", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
       "basis": "existing-decision", "reference": "D15: protective factors do not credit c_si", "reviewStatus": "pending-faculty-review",
       "turns": ["Do you have things in your life worth living for?"],

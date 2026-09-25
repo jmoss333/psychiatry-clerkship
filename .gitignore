@@ -111,3 +111,6 @@ tmp/
 
 # Local Dev Container verification evidence; commit-bound and regenerated on demand.
 /output/devcontainer/
+
+# Local print/PDF render of the workplace-assessment faculty pack (build_assessment_pdf.py).
+/output/assessment-pack/

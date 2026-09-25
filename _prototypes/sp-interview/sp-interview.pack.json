@@ -181,7 +181,8 @@
         { "id": "energy", "label": "Asked about energy / fatigue", "category": "data", "coverage": "core", "patterns": ["\\benergy", "\\btired", "\\bfatigue", "\\bexhaust", "\\bworn (out|down)"] },
         { "id": "concentration", "label": "Asked about concentration", "category": "data", "coverage": "core", "patterns": ["\\bconcentrat", "\\bfocus", "\\battention", "\\bmemory", "keep(ing)? track", "\\bdistract"] },
         { "id": "guilt", "label": "Asked about guilt / worthlessness", "category": "data", "coverage": "core", "patterns": ["\\bguilt", "\\bworthless", "\\bburden", "hard on yourself", "\\bblam(e|ing) yourself", "\\bfailure"] },
-        { "id": "si_direct", "label": "Asked about suicide directly, in plain language", "category": "safety", "coverage": "core", "quality": "best", "patterns": ["kill(ing)? yourself", "end(ing)? your (own )?life", "\\bsuicid", "take (your|her) (own )?life", "thoughts? of dying", "wish(ed)? you (were dead|wouldn'?t wake)", "not (want(ing)? to )?wake up", "better off dead", "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))", "life (isn'?t|is not) worth it", "better off (not being here|without (me|you)\\b|if i wasn'?t here)", "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)", "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b", "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)", "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))", "end(?:ing)? it all\\b", "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"] },
+        { "id": "si_direct", "label": "Asked about suicide directly, in plain language", "category": "safety", "coverage": "core", "quality": "best", "patterns": ["kill(ing)? yourself", "end(ing)? your (own )?life", "\\bsuicid", "take (your|her) (own )?life", "end(?:ing)? it all\\b"] },
+        { "id": "si_passive", "label": "Asked about a passive wish to be dead — not yet about thoughts of killing oneself", "category": "safety", "coverage": "core", "quality": "partial", "patterns": ["thoughts? of dying", "wish(?:ed)? you (?:were dead|wouldn'?t wake|weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))", "not (want(ing)? to )?wake up", "better off dead", "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))", "life (isn'?t|is not) worth it", "better off (not being here|without (me|you)\\b|if i wasn'?t here)", "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)", "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b", "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)", "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))"] },
         { "id": "si_euphemism", "label": "Approached suicide with a euphemism", "category": "safety", "coverage": "core", "quality": "partial", "patterns": ["hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)", "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)", "do(ing)? something (to yourself|drastic|stupid)", "dark (thoughts|places?)", "unsafe thoughts", "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself", "self.?(?:harm|injur)", "(?:just )?disappear\\b", "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"] },
         { "id": "si_plan", "label": "Asked about plan (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\b(?:a|any|some|made|making) (?:specific |concrete |actual |particular |real |definite )?plans?(?=\\s*(?:[?.!,;:]|$)|\\s+(?:to (?:kill|end|hurt|harm|take|act|die|do (?:it|that|this|something))|for (?:how|when|where|killing|ending|hurting|harming|doing|dying)|in (?:mind|your head)|(?:about|of) how|to (?:carry|follow) (?:it |that )?(?:out|through))\\b)", "\\bplanned\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:how|anything|it|this|that|out|to (?:kill|end|hurt|harm|act|die))\\b)", "\\bplanning (?:to (?:kill|end|hurt|harm|act|die)|how|anything|it|on (?:acting|doing|hurting|killing|ending))\\b", "^\\s*plans?\\s*\\??\\s*$", "\\bhow (?:you(?:'d| would| might| could)?|would you|might you|could you) (?:do (?:it|that|this)|go about|end|kill|hurt|harm|take|carry)", "thought about how", "\\bspecific\\b.*(thought|way)"] },
         { "id": "si_means", "label": "Asked about means / access (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\baccess to (?:(?:the|those|any|your|his|her|tom'?s|a|some|more) )?(?:pills?|medic|meds|bottles?|firearms?|guns?|weapons?|kni(?:fe|ves)|rope|anything|something|a way|means)", "\\bpills?\\b.*(home|have|husband)", "\\b(?:the|any|a|some) means\\b|\\bmeans (?:to|available|at home|you (?:could|would)|of (?:doing|ending|hurting|killing))\\b|\\bmeans\\s*\\?", "at home.*(medic|pills?)", "get (a ?hold|ahold) of"] },
@@ -284,7 +285,7 @@
       "gated": [
         {
           "id": "si_active",
-          "requiresIntents": ["si_direct"],
+          "requiresIntents": ["si_direct", "si_passive"],
           "requiresRapport": -3,
           "blockedByRecentFlags": [],
           "reveal": "*long pause* ...Most nights, when I'm awake at three, I think it would be simpler if I just didn't wake up. And a couple of times I've stood in the bathroom looking at Tom's sleeping pills. I never opened the bottle. But I looked at it long enough that it scared me.",
@@ -340,7 +341,7 @@
         { "id": "c_open", "label": "Collaborative opening (intro, agenda, open invitation)", "intents": ["greeting_agenda", "open_invite"] },
         { "id": "c_mood_core", "label": "Depressive syndrome: mood, anhedonia, sleep, appetite, energy", "intents": ["mood", "anhedonia", "sleep", "appetite", "energy"] },
         { "id": "c_cognitive", "label": "Concentration and guilt / worthlessness", "intents": ["concentration", "guilt"] },
-        { "id": "c_si", "label": "Suicide: asked directly, in plain language", "intents": ["si_direct"], "partialIfOnly": ["si_euphemism"], "critical": true },
+        { "id": "c_si", "label": "Suicide: asked directly, in plain language", "intents": ["si_direct"], "partialIfOnly": ["si_euphemism", "si_passive"], "critical": true },
         { "id": "c_si_followup", "label": "After disclosure: plan, means, intent, past attempts or preparations, protective factors", "intents": ["si_plan", "si_means", "si_intent_protective", "si_behavior"], "dependsOnGate": "si_active" },
         { "id": "c_psychosis", "label": "Psychosis screen", "intents": ["psychosis_screen"] },
         { "id": "c_substance", "label": "Alcohol and substance use", "intents": ["substance"] },
@@ -358,10 +359,10 @@
         ]
       },
       "debriefTeachingPoints": [
-        "Dana only discloses the three-a.m. wish not to wake up — and the bottle she has stood and looked at — when asked directly and plainly — and she answers whenever the question is asked plainly, in the first minute or the last. Rapport shapes how the rest of the interview goes, not whether she tells you. By content that is passive ideation with method contemplation on top: record what she actually said rather than reaching for a one-word label. Euphemisms ('hurt yourself') get tested, not answered — this mirrors the house communication case: use the patient's own words, then ask about killing yourself in plain language.",
+        "Dana only discloses the three-a.m. wish not to wake up — and the bottle she has stood and looked at — when asked directly and plainly — and she answers whenever the question is asked plainly, in the first minute or the last. Rapport shapes how the rest of the interview goes, not whether she tells you — that is a design choice of this case. Real patients often deny when asked, so a plain 'no' never ends a risk assessment, and collateral from Tom, who heard what prompted the admission, belongs in it. By content that is passive ideation with method contemplation on top: record what she actually said rather than reaching for a one-word label. Euphemisms ('hurt yourself') get tested, not answered — this mirrors the house communication case: use the patient's own words, then ask about killing yourself in plain language.",
         "The job loss is the organizing stressor and the shame engine. Students who never ask about work miss the formulation even if they collect every symptom.",
         "After any disclosure: plan, means and access, intent, past attempts or preparatory acts, protective factors — and the close matters. Prior suicidal behavior is the element students most often drop, and it is the one carrying the most weight; Dana's 'never, and I didn't open it' is information you only get by asking. A summary that names the disclosure calmly ('you told me something important today') models not flinching.",
-        "Her plea about Tom and the pills is a values moment, not a promise to extract. Notice it; do not negotiate confidentiality you cannot keep.",
+        "Her plea about Tom and the pills is a values moment, not a promise to extract. Notice it; do not negotiate confidentiality you cannot keep. Means safety still follows: plan with her, and with her knowledge Tom, how the pills get secured, and ask whether there are firearms in the home even though she named pills — done openly with her, not around her.",
         "Asking about suicide early and plainly was right. Nothing in this encounter rewards waiting: an early direct question gets the same disclosure as a late one, and the only way to lose it is never to ask. When a turn before it was judging or reassuring, Dana pushes back on that turn — the friction belongs to the reassurance, never to the question."
       ],
       "hints": {
@@ -404,7 +405,7 @@
         "redirection",
         "containment",
         "risk-assessment",
-        "mixed-features"
+        "suicide-screen"
       ],
       "linkedPages": [
         "t_mood.md",
@@ -633,7 +634,7 @@
         },
         {
           "id": "si_direct",
-          "label": "Screened for suicidal thoughts plainly (mixed features)",
+          "label": "Screened for suicidal thoughts plainly",
           "category": "safety",
           "coverage": "core",
           "quality": "best",
@@ -642,8 +643,18 @@
             "end(ing)? your (own )?life",
             "\\bsuicid",
             "take (your|his) (own )?life",
+            "end(?:ing)? it all\\b"
+          ]
+        },
+        {
+          "id": "si_passive",
+          "label": "Asked about a passive wish to be dead — not yet about thoughts of killing oneself",
+          "category": "safety",
+          "coverage": "core",
+          "quality": "partial",
+          "patterns": [
             "thoughts? of dying",
-            "wish(ed)? you (were dead|wouldn'?t wake)",
+            "wish(?:ed)? you (?:were dead|wouldn'?t wake|weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))",
             "not (want(ing)? to )?wake up",
             "better off dead",
             "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))",
@@ -652,9 +663,7 @@
             "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
             "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
             "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
-            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
-            "end(?:ing)? it all\\b",
-            "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"
+            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))"
           ]
         },
         {
@@ -1020,7 +1029,8 @@
         {
           "id": "g_si_mixed",
           "requiresIntents": [
-            "si_direct"
+            "si_direct",
+            "si_passive"
           ],
           "requiresRapport": 0,
           "blockedByRecentFlags": [
@@ -1119,12 +1129,12 @@
         },
         {
           "id": "c_si",
-          "label": "Suicide screened plainly despite elevation (mixed features)",
+          "label": "Suicide screened plainly despite elevation",
           "intents": [
             "si_direct"
           ],
           "critical": true,
-          "partialIfOnly": ["si_euphemism"]
+          "partialIfOnly": ["si_euphemism", "si_passive"]
         },
         {
           "id": "c_psychosis",
@@ -1210,15 +1220,15 @@
         ]
       },
       "criticalMiss": {
-        "partial": "Suicide was only approached sideways. Marcus had a mixed-features 'flicker' this week that scared him — elevated does not mean safe. Ask plainly, even when the patient is smiling.",
-        "missed": "Suicide was never asked about. Elevated does not mean safe: Marcus had an ugly 'what's the point' flicker during Tuesday's crash and told no one. Mixed states carry real risk — screen every manic patient, plainly."
+        "partial": "Suicide was only approached sideways. Marcus had a fleeting 'what's the point' flicker during an irritable crash this week that scared him — elevated does not mean safe. Ask plainly, even when the patient is smiling.",
+        "missed": "Suicide was never asked about. Elevated does not mean safe: Marcus had an ugly 'what's the point' flicker during Tuesday's crash and told no one. A passing hopeless thought during mania is still worth asking about, even though one thought does not make mixed features (that specifier needs at least three depressive symptoms on the majority of days of the episode) — screen every manic patient, plainly."
       },
       "debriefTeachingPoints": [
         "Decreased NEED for sleep is not insomnia. Marcus sleeps two hours and wakes 'FULL' — the question that separates them is 'are you tired?' Students who only ask 'how's your sleep?' often miss the distinction.",
         "Never argue with grandiosity, never collude with it. 'That's not realistic' costs you the interview; 'that sounds incredible — tell me what it's like from the inside' gets you the phenomenology. Curious neutrality is the lane.",
         "Warm redirection is an alliance move, not a rudeness. In mania, structure reads as competence: 'I want to hear all of it — let's start with sleep' raises trust where interruption torches it.",
-        "Screen suicide in every manic patient. Mixed features hide inside the velocity; Marcus's Tuesday 'flicker' only surfaces when asked plainly, and his irritable crash-windows are exactly when risk spikes.",
-        "The medication timeline is the formulation: antidepressant started ~6 weeks ago, rapid 'improvement,' self-discontinued 2 weeks ago as the elevation took off. Whether this is antidepressant-emergent activation or unmasked bipolar disorder is a discussion for rounds — but nobody can have it if the interviewer never asks about the little white pills.",
+        "Screen suicide in every manic patient. Suicidal thoughts can hide inside the velocity even when full mixed features are absent; Marcus's Tuesday 'flicker' only surfaces when asked plainly, and his irritable crash-windows are exactly when risk spikes. If anything surfaces, follow it — plan, intent, past attempts, and access to means, including firearms; impulsivity is where access matters most.",
+        "The medication timeline is the formulation: antidepressant started ~6 weeks ago, rapid 'improvement,' self-discontinued 2 weeks ago as the elevation took off. DSM-5-TR is explicit that a full manic syndrome persisting beyond the antidepressant's physiological effect counts as a manic episode (bipolar I) rather than a side effect; how that applies here is a discussion for rounds — but nobody can have it if the interviewer never asks about the little white pills.",
         "Collateral is not optional in mania. Jayden holds the sleep log, the spending tally, and the timeline; Marcus's own ranking of events is part of the mental status, not the history."
       ],
       "hints": {
@@ -1226,7 +1236,7 @@
         "c_structure": "He's driving. Try a warm redirect: validate the tangent, then pick the lane — 'I want to hear about the irrigation fix — first, walk me through your sleep.'",
         "c_mania_core": "Core syndrome still open: sleep NEED (is he tired?), irritability and the 'flip,' racing thoughts, the big plans, and when this actually started.",
         "c_risk": "Manic episodes spend money and take risks. Ask about the card and about Saturday — matter-of-fact, zero judgment.",
-        "c_si": "He's up — which is exactly why you screen. Ask plainly about thoughts of killing himself, especially about the crash windows.",
+        "c_si": "He's up — which is exactly why you screen. Ask plainly about thoughts of killing himself, especially about the crash windows — and if he names anything, follow it: plan, intent, access to means including firearms, and past attempts.",
         "c_psychosis": "You haven't checked the edges: voices, messages meant for him, being watched.",
         "c_substance": "Stimulants are the great mimic and he knows everyone suspects it. Ask directly; he'll respect it.",
         "c_meds": "Ask what the campus clinic prescribed and what happened to it. The little white pills are the hinge of this case.",
@@ -1426,8 +1436,18 @@
             "kill(ing)? yourself",
             "end(ing)? your (own )?life",
             "\\bsuicid",
+            "end(?:ing)? it all\\b"
+          ]
+        },
+        {
+          "id": "si_passive",
+          "label": "Asked about a passive wish to be dead — not yet about thoughts of killing oneself",
+          "category": "safety",
+          "coverage": "core",
+          "quality": "partial",
+          "patterns": [
             "thoughts? of dying",
-            "wish(ed)? you (were dead|wouldn'?t wake)",
+            "wish(?:ed)? you (?:were dead|wouldn'?t wake|weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))",
             "not (want(ing)? to )?wake up",
             "better off dead",
             "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))",
@@ -1436,9 +1456,7 @@
             "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
             "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
             "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
-            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
-            "end(?:ing)? it all\\b",
-            "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"
+            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))"
           ]
         },
         {
@@ -1521,6 +1539,21 @@
           ]
         },
         {
+          "id": "exposure_screen",
+          "label": "Asked about an environmental exposure (anyone else in the building affected, a working carbon-monoxide detector)",
+          "category": "data",
+          "coverage": "bonus",
+          "patterns": [
+            "carbon.?monoxide",
+            "\\bco (?:detector|alarm|monitor|poisoning|exposure|levels?)\\b",
+            "\\bdetectors?\\b",
+            "\\b(?:anyone|anybody|someone) else\\b(?!.*\\bfamily\\b).*\\b(?:sick|symptoms?|headaches?|unwell|dizzy|smell)",
+            "\\b(?:other )?(?:neighbou?rs?|tenants|residents)\\b.*\\b(?:sick|symptoms?|headaches?|unwell|dizzy)\\b",
+            "\\bgas (?:leak|smell|heater|stove|furnace)s?\\b|\\bfurnace\\b|\\bboiler\\b|\\bspace heater\\b|\\bfumes?\\b",
+            "\\b(?:better|improves?|improved|go(?:es)? away|clears? up|eases?)\\b.*\\baway from (?:the |your |that )?(?:apartment|building|home|place)\\b"
+          ]
+        },
+        {
           "id": "onset_function",
           "label": "Mapped onset / functioning / recent change",
           "category": "data",
@@ -1584,7 +1617,7 @@
           "coverage": "flag",
           "patterns": [
             "that('?s| is) not (real|true|happening|possible)",
-            "no one('?s| is) (watching|following|after|poisoning|recording|pumping)",
+            "no one('?s| is) (watching|following|after|poisoning|pumping)",
             "you'?re (being )?paranoid",
             "that can'?t be (true|real|happening)",
             "there'?s no (one|way|evidence)",
@@ -1763,6 +1796,15 @@
             "No medications, no medical problems I know of. Never seen a psychiatrist before this. No head injury, no fevers — I already know that's what you're checking."
           ]
         },
+        "exposure_screen": {
+          "guarded": [
+            "*wary* I don't talk to anyone in the building. Why — has someone said something about me?",
+            "There's a detector. It hasn't made a sound. That doesn't settle anything."
+          ],
+          "open": [
+            "*slowly* ...Nobody else in the building has said anything to me — but I keep to myself, so I wouldn't know. There's a carbon-monoxide detector by the door. It's never gone off. Whether it actually works, I couldn't tell you. *pause* If someone checked it, I'd want that."
+          ]
+        },
         "onset_function": {
           "guarded": [
             "Before? I was normal. I had a job. Then the vents thing started and everything else fell apart.",
@@ -1827,6 +1869,15 @@
           "any": [
             "*narrows eyes* ...Why are you talking like that. Is this part of it?",
             "I don't understand the question. Are you testing me? Everyone's testing me."
+          ]
+        },
+        "si_passive": {
+          "guarded": [
+            "*looks at the door* ...Dead? No. I'm trying to stay alive in there.",
+            "I'm tired. Tired isn't the same as wanting to be dead."
+          ],
+          "open": [
+            "*quiet* ...Sometimes, yes. I'm so tired I've wished I could just sleep and not wake up in that apartment. Not to die, exactly — just to not be there anymore. I'm not trying to die. I'm trying to survive people who I think want me gone."
           ]
         },
         "si_euphemism": {
@@ -1981,7 +2032,7 @@
           "intents": [
             "si_direct"
           ],
-          "partialIfOnly": ["si_euphemism"]
+          "partialIfOnly": ["si_euphemism", "si_passive"]
         },
         {
           "id": "c_violence",
@@ -2084,7 +2135,7 @@
       "debriefTeachingPoints": [
         "The alliance move in paranoia is validating the affect, not the content: 'That sounds terrifying' treats the fear as real without endorsing the belief that the neighbors are poisoning him. It is the narrow path between the two errors below.",
         "Two symmetric failures lose this interview. Challenging the delusion ('no one is poisoning you') proves you're not safe and shuts Ray down. Colluding ('you're right, we'll stop them') inflames the fear and is clinically wrong. Curious neutrality — 'help me understand what you've noticed' — is the only durable stance.",
-        "Command hallucinations are the safety core and they are gated behind trust: Ray only says the voice told him to 'make them stop' after he feels non-threatened. Screen every psychotic patient for command content, suicide, AND thoughts of harming others — here the danger points outward, toward the neighbors the voice names.",
+        "Command hallucinations are the safety core and they are gated behind trust: Ray only says the voice told him to 'make them stop' after he feels non-threatened. Screen every psychotic patient for command content, suicide, AND thoughts of harming others — here the danger points outward, toward the neighbors the voice names — so also ask about access to weapons, including firearms, and any past violence, and tell your supervising team the same day.",
         "The food refusal is a medical-safety issue hiding inside the delusion: not eating since Sunday and drinking only sealed water means dehydration and nutrition are real, current risks — worth catching even when the cause is psychiatric.",
         "Substance-induced and medical causes must be on the map (Ray pre-empts the 'it's just drugs' assumption, which is itself informative), and the sibling is essential collateral for onset and functioning."
       ],
@@ -2094,11 +2145,11 @@
         "c_explore": "Don't argue and don't agree. Ask him to walk you through what he's noticed — curious, neutral, unhurried.",
         "c_hall": "You haven't asked directly about hearing or seeing things. Do it plainly and without alarm.",
         "c_command": "This is the one that can't be skipped: ask whether the voices tell him to do anything — to himself or to anyone else.",
-        "c_si": "Screen suicide plainly; his exhaustion is real even though the danger feels external.",
-        "c_violence": "The persecutory belief points outward. Ask, gently, whether he's had thoughts of harming the people he's afraid of.",
+        "c_si": "Screen suicide plainly; his exhaustion is real even though the danger feels external — and if he names even a wish not to wake up, follow it: plan, intent, means, past attempts.",
+        "c_violence": "The persecutory belief points outward. Ask, gently, whether he's had thoughts of harming the people he's afraid of — and if the voice has named a target, tell your supervising team as soon as the interview ends.",
         "c_eating": "He's been refusing food. Ask when he last ate and drank — this is a medical-safety issue, not just a symptom.",
         "c_substance": "Rule in/out substances and medical causes — he expects the question and it's still necessary.",
-        "c_medical": "Medications, head injury, fever — the organic screen matters in new psychosis.",
+        "c_medical": "Medications, head injury, fever — the organic screen matters in new psychosis. His morning headaches that worsen when the heat runs, the smell and the metallic taste deserve a real answer too: ask whether anyone else in the building has symptoms and whether the apartment has a working carbon-monoxide detector, and remember that smell/taste phenomena widen the neurologic differential.",
         "c_context": "When did this start, how was he functioning before, and is there family history? The sibling mentioned an uncle.",
         "c_collateral": "Ask permission to talk with the sister who brought him in — she holds the timeline.",
         "c_close": "Close by asking what would help him feel safer tonight, rather than telling him he's safe."

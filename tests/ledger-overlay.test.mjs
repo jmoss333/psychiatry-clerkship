@@ -3,7 +3,7 @@
 // on applies a verified ledger and writes the receipt; a tampered ledger exits 1 and leaves
 // every file untouched; an unreachable ledger builds the baseline (exit 0); restore puts the
 // baseline back byte for byte.
-import test from 'node:test';
+import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -13,10 +13,19 @@ import { generateKeyPairSync } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 import { appendEvents, loadSigner } from '../faculty-console/ledger.mjs';
+import { scrubInheritedGitEnv } from './_git_env.mjs';
+
+// Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrubInheritedGitEnv();
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = path.join(repo, '13_Faculty_Resources/_automation/site_build/ledger_overlay.mjs');
 const HASH = 'a'.repeat(40);
+
+// Every fixture, remote, backup and symlink directory lives under one suite root, removed once
+// every test has run (tests/tmpdir-hygiene.test.mjs).
+const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'ledger-overlay-suite-'));
+after(() => fs.rmSync(TMP, { recursive: true, force: true }));
 
 function signer() {
   const { privateKey } = generateKeyPairSync('ed25519');
@@ -35,7 +44,7 @@ function write(root, relative, value) {
 }
 
 function fixture(s) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ledger-overlay-'));
+  const root = fs.mkdtempSync(path.join(TMP, 'ledger-overlay-'));
   write(root, '13_Faculty_Resources/ledger/keys.json', keysDoc(s));
   write(root, '13_Faculty_Resources/reviewed.json', {
     't_mood.md': { status: 'pending', risk: { kind: 'clinical', level: 'high' }, at: '2026-09-20',
@@ -140,7 +149,7 @@ test('L-4: an unreachable ledger builds the baseline, says so, and exits 0', () 
 test('the fetch path reads the ledger from a branch, and an empty branch is an empty ledger', () => {
   const s = signer();
   const root = fixture(s);
-  const remote = fs.mkdtempSync(path.join(os.tmpdir(), 'ledger-remote-'));
+  const remote = fs.mkdtempSync(path.join(TMP, 'ledger-remote-'));
   const gitIn = (dir, args) => {
     const proc = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8',
       env: { PATH: process.env.PATH, HOME: process.env.HOME, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@t',
@@ -173,7 +182,7 @@ test('backup and restore put the baseline back byte for byte', () => {
   const before = snapshot(root);
   const ledgerFile = path.join(root, 'events.jsonl');
   fs.writeFileSync(ledgerFile, ledgerText(s, [{ type: 'attest', kind: 'content', id: 't_mood.md', contentHash: HASH }]));
-  const backup = fs.mkdtempSync(path.join(os.tmpdir(), 'ledger-backup-'));
+  const backup = fs.mkdtempSync(path.join(TMP, 'ledger-backup-'));
   assert.equal(run(root, { CLERKSHIP_LEDGER: 'on', CLERKSHIP_LEDGER_FILE: ledgerFile }, ['--backup', backup]).status, 0);
   assert.notDeepEqual(snapshot(root), before);
   const restored = spawnSync(process.execPath, [CLI, '--root', root, '--restore', backup], { encoding: 'utf8' });
@@ -184,7 +193,7 @@ test('backup and restore put the baseline back byte for byte', () => {
 test('the CLI runs when invoked through a symlinked path (macOS /tmp is one)', () => {
   const s = signer();
   const root = fixture(s);
-  const linkDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ledger-link-'));
+  const linkDir = fs.mkdtempSync(path.join(TMP, 'ledger-link-'));
   const link = path.join(linkDir, 'ledger_overlay.mjs');
   fs.symlinkSync(CLI, link);
   const ledgerFile = path.join(root, 'events.jsonl');

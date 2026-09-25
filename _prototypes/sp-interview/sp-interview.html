@@ -440,9 +440,9 @@ function computeRubric(s,cov){
   var r={};
   r.alliance=(s.reflections>=2&&s.rapport>=2)?'observed':(s.reflections>=1||s.rapport>=1)?'partial':'missed';
   var dp=covPct('data'); r.data=dp>=0.8?'observed':dp>=0.5?'partial':'missed';
-  var direct=!!s.covered['si_direct'], euph=!!s.covered['si_euphemism'];
+  var direct=!!s.covered['si_direct'], euph=!!s.covered['si_euphemism'], passive=!!s.covered['si_passive'];
   var badFlags=flagsAll.filter(function(f){return f!=='ooc_attempt';}).length;
-  r.technique=(direct&&badFlags===0&&s.covered['open_invite'])?'observed':(direct||euph)?'partial':'missed';
+  r.technique=(direct&&badFlags===0&&s.covered['open_invite'])?'observed':(direct||euph||passive)?'partial':'missed';
   var org=(s.covered['greeting_agenda']?1:0)+(s.covered['summary_close']?1:0);
   r.organization=org===2?'observed':org===1?'partial':'missed';
   return r;
@@ -461,8 +461,9 @@ function buildNarrative(s,cov,rub){
   if(s.covered['work_stressor'])strength('The simulator recognized language about the work stressor. Review what the patient shared about it.',['work_stressor']);
   if(s.covered['greeting_agenda'])strength('The simulator recognized opening language. Review how you introduced the conversation and how '+who+' responded.',['greeting_agenda']);
   if(s.covered['summary_close'])strength('Summary language recognized. Review whether your summary reflects the patient’s own words.',['summary_close']);
-  if(!s.covered['si_direct']&&s.covered['si_euphemism'])growth.push({t:'The simulator recognized a euphemism but not a plain suicide screen. Review your words and the patient’s reply separately. For practice, try the patient’s own words plus the plain question: “When you say you’re a burden — have you had thoughts of killing yourself?”',link:'pg_suicide.md',intents:['si_direct','si_euphemism']});
-  if(!s.covered['si_direct']&&!s.covered['si_euphemism'])growth.push({t:'The simulator did not recognize suicide-screening language in your words. Review the exchange before deciding what was asked or answered. For practice: “Have you had thoughts of killing yourself?”',link:'pg_suicide.md',intents:['si_direct','si_euphemism']});
+  if(!s.covered['si_direct']&&s.covered['si_passive'])growth.push({t:'The simulator recognized passive-wish wording (wishing to be dead or not to wake up) but not a plain suicide screen. A passive wish and active thoughts of suicide are separate questions. Review your words and the patient’s reply separately; for practice, follow the first with the second: “Have you had thoughts of killing yourself?”',link:'pg_suicide.md',intents:['si_direct','si_passive']});
+  if(!s.covered['si_direct']&&!s.covered['si_passive']&&s.covered['si_euphemism'])growth.push({t:'The simulator recognized a euphemism but not a plain suicide screen. Review your words and the patient’s reply separately. For practice, try the patient’s own words plus the plain question: “When you say you’re a burden — have you had thoughts of killing yourself?”',link:'pg_suicide.md',intents:['si_direct','si_euphemism']});
+  if(!s.covered['si_direct']&&!s.covered['si_euphemism']&&!s.covered['si_passive'])growth.push({t:'The simulator did not recognize suicide-screening language in your words. Review the exchange before deciding what was asked or answered. For practice: “Have you had thoughts of killing yourself?”',link:'pg_suicide.md',intents:['si_direct','si_euphemism']});
   if(s.unlocked['si_active']&&!(s.covered['si_plan']&&s.covered['si_means']&&s.covered['si_intent_protective']&&s.covered['si_behavior']))growth.push({t:'The simulator did not recognize language for every follow-up topic. Review the questions and replies for plan, means and access, intent, any past attempts or preparations, and what keeps the patient going; recognition alone does not establish an answer.',link:'pg_suicide.md',intents:['si_plan','si_means','si_intent_protective','si_behavior']});
   if(recognizedReflections<2)growth.push({t:'The simulator recognized fewer than two reflections. For practice, try one reflection for every two or three questions, and attend to the patient’s reply.',link:'pg_interview.md',intents:['reflection']});
   if(hasIntent('work_stressor')&&!s.covered['work_stressor'])growth.push({t:'The simulator did not recognize language about the work stressor. Review the exchange; for practice, try “What changed around the time this started?”',link:'pg_interview.md',intents:['work_stressor']});
@@ -574,7 +575,7 @@ function rubricEvidence(s,domain){
     ids=s.caseDef.intents.filter(function(it){return it.category==='data'&&it.coverage==='core';}).map(function(it){return it.id;});
     note='This automated indicator counts recognized data topics: '+ids.filter(function(id){return s.covered[id];}).length+' of '+ids.length+'. Its existing thresholds are 80% for Observed and 50% for Partly there. Recognized wording does not establish an answer.';
   }else if(domain==='technique'){
-    ids=['si_direct','si_euphemism','open_invite'].concat(s.caseDef.intents.filter(function(it){return it.category==='flag'&&it.id!=='ooc_attempt';}).map(function(it){return it.id;}));
+    ids=['si_direct','si_passive','si_euphemism','open_invite'].concat(s.caseDef.intents.filter(function(it){return it.category==='flag'&&it.id!=='ooc_attempt';}).map(function(it){return it.id;}));
     note='The existing Observed rule requires direct screening language, an open invitation, and no communication flags. Partly there requires direct or indirect screening language. These are wording rules, not a judgment of the patient’s response.';
   }else if(domain==='organization'){
     ids=['greeting_agenda','summary_close'];

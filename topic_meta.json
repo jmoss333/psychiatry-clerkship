@@ -1877,7 +1877,7 @@
     "points": [
       "Kleinman's explanatory-model questions surface what the illness means to the patient.",
       "Cultural concepts of distress (e.g., ataque de nervios) can mimic panic or psychosis — ask before you label.",
-      "Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against."
+      "Black (and some other minority) patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against."
     ],
     "cant": "Never use family members — especially children — as interpreters; book a trained professional and speak directly to the patient.",
     "ruleOut": [
@@ -1981,7 +1981,7 @@
     "points": [
       "Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, or prior ECT response — pregnancy is not a fifth trigger, it is what makes ECT preferred over drugs once one of those is present.",
       "Minimise or time benzodiazepines and mood-stabilising anticonvulsants pre-ECT (they blunt the seizure) — continue antiepileptics prescribed for epilepsy, and don't abruptly stop lorazepam in catatonia, and plan continuation treatment — relapse is the rule without it.",
-      "rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours on depressive symptoms — not on suicidality itself, so they never replace monitoring, means restriction, or safety planning (esketamine requires REMS monitoring)."
+      "rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours on depressive symptoms — any effect on suicidal ideation is short-lived and, for esketamine, not demonstrated, so they never replace monitoring, means restriction, or safety planning (esketamine requires REMS monitoring)."
     ],
     "cant": "There are no absolute contraindications to ECT — raised intracranial pressure and recent MI/unstable cardiac disease are the key relative risks.",
     "quiz": {
@@ -2546,7 +2546,7 @@
     "hy": true,
     "tldr": "Postpartum psychosis is a bipolar-spectrum emergency requiring urgent admission — a lucid interval does not rule it out; distinguish it from PMADs and baby blues by waxing/waning course, and assess safety for both mother and infant on every encounter.",
     "points": [
-      "Postpartum psychosis typically appears in the first 1–4 weeks, recurs in 30–50% of subsequent deliveries, and is bipolar-spectrum until proven otherwise — screen for prior mania.",
+      "Postpartum psychosis typically appears in the first 1–4 weeks, recurs as a severe episode after roughly 29% of subsequent deliveries in women with a prior episode, and is bipolar-spectrum until proven otherwise — screen for prior mania.",
       "The EPDS screens for depression, not psychosis — ask directly about delusions and perceptual disturbance, and screen for manic symptoms separately.",
       "Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — but 'don't stop everything' is not 'continue everything': valproate is the agent to be off before conception, with lamotrigine or lithium the maintenance options."
     ],
@@ -2836,7 +2836,7 @@
     "points": [
       "Antidepressants carry an FDA black-box warning for suicidality through age 24 — not just children; screen for bipolarity before starting any antidepressant, and monitor young adults closely in early weeks.",
       "Lithium has the strongest anti-suicidal evidence in its class and a narrow therapeutic window — levels, renal function, and thyroid monitoring are non-negotiable at every relevant interval.",
-      "Clozapine is uniquely effective for treatment-resistant schizophrenia and requires mandatory ANC monitoring for agranulocytosis; myocarditis, ileus, and lowered seizure threshold are additional red flags requiring immediate escalation."
+      "Clozapine is uniquely effective for treatment-resistant schizophrenia and requires ANC monitoring for agranulocytosis per its prescribing information (the REMS was eliminated in 2025); myocarditis, ileus, and lowered seizure threshold are additional red flags requiring immediate escalation."
     ],
     "cant": "Benzodiazepines left on a scheduled standing basis rather than short-term and targeted create dependence, falls, and delirium — autopilot benzodiazepines are a common and preventable inpatient harm.",
     "ruleOut": [
@@ -2998,7 +2998,7 @@
       "EPA2"
     ],
     "evidenceIds": [
-      "rosenhan-1973-sane-places"
+      "nice-delirium-cg103"
     ]
   },
   "pg_interview.md": {
@@ -3444,7 +3444,7 @@
     "points": [
       "Family psychoeducation (OR 0.18 vs. treatment as usual) is the single strongest psychosocial intervention for schizophrenia relapse prevention, supported by 90 RCTs across more than 10,000 patients.",
       "CRAFT is the go-to modality when a family member is struggling with a patient's substance use — it changes the family's own behavior to reduce blame and invite treatment engagement, without confrontation.",
-      "Expressed emotion (high criticism, hostility, emotional over-involvement) roughly quintuples relapse odds; family warmth is protective — lowering expressed emotion is a modifiable clinical target."
+      "Expressed emotion (high criticism, hostility, emotional over-involvement) roughly quintuples the odds of relapse within 12 months (about 2-fold for later relapse); family warmth is protective — lowering expressed emotion is a modifiable clinical target."
     ],
     "cant": "≤2 family sessions is ineffective for relapse prevention — NICE recommends ≥10 sessions over ≥3 months; a single discharge meeting starts the work but is not a course of care.",
     "quiz": {
@@ -3527,10 +3527,10 @@
     "tldr": "Structure the 90-minute meeting across five phases — open/join, share the picture, hear the family and read expressed emotion, problem-solve and plan, then summarize — convene early to plant a seed, not at discharge to harvest one.",
     "points": [
       "Convene the family meeting early in the admission — the relapse-prevention benefit of family work accrues over the following 12 months, not on the unit; saving it for the day before discharge squanders the inpatient window.",
-      "Phase 3 (0:35–0:55) — hearing the family's perspective and reading expressed emotion — is the phase that most changes outcomes; protect the time, listen without correcting in the moment, and de-shame by framing behavior as regulation, not character.",
+      "Phase 3 (0:35–0:55) — hearing the family's perspective and reading expressed emotion — is the phase most often squeezed out, and where expressed emotion becomes workable; protect the time, listen without correcting in the moment, and de-shame by framing behavior as regulation, not character.",
       "Set the meeting goal in one sentence before you begin: 'Align on the diagnosis and discharge plan' or 'Lower the temperature and agree on warning signs' — a meeting with a single clear goal beats one that tries to cover everything."
     ],
-    "cant": "Letting information-sharing (Phase 2) expand to fill the entire meeting is the most common failure — the clinical work that changes outcomes is in Phase 3 (family perspective) and Phase 4 (shared planning), not the didactic.",
+    "cant": "Letting information-sharing (Phase 2) expand to fill the entire meeting is the most common failure — the work families most often miss out on is in Phase 3 (family perspective) and Phase 4 (shared planning) — keep the didactic structured and brief so it does not crowd them out.",
     "quiz": {
       "q": "A family meeting has run to 85 minutes. The team shared the diagnosis and treatment plan thoroughly but skipped Phase 4 (problem-solving) and Phase 5 (close). With 5 minutes remaining, what should the facilitator prioritize?",
       "o": [
@@ -3637,7 +3637,7 @@
           "t": "Motivational interviewing — roll with ambivalence about treatment and evoke change talk"
         }
       ],
-      "why": "The mechanism is behavioral shutdown — withdrawn, anhedonic, inactive. Behavioral activation is the match: it targets this mechanism directly by scheduling activity and requires the lowest cognitive demand, which is why the page flags it as the best inpatient fit. Cognitive restructuring requires cognitive engagement a deeply depressed patient may not have; chain analysis is for a self-harm incident; MI is for motivational ambivalence."
+      "why": "The mechanism is behavioral shutdown — withdrawn, anhedonic, inactive. Behavioral activation is the match: it targets this mechanism directly by scheduling activity and requires the lowest cognitive demand, which is why the page treats it as a reasonable inpatient fit (by extrapolation: the Cochrane review behind it excluded inpatient trials). Cognitive restructuring requires cognitive engagement a deeply depressed patient may not have; chain analysis is for a self-harm incident; MI is for motivational ambivalence."
     },
     "cta": [
       {
@@ -3775,7 +3775,7 @@
     "tldr": "A teaching index of the unit's order sets — always pull exact medications, doses, and monitoring from the live EHR order set; this page tells you which protocol applies and why, not what to prescribe.",
     "points": [
       "Withdrawal protocols use symptom-triggered scoring (CIWA-Ar for alcohol/benzo, COWS for opioids); give thiamine before or with glucose in any withdrawal or nutritional risk, never delaying dextrose for hypoglycemia.",
-      "Clozapine initiation requires mandatory ANC monitoring per the hematologic schedule — know the workflow before the patient starts, not after the first dose.",
+      "Clozapine initiation requires ANC monitoring per the prescribing-information schedule (REMS eliminated 2025) — know the workflow before the patient starts, not after the first dose.",
       "Delirium prevention bundles non-pharmacologic measures first; the restraint and agitation pathway is least-restrictive, time-limited, and always followed by a debrief."
     ],
     "cta": {
@@ -3834,7 +3834,7 @@
     "points": [
       "The Compass is a wayfinding map, not a checklist, clinical protocol, or measure of readiness.",
       "Review the Orientation Packet's safety and supervision boundaries before using bedside tools.",
-      "Use the optional captioned orientation overview when a narrated walkthrough helps; the transcript provides the non-video route."
+      "Pick one page, one tool, and one question to bring to your team; the library is a reference, not a reading list."
     ],
     "workflowStages": [
       "encounter",
@@ -3998,7 +3998,7 @@
     "points": [
       "The skill of the week is the Mental Status Exam plus the call-now safety check — use the interactive MSE module, write your first admission note, and tell the resident or attending immediately when safety could change today.",
       "Required Week 1 safety recognition set: suicide intent/plan/preparation/means, escalating agitation, delirium/catatonia signs, and alcohol/benzodiazepine/opioid withdrawal concern.",
-      "Suggested landmark readings: Engel 1977 (biopsychosocial), Rosenhan 1973 (labeling), and Appelbaum & Grisso 1988 (capacity) — three papers that shape how the unit thinks about diagnosis and autonomy.",
+      "Suggested landmark readings: Engel 1977 (biopsychosocial), Rosenhan 1973 (labeling — read with Scull 2023, which documents serious doubts about its data), and Appelbaum & Grisso 1988 (capacity) — three papers that shape how the unit thinks about diagnosis and autonomy.",
       "On the unit this week: shadow an admission, ask one capacity question on rounds, and name one safety concern you would escalate immediately."
     ],
     "cta": {
@@ -4598,7 +4598,7 @@
     "points": [
       "Books in the library double as bibliotherapy recommendations — pick by the patient and family in front of you, not by diagnostic category alone.",
       "Highest-yield family resources: CRAFT approach (Beyond Addiction) for substance use, LEAP method (I Am Not Sick I Don't Need Help!) for psychosis anosognosia, and Stop Walking on Eggshells for borderline-pattern family dynamics.",
-      "For trauma: The Body Keeps the Score is the standard patient/family resource; for mood narratives: An Unquiet Mind (bipolar) and Reasons to Stay Alive (depression) are widely received and readable."
+      "For trauma: The Body Keeps the Score is widely read but its neuroscience and treatment claims are contested — pair it with the message that trauma-focused therapy (CPT/PE) is first-line; for mood narratives: An Unquiet Mind (bipolar) and Reasons to Stay Alive (depression) are widely received and readable."
     ],
     "cta": {
       "label": "Open the Podcast Library",
@@ -5731,7 +5731,7 @@
       "say": "We can use these few days: one skill, one scheduled activity, and one plan for the first week home.",
       "collateral": "You can listen to a family without the patient's permission — but without it (and absent a recognized exception such as incapacity or emergency) don't confirm the admission or share anything back; consent governs what you share, including that they are here, not what you hear.",
       "rounds": "Name the mechanism, the 5-minute intervention delivered, the patient's response, and the discharge-bridge status.",
-      "exam": "Safety planning with follow-up beats no-suicide contracts; behavioral activation matches the anergic patient; psychoeducation carries the strongest single-intervention numbers in psychosis.",
+      "exam": "Safety planning with follow-up beats no-suicide contracts; behavioral activation matches the anergic patient; psychoeducation is among the best-supported psychological interventions in psychosis, though its headline NNTs rest on limited-quality trials.",
       "actions": [
         {
           "label": "Open the Therapy Reading Room",

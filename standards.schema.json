@@ -82,7 +82,7 @@
         "domain": { "type": "string", "minLength": 2 },
         "rotationRequirement": {
           "enum": ["required", "elsewhere", "undecided"],
-          "description": "For the 4-week adult inpatient resident rotation only. 'elsewhere' means the program addresses it on a different rotation and this one is correctly silent — that is a coverage ANSWER, not a gap."
+          "description": "Relative to the rotation this unit's framework serves, which the framework's note names: the 4-week adult inpatient resident rotation for the ACGME Milestones, the six-week MS3 clerkship for the student frameworks (ADMSEP, Foundational Competencies). 'elsewhere' means the program addresses it on a different rotation (or, for a student, elsewhere in the curriculum) and this one is correctly silent — that is a coverage ANSWER, not a gap."
         },
         "rotationRationale": { "type": "string", "minLength": 10 },
         "internalCodes": {

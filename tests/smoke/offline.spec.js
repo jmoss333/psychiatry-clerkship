@@ -285,7 +285,9 @@ test('offline readiness: active worker verifies route and cached reading, tool, 
     await page.locator('.fd-searchpanel__input:visible').fill('mood');
     await expect(page.locator('.fd-result').first()).toBeVisible();
     const mediaResult = await page.evaluate(async () => {
-      const response = await fetch('/media/day-in-the-life.mp4', { headers: { Range: 'bytes=0-127' } }).catch(() => null);
+      // A media file that really ships (landmark-trial audio): offline, it must not be served
+      // from the precache. (Was /media/day-in-the-life.mp4 until that clip was retired.)
+      const response = await fetch('/audio/01_LM_01_Lieberman_2005_CATIE_Trial_1_38.m4a', { headers: { Range: 'bytes=0-127' } }).catch(() => null);
       return response && response.status;
     });
     expect(mediaResult).toBeNull();

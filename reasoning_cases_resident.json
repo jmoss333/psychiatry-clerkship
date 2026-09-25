@@ -315,7 +315,7 @@
           "choices": [
             {
               "id": "a",
-              "text": "Escalate urgently for fever, autonomic instability, worsening rigidity, rising CK, dehydration, immobility complications, or failure to improve with supervised first-line treatment.",
+              "text": "Escalate urgently for fever, autonomic instability, worsening rigidity, rising CK, dehydration, immobility complications, or failure to improve with supervised first-line treatment — and if malignant features emerge, stop antipsychotics and request urgent ECT consultation.",
               "quality": "best",
               "feedback": "Best. It names the physiologic and treatment-response signals that should change urgency."
             },
@@ -536,7 +536,7 @@
               "id": "b",
               "text": "Recommend lithium first because it has the strongest anti-suicidal evidence of the options available.",
               "quality": "partial",
-              "feedback": "The anti-suicidal evidence for lithium is real, but reciting the strongest population-level evidence without weighing this patient's overdose history and eventual unsupervised access is incomplete reasoning, not a full recommendation."
+              "feedback": "Lithium's anti-suicidal evidence is strongest in bipolar disorder and weaker in unipolar depression (a 2022 VA RCT in patients with a recent suicide-related event was stopped for futility), but reciting the strongest population-level evidence without weighing this patient's overdose history and eventual unsupervised access is incomplete reasoning, not a full recommendation."
             },
             {
               "id": "c",
