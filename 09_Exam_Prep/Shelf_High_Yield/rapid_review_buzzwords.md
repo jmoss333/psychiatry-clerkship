@@ -73,7 +73,7 @@
 - Involuntary hold = **mental illness + danger to self/others or grave disability**. *(→ Ethics & Law)*
 - **Capacity** = clinical, decision-specific, can fluctuate; **competence** = legal/court.
 - Capacitated patient may **refuse even life-sustaining treatment**.
-- Identifiable threatened victim → **duty to protect (Tarasoff)**.
+- Identifiable threatened victim → **duty to protect (Tarasoff)**: mandatory, permissive or absent depending on the state; know your state's rule. In Maine, see 34-B M.R.S. §1207(6-A).
 - No advance directive → surrogate uses **substituted judgment**, then best interest.
 - Emergency + can't consent + no surrogate → **implied consent**.
 
