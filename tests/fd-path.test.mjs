@@ -304,6 +304,58 @@ test('"Set as my week" appears only when browsing away from the current week, an
   assert.match(elsewhere, /<button type="button" class="fd-btn fd-btn--accent" data-fd-setweek="5">Set as my week<\/button>/);
 });
 
+// ---- "Open week guide": the week's landing page, linked from the detail card ------------
+//
+// curriculum.json's libraryExclude keeps week1..week6.md out of the Library as "surfaced by the
+// Path tab", so this action IS that surfacing: without it the week landing pages had no route in
+// from the Front Door at all (curriculum-architecture review, WP-14). Fixture weeks carry a
+// landingRef the way the MS3 path does; the resident-shaped FOUR_INDEX carries none.
+
+function buildLandingIndex(weekDefs) {
+  const cur = buildCurriculum(weekDefs);
+  for (const w of cur.weeks) w.landingRef = 'guide' + w.n + '.md';
+  cur.libraryExclude = cur.weeks.map((w) => ({ ref: w.landingRef, reason: 'fixture week page' }));
+  const man = buildManifest(weekDefs);
+  man.md = man.md.concat(cur.weeks.map((w) => ['src/' + w.landingRef, w.landingRef, 'Guide ' + w.n]));
+  return F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, man);
+}
+const LANDING_IDX = buildLandingIndex(WEEK_DEFS);
+const GUIDE_BUTTON = (ref) => '<button type="button" class="fd-btn fd-btn--ghost fd-detail__guide" ' +
+  'data-fd-open="' + ref + '">Open week guide<span aria-hidden="true"> →</span></button>';
+
+test('the detail card links the viewed week\'s guide page through the open action', () => {
+  const html = F.fdPath(LANDING_IDX, s({ week: 2, viewWeek: 5 }));
+  assert.ok(html.includes(GUIDE_BUTTON('guide5.md')), 'the viewed week\'s landingRef is the target');
+  assert.equal((html.match(/fd-detail__guide/g) || []).length, 1, 'one guide action, for the viewed week only');
+  assert.doesNotMatch(html, /data-fd-open="guide2\.md"/, 'the current week is not the one being shown');
+  // Placement: after the week heading, before the week's checklist.
+  const detail = html.slice(html.indexOf('id="fd-path-detail"'));
+  assert.ok(detail.indexOf('fd-detail__guide') > detail.indexOf('class="fd-detail__h2"'));
+  assert.ok(detail.indexOf('fd-detail__guide') < detail.indexOf('class="fd-detail__list"'));
+  // A guide is a place to read, never a checklist item: no done-toggle, no row.
+  assert.doesNotMatch(html, /data-fd-toggle="guide5\.md"/);
+});
+
+test('the guide action follows the selected week and still renders with no week set', () => {
+  const onCurrent = F.fdPath(LANDING_IDX, s({ week: 2, viewWeek: 2 }));
+  assert.ok(onCurrent.includes(GUIDE_BUTTON('guide2.md')));
+  const browsing = F.fdPath(LANDING_IDX, s({ week: null, viewWeek: 3 }));
+  assert.ok(browsing.includes(GUIDE_BUTTON('guide3.md')));
+});
+
+test('a week without a landing page renders no guide action', () => {
+  assert.doesNotMatch(F.fdPath(IDX, s({})), /fd-detail__guide|Open week guide/);
+  assert.doesNotMatch(F.fdPath(FOUR_INDEX, s({})), /fd-detail__guide|Open week guide/);
+});
+
+test('the guide action escapes its ref', () => {
+  const cur = buildCurriculum(WEEK_DEFS);
+  cur.weeks[0].landingRef = 'x" onclick="alert(1).md';
+  const html = F.fdPath(F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN), s({ week: 1, viewWeek: 1 }));
+  assert.match(html, /data-fd-open="x&quot; onclick=&quot;alert\(1\)\.md"/);
+  assert.doesNotMatch(html, /onclick="alert/);
+});
+
 // ---- no week set: nothing may claim to be current ---------------------------------------
 
 test('with no week set, no row and no pill claims "you are here", but browsing still works', () => {
@@ -342,6 +394,7 @@ test('fd_path.js touches no DOM, storage, or clock', () => {
 test('no rendered output carries an audience-specific token', () => {
   const html = F.fdPath(IDX, s({ week: 2, viewWeek: 2 }))
     + F.fdPath(IDX, s({ week: null, viewWeek: 3 }))
-    + F.fdPath(IDX, s({ week: 2, viewWeek: 5 }));
+    + F.fdPath(IDX, s({ week: 2, viewWeek: 5 }))
+    + F.fdPath(LANDING_IDX, s({ week: 2, viewWeek: 5 }));
   assert.doesNotMatch(html, AUDIENCE_TOKEN_RE);
 });
