@@ -54,7 +54,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 
 ## Psychopharmacology in organ dysfunction
 - **Liver disease:** prefer benzodiazepines cleared by conjugation — **"LOT": Lorazepam, Oxazepam, Temazepam** (no oxidative metabolism) — but even these accumulate in advanced disease and can tip a patient into hepatic encephalopathy, so they are the safer choice, not a free one. **Duloxetine is contraindicated in chronic liver disease.** **Valproate is contraindicated in significant hepatic impairment**, and is the one you will most often be asked to continue: valproate-induced **hyperammonaemic encephalopathy** presents as worsening delirium and can occur with normal LFTs, so send an **ammonia level**, not just a hepatic panel. Carbamazepine is a poor choice here for the same reason.
-- **Renal impairment:** dose-reduce **lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride**; paliperidone is heavily renally cleared.
+- **Renal impairment:** dose-reduce **lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride** — lithium is not recommended at CrCl <30 and paliperidone palmitate LAI at CrCl <50; paliperidone is heavily renally cleared.
 
 ## The escalation line
 Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell someone now"** findings. Your job on the consult is rapid recognition, the first safe step (stop the offending agent, correct electrolytes, sedate rather than restrain in SS), and escalation — not solo management.
