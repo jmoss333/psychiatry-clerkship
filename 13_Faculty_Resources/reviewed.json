@@ -658,9 +658,9 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-21",
+    "at": "2026-09-25",
     "by": "Joshua Moss, MD",
-    "contentHash": "1ca78645e452f4d9d54ed4d906fa2f2297c6b96e"
+    "contentHash": "ad2abddf2860a4cbf50c680dec9d74c872378550"
   },
   "motivational_interviewing.md": {
     "status": "reviewed",
