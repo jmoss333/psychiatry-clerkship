@@ -210,6 +210,12 @@ def _commit(root, message):
 
 
 def self_test():
+    # The self-test builds throwaway repositories. An inherited GIT_DIR (this runs under the
+    # pre-push hook via verify.sh, and by hand from `rebase --exec`) would aim every one of
+    # them at the repository running it; scrub it here, not at import — in normal operation
+    # this tool reads the real repository and may legitimately be handed a hook's git env.
+    from _git_env import scrub_inherited_git_env
+    scrub_inherited_git_env()
     failures, total = [], []
 
     def check(name, got, want):

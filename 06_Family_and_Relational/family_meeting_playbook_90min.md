@@ -14,7 +14,7 @@ Convene a family meeting for a first episode, a relapse, a high-expressed-emotio
 - **Set the goal in one sentence.** "Align on the diagnosis and the discharge plan," or "Lower the temperature at home and agree on warning signs." A meeting with one clear goal beats a meeting that tries to do everything.
 - **Know your audience.** Who is coming, who is missing, who holds influence, what each person is most worried about.
 - **Brief the team.** Agree on who leads, who takes notes, who watches the patient's distress, and the two or three messages everyone will keep consistent.
-- **Logistics.** A private room, enough chairs, phones silenced, an interpreter if needed, ~90 minutes protected, and a plan for breaks.
+- **Logistics.** A private room, enough chairs, phones silenced, a qualified professional interpreter if anyone needs one (not a family member), ~90 minutes protected, and a plan for breaks.
 
 ## The 90-minute arc
 

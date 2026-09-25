@@ -12,7 +12,7 @@
 - **Illness anxiety disorder** — preoccupation with *having or acquiring* a serious illness with minimal or no somatic symptoms; care-seeking or maladaptive avoidance. Not conscious.
 - **Functional neurological symptom disorder (conversion)** — neurologic symptoms (weakness, non-epileptic seizures, sensory loss) *incompatible* with recognized disease; diagnosis rests on **positive signs** (Hoover sign, give-way weakness, tremor entrainment, seizure with preserved awareness/eyes closed). Not conscious.
 - **Factitious disorder** — **conscious** falsification or induction of illness (self or another) motivated by assuming the sick role, **without external reward**. *Imposed on another* (formerly Munchausen by proxy) is a form of **abuse — report it** ([Ethics & the Law](?page=ethics_legal.md)).
-- **Malingering** — **conscious** feigning for an **external incentive** (money, drugs, disability, avoiding work/jail). *Not a mental disorder* — a V-code/observation.
+- **Malingering** — **conscious** feigning for an **external incentive** (money, drugs, disability, avoiding work/jail). *Not a mental disorder* — a Z-code (Z76.5) condition that may be a focus of clinical attention.
 
 **Initial workup** — Take the somatic complaint seriously and do a *focused, guideline-appropriate* evaluation — then stop escalating. Review prior records to avoid repeating negative studies. Screen for depression, anxiety, PTSD, and substance use, which are common and treatable. Ask about early adversity and current stressors. For suspected factitious disorder imposed on another, prioritize the dependent's safety and reporting duties over confrontation.
 
@@ -28,7 +28,7 @@
 **Disposition & discharge essentials** — Consolidate care under a single outpatient clinician with scheduled follow-up and a shared plan to limit fragmented, escalating workups. Communicate the formulation to the receiving team in function-focused language. Arrange psychotherapy (CBT) and treat comorbidities. For factitious-by-proxy concerns, ensure protective services and safe disposition for the dependent.
 
 **High-yield pearls**
-- SSD is defined by the *excessive response* to symptoms, not by whether they're medically explained (a key DSM-5-TR shift from "medically unexplained").
+- SSD is defined by the *excessive response* to symptoms, not by whether they're medically explained (a key DSM-5 shift, retained in DSM-5-TR, from "medically unexplained").
 - Conversion/functional neurological disorder is a *rule-in* diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures.
 - Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder).
 - Factitious disorder imposed on another is child (or vulnerable-adult) abuse — a reporting duty.

@@ -50,7 +50,7 @@ Mental status: alert, cooperative, tearful, with constricted affect and mood-con
 
 ### Ranked Differential (drivers of suicidality — treat the underlying condition)
 
-1. **MDD, severe, single or recurrent episode, with suicidal ideation** (DSM-5-TR) — best fit; assess for **mixed features** and **psychotic features**, both of which raise risk and change treatment [1].
+1. **MDD, severe, single or recurrent episode** (DSM-5-TR), with current suicidal ideation recorded separately (R45.851) — best fit; assess for **mixed features** and **psychotic features**, both of which raise risk and change treatment [1].
 2. **Bipolar disorder, current episode depressed** — mandatory to exclude past (hypo)mania/mixed states before initiating an antidepressant; bipolar depression carries high suicide risk.
 3. **Alcohol use disorder, acute intoxication/early withdrawal contribution** — independent acute-risk amplifier and a modifiable target; also a differential for the mood presentation.
 4. **Adjustment disorder with depressed mood** vs. acute stress reaction — plausible given losses, but severity/duration and neurovegetative burden favor MDD.

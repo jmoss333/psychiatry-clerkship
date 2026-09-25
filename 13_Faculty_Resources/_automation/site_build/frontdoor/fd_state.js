@@ -203,6 +203,22 @@ function fdPathExamCountdown(pathId, week, weeks, nowMs, rotationStart){
   return fdExamCountdown(week, weeks, nowMs, rotationStart);
 }
 
+/* Today's exam-date prompt: the field's label, or '' when Today should not ask. Without a stored
+   date the countdown falls back to the path grid, and phase_policy.js returns 'unset' -- no taper
+   before the exam, the full new-card cap through exam week. The date already had a home (the
+   settings panel's Pacing field), but a learner had to know the gear held it, so on the one path
+   that ends in an exam Today asks once, until a date is stored.
+
+   Same gate shape as fdPathExamCountdown, inverted: only the exam path asks, and a PARSEABLE stored
+   date -- past ones included -- means the learner has answered. The label lives here rather than
+   in fd_today.js for the countdown's reason: that file never spells the word. */
+function fdExamDatePrompt(pathId, nowMs){
+  if(pathId!==FD_EXAM_PATH_ID) return '';
+  var stored=null;
+  try{ stored=localStorage.getItem('cw_shelf_date'); }catch(_){ }
+  return shelfDaysUntil(stored, nowMs)===null?'Exam date':'';
+}
+
 /* The write half of the key fdExamCountdown reads, and the settings panel's only persistence.
    It lives HERE rather than in fd_wire.js's fdApplyEffect, beside its reader, because the key
    spells an audience token the controller's copy rule bans FILE-WIDE

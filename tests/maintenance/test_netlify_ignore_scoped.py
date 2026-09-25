@@ -25,11 +25,18 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.append(str(REPO_ROOT / "bin"))
+from _git_env import scrub_inherited_git_env  # noqa: E402
+
+# Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrub_inherited_git_env()
+
 SCRIPT = (
     REPO_ROOT
     / "13_Faculty_Resources"

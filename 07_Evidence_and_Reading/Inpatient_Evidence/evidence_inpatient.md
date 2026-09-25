@@ -8,7 +8,7 @@ An evidence reference for the inpatient stay, admission through discharge — fo
 
 ### Strongest Evidence
 
-The **Columbia-Suicide Severity Rating Scale (C-SSRS)** is the most widely endorsed tool. A 2025 meta-analysis found prior suicidal behavior predicted future attempts (pooled OR 3.14, 95% CI 1.86–5.31), and in an inpatient cohort of 1,055 adults, the C-SSRS demonstrated AUC = 0.757 for post-discharge suicide-related behavior. The Joint Commission (NPSG 15.01.01) and the VA/DoD 2024 Clinical Practice Guideline endorse the C-SSRS for screening. However, a systematic review using GRADE found that **no instrument fulfilled requirements for sufficient diagnostic accuracy** (sensitivity >80% and specificity >50%).
+The **Columbia-Suicide Severity Rating Scale (C-SSRS)** is the most widely endorsed tool. A 2025 meta-analysis found prior suicidal behavior predicted future attempts (pooled OR 3.14, 95% CI 1.86–5.31), and in an inpatient cohort of 1,055 adults, the C-SSRS demonstrated AUC = 0.757 for post-discharge suicide-related behavior. The Joint Commission (NPSG 15.01.01, which requires a validated screening tool but names none) accepts the C-SSRS, and the VA/DoD 2024 Clinical Practice Guideline endorses it for screening. However, a systematic review using GRADE found that **no instrument fulfilled requirements for sufficient diagnostic accuracy** (sensitivity >80% and specificity >50%).
 
 The **SAD PERSONS scale should not be used**: multiple studies demonstrate it performs no better than chance (AUC 0.55–0.59), with sensitivity as low as 1% for repeat self-harm. The VA/DoD 2024 guideline explicitly excludes it.
 
@@ -113,7 +113,7 @@ For **methamphetamine-related agitation**, IV midazolam 5 mg + droperidol 5 mg a
 
 - **IV vs. IM route**: IV combinations may be faster but carry greater hemodynamic risks; most guidelines recommend avoiding IV treatments
 
-- **Droperidol availability** varies by country, limiting generalizability of evidence favoring it
+- **Droperidol availability** varies by country, limiting generalizability of evidence favoring it; in the US it carries an FDA boxed warning for QT prolongation, so QTc risk must be considered before use
 
 ---
 
@@ -199,7 +199,7 @@ The **MacArthur Competence Assessment Tool for Treatment (MacCAT-T)** is the mos
 
 - Use the MacCAT-T for difficult cases or those likely to involve legal proceedings
 
-- MMSE scores <19 are highly likely to be associated with incompetence; scores ≥23–26 strongly suggest competence
+- MMSE scores <19 make incapacity likely, but a normal MMSE does not establish capacity — it does not test appreciation or reasoning, which psychosis, mania and severe depression often impair despite intact cognition
 
 - Document the specific decision, the information disclosed, and the patient's responses to each of the four criteria
 
@@ -211,7 +211,7 @@ The **MacArthur Competence Assessment Tool for Treatment (MacCAT-T)** is the mos
 
 ### Legal Framework
 
-Three landmark U.S. Supreme Court cases define the legal landscape: **Washington v. Harper** (1990) allows administrative review for involuntary medication of dangerous/gravely disabled prisoners; **Sell v. United States** (2003) requires judicial authorization for competency restoration with four specific criteria; and **Riggins v. Nevada** (1992) extends protections to pretrial detainees. A retrospective review found that 79% of federal defendants involuntarily treated under Sell were successfully restored to competency.
+Three landmark U.S. Supreme Court cases define the legal landscape for involuntary medication of prisoners and criminal defendants: **Washington v. Harper** (1990) allows administrative review for involuntary medication of dangerous/gravely disabled prisoners; **Sell v. United States** (2003) requires judicial authorization for competency restoration with four specific criteria; and **Riggins v. Nevada** (1992) extends protections to pretrial detainees. A retrospective review found that 79% of federal defendants involuntarily treated under Sell were successfully restored to competency. Civil involuntary medication of committed inpatients is governed by state law and varies, from a court order in some states to administrative or clinical review in others; in most states, commitment alone does not authorize treatment over refusal. Check your state's statute; in Maine, the District Court can authorize treatment over objection for a committed patient who lacks capacity (34-B M.R.S. §3864(7-A)), or a clinical review panel can order it for a committed patient who lacks capacity at a state or designated hospital (34-B M.R.S. §3861(3)).
 
 ### Outcomes Evidence
 
@@ -331,7 +331,7 @@ The **IMPACT trial** (n=1,801) is the landmark CoCM study: 45% of intervention p
 
 ### Measurement-Based Care
 
-In a randomised trial of 120 **outpatients** with moderate-to-severe major depression, remission at 24 weeks was 73.8% with measurement-based care vs. 28.8% with standard treatment (Guo et al., *Am J Psychiatry* 2015) — a large effect, but from a single-centre outpatient trial restricted to paroxetine or mirtazapine, so treat it as proof of concept rather than an inpatient estimate. The Joint Commission requires MBC in all accredited behavioral health programs since 2018. However, **less than 20% of practitioners** engage in MBC, and the VA/DoD 2022 guideline rated the overall evidence as weak.
+In a randomised trial of 120 **outpatients** with moderate-to-severe major depression, remission at 24 weeks was 73.8% with measurement-based care vs. 28.8% with standard treatment (Guo et al., *Am J Psychiatry* 2015) — a large effect, but from a single-centre outpatient trial restricted to paroxetine or mirtazapine, so treat it as proof of concept rather than an inpatient estimate. The Joint Commission has required MBC since 2018 for organizations accredited under its Behavioral Health Care and Human Services program (standard CTS.03.01.09). However, **less than 20% of practitioners** engage in MBC, and the VA/DoD 2022 guideline rated the overall evidence as weak.
 
 ### Current Controversies
 

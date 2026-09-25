@@ -30,7 +30,7 @@ Vital signs: T 37.0 °C, HR 88, BP 118/74, RR 14, SpO₂ 99% on room air. Mucous
 
 **Q3. Build a ranked differential. What features here argue for and against each item?**
 
-*Teaching point:* See the ranked differential below. The two "cannot-miss" branch points for a student: (a) **is there a medical cause** (catatonia is a syndrome, not a diagnosis), and (b) **is this neuroleptic malignant syndrome (NMS)** — which this patient cannot have without dopamine-blocking drug exposure. Recent antipsychotic exposure, fever, rigidity, and marked autonomic instability should always be actively sought and documented.
+*Teaching point:* See the ranked differential below. The two "cannot-miss" branch points for a student: (a) **is there a medical cause** (catatonia is a syndrome, not a diagnosis), and (b) **is this neuroleptic malignant syndrome (NMS)** — which this patient is very unlikely to have without dopamine-blocking drug exposure (including antiemetics) or abrupt withdrawal of a dopaminergic drug. Recent antipsychotic exposure, fever, rigidity, and marked autonomic instability should always be actively sought and documented.
 
 **Q4. What initial workup do you order, and why?**
 
@@ -54,7 +54,7 @@ Vital signs: T 37.0 °C, HR 88, BP 118/74, RR 14, SpO₂ 99% on room air. Mucous
 
 1. **Catatonia associated with major depressive disorder** — known depression, subacute withdrawal, then classic catatonic signs; most common context for catatonia is a mood disorder [1].
 2. **Catatonia due to another medical condition** — including autoimmune (anti-NMDA-receptor) encephalitis; argues for: young woman, subacute course; argues against: no prodrome, seizures, dysautonomia, or focal signs yet. This must be actively excluded, not assumed away [2].
-3. **Hypoactive delirium** — can look similar (withdrawn, minimally responsive) and can co-occur with catatonia; look for fluctuating attention and an underlying medical driver.
+3. **Hypoactive delirium** — can look similar (withdrawn, minimally responsive) and can co-occur with catatonia; look for fluctuating attention and an underlying medical driver. **Nonconvulsive status epilepticus** is a further mimic of mutism/stupor that also improves with lorazepam — a positive challenge does not exclude it, so obtain an EEG if there is doubt.
 4. **Neuroleptic malignant syndrome** — effectively excluded without recent dopamine-blocking drug exposure; would feature rigidity, fever, autonomic instability, elevated CK.
 5. **Severe drug-induced parkinsonism / extrapyramidal side effects** — no offending medication here; would show rigidity and bradykinesia rather than negativism, waxy flexibility, and echophenomena.
 

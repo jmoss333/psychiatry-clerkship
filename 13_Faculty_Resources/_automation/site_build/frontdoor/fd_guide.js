@@ -9,14 +9,54 @@ function fdGuideNormalize(text){
 function fdGuideSlug(text){
   return fdGuideNormalize(text).replace(/\s+/g,'-').slice(0,110)||'section';
 }
+/* Bold section leads. 38 teaching pages were authored without H2s: each section opens with a
+   paragraph whose first element is a bold label ("**Initial workup** — …", "**Management.** …").
+   The guide promotes those paragraphs to sections at render time, so kit links, search and the
+   "On this page" list can land inside a long page. Authored bytes are never rewritten. Detection
+   is structural and deliberately narrow: a bold word that merely opens a sentence ("**Never**
+   leave …") has no separator and is not a section, and a page qualifies only when its authored
+   content is long enough to need navigation and carries no H2 at any depth (an embedded
+   component's own heading, like the Compass on Welcome, keeps that page out of this mode). */
+var FD_GUIDE_LEAD_MIN=4, FD_GUIDE_LEAD_MIN_WORDS=500;
+function fdGuideLeadLabel(node){
+  if(!node||node.tagName!=='P')return '';
+  var lead=node.firstChild;
+  while(lead&&lead.nodeType===3&&!/\S/.test(lead.nodeValue))lead=lead.nextSibling;
+  if(!lead||lead.nodeType!==1||(lead.tagName!=='STRONG'&&lead.tagName!=='B'))return '';
+  var raw=lead.textContent.replace(/\s+/g,' ').trim(), label=raw.replace(/[\s.:\u2013\u2014-]+$/,''), rest='';
+  if(label.length<2||label.length>80)return '';
+  for(var next=lead.nextSibling;next;next=next.nextSibling)rest+=next.textContent;
+  rest=rest.replace(/^\s+/,'');
+  if(rest&&!/[.:]$/.test(raw)&&!/^[\u2013\u2014:-]/.test(rest))return '';
+  return label;
+}
+/* Chrome the reader adds to every page — the governance receipt, the practice panel, the
+   feedback link, the build-injected crisis block — says nothing about how long the authored
+   teaching is. Counted, it put a 418-word week page over the floor. */
+var FD_GUIDE_CHROME='.governance-notice,.topic-tpl,.pgfb,.crisis-block-hook';
+function fdGuideLeads(body){
+  var leads=[], words=0, heading=false;
+  if(!body)return leads;
+  [].forEach.call(body.children,function(node){
+    if(heading||node.matches(FD_GUIDE_CHROME)||node.querySelector('.crisis-block-hook'))return;
+    if(node.tagName==='H2'||node.querySelector('h2')){heading=true;return;}
+    if(fdGuideLeadLabel(node))leads.push(node);
+    words+=String(node.textContent||'').split(/\s+/).filter(Boolean).length;
+  });
+  return heading||leads.length<FD_GUIDE_LEAD_MIN||words<FD_GUIDE_LEAD_MIN_WORDS?[]:leads;
+}
 function fdGuideMount(body,options){
   var o=options||{}, reader=body&&body.closest('.fd-reader');
   if(!reader||reader.classList.contains('fd-reader--tool'))return null;
   /* Embedded components may contain their own headings (the orientation Compass does).
      Only the reader's top-level teaching sections opt into this layout. */
+  var leads=[];
   if(![].some.call(body.children,function(node){
     return node.tagName==='H2'||(node.classList.contains('sec-c')&&node.querySelector('.sec-h'));
-  }))return null;
+  })){
+    leads=fdGuideLeads(body);
+    if(!leads.length)return null;
+  }
   var doc=body.ownerDocument, win=doc.defaultView, ref=o.ref;
   var disposed=false, frame=0, printOpened=[], tableModes=[], invokers=[];
   function el(tag,cls,text){
@@ -28,7 +68,9 @@ function fdGuideMount(body,options){
   function button(text,cls){var b=el('button',cls,text);b.type='button';return b;}
   function each(nodes,fn){[].forEach.call(nodes,fn);}
   function desktop(){return win.matchMedia('(min-width:1000px)').matches;}
-  function headingText(h){return h.textContent.replace(/^[\s▸]+/,'').trim();}
+  function headingText(h){
+    return h.classList.contains('fd-guide-lead')?fdGuideLeadLabel(h):h.textContent.replace(/^[\s▸]+/,'').trim();
+  }
   reader.classList.add('fd-reader--guide');
 
   /* Wrap direct headings without collapsing. This includes all crisis-bearing pages, which
@@ -38,11 +80,12 @@ function fdGuideMount(body,options){
   each([].slice.call(body.children),function(node){
     if(node.classList.contains('crisis-block-hook')||node.querySelector('.crisis-block-hook')){
       group=null;
-    }else if(node.tagName==='H2'){
+    }else if(node.tagName==='H2'||leads.indexOf(node)!==-1){
+      if(node.tagName!=='H2')node.classList.add('fd-guide-lead');
       group=el('section','fd-guide-section');body.insertBefore(group,node);group.appendChild(node);
     }else if(group){group.appendChild(node);}
   });
-  var headings=[].slice.call(body.querySelectorAll('.fd-guide-section>h2,.sec-c>.sec-h'));
+  var headings=[].slice.call(body.querySelectorAll('.fd-guide-section>h2,.fd-guide-section>.fd-guide-lead,.sec-c>.sec-h'));
   var used={};
   headings.forEach(function(h){
     var text=headingText(h), id=h.id||('guide-'+fdGuideSlug(text)), base=id, n=1;
@@ -211,7 +254,7 @@ function fdGuideMount(body,options){
       (matches.length?matches.length+' matching passage'+(matches.length===1?'':'s')+' in this guide.':'No matching passage in this guide.');
     matches.slice(0,20).forEach(function(node){
       var excerpt=node.textContent.replace(/\s+/g,' ').trim();
-      var section=node.closest('.fd-guide-section,.sec-c'), h=section&&section.querySelector('h2');
+      var section=node.closest('.fd-guide-section,.sec-c'), h=section&&section.querySelector('h2,.fd-guide-lead');
       var b=button((h?headingText(h)+' — ':'')+excerpt.slice(0,180)+(excerpt.length>180?'…':''));
       b.onclick=function(){go(node,true);};results.appendChild(b);
     });
@@ -262,6 +305,8 @@ function fdGuideMount(body,options){
   }
   reader.addEventListener('click',capturePractice,true);updateCurrent();
   return {
+    /* A lead-promoted page keeps the saved reading place it had before it gained sections. */
+    leads:leads.length>0,
     arrive:function(search,focusAllowed){
       var params=new URLSearchParams(search||''), query=params.get('guideFind'), id=params.get('guideSection');
       if(id&&id.length>130)id=null;

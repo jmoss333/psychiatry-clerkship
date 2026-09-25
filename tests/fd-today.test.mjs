@@ -440,6 +440,48 @@ test('no exam countdown on a path that does not end in an exam', () => {
   }
 });
 
+// ---- the exam-date prompt (2026-09-25) -----------------------------------------------
+//
+// With no stored date the taper never engages, and the date's only home was the settings panel.
+// On the exam path Today asks once -- storage is absent in this harness, so fdExamDatePrompt
+// (fd_state.js, pinned in fd-state.test.mjs with storage injected) always answers "ask" here.
+test('the exam path asks for the date below the primary action and above the week list', () => {
+  const html = F.fdToday(MS3_IDX, s({ week: 1 }));
+  const prompt = html.indexOf('class="fd-today__exam"');
+  const primary = html.indexOf('data-fd-dock-source="primary-week"');
+  const list = html.indexOf('class="fd-listhead"');
+  assert.ok(prompt > -1, 'the prompt renders on the exam path');
+  assert.ok(primary > -1 && primary < prompt, 'it never sits above One Thing First\'s primary action');
+  assert.ok(list > prompt, 'and it comes before the week list');
+  assert.equal((html.match(/class="fd-today__exam"/g) || []).length, 1);
+});
+
+test('the prompt is the panel\'s own field type with its own id, never a second settings opener', () => {
+  const html = F.fdToday(MS3_IDX, s({ week: 1 }));
+  const block = html.slice(html.indexOf('class="fd-today__exam"'), html.indexOf('class="fd-listhead"'));
+  assert.match(block, /<label class="fd-today__examlabel" for="fdTodayExam">Exam date<\/label>/);
+  assert.match(block, /<input id="fdTodayExam" class="fd-today__examdate" type="date" data-fd-exam-date value="">/);
+  assert.doesNotMatch(block, /fdSetExam/, 'both inputs are in the document while the panel is open');
+  assert.doesNotMatch(html, /data-fd-settings/,
+    'a second opener would become restoreInvoker\'s equivalent of the gear');
+  assert.doesNotMatch(block, AUDIENCE_TOKEN_RE);
+});
+
+test('no exam-date prompt on a path without an exam, or before a week is set', () => {
+  for (const idx of [RES_IDX, IDX]) {
+    assert.doesNotMatch(F.fdToday(idx, s({ week: 1 })), /fd-today__exam|fdTodayExam/,
+      `path ${JSON.stringify(idx.path && idx.path.id)}`);
+  }
+  assert.doesNotMatch(F.fdToday(MS3_IDX, s({ week: null })), /fd-today__exam|fdTodayExam/,
+    'browsing without a week has no rotation to pace');
+});
+
+test('every prompt class Today emits has a rule in frontdoor.css', () => {
+  for (const cls of ['fd-today__exam', 'fd-today__examlabel', 'fd-today__examdate', 'fd-today__examnote']) {
+    assert.match(frontdoorCss, new RegExp(`\\.${cls}\\{`), cls);
+  }
+});
+
 test('a week with no countdown leaves no trailing space behind', () => {
   const sub = subOf(F.fdToday(IDX, s({})));
   assert.equal(sub, 'Week 1 · Foundations · Monday');

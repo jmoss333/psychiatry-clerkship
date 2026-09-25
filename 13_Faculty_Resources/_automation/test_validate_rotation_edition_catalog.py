@@ -21,6 +21,11 @@ from jsonschema import Draft7Validator
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(HERE))
+sys.path.append(str(ROOT / "bin"))
+from _git_env import scrub_inherited_git_env  # noqa: E402
+
+# Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrub_inherited_git_env()
 
 from validate_rotation_edition_catalog import (  # noqa: E402
     build_audience_projection,

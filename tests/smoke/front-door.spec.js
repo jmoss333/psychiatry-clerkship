@@ -17,7 +17,15 @@ const READING_FAILURE = 'Reading place could not be saved on this device';
 
 // Three synthetic sections keep this an ordinary reading (the field-guide enhancer owns H2s).
 // Long neutral paragraphs make the second and third anchors reachable at phone height.
+// The page's governance is pinned too, not read from the live ledger. A high-risk page that is
+// pending (or has drifted since its attestation) renders a pending-high notice whose deferred
+// focus -- taken when the startup gate opens or governance.json settles -- scrolls the notice
+// into view. That can land after the reading-place restore and reads as the learner scrolling
+// to the top. t_mood.md drifted on 2026-09-24 (#763) and this suite went intermittently red for
+// it: a test of the reading place, failing on the faculty's queue (CLAUDE.md: never depend on
+// live governance state). Pinning it reviewed/low keeps these tests about the reading place.
 async function controlledReading(page, ref = READING_REF) {
+  await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
   const filler = 'A short note about organizing study time. '.repeat(28);
   const markdown = '# Study notes\n\n' + [1, 2, 3].map(n =>
     `### Section ${n}\n\n${filler}\n\n${filler}\n`).join('\n');
@@ -128,6 +136,23 @@ test('reading place: a removed heading opens at top and deletes only that readin
   await expectHealthy(page);
 });
 
+// "Before the debounce" is arranged inside ONE page task, not across Playwright round trips.
+// The controller binds the page's own setTimeout when the reader mounts, so a page.clock
+// installed afterwards does not hold its 150 ms debounce: it runs on real time. These tests
+// used to install the clock and fast-forward it; on a loaded runner the real debounce fired
+// between two round trips and the test either failed (the abandoned section was saved first,
+// then the top anchor) or passed without reaching the path it names (resize found nothing
+// pending to flush). The debounce logic itself is pinned with injected timers in
+// tests/fd-wire.test.mjs; these pin the same behaviour in a real browser.
+async function scrollThen(page, index, after) {
+  await page.locator('.fd-article__body h3').nth(index).evaluate((heading, then) => {
+    window.scrollTo(0, heading.getBoundingClientRect().top + window.scrollY + 85);
+    window.dispatchEvent(new Event('scroll'));
+    if (then === 'resize') window.dispatchEvent(new Event('resize'));
+    if (then === 'top') { window.scrollTo(0, 0); window.dispatchEvent(new Event('scroll')); }
+  }, after);
+}
+
 test('reading place: pending scroll survives resize before the debounce', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 900, height: 650 });
   await seedApp(page, testInfo);
@@ -136,10 +161,10 @@ test('reading place: pending scroll survives resize before the debounce', async 
   await readingReady(page);
   await scrollReadingTo(page, 1);
   await expectReadingAnchor(page, 1);
-  await page.clock.install();
-  await scrollReadingTo(page, 2);
+  // Section 3 is still pending when the resize lands, so only the resize's flush can save it:
+  // were the flush lost, the reflow would restore the saved section 2 over it.
+  await scrollThen(page, 2, 'resize');
   await page.setViewportSize(PHONE);
-  await page.clock.fastForward(200);
   await expectReadingAnchor(page, 2);
   await expectHealthy(page);
 });
@@ -151,17 +176,15 @@ test('reading place: returning to the fresh position cancels an abandoned pendin
   await page.goto(`/?page=${READING_REF}`);
   const reader = await readingReady(page);
   await expect(reader.locator('[data-fd-reading-status]')).toHaveText(READING_SUCCESS);
-  await page.clock.install();
-  await scrollReadingTo(page, 2);
-  await page.evaluate(() => { window.scrollTo(0, 0); window.dispatchEvent(new Event('scroll')); });
-  await page.clock.fastForward(200);
+  await scrollThen(page, 2, 'top');
+  // Real time, well past the 150 ms debounce: a cancelled section must stay unsaved.
+  await page.waitForTimeout(400);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.setViewportSize(PHONE);
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
   await scrollReadingTo(page, 1);
-  await page.clock.fastForward(200);
   await expectReadingAnchor(page, 1);
   await expectHealthy(page);
 });
@@ -1109,6 +1132,42 @@ test('Safety Kit, theme, and Progress remain usable and restore their invokers',
   await expectHealthy(page);
 });
 
+// Today's exam-date prompt (fd_today.js / fdExamDatePrompt). Without a stored date the taper in
+// phase_policy.js never engages, and the only home for the date was the settings panel. The field
+// is the panel's own type, so it must commit IN PLACE -- no render, no focus move -- and it must
+// not become a second settings opener (the gear's focus return after a theme change depends on it).
+test('Today asks once for the exam date on the exam path, stores it in place, and settings reads it back', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const field = page.locator('#fdTodayExam');
+  if (isResidentProject(testInfo.project.name)) {
+    await expect(field).toHaveCount(0);
+    await expect(page.locator('.fd-today__exam')).toHaveCount(0);
+    await expectHealthy(page);
+    return;
+  }
+  await expect(page.locator('label[for="fdTodayExam"]')).toHaveText('Exam date');
+  await expect(page.locator('[data-fd-settings]')).toHaveCount(1);
+  const typedInto = await field.elementHandle();
+  await field.fill('2026-10-30');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_shelf_date'))).toBe('2026-10-30');
+  expect(await typedInto.evaluate((el) => el.isConnected), 'the field was rebuilt under the learner').toBe(true);
+  await expect(field).toHaveValue('2026-10-30');
+
+  await page.locator('[data-fd-tab="library"]:visible').first().click();
+  await page.locator('[data-fd-tab="today"]:visible').first().click();
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator('.fd-today__exam'), 'answered once, asked no more').toHaveCount(0);
+
+  const settings = page.locator('[data-fd-settings]');
+  await settings.click();
+  await expect(page.locator('#fdSetExam')).toHaveValue('2026-10-30');
+  await page.locator('.fd-sheet__close').click();
+  await expect(settings).toBeFocused();
+  await expectHealthy(page);
+});
+
 test('malformed built protocol fails closed with every canonical crisis resource', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.route(/\/\?(?:$|#)|\/$/, async route => {
@@ -1145,11 +1204,13 @@ test('Compass native Tab sequence keeps every link above the mobile dock', async
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await seedApp(page, testInfo);
   await page.goto('/?page=welcome.md');
+  // The safety link plus six week links (the optional orientation-video link was retired
+  // with the video on 2026-09-25).
   const links = page.locator('[data-fd-compass-root] a');
-  await expect(links).toHaveCount(8);
+  await expect(links).toHaveCount(7);
   await links.first().focus();
   // Let the browser scroll on native Tab. No scrollIntoView, click or focus on later links.
-  for (let index = 0; index < 8; index += 1) {
+  for (let index = 0; index < 7; index += 1) {
     if (index) await page.keyboard.press('Tab');
     await expect(links.nth(index)).toBeFocused();
     const focus = await links.nth(index).evaluate(link => {
@@ -1217,10 +1278,8 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     await expect(reader.locator('.fd-article__lead')).toContainText('four-week');
     await expect(reader.locator('.governance-notice.pending-compact')).toContainText('Pending faculty review');
     await expect(reader.locator('.governance-notice.reviewed-receipt')).toHaveCount(0);
-    const onboarding = page.locator(
-      'video[src="media/resident-onboarding.mp4"][poster="media/resident-onboarding-poster.jpg"]',
-    );
-    await expect(onboarding).toHaveCount(1);
+    // The resident onboarding video was retired from the Welcome on 2026-09-25.
+    await expect(reader.locator('video')).toHaveCount(0);
     await expectHealthy(page);
     return;
   }
@@ -1231,20 +1290,19 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     if (child.hasAttribute('data-fd-compass-scope')) return 'scope';
     if (child.hasAttribute('data-fd-compass')) return 'compass';
     if (child.hasAttribute('data-fd-compass-prompt')) return 'prompt';
-    if (child.hasAttribute('data-fd-compass-orientation')) return 'optional-video';
     return 'unexpected';
-  }))).toEqual(['safety', 'scope', 'compass', 'prompt', 'optional-video']);
+  }))).toEqual(['safety', 'scope', 'compass', 'prompt']);
 
   const safetyCopy = 'If you are worried about immediate safety, tell the resident or attending now. Do not wait for rounds. Do not carry it alone.';
   const scopeCopy = 'This map supports orientation, supervised practice, and reflection. It is not a checklist, clinical protocol, or measure of readiness. Using or viewing this map does not establish competence, entrustment, or permission to act independently.';
   const promptCopy = 'Choose the week or task you are preparing to discuss with your supervising team.';
-  const optionalCopy = 'Optional: watch the captioned orientation overview (transcript available)';
   await expect(compassRoot.locator('[role="note"]')).toHaveCount(1);
   await expect(compassRoot.locator('[data-fd-compass-safety] > p')).toHaveText(safetyCopy);
   await expect(compassRoot.locator('[data-fd-compass-safety] > a')).toHaveText('Open the Orientation Packet');
   await expect(compassRoot.locator('[data-fd-compass-scope]')).toHaveText(scopeCopy);
   await expect(compassRoot.locator('[data-fd-compass-prompt]')).toHaveText(promptCopy);
-  await expect(compassRoot.locator('[data-fd-compass-orientation]')).toHaveText(optionalCopy);
+  // The optional orientation-video link was retired with the video on 2026-09-25.
+  await expect(compassRoot.locator('video, [href*="orientation-video"]')).toHaveCount(0);
   await expect(compassRoot.locator('section[aria-labelledby="fd-compass-title"]')).toHaveCount(1);
   await expect(compassRoot.locator('ol')).toHaveCount(1);
 
@@ -1282,10 +1340,6 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     await expect(weekLinks.nth(index)).toBeFocused();
     await expect(weekLinks.nth(index)).toHaveAttribute('href', expectedWeeks[index].href);
   }
-  await page.keyboard.press('Tab');
-  const optionalLink = compassRoot.locator('[data-fd-compass-orientation]');
-  await expect(optionalLink).toBeFocused();
-  await expect(optionalLink).toHaveAttribute('href', '?tool=orientation-video.html');
 
   const widthCases = [
     { viewport: 736, bucket: 'three', tracks: 3 },
@@ -1358,13 +1412,18 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     const touchPage = await touchContext.newPage();
     await seedApp(touchPage, testInfo);
     await touchPage.goto('/?page=welcome.md');
+    await expect(touchPage.locator('[data-fd-compass-root]')).toHaveCount(1);
+    // This context does not emulate reduced motion, so the reader's fdPopIn entrance
+    // (scale(.985) -> none) can still be running at first paint; measuring then read a
+    // 44px target as 43.9998px under load. Touch size is a property of the settled layout.
+    await touchPage.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => null))));
     const touchTargets = await touchPage.locator(
-      '[data-fd-compass-safety] a, [data-fd-compass-link], [data-fd-compass-orientation]',
+      '[data-fd-compass-safety] a, [data-fd-compass-link]',
     ).evaluateAll(links => links.map(link => {
       const box = link.getBoundingClientRect();
       return { width: box.width, height: box.height };
     }));
-    expect(touchTargets).toHaveLength(8);
+    expect(touchTargets).toHaveLength(7);
     for (const box of touchTargets) {
       expect(box.width).toBeGreaterThanOrEqual(44);
       expect(box.height).toBeGreaterThanOrEqual(44);
@@ -1414,6 +1473,11 @@ test('390x844 reduced-motion Reader keeps one fixed 44px dock during scroll with
 
 test('320-641px header controls remain distinct, readable, and fully tappable', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
+  // Geometry is measured at scroll 0. A pending/HIGH page focuses its alert notice on open, and
+  // on a phone a field guide's header and margin sit above that notice, so the focus scrolls the
+  // page. That is governance behaviour, not header layout — pin the row rather than inherit the
+  // live ledger (t_mood.md was pending/high when it became a bold-lead guide).
+  await pinGovernance(page, 't_mood.md', { status: 'reviewed', riskLevel: 'low' });
   // A reader collapses its header to one row on a phone (frontdoor.css "Phone chrome",
   // 2026-09-18): the week pill, the settings gear and the tab row are one Back-tap away in the
   // action bar and leave the header; the brand name is clipped but stays the home button's
@@ -1989,6 +2053,94 @@ test.describe('Clinical field guide', () => {
       await expectHealthy(page);
     });
   }
+
+  // Next Ten #10: pages authored without H2s open each section with a bold lead. The guide
+  // promotes those at render time. Pinned as a FLOOR plus the Safety-sheet kit targets, never an
+  // exact page list — a list would turn every content edit into a build breaker.
+  const LEAD_GUIDE_FLOOR = { ms3: 24, res: 27 };
+  const KIT_LEAD_PAGES = ['delirium.md', 't_sud.md'];
+
+  test('bold-lead pages gain section navigation; short week pages stay plain', async ({ page }, testInfo) => {
+    test.setTimeout(180_000);
+    const site = isResidentProject(testInfo.project.name) ? 'res' : 'ms3';
+    const nav = await (await requestGetWithRetry(page.request, '/nav.json')).json();
+    const refs = [...new Set(nav.flatMap(section => (section.items || []).map(item => item.f)))]
+      .filter(ref => /\.md$/.test(ref));
+    // Candidates come from the served markdown, so the floor follows the corpus: no H2 line and at
+    // least four paragraphs that open in bold. Whether each one qualifies is the reader's call.
+    const candidates = [];
+    for (const ref of refs) {
+      const md = await (await requestGetWithRetry(page.request, `/content/${ref}`)).text();
+      if (!/^##\s/m.test(md) && (md.match(/^\*\*[^*\n]{2,80}\*\*/gm) || []).length >= 4) candidates.push(ref);
+    }
+    for (const ref of KIT_LEAD_PAGES) expect(candidates, `${ref} is a kit target without H2s`).toContain(ref);
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    const promoted = [];
+    const plain = [];
+    for (const ref of candidates) {
+      await page.goto(`/?page=${ref}`);
+      await expect(page.locator('.fd-reader:visible .fd-src')).toHaveText(ref);
+      await expect(page.locator('.fd-reader:visible .fd-article__body')).toBeVisible();
+      const links = page.locator('[data-guide-section]');
+      if (await page.locator('.fd-reader--guide').count()) {
+        const leads = await page.locator('.fd-guide-section > .fd-guide-lead').count();
+        expect(leads, `${ref} is a guide because of its bold leads`).toBeGreaterThanOrEqual(4);
+        await expect(links).toHaveCount(leads);
+        await expect(page.locator('[data-fd-reading-status]'), `${ref} keeps its reading place`).toHaveCount(1);
+        promoted.push(ref);
+      } else {
+        await expect(links).toHaveCount(0);
+        plain.push(ref);
+      }
+    }
+    for (const ref of KIT_LEAD_PAGES) expect(promoted, `${ref} lands kit links on a section`).toContain(ref);
+    expect(promoted.length, `promoted: ${promoted.join(', ')}`).toBeGreaterThanOrEqual(LEAD_GUIDE_FLOOR[site]);
+    // The rotation week pages carry many bold leads in a few hundred words: navigation would be
+    // noise there, and the reader chrome around them must not count toward the word floor.
+    const weeks = candidates.filter(ref => /^week\d\.md$/.test(ref));
+    expect(weeks.length).toBeGreaterThan(0);
+    for (const ref of weeks) expect(plain, `${ref} stays a plain reading`).toContain(ref);
+    await expectHealthy(page);
+  });
+
+  test('a bold-lead guide keeps its reading place, and a passage link still decides arrival', async ({ page }, testInfo) => {
+    const ref = KIT_LEAD_PAGES[0];
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
+    await page.goto(`/?page=${ref}`);
+    await expect(page.locator('.fd-reader--guide')).toBeVisible();
+    await expect(page.locator('[data-fd-reading-status]')).toHaveText(READING_SUCCESS);
+    const leads = page.locator('.fd-guide-section > .fd-guide-lead');
+    expect(await leads.count()).toBeGreaterThanOrEqual(5);
+    // The reading anchor is the bold label, not the paragraph, so a prose edit keeps a saved place.
+    const label = leads.nth(2).locator('> strong:first-child');
+    const anchor = await label.getAttribute('data-fd-reading-anchor');
+    expect(anchor).toMatch(/^fd-reading-/);
+    await label.evaluate(node => {
+      window.scrollTo(0, node.getBoundingClientRect().top + window.scrollY + 85);
+      window.dispatchEvent(new Event('scroll'));
+    });
+    await expect.poll(async () => (await readingPlaces(page))[ref]?.heading).toBe(anchor);
+    await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+    await page.reload();
+    await expect(page.locator('.fd-reader--guide')).toBeVisible();
+    await expect.poll(() => page.locator(`[data-fd-reading-anchor="${anchor}"]`).evaluate(node =>
+      Math.abs(window.scrollY - (node.getBoundingClientRect().top + window.scrollY) - 85))).toBeLessThan(12);
+    await expect(page.locator('[data-fd-reading-top]')).toBeVisible();
+
+    // A passage link owns arrival: the saved place does not scroll over it or take its focus.
+    const target = leads.last();
+    const id = await target.getAttribute('id');
+    expect(id).toMatch(/^guide-/);
+    const heading = await page.getByRole('navigation', { name: 'On this page', exact: true })
+      .locator(`[data-guide-section="${id}"]`).innerText();
+    await page.goto(`/?page=${ref}&guideSection=${id.slice('guide-'.length)}`);
+    await expect(page.locator('.fd-guide-arrival')).toContainText(`Opened at “${heading}”.`);
+    await expect(page.locator(`#${id}`)).toBeFocused();
+    await expect(page.locator(`#${id}`)).toBeInViewport();
+    await expect(page.locator('[data-fd-reading-top]')).toBeHidden();
+    await expectHealthy(page);
+  });
 
   test('opens a real practice tool and restores guide focus and position through explicit return and browser Back', async ({ page }, testInfo) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -2860,6 +3012,14 @@ test('Patient care resources stays reachable through an in-flow phone entry and 
   await expect(entry).toBeVisible();
   await expect(entry).toHaveAccessibleName('Patient care resources');
   expect(await entry.evaluate(el => getComputedStyle(el).position)).not.toBe('fixed');
+  // Today fades in (fdFadeUp: translateY 8px -> none, 0.24 s), and mid-fade the entry's box is
+  // mapped through a fractional transform in float: seeked frame by frame, the 44 px target read
+  // 44.00003 at 90 ms and CI measured 43.999969 on both attempts of one run (#788). Measure where
+  // it settles, on the fade's own `finished` promises rather than a clock; an infinite animation
+  // never settles, so it is not waited on.
+  await entry.evaluate(el => Promise.all(el.closest('.fd-today').getAnimations({ subtree: true })
+    .filter(animation => animation.effect?.getComputedTiming().endTime !== Infinity)
+    .map(animation => animation.finished)));
   expect((await entry.boundingBox()).height).toBeGreaterThanOrEqual(44);
   await expect(page.locator('.fd-dock:visible button')).toHaveCount(5);
   await entry.click();

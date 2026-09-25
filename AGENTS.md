@@ -19,17 +19,31 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
 ```
 - **Two sites, one repo.** Build command and publish dir are set **per-site in the Netlify UI**, not
   in `netlify.toml` (kept intentionally minimal — one toml can't express two sites, and it's read
-  *after* the clone). The legacy `GIT_LFS_ENABLED` / `GIT_LFS_FETCH_INCLUDE` env vars also live
-  there and are being **retired** (next bullet but one). See `13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md`.
-- Deploy-on-push to `main`. Deploy previews: `https://deploy-preview-{PR}--{slug}.netlify.app`.
+  *after* the clone). The legacy `GIT_LFS_ENABLED` / `GIT_LFS_FETCH_INCLUDE` env vars were
+  **removed** from both sites on 2026-09-14 (next bullet but one). See `13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md`.
+- **The two learner sites publish from `release`, not `main`** (since 2026-09-25). A merge to
+  `main` deploys nothing learner-facing: `.github/workflows/production-release-train.yml`
+  fast-forwards `release` to the newest main commit whose required checks are BOTH green, at
+  09:05, 15:05 and 21:05 UTC, and its "Run workflow" button is the publish-now path for an
+  urgent (e.g. safety) fix. Why: every Netlify production deploy is billed (15 credits) and
+  publishing per merge cost two per merge. Never push to `release` by hand except to repair it;
+  it only ever fast-forwards. A scheduled run HOLDS (red) if Netlify shows more than 12
+  billable production deploys across all five sites in the last 24 h -- the spend tripwire
+  that stands in for the auto-recharge ceiling Netlify does not offer; publish-now is never
+  held. The satellite sites (sp-proxy, faculty console, workforce tour)
+  still build from `main`. Deploy previews: `https://deploy-preview-{PR}--{slug}.netlify.app`.
 - **Git LFS** tracks `*.mp3 *.m4a *.wav *.mp4`. Never commit LFS **pointer stubs** (~133 B) in place
   of real media — the build's LFS gate fails the deploy. In sandboxes without LFS installed, audio
   shows as false "modified"; don't commit those.
 - **LFS bandwidth is metered per GitHub account (10 GB/mo).** If *every* production deploy of both
   sites fails the LFS gate while previews and CI stay green and nothing changed, it is the quota,
   not the code (2026-08-30 outage) — see `site_build/NETLIFY_LFS_RUNBOOK.md` "Incident pattern 2".
-  `site_build/lfs_pull_cached.sh` pulls media inside the build from Netlify's persistent cache so
-  a merge costs ~0 MB; it only takes effect once `GIT_LFS_ENABLED` is removed from the site's UI.
+  **The cost is per fresh clone (~455 MB), not per build or merge:** a cache-reusing production
+  build downloads nothing, so ~11 "Clear cache and deploy"s spend the month — never clear the
+  cache to retry an LFS failure. `site_build/lfs_pull_cached.sh` is shipped but **inert**:
+  removing `GIT_LFS_ENABLED` (done 2026-09-14) did not engage it, because Netlify's checkout
+  materialises LFS objects regardless — do not repeat that switch-over expecting a saving.
+  Read the deploy log's checkout gap (~2 s reused, ~70 s fresh clone), not an MB line.
 - **`CLERKSHIP_ANALYTICS=off|ms3|res|both`** gates the usage-analytics emitter (`common.py`'s
   `analytics_enabled_for()`), **default `off`**. Per the rollout in
   `docs/superpowers/specs/2026-09-04-usage-analytics-design.md`, enabling it is the repo owner's
@@ -126,6 +140,15 @@ the container when the Bash 5 environment is part of the evidence.
   empty array as unbound and aborts with an empty message (PR #469). Write
   `${ARR[@]+"${ARR[@]}"}`. Prove whose fault it is by running the failing gate on clean `main`
   before reaching for `--no-verify` (which is never the answer).
+- **Every `verify.sh` step runs with its own `TMPDIR`** — a `verify-step.*` directory removed
+  when the step ends. Anything still in it prints as `LEAK <step> N entries left … (removed):
+  <prefix>* (count), …` and fails the run; the prefix greps to the test that made the fixture.
+  Fix the test (`t.after(() => fs.rmSync(dir, { recursive: true, force: true }))`, Python
+  `addCleanup`/`TemporaryDirectory`), never the report. Why: on 2026-09-24 the Mac's shared
+  `$TMPDIR` held ~122,700 entries, ~103k of them fixtures from three test files that never
+  cleaned up; `python3` importing from that directory took ~20 s and `preview-site.test.mjs`
+  blocked pushes while no test failed. A bare `node --test` outside verify.sh is not sandboxed.
+  `bin/tmp_leak_report.sh`, pinned by `tests/verify-tmp-sandbox.test.mjs`.
 - **Visual baselines must be generated on Ubuntu/Chromium** (the CI runner), not a macOS laptop —
   regenerate via the "Refresh visual baselines" workflow_dispatch, not locally.
 
@@ -222,6 +245,14 @@ the container when the Bash 5 environment is part of the evidence.
   from committed tables under `bin/data/`; `retiring` fires BEFORE the October 1 boundary).
   All three state what they examined beside the verdict, exit 2 rather than pass over a
   partial set, and only the self-tests (plus the offline ICD scan) run in `verify.sh`.
+  `check_claim_direction.py` is the step after a supersession finding: given a source id
+  and the newer DOI/PMID it fetches the newer abstract (Europe PMC) and reports, per stored
+  claim, whether the span survives verbatim, whether the sentences carrying the claim's
+  terms keep the stored direction (C5's own marker list, imported), and which quoted
+  statistics vanished — `consistent` / `contradicts` / `unlocated` / `unclear`. Advisory:
+  exit 0, the located sentences are the evidence; `--strict` for scripts. First case
+  (2026-09-19): `williams-2022` pub3 → pub4 — span 2/2 verbatim, direction consistent, the
+  update changed nothing taught.
 - **Egress is an allowlist, and which side of it a host falls on decides which tasks are possible
   today.** `bin/probe_egress.py` reports that in the repo's own terms — not "itunes.apple.com is
   unreachable" but "the podcast canonical backfill cannot run here". The SessionStart hook prints
@@ -498,7 +529,9 @@ the container when the Bash 5 environment is part of the evidence.
   `13_Faculty_Resources/reviewed.json`, `CLAUDE.md`, `AGENTS.md`, `decisions.json`,
   `standards.json`, `instrument_rights.json`, `vocabulary.json`, `.gitattributes`,
   `reviewed.schema.json`, and `_automation/`'s `attestation_hash.py`, `surface_governance.py`,
-  `validate_attestation_consistency.py`, `validate_curriculum.py`, `validate_topic_meta.py`;
+  `validate_attestation_consistency.py`, `validate_curriculum.py`, `validate_topic_meta.py`,
+  `site_build/ledger_overlay.mjs` (the attestation ledger's build-side reader), and everything
+  under `13_Faculty_Resources/ledger/` (its public keys);
   everything under `.claude/` (skills, hooks, subagents, settings), `.github/` **in full** — not
   only `workflows/`: an action, a template or CODEOWNERS decides how work is reviewed too —
   `bin/` (every gate and audit tool, this one and `verify.sh` included), `faculty-console/`
@@ -521,7 +554,12 @@ the container when the Bash 5 environment is part of the evidence.
   matching `^(0\d|1[0-4]|99)_[^/]+/` that is not under `13_Faculty_Resources/` — a directory
   segment is required, so a top-level `03_notes.md` is not content — the derived listing because
   a page can ship from a path the regex misses (`welcome.md`'s resident override), the regex
-  because a path can be content before any site lists it. A **promotion** is a claim that a
+  because a path can be content before any site lists it. **One exception:**
+  `question_bank.json` has been content since #783 listed it in the question tools'
+  `extraSources`, but a diff that changes nothing except items' `status` is not a content
+  change — a question's attestation *is* its status, and counting the flip as content made
+  every console question sign-off fail L3 against itself (rolling PR #781). Any other edit to
+  the bank, `retired` included, is still content. A **promotion** is a claim that a
   review happened: in `reviewed.json`, a row whose `status` becomes `reviewed`, a row born
   `reviewed`, or a row reviewed on BOTH sides whose `at`, `by`, `risk`, `note`, `contentHash`,
   `claimsHash`, `evidenceHash` or `evidenceThrough` changes — **a missing key is a value**,
@@ -598,6 +636,30 @@ the container when the Bash 5 environment is part of the evidence.
   machine user so `faculty@clerkship.local` is an identity nobody else holds, and add a ruleset
   restricting pushes to `attest/pending` to it. Until that lands, this gate raises the cost of a
   forged promotion; it does not make one impossible.
+- **The attestation ledger (ADR-003) — sign-offs that never merge.** Built and DARK: nothing
+  changes until `13_Faculty_Resources/ledger/ACTIVATION.md` is followed. Once on, a faculty
+  sign-off is one Ed25519-signed, hash-chained line appended to `ledger/events.jsonl` on the
+  orphan branch `attestations` (never merged; pushes to it trigger no CI and no Netlify build),
+  written only by the console in ledger mode (`ATTEST_LEDGER=on`), which hashes the page AS IT
+  STANDS ON `main`. Each learner-site build runs `site_build/ledger_overlay.mjs` FIRST
+  (`CLERKSHIP_LEDGER=on`): it verifies every signature and link against
+  `13_Faculty_Resources/ledger/keys.json` and projects the latest event per item onto the
+  working copies of `reviewed.json` / `topic_meta.json` / `question_bank.json`, so every
+  validator, projection and test below it judges the combined record unchanged. A tampered
+  ledger fails the build (last good deploy stays live); an unreachable one builds the baseline
+  and says so; `CLERKSHIP_LEDGER=off` is the emergency override. The console's scheduled
+  `ledger-publish` function rebuilds a site ~10 min after sign-offs go quiet, reading the
+  `ledger-receipt.json` each site serves. Rules that follow: **`reviewed.json` stays the
+  registration record** — content PRs still register and demote there, and a baseline row dated
+  LATER than a ledger event wins over it; **an agent never runs `bin/ledger_keygen.mjs`** (whoever
+  runs it briefly holds the signing key — it is Josh's step) and never writes the ledger branch;
+  **git-side report tools read the baseline only** — `node bin/ledger.mjs materialize --out DIR`
+  gives them the combined view; `node bin/ledger.mjs verify|status|audit` inspect the ledger.
+  Core: `faculty-console/ledger.mjs`; tests: `tests/ledger-*.test.mjs`,
+  `tests/faculty-console-ledger.test.mjs` (every guard in them was broken once to watch its test
+  go red). Also note `question_bank.json`'s manifest line is hashed WITHOUT item `status`
+  (`canonical_question_bank` / `canonicalQuestionBank`, parity-pinned) — signing a question must
+  not drift the question tools.
 - **Adding a step to `ci.yml` trips three separate contracts.** `bin/check-verify-coverage.py`
   (mirror it in `bin/verify.sh` or justify an `ALLOWED` exemption);
   `_automation/maintenance/validate_scheduled_workflows.py`, which pins the workflow by **exact step
