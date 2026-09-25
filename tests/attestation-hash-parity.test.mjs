@@ -40,10 +40,13 @@ import { fileURLToPath } from 'node:url';
 import {
   PENDING_SENTINEL,
   STALE_REASON,
+  QUESTION_BANK_PATH,
   blobSha,
+  canonicalQuestionBank,
   canonicalTopicMetaRecord,
   digestFromManifest,
   manifestForSlug,
+  sourceBlobSha,
   sourcesForSlug,
 } from '../faculty-console/attestation-hash.mjs';
 
@@ -87,6 +90,13 @@ for slug, record in meta.items():
         out["records"][slug] = base64.b64encode(
             ah.canonical_topic_meta_record(record)
         ).decode("ascii")
+bank_path = root / ah.QUESTION_BANK_PATH
+bank = bank_path.read_bytes() if bank_path.exists() else b""
+out["questionBank"] = {
+    "path": ah.QUESTION_BANK_PATH,
+    "canonical": base64.b64encode(ah.canonical_question_bank(bank)).decode("ascii"),
+    "sha": ah.source_blob_sha(ah.QUESTION_BANK_PATH, bank),
+}
 json.dump(out, sys.stdout)
 `;
 
@@ -112,7 +122,7 @@ function readJson(root, relative) {
 function jsManifest(root, shipped, topicMeta, slug) {
   const sources = {};
   for (const source of sourcesForSlug(shipped, slug)) {
-    sources[source] = blobSha(fs.readFileSync(path.join(root, source)));
+    sources[source] = sourceBlobSha(source, fs.readFileSync(path.join(root, source)));
   }
   const record = Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : undefined;
   return manifestForSlug(slug, sources, record);
@@ -318,4 +328,43 @@ test('the ledger stores 40-hex git blob shas, and the drifted count is reported'
   // the owner re-attests, so pinning this number would fail the suite on ordinary edits.
   t.diagnostic(`${bound} of ${stored} stored hashes match the current tree `
     + `(${reviewedShipped.length} reviewed shipped rows)`);
+});
+
+// The question bank is the one source hashed over a canonical form (ADR-003): both twins
+// must produce the same bytes for the real bank, and that form must ignore `status` and
+// nothing else — or signing a question drifts the two question tools, and a ledger build
+// that overlays question sign-offs drifts them on every build.
+test('question_bank.json canonicalises to identical bytes in both twins', () => {
+  const py = python({ root: repo, shipped: SHIPPED_PAGES, topicMeta: TOPIC_META, slugs: [] });
+  const bytes = fs.readFileSync(path.join(repo, QUESTION_BANK_PATH));
+  assert.equal(py.questionBank.path, QUESTION_BANK_PATH);
+  assert.equal(canonicalQuestionBank(bytes).toString('base64'), py.questionBank.canonical,
+    'canonical question bank bytes differ between Python and JS');
+  assert.equal(sourceBlobSha(QUESTION_BANK_PATH, bytes), py.questionBank.sha);
+});
+
+test('the question bank line ignores item status and nothing else', () => {
+  const bank = JSON.parse(fs.readFileSync(path.join(repo, QUESTION_BANK_PATH), 'utf8'));
+  const flipped = structuredClone(bank);
+  flipped.items[0].status = flipped.items[0].status === 'attested' ? 'draft' : 'attested';
+  const raw = (doc) => Buffer.from(`${JSON.stringify(doc, null, 2)}\n`, 'utf8');
+  assert.equal(sourceBlobSha(QUESTION_BANK_PATH, raw(flipped)),
+    sourceBlobSha(QUESTION_BANK_PATH, raw(bank)), 'a status flip must not change the line');
+  assert.notEqual(blobSha(raw(flipped)), blobSha(raw(bank)), 'the raw bytes did change');
+  // Reformatting is not a change either: the line is over parsed content.
+  assert.equal(sourceBlobSha(QUESTION_BANK_PATH, Buffer.from(JSON.stringify(bank))),
+    sourceBlobSha(QUESTION_BANK_PATH, raw(bank)));
+  const edited = structuredClone(bank);
+  edited.items[0].stem = `${edited.items[0].stem} (edited)`;
+  assert.notEqual(sourceBlobSha(QUESTION_BANK_PATH, raw(edited)),
+    sourceBlobSha(QUESTION_BANK_PATH, raw(bank)), 'a stem edit must change the line');
+  const retired = structuredClone(bank);
+  retired.items[0].retired = !retired.items[0].retired;
+  assert.notEqual(sourceBlobSha(QUESTION_BANK_PATH, raw(retired)),
+    sourceBlobSha(QUESTION_BANK_PATH, raw(bank)), 'retirement changes what ships');
+  // Any other path is hashed raw, exactly as git stores it.
+  assert.equal(sourceBlobSha('a.md', raw(bank)), blobSha(raw(bank)));
+  // A malformed bank drifts rather than throws.
+  assert.equal(sourceBlobSha(QUESTION_BANK_PATH, Buffer.from('{not json')),
+    blobSha(Buffer.from('{not json')));
 });

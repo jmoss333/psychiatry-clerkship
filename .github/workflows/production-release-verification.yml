@@ -1,8 +1,9 @@
 name: Production — Release verification receipt
 
+# Dispatched by production-release-train.yml for each commit it publishes to
+# `release` (the learner sites no longer deploy on every merge to main, so a
+# push-to-main trigger would wait an hour for a deploy that never comes).
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       revision:

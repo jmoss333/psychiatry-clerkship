@@ -5,9 +5,23 @@ import {
   STALE_REASON,
   digestFromManifest,
   manifestForSlug,
+  sourceBlobSha,
   sourcesForSlug,
 } from '../../attestation-hash.mjs';
 import { deriveContentUniverse } from '../../content-universe.mjs';
+import {
+  KEYS_PATH,
+  LEDGER_BRANCH,
+  LEDGER_FILE,
+  LedgerError,
+  MAX_LEDGER_BYTES,
+  appendEvents,
+  applyLedger,
+  loadSigner,
+  questionItemHash,
+  verifyLedger,
+} from '../../ledger.mjs';
+import { parseHooks, publishLedger, readReceipt } from '../../ledger-publish.mjs';
 import { assessBank } from '../../qbank-rules.mjs';
 import {
   QbankActionError,
@@ -267,9 +281,28 @@ function requireServerSettings(env, fetchImpl, originPolicy) {
     throw new HttpError('server_configuration', 500, 'The faculty service is not configured.');
   }
 
+  // LEDGER MODE (ADR-003). A sign-off is a signed event appended to the attestation ledger
+  // (an orphan branch nobody merges), and content is read from — and hashed against — the
+  // BASE branch, the text learners actually get. Nothing is ever written to the base, and
+  // there is no attestation branch to sync and no rolling PR to keep. Off unless
+  // ATTEST_LEDGER=on; a ledger-mode console with no usable signing key refuses to start,
+  // because a console that could not sign would silently take sign-offs it cannot record.
+  let ledger = null;
+  if (readEnv(env, 'ATTEST_LEDGER').trim().toLowerCase() === 'on') {
+    try {
+      ledger = {
+        branch: readEnv(env, 'LEDGER_BRANCH').trim() || LEDGER_BRANCH,
+        signer: loadSigner(readEnv(env, 'LEDGER_SIGNING_KEY')),
+        hooks: parseHooks(readEnv(env, 'LEDGER_BUILD_HOOKS')),
+      };
+    } catch {
+      throw new HttpError('server_configuration', 500, 'The faculty service is not configured.');
+    }
+  }
+
   // Equal branches mean "write straight to the base" — nothing to sync, no PR to
   // keep. That is the pre-2026-08 behaviour, and how the handler tests run.
-  const isolated = branch !== baseBranch;
+  const isolated = !ledger && branch !== baseBranch;
 
   // Base-lag alarm threshold (#415 aftermath): the load-time probe alarms when
   // unmerged attestations sit on a branch whose base lags the base branch by at
@@ -280,8 +313,20 @@ function requireServerSettings(env, fetchImpl, originPolicy) {
     ? configuredLag : DEFAULT_BASE_LAG_ALARM;
 
   return {
-    token, key, repo, branch, baseBranch, isolated, student, resident, attesterEmail, attester,
+    token,
+    key,
+    repo,
+    // In ledger mode every read is from the base branch; see above.
+    branch: ledger ? baseBranch : branch,
+    baseBranch,
+    isolated,
+    student,
+    resident,
+    attesterEmail,
+    attester,
     lagAlarmThreshold,
+    ledger,
+    fetchImpl,
   };
 }
 
@@ -444,7 +489,11 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
   // can turn it off. `undefined` means "the shared default".
   const trees = treeCache === undefined ? treeCacheFor(fetchImpl) : treeCache;
 
-  async function read(path, { maxBytes = 0, ref = settings.branch } = {}) {
+  /**
+   * One file's bytes at `ref`, size-limited. `read` parses them as JSON; the attestation ledger
+   * (JSON Lines) and the canonical question-bank hash need the bytes themselves.
+   */
+  async function readRaw(path, { maxBytes = 0, ref = settings.branch } = {}) {
     const objectResponse = await githubRequest(
       fetchImpl,
       repositoryUrl(settings, path, true, ref),
@@ -484,11 +533,74 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
     }
 
     enforceByteLimit(bytes.byteLength, maxBytes);
-    return {
-      json: parseRepositoryJson(bytes),
-      sha,
-      size: bytes.byteLength,
-    };
+    return { bytes, sha, size: bytes.byteLength };
+  }
+
+  async function read(path, options = {}) {
+    const { bytes, sha, size } = await readRaw(path, options);
+    return { json: parseRepositoryJson(bytes), sha, size };
+  }
+
+  /**
+   * A UTF-8 text file at `ref`, or null when the file (or the branch) does not exist yet.
+   * The attestation ledger starts life absent, and absent is an empty ledger, not a fault.
+   */
+  async function readText(path, { maxBytes = 0, ref } = {}) {
+    let raw;
+    try {
+      raw = await readRaw(path, { maxBytes, ref });
+    } catch (error) {
+      if (error instanceof GithubError && error.notFound) return null;
+      throw error;
+    }
+    let text;
+    try {
+      text = new TextDecoder('utf-8', { fatal: true }).decode(raw.bytes);
+    } catch {
+      throw new GithubError('repository_file_invalid', 502);
+    }
+    return { text, sha: raw.sha };
+  }
+
+  /**
+   * Create or replace one text file on `branch` in one commit, as the console identity.
+   * `sha` is the blob being replaced (null to create): GitHub answers 409/422 when the file
+   * moved underneath us, which the caller turns into a re-read and a retry — the same
+   * optimistic concurrency every other console write uses.
+   */
+  async function writeText({ path, text, sha, message, branch }) {
+    const bytes = Buffer.from(text, 'utf8');
+    const submittedSha = sha ? normalizeGitObjectId(sha) : null;
+    const response = await githubRequest(
+      fetchImpl,
+      repositoryUrl(settings, path, false),
+      {
+        method: 'PUT',
+        headers: githubHeaders(settings.token),
+        body: JSON.stringify({
+          message,
+          content: bytes.toString('base64'),
+          ...(submittedSha ? { sha: submittedSha } : {}),
+          branch,
+          committer: {
+            name: 'Faculty Attestation Console',
+            email: settings.attesterEmail,
+          },
+        }),
+      },
+    );
+    const payload = await githubJson(response);
+    const revision = normalizeGitObjectId(payload.content?.sha);
+    let commitUrl;
+    try {
+      commitUrl = new URL(payload.commit?.html_url);
+    } catch {
+      throw new GithubError('github_response_invalid', 502);
+    }
+    if (commitUrl.protocol !== 'https:' || revision === submittedSha) {
+      throw new GithubError('github_response_invalid', 502);
+    }
+    return { commit: commitUrl.href, revision };
   }
 
   async function write(path, value, sha, message, indent) {
@@ -884,7 +996,7 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
   }
 
   return {
-    read, readTree, write, head, headOf, writeAtHead,
+    read, readRaw, readText, readTree, write, writeText, head, headOf, writeAtHead,
     ensureBranchFresh, ensureRollingPullRequest, describeBranchSync,
   };
 }
@@ -1117,13 +1229,32 @@ function digestForSlug(slug, { shipped, tree, topicMeta }) {
  * shipped_pages.json came from the base-branch fallback.
  */
 async function readDigestInputs(repository, shipped, branch) {
-  const tree = await repository.readTree(await repository.head());
+  const head = await repository.head();
+  const listed = await repository.readTree(head);
   // readRequired, not read: on the write path a topic_meta.json that is simply absent from
   // this branch must say so and name the branch, rather than reaching the reviewer as
   // "the repository request failed, try again later" — the 2026-09-04 misdiagnosis.
   const topicMetaFile = await readRequired(repository, TOPIC_META_PATH, branch);
   if (!isRecord(topicMetaFile.json)) invalidRepositoryFile();
-  return { tree, shipped, topicMeta: topicMetaFile.json };
+  // The question bank is the one source whose manifest line is NOT its git blob sha: it is
+  // hashed over its canonical form without any item's `status` (attestation-hash.mjs,
+  // canonicalQuestionBank), or signing a question would drift the question tools. Fetched
+  // only when a shipped page lists it, and written into a COPY of the listing: the memoised
+  // tree is keyed by commit and must stay exactly what git said.
+  let tree = listed;
+  if (listed.has(QBANK_PATH) && shipsQuestionBank(shipped)) {
+    const bank = await repository.readRaw(QBANK_PATH, { maxBytes: MAX_BANK_BYTES, ref: head });
+    tree = new Map(listed);
+    tree.set(QBANK_PATH, sourceBlobSha(QBANK_PATH, bank.bytes));
+  }
+  return { tree, shipped, topicMeta: topicMetaFile.json, head };
+}
+
+function shipsQuestionBank(shipped) {
+  const pages = isRecord(shipped) && Array.isArray(shipped.pages) ? shipped.pages : [];
+  return pages.some(page => isRecord(page)
+    && (page.source === QBANK_PATH
+      || (Array.isArray(page.extraSources) && page.extraSources.includes(QBANK_PATH))));
 }
 
 /**
@@ -1237,11 +1368,38 @@ async function buildState(repository, settings, branchSync) {
     }
   }
   const essentials = await readEssentials(repository, settings);
-  const items = buildContentItems(reviewedFile.json, shippedFile.json, verification, essentials.slugs);
+  // Ledger mode: the queue is the git baseline WITH the signed sign-offs applied, exactly as
+  // the learner-site build applies them — same function, same rules (ledger.mjs applyLedger).
+  let reviewedDoc = reviewedFile.json;
+  let effectiveQbankFile = qbankFile;
+  let ledgerState = null;
+  if (settings.ledger) {
+    const ledger = await readLedger(repository, settings);
+    const shippedSlugs = new Set((isRecord(shippedFile.json) && Array.isArray(shippedFile.json.pages)
+      ? shippedFile.json.pages : []).filter(isRecord).map(page => page.slug));
+    const applied = applyLedger({
+      reviewed: isRecord(reviewedDoc) ? reviewedDoc : {},
+      qbank: qbankFile.json,
+      events: ledger.events,
+      shippedSlugs,
+    });
+    reviewedDoc = applied.reviewed;
+    effectiveQbankFile = { ...qbankFile, json: applied.qbank };
+    ledgerState = {
+      mode: 'on',
+      branch: settings.ledger.branch,
+      head: ledger.head ? { seq: ledger.head.seq, ts: ledger.head.ts } : null,
+      events: ledger.events.length,
+      skipped: applied.report.skipped,
+      questionDrift: applied.report.questionDrift,
+      published: await readPublishState(settings),
+    };
+  }
+  const items = buildContentItems(reviewedDoc, shippedFile.json, verification, essentials.slugs);
   // The qbank half still needs the manifest itself: requireManifest both validates it and
   // yields manifestPages, the list a question may anchor to.
   requireManifest(manifestFile.json);
-  const qbankPayload = buildQbankPayload(qbankFile, manifestFile.json);
+  const qbankPayload = buildQbankPayload(effectiveQbankFile, manifestFile.json);
   return {
     student,
     resident,
@@ -1272,6 +1430,7 @@ async function buildState(repository, settings, branchSync) {
       : 0,
     items,
     ...qbankPayload,
+    ...(ledgerState ? { ledger: ledgerState } : {}),
     counts: {
       pagesReviewed: items.filter(item => item.status === 'reviewed').length,
       pagesTotal: items.length,
@@ -1615,6 +1774,285 @@ async function commitQbankMutation({ repository, action, body, attester }) {
   throw new GithubError('github_conflict', 409, { retryable: true });
 }
 
+// ───────────────────────────────────────────────────────────────────────────────────────
+// Ledger mode (ADR-003): sign, append, publish. Nothing below writes the base branch.
+// ───────────────────────────────────────────────────────────────────────────────────────
+
+const LEDGER_INVALID_MESSAGE = 'The attestation ledger failed verification, so nothing can be '
+  + 'signed on top of it until it is repaired.';
+
+/**
+ * The ledger as it stands: its text, the blob sha to write over, and the VERIFIED events.
+ * Verification is the same all-or-nothing check the build runs; a ledger that fails it
+ * cannot be read from or appended to (a forged history must never be extended).
+ */
+async function readLedger(repository, settings) {
+  let keysDoc = { version: 1, keys: [] };
+  try {
+    keysDoc = (await repository.read(KEYS_PATH)).json;
+  } catch (error) {
+    if (!(error instanceof GithubError && error.notFound)) throw error;
+  }
+  const file = await repository.readText(LEDGER_FILE, {
+    ref: settings.ledger.branch,
+    maxBytes: MAX_LEDGER_BYTES,
+  });
+  const text = file ? file.text : '';
+  try {
+    return { text, sha: file ? file.sha : null, keysDoc, ...verifyLedger(text, keysDoc) };
+  } catch (error) {
+    if (error instanceof LedgerError) {
+      throw new HttpError('ledger_invalid', 502, `${LEDGER_INVALID_MESSAGE} (${error.message})`);
+    }
+    throw error;
+  }
+}
+
+/** Which ledger seq each learner site serves right now; advisory, never fatal. */
+async function readPublishState(settings) {
+  const [ms3, res] = await Promise.all([
+    readReceipt(settings.student, settings.fetchImpl),
+    readReceipt(settings.resident, settings.fetchImpl),
+  ]);
+  return { ms3, res };
+}
+
+function signLedger({ ledger, drafts, attester, base, settings }) {
+  try {
+    return appendEvents({
+      existingText: ledger.text,
+      keysDoc: ledger.keysDoc,
+      drafts,
+      ts: new Date().toISOString(),
+      by: attester,
+      base,
+      signer: settings.ledger.signer,
+    });
+  } catch (error) {
+    if (error instanceof LedgerError) {
+      // The one expected case: the console's key is not (yet) published in keys.json.
+      throw new HttpError('ledger_unavailable', 503,
+        `This sign-off could not be recorded: ${error.message}. See 13_Faculty_Resources/ledger/ACTIVATION.md.`);
+    }
+    throw error;
+  }
+}
+
+function ledgerCommitMessage(appended, what, attester) {
+  const first = appended.head.seq - appended.events.length + 1;
+  const range = first === appended.head.seq ? `#${first}` : `#${first}–${appended.head.seq}`;
+  return `ledger ${range}: ${what} by ${attester}`;
+}
+
+// Two rules in validate_attestation_consistency.py read the PAGE SOURCE, not the ledger, and
+// a sign-off cannot change the source (the source is what is being signed). Signing across
+// either would turn the next learner-site build red, so refuse here, with the reason, before
+// anything is recorded:
+//   · a signed manifest page whose first eight lines still announce it as unreviewed;
+//   · a manifest tool whose source metadata marker states a review status that disagrees with
+//     the one being recorded (today only The Interview Room and Interaction Cards carry one,
+//     and both say "reviewed" — so re-signing them works and reopening them is refused).
+//     Whether that marker rule should become one-way, like the resident tools', is an open
+//     governance decision (ADR-003 §6), deliberately not taken here.
+const PENDING_BANNER = /pending.*review|pending.*attestation|AI-drafted/i;
+const TOOL_MARKER = /<!--\s*\[(?:CLERKSHIP-META v1|RC-META)\]\s*([\s\S]*?)-->/;
+const MARKER_REVIEWED = new Set(['reviewed', 'attested']);
+
+function markerStatus(text) {
+  const marker = text.match(TOOL_MARKER);
+  if (!marker) return null;
+  const status = marker[1].match(/(?:^|\s)status="([^"\r\n]*)"/);
+  return status ? status[1] : null;
+}
+
+async function refuseSourceConflicts(repository, settings, drafts, head) {
+  if (!drafts.length) return;
+  const manifestFile = await readRequired(repository, MANIFEST_PATH, settings.branch);
+  const pages = new Map();
+  const tools = new Map();
+  for (const entry of Array.isArray(manifestFile.json?.md) ? manifestFile.json.md : []) {
+    if (Array.isArray(entry) && typeof entry[0] === 'string') pages.set(entry[1], entry[0]);
+  }
+  for (const entry of Array.isArray(manifestFile.json?.tools) ? manifestFile.json.tools : []) {
+    if (Array.isArray(entry) && typeof entry[0] === 'string') tools.set(entry[1], entry[0]);
+  }
+  for (const draft of drafts) {
+    const source = draft.type === 'attest' ? (pages.get(draft.id) || tools.get(draft.id)) : tools.get(draft.id);
+    if (!source) continue;
+    const { bytes } = await repository.readRaw(source, { ref: head });
+    const text = bytes.toString('utf8');
+    if (draft.type === 'attest' && pages.has(draft.id)
+        && PENDING_BANNER.test(text.split('\n').slice(0, 8).join('\n'))) {
+      throw new HttpError('content.pending_banner', 400,
+        `\`${draft.id}\` still says it is unreviewed in its first lines (${source}). Remove that `
+          + 'banner in a content change first; a signed page whose source says it is unreviewed '
+          + 'fails the learner-site build.');
+    }
+    if (!tools.has(draft.id)) continue;
+    const status = markerStatus(text);
+    if (!status) continue;
+    const markerSaysReviewed = MARKER_REVIEWED.has(status);
+    if ((draft.type === 'attest' && !markerSaysReviewed) || (draft.type === 'reopen' && markerSaysReviewed)) {
+      throw new HttpError('content.marker_conflict', 409,
+        `\`${draft.id}\` carries its own review label in its source, and it disagrees with this `
+          + `${draft.type === 'attest' ? 'sign-off' : 'reopen'}. The learner-site build requires the two `
+          + 'to match, and changing the label is a content change. This needs a governance decision '
+          + '(ADR-003 §6) before the ledger can change this tool\'s review state.');
+    }
+  }
+}
+
+async function commitContentLedger({ repository, settings, body, attester }) {
+  const changes = requireContentChanges(body.changes);
+  if (!changes.length) return { ok: true, target: 'content', updated: 0, commit: null };
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const reviewedFile = await readRequired(repository, REVIEWED_PATH, settings.branch);
+    if (!isRecord(reviewedFile.json)) invalidRepositoryFile();
+    const ledger = await readLedger(repository, settings);
+    const reviewed = applyLedger({ reviewed: reviewedFile.json, events: ledger.events }).reviewed;
+
+    const digestInputs = changes.some(([, selected]) => selected)
+      ? await readMutationDigestInputs(repository, settings.branch)
+      : null;
+    const digests = new Map();
+    const digestOf = (slug) => {
+      if (!digests.has(slug)) digests.set(slug, digestForSlug(slug, digestInputs));
+      return digests.get(slug);
+    };
+    // Same no-op rule as the git path: a reviewed row is a no-op only while still BOUND.
+    const effectiveChanges = changes.filter(([slug, selected]) => {
+      const current = Object.hasOwn(reviewed, slug) && isRecord(reviewed[slug]) ? reviewed[slug] : null;
+      const status = current ? current.status : '';
+      if (!selected) return status !== 'pending';
+      if (status !== 'reviewed') return true;
+      return current.contentHash !== digestOf(slug);
+    });
+    if (!effectiveChanges.length) return { ok: true, target: 'content', updated: 0, commit: null };
+
+    const base = digestInputs ? digestInputs.head : await repository.head();
+    const drafts = [];
+    for (const [slug, selected] of effectiveChanges) {
+      requireCurrentRisk(Object.hasOwn(reviewed, slug) ? reviewed[slug] : null);
+      if (selected) {
+        const digest = digestOf(slug);
+        if (!digest) throw noSourceError(slug);
+        drafts.push({ type: 'attest', kind: 'content', id: slug, contentHash: digest });
+      } else {
+        drafts.push({ type: 'reopen', kind: 'content', id: slug, reason: requireReopenReason(body.reasons?.[slug]) });
+      }
+    }
+    await refuseSourceConflicts(repository, settings, drafts, base);
+
+    const appended = signLedger({ ledger, drafts, attester, base, settings });
+    try {
+      const saved = await repository.writeText({
+        path: LEDGER_FILE,
+        text: appended.text,
+        sha: ledger.sha,
+        message: ledgerCommitMessage(appended, `${drafts.length} content item(s)`, attester),
+        branch: settings.ledger.branch,
+      });
+      return {
+        ok: true,
+        target: 'content',
+        updated: drafts.length,
+        commit: saved.commit,
+        ledger: { seq: appended.head.seq },
+      };
+    } catch (error) {
+      if (!(error instanceof GithubError && error.conflict) || attempt === 1) throw error;
+    }
+  }
+  throw new GithubError('github_conflict', 409, { retryable: true });
+}
+
+async function commitQbankLedger({ repository, settings, body, attester }) {
+  const expectedManifestRevision = requireManifestRevision(body.manifestRevision);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const head = await repository.head();
+    const bankFile = await repository.read(QBANK_PATH, { maxBytes: MAX_BANK_BYTES, ref: head });
+    let manifestFile;
+    try {
+      manifestFile = await repository.read(MANIFEST_PATH, { ref: head });
+    } catch (error) {
+      if (error instanceof GithubError && error.notFound) throw manifestConflict();
+      throw error;
+    }
+    const { manifestPages } = requireManifest(manifestFile.json);
+    if (manifestFile.sha !== expectedManifestRevision) throw manifestConflict();
+    requireQbank(bankFile.json);
+    const ledger = await readLedger(repository, settings);
+    const bank = applyLedger({ reviewed: {}, qbank: bankFile.json, events: ledger.events }).qbank;
+    let result;
+    try {
+      result = prepareAttestation({
+        bank,
+        manifestPages,
+        entries: body.items,
+        confirmations: body.confirmations,
+      });
+    } catch (error) {
+      throw attempt === 1 ? normalizeRetryTargetError(error) : error;
+    }
+    const drafts = result.ids.map((id) => ({
+      type: 'attest',
+      kind: 'question',
+      id,
+      itemHash: questionItemHash(result.bank.items.find(item => item?.id === id)),
+    }));
+    const appended = signLedger({ ledger, drafts, attester, base: head, settings });
+    try {
+      const saved = await repository.writeText({
+        path: LEDGER_FILE,
+        text: appended.text,
+        sha: ledger.sha,
+        message: ledgerCommitMessage(appended, `${drafts.length} question(s)`, attester),
+        branch: settings.ledger.branch,
+      });
+      return { ...qbankSuccess('qbank.attest', result, saved, manifestPages), ledger: { seq: appended.head.seq } };
+    } catch (error) {
+      if (!(error instanceof GithubError && error.conflict) || attempt === 1) throw error;
+    }
+  }
+  throw new GithubError('github_conflict', 409, { retryable: true });
+}
+
+async function publishNow(repository, settings) {
+  const ledger = await readLedger(repository, settings);
+  return publishLedger({
+    head: ledger.head ? { seq: ledger.head.seq, ts: ledger.head.ts } : null,
+    sites: {
+      ms3: { url: settings.student, hook: settings.ledger.hooks.ms3 },
+      res: { url: settings.resident, hook: settings.ledger.hooks.res },
+    },
+    fetchImpl: settings.fetchImpl,
+    force: true,
+  });
+}
+
+async function handleLedgerPost({ repository, settings, body, attester }) {
+  if (body.action === 'branch.ensure-pr') {
+    // There is no rolling PR in ledger mode; say so rather than fail an old console tab.
+    return { ok: true, pullRequest: null, ledger: true };
+  }
+  if (body.action === 'ledger.publish') {
+    return { ok: true, publish: await publishNow(repository, settings) };
+  }
+  if (body.target === 'content') {
+    return commitContentLedger({ repository, settings, body, attester });
+  }
+  if (body.action === 'qbank.attest') {
+    return commitQbankLedger({ repository, settings, body, attester });
+  }
+  if (body.action === 'qbank.save-draft') {
+    throw new HttpError('ledger.drafts_disabled', 409,
+      'With the attestation ledger on, the console signs questions but does not edit them. '
+        + 'Change the wording in a content pull request; it can be signed here once it merges.');
+  }
+  throw new HttpError('unknown_action', 400, 'Choose a supported faculty action.');
+}
+
 async function readPostBody(request) {
   const contentLengthValue = request.headers.get('Content-Length');
   if (contentLengthValue && /^\d+$/.test(contentLengthValue)) {
@@ -1654,6 +2092,8 @@ async function handlePost({ repository, settings, body, attester }) {
       'Use an explicit question-bank save or attestation action.',
     );
   }
+
+  if (settings.ledger) return handleLedgerPost({ repository, settings, body, attester });
 
   // Reopening the rolling review request on demand. The console's own housekeeping
   // is best-effort and silent by design (an attestation that committed must not be
