@@ -1,5 +1,5 @@
 {
-  "_note": "Pinned by tests/smoke/frozen-colour.spec.js. Counts may FALL, never rise. A page absent here must measure clean. Regenerate a reviewed reduction with UPDATE_FROZEN_BASELINE=1 npx playwright test --config tests/smoke/playwright.config.js --project nav-ms3 --project nav-res frozen-colour.spec.js",
+  "_note": "Pinned by tests/smoke/frozen-colour.spec.js. Counts may FALL, never rise. A page absent here must measure clean. Regenerate a reviewed reduction with: cd tests/smoke && UPDATE_FROZEN_BASELINE=1 npx playwright test --project=nav-ms3 --project=nav-res frozen-colour.spec.js",
   "_measured": "2026-09-10, local build, Chrome, both themes, stylesheets re-fetched.",
   "sites": {
     "ms3": {
@@ -29,9 +29,9 @@
         "lowDark": 0
       },
       "tools/decision-aids.html": {
-        "frozen": 20,
+        "frozen": 0,
         "lowLight": 0,
-        "lowDark": 55
+        "lowDark": 0
       },
       "tools/diagnostic-reasoning.html": {
         "frozen": 0,
@@ -151,9 +151,9 @@
         "lowDark": 0
       },
       "tools/decision-aids.html": {
-        "frozen": 20,
+        "frozen": 0,
         "lowLight": 0,
-        "lowDark": 55
+        "lowDark": 0
       },
       "tools/diagnostic-reasoning.html": {
         "frozen": 0,

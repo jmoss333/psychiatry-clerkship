@@ -40,9 +40,11 @@
  * Netlify's edge would blow the canary's 30-round-trip budget many times over, and nothing here
  * needs production to be true — it is a property of the build.
  *
- * REGENERATE after a reviewed reduction:
- *   UPDATE_FROZEN_BASELINE=1 npx playwright test --config tests/smoke/playwright.config.js \
- *     --project nav-ms3 --project nav-res frozen-colour.spec.js
+ * REGENERATE after a reviewed reduction (from tests/smoke, where playwright is installed; the
+ * `=` matters — `--project` is variadic, so `--project nav-res frozen-colour.spec.js` swallows
+ * the spec path as a second project name and exits "Project(s) not found"):
+ *   cd tests/smoke && UPDATE_FROZEN_BASELINE=1 npx playwright test \
+ *     --project=nav-ms3 --project=nav-res frozen-colour.spec.js
  */
 
 import { test, expect } from '@playwright/test';
