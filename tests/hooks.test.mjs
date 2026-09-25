@@ -5,6 +5,10 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { scrubInheritedGitEnv } from './_git_env.mjs';
+
+// Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrubInheritedGitEnv();
 
 // Drives every Claude Code hook in .claude/hooks/ with canned tool-call JSON and asserts the
 // decision it returns, so the hooks are under the same node suite as everything else.

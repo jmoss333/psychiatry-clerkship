@@ -14,6 +14,10 @@ import {
   currentRuntimeErrors,
 } from '../bin/check-runtime-contract.mjs';
 import { evaluateReceipt } from '../bin/devcontainer-receipt.mjs';
+import { scrubInheritedGitEnv } from './_git_env.mjs';
+
+// Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrubInheritedGitEnv();
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 

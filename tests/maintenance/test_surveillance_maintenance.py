@@ -17,6 +17,11 @@ SURV = ROOT / "13_Faculty_Resources" / "_automation" / "surveillance"
 BIN = SURV / "bin"
 FIXTURES = Path(__file__).with_name("fixtures")
 sys.path.insert(0, str(BIN))
+sys.path.append(str(ROOT / "bin"))
+from _git_env import scrub_inherited_git_env  # noqa: E402
+
+# Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrub_inherited_git_env()
 
 import build_status
 import lib_surveillance as L

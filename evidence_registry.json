@@ -2770,6 +2770,119 @@
       }
     },
     {
+      "id": "katz-2022-lithium-va",
+      "type": "primary-study",
+      "citation": {
+        "title": "Lithium Treatment in the Prevention of Repeat Suicide-Related Outcomes in Veterans With Major Depression or Bipolar Disorder: A Randomized Clinical Trial.",
+        "authors": [
+          {
+            "family": "Katz",
+            "given": "Ira R"
+          },
+          {
+            "family": "Rogers",
+            "given": "Malcolm P"
+          },
+          {
+            "family": "Lew",
+            "given": "Robert"
+          },
+          {
+            "family": "Thwin",
+            "given": "Soe Soe"
+          },
+          {
+            "family": "Doros",
+            "given": "Gheorghe"
+          },
+          {
+            "family": "Ahearn",
+            "given": "Eileen"
+          },
+          {
+            "family": "Ostacher",
+            "given": "Michael J"
+          },
+          {
+            "family": "DeLisi",
+            "given": "Lynn E"
+          },
+          {
+            "family": "Smith",
+            "given": "Eric G"
+          },
+          {
+            "family": "Ringer",
+            "given": "Robert J"
+          },
+          {
+            "family": "Ferguson",
+            "given": "Ryan"
+          },
+          {
+            "family": "Hoffman",
+            "given": "Brian"
+          },
+          {
+            "family": "Kaufman",
+            "given": "James S"
+          },
+          {
+            "family": "Paik",
+            "given": "Julie M"
+          },
+          {
+            "family": "Conrad",
+            "given": "Chester H"
+          },
+          {
+            "family": "Holmberg",
+            "given": "Erika F"
+          },
+          {
+            "family": "Boney",
+            "given": "Tamara Y"
+          },
+          {
+            "family": "Huang",
+            "given": "Grant D"
+          },
+          {
+            "family": "Liang",
+            "given": "Matthew H"
+          }
+        ],
+        "organization": "",
+        "year": 2022,
+        "journal": "JAMA Psychiatry",
+        "volume": "79",
+        "pages": "24-32",
+        "doi": "10.1001/jamapsychiatry.2021.3170",
+        "pmid": "34787653",
+        "url": "https://doi.org/10.1001/jamapsychiatry.2021.3170"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-09-24",
+        "note": "PMID 34787653 resolved via NCBI efetch on 2026-09-24: all 19 named authors (plus the collective author Li+ plus Investigators), 2022, JAMA Psychiatry 79(1):24-32, DOI and PMC8600458 match; PubMed lists only CommentIn items (an editorial and a letter/reply), and Crossref records no update, so no erratum is known. The published title is the one recorded here; the working citation had paraphrased it as 'Effect of Lithium vs Placebo on the Risk of Suicide-Related Events'. VA Cooperative Studies Program trial CSP #590 (NCT01928446, confirmed on ClinicalTrials.gov): double-blind lithium vs placebo added to usual care in veterans with bipolar disorder or depression who had survived a recent suicide-related event, 29 VA medical centers. Stopped for futility after 519 were randomized (255 lithium, 264 placebo); no overall difference in repeated suicide-related events (HR 1.10, 95% CI 0.77-1.55). Mean lithium concentrations at 3 months were 0.54 mEq/L (bipolar) and 0.46 mEq/L (major depression). A null trial: read beside Cipriani 2013, it does not license an anti-suicide claim for lithium added to usual care in this population."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "PMID 34787653 resolved via NCBI efetch on 2026-09-24: all 19 named authors (plus the collective author Li+ plus Investigators), 2022, JAMA Psychiatry 79(1):24-32, DOI and PMC8600458 match; PubMed lists only CommentIn items (an editorial and a letter/reply), and Crossref records no update, so no erratum is known. The published title is the one recorded here; the working citation had paraphrased it as 'Effect of Lithium vs Placebo on the Risk of Suicide-Related Events'. VA Cooperative Studies Program trial CSP #590 (NCT01928446, confirmed on ClinicalTrials.gov): double-blind lithium vs placebo added to usual care in veterans with bipolar disorder or depression who had survived a recent suicide-related event, 29 VA medical centers. Stopped for futility after 519 were randomized (255 lithium, 264 placebo); no overall difference in repeated suicide-related events (HR 1.10, 95% CI 0.77-1.55). Mean lithium concentrations at 3 months were 0.54 mEq/L (bipolar) and 0.46 mEq/L (major depression). A null trial: read beside Cipriani 2013, it does not license an anti-suicide claim for lithium added to usual care in this population.",
+            "reason": "Peer-review remediation WP8 (2026-09-24): canon_200.md now pairs Cipriani 2013 with the VA Li+ trial, stopped for futility after lithium added to usual care did not reduce suicide-related events. A claim about what a paper found needs that paper's own words, so the source enters the registry with a stored results span in evidence_annotations.json."
+          }
+        ]
+      }
+    },
+    {
       "id": "apa-eating-disorders-2023",
       "type": "guideline",
       "citation": {
@@ -4272,6 +4385,79 @@
             "date": "2026-08-21",
             "note": "Promoted from therapy_library.staging.json (WP-T2). Verification: epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama Annotation is AI-drafted from the abstract and awaits faculty signature (facultyReviewStatus: pending).",
             "reason": "therapy-curriculum WP-T2 promotion (Taplinger request #5; closes review finding F19 for the therapy domain)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "studdert-2020-handgun-suicide",
+      "type": "primary-study",
+      "citation": {
+        "title": "Handgun Ownership and Suicide in California.",
+        "authors": [
+          {
+            "family": "Studdert",
+            "given": "David M"
+          },
+          {
+            "family": "Zhang",
+            "given": "Yifan"
+          },
+          {
+            "family": "Swanson",
+            "given": "Sonja A"
+          },
+          {
+            "family": "Prince",
+            "given": "Lea"
+          },
+          {
+            "family": "Rodden",
+            "given": "Jonathan A"
+          },
+          {
+            "family": "Holsinger",
+            "given": "Erin E"
+          },
+          {
+            "family": "Spittal",
+            "given": "Matthew J"
+          },
+          {
+            "family": "Wintemute",
+            "given": "Garen J"
+          },
+          {
+            "family": "Miller",
+            "given": "Matthew"
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "The New England Journal of Medicine",
+        "volume": "382",
+        "pages": "2220-2229",
+        "doi": "10.1056/NEJMsa1916744",
+        "pmid": "32492303",
+        "url": "https://doi.org/10.1056/NEJMsa1916744"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-09-24",
+        "note": "PMID 32492303 resolved via NCBI efetch on 2026-09-24: title, all nine authors, 2020, N Engl J Med 382(23):2220-2229 and DOI match; PubMed lists only a CommentIn editorial (PMID 32492309) and Crossref records no update, so no erratum is known. Cohort of 26.3 million California adults without prior handgun acquisition, followed for up to 12 years: suicide by any method was higher among handgun owners, adjusted HR 3.34 (95% CI 3.13-3.56) for men and 7.16 (6.22-8.24) for women versus same-sex nonowners, driven by suicide by firearm (HR 7.82 men, 35.15 women); owners did not have higher rates of suicide by other methods or higher all-cause mortality. Observational: it licenses an individual-level association, not the effect of removing access. Backs the individual-cohort sentence beside Shank 2026 on therapy_reading_room.md."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "PMID 32492303 resolved via NCBI efetch on 2026-09-24: title, all nine authors, 2020, N Engl J Med 382(23):2220-2229 and DOI match; PubMed lists only a CommentIn editorial (PMID 32492309) and Crossref records no update, so no erratum is known. Cohort of 26.3 million California adults without prior handgun acquisition, followed for up to 12 years: suicide by any method was higher among handgun owners, adjusted HR 3.34 (95% CI 3.13-3.56) for men and 7.16 (6.22-8.24) for women versus same-sex nonowners, driven by suicide by firearm (HR 7.82 men, 35.15 women); owners did not have higher rates of suicide by other methods or higher all-cause mortality. Observational: it licenses an individual-level association, not the effect of removing access. Backs the individual-cohort sentence beside Shank 2026 on therapy_reading_room.md.",
+            "reason": "Peer-review remediation WP8 (2026-09-24): therapy_reading_room.md says individual cohort data link handgun ownership to a three- to sevenfold higher suicide rate. A claim about what a paper found needs that paper's own words, so the source enters the registry with a stored results span in evidence_annotations.json."
           }
         ]
       }

@@ -2,8 +2,6 @@
 
 from pathlib import Path
 import copy
-import io
-import os
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -66,20 +64,8 @@ EXPECTED_FRAGMENT = (
     '</ol></section>'
     '<p data-fd-compass-prompt>Choose the week or task you are preparing to discuss with your '
     'supervising team.</p>'
-    '<a data-fd-compass-orientation href="?tool=orientation-video.html">Optional: watch the '
-    'captioned orientation overview (transcript available)</a>'
     '</div>'
 )
-BUILT_ORIENTATION_PATHS = [
-    "tools/orientation-video.html",
-    "tools/Inpatient_Psych_Orientation.mp4",
-    "tools/Inpatient_Psych_Orientation.vtt",
-    "tools/poster.jpg",
-]
-RESIDENT_ONBOARDING_PATHS = [
-    "media/resident-onboarding.mp4",
-    "media/resident-onboarding-poster.jpg",
-]
 TEXT_OUTPUT_PATHS = [
     "content/other.md",
     "tools/other.html",
@@ -102,31 +88,16 @@ def write_complete_ms3_output(root, welcome):
     content.mkdir()
     tools.mkdir()
     (content / "welcome.md").write_text(welcome, encoding="utf-8")
-    for relative_path in BUILT_ORIENTATION_PATHS:
-        Path(root, relative_path).write_bytes(b"completed build asset")
 
 
 def write_complete_resident_output(root):
     content = Path(root, "content")
-    media = Path(root, "media")
     content.mkdir()
-    media.mkdir()
     (content / "welcome.md").write_text(
-        '<video src="media/resident-onboarding.mp4" '
-        'controls playsinline poster="media/resident-onboarding-poster.jpg" '
-        'aria-label="Resident onboarding trailer"></video>',
+        "# Welcome to the resident rotation\n\nFour weeks of supervised practice.\n",
         encoding="utf-8",
     )
-    for relative_path in RESIDENT_ONBOARDING_PATHS:
-        Path(root, relative_path).write_bytes(b"resident onboarding asset")
     Path(root, "sw.js").write_text("resident service worker", encoding="utf-8")
-
-
-# require_real_files only hard-fails a Git-LFS pointer stub outside the soft contexts
-# check_lfs_media.is_soft_context() names, and this suite runs inside one of them (CI
-# checks out lfs:false; Netlify deploy previews set CONTEXT=deploy-preview). Tests that
-# assert stub rejection pin the hard context so they test the rule, not the runner.
-HARD_LFS_CONTEXT = {"GITHUB_ACTIONS": "", "CONTEXT": "production"}
 
 
 def write_output_file(root, relative_path, payload):
@@ -289,6 +260,8 @@ class WelcomeCompassTests(unittest.TestCase):
             "<style",
             "<video",
             "<img",
+            "orientation-video",
+            "data-fd-compass-orientation",
         ):
             self.assertNotIn(forbidden, fragment)
 
@@ -332,101 +305,17 @@ class WelcomeCompassTests(unittest.TestCase):
             with self.assertRaisesRegex(welcome_compass.CompassContractError, "week1.md"):
                 welcome_compass.assert_nav_projection([{"section": "Compass", "items": rows}], self.cards())
 
-    def test_requires_each_nonempty_regular_readable_non_lfs_source_file(self):
-        with tempfile.TemporaryDirectory() as root:
-            relative_paths = ["orientation.html", "orientation.mp4", "orientation.vtt", "poster.jpg"]
-            for relative_path in relative_paths:
-                Path(root, relative_path).write_bytes(b"real package asset")
-
-            self.assertIsNone(welcome_compass.require_real_files(root, relative_paths))
-
-    def test_reports_every_invalid_orientation_source_file(self):
-        with tempfile.TemporaryDirectory() as root:
-            empty = Path(root, "empty.mp4")
-            empty.touch()
-            directory = Path(root, "directory.vtt")
-            directory.mkdir()
-            unreadable = Path(root, "unreadable.jpg")
-            unreadable.write_bytes(b"poster")
-            unreadable.chmod(0o000)
-            pointer = Path(root, "pointer.html")
-            pointer.write_bytes(welcome_compass.LFS_HEADER + b" oid sha256:abc")
-            relative_paths = [
-                "missing.html",
-                "empty.mp4",
-                "directory.vtt",
-                "unreadable.jpg",
-                "pointer.html",
-            ]
-            try:
-                with patch.dict(os.environ, HARD_LFS_CONTEXT), \
-                        self.assertRaises(welcome_compass.CompassContractError) as raised:
-                    welcome_compass.require_real_files(root, relative_paths)
-            finally:
-                unreadable.chmod(0o644)
-
-            for relative_path in relative_paths:
-                self.assertIn(relative_path, str(raised.exception))
-
-    def test_lfs_pointer_stubs_warn_instead_of_failing_in_soft_contexts(self):
-        with tempfile.TemporaryDirectory() as root:
-            Path(root, "stub.mp4").write_bytes(welcome_compass.LFS_HEADER + b" oid sha256:abc")
-            Path(root, "real.mp4").write_bytes(b"\x00\x00\x00\x18ftypmp42")
-            with patch.dict(os.environ, {"GITHUB_ACTIONS": "true", "CONTEXT": ""}), \
-                    patch("sys.stdout", new_callable=io.StringIO) as out:
-                self.assertIsNone(welcome_compass.require_real_files(root, ["stub.mp4", "real.mp4"]))
-            self.assertIn("stub.mp4", out.getvalue())
-            with patch.dict(os.environ, {"GITHUB_ACTIONS": "", "CONTEXT": "deploy-preview"}), \
-                    patch("sys.stdout", new_callable=io.StringIO):
-                self.assertIsNone(welcome_compass.require_real_files(root, ["stub.mp4"]))
-            with patch.dict(os.environ, {"GITHUB_ACTIONS": "", "CONTEXT": "production"}):
-                with self.assertRaisesRegex(welcome_compass.CompassContractError, "stub.mp4"):
-                    welcome_compass.require_real_files(root, ["stub.mp4", "real.mp4"])
-            with patch.dict(os.environ, {"GITHUB_ACTIONS": "true"}):
-                with self.assertRaisesRegex(welcome_compass.CompassContractError, "missing.mp4"):
-                    welcome_compass.require_real_files(root, ["missing.mp4"])
-
     def test_lfs_policy_is_imported_from_the_site_wide_gate(self):
         source = Path(welcome_compass.__file__).read_text(encoding="utf-8")
         self.assertIn("from check_lfs_media import", source)
         self.assertNotIn('b"version https://git-lfs"', source)
 
-    def test_package_paths_derive_from_site_extras(self):
-        from site_extras import MS3_ORIENT_VIDEO, RESIDENT_ONBOARDING_MEDIA
+    def test_ms3_only_tool_paths_derive_from_site_extras(self):
+        from site_extras import MS3_EXTRA_TOOLS
         self.assertEqual(
-            welcome_compass.MS3_OPTIONAL_ORIENTATION_PATHS,
-            tuple("tools/" + built for _src, built, _title in MS3_ORIENT_VIDEO),
+            welcome_compass.MS3_ONLY_TOOL_PATHS,
+            tuple("tools/" + built for _src, built, _title in MS3_EXTRA_TOOLS),
         )
-        self.assertEqual(
-            welcome_compass.RESIDENT_ONBOARDING_PATHS,
-            tuple("media/" + built for _src, built in RESIDENT_ONBOARDING_MEDIA),
-        )
-        self.assertEqual(
-            [src for src, _built in RESIDENT_ONBOARDING_MEDIA],
-            ["_prototypes/video-library/resident-onboarding.mp4",
-             "_prototypes/video-library/resident-onboarding-poster.jpg"],
-        )
-
-    def orientation_entries(self, served):
-        from site_extras import MS3_ORIENT_VIDEO
-        return [{"file": src, "served": served} for src, _built, _title in MS3_ORIENT_VIDEO] + [
-            {"file": "tools/" + built, "served": served} for _src, built, _title in MS3_ORIENT_VIDEO]
-
-    def test_media_manifest_may_describe_the_orientation_package_but_not_mark_it_served(self):
-        base = {"audio": [], "video": [{"file": "media/day-in-the-life.mp4", "poster": "poster.jpg", "served": True}]}
-        self.assertIsNone(welcome_compass.validate_media_manifest(base))
-        for group in ("audio", "video"):
-            manifest = {**base, group: base[group] + self.orientation_entries(False)}
-            self.assertIsNone(welcome_compass.validate_media_manifest(manifest))
-            for entry in self.orientation_entries(True):
-                with self.subTest(group=group, entry=entry["file"]):
-                    manifest = {**base, group: base[group] + [entry]}
-                    with self.assertRaisesRegex(welcome_compass.CompassContractError, "served"):
-                        welcome_compass.validate_media_manifest(manifest)
-        for broken in ({"video": []}, {"audio": [], "video": [7]}, []):
-            with self.subTest(broken=broken):
-                with self.assertRaises(welcome_compass.CompassContractError):
-                    welcome_compass.validate_media_manifest(broken)
 
     def test_structure_parser_balances_void_elements(self):
         fragment = '<div data-fd-compass-root><p>a<br>b<img src="x"><hr/></p></div>'
@@ -439,12 +328,12 @@ class WelcomeCompassTests(unittest.TestCase):
         self.assertEqual(alone.compasses, embedded.compasses)
         self.assertEqual(alone.depth, 0)
 
-    def test_accepts_one_exact_rendered_compass_and_complete_orientation_package(self):
+    def test_accepts_one_exact_rendered_compass(self):
         with tempfile.TemporaryDirectory() as root:
             write_complete_ms3_output(root, "Before\n" + EXPECTED_FRAGMENT + "\nAfter\n")
             self.assertIsNone(
                 welcome_compass.assert_ms3_output(
-                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                    root, self.cards(), SAFETY
                 )
             )
 
@@ -457,7 +346,7 @@ class WelcomeCompassTests(unittest.TestCase):
                 write_complete_ms3_output(root, wrapper % EXPECTED_FRAGMENT)
                 with self.assertRaisesRegex(welcome_compass.CompassContractError, "rendered"):
                     welcome_compass.assert_ms3_output(
-                        root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                        root, self.cards(), SAFETY
                     )
 
     def test_rejects_retired_intro_file_or_text_reference_in_completed_ms3_output(self):
@@ -473,7 +362,7 @@ class WelcomeCompassTests(unittest.TestCase):
                 path.write_bytes(payload)
                 with self.assertRaisesRegex(welcome_compass.CompassContractError, "retired intro"):
                     welcome_compass.assert_ms3_output(
-                        root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                        root, self.cards(), SAFETY
                     )
 
     def test_rejects_retired_intro_references_in_every_completed_text_output_class(self):
@@ -483,10 +372,10 @@ class WelcomeCompassTests(unittest.TestCase):
                 write_output_file(root, relative_path, b"reference: intro-trailer-poster.jpg")
                 with self.assertRaisesRegex(welcome_compass.CompassContractError, "retired intro"):
                     welcome_compass.assert_ms3_output(
-                        root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                        root, self.cards(), SAFETY
                     )
 
-    def test_resident_output_accepts_only_resident_welcome_and_real_onboarding_assets(self):
+    def test_resident_output_accepts_a_resident_welcome_with_no_compass(self):
         with tempfile.TemporaryDirectory() as root:
             write_complete_resident_output(root)
             welcome_path = Path(root, "content", "welcome.md")
@@ -496,18 +385,6 @@ class WelcomeCompassTests(unittest.TestCase):
             )
             self.assertIsNone(welcome_compass.assert_resident_output(root))
 
-    def test_resident_output_rejects_a_missing_or_undecodable_built_welcome(self):
-        with tempfile.TemporaryDirectory() as root:
-            write_complete_resident_output(root)
-            Path(root, "content", "welcome.md").unlink()
-            with self.assertRaisesRegex(welcome_compass.CompassContractError, "welcome.md"):
-                welcome_compass.assert_resident_output(root)
-        with tempfile.TemporaryDirectory() as root:
-            write_complete_resident_output(root)
-            Path(root, "content", "welcome.md").write_bytes(b"\xff\xfe<video src=\"media/resident-onboarding.mp4\">")
-            with self.assertRaisesRegex(welcome_compass.CompassContractError, "welcome.md"):
-                welcome_compass.assert_resident_output(root)
-
     def test_resident_output_rejects_compass_heading_in_metadata_or_governance(self):
         for relative_path in ("topic_meta.json", "governance.json", "index.html"):
             with self.subTest(path=relative_path), tempfile.TemporaryDirectory() as root:
@@ -516,12 +393,10 @@ class WelcomeCompassTests(unittest.TestCase):
                 with self.assertRaisesRegex(welcome_compass.CompassContractError, "Compass"):
                     welcome_compass.assert_resident_output(root)
 
-    def test_resident_output_rejects_ms3_compass_optional_package_retired_intro_and_lfs_media(self):
+    def test_resident_output_rejects_ms3_compass_and_retired_intro(self):
         mutations = (
             ("content/welcome.md", welcome_compass.COMPASS_ROOT_OPENER.encode("utf-8") + b"Compass</div>", "Compass"),
-            ("tools/orientation-video.html", b"optional package", "optional"),
             ("media/intro-trailer.mp4", b"retired", "retired intro"),
-            ("media/resident-onboarding.mp4", welcome_compass.LFS_HEADER + b" oid", "resident-onboarding.mp4"),
         )
         for relative_path, payload, expected in mutations:
             with self.subTest(relative_path=relative_path), tempfile.TemporaryDirectory() as root:
@@ -532,8 +407,7 @@ class WelcomeCompassTests(unittest.TestCase):
                     path.write_bytes(path.read_bytes() + payload)
                 else:
                     path.write_bytes(payload)
-                with patch.dict(os.environ, HARD_LFS_CONTEXT), \
-                        self.assertRaisesRegex(welcome_compass.CompassContractError, expected):
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, expected):
                     welcome_compass.assert_resident_output(root)
 
     def test_resident_output_rejects_compass_material_in_every_completed_text_output_class(self):
@@ -582,62 +456,33 @@ class WelcomeCompassTests(unittest.TestCase):
             with self.assertRaisesRegex(welcome_compass.CompassContractError, "blob.unknown"):
                 welcome_compass.assert_resident_output(root)
 
-    def test_resident_output_rejects_each_missing_or_lfs_onboarding_asset(self):
-        for relative_path in RESIDENT_ONBOARDING_PATHS:
-            with self.subTest(missing=relative_path), tempfile.TemporaryDirectory() as root:
+    def test_resident_output_rejects_an_ms3_only_tool_and_retired_file(self):
+        # No MS3-only tool ships today (MS3_EXTRA_TOOLS is empty since the orientation video
+        # was retired), so inject one: the isolation gate must still fire the day one returns.
+        ms3_only = "tools/ms3-only-example.html"
+        with patch.object(welcome_compass, "MS3_ONLY_TOOL_PATHS", (ms3_only,)):
+            with tempfile.TemporaryDirectory() as root:
                 write_complete_resident_output(root)
-                Path(root, relative_path).unlink()
-                with self.assertRaisesRegex(welcome_compass.CompassContractError, relative_path):
+                self.assertIsNone(welcome_compass.assert_resident_output(root))
+                write_output_file(root, ms3_only, b"unexpected output")
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, "MS3-only tool"):
                     welcome_compass.assert_resident_output(root)
-            with self.subTest(lfs=relative_path), tempfile.TemporaryDirectory() as root:
-                write_complete_resident_output(root)
-                Path(root, relative_path).write_bytes(welcome_compass.LFS_HEADER + b" oid")
-                with patch.dict(os.environ, HARD_LFS_CONTEXT), \
-                        self.assertRaisesRegex(welcome_compass.CompassContractError, relative_path):
-                    welcome_compass.assert_resident_output(root)
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_resident_output(root)
+            write_output_file(root, "media/intro-trailer-poster.jpg", b"unexpected output")
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "retired intro"):
+                welcome_compass.assert_resident_output(root)
 
-    def test_resident_output_requires_one_real_video_with_exact_onboarding_src_and_poster(self):
-        invalid_welcomes = (
-            '`<video src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg"></video>`',
-            '``<video src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg"></video>``',
-            '<video poster="media/resident-onboarding-poster.jpg"></video>',
-            '<video src="media/resident-onboarding.mp4"></video>',
-            '<!-- media/resident-onboarding.mp4 media/resident-onboarding-poster.jpg -->',
-            '```html\n<video src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg"></video>\n```',
-            '```html\n```not-a-closing-fence\n<video src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg"></video>',
-            '    <video src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg"></video>',
-            '   \t<video src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg"></video>',
-            '<video src="wrong.mp4" src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg"></video>',
-            '<video src="media/resident-onboarding.mp4" src="wrong.mp4" poster="media/resident-onboarding-poster.jpg"></video>',
-            '<video src="media/resident-onboarding.mp4" poster="wrong.jpg" poster="media/resident-onboarding-poster.jpg"></video>',
-            '<video src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg" poster="wrong.jpg"></video>',
-        )
-        for welcome in invalid_welcomes:
-            with self.subTest(welcome=welcome), tempfile.TemporaryDirectory() as root:
-                write_complete_resident_output(root)
-                Path(root, "content", "welcome.md").write_text(welcome, encoding="utf-8")
-                with self.assertRaisesRegex(welcome_compass.CompassContractError, "video"):
-                    welcome_compass.assert_resident_output(root)
-
-    def test_resident_output_rejects_every_optional_package_path_and_retired_file(self):
-        for relative_path in [
-            *welcome_compass.MS3_OPTIONAL_ORIENTATION_PATHS,
-            "media/intro-trailer-poster.jpg",
-        ]:
-            with self.subTest(relative_path=relative_path), tempfile.TemporaryDirectory() as root:
-                write_complete_resident_output(root)
-                write_output_file(root, relative_path, b"unexpected output")
-                with self.assertRaisesRegex(welcome_compass.CompassContractError, "optional|retired intro"):
-                    welcome_compass.assert_resident_output(root)
-
-    def test_output_validation_rejects_symlinked_required_files_and_output_tree_entries(self):
+    def test_output_validation_rejects_symlinked_media_and_output_tree_entries(self):
+        # Media files are walked for names but never read, so a symlinked clip must still be
+        # caught by the traversal itself rather than slip past the byte scan.
         with tempfile.TemporaryDirectory() as root, tempfile.TemporaryDirectory() as outside:
             write_complete_resident_output(root)
-            external = Path(outside, "onboarding.mp4")
-            external.write_bytes(b"external onboarding")
-            Path(root, "media", "resident-onboarding.mp4").unlink()
-            Path(root, "media", "resident-onboarding.mp4").symlink_to(external)
-            with self.assertRaisesRegex(welcome_compass.CompassContractError, "resident-onboarding.mp4"):
+            external = Path(outside, "clip.mp4")
+            external.write_bytes(b"external clip")
+            Path(root, "media").mkdir()
+            Path(root, "media", "clip.mp4").symlink_to(external)
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "symlink.*clip.mp4"):
                 welcome_compass.assert_resident_output(root)
 
         for relative_path, target_kind in (("tools/linked.html", "file"), ("linked-directory", "directory")):
@@ -669,21 +514,12 @@ class WelcomeCompassTests(unittest.TestCase):
                 ):
                     welcome_compass._scan_completed_output(root, {})
 
-    def test_rejects_missing_built_orientation_file(self):
-        with tempfile.TemporaryDirectory() as root:
-            write_complete_ms3_output(root, EXPECTED_FRAGMENT)
-            Path(root, "tools", "poster.jpg").unlink()
-            with self.assertRaisesRegex(welcome_compass.CompassContractError, "poster.jpg"):
-                welcome_compass.assert_ms3_output(
-                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
-                )
-
     def test_rejects_two_identical_rendered_compass_fragments(self):
         with tempfile.TemporaryDirectory() as root:
             write_complete_ms3_output(root, EXPECTED_FRAGMENT + EXPECTED_FRAGMENT)
             with self.assertRaisesRegex(welcome_compass.CompassContractError, "exactly once"):
                 welcome_compass.assert_ms3_output(
-                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                    root, self.cards(), SAFETY
                 )
 
     def test_rejects_a_stale_compass_root_beside_the_expected_fragment(self):
@@ -692,7 +528,7 @@ class WelcomeCompassTests(unittest.TestCase):
             write_complete_ms3_output(root, EXPECTED_FRAGMENT + stale)
             with self.assertRaisesRegex(welcome_compass.CompassContractError, "exactly one Compass root"):
                 welcome_compass.assert_ms3_output(
-                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                    root, self.cards(), SAFETY
                 )
 
     def test_rejects_a_raw_compass_marker_in_built_welcome(self):
@@ -700,7 +536,7 @@ class WelcomeCompassTests(unittest.TestCase):
             write_complete_ms3_output(root, EXPECTED_FRAGMENT + welcome_compass.COMPASS_MARKER)
             with self.assertRaisesRegex(welcome_compass.CompassContractError, "raw Compass marker"):
                 welcome_compass.assert_ms3_output(
-                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                    root, self.cards(), SAFETY
                 )
 
     def test_rejects_a_raw_safety_start_marker_in_built_welcome(self):
@@ -708,7 +544,7 @@ class WelcomeCompassTests(unittest.TestCase):
             write_complete_ms3_output(root, EXPECTED_FRAGMENT + welcome_compass.SAFETY_START)
             with self.assertRaisesRegex(welcome_compass.CompassContractError, "raw safety marker"):
                 welcome_compass.assert_ms3_output(
-                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                    root, self.cards(), SAFETY
                 )
 
     def test_rejects_a_raw_safety_end_marker_in_built_welcome(self):
@@ -716,7 +552,7 @@ class WelcomeCompassTests(unittest.TestCase):
             write_complete_ms3_output(root, EXPECTED_FRAGMENT + welcome_compass.SAFETY_END)
             with self.assertRaisesRegex(welcome_compass.CompassContractError, "raw safety marker"):
                 welcome_compass.assert_ms3_output(
-                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                    root, self.cards(), SAFETY
                 )
 
     def test_missing_curriculum_uses_the_targeted_compass_preflight_path(self):

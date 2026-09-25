@@ -26,7 +26,7 @@
  * WHY A RATCHET AND NOT ZERO
  * --------------------------
  * The honest starting position is 183 frozen colours and 381 AA failures across the two sites,
- * concentrated in pages this work has not reached (decision-aids, orientation-video, sp-interview,
+ * concentrated in pages this work has not reached (decision-aids, sp-interview,
  * rp-canon-quiz, withdrawal). A gate that fails on day one teaches everyone to bypass it. This
  * fails only on the commit that makes a page worse — which is the commit that can still fix it
  * cheaply — and every reduction re-pins lower and can never be given back. Same shape as
@@ -40,9 +40,11 @@
  * Netlify's edge would blow the canary's 30-round-trip budget many times over, and nothing here
  * needs production to be true — it is a property of the build.
  *
- * REGENERATE after a reviewed reduction:
- *   UPDATE_FROZEN_BASELINE=1 npx playwright test --config tests/smoke/playwright.config.js \
- *     --project nav-ms3 --project nav-res frozen-colour.spec.js
+ * REGENERATE after a reviewed reduction (from tests/smoke, where playwright is installed; the
+ * `=` matters — `--project` is variadic, so `--project nav-res frozen-colour.spec.js` swallows
+ * the spec path as a second project name and exits "Project(s) not found"):
+ *   cd tests/smoke && UPDATE_FROZEN_BASELINE=1 npx playwright test \
+ *     --project=nav-ms3 --project=nav-res frozen-colour.spec.js
  */
 
 import { test, expect } from '@playwright/test';
@@ -82,6 +84,51 @@ function builtPages(site) {
   }
   return out;
 }
+
+/**
+ * The measurement's one blind spot, pinned in a real browser. A forced reflow resolves the cascade
+ * but does not advance time, so a `transition` on colour reads at t=0 (the OLD theme) right after
+ * the flip. decision-aids.html's body transition inflated its dark-AA count 34 -> 55 and frozen
+ * 6 -> 20 that way. theme_scan.js now disables transitions for the scan. This fixture has both
+ * shapes that went wrong: a chip whose ink is INHERITED from the transitioning body, and legend
+ * text whose GROUND is the transitioning body. tests/theme-scan.test.mjs models the same case in
+ * Node, and this test checks that model against Chromium.
+ */
+const TRANSITION_FIXTURE = `<!doctype html><html><head><style>
+  :root{--bg:#fbf8f3;--ink:#3b332c;--chip:#efe6da;--legend:#6b6259}
+  :root[data-theme="dark"]{--bg:#1c1a17;--ink:#e9e4dc;--chip:#2a2622;--legend:#b8b0a6}
+  body{background:var(--bg);color:var(--ink);transition:background .2s,color .2s;font:15px/1.5 sans-serif}
+  .chip{background:var(--chip);padding:2px 8px}
+  .legend{color:var(--legend)}
+</style></head><body><p><span class="chip">Mild</span> <span class="legend">Legend text</span></p></body></html>`;
+
+test('the scan reads a transitioned colour where it settles, not at t=0', async ({ page }) => {
+  // Control. This browser really does report t=0 after a forced reflow. If that ever stops being
+  // true, the fixture no longer exercises the blind spot, and the clean result below proves nothing.
+  await page.setContent(TRANSITION_FIXTURE);
+  const atFlip = await page.evaluate(() => {
+    const root = document.documentElement;
+    root.dataset.theme = 'dark';
+    void root.offsetHeight;
+    return getComputedStyle(document.querySelector('.chip')).color;
+  });
+  expect(atFlip, 'inherited ink should still be the light value at t=0').toBe('rgb(59, 51, 44)');
+
+  await page.setContent(TRANSITION_FIXTURE);
+  await page.addScriptTag({ content: fs.readFileSync(SCAN_SRC, 'utf8') });
+  const r = await page.evaluate(() => {
+    const out = window.cwThemeScan.install(document, window).measure();
+    out.leftovers = document.querySelectorAll('#cw-theme-scan-freeze').length;
+    out.theme = document.documentElement.dataset.theme ?? null;
+    return out;
+  });
+  // Without the freeze: span.chip 1.21:1 and span.legend 2.02:1 in dark, and the chip's ink frozen.
+  expect(r.lowDark, 'a transition-stale colour was scored for dark contrast').toEqual({});
+  expect(r.lowLight).toEqual({});
+  expect(r.frozen, 'a transition-stale colour was reported as frozen').toEqual({});
+  expect(r.leftovers, 'the scan left transitions disabled on the page').toBe(0);
+  expect(r.theme, 'a page with no data-theme must be left with none').toBeNull();
+});
 
 test.describe('frozen colours and rendered AA, every built page, both themes', () => {
   // One test per site rather than per page: the ratchet's verdict is a whole-site comparison

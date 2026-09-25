@@ -76,7 +76,13 @@ SITE_DIR="${PREVIEW_SITE_DIR:-$ROOT/_build/$AUDIENCE}"
 [ -d "$SITE_DIR" ] || die "built site not found: $SITE_DIR"
 [ -f "$SITE_DIR/index.html" ] || die "built site has no index.html: $SITE_DIR"
 
-python3 - "$PORT" <<'PY'
+# Every python3 below runs with -I. `python3 -` and `python3 -m` otherwise put the caller's cwd
+# on sys.path, and the import system lists that directory: run from a $TMPDIR holding ~120,000
+# leaked fixtures, `import urllib.request` took ~6.5 s and the readiness loop timed out
+# (2026-09-24). A module in the cwd named like the stdlib would also shadow it. -I, not -P:
+# -P needs Python 3.11 and macOS's /usr/bin/python3 is 3.9. Pinned by
+# tests/preview-site-isolation.test.mjs.
+python3 -I - "$PORT" <<'PY'
 import socket
 import sys
 
@@ -120,7 +126,7 @@ trap 'exit 129' HUP
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
-python3 -m http.server "$PORT" --bind 127.0.0.1 --directory "$SITE_DIR" >"$SERVER_LOG" 2>&1 &
+python3 -I -m http.server "$PORT" --bind 127.0.0.1 --directory "$SITE_DIR" >"$SERVER_LOG" 2>&1 &
 SERVER_PID=$!
 
 attempt=0
@@ -129,7 +135,7 @@ while [ "$attempt" -lt 50 ]; do
     sed -n '1,80p' "$SERVER_LOG" >&2
     die 'preview server exited during startup'
   fi
-  if python3 - "$PORT" <<'PY'
+  if python3 -I - "$PORT" <<'PY'
 import sys
 import urllib.request
 

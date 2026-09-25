@@ -608,7 +608,7 @@ class RepositoryProducerTests(unittest.TestCase):
         ):
             diagnostics, documents = governance.validate_repository(ROOT)
 
-        self.assertEqual(len(documents["ms3"]["items"]), 23)
+        self.assertEqual(len(documents["ms3"]["items"]), 22)
         self.assertEqual(len(documents["resident"]["items"]), 26)
         self.assertEqual(len(diagnostics), 1)
         self.assertTrue(diagnostics[0].startswith("legacy metadata warning: "))
@@ -688,7 +688,7 @@ class RepositoryProducerTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(
                 governance.GovernanceError,
-                r"tool-governance.json: ms3 item count must equal 23",
+                r"tool-governance.json: ms3 item count must equal 22",
             ):
                 governance.build_governance_document(
                     ROOT, "ms3", enforce_expected_count=True
@@ -731,7 +731,7 @@ class RepositoryProducerTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("tool governance OK", result.stdout)
-        self.assertIn("ms3: 23 item(s)", result.stdout)
+        self.assertIn("ms3: 22 item(s)", result.stdout)
         self.assertIn("resident: 26 item(s)", result.stdout)
 
     def test_rotation_curator_envelope_agrees_with_the_effective_ledger(

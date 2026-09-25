@@ -65,7 +65,7 @@ Two corollaries worth stating explicitly:
 
 *Teaching point:* The exam — myoclonus, clonus, ataxia, nystagmus, encephalopathy, **afebrile, normal tone, normal CK** — is fairly specific, but the differential is where residents earn their keep.
 
-1. **Chronic lithium neurotoxicity** — *most likely.* Cerebellar and pyramidal signs with encephalopathy at a near-therapeutic level.
+1. **Chronic lithium neurotoxicity** — *most likely.* Cerebellar and pyramidal signs with encephalopathy out of proportion to a serum level modestly above range.
 2. **Serotonin syndrome** — the closest mimic; clonus and hyperreflexia overlap almost completely. Distinguishing features: serotonergic agent exposure with a **temporally tight** onset, hyperthermia, diaphoresis, GI hyperactivity, and **lower-extremity-predominant** clonus. She is on lithium monotherapy — but always confirm, since lithium is itself serotonergic and is a recognized contributor when combined.
 3. **NMS** — argues against: afebrile, no rigidity, normal CK. Keep it live if an antipsychotic is on board; lithium plus antipsychotic is a described risk combination.
 4. **Hypercalcemia — a marker, not a driver** — note the loop-back: her **corrected calcium is 10.9 with an inappropriately elevated PTH**, i.e. lithium-associated hyperparathyroidism (Q6). Read it as a *marker* of that endocrine effect rather than as a contributor to tonight's picture: mild hypercalcemia at this level does not produce encephalopathy — that generally requires >12–13 mg/dL — and her concentrating defect is already fully accounted for by lithium's direct effect on the collecting duct (Q4). Two lithium effects converging, but only one of them is driving the neurologic picture.

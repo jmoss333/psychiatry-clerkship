@@ -26,6 +26,8 @@ except ImportError:  # script - siblings are on sys.path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 EXPECTATIONS = {
     "maintenance-sp-health-monitor.yml": 16,
+    # Fires every 6 h; 14 h tolerates one missed slot before the heartbeat says so.
+    "production-release-train.yml": 14,
     "maintenance-production-canary.yml": 30,
     "maintenance-queue-runner.yml": 30,
     "maintenance-rotation-readiness.yml": 30,
@@ -54,6 +56,7 @@ UNWATCHED_BY_DESIGN = {"maintenance-heartbeat.yml": "cannot assess its own fresh
 # one and not the other, so test_the_two_watch_lists_cannot_drift pins the parity.
 EXPECTED_CRONS = {
     "maintenance-sp-health-monitor.yml": "15 */12 * * *",
+    "production-release-train.yml": "5 9,15,21 * * *",
     "maintenance-production-canary.yml": "20 9 * * *",
     "maintenance-queue-runner.yml": "40 4 * * *",
     "maintenance-rotation-readiness.yml": "15 13 * * *",

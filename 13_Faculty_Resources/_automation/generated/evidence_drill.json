@@ -178,18 +178,18 @@
      "key": "A"
     },
     {
-     "t": "U.S. Food and Drug Administration · 2026",
-     "sourceId": "fda-prozac-label-maoi-switching",
+     "t": "Caspi et al. · 2003 · Science",
+     "sourceId": "caspi-2003-5htt-stress",
      "key": "B"
     },
     {
-     "t": "Links et al. · 2025 · Am J Psychother",
-     "sourceId": "links-ross-2025",
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
      "key": "C"
     },
     {
-     "t": "Substance Abuse and Mental Health Services Administration · 2021 · Treatment Improvement Protocol (TIP) Series 63",
-     "sourceId": "samhsa-tip63-2021",
+     "t": "Royal College of Psychiatrists · 2022 · College Report CR233",
+     "sourceId": "rcpsych-meed-2022",
      "key": "D"
     }
    ],
@@ -223,13 +223,13 @@
      "key": "B"
     },
     {
-     "t": "Hong et al. · 2025 · PLoS One",
-     "sourceId": "hong-2025",
+     "t": "Pott et al. · 2022 · J Subst Abuse Treat",
+     "sourceId": "pott-2022",
      "key": "C"
     },
     {
-     "t": "Gunturu et al. · 2026",
-     "sourceId": "statpearls-mcp-2026",
+     "t": "Stanley et al. · 2018 · JAMA Psychiatry",
+     "sourceId": "stanley-brown-2018",
      "key": "D"
     }
    ],
@@ -252,19 +252,19 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "American Society of Addiction Medicine · 2020",
-     "sourceId": "asam-alcohol-withdrawal-2020",
-     "key": "A"
-    },
-    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "c": true,
      "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "B"
+     "key": "A"
     },
     {
      "t": "Cipriani et al. · 2013 · BMJ",
      "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "B"
+    },
+    {
+     "t": "Lieberman et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "lieberman-2005-catie",
      "key": "C"
     },
     {
@@ -308,8 +308,8 @@
      "key": "C"
     },
     {
-     "t": "Schünemann et al. · 2025 · Clin Psychol Eur",
-     "sourceId": "schunemann-2025",
+     "t": "Penzenik et al. · 2026 · J Rural Health",
+     "sourceId": "penzenik-2026",
      "key": "D"
     }
    ],
@@ -328,7 +328,7 @@
    "review": null,
    "page": "t_mood.md",
    "sourceId": "nolen-2019-lithium-levels",
-   "claim": "Lithium runs a narrow therapeutic window (acute ~0.8–1.2 mEq/L; maintenance ~0.6–0.8, lower in older adults): check baseline and periodic renal and thyroid function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
+   "claim": "Lithium runs a narrow therapeutic window (acute ~0.8–1.2 mEq/L; maintenance ~0.6–0.8, lower in older adults): check baseline and periodic renal, thyroid and calcium (parathyroid) function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -348,8 +348,8 @@
      "key": "C"
     },
     {
-     "t": "Penzenik et al. · 2026 · J Rural Health",
-     "sourceId": "penzenik-2026",
+     "t": "Williams et al. · 2022 · Cochrane Database Syst Rev",
+     "sourceId": "williams-2022-cochrane-ptsd-pharmacotherapy",
      "key": "D"
     }
    ],
@@ -368,7 +368,7 @@
    "review": null,
    "page": "t_neurocog.md",
    "sourceId": "fda-drug-safety",
-   "claim": "Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis — use the lowest dose for the shortest time, document informed consent, and reassess.",
+   "claim": "Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis (it applies equally to brexpiprazole, FDA-approved in 2023 for agitation associated with Alzheimer dementia) — use the lowest dose for the shortest time, document informed consent, and reassess.",
    "stem": "This claim on t_neurocog.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -532,13 +532,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Substance Abuse and Mental Health Services Administration · 2026",
-     "sourceId": "samhsa-guidelines",
+     "t": "Diefenbach et al. · 2025 · Gen Hosp Psychiatry",
+     "sourceId": "diefenbach-2025",
      "key": "A"
     },
     {
-     "t": "Stanley et al. · 2012 · Cognitive and Behavioral Practice",
-     "sourceId": "stanley-brown-2012-safety-planning",
+     "t": "Pharoah et al. · 2010 · Cochrane Database of Systematic Reviews",
+     "sourceId": "pharoah-2010-family-intervention",
      "key": "B"
     },
     {
@@ -572,13 +572,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "D'Onofrio et al. · 2026 · JAMA",
-     "sourceId": "donofrio-2026-ed-bup",
+     "t": "Nolen et al. · 2019 · Bipolar Disord",
+     "sourceId": "nolen-2019-lithium-levels",
      "key": "A"
     },
     {
-     "t": "Nolen et al. · 2019 · Bipolar Disord",
-     "sourceId": "nolen-2019-lithium-levels",
+     "t": "Gunturu et al. · 2026",
+     "sourceId": "statpearls-mcp-2026",
      "key": "B"
     },
     {

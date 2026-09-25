@@ -59,7 +59,7 @@ test('with a working credential the dependent probes still run', async () => {
   assert.doesNotMatch(out.stdout, /SKIP/, 'nothing is skipped when the credential works');
 });
 
-import {mkdtempSync, writeFileSync, chmodSync} from 'node:fs';
+import {mkdtempSync, writeFileSync, chmodSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 
 // A stand-in `netlify` CLI that returns what a secret variable actually reads back:
@@ -72,8 +72,9 @@ function fakeNetlify(value) {
   return dir;
 }
 
-test('a Netlify readback that cannot authenticate is discarded, not used', async () => {
+test('a Netlify readback that cannot authenticate is discarded, not used', async (t) => {
   const dir = fakeNetlify('PLACEHOLDER1234ABCD');
+  t.after(() => rmSync(dir, {recursive: true, force: true}));
   const out = await withEndpoint((req, res) => {
     if ((req.headers['x-student-key'] || '') === 'the-real-passcode') { res.writeHead(200); res.end('{}'); return; }
     res.writeHead(401); res.end('{}');

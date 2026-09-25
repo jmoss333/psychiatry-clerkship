@@ -53,6 +53,33 @@
       ]
     },
     {
+      "sourceId": "katz-2022-lithium-va",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "34787653",
+        "doi": "10.1001/jamapsychiatry.2021.3170",
+        "sourceSpan": "The trial was stopped for futility after 519 veterans (mean [SD] age, 42.8 [12.4] years; 437 [84.2%] male) were randomized: 255 to lithium and 264 to placebo. Mean lithium concentrations at 3 months were 0.54 mEq/L for patients with bipolar disorder and 0.46 mEq/L for patients with major depressive disorder. No overall difference in repeated suicide-related events between treatments was found (hazard ratio, 1.10; 95% CI, 0.77-1.55). In this randomized clinical trial, the addition of lithium to usual Veterans Affairs mental health care did not reduce the incidence of suicide-related events in veterans with major depression or bipolar disorders who experienced a recent suicide event."
+      },
+      "claims": [
+        {
+          "claimId": "lithium-augmentation-futility",
+          "claimText": "The VA trial of lithium added to usual care was stopped for futility after 519 veterans were randomized, and lithium did not reduce suicide-related events: there was no overall difference in repeated suicide-related events between lithium and placebo (hazard ratio 1.10; 95% CI 0.77-1.55) in veterans with major depression or bipolar disorder who experienced a recent suicide event.",
+          "claimTerms": [
+            "stopped for futility",
+            "No overall difference in repeated suicide-related events",
+            "did not reduce the incidence of suicide-related events"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "canon_200",
+            "AR-40"
+          ]
+        }
+      ]
+    },
+    {
       "sourceId": "varese-2025",
       "verifiedAgainst": {
         "spanType": "conclusion",
@@ -157,6 +184,33 @@
             "safety-planning-practice-tool"
           ],
           "retractedClaim": "v1 said 'the strongest causal lever in suicide prevention' - retracted 2026-08-21."
+        }
+      ]
+    },
+    {
+      "sourceId": "studdert-2020-handgun-suicide",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "32492303",
+        "doi": "10.1056/NEJMsa1916744",
+        "sourceSpan": "Rates of suicide by any method were higher among handgun owners, with an adjusted hazard ratio of 3.34 for all male owners as compared with male nonowners (95% confidence interval [CI], 3.13 to 3.56) and 7.16 for female owners as compared with female nonowners (95% CI, 6.22 to 8.24). These rates were driven by much higher rates of suicide by firearm among both male and female handgun owners, with a hazard ratio of 7.82 for men (95% CI, 7.26 to 8.43) and 35.15 for women (95% CI, 29.56 to 41.79). Handgun owners did not have higher rates of suicide by other methods or higher all-cause mortality."
+      },
+      "claims": [
+        {
+          "claimId": "handgun-ownership-suicide-hazard",
+          "claimText": "In a California cohort, handgun ownership was associated with a three- to sevenfold higher rate of suicide by any method: adjusted hazard ratio 3.34 for male owners versus male nonowners (95% CI 3.13 to 3.56) and 7.16 for female owners versus female nonowners (95% CI 6.22 to 8.24). The excess was driven by suicide by firearm; handgun owners did not have higher rates of suicide by other methods.",
+          "claimTerms": [
+            "Rates of suicide by any method were higher among handgun owners",
+            "adjusted hazard ratio of 3.34",
+            "7.16 for female owners",
+            "did not have higher rates of suicide by other methods"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "therapy_reading_room"
+          ]
         }
       ]
     },
