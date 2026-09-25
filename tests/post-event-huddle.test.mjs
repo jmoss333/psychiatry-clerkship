@@ -71,7 +71,7 @@ test('T1 static shell: lang, one title, viewport, one h1, no skipped heading lev
   }
 });
 
-test('T2 governance marker: one CLERKSHIP-META, resident-only audience, 2min, status tracks the ledger', () => {
+test('T2 governance marker: one CLERKSHIP-META, resident-only audience, 2min, status never outruns the ledger', () => {
   const markers = html.match(/<!--\s*\[CLERKSHIP-META v1\][\s\S]*?-->/g) || [];
   assert.equal(markers.length, 1);
   assert.equal((html.match(/\[RC-META\]/g) || []).length, 0, 'no legacy marker');
@@ -80,8 +80,29 @@ test('T2 governance marker: one CLERKSHIP-META, resident-only audience, 2min, st
   assert.equal(fields.time, '2min');
   const ledger = reviewed[SLUG];
   assert.ok(ledger, `${SLUG} has a ledger record in reviewed.json`);
-  const expected = ledger.status === 'pending' ? 'draft-pending-attestation' : 'reviewed';
-  assert.equal(fields.status, expected, 'marker status must mirror the canonical ledger');
+  // ONE-WAY, NOT A MIRROR. The source marker may never claim a review the ledger does not
+  // record (the 2026-09-14 incident propagated an agent's "reviewed" into this very marker,
+  // d640d78). The other direction cannot be required: since the contentHash binding
+  // (2026-09-18) the marker is part of the attested text, so "the marker must flip to
+  // reviewed when the ledger does" means attesting the page changes the page — an L3 diff the
+  // governance gate forbids, and a hash the attestation no longer fits. The sibling resident
+  // tools already live this way (rp-agitation, rp-brief-psych, rp-canon-quiz: ledger
+  // reviewed, marker draft-pending-attestation). What a learner sees comes from the ledger
+  // (tool-governance.json), never from this field. Asserted against both ledger states, so
+  // the test no longer depends on where the faculty queue happens to stand.
+  const MARKER_STATES = ['draft-pending-attestation', 'reviewed'];
+  assert.ok(MARKER_STATES.includes(fields.status), `marker status is one of ${MARKER_STATES.join(', ')}`);
+  assert.ok(['pending', 'reviewed'].includes(ledger.status), 'ledger status is pending or reviewed');
+  if (ledger.status !== 'reviewed') {
+    assert.notEqual(fields.status, 'reviewed', 'marker must not claim a review the ledger does not record');
+  }
+  // The rule itself, pinned on both ledger states rather than on today's:
+  const allowed = (marker, ledgerStatus) => ledgerStatus === 'reviewed' || marker !== 'reviewed';
+  assert.equal(allowed('reviewed', 'pending'), false);
+  assert.equal(allowed('draft-pending-attestation', 'pending'), true);
+  assert.equal(allowed('draft-pending-attestation', 'reviewed'), true);
+  assert.equal(allowed('reviewed', 'reviewed'), true);
+  assert.equal(allowed(fields.status, ledger.status), true);
 });
 
 test('T3 self-contained: no external scripts, stylesheets, imports or URLs of any kind', () => {

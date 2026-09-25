@@ -222,6 +222,14 @@ the container when the Bash 5 environment is part of the evidence.
   from committed tables under `bin/data/`; `retiring` fires BEFORE the October 1 boundary).
   All three state what they examined beside the verdict, exit 2 rather than pass over a
   partial set, and only the self-tests (plus the offline ICD scan) run in `verify.sh`.
+  `check_claim_direction.py` is the step after a supersession finding: given a source id
+  and the newer DOI/PMID it fetches the newer abstract (Europe PMC) and reports, per stored
+  claim, whether the span survives verbatim, whether the sentences carrying the claim's
+  terms keep the stored direction (C5's own marker list, imported), and which quoted
+  statistics vanished — `consistent` / `contradicts` / `unlocated` / `unclear`. Advisory:
+  exit 0, the located sentences are the evidence; `--strict` for scripts. First case
+  (2026-09-19): `williams-2022` pub3 → pub4 — span 2/2 verbatim, direction consistent, the
+  update changed nothing taught.
 - **Egress is an allowlist, and which side of it a host falls on decides which tasks are possible
   today.** `bin/probe_egress.py` reports that in the repo's own terms — not "itunes.apple.com is
   unreachable" but "the podcast canonical backfill cannot run here". The SessionStart hook prints
@@ -521,7 +529,12 @@ the container when the Bash 5 environment is part of the evidence.
   matching `^(0\d|1[0-4]|99)_[^/]+/` that is not under `13_Faculty_Resources/` — a directory
   segment is required, so a top-level `03_notes.md` is not content — the derived listing because
   a page can ship from a path the regex misses (`welcome.md`'s resident override), the regex
-  because a path can be content before any site lists it. A **promotion** is a claim that a
+  because a path can be content before any site lists it. **One exception:**
+  `question_bank.json` has been content since #783 listed it in the question tools'
+  `extraSources`, but a diff that changes nothing except items' `status` is not a content
+  change — a question's attestation *is* its status, and counting the flip as content made
+  every console question sign-off fail L3 against itself (rolling PR #781). Any other edit to
+  the bank, `retired` included, is still content. A **promotion** is a claim that a
   review happened: in `reviewed.json`, a row whose `status` becomes `reviewed`, a row born
   `reviewed`, or a row reviewed on BOTH sides whose `at`, `by`, `risk`, `note`, `contentHash`,
   `claimsHash`, `evidenceHash` or `evidenceThrough` changes — **a missing key is a value**,
