@@ -76,7 +76,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **8. What is neuroleptic malignant syndrome (NMS)?**
 
-- **Answer:** A life-threatening reaction to dopamine-blocking agents characterized by **fever, lead-pipe rigidity, altered mental status, and autonomic instability**. CK is typically markedly elevated (often >10,000 U/L).
+- **Answer:** A life-threatening reaction to dopamine-blocking agents characterized by **fever, lead-pipe rigidity, altered mental status, and autonomic instability**. CK is usually elevated (consensus threshold ≥4× the upper limit of normal; it can exceed 10,000 U/L) but may be only modestly raised early, so a lower CK does not exclude NMS.
 
 - **Evidence:** Incidence 0.01–0.2%; virtually all cases occur within 30 days of starting or dose-changing the offending agent.
 
@@ -238,7 +238,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **24. What are the therapeutic levels and key toxicities of lithium?**
 
-- **Answer:** Acute mania: 0.8–1.2 mEq/L; maintenance: 0.6–0.8 mEq/L. Toxic at ≥1.5 mEq/L. Key toxicities: fine tremor, polyuria/polydipsia (nephrogenic DI), hypothyroidism, hyperparathyroidism, renal impairment.
+- **Answer:** Acute mania: 0.8–1.2 mEq/L; maintenance: 0.6–0.8 mEq/L (older adults usually 0.4–0.6). Toxic at ≥1.5 mEq/L. Key toxicities: fine tremor, polyuria/polydipsia (nephrogenic DI), hypothyroidism, hyperparathyroidism, renal impairment.
 
 - **Evidence:** Hypothyroidism occurs in ~14% of lithium-treated patients (OR 5.78 vs. placebo).
 
@@ -504,7 +504,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** The Clinical Opiate Withdrawal Scale — an 11-item clinician-administered tool (score 0–48) assessing opioid withdrawal severity. Scores 5–12: mild; 13–24: moderate; 25–36: moderately severe; >36: severe.
 
-- **Evidence:** Validated against CINA scale (Pearson r = 0.85). For buprenorphine induction, COWS should ideally be ≥10–12.
+- **Evidence:** Validated against CINA scale (Pearson r = 0.85). For buprenorphine initiation, guidelines put the start at roughly COWS ≥ 8–12 (ASAM's 2023 fentanyl guidance: ≥ 8 with at least one objective sign).
 
 - **Key paper:** Wesson & Ling, J Psychoactive Drugs 2003.
 
@@ -518,7 +518,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Nosyk et al., JAMA 2024.
 
-- **Pearl:** Buprenorphine is a **partial agonist** — it can precipitate withdrawal if given while full agonists are still present. Wait for adequate withdrawal (COWS ≥10–12) before initiating.
+- **Pearl:** Buprenorphine is a **partial agonist** — it can precipitate withdrawal if given while full agonists are still present. Start buprenorphine once objective withdrawal is present — roughly COWS ≥ 8–12 depending on the guideline (ASAM's 2023 fentanyl guidance: ≥ 8 with at least one objective sign). With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.
 
 **52. How does naloxone work and when is it used?**
 

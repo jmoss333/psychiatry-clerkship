@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(479 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(481 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -282,6 +282,8 @@ internal Progress. These are part of the same shipped class contract:
 | Class | Element / notes |
 |---|---|
 | `.fd-due` | Due-review button; contains `.fd-due__label`, `.fd-due__breakdown`, and `.fd-due__action`. |
+| `.fd-due-group` | Wrapper `fdDueRow` emits ONLY when practice-bank (QB#) cards are due beside Daily Review ones (2026-09-24): the `.fd-due` button, then `.fd-due-group__bank`. Daily Review cannot serve QB# cards, so the row keeps its route to `review.html` and the bank's share gets its own control. Without both kinds due the row is the bare `.fd-due` button as before — bank-only dues route that button to `question-bank-practice.html`. Carries no `.fd-due`, so a due-row count still finds one. |
+| `.fd-due-group__bank` | Secondary `<button data-fd-open="question-bank-practice.html">` "Practice bank · N due for review →", a SIBLING of `.fd-due` (never nested: a button may not contain one). No `data-fd-dock-source` — it is never Today's primary. N is the shell's QB# servability count, pinned equal to the bank's own "Due for review (N)" by `tests/fd-due-bank-parity.test.mjs`. |
 | `.fd-resume` | Session-resume section; `.fd-resume__link` is the query-preserving link. |
 | `.fd-resume__block` | Progress line inside `.fd-resume__link` when the capsule came from a timed block ("Block · 1 of 2 done"); the link then carries `resume=1&block=1&n[&cat]` (Phase 2, 2026-09-16). |
 | `.fd-block` | Timed block card (2026-09-02, not in the prototype), spliced in with the due row and resume card by `fdTodayLive`. Planner face: `.fd-block__head` (`__kicker`, `__chips` › `__chip(.is-sel)`, `__hint`), `.fd-block__steps` › `__step` (`__dot.is-review/.is-page/.is-qb`, `__title`, `__min`), `.fd-block__actions` (a `.fd-btn--primary` carrying `data-block-start`), or `.fd-block__empty`. Live face adds `.is-live` on the card, `__count`, `__check` on each `__step(.is-done)`, and `__doneline`. Click attributes are `data-block-minutes` / `-start` / `-continue` / `-end`, owned by the shell's auxiliary click handler — deliberately outside the `data-fd-*` controller namespace. Rendered by `fdBlockCard` (`frontdoor/fd_block.js`). |

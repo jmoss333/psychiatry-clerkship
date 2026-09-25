@@ -1,0 +1,109 @@
+[
+ {
+  "id": "S1-001",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "The can't-miss list (Q3) does leave out withdrawal and CNS infection, and nothing on the page asks for a substance history. But Q5 and the Learner Summary both already carry the withdrawal exception ('avoid benzodiazepines outside withdrawal syndromes'), so the pharmacologic harm pathway is partly covered. Downgraded to Moderate. Correction changed from 'sedative (benzodiazepine)' to 'sedative-hypnotic (e.g., benzodiazepine)' so Z-drugs and barbiturates are not excluded.",
+  "evidence": "Wilson MP et al., Project BETA psychopharmacology, West J Emerg Med 2012 (DOI 10.5811/westjem.2011.9.6866; westjem.com full text: benzodiazepine is agent of choice for alcohol/benzodiazepine withdrawal delirium); CNS infection as febrile-delirium can't-miss is recall.",
+  "correction": "metabolic derangements, and — always — hypoglycemia, hypoxia, alcohol or sedative-hypnotic (e.g., benzodiazepine) withdrawal (ask the daughter directly about drinking and sleeping pills), CNS infection (meningitis/encephalitis — fever plus confusion), and intracranial catastrophe as can't-miss items.",
+  "problem": "Q3's can't-miss list for a febrile delirious older adult leaves out alcohol/sedative-hypnotic withdrawal and CNS infection, and the page never asks for a substance history. The withdrawal exception does appear in Q5 and the Learner Summary, but only as a drug-choice caveat.",
+  "confidence": "high"
+ },
+ {
+  "id": "S1-002",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "Q4 asks what the student does 'first' with a patient swinging at staff, and the answer opens with verbal de-escalation, with no personal-space, exit, or call-for-help step. The Learner Summary says 'ensure safety of patient and staff; one calm communicator' and the facilitator note mentions escalation to security, but neither appears in the Q4 teaching point a student will remember. The correction is accurate for an MS3 and drops in grammatically.",
+  "evidence": "Richmond JS et al., Project BETA de-escalation workgroup, West J Emerg Med 2012 (DOI 10.5811/westjem.2011.9.6864): Domain 1 respect personal space (two arm's lengths, unobstructed exit); one designated interactor (recall of paper content).",
+  "correction": "*Teaching point:* First, make the scene safe: step back to a safe distance with a clear exit, call for help (nurse, security, your supervising resident/attending), and let one experienced team member lead — you participate under supervision. Then: verbal de-escalation before medication, and medication before physical restraint.",
+  "confidence": "high"
+ },
+ {
+  "id": "S1-003",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "The DLB/PD neuroleptic-sensitivity warning is valid and missing. However, the reviewer's correction names 'visual hallucinations, fluctuations' as the cues for Lewy body disease, and Q2 on the same page teaches those same features as markers of delirium. Every delirious patient would then screen positive, which contradicts the page. The cue is anchored to baseline (pre-illness) features instead, and the warning now covers antipsychotics generally, not only haloperidol.",
+  "evidence": "McKeith IG et al., DLB Consortium 4th consensus, Neurology 2017 (severe neuroleptic sensitivity); AGS Beers Criteria 2023 (avoid antipsychotics in Parkinson disease except quetiapine, clozapine, pimavanserin); recall.",
+  "correction": "(The exception: sedative-hypnotic or alcohol withdrawal, where benzodiazepines are first-line.) Avoid haloperidol (and use any antipsychotic only with great caution) in known Parkinson disease or suspected Lewy body dementia — look for parkinsonism or hallucinations/fluctuations that predate this illness — because of severe antipsychotic sensitivity; ask your team. Start low, go slow, and reassess.",
+  "problem": "Q5 recommends low-dose haloperidol for an older adult who may have unrecognized dementia, with no warning about severe antipsychotic sensitivity in Parkinson disease or Lewy body dementia. The DLB cues must be baseline features so they do not conflict with Q2's delirium features.",
+  "confidence": "high"
+ },
+ {
+  "id": "S1-005",
+  "verdict": "confirmed",
+  "severity": "Major",
+  "reason": "Verified against the current label. Zyprexa USPI §5.7 says concomitant IM olanzapine and parenteral benzodiazepine 'is not recommended due to the potential for excessive sedation and cardiorespiratory depression'. The page's own cited source, BETA [2], says 'This combination should be avoided' in general and notes the alcohol signal only as supporting data. So the page narrows both the label and its own reference. Patient B's plan also lists midazolam IM and olanzapine IM as sequential options, which gives a concrete path to stacking the two.",
+  "evidence": "ZYPREXA USPI §5.7 (drugs.com/pro/zyprexa.html; DailyMed setid b418946a-1ab4-4d89-a012-d94fc361a3c4); Wilson MP et al., West J Emerg Med 2012 full text (westjem.com), DOI 10.5811/westjem.2011.9.6866.",
+  "correction": "avoid combining IM olanzapine with a parenteral benzodiazepine (not recommended per FDA label; cardiorespiratory depression), especially in alcohol-intoxicated patients [2]",
+  "confidence": "high"
+ },
+ {
+  "id": "S1-006",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "Head injury and intracranial hemorrhage are a real gap for a patient brought in by police after an altercation. Excited catatonia and serotonin toxicity are reasonable additions. The page does not state anything false, and Q7 already frames undifferentiated agitation as a medical evaluation, so this is an omission (Moderate), not Major. The correction's 'altercation with police' misreads the stem: police brought him in after an altercation, and the text does not say it was with police. Correction adjusted.",
+  "evidence": "Nordstrom K et al., Project BETA medical evaluation workgroup, West J Emerg Med 2012 (head trauma among medical causes to exclude); Boyer EW, Shannon M, NEJM 2005 (serotonin syndrome); catatonia/NMS risk with antipsychotics (recall).",
+  "correction": "6. Hyperactive delirium of medical origin (metabolic, post-ictal).\n7. Traumatic brain injury/intracranial hemorrhage — brought in after an altercation; examine for head trauma before and after sedation.\n8. Excited catatonia or serotonin toxicity — check catatonic signs and clonus/hyperreflexia before a dopamine antagonist.",
+  "problem": "Patient B's differential leaves out traumatic brain injury/intracranial hemorrhage (he was brought in after an altercation), excited catatonia, and serotonin toxicity.",
+  "confidence": "high"
+ },
+ {
+  "id": "S1-007",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "Patient A's list does leave out withdrawal and CNS infection. Patient B's list includes both, and the plan says 'Avoid benzodiazepines' flatly. However, Q1 and Q2 ('In non-withdrawal delirium') already state the withdrawal exception, which lowers severity to Moderate. The '6a.' item is split into 6a/6b so that the list stays one condition per item and #7 (primary psychiatric illness, a diagnosis of exclusion) stays last.",
+  "evidence": "Wilson MP et al., West J Emerg Med 2012 full text (benzodiazepine is agent of choice in alcohol/benzodiazepine withdrawal delirium), DOI 10.5811/westjem.2011.9.6866; Tunkel AR et al., IDSA encephalitis guideline, Clin Infect Dis 2008 (recall).",
+  "correction": "6. Nonconvulsive status epilepticus — consider if fluctuation persists despite source control.\n6a. Alcohol or sedative-hypnotic withdrawal — obtain substance history/collateral before endorsing 'avoid benzodiazepines'.\n6b. CNS infection (meningitis/encephalitis) — LP if the source is uncertain, meningismus is present, or he fails to improve with source control.",
+  "problem": "Patient A's ranked differential leaves out alcohol/sedative-hypnotic withdrawal and CNS infection, yet the plan says flatly to avoid benzodiazepines. The Q1/Q2 qualifier about withdrawal only partly covers this.",
+  "confidence": "high"
+ },
+ {
+  "id": "S1-008",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "Verified in BETA's full text: 'For intoxication with most recreational drugs, especially stimulants, benzodiazepines are generally considered first-line agents'. BETA also recommends an antipsychotic when psychotic features are present, and adding an SGA for amphetamine psychosis. Cole 2021 confirmed at 86% alcohol intoxication (PMID 33846015). The correction is extended to (a) keep the antipsychotic option for prominent psychosis, since Patient B has hostile, hypervigilant speech, and (b) repeat the no-stacking caution so it does not conflict with S1-005.",
+  "evidence": "Wilson MP et al., West J Emerg Med 2012 full text (westjem.com), DOI 10.5811/westjem.2011.9.6866; Cole JB et al., Ann Emerg Med 2021, PMID 33846015, DOI 10.1016/j.annemergmed.2021.01.005.",
+  "correction": "if IM required and a sympathomimetic toxidrome is likely: a benzodiazepine first (e.g., midazolam 5 mg IM, with airway monitoring) per BETA [2,3], adding or substituting an antipsychotic if psychotic features predominate; droperidol 5 mg or olanzapine 10 mg IM are effective alternatives (note Cole's cohort was 86% alcohol-intoxicated; do not stack IM olanzapine on a parenteral benzodiazepine) [3,5];",
+  "problem": "For a likely sympathomimetic toxidrome, the IM plan leads with antipsychotics and treats benzodiazepines as a speed option only. This contradicts Q1 and BETA, which make benzodiazepines first-line for stimulant intoxication, and the plan leans on alcohol-dominated droperidol/olanzapine data.",
+  "confidence": "high"
+ },
+ {
+  "id": "S1-009",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "Valid. The monitoring list for a sedated, possibly restrained stimulant-toxic patient leaves out temperature and CK, and the page never mentions restraint-related hyperthermia, rhabdomyolysis, or positional asphyxia. The fix is kept, with 'never restrain prone' changed to 'avoid prone positioning' so it names a safety principle without stating a universal legal rule. It also stays within the facilitator note's no-technique-detail framing. One correction to the reviewer's evidence: the ACEP hyperactive-delirium task force report is from 2021, not 2023.",
+  "evidence": "42 CFR 482.13(e)(10) (monitoring at hospital-policy interval, verified eCFR); ACEP Task Force on Hyperactive Delirium with Severe Agitation 2021; Goldfrank's Toxicologic Emergencies (sympathomimetic hyperthermia/rhabdomyolysis) — recall.",
+  "correction": "Post-sedation: vitals q15 min including temperature, SpO2/capnography where available, ECG when feasible, CK and toxicologic/metabolic workup (hyperthermia and rhabdomyolysis risk, especially if he struggled against restraint; avoid prone positioning), serial reassessment;",
+  "problem": "Post-sedation monitoring for a patient with a suspected sympathomimetic toxidrome leaves out temperature and CK, and the page never warns about restraint-related hyperthermia, rhabdomyolysis, or prone-position asphyxia.",
+  "confidence": "high"
+ },
+ {
+  "id": "S1-010",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "Checked against eCFR 42 CFR 482.13. PRN/standing orders are banned (e)(6); adult orders are limited to 4 h, renewable up to 24 h (e)(8); face-to-face evaluation is required within 1 h (e)(12). However, CMS requires monitoring only at an interval set by hospital policy (e)(10), and continuous monitoring only for simultaneous restraint plus seclusion (e)(15). CMS does not require a hospital debrief. The reviewer's correction attributed 'continuous monitoring' and 'debrief' to CMS, which is inaccurate, so the attributions are fixed.",
+  "evidence": "42 CFR 482.13(e)(6),(8),(10),(12),(15),(16), eCFR current text (ecfr.gov, accessed 2026-09-24).",
+  "correction": "For any physical restraint for violent behavior (CMS 42 CFR 482.13(e); state law and hospital policy may be stricter): a non-PRN, time-limited order (≤4 h for adults, renewable only after reassessment, up to 24 h before a new in-person physician/LIP assessment), a face-to-face evaluation within 1 hour of initiation, monitoring at the interval hospital policy sets (continuous if restraint and seclusion are combined; never prone; airway, circulation, temperature), release at the earliest safe time, and a post-event debrief as best practice.",
+  "problem": "The restraint-governance teaching point leaves out the federal specifics residents are accountable for: no PRN orders, a 4-h adult order limit with 24-h renewal ceiling, and face-to-face evaluation within 1 hour. It also says nothing about prone-position risk. The corrected text must credit CMS only for what CMS actually requires.",
+  "confidence": "high"
+ },
+ {
+  "id": "S1-011",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "Verified against the current droperidol USPI. The boxed warning is still on the label: reserve for patients who fail other treatments, 12-lead ECG before administration, and ECG monitoring for 2–3 h after. The only labeled indication is nausea/vomiting with surgical and diagnostic procedures. Q4 describes the warning's origin but never says it is still on the label, so residents could skip post-dose monitoring. The correction is accurate and drops in.",
+  "evidence": "Droperidol Injection USPI (drugs.com/pro/droperidol-injection.html; DailyMed setid 147e033d-d997-4ef6-8bb5-a9ba372590b2), boxed warning and Indications.",
+  "correction": "Reasonable practice: know that the boxed warning is still on the label (pre-dose 12-lead ECG, ECG monitoring for 2–3 h) and that agitation is an off-label use; follow an institutional ED droperidol protocol, screen for known long-QT/recent QT-prolonging drug load when feasible, obtain ECG when the clinical situation allows, monitor after dosing, and avoid routine \"QTc paralysis\" that delays treatment of dangerous agitation.",
+  "confidence": "high"
+ },
+ {
+  "id": "S1-012",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "The DLB/PD sensitivity warning and the IV-haloperidol off-label/QT point are both valid. FDA's 2007 alert says IV haloperidol is not approved and recommends ECG monitoring if it is given IV. Quetiapine is oral-only, so the correction now says so; that matters for an agitated patient who may refuse oral medication. The DLB cue is phrased as a baseline feature to match S1-003.",
+  "evidence": "McKeith IG et al., Neurology 2017 (DLB 4th consensus); AGS Beers Criteria 2023; FDA Information for Healthcare Professionals: Haloperidol (2007) — recall.",
+  "correction": "haloperidol 0.5–1 mg IV/IM (or low-dose SGA), reassess q30–60 min, cumulative-dose cap and EPS/QTc vigilance [2] (IV haloperidol is off-label — ECG monitoring); avoid haloperidol if Parkinson disease or Lewy body dementia is known or suspected (baseline parkinsonism or pre-existing hallucinations/fluctuations) — very-low-dose oral quetiapine if an antipsychotic is unavoidable.",
+  "problem": "Patient A's plan gives haloperidol with no warning about antipsychotic sensitivity in Parkinson disease or Lewy body dementia and no note that IV haloperidol is off-label and needs ECG monitoring.",
+  "confidence": "high"
+ }
+]

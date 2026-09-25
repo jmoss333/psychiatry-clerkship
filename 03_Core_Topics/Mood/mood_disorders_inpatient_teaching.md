@@ -33,7 +33,7 @@ without arguing, shaming, or making promises about discharge.
 - Lithium is the mood stabilizer with anti-suicidal[^cipriani-2013-lithium-suicide] and best maintenance evidence — use it, and monitor it.
 - Sleep is treatment: protect it to pull patients out of depression and to prevent mania.
 - ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states, and in pregnancy it is a preferred option when illness of that severity demands rapid, definitive treatment. Pregnancy alone is not the indication; the severity is.
-- Lithium runs a **narrow therapeutic window (~0.6–1.2 mEq/L)**: check baseline and periodic renal, thyroid and calcium (parathyroid) function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.
+- Lithium runs a **narrow therapeutic window (acute ~0.8–1.2 mEq/L; maintenance ~0.6–0.8, lower in older adults)**[^nolen-2019-lithium-levels]: check baseline and periodic renal, thyroid and calcium (parathyroid) function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.
 - For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic[^canmat-isbd-bipolar-2018] — but **avoid valproate in anyone who could become pregnant** (teratogenic, including neural-tube defects); confirm before it is ordered.
 
 <!-- crisis-block -->

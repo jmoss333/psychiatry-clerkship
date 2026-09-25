@@ -28,7 +28,7 @@ Malingering is **not a psychiatric diagnosis** — it's a V-code/coded observati
 - **Anorexia nervosa** — restriction → low weight, intense fear of weight gain, body-image disturbance. Medical: bradycardia, hypotension, hypothermia, QTc, amenorrhea. **No drug is first-line**; nutritional rehab + therapy (FBT in adolescents).
 - **Bulimia nervosa** — binge + compensatory purging at normal/above weight; hypokalemia, dental erosion, parotid swelling, Russell sign. **Fluoxetine 60 mg** + CBT.
 - **Binge-eating disorder** — binges without compensation; CBT, **lisdexamfetamine** or an SSRI.
-- **Refeeding syndrome** — the can't-miss complication of feeding a starved patient: insulin surge drives **phosphate, potassium, and magnesium intracellularly** → **hypophosphatemia** (weakness, arrhythmia, respiratory failure). **Refeed slowly, replete phosphate/K/Mg, give thiamine, monitor electrolytes.**
+- **Refeeding syndrome** — the can't-miss complication of feeding a starved patient: insulin surge drives **phosphate, potassium, and magnesium intracellularly** → **hypophosphatemia** (weakness, arrhythmia, respiratory failure). **Watch phosphate daily; start higher unless highest-risk (a cautious start for the most malnourished or unstable); replete phosphate/K/Mg; give thiamine.**
 
 ## 4. Serotonin syndrome vs neuroleptic malignant syndrome (high-yield contrast)
 
