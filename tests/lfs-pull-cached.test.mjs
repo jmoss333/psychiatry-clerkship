@@ -17,6 +17,10 @@ import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, chmodSync, statSyn
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { scrubInheritedGitEnv } from './_git_env.mjs';
+
+// Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrubInheritedGitEnv();
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_BUILD = join(ROOT, '13_Faculty_Resources', '_automation', 'site_build');
