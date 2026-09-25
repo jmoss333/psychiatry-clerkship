@@ -75,7 +75,7 @@ var FD_PATH_PRACTICE=[
     feedback:'Can you review my rationale for this treatment plan?'},
   {skill:'Draft a family-meeting agenda and discharge barrier map',
     feedback:'Can you review my family-meeting agenda and discharge barriers?'},
-  {skill:'Formulate suicide/violence risk, recognize delirium/catatonia/withdrawal, and document supervised escalation reasoning',
+  {skill:'Deepen the suicide/violence risk formulation practised since Week 1 (and used for Week 3 safety planning), recognize delirium/catatonia/withdrawal, and document supervised escalation reasoning',
     feedback:'Can you tell me if my risk formulation separates chronic and acute risk?'},
   {skill:'Present a full case with formulation, risk reasoning, and plan',
     feedback:'Can you help me make my presentation more concise?'}
