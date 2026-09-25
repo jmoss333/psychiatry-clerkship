@@ -1942,7 +1942,9 @@ test('completion updates desktop, mobile, and the audience-correct rail immediat
   if (resident) {
     await expect(railLabel).toHaveCount(0);
   } else {
-    await expect(railLabel).toContainText('1 of 9 done');
+    // Week 1 of the MS3 Path has 11 steps since WP-5 part 1 added sp-interview.html and
+    // one-patient-six-weeks.html (2026-09-24); the rail counts every step of the week.
+    await expect(railLabel).toContainText('1 of 11 done');
     await expect(page.locator('.fd-railnav__row[data-fd-open="question-bank-practice.html"] .fd-visually-hidden'))
       .toHaveText('Completed');
   }
@@ -1973,7 +1975,7 @@ test('completion updates desktop, mobile, and the audience-correct rail immediat
   if (resident) {
     await expect(railLabel).toHaveCount(0);
   } else {
-    await expect(railLabel).toContainText('0 of 9 done');
+    await expect(railLabel).toContainText('0 of 11 done');
     await expect(page.locator('.fd-railnav__row[data-fd-open="question-bank-practice.html"] .fd-visually-hidden'))
       .toHaveCount(0);
   }
