@@ -344,7 +344,10 @@ test('the real curriculum joins without throwing and routes every week item', ()
   }
   // 39 = 40 minus cssrs.html, which left Week 5 on 2026-09-16: a rights reference is a Library
   // row, not a path step (tests/path-rights-references.test.mjs).
-  assert.equal(n, 39, 'expected the 39 week items curriculum.json ships');
+  // 48 = 39 + the nine simulation steps WP-5 part 1 put on the Path (2026-09-24):
+  // sp-interview.html in weeks 1-2, diagnostic-reasoning.html in weeks 2 and 4, and
+  // one-patient-six-weeks.html in weeks 1-5 (it was already in week 6).
+  assert.equal(n, 48, 'expected the 48 week items curriculum.json ships');
 });
 
 test('every real library column item resolves', () => {
