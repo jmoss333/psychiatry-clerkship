@@ -430,14 +430,17 @@
      stylesheet here would trip fd-shell-boot's single-reference count, which exists to keep this
      document from acquiring a second competing link to it.) */
   #fdChromeMount{display:contents}
-  #fdCaptureMount{width:100%;max-width:1200px;margin:12px auto 0;padding:0 20px;display:flex;justify-content:flex-end}
+  #fdCaptureMount{position:fixed;right:calc(var(--fd-space-8) + var(--fd-target-touch) + var(--fd-space-9));bottom:var(--fd-space-8);z-index:28;display:flex;justify-content:flex-end}
   #fdCaptureMount:empty{display:none}
-  #fdCaptureMount .fd-capture-launch{width:min(230px,100%);margin:0}
-  @media(max-width:999px){#fdCaptureMount .fd-capture-launch{width:min(210px,100%)}}
-  /* Phone chrome (see the front-door stylesheet's block of that name): the launcher keeps its
-     44px target and gives up only the gap above it, so the first phone screen has more page. */
-  @media(max-width:640px){#fdCaptureMount{margin-top:0}}
+  #fdCaptureMount .fd-capture-launch{width:auto;margin:0;box-shadow:var(--fd-shadow-lift);border-style:solid}
+  @media(max-width:1000px){#fdCaptureMount{right:var(--fd-space-6);bottom:calc(env(safe-area-inset-bottom,0px) + var(--fd-target-touch) + var(--fd-space-10) + var(--fd-space-2))}}
+  @media(max-width:640px){#fdCaptureMount{display:none}}
   .cap-disclose{font-size:var(--fd-font-xs);color:var(--text-light);margin:8px 0 0}
+  .cap-starters{display:flex;align-items:center;gap:var(--fd-space-3);flex-wrap:wrap;margin:var(--fd-space-4) 0 0}
+  .cap-starters span{font-size:var(--fd-font-xs);color:var(--text-light)}
+  .cap-starters button{min-height:var(--fd-target-touch);border:1px solid var(--border);border-radius:var(--fd-radius-pill);background:var(--surface);color:var(--primary-dark);padding:var(--fd-space-3) var(--fd-space-5);font:inherit;font-size:var(--fd-font-xs);cursor:pointer}
+  .cap-starters button:hover{background:var(--primary-light);border-color:var(--primary)}
+  .cap-starters button:focus-visible{outline:var(--fd-space-1) solid var(--fd-focus);outline-offset:var(--fd-space-1)}
   .cap-acts{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 0}
   .cap-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:8px 14px;font:inherit;font-size:var(--fd-font-sm);font-weight:600;cursor:pointer}
   .cap-btn.primary{background:var(--primary-dark);border-color:var(--primary-dark);color:#fff}
@@ -448,11 +451,23 @@
   .cap-purpose{margin:0 0 10px;font-size:var(--fd-font-md);line-height:1.45;color:var(--text-mid);max-width:70ch}
   .cap-phi{margin:12px 0 0;padding:12px;background:var(--warning-light);border:1px solid var(--warning);border-radius:9px;font-size:var(--fd-font-sm);color:var(--warning)}
   .cap-phi b{display:block;margin:0 0 4px}
+  .cap-next{margin:var(--fd-space-7) 0 0;padding:var(--fd-space-7);border:1px solid var(--primary);border-radius:var(--fd-radius-lg);background:var(--primary-light)}
+  .cap-next__saved{margin:0 0 var(--fd-space-1);color:var(--primary-dark);font-size:var(--fd-font-xs);font-weight:700}
+  .cap-next h3{margin:0 0 var(--fd-space-5);color:var(--text);font-family:var(--font-head);font-size:var(--fd-font-md)}
+  .cap-next__match{display:flex;flex-direction:column;gap:var(--fd-space-1);margin-top:var(--fd-space-5);padding:var(--fd-space-5);border-radius:var(--fd-radius-md);background:var(--surface)}
+  .cap-next__match span{font-size:var(--fd-font-xs);color:var(--text-light)}
+  .cap-next__match strong{font-size:var(--fd-font-md);color:var(--text)}
+  .cap-next__actions{display:flex;gap:var(--fd-space-4);flex-wrap:wrap;margin-top:var(--fd-space-5)}
+  .cap-next__empty{margin:0 0 var(--fd-space-5);font-size:var(--fd-font-sm);line-height:1.5;color:var(--text-mid)}
+  .cap-next__done{margin-top:var(--fd-space-5);min-height:var(--fd-target-touch)}
+  .cap-route{display:flex;flex-wrap:wrap;gap:var(--fd-space-4);margin-top:var(--fd-space-4)}
+  .cap-route .cap-btn{min-height:var(--fd-target-touch)}
+  .cap-route .cap-btn[aria-pressed="true"]{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark)}
   .cap-list{list-style:none;margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--border)}
-  .cap-list li{display:flex;align-items:center;gap:var(--fd-space-4);margin:0 0 var(--fd-space-1);font-size:var(--fd-font-sm);color:var(--text)}
+  .cap-list li{margin:0 0 var(--fd-space-6);padding:0 0 var(--fd-space-6);border-bottom:1px solid var(--border);font-size:var(--fd-font-sm);color:var(--text)}
+  .cap-list__row{display:flex;align-items:center;gap:var(--fd-space-4)}
   .cap-list__text{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
   .cap-list__status{flex:0 0 auto;font-size:var(--fd-font-2xs);font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--text-light);border:1px solid var(--border);border-radius:var(--fd-radius-pill);padding:var(--fd-space-1) var(--fd-space-3);line-height:1.4}
-  .cap-list li[data-cap-status="triaged"] .cap-list__text{color:var(--text-mid)}
   /* Touch target (#428) without a taller list: the hit area is the button box, the glyph stays small. */
   .cap-list .x{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--text-light);font:inherit;font-size:var(--fd-font-lg);line-height:1;cursor:pointer;padding:0;min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);border-radius:var(--fd-radius-sm)}
   .cap-list .x:hover,.cap-list .x:focus-visible{background:var(--bg-alt);color:var(--text)}
@@ -616,7 +631,9 @@
 <div id="fdApp" class="fd-shell" aria-busy="true" inert>
   <div id="fdChromeMount"></div>
   <span id="routeStatus" class="vh-live" aria-live="polite"></span>
+  <span id="careNavigatorStatus" class="vh-live" role="status" aria-live="polite" aria-atomic="true"></span>
   <div id="fdCaptureMount"></div>
+  <div id="fdDockMount"></div>
   <main id="content" class="fd-main" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></main>
   <div id="governanceMount"></div>
   <div id="fdOverlayMount"></div>
@@ -743,7 +760,7 @@
     [].forEach.call(contentEl.querySelectorAll('.markrev'),function(el){ if(el.getAttribute('data-f')!==file)return; el.classList.toggle('on',done); el.setAttribute('aria-pressed',String(done)); el.textContent=done?'✓ Read':'Mark as read'; });
   }
   function topicHasQuiz(file){ var m=(typeof TOPIC_META!=='undefined'&&TOPIC_META)?TOPIC_META[file]:null; return !!(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length); }
-  function seedSRS(file){ try{ if(!topicHasQuiz(file))return; var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}}; } var id='TOPIC#'+file; if(!s.cards[id]){ s.cards[id]={ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; localStorage.setItem('cw_srs_v1',JSON.stringify(s)); } }catch(_){ } }
+  function seedSRS(file){ try{ if(!topicHasQuiz(file))return false; var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}}; } var id='TOPIC#'+file; if(!s.cards[id]){ s.cards[id]={ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; localStorage.setItem('cw_srs_v1',JSON.stringify(s)); } return true; }catch(_){ return false; } }
   /* One-time self-healing migration: drop never-graded TOPIC# cards whose topic has no
      servable quiz — they were seeded by the unguarded seedSRS, can never be graded in
      Daily Review, and inflate "Due today" forever. Runs whenever topic_meta loads;
@@ -1269,6 +1286,7 @@
     if(s.openId)return null;
     if(s.tab==='path')return {f:'__path__',t:'Path',k:'special'};
     if(s.tab==='library')return {f:'__library__',t:'Library',k:'special'};
+    if(s.tab==='care')return {f:'__care__',t:'Patient care resources',k:'special'};
     return {f:'__home__',t:'Today',k:'special'};
   }
   function fdAdoptSpecialContext(state){
@@ -1398,44 +1416,131 @@
      tests/ward-capture.test.mjs T3b. Scoping it here keeps the shared file untouched. */
   var CAP_WARD_LOC=/\b(?:bed|room|rm)\s*#?\s*\d+/i;
   function capRisky(t){ return looksLikePhi(t) || CAP_WARD_LOC.test(t); }
+  function capRoute(v){ return typeof v==='string'&&/^(?:rounds|supervision|later)$/.test(v)?v:null; }
+  function capState(v){ return v==='done'?'done':'open'; }
+  function capLegacyRoute(item){
+    if(item.status==='supervision')return 'supervision';
+    if(item.status==='scheduled')return 'later';
+    return null;
+  }
+  function capValidId(v){ return typeof v==='string'&&/^[A-Za-z0-9_-]{1,64}$/.test(v)
+    &&v!=='__proto__'&&v!=='constructor'&&v!=='prototype'; }
+  function capTime(v){ return typeof v==='number'&&isFinite(v)&&v>=0&&v<=8640000000000000&&Math.floor(v)===v?v:0; }
+  function capContext(v){ return typeof v==='string'&&/^[A-Za-z0-9][A-Za-z0-9_./-]{0,199}$/.test(v)
+    &&v.indexOf('..')<0?v:null; }
+  function capOlder(a,b){ return a.at<b.at||(a.at===b.at&&a.id<b.id); }
   function capRead(){
     var d=null; try{ d=JSON.parse(localStorage.getItem('cw_capture_v1')||'null'); }catch(_){ d=null; }
-    if(!d||typeof d!=='object'||Object.prototype.toString.call(d.items)!=='[object Array]') return {v:1,items:[]};
-    var out=[]; for(var i=0;i<d.items.length;i++){ var it=d.items[i];
-      if(!it||typeof it.text!=='string')continue;
-      /* clamp on read as well as write — a hand-edited store must not widen the cap */
-      out.push({id:String(it.id||''),text:it.text.slice(0,CAP_MAX),at:+it.at||0,ctx:it.ctx||null,triaged:!!it.triaged}); }
-    return {v:1,items:out};
+    if(!d||typeof d!=='object'||(d.v!==1&&d.v!==2)
+       ||Object.prototype.toString.call(d.items)!=='[object Array]')return {v:2,items:[]};
+    var out=[], seen=Object.create(null);
+    for(var i=0;i<d.items.length;i++){ var it=d.items[i];
+      if(!it||typeof it!=='object'||!capValidId(it.id)||seen[it.id]
+         ||typeof it.text!=='string'||!it.text.trim())continue;
+      seen[it.id]=true;
+      var route=d.v===1?capLegacyRoute(it):capRoute(it.route);
+      var state=d.v===1?'open':capState(it.state);
+      out.push({id:it.id,text:it.text.slice(0,CAP_MAX),at:capTime(it.at),ctx:capContext(it.ctx),
+        route:route,state:state});
+      capEvict(out);
+    }
+    return {v:2,items:out};
   }
-  function capWrite(d){ try{ localStorage.setItem('cw_capture_v1',JSON.stringify(d)); return true; }catch(_){ return false; } }
-  function capEraseAll(){ try{ localStorage.removeItem('cw_capture_v1'); }catch(_){ } }
+  function capWrite(d){
+    try{
+      var items=[];
+      for(var i=0;i<d.items.length;i++){
+        var it=d.items[i];
+        items.push({id:it.id,text:it.text.slice(0,CAP_MAX),at:capTime(it.at),ctx:capContext(it.ctx),
+          route:capRoute(it.route),state:capState(it.state)});
+      }
+      localStorage.setItem('cw_capture_v1',JSON.stringify({v:2,items:capEvict(items)}));
+      return true;
+    }catch(_){ return false; }
+  }
+  function capEraseAll(){
+    try{
+      localStorage.removeItem('cw_capture_v1');
+      return localStorage.getItem('cw_capture_v1')===null;
+    }catch(_){ return false; }
+  }
   function capCtx(){
     /* null on every Front Door special route. The learner bookmark intentionally remains the
        previous real page, so capture context must consult currentItem rather than stale cw_last. */
     try{ if(!currentItem||currentItem.k==='special')return null; return currentItem.f||null; }catch(_){ return null; }
   }
-  function capEvict(items){
-    while(items.length>CAP_LIMIT){ var idx=0;
-      for(var i=0;i<items.length;i++){ if(items[i].triaged){ idx=i; break; } }
-      items.splice(idx,1); }
+  function capEvict(items,limit){
+    if(limit===undefined)limit=CAP_LIMIT;
+    while(items.length>limit){ var idx=-1, havePriority=false;
+      for(var i=0;i<items.length;i++){
+        var priority=items[i].route!==null||items[i].state==='done';
+        if(idx<0||(priority&&!havePriority)||(priority===havePriority&&capOlder(items[i],items[idx]))){
+          idx=i; havePriority=priority;
+        }
+      }
+      items.splice(idx,1);
+    }
     return items;
   }
-  function capAdd(text){
-    var d=capRead();
-    d.items.push({id:'c_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-3),
-      text:String(text).slice(0,CAP_MAX),at:Date.now(),ctx:capCtx(),triaged:false});
-    capEvict(d.items);
-    return capWrite(d);
+  function capOldestUnrouted(items){
+    if(Object.prototype.toString.call(items)!=='[object Array]')return null;
+    var oldest=null;
+    for(var i=0;i<items.length;i++){
+      var it=items[i];
+      if(!it||it.route!==null||it.state!=='open')continue;
+      if(!oldest||capOlder(it,oldest))oldest=it;
+    }
+    return oldest;
   }
-  function capRemove(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items.splice(i,1); break; } } if(d.items.length) capWrite(d); else capEraseAll(); }
-  function capMarkTriaged(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items[i].triaged=true; break; } } capWrite(d); }
+  function capNewId(items,at){
+    try{
+      var random=Math.random();
+      if(typeof random!=='number'||!isFinite(random)||random<0||random>=1)return null;
+      var base='c_'+random.toString(36).slice(2,8)+at.toString(36).slice(-3);
+      if(!capValidId(base))return null;
+      /* At most CAP_LIMIT ids are retained, so base plus CAP_LIMIT suffixes has a free slot. */
+      for(var suffix=0;suffix<=CAP_LIMIT;suffix++){
+        var id=suffix?base+'_'+suffix:base, used=false;
+        for(var i=0;i<items.length;i++){ if(items[i].id===id){ used=true; break; } }
+        if(!used)return id;
+      }
+    }catch(_){ }
+    return null;
+  }
+  function capAdd(text){
+    var d=capRead(), at;
+    try{ at=Date.now(); }catch(_){ return false; }
+    if(capTime(at)!==at)return false;
+    var id=capNewId(d.items,at);
+    if(!id)return false;
+    /* Reserve the incoming item before writing; a backward clock must not evict the new save. */
+    capEvict(d.items,CAP_LIMIT-1);
+    d.items.push({id:id,text:String(text).slice(0,CAP_MAX),at:at,ctx:capCtx(),route:null,state:'open'});
+    return capWrite(d)?id:false;
+  }
+  function capRemove(id){
+    var d=capRead(), found=false;
+    for(var i=0;i<d.items.length;i++){
+      if(d.items[i].id===id){ d.items.splice(i,1); found=true; break; }
+    }
+    if(!found)return false;
+    return d.items.length?capWrite(d):capEraseAll();
+  }
+  function capSetRoute(id,route){
+    if(route!==null&&capRoute(route)!==route)return false;
+    var d=capRead();
+    for(var i=0;i<d.items.length;i++){
+      if(d.items[i].id===id){ d.items[i].route=route; return capWrite(d); }
+    }
+    return false;
+  }
   /* The supervised-draft stamp travels with the one sanctioned clipboard egress. */
   var CAP_STAMP='Questions from the unit, brought to supervision. Written by a trainee for teaching discussion — contains no patient information.';
   /* P4 — the one sanctioned egress. The stamp lives inside the payload builder so every copy path
      carries it, matching the supervised-draft pattern in decisional-capacity-module.html. */
   function capClipboardText(){
     var d=capRead(), lines=[CAP_STAMP,''];
-    for(var i=0;i<d.items.length;i++){ if(!d.items[i].triaged) lines.push('- '+d.items[i].text); }
+    for(var i=0;i<d.items.length;i++){ if(d.items[i].state==='open') lines.push('- '+d.items[i].text); }
     return lines.join('\n');
   }
   /* ---- end ward capture store ---- */
@@ -1454,7 +1559,7 @@
     return out;
   }
   function capKeydown(e){
-    if(!capSheet)return;
+    if(!capSheet||capEmailSheet)return;
     if(e.key==='Escape'){ e.preventDefault(); if(e.stopPropagation)e.stopPropagation(); capClose(); return; }
     if(e.key!=='Tab')return;
     var f=capFocusables(); if(!f.length)return;
@@ -1463,6 +1568,7 @@
     else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
   }
   function capClose(){
+    if(capEmailSheet)capEmailClose();
     if(capBackdrop&&capBackdrop.parentNode)capBackdrop.parentNode.removeChild(capBackdrop);
     if(capSheet&&capSheet.parentNode)capSheet.parentNode.removeChild(capSheet);
     capSheet=null; capBackdrop=null;
@@ -1487,29 +1593,193 @@
     if(t.length>60) t=t.slice(0,57)+'…';
     return 'Delete question: '+t;
   }
+  function capRouteLabel(route){
+    if(route==='rounds')return 'Ask on rounds';
+    if(route==='supervision')return 'Discuss in supervision';
+    if(route==='later')return 'Look up later';
+    return 'Unrouted';
+  }
+  function capRouteHtml(id,route){
+    var questionId='cap-question-'+capAttr(id);
+    var options=['rounds','supervision','later'], h='<div class="cap-route" role="group" aria-label="Choose where to take this question" aria-describedby="'+questionId+'">';
+    for(var i=0;i<options.length;i++){
+      var choice=options[i];
+      h+='<button type="button" class="cap-btn" data-cap-route="'+choice+'" data-cap-id="'+capAttr(id)+'" aria-pressed="'+(route===choice?'true':'false')+'" aria-describedby="'+questionId+'">'+capRouteLabel(choice)+'</button>';
+    }
+    return h+'</div>';
+  }
   function capListHtml(){
-    /* Every retained capture is listed here, triaged ones included (#426). Opening or scheduling
-       a question marks it triaged and drops it from Today's card, but the text stays in
-       cw_capture_v1 -- and a learner must be able to see and delete anything the app still holds.
-       Untriaged first, so the working list reads as before; triaged after, labelled as such. */
-    var d=capRead(), items=[], i;
-    for(i=0;i<d.items.length;i++){ if(!d.items[i].triaged) items.push(d.items[i]); }
-    for(i=0;i<d.items.length;i++){ if(d.items[i].triaged) items.push(d.items[i]); }
+    /* Every retained question stays visible here, including questions already routed elsewhere. */
+    var d=capRead(), items=d.items;
     if(!items.length)return '';
     var h='<ul class="cap-list">';
     for(var j=0;j<items.length;j++){
       var it=items[j];
-      h+='<li data-cap-status="'+(it.triaged?'triaged':'new')+'"><span class="cap-list__text">'+esc(it.text)+'</span>'
-        +'<span class="cap-list__status">'+(it.triaged?'Triaged':'New')+'</span>'
-        +'<button type="button" class="x" data-cap-del="'+esc(it.id)+'" aria-label="'+capAttr(capDeleteLabel(it.text))+'">&times;</button></li>';
+      h+='<li data-cap-route-state="'+(it.route||'unrouted')+'"><div class="cap-list__row">'
+        +(it.state==='open'?'<input type="checkbox" class="cap-email-select" data-cap-email-id="'+capAttr(it.id)+'" aria-label="Select question for email: '+capAttr(it.text.replace(/\s+/g,' ').slice(0,60))+'">':'')
+        +'<span class="cap-list__text" id="cap-question-'+capAttr(it.id)+'">'+esc(it.text)+'</span>'
+        +'<span class="cap-list__status">'+capRouteLabel(it.route)+'</span>'
+        +'<button type="button" class="x" data-cap-del="'+capAttr(it.id)+'" aria-label="'+capAttr(capDeleteLabel(it.text))+'">&times;</button></div>'
+        +capRouteHtml(it.id,it.route)+'</li>';
     }
-    /* Erase all is offered whenever the store holds ANY record, not only untriaged ones. */
-    return h+'</ul><div class="cap-acts"><button type="button" class="cap-btn danger" id="capEraseAll">Erase all captures</button></div>';
+    /* Erase all is offered whenever the store holds any record. */
+    return h+'</ul><div class="cap-acts"><button type="button" class="cap-btn" id="capEmailSelect" disabled>Email selected questions</button>'+
+      '<button type="button" class="cap-btn" data-cap-copy="1">Copy questions</button>'+
+      '<button type="button" class="cap-btn danger" id="capEraseAll">Erase all captures</button></div>';
   }
   function capRenderBody(){
     if(!capSheet)return;
     var body=capSheet.querySelector('#capListWrap'); if(body)body.innerHTML=capListHtml();
   }
+  /* The Front Door script below installs this after its canonical index is ready. */
+  var fdCaptureEmail=null;
+  /* ---- faculty email dialog ---- */
+  var capEmailSheet=null,capEmailBackdrop=null,capEmailInvoker=null;
+  var capEmailGeneration=0;
+  var capEmailState={selected:[],digest:null,localPart:'',affirmed:false,showFallback:false};
+  function capEmailText(){
+    return capEmailState.digest?'Subject: '+capEmailState.digest.subject+'\n\n'+capEmailState.digest.body:'';
+  }
+  function capEmailReady(){
+    return capEmailState.selected.length>0&&!!fdCaptureEmail.address(capEmailState.localPart)&&capEmailState.affirmed;
+  }
+  function capEmailHandoff(){
+    if(!capEmailReady())return 'blocked';
+    var mail=fdCaptureEmail.mailto(capEmailState.localPart,capEmailState.digest);
+    if(!mail.ok){
+      if(mail.reason==='too-long'||mail.reason==='invalid-digest')capEmailState.showFallback=true;
+      return mail.reason;
+    }
+    var anchor=document.createElement('a');
+    anchor.href=mail.href;
+    try{ anchor.click(); }catch(_){ capEmailState.showFallback=true; return 'unavailable'; }
+    finally{ anchor.remove(); }
+    return 'opened';
+  }
+  function capEmailCopy(){
+    if(!capEmailState.digest)return Promise.resolve(false);
+    var state=capEmailState, sheet=capEmailSheet, generation=capEmailGeneration;
+    function current(){return state===capEmailState&&sheet===capEmailSheet&&generation===capEmailGeneration;}
+    if(!navigator.clipboard||typeof navigator.clipboard.writeText!=='function'){
+      capEmailState.showFallback=true; return Promise.resolve(false);
+    }
+    try{
+      return Promise.resolve(navigator.clipboard.writeText(capEmailText())).then(function(){
+        return current()?true:null;
+      },function(){
+        if(!current())return null;
+        state.showFallback=true;return false;
+      });
+    }catch(_){if(current())state.showFallback=true;return Promise.resolve(current()?false:null);}
+  }
+  function capEmailFocusables(){
+    if(!capEmailSheet)return [];
+    var all=capEmailSheet.querySelectorAll('button,input,textarea,[href]'),out=[];
+    for(var i=0;i<all.length;i++)if(!all[i].disabled&&all[i].offsetParent!==null)out.push(all[i]);
+    return out;
+  }
+  function capEmailKeydown(e){
+    if(!capEmailSheet)return;
+    if(e.key==='Escape'){e.preventDefault();if(e.stopPropagation)e.stopPropagation();capEmailClose();return;}
+    if(e.key!=='Tab')return;
+    var all=capEmailFocusables();if(!all.length)return;
+    if(e.shiftKey&&document.activeElement===all[0]){e.preventDefault();all[all.length-1].focus();}
+    else if(!e.shiftKey&&document.activeElement===all[all.length-1]){e.preventDefault();all[0].focus();}
+  }
+  function capEmailPreview(message){
+    if(!capEmailSheet)return;
+    var field=capEmailSheet.querySelector('#capEmailLocal');
+    var valid=fdCaptureEmail.address(capEmailState.localPart);
+    var hint=capEmailSheet.querySelector('#capEmailHint');
+    hint.textContent=capEmailState.localPart&&!valid
+      ?'Enter one email name before @mainehealth.org. Spaces, a second @, and recipient lists are not allowed.'
+      :'We cannot verify whether this MaineHealth mailbox exists. Check it in your mail app.';
+    field.setAttribute('aria-invalid',capEmailState.localPart&&!valid?'true':'false');
+    capEmailSheet.querySelector('#capEmailOpenDraft').disabled=!capEmailReady();
+    var fallback=capEmailSheet.querySelector('#capEmailFallback');
+    fallback.hidden=!capEmailState.showFallback;
+    if(capEmailState.showFallback)fallback.querySelector('textarea').value=capEmailText();
+    if(message)capEmailSheet.querySelector('#capEmailStatus').textContent=message;
+  }
+  function capEmailClose(){
+    capEmailGeneration++;
+    if(capEmailBackdrop&&capEmailBackdrop.parentNode)capEmailBackdrop.parentNode.removeChild(capEmailBackdrop);
+    if(capEmailSheet&&capEmailSheet.parentNode)capEmailSheet.parentNode.removeChild(capEmailSheet);
+    capEmailSheet=null;capEmailBackdrop=null;
+    document.removeEventListener('keydown',capEmailKeydown,true);
+    var restore=null;
+    if(capSheet){
+      capSheet.inert=false;capSheet.removeAttribute('aria-hidden');
+      var boxes=capSheet.querySelectorAll('[data-cap-email-id]');
+      for(var i=0;i<boxes.length;i++){if(boxes[i].checked&&!restore)restore=boxes[i];boxes[i].checked=false;}
+      var select=capSheet.querySelector('#capEmailSelect');if(select)select.disabled=true;
+    }
+    var inv=capEmailInvoker;capEmailInvoker=null;
+    capEmailState={selected:[],digest:null,localPart:'',affirmed:false,showFallback:false};
+    if(restore&&restore.isConnected&&restore.offsetParent!==null){restore.focus();return;}
+    if(inv&&!inv.disabled&&inv.isConnected&&inv.offsetParent!==null){inv.focus();return;}
+    if(capSheet)capFocusEditor();
+  }
+  function capEmailOpen(invoker){
+    if(facultyPreviewRequest||!capSheet||capEmailSheet)return;
+    var boxes=capSheet.querySelectorAll('[data-cap-email-id]'),ids=[];
+    for(var i=0;i<boxes.length;i++)if(boxes[i].checked)ids.push(boxes[i].getAttribute('data-cap-email-id'));
+    var selected=fdCaptureEmail.selection(capRead().items,ids);
+    if(!selected.length)return;
+    capEmailGeneration++;
+    capEmailState={selected:selected,digest:fdCaptureEmail.digest(selected),localPart:'',affirmed:false,showFallback:false};
+    capEmailInvoker=invoker||null;
+    capEmailBackdrop=document.createElement('div');capEmailBackdrop.className='cap-email-backdrop';
+    capEmailBackdrop.addEventListener('click',capEmailClose);
+    capEmailSheet=document.createElement('div');capEmailSheet.className='cap-email-sheet';
+    capEmailSheet.setAttribute('role','dialog');capEmailSheet.setAttribute('aria-modal','true');
+    capEmailSheet.setAttribute('aria-labelledby','capEmailHead');
+    capEmailSheet.innerHTML='<div class="cap-email-head"><h2 id="capEmailHead">Review email draft</h2>'
+      +'<button type="button" class="cap-btn" id="capEmailClose">Close</button></div>'
+      +'<p id="capEmailCount" class="cap-email-count"></p>'
+      +'<pre id="capEmailDigest" class="cap-email-digest"></pre>'
+      +'<label class="cap-email-label" for="capEmailLocal">Faculty recipient</label>'
+      +'<div class="cap-email-address"><input id="capEmailLocal" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="capEmailSuffix capEmailHint" maxlength="64"><span id="capEmailSuffix">@mainehealth.org</span></div>'
+      +'<p id="capEmailHint" class="cap-email-hint"></p>'
+      +'<label class="cap-email-affirm"><input id="capEmailAffirm" type="checkbox"><span>I reviewed these questions and removed patient names, identifying details, and other PHI.</span></label>'
+      +'<div class="cap-acts"><button type="button" class="cap-btn primary" id="capEmailOpenDraft" disabled>Open email draft</button>'
+      +'<button type="button" class="cap-btn" id="capEmailCopy">Copy email text</button></div>'
+      +'<p id="capEmailStatus" class="cap-email-status" role="status" aria-live="polite"></p>'
+      +'<div id="capEmailFallback" class="cap-email-fallback" hidden><label for="capEmailFallbackText">Select and copy the complete email text</label><textarea id="capEmailFallbackText" readonly rows="8"></textarea></div>';
+    document.body.appendChild(capEmailBackdrop);document.body.appendChild(capEmailSheet);
+    capEmailSheet.querySelector('#capEmailCount').textContent=selected.length+' selected question'+(selected.length===1?'':'s');
+    capEmailSheet.querySelector('#capEmailDigest').textContent=capEmailState.digest.body;
+    capEmailPreview();
+    document.addEventListener('keydown',capEmailKeydown,true);
+    capEmailSheet.querySelector('#capEmailLocal').focus();
+    capSheet.inert=true;capSheet.setAttribute('aria-hidden','true');
+    capEmailSheet.addEventListener('input',function(e){
+      if(e.target.id==='capEmailLocal'){capEmailState.localPart=e.target.value;capEmailPreview();}
+      if(e.target.id==='capEmailAffirm'){capEmailState.affirmed=e.target.checked;capEmailPreview();}
+    });
+    capEmailSheet.addEventListener('change',function(e){
+      if(e.target.id==='capEmailAffirm'){capEmailState.affirmed=e.target.checked;capEmailPreview();}
+    });
+    capEmailSheet.addEventListener('click',function(e){
+      if(e.target.id==='capEmailClose'){capEmailClose();return;}
+      if(e.target.id==='capEmailOpenDraft'){
+        var result=capEmailHandoff();
+        if(result==='opened')capEmailPreview('Your mail app may have opened. Review the recipient and message there, then press Send yourself.');
+        else if(result==='too-long')capEmailPreview('This draft is too long for a mail link. Reduce the selection or copy the complete email text below.');
+        else if(result==='invalid-digest')capEmailPreview('Could not prepare a mail link from this question text. Select and copy the complete email text below.');
+        else if(result==='unavailable')capEmailPreview('Could not open a mail app. Copy the complete email text below.');
+        return;
+      }
+      if(e.target.id==='capEmailCopy'){
+        var copyGeneration=capEmailGeneration,copySheet=capEmailSheet;
+        capEmailCopy().then(function(copied){
+        if(copied===null||copyGeneration!==capEmailGeneration||copySheet!==capEmailSheet)return;
+        capEmailPreview(copied?'Email text copied. Review it in your mail app before sending.':'Clipboard unavailable. Select and copy the complete text below.');
+        });
+      }
+    });
+  }
+  /* ---- end faculty email dialog ---- */
   function capAnnounce(msg){
     var el=capSheet&&capSheet.querySelector('#capStatus');
     if(!el)return;
@@ -1520,15 +1790,38 @@
     var n=capRead().items.length;
     return n===0?'No saved questions remain.':(n+' saved question'+(n===1?'':'s')+' remain'+(n===1?'s':'')+'.');
   }
+  function capNextHtml(id,text,route){
+    var match=typeof window.fdCaptureMatchForQuestion==='function'?window.fdCaptureMatchForQuestion(text):null;
+    var h='<section class="cap-next" data-cap-next="'+capAttr(id)+'" aria-labelledby="capNextHead"><p class="cap-next__saved">Saved on this device</p>'+
+      '<h3 id="capNextHead">Where will you take this question?</h3>'+capRouteHtml(id,route);
+    if(match&&match.ref){
+      h+='<div class="cap-next__match"><span>Likely match</span><strong>'+esc(match.title||match.ref)+'</strong></div>'+
+        '<div class="cap-next__actions"><button type="button" class="cap-btn primary" data-cap-open="'+capAttr(id)+'" data-cap-ref="'+capAttr(match.ref)+'">Open now</button>';
+      if(match.hasQuiz)h+='<button type="button" class="cap-btn" data-cap-review="'+capAttr(id)+'" data-cap-ref="'+capAttr(match.ref)+'">Schedule review</button>';
+      h+='</div>';
+    }else h+='<p class="cap-next__empty">No close library match yet. Your question remains in Capture.</p>';
+    return h+'<button type="button" class="cap-btn cap-next__done" data-cap-drop="'+capAttr(id)+'">Done</button></section>';
+  }
+  function capRefreshNext(){
+    var next=capSheet&&capSheet.querySelector('[data-cap-next]');
+    if(!next)return;
+    var id=next.getAttribute('data-cap-next'), items=capRead().items, hold=capSheet.querySelector('#capHold');
+    for(var i=0;i<items.length;i++){
+      if(items[i].id===id){ if(hold)hold.innerHTML=capNextHtml(id,items[i].text,items[i].route); return; }
+    }
+    if(hold)hold.innerHTML='';
+  }
+  function capFocusEditor(){
+    var ta=capSheet&&capSheet.querySelector('#capText');
+    if(ta){ try{ ta.focus({preventScroll:true}); }catch(_){ try{ ta.focus(); }catch(ignoreFocus){ } } }
+  }
   function capRefreshAfterMutation(){
     capRenderBody();
+    capRefreshNext();
     try{ specialRefresh(); }
-    finally{
-      var ta=capSheet&&capSheet.querySelector('#capText');
-      if(ta){ try{ ta.focus(); }catch(_){ } }
-    }
+    finally{ capFocusEditor(); }
   }
-  function capOpen(invoker){
+  function capOpen(invoker,onAction){
     if(capSheet)return;
     capInvoker=invoker||null;
     capBackdrop=document.createElement('div'); capBackdrop.className='cap-backdrop';
@@ -1541,8 +1834,13 @@
       /* P1 — point-of-entry warning, approved copy, verbatim */
       + '<p class="cap-warn"><strong>The question, not the patient.</strong> No names, initials, room or bed numbers, dates, or MRNs — write what you want to understand, not who you saw. Stays on this device.</p>'
       + '<textarea id="capText" maxlength="280" rows="4" aria-label="Your question, no patient identifiers" placeholder="What did you want to look up later?"></textarea>'
+      + '<div class="cap-starters" aria-label="Question starters"><span>Start with</span>'
+      + '<button type="button" data-cap-starter="Why would we ">Why would we…?</button>'
+      + '<button type="button" data-cap-starter="How can I distinguish ">How can I distinguish…?</button>'
+      + '<button type="button" data-cap-starter="What should I ask when ">What should I ask when…?</button>'
+      + '<button type="button" data-cap-starter="What changes disposition for ">What changes disposition?</button></div>'
       /* P3 — always-visible disclosure, not dismissible, because storage is on by default */
-      + '<p class="cap-disclose">Saved on this device only, never sent anywhere. Erase all captures below.</p>'
+      + '<p class="cap-disclose">Saved on this device. Nothing leaves unless you choose Copy or Email. No patient details.</p>'
       + '<div id="capHold"></div>'
       + '<div class="cap-acts"><button type="button" class="cap-btn primary" id="capSave">Save</button>'
       + '<button type="button" class="cap-btn" id="capCancel">Cancel</button></div>'
@@ -1557,13 +1855,35 @@
     var ta=capSheet.querySelector('#capText'); if(ta){ try{ ta.focus(); }catch(_){ } }
     capSheet.addEventListener('click',function(e){
       var t=e.target;
+      if(t.id==='capEmailSelect'){capEmailOpen(t);return;}
+      /* The dialog is mounted under body, outside fdApp's delegated click listener. */
+      var action=t.closest&&t.closest('[data-cap-open],[data-cap-review],[data-cap-route],[data-cap-drop],[data-cap-copy]');
+      if(action&&typeof onAction==='function'){e.preventDefault();onAction(action);return;}
+      var starter=t.closest&&t.closest('[data-cap-starter]');
+      if(starter){ var starterText=capSheet.querySelector('#capText'); if(starterText&&!starterText.value.trim())starterText.value=starter.getAttribute('data-cap-starter')||''; if(starterText)starterText.focus(); return; }
       if(t.id==='capCancel'){ capClose(); return; }
       if(t.id==='capSave'){ capSave(false); return; }
       if(t.id==='capHoldEdit'){ var hold=capSheet.querySelector('#capHold'); if(hold)hold.innerHTML=''; var tx=capSheet.querySelector('#capText'); if(tx)tx.focus(); return; }
       if(t.id==='capHoldSave'){ capSave(true); return; }
-      if(t.id==='capEraseAll'){ if(window.confirm('Erase all saved questions on this device?')){ capEraseAll(); capRefreshAfterMutation(); capAnnounce('All saved questions erased.'); } return; }
+      if(t.id==='capEraseAll'){
+        if(window.confirm('Erase all saved questions on this device?')){
+          if(capEraseAll()){ capRefreshAfterMutation(); capAnnounce('All saved questions erased.'); }
+          else capAnnounce('Could not erase saved questions on this device. Try again.');
+        }
+        return;
+      }
       var del=t.getAttribute&&t.getAttribute('data-cap-del');
-      if(del){ capRemove(del); capRefreshAfterMutation(); capAnnounce('Question deleted. '+capRemainingText()); return; }
+      if(del){
+        if(capRemove(del)){ capRefreshAfterMutation(); capAnnounce('Question deleted. '+capRemainingText()); }
+        else capAnnounce('Could not delete this question on this device. Try again.');
+        return;
+      }
+    });
+    capSheet.addEventListener('change',function(e){
+      if(!e.target.hasAttribute||!e.target.hasAttribute('data-cap-email-id'))return;
+      var boxes=capSheet.querySelectorAll('[data-cap-email-id]'),selected=false;
+      for(var i=0;i<boxes.length;i++)if(boxes[i].checked){selected=true;break;}
+      var button=capSheet.querySelector('#capEmailSelect');if(button)button.disabled=!selected;
     });
   }
   function capSave(force){
@@ -1579,9 +1899,10 @@
       return;
     }
     if(hold)hold.innerHTML='';
-    if(capAdd(text)){ ta.value=''; capRefreshAfterMutation(); capAnnounce('Question saved. '+capRemainingText()); }
+    var savedId=capAdd(text);
+    if(savedId){ ta.value=''; capRefreshAfterMutation(); if(hold)hold.innerHTML=capNextHtml(savedId,text,null); capAnnounce('Saved on this device. '+capRemainingText()); }
     else { var err=document.createElement('p'); err.className='cap-err';
-      err.textContent="Couldn't save on this device. Use “Ask my attending” on the home screen to copy your questions out before you close this tab.";
+      err.textContent="Couldn't save on this device. Select and copy your question from the text box before you close this tab.";
       if(hold)hold.appendChild(err); }
   }
   /* ---------- Search (mirrors rc-search: tokenize -> synonym expand -> TF-IDF + prefix/substring bonus) ---------- */
@@ -1593,7 +1914,7 @@
   }
   /* SI===null means "failed" OR "not yet resolved". Refresh the guarded Today surface after
      the index settles so captures can gain matches without a reload. */
-  fetch('search-index.json').then(function(r){return r.json()}).then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); specialRefresh(); })
+  fetch('search-index.json').then(function(r){return r.json()}).then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); specialRefresh(); capRefreshNext(); })
     .catch(function(){ SI=null; VOCAB=[]; });
 
   function idf(t){ return Math.log(1 + SI.n/((SI.df[t]||1))); }
@@ -1668,7 +1989,12 @@
   function qbRecordServable(id){ if(isRetiredQb(id))return false; if(!qbDraftsIncluded()&&isDraftQb(id))return false; return true; }
   /* ---- end qb servability ---- */
   function srsState(){ try{ return JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); }catch(_){ return null; } }
-  function srsBucket(id){ if(id.indexOf('QB#')===0)return 'qb'; if(id.indexOf('FAM#')===0)return 'fam'; if(id.indexOf('COMM#')===0)return 'comm'; if(id.indexOf('REASON#')===0)return 'reason'; if(id.indexOf('deck#')===0||id.indexOf('TOPIC#')===0)return 'daily'; return 'other'; }
+  /* Daily Review's landmark-deck cards are `<deck id>#<question index>` and every deck id in
+     quizzes.json is AR-<n> or SP-<n> (review.html builds the id; tests/srs-home-counters pins
+     the shape against the real file). Until 2026-09-24 this matched a `deck#` prefix nothing
+     writes, so every real deck card fell into `other` and vanished from timed blocks. */
+  var SRS_DECK_CARD=/^(?:AR|SP)-\d+#\d+$/;
+  function srsBucket(id){ if(id.indexOf('QB#')===0)return 'qb'; if(id.indexOf('FAM#')===0)return 'fam'; if(id.indexOf('COMM#')===0)return 'comm'; if(id.indexOf('REASON#')===0)return 'reason'; if(SRS_DECK_CARD.test(id)||id.indexOf('TOPIC#')===0)return 'daily'; return 'other'; }
   function dueBreakdown(){ var s=srsState(),b={daily:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},comm:{due:0,overdue:0},reason:{due:0,overdue:0},other:{due:0,overdue:0}}; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ var k=srsBucket(id); if(k==='qb'&&!qbRecordServable(id.slice(3)))continue; b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } return b; }
   function dueCount(){ var b=dueBreakdown(); return {due:b.daily.due,overdue:b.daily.overdue}; }
   /* ---- end due breakdown ---- */
@@ -1734,6 +2060,10 @@
 
   /*__FD_STATE__*/
 
+  /*__FD_READING_PLACE__*/
+
+  /*__FD_CAPTURE_EMAIL__*/
+
   var FD_CURRICULUM={};
   var FD_TOPIC_META={};
   var FD_TOOL_REGISTRY={};
@@ -1744,6 +2074,8 @@
   var FD_ROTATION_EDITION_CATALOG={};
 
   /*__FD_DATA__*/
+
+  /*__FD_OFFLINE__*/
 
   /*__FD_EDITION_CATALOG__*/
 
@@ -1759,11 +2091,23 @@
 
   /*__FD_BLOCK__*/
 
+  /*__FD_APP_PRACTICE__*/
+
+  /*__FD_APP__*/
+
   /*__FD_SHELL__*/
 
   /*__FD_PATH__*/
 
   /*__FD_LIBRARY__*/
+
+  /*__FD_CARE_NAVIGATOR__*/
+
+  /*__QR_GENERATOR_1_4_4__*/
+
+  /*__FD_CARE_PACK__*/
+
+  /*__FD_CARE__*/
 
   /*__FD_READER__*/
 
@@ -1998,6 +2342,14 @@
   /* ===== Governed Front Door live shell ===== */
   var FD_CANONICAL_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
   var FD_INDEX=FD_CANONICAL_INDEX;
+  /* Capture lives in the preceding script. This bridge exposes only the pure email operations;
+     its digest callback reads the current canonical/edition index at the moment of review. */
+  fdCaptureEmail={
+    address:fdEmailAddress,
+    selection:fdEmailSelection,
+    digest:function(selected){return fdEmailDigest(FD_INDEX,selected,location.origin);},
+    mailto:fdEmailMailto
+  };
   function fdRotationCatalogContext(value){
     var revision,gate,descriptor;
     try{descriptor=Object.getOwnPropertyDescriptor(value,'revision');revision=descriptor&&descriptor.enumerable&&Object.prototype.hasOwnProperty.call(descriptor,'value')&&typeof descriptor.value==='string'&&/^sha256-[A-Za-z0-9_-]{43}$/.test(descriptor.value)?descriptor.value:'';}catch(ignoreRevision){revision='';}
@@ -2014,6 +2366,7 @@
   var fdChromeMount=fdEditionRuntimeElement(fdDocument,'fdChromeMount');
   var fdEditionMount=fdEditionRuntimeElement(fdDocument,'governanceMount');
   var fdCaptureMount=fdEditionRuntimeElement(fdDocument,'fdCaptureMount');
+  var fdDockMount=fdEditionRuntimeElement(fdDocument,'fdDockMount');
   var fdOverlayMount=fdEditionRuntimeElement(fdDocument,'fdOverlayMount');
   var fdCrisisTemplate=document.getElementById('fdCrisisTemplate');
   var fdCrisisHtml=fdCrisisTemplate?fdCrisisTemplate.innerHTML:'';
@@ -2129,6 +2482,7 @@
         :((FD_INDEX.weeks[0]||{}).n);
     }
     out.done=fdProgressDoneMap(raw,FD_INDEX,fdProgressWeek(out,FD_INDEX));
+    out.appMode=out.appInvite===true||out.role==='app';
     /* ORDER IS LOAD-BEARING. The next line replaces out.role with the DISPLAY NAME for every
        renderer downstream, so the settings panel -- which marks its active chip by comparing
        against the chip's raw data-fd-role id -- has to be handed that id first, under its own
@@ -2149,23 +2503,23 @@
     return out;
   }
 
+  function fdCaptureMatch(text){
+    var results=SI?runSearch(text):[];
+    if(!results.length)return null;
+    /* Prefer a result the learner can also schedule for review; otherwise keep the top hit. */
+    var hit=results[0].d;
+    for(var q=0;q<results.length;q++){ if(topicHasQuiz(results[q].d.f)){ hit=results[q].d; break; } }
+    return {ref:hit.f,title:hit.t,hasQuiz:topicHasQuiz(hit.f)};
+  }
+  /* The capture dialog lives in the legacy shell script above while search-to-resource matching
+     lives in this Front Door closure. Expose only the normalized result, never the index itself. */
+  if(typeof window!=="undefined") window.fdCaptureMatchForQuestion=fdCaptureMatch;
+
   function fdCaptureRows(){
     var data=capRead(), rows=[];
     for(var i=0;i<data.items.length;i++){
       var item=data.items[i];
-      if(item.triaged)continue;
-      var match=null, results=SI?runSearch(item.text):[];
-      if(results.length){
-        /* Prefer the best-ranked hit the learner can actually revisit. topicHasQuiz gates the
-           "Review this topic" action (fd_due.js), and Case-of-the-Week pages are not in TOPIC_META,
-           so a case named for the same topic outranks the topic page and the affordance vanishes
-           silently -- "first-episode psychosis" displaced t_psychosis.md on 2026-09-07. Falls back
-           to the top hit when nothing reviewable matched, so a capture never loses its match. */
-        var hit=results[0].d;
-        for(var q=0;q<results.length;q++){ if(topicHasQuiz(results[q].d.f)){ hit=results[q].d; break; } }
-        match={ref:hit.f,title:hit.t,hasQuiz:topicHasQuiz(hit.f)};
-      }
-      rows.push({id:item.id,text:item.text,triaged:false,match:match});
+      rows.push({id:item.id,text:item.text,at:item.at,route:item.route,state:item.state});
     }
     return rows;
   }
@@ -2201,6 +2555,8 @@
       lastRead:lastRead
     });
     live.primaryKind=primary.kind;
+    var offlineHtml=facultyPreviewRequest?'':fdOfflineEntry(
+      fdOfflineDisplayState(state),fdOfflineRouteLabel(state),state.offlineOpen===true);
     var html=fdToday(FD_INDEX,live);
     if(!facultyPreviewRequest){
       var blockResume=(blockStatus&&sess&&fdBlockResumeSearch(blockStatus.next,sess))?{left:fdCapsuleLeft(sess),n:blockStatus.next.n}:null;
@@ -2220,8 +2576,8 @@
     }
     also+=captureHtml;
     var rest=fdTodayWhy()+'<h2 class="fd-sectionhead fd-also">Also today</h2>'+also;
-    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+lead+rest);
-    return html.replace(FD_TODAY_LEAD_END,rest);
+    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+lead+offlineHtml+rest);
+    return html.replace(FD_TODAY_LEAD_END,offlineHtml+rest);
   }
 
   function fdRenderCapture(state){
@@ -2233,11 +2589,46 @@
       for(var i=1;i<launchers.length;i++)launchers[i].parentNode.removeChild(launchers[i]);
       return;
     }
-    fdCaptureMount.innerHTML='<button type="button" class="fd-capture-launch fd-capture-launch--global" data-capture-open aria-haspopup="dialog" aria-expanded="false">+ Capture a question</button>';
+    fdCaptureMount.innerHTML='<button type="button" class="fd-capture-launch fd-capture-launch--global" data-capture-open aria-haspopup="dialog" aria-expanded="false"><span aria-hidden="true">＋</span> Ask a question</button>';
+  }
+
+  function fdRenderDock(state,preserveFocus){
+    if(!fdDockMount)return;
+    var show=state&&state.screen==='app'&&!facultyPreviewRequest;
+    if(!show){fdDockMount.innerHTML='';return;}
+    var source=fdDockSource(contentEl);
+    var live=fdClone(fdLiveState(state));
+    live.dockAction=source?{sourceId:source.id,label:source.label}:null;
+    /* Only same-route refreshes may retain dock focus. Full navigation and dialogs own their
+       focus transitions. Match the old action, never an arbitrary button or a page control. */
+    var active=document.activeElement, focusSelector=null;
+    if(preserveFocus&&!state.searchOpen&&!state.sheet&&active&&fdDockMount.contains(active)){
+      var attrs=['data-fd-dock-forward','data-fd-tab','data-fd-search','data-capture-open'];
+      for(var i=0;i<attrs.length;i++){
+        var value=active.getAttribute(attrs[i]);
+        if(value!==null&&!/["\\]/.test(value)){focusSelector='['+attrs[i]+'="'+value+'"]';break;}
+      }
+    }
+    /* Dialog owners retain their opener objects across hydration and Capture mutations.
+       Reuse the utility controls, including Capture's live expanded state, without focusing
+       them while an overlay owns focus. The route/context controls still refresh normally. */
+    var utilities=['[data-fd-search]','[data-capture-open]'], retained=[];
+    for(var j=0;j<utilities.length;j++)retained[j]=fdDockMount.querySelector(utilities[j]);
+    fdDockMount.innerHTML=fdDock(live);
+    for(var k=0;k<utilities.length;k++){
+      var replacement=fdDockMount.querySelector(utilities[k]);
+      if(retained[k]&&replacement)replacement.parentNode.replaceChild(retained[k],replacement);
+    }
+    if(!state.openId){
+      var current=fdDockMount.querySelector('[data-fd-tab="'+state.tab+'"]');
+      if(current)current.setAttribute('aria-current','page');
+    }
+    var successor=focusSelector&&fdDockMount.querySelector(focusSelector);
+    if(successor&&!successor.disabled)successor.focus({preventScroll:true});
   }
 
   function fdProgressMarkup(state){
-    var label=fdReaderBackLabel(state&&state.fromTab);
+    var label=fdReaderBackLabel(state&&state.fromTab,state&&state.roleId,fdAppMode(state));
     return '<article class="fd-reader fd-progress-reader">'+
       '<button type="button" class="fd-reader__back" data-fd-back>‹ '+fdEsc(label)+'</button>'+
       fdSurface('progress',function(){ return window.renderProgress?window.renderProgress():'<div class="fd-fallback">Progress is unavailable.</div>'; })+
@@ -2256,12 +2647,23 @@
     if(state.openId){
       return fdSurface('reader',function(){
         var rstate=fdClone(live); rstate.ref=state.openId;
+        rstate.readingPlaceEligible=false; /* Loading is not a mounted reading. */
         return fdReader(FD_INDEX,rstate,'<p class="loading" role="status">Loading…</p>');
       });
     }
     if(state.tab==='path') return fdSurface('path',function(){ return fdPath(FD_INDEX,live); });
-    if(state.tab==='library') return fdSurface('library',function(){ return state.libraryView==='full'?fdLibrary(FD_INDEX):fdEssentials(FD_INDEX,{kitSection:state.kitSection,week:live.week}); });
-    return fdSurface('today',function(){ return fdTodayLive(live); });
+    if(state.tab==='library') return fdSurface('library',function(){ return state.libraryView==='full'?fdLibrary(FD_INDEX):fdEssentials(FD_INDEX,{kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,week:live.week}); });
+    if(state.tab==='care') return fdSurface('care',function(){
+      return fdCare(FD_INDEX,state.careIntentId||'',state.carePackIds||[],fdCrisisHtml);
+    });
+    if(fdAppMode(state)) return fdSurface('today',function(){ return fdAppWorkspace(
+      FD_INDEX,FD_CURRICULUM.appPathway,live,
+      facultyPreviewRequest?'':fdCaptureTriage(fdCaptureRows()),
+      facultyPreviewRequest?'':fdOfflineEntry(fdOfflineDisplayState(state),
+        fdOfflineRouteLabel(state),state.offlineOpen===true)); });
+    /* fdTodayLive resolves device-backed state itself. Passing an already-resolved object here
+       turns the APP role id into its display label on the second pass and loses APP mode. */
+    return fdSurface('today',function(){ return fdTodayLive(state); });
   }
 
   function fdRenderOverlays(state){
@@ -2353,9 +2755,74 @@
   }
 
   var fdGuideSession=null, fdGuideBookmark=null, fdGuideReturning=false;
+  var fdReadingPlaceSession=null;
+  var fdOfflineVisitStatus=null;
+  var fdOfflineVisitRouteKey='';
+  var fdOfflineVisitRouteLabel='';
+  function fdOfflineRouteLabel(state){
+    var live=fdLiveState(state);
+    if(fdAppMode(state))return live.appBridge==='pmhnp'?'APP PMHNP route':'APP PA route';
+    return typeof live.week==='number'?'Week '+live.week:'current learning route';
+  }
+  function fdOfflineKeyForRoute(state){
+    var route=fdLiveState(state);
+    route.appPathway=FD_CURRICULUM.appPathway;
+    var urls=fdOfflineUrls(FD_INDEX,route);
+    return String(route.roleId||route.role||'')+'|'+
+      (route.appMode===true?'app:'+String(route.appBridge||'pa'):'week:'+String(route.week))+
+      '|'+urls.join('|');
+  }
+  function fdOfflineDisplayState(state){
+    if(fdOfflineVisitStatus&&fdOfflineVisitRouteKey===fdOfflineKeyForRoute(state))return fdOfflineVisitStatus;
+    var live=fdLiveState(state);
+    live.appPathway=FD_CURRICULUM.appPathway;
+    return {checking:true,expected:fdOfflineUrls(FD_INDEX,live)};
+  }
+  var fdOfflineWorker=null;
+  try{fdOfflineWorker=navigator.serviceWorker||null;}catch(ignoreOfflineWorker){ }
+  var fdOfflineVisit=fdOfflineMonitor({
+    serviceWorker:fdOfflineWorker,MessageChannel:window.MessageChannel,
+    facultyPreview:!!facultyPreviewRequest,
+    getWaiting:function(){var reg=clerkshipSWRegistration();return !!(reg&&reg.waiting);},
+    subscribeWaiting:clerkshipSWSubscribe,
+    onChange:function(status){
+      fdOfflineVisitStatus=status;
+      /* Task 4 owns placement. A mounted card can update without rebuilding Today, losing
+         focus, or re-running the route check. */
+      var mount=contentEl&&contentEl.querySelector('[data-fd-offline-card]');
+      if(mount&&status){
+        mount.innerHTML=fdOfflineCard(status,fdOfflineVisitRouteLabel);
+        var entry=contentEl.querySelector('[data-fd-offline-entry]');
+        if(entry)entry.className='fd-offline is-'+fdOfflineStatus(status).kind;
+        var label=contentEl.querySelector('[data-fd-offline-label]');
+        if(label)label.textContent=fdOfflineStatus(status).label;
+      }
+    }
+  });
+  function fdSyncOfflineVisit(state){
+    if(fdEditionBootState!=='started')return;
+    var route=fdLiveState(state);
+    route.appPathway=FD_CURRICULUM.appPathway;
+    fdOfflineVisitRouteKey=fdOfflineKeyForRoute(state);
+    fdOfflineVisitRouteLabel=fdOfflineRouteLabel(state);
+    fdOfflineVisit.sync(FD_INDEX,route);
+  }
+  function fdDisposeReadingPlace(){
+    if(fdReadingPlaceSession)fdReadingPlaceSession.destroy();
+    fdReadingPlaceSession=null;
+  }
   function fdDisposeGuide(){
     if(fdGuideSession)fdGuideSession.destroy();
     fdGuideSession=null;
+  }
+
+  function fdUpdateCareNavigatorStatus(state){
+    var status=document.getElementById('careNavigatorStatus');
+    if(!status)return;
+    var selected=state&&state.screen==='app'&&state.tab==='care'&&!state.openId&&contentEl&&
+      contentEl.querySelector('.fd-care-navigator__result');
+    var next=selected?fdCareNavigatorAnnouncement(FD_INDEX,state.careIntentId):'';
+    if(status.textContent!==next)status.textContent=next;
   }
 
   function fdRender(state,detail){
@@ -2363,11 +2830,14 @@
     fdPrepareRoute(state,detail);
     fdAdoptSpecialContext(state);
     if(!hydrate&&fdChromeMount)fdChromeMount.innerHTML=app?fdHeader(fdLiveState(state)):'';
-    if(contentEl){ fdDisposeGuide(); contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
+    if(contentEl){ fdDisposeReadingPlace(); fdDisposeGuide(); contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
     fdPatchToolLayout(state);
     fdRenderCapture(state);
+    fdRenderDock(state);
     fdRenderOverlays(state);
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
+    fdUpdateCareNavigatorStatus(state);
+    fdSyncOfflineVisit(state);
   }
 
   function fdPatchCompletion(state){
@@ -2390,6 +2860,8 @@
         if(current[i].getAttribute('data-fd-toggle')===fresh[j].getAttribute('data-fd-toggle')&&
             completionScope(current[i])===completionScope(fresh[j])){
           current[i].setAttribute('aria-pressed',fresh[j].getAttribute('aria-pressed'));
+          var dockLabel=fresh[j].getAttribute('data-fd-dock-label');
+          if(dockLabel)current[i].setAttribute('data-fd-dock-label',dockLabel);
           current[i].innerHTML=fresh[j].innerHTML;
           break;
         }
@@ -2418,14 +2890,18 @@
       if(surfaces.completion)fdPatchCompletion(state);
     } else if(surfaces.base||surfaces.completion){
       fdAdoptSpecialContext(state);
-      if(contentEl){fdDisposeGuide();contentEl.className='fd-main';contentEl.innerHTML=fdBaseMarkup(state);}
+      if(contentEl){fdDisposeReadingPlace();fdDisposeGuide();contentEl.className='fd-main';contentEl.innerHTML=fdBaseMarkup(state);}
     }
     if(surfaces.layout)fdPatchToolLayout(state);
+    if(surfaces.base||surfaces.completion)fdRenderDock(state,true);
     fdRenderOverlays(state);
+    fdUpdateCareNavigatorStatus(state);
+    fdSyncOfflineVisit(state);
   }
 
   function fdOpenProgress(state,opts){
     var host=(opts&&opts.host)||contentEl;
+    fdDisposeReadingPlace();
     currentItem={f:'__progress__',t:'Progress',k:'special'};
     setLearnerTitle(currentItem);
     if(host){if(host===contentEl)host.className='fd-main';host.innerHTML=fdProgressMarkup(state);}
@@ -2443,6 +2919,7 @@
 
   function fdOpenResourceLive(ref,opts){
     var options=opts||{}, item=(FD_INDEX.byRef||{})[ref]||(typeof fdKnownItem==='function'?fdKnownItem(FD_INDEX,ref):{title:ref,kind:/\.html$/.test(ref)?'tool':'read'});
+    fdDisposeReadingPlace();
     if(!facultyPreviewRequest)fdDisposeGuide();
     /* The audited preview path delegates to show(), which must see the previous currentItem so its
        same-tool reload guard cannot suppress the initial preflight. It also must not mutate the
@@ -2491,6 +2968,10 @@
             onPractice:function(bookmark){fdGuideBookmark=bookmark;fdGuideReturning=false;}
           });
           if(fdGuideSession){
+            var statusNode=contentEl.querySelector('[data-fd-reading-status]');
+            var topNode=contentEl.querySelector('[data-fd-reading-top]');
+            if(statusNode)statusNode.remove();
+            if(topNode)topNode.remove();
             var guide=fdGuideSession, bookmark=fdGuideBookmark;
             var returning=bookmark&&bookmark.ref===ref&&(fdGuideReturning||options.fromHistory);
             var arrivalSearch=options.search===undefined?location.search:options.search;
@@ -2508,6 +2989,22 @@
               if(returning){guide.arrive(bookmark.search,false);guide.restore(bookmark,canFocus);}
               else guide.arrive(arrivalSearch,canFocus);
             });
+          }else{
+            var mountedReader=contentEl.querySelector('.fd-reader');
+            var readingState=options.getState?options.getState():(fdController&&fdController.getState());
+            if(mountedReader&&readingState)fdReadingPlaceSession=fdInstallReadingPlace(mountedReader,ref,readingState,{
+              window:window,
+              allowStorage:readingState.screen==='app'&&!!readingState.role&&!readingState.guest&&!facultyPreviewRequest,
+              focusOnRestore:options.focusOnRestore===true,
+              canFocusOnRestore:function(){
+                return fdReadingFocusAllowed(readState(),{
+                  ref:ref,currentRef:currentItem&&currentItem.f,
+                  facultyPreview:!!facultyPreviewRequest,externalModal:!!capSheet,
+                  pendingHigh:!!contentEl.querySelector('.governance-notice.pending-high'),
+                  readerConnected:document.documentElement.contains(mountedReader)
+                });
+              }
+            });
           }
           fdGuideReturning=false;
         }else if(!facultyPreviewRequest&&fdGuideBookmark&&fdIsTool(ref)){
@@ -2523,6 +3020,9 @@
           }
         }
       }
+      /* Resource loading replaces the source controls, including on failure. Refresh only for
+         the still-current route; a late response must never overwrite the next route's dock. */
+      if(!facultyPreviewRequest&&(!options.isCurrent||options.isCurrent(ref)!==false))fdRenderDock(readState(),true);
       return ok;
     });
   }
@@ -2536,7 +3036,8 @@
   }
 
   function fdCaptureAction(el){
-    var id=el.getAttribute('data-cap-open')||el.getAttribute('data-cap-review')||el.getAttribute('data-cap-drop');
+    if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}
+    var id=el.getAttribute('data-cap-id')||el.getAttribute('data-cap-open')||el.getAttribute('data-cap-review')||el.getAttribute('data-cap-drop');
     var ref=el.getAttribute('data-cap-ref');
     if(el.hasAttribute('data-cap-copy')){
       var payload=capClipboardText();
@@ -2544,9 +3045,38 @@
       else el.textContent='Copy unavailable';
       return;
     }
-    if(el.hasAttribute('data-cap-review')&&ref){seedSRS(ref);capMarkTriaged(id);specialRefresh();return;}
-    if(el.hasAttribute('data-cap-drop')){capRemove(id);specialRefresh();return;}
-    if(el.hasAttribute('data-cap-open')&&ref){capMarkTriaged(id);fdOpenRef(ref);return;}
+    if(el.hasAttribute('data-cap-route')){
+      var route=el.getAttribute('data-cap-route');
+      var routeHost=el.closest&&el.closest('#capListWrap')?'#capListWrap':'#capHold';
+      var currentRoute=null, routeItems=capRead().items;
+      for(var r=0;r<routeItems.length;r++){ if(routeItems[r].id===id){ currentRoute=routeItems[r].route; break; } }
+      var nextRoute=currentRoute===route?null:route;
+      if(capSetRoute(id,nextRoute)){
+        capRenderBody();capRefreshNext();specialRefresh();capAnnounce(nextRoute===null?'Question route cleared. Unrouted.':'Question routed: '+capRouteLabel(nextRoute)+'.');
+        var buttons=capSheet&&capSheet.querySelectorAll(routeHost+' [data-cap-route][data-cap-id]');
+        for(var i=0;buttons&&i<buttons.length;i++){
+          if(buttons[i].getAttribute('data-cap-id')===id&&buttons[i].getAttribute('data-cap-route')===route){buttons[i].focus();break;}
+        }
+      }else if(capSheet)capAnnounce('Could not save this question route on this device. Try again.');
+      return;
+    }
+    if(el.hasAttribute('data-cap-review')&&ref){
+      if(seedSRS(ref)){
+        if(capSetRoute(id,'later')){
+          specialRefresh();
+          if(capSheet){capRenderBody();capRefreshNext();capAnnounce('Review scheduled.');capFocusEditor();}
+        }else if(capSheet)capAnnounce('Review scheduled, but the question route could not be saved on this device.');
+      }else if(capSheet)capAnnounce('Could not schedule review on this device.');
+      return;
+    }
+    if(el.hasAttribute('data-cap-drop')){
+      if(capRemove(id)){
+        if(capSheet){capRenderBody();capRefreshNext();capAnnounce('Question done. '+capRemainingText());}
+        specialRefresh();capFocusEditor();
+      }else if(capSheet)capAnnounce('Could not finish this question on this device. Try again.');
+      return;
+    }
+    if(el.hasAttribute('data-cap-open')&&ref){if(capSheet)capClose();fdOpenRef(ref);return;}
   }
 
   function fdRefreshLocalCompletion(identity,kind,id){
@@ -2581,13 +3111,13 @@
       return;
     }
     el=target.closest&&target.closest('[data-capture-open]');
-    if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el);return;}
-    el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-drop],[data-cap-copy]');
+    if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el,fdCaptureAction);return;}
+    el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-route],[data-cap-drop],[data-cap-copy]');
     if(el){event.preventDefault();fdCaptureAction(el);return;}
     el=target.closest&&target.closest('.pt-opt');
     if(el){event.preventDefault();var qi=el.getAttribute('data-qi');ptAnswers[qi]=el.getAttribute('data-key');var siblings=contentEl.querySelectorAll('.pt-opt[data-qi="'+qi+'"]');for(var i=0;i<siblings.length;i++)siblings[i].classList.remove('sel');el.classList.add('sel');updatePtCount();return;}
     el=target.closest&&target.closest('.pgfb-b');
-    if(el){event.preventDefault();if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}try{localStorage.setItem('cw_fb_ctx',currentItem?currentItem.t:'');}catch(_){}fdOpenRef('feedback.html');return;}
+    if(el){event.preventDefault();if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}try{localStorage.setItem('cw_fb_ctx',el.getAttribute('data-fb-context')||(currentItem?currentItem.t:''));}catch(_){}fdOpenRef('feedback.html');return;}
     el=target.closest&&target.closest('.markrev');
     if(el){event.preventDefault();if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}var mf=el.getAttribute('data-f'),pp=progLoad(),nd=!(pp[mf]&&pp[mf].done);if(nd){pp[mf]={done:true,at:new Date().toISOString().slice(0,10)};seedSRS(mf);}else delete pp[mf];progSave(pp);refreshReviewLedger(mf,pp);return;}
     el=target.closest&&target.closest('.tyo');
@@ -2733,6 +3263,7 @@
     });
   }
   function fdEditionCleanupWiring(){
+    fdOfflineVisit.destroy();
     for(var i=fdEditionStartupTeardowns.length-1;i>=0;i--)
       try{fdEditionStartupTeardowns[i]();}catch(ignoreTeardown){ }
     fdEditionStartupTeardowns=[];
@@ -2787,7 +3318,9 @@
       if(fdPrereleaseRef&&!fdIsLegacyRouteAlias(fdPrereleaseRef)&&!fdPrereleaseStored.role){
         fdPrereleaseStored.browsing=true;
       }
-      var fdPrereleaseInitial=fdResolveState(location.href,fdPrereleaseStored);
+      var fdPrereleaseInitial=fdResolveState(location.href,fdPrereleaseStored,{
+        allowAppInvite:FD_AUDIENCE==='resident'&&!!FD_CURRICULUM.appPathway
+      });
       fdPrereleaseInitial.done=fdProgressDoneMap(progLoad());
       fdPrereleaseInitial.rotationStart=fdPrereleaseRotation;
       fdRender(fdPrereleaseInitial);
@@ -2853,7 +3386,9 @@
     if(fdIncomingRef&&!fdIsLegacyRouteAlias(fdIncomingRef)&&!fdStored.role){
       fdStored.browsing=true;
     }
-    fdInitial=fdResolveState(location.href,fdStored);
+    fdInitial=fdResolveState(location.href,fdStored,{
+      allowAppInvite:FD_AUDIENCE==='resident'&&!!FD_CURRICULUM.appPathway
+    });
     fdInitial.done=fdProgressDoneMap(progLoad());
     fdInitial.rotationStart=fdRotation;
     if(FD_RUNTIME_WIRING_OK!==true||!fdEditionRuntimePreflightWiring(window,document,fdApp)){
@@ -2864,11 +3399,22 @@
       window:window,document:document,index:FD_INDEX,roles:FD_ROLES,rotationStart:fdRotation,
       render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
       openResource:fdOpenResourceLive,openProgress:fdOpenProgress,
+      readingPlaceSession:function(){return fdReadingPlaceSession;},
+      disposeReadingPlace:fdDisposeReadingPlace,
       externalModalOpen:function(){return !!capSheet;},
       loadBlock:blockLoad,
+      offlineStatus:function(){return fdOfflineVisitStatus;},
+      online:function(){return navigator.onLine!==false;},
+      requestSWUpdate:requestClerkshipSWUpdate,
+      reportOfflineRefresh:function(message){
+        var status=contentEl&&contentEl.querySelector('[data-fd-offline-refresh-status]');
+        if(status)status.textContent=message;
+      },
       facultyPreview:function(){return !!facultyPreviewRequest;},
       facultyPreviewLock:showFacultyPreviewLockNotice,
+      allowAppInvite:FD_AUDIENCE==='resident'&&!!FD_CURRICULUM.appPathway,
       synonyms:FD_CURRICULUM.synonyms||{},
+      appPracticePacks:(FD_CURRICULUM.appPathway&&FD_CURRICULUM.appPathway.practicePacks)||[],
       releaseStartupGate:function(){return fdEditionRuntimeReleaseGate(fdApp);}
     });
   }catch(ignoreStartupWiring){fdController=null;}
@@ -2878,6 +3424,7 @@
   }
   fdEditionStartupTeardowns.push(function(){
     if(fdController&&fdController.destroy)fdController.destroy();
+    fdDisposeReadingPlace();
     fdDisposeGuide();
   });
   if(!fdEditionTrackListener(window,'resize',refreshTableScrollCues,false)||
@@ -3028,6 +3575,7 @@
   fdEditionStartupStorageDirty=false;
   fdEditionStartupHistoryDirty=false;
   fdEditionBootState='started';
+  fdSyncOfflineVisit(fdController.getState());
   return {ok:true,code:'STARTED'};
   }
 

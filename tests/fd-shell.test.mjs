@@ -14,7 +14,8 @@ const make = new Function(`
   ${read('frontdoor/fd_shell.js')}
   return { fdHeader: fdHeader, fdTabs: fdTabs, fdSetupRole: fdSetupRole,
            fdSetupWeek: fdSetupWeek, fdKeyAction: fdKeyAction,
-           fdThemeMode: fdThemeMode, fdThemeAttr: fdThemeAttr };
+           fdThemeMode: fdThemeMode, fdThemeAttr: fdThemeAttr,
+           fdAppMode: fdAppMode, fdDockModel: fdDockModel, fdDock: fdDock };
 `);
 const F = make();
 
@@ -40,12 +41,20 @@ test('escape closes search first, then the sheet', () => {
   assert.equal(F.fdKeyAction('Escape', o()), null, 'escape with nothing open does nothing');
 });
 
-test('1/2/3 switch tabs only when nothing is layered above the page', () => {
+test('1/2/3/4 switch tabs only when nothing is layered above the page', () => {
   assert.deepEqual(F.fdKeyAction('1', o()), { type: 'tab', tab: 'today' });
   assert.deepEqual(F.fdKeyAction('2', o()), { type: 'tab', tab: 'path' });
   assert.deepEqual(F.fdKeyAction('3', o()), { type: 'tab', tab: 'library' });
+  assert.deepEqual(F.fdKeyAction('4', o()), { type: 'tab', tab: 'care' });
   assert.equal(F.fdKeyAction('1', o({ searchOpen: true })), null);
   assert.equal(F.fdKeyAction('1', o({ sheetOpen: true })), null);
+});
+
+test('APP keyboard shortcuts follow the two visible destinations', () => {
+  assert.deepEqual(F.fdKeyAction('1', o({ appMode: true })), { type: 'tab', tab: 'today' });
+  assert.deepEqual(F.fdKeyAction('2', o({ appMode: true })), { type: 'tab', tab: 'library' });
+  assert.deepEqual(F.fdKeyAction('3', o({ appMode: true })), { type: 'tab', tab: 'care' });
+  assert.equal(F.fdKeyAction('4', o({ appMode: true })), null);
 });
 
 test('arrows move between items only while reading', () => {
@@ -94,10 +103,56 @@ test('the active tab is marked for both CSS and assistive tech', () => {
   assert.equal((html.match(/is-active/g) || []).length, 1, 'exactly one tab is active');
 });
 
+test('responsive tab labels render once even before navigation CSS loads', () => {
+  const html = F.fdTabs('care');
+  const visibleTextWithoutCss = html.replace(/<[^>]+>/g, ' ');
+  assert.match(html, /class="[^"]*fd-tab--care[^"]*is-active[^"]*"[^>]*data-fd-tab="care"/);
+  assert.match(html, /aria-label="Patient care resources"/);
+  assert.match(html, /fd-tab__label" data-compact="Care">Patient care resources<\/span>/);
+  assert.match(html, /fd-tab__label" data-compact="Essentials">The Essentials<\/span>/);
+  assert.equal((visibleTextWithoutCss.match(/The Essentials/g) || []).length, 1);
+  assert.equal((visibleTextWithoutCss.match(/Patient care resources/g) || []).length, 1);
+  assert.ok(html.indexOf('data-fd-tab="care"') > html.indexOf('data-fd-tab="library"'));
+});
+
 test('the header renders the safety button and the week pill', () => {
   const html = F.fdHeader({ week: 4 });
   assert.match(html, /data-fd-safety/);
   assert.match(html, /Week 4/);
+});
+
+test('the header places a mobile Patient care resources shortcut directly after Safety', () => {
+  const inactive = F.fdHeader({ week: 4, tab: 'today' });
+  const safety = inactive.indexOf('data-fd-safety');
+  const care = inactive.indexOf('data-fd-tab="care"', safety);
+  const settings = inactive.indexOf('data-fd-settings', care);
+  assert.ok(safety > -1 && care > safety && settings > care,
+    'Safety, Care, and Settings must retain their visual and keyboard order');
+  assert.match(inactive,
+    /class="fd-carebtn"[^>]*data-fd-tab="care"[^>]*aria-label="Patient care resources"[^>]*>Care<\/button>/);
+  assert.doesNotMatch(inactive, /class="fd-carebtn is-active"|data-fd-tab="care"[^>]*aria-current/);
+
+  const active = F.fdHeader({ week: 4, tab: 'care' });
+  assert.match(active,
+    /class="fd-carebtn is-active"[^>]*data-fd-tab="care"[^>]*aria-label="Patient care resources"[^>]*aria-current="page"/);
+});
+
+test('the APP header replaces rotation chrome with an On shift workspace', () => {
+  const html = F.fdHeader({ roleId: 'app', tab: 'today' });
+  assert.match(html, /data-fd-tab="today"[^>]*>On shift</);
+  assert.match(html, /data-fd-tab="library"[^>]*>[\s\S]*?fd-tab__label" data-compact="Essentials">The Essentials</);
+  assert.match(html, /data-fd-tab="care"/);
+  assert.doesNotMatch(html, /data-fd-tab="path"|data-fd-change-week|Set week|Week \d/);
+  assert.match(html, /class="fd-weekpill[^>]*>APP</);
+});
+
+test('a transient APP invitation gets APP chrome without replacing the learner identity', () => {
+  const state = { roleId: 'resident', appInvite: true, tab: 'today' };
+  assert.equal(F.fdAppMode(state), true);
+  const html = F.fdHeader(state);
+  assert.match(html, /data-fd-tab="today"[^>]*>On shift</);
+  assert.doesNotMatch(html, /data-fd-tab="path"|data-fd-change-week/);
+  assert.equal(state.roleId, 'resident');
 });
 
 // Supersedes 'the compact header theme toggle has an explicit accessible name': that test pinned
@@ -110,13 +165,39 @@ test('the header offers settings, not a bare theme toggle', () => {
   assert.match(h, /aria-label="Settings"/);
 });
 
-test('the header still carries exactly three action controls', () => {
+test('phone dock adapts slot two for APP without exposing Path', () => {
+  const standard = F.fdDockModel({ tab: 'today', appMode: false, dockAction: null });
+  const app = F.fdDockModel({ tab: 'today', appMode: true, dockAction: null });
+  assert.deepEqual(standard.items.map((x) => x.label), ['Today', 'Path', 'Search', 'Capture']);
+  assert.deepEqual(app.items.map((x) => x.label), ['On shift', 'The Essentials', 'Search', 'Capture']);
+  assert.equal(app.items.some((x) => x.value === 'path'), false);
+});
+
+test('dock context uses a source id or the audience browse fallback', () => {
+  assert.match(F.fdDock({ appMode: false, dockAction: { label: 'Continue', sourceId: 'primary-1' } }),
+    /data-fd-dock-forward="primary-1"[^>]*>.*Continue/s);
+  assert.match(F.fdDock({ appMode: true, dockAction: null }),
+    /data-fd-tab="library"[^>]*>.*Browse/s);
+});
+
+test('dock renders five labelled buttons with an escaped center action', () => {
+  const html = F.fdDock({ dockAction: { label: '<Continue>', sourceId: 'action&one' } });
+  assert.match(html, /^<nav class="fd-dock" aria-label="Learning actions">/);
+  assert.equal((html.match(/<button\b/g) || []).length, 5);
+  assert.match(html, /data-capture-open="" aria-haspopup="dialog" aria-expanded="false">Capture<\/button>/);
+  assert.match(html, /class="fd-dock__item fd-dock__item--context" data-fd-dock-forward="action&amp;one">&lt;Continue&gt;<\/button>/);
+  assert.equal(html.indexOf('fd-dock__item--context') > html.indexOf('Path'), true,
+    'the contextual action follows the two leading destinations');
+});
+
+test('the header carries three standing controls plus one phone-only Care shortcut', () => {
   // Scoped to the actions container's own markup: everything after the marker also carries the
-  // three tab buttons fdHeader appends, which reads as 6 and makes the count say nothing.
+  // tab buttons fdHeader appends, which otherwise makes the count say nothing.
   const actions = F.fdHeader({ week: 3, tab: 'today' })
     .split('fd-header__actions')[1].split('</div>')[0];
   const buttons = actions.match(/<button/g) || [];
-  assert.equal(buttons.length, 3, 'week pill, safety, settings — a fourth costs the mobile row');
+  assert.equal(buttons.length, 4, 'week pill, safety, phone Care shortcut, settings');
+  assert.equal((actions.match(/class="fd-carebtn"/g) || []).length, 1);
 });
 
 test('the header says exam, never the site-specific word', () => {

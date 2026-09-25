@@ -168,7 +168,7 @@ var TREES=[
   firstMove:"Medical workup first; don’t anchor on schizophrenia at a first presentation.",
   rounds:"“First-episode psychosis — I screened for substances, delirium, and autoimmune causes before calling it primary.”"},
  {id:"hyperthermia",title:"Hyperthermia + rigidity",
-  ruleOut:["Serotonin syndrome (clonus, hyperreflexia)","NMS (lead-pipe rigidity, days)","Malignant hyperthermia (anesthetics)","Anticholinergic (dry, normal reflexes)"],
+  ruleOut:["Serotonin syndrome (clonus, hyperreflexia)","NMS (lead-pipe rigidity, days)","Malignant hyperthermia (anesthetics)","Anticholinergic (dry, normal reflexes)","Alcohol/sedative-hypnotic withdrawal — delirium tremens (tremor, autonomic surge, last drink or dose)","Sympathomimetic toxicity (cocaine, amphetamines)"],
   medical:"Identify the trigger and the toxidrome.",
   psych:[],
   firstMove:"Stop the offending agent, cool, supportive care; agent-specific — cyproheptadine for serotonin syndrome, dantrolene / bromocriptine for NMS.",
@@ -200,7 +200,7 @@ var MATRIX={
 var TIMELINE=[
  {t:"6–12 h",h:"Minor withdrawal",s:"Tremor, anxiety, headache, autonomic arousal.",tone:""},
  {t:"12–24 h",h:"Alcoholic hallucinosis",s:"Visual hallucinations with a clear sensorium.",tone:"warn"},
- {t:"24–48 h",h:"Withdrawal seizures",s:"Generalized tonic-clonic; can occur without prior signs.",tone:"warn"},
+ {t:"6–48 h (peak ~12–24 h)",h:"Withdrawal seizures",s:"Generalized tonic-clonic; can occur without prior signs.",tone:"warn"},
  {t:"48–72 h+",h:"Delirium tremens",s:"Confusion, fever, autonomic instability — a medical emergency with real mortality.",tone:"dgr"}
 ];
 
@@ -325,8 +325,8 @@ function App(){
         e("div",{className:"band s1"}, e("span",{className:"bk"},"≤ 8"), e("span",null,"Minimal–mild — supportive care, PRN only.")),
         e("div",{className:"band s2"}, e("span",{className:"bk"},"9–19"), e("span",null,"Moderate — symptom-triggered benzodiazepine; reassess hourly.")),
         e("div",{className:"band s3"}, e("span",{className:"bk"},"≥ 20"), e("span",null,"Severe — high DTs risk; aggressive treatment, consider higher level of care."))),
-      e("div",{className:"note"},"Brief teaching reference — use the full CIWA-Ar tool for scoring. ",
-        e("a",{className:"more",href:"./withdrawal.html"},"Open the CIWA-Ar / COWS tool →"))
+      e("div",{className:"note"},"Brief teaching reference — use your unit's alcohol-withdrawal protocol. ",
+        e("a",{className:"more",href:"./withdrawal.html"},"Open the withdrawal recognition card (COWS) →"))
     );
   }
 

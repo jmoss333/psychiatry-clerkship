@@ -337,7 +337,7 @@ const SMOKE_LAUNCHER_COMMAND = 'bash tests/smoke/start-local-servers.sh';
 const SMOKE_CONFIGURATION_PATTERN = /\bSMOKE_[A-Z0-9_]+\b/;
 const MANAGED_GATE_ORDER = [
   '- uses: actions/setup-node',
-  'node-version: "20"',
+  'node-version: "22"',
   'run: npm --prefix sp-proxy ci',
   'npm --prefix sp-proxy test',
   'bash _prototypes/sp-interview/tests/run-all.sh',
@@ -646,7 +646,7 @@ function assertSmokeLauncherContract(ci) {
     'npx playwright test --project=faculty-console',
     'npx playwright test --project=lfs',
     'npx playwright test --project=visual',
-    'npx playwright test --project=offline',
+    'npx playwright test --project=offline-ms3 --project=offline-res',
   ];
   let prior = -1;
   for (const command of ordered) {
@@ -744,7 +744,7 @@ test('smoke launcher contract ignores labels and rejects boundary drift', () => 
     'npx playwright test --project=faculty-console',
     'npx playwright test --project=lfs',
     'npx playwright test --project=visual',
-    'npx playwright test --project=offline',
+    'npx playwright test --project=offline-ms3 --project=offline-res',
   ]) {
     const movedProject = ci
       .replace(projectCommand, '')

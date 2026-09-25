@@ -196,7 +196,7 @@ jobs:
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Unit — root node regression tests (tests/*.test.mjs)
         run: node --test tests/*.test.mjs
@@ -292,7 +292,7 @@ jobs:
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "20"
+          node-version: "22"
 
       # Serve the exact QA-gated tree the build job published (media are LFS
       # stubs on CI either way, so the artifact is ~13MB). The local review
@@ -376,7 +376,7 @@ jobs:
       - name: "Check 4: offline shell — service worker"
         run: |
           cd tests/smoke
-          npx playwright test --project=offline
+          npx playwright test --project=offline-ms3 --project=offline-res
 
       # Needs no server: prototypes are driven over file:// and the spec blocks the network
       # itself, so this behaves identically here and in a sandbox. It covers the gap nav-crawl

@@ -84,6 +84,77 @@ QBANK_GRANDFATHERED_IDS = frozenset(
     {"qb_chd_001", "qb_chd_002", "qb_oth_001", "qb_oth_002"}
 )
 
+CARE_NAVIGATOR_IDS = (
+    "services",
+    "meetings",
+    "explain",
+    "listen",
+    "books",
+    "family-conversation",
+)
+
+
+def care_navigator_diagnostics(document):
+    """Require six unique intents whose recommendations resolve to careResources."""
+    diagnostics = []
+    resources = document.get("careResources", []) if isinstance(document, dict) else []
+    if not isinstance(resources, list):
+        resources = []
+    resource_ids = {
+        resource.get("id") for resource in resources
+        if isinstance(resource, dict) and isinstance(resource.get("id"), str)
+    }
+    intents = document.get("careNavigator", []) if isinstance(document, dict) else []
+    if not isinstance(intents, list):
+        intents = []
+    seen = {}
+    for index, intent in enumerate(intents):
+        if not isinstance(intent, dict):
+            continue
+        intent_id = intent.get("id")
+        if isinstance(intent_id, str):
+            if intent_id in seen:
+                diagnostics.append(
+                    "curriculum.json: INVALID at /careNavigator/%d/id: %r duplicates /careNavigator/%d"
+                    % (index, intent_id, seen[intent_id])
+                )
+            else:
+                seen[intent_id] = index
+        primary = intent.get("primaryResourceId")
+        if isinstance(primary, str) and primary not in resource_ids:
+            diagnostics.append(
+                "curriculum.json: INVALID at /careNavigator/%d/primaryResourceId: "
+                "unknown care resource %r" % (index, primary)
+            )
+        alternatives = intent.get("alternativeResourceIds", [])
+        alternative_seen = set()
+        if isinstance(alternatives, list):
+            for alternative_index, alternative in enumerate(alternatives):
+                if not isinstance(alternative, str):
+                    continue
+                if alternative == primary:
+                    diagnostics.append(
+                        "curriculum.json: INVALID at /careNavigator/%d/alternativeResourceIds/%d: "
+                        "repeats its primary resource %r" % (index, alternative_index, primary)
+                    )
+                if alternative in alternative_seen:
+                    diagnostics.append(
+                        "curriculum.json: INVALID at /careNavigator/%d/alternativeResourceIds/%d: "
+                        "duplicates alternative %r" % (index, alternative_index, alternative)
+                    )
+                alternative_seen.add(alternative)
+                if alternative not in resource_ids:
+                    diagnostics.append(
+                        "curriculum.json: INVALID at /careNavigator/%d/alternativeResourceIds/%d: "
+                        "unknown care resource %r" % (index, alternative_index, alternative)
+                    )
+    for intent_id in CARE_NAVIGATOR_IDS:
+        if intent_id not in seen:
+            diagnostics.append(
+                "curriculum.json: INVALID at /careNavigator: missing intent %r" % intent_id
+            )
+    return diagnostics
+
 
 def qbank_prefix_diagnostics(document):
     """Semantic gate: each item id must use its category's canonical prefix."""
@@ -363,6 +434,8 @@ def validate_root(root: Path) -> tuple[list[str], bool]:
             semantic = qbank_prefix_diagnostics(document)
         elif document_name == "pairings.json":
             semantic = pairings_integrity_diagnostics(document, root)
+        elif document_name == "curriculum.json":
+            semantic = care_navigator_diagnostics(document)
         else:
             semantic = []
         if errors or semantic:

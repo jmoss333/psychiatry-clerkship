@@ -170,6 +170,29 @@ so committing an otherwise unchanged artifact does not make it stale. Missing
 evidence, control failures, or parity failures stop generation. The proxy test
 suite checks artifact freshness and safe rendering.
 
+## Private Hugging Face evaluation export
+
+Generate a deterministic, locally analyzable dataset package without contacting
+Hugging Face or any model provider:
+
+```bash
+out="$(mktemp -d)"
+node benchmarks/interview-room/hf-dataset.mjs --write "$out"
+```
+
+The package contains `baseline.jsonl`, `analysis.json`, and a dataset-card
+`README.md`. Every turn row carries the source Git SHA, raw patient-pack SHA-256,
+offline model ID, and model revision. The revision is the SHA-256 of the exact
+Interview Room client file containing the `MockProvider` that generated the
+synthetic replies. The configured live actor is recorded separately and is not
+claimed as the model that produced this baseline.
+
+The exporter fails closed if provenance is absent, a row is not marked
+`synthetic-only`, a live model is reported as invoked, the corpus status is no
+longer `pending-faculty-review`, or an identity/contact/recording field appears.
+It performs no upload and reads no token. Publication to a private dataset is a
+separate, explicit action by an authenticated owner.
+
 ## Faculty decisions and a fresh second round
 
 Use the [faculty decision record](../../docs/superpowers/plans/2026-09-04-interview-room-faculty-adjudication.md)

@@ -7,7 +7,7 @@
         390,
         999
       ],
-      "raw_dimension_declarations": 196,
+      "raw_dimension_declarations": 193,
       "sub_floor_font_sizes": 0
     },
     "spa_index.html": {
@@ -18,10 +18,9 @@
         680,
         760,
         820,
-        821,
-        999
+        821
       ],
-      "raw_dimension_declarations": 302,
+      "raw_dimension_declarations": 300,
       "sub_floor_font_sizes": 0
     }
   }

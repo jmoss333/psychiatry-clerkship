@@ -99,24 +99,54 @@ function fdSearchContentWords(words){
   return out.length?out:words;
 }
 
+/* Does `text` (lowercased) contain the search word `w`? A word longer than three characters
+   matches anywhere, as it always has -- "lith" still finds lithium, "psych" still finds
+   psychosis. A SHORT word may not match inside another word: until 2026-09-24 every haystack
+   test was a bare substring, so "im" in "haldol im" matched "claim" and "time" and pulled two
+   safety protocols to the top of a medication question, and "ect" matched every page that says
+   "effect". Two characters or fewer must be a whole word (the route abbreviations im / iv / po /
+   pr, and si / hi / od, which the synonyms map expands anyway). Exactly three characters must
+   START a word, so "del" typed on the way to "delirium" still shows Delirium on that keystroke --
+   search re-runs per keystroke, and a whole-word rule would blank the list mid-word -- while
+   "ect" no longer matches "effect". Words are the runs of [a-z0-9]: "c-ssrs" is "c" and "ssrs",
+   "pg_suicide.md" is "pg", "suicide" and "md".
+
+   `loose` restores the old bare-substring test. The safety-kit haystack pass uses it, and that
+   exemption is deliberate, not an oversight: measured on 2026-09-24, "cut her wrist", "she cut
+   herself" and "cut myself" reach the suicide protocol ONLY because "cut" sits inside "acute" in
+   that page's summary, and "pulled out iv" reaches the agitation protocol the same way. Strict
+   matching there would silently delete those routes. Making them explicit is a crisis-vocabulary
+   change to curriculum.json's safetyKit triggers, which is a faculty decision, so until it is
+   made the protocol rows are exactly what they were and only ordinary results get the rule. */
+var FD_SEARCH_SHORT_WORD=3;
+function fdSearchWordIn(text, w, loose){
+  if(!w) return false;
+  if(loose||w.length>FD_SEARCH_SHORT_WORD) return text.indexOf(w)!==-1;
+  var words=text.split(/[^a-z0-9]+/);
+  for(var i=0;i<words.length;i++){
+    if(w.length<FD_SEARCH_SHORT_WORD?words[i]===w:words[i].indexOf(w)===0) return true;
+  }
+  return false;
+}
+
 /* Higher is better. Title evidence outranks ref evidence outranks summary evidence, so an exact
    title match cannot be displaced by a page that merely mentions the phrase in prose. */
-function fdSearchScore(item, rawQuery, contentWords){
+function fdSearchScore(item, rawQuery, contentWords, loose){
   var title=String(item.searchTitle||item.title||'').toLowerCase();
   var ref=String(item.ref||'').toLowerCase();
   var summary=String(item.summary||'').toLowerCase();
   var score=0,i,w;
   if(rawQuery){
     if(fdSearchNormalize(title)===fdSearchNormalize(rawQuery)) score+=100;
-    else if(title.indexOf(rawQuery)!==-1) score+=70;
-    if(ref.indexOf(rawQuery)!==-1) score+=25;
-    if(summary.indexOf(rawQuery)!==-1) score+=10;
+    else if(fdSearchWordIn(title, rawQuery, loose)) score+=70;
+    if(fdSearchWordIn(ref, rawQuery, loose)) score+=25;
+    if(fdSearchWordIn(summary, rawQuery, loose)) score+=10;
   }
   for(i=0;i<contentWords.length;i++){
     w=contentWords[i];
-    if(title.indexOf(w)!==-1) score+=12;
-    else if(ref.indexOf(w)!==-1) score+=6;
-    else if(summary.indexOf(w)!==-1) score+=2;
+    if(fdSearchWordIn(title, w, loose)) score+=12;
+    else if(fdSearchWordIn(ref, w, loose)) score+=6;
+    else if(fdSearchWordIn(summary, w, loose)) score+=2;
   }
   return score;
 }
@@ -158,12 +188,13 @@ function fdExpandQuery(q, synonyms){
 
 /* hay is already lowercased by the caller. Matches on either the raw (unexpanded) query as a
    whole substring, or any single expanded word of length > 1 -- single-letter expanded words
-   would match almost everything and are excluded, same guard the prototype uses. */
-function fdSearchHits(hay, rawQuery, expandedWords){
+   would match almost everything and are excluded, same guard the prototype uses. A short raw
+   query or word follows fdSearchWordIn's whole-word / word-start rule unless `loose`. */
+function fdSearchHits(hay, rawQuery, expandedWords, loose){
   var h=hay||'';
-  if(rawQuery&&h.indexOf(rawQuery)!==-1) return true;
+  if(rawQuery&&fdSearchWordIn(h, rawQuery, loose)) return true;
   for(var i=0;i<expandedWords.length;i++){
-    if(expandedWords[i].length>1&&h.indexOf(expandedWords[i])!==-1) return true;
+    if(expandedWords[i].length>1&&fdSearchWordIn(h, expandedWords[i], loose)) return true;
   }
   return false;
 }
@@ -182,6 +213,17 @@ function fdSearchTriggerHit(triggers, paddedQuery){
   var list=triggers||[];
   for(var i=0;i<list.length;i++){
     if(list[i]&&paddedQuery.indexOf(' '+list[i]+' ')!==-1) return true;
+  }
+  return false;
+}
+
+/* Care vocabulary is deliberately separate from synonyms and safety triggers. A match only
+   selects a static, canonical URL; the typed phrase never becomes a query parameter or fragment. */
+function fdSearchCareHit(resource, normalizedQuery){
+  var padded=' '+normalizedQuery+' ', terms=resource.searchTerms||[];
+  for(var i=0;i<terms.length;i++){
+    var term=fdSearchNormalize(terms[i]);
+    if(term&&padded.indexOf(' '+term+' ')!==-1) return true;
   }
   return false;
 }
@@ -291,14 +333,22 @@ function fdSearchResults(index, query, synonyms, state){
     var kitItem=kit[kk].item;
     var triggered=fdSearchTriggerHit(kit[kk].triggers, paddedQuery)||
        fdSearchTriggerHit(kit[kk].triggers, ' '+normalizedQuery+' ')||
-       fdSearchHits(fdSearchHaystack(kitItem), '', safetyWords);
-    var byHaystack=fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords);
+       fdSearchHits(fdSearchHaystack(kitItem), '', safetyWords, true);
+    /* loose: see fdSearchWordIn. Protocol rows keep the pre-2026-09-24 substring test. */
+    var byHaystack=fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords, true);
     if(triggered){
       protoResults.push({ item: kitItem, kind:'protocol', meta:'safety · protocol' });
       seenRefs[kitItem.ref]=true;
     } else if(byHaystack){
       hayProtocols.push({ item: kitItem, kind:'protocol', meta:'safety · protocol' });
       seenRefs[kitItem.ref]=true;
+    }
+  }
+
+  var careResults=[], care=idx.careResources||[];
+  for(var ci=0;ci<care.length;ci++){
+    if(fdSearchCareHit(care[ci],normalizedQuery)){
+      careResults.push({item:care[ci],kind:'care',meta:'ReConnect · external care resource'});
     }
   }
 
@@ -340,7 +390,7 @@ function fdSearchResults(index, query, synonyms, state){
      before the Consult Questions sheet whose title merely contains the word. Trigger-matched
      protocols stay in kit order -- that block is the crisis contract and is never reordered. */
   for(var hp=0;hp<hayProtocols.length;hp++){
-    hayProtocols[hp]._score=fdSearchScore(hayProtocols[hp].item, rawQuery, contentWords);
+    hayProtocols[hp]._score=fdSearchScore(hayProtocols[hp].item, rawQuery, contentWords, true);
   }
   hayProtocols.sort(function(a,b){
     return (b._score-a._score) ||
@@ -348,12 +398,17 @@ function fdSearchResults(index, query, synonyms, state){
   });
   for(var hq=0;hq<hayProtocols.length;hq++){ delete hayProtocols[hq]._score; }
 
-  return protoResults.concat(aliasItems, hayProtocols, rest).slice(0,8);
+  return protoResults.concat(careResults, aliasItems, hayProtocols, rest).slice(0,8);
 }
 
 /* Protocol rows keep the safety panel; ordinary results open the resource directly. */
 function fdSearchResultRow(r){
   var it=r.item;
+  if(r.kind==='care'){
+    return '<a class="fd-result is-care" data-care-resource="'+fdEsc(it.id)+'" href="'+fdEsc(it.url)+'" target="_blank" rel="noopener noreferrer">'+
+      '<span class="fd-result__dot is-care"></span><span class="fd-result__title">'+fdEsc(it.title)+'</span>'+
+      '<span class="fd-result__meta">'+fdEsc(r.meta)+'</span></a>';
+  }
   var isProto=(r.kind==='protocol');
   var dotCls='fd-result__dot';
   if(isProto) dotCls+=' is-safety';
@@ -384,6 +439,10 @@ function fdSearchOverlay(index, query, synonyms, state){
     'aria-label="Search resources" placeholder="Symptom, drug, tool, or task…">';
   out+='<button type="button" class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">esc</button>';
   out+='</div>';
+  if(!(state&&state.appMode===true)){
+    out+='<div class="fd-searchpanel__browse">'+
+      '<button type="button" class="fd-btn" data-fd-tab="library">Browse the Library</button></div>';
+  }
   /* Results replace themselves on every keystroke with no visual transition a screen reader can
      observe, so the region announces its own size. aria-label carries the count rather than a
      visually-hidden node: the panel is rebuilt wholesale on each render, and an attribute cannot
@@ -396,7 +455,6 @@ function fdSearchOverlay(index, query, synonyms, state){
   if(trimmed&&!results.length){
     out+='<div class="fd-searchpanel__empty">Nothing for “'+fdEsc(trimmed)+'” '+
       '— try a symptom, scale, or drug class.</div>';
-    out+='<button type="button" class="fd-btn" data-fd-tab="library">Browse Library</button>';
   } else {
     if(/\bcalculator\b/i.test(q)&&!results.some(function(r){
       return /\bcalculator\b/i.test(fdSearchHaystack(r.item));
@@ -404,7 +462,7 @@ function fdSearchOverlay(index, query, synonyms, state){
     for(var i=0;i<results.length;i++){ out+=fdSearchResultRow(results[i]); }
   }
   out+='</div>';
-  out+='<div class="fd-searchpanel__foot">Choose a result to open it. Safety protocols open in a quick-access panel.</div>';
+  out+='<div class="fd-searchpanel__foot">Choose a result to open it. Safety protocols open in a quick-access panel. External care resources open in a new tab.</div>';
   out+='</div>';
   out+='</div>';
   return out;

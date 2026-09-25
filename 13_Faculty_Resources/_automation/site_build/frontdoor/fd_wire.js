@@ -3,16 +3,23 @@
    pure; browser effects live in fdWire and fdOpenResource behind explicit options so the same
    decisions can be tested without a DOM. */
 
-/* Every attribute the controller gives a meaning to. The exam-date input and section select
-   commit on change and are deliberately absent from FD_ACTION_SELECTOR below. */
+/* Every attribute the controller gives a meaning to. The exam-date input commits on change and
+   is deliberately absent from FD_ACTION_SELECTOR below. */
 var FD_HANDLED_ATTRS=[
   'data-fd-open','data-fd-sheet','data-fd-safety','data-fd-toggle','data-fd-tab',
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
   'data-fd-back','data-fd-home','data-fd-search','data-fd-change-week','data-fd-progress',
   'data-fd-theme','data-fd-settings','data-fd-analytics','data-fd-exam-date',
+  'data-fd-app-bridge','data-fd-app-shift','data-fd-app-start','data-fd-app-reflect','data-fd-app-reset',
+  'data-fd-app-practice-open','data-fd-app-practice-reveal','data-fd-app-practice-classify',
+  'data-fd-app-practice-question','data-fd-app-practice-reset','data-fd-app-practice-close',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
-  'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
-  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section'
+  'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge','data-fd-dock-forward',
+  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section','data-fd-kit-tool',
+  'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear',
+  'data-fd-care-pack','data-fd-care-pack-clear',
+  'data-fd-care-pack-print',
+  'data-fd-offline-open','data-fd-offline-close','data-fd-offline-refresh'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -23,6 +30,15 @@ var FD_ACTION_SEMANTICS={
   'data-fd-tab':'open top-level tab',
   'data-fd-library-view':'choose Library view',
   'data-fd-kit-section':'filter Essentials sections',
+  'data-fd-kit-tool':'preview an Essentials tool',
+  'data-fd-care-intent':'choose a transient Care navigator task',
+  'data-fd-care-clear':'clear the transient Care navigator task',
+  'data-fd-care-pack':'toggle a transient patient resource pack item',
+  'data-fd-care-pack-clear':'clear the transient patient resource pack',
+  'data-fd-care-pack-print':'print the transient patient resource pack',
+  'data-fd-offline-open':'show verified shift readiness details',
+  'data-fd-offline-close':'close verified shift readiness details',
+  'data-fd-offline-refresh':'check for a newer offline copy',
   'data-fd-week':'select setup week',
   'data-fd-view-week':'preview path week',
   'data-fd-setweek':'adopt previewed week',
@@ -37,14 +53,27 @@ var FD_ACTION_SEMANTICS={
   'data-fd-settings':'open settings panel',
   'data-fd-analytics':'set usage measurement',
   'data-fd-exam-date':'set exam date',
+  'data-fd-app-bridge':'choose APP starting route',
+  'data-fd-app-shift':'choose APP work task',
+  'data-fd-app-start':'open APP preparation resource',
+  'data-fd-app-reflect':'choose private APP reflection',
+  'data-fd-app-reset':'reset private APP reflection',
+  'data-fd-app-practice-open':'open private APP change rehearsal',
+  'data-fd-app-practice-reveal':'reveal one APP practice change',
+  'data-fd-app-practice-classify':'classify APP practice statement',
+  'data-fd-app-practice-question':'choose APP practice supervision question',
+  'data-fd-app-practice-reset':'reset APP change rehearsal',
+  'data-fd-app-practice-close':'close APP change rehearsal',
   'data-fd-clear-ask':'arm device data erase',
   'data-fd-clear-cancel':'cancel device data erase',
   'data-fd-clear-confirm':'erase device data',
   'data-fd-close-search':'close search dialog',
   'data-fd-close-sheet':'close side sheet',
   'data-fd-close-nudge':'dismiss protocol nudge',
+  'data-fd-dock-forward':'forward contextual dock action',
   'data-fd-try-now':'preview related tool',
-  'data-fd-expand-tool':'toggle saved tool workspace width'
+  'data-fd-expand-tool':'toggle saved tool workspace width',
+  'data-fd-reading-top':'clear this reading place and focus the article heading'
 };
 
 function fdActionSemantic(attr){
@@ -53,7 +82,7 @@ function fdActionSemantic(attr){
 
 function fdOwn(o,k){ return !!o&&Object.prototype.hasOwnProperty.call(o,k); }
 
-function fdValidTab(tab){ return tab==='path'||tab==='library'||tab==='today'; }
+function fdValidTab(tab){ return tab==='path'||tab==='library'||tab==='care'||tab==='today'; }
 
 function fdClone(o){
   var out={}, src=o||{};
@@ -95,9 +124,10 @@ function fdLegacyRouteResult(ref, context, state){
   return null;
 }
 
-function fdResolveState(url, stored){
-  var src=stored||{}, out={};
+function fdResolveState(url, stored, options){
+  var src=stored||{}, opts=options||{}, out={};
   if(typeof src.role==='string'&&src.role) out.role=src.role;
+  if(src.appBridge==='pa'||src.appBridge==='pmhnp') out.appBridge=src.appBridge;
   out.tab=fdValidTab(src.tab)?src.tab:'today';
   out.libraryView='essentials';
   out.kitSection='all';
@@ -114,10 +144,15 @@ function fdResolveState(url, stored){
      persisted the offset and then dropped it here, so the one return that most needs it -- an
      interrupted read -- scrolled to the top. */
   if(typeof src.scrollPos==='number'&&isFinite(src.scrollPos)&&src.scrollPos>=0) out.scrollPos=src.scrollPos;
+  if(src.readingPlaces!==undefined) out.readingPlaces=fdReadingPlaces(src.readingPlaces);
 
   var parsed, routedRef=null;
   try{ parsed=new URL(String(url||''),'https://frontdoor.invalid/'); }catch(_){ parsed=null; }
   if(parsed){
+    var audienceValues=parsed.searchParams.getAll('audience');
+    if(opts.allowAppInvite===true&&audienceValues.length===1&&audienceValues[0]==='app'){
+      out.appInvite=true;
+    }
     var routedTab=parsed.searchParams.get('tab');
     routedRef=parsed.searchParams.get('page')||parsed.searchParams.get('tool');
     if(parsed.searchParams.get('library')==='full'&&(!fdValidTab(routedTab)||routedTab==='library')){
@@ -144,9 +179,10 @@ function fdResolveState(url, stored){
      the wizard from step 1. The flag is per-boot state, never persisted (see FD_KEYS). Only a
      real page or tool admits a guest: the legacy aliases and every other __name__ pseudo-route
      (__progress__ is the device's own dashboard) keep the setup gate below. */
-  if(!out.role&&routedRef&&!fdIsLegacyRouteAlias(routedRef)&&routedRef.indexOf('__')!==0){ out.guest=true; out.screen='app'; }
+  if(out.appInvite===true) out.screen='app';
+  else if(!out.role&&routedRef&&!fdIsLegacyRouteAlias(routedRef)&&routedRef.indexOf('__')!==0){ out.guest=true; out.screen='app'; }
   else if(!out.role) out.screen='setup-role';
-  else if(src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
+  else if(fdAppMode(out)||src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library'||out.tab==='care') out.screen='app';
   else out.screen='setup-week';
   if(routedRef&&fdIsLegacyRouteAlias(routedRef)){
     if(routedRef==='__home__'){
@@ -164,6 +200,7 @@ function fdResolveState(url, stored){
       delete out.openId;
     }
   }
+  if(fdAppMode(out)&&out.tab==='path') out.tab='today';
   return out;
 }
 
@@ -268,6 +305,74 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-close-sheet')) return fdCloseSheet(s);
   if(fdOwn(a,'data-fd-close-nudge')){
     return {patch:{nudge:null},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-offline-open')){
+    return s.screen==='app'&&s.tab==='today'&&!s.openId
+      ?{patch:{offlineOpen:true},route:null,effect:null}:{patch:{},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-offline-close')){
+    return {patch:{offlineOpen:false},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-offline-refresh')){
+    return s.screen==='app'&&s.tab==='today'&&!s.openId&&s.offlineOpen===true
+      ?{patch:{},route:null,effect:{type:'refresh-offline'}}:{patch:{},route:null,effect:null};
+  }
+
+  if(fdOwn(a,'data-fd-app-bridge')){
+    picked=String(a['data-fd-app-bridge']||'');
+    if(picked!=='pa'&&picked!=='pmhnp') return {patch:{},route:null,effect:null};
+    return {patch:{appBridge:picked,appActivity:null,appReflection:null,appPractice:null},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-app-shift')){
+    picked=String(a['data-fd-app-shift']||'');
+    if(picked!=='initial-evaluation'&&picked!=='medication-follow-through'&&picked!=='collateral-transition'){
+      return {patch:{},route:null,effect:null};
+    }
+    return {patch:{appActivity:picked,appReflection:null},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-app-reflect')){
+    picked=String(a['data-fd-app-reflect']||'');
+    if(picked!=='revisit'&&picked!=='supervisor'&&picked!=='another'){
+      return {patch:{},route:null,effect:null};
+    }
+    return {patch:{appReflection:picked},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-app-reset')){
+    return {patch:{appActivity:null,appReflection:null,appPractice:null},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-app-practice-open')){
+    picked=String(a['data-fd-app-practice-open']||'');
+    var pack=fdAppPracticeFind(c.appPracticePacks,picked);
+    if(!pack) return {patch:{},route:null,effect:null};
+    try{return {patch:{appPractice:fdAppPracticeStart(pack)},route:null,effect:null};}
+    catch(ignorePracticeOpen){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-reveal')){
+    try{return {patch:{appPractice:fdAppPracticeReveal(s.appPractice)},route:null,effect:null};}
+    catch(ignorePracticeReveal){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-classify')){
+    picked=String(a['data-fd-app-practice-classify']||'');
+    var split=picked.indexOf(':');
+    if(split<1) return {patch:{},route:null,effect:null};
+    try{return {patch:{appPractice:fdAppPracticeClassify(
+      s.appPractice,picked.slice(0,split),picked.slice(split+1))},route:null,effect:null};}
+    catch(ignorePracticeClassify){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-question')){
+    try{return {patch:{appPractice:fdAppPracticeChooseQuestion(
+      s.appPractice,String(a['data-fd-app-practice-question']||''))},route:null,effect:null};}
+    catch(ignorePracticeQuestion){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-reset')){
+    try{return {patch:{appPractice:fdAppPracticeReset(s.appPractice)},route:null,effect:null};}
+    catch(ignorePracticeReset){return {patch:{},route:null,effect:null};}
+  }
+  if(fdOwn(a,'data-fd-app-practice-close')){
+    return {patch:{appPractice:null},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-app-start')){
+    return fdDispatch({'data-fd-open':String(a['data-fd-app-start']||'')},c,s);
   }
 
   if(fdOwn(a,'data-fd-view-week')){
@@ -412,6 +517,31 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-kit-section')){
     return {patch:{kitSection:String(a['data-fd-kit-section']||'all')},route:null,effect:null};
   }
+  if(fdOwn(a,'data-fd-kit-tool')){
+    return {patch:{kitToolPreview:String(a['data-fd-kit-tool']||'')},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-care-intent')){
+    var careIntent=typeof a['data-fd-care-intent']==='string'
+      ?a['data-fd-care-intent']:'';
+    var careChoice=typeof fdCareNavigatorSelection==='function'
+      ?fdCareNavigatorSelection(c.index||{},careIntent):null;
+    return {patch:{careIntentId:careChoice?careChoice.id:''},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-care-clear')){
+    return {patch:{careIntentId:''},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-care-pack')){
+    return {patch:{carePackIds:fdCarePackToggle(
+      c.index||{},s.carePackIds||[],a['data-fd-care-pack'])},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-care-pack-clear')){
+    return {patch:{carePackIds:[]},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-care-pack-print')){
+    var printablePackIds=fdCarePackIds(c.index||{},s.carePackIds||[]);
+    return {patch:{},route:null,effect:s.tab==='care'&&!s.openId&&printablePackIds.length
+      ?{type:'print-care-pack'}:null};
+  }
   if(fdOwn(a,'data-fd-library-view')){
     var view=String(a['data-fd-library-view']||'');
     if(view!=='essentials'&&view!=='full') return {patch:{},route:null,effect:null};
@@ -424,6 +554,7 @@ function fdDispatch(attrs, context, state){
     tab=String(a['data-fd-tab']||'');
     if(!fdValidTab(tab)) return {patch:{},route:null,effect:null};
     patch={tab:tab,openId:null,searchOpen:false};
+    if(tab!=='care'){ patch.careIntentId=''; patch.carePackIds=[]; }
     if(tab==='library'){ patch.libraryView='essentials'; patch.kitSection='all'; }
     return {patch:patch,route:fdRouteForTab(tab,c.search),effect:null};
   }
@@ -434,6 +565,12 @@ function fdDispatch(attrs, context, state){
        the wizard reaches here with screen==='setup-role', so that is the fork -- and leaving the
        rest of the state alone is what keeps the panel open on the chip it just filled. */
     picked=String(a['data-fd-role']||'');
+    if(picked==='app'){
+      return {
+        patch:{role:'app',screen:'app',tab:'today',week:null,browsing:true,openId:null,searchOpen:false},
+        route:fdRouteForTab('today',c.search),effect:{type:'browse-without-rotation'}
+      };
+    }
     if(s.screen==='setup-role'){
       return {patch:{role:picked,screen:'setup-week'},route:null,effect:null};
     }
@@ -814,13 +951,40 @@ function fdTrapFocus(event, dialog){
    opens the native picker and -- the attribute being valueless in the markup -- dispatches an
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
-var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],'+
+var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],'+
+  '[data-fd-care-intent],[data-fd-care-clear],[data-fd-care-pack],[data-fd-care-pack-clear],[data-fd-care-pack-print],'+
+  '[data-fd-offline-open],[data-fd-offline-close],[data-fd-offline-refresh],'+
+  '[data-fd-app-bridge],[data-fd-app-shift],[data-fd-app-start],[data-fd-app-reflect],[data-fd-app-reset],'+
+  '[data-fd-app-practice-open],[data-fd-app-practice-reveal],[data-fd-app-practice-classify],'+
+  '[data-fd-app-practice-question],[data-fd-app-practice-reset],[data-fd-app-practice-close],'+
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
   '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
   '[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
-  '[data-fd-try-now],[data-fd-expand-tool]';
+  '[data-fd-try-now],[data-fd-expand-tool],[data-fd-dock-forward],[data-fd-reading-top]';
+
+function fdDockSource(root){
+  var el=root&&root.querySelector?root.querySelector('[data-fd-dock-source]'):null;
+  if(!el||el.isConnected===false) return null;
+  var id=el.getAttribute('data-fd-dock-source');
+  var label=el.getAttribute('data-fd-dock-label');
+  return id&&label?{id:id,label:label}:null;
+}
+
+function fdForwardDockAction(root,id){
+  if(!id) return false;
+  var nodes=root&&root.querySelectorAll?root.querySelectorAll('[data-fd-dock-source]'):[], i, el;
+  for(i=0;i<nodes.length;i++){
+    el=nodes[i];
+    if(el.getAttribute('data-fd-dock-source')===id&&
+       el.isConnected!==false&&typeof el.click==='function'){
+      el.click();
+      return true;
+    }
+  }
+  return false;
+}
 
 function fdAttrsFromTarget(target){
   var out={};
@@ -831,11 +995,163 @@ function fdAttrsFromTarget(target){
   return out;
 }
 
+/* Focus belongs to the live foreground surface, not to a stale Continue intent. */
+function fdReadingFocusAllowed(state,context){
+  var s=state||{}, c=context||{};
+  return s.screen==='app'&&!s.searchOpen&&!s.sheet&&!c.facultyPreview&&!c.externalModal&&
+    !c.pendingHigh&&c.readerConnected===true&&!!c.ref&&c.currentRef===c.ref;
+}
+
+/* The rendered reader owns this lease; its listeners are removed before the next resource. */
+function fdInstallReadingPlace(reader,ref,state,options){
+  var o=options||{}, win=o.window||(typeof window!=='undefined'?window:null);
+  var status=reader&&reader.querySelector?reader.querySelector('[data-fd-reading-status]'):null;
+  var top=reader&&reader.querySelector?reader.querySelector('[data-fd-reading-top]'):null;
+  var nodes=reader&&reader.querySelectorAll?Array.prototype.slice.call(reader.querySelectorAll('.fd-article > .fd-article__h1,.fd-article__body h2,.fd-article__body h3,.fd-article__body h4')):[];
+  var save=o.save||fdSave, now=o.now||Date.now;
+  var timerSet=o.setTimer||setTimeout, timerClear=o.clearTimer||clearTimeout;
+  var frame=o.requestAnimationFrame||(win&&win.requestAnimationFrame?function(fn){win.requestAnimationFrame(fn);}:function(fn){timerSet(fn,0);});
+  var active=true, timer=null, ready=false, suppressedY=null, resizeSeq=0, baselineY=0, pendingPosition=null, anchors, authored={}, i;
+  function empty(){ }
+  if(!status||!top||!nodes.length||!win||!fdReadingRef(ref))return {destroy:empty,startAtTop:empty};
+  anchors=fdReadingHeadingIds(nodes.map(function(node){return node.textContent||'';}));
+  for(i=0;i<nodes.length;i++)if(nodes[i].id)authored[nodes[i].id]=true;
+  for(i=0;i<nodes.length;i++){
+    nodes[i].setAttribute('data-fd-reading-anchor',anchors[i]);
+    /* Keep component ids (and aria-labelledby / fragment links) intact. A heading without one
+       may retain the generated DOM id unless it would collide with authored content. */
+    if(!nodes[i].id&&!authored[anchors[i]]&&
+       (!nodes[i].ownerDocument||!nodes[i].ownerDocument.getElementById(anchors[i])))nodes[i].id=anchors[i];
+  }
+  function anchor(node){return node.getAttribute('data-fd-reading-anchor');}
+  function availableAnchors(){return nodes.map(anchor);}
+  function scrollY(){return typeof win.scrollY==='number'&&isFinite(win.scrollY)?Math.max(0,win.scrollY):0;}
+  function absoluteTop(node){return node.getBoundingClientRect().top+scrollY();}
+  function current(){
+    var y=scrollY(), chosen=nodes[0], pos=absoluteTop(chosen), j, next;
+    for(j=1;j<nodes.length;j++){
+      next=absoluteTop(nodes[j]);
+      if(next<=y&&next>=pos){chosen=nodes[j];pos=next;}
+    }
+    return {heading:anchor(chosen),offset:Math.max(0,y-pos)};
+  }
+  function write(places){
+    state.readingPlaces=places;
+    var ok=false;
+    try{ok=save(state)===true;}catch(_){ok=false;}
+    status.textContent=ok?'Reading place saved on this device only':
+      'Reading place could not be saved on this device';
+  }
+  function capture(){
+    if(!active||!ready||suppressedY!==null)return;
+    if(Math.abs(scrollY()-baselineY)<=4){pendingPosition=null;return;}
+    var position=pendingPosition||current();
+    pendingPosition=null;
+    write(fdReadingPlaceUpdate(state.readingPlaces,ref,position.heading,position.offset,now()));
+    baselineY=scrollY();
+  }
+  function onScroll(){
+    if(!active||!ready)return;
+    if(suppressedY!==null){
+      if(Math.abs(scrollY()-suppressedY)<=4)return;
+      suppressedY=null;
+    }
+    if(Math.abs(scrollY()-baselineY)<=4){
+      if(timer!==null){timerClear(timer);timer=null;}
+      pendingPosition=null;
+      return;
+    }
+    pendingPosition=current();
+    if(timer!==null)timerClear(timer);
+    timer=timerSet(function(){timer=null;capture();},150);
+  }
+  function onPagehide(){
+    if(timer!==null){timerClear(timer);timer=null;}
+    capture();
+  }
+  function onResize(){
+    if(!active||!ready)return;
+    if(timer!==null){timerClear(timer);timer=null;capture();}
+    ready=false;
+    var sequence=++resizeSeq;
+    frame(function(){
+      if(!active||sequence!==resizeSeq)return;
+      var place=state.readingPlaces&&state.readingPlaces[ref];
+      var resolved=place&&fdReadingResume(place,availableAnchors()), target=null, j;
+      if(resolved){
+        for(j=0;j<nodes.length;j++)if(anchor(nodes[j])===resolved.heading){target=nodes[j];break;}
+        if(target){win.scrollTo(0,absoluteTop(target)+resolved.offset);suppressedY=scrollY();baselineY=scrollY();}
+      }
+      ready=true;
+    });
+  }
+  function destroy(){
+    if(!active)return;
+    if(timer!==null){timerClear(timer);timer=null;}
+    capture();
+    active=false;
+    win.removeEventListener('scroll',onScroll);
+    win.removeEventListener('pagehide',onPagehide);
+    win.removeEventListener('resize',onResize);
+  }
+  function startAtTop(){
+    if(!active||!ready||top.hidden)return;
+    if(timer!==null){timerClear(timer);timer=null;}
+    pendingPosition=null;
+    win.scrollTo(0,absoluteTop(nodes[0]));
+    suppressedY=scrollY();
+    baselineY=scrollY();
+    write(fdReadingPlaceDrop(state.readingPlaces,ref));
+    top.hidden=true;
+    nodes[0].setAttribute('tabindex','-1');
+    try{nodes[0].focus({preventScroll:true});}catch(_){nodes[0].focus();}
+  }
+  if(o.allowStorage!==true){
+    status.textContent='Reading place could not be saved on this device';
+    return {destroy:destroy,startAtTop:startAtTop};
+  }
+  frame(function(){
+    if(!active)return;
+    state.readingPlaces=fdReadingPlaces(state.readingPlaces);
+    var place=state.readingPlaces[ref], resolved=place&&fdReadingResume(place,availableAnchors()), target=null;
+    if(place&&!resolved){
+      win.scrollTo(0,0);
+      suppressedY=scrollY();
+      baselineY=scrollY();
+      write(fdReadingPlaceDrop(state.readingPlaces,ref));
+    }else{
+      if(resolved){
+        for(var j=0;j<nodes.length;j++)if(anchor(nodes[j])===resolved.heading){target=nodes[j];break;}
+        win.scrollTo(0,absoluteTop(target)+resolved.offset);
+        suppressedY=scrollY();
+        top.hidden=false;
+        if(o.focusOnRestore===true&&(!o.canFocusOnRestore||o.canFocusOnRestore()===true)){
+          target.setAttribute('tabindex','-1');
+          try{target.focus({preventScroll:true});}catch(_){target.focus();}
+        }
+      }
+      ready=true;
+      baselineY=scrollY();
+      write(state.readingPlaces);
+      if(o.focusOnRestore!==true&&(!o.canFocusOnRestore||o.canFocusOnRestore()===true)){
+        nodes[0].setAttribute('tabindex','-1');
+        try{nodes[0].focus({preventScroll:true});}catch(_){nodes[0].focus();}
+      }
+    }
+    ready=true;
+    win.addEventListener('scroll',onScroll);
+    win.addEventListener('pagehide',onPagehide);
+    win.addEventListener('resize',onResize);
+  });
+  return {destroy:destroy,startAtTop:startAtTop};
+}
+
 function fdWire(root, initialState, opts){
   var o=opts||{}, win=o.window||(typeof window!=='undefined'?window:null);
   var doc=o.document||(typeof document!=='undefined'?document:null);
   var state=fdClone(initialState||{}), invokers=[], nudgeTimer=null, navGeneration=0;
   var destroyed=false, registrations=[], startupPrepared=false, startupCommitted=false;
+  var offlineRefreshPending=false,offlineRefreshTimer=null,offlineRefreshGeneration=0;
   var baseStale=false;
   var render=o.render||function(){};
   var renderTransient=o.renderTransient||function(next,detail){
@@ -845,6 +1161,19 @@ function fdWire(root, initialState, opts){
   var clearTimer=o.clearTimer||(typeof clearTimeout==='function'?clearTimeout:null);
   var index=o.index||fdDefaultIndex();
   var previewRouteBase=previewActive()?currentRoute():null;
+
+  function offlineRefreshScope(value){
+    var s=value||{};
+    if(s.screen!=='app'||s.tab!=='today'||s.openId||s.offlineOpen!==true)return '';
+    return [String(s.roleId||s.role||''),String(s.week),String(s.rotationStart||''),
+      s.appMode===true?'app':'week',String(s.appBridge||'')].join('|');
+  }
+  function cancelOfflineRefresh(){
+    offlineRefreshGeneration++;
+    offlineRefreshPending=false;
+    if(offlineRefreshTimer!==null&&clearTimer)try{clearTimer(offlineRefreshTimer);}catch(_){}
+    offlineRefreshTimer=null;
+  }
 
   function overlayIdentity(value){
     var s=value||{};
@@ -1016,7 +1345,7 @@ function fdWire(root, initialState, opts){
     return raw||'';
   }
   function baseChanged(before, after){
-    var keys=['openId','tab','screen','libraryView','kitSection'];
+    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview','careIntentId','carePackIds','offlineOpen'];
     for(var i=0;i<keys.length;i++){
       if(baseValue(before,keys[i])!==baseValue(after,keys[i])) return true;
     }
@@ -1101,7 +1430,7 @@ function fdWire(root, initialState, opts){
     if(!detail.preserveResource) baseStale=false;
     return detail;
   }
-  function fdApplyEffect(effect, fromHistory, generation){
+  function fdApplyEffect(effect, fromHistory, generation, focusOnRestore){
     if(!effect) return;
     /* set-rotation and browse-without-rotation write their key in apply(), ABOVE the render --
        see the comment there. Nothing is left for them to do once the page has painted. */
@@ -1132,6 +1461,7 @@ function fdWire(root, initialState, opts){
          restoring role, week and route with no second confirmation. Reloading is what makes the
          page agree with the store. It follows the render deliberately: whether the browser
          honours it or not, nothing is left on screen claiming data that is gone. */
+      if(o.disposeReadingPlace)o.disposeReadingPlace();
       fdClearDeviceData(localStorage);
       if(win&&win.location&&win.location.reload) win.location.reload();
     } else if(effect.type==='set-exam-date'){
@@ -1139,6 +1469,44 @@ function fdWire(root, initialState, opts){
          itself cannot be named in this file: the controller's copy rule bans its audience token
          file-wide (tests/fd-action-contract.test.mjs), comments included. */
       fdStoreExamDate(effect.date);
+    } else if(effect.type==='print-care-pack'){
+      if(win&&typeof win.print==='function') try{win.print();}catch(_){}
+    } else if(effect.type==='refresh-offline'){
+      if(offlineRefreshPending)return;
+      var report=typeof o.reportOfflineRefresh==='function'?o.reportOfflineRefresh:function(){};
+      var scope=offlineRefreshScope(state);
+      if(!scope)return;
+      var current=typeof o.offlineStatus==='function'?o.offlineStatus():null;
+      var model=typeof fdOfflineStatus==='function'?fdOfflineStatus(current):{kind:'not-ready'};
+      var verified=model.kind==='ready'||model.kind==='update';
+      var online=typeof o.online==='function'?o.online():!!(win&&win.navigator&&win.navigator.onLine!==false);
+      if(!online){report(fdOfflineRefreshMessage(false,verified));return;}
+      if(!setTimer||!clearTimer){report(fdOfflineRefreshMessage(true,false));return;}
+      var timeoutMs=typeof o.offlineRefreshTimeoutMs==='number'&&isFinite(o.offlineRefreshTimeoutMs)&&
+        o.offlineRefreshTimeoutMs>0?o.offlineRefreshTimeoutMs:8000;
+      var token=++offlineRefreshGeneration;
+      function finish(success,timedOut){
+        if(token!==offlineRefreshGeneration)return;
+        offlineRefreshGeneration++;
+        offlineRefreshPending=false;
+        if(offlineRefreshTimer!==null)try{clearTimer(offlineRefreshTimer);}catch(_){}
+        offlineRefreshTimer=null;
+        if(destroyed||offlineRefreshScope(state)!==scope)return;
+        report(timedOut===true?'Update check timed out. Try again with a connection.':
+          fdOfflineRefreshMessage(true,success===true));
+      }
+      offlineRefreshPending=true;
+      report('Checking for a newer offline copy…');
+      try{offlineRefreshTimer=setTimer(function(){finish(false,true);},timeoutMs);}
+      catch(_){finish(false,false);return;}
+      var update=typeof o.requestSWUpdate==='function'?o.requestSWUpdate:function(){return Promise.resolve(false);};
+      var updateResult;
+      try{updateResult=update();}catch(_){finish(false,false);return;}
+      Promise.resolve(updateResult).then(function(success){
+        finish(success===true,false);
+      },function(){
+        finish(false,false);
+      });
     } else if(effect.type==='nudge-timeout'&&setTimer){
       if(nudgeTimer&&clearTimer) clearTimer(nudgeTimer);
       nudgeTimer=setTimer(function(){
@@ -1153,7 +1521,7 @@ function fdWire(root, initialState, opts){
       var opener=o.openResource||fdOpenResource;
       opener(effect.ref,{
         index:index,state:state,search:(win&&win.location&&win.location.search)||'',
-        fromHistory:!!fromHistory,host:freshResourceHost(),
+        fromHistory:!!fromHistory,host:freshResourceHost(),focusOnRestore:focusOnRestore===true,
         getState:function(){ return state; },
         isCurrent:function(){
           return !destroyed&&generation===navGeneration&&state.openId===effect.ref;
@@ -1269,6 +1637,29 @@ function fdWire(root, initialState, opts){
       if(heading&&heading.focus) try{heading.focus({preventScroll:true});}catch(_){try{heading.focus();}catch(__){}}
     }
   }
+  /* APP practice repaints its whole visit-only player. Keep keyboard focus at the next step,
+     or on the equivalent rebuilt control, so Tab continues where the learner left off. */
+  function focusAppPractice(invoker,before){
+    if(!invoker||!invoker.hasAttribute||!root||!root.querySelector) return;
+    var selector='',target=null,pack,id;
+    if(invoker.hasAttribute('data-fd-app-practice-open')||
+       invoker.hasAttribute('data-fd-app-practice-reset')){
+      selector='[data-fd-app-practice-reveal]';
+    } else if(invoker.hasAttribute('data-fd-app-practice-reveal')){
+      selector='[data-fd-app-practice-classify]';
+    } else if(invoker.hasAttribute('data-fd-app-practice-classify')||
+              invoker.hasAttribute('data-fd-app-practice-question')){
+      target=equivalentControl(invoker,root);
+    } else if(invoker.hasAttribute('data-fd-app-practice-close')){
+      pack=before.appPractice&&before.appPractice.pack;
+      id=pack&&pack.id;
+      if(typeof id==='string'&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)){
+        selector='[data-fd-app-practice-open="'+id+'"]';
+      }
+    }
+    if(!target&&selector) target=root.querySelector(selector);
+    if(target&&target.focus) try{target.focus();}catch(_){}
+  }
   function apply(result, invoker, fromHistory){
     if(destroyed) return state;
     if(previewActive()&&meaningfulResult(result)){
@@ -1276,11 +1667,18 @@ function fdWire(root, initialState, opts){
       return state;
     }
     var before=fdClone(state), beforeOverlay=overlayIdentity(state);
+    var beforeRefreshScope=offlineRefreshScope(state);
     var beforeHistory=historyValue();
     var patch=result.patch||{};
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
+    if(state.screen!=='app'||state.tab!=='today'||state.openId)state.offlineOpen=false;
+    if(beforeRefreshScope&&beforeRefreshScope!==offlineRefreshScope(state))cancelOfflineRefresh();
+    if(state.tab!=='care'||state.openId){
+      state.careIntentId='';
+      if(state.carePackIds&&state.carePackIds.length) state.carePackIds=[];
+    }
     /* Where the learner was when they opened a resource (#427). Recorded by the controller, not
        by fdDispatch: the scroll offset is a browser fact and dispatch stays pure. A reader that
        opens another reader keeps the origin -- "back" still means the tab it all started from. */
@@ -1343,15 +1741,49 @@ function fdWire(root, initialState, opts){
         }
       }catch(_){}
     }
-    fdSave(state);
+    /* A section-only filter belongs just to this Essentials visit. Other navigation patches also
+       reset kitSection to All; those still carry durable route state and must be saved normally. */
+    var visitOnly=fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||
+      fdOwn(patch,'careIntentId')||fdOwn(patch,'carePackIds')||fdOwn(patch,'offlineOpen')||
+      !!(result.effect&&result.effect.type==='refresh-offline');
+    for(var saveKey in patch){
+      if(fdOwn(patch,saveKey)&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview'&&
+         saveKey!=='careIntentId'&&saveKey!=='carePackIds'&&saveKey!=='offlineOpen') visitOnly=false;
+    }
+    if(!visitOnly) fdSave(state);
     if(!fromHistory){
       var pushed=routeTo(result.route,result.history==='replace');
       if(!pushed&&beforeHistory!==historyValue()) replaceHistorySnapshot();
     }
     if(changedBase) render(state,detail);
     else renderTransient(state,detail);
-    fdApplyEffect(result.effect,fromHistory,generation);
+    fdApplyEffect(result.effect,fromHistory,generation,
+      !!(invoker&&invoker.getAttribute&&invoker.getAttribute('data-fd-reading-resume')==='1'));
     focusPostTransition(before,result,changedBase);
+    if(fdOwn(patch,'appPractice')&&!afterOverlay&&!beforeHadOverlay){
+      focusAppPractice(invoker,before);
+    }
+    /* The Essentials rail rebuilds with the filtered results. Keep keyboard focus on the exact
+       section button the learner chose, which also scrolls a clipped phone rail into view. */
+    if((fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview'))&&!afterOverlay&&!beforeHadOverlay){
+      var rebuiltFilter=equivalentControl(invoker,root);
+      if(rebuiltFilter&&rebuiltFilter.focus) try{rebuiltFilter.focus();}catch(_){}
+    }
+    if(fdOwn(patch,'careIntentId')&&!afterOverlay&&!beforeHadOverlay&&root&&root.querySelector){
+      var careFocus=state.careIntentId
+        ?root.querySelector('[data-fd-care-intent="'+state.careIntentId+'"]')
+        :root.querySelector('[data-fd-care-intent]');
+      if(careFocus&&careFocus.focus) try{careFocus.focus();}catch(_){}
+    }
+    if(fdOwn(patch,'carePackIds')&&!afterOverlay&&!beforeHadOverlay&&root&&root.querySelector){
+      var packFocus=invoker&&invoker.hasAttribute&&invoker.hasAttribute('data-fd-care-pack-clear')
+        ?root.querySelector('[data-fd-care-pack]'):equivalentControl(invoker,root);
+      if(packFocus&&packFocus.focus) try{packFocus.focus();}catch(_){}
+    }
+    if(fdOwn(patch,'offlineOpen')&&!afterOverlay&&!beforeHadOverlay&&root&&root.querySelector){
+      var offlineFocus=root.querySelector(state.offlineOpen?'[data-fd-offline-close]':'[data-fd-offline-open]');
+      if(offlineFocus&&offlineFocus.focus)try{offlineFocus.focus();}catch(_){}
+    }
     if(before.openId&&!state.openId) restoreOrigin(before);
     if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
@@ -1380,7 +1812,8 @@ function fdWire(root, initialState, opts){
     var c={
       nowMs:Date.now(),theme:currentTheme(),
       search:(win&&win.location&&win.location.search)||'',
-      progressRaw:progressRaw(),weekItems:fdItemsForWeek(index,fdProgressWeek(state,index)),index:index
+      progressRaw:progressRaw(),weekItems:fdItemsForWeek(index,fdProgressWeek(state,index)),index:index,
+      appPracticePacks:o.appPracticePacks||[]
     };
     var add=extra||{};
     for(var k in add){ if(fdOwn(add,k)) c[k]=add[k]; }
@@ -1397,17 +1830,47 @@ function fdWire(root, initialState, opts){
       return;
     }
     var attrs=fdAttrsFromTarget(target);
+    var retainPathFocus=target.hasAttribute&&target.hasAttribute('data-fd-view-week');
     if(event.preventDefault) event.preventDefault();
+    if(fdOwn(attrs,'data-fd-reading-top')){
+      if(previewActive()){lockPreview();return;}
+      var readingSession=o.readingPlaceSession&&o.readingPlaceSession();
+      if(readingSession)readingSession.startAtTop();
+      return;
+    }
+    if(fdOwn(attrs,'data-fd-dock-forward')){
+      if(fdForwardDockAction(root,attrs['data-fd-dock-forward'])) return;
+      apply(fdDispatch({'data-fd-tab':'library'},context(),state),target,false);
+      return;
+    }
     apply(fdDispatch(attrs,context({inSheet:!!state.sheet}),state),target,false);
+    /* Path rerenders its route and detail together, so the activated tab no longer exists after
+       apply(). Restore its equivalent without scrolling the learner away from the route. */
+    if(retainPathFocus){
+      var rebuiltPath=equivalentControl(target,root);
+      if(rebuiltPath&&rebuiltPath.focus){
+        try{rebuiltPath.focus({preventScroll:true});}catch(_){try{rebuiltPath.focus();}catch(__){}}
+      }
+    }
   }
-  /* Chromium can focus a partly visible button in the native details tool strip without
+  function pathKeyHandler(event){
+    if(destroyed||!startupCommitted||previewActive()) return;
+    var target=event&&event.target&&event.target.closest?event.target.closest('.fd-pathroute [data-fd-view-week]'):null;
+    if(!target) return;
+    var next=fdPathMoveWeek(index,state.viewWeek,event.key);
+    if(next===null) return;
+    if(event.preventDefault) event.preventDefault();
+    var control=root&&root.querySelector?root.querySelector('.fd-pathroute [data-fd-view-week="'+next+'"]'):null;
+    if(control&&control.click) control.click();
+  }
+  /* Chromium can focus a partly visible button in either horizontal Essentials strip without
      scrolling it fully into view. Move only that strip, preserving the page and route. */
   function focusHandler(event){
     if(destroyed||!startupCommitted||previewActive()) return;
     var target=event&&event.target;
-    var control=target&&target.closest?target.closest('.fd-kit__tool-list [data-fd-open]'):null;
+    var control=target&&target.closest?target.closest('.fd-kit__tool-tabs [data-fd-kit-tool],.fd-kit__index-track [data-fd-kit-section]'):null;
     if(!control) return;
-    var strip=control.closest('.fd-kit__tool-list');
+    var strip=control.closest('.fd-kit__tool-tabs,.fd-kit__index-track');
     if(!strip||!strip.getBoundingClientRect||!control.getBoundingClientRect) return;
     var frame=strip.getBoundingClientRect(), box=control.getBoundingClientRect();
     var style=win&&win.getComputedStyle?win.getComputedStyle(strip):null;
@@ -1477,23 +1940,12 @@ function fdWire(root, initialState, opts){
     if(destroyed) return;
     var target=event&&event.target;
     if(!target||!target.hasAttribute) return;
-    var kitChange=target.hasAttribute('data-fd-kit-section');
-    if(!kitChange&&!target.hasAttribute('data-fd-exam-date')) return;
+    if(!target.hasAttribute('data-fd-exam-date')) return;
     /* No preventDefault() on the pre-commit bail, unlike the click and key handlers: a change
        event is not cancelable, so calling it would only look like a guard. Dropping the write is
        the guard, and the field keeps showing what the learner typed either way. */
     if(!startupCommitted) return;
     if(previewActive()){ lockPreview(); return; }
-    if(kitChange){
-      /* The selection belongs only to this visit: no save, route, or history snapshot. */
-      var before=fdClone(state);
-      var selection=fdDispatch({'data-fd-kit-section':String(target.value||'all')},context(),state);
-      state.kitSection=selection.patch.kitSection;
-      render(state,absorbStaleBase(transitionDetail(before,selection.patch,null,true)));
-      var select=root.querySelector('[data-fd-kit-section]');
-      if(select&&select.focus) select.focus();
-      return;
-    }
     var result=fdDispatch(
       {'data-fd-exam-date':String(target.value||'')},context(),state
     );
@@ -1508,6 +1960,21 @@ function fdWire(root, initialState, opts){
     if(externalModalOpen()) return;
     var d=dialog();
     if(d&&fdTrapFocus(event,d)) return;
+    var toolTab=event.target&&event.target.closest?event.target.closest('[data-fd-kit-tool]'):null;
+    if(toolTab&&(event.key==='ArrowRight'||event.key==='ArrowDown'||event.key==='ArrowLeft'||event.key==='ArrowUp'||event.key==='Home'||event.key==='End')){
+      var toolTabs=root&&root.querySelectorAll?root.querySelectorAll('[data-fd-kit-tool]'):[], current=-1, ti;
+      for(ti=0;ti<toolTabs.length;ti++) if(toolTabs[ti]===toolTab) current=ti;
+      if(current>=0&&toolTabs.length){
+        var next=current;
+        if(event.key==='Home') next=0;
+        else if(event.key==='End') next=toolTabs.length-1;
+        else if(event.key==='ArrowRight'||event.key==='ArrowDown') next=(current+1)%toolTabs.length;
+        else next=(current+toolTabs.length-1)%toolTabs.length;
+        if(event.preventDefault) event.preventDefault();
+        apply(fdDispatch({'data-fd-kit-tool':toolTabs[next].getAttribute('data-fd-kit-tool')},context(),state),toolTabs[next],false);
+      }
+      return;
+    }
     if(event.key==='Escape'&&(state.searchOpen||state.sheet)){
       if(event.preventDefault) event.preventDefault();
       apply(fdDispatch({close:true},context(),state),event.target,false);
@@ -1518,6 +1985,14 @@ function fdWire(root, initialState, opts){
       var results=searcher(index,state.query||'',o.synonyms||{},state)||[];
       if(results.length){
         var first=results[0], attrs={};
+        if(first.kind==='care'){
+          var careId=first.item&&first.item.id;
+          var careLink=careId&&root&&root.querySelector?
+            root.querySelector('.fd-result.is-care[data-care-resource="'+careId+'"]'):null;
+          if(event.preventDefault) event.preventDefault();
+          if(careLink&&careLink.click) careLink.click();
+          return;
+        }
         if(first.kind==='protocol') attrs['data-fd-safety']=first.item.ref;
         else{
           attrs['data-fd-open']=first.item.ref;
@@ -1530,7 +2005,7 @@ function fdWire(root, initialState, opts){
     var action=fdKeyAction(event.key,{
       typing:fdIsTypingTarget(event.target),screen:state.screen||'app',
       searchOpen:!!state.searchOpen,sheetOpen:!!state.sheet,reading:!!state.openId,
-      meta:!!(event.metaKey||event.ctrlKey)
+      meta:!!(event.metaKey||event.ctrlKey),appMode:fdAppMode(state)
     });
     if(!action) return;
     var attrs={};
@@ -1556,8 +2031,14 @@ function fdWire(root, initialState, opts){
       if(currentRoute()!==previewRouteBase) lockPreview();
       return;
     }
+    cancelOfflineRefresh();
+    /* Flush the outgoing reader while its state is still current. The next save clones this map. */
+    if(o.disposeReadingPlace)o.disposeReadingPlace();
     var before=fdClone(state);
     var merged=fdClone(state), snap=event&&event.state&&event.state.fd&&event.state.state;
+    merged.careIntentId='';
+    merged.carePackIds=[];
+    merged.offlineOpen=false;
     merged.searchOpen=false;
     merged.query='';
     merged.sheet=null;
@@ -1577,7 +2058,7 @@ function fdWire(root, initialState, opts){
     } else {
       merged.roles=o.roles||merged.roles;
       merged.rotationStart=o.rotationStart||merged.rotationStart;
-      merged=fdResolveState(win.location.href,merged);
+      merged=fdResolveState(win.location.href,merged,{allowAppInvite:o.allowAppInvite===true});
       var params=new URLSearchParams(win.location.search||'');
       if(!params.get('page')&&!params.get('tool')&&!params.get('tab')&&params.get('library')!=='full'){
         merged.tab='today';
@@ -1706,6 +2187,7 @@ function fdWire(root, initialState, opts){
       destroy:function(){
         if(destroyed&&registrations.length===0) return;
         destroyed=true;
+        cancelOfflineRefresh();
         navGeneration++;
         removeRegistrations();
         if(nudgeTimer&&clearTimer) try{clearTimer(nudgeTimer);}catch(ignoreTimer){ }
@@ -1715,6 +2197,7 @@ function fdWire(root, initialState, opts){
 
   if(!listen(root,'click',clickHandler,false)||!listen(root,'input',inputHandler,false)||
      !listen(root,'change',changeHandler,false)||!listen(root,'focusin',focusHandler,false)||
+     !listen(root,'keydown',pathKeyHandler,false)||
      !listen(win,'keydown',keyHandler,false)||!listen(win,'popstate',popstateHandler,false)){
       removeRegistrations();
       destroyed=true;

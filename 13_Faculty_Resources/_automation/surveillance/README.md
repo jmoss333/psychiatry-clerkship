@@ -62,7 +62,7 @@ _automation/surveillance/
 Collector / GitHub Action
    → writes findings.json + checked-sources.json
    → sync resolves affects[] and reads the live surveillance issue queue
-        → P0/P1 → open issue (idempotent by fingerprint)
+        → P0/P1 → open issue, or reconcile a matching open issue's generated routing fields
         → P2   → append to monthly digest
         → write dated report + content-free issue-state.json
    → status builder overlays live open/closed issue truth
@@ -70,10 +70,12 @@ Collector / GitHub Action
    → faculty review → edit page manually if needed → re-stamp reviewed.json → close issue
 ```
 
-An existing open or closed fingerprint is deduplicated; automation does not comment on,
-reopen, or update that issue. Live status excludes closed issues from the active queue.
-If a finding requires a clinical change, faculty decide the edit and re-attestation, then
-close the issue manually.
+An existing open fingerprint is deduplicated. When fresh routing changes its managed
+severity/job labels, automation refreshes the generated title/body and managed labels while
+preserving human-added labels and comments. A closed fingerprint may re-fire as a recurrence;
+only `config/dismissed.json` permanently suppresses a reviewed finding. Live status excludes
+closed issues from the active queue. If a finding requires a clinical change, faculty decide
+the edit and re-attestation, then close the issue manually.
 
 Wiring pattern: **collector → GitHub Action → one rolling review PR**. The four
 workflows share the `surveillance-inbox` concurrency group. They hydrate prior generated

@@ -113,6 +113,8 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
     projected.pop("learningPaths", None)
     projected.pop("roles", None)
     projected.pop("siteLibrary", None)
+    if site == "ms3":
+        projected.pop("appPathway", None)
     projected["path"] = {"id": expected_id, "weekCount": len(weeks)}
     projected["weeks"] = copy.deepcopy(weeks)
     projected["essentials"] = copy.deepcopy(selection)
@@ -151,6 +153,29 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
         column["refs"] = [ref for ref in refs if ref not in excluded]
 
     catalog_entries = _catalog_entries(catalog)
+    app_refs = []
+    if site == "resident":
+        pathway = projected.get("appPathway")
+        if not isinstance(pathway, dict):
+            raise ValueError("curriculum.appPathway must be an object for resident")
+        bridges = pathway.get("bridges")
+        activities = pathway.get("activities")
+        if not isinstance(bridges, dict) or not isinstance(activities, list):
+            raise ValueError("curriculum.appPathway needs bridges and activities")
+        for bridge_id in ("pa", "pmhnp"):
+            bridge = bridges.get(bridge_id)
+            refs = bridge.get("refs") if isinstance(bridge, dict) else None
+            if not isinstance(refs, list):
+                raise ValueError("APP bridge '%s' needs refs" % bridge_id)
+            app_refs.extend(refs)
+        for activity in activities:
+            refs = activity.get("refs") if isinstance(activity, dict) else None
+            if not isinstance(refs, list):
+                raise ValueError("APP activity needs refs")
+            app_refs.extend(refs)
+        for ref in app_refs:
+            if ref not in catalog_entries:
+                raise ValueError("APP ref '%s' has no final resident catalog entry" % ref)
     placed = []
     for column in columns:
         for ref in column["refs"]:
@@ -201,6 +226,7 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
     manifest = {"tools": [], "md": []}
     manifest_refs = placed + [ref for ref in path_refs if ref not in placed]
     manifest_refs += [ref for ref in landing_refs if ref not in manifest_refs]
+    manifest_refs += [ref for ref in app_refs if ref not in manifest_refs]
     # A libraryExclude page ships and is reachable (the shell marks it `known`), so the shell
     # needs its title: without an entry every reader-side fallback synthesized {title: ref} and
     # ?tool=feedback.html painted "feedback.html" as heading, iframe title and document title

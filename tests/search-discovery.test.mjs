@@ -151,9 +151,10 @@ test('search-only resources do not change Library, assignments or daily picks', 
   assert.deepEqual(F.fdQuickTools(index, []), []);
 });
 
-test('empty search offers a named Browse Library action and explicitly named input', () => {
+test('Search offers Browse the Library above an empty result list and names its input', () => {
   const html = F.fdSearchOverlay({byRef:{},kit:[]}, 'zzzzqqq', {}, {});
-  assert.match(html, /data-fd-tab="library"[^>]*>Browse Library/);
+  assert.match(html, /data-fd-tab="library"[^>]*>Browse the Library/);
+  assert.ok(html.indexOf('Browse the Library') < html.indexOf('fd-searchpanel__body'));
   assert.match(html, /<input[^>]*aria-label="Search resources"/);
 });
 

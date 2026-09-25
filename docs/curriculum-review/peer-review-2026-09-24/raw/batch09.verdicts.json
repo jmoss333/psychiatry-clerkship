@@ -1,0 +1,132 @@
+[
+  {
+    "id": "M04-018",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "Read t_sexual.md in full: the Can't-miss paragraph limits reporting to 'child protection reporting where a child is at risk', but the pearl (and the student bullet and overlay) generalise a 'reporting duty' to any non-consenting paraphilic behaviour, which no general US statute imposes for competent adult victims. The reviewer's fix is sound but omits the other mandated-reporting category (elder/dependent-adult abuse), so it now under-states duties; added it.",
+    "evidence": "recall: state child-abuse and elder/dependent-adult (APS) mandated-reporting statutes; state duty-to-protect laws (mandatory/permissive/none); HIPAA 45 CFR 164.512(c),(j). Page's own Can't-miss paragraph.",
+    "correction": "- A child (or, in most states, an elder or dependent adult) at risk triggers protective-services reporting; other non-consenting paraphilic behavior triggers a safety assessment and, only for a credible threat to an identifiable person, your state's duty-to-protect rules.",
+    "problem": "The pearl states that any non-consenting paraphilic behaviour triggers reporting duties; mandated reporting applies when a child (or, under APS statutes, an elder or dependent adult) is at risk, and otherwise only state duty-to-protect rules apply to a credible threat. The reviewer's correction left out vulnerable-adult reporting.",
+    "confidence": "medium"
+  },
+  {
+    "id": "M07-005",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "HHS OCR guidance says HIPAA does not stop a provider from listening to family, but confirming that a patient is on a psychiatric unit, or phoning a relative, is itself a disclosure and needs agreement or a 164.510(b) exception. The reviewer's fix is right in substance but says flatly 'do not ... share anything back', which contradicts the incapacity/emergency exceptions; reworded so it matches M07-006.",
+    "evidence": "recall: 45 CFR 164.510(a)-(b), 164.512(j); HHS OCR 'HIPAA Privacy Rule and Sharing Information Related to Mental Health' FAQ (providers may listen to family concerns).",
+    "correction": "You can listen to a family without the patient's permission — but without it (and absent a recognized exception such as incapacity or emergency) don't confirm the admission or share anything back; consent governs what you share, including that they are here, not what you hear.",
+    "problem": "'Always listen' leaves out the caveat that acknowledging the admission, or placing an outbound call, discloses PHI. That needs the patient's agreement or a HIPAA exception.",
+    "confidence": "high"
+  },
+  {
+    "id": "M07-006",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "The §6 family-meeting text has the same unqualified 'always' and nothing nearby qualifies it (the resident extension's 'consent-scope check' covers the meeting, not the call). The correction is accurate, keeps the teaching point, and reads grammatically in place.",
+    "evidence": "recall: 45 CFR 164.510(b)(1)-(3); 45 CFR 164.512(j); HHS OCR mental-health information-sharing guidance.",
+    "correction": "You can always *receive* information from a family — observations, history, concerns — without the patient's permission, provided you do not confirm the patient is here or share anything back unless the patient agrees or a recognized exception (incapacity, emergency, serious threat) applies. Consent governs what you share, not what you hear.",
+    "confidence": "high"
+  },
+  {
+    "id": "M05-008",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "In violence.md's Management paragraph the duty is stated as 'is triggered' with no state qualifier. The 'vary by state' caveat appears only in the separate FRST tool text (line ~681), not on this page. The correction adds the variation and keeps the escalation instruction.",
+    "evidence": "recall: NCSL survey of mental health professionals' duty to warn (mandatory / permissive / none by state); page's own FRST tool text 'Duty-to-protect obligations vary by state'.",
+    "correction": "When a patient makes a credible threat against an identifiable person, a **duty to protect (Tarasoff)** may be triggered — whether it is mandatory, permissive, or absent, and what discharges it, varies by state; escalate to your supervising clinician immediately rather than deciding alone.",
+    "confidence": "high"
+  },
+  {
+    "id": "AQ3-016",
+    "verdict": "confirmed",
+    "severity": "Major",
+    "reason": "Checked against the PubMed abstract: combined treatment beat pharmacotherapy alone (g=0.51 short-term, 0.32 long-term) 'but it was not more effective than CBT alone at either time point'. The keyed option is wrong and the correction matches the paper. Sibling text keeps the error and must change in the same edit: option 4's feedback ('superior to both'), option 2's feedback, and Q6 option 1 ('combined > psychotherapy alone ... key finding'), which contradicts the new key.",
+    "evidence": "Cuijpers P et al., World Psychiatry 2023;22:105-15, PMID 36640411, doi:10.1002/wps.21069",
+    "correction": "Combined treatment is superior to pharmacotherapy alone but was not significantly more effective than CBT alone.",
+    "confidence": "high"
+  },
+  {
+    "id": "AQ3-017",
+    "verdict": "confirmed",
+    "severity": "Major",
+    "reason": "The keyed feedback states the reverse of the abstract for CBT alone. The correction matches the abstract (more effective than pharmacotherapy alone short- and long-term; not more effective than CBT alone).",
+    "evidence": "Cuijpers P et al., World Psychiatry 2023;22:105-15, PMID 36640411, doi:10.1002/wps.21069",
+    "correction": "The meta-analysis found combined treatment more effective than pharmacotherapy alone at short and longer-term follow-up, but not more effective than CBT alone.",
+    "confidence": "high"
+  },
+  {
+    "id": "AQ3-001",
+    "verdict": "confirmed",
+    "severity": "Major",
+    "reason": "The shipped Q2 stem is the prior remediation instruction, verbatim. The proposed stem matches Aoki 2022 (15 RCTs). It must ship with AQ3-002 and AQ3-003, and Q6's feedback ('while satisfaction and engagement improve') still needs the alignment the instruction asked for.",
+    "evidence": "Aoki Y et al., Cochrane Database Syst Rev 2022;11:CD007297, PMID 36367232, doi:10.1002/14651858.CD007297.pub3",
+    "correction": "A 2022 Cochrane review of 15 RCTs evaluated shared decision-making (SDM) interventions in mental health care. Which outcome showed some evidence of improvement?",
+    "confidence": "high"
+  },
+  {
+    "id": "AQ3-002",
+    "verdict": "confirmed",
+    "severity": "Major",
+    "reason": "Per the abstract, the only improved primary outcome was SDM-specific user-reported outcomes immediately after the encounter, which the authors' conclusion restates as perceived involvement (SMD 0.63, low certainty). Knowledge and overall satisfaction were uncertain. The replacement key is accurate.",
+    "evidence": "Aoki Y et al., Cochrane Database Syst Rev 2022;11:CD007297, PMID 36367232, doi:10.1002/14651858.CD007297.pub3",
+    "correction": "Patients' perceived involvement in the decision immediately after the encounter",
+    "confidence": "high"
+  },
+  {
+    "id": "AQ3-003",
+    "verdict": "modified",
+    "severity": "Major",
+    "reason": "The rationale mis-summarises the review. The reviewer's correction gives the certainty grade for all three outcomes as 'very-low', but the abstract grades knowledge and clinical outcomes very-low and gives no grade for overall satisfaction; one study found moderate-certainty gains in satisfaction with the information received. Removed the over-precise grade.",
+    "evidence": "Aoki Y et al., Cochrane Database Syst Rev 2022;11:CD007297, PMID 36367232, doi:10.1002/14651858.CD007297.pub3",
+    "correction": "The review found low-certainty evidence that SDM interventions increase patients' perceived involvement in the decision immediately after the encounter; it was uncertain whether they improve knowledge, overall satisfaction or clinical outcomes.",
+    "problem": "The rationale says SDM improved knowledge and satisfaction, but Aoki 2022 was uncertain on both. The replacement should not give one certainty grade to every outcome.",
+    "confidence": "high"
+  },
+  {
+    "id": "AQ3-013",
+    "verdict": "confirmed",
+    "severity": "Major",
+    "reason": "The abstract gives -2.4 MMSE points over 36 weeks as the decline across all patients ('Overall, patients showed ...'), not as a drug-minus-placebo difference. The correction is faithful. The option-2 distractor feedback ('specifically identified a -2.4 point difference') repeats the error and should change in the same edit.",
+    "evidence": "Vigen CL et al., Am J Psychiatry 2011;168:831-9, PMID 21572163, doi:10.1176/appi.ajp.2011.08121844",
+    "correction": "All patients declined (MMSE −2.4 points over 36 weeks overall), and decline was significantly greater with antipsychotics than with placebo on the MMSE, BPRS cognitive subscale and a cognitive summary score — a magnitude the authors equated to about one year's additional deterioration.",
+    "confidence": "high"
+  },
+  {
+    "id": "AQ3-008",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "The stem asks for a cross-trial comparison, while the key (64% vs 52%, intensive psychotherapy vs collaborative care) is accurate and answers a different question. The new stem fixes this. Downgraded to Moderate because the keyed facts are correct and the defect is framing. Still to fix: the keyed feedback ('compared to the medication-only outcomes'; the collaborative-care arm also took medication) and the distractors that refer to 'both trials'.",
+    "evidence": "recall of Miklowitz DJ et al., Arch Gen Psychiatry 2007;64:419-26 (year-end recovery 64.4% vs 51.5%, all on pharmacotherapy); Sachs GS et al., NEJM 2007 (23.5% vs 27.3%)",
+    "correction": "In the companion STEP-BD psychosocial trial, how did 1-year recovery with intensive psychotherapy compare with brief collaborative care?",
+    "confidence": "high"
+  },
+  {
+    "id": "AQ3-006",
+    "verdict": "modified",
+    "severity": "Major",
+    "reason": "The shipped feedback is the remediation instruction, and that part is correct. But the instruction itself required checking the polarity-specific secondary outcomes in the full report, and that check supports the existing key. The full BALANCE report states 'the advantage of lithium compared with valproate was most apparent for depressive relapses (HR 0.63 [95% CI 0.41–0.96], p=0.0331)'. The reviewer's text ('does not establish ... depressive relapse') would contradict both the paper and the key, so the replacement should explain the key while labelling it secondary.",
+    "evidence": "Geddes JR et al. (BALANCE), Lancet 2010;375:385-95, PMID 20092882, doi:10.1016/S0140-6736(09)61828-6 (abstract: primary HR 0.71); full-text Findings sentence read via the reprint at psychiatryonline.org/doi/full/10.1176/foc.9.4.foc488 (two independent fetches returned the same verbatim sentence; exact-phrase web search also matches it)",
+    "correction": "In the full report, lithium's advantage over valproate was most apparent for depressive relapses (HR 0.63, 95% CI 0.41–0.96) — a secondary, polarity-specific analysis; the primary outcome, new intervention for an emergent mood episode of either pole, favored lithium overall (HR 0.71, 95% CI 0.51–1.00).",
+    "problem": "The keyed feedback is a pasted editorial instruction. The key 'Depressive relapses' is supported by BALANCE's reported secondary analysis (HR 0.63), so the feedback should explain that result and mark it as secondary, not deny it.",
+    "confidence": "medium"
+  },
+  {
+    "id": "AQ3-011",
+    "verdict": "confirmed",
+    "severity": "Major",
+    "reason": "PubMed metadata agrees: Kirkbride et al., World Psychiatry 2024, is a narrative evidence-and-prevention roadmap, and the umbrella review of 26 meta-analyses reporting medium effects for food insecurity, childhood abuse and IPV is Alon et al., Psychiatry Res 2024. The re-attributed stem is accurate. Q2's feedback ('Kirkbride review of MDD risk') has the same misattribution, and Q3–Q5 of the set still mean Kirkbride.",
+    "evidence": "PubMed PMID 38214615 (Kirkbride, doi:10.1002/wps.21160); PMID 38554496 (Alon, doi:10.1016/j.psychres.2024.115854)",
+    "correction": "The 2024 umbrella review by Alon et al. in 'Psychiatry Research' used which of the following methods to establish the evidence base for social determinants of major depressive disorder?",
+    "confidence": "high"
+  },
+  {
+    "id": "AQ2-001",
+    "verdict": "confirmed",
+    "severity": "Major",
+    "reason": "The keyed option is a pasted editorial instruction. The replacement is accurate: DUP moderated benefit at 2 years (median 74 weeks), and Robinson 2022 found DUP did not moderate the QLS advantage at 5 years (P=.32), so the '2-year' qualifier is right. Because the stem reads 'overstatement or limitation', option 2 (whose feedback calls it 'a common overstatement') also qualifies as an answer. To end the double key, either change the stem to 'limitation' and make option 2's feedback say it is wrong, or re-key to option 2 as the prior finding proposed.",
+    "evidence": "Robinson DG et al., Schizophr Bull 2022;48:1021-31, PMID 35689478, doi:10.1093/schbul/sbac053; recall of Kane JM et al., Am J Psychiatry 2016 (DUP<74-week median moderation)",
+    "correction": "The 2-year benefits were concentrated in patients with shorter duration of untreated psychosis (below the 74-week median), so gains may be smaller when treatment starts late.",
+    "confidence": "high"
+  }
+]

@@ -10,6 +10,7 @@ import test from 'node:test';
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf8');
 const todaySrc = read('frontdoor/fd_today.js');
+const frontdoorCss = read('frontdoor/frontdoor.css');
 
 // eslint-disable-next-line no-new-func
 const make = new Function(`
@@ -76,6 +77,16 @@ const FIX_CUR = {
   ],
   libraryColumns: [{ name: 'Col', accent: 'topic', refs: ['a.md', 'b.md', 't.html'] }],
   libraryExclude: [],
+  careResources: [
+    { id: 'resource-finder', title: 'Find services and community supports',
+      description: 'Treatment, housing, food, transportation, and family supports.',
+      url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html',
+      searchTerms: ['community resources', 'housing help'] },
+    { id: 'meeting-calendar', title: 'Find a recovery meeting',
+      description: 'Current recovery-meeting options from ReConnect.',
+      url: 'https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html',
+      searchTerms: ['recovery meeting', 'aa meeting'] },
+  ],
   safetyKit: [{ ref: 'a.md', sub: 'Sub line' }],
   roles: { ms3: [], resident: [] },
   synonyms: {},
@@ -105,6 +116,29 @@ const BASE_STATE = { week: 1, role: 'there', done: {}, streak: 0, ringPct: 50,
 const s = (over) => Object.assign({}, BASE_STATE, over);
 const fourState = (over) => Object.assign({}, BASE_STATE, over);
 
+test('Today marks only the winning Continue or setup control as a dock source', () => {
+  const week = F.fdToday(IDX, s({}));
+  assert.equal((week.match(/data-fd-dock-source=/g) || []).length, 1);
+  assert.match(week, /data-fd-dock-source="primary-week" data-fd-dock-label="Continue"/);
+  const ahead = F.fdToday(IDX, s({ done: { 'a.md': true, 't.html': true } }));
+  assert.match(ahead, /data-fd-dock-source="primary-ahead" data-fd-dock-label="Preview week"/);
+  assert.equal((ahead.match(/data-fd-dock-source=/g) || []).length, 1);
+  const setup = F.fdToday(IDX, s({ week: null }));
+  assert.match(setup, /data-fd-dock-source="primary-setup" data-fd-dock-label="Set rotation week"/);
+  assert.equal((setup.match(/data-fd-dock-source=/g) || []).length, 1);
+  assert.equal((F.fdToday(IDX, s({ primaryKind: 'due' })).match(/data-fd-dock-source=/g) || []).length, 0);
+  assert.equal((F.fdToday(IDX, s({ week: null, primaryKind: 'resume' })).match(/data-fd-dock-source=/g) || []).length, 0);
+});
+
+test('Today keeps the Shift-ready entry below its primary action and beside in-flow Care', () => {
+  const html = F.fdToday(IDX, s({ offlineHtml: '<aside class="fd-offline" data-test-offline></aside>' }));
+  const primary = html.indexOf('data-fd-dock-source="primary-week"');
+  const readiness = html.indexOf('data-test-offline');
+  assert.ok(primary >= 0 && readiness > primary);
+  assert.match(html, /class="fd-care-entry"[^>]*data-fd-tab="care"/);
+  assert.equal((html.match(/data-test-offline/g) || []).length, 1);
+});
+
 test('Today counts repeated practice for the current week even when another Path week was viewed', () => {
   const cur = { ...FIX_CUR, weeks: FIX_CUR.weeks.map((w) => ({ ...w,
     items: [{ ref: 't.html', kind: 'tool' }],
@@ -125,6 +159,30 @@ test('the greeting varies by time of day, derived from state.nowMs', () => {
   assert.match(F.fdToday(IDX, s({ nowMs: morning })), /Morning, there<\/h1>/);
   assert.match(F.fdToday(IDX, s({ nowMs: afternoon })), /Afternoon, there<\/h1>/);
   assert.match(F.fdToday(IDX, s({ nowMs: evening })), /Evening, there<\/h1>/);
+});
+
+test('Today visibly invites feedback while the shared site is in active testing', () => {
+  const html = F.fdToday(IDX, s({}));
+  assert.match(html, /class="fd-pilot"/);
+  assert.match(html, /This learning site is in active testing/);
+  assert.match(html, /official rotation materials and supervision/);
+  assert.match(html, /class="[^"]*pgfb-b[^"]*"[^>]*data-fb-context="Today landing page"/);
+  assert.match(html, />Share feedback</);
+});
+
+test('the active-testing invitation is audience-neutral', () => {
+  const banner = F.fdToday(IDX, s({})).match(/<section class="fd-pilot"[\s\S]*?<\/section>/);
+  assert.ok(banner, 'the invitation renders as one labelled section');
+  assert.doesNotMatch(banner[0], AUDIENCE_TOKEN_RE);
+});
+
+test('the 390px pilot keeps its concise action above the fold across font metrics', () => {
+  const phone = frontdoorCss.match(/@media \(max-width:390px\)\{([\s\S]*?)\n\}/);
+  assert.ok(phone, 'the exact 390px phone contract must exist');
+  assert.match(phone[1], /\.fd-pilot__copy p\s*\{\s*display:none\s*\}/,
+    'the optional explanatory sentence must not push the primary card below the phone fold');
+  assert.match(phone[1], /\.fd-pilot\s*\{\s*margin-bottom:var\(--fd-space-6\)\s*\}/,
+    'the compact pilot-to-primary gap must leave room for cross-platform font metrics');
 });
 
 // ---- accessibility (Fresh Eyes Audit A2/A6) --------------------------------------------------
@@ -249,6 +307,13 @@ test('the rail and the pill row are both always present, for CSS to choose betwe
   assert.match(html, /fd-quicktools--pills/);
 });
 
+test('Today leaves patient-care links to the dedicated top-level destination', () => {
+  const html = F.fdToday(IDX, s({}));
+  assert.doesNotMatch(html, /aria-label="Patient care resources"|fd-carelinks|data-care-resource/);
+  assert.equal((html.match(/class="fd-quicktool"/g) || []).length, 2,
+    'the existing responsive Quick Tools remain intact');
+});
+
 test('no week set renders the setup CTA instead of the continue card', () => {
   const html = F.fdToday(IDX, s({ week: null }));
   assert.match(html, /fd-setupcta/);
@@ -345,15 +410,34 @@ function subOf(html) {
 // 2026-08-16 is the Sunday of the week whose Monday (2026-08-10) anchors fd-state's countdown
 // fixture; at week 5 that is 5 days out from the week-6 Friday.
 const SUNDAY_W5 = new Date(2026, 7, 16, 9, 0, 0).getTime();
+// The countdown belongs to the path that ends in an exam (fdPathExamCountdown, fd_state.js), so
+// these indexes carry the path ids frontdoor_catalog.py pins. IDX itself has no path id and, like
+// any path without an exam, shows no countdown unless a date is stored.
+const MS3_IDX = F.fdBuildIndex({ ...FIX_CUR, path: { id: 'ms3-six-week', weekCount: 6 } }, FIX_META, FIX_TOOLS, FIX_MAN);
+const RES_IDX = F.fdBuildIndex({ ...FIX_CUR, path: { id: 'resident-four-week', weekCount: 6 } }, FIX_META, FIX_TOOLS, FIX_MAN);
 
 test('the exam countdown joins onto the subhead with a separating space', () => {
-  assert.equal(subOf(F.fdToday(IDX, s({ week: 5, nowMs: SUNDAY_W5 }))),
+  assert.equal(subOf(F.fdToday(MS3_IDX, s({ week: 5, nowMs: SUNDAY_W5 }))),
     'Week 5 · W5 · Sunday · exam in ~5 days');
 });
 
 test('the countdown joins directly after the day name now that the streak clause is gone', () => {
-  assert.equal(subOf(F.fdToday(IDX, s({ week: 5, streak: 3, activityDays: FOUR_OF_SEVEN, nowMs: SUNDAY_W5 }))),
+  assert.equal(subOf(F.fdToday(MS3_IDX, s({ week: 5, streak: 3, activityDays: FOUR_OF_SEVEN, nowMs: SUNDAY_W5 }))),
     'Week 5 · W5 · Sunday · exam in ~5 days');
+});
+
+// Residents have no end-of-block exam. Until 2026-09-24 the countdown fired in the final two
+// weeks of ANY path, so the resident Today told residents an exam was ~N days away. Same week,
+// same clock as the MS3 pin above -- only the path differs. (A stored date re-opens it on any
+// path; tests/fd-state.test.mjs pins that half, where storage can be injected.)
+test('no exam countdown on a path that does not end in an exam', () => {
+  for (const idx of [RES_IDX, IDX]) {
+    for (const week of [5, 6]) {
+      const sub = subOf(F.fdToday(idx, s({ week, nowMs: SUNDAY_W5 })));
+      assert.doesNotMatch(sub, /exam/, `path "${idx.path.id}" week ${week}: ${sub}`);
+      assert.doesNotMatch(sub, / $/, 'and no stranded join space');
+    }
+  }
 });
 
 test('a week with no countdown leaves no trailing space behind', () => {
@@ -489,14 +573,22 @@ test('fdContinue: primary undefined renders exactly what primary=true renders, a
   const a = F.fdContinue(IDX, s({}), WK1, PROG({}));
   const b = F.fdContinue(IDX, s({}), WK1, PROG({}), true);
   assert.equal(a, b);
-  assert.match(a, /^<button type="button" class="fd-continue" data-fd-open="a\.md">/);
+  assert.match(a, /^<button type="button" class="fd-continue" data-fd-open="a\.md" data-fd-reading-resume="1" data-fd-dock-source="primary-week" data-fd-dock-label="Continue">/);
   assert.doesNotMatch(a, /is-secondary|fd-freshset/);
+});
+
+test('Continue marks only a reading open for one-shot restored-heading focus', () => {
+  const reading = F.fdContinue(IDX, s({}), WK1, PROG({}));
+  assert.match(reading, /data-fd-open="a\.md" data-fd-reading-resume="1"/);
+  const tool = F.fdContinue(IDX, s({}), WK1, PROG({ 'a.md': true }));
+  assert.doesNotMatch(tool, /data-fd-reading-resume/);
 });
 
 test('fdContinue: primary=false adds is-secondary and changes nothing else', () => {
   const secondary = F.fdContinue(IDX, s({}), WK1, PROG({}), false);
-  assert.match(secondary, /^<button type="button" class="fd-continue is-secondary" data-fd-open="a\.md">/);
-  assert.equal(secondary.replace(' is-secondary', ''), F.fdContinue(IDX, s({}), WK1, PROG({})));
+  assert.match(secondary, /^<button type="button" class="fd-continue is-secondary" data-fd-open="a\.md" data-fd-reading-resume="1">/);
+  assert.equal(secondary.replace(' is-secondary', '').replace(/(<button[^>]+)(>)/,
+    '$1 data-fd-dock-source="primary-week" data-fd-dock-label="Continue"$2'), F.fdContinue(IDX, s({}), WK1, PROG({})));
 });
 
 test('fdContinue names the kind of the next item with the same chip rule as the week rows', () => {
@@ -565,11 +657,12 @@ test('every new string is audience-neutral', () => {
   assert.doesNotMatch(all, AUDIENCE_TOKEN_RE);
 });
 
-test('phone pill ordering is CSS-only at 640px and desktop remains unchanged', () => {
+test('phone quick tools remain CSS-first while patient-care duplicates stay retired', () => {
   const css = read('frontdoor/frontdoor.css');
   const phone = [...css.matchAll(/@media\s*\(max-width:640px\)\s*\{([\s\S]*?)\n\}/g)].find(m=>m[1].includes('.fd-today__main{'));
   assert.ok(phone,'phone-only breakpoint exists');
   assert.match(phone[1], /\.fd-today__main\{display:flex;flex-direction:column\}/);
   assert.match(phone[1], /\.fd-today__main > \.fd-quicktools--pills\{order:-1;margin-bottom:var\(--fd-space-\d+\)\}/);
   assert.match(css, /@media \(min-width:1000px\)\{[\s\S]*?\.fd-quicktools--pills\{display:none\}/);
+  assert.doesNotMatch(css, /fd-carelinks--mobile|fd-carelinks--rail|fd-kit__care/);
 });

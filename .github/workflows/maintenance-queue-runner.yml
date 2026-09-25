@@ -32,7 +32,7 @@ jobs:
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "20"
+          node-version: "22"
 
       # One outstanding automated pull request at a time. The branch name carries the
       # date, so without this the runner opens a fresh duplicate every night for as long

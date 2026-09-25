@@ -319,28 +319,56 @@ test('every real tool row carries a hint span, and no real hint carries an audie
 
 // ---- Essentials renderer -------------------------------------------------------------------
 
-test('Essentials uses reading rows, open native groups, a labelled filter and a separate tool group', () => {
-  const idx = {columns: IDX.columns, essentials:[{name:'First <group>',items:[
+test('Essentials uses reading rows, open native groups, a section index rail and a separate tool group', () => {
+  const idx = {columns: IDX.columns, teachingResources:[
+    {id:'family-therapy-companion',title:'Family Therapy Seminar Companion',description:'Practice a structured family meeting with de-identified teaching cases.',url:'https://family-therapy-seminar-companion.netlify.app/',note:'Answers stay on this device. Do not enter names or identifying details.'},
+  ], essentials:[{name:'First <group>',items:[
     {ref:'read.md',title:'Title <one>',summary:'A & B',minutes:7,kind:'md',governance:{status:'pending'}},
-    {ref:'tool.html',title:'Tool',kind:'tool'}]}]};
+    {ref:'tool.html',title:'Tool <one>',hint:'Use this when A & B.',kind:'tool'},
+    {ref:'second.html',title:'Second tool',hint:'Compare the next step.',kind:'tool'}]}]};
   const calls=[];
   const G=make((g,o)=>{calls.push([g,o]); return g?.status==='pending'?'<span class="pending-test"></span>':'';});
   const html=G.fdEssentials(idx);
   assert.match(html, /<section class="fd-library fd-kit">/);
   assert.match(html, />Core readings<\/h1>/);
-  assert.match(html, />1 readings · 1 tools<\/span>/);
-  assert.match(html, /<label[^>]*for="fd-kit-section"/);
-  assert.match(html, /<select[^>]*data-fd-kit-section/);
+  assert.match(html, />1 readings · 2 tools<\/span>/);
+  assert.match(html, /<nav class="fd-kit__index" aria-label="Essentials sections">/);
+  assert.match(html, /data-fd-kit-section="all"[^>]*aria-pressed="true"/);
+  assert.match(html, />All<\/span><span class="fd-kit__index-count">3<\/span>/);
+  assert.match(html, />First &lt;group&gt;<\/span><span class="fd-kit__index-count">1<\/span>/);
+  assert.match(html, />Tools<\/span><span class="fd-kit__index-count">2<\/span>/);
+  assert.doesNotMatch(html, /<select|<option/);
   assert.equal((html.match(/<details class="fd-kit__group/g)||[]).length,2);
-  assert.equal((html.match(/<option /g)||[]).length,3);
+  assert.equal((html.match(/data-fd-kit-section=/g)||[]).length,3);
+  assert.match(html, /role="tablist" aria-label="Preview tools"/);
+  assert.equal((html.match(/role="tab"/g)||[]).length,2);
+  assert.match(html, /data-fd-kit-tool="tool.html"[^>]*aria-selected="true"[^>]*tabindex="0"/);
+  assert.match(html, /data-fd-kit-tool="second.html"[^>]*aria-selected="false"[^>]*tabindex="-1"/);
+  assert.match(html, /role="tabpanel"[^>]*aria-labelledby="fd-kit-tool-tab-0"/);
+  assert.match(html, /Tool &lt;one&gt;<\/h3><p>Use this when A &amp; B\.<\/p>/);
+  assert.match(html, /data-fd-open="tool.html"[^>]*aria-label="Open Tool &lt;one&gt;"/);
   assert.match(html, /Title &lt;one&gt;/); assert.match(html,/A &amp; B/); assert.match(html,/7 min/);
   assert.match(html, /Faculty re-review in progress — 1 of 1 readings changed since they were last attested ·/); assert.match(html, /<summary>What that means<\/summary>/);
   assert.match(html, /Everything \(10 pages\) →/);
+  assert.doesNotMatch(html, /fd-kit__care|Patient care resources/);
+  assert.match(html, /class="fd-kit__teaching"[^>]*aria-label="External teaching companion"/);
+  assert.match(html, /href="https:\/\/family-therapy-seminar-companion\.netlify\.app\/"/);
+  assert.match(html, /Family Therapy Seminar Companion <span class="fd-visually-hidden">\(opens in a new tab\)<\/span>/);
+  assert.match(html, /target="_blank" rel="noopener noreferrer"/);
+  assert.match(html, /Family Therapy Seminar Companion/);
+  assert.match(html, /Answers stay on this device\. Do not enter names or identifying details\./);
   assert.deepEqual(calls[0][1],{compact:true});
   const filtered=G.fdEssentials(idx,{kitSection:'0'});
+  assert.match(filtered,/data-fd-kit-section="0"[^>]*aria-pressed="true"/);
+  assert.match(filtered,/data-fd-kit-section="all"[^>]*aria-pressed="false"/);
   assert.match(filtered,/data-fd-open="read.md"/); assert.doesNotMatch(filtered,/data-fd-open="tool.html"/);
   const tools=G.fdEssentials(idx,{kitSection:'tools'});
   assert.match(tools,/data-fd-open="tool.html"/); assert.doesNotMatch(tools,/data-fd-open="read.md"/);
+  const second=G.fdEssentials(idx,{kitSection:'tools',kitToolPreview:'second.html'});
+  assert.match(second,/data-fd-kit-tool="second.html"[^>]*aria-selected="true"[^>]*tabindex="0"/);
+  assert.match(second,/Second tool<\/h3><p>Compare the next step\.<\/p>/);
+  assert.match(second,/data-fd-open="second.html"[^>]*aria-label="Open Second tool"/);
+  assert.equal(G.fdEssentials(idx,{kitSection:'tools',kitToolPreview:'missing.html'}),tools);
   assert.equal(G.fdEssentials(idx,{kitSection:'unknown'}),html);
 });
 
@@ -384,14 +412,15 @@ print(json.dumps(out))
 `], { cwd: PROJECT_ROOT, encoding: 'utf8' }));
 
 for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93]]) {
-  test(`${site}: real Essentials renders ${expectedKit} rows and links to all ${expectedFull} pages`, () => {
+  test(`${site}: real Essentials renders ${expectedKit} reading and tool choices and links to all ${expectedFull} pages`, () => {
     const payload = projected[site];
     const idx = F.fdBuildIndex(payload.curriculum, REAL_META, REAL_TOOLS, payload.manifest);
     const html = F.fdEssentials(idx);
-    assert.equal((html.match(/data-fd-open="/g) || []).length, expectedKit);
+    assert.equal((html.match(/class="fd-kit__reading"/g) || []).length+
+      (html.match(/data-fd-kit-tool="/g) || []).length, expectedKit);
     assert.match(html, new RegExp('fd-library__count\">' + (site==='ms3'?23:26) + ' readings · ' + (site==='ms3'?7:9) + ' tools'));
     assert.equal((html.match(/<details class=\"fd-kit__group/g)||[]).length,site==='ms3'?8:7);
-    assert.equal((html.match(/<option /g)||[]).length,site==='ms3'?9:8);
+    assert.equal((html.match(/data-fd-kit-section=/g)||[]).length,site==='ms3'?9:8);
     assert.doesNotMatch(html,/governance-badge/);
     const pending=idx.essentials.flatMap(c=>c.items).filter(i=>i.kind!=='tool'&&i.governance?.status==='pending').length;
     assert.match(html,new RegExp('— '+pending+' of '+(site==='ms3'?23:26)+' readings'));
@@ -403,6 +432,8 @@ for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93
 
 test('the live Library shell selects kit by default and the complete renderer only for full', () => {
   const shell = read('spa_index.html');
+  assert.match(shell, /fdEssentials\(FD_INDEX,\{kitSection:state\.kitSection,kitToolPreview:state\.kitToolPreview,week:live\.week\}\)/,
+    'the live shell must pass the selected tool through to the pure Essentials renderer');
   const branch = /if\(state\.tab==='library'\) return (fdSurface\('library',function\(\)\{[^\n]+\}\));/.exec(shell);
   assert.ok(branch,'Library shell branch remains a shared pure renderer call');
   const run = new Function('state','FD_INDEX','fdSurface','fdLibrary','fdEssentials',`var live=state; return ${branch[1]};`);
@@ -445,10 +476,10 @@ const renderedRefs = html => [...html.matchAll(/data-fd-open="([^"]+)"/g)].map(m
 test('This week counts only matching Essentials readings and preserves their section order', () => {
   const idx = weeklyFixture(), before = JSON.stringify(idx);
   const all = F.fdEssentials(idx, { week: 1 });
-  assert.match(all, /<option value="week">This week · 2<\/option>/);
+  assert.match(all, /data-fd-kit-section="week"[^>]*aria-pressed="false"[^>]*><span>This week<\/span><span class="fd-kit__index-count">2<\/span>/);
   assert.deepEqual(renderedRefs(all), ['m2.md', 'm1.md', 's1.md', 'm3.md', 't1.html']);
   const filtered = F.fdEssentials(idx, { week: 1, kitSection: 'week' });
-  assert.match(filtered, /<option value="week" selected>This week · 2<\/option>/);
+  assert.match(filtered, /data-fd-kit-section="week"[^>]*aria-pressed="true"[^>]*><span>This week<\/span><span class="fd-kit__index-count">2<\/span>/);
   assert.deepEqual(renderedRefs(filtered), ['m1.md', 's1.md']);
   assert.equal((filtered.match(/<details class="fd-kit__group" open>/g) || []).length, 2);
   assert.equal((filtered.match(/fd-kit__group-count">1 readings/g) || []).length, 2);
@@ -460,7 +491,7 @@ test('This week counts only matching Essentials readings and preserves their sec
 test('This week drops empty groups and changes with the actual current week', () => {
   const html = F.fdEssentials(weeklyFixture(), { week: 2, viewWeek: 1, kitSection: 'week' });
   assert.deepEqual(renderedRefs(html), ['m2.md']);
-  assert.match(html, /This week · 1/);
+  assert.match(html, />This week<\/span><span class="fd-kit__index-count">1<\/span>/);
   assert.doesNotMatch(html, /<summary>Second /);
 });
 
@@ -488,9 +519,9 @@ for (const site of ['ms3', 'res']) {
       if (expected.length) {
         exercised++;
         assert.deepEqual(renderedRefs(html), expected, `week ${week.n}`);
-        assert.match(html, new RegExp('This week · ' + expected.length + '<'));
+        assert.match(html, new RegExp('>This week<\\/span><span class="fd-kit__index-count">' + expected.length + '<'));
       } else {
-        assert.doesNotMatch(html, /value="week"/);
+        assert.doesNotMatch(html, /data-fd-kit-section="week"/);
         assert.deepEqual(renderedRefs(html), renderedRefs(F.fdEssentials(idx)));
       }
     }

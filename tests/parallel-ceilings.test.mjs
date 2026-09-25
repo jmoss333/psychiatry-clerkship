@@ -12,7 +12,14 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // because it went red: you (or a concurrent PR) changed a shared ceiling — bump the pins below
 // IN THE SAME DIFF as the change, after confirming the other agent's PRs in flight.
 
-const EXPECTED_MARKER_COUNT = 30; // +1 (2026-09-15): learner field-guide DOM enhancement (fd_guide.js).
+// +1 (2026-09-22): APP one-detail practice engine (fd_app_practice.js).
+// +1 (2026-09-23): device reading-place helper (fd_reading_place.js).
+// +1 (2026-09-23): pure Capture faculty email builder (fd_capture_email.js).
+// +1 (2026-09-23): Patient care resources destination (fd_care.js).
+// +1 (2026-09-23): Fixed-choice Care navigator (fd_care_navigator.js).
+// +1 (2026-09-23): Patient resource pack renderer (fd_care_pack.js).
+// +1 (2026-09-23): Verified offline readiness model (fd_offline.js).
+const EXPECTED_MARKER_COUNT = 38;
 
 test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
   const src = fs.readFileSync(

@@ -31,15 +31,19 @@ test('vendored qrcode-generator 1.4.4 source and tag-specific MIT license bytes 
   assert.match(license, /^MIT License\n\nCopyright \(c\) 2009 Kazuhiko Arase\n/); assert.match(license, /SOFTWARE\.\n$/);
 });
 
-test('the unique QR vendor marker is curator-only and maps to the exact local source', () => {
+test('the QR vendor marker is restricted to the curator and patient resource pack shell', () => {
   const marker = '/*__QR_GENERATOR_1_4_4__*/'; const curator = readFileSync(CURATOR_URL, 'utf8'); const shell = readFileSync(SHELL_URL, 'utf8'); const common = readFileSync(COMMON_URL, 'utf8');
-  assert.equal(curator.split(marker).length - 1, 1); assert.equal(shell.includes(marker), false);
+  assert.equal(curator.split(marker).length - 1, 1); assert.equal(shell.split(marker).length - 1, 1);
   assert.match(common, /"\/\*__QR_GENERATOR_1_4_4__\*\/"\s*:\s*"vendor\/qrcode-generator-1\.4\.4\.js"/);
   assert.equal(curator.indexOf(marker) < curator.indexOf('/*__FD_CURATOR__*/'), true, 'QR global must precede the curator consumer');
+  assert.equal(shell.indexOf(marker) < shell.indexOf('/*__FD_CARE_PACK__*/'), true, 'QR global must precede the patient resource pack consumer');
 
   const tracked = spawnSync('git', ['ls-files', '--', '*.html'], { cwd: ROOT, encoding: 'utf8' }).stdout.split('\n').filter(Boolean);
   const consumers = tracked.filter((path) => readFileSync(join(ROOT, path), 'utf8').includes(marker));
-  assert.deepEqual(consumers, ['13_Faculty_Resources/Rotation_Curation/rotation-curator.html']);
+  assert.deepEqual(consumers, [
+    '13_Faculty_Resources/Rotation_Curation/rotation-curator.html',
+    '13_Faculty_Resources/_automation/site_build/spa_index.html',
+  ]);
 });
 
 test('the adjacent non-executable vendoring receipt binds package, tarball, source, and tag-license provenance', () => {
@@ -63,13 +67,14 @@ test('vendored QR code has no executable remote import or request path', () => {
   assert.doesNotMatch(executable, /\b(?:script|img|image)\s*\.\s*src\s*=/i); assert.doesNotMatch(executable, /\bimport\s*\(/);
 });
 
-function runStaticQa(extra, indexExtra = '') {
+function runStaticQa(extra, indexExtra = '', otherExtra = null) {
   const directory = mkdtempSync(join(tmpdir(), 'rotation-qr-qa-'));
   const sourceMap = `${directory}.source-map.json`;
   try {
     mkdirSync(join(directory, 'tools'));
     writeFileSync(join(directory, 'index.html'), `<!doctype html><html><head><title>Fixture</title></head><body>${indexExtra}</body></html>`);
     writeFileSync(join(directory, 'tools', 'rotation-curator.html'), `<!doctype html><html><head><title>Curator</title><meta name="viewport" content="width=device-width"></head><body>${extra}</body></html>`);
+    if (otherExtra !== null) writeFileSync(join(directory, 'tools', 'other.html'), `<!doctype html><html><head><title>Other</title><meta name="viewport" content="width=device-width"></head><body>${otherExtra}</body></html>`);
     const root = new URL('../', import.meta.url).pathname;
     const tracked = spawnSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' }).stdout.split('\n').filter(Boolean);
     const sources = tracked.filter((relative) => {
@@ -84,7 +89,9 @@ function runStaticQa(extra, indexExtra = '') {
 test('static QA mechanically rejects remote QR script/image destinations and executable network transports', () => {
   const signature = '<script>var qrcode = function(){}</script>';
   const baseline = runStaticQa(`${signature}<link rel="stylesheet" href="../frontdoor.css"><svg aria-label="local QR"></svg>`); assert.equal(baseline.status, 0, `${baseline.stdout}\n${baseline.stderr}`);
-  const leaked = runStaticQa(signature, signature); assert.notEqual(leaked.status, 0); assert.match(`${leaked.stdout}\n${leaked.stderr}`, /QR vendor signature outside rotation-curator\.html/);
+  const shared = runStaticQa(signature, signature); assert.equal(shared.status, 0, `${shared.stdout}\n${shared.stderr}`);
+  const duplicated = runStaticQa(signature, signature + signature); assert.notEqual(duplicated.status, 0); assert.match(`${duplicated.stdout}\n${duplicated.stderr}`, /QR vendor signature must appear exactly once in index\.html/);
+  const leaked = runStaticQa(signature, '', signature); assert.notEqual(leaked.status, 0); assert.match(`${leaked.stdout}\n${leaked.stderr}`, /QR vendor signature outside approved pages: tools\/other\.html/);
   for (const [label, html, expected] of [
     ['script', '<script src="https://remote.invalid/qr.js"></script>', /remote script source in rotation-curator\.html/],
     ['unquoted script', '<script src=https://remote.invalid/qr.js></script>', /remote script source in rotation-curator\.html/],

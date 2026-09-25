@@ -123,9 +123,12 @@ built HTML/markdown; it cannot see the authoritative source URLs that live in `s
 nor validate DOIs/PMIDs as citations. A dedicated weekly job checks both (doi.org / NCBI eutils),
 emitting the same `finding` schema so it reuses `sync_findings.py` unchanged. To avoid alert fatigue
 (a known risk in `REVIEW_RULES.md`), a *no-HTTP-response* result — commonly datacenter-IP bot-blocking
-rather than a dead page — is capped at P1 so it can never page as a false P0; a definitive HTTP 4xx/5xx
-keeps the registry severity. Idempotency (fingerprint dedup across open **and** closed issues) means a
-dismissed false positive never reopens.
+rather than a dead page — is capped at P1 so it can never page as a false P0. A 4xx from a source marked
+`browser_required` carries the same P1 cap because some official sites serve datacenter-IP blocks as
+404s. The cap survives acute-path escalation and requires verification from a non-runner network.
+Idempotency deduplicates against an **open** issue and reconciles its generated severity/title/body when
+fresh routing changes; a closed issue can re-fire as a recurrence. Only an explicit entry in
+`config/dismissed.json` permanently suppresses a reviewed false positive.
 
 **Human gate unchanged.** Both features still terminate at Dr. Moss reviewing and re-attesting.
 The only new operational input is an optional `ANTHROPIC_API_KEY` repo secret to enable drafting.

@@ -20,6 +20,20 @@ const F = new Function(`
   return { fdBlockPlan, fdBlockCard, fdBlockRouteForStep, fdBlockStatus, fdBlockBudget, fdBuildIndex, fdItemsForWeek, fdBlockDueTotal, FD_BLOCK_REVIEW_BUCKETS, fdBlockHandoffLabel, fdBlockResumeSearch };
 `)();
 
+test('block planner and live continuation mark only their primary action', () => {
+  const plan = { steps: [{ kind: 'page', ref: 'x.md', title: 'Read', min: 2 }], total: 2, minutes: 5 };
+  const live = { minutes: 5, steps: [{ kind: 'page', ref: 'x.md', title: 'Read', min: 2 }] };
+  for (const [primary, secondary] of [
+    [F.fdBlockCard(plan, 5, null, {}), F.fdBlockCard(plan, 5, null, {}, { primary: false })],
+    [F.fdBlockCard(null, 5, live, {}), F.fdBlockCard(null, 5, live, {}, { primary: false })],
+  ]) {
+    assert.equal((primary.match(/data-fd-dock-source=/g) || []).length, 1);
+    assert.match(primary, /data-fd-dock-source="primary-block"/);
+    assert.doesNotMatch(secondary, /data-fd-dock-source=/);
+  }
+  assert.doesNotMatch(F.fdBlockCard(null, 5, { minutes: 5, steps: [{ kind: 'page', ref: 'x.md', title: 'Read', min: 2 }] }, { 'x.md': true }), /data-fd-dock-source=/);
+});
+
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
 
 const CUR = { weeks: [
@@ -142,9 +156,9 @@ test('the planner card offers the three chips with the chosen one pressed, and a
   assert.equal((html.match(/data-block-minutes="/g) || []).length, 3);
   assert.match(html, /data-block-minutes="10" aria-pressed="true"/);
   assert.match(html, /data-block-minutes="5" aria-pressed="false"/);
-  assert.match(html, /data-block-start="10">Start the 10-minute block</);
+  assert.match(html, /data-block-start="10" data-fd-dock-source="primary-block" data-fd-dock-label="Start the 10-minute block">Start the 10-minute block</);
   assert.equal((html.match(/class="fd-block__step"/g) || []).length, 3);
-  assert.doesNotMatch(html, /data-fd-/, 'block actions stay out of the controller namespace');
+  assert.doesNotMatch(html, /data-fd-open|data-fd-tab/, 'block routes stay with their existing handlers');
   assert.doesNotMatch(html, AUDIENCE_TOKEN_RE);
 });
 
@@ -168,7 +182,7 @@ test('a live block renders done marks, the count, Continue to the next step, and
   assert.equal((html.match(/fd-visually-hidden">Not yet: /g) || []).length, 2);
   assert.match(html, /1 of 3 done/);
   assert.equal((html.match(/fd-block__step is-done/g) || []).length, 1);
-  assert.match(html, /data-block-continue="1">Continue: Alpha →/);
+  assert.match(html, /data-block-continue="1" data-fd-dock-source="primary-block" data-fd-dock-label="Continue: Alpha">Continue: Alpha →/);
   assert.match(html, /data-block-end="1">End block</);
   assert.doesNotMatch(html, /data-block-minutes/, 'no chips while a block is live');
 });
@@ -270,7 +284,7 @@ test('the live card offers Resume with the remaining count when the shell passes
   ] };
   const html = F.fdBlockCard(null, 10, block, { 'a.md': true }, { primary: false, resume: { left: 4, n: 6 } });
   assert.match(html, /<button type="button" class="fd-btn fd-btn--accent" data-block-continue="1">Resume: 4 of 6 questions left →<\/button>/);
-  assert.match(F.fdBlockCard(null, 10, block, { 'a.md': true }, { resume: { left: 1, n: 6 } }), /class="fd-btn fd-btn--primary" data-block-continue="1">Resume: 1 of 6 questions left →/);
+  assert.match(F.fdBlockCard(null, 10, block, { 'a.md': true }, { resume: { left: 1, n: 6 } }), /class="fd-btn fd-btn--primary" data-block-continue="1" data-fd-dock-source="primary-block" data-fd-dock-label="Resume: 1 of 6 questions left">Resume: 1 of 6 questions left →/);
   assert.match(F.fdBlockCard(null, 10, block, { 'a.md': true }), /Continue: 6 practice questions →/, 'no capsule, no resume wording');
   assert.match(F.fdBlockCard(null, 10, block, { 'a.md': true }, { resume: null }), /Continue: 6 practice questions →/);
   assert.doesNotMatch(html, AUDIENCE_TOKEN_RE);

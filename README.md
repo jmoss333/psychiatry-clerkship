@@ -42,6 +42,43 @@ references it. Internal RSS/RSSM naming is retained here; a public mirror would 
 Content never forks. `14_Tracks/<audience>/` holds only a short ordered list of links into the shared body.
 MS3 is the default build; later tracks are overlays.
 
+## Development
+
+For a reproducible local environment, follow the [Dev Container onboarding guide](.devcontainer/README.md).
+Before reopening a full clone in VS Code, run `python3 bin/devcontainer-preflight.py` on the host
+(`--json` gives a machine-readable report). It checks Git/LFS accessibility, memory capacity,
+and credential-forwarding warnings without repairing anything or displaying secrets.
+Container creation runs preflight before installing locked dependencies and checking the fast runtime contract.
+The full gate is deliberately manual: run the VS Code task **Verify Dev Container** via
+**Tasks: Run Task**, or run this receipt-enabled command inside the container:
+
+```bash
+bash bin/verify-devcontainer.sh --refresh-deps --receipt output/devcontainer/verification-receipt.json
+```
+
+A completed attempt writes `output/devcontainer/verification-receipt.json`. The status bar stays
+visible: green means the receipt passed for the current clean tracked commit; red means the current commit's latest attempt failed;
+gray means no current proof exists (missing, malformed, running/interrupted, stale, a different commit,
+or tracked edits). A gray item can be clicked to run the task; the receipt is local and ignored by Git.
+Green certifies this checkout's commit, not that it is the latest remote main.
+The image-supplied `CLERKSHIP_DEVCONTAINER=1` check prevents accidental host invocation; it is a
+forgeable environment guard, not authentication or proof that a deliberate caller used the container.
+If the receipt directory is wholly unwritable, the task fails but the last atomically completed receipt
+may remain readable until permissions or repository freshness change.
+Without deploy URLs, the local LFS browser projects remain skipped: deploy-only LFS browser coverage
+is not proved, and the receipt says so even when the local task passes.
+
+Open a full clone with materialized LFS media (reuse cached objects with `git lfs checkout` first;
+`git lfs pull` may consume metered bandwidth), not a linked worktree whose Git
+directory is outside the container. This is a local Docker workflow and does not deploy anything.
+For Colima, 6 GiB is the tested memory recommendation, not a universal minimum; preflight warns
+on low capacity but does not change the allocation or prevent local tests for advisory warnings.
+The container declares no repository-managed credential or Docker-socket mount; VS Code may still
+forward the host SSH agent or Git credential helper, and setup reports either state. Local proof
+does not establish deployment, provider behavior, microphone/headphone behavior, VoiceOver, faculty
+approval, clinical correctness, or Ubuntu visual-baseline parity. Never regenerate visual baselines
+from the container; use the existing workflow_dispatch job.
+
 ## Operations and maintenance
 
 The [scheduled maintenance operations runbook](13_Faculty_Resources/_automation/maintenance/README.md)

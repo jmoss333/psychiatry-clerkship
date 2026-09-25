@@ -450,6 +450,7 @@ test('speech attempt cap includes speculative and remainder jobs without duplica
 test('concurrent actors cannot both spend the final speech attempt', {timeout:3000},async t=>{
   const control=controlledActorAndSpeech(),f=await fixture(t,{provider:control.provider,maxSpeechOperations:1}),a=await f.session(),b=await f.session();
   const first=f.request('/api/dana/turn',{sessionId:a.sessionId,turnId:1,text:'How are things?'});
+  await until(()=>control.actors.length===1);
   const second=f.request('/api/dana/turn',{sessionId:b.sessionId,turnId:1,text:'How are things?'});
   await until(()=>control.actors.length===2);
   control.actors[0].onLead('I have been tired.');

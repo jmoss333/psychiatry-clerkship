@@ -108,3 +108,6 @@ tmp/
 
 # Local synthetic voice auditions and release verification receipts.
 /output/sp-realism-release/
+
+# Local Dev Container verification evidence; commit-bound and regenerated on demand.
+/output/devcontainer/

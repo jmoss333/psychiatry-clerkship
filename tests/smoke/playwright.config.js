@@ -79,19 +79,19 @@ export default defineConfig({
     // page.route CANNOT intercept requests once a SW controls the page, which silently breaks
     // every spec that simulates failures via route fulfillment (first casualty: the faculty
     // console's preview-failure spec — its clean-fallback tab registers the SW mid-test).
-    // Block SWs everywhere; the dedicated 'offline' project opts back in below.
+    // Block SWs everywhere; the two dedicated offline projects opt back in below.
     serviceWorkers: 'block',
   },
 
   projects: [
     {
       name: 'nav-ms3',
-      testMatch: ['nav-crawl.spec.js', 'contrast.spec.js', 'frozen-colour.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'qbank-retired.spec.js', 'aria-live.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
+      testMatch: ['nav-crawl.spec.js', 'contrast.spec.js', 'frozen-colour.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'qbank-retired.spec.js', 'aria-live.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'care-resource-pack.spec.js', 'app-pathway.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: MS3_URL },
     },
     {
       name: 'nav-res',
-      testMatch: ['nav-crawl.spec.js', 'contrast.spec.js', 'frozen-colour.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'communication-practice.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
+      testMatch: ['nav-crawl.spec.js', 'contrast.spec.js', 'frozen-colour.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'care-resource-pack.spec.js', 'app-pathway.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: RES_URL },
     },
     // Production-only. See CANARY_SHARED_SPECS above for why these are narrower than nav-*.
@@ -143,10 +143,15 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], baseURL: FACULTY_URL },
     },
     {
-      name: 'offline',
+      name: 'offline-ms3',
       testMatch: 'offline.spec.js',
-      // The one project whose subject IS the service worker.
+      // These two projects exercise the service worker emitted for each learner site.
       use: { ...devices['Desktop Chrome'], baseURL: MS3_URL, serviceWorkers: 'allow' },
+    },
+    {
+      name: 'offline-res',
+      testMatch: 'offline.spec.js',
+      use: { ...devices['Desktop Chrome'], baseURL: RES_URL, serviceWorkers: 'allow' },
     },
   ],
 

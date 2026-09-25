@@ -12,6 +12,12 @@ command -v git >/dev/null 2>&1 || { echo "vitals: git not available"; exit 0; }
 echo "== clerkship vitals =="
 echo "branch: $(git rev-parse --abbrev-ref HEAD 2>/dev/null) @ $(git rev-parse --short HEAD 2>/dev/null)"
 
+# Offline and report-only: stale remote knowledge is explicitly labelled as cached.
+# Run before the slower network probes so divergence is visible even if they time out.
+if [ -f bin/sync_status.py ]; then
+  python3 bin/sync_status.py || echo "sync: report unavailable (not evidence of synchronization)"
+fi
+
 # Git LFS — the single most common sandbox trap.
 if git lfs version >/dev/null 2>&1; then
   echo "git-lfs: installed ($(git lfs ls-files 2>/dev/null | wc -l | tr -d ' ') tracked media files)"

@@ -11,6 +11,13 @@
   var ROOM_BED_GAIN=0.035,ROOM_BED_PHASES=['ready','connecting','listening','responding','speaking'];
   var ROOM_CUES={door_knock:'A brief knock at the closed door. No one enters.',hallway_chime:'A short chime sounds in the hallway and stops.',door_tap:'Two quick taps at the closed door, then footsteps move away down the hallway. The door stays closed.',overhead_page:'An overhead page sounds in the hallway and stops. The words do not carry into the room.'};
   var FAMILY_CASE_ID='family_morgan_maya_001',FAMILY_NAMES={morgan:'Morgan',maya:'Maya'};
+  function applyLaunchPreset(search,controls){
+    var preset=new URLSearchParams(String(search||'')).get('preset');
+    if(preset!=='trainee'||!controls||!controls.format||!controls.coachingDepth)return false;
+    controls.format.value='full';controls.format.dispatchEvent(new Event('change',{bubbles:true}));
+    controls.coachingDepth.value='student';controls.coachingDepth.dispatchEvent(new Event('change',{bubbles:true}));
+    return true;
+  }
   function addressedFamilyRole(text){
     // Only a direct address at the beginning changes the addressee. Mentioning
     // someone in a story ("Maya said...") must not silently change who answers.
@@ -763,6 +770,7 @@
     if(env.PracticeCoach&&env.PracticeContent&&el('practice-entry')&&el('practice-room')){
       practice=env.PracticeCoach.mount(env,{entry:el('practice-entry'),room:el('practice-room'),content:env.PracticeContent,onOpen:controller.openCoaching,onClose:controller.closeCoaching});
       practice.preview(el('case-choice').value,!momentProfile(el('case-choice').value));
+      applyLaunchPreset(env.location&&env.location.search,{format:el('experience-choice'),coachingDepth:el('practice-depth')});
     }
     // The station is a projection of the snapshot: it never calls the controller.
     var station=null;
@@ -884,5 +892,5 @@
     doc.addEventListener('keydown',function(event){if(event.defaultPrevented||event.repeat||event.isComposing||event.ctrlKey||event.metaKey||event.altKey)return;var snapshot=controller.getSnapshot();if(event.code==='Escape'&&coachOpen){event.preventDefault();closeCoach();el('coach-open').focus();return;}if(event.code==='Escape'&&snapshot.busy){event.preventDefault();controller.interrupt();return;}if(event.code==='Space'&&snapshot.phase==='listening'&&!(event.target&&event.target.closest('input,textarea,button,select,a,summary,[contenteditable]'))){event.preventDefault();controller.send();}});
     doc.addEventListener('visibilitychange',function(){if(doc.hidden)controller.pause();});env.addEventListener('pagehide',function(){if(transcriptSize)transcriptSize.disconnect();controller.dispose();if(practice){practice.dispose();practice=null;}if(elapsedTimer){env.clearInterval(elapsedTimer);elapsedTimer=null;}if(station){station.dispose();station=null;}});render(controller.getSnapshot());return controller;
   }
-  return {createReviewParser:createReviewParser,validateDisplayReview:validateDisplayReview,createParser:createParser,readResponse:readResponse,createCapture:createCapture,createController:createController,safeMessage:safeMessage,mount:mount,applyIdentity:applyIdentity,statusLine:statusLine,roomView:roomView,renderRoom:renderRoom,roomCues:ROOM_CUES,thinkingPauseMs:thinkingPauseMs,elapsedLabel:elapsedLabel,elapsedIso:elapsedIso,closingNote:closingNote,coachView:coachView,renderCoach:renderCoach,speakerLabel:speakerLabel,addressedFamilyRole:addressedFamilyRole};
+  return {createReviewParser:createReviewParser,validateDisplayReview:validateDisplayReview,createParser:createParser,readResponse:readResponse,createCapture:createCapture,createController:createController,safeMessage:safeMessage,mount:mount,applyLaunchPreset:applyLaunchPreset,applyIdentity:applyIdentity,statusLine:statusLine,roomView:roomView,renderRoom:renderRoom,roomCues:ROOM_CUES,thinkingPauseMs:thinkingPauseMs,elapsedLabel:elapsedLabel,elapsedIso:elapsedIso,closingNote:closingNote,coachView:coachView,renderCoach:renderCoach,speakerLabel:speakerLabel,addressedFamilyRole:addressedFamilyRole};
 }));
