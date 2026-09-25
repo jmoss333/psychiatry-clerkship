@@ -76,7 +76,7 @@ Consider: he mentions that during this episode he has also felt "wired but on ed
 
 - **Objectives:** (1) apply DSM-5-TR mania criteria including required increased-activity criterion and the mixed-features specifier; (2) generate a robust differential including secondary mania and know when to image/LP; (3) reason from the acute-mania and maintenance network meta-analyses to individualized drug choice; (4) integrate lithium/valproate/carbamazepine mechanism, interactions, and teratogenicity; (5) manage agitation and involuntary treatment ethically; (6) build a maintenance/monitoring plan.
 - **Debate-worthy tensions:** monotherapy vs. combination (speed/efficacy vs. tolerability); lithium's anti-suicidal advantage vs. practical monitoring burden; when atypical presentation mandates a neuro workup; LAI timing.
-- **Evidence nuance to surface:** in Kishi 2021, breadth of "efficacious" agents is wide, but the **acceptability** filter narrows practical first choices to aripiprazole/olanzapine/quetiapine/risperidone [2]; topiramate underperforms and is not an antimanic agent.
+- **Evidence nuance to surface:** in Kishi 2022 (acute mania), breadth of "efficacious" agents is wide, but the **acceptability** filter narrows practical first choices to aripiprazole/olanzapine/quetiapine/risperidone [2]; topiramate underperforms and is not an antimanic agent.
 - **Pitfalls to correct:** treating mixed features with antidepressants; lamotrigine for acute mania; valproate in patients who could become pregnant; neglecting capacity documentation.
 - **Safety framing:** all suicide/dangerousness content stays at recognition/escalation/safety-planning level.
 
