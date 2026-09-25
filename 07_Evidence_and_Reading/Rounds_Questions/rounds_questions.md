@@ -182,7 +182,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Evidence:** All SSRIs have similar efficacy; selection is based on side-effect profile, drug interactions, and cost.
 
-- **Key paper:** Boyer & Shannon, NEJM 2005.
+- **Key paper:** Cipriani et al., Lancet 2018 — network meta-analysis of 21 antidepressants.
 
 - **Pearl:** Fluoxetine has the longest half-life (parent + norfluoxetine = weeks), making it the least likely to cause discontinuation syndrome — and the most problematic for drug interactions after stopping.
 
@@ -282,7 +282,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Evidence:** Esketamine + SSRI/SNRI showed higher remission than quetiapine XR + SSRI/SNRI at 8 weeks (27.1% vs. 17.6%) in the ESCAPE-TRD trial.
 
-- **Key paper:** Anand et al., NEJM 2023 — ketamine vs. ECT for nonpsychotic TRD.
+- **Key paper:** Reif et al., NEJM 2023 (ESCAPE-TRD); see also Anand et al., NEJM 2023 — ketamine vs. ECT for nonpsychotic TRD.
 
 - **Pearl:** Esketamine requires a REMS program with 2-hour post-dose monitoring due to dissociation and sedation risk — it cannot be prescribed for home use.
 
@@ -434,7 +434,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Evidence:** Simpson et al., JAMA Psychiatry 2013 showed ERP augmentation was superior to risperidone augmentation.
 
-- **Key paper:** Foa et al., JAMA Psychiatry 2022.
+- **Key paper:** Simpson et al., JAMA Psychiatry 2013.
 
 - **Pearl:** Clomipramine (a TCA with potent serotonin reuptake inhibition) is an alternative to SSRIs but has a worse side-effect profile — reserve for SSRI failures.
 
