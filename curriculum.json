@@ -19,6 +19,8 @@
         { "ref": "withdrawal.html", "kind": "tool" },
         { "ref": "doc_oral.md", "kind": "read" },
         { "ref": "mse.html", "kind": "tool" },
+        { "ref": "sp-interview.html", "kind": "tool" },
+        { "ref": "one-patient-six-weeks.html", "kind": "tool" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
           ]
         },
@@ -33,6 +35,9 @@
         { "ref": "t_psychosis.md", "kind": "read" },
         { "ref": "psychopharm_primer.md", "kind": "read" },
         { "ref": "ddx.md", "kind": "read" },
+        { "ref": "sp-interview.html", "kind": "tool" },
+        { "ref": "diagnostic-reasoning.html", "kind": "tool" },
+        { "ref": "one-patient-six-weeks.html", "kind": "tool" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
           ]
         },
@@ -47,6 +52,7 @@
         { "ref": "exp_tx.md", "kind": "read" },
         { "ref": "brief_psychotherapy.md", "kind": "read" },
         { "ref": "reflection.html", "kind": "tool" },
+        { "ref": "one-patient-six-weeks.html", "kind": "tool" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
           ]
         },
@@ -62,6 +68,8 @@
         { "ref": "family_playbook.md", "kind": "read" },
         { "ref": "collateral_workflow.md", "kind": "read" },
         { "ref": "family-systems.html", "kind": "tool" },
+        { "ref": "diagnostic-reasoning.html", "kind": "tool" },
+        { "ref": "one-patient-six-weeks.html", "kind": "tool" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
           ]
         },
@@ -78,6 +86,7 @@
         { "ref": "catatonia.md", "kind": "read" },
         { "ref": "withdrawal.html", "kind": "tool" },
         { "ref": "capacity.html", "kind": "tool" },
+        { "ref": "one-patient-six-weeks.html", "kind": "tool" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
           ]
         },

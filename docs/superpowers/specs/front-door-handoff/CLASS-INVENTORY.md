@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(481 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(485 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -247,6 +247,10 @@ ancestor; there is no modifier class for it.
         .fd-offline__details            in-flow, hidden until opened
           .fd-offline__inventory        response-only subtree
           .fd-offline__actions          refresh and close buttons, never inside the response subtree
+      .fd-today__exam  <div>           exam-date prompt: exam path only, until a date is stored
+        .fd-today__examlabel <label>   for="fdTodayExam"
+        .fd-today__examdate  <input type=date data-fd-exam-date>
+        .fd-today__examnote  <p>
       .fd-listhead
         .fd-sectionhead / .fd-listhead__theme
       .fd-list
@@ -272,6 +276,7 @@ ancestor; there is no modifier class for it.
 | `.fd-consistency` | Seven-day activity strip (2026-09-02, not in the prototype). Replaces the subhead's `· N days in a row` clause, which only Daily Review could write. Derived at render time by `fdActivityDays` from the timestamps every tool already stores; nothing new is persisted. Carries a `-12px` top margin so the subhead's 22px gap closes only when the strip is present. |
 | `.fd-pilot` | Shared active-testing invitation (2026-09-21). Its `.fd-pilot__button` uses the existing `.pgfb-b` launcher and adds `data-fb-context="Today landing page"`; no second form or submission channel is introduced. |
 | `.fd-offline` | One in-flow cache receipt after Today's actual primary card, or immediately after the APP's marked primary resource inside its starting-route resources or selected task's Prepare links. The Care entry stays in flow at ≤640px; the five-item dock is unchanged. State classes `.is-checking`, `.is-ready`, `.is-update`, and `.is-not-ready` change border shape/color and surface wash while visible text carries the meaning. It uses the existing warm palette tokens in light and dark themes; all controls meet `--fd-target-touch`. |
+| `.fd-today__exam` | Today's exam-date prompt, after the primary action (and the Shift-ready receipt when present), before the week list. Rendered only on the path that ends in an exam and only until a parseable date is stored (`fdExamDatePrompt`, `fd_state.js`). `.fd-today__examdate` is the settings panel's own field type (`data-fd-exam-date`): `fd_wire.js` commits it on `change`, stores the date, renders nothing and moves no focus, so the field is never rebuilt under the learner; the next navigation drops the prompt. Its id is `fdTodayExam`, never `fdSetExam`, because both are in the document while the panel is open. It is deliberately **not** a second `data-fd-settings` opener — that would become `restoreInvoker`'s equivalent of the gear. `.fd-today__examlabel`, `.fd-today__examnote` mirror `.fd-set__label` / `.fd-set__note`; the input keeps its intrinsic width so it never reads as the page's primary control. |
 | `.fd-offline__status`, `.fd-offline__detail`, `.fd-offline__scope`, `.fd-offline__checked` | Detailed state, reason, current route, and current-session verification timestamp. `Checked just now` is emitted only for a validated active-worker response. |
 | `.fd-offline__inventory` | Counts present and missing eligible reading, tool, shell/navigation, and search-data files. Device-only Reading place/Capture and connection-required media, live services, external links, and email delivery are always separate lines. Only this response subtree is replaced after a cache reply; focused controls are siblings outside it. |
 | `.fd-offline__refresh-status` | Stable live text for update-check success/failure or the offline explanation. The existing worker Refresh/Later prompt remains the sole reload decision. |
