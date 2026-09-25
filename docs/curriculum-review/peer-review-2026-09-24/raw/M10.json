@@ -1,0 +1,82 @@
+[
+ {
+  "id": "M10-001", "chunk": "M10", "audience": "both", "surface": "cases.md",
+  "locus": "page", "severity": "Moderate", "category": "emergency psychiatry", "pattern": null,
+  "quote": "- Catatonia and delirium can overlap; ask for help early.",
+  "problem": "Case 4 plants a recently started antipsychotic in a patient with possible catatonia, but the teaching points never tell the learner to flag the dopamine blocker for hold/reassessment or to screen for NMS/malignant catatonia.",
+  "whyItMatters": "A learner can leave the case believing the new antipsychotic simply continues; antipsychotics can worsen catatonia and precipitate NMS, which is the can't-miss branch in exactly this scenario.",
+  "evidence": "Heckers & Walther, NEJM 2023;389:1797 and Rogers et al., Clin Med 2023;23:242 (both cited on this site's catatonia COTW): avoid/hold dopamine antagonists in catatonia; screen for NMS (temperature, autonomic signs, rigidity, CK). The site's own Aug 31 catatonia COTW Q6 teaches this.",
+  "correction": "- Catatonia and delirium can overlap; ask for help early.\n- The recently started antipsychotic may be causing or worsening the picture — flag it for the team to hold/reassess, and check vitals, rigidity, and CK to screen for NMS.",
+  "confidence": "high", "verified": "recall; cross-checked against the catatonia COTW in this chunk", "persistsFrom": "MS3V09-F009"
+ },
+ {
+  "id": "M10-002", "chunk": "M10", "audience": "both", "surface": "cotw_20260914_ssnms_ms3.md",
+  "locus": "page", "severity": "Moderate", "category": "emergency psychiatry", "pattern": null,
+  "quote": "Recognition and escalation, not memorizing rare complications, is the MS3-level skill.",
+  "problem": "The page sets the ICU/urgent-cooling threshold at T > 38.5 °C or autonomic instability, but never applies it to its own patient, who is already at 38.7 °C with HR 122 and BP 162/92 and has increased leg tone; Q6 is framed as if escalation is a future contingency.",
+  "whyItMatters": "A learner may treat this patient as a ward-level moderate case and wait for deterioration, when by the page's own criterion (and its cited source) urgent cooling, sedation and ICU-level care are indicated now.",
+  "evidence": "Maitland & Baker, Drug Ther Bull 2022;60:88 (ref [5], PubMed-verified abstract): 'In case of temperature exceeding 38.5°C, urgent cooling measures and sedation should be employed, progressing to rapid sequence intubation and paralysis if cooling measures are ineffective.'",
+  "correction": "This patient (T 38.7 °C, HR 122, BP 162/92) already meets that threshold — call your senior now for ICU-level evaluation rather than waiting for further deterioration. Recognition and escalation, not memorizing rare complications, is the MS3-level skill.",
+  "confidence": "high", "verified": "PubMed abstract of ref [5] (PMID 35551099)", "persistsFrom": null
+ },
+ {
+  "id": "M10-003", "chunk": "M10", "audience": "both", "surface": "cotw_20260914_ssnms_ms3.md",
+  "locus": "page", "severity": "Moderate", "category": "emergency psychiatry", "pattern": null,
+  "quote": "and **benzodiazepines** for agitation and to blunt the neuromuscular hyperactivity [1].",
+  "problem": "Management of the agitated, hyperthermic serotonin-toxic patient omits the standard warning to avoid physical restraints.",
+  "whyItMatters": "The reflexive ward response to a restless, febrile patient pulling at lines is restraint; isometric contraction against restraints worsens hyperthermia and lactic acidosis and is associated with death in serotonin toxicity.",
+  "evidence": "Boyer & Shannon, NEJM 2005;352:1112 (ref [1]): physical restraints should be avoided because they may enforce isometric muscle contractions associated with severe lactic acidosis and hyperthermia; agitation is controlled with benzodiazepines.",
+  "correction": "and **benzodiazepines** for agitation and to blunt the neuromuscular hyperactivity; avoid physical restraints, which increase isometric muscle activity, hyperthermia and lactic acidosis [1].",
+  "confidence": "high", "verified": "recall", "persistsFrom": null
+ },
+ {
+  "id": "M10-004", "chunk": "M10", "audience": "both", "surface": "cotw_20260914_ssnms_ms3.md",
+  "locus": "page", "severity": "Minor", "category": "ambiguity", "pattern": null,
+  "quote": "Onset is typically **rapid (within 24 hours of the provoking change)** [1].",
+  "problem": "The page teaches onset <24 h vs NMS 'days' as a discriminator, yet its own patient develops serotonin toxicity on hospital day 3, roughly 48 h after linezolid was started; the tension is never addressed.",
+  "whyItMatters": "A learner applying the table literally could read the day-3 onset as pointing toward NMS; interaction-driven toxicity (e.g., linezolid added to an SSRI) can declare itself a day or more after the new agent starts.",
+  "evidence": "Boyer & Shannon 2005 (most cases within 6–24 h of a change); linezolid–SSRI case series and Wali 2025 J Int Med Res (ref [3]) describe onset after one to several days of combined exposure.",
+  "correction": "Onset is typically **rapid (within 24 hours of the provoking change)** [1] — though when an interacting drug such as linezolid is added, it can appear a day or more later, as here [3].",
+  "confidence": "medium", "verified": "PubMed metadata for ref [3] (PMID 39932284); onset detail from recall", "persistsFrom": null
+ },
+ {
+  "id": "M10-005", "chunk": "M10", "audience": "both", "surface": "cotw_20260914_ssnms_ms3.md",
+  "locus": "page", "severity": "Minor", "category": "emergency psychiatry", "pattern": null,
+  "quote": "| Resolution after stopping drug | Usually < 24–48 h [1] | Days to 2 weeks [4] |",
+  "problem": "The Step 2 CK comparison table (and the whole MS3 page) gives no NMS management, although the index promises 'why the treatments diverge'; cyproheptadine is the only antidote taught.",
+  "whyItMatters": "Learners leave the contrast case without the NMS first moves (stop the dopamine blocker, supportive ICU care, benzodiazepines; dantrolene/bromocriptine only as low-quality-evidence options in severe cases), which is exactly the divergence the shelf tests.",
+  "evidence": "Wijdicks & Ropper, NEJM 2024;391:1130 (ref [4], PubMed-verified): NMS management = withdraw the causative agent and supportive care; dantrolene, bromocriptine/amantadine and benzodiazepines are used with evidence limited to case series.",
+  "correction": "| Resolution after stopping drug | Usually < 24–48 h [1] | Days to 2 weeks [4] |\n| First treatment | Stop serotonergics; benzodiazepines, cooling; cyproheptadine if not responding [1] | Stop the dopamine blocker; ICU supportive care, cooling, benzodiazepines; dantrolene or bromocriptine considered in severe cases (case-series evidence only) [4] |",
+  "confidence": "high", "verified": "PubMed metadata for ref [4] (PMID 39321364); content from recall", "persistsFrom": null
+ },
+ {
+  "id": "M10-006", "chunk": "M10", "audience": "both", "surface": "cotw_20260907_fep_ms3.md",
+  "locus": "page", "severity": "Moderate", "category": "ambiguity", "pattern": null,
+  "quote": "For the past two weeks he has heard two voices commenting on his actions",
+  "problem": "The stem is internally contradictory: voices began only two weeks ago, yet he stopped cannabis six weeks ago because 'it made the voices louder'. Q4 and the differential then reason from symptoms 'persisted and worsened six weeks after stopping'.",
+  "whyItMatters": "The case's key discrimination (substance-induced vs primary psychosis, DSM-5-TR ~1-month persistence after abstinence) depends on the timeline; a careful learner who spots the contradiction cannot tell whether hallucinations predated abstinence, and the teaching point loses its footing.",
+  "evidence": "DSM-5-TR substance/medication-induced psychotic disorder, criterion C (symptoms persisting a substantial period, e.g., about 1 month, after cessation suggest an independent psychotic disorder); internal consistency of the stem with Q4 and differential item 2.",
+  "correction": "For the past two months he has heard two voices commenting on his actions",
+  "confidence": "high", "verified": "internal comparison of stem, Q4 and differential", "persistsFrom": null
+ },
+ {
+  "id": "M10-007", "chunk": "M10", "audience": "both", "surface": "cotw_20260831_catatonia_ms3.md",
+  "locus": "page", "severity": "Moderate", "category": "emergency psychiatry", "pattern": null,
+  "quote": "3. **Hypoactive delirium** — can look similar (withdrawn, minimally responsive) and can co-occur with catatonia; look for fluctuating attention and an underlying medical driver.",
+  "problem": "The ranked differential for a mute, staring, minimally responsive patient omits nonconvulsive status epilepticus (NCSE), which also improves with lorazepam, so a positive lorazepam challenge does not distinguish it from catatonia.",
+  "whyItMatters": "The page teaches that a positive challenge 'supports the diagnosis'; a learner could accept lorazepam response as confirmation and miss ongoing seizure activity, which EEG settles.",
+  "evidence": "Rogers JP et al., BAP consensus guidelines on catatonia, J Psychopharmacol 2023, and Heckers & Walther NEJM 2023 list NCSE among catatonia mimics and support EEG when it is in the differential; benzodiazepine response is shared by both.",
+  "correction": "3. **Hypoactive delirium** — can look similar (withdrawn, minimally responsive) and can co-occur with catatonia; look for fluctuating attention and an underlying medical driver. **Nonconvulsive status epilepticus** is a further mimic of mutism/stupor that also improves with lorazepam — a positive challenge does not exclude it, so obtain an EEG if there is doubt.",
+  "confidence": "medium", "verified": "recall", "persistsFrom": null
+ },
+ {
+  "id": "M10-008", "chunk": "M10", "audience": "both", "surface": "cotw_20260831_catatonia_ms3.md",
+  "locus": "page", "severity": "Minor", "category": "terminology inconsistencies", "pattern": null,
+  "quote": "which this patient cannot have without dopamine-blocking drug exposure",
+  "problem": "Overstated: an NMS-like syndrome also follows abrupt withdrawal of dopaminergic drugs, as the site's own SS/NMS case table states, and hidden exposures (antiemetics such as metoclopramide/prochlorperazine) are common.",
+  "whyItMatters": "An absolute 'cannot' teaches learners to close the NMS branch on an incomplete medication history rather than actively seeking dopamine-blocker exposure or dopaminergic withdrawal.",
+  "evidence": "Wijdicks & Ropper, NEJM 2024;391:1130; this chunk's SS/NMS table: 'Dopamine-blocking agent (antipsychotics, metoclopramide) or abrupt withdrawal of dopaminergic therapy'.",
+  "correction": "which this patient is very unlikely to have without dopamine-blocking drug exposure (including antiemetics) or abrupt withdrawal of a dopaminergic drug",
+  "confidence": "high", "verified": "recall; internal cross-check", "persistsFrom": null
+ }
+]

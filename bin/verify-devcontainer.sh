@@ -68,6 +68,9 @@ fi
 
 trap on_error ERR
 
+stage="preflight"
+python3 bin/devcontainer-preflight.py --context container
+
 stage="dependencies"
 if [ "$refresh_deps" = 1 ]; then
   bash .devcontainer/install-dependencies.sh

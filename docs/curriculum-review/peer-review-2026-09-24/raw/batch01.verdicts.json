@@ -1,0 +1,134 @@
+[
+  {
+    "id": "M10-001",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "Case 4 (cases.md) presents possible catatonia in a patient who recently started an antipsychotic. Its three teaching points never mention the antipsychotic or NMS, and nothing else on the page does either. The site's own catatonia.md and the Aug 31 COTW both teach holding antipsychotics and screening for NMS/malignant features. The added bullet is hedged, pitched at MS3 level, and contains no dose.",
+    "evidence": "Rogers JP et al., BAP catatonia consensus guideline, J Psychopharmacol 2023;37:327-369 (PMID 37039129, doi:10.1177/02698811231158232): antipsychotic-induced catatonia, NMS and malignant catatonia sections; site catatonia.md overlay ('hold antipsychotics until malignant catatonia/NMS is addressed').",
+    "correction": "- Catatonia and delirium can overlap; ask for help early.\n- The recently started antipsychotic may be causing or worsening the picture — flag it for the team to hold/reassess, and check vitals, rigidity, and CK to screen for NMS.",
+    "confidence": "high"
+  },
+  {
+    "id": "M05-006",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "The catatonia.md workup paragraph says 'basic labs' and never names CK or EEG. Yet the page's own overlay lists nonconvulsive status epilepticus as a rule-out, and the page names malignant catatonia/NMS as the can't-miss. BAP 2023 recommends CK in the catatonia workup and EEG where seizure activity or encephalopathy is possible. The correction reads grammatically in place and adds no dose.",
+    "evidence": "Rogers JP et al., BAP catatonia guideline, J Psychopharmacol 2023 (PMID 37039129), investigations section; page overlay rule-out list in chunk M05.",
+    "correction": "Check vital signs and basic labs including CK, obtain an EEG when nonconvulsive status epilepticus is possible, review the medication list (especially recent antipsychotic exposure)",
+    "confidence": "high"
+  },
+  {
+    "id": "C1-007",
+    "verdict": "modified",
+    "severity": "Minor",
+    "reason": "The keyed answer correctly answers what the step asks, which is WHEN the case becomes emergent, so it is not wrong. The antipsychotic hazard is already taught in Step 2's feedback ('Antipsychotics can worsen catatonia or malignant catatonia/NMS'). ECT is missing from the case, but it is taught on the linked catatonia.md. That makes this a completeness gap rather than misleading content, so I downgraded it. Adding the clause only to the keyed option also lengthens it, which gives an answer-length cue; the coordinator may prefer to put the same sentence in option (a)'s feedback line instead.",
+    "evidence": "Rogers JP et al., BAP catatonia guideline 2023 (PMID 37039129): ECT for benzodiazepine non-response and early in malignant catatonia; stop antipsychotics when malignant features emerge. Chunk C1 Step 2 option (c) feedback.",
+    "correction": "*Prompt.* Which reasoning best defines when the case becomes emergent?\n\n- **(a)** Escalate urgently for fever, autonomic instability, worsening rigidity, rising CK, dehydration, immobility complications, or failure to improve with supervised first-line treatment — and if malignant features emerge, stop antipsychotics and request urgent ECT consultation.",
+    "problem": "The escalation step names the triggers but never says what escalation means. ECT, the definitive treatment for benzodiazepine-refractory catatonia and urgent in malignant catatonia, appears nowhere in the resident case. The keyed answer is correct as far as it goes, and the linked page and Step 2 cover part of the gap.",
+    "confidence": "medium"
+  },
+  {
+    "id": "R01-001",
+    "verdict": "confirmed",
+    "severity": "Major",
+    "reason": "I checked the EXTRIP abstract on PubMed. Dialysis is recommended for [Li] >4.0 with impaired kidney function, or for decreased consciousness, seizures or life-threatening dysrhythmias whatever the level. It is suggested for >5.0, significant confusion, or an expected time to <1.0 mEq/L of more than 36 h. The page's '>2.5 with severe signs' floor would exclude an obtunded or seizing patient at 2.2, contradicting its own 'treat the patient, not the number'. The correction matches EXTRIP; its 'despite optimal care' mirrors the full text's 'with optimal management'.",
+    "evidence": "Decker BS et al., EXTRIP, Clin J Am Soc Nephrol 2015;10:875-87 (PMID 25583292, doi:10.2215/CJN.10021014).",
+    "correction": "- **Hemodialysis (EXTRIP 2015):** recommended if level **>4.0** mEq/L with impaired kidney function, or with decreased consciousness, seizures, or life-threatening dysrhythmias **at any level**; suggested if **>5.0**, significant confusion, or expected time to <1.0 mEq/L exceeds 36 h despite optimal care.",
+    "confidence": "high"
+  },
+  {
+    "id": "R01-002",
+    "verdict": "modified",
+    "severity": "Major",
+    "reason": "The key-point card repeats the same pre-EXTRIP floor that R01-001 corrects in the page body, so the finding stands. I made one wording change: EXTRIP's any-level criterion is 'life-threatening dysrhythmias', not any 'dysrhythmia', so I restored the qualifier to avoid overstating the indication.",
+    "evidence": "Decker BS et al., EXTRIP, CJASN 2015;10:875-87 (PMID 25583292, doi:10.2215/CJN.10021014).",
+    "correction": "Lithium: toxicity generally ≥1.5 mEq/L; dialysis for >4.0 with impaired kidney function, >5.0 regardless, or decreased consciousness, seizures or life-threatening dysrhythmias at any level — treat the patient, not the number, in chronic toxicity.",
+    "problem": "The key-point card repeats the outdated '>2.5 with severe signs' dialysis floor. EXTRIP makes decreased consciousness, seizures or life-threatening dysrhythmias an indication at any level, and ties >4.0 to impaired kidney function.",
+    "confidence": "high"
+  },
+  {
+    "id": "R04-007",
+    "verdict": "modified",
+    "severity": "Minor",
+    "reason": "The can't-miss list in Q6 is a list of ETIOLOGIES of delirium. Catatonia is a syndrome that co-occurs with delirium, not a cause of it. The vignette's goal-directed behavior (pulling at the IV, trying to leave, swinging at staff) is not catatonic. So the omission is real but low-yield here, and I downgraded it. The underlying point is sound: Wilson et al. found catatonia co-occurring with delirium in critically ill patients, and high-potency D2 blockade can precipitate malignant catatonia. The reviewer's first citation title is garbled; the correct paper is Wilson JE et al., 'Delirium and Catatonia in Critically Ill Patients', Crit Care Med 2017;45:1837-44 (recall). I reworded the correction to frame catatonia as co-occurring or mimicking rather than as a cause.",
+    "evidence": "Recall: Wilson JE et al., Crit Care Med 2017;45(11):1837-1844; BAP catatonia guideline 2023 (PMID 37039129) on antipsychotic risk in catatonia.",
+    "correction": "**Can't-miss before accepting \"UTI delirium\":** hypoglycemia/hypoxia (excluded early), co-occurring or mimicking **excited catatonia** (screen for Bush-Francis signs before a high-potency D2 blocker),",
+    "problem": "Before a high-potency D2 blocker is given to a febrile, autonomically aroused, delirious patient, the page never prompts a screen for catatonia, which can co-occur with delirium. This is a completeness gap; the listed etiologies are otherwise correct.",
+    "confidence": "medium"
+  },
+  {
+    "id": "R04-008",
+    "verdict": "rejected",
+    "severity": "Minor",
+    "reason": "The sentence is about this specific patient, not every patient with PAWSS ≥4. He had a documented prior withdrawal SEIZURE and an ORIF planned, which predictably invalidates CIWA-Ar, and the very next point on the page carries the ASAM nuance: symptom-triggered dosing is preferred where it can be validly applied, with fixed or front-loaded dosing for higher-risk or non-assessable patients. That is exactly this patient, so the two sentences agree. The finding also calls him elderly; he is 54. The proposed softening would weaken a correct retrospective teaching point.",
+    "evidence": "Chunk R04 cotw_20260726_etohwd_res.md Q2 point 2 (ASAM 2020 framing on the same page); ASAM Clinical Practice Guideline on Alcohol Withdrawal Management 2020 (recall: prior withdrawal seizure/DT marks high risk warranting prophylactic or scheduled treatment and a higher level of care).",
+    "correction": "",
+    "confidence": "medium"
+  },
+  {
+    "id": "R03-005",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "The core point stands: oxazepam/nordiazepam-calibrated immunoassays commonly miss clonazepam and lorazepam, and routine screens do not detect xylazine, so a negative UDS is weak reassurance in a fentanyl user. The reviewer's correction overstates two things. It says immunoassays 'miss' novel benzodiazepines, but their cross-reactivity is variable rather than absent. It also says 'all' three are present in the fentanyl supply, which is untrue of prescription clonazepam and lorazepam. I tightened both.",
+    "evidence": "Recall: benzodiazepine immunoassay cross-reactivity limitations (standard toxicology references); CDC/DEA reporting of xylazine and bromazolam as illicit-fentanyl adulterants 2023-2025. Not tool-verified.",
+    "correction": "**Occult sedative or alcohol withdrawal** — history makes this less likely, but a negative UDS is weak reassurance (standard benzodiazepine immunoassays often miss clonazepam, lorazepam and some novel benzodiazepines such as bromazolam, and do not detect xylazine — both of the latter now common fentanyl adulterants); it remains the dangerous miss",
+    "problem": "The page treats a negative UDS as lowering the probability of sedative withdrawal. Standard immunoassays often miss several benzodiazepines and do not detect xylazine, both relevant in a fentanyl user.",
+    "confidence": "medium"
+  },
+  {
+    "id": "M10-007",
+    "verdict": "modified",
+    "severity": "Minor",
+    "reason": "NCSE is absent from the ranked differential, and a benzodiazepine response does not separate NCSE from catatonia, so the gap is real. However, the same page already calls for EEG when seizure is suspected, in both Q4 and the lab summary, so the nuance is partly present nearby; I downgraded it to Minor. The reviewer's correction is accurate and drops in cleanly.",
+    "evidence": "Rogers JP et al., BAP catatonia guideline 2023 (PMID 37039129) — NCSE as a differential and EEG indication; chunk M10 Q4 and 'Workup & management summary' already mention EEG for seizure suspicion.",
+    "correction": "3. **Hypoactive delirium** — can look similar (withdrawn, minimally responsive) and can co-occur with catatonia; look for fluctuating attention and an underlying medical driver. **Nonconvulsive status epilepticus** is a further mimic of mutism/stupor that also improves with lorazepam — a positive challenge does not exclude it, so obtain an EEG if there is doubt.",
+    "problem": "The ranked differential omits NCSE, which also responds to lorazepam, so a positive challenge cannot exclude it. The page mentions EEG only for 'seizure suspicion' elsewhere.",
+    "confidence": "medium"
+  },
+  {
+    "id": "M10-002",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "I confirmed the quoted threshold against the Maitland & Baker abstract on PubMed: above 38.5°C, urgent cooling and sedation. The patient's 38.7°C with HR 122 and BP 162/92 meets that threshold, but the page never says so. Note that Boyer & Shannon grade temperatures up to 40°C as 'moderate', so the ICU call rests on ref [5], which the page itself uses. I changed 'that threshold' to name the number, because the pasted sentence sits two sentences after the threshold is stated and the referent would otherwise be unclear.",
+    "evidence": "Maitland S, Baker M. Drug Ther Bull 2022;60:88-91 (PMID 35551099, doi:10.1136/dtb.2021.000032).",
+    "correction": "This patient (T 38.7 °C, HR 122, BP 162/92) already meets the > 38.5 °C threshold — call your senior now for ICU-level evaluation rather than waiting for further deterioration. Recognition and escalation, not memorizing rare complications, is the MS3-level skill.",
+    "problem": "The page sets an escalation threshold of T > 38.5 °C but never applies it to its own patient, who is at 38.7 °C with tachycardia and hypertension.",
+    "confidence": "high"
+  },
+  {
+    "id": "M10-003",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "The MS3 serotonin-syndrome management section omits the warning against physical restraints. The resident cl_reference page carries it as its red-flag line, so the MS3 omission is also a cross-audience gap. Boyer & Shannon (ref [1] on this page) state that restraints should be avoided because isometric contraction worsens hyperthermia and lactic acidosis. The correction is grammatical and moves the [1] citation to the end of the sentence.",
+    "evidence": "Recall: Boyer EW, Shannon M. N Engl J Med 2005;352:1112-20 (management section); cross-checked against the cl_reference.md red-flag line in chunk R01.",
+    "correction": "and **benzodiazepines** for agitation and to blunt the neuromuscular hyperactivity; avoid physical restraints, which increase isometric muscle activity, hyperthermia and lactic acidosis [1].",
+    "confidence": "high"
+  },
+  {
+    "id": "R02-004",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "The resident NMS case has CK 28,400, myoglobinuria and rising creatinine. The page recommends intubation and paralysis, and ECT in the next bullet, without warning against succinylcholine. Succinylcholine-induced hyperkalemia in active rhabdomyolysis is a label-level hazard, and the caution belongs in a plan that is handed to ICU or anesthesia. One note: the reviewer's Boyer & Shannon citation concerns serotonin toxicity, not NMS; the succinylcholine label is the operative source.",
+    "evidence": "Recall: succinylcholine (Anectine/Quelicin) US prescribing information, Warnings — hyperkalemia and rhabdomyolysis; not re-verified against a dated label in this pass.",
+    "correction": "Intubation and paralysis with a non-depolarizing agent if refractory hyperthermia — avoid succinylcholine (rhabdomyolysis/hyperkalemia), a caution that also travels with any ECT referral.",
+    "confidence": "medium"
+  },
+  {
+    "id": "M06-007",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "Alcohol-withdrawal seizures cluster 6–48 h after the last drink, with a peak around 12–24 h (Victor & Adams' classic series; ASAM 2020 clinical-course description). A timeline entry starting at 24 h misplaces the peak risk window. Coordinator note: the 24–48 h figure matches the First Aid for USMLE table that students study from, so faculty may want to acknowledge that discrepancy. The correction fits the {t:...} string.",
+    "evidence": "Recall: Victor M, Adams RD 1953 (seizures largely 7–48 h, peak 13–24 h); ASAM Clinical Practice Guideline on Alcohol Withdrawal Management 2020 (https://www.asam.org/quality-care/clinical-guidelines/alcohol-withdrawal-management-guideline).",
+    "correction": "{t:\"6–48 h (peak ~12–24 h)\",h:\"Withdrawal seizures\"",
+    "confidence": "medium"
+  },
+  {
+    "id": "M05-013",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "The consult quick-differential row for new psychosis omits psychotic disorder due to another medical condition, even though the mutism row names neurologic illness. The same site's decision-aids 'New psychosis' tree lists autoimmune (anti-NMDA) and seizure/CNS lesion, so the table is also inconsistent with the rest of the site. The correction is a clean drop-in.",
+    "evidence": "Recall: DSM-5-TR schizophrenia criterion E and Psychotic Disorder Due to Another Medical Condition; APA Practice Guideline for Schizophrenia, 3rd ed. (2020), initial assessment. Cross-checked against the decision-aids.html psychosis ruleOut list in chunk M06.",
+    "correction": "| New psychosis | substance/medication, delirium, medical/neurologic illness (e.g., encephalitis, seizure, endocrine), mania, trauma, primary psychotic disorder |",
+    "confidence": "high"
+  }
+]
