@@ -110,6 +110,50 @@ def canonical_topic_meta_record(record: dict) -> bytes:
     )
 
 
+# The one registry that is both page text (#783 lists it in the question tools'
+# `extraSources`) and an attestation ledger (each item's `status`). Its line in a manifest
+# is hashed over the bank WITHOUT any item's `status`: otherwise signing a question would
+# drift the two question tools' own attestations, and a build that overlays question
+# sign-offs from the attestation ledger (ADR-003) would drift them on every build.
+QUESTION_BANK_PATH = "question_bank.json"
+QUESTION_BANK_GOVERNANCE_KEYS = frozenset({"status"})
+
+
+def canonical_question_bank(data: bytes) -> bytes:
+    """Canonical bytes of question_bank.json with every item's `status` removed.
+
+    Key-sorted, no whitespace, raw UTF-8 — the same canonical form as a topic_meta record,
+    so the JS twin serialises it identically. `retired` is NOT removed: it changes which
+    questions ship, which is content. Bytes that are not a JSON object with an `items`
+    list are returned unchanged: a malformed bank is `validate_registry_schemas.py`'s to
+    fail, and this must stay a total function or a digest would raise where it should
+    merely drift.
+    """
+    try:
+        doc = json.loads(data.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return data
+    if not isinstance(doc, dict) or not isinstance(doc.get("items"), list):
+        return data
+    body = dict(doc)
+    body["items"] = [
+        {k: v for k, v in item.items() if k not in QUESTION_BANK_GOVERNANCE_KEYS}
+        if isinstance(item, dict) else item
+        for item in doc["items"]
+    ]
+    return json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
+        "utf-8"
+    )
+
+
+def source_blob_sha(path: str, data: bytes) -> str:
+    """The value a manifest line carries for one source: its blob SHA, canonicalised
+    first when the source is the question bank (see QUESTION_BANK_PATH)."""
+    if path == QUESTION_BANK_PATH:
+        return blob_sha(canonical_question_bank(data))
+    return blob_sha(data)
+
+
 def sources_for_slug(shipped_doc: dict, slug: str) -> list[str]:
     """Every source path the slug ships from: `source` first, then `extraSources`.
 
@@ -160,7 +204,7 @@ def manifest_for_slug(slug: str, sources: dict[str, bytes], record: dict | None)
         raise AttestationHashError(
             f"{slug}: no attested sources — its digest would cover nothing"
         )
-    lines = [f"{path} {blob_sha(sources[path])}" for path in sorted(sources)]
+    lines = [f"{path} {source_blob_sha(path, sources[path])}" for path in sorted(sources)]
     if isinstance(record, dict):
         lines.append(f"topic_meta {blob_sha(canonical_topic_meta_record(record))}")
     return "\n".join(lines) + "\n"

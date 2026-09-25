@@ -199,7 +199,7 @@ The **MacArthur Competence Assessment Tool for Treatment (MacCAT-T)** is the mos
 
 - Use the MacCAT-T for difficult cases or those likely to involve legal proceedings
 
-- MMSE scores <19 are highly likely to be associated with incompetence; scores ≥23–26 strongly suggest competence
+- MMSE scores <19 make incapacity likely, but a normal MMSE does not establish capacity — it does not test appreciation or reasoning, which psychosis, mania and severe depression often impair despite intact cognition
 
 - Document the specific decision, the information disclosed, and the patient's responses to each of the four criteria
 
@@ -211,7 +211,7 @@ The **MacArthur Competence Assessment Tool for Treatment (MacCAT-T)** is the mos
 
 ### Legal Framework
 
-Three landmark U.S. Supreme Court cases define the legal landscape: **Washington v. Harper** (1990) allows administrative review for involuntary medication of dangerous/gravely disabled prisoners; **Sell v. United States** (2003) requires judicial authorization for competency restoration with four specific criteria; and **Riggins v. Nevada** (1992) extends protections to pretrial detainees. A retrospective review found that 79% of federal defendants involuntarily treated under Sell were successfully restored to competency.
+Three landmark U.S. Supreme Court cases define the legal landscape for involuntary medication of prisoners and criminal defendants: **Washington v. Harper** (1990) allows administrative review for involuntary medication of dangerous/gravely disabled prisoners; **Sell v. United States** (2003) requires judicial authorization for competency restoration with four specific criteria; and **Riggins v. Nevada** (1992) extends protections to pretrial detainees. A retrospective review found that 79% of federal defendants involuntarily treated under Sell were successfully restored to competency. Civil involuntary medication of committed inpatients is governed by state law and varies, from a court order in some states to administrative or clinical review in others; in most states, commitment alone does not authorize treatment over refusal. Check your state's statute; in Maine, the District Court can authorize treatment over objection for a committed patient who lacks capacity (34-B M.R.S. §3864(7-A)), or a clinical review panel can order it for a committed patient who lacks capacity at a state or designated hospital (34-B M.R.S. §3861(3)).
 
 ### Outcomes Evidence
 

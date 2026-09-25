@@ -122,6 +122,10 @@
     "staleClaims": {
       "path": "13_Faculty_Resources/_automation/maintenance/receipts/stale-claims.json",
       "maxAgeDays": 35
+    },
+    "sourceIntegrity": {
+      "path": "13_Faculty_Resources/_automation/surveillance/history/source_integrity_receipt.json",
+      "maxAgeDays": 10
     }
   },
   "apaCrosswalk": "13_Faculty_Resources/APA_Downloads_2026-06-29/metadata/library_crosswalk.csv"

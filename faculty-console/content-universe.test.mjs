@@ -44,6 +44,28 @@ const REVIEWED = readJson('13_Faculty_Resources/reviewed.json');
 // legitimately carry.
 const WEEKS = REGISTRY.weeks.length;
 
+// site_extras.py's literal lists, read out of the module by Python itself. The MS3-only
+// tool count derives from them for the same reason WEEKS derives from the registry:
+// adding or retiring an MS3-only extra (the orientation-video tool is one) is
+// registration a content PR carries in site_extras.py, and a count hand-pinned here would
+// deadlock that PR under L1. Not vacuous: the parity test below still checks every listed
+// extra against shipped_pages.json slug by slug, so extras and shipped cannot drift apart.
+const EXTRAS = JSON.parse(execFileSync('python3', [
+  '-c',
+  [
+    'import json,sys',
+    'sys.path.insert(0, sys.argv[1])',
+    'import site_extras as e',
+    'print(json.dumps({',
+    '  "ms3_tools": e.MS3_EXTRA_TOOLS,',
+    '  "resident_pages": e.RESIDENT_EXTRA_PAGES,',
+    '  "resident_tools": e.RESIDENT_PROTO_TOOLS,',
+    '}))',
+  ].join('\n'),
+  new URL('13_Faculty_Resources/_automation/site_build/', ROOT).pathname,
+], { encoding: 'utf8' }));
+const MS3_TOOLS = EXTRAS.ms3_tools.length;
+
 // The exact Python expression the one shared slug helper uses. Asserting on the source
 // text — not on a hand-copied restatement of it — is what makes "byte-identical" a claim
 // a test can actually break when someone edits the Python side alone.
@@ -79,26 +101,28 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
   const tools = items.filter(item => item.kind === 'tool');
   const cotw = items.filter(item => isCotwSlug(item.slug));
 
-  // 69 shared pages + 22 shared tools + 1 MS3-only tool (orientation-video.html)
+  // 69 shared pages + 22 shared tools + the MS3-only tools site_extras.py lists
   // + 2×WEEKS Case-of-the-Week twins + 6 resident-only pages + 4 resident-only tools
   // (rp-post-event-huddle.html joined the three role-play tools on 2026-09-04; the CotW
-  // term was registry-derived on 2026-09-24 — at 13 weeks — so weekly content PRs stop
-  // editing this governance file).
+  // term was registry-derived on 2026-09-24 — at 13 weeks — and the MS3-only tool term
+  // derived from site_extras.py on 2026-09-25, so content PRs stop editing this
+  // governance file for either).
   assert.equal(MANIFEST.md.length, 69);
   assert.equal(MANIFEST.tools.length, 22);
   assert.ok(WEEKS >= 13, 'the CotW registry only ever grows');
-  assert.equal(items.length, 102 + 2 * WEEKS);
+  assert.equal(items.length, 69 + 22 + MS3_TOOLS + 6 + 4 + 2 * WEEKS);
   assert.equal(pages.length, 69 + 2 * WEEKS + 6);
-  assert.equal(tools.length, 22 + 1 + 4);
+  assert.equal(tools.length, 22 + MS3_TOOLS + 4);
   assert.equal(cotw.length, 2 * WEEKS);
 
   const byProducer = {};
   for (const entry of SHIPPED.pages) {
     byProducer[entry.producer] = (byProducer[entry.producer] ?? 0) + 1;
   }
+  // A producer with nothing to ship emits no entry, so its key is absent, not zero.
   assert.deepEqual(byProducer, {
     site_manifest: 91,
-    ms3_extra_tool: 1,
+    ...(MS3_TOOLS ? { ms3_extra_tool: MS3_TOOLS } : {}),
     cotw_registry: 2 * WEEKS,
     resident_extra: 6,
     resident_tool: 4,
@@ -135,21 +159,7 @@ test('shipped_pages.json agrees with the producers it claims to be derived from'
     expected.set(slug, { slug, kind: 'tool', sites: ['ms3', 'res'], title, source });
   }
 
-  // site_extras.py's literal lists, read out of the module by Python itself.
-  const extras = JSON.parse(execFileSync('python3', [
-    '-c',
-    [
-      'import json,sys',
-      'sys.path.insert(0, sys.argv[1])',
-      'import site_extras as e',
-      'print(json.dumps({',
-      '  "ms3_tools": e.MS3_EXTRA_TOOLS,',
-      '  "resident_pages": e.RESIDENT_EXTRA_PAGES,',
-      '  "resident_tools": e.RESIDENT_PROTO_TOOLS,',
-      '}))',
-    ].join('\n'),
-    new URL('13_Faculty_Resources/_automation/site_build/', ROOT).pathname,
-  ], { encoding: 'utf8' }));
+  const extras = EXTRAS;
 
   for (const [source, slug, title] of extras.ms3_tools) {
     expected.set(slug, { slug, kind: 'tool', sites: ['ms3'], title, source });
@@ -205,11 +215,6 @@ test('a resident override is recorded on the shared page as extraSources', () =>
   assert.deepEqual(
     bySlug.get('cotw_index.md').extraSources,
     ['08_Cases_and_Simulation/case-of-the-week/index_resident.md'],
-  );
-  assert.deepEqual(
-    SHIPPED.pages.filter(page => page.extraSources !== undefined).map(page => page.slug).sort(),
-    ['cotw_index.md', 'welcome.md'],
-    'only the two resident overrides reuse a slug the manifest already ships',
   );
 });
 

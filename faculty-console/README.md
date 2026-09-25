@@ -49,6 +49,8 @@ Use the shared queue's search, item type, review status, category, gate, and dif
 
 **Case-of-the-Week pairs.** Each weekly case ships as an MS3 page and a resident twin built from one registry week. When one is selected, the rail names the other (`Twin: <title> · Needs review | Reviewed`) with **Go to twin**, and attesting one half advances the selection to the twin when it still needs review. That is navigation only. **One press still attests exactly one slug** — attesting both halves in a single action would be a governance change, and the console does not make it.
 
+**Re-sign by change.** When pages you signed have since been edited (they read *Content changed since faculty review on …*), the queue shows a **Re-sign by change** disclosure. Opened, it lists the corrections (pull requests) that changed those pages, largest first, each with its pages, and a *No text change* group for pages whose record or fingerprint scope moved instead. Every page has **Show what #N changed on this page**: the exact words removed and added, including its quiz, key-point, and evidence record. A correction that landed on the day you signed is flagged *you may already have read it*, because a row records only the date. Opening a page from a correction selects it in the ordinary review, and the rail opens **What changed since you signed** (everything since the start of the signing day). After you sign it, the next page from **that** correction opens rather than the next page alphabetically. This is navigation and reading only. **No control in the list signs anything**. Each page is still signed by its own press after its own preview. The list is fetched only when opened (`GET /api/attest?view=changes`, and `?view=diff&slug=…[&sha=…]` per page). Both are read-only: they never freshen or write a branch.
+
 The compact **Review sitting** strip keeps the automation visible: it shows saved-draft receipt and batch counts, any reset notice, the most recent automatic batch choice with **Undo batch selection**, and a collapsible ledger of every confirmed repository action in the current sitting. The ledger is scrollable for a long sitting, links the confirmed commit and rolling pull request when available, and flags a pull-request housekeeping failure without calling the confirmed write a failure. This is browser-session context, not a durable approval record; it clears when the console is locked or the tab closes.
 
 ### 2. Review the learner-facing surface
@@ -164,6 +166,26 @@ If the console uses a different origin, update the learner site's exact `frame-a
 | `ATTESTER_NAME` | reviewer attribution recorded in `by:` fields and commit messages *(optional; defaults to `Joshua Moss, MD`)* |
 
 Deploy. Open the site, enter the key, and you're attesting.
+
+### Ledger mode — sign-offs without a pull request (ADR-003)
+
+With `ATTEST_LEDGER=on` the console stops using `GIT_BRANCH` and the rolling PR entirely. A
+sign-off (or a reopen) becomes one Ed25519-signed line appended to `ledger/events.jsonl` on the
+`attestations` branch, hashed against the page **as it stands on `main`**, and the learner sites
+pick it up on their next build (the scheduled `ledger-publish` function asks for one about ten
+minutes after sign-offs go quiet; **Publish now** asks at once). Nothing is ever written to
+`main`, so nothing ever needs merging. In ledger mode the console signs questions but does not
+edit their wording — that arrives through a content PR.
+
+| Variable | Value |
+|---|---|
+| `ATTEST_LEDGER` | `on` to enable; anything else keeps the rolling-PR route below |
+| `LEDGER_SIGNING_KEY` | **set only by `node bin/ledger_keygen.mjs --install`** — a production-only Netlify secret |
+| `LEDGER_BUILD_HOOKS` | `ms3=<build hook URL>,res=<build hook URL>` (secret) |
+| `LEDGER_BRANCH` | optional; default `attestations` |
+
+Turning it on is a five-step runbook: `13_Faculty_Resources/ledger/ACTIVATION.md`. The design, its
+invariants and its honest limits: `docs/superpowers/specs/2026-09-25-attestation-ledger-design.md`.
 
 ### Why attestations do not commit to `main`
 

@@ -17,6 +17,8 @@ Use patients to organize exam review:
 
 ## High-Yield Domains
 
+The domains below anchor inpatient care; the exam blueprint also covers eating, somatic symptom/factitious, sleep-wake and neurodevelopmental/child disorders — see the Rapid Review and the official blueprint.
+
 ### Mood Disorders
 
 Know:

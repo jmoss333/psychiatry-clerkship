@@ -28,6 +28,11 @@ const REGISTRY = readJson('08_Cases_and_Simulation/case-of-the-week/cotw_registr
 // Registry-derived so weekly content PRs never edit this governance file — see the
 // rationale in content-universe.test.mjs next to its own WEEKS constant.
 const WEEKS = REGISTRY.weeks.length;
+// The MS3-only tool count derives for the same reason: retiring or adding one is
+// registration a content PR carries, and a hand-pinned count here would deadlock it under
+// L1. Read from the listing; content-universe.test.mjs pins that listing against
+// site_extras.py slug by slug, so this cannot drift from the producers.
+const MS3_TOOLS = SHIPPED.pages.filter(page => page.producer === 'ms3_extra_tool').length;
 
 const MS3_BASE = 'https://une-ms3-psychiatry.netlify.app/';
 const RES_BASE = 'https://mmc-psychiatry-residents-sanford.netlify.app/';
@@ -172,12 +177,13 @@ test('parseDeepLink returns null for anything that is not a loaded key', () => {
 
 test('parseDeepLink addresses every real item and nothing else', () => {
   const items = realItems();
-  // 102 + 2×WEEKS = 69 shared pages + 22 shared tools + 1 MS3-only tool + the
-  // Case-of-the-Week twins + 6 resident-only pages + 4 resident-only tools. The CotW
-  // term is registry-derived (2026-09-24, at 13 weeks) so weekly content PRs stop
-  // editing this governance file. The fixed 102 was 113 items before ADR-002 minus what
-  // only the resident build ships; the extra 10 are what nothing enumerated back then.
-  assert.equal(items.length, 102 + 2 * WEEKS);
+  // 69 shared pages + 22 shared tools + the MS3-only tools + the Case-of-the-Week twins
+  // + 6 resident-only pages + 4 resident-only tools. The CotW term is registry-derived
+  // (2026-09-24, at 13 weeks) and the MS3-only term listing-derived (2026-09-25) so
+  // content PRs stop editing this governance file for either. The fixed part was 102
+  // (with one MS3-only tool) = 113 items before ADR-002 minus what only the resident
+  // build ships; the extra 10 are what nothing enumerated back then.
+  assert.equal(items.length, 69 + 22 + MS3_TOOLS + 6 + 4 + 2 * WEEKS);
   for (const item of items) {
     assert.equal(parseDeepLink(`?item=${encodeURIComponent(item.key)}`, items)?.key, item.key);
   }
