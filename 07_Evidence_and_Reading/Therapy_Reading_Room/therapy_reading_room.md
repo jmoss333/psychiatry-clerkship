@@ -50,7 +50,7 @@
 - ★ **Safety Planning Intervention with follow-up vs usual care** — Stanley & Brown et al., *JAMA Psychiatry* 2018. PMID 29998307 · Open (PMC)
   The foundational cohort (1,640 ED patients): safety planning plus follow-up contact was associated with 45% fewer suicidal behaviors (OR 0.56) and double the odds of attending outpatient care. A cohort comparison, not an RCT — but the tool you'll use most is built on it.
 - **Means restriction: overview of systematic reviews** — Steeg et al., *BMJ Ment Health* 2025. PMID 41365522 · Open
-  The umbrella view (20 reviews, 179 primary studies), and the concrete wins behind the counseling: physical barriers at jumping sites show strong effects, platform screen doors cut site-specific deaths without displacement, paracetamol pack limits reduced self-poisoning admissions, and bans on highly hazardous pesticides reduced suicide rates. Review quality varies — the authors say so — but this is where means restriction earns its place.
+  The umbrella view (20 reviews, 179 primary studies), and the concrete wins behind the counseling: physical barriers at jumping sites show strong effects (though the underlying studies overlap heavily), platform screen doors cut site-specific deaths without displacement, paracetamol pack limits reduced self-poisoning admissions (with mixed effects on deaths), and bans on highly hazardous pesticides reduced suicide rates. Review quality varies — the authors say so — but this is where means restriction earns its place.
 
 *Go deeper:* the sobering trial-level review — stricter firearm regulation was associated with "a small reduction, if any" in suicide deaths, no high-quality RCTs exist, and the ecological designs preclude individual-level causal inference; counsel about means honestly, on population-level evidence; Shank et al. 2026 (PMID 40185617 · Library) · how rural communities — ours — actually hear this counseling: most respondents would discuss firearm access with a provider, but only 4–11% had ever been asked; Penzenik et al. 2026 (PMID 41588871 · Library).
 
@@ -79,7 +79,7 @@
 ## Family intervention and expressed emotion
 
 - ★ **Family intervention for schizophrenia** — Pharoah et al., *Cochrane* 2010. PMID 21154340 · Open (PMC)
-  The canonical review (53 RCTs): family intervention "may decrease the frequency of relapse" (RR 0.55, NNT 7) and "may also reduce hospital admission" (RR 0.78, CI 0.6–1.0, NNT 8), with better medication adherence too. The authors' own hedge — effects "may be overestimated due to the poor methodological quality" — is part of the finding: the same rigor lesson Tarrier & Wykes teach, arriving in the domain's foundational citation.
+  The canonical review (53 RCTs in all): family intervention "may decrease the frequency of relapse" (32 RCTs; RR 0.55, NNT 7) and "may also reduce hospital admission" (8 RCTs; RR 0.78, CI 0.6–1.0, NNT 8), with better medication adherence too. The authors' own hedge — effects "may be overestimated due to the poor methodological quality" — is part of the finding: the same rigor lesson Tarrier & Wykes teach, arriving in the domain's foundational citation.
 - **Expressed emotion and relapse: meta-analysis** — Ma et al., *Psychol Med* 2021. PMID 33568244 · Library
   The empirical floor under family work: high expressed emotion predicts early relapse (OR 4.87 within 12 months), criticism predicts relapse (OR 2.22), and warmth protects (OR 0.35). A measured, modifiable relapse predictor.
 - **Family intervention in first-episode psychosis to 24 months** — Camacho-Gomez & Castellví, *Schizophr Bull* 2020. PMID 31050757 · Open (PMC)
@@ -108,7 +108,7 @@
 - **Who benefits from adding STPP to antidepressants?** — Driessen et al., *Psychol Med* 2023. PMID 36404677 · Open
   The combined-treatment question in its most ward-relevant form: adding STPP to antidepressants helped most in severe and chronic (>2-year) depression — the patients we actually admit.
 - **MBT for self-harm: SR and meta-analysis** — Hajek Gross et al., *Suicide Life Threat Behav* 2024. PMID 38279664 · Open
-  Kept for the comparator lesson: MBT's pre-post effects on self-harm look large (g = −0.82), but against active controls it "did not prove to be more efficacious," and the authors conclude that "prioritizing the application of MBT(-A) for the treatment of self-harm is not supported" (**includes MBT-A adolescent arms**). Read past the pre-post effect size to the comparator — always.
+  Kept for the comparator lesson: MBT's pre-post effects on self-harm look large (g = −0.82), but against control interventions (treatment as usual or structured clinical management) it "did not prove to be more efficacious," and the authors conclude that "prioritizing the application of MBT(-A) for the treatment of self-harm is not supported" (**includes MBT-A adolescent arms**). Read past the pre-post effect size to the comparator — always.
 
 ## Therapy in the medically ill (consult-liaison)
 

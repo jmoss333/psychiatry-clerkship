@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-09-16",
+  "updated": "2026-09-24",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -658,6 +658,56 @@
             "date": "2026-07-12",
             "note": "Zotero parent TSN2F24F matched the primary article and PubMed title, first author, year, DOI, PMID, and journal.",
             "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          }
+        ]
+      }
+    },
+    {
+      "id": "scull-2023-rosenhan-revisited",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "Rosenhan revisited: successful scientific fraud",
+        "authors": [
+          {
+            "family": "Scull",
+            "given": "A"
+          }
+        ],
+        "organization": "",
+        "year": 2023,
+        "journal": "Hist Psychiatry",
+        "volume": "34",
+        "pages": "180-195",
+        "doi": "10.1177/0957154X221150878",
+        "pmid": "36737877",
+        "url": "https://doi.org/10.1177/0957154X221150878"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 36737877): title, all 1 author, journal, volume 34, issue 2, pages 180-195 and DOI 10.1177/0957154X221150878 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings M01-005/M01-006 (week1.md): Rosenhan 1973 is still recommended Week 1 reading, now read with this paper. The abstract is the whole claim: on records shared by Susannah Cahalan, the author concludes the 1973 study was scientific fraud. It is not a source for any claim about diagnostic labeling itself. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "historical analysis (archival records)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "diagnosis",
+          "labeling",
+          "research-integrity"
+        ],
+        "clerkshipRelevance": "Read beside Rosenhan 1973: drawing on an investigative journalist's findings and the records she shared, Scull concludes the study was a case of scientific fraud — teach Rosenhan for its influence on DSM-III, not as evidence about diagnosis.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings M01-005/M01-006 (week1.md): Rosenhan 1973 is still recommended Week 1 reading, now read with this paper. The abstract is the whole claim: on records shared by Susannah Cahalan, the author concludes the 1973 study was scientific fraud. It is not a source for any claim about diagnostic labeling itself. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (findings M01-005/M01-006)"
           }
         ]
       }
@@ -3140,6 +3190,737 @@
       }
     },
     {
+      "id": "cipriani-2018-antidepressant-nma",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Comparative efficacy and acceptability of 21 antidepressant drugs for the acute treatment of adults with major depressive disorder: a systematic review and network meta-analysis",
+        "authors": [
+          {
+            "family": "Cipriani",
+            "given": "A"
+          },
+          {
+            "family": "Furukawa",
+            "given": "TA"
+          },
+          {
+            "family": "Salanti",
+            "given": "G"
+          },
+          {
+            "family": "Chaimani",
+            "given": "A"
+          },
+          {
+            "family": "Atkinson",
+            "given": "LZ"
+          },
+          {
+            "family": "Ogawa",
+            "given": "Y"
+          },
+          {
+            "family": "Leucht",
+            "given": "S"
+          },
+          {
+            "family": "Ruhe",
+            "given": "HG"
+          },
+          {
+            "family": "Turner",
+            "given": "EH"
+          },
+          {
+            "family": "Higgins",
+            "given": "JPT"
+          },
+          {
+            "family": "Egger",
+            "given": "M"
+          },
+          {
+            "family": "Takeshima",
+            "given": "N"
+          },
+          {
+            "family": "Hayasaka",
+            "given": "Y"
+          },
+          {
+            "family": "Imai",
+            "given": "H"
+          },
+          {
+            "family": "Shinohara",
+            "given": "K"
+          },
+          {
+            "family": "Tajika",
+            "given": "A"
+          },
+          {
+            "family": "Ioannidis",
+            "given": "JPA"
+          },
+          {
+            "family": "Geddes",
+            "given": "JR"
+          }
+        ],
+        "organization": "",
+        "year": 2018,
+        "journal": "Lancet",
+        "volume": "391",
+        "pages": "1357-1366",
+        "doi": "10.1016/S0140-6736(17)32802-7",
+        "pmid": "29477251",
+        "url": "https://doi.org/10.1016/S0140-6736(17)32802-7"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 29477251): title, all 18 authors, journal, volume 391, issue 10128, pages 1357-1366 and DOI 10.1016/S0140-6736(17)32802-7 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings R05-006 (canon_200.md: the summary dropped amitriptyline, paroxetine and vortioxetine from the paper's own lists) and M08-021 (rounds_questions.md Q18: now the key paper for antidepressant class efficacy, replacing the serotonin-syndrome review). 522 trials, 116 477 participants. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / network meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "antidepressants",
+          "depression",
+          "pharmacotherapy"
+        ],
+        "clerkshipRelevance": "All 21 antidepressants beat placebo for acute adult major depression (largest odds ratio amitriptyline, smallest reboxetine); head-to-head, agomelatine, amitriptyline, escitalopram, mirtazapine, paroxetine, venlafaxine and vortioxetine were more effective than other antidepressants, on moderate to very low certainty evidence.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings R05-006 (canon_200.md: the summary dropped amitriptyline, paroxetine and vortioxetine from the paper's own lists) and M08-021 (rounds_questions.md Q18: now the key paper for antidepressant class efficacy, replacing the serotonin-syndrome review). 522 trials, 116 477 participants. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (findings R05-006/M08-021)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bridge-2007-pediatric-antidepressant-risk-benefit",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Clinical response and risk for reported suicidal ideation and suicide attempts in pediatric antidepressant treatment: a meta-analysis of randomized controlled trials",
+        "authors": [
+          {
+            "family": "Bridge",
+            "given": "JA"
+          },
+          {
+            "family": "Iyengar",
+            "given": "S"
+          },
+          {
+            "family": "Salary",
+            "given": "CB"
+          },
+          {
+            "family": "Barbe",
+            "given": "RP"
+          },
+          {
+            "family": "Birmaher",
+            "given": "B"
+          },
+          {
+            "family": "Pincus",
+            "given": "HA"
+          },
+          {
+            "family": "Ren",
+            "given": "L"
+          },
+          {
+            "family": "Brent",
+            "given": "DA"
+          }
+        ],
+        "organization": "",
+        "year": 2007,
+        "journal": "JAMA",
+        "volume": "297",
+        "pages": "1683-1696",
+        "doi": "10.1001/jama.297.15.1683",
+        "pmid": "17440145",
+        "url": "https://doi.org/10.1001/jama.297.15.1683"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 17440145): title, all 8 authors, journal, volume 297, issue 15, pages 1683-1696 and DOI 10.1001/jama.297.15.1683 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M06-017 (psychopharm_primer.md): the page's '~110 treated' and 'NNT near 10' carried no study identity and sat under the through-age-24 warning. They come from this pediatric meta-analysis: MDD response NNT 10 (95% CI 7-15); MDD suicidal ideation/attempt risk difference 0.9% (95% CI -0.1% to 1.9%, not statistically significant within the indication; 1/0.009 is about 110); all indications 0.7% (NNH 143). Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "meta-analysis of randomized controlled trials (pediatric)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "antidepressants",
+          "suicidality",
+          "pediatric",
+          "black-box-warning"
+        ],
+        "clerkshipRelevance": "The pediatric trial base behind the antidepressant suicidality warning: in MDD, response NNT 10 against a non-significant 0.9% risk difference in suicidal ideation/attempt; across all indications 0.7% (NNH 143). These are trials in participants younger than 19, not the young-adult extension of the warning.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M06-017 (psychopharm_primer.md): the page's '~110 treated' and 'NNT near 10' carried no study identity and sat under the through-age-24 warning. They come from this pediatric meta-analysis: MDD response NNT 10 (95% CI 7-15); MDD suicidal ideation/attempt risk difference 0.9% (95% CI -0.1% to 1.9%, not statistically significant within the indication; 1/0.009 is about 110); all indications 0.7% (NNH 143). Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding M06-017)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "jonas-2014-aud-pharmacotherapy",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Pharmacotherapy for adults with alcohol use disorders in outpatient settings: a systematic review and meta-analysis",
+        "authors": [
+          {
+            "family": "Jonas",
+            "given": "DE"
+          },
+          {
+            "family": "Amick",
+            "given": "HR"
+          },
+          {
+            "family": "Feltner",
+            "given": "C"
+          },
+          {
+            "family": "Bobashev",
+            "given": "G"
+          },
+          {
+            "family": "Thomas",
+            "given": "K"
+          },
+          {
+            "family": "Wines",
+            "given": "R"
+          },
+          {
+            "family": "Kim",
+            "given": "MM"
+          },
+          {
+            "family": "Shanahan",
+            "given": "E"
+          },
+          {
+            "family": "Gass",
+            "given": "CE"
+          },
+          {
+            "family": "Rowe",
+            "given": "CJ"
+          },
+          {
+            "family": "Garbutt",
+            "given": "JC"
+          }
+        ],
+        "organization": "",
+        "year": 2014,
+        "journal": "JAMA",
+        "volume": "311",
+        "pages": "1889-1900",
+        "doi": "10.1001/jama.2014.3628",
+        "pmid": "24825644",
+        "url": "https://doi.org/10.1001/jama.2014.3628"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 24825644): title, all 11 authors, journal, volume 311, issue 18, pages 1889-1900 and DOI 10.1001/jama.2014.3628 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding R05-009 (canon_200.md): 'Naltrexone NNT=12; acamprosate NNT=12' read as equivalent drugs on one outcome. 122 RCTs and 1 cohort study, 22,803 participants; head-to-head, no significant difference between acamprosate and naltrexone. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "alcohol-use-disorder",
+          "pharmacotherapy"
+        ],
+        "clerkshipRelevance": "AUD pharmacotherapy: acamprosate NNT 12 to prevent return to any drinking; oral naltrexone NNT 12 to prevent return to heavy drinking but NNT 20 for any drinking — two NNTs of 12 that measure different outcomes.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding R05-009 (canon_200.md): 'Naltrexone NNT=12; acamprosate NNT=12' read as equivalent drugs on one outcome. 122 RCTs and 1 cohort study, 22,803 participants; head-to-head, no significant difference between acamprosate and naltrexone. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding R05-009)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "chawla-2022-panic-disorder-nma",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Drug treatment for panic disorder with or without agoraphobia: systematic review and network meta-analysis of randomised controlled trials",
+        "authors": [
+          {
+            "family": "Chawla",
+            "given": "N"
+          },
+          {
+            "family": "Anothaisintawee",
+            "given": "T"
+          },
+          {
+            "family": "Charoenrungrueangchai",
+            "given": "K"
+          },
+          {
+            "family": "Thaipisuttikul",
+            "given": "P"
+          },
+          {
+            "family": "McKay",
+            "given": "GJ"
+          },
+          {
+            "family": "Attia",
+            "given": "J"
+          },
+          {
+            "family": "Thakkinstian",
+            "given": "A"
+          }
+        ],
+        "organization": "",
+        "year": 2022,
+        "journal": "BMJ",
+        "volume": "376",
+        "pages": "e066084",
+        "doi": "10.1136/bmj-2021-066084",
+        "pmid": "35045991",
+        "url": "https://doi.org/10.1136/bmj-2021-066084"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 35045991): title, all 7 authors, journal, volume 376, pages e066084 and DOI 10.1136/bmj-2021-066084 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding R03-002 (cotw_20260810_panic_res.md): the page said SSRIs win 'over the longer horizon'. The abstract ranks benzodiazepines first for remission and favours SSRIs only on the combined remission-and-adverse-event cluster ranking; the full text (PMC8767458, Discussion) states that most studies were of short duration (<12 weeks) and that the review focused on short-term outcomes. 87 studies, 12 800 participants. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / network meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "panic-disorder",
+          "anxiety",
+          "pharmacotherapy"
+        ],
+        "clerkshipRelevance": "Panic disorder drug NMA: on remission alone benzodiazepines ranked first (SUCRA 84.5%); SSRIs came out ahead only on the ranking that combined remission with adverse events. Most trials were under 12 weeks, so it says nothing about a longer horizon.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding R03-002 (cotw_20260810_panic_res.md): the page said SSRIs win 'over the longer horizon'. The abstract ranks benzodiazepines first for remission and favours SSRIs only on the combined remission-and-adverse-event cluster ranking; the full text (PMC8767458, Discussion) states that most studies were of short duration (<12 weeks) and that the review focused on short-term outcomes. 87 studies, 12 800 participants. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding R03-002)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "gomes-2023-canmat-adherence-readmission",
+      "type": "primary-study",
+      "citation": {
+        "title": "Does the Ranking Matter? A Retrospective Cohort Study Investigating the Impact of the 2018 CANMAT and ISBD Guidelines for the Management of Patients with Bipolar Disorder Treatment Recommendations for Acute Mania on Rehospitalization Rates",
+        "authors": [
+          {
+            "family": "Gomes",
+            "given": "FA"
+          },
+          {
+            "family": "Dumay",
+            "given": "H"
+          },
+          {
+            "family": "Fagen",
+            "given": "J"
+          },
+          {
+            "family": "Palma",
+            "given": "N"
+          },
+          {
+            "family": "Milev",
+            "given": "R"
+          },
+          {
+            "family": "Brietzke",
+            "given": "E"
+          }
+        ],
+        "organization": "",
+        "year": 2023,
+        "journal": "Can J Psychiatry",
+        "volume": "68",
+        "pages": "605-612",
+        "doi": "10.1177/07067437231156235",
+        "pmid": "37551100",
+        "url": "https://doi.org/10.1177/07067437231156235"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 37551100): title, all 6 authors, journal, volume 68, issue 8, pages 605-612 and DOI 10.1177/07067437231156235 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M12-010 (cotw_20260720_bipolar_ms3.md): the page compared first-line regimens with 'no or non-recommended treatment'. Every comparison in the abstract is against no treatment; noncompliant regimens also reduced any readmission (OR 0.414). Kingston General Hospital, 2018-2021. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "retrospective cohort study (single centre)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "bipolar",
+          "mania",
+          "readmission",
+          "guidelines"
+        ],
+        "clerkshipRelevance": "211 admissions for acute mania: only CANMAT/ISBD first-line regimens were associated with lower 30-day readmission compared with no treatment (OR 0.209). The comparator is no treatment — noncompliant regimens also reduced any readmission.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M12-010 (cotw_20260720_bipolar_ms3.md): the page compared first-line regimens with 'no or non-recommended treatment'. Every comparison in the abstract is against no treatment; noncompliant regimens also reduced any readmission (OR 0.414). Kingston General Hospital, 2018-2021. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding M12-010)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "dunkley-2003-hunter-criteria",
+      "type": "primary-study",
+      "citation": {
+        "title": "The Hunter Serotonin Toxicity Criteria: simple and accurate diagnostic decision rules for serotonin toxicity",
+        "authors": [
+          {
+            "family": "Dunkley",
+            "given": "EJ"
+          },
+          {
+            "family": "Isbister",
+            "given": "GK"
+          },
+          {
+            "family": "Sibbritt",
+            "given": "D"
+          },
+          {
+            "family": "Dawson",
+            "given": "AH"
+          },
+          {
+            "family": "Whyte",
+            "given": "IM"
+          }
+        ],
+        "organization": "",
+        "year": 2003,
+        "journal": "QJM",
+        "volume": "96",
+        "pages": "635-642",
+        "doi": "10.1093/qjmed/hcg109",
+        "pmid": "12925718",
+        "url": "https://doi.org/10.1093/qjmed/hcg109"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 12925718): title, all 5 authors, journal, volume 96, issue 9, pages 635-642 and DOI 10.1093/qjmed/hcg109 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding R02-005 (cotw_20260914_ssnms_res.md): reference 8 (the Hunter criteria) was listed but never cited, and the page gave no diagnostic rule for serotonin toxicity. Derived from 2222 serotonergic overdose admissions to the Hunter Area Toxicology Service; sensitivity 84% vs 75% and specificity 97% vs 96% against Sternbach. Not a management source. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "diagnostic decision-rule derivation (retrospective analysis of prospectively collected data)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "serotonin-syndrome",
+          "toxidromes",
+          "diagnosis"
+        ],
+        "clerkshipRelevance": "The Hunter criteria: serotonin toxicity diagnosed on clonus (inducible, spontaneous or ocular) with agitation, diaphoresis, tremor and hyperreflexia, plus hypertonicity and temperature above 38 degrees C in life-threatening cases; simpler, more sensitive and more specific than Sternbach's criteria.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding R02-005 (cotw_20260914_ssnms_res.md): reference 8 (the Hunter criteria) was listed but never cited, and the page gave no diagnostic rule for serotonin toxicity. Derived from 2222 serotonergic overdose admissions to the Hunter Area Toxicology Service; sensitivity 84% vs 75% and specificity 97% vs 96% against Sternbach. Not a management source. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding R02-005)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sullivan-2020-ketamine-agitation-meta",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Ketamine for emergency sedation of agitated patients: A systematic review and meta-analysis",
+        "authors": [
+          {
+            "family": "Sullivan",
+            "given": "N"
+          },
+          {
+            "family": "Chen",
+            "given": "C"
+          },
+          {
+            "family": "Siegel",
+            "given": "R"
+          },
+          {
+            "family": "Ma",
+            "given": "Y"
+          },
+          {
+            "family": "Pourmand",
+            "given": "A"
+          },
+          {
+            "family": "Montano",
+            "given": "N"
+          },
+          {
+            "family": "Meltzer",
+            "given": "A"
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "Am J Emerg Med",
+        "volume": "38",
+        "pages": "655-661",
+        "doi": "10.1016/j.ajem.2019.11.007",
+        "pmid": "31902698",
+        "url": "https://doi.org/10.1016/j.ajem.2019.11.007"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 31902698): title, all 7 authors, journal, volume 38, issue 3, pages 655-661 and DOI 10.1016/j.ajem.2019.11.007 match; PubMed ErratumIn PMID 32507571 (Am J Emerg Med 2020;38(8):1702)",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding S1-013 (cotw_20260923_agitation_res.md): the page credited this meta-analysis with a ~5-minute onset faster than comparators. It pooled sedation (85%) and airway management (20%); comparisons with controls were not significant (sedation RR 1.95, 95% CI 0.47-8.1). The onset figure belongs to individual studies such as Cole 2016 (cole-2016-ketamine-vs-haloperidol). PubMed links a corrigendum (PMID 32507571, Am J Emerg Med 2020;38(8):1702); its content was not retrieved, and the figures used here are the ones the PubMed abstract carries. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "corrected",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "agitation",
+          "ketamine",
+          "emergency-psychiatry"
+        ],
+        "clerkshipRelevance": "Ketamine for ED and prehospital agitation: an estimated 85% sedated and 20% needed airway management across 13 studies; in the four studies with a comparator, differences in sedation and intubation were not significant. It reports no time to sedation.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding S1-013 (cotw_20260923_agitation_res.md): the page credited this meta-analysis with a ~5-minute onset faster than comparators. It pooled sedation (85%) and airway management (20%); comparisons with controls were not significant (sedation RR 1.95, 95% CI 0.47-8.1). The onset figure belongs to individual studies such as Cole 2016 (cole-2016-ketamine-vs-haloperidol). PubMed links a corrigendum (PMID 32507571, Am J Emerg Med 2020;38(8):1702); its content was not retrieved, and the figures used here are the ones the PubMed abstract carries. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding S1-013)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cole-2016-ketamine-vs-haloperidol",
+      "type": "primary-study",
+      "citation": {
+        "title": "A prospective study of ketamine versus haloperidol for severe prehospital agitation",
+        "authors": [
+          {
+            "family": "Cole",
+            "given": "JB"
+          },
+          {
+            "family": "Moore",
+            "given": "JC"
+          },
+          {
+            "family": "Nystrom",
+            "given": "PC"
+          },
+          {
+            "family": "Orozco",
+            "given": "BS"
+          },
+          {
+            "family": "Stellpflug",
+            "given": "SJ"
+          },
+          {
+            "family": "Kornas",
+            "given": "RL"
+          },
+          {
+            "family": "Fryza",
+            "given": "BJ"
+          },
+          {
+            "family": "Steinberg",
+            "given": "LW"
+          },
+          {
+            "family": "O'Brien-Lambert",
+            "given": "A"
+          },
+          {
+            "family": "Bache-Wiig",
+            "given": "P"
+          },
+          {
+            "family": "Engebretsen",
+            "given": "KM"
+          },
+          {
+            "family": "Ho",
+            "given": "JD"
+          }
+        ],
+        "organization": "",
+        "year": 2016,
+        "journal": "Clin Toxicol (Phila)",
+        "volume": "54",
+        "pages": "556-562",
+        "doi": "10.1080/15563650.2016.1177652",
+        "pmid": "27102743",
+        "url": "https://doi.org/10.1080/15563650.2016.1177652"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 27102743): title, all 12 authors, journal, volume 54, issue 7, pages 556-562 and DOI 10.1080/15563650.2016.1177652 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding S1-013 (cotw_20260923_agitation_res.md): the source of the ~5-minute ketamine onset the page had attributed to the Sullivan 2020 meta-analysis. Two consecutive 6-month periods in one urban EMS system (64 ketamine, 82 haloperidol), open label; not randomized. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "prospective open-label comparison (prehospital)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "agitation",
+          "ketamine",
+          "emergency-psychiatry"
+        ],
+        "clerkshipRelevance": "Prehospital ketamine against haloperidol for severe agitation: median time to adequate sedation 5 vs 17 minutes, at the cost of more complications and far more intubation (39% vs 4%).",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding S1-013 (cotw_20260923_agitation_res.md): the source of the ~5-minute ketamine onset the page had attributed to the Sullivan 2020 meta-analysis. Two consecutive 6-month periods in one urban EMS system (64 ketamine, 82 haloperidol), open label; not randomized. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding S1-013)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "schonnop-2022-missed-delirium-ed",
+      "type": "primary-study",
+      "citation": {
+        "title": "Understanding why delirium is often missed in older emergency department patients: a qualitative descriptive study",
+        "authors": [
+          {
+            "family": "Schonnop",
+            "given": "R"
+          },
+          {
+            "family": "Dainty",
+            "given": "KN"
+          },
+          {
+            "family": "McLeod",
+            "given": "SL"
+          },
+          {
+            "family": "Melady",
+            "given": "D"
+          },
+          {
+            "family": "Lee",
+            "given": "JS"
+          }
+        ],
+        "organization": "",
+        "year": 2022,
+        "journal": "CJEM",
+        "volume": "24",
+        "pages": "820-831",
+        "doi": "10.1007/s43678-022-00371-4",
+        "pmid": "36138324",
+        "url": "https://doi.org/10.1007/s43678-022-00371-4"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 36138324): title, all 5 authors, journal, volume 24, issue 8, pages 820-831 and DOI 10.1007/s43678-022-00371-4 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding S1-014 (cotw_20260923_agitation_res.md): the page credited this study with miss patterns (hypoactive presentations, attribution to dementia, absent collateral) it does not report. Its four themes are system and attitude themes from 26 ED physicians and nurses at two Toronto academic EDs. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "qualitative descriptive study",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "delirium",
+          "emergency-department",
+          "recognition"
+        ],
+        "clerkshipRelevance": "Why ED clinicians miss delirium, in their own words: inconsistent screening-tool use, assessment seen as time-consuming and low priority, unclear ownership of recognition, and a shallow understanding of delirium's consequences. It does not report which clinical presentations are missed.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding S1-014 (cotw_20260923_agitation_res.md): the page credited this study with miss patterns (hypoactive presentations, attribution to dementia, absent collateral) it does not report. Its four themes are system and attitude themes from 26 ED physicians and nurses at two Toronto academic EDs. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding S1-014)"
+          }
+        ]
+      }
+    },
+    {
       "id": "fluckiger-2018",
       "type": "systematic-review",
       "citation": {
@@ -3834,6 +4615,91 @@
             "date": "2026-08-21",
             "note": "Promoted from therapy_library.staging.json (WP-T2). Verification: epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama Annotation is AI-drafted from the abstract and awaits faculty signature (facultyReviewStatus: pending).",
             "reason": "therapy-curriculum WP-T2 promotion (Taplinger request #5; closes review finding F19 for the therapy domain)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "uphoff-2020-behavioural-activation",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Behavioural activation therapy for depression in adults",
+        "authors": [
+          {
+            "family": "Uphoff",
+            "given": "E"
+          },
+          {
+            "family": "Ekers",
+            "given": "D"
+          },
+          {
+            "family": "Robertson",
+            "given": "L"
+          },
+          {
+            "family": "Dawson",
+            "given": "S"
+          },
+          {
+            "family": "Sanger",
+            "given": "E"
+          },
+          {
+            "family": "South",
+            "given": "E"
+          },
+          {
+            "family": "Samaan",
+            "given": "Z"
+          },
+          {
+            "family": "Richards",
+            "given": "D"
+          },
+          {
+            "family": "Meader",
+            "given": "N"
+          },
+          {
+            "family": "Churchill",
+            "given": "R"
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "Cochrane Database Syst Rev",
+        "volume": "7",
+        "pages": "CD013305",
+        "doi": "10.1002/14651858.CD013305.pub2",
+        "pmid": "32628293",
+        "url": "https://doi.org/10.1002/14651858.CD013305.pub2"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 32628293): title, all 10 authors, journal, volume 7, issue 7, pages CD013305 and DOI 10.1002/14651858.CD013305.pub2 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M07-002 (brief_psychotherapy.md) and its rp-brief-psych sibling: the page credited this review with an inpatient-fit claim, but its selection criteria excluded RCTs conducted in inpatient settings. BA vs usual care RR 1.40 (1.10-1.78; 7 RCTs), not robust to worst-case/ITT sensitivity analyses; no evidence of a difference from CBT (RR 0.99). PubMed records it as an update of the protocol (CD013305). Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Cochrane systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "behavioral-activation",
+          "therapy"
+        ],
+        "clerkshipRelevance": "Behavioural activation for adult depression: greater short-term efficacy than usual care on moderate-certainty evidence that did not survive worst-case or intention-to-treat sensitivity analyses, and no evidence of a difference from CBT — inpatient RCTs were excluded, so any inpatient use is extrapolation.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M07-002 (brief_psychotherapy.md) and its rp-brief-psych sibling: the page credited this review with an inpatient-fit claim, but its selection criteria excluded RCTs conducted in inpatient settings. BA vs usual care RR 1.40 (1.10-1.78; 7 RCTs), not robust to worst-case/ITT sensitivity analyses; no evidence of a difference from CBT (RR 0.99). PubMed records it as an update of the protocol (CD013305). Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding M07-002)"
           }
         ]
       }
@@ -4979,6 +5845,179 @@
             "date": "2026-08-21",
             "note": "Promoted from therapy_library.staging.json (WP-T2). Verification: epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama Annotation is AI-drafted from the abstract and awaits faculty signature (facultyReviewStatus: pending).",
             "reason": "therapy-curriculum WP-T2 promotion (Taplinger request #5; closes review finding F19 for the therapy domain)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "miklowitz-2021-bipolar-psychotherapy-nma",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Adjunctive Psychotherapy for Bipolar Disorder: A Systematic Review and Component Network Meta-analysis",
+        "authors": [
+          {
+            "family": "Miklowitz",
+            "given": "DJ"
+          },
+          {
+            "family": "Efthimiou",
+            "given": "O"
+          },
+          {
+            "family": "Furukawa",
+            "given": "TA"
+          },
+          {
+            "family": "Scott",
+            "given": "J"
+          },
+          {
+            "family": "McLaren",
+            "given": "R"
+          },
+          {
+            "family": "Geddes",
+            "given": "JR"
+          },
+          {
+            "family": "Cipriani",
+            "given": "A"
+          }
+        ],
+        "organization": "",
+        "year": 2021,
+        "journal": "JAMA Psychiatry",
+        "volume": "78",
+        "pages": "141-150",
+        "doi": "10.1001/jamapsychiatry.2020.2993",
+        "pmid": "33052390",
+        "url": "https://doi.org/10.1001/jamapsychiatry.2020.2993"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 33052390): title, all 7 authors, journal, volume 78, issue 2, pages 141-150 and DOI 10.1001/jamapsychiatry.2020.2993 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M07-011 (family_modalities.md): the page read OR 0.12 as a result against control and called a confidence interval crossing zero 'helped stabilize'. OR 0.12 compares family/group-format psychoeducation with the same strategies delivered individually; retention OR 0.46 is against standard psychoeducation; family/conjoint therapy SMD -0.46 (95% CI -1.01 to 0.08) was reported 'with less certainty'. 39 RCTs, 3863 participants. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / component network meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "bipolar",
+          "family",
+          "psychoeducation",
+          "therapy"
+        ],
+        "clerkshipRelevance": "Adjunctive psychotherapy for bipolar disorder: manualized treatments lowered recurrence against control (OR 0.56); family or group-format psychoeducation beat the same strategies delivered individually (OR 0.12, a component comparison); family/conjoint therapy improved retention against standard psychoeducation (OR 0.46), with a less certain effect on depressive symptoms.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M07-011 (family_modalities.md): the page read OR 0.12 as a result against control and called a confidence interval crossing zero 'helped stabilize'. OR 0.12 compares family/group-format psychoeducation with the same strategies delivered individually; retention OR 0.46 is against standard psychoeducation; family/conjoint therapy SMD -0.46 (95% CI -1.01 to 0.08) was reported 'with less certainty'. 39 RCTs, 3863 participants. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding M07-011)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "haselden-2019-family-involvement-followup",
+      "type": "primary-study",
+      "citation": {
+        "title": "Family Involvement in Psychiatric Hospitalizations: Associations With Discharge Planning and Prompt Follow-Up Care",
+        "authors": [
+          {
+            "family": "Haselden",
+            "given": "M"
+          },
+          {
+            "family": "Corbeil",
+            "given": "T"
+          },
+          {
+            "family": "Tang",
+            "given": "F"
+          },
+          {
+            "family": "Olfson",
+            "given": "M"
+          },
+          {
+            "family": "Dixon",
+            "given": "LB"
+          },
+          {
+            "family": "Essock",
+            "given": "SM"
+          },
+          {
+            "family": "Wall",
+            "given": "MM"
+          },
+          {
+            "family": "Radigan",
+            "given": "M"
+          },
+          {
+            "family": "Frimpong",
+            "given": "E"
+          },
+          {
+            "family": "Wang",
+            "given": "R"
+          },
+          {
+            "family": "Lamberti",
+            "given": "S"
+          },
+          {
+            "family": "Schneider",
+            "given": "M"
+          },
+          {
+            "family": "Smith",
+            "given": "TE"
+          }
+        ],
+        "organization": "",
+        "year": 2019,
+        "journal": "Psychiatr Serv",
+        "volume": "70",
+        "pages": "860-866",
+        "doi": "10.1176/appi.ps.201900028",
+        "pmid": "31310186",
+        "url": "https://doi.org/10.1176/appi.ps.201900028"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 31310186): title, all 13 authors, journal, volume 70, issue 10, pages 860-866 and DOI 10.1176/appi.ps.201900028 match; PubMed ErratumIn PMID 31474217 (Psychiatr Serv 2019;70(9):792)",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M07-009 (exp_family.md): the page's ~50% 7-day follow-up figure matches this single NY Medicaid sample (96 of 179, 53%), which the page now names. Also the source behind family_modalities.md's 'family involvement nearly triples the odds of 7-day follow-up' (adjusted OR 2.79, 95% CI 1.28-6.08). PubMed links an erratum (PMID 31474217, 'Correction to Haselden et al.', Psychiatr Serv 2019;70(9):792); its content was not retrieved, and the figures used here are the ones the PubMed abstract carries. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "retrospective medical-record and claims study (two hospitals, Medicaid)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "corrected",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "family",
+          "discharge",
+          "follow-up"
+        ],
+        "clerkshipRelevance": "In 179 New York Medicaid inpatients with serious mental illness, 53% attended outpatient care within 7 days of discharge, and family involvement with inpatient staff was associated with attending by 7 days (OR 2.79) — one sample, not a national rate.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M07-009 (exp_family.md): the page's ~50% 7-day follow-up figure matches this single NY Medicaid sample (96 of 179, 53%), which the page now names. Also the source behind family_modalities.md's 'family involvement nearly triples the odds of 7-day follow-up' (adjusted OR 2.79, 95% CI 1.28-6.08). PubMed links an erratum (PMID 31474217, 'Correction to Haselden et al.', Psychiatr Serv 2019;70(9):792); its content was not retrieved, and the figures used here are the ones the PubMed abstract carries. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding M07-009)"
           }
         ]
       }
@@ -6145,7 +7184,7 @@
           "practice-inpatient",
           "therapy"
         ],
-        "clerkshipRelevance": "Psychoeducation in schizophrenia: NNT ~5 readmission, ~9 relapse — strongest single inpatient psychological intervention.",
+        "clerkshipRelevance": "Psychoeducation in schizophrenia: relapse NNT ~9 and readmission NNT ~5 (the latter from 206 participants), in hospital-based studies of limited quality whose authors expect the true effect is smaller.",
         "noteHistory": [
           {
             "date": "2026-08-21",
@@ -6396,48 +7435,84 @@
       }
     },
     {
-      "id": "sall-2019",
+      "id": "brenner-2025-va-dod-suicide-synopsis",
       "type": "guideline",
       "citation": {
-        "title": "Assessment and Management of Patients at Risk for Suicide: Synopsis of the 2019 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guidelines",
+        "title": "Assessment and Management of Patients at Risk for Suicide: Synopsis of the 2024 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guidelines",
         "authors": [
+          {
+            "family": "Brenner",
+            "given": "LA"
+          },
+          {
+            "family": "Capaldi",
+            "given": "V"
+          },
+          {
+            "family": "Constans",
+            "given": "J"
+          },
+          {
+            "family": "Dobscha",
+            "given": "S"
+          },
+          {
+            "family": "Fuller",
+            "given": "M"
+          },
+          {
+            "family": "Matarazzo",
+            "given": "B"
+          },
+          {
+            "family": "McGraw",
+            "given": "K"
+          },
+          {
+            "family": "Richter",
+            "given": "K"
+          },
           {
             "family": "Sall",
             "given": "J"
           },
           {
-            "family": "Brenner",
-            "given": "L"
+            "family": "Smolenski",
+            "given": "D"
           },
           {
-            "family": "Millikan",
-            "given": "Bell AM"
+            "family": "Williams",
+            "given": "S"
           },
           {
-            "family": "Colston",
-            "given": "MJ"
+            "family": "Davis-Arnold",
+            "given": "S"
+          },
+          {
+            "family": "Bahraini",
+            "given": "N"
           }
         ],
-        "organization": "",
-        "year": 2019,
+        "organization": "U.S. Department of Veterans Affairs / Department of Defense",
+        "year": 2025,
         "journal": "Ann Intern Med",
-        "volume": "171",
-        "pages": "343-353",
-        "doi": "10.7326/M19-0687",
-        "pmid": "31450237",
-        "url": "https://doi.org/10.7326/M19-0687"
+        "volume": "178",
+        "pages": "416-425",
+        "doi": "10.7326/ANNALS-24-01938",
+        "pmid": "39903866",
+        "url": "https://doi.org/10.7326/ANNALS-24-01938"
       },
       "identity": {
         "status": "verified",
-        "source": "scholar-sidekick canonical pass (PubMed/Crossref identity, Retraction Watch, Unpaywall)",
-        "verifiedAt": "2026-08-21",
-        "note": "Promoted from therapy_library.staging.json (WP-T2). Verification: epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama Annotation is AI-drafted from the abstract and awaits faculty signature (facultyReviewStatus: pending)."
+        "source": "PubMed efetch (PMID 39903866): title, all 13 authors in order (Brenner LA first, Bahraini N last), journal, volume 178, issue 3, pages 416-425 and DOI 10.7326/ANNALS-24-01938 match; no erratum or retraction linked",
+        "verifiedAt": "2026-09-24",
+        "note": "Replaces the registry entry for the 2019 VA/DoD suicide-risk guideline synopsis (Sall J et al., Ann Intern Med 2019;171:343-353, PMID 31450237), whose guideline the 2024 CPG updated (peer-review finding E1-001; the 2024 CPG itself is va-dod-suicide-cpg-2024). Abstract: insufficient evidence for or against suicide risk screening programs, validated tools to identify higher-risk populations, CBT for patients with a history of suicidal behavior or self-directed violence, periodic communications after a suicide attempt, and a role for clozapine (schizophrenia) and ketamine infusion (major depression). Full 2024 CPG (healthquality.va.gov, April 2024), checked for the claim the 2019 entry carried: Recommendation 7 finds insufficient evidence for or against crisis response planning or the Safety Planning Intervention to reduce suicide attempts (low-quality evidence), while the routine-care section describes SPI as consistent with the VA and DoD standard of care; the CPG text makes no statement about no-suicide contracts. No page cites this id or cited the old one; therapy_on_the_unit_inpatient_teaching.md reference 8 cites the 2019 synopsis by text for 'no-suicide contracts are obsolete', which the 2024 guideline does not address, so it was left on the 2019 citation for faculty to decide. The old row's faculty review status does not carry over. Annotation is AI-drafted and awaits faculty signature."
       },
-      "requiredAccess": "metadata",
+      "requiredAccess": "abstract",
       "governance": {
-        "evidenceLevel": "clinical practice guideline synopsis",
-        "facultyReviewStatus": "reviewed",
-        "lastReviewed": "2026-08-23",
+        "evidenceLevel": "clinical practice guideline (synopsis)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
         "reviewCadence": "annual",
         "supersededBy": [],
         "correctionStatus": "none-known",
@@ -6446,12 +7521,12 @@
           "practice-inpatient",
           "therapy"
         ],
-        "clerkshipRelevance": "VA/DoD guideline synopsis: SPI standard of care; no-suicide contracts out.",
+        "clerkshipRelevance": "Synopsis of the current (2024) VA/DoD suicide-risk guideline, which replaced the 2019 edition: insufficient evidence for or against screening programs but validated tools for higher-risk groups, CBT-based psychotherapy after suicidal behavior, periodic caring communications after an attempt, and a role for clozapine (schizophrenia) and ketamine infusion (major depression). The full CPG keeps the Safety Planning Intervention as standard of care while rating its evidence for preventing attempts insufficient.",
         "noteHistory": [
           {
-            "date": "2026-08-21",
-            "note": "Promoted from therapy_library.staging.json (WP-T2). Verification: epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama Annotation is AI-drafted from the abstract and awaits faculty signature (facultyReviewStatus: pending).",
-            "reason": "therapy-curriculum WP-T2 promotion (Taplinger request #5; closes review finding F19 for the therapy domain)"
+            "date": "2026-09-24",
+            "note": "Replaces the registry entry for the 2019 VA/DoD suicide-risk guideline synopsis (Sall J et al., Ann Intern Med 2019;171:343-353, PMID 31450237), whose guideline the 2024 CPG updated (peer-review finding E1-001; the 2024 CPG itself is va-dod-suicide-cpg-2024). Abstract: insufficient evidence for or against suicide risk screening programs, validated tools to identify higher-risk populations, CBT for patients with a history of suicidal behavior or self-directed violence, periodic communications after a suicide attempt, and a role for clozapine (schizophrenia) and ketamine infusion (major depression). Full 2024 CPG (healthquality.va.gov, April 2024), checked for the claim the 2019 entry carried: Recommendation 7 finds insufficient evidence for or against crisis response planning or the Safety Planning Intervention to reduce suicide attempts (low-quality evidence), while the routine-care section describes SPI as consistent with the VA and DoD standard of care; the CPG text makes no statement about no-suicide contracts. No page cites this id or cited the old one; therapy_on_the_unit_inpatient_teaching.md reference 8 cites the 2019 synopsis by text for 'no-suicide contracts are obsolete', which the 2024 guideline does not address, so it was left on the 2019 citation for faculty to decide. The old row's faculty review status does not carry over. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding E1-001): registry swap of the superseded 2019 VA/DoD synopsis (PMID 31450237) for the 2024 synopsis, in the same array position"
           }
         ]
       }
@@ -6602,6 +7677,228 @@
             "date": "2026-08-21",
             "note": "Promoted from therapy_library.staging.json (WP-T2). Verification: epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction: erratum noted, checkOpenAccess closed, formatCitation ama Erratum: JAMA Psychiatry, doi:10.1001/jamapsychiatry.2015.1480; paper stands. Caught by the 2026-08-21 Scholar Sidekick pass (missed by the earlier gate). Annotation is AI-drafted from the abstract and awaits faculty signature (facultyReviewStatus: pending).",
             "reason": "therapy-curriculum WP-T2 promotion (Taplinger request #5; closes review finding F19 for the therapy domain)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linehan-2006-dbt-vs-experts",
+      "type": "primary-study",
+      "citation": {
+        "title": "Two-year randomized controlled trial and follow-up of dialectical behavior therapy vs therapy by experts for suicidal behaviors and borderline personality disorder",
+        "authors": [
+          {
+            "family": "Linehan",
+            "given": "MM"
+          },
+          {
+            "family": "Comtois",
+            "given": "KA"
+          },
+          {
+            "family": "Murray",
+            "given": "AM"
+          },
+          {
+            "family": "Brown",
+            "given": "MZ"
+          },
+          {
+            "family": "Gallop",
+            "given": "RJ"
+          },
+          {
+            "family": "Heard",
+            "given": "HL"
+          },
+          {
+            "family": "Korslund",
+            "given": "KE"
+          },
+          {
+            "family": "Tutek",
+            "given": "DA"
+          },
+          {
+            "family": "Reynolds",
+            "given": "SK"
+          },
+          {
+            "family": "Lindenboim",
+            "given": "N"
+          }
+        ],
+        "organization": "",
+        "year": 2006,
+        "journal": "Arch Gen Psychiatry",
+        "volume": "63",
+        "pages": "757-766",
+        "doi": "10.1001/archpsyc.63.7.757",
+        "pmid": "16818865",
+        "url": "https://doi.org/10.1001/archpsyc.63.7.757"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 16818865): title, all 10 authors, journal, volume 63, issue 7, pages 757-766 and DOI 10.1001/archpsyc.63.7.757 match; PubMed ErratumIn: Arch Gen Psychiatry 2007;64(12):1401",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding R05-004 (canon_200.md): the canon credited this 2006 trial with establishing DBT as the first empirically validated BPD treatment. Its own context calls DBT's efficacy 'well-documented' and its conclusion says the findings replicate previous DBT studies; what it adds is that the effect cannot reasonably be attributed to general factors of expert psychotherapy. PubMed links an erratum (Arch Gen Psychiatry 2007;64(12):1401, no PMID); the paper stands. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "randomized controlled trial",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "corrected",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "bpd-dbt-gpm",
+          "suicide",
+          "therapy"
+        ],
+        "clerkshipRelevance": "DBT against community treatment by non-behavioral psychotherapy experts: DBT halved suicide attempts, which the authors read as benefit specific to DBT rather than to expert psychotherapy in general — a replication of earlier DBT trials, not the first demonstration of DBT's efficacy.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding R05-004 (canon_200.md): the canon credited this 2006 trial with establishing DBT as the first empirically validated BPD treatment. Its own context calls DBT's efficacy 'well-documented' and its conclusion says the findings replicate previous DBT studies; what it adds is that the effect cannot reasonably be attributed to general factors of expert psychotherapy. PubMed links an erratum (Arch Gen Psychiatry 2007;64(12):1401, no PMID); the paper stands. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding R05-004)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mcmain-2009-dbt-vs-gpm",
+      "type": "primary-study",
+      "citation": {
+        "title": "A randomized trial of dialectical behavior therapy versus general psychiatric management for borderline personality disorder",
+        "authors": [
+          {
+            "family": "McMain",
+            "given": "SF"
+          },
+          {
+            "family": "Links",
+            "given": "PS"
+          },
+          {
+            "family": "Gnam",
+            "given": "WH"
+          },
+          {
+            "family": "Guimond",
+            "given": "T"
+          },
+          {
+            "family": "Cardish",
+            "given": "RJ"
+          },
+          {
+            "family": "Korman",
+            "given": "L"
+          },
+          {
+            "family": "Streiner",
+            "given": "DL"
+          }
+        ],
+        "organization": "",
+        "year": 2009,
+        "journal": "Am J Psychiatry",
+        "volume": "166",
+        "pages": "1365-1374",
+        "doi": "10.1176/appi.ajp.2009.09010039",
+        "pmid": "19755574",
+        "url": "https://doi.org/10.1176/appi.ajp.2009.09010039"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 19755574): title, all 7 authors, journal, volume 166, issue 12, pages 1365-1374 and DOI 10.1176/appi.ajp.2009.09010039 match; PubMed ErratumIn: Am J Psychiatry 2010;167(10):1283",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding R02-011 (cotw_20260827_bpd_res.md): the page credited GPM's parity with DBT to a 2024 narrative review; this is the trial itself. PubMed links an erratum (Am J Psychiatry 2010;167(10):1283, no PMID); the paper stands. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "randomized controlled trial (single-blind)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "corrected",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "bpd-dbt-gpm",
+          "therapy"
+        ],
+        "clerkshipRelevance": "The principal head-to-head trial of DBT against general psychiatric management (GPM): 180 patients, 1 year of treatment, both groups improved, and no significant between-group differences on any outcome.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding R02-011 (cotw_20260827_bpd_res.md): the page credited GPM's parity with DBT to a 2024 narrative review; this is the trial itself. PubMed links an erratum (Am J Psychiatry 2010;167(10):1283, no PMID); the paper stands. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding R02-011)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hatcher-2011-pst-self-harm",
+      "type": "primary-study",
+      "citation": {
+        "title": "Problem-solving therapy for people who present to hospital with self-harm: Zelen randomised controlled trial",
+        "authors": [
+          {
+            "family": "Hatcher",
+            "given": "S"
+          },
+          {
+            "family": "Sharon",
+            "given": "C"
+          },
+          {
+            "family": "Parag",
+            "given": "V"
+          },
+          {
+            "family": "Collins",
+            "given": "N"
+          }
+        ],
+        "organization": "",
+        "year": 2011,
+        "journal": "Br J Psychiatry",
+        "volume": "199",
+        "pages": "310-316",
+        "doi": "10.1192/bjp.bp.110.090126",
+        "pmid": "21816868",
+        "url": "https://doi.org/10.1192/bjp.bp.110.090126"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 21816868): title, all 4 authors, journal, volume 199, issue 4, pages 310-316 and DOI 10.1192/bjp.bp.110.090126 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M07-001 (brief_psychotherapy.md): the page gave the repeat-self-harm result (NNT 12) as the trial's result. The intention-to-treat comparison of all episodes was null (13.4% vs 14.1%, P = 0.79); first-time and repeat presentations were separate a priori primary outcomes, and only the repeat group differed. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "randomised controlled trial (Zelen design)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "self-harm",
+          "problem-solving-therapy",
+          "inpatient-brief",
+          "therapy"
+        ],
+        "clerkshipRelevance": "Problem-solving therapy after hospital-presenting self-harm: no effect on 12-month re-presentation in the trial overall (13.4% vs 14.1%); benefit only where the index episode was repeat self-harm (13.5% vs 22.1%, NNT 12). The authors do not recommend it for everyone who presents with self-harm.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M07-001 (brief_psychotherapy.md): the page gave the repeat-self-harm result (NNT 12) as the trial's result. The intention-to-treat comparison of all episodes was null (13.4% vs 14.1%, P = 0.79); first-time and repeat presentations were separate a priori primary outcomes, and only the repeat group differed. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding M07-001)"
           }
         ]
       }
@@ -7075,6 +8372,223 @@
             "date": "2026-08-24",
             "note": "Supports first-week and first-month rates specifically. The authors report evidence of publication bias toward studies reporting higher post-discharge rates, and I²=88–90; do not present these as precise point estimates.",
             "reason": "Added by the post-discharge citation correction: reference 5 on therapy_on_the_unit.md cited a viewpoint (modini-large-2026) for a time-course statistic it does not report."
+          }
+        ]
+      }
+    },
+    {
+      "id": "doupnik-2020-acute-care-suicide-prevention",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Association of Suicide Prevention Interventions With Subsequent Suicide Attempts, Linkage to Follow-up Care, and Depression Symptoms for Acute Care Settings: A Systematic Review and Meta-analysis",
+        "authors": [
+          {
+            "family": "Doupnik",
+            "given": "SK"
+          },
+          {
+            "family": "Rudd",
+            "given": "B"
+          },
+          {
+            "family": "Schmutte",
+            "given": "T"
+          },
+          {
+            "family": "Worsley",
+            "given": "D"
+          },
+          {
+            "family": "Bowden",
+            "given": "CF"
+          },
+          {
+            "family": "McCarthy",
+            "given": "E"
+          },
+          {
+            "family": "Eggan",
+            "given": "E"
+          },
+          {
+            "family": "Bridge",
+            "given": "JA"
+          },
+          {
+            "family": "Marcus",
+            "given": "SC"
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "JAMA Psychiatry",
+        "volume": "77",
+        "pages": "1021-1030",
+        "doi": "10.1001/jamapsychiatry.2020.1586",
+        "pmid": "32584936",
+        "url": "https://doi.org/10.1001/jamapsychiatry.2020.1586"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 32584936): title, all 9 authors, journal, volume 77, issue 10, pages 1021-1030 and DOI 10.1001/jamapsychiatry.2020.1586 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M12-004 (evidence_inpatient.md): the page gave linkage to follow-up as OR 2.74; the pooled estimate is 3.04 (95% CI 1.79-5.17). The included trials are single-encounter interventions in acute-care settings, not inpatient programmes. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "acute-care",
+          "follow-up"
+        ],
+        "clerkshipRelevance": "Single-encounter acute-care (largely ED) suicide prevention interventions: fewer subsequent attempts (pooled OR 0.69) and more linkage to follow-up (pooled OR 3.04), no effect on depression symptoms.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M12-004 (evidence_inpatient.md): the page gave linkage to follow-up as OR 2.74; the pooled estimate is 3.04 (95% CI 1.79-5.17). The included trials are single-encounter interventions in acute-care settings, not inpatient programmes. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding M12-004)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bensken-2021-social-needs-readmission",
+      "type": "primary-study",
+      "citation": {
+        "title": "Health-Related Social Needs and Increased Readmission Rates: Findings from the Nationwide Readmissions Database",
+        "authors": [
+          {
+            "family": "Bensken",
+            "given": "WP"
+          },
+          {
+            "family": "Alberti",
+            "given": "PM"
+          },
+          {
+            "family": "Koroukian",
+            "given": "SM"
+          }
+        ],
+        "organization": "",
+        "year": 2021,
+        "journal": "J Gen Intern Med",
+        "volume": "36",
+        "pages": "1173-1180",
+        "doi": "10.1007/s11606-021-06646-3",
+        "pmid": "33634384",
+        "url": "https://doi.org/10.1007/s11606-021-06646-3"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 33634384): title, all 3 authors, journal, volume 36, issue 5, pages 1173-1180 and DOI 10.1007/s11606-021-06646-3 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M12-003 (evidence_inpatient.md): the figures were right but sat in a psychiatric-readmission section as if psychiatric. This is the 2017 Nationwide Readmissions Database, all causes, 13,217,506 patients; the page now says so and the source is added to its Sources list. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "retrospective analysis of the Nationwide Readmissions Database (all-cause)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "readmission",
+          "social-determinants"
+        ],
+        "clerkshipRelevance": "All-cause hospital readmissions, not a psychiatric cohort: 30-day readmission rose from 11.5% with no coded health-related social need to 63.5% with needs in all five domains (adjusted OR 12.55); only 2.4% of patients had any coded need.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M12-003 (evidence_inpatient.md): the figures were right but sat in a psychiatric-readmission section as if psychiatric. This is the 2017 Nationwide Readmissions Database, all causes, 13,217,506 patients; the page now says so and the source is added to its Sources list. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding M12-003)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "shaffer-2015-brief-cti",
+      "type": "primary-study",
+      "citation": {
+        "title": "Brief Critical Time Intervention to Reduce Psychiatric Rehospitalization",
+        "authors": [
+          {
+            "family": "Shaffer",
+            "given": "SL"
+          },
+          {
+            "family": "Hutchison",
+            "given": "SL"
+          },
+          {
+            "family": "Ayers",
+            "given": "AM"
+          },
+          {
+            "family": "Goldberg",
+            "given": "RW"
+          },
+          {
+            "family": "Herman",
+            "given": "D"
+          },
+          {
+            "family": "Duch",
+            "given": "DA"
+          },
+          {
+            "family": "Kogan",
+            "given": "JN"
+          },
+          {
+            "family": "Terhorst",
+            "given": "L"
+          }
+        ],
+        "organization": "",
+        "year": 2015,
+        "journal": "Psychiatr Serv",
+        "volume": "66",
+        "pages": "1155-1161",
+        "doi": "10.1176/appi.ps.201400362",
+        "pmid": "26234327",
+        "url": "https://doi.org/10.1176/appi.ps.201400362"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 26234327): title, all 8 authors, journal, volume 66, issue 11, pages 1155-1161 and DOI 10.1176/appi.ps.201400362 match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M12-005 (evidence_inpatient.md): the page placed this result in its 'strongest RCT evidence' paragraph. Intervention cohort n = 149; comparison cohort n = 224 served before implementation; longer-term readmission (44% vs 52%) did not differ significantly. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "non-randomized cohort comparison (pre-implementation cohort)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "readmission",
+          "critical-time-intervention",
+          "discharge"
+        ],
+        "clerkshipRelevance": "Brief Critical Time Intervention was associated with lower 30-day readmission (28% vs 47%) against a pre-implementation cohort drawn from administrative data — an implementation comparison, not a randomized trial.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M12-005 (evidence_inpatient.md): the page placed this result in its 'strongest RCT evidence' paragraph. Intervention cohort n = 149; comparison cohort n = 224 served before implementation; longer-term readmission (44% vs 52%) did not differ significantly. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding M12-005)"
           }
         ]
       }

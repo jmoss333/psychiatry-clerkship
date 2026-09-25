@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-09-18",
+  "updated": "2026-09-24",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -92,7 +92,7 @@
       "claims": [
         {
           "claimId": "mbt-not-superior-active-control",
-          "claimText": "Pre-post effects for self-harm are large at g = -0.82, but against active controls MBT(-A) did not prove more efficacious except for adult borderline personality disorder symptoms at g = -0.56, and prioritizing it for self-harm is not supported.",
+          "claimText": "Pre-post effects for self-harm are large at g = -0.82, but against control interventions (treatment as usual or structured clinical management) MBT(-A) did not prove more efficacious except for adult borderline personality disorder symptoms at g = -0.56, and prioritizing it for self-harm is not supported.",
           "claimTerms": [
             "did not prove to be more efficacious",
             "is not supported"
@@ -199,7 +199,7 @@
       "claims": [
         {
           "claimId": "spi-suicidal-behaviour",
-          "claimText": "In a cohort comparison of 1640 emergency-department patients, the Safety Planning Intervention with follow-up was associated with 45% fewer suicidal behaviors over 6 months (odds ratio 0.56) and more than double the odds of attending at least 1 outpatient mental health visit (odds ratio 2.06).",
+          "claimText": "In a cohort comparison of 1640 suicidal patients treated in Veterans Health Administration emergency departments, the Safety Planning Intervention with follow-up was associated with 45% fewer suicidal behaviors over 6 months (odds ratio 0.56) and more than double the odds of attending at least 1 outpatient mental health visit (odds ratio 2.06).",
           "claimTerms": [
             "Cohort comparison design",
             "was associated with 45% fewer suicidal behaviors"
@@ -250,7 +250,7 @@
       "claims": [
         {
           "claimId": "family-intervention-relapse",
-          "claimText": "Across 53 randomised controlled trials, family intervention may decrease the frequency of relapse (RR 0.55, NNT 7) and may also reduce hospital admission (RR 0.78).",
+          "claimText": "In a review of 53 randomised controlled trials, family intervention may decrease the frequency of relapse (32 RCTs, n = 2981; RR 0.55, NNT 7), although some small but negative studies might not have been identified, and may also reduce hospital admission (8 RCTs, n = 481; RR 0.78, CI 0.6 to 1.0).",
           "claimTerms": [
             "may decrease the frequency of relapse",
             "may also reduce hospital admission"
@@ -426,7 +426,7 @@
       "claims": [
         {
           "claimId": "activity-scheduling-vs-cognitive-therapy",
-          "claimText": "Activity scheduling differed from control conditions by a pooled effect size of 0.87, while the difference between activity scheduling and cognitive therapy was 0.02 and non-significant at follow-up — activation is a treatment in its own right, not a preliminary to cognitive work.",
+          "claimText": "Activity scheduling differed from control conditions by a pooled effect size of 0.87, while in ten studies the difference between activity scheduling and cognitive therapy was 0.02 at post-test and also non-significant at follow-up — activity scheduling performed as well as cognitive therapy.",
           "claimTerms": [
             "difference between these two types of treatment was 0.02",
             "also non-significant"
@@ -502,7 +502,7 @@
       "claims": [
         {
           "claimId": "means-restriction-population-wins",
-          "claimText": "Across 20 systematic reviews and 179 unique primary studies, physical barriers to prevent jumping showed strong effect sizes, train platform screen doors were associated with reduced site-specific suicide mortality with no evidence of displacement, paracetamol pack size limitation reduced self-poisoning admissions, and bans on highly hazardous pesticides reduced suicide rates.",
+          "claimText": "Across 20 systematic reviews and 179 unique primary studies, physical barriers to prevent jumping showed strong effect sizes although primary study overlap was high, train platform screen doors were associated with reduced site-specific suicide mortality with no evidence of displacement, paracetamol pack size limitation reduced self-poisoning admissions with mixed impacts on mortality, and bans on highly hazardous pesticides reduced suicide rates.",
           "claimTerms": [
             "no evidence of displacement to other sites",
             "Bans on highly hazardous pesticides reduced suicide rates"
@@ -602,7 +602,7 @@
       "claims": [
         {
           "claimId": "dbt-vs-ssri-suicide-events",
-          "claimText": "In borderline personality disorder, over a 6-month treatment phase DBT produced significantly fewer suicide-related events, fewer suicide attempts and lower non-suicidal self-injury counts than SSRI plus clinical management, while severity of depression and suicidal ideation decreased comparably in both groups and outcomes were comparable between the two groups at 12-month follow-up.",
+          "claimText": "In borderline personality disorder, over a 6-month treatment phase DBT produced significantly fewer suicide-related events, fewer suicide attempts and lower non-suicidal self-injury counts than SSRI plus clinical management, while severity of depression and suicidal ideation decreased comparably in both groups, the rate of major depressive disorder after 6 months was significantly lower in the SSRI/M arm, and outcomes were comparable between the two groups at 12-month follow-up.",
           "claimTerms": [
             "Significantly fewer SREs occurred in the DBT arm",
             "decreased comparably in both treatment groups",
@@ -956,7 +956,7 @@
       "claims": [
         {
           "claimId": "caring-contacts-pilot",
-          "claimText": "Caring-contact messages sent on days 2 and 7 after discharge to 27 participants produced reductions in depressive symptoms at day 7 and left most participants feeling more connected to the hospital — pilot evidence, not a trial result.",
+          "claimText": "Caring-contact messages sent on days 2 and 7 after discharge to 27 participants were followed by reductions in depressive symptoms at day 7 and left most participants feeling more connected to the hospital — pilot evidence, not a trial result.",
           "claimTerms": [
             "reductions in depressive symptoms at day-7 post-discharge",
             "further pilot evidence"
@@ -1056,7 +1056,7 @@
       "claims": [
         {
           "claimId": "risk-assessment-woven-into-conversation",
-          "claimText": "Flexibly interweaving risk assessment into therapeutic conversation was beneficial to the alliance with suicidal clients and enhanced their safety — weaving risk assessment into the conversation rather than bolting it on.",
+          "claimText": "Flexibly interweaving risk assessment into therapeutic conversation was beneficial to the alliance with suicidal clients and enhanced their safety — as reported by clients and therapists across thirty-seven qualitative papers, not a measured outcome; weave risk assessment into the conversation rather than bolting it on.",
           "claimTerms": [
             "Flexibly interweaving risk assessment into therapeutic conversation",
             "enhanced their safety"
@@ -1140,7 +1140,556 @@
           ],
           "direction": "mixed",
           "usedBy": [
-            "T4"
+            "T4",
+            "rp-brief-psych"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "scull-2023-rosenhan-revisited",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "36737877",
+        "doi": "10.1177/0957154X221150878",
+        "sourceSpan": "The publication of David Rosenhan's 'On being sane in insane places' in Science in 1973 played a crucial role in persuading the American Psychiatric Association to revise its diagnostic manual. Yet based on the findings of an investigative journalist, Susannah Cahalan, and on records she shared with the author, we now know that this research is a spectacularly successful case of scientific fraud."
+      },
+      "claims": [
+        {
+          "claimId": "rosenhan-study-scientific-fraud",
+          "claimText": "Drawing on an investigative journalist's findings and the records she shared, Scull concludes that Rosenhan's 'On being sane in insane places' is a case of scientific fraud.",
+          "claimTerms": [
+            "spectacularly successful case of scientific fraud",
+            "records she shared with the author"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "week1"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "uphoff-2020-behavioural-activation",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "32628293",
+        "doi": "10.1002/14651858.CD013305.pub2",
+        "sourceSpan": "We excluded RCTs conducted in inpatient settings and with trial participants selected because of a physical comorbidity. We found moderate-certainty evidence that behavioural activation had greater short-term efficacy than treatment as usual (risk ratio (RR) 1.40, 95% confidence interval (CI) 1.10 to 1.78; 7 RCTs, 1533 participants), although this difference was no longer evident in sensitivity analyses using a worst-case or intention-to-treat scenario. We found moderate-certainty evidence suggesting no evidence of a difference in short-term treatment efficacy between behavioural activation and CBT (RR 0.99, 95% CI 0.92 to 1.07; 5 RCTs, 601 participants)."
+      },
+      "claims": [
+        {
+          "claimId": "ba-review-excluded-inpatient-trials",
+          "claimText": "The Cochrane review of behavioural activation for adult depression excluded RCTs conducted in inpatient settings, so its findings describe non-inpatient trials.",
+          "claimTerms": [
+            "We excluded RCTs conducted in inpatient settings"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "brief_psychotherapy",
+            "rp-brief-psych"
+          ]
+        },
+        {
+          "claimId": "ba-vs-usual-care-not-robust",
+          "claimText": "Behavioural activation had greater short-term efficacy than treatment as usual (RR 1.40, moderate certainty), but the difference was no longer evident in worst-case or intention-to-treat sensitivity analyses, and there was no evidence of a difference from CBT.",
+          "claimTerms": [
+            "greater short-term efficacy than treatment as usual",
+            "no longer evident in sensitivity analyses",
+            "no evidence of a difference in short-term treatment efficacy between behavioural activation and CBT"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "brief_psychotherapy"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "miklowitz-2021-bipolar-psychotherapy-nma",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "33052390",
+        "doi": "10.1001/jamapsychiatry.2020.2993",
+        "sourceSpan": "A total of 39 randomized clinical trials with 3863 participants (2247 of 3693 [60.8%] with data on sex were female; mean [SD] age, 36.5 [8.2] years) were identified. Across 20 two-group trials that provided usable information, manualized treatments were associated with lower recurrence rates than control treatments (OR, 0.56; 95% CI, 0.43-0.74). Psychoeducation with guided practice of illness management skills in a family or group format was associated with reducing recurrences vs the same strategies in an individual format (OR, 0.12; 95% CI, 0.02-0.94). Cognitive behavioral therapy (SMD, -0.32; 95% CI, -0.64 to -0.01) and, with less certainty, family or conjoint therapy (SMD, -0.46; 95% CI, -1.01 to 0.08) and interpersonal therapy (SMD, -0.46; 95% CI, -1.07 to 0.15) were associated with stabilizing depressive symptoms compared with treatment as usual. Higher study retention was associated with family or conjoint therapy (OR, 0.46; 95% CI, 0.26-0.82) and brief psychoeducation (OR, 0.44; 95% CI, 0.23-0.85) compared with standard psychoeducation."
+      },
+      "claims": [
+        {
+          "claimId": "bipolar-psychotherapy-components",
+          "claimText": "Across 39 randomized clinical trials of adjunctive psychotherapy for bipolar disorder, manualized treatments were associated with lower recurrence than control treatments in 20 two-group trials (OR 0.56); psychoeducation in a family or group format was associated with fewer recurrences than the same strategies in an individual format (OR 0.12, 95% CI 0.02-0.94); family or conjoint therapy was associated with higher study retention than standard psychoeducation (OR 0.46, 95% CI 0.26-0.82) and, with less certainty, with stabilizing depressive symptoms (SMD -0.46, 95% CI -1.01 to 0.08).",
+          "claimTerms": [
+            "in a family or group format was associated with reducing recurrences vs the same strategies in an individual format",
+            "with less certainty",
+            "compared with standard psychoeducation"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "family_modalities"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "haselden-2019-family-involvement-followup",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "31310186",
+        "doi": "10.1176/appi.ps.201900028",
+        "sourceSpan": "This study examined frequencies of involvement by family in the care and discharge planning for 179 psychiatric inpatients. Involvement by family in care and discharge planning was assessed from randomly selected medical records of inpatients with Medicaid and severe mental illness at two New York hospitals from 2012 to 2013. Sixty-seven (37%) patients received comprehensive discharge planning, and 96 (53%) and 139 (78%) attended an outpatient appointment within 7 and 30 days of discharge, respectively. When analyses controlled for demographic and clinical factors, having any involvement between family members and inpatient staff was significantly associated with patients' attending an outpatient appointment by 7 days (odds ratio [OR]=2.79, 95% confidence interval [CI]=1.28-6.08) or 30 days (OR=3.07, 95% CI=1.29-7.32) after discharge."
+      },
+      "claims": [
+        {
+          "claimId": "seven-day-followup-ny-medicaid-sample",
+          "claimText": "In 179 Medicaid-insured inpatients with severe mental illness at two New York hospitals, 96 (53%) attended an outpatient appointment within 7 days of discharge, and any involvement between family members and inpatient staff was associated with attending by 7 days after adjustment (OR 2.79).",
+          "claimTerms": [
+            "two New York hospitals",
+            "96 (53%)",
+            "attending an outpatient appointment by 7 days"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "exp_family",
+            "family_modalities"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "linehan-2006-dbt-vs-experts",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "16818865",
+        "doi": "10.1001/archpsyc.63.7.757",
+        "sourceSpan": "Dialectical behavior therapy (DBT) is a treatment for suicidal behavior and borderline personality disorder with well-documented efficacy. To evaluate the hypothesis that unique aspects of DBT are more efficacious compared with treatment offered by non-behavioral psychotherapy experts. Subjects receiving DBT were half as likely to make a suicide attempt (hazard ratio, 2.66; P = .005), required less hospitalization for suicide ideation (F(1,92) = 7.3; P = .004), and had lower medical risk (F(1,50) = 3.2; P = .04) across all suicide attempts and self-injurious acts combined. Our findings replicate those of previous studies of DBT and suggest that the effectiveness of DBT cannot reasonably be attributed to general factors associated with expert psychotherapy."
+      },
+      "claims": [
+        {
+          "claimId": "dbt-specific-not-expert-general",
+          "claimText": "Compared with treatment by non-behavioral psychotherapy experts, DBT recipients were half as likely to make a suicide attempt; the authors conclude that their findings replicate previous DBT studies and that DBT's effectiveness cannot reasonably be attributed to general factors associated with expert psychotherapy.",
+          "claimTerms": [
+            "half as likely to make a suicide attempt",
+            "replicate those of previous studies of DBT",
+            "cannot reasonably be attributed to general factors associated with expert psychotherapy"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "canon_200"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "mcmain-2009-dbt-vs-gpm",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "19755574",
+        "doi": "10.1176/appi.ajp.2009.09010039",
+        "sourceSpan": "This was a single-blind trial in which 180 patients diagnosed with borderline personality disorder who had at least two suicidal or nonsuicidal self-injurious episodes in the past 5 years were randomly assigned to receive 1 year of dialectical behavior therapy or general psychiatric management. Both groups showed improvement on the majority of clinical outcome measures after 1 year of treatment, including significant reductions in the frequency and severity of suicidal and nonsuicidal self-injurious episodes and significant improvements in most secondary clinical outcomes. No significant differences across any outcomes were found between groups."
+      },
+      "claims": [
+        {
+          "claimId": "gpm-comparable-to-dbt",
+          "claimText": "In a single-blind trial, 180 patients with borderline personality disorder were randomly assigned to 1 year of dialectical behavior therapy or general psychiatric management; both groups improved, and no significant differences across any outcomes were found between groups.",
+          "claimTerms": [
+            "No significant differences across any outcomes were found between groups",
+            "general psychiatric management"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "cotw_20260827_bpd_res"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "hatcher-2011-pst-self-harm",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "21816868",
+        "doi": "10.1192/bjp.bp.110.090126",
+        "sourceSpan": "A second hospital presentation with self-harm at 1 year for all episodes, plus separate comparisons of first-time and repeat presentations at the index episode, were the a priori primary outcomes. In an intention-to-treat analysis of all randomised patients (n = 1094) there was no significant difference at 12 months in the proportion of people who had presented again with self-harm when comparing all episodes (intervention 13.4%, usual care 14.1%; relative risk reduction RR = 0.05, 95% CI -0.28 to 0.30, P = 0.79) or where the index episode was the first episode (intervention 13.4%, usual care 9.4%, RR = -0.42, 95% CI -1.17 to 0.08, P = 0.37). Where the index episode was repeated self-harm, those who received therapy were less likely to present again with self-harm (intervention 13.5%, usual care 22.1%, RR = 0.39, 95% CI 0.07 to 0.60, number needed to treat 12, P = 0.03)."
+      },
+      "claims": [
+        {
+          "claimId": "pst-null-overall-repeat-subgroup",
+          "claimText": "In a Zelen randomised trial of adults presenting to hospital with self-harm (n = 1094), problem-solving therapy made no significant difference to 12-month re-presentation across all episodes (13.4% vs 14.1%); only where the index episode was repeated self-harm, one of the a priori primary outcomes, was re-presentation lower (13.5% vs 22.1%, number needed to treat 12).",
+          "claimTerms": [
+            "no significant difference at 12 months",
+            "Where the index episode was repeated self-harm",
+            "number needed to treat 12"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "brief_psychotherapy",
+            "rp-brief-psych"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "doupnik-2020-acute-care-suicide-prevention",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "32584936",
+        "doi": "10.1001/jamapsychiatry.2020.1586",
+        "sourceSpan": "Studies describing clinical trials of single-encounter suicide prevention interventions were included. A total of 14 studies, representing outcomes for 4270 patients, were included. Pooled-effect estimates showed that brief suicide prevention interventions were associated with reduced subsequent suicide attempts (pooled odds ratio, 0.69; 95% CI, 0.53-0.89), increased linkage to follow-up (pooled odds ratio, 3.04; 95% CI, 1.79-5.17) but were not associated with reduced depression symptoms (Hedges g = 0.28 [95% CI, -0.02 to 0.59)."
+      },
+      "claims": [
+        {
+          "claimId": "brief-acute-care-interventions-attempts-linkage",
+          "claimText": "Across 14 studies (4270 patients) of single-encounter suicide prevention interventions, the interventions were associated with reduced subsequent suicide attempts (pooled OR 0.69) and increased linkage to follow-up (pooled OR 3.04), but not with reduced depression symptoms.",
+          "claimTerms": [
+            "single-encounter suicide prevention interventions",
+            "increased linkage to follow-up (pooled odds ratio, 3.04"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "evidence_inpatient"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "bensken-2021-social-needs-readmission",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "33634384",
+        "doi": "10.1007/s11606-021-06646-3",
+        "sourceSpan": "From 13,217,506 patients, only 2.4% had at least one HRSN diagnosis. Among patients without HRSN, 11.5% had a 30-day readmission, compared to 27.0% of those with 1 domain, increasing to 63.5% for patients with codes in 5 domains. The adjusted odds ratio for readmission for individuals with all 5 domains was 12.55 (95% CI: 9.04, 17.43)."
+      },
+      "claims": [
+        {
+          "claimId": "social-needs-dose-response-all-cause",
+          "claimText": "Among 13,217,506 patients (all causes of admission), only 2.4% had a coded health-related social need; 30-day readmission was 11.5% without such a need and 63.5% with codes in all 5 domains (adjusted OR 12.55).",
+          "claimTerms": [
+            "only 2.4% had at least one HRSN diagnosis",
+            "increasing to 63.5% for patients with codes in 5 domains"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "evidence_inpatient"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "shaffer-2015-brief-cti",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "26234327",
+        "doi": "10.1176/appi.ps.201400362",
+        "sourceSpan": "A sample of 149 adults with a psychiatric inpatient readmission within 30 days of a prior psychiatric hospitalization was referred to an acute level of service coordination (ASC) available at six provider organizations implementing BCTI. A comparison cohort of 224 adults served by ASC at the same organizations before implementation of BCTI was derived from administrative data. The proportion of individuals readmitted within 30 days of a discharge was lower for the BCTI cohort (28%) than the comparison cohort (47%) (p<.001)."
+      },
+      "claims": [
+        {
+          "claimId": "brief-cti-nonrandomized-30-day",
+          "claimText": "In a non-randomized comparison of 149 adults receiving brief critical time intervention with a cohort of 224 adults served before implementation, 30-day readmission was lower in the intervention cohort (28% vs 47%, p<.001).",
+          "claimTerms": [
+            "before implementation of BCTI was derived from administrative data",
+            "lower for the BCTI cohort (28%) than the comparison cohort (47%)"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "evidence_inpatient"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "cipriani-2018-antidepressant-nma",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "29477251",
+        "doi": "10.1016/S0140-6736(17)32802-7",
+        "sourceSpan": "We included placebo-controlled and head-to-head trials of 21 antidepressants used for the acute treatment of adults (≥18 years old and of both sexes) with major depressive disorder diagnosed according to standard operationalised criteria. We identified 28 552 citations and of these included 522 trials comprising 116 477 participants. In terms of efficacy, all antidepressants were more effective than placebo, with ORs ranging between 2·13 (95% credible interval [CrI] 1·89-2·41) for amitriptyline and 1·37 (1·16-1·63) for reboxetine. In head-to-head studies, agomelatine, amitriptyline, escitalopram, mirtazapine, paroxetine, venlafaxine, and vortioxetine were more effective than other antidepressants (range of ORs 1·19-1·96), whereas fluoxetine, fluvoxamine, reboxetine, and trazodone were the least efficacious drugs (0·51-0·84)."
+      },
+      "claims": [
+        {
+          "claimId": "all-21-beat-placebo-head-to-head-leaders",
+          "claimText": "In a network meta-analysis of 522 trials (116 477 participants) of 21 antidepressants for adults with major depressive disorder, all antidepressants were more effective than placebo, with the largest odds ratio for amitriptyline and the smallest for reboxetine; in head-to-head studies, agomelatine, amitriptyline, escitalopram, mirtazapine, paroxetine, venlafaxine and vortioxetine were more effective than other antidepressants.",
+          "claimTerms": [
+            "all antidepressants were more effective than placebo",
+            "agomelatine, amitriptyline, escitalopram, mirtazapine, paroxetine, venlafaxine, and vortioxetine were more effective than other antidepressants"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "canon_200",
+            "rounds_questions"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "bridge-2007-pediatric-antidepressant-risk-benefit",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "17440145",
+        "doi": "10.1001/jama.297.15.1683",
+        "sourceSpan": "Twenty-seven trials of pediatric MDD (n = 15), OCD (n = 6), and non-OCD anxiety disorders (n = 6) were selected, and risk differences for response and for suicidal ideation/suicide attempt estimated by random-effects methods. Pooled risk differences in rates of primary study-defined measures of responder status significantly favored antidepressants for MDD (11.0%; [95% confidence interval {CI}, 7.1% to 14.9%]), OCD (19.8% [95% CI, 13.0% to 26.6%), and non-OCD anxiety disorders (37.1% [22.5% to 51.7%]), corresponding to a number needed to treat (NNT) of 10 (95% CI, 7 to 15), 6 (4 to 8), and 3 (2 to 5), respectively. While there was increased risk difference of suicidal ideation/suicide attempt across all trials and indications for drug vs placebo (0.7%; 95% CI, 0.1% to 1.3%) (number needed to harm, 143 [95% CI, 77 to 1000]), the pooled risk differences within each indication were not statistically significant: 0.9% (95% CI, -0.1% to 1.9%) for MDD, 0.5% (-1.2% to 2.2%) for OCD, and 0.7% (-0.4% to 1.8%) for non-OCD anxiety disorders."
+      },
+      "claims": [
+        {
+          "claimId": "pediatric-mdd-nnt-vs-suicidality-risk",
+          "claimText": "In pediatric antidepressant trials, response in major depressive disorder corresponded to a number needed to treat of 10, while the pooled risk difference for suicidal ideation/suicide attempt in MDD was 0.9% (95% CI -0.1% to 1.9%), not statistically significant within that indication; across all trials and indications it was 0.7% (number needed to harm 143).",
+          "claimTerms": [
+            "number needed to treat (NNT) of 10",
+            "0.9% (95% CI, -0.1% to 1.9%) for MDD",
+            "number needed to harm, 143"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "psychopharm_primer"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "jonas-2014-aud-pharmacotherapy",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "24825644",
+        "doi": "10.1001/jama.2014.3628",
+        "sourceSpan": "We included 122 RCTs and 1 cohort study (total 22,803 participants). The NNT to prevent return to any drinking for acamprosate was 12 (95% CI, 8 to 26; risk difference [RD], -0.09; 95% CI, -0.14 to -0.04) and was 20 (95% CI, 11 to 500; RD, -0.05; 95% CI, -0.10 to -0.002) for oral naltrexone (50 mg/d). The NNT to prevent return to heavy drinking was 12 (95% CI, 8 to 26; RD -0.09; 95% CI, -0.13 to -0.04) for oral naltrexone (50 mg/d)."
+      },
+      "claims": [
+        {
+          "claimId": "acamprosate-naltrexone-nnts-different-outcomes",
+          "claimText": "The number needed to treat to prevent return to any drinking was 12 for acamprosate and 20 for oral naltrexone (50 mg/d); for oral naltrexone (50 mg/d), the number needed to treat to prevent return to heavy drinking was 12.",
+          "claimTerms": [
+            "prevent return to any drinking for acamprosate was 12",
+            "The NNT to prevent return to heavy drinking was 12"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "canon_200"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "chawla-2022-panic-disorder-nma",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "35045991",
+        "doi": "10.1136/bmj-2021-066084",
+        "sourceSpan": "87 studies including a total of 12 800 participants and 12 drug classes were eligible for inclusion. SUCRAs identified benzodiazepines (84.5%, mean rank=2.4), tricyclic antidepressants (68.7%, 3.8), and SSRIs (66.4%, 4.0) as the top three best treatments for remission. A SUCRA cluster ranking plot considering both remission and adverse events among all drug classes indicated that SSRIs were associated with high remission and low risk of adverse events."
+      },
+      "claims": [
+        {
+          "claimId": "benzodiazepines-top-remission-ssris-combined-ranking",
+          "claimText": "Across 87 randomised trials, benzodiazepines ranked first for remission (SUCRA 84.5%), ahead of tricyclic antidepressants (68.7%) and SSRIs (66.4%); SSRIs came out ahead only on a cluster ranking that considered remission together with adverse events.",
+          "claimTerms": [
+            "top three best treatments for remission",
+            "considering both remission and adverse events"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "cotw_20260810_panic_res"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "gomes-2023-canmat-adherence-readmission",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "37551100",
+        "doi": "10.1177/07067437231156235",
+        "sourceSpan": "We identified 211 hospitalizations related to 165 patients. Compared to no treatment, only first-line treatments were associated with a statistically significant decreased risk of 30-day readmission (odds ratio [OR] = 0.209; 95% CI, 0.058 to 0.670). On survival analysis, no treatment group was associated with shorter time-to-readmission (log-rank test, p = 0.014) and increased risk of readmission (hazard ratio = 2.27; 95% CI, 1.30 to 3.96) when compared to first-line medications."
+      },
+      "claims": [
+        {
+          "claimId": "first-line-vs-no-treatment-readmission",
+          "claimText": "In a retrospective cohort of 211 hospitalizations for acute mania, only first-line regimens were associated with a significantly lower risk of 30-day readmission compared with no treatment (OR 0.209), and the no-treatment group had a shorter time to readmission and a higher risk of readmission than the first-line group (hazard ratio 2.27).",
+          "claimTerms": [
+            "Compared to no treatment, only first-line treatments",
+            "shorter time-to-readmission"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "cotw_20260720_bipolar_ms3"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "dunkley-2003-hunter-criteria",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "12925718",
+        "doi": "10.1093/qjmed/hcg109",
+        "sourceSpan": "Numerous clinical features were associated with serotonin toxicity, but only clonus (inducible, spontaneous or ocular), agitation, diaphoresis, tremor and hyperreflexia were needed for accurate prediction of serotonin toxicity as diagnosed by a clinical toxicologist. Although the learning dataset did not include patients with life-threatening serotonin toxicity, hypertonicity and maximum temperature > 38 degrees C were universal in such patients; these features were therefore added. Using these seven clinical features, decision rules (the Hunter Serotonin Toxicity Criteria) were developed. These new criteria were simpler, more sensitive (84% vs. 75%) and more specific (97% vs. 96%) than Sternbach's criteria."
+      },
+      "claims": [
+        {
+          "claimId": "hunter-criteria-clonus-based",
+          "claimText": "The Hunter Serotonin Toxicity Criteria are decision rules built on clonus (inducible, spontaneous or ocular) together with agitation, diaphoresis, tremor and hyperreflexia, with hypertonicity and temperature above 38 degrees C added for life-threatening toxicity; they were simpler, more sensitive (84% vs 75%) and more specific (97% vs 96%) than Sternbach's criteria.",
+          "claimTerms": [
+            "clonus (inducible, spontaneous or ocular)",
+            "more sensitive (84% vs. 75%) and more specific (97% vs. 96%)"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "cotw_20260914_ssnms_res"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "sullivan-2020-ketamine-agitation-meta",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "31902698",
+        "doi": "10.1016/j.ajem.2019.11.007",
+        "sourceSpan": "13 studies met the inclusion criteria. The overall proportion of subjects receiving airway management across all 13 studies was 20% (95% CI = 0.0489-1.6505). The estimate of the proportion of subjects that achieved sedation was 85% (95% CI = 0.71-0.93). After synthesizing data from the four studies that compared ketamine to controls, ketamine was associated with increased rates of sedation (RR, 1.95 [CI, 0.47-8.1]) and increased need for intubation (RR, 2.44 [CI, 0.75-7.91]). The differences were not significant by random effects model."
+      },
+      "claims": [
+        {
+          "claimId": "ketamine-sedation-airway-no-significant-difference",
+          "claimText": "Across 13 ED and prehospital studies, an estimated 85% of agitated patients given ketamine achieved sedation and 20% received airway management; in the four studies with a comparison group, the differences in sedation and intubation were not significant.",
+          "claimTerms": [
+            "proportion of subjects that achieved sedation was 85%",
+            "The differences were not significant by random effects model"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "cotw_20260923_agitation_res"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "cole-2016-ketamine-vs-haloperidol",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "27102743",
+        "doi": "10.1080/15563650.2016.1177652",
+        "sourceSpan": "This was a prospective open label study of all patients in an urban EMS system requiring chemical sedation for severe acute undifferentiated agitation that were subsequently transported to the EMS system's primary Emergency Department. Median time to adequate sedation for the ketamine group was 5 minutes (range 0.4-23) vs. 17 minutes (range 2-84) in the haloperidol group (difference 12 minutes, 95% CI 9-15). Intubation was also significantly higher in the ketamine group; 39% of patients receiving ketamine were intubated vs. 4% of patients receiving haloperidol."
+      },
+      "claims": [
+        {
+          "claimId": "prehospital-ketamine-faster-more-intubation",
+          "claimText": "In a prospective open-label prehospital study of severe agitation, median time to adequate sedation was 5 minutes with ketamine versus 17 minutes with haloperidol, but 39% of ketamine patients were intubated versus 4% of haloperidol patients.",
+          "claimTerms": [
+            "Median time to adequate sedation for the ketamine group was 5 minutes",
+            "39% of patients receiving ketamine were intubated"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "cotw_20260923_agitation_res"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "schonnop-2022-missed-delirium-ed",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "36138324",
+        "doi": "10.1007/s43678-022-00371-4",
+        "sourceSpan": "We interviewed 26 ED physicians and nurses. The four themes include: (1) there are varied approaches to delirium recognition and infrequent use of screening tools; (2) delirium assessment is perceived as overly time consuming and of lower priority than other symptoms and syndromes; (3) it is unclear whose responsibility it is to recognize delirium; and (4) there is a need for a deeper or \"functional\" understanding of delirium that includes its consequences."
+      },
+      "claims": [
+        {
+          "claimId": "missed-delirium-system-themes",
+          "claimText": "Interviews with 26 ED physicians and nurses attributed missed delirium to varied approaches and infrequent use of screening tools, assessment perceived as overly time consuming and of lower priority, unclear responsibility for recognizing delirium, and the need for a deeper, functional understanding of delirium.",
+          "claimTerms": [
+            "infrequent use of screening tools",
+            "it is unclear whose responsibility it is to recognize delirium"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "cotw_20260923_agitation_res"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "wesseloo-2016-postpartum-relapse",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-24",
+        "pmid": "26514657",
+        "doi": "10.1176/appi.ajp.2015.15010124",
+        "sourceSpan": "Thirty-seven articles describing 5,700 deliveries in 4,023 patients were included in the quantitative analyses. The overall postpartum relapse risk was 35% (95% CI=29, 41). Patients with bipolar disorder were significantly less likely to experience severe episodes postpartum (17%, 95% CI=13, 21) than patients with a history of postpartum psychosis (29%, 95% CI=20, 41). Insufficient information was available to determine relapse rates for patients with bipolar disorder and a history of postpartum episodes."
+      },
+      "claims": [
+        {
+          "claimId": "postpartum-psychosis-severe-recurrence",
+          "claimText": "Across 5,700 deliveries, overall postpartum relapse risk in high-risk women was 35%; women with a history of postpartum psychosis had severe postpartum episodes in 29% (95% CI 20-41), against 17% in women with bipolar disorder; information was insufficient to determine relapse rates for women with both bipolar disorder and a history of postpartum episodes.",
+          "claimTerms": [
+            "history of postpartum psychosis (29%",
+            "Insufficient information was available to determine relapse rates"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "t_perinatal"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "project-beta-psychopharm-agitation-2012",
+      "verifiedAgainst": {
+        "spanType": "fulltext",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pmc&id=PMC3298219 (Wilson MP et al., West J Emerg Med 2012;13(1):26-34; sections 'Benzodiazepines' and 'Agitation Due to Intoxication', item 1; superscript reference numbers removed; the cache holds those two paragraphs under the PMID)",
+        "retrievedAt": "2026-09-24",
+        "pmid": "22461918",
+        "doi": "10.5811/westjem.2011.9.6866",
+        "sourceSpan": "In addition, these medications may be oversedating and have the potential for respiratory depression or hypotension when used parenterally in patients with underlying respiratory conditions or in combination with other CNS depressants such as alcohol. Drugs: For intoxication with most recreational drugs, especially stimulants, benzodiazepines are generally considered first-line agents."
+      },
+      "claims": [
+        {
+          "claimId": "stimulant-intoxication-benzodiazepine-first-line-consensus",
+          "claimText": "The Project BETA psychopharmacology workgroup's consensus statement holds that for intoxication with most recreational drugs, especially stimulants, benzodiazepines are generally considered first-line agents, and warns that parenteral benzodiazepines carry a potential for respiratory depression, particularly in combination with other CNS depressants such as alcohol.",
+          "claimTerms": [
+            "especially stimulants, benzodiazepines are generally considered first-line agents",
+            "potential for respiratory depression",
+            "in combination with other CNS depressants"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "agitation-trainer",
+            "rp-agitation"
           ]
         }
       ]
@@ -1208,7 +1757,7 @@
       "claims": [
         {
           "claimId": "catatonia-benzodiazepine-response-rate",
-          "claimText": "Across 53 studies, benzodiazepine treatment of catatonia produced an overall response rate of 77% and an overall remission rate of 55%.",
+          "claimText": "Across 53 studies, mostly case series using lorazepam, benzodiazepine treatment of catatonia was associated with an overall response rate of 77% and an overall remission rate of 55%.",
           "claimTerms": [
             "overall remission rate",
             "overall response",
@@ -1260,7 +1809,7 @@
       "claims": [
         {
           "claimId": "lethal-means-assessment-180-day-risk",
-          "claimText": "Lethal means assessment reduced the risk of a suicide attempt or death within 180 days from 3.3 to 0.83%.",
+          "claimText": "In a quasi-experimental analysis of patients with suicide ideation reported on the PHQ-9, lethal means assessment reduced the risk of a suicide attempt or death within 180 days from 3.3 to 0.83% — an observational estimate, not a randomized trial result.",
           "claimTerms": [
             "lethal means assessment",
             "within 180 days"

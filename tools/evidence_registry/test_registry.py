@@ -160,7 +160,6 @@ THERAPY_WP_T2_IDS = {
     "modini-large-2026",
     "penzenik-2026",
     "pott-2022",
-    "sall-2019",
     "saxler-2024",
     "schefft-2019",
     "schunemann-2025",
@@ -189,6 +188,42 @@ THERAPY_WP_T2_IDS = {
 POSTDISCHARGE_CORRECTION_IDS = {
     "chung-2017-postdischarge-suicide",
     "chung-2019-first-week-month",
+}
+# Added by the 2026-09-24 peer review, WP-9 (citations and evidence, pattern H + E1). Each
+# corrected sentence asserts what one of these found, so each enters with a stored span.
+# brenner-2025-va-dod-suicide-synopsis REPLACES the Sall 2019 VA/DoD synopsis entry (E1-001:
+# the 2024 CPG superseded its guideline), in the same array position; the old id therefore
+# left THERAPY_WP_T2_IDS. One set, alphabetical. Folded into ALL_SOURCE_IDS below the
+# path constants, away from the union's own lines, so parallel batches do not collide.
+PEER_REVIEW_WP9_2026_09_IDS = {
+    "bensken-2021-social-needs-readmission",
+    "brenner-2025-va-dod-suicide-synopsis",
+    "bridge-2007-pediatric-antidepressant-risk-benefit",
+    "chawla-2022-panic-disorder-nma",
+    "cipriani-2018-antidepressant-nma",
+    "cole-2016-ketamine-vs-haloperidol",
+    "doupnik-2020-acute-care-suicide-prevention",
+    "dunkley-2003-hunter-criteria",
+    "gomes-2023-canmat-adherence-readmission",
+    "haselden-2019-family-involvement-followup",
+    "hatcher-2011-pst-self-harm",
+    "jonas-2014-aud-pharmacotherapy",
+    "linehan-2006-dbt-vs-experts",
+    "mcmain-2009-dbt-vs-gpm",
+    "miklowitz-2021-bipolar-psychotherapy-nma",
+    "schonnop-2022-missed-delirium-ed",
+    "scull-2023-rosenhan-revisited",
+    "shaffer-2015-brief-cti",
+    "sullivan-2020-ketamine-agitation-meta",
+    "uphoff-2020-behavioural-activation",
+}
+# WP-9 sources whose PubMed record links a published erratum (ErratumIn); each entry's
+# identity note records it and correctionStatus is "corrected" pending faculty review.
+PEER_REVIEW_WP9_2026_09_CORRECTED_IDS = {
+    "haselden-2019-family-involvement-followup",
+    "linehan-2006-dbt-vs-experts",
+    "mcmain-2009-dbt-vs-gpm",
+    "sullivan-2020-ketamine-agitation-meta",
 }
 # Added by curriculum-review remediation WP-5a (finding RSAF-F010): cl_reference.md put
 # benzodiazepine response in catatonia at "~90%" with nothing behind it. The meta-analysis
@@ -258,6 +293,8 @@ sys.path.insert(0, str(SURVEILLANCE_BIN))
 import build_status as surveillance_status
 import lib_surveillance as surveillance_library
 import run_citation_check as citation_checker
+
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | PEER_REVIEW_WP9_2026_09_IDS
 
 
 def _zotero_config() -> dict:
@@ -527,7 +564,9 @@ def test_published_schema_governance_is_required_for_every_canonical_source():
     for position, source in enumerate(registry["sources"]):
         assert source["governance"]["supersededBy"] == [], position
         expected_status = (
-            "corrected" if source["id"] in CORRECTED_IDS else "none-known"
+            "corrected"
+            if source["id"] in CORRECTED_IDS | PEER_REVIEW_WP9_2026_09_CORRECTED_IDS
+            else "none-known"
         )
         assert source["governance"]["correctionStatus"] == expected_status, position
         assert registry_library._STABLE_ID_RE.fullmatch(source["id"]), position
