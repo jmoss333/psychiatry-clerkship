@@ -9,22 +9,20 @@ import os
 import stat
 import subprocess
 
-from check_lfs_media import LFS_HEADER, MEDIA_EXTS, is_soft_context
-from site_extras import MS3_ORIENT_VIDEO, RESIDENT_ONBOARDING_MEDIA
+from check_lfs_media import MEDIA_EXTS
+from site_extras import MS3_EXTRA_TOOLS
 
 
 COMPASS_MARKER = "<!-- ms3-six-week-compass -->"
 SAFETY_START = "<!-- single-safety-rule:start -->"
 SAFETY_END = "<!-- single-safety-rule:end -->"
 RETIRED_INTRO_FILENAMES = ("intro-trailer.mp4", "intro-trailer-poster.jpg")
-# Both packages are declared once, in site_extras.py, and projected into built paths
-# here: this module's gates and the two build scripts must agree on the same set, and
-# before 2026-09-05 each package was typed out in three separate places.
-MS3_OPTIONAL_ORIENTATION_PATHS = tuple(
-    os.path.join("tools", built) for _src, built, _title in MS3_ORIENT_VIDEO
-)
-RESIDENT_ONBOARDING_PATHS = tuple(
-    os.path.join("media", built) for _src, built in RESIDENT_ONBOARDING_MEDIA
+# The MS3-only tools are declared once, in site_extras.py, and projected into built paths
+# here, so the resident isolation gate and the two build scripts agree on the same set.
+# (Until 2026-09-25 this also carried the optional orientation-video package and the
+# resident onboarding media; both were retired with the welcome and orientation videos.)
+MS3_ONLY_TOOL_PATHS = tuple(
+    os.path.join("tools", built) for _src, built, _title in MS3_EXTRA_TOOLS
 )
 
 COMPASS_ROOT_OPENER = '<div data-fd-compass-root>'
@@ -36,7 +34,6 @@ SCOPE_COPY = (
     "not establish competence, entrustment, or permission to act independently."
 )
 PROMPT_COPY = "Choose the week or task you are preparing to discuss with your supervising team."
-OPTIONAL_VIDEO_COPY = "Optional: watch the captioned orientation overview (transcript available)"
 
 
 class CompassContractError(ValueError):
@@ -45,16 +42,6 @@ class CompassContractError(ValueError):
 
 class CompassPreflightError(CompassContractError):
     pass
-
-
-class _ResidentWelcomeVideoParser(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.videos = []
-
-    def handle_starttag(self, tag, attrs):
-        if tag.lower() == "video":
-            self.videos.append(attrs)
 
 
 VOID_ELEMENTS = frozenset({
@@ -268,7 +255,6 @@ def render_compass(cards, safety_text: str) -> str:
         '<h2 class="fd-compass__title" id="fd-compass-title">%s</h2>'
         '<ol class="fd-compass__weeks" data-fd-compass-weeks role="list">%s</ol></section>'
         '<p data-fd-compass-prompt>%s</p>'
-        '<a data-fd-compass-orientation href="?tool=orientation-video.html">%s</a>'
         '</div>'
         % (
             escape(safety_text, quote=True),
@@ -277,7 +263,6 @@ def render_compass(cards, safety_text: str) -> str:
             COMPASS_HEADING,
             items,
             PROMPT_COPY,
-            OPTIONAL_VIDEO_COPY,
         )
     )
 
@@ -324,42 +309,6 @@ def assert_nav_projection(nav, cards, label="MS3") -> None:
                 "%s final nav row %s must have title %s"
                 % (label, card.landing_ref, expected_title)
             )
-
-
-def require_real_files(root, relative_paths) -> None:
-    """Every path must be a real, non-empty, readable regular file.
-
-    A Git-LFS pointer stub is an error in production and a printed warning in the soft
-    contexts check_lfs_media.is_soft_context() names (GitHub Actions' lfs:false checkout,
-    Netlify deploy previews): those contexts ship stubs on purpose and the site-wide LFS
-    gate is already soft there. Missing, empty, directory, symlink and unreadable paths
-    always fail.
-    """
-    invalid, stubs = [], []
-    for relative_path in relative_paths:
-        path = os.path.join(root, relative_path)
-        try:
-            metadata = os.lstat(path)
-            if (
-                stat.S_ISLNK(metadata.st_mode)
-                or not stat.S_ISREG(metadata.st_mode)
-                or metadata.st_size == 0
-                or metadata.st_mode & 0o444 == 0
-            ):
-                invalid.append(relative_path)
-                continue
-            with open(path, "rb") as handle:
-                if handle.read(len(LFS_HEADER)) == LFS_HEADER:
-                    stubs.append(relative_path)
-        except OSError:
-            invalid.append(relative_path)
-    if stubs and is_soft_context():
-        print("WARN (soft LFS context): Git-LFS pointer stub(s) among required Compass files: "
-              + ", ".join(stubs))
-    else:
-        invalid.extend(stubs)
-    if invalid:
-        raise CompassContractError("MS3 Compass required files are invalid: " + ", ".join(invalid))
 
 
 def _iter_completed_output_files(out_dir):
@@ -426,52 +375,6 @@ def _scan_completed_output(out_dir, forbidden):
     return files
 
 
-def _assert_resident_welcome_video(welcome) -> None:
-    parser = _ResidentWelcomeVideoParser()
-    parser.feed(_render_markdown(welcome))
-    parser.close()
-    if len(parser.videos) != 1:
-        raise CompassContractError(
-            "resident built Welcome must contain exactly one video with the resident onboarding src and poster"
-        )
-    attrs = parser.videos[0]
-    src_values = [value for name, value in attrs if name == "src"]
-    poster_values = [value for name, value in attrs if name == "poster"]
-    if src_values != [RESIDENT_ONBOARDING_PATHS[0]] or poster_values != [RESIDENT_ONBOARDING_PATHS[1]]:
-        raise CompassContractError(
-            "resident built Welcome must contain exactly one video with the resident onboarding src and poster"
-        )
-
-
-def validate_media_manifest(manifest) -> None:
-    """The WP-13 accessibility manifest may describe the orientation package (caption and
-    transcript status are exactly what it exists to record) but may not mark it served:
-    production_canary.py probes every served entry and accepts media only under /audio/,
-    /audio_oe/ or /media/, while this package ships under /tools/. Widening the canary's
-    scope is a separate decision; until then a served:true row would fail every canary run.
-    """
-    if not isinstance(manifest, dict):
-        raise CompassContractError("media manifest must be an object")
-    identities = set()
-    for source_path, built_name, _title in MS3_ORIENT_VIDEO:
-        identities.update((source_path, os.path.join("tools", built_name)))
-    for group in ("audio", "video"):
-        entries = manifest.get(group)
-        if not isinstance(entries, list):
-            raise CompassContractError("media manifest must contain a list under %r" % group)
-        for entry in entries:
-            if not isinstance(entry, dict):
-                raise CompassContractError("media manifest %s entries must be objects" % group)
-            if entry.get("served") is not True:
-                continue
-            for value in entry.values():
-                if isinstance(value, str) and value in identities:
-                    raise CompassContractError(
-                        "media manifest marks the MS3 orientation package as served, "
-                        "outside the canary's media scope: " + value
-                    )
-
-
 def load_ms3_preflight_sources(curriculum_path, orientation_packet_path):
     try:
         with open(curriculum_path, encoding="utf-8") as handle:
@@ -483,8 +386,7 @@ def load_ms3_preflight_sources(curriculum_path, orientation_packet_path):
     return curriculum, orientation_packet
 
 
-def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> None:
-    require_real_files(out_dir, built_orientation_paths)
+def assert_ms3_output(out_dir, cards, safety_text) -> None:
     _scan_completed_output(out_dir, _retired_needles())
     try:
         with open(os.path.join(out_dir, "content", "welcome.md"), encoding="utf-8") as handle:
@@ -522,19 +424,12 @@ def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> N
 
 
 def assert_resident_output(out_dir) -> None:
-    require_real_files(out_dir, RESIDENT_ONBOARDING_PATHS)
     forbidden = _retired_needles()
-    for copy in (COMPASS_ROOT_OPENER, SCOPE_COPY, PROMPT_COPY, COMPASS_HEADING, OPTIONAL_VIDEO_COPY):
+    for copy in (COMPASS_ROOT_OPENER, SCOPE_COPY, PROMPT_COPY, COMPASS_HEADING):
         forbidden[copy.encode("utf-8")] = "MS3 Compass copy: " + copy
     files = _scan_completed_output(out_dir, forbidden)
-    for relative_path in MS3_OPTIONAL_ORIENTATION_PATHS:
+    for relative_path in MS3_ONLY_TOOL_PATHS:
         if relative_path in files:
             raise CompassContractError(
-                "resident built output contains MS3 optional orientation package: " + relative_path
+                "resident built output contains an MS3-only tool: " + relative_path
             )
-    try:
-        with open(os.path.join(out_dir, "content", "welcome.md"), encoding="utf-8") as handle:
-            welcome = handle.read()
-    except (OSError, UnicodeError) as error:
-        raise CompassContractError("resident built Welcome is unreadable: content/welcome.md") from error
-    _assert_resident_welcome_video(welcome)

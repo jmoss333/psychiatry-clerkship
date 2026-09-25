@@ -315,7 +315,7 @@ function fdReader(index, state, bodyHtml){
     ref: st.ref||'', kind:'read', title: st.ref||'', minutes:null, summary:'',
     points:[], attested:false, toolRef:null, risk:null, href:'',
   });
-  /* Direct .html routes such as orientation-video.html can be intentionally absent from the
+  /* Direct .html routes such as the rp-* tools can be intentionally absent from the
      Library projection while still being governed tool routes. Extension inference keeps the
      shared control literal across all tools instead of silently treating those routes as reads. */
   var isTool=item.kind==='tool'||fdIsTool(item.ref||st.ref);

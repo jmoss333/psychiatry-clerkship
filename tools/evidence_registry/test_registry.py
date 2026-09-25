@@ -1519,7 +1519,9 @@ def _spawned_build_blocked() -> "str | None":
     file IS its pointer stub -- and build_deploy.py hard-fails those outside the CI and
     deploy-preview contexts. That aborts the build below for a reason no source edit can
     fix. Reporting it as a skip keeps the signal honest; any OTHER build failure still
-    hits the returncode assertions.
+    hits the returncode assertions. (Since 2026-09-25 build_deploy.py no longer aborts on
+    stubs -- its only stub gate was retired with the orientation videos -- so in a no-LFS
+    sandbox this skip is now conservative rather than necessary; CI runs it either way.)
 
     An import that cannot be resolved returns None on purpose: "cannot tell" must run the
     test and fail loudly, never silence it.
