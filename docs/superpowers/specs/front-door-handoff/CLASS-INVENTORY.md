@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(481 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(484 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -125,8 +125,9 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
       .fd-carebtn          <button>          (phone-only Patient care resources shortcut)
       .fd-settingsbtn      <button>          (compact settings-panel gear)
   .fd-tabs                 <nav>          (hidden ≤640px)
-    .fd-tab                <button> ×4 standard / ×3 APP
+    .fd-tab                <button> ×5 standard / ×4 APP
       .fd-tab__label[data-compact]       (Essentials and Care labels only)
+    .fd-tab[data-fd-tab="everything"] <button> (sits between Essentials and Care; opens the full Library)
     .fd-tab.fd-tab--care   <button>      (far-right Patient care resources destination)
 #fdDockMount               <div>          (sibling of #fdChromeMount and .fd-main)
   .fd-dock                <nav aria-label="Learning actions"> (≤640px only)
@@ -141,6 +142,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | `.fd-carebtn` | Hidden above 640px. On phones it is a teal, 44px-minimum shortcut beside Safety that routes to the existing Patient care resources tab; `.is-active` and `aria-current="page"` mark the current destination. |
 | `.fd-settingsbtn` | Compact icon-only header gear opening the settings panel; `aria-label` names the action. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
+| `.fd-tab[data-fd-tab="everything"]` | Not a distinct `state.tab` value -- clicking it dispatches the same `data-fd-library-view="full"` transition as the in-Library "Everything (N pages) →" footer button (fd_library.js), landing on `tab:'library', libraryView:'full'`. `is-active` on Everything and on Essentials are mutually exclusive projections of that one `libraryView` field (fd_shell.js `fdTabs`). |
 | `.fd-tab--care` | Uses `margin-left:auto` plus a quiet divider to keep Patient care resources visually separate at the far right on tablet and desktop. |
 | `.fd-tab__label[data-compact]` | One resilient text node per responsive tab. Its full button `aria-label` remains accessible. |
 | `.fd-tab--care` | Uses `margin-left:auto` plus a quiet divider to keep Patient care resources visually separate at the far right. At ≤640px the divider and auto margin disappear. |
@@ -153,30 +155,38 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 
 ```
 .fd-dock                 <nav aria-label="Learning actions">
-  .fd-dock__item         <button> ×2   (Today + Path, or On shift + The Essentials)
+  .fd-dock__item         <button> ×1   (Today, or On shift)
+  .fd-dock__item         <button> ×1   (Path, or The Essentials)
   .fd-dock__item.fd-dock__item--context
-                         <button>      (primary action, or Library Browse fallback)
-  .fd-dock__item         <button> ×2   (Search + Capture)
+                         <button>      (primary action, or Library Essentials fallback)
+  .fd-dock__item.fd-dock__browse
+                         <details>     (Browse -- see below)
+    .fd-dock__browsemenu <div role="menu">
+      .fd-dock__browseitem <button> ×2 (The Essentials, Everything)
+  .fd-dock__item         <button> ×1   (Capture)
 ```
 
 | Class | Notes |
 |---|---|
 | `.fd-dock` | `<nav aria-label="Learning actions">`; fixed five-column phone grid under `#fdDockMount`. Its safe-area padding is the only phone bottom-edge action surface. Hidden above 640px. |
-| `.fd-dock__item` | `<button>`; four ordinary items and the contextual button. Every phone target has at least 44×44 CSS pixels and visible text. Height is bounded to 60px with three visible lines so a long reader title cannot exceed the 84px content clearance; the full text remains the accessible name. `[aria-current="page"]` marks the active top-level destination; `:disabled` dims an unavailable item. |
-| `.fd-dock__item--context` | Modifier on the center button. A marked primary source forwards its existing click through `data-fd-dock-forward` and is raised; absent or stale source opens Library Browse as a flat **Browse** item. The reader's marked source stays in the hidden legacy action bar solely to own its behavior; Today sources remain visible in their cards. |
+| `.fd-dock__item` | `<button>` for four of the five slots, `<details>` for Browse (see below). Every phone target has at least 44×44 CSS pixels and visible text. Height is bounded to 60px with three visible lines so a long reader title cannot exceed the 84px content clearance; the full text remains the accessible name. `[aria-current="page"]` marks the active top-level destination; `:disabled` dims an unavailable item. |
+| `.fd-dock__item--context` | Modifier on the center button. A marked primary source forwards its existing click through `data-fd-dock-forward` and is raised; absent or stale source opens the Library (Essentials) as a flat **Essentials** item. Renamed from **Browse** (2026-09-25) once the dedicated `.fd-dock__browse` item shipped beside it -- both landing on the same word read as a duplicate-label bug rather than two purposeful controls, since this fallback only appears when nothing is actively being read while the dedicated Browse item is always present. The reader's marked source stays in the hidden legacy action bar solely to own its behavior; Today sources remain visible in their cards. |
+| `.fd-dock__browse` | Replaces the dock's old Search button (2026-09-25) -- the header's own `.fd-searchbtn[data-fd-search]` already covers phones, so a second Search entry point was pure redundancy. A native `<details>`/`<summary>` disclosure, not a dispatched action: opening/closing it is browser-owned, so it needs no state field and nothing to reset on unrelated navigation. `fdRenderDock` replaces the dock's entire innerHTML on every refresh, which closes an open disclosure for free. Overrides `.fd-dock__item`'s `overflow:hidden`/line-clamp (built for a plain text label) with `overflow:visible`, since `.fd-dock__browsemenu` is an absolutely-positioned descendant that must escape this box to float above the dock. |
+| `.fd-dock__browsemenu` | The popover revealed by `.fd-dock__browse[open]`; `position:absolute;bottom:100%` anchors it above the dock. `role="menu"`. |
+| `.fd-dock__browseitem` | `<button role="menuitem" data-fd-library-view="essentials"\|"full">` -- the exact dispatch action the desktop Essentials/Everything tabs already use (fd_wire.js), so choosing either behaves identically to the equivalent desktop tab; no new navigation logic was added for the phone dock. |
 
 The renderer inserts the context button after the two leading destinations, making it the third
-of five buttons. APP changes the first two labels and routes its second item to Library; Search
-and Capture remain the final two. Capture carries `aria-haspopup="dialog"` and an `aria-expanded`
-state that the existing Capture open/close handler updates. The shell refreshes the dock's route
-and context controls after each base render, completion change, and settled resource load
-(including failure, only for the current route). It reuses the same Search and Capture button
-objects, preserving open-dialog invokers and Capture's expanded state without taking focus from
-the dialog. `fdDockSource(contentEl)` supplies the marked action and the delegated controller
-forwards it. The dock is cleared on setup, faculty preview, and non-app screens. Enhanced guides
-retain this single dock for completion and Capture while their inline Find, Print, Practice,
-and contents controls keep their existing behavior. Search and Capture retain their existing
-dialog focus traps and return focus to the exact dock button that opened them.
+of five items, with Browse fourth and Capture fifth. APP changes the first two labels and routes
+its second item to Library. Capture carries `aria-haspopup="dialog"` and an `aria-expanded` state
+that the existing Capture open/close handler updates. The shell refreshes the dock's route and
+context controls after each base render, completion change, and settled resource load (including
+failure, only for the current route). It reuses the same Capture button object, preserving its
+open-dialog invoker and expanded state without taking focus from the dialog -- Search dropped out
+of this reuse list along with the button itself. `fdDockSource(contentEl)` supplies the marked
+action and the delegated controller forwards it. The dock is cleared on setup, faculty preview,
+and non-app screens. Enhanced guides retain this single dock for completion and Capture while
+their inline Find, Print, Practice, and contents controls keep their existing behavior. Capture
+retains its existing dialog focus trap and returns focus to the exact dock button that opened it.
 
 ---
 

@@ -199,7 +199,7 @@ test('reading place: Today Continue focuses once; Library and Search restore scr
   await expect(page.locator('.fd-article__body h3').nth(1)).toBeFocused();
   expect(await page.evaluate(() => window.__readingFocusCalls)).toBe(1);
   await page.locator('.fd-reader__back:visible').evaluate(button => button.click());
-  await page.locator('.fd-dock [data-fd-search]:visible').click();
+  await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
   await page.getByRole('dialog', { name: 'Search' }).getByRole('button', { name: 'Browse the Library' }).click();
   const full = page.locator('[data-fd-library-view="full"]:visible');
   if (await full.count()) await full.click();
@@ -210,7 +210,7 @@ test('reading place: Today Continue focuses once; Library and Search restore scr
   await expectReadingAnchor(page, 1, ref);
   await expect(page.locator('.fd-reader:visible .fd-article__h1')).toBeFocused();
   expect(await page.evaluate(() => window.__readingFocusCalls)).toBe(1);
-  await page.locator('.fd-dock [data-fd-search]:visible').click();
+  await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
   const dialog = page.getByRole('dialog', { name: 'Search' });
   await expect(dialog.getByRole('textbox', { name: 'Search resources' })).toBeFocused();
   await expect(page.locator('.fd-article__body h3').nth(1)).not.toBeFocused();
@@ -468,7 +468,7 @@ async function expectAdaptiveDock(page, expectedFirst, expectedSecond, expectedC
   await expect(dock).toHaveCount(1);
   await expect(dock).toHaveAttribute('aria-label', 'Learning actions');
   const items = dock.locator('button:visible');
-  await expect(items).toHaveCount(5);
+  await expect(items).toHaveCount(4);
   const labels = (await items.allTextContents()).map(label => label.trim());
   expect(labels[0]).toBe(expectedFirst);
   expect(labels[1]).toBe(expectedSecond);
@@ -478,7 +478,11 @@ async function expectAdaptiveDock(page, expectedFirst, expectedSecond, expectedC
   } else {
     expect(labels[2].length).toBeGreaterThan(0);
   }
-  expect(labels.slice(3)).toEqual(['Search', 'Capture']);
+  expect(labels.slice(3)).toEqual(['Capture']);
+  // Browse is a native <details> disclosure, not a button: closed, its two menu actions render
+  // but are not :visible, which is why it is absent from the `items` count above.
+  await expect(dock.locator('details.fd-dock__browse:visible')).toHaveCount(1);
+  await expect(dock.locator('details.fd-dock__browse summary')).toHaveText('Browse');
   const geometry = await page.evaluate(() => {
     const dock = document.querySelector('.fd-dock');
     const bar = dock.getBoundingClientRect();
@@ -661,40 +665,12 @@ for (const mutation of ['save', 'delete']) {
   });
 }
 
-test('adaptive mobile dock: delayed Search hydration preserves input focus and exact invoker', async ({ page }, testInfo) => {
-  let releaseIndex;
-  const delayed = new Promise(resolve => { releaseIndex = resolve; });
-  await page.route('**/search-index.json', async route => {
-    await delayed;
-    await route.continue();
-  });
-  await page.setViewportSize(DOCK_PHONE);
-  await seedApp(page, testInfo);
-  await page.goto('/?tab=today');
-  await expect(page.locator('.fd-today')).toBeVisible();
-  const search = page.locator('.fd-dock [data-fd-search]:visible');
-  await search.evaluate(el => { window.__dockSearchInvoker = el; });
-  await search.click();
-  const dialog = page.getByRole('dialog', { name: 'Search' });
-  const input = dialog.getByRole('textbox', { name: 'Search resources' });
-  await input.fill('sleep');
-  await expect(input).toBeFocused();
-  releaseIndex();
-  await expect.poll(() => page.evaluate(() => Boolean(window.SI && Object.keys(window.SI.postings).length))).toBe(true);
-  await expect(input).toBeFocused();
-  await expect(input).toHaveValue('sleep');
-  expect(await search.evaluate(el => el === window.__dockSearchInvoker)).toBe(true);
-  await expect(search).toHaveCount(1);
-  await input.press('Shift+Tab');
-  await expect(dialog.locator('button:visible').last()).toBeFocused();
-  await page.keyboard.press('Tab');
-  await expect(input).toBeFocused();
-  await input.press('Escape');
-  await expect(dialog).toHaveCount(0);
-  await expect(search).toBeFocused();
-  expect(await page.evaluate(() => document.activeElement === window.__dockSearchInvoker)).toBe(true);
-  await expectHealthy(page);
-});
+// The dock no longer has its own Search opener (2026-09-25 -- replaced by Browse; the header's
+// .fd-searchbtn[data-fd-search] is the one search entry point now), so the exact-invoker-survives
+// -delayed-hydration coverage that used to live here no longer has a mechanism to test: Browse is
+// a stateless native <details> disclosure with no text input to preserve, and the header search
+// button's own hydration-focus-retention is already covered by frontdoor-runtime.spec.js's
+// 'same-route data hydration preserves focused header and Today controls'.
 
 test('adaptive mobile dock: resident APP invitation substitutes slots without changing saved identity', async ({ page }, testInfo) => {
   test.skip(!isResidentProject(testInfo.project.name), 'APP invitation exists only on the resident build');
@@ -703,7 +679,7 @@ test('adaptive mobile dock: resident APP invitation substitutes slots without ch
   await page.goto('/?tab=library');
   await expect(page.locator('.fd-library')).toBeVisible();
   // Settle the normal Library navigation write before comparing invitation-mode storage.
-  await page.locator('.fd-dock [data-fd-search]:visible').click();
+  await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
   await page.getByRole('dialog', { name: 'Search' }).getByRole('button', { name: 'Browse the Library' }).click();
   await expect(page.locator('.fd-library')).toBeVisible();
   // Prevent the fixture's load-time seeding from masking an APP-mode storage write on reload.
@@ -1391,7 +1367,8 @@ test('390x844 reduced-motion Reader keeps one fixed 44px dock during scroll with
   expect(after.y + after.height).toBeCloseTo(PHONE.height, 0);
 
   const targets = await page.locator(
-    '.fd-dock:visible button:visible, .fd-searchbtn:visible, .fd-safetybtn:visible, .fd-carebtn:visible',
+    '.fd-dock:visible button:visible, .fd-dock__browse summary:visible, '
+      + '.fd-searchbtn:visible, .fd-safetybtn:visible, .fd-carebtn:visible',
   ).evaluateAll(controls => controls.map(control => {
       const box = control.getBoundingClientRect();
       return { width: box.width, height: box.height };
@@ -2635,9 +2612,9 @@ test('Patient care resources is a safe, responsive fourth destination and search
   await page.goto('/?tab=care');
 
   const tabs = page.locator('.fd-tab');
-  await expect(tabs).toHaveCount(4);
+  await expect(tabs).toHaveCount(5);
   expect(await tabs.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-fd-tab'))))
-    .toEqual(['today', 'path', 'library', 'care']);
+    .toEqual(['today', 'path', 'library', 'everything', 'care']);
   const careTab = page.locator('.fd-tabs [data-fd-tab="care"]:visible');
   await expect(careTab).toHaveAttribute('aria-current', 'page');
   await expect(careTab).toHaveAccessibleName('Patient care resources');
@@ -2793,7 +2770,7 @@ test('Patient care resources is a safe, responsive fourth destination and search
 
   await page.setViewportSize(PHONE);
   await expect(careTab).toBeHidden();
-  await expect(page.locator('.fd-dock:visible button')).toHaveCount(5);
+  await expect(page.locator('.fd-dock:visible button')).toHaveCount(4);
   expect(await page.locator('.fd-tabs').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
   expect(await page.locator('.fd-care-page').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
 
@@ -2861,7 +2838,7 @@ test('Patient care resources stays reachable through an in-flow phone entry and 
   await expect(entry).toHaveAccessibleName('Patient care resources');
   expect(await entry.evaluate(el => getComputedStyle(el).position)).not.toBe('fixed');
   expect((await entry.boundingBox()).height).toBeGreaterThanOrEqual(44);
-  await expect(page.locator('.fd-dock:visible button')).toHaveCount(5);
+  await expect(page.locator('.fd-dock:visible button')).toHaveCount(4);
   await entry.click();
   await expect(page.locator('.fd-care-page')).toBeVisible();
   await expect(page.locator('.fd-care-pack')).toBeVisible();
@@ -3158,7 +3135,7 @@ test.describe('Essentials Phase 2', () => {
     await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
     await page.locator('[data-fd-change-week]').click();
     await page.locator('[data-fd-week="2"]').click();
-    await page.locator('.fd-dock [data-fd-search]:visible').click();
+    await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
     await page.getByRole('dialog', { name: 'Search' }).getByRole('button', { name: 'Browse the Library' }).click();
     await rail.locator('[data-fd-kit-section="week"]').click();
     await expect(rail.locator('[data-fd-kit-section="week"] .fd-kit__index-count')).toHaveText(String(expectedWeek(2).length));

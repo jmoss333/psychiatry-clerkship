@@ -552,6 +552,11 @@ function fdDispatch(attrs, context, state){
   }
   if(fdOwn(a,'data-fd-tab')){
     tab=String(a['data-fd-tab']||'');
+    /* The Everything tab is not a fifth app-level tab -- it is the top-row entry point into the
+       full Library, so it reuses the already-tested full-view transition rather than growing a
+       new state.tab value that fdValidTab, fdRouteForTab, and every screen switch would then also
+       need to know about. */
+    if(tab==='everything') return fdDispatch({'data-fd-library-view':'full'},c,s);
     if(!fdValidTab(tab)) return {patch:{},route:null,effect:null};
     patch={tab:tab,openId:null,searchOpen:false};
     if(tab!=='care'){ patch.careIntentId=''; patch.carePackIds=[]; }

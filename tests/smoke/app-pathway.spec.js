@@ -220,7 +220,7 @@ test('APP workspace stacks without horizontal overflow at phone width', async ({
 
   const appTabs = page.locator('.fd-tab');
   expect(await appTabs.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-fd-tab'))))
-    .toEqual(['today', 'library', 'care']);
+    .toEqual(['today', 'library', 'everything', 'care']);
   const careEntry = page.locator('.fd-app .fd-care-entry[data-fd-tab="care"]');
   await expect(careEntry).toBeVisible();
   await expect(careEntry).toHaveAccessibleName('Patient care resources');
