@@ -19,7 +19,8 @@ name: Refresh visual baselines
 #   2. Commits tests/smoke/baseline/ and nothing else. The message carries no CI-skip
 #      token, so Netlify builds the PR's deploy previews on it as on any push.
 #   3. Runs the governance/content guard (bin/check_governance_separation.py) over each
-#      open PR's range, with the new commit as the head, BEFORE pushing. ci.yml runs that
+#      open PR's range (from its merge-base with the PR's base branch, as the PR's own diff
+#      is), with the new commit as the head, BEFORE pushing. ci.yml runs that
 #      guard only on pull_request events, and step 5's run is a workflow_dispatch, so this
 #      is where the head gets judged. The guard's output is in this run's log.
 #   4. Pushes. A push made with this workflow's GITHUB_TOKEN starts no workflow at all,
@@ -149,9 +150,15 @@ jobs:
 
           # Step 3: judge each open PR's range with this commit as its head, before
           # pushing. A red guard (exit 1) or a could-not-check (exit 2) stops here.
-          bases=$(gh pr list --head "$BRANCH" --state open --json baseRefOid --jq '.[].baseRefOid')
-          for base in $bases; do
-            git fetch --no-tags --quiet origin "$base"
+          # The range starts at the merge-base, as the PR's own diff does. baseRefOid is
+          # the base branch's CURRENT tip, and once that moves past the branch's fork
+          # point, a diff from the tip counts every newer main commit, reversed, as this
+          # branch's change: a false L1 the first time main takes content and governance.
+          # (ci.yml can diff from the tip because it checks out the PR's merge commit.)
+          tips=$(gh pr list --head "$BRANCH" --state open --json baseRefOid --jq '.[].baseRefOid')
+          for tip in $tips; do
+            git fetch --no-tags --quiet origin "$tip"
+            base=$(git merge-base "$tip" HEAD)
             python3 bin/check_governance_separation.py --base "$base" --head HEAD --head-branch "$BRANCH"
           done
 
@@ -159,7 +166,7 @@ jobs:
           git push origin "HEAD:$BRANCH"
 
           # Step 5.
-          if [ -z "$bases" ]; then
+          if [ -z "$tips" ]; then
             echo "No open PR from $BRANCH: pushed $(git rev-parse --short HEAD) without starting CI."
             echo "Opening the PR runs the ordinary pull_request CI, governance guard included."
             exit 0
