@@ -188,13 +188,30 @@ class RealShippedPagesSourcesTest(unittest.TestCase):
         )
 
     def test_no_other_shipped_page_carries_extra_sources(self):
+        # Tools carry their rendered data as extraSources since 2026-09-24; that set is
+        # pinned file by file in site_build/test_shipped_pages.py. Among PAGES, only the
+        # two resident overrides have a second source.
         self.assertEqual(
             sorted(
                 page["slug"]
                 for page in self.document["pages"]
-                if "extraSources" in page
+                if "extraSources" in page and page["kind"] == "page"
             ),
             ["cotw_index.md", "welcome.md"],
+        )
+
+    def test_a_tool_hashes_the_pack_it_renders(self):
+        """The defect that motivated the tool-data registration (peer-review WP-5, #770).
+
+        sp-interview.html fetches its whole case set from sp-interview.pack.json; with only
+        the .html hashed, a pack edit changed what learners saw without drifting anything.
+        """
+        self.assertEqual(
+            sources_for_slug(self.document, "sp-interview.html"),
+            [
+                "_prototypes/sp-interview/sp-interview.html",
+                "_prototypes/sp-interview/sp-interview.pack.json",
+            ],
         )
 
 

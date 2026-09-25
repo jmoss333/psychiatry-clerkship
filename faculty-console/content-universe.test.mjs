@@ -207,9 +207,26 @@ test('a resident override is recorded on the shared page as extraSources', () =>
     ['08_Cases_and_Simulation/case-of-the-week/index_resident.md'],
   );
   assert.deepEqual(
-    SHIPPED.pages.filter(page => page.extraSources !== undefined).map(page => page.slug).sort(),
+    SHIPPED.pages
+      .filter(page => page.extraSources !== undefined && page.kind === 'page')
+      .map(page => page.slug).sort(),
     ['cotw_index.md', 'welcome.md'],
     'only the two resident overrides reuse a slug the manifest already ships',
+  );
+});
+
+test('a tool carries the data it renders as extraSources, so the console hashes it too', () => {
+  // attestation-hash.mjs reads source + extraSources exactly as the Python twin does; this
+  // pins that the listing the console reads really carries a tool's pack, so re-attesting
+  // sp-interview.html in the console binds the case set learners see, not the shell alone.
+  const bySlug = new Map(SHIPPED.pages.map(page => [page.slug, page]));
+  assert.deepEqual(
+    bySlug.get('sp-interview.html').extraSources,
+    ['_prototypes/sp-interview/sp-interview.pack.json'],
+  );
+  assert.deepEqual(
+    bySlug.get('rp-brief-psych.html').extraSources,
+    ['_prototypes/brief-psych/rp-brief-psych.pack.json'],
   );
 });
 

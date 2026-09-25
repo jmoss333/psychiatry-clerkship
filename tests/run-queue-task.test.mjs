@@ -185,6 +185,56 @@ print(M.staleness_notices(["07_Evidence_and_Reading/Book_Summaries/ms3_book_libr
   assert.match(notices, /could not determine attestation impact/);
 });
 
+/**
+ * A throwaway root with the real derived-listing modules and a controlled ledger, so the G4
+ * cases below pin the code and not the faculty's live queue (CLAUDE.md: a test may not depend
+ * on live governance state). Modules are COPIED, never symlinked: Python resolves a symlinked
+ * module to the real tree, and the listing would then be read from the repository instead.
+ */
+function g4Root(pages, ledger) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'g4-inputs-'));
+  const build = path.join(dir, '13_Faculty_Resources', '_automation', 'site_build');
+  fs.mkdirSync(build, { recursive: true });
+  for (const name of ['shipped_pages.py', 'site_extras.py', 'cotw_slug.py']) {
+    fs.copyFileSync(path.join(repo, '13_Faculty_Resources', '_automation', 'site_build', name),
+      path.join(build, name));
+  }
+  fs.writeFileSync(path.join(build, 'shipped_pages.json'), JSON.stringify({ version: 1, pages }));
+  fs.writeFileSync(path.join(dir, '13_Faculty_Resources', 'reviewed.json'), JSON.stringify(ledger));
+  return dir;
+}
+
+const g4Page = (slug, extraSources) => ({
+  slug, kind: 'tool', sites: ['ms3'], title: slug, source: `tools/${slug}`,
+  producer: 'site_manifest', extraSources,
+});
+
+test('G4 — editing data a tool renders announces every attested slug it feeds', () => {
+  // A tool's pack or scenario file is an extraSources entry, and one shared file can feed
+  // several tools (communication_cases.json: the practice tool AND the review deck). Reading
+  // `source` alone stayed silent here -- the edit staled two hashes and announced neither.
+  const dir = g4Root(
+    [g4Page('deck.html', ['cases.json']), g4Page('draft.html', ['cases.json']),
+      g4Page('practice.html', ['cases.json'])],
+    {
+      'deck.html': { status: 'reviewed', by: 'Faculty A', at: '2026-09-21' },
+      'draft.html': { status: 'pending', by: 'Pending faculty review', at: '2026-09-21' },
+      'practice.html': { status: 'reviewed', by: 'Faculty A', at: '2026-09-21' },
+    },
+  );
+  try {
+    const notices = py(`
+for n in M.staleness_notices(["cases.json"], root=${JSON.stringify(dir)}):
+    print(n)`);
+    assert.doesNotMatch(notices, /could not determine/);
+    assert.match(notices, /`cases\.json` ships as `deck\.html`, currently \*\*reviewed\*\*/);
+    assert.match(notices, /`cases\.json` ships as `practice\.html`, currently \*\*reviewed\*\*/);
+    assert.doesNotMatch(notices, /draft\.html/, 'a pending slug claims nothing to stale');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('a file that ships nowhere raises no attestation notice', () => {
   assert.equal(py('print(M.staleness_notices(["bin/run_queue_task.py"]))'), '[]');
 });

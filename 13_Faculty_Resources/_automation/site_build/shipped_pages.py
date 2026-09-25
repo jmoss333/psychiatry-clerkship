@@ -113,6 +113,70 @@ def _manifest_entries(manifest, key):
         yield entry[0], entry[1], entry[2]
 
 
+def _is_tool_data(name):
+    return name.endswith(site_extras.TOOL_DATA_SUFFIXES)
+
+
+def tool_data_sources(root=ROOT):
+    """The data each shipped tool renders: {slug: {repo source: name the tool fetches}}.
+
+    Four routes, three of them read from lists the builds themselves copy from:
+      a. site_manifest.json `toolAssets` with a data suffix, owned by the manifest tool
+         whose built name shares its stem (sp-interview.pack.json -> sp-interview.html);
+      b. the orientation video's rider assets with a data suffix (its captions);
+      c. the sibling pack of each resident tool in site_extras.RESIDENT_TOOLS_WITH_PACK
+         (resident_section.py copies it when it exists; the declaration keeps this a
+         read of producer files, never of the tree);
+      d. site_extras.TOOL_SHARED_DATA, declared by hand (see there for why).
+    Code and media riders never appear: see site_extras.TOOL_DATA_SUFFIXES.
+    """
+    root = os.path.abspath(os.fspath(root))
+    manifest = _load_json(os.path.join(root, MANIFEST_RELATIVE), "site_manifest.json")
+    found = {}
+
+    def add(slug, source, served):
+        found.setdefault(slug, {})[source] = served
+
+    tool_slugs = {slug for _source, slug, _title in _manifest_entries(manifest, "tools")}
+    assets = manifest.get("toolAssets", []) if isinstance(manifest, dict) else []
+    if not isinstance(assets, list):
+        raise ShippedPagesError("site_manifest.json: toolAssets must be a list")
+    for entry in assets:
+        if not (isinstance(entry, list) and len(entry) == 2
+                and all(isinstance(value, str) for value in entry)):
+            raise ShippedPagesError("site_manifest.json: a toolAssets entry is malformed")
+        source, served = entry
+        if not _is_tool_data(served):
+            continue
+        owner = served.split(".", 1)[0] + ".html"
+        if owner not in tool_slugs:
+            raise ShippedPagesError(
+                "site_manifest.json: toolAssets %r is data but no shipped tool is named %r "
+                "-- its attestation would cover nothing" % (served, owner)
+            )
+        add(owner, source, served)
+
+    for _source, slug, _title in site_extras.MS3_EXTRA_TOOLS:
+        for source, served, title in site_extras.MS3_ORIENT_VIDEO:
+            if title is None and _is_tool_data(served):
+                add(slug, source, served)
+
+    resident_tools = {slug: source for source, slug, _title in site_extras.RESIDENT_PROTO_TOOLS}
+    for slug in site_extras.RESIDENT_TOOLS_WITH_PACK:
+        if slug not in resident_tools:
+            raise ShippedPagesError(
+                "site_extras.py: RESIDENT_TOOLS_WITH_PACK names %r, which is not a resident "
+                "tool" % slug
+            )
+        add(slug, site_extras.resident_tool_pack(resident_tools[slug]),
+            site_extras.resident_tool_pack(slug))
+
+    for slug, pairs in site_extras.TOOL_SHARED_DATA.items():
+        for source, served in pairs:
+            add(slug, source, served)
+    return found
+
+
 def derive(root=ROOT):
     """The pure derivation: producers in, the shipped_pages document out.
 
@@ -188,6 +252,20 @@ def derive(root=ROOT):
     # 5 -- resident-only prototype tools. These DO ship: _build/res/tools/.
     for source, slug, title in site_extras.RESIDENT_PROTO_TOOLS:
         add(_page(slug, "tool", ["res"], title, source, "resident_tool"))
+
+    # 6 -- the data each tool renders is an attested input of that tool. Not a new page:
+    # it rides on the tool's slug as `extraSources`, which attestation_hash hashes with
+    # `source`, so editing a pack or a scenario file drifts the tool that shows it.
+    for slug, sources in sorted(tool_data_sources(root).items()):
+        page = by_slug.get(slug)
+        if page is None:
+            raise ShippedPagesError(
+                "tool data is registered for %r, which no producer ships -- rename or drop "
+                "its entry in site_extras.py" % slug
+            )
+        for source in sorted(sources):
+            if source != page["source"] and source not in page.get("extraSources", []):
+                page.setdefault("extraSources", []).append(source)
 
     generated_from = {}
     for relative in INPUT_FILES:

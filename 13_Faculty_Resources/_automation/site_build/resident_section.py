@@ -162,7 +162,7 @@ common.apply_contrast_fix(glob.glob(OUT+"/content/*.md"))
 # git-tracked _prototypes/ so build-on-push keeps them live. Copied raw to match live (no polish pass).
 # Same reasoning as RES_EXTRA above: these three DO ship (_build/res/tools/), so
 # shipped_pages.py has to be able to enumerate them without running this script.
-from site_extras import RESIDENT_PROTO_TOOLS as PROTO_TOOLS
+from site_extras import RESIDENT_PROTO_TOOLS as PROTO_TOOLS, resident_tool_pack
 os.makedirs(OUT+"/tools",exist_ok=True)
 for src,dst,_title in PROTO_TOOLS:
     p=os.path.join(LIB,src)
@@ -170,9 +170,10 @@ for src,dst,_title in PROTO_TOOLS:
     else: print("  WARN: prototype tool missing from source:",src)
     # sibling content pack (tools/<name>.pack.json convention — see _TEMPLATE.html);
     # the tool's own fetch() 404s at runtime if this doesn't ride along with the .html.
-    pack_src=p[:-len(".html")]+".pack.json"
+    # One definition, shared with shipped_pages.py, which binds the pack to the tool's hash.
+    pack_src=os.path.join(LIB,resident_tool_pack(src))
     if os.path.exists(pack_src):
-        shutil.copyfile(pack_src, OUT+"/tools/"+dst[:-len(".html")]+".pack.json")
+        shutil.copyfile(pack_src, OUT+"/tools/"+resident_tool_pack(dst))
 
 # Apply the full shared page pass over the resident build. Idempotent, so the pages
 # inherited from the MS3 copytree are untouched and only the newly-written rp-* tools

@@ -28,6 +28,16 @@ files are media the onboarding page plays, not pages, so they have no nav title.
 Fifth route, deliberately NOT here: the Case-of-the-Week pages, which are
 registry-driven and derived by cotw_slug.py.
 
+The bottom of this module answers a different question -- not "which pages ship" but
+"which files does a shipped TOOL render from". A tool's attestation hashes its .html;
+the scenarios, packs and decks it fetches are separate files, and until 2026-09-24
+no hash covered them (peer-review WP-5 #770 and WP-10 #773 found it). shipped_pages.py
+records each one as an `extraSources` entry of every slug that renders it. Three of the
+four routes are derived from lists the builds already use; TOOL_SHARED_DATA is the one
+declared by hand, because for shared data the tool-to-file relation exists only inside
+the tool's own fetch() call. test_shipped_pages.py reads those calls and fails when a
+tool fetches data nothing here registers.
+
 DECISION: shipped-pages-single-source
 """
 
@@ -39,6 +49,11 @@ __all__ = [
     "RESIDENT_TRACK_PAGES",
     "RESIDENT_EXTRA_PAGES",
     "RESIDENT_PROTO_TOOLS",
+    "resident_tool_pack",
+    "RESIDENT_TOOLS_WITH_PACK",
+    "TOOL_DATA_SUFFIXES",
+    "TOOL_SHARED_DATA",
+    "TOOL_DATA_NOT_BOUND",
 ]
 
 # ---- MS3-only: the orientation video tool and the media it plays ---------------
@@ -152,3 +167,85 @@ RESIDENT_PROTO_TOOLS = [
         "Post-Event Learning Huddle (2 min)",
     ),
 ]
+
+
+def resident_tool_pack(source):
+    """The sibling content pack resident_section.py copies beside a resident tool.
+
+    `<dir>/<name>.html` -> `<dir>/<name>.pack.json` (the _TEMPLATE.html convention). It
+    ships only when the file exists; the tool fetches it as `./<name>.pack.json`.
+    """
+    return source[: -len(".html")] + ".pack.json"
+
+
+# The resident tools whose sibling pack exists, and therefore ships. DECLARED rather than
+# probed so shipped_pages.derive() stays a pure function of its producer files -- a fixture
+# holding only the producers must derive the same listing as the repository.
+# test_shipped_pages.py fails when this disagrees with the tree in either direction.
+RESIDENT_TOOLS_WITH_PACK = ("rp-agitation.html", "rp-brief-psych.html")
+
+
+# ---- the data a shipped tool renders -------------------------------------------
+# Suffixes of a text data file a tool renders. A rider asset with any other suffix is
+# code or media and stays OUT of the attestation manifest:
+#   .js   -- code (sp-interview.voice.js: speech I/O and its error strings), like the
+#            vendored React bundles;
+#   .mp4  -- Git-LFS. The console hashes from the git tree, where an LFS file is its
+#            ~133-byte pointer, while attestation_hash.py reads the smudged bytes on
+#            disk, so the two digests could never agree;
+#   .jpg  -- the orientation video's poster frame.
+TOOL_DATA_SUFFIXES = (".json", ".vtt")
+
+# Shared data files a tool reaches by relative URL, as
+#   slug -> [(repo source, the name the tool fetches it by)].
+# The build copies each to that name: build_deploy.py puts the four case/scenario files
+# at the site root ("../x.json" from tools/) and the landmark deck at tools/quizzes.json;
+# resident_section.py then overwrites the root reasoning_cases.json with
+# reasoning_cases_resident.json, which is why a shared slug lists BOTH -- one per site,
+# and the digest takes the union, like a resident page override.
+TOOL_SHARED_DATA = {
+    "communication-practice.html": [
+        ("communication_cases.json", "communication_cases.json"),
+    ],
+    "diagnostic-reasoning.html": [
+        ("reasoning_cases.json", "reasoning_cases.json"),
+        ("reasoning_cases_resident.json", "reasoning_cases.json"),
+    ],
+    "family-systems.html": [
+        ("family_systems_scenarios.json", "family_systems_scenarios.json"),
+    ],
+    "one-patient-six-weeks.html": [
+        ("longitudinal_case.json", "longitudinal_case.json"),
+    ],
+    # The spaced-review deck renders cards from the landmark-trial quizzes and from all
+    # three scenario sets, so an edit to any of them changes what it shows.
+    "review.html": [
+        ("07_Evidence_and_Reading/Landmark_Trials/quizzes.json", "quizzes.json"),
+        ("communication_cases.json", "communication_cases.json"),
+        ("family_systems_scenarios.json", "family_systems_scenarios.json"),
+        ("reasoning_cases.json", "reasoning_cases.json"),
+        ("reasoning_cases_resident.json", "reasoning_cases.json"),
+    ],
+    # tools/quizzes.json is the landmark deck, not _prototypes/canon-quiz/quizzes.json
+    # (an unshipped local-preview copy that has drifted from it).
+    "rp-canon-quiz.html": [
+        ("07_Evidence_and_Reading/Landmark_Trials/quizzes.json", "quizzes.json"),
+    ],
+}
+
+# Data a shipped tool fetches that is deliberately NOT an extraSource, with why.
+# Both files are registries check_governance_separation.py reads PROMOTIONS from, and
+# its L3 fails a promotion in a diff that also changes CONTENT. Registering either
+# would make it content, so a legitimate attestation on attest/pending would fail L3
+# against the very file it attests.
+TOOL_DATA_NOT_BOUND = {
+    "question_bank.json": (
+        "attested item by item (status: attested); an attested item cannot change "
+        "without a promotion, which Gate B confines to attest/pending"
+    ),
+    "topic_meta.json": (
+        "each slug's own record is already a line in that slug's manifest "
+        "(attestation_hash.manifest_for_slug); the whole file would drift review.html "
+        "on every metadata edit anywhere"
+    ),
+}

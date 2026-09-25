@@ -206,22 +206,27 @@ def staleness_notices(paths, root=ROOT):
         return ["could not determine attestation impact (%s: %s) -- check by hand before "
                 "merging" % (type(exc).__name__, exc)]
 
-    by_source = {page.get("source"): page for page in pages if page.get("source")}
+    # Every attested input, not only `source`: a resident override or a tool's pack is an
+    # `extraSources` entry, it stales the slug's hash just the same, and one shared data
+    # file (communication_cases.json) can feed several slugs at once.
+    by_input = {}
+    for page in pages:
+        for path in [page.get("source"), *(page.get("extraSources") or [])]:
+            if path:
+                by_input.setdefault(path, []).append(page)
     notices = []
     for path in sorted(set(paths)):
-        page = by_source.get(path)
-        if page is None:
-            continue
-        row = ledger.get(page["slug"])
-        status = row.get("status") if isinstance(row, dict) else None
-        if status in ("reviewed", "attested"):
-            notices.append(
-                "`%s` ships as `%s`, currently **%s** (%s, %s). This edit makes that "
-                "attestation stale: faculty must re-attest in the console, or the ledger "
-                "row must move to pending. The ledger is byte-identical in this diff -- "
-                "nothing else will say so."
-                % (path, page["slug"], status,
-                   (row or {}).get("by", "unknown"), (row or {}).get("at", "undated")))
+        for page in sorted(by_input.get(path, []), key=lambda page: page["slug"]):
+            row = ledger.get(page["slug"])
+            status = row.get("status") if isinstance(row, dict) else None
+            if status in ("reviewed", "attested"):
+                notices.append(
+                    "`%s` ships as `%s`, currently **%s** (%s, %s). This edit makes that "
+                    "attestation stale: faculty must re-attest in the console, or the ledger "
+                    "row must move to pending. The ledger is byte-identical in this diff -- "
+                    "nothing else will say so."
+                    % (path, page["slug"], status,
+                       (row or {}).get("by", "unknown"), (row or {}).get("at", "undated")))
     return notices
 
 

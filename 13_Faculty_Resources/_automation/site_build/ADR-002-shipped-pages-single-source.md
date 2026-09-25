@@ -167,6 +167,34 @@ Two readers are **partially** migrated on purpose and will keep a manifest read:
 `validate_attestation_consistency.py` (per-entry source paths for the source-banner,
 tool-metadata and case-pack checks). Both ask `shipped_pages.json` what ships.
 
+### Phase 3 — the data a tool renders (2026-09-24, proposed; owner's decision)
+
+**Found by** peer-review WP-5 (#770, `sp-interview.pack.json`) and WP-10 (#773,
+`rp-brief-psych.pack.json`): a tool's `contentHash` covered its `.html` and nothing else,
+so an edit to the pack, scenario set or deck the tool fetches changed what learners saw
+while the attestation kept reading `reviewed`. Same shape as the #640/#672 incident the
+hash exists for, one layer down.
+
+**Decision (proposed).** Every text data file a shipped tool renders is an `extraSources`
+entry of that tool, derived by `shipped_pages.tool_data_sources()` from four routes: the
+manifest's `toolAssets` (by stem), the orientation video's riders, each resident tool's
+sibling pack (`site_extras.resident_tool_pack`, now also what `resident_section.py`
+copies by), and the hand-declared `site_extras.TOOL_SHARED_DATA` for files a tool reaches
+by relative URL. `test_shipped_pages.py` reads every shipped tool's `fetch()`/`<track>`
+calls and fails in both directions: data fetched but unregistered, or registered but never
+fetched.
+
+**Deliberately not bound:** `question_bank.json` and `topic_meta.json`
+(`TOOL_DATA_NOT_BOUND`). Both are registries Gate B reads promotions from; making either
+content would make every legitimate attestation of it fail L3 on `attest/pending`. Also
+out: code riders (`sp-interview.voice.js`, vendored React), Git-LFS media (the console
+hashes an LFS pointer while Python hashes the smudged bytes, so they could never agree),
+and build-time injections, as before.
+
+**Cost.** Adding an input changes the digest, so all ten registered tools drift to pending
+at once and render the pending notice until re-attested in the console. No stored hash is
+rewritten by this change.
+
 ## Alternatives considered
 
 - **Keep the #517 fix and write a better comment.** Rejected: it is the same
