@@ -26,6 +26,7 @@ from attestation_hash import (  # noqa: E402
     STALE_REASON,
     AttestationHashError,
     blob_sha,
+    canonical_record,
     canonical_topic_meta_record,
     digest,
     digest_from_tree,
@@ -33,6 +34,7 @@ from attestation_hash import (  # noqa: E402
     manifest_for_slug,
     project_effective_ledger,
     project_topic_meta_faculty_review,
+    registry_row_from_tree,
     sources_for_slug,
 )
 
@@ -427,6 +429,150 @@ class ProjectEffectiveLedgerTest(FixtureTreeTestCase):
 
     def test_an_unlisted_unshipped_slug_is_refused(self):
         self.assert_refuses({"ghost.md": reviewed_entry(X_DIGEST)}, "ghost.md", "unshipped")
+
+
+# printf 'gamma\n' | git hash-object --stdin
+GAMMA_SHA = "af17f6cc87e4d5e4adec0018cbb73d3e2bd008c8"
+# printf '%s' '{"date":"2026-08-31","tldr":"t — é","topic":"cat"}' | git hash-object --stdin
+CAT_ROW_SHA = "0c69f8613c830d50018a4527400de69edda2af76"
+C_MANIFEST = f"c.md {GAMMA_SHA}\ncotw_registry {CAT_ROW_SHA}\n"
+# printf '%s' "$C_MANIFEST" | git hash-object --stdin
+C_DIGEST = "7a8497e3482dfcd61ef5391ca7aefcf5c9e6c4bc"
+
+REGISTRY = "cases/cotw_registry.json"
+CAT_ROW = {"date": "2026-08-31", "topic": "cat", "tldr": "t — é"}
+DOG_ROW = {"date": "2026-09-07", "topic": "dog", "tldr": "other"}
+
+
+class RegistryRowTest(unittest.TestCase):
+    """A page whose metadata is DERIVED from one row of a shared registry.
+
+    Case-of-the-Week pages have no topic_meta.json record; the build derives one from
+    their row of cotw_registry.json, and the row's `tldr` is the sentence learners read
+    as the page's lead. Hashing only the case's markdown left that sentence unbound, and
+    hashing the whole registry would drift every case each time a week is added. So the
+    page binds ITS OWN row, found by the `registryRow` spec shipped_pages.json carries.
+    """
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        (self.root / "c.md").write_bytes(b"gamma\n")
+        (self.root / "cases").mkdir()
+        self.write_registry([CAT_ROW, DOG_ROW])
+        self.shipped = {
+            "version": 1,
+            "pages": [
+                {
+                    "kind": "page",
+                    "slug": "c.md",
+                    "source": "c.md",
+                    "sites": ["ms3"],
+                    "registryRow": {
+                        "path": REGISTRY,
+                        "list": "weeks",
+                        "match": {"date": "2026-08-31", "topic": "cat"},
+                    },
+                }
+            ],
+        }
+
+    def write_registry(self, weeks, indent=2):
+        (self.root / REGISTRY).write_text(
+            json.dumps({"weeks": weeks}, indent=indent, ensure_ascii=False), encoding="utf-8"
+        )
+
+    def digest(self):
+        return digest_from_tree(self.root, self.shipped, {}, "c.md")
+
+    def test_the_row_line_is_named_for_its_registry_and_pinned_by_git(self):
+        self.assertEqual(
+            manifest_for_slug("c.md", {"c.md": b"gamma\n"}, None, ("cotw_registry", CAT_ROW)),
+            C_MANIFEST,
+        )
+        self.assertEqual(self.digest(), C_DIGEST)
+
+    def test_the_row_line_sits_between_the_sources_and_topic_meta(self):
+        manifest = manifest_for_slug(
+            "c.md", {"c.md": b"gamma\n"}, {"tldr": "t — é"}, ("cotw_registry", CAT_ROW)
+        )
+        self.assertEqual(
+            [line.split(" ")[0] for line in manifest.splitlines()],
+            ["c.md", "cotw_registry", "topic_meta"],
+        )
+
+    def test_the_row_canonicalises_like_a_topic_meta_record(self):
+        self.assertEqual(canonical_record(CAT_ROW), canonical_topic_meta_record(CAT_ROW))
+        self.write_registry([DOG_ROW, dict(reversed(list(CAT_ROW.items())))], indent=None)
+        self.assertEqual(self.digest(), C_DIGEST, "formatting and row order are not content")
+
+    def test_adding_a_week_does_not_drift_an_existing_case(self):
+        self.write_registry([{"date": "2026-09-14", "topic": "new", "tldr": "x"}, CAT_ROW, DOG_ROW])
+        self.assertEqual(self.digest(), C_DIGEST)
+
+    def test_editing_another_row_does_not_drift_this_case(self):
+        self.write_registry([CAT_ROW, dict(DOG_ROW, tldr="rewritten")])
+        self.assertEqual(self.digest(), C_DIGEST)
+
+    def test_editing_this_row_drifts_this_case(self):
+        self.write_registry([dict(CAT_ROW, tldr="hold nothing"), DOG_ROW])
+        self.assertNotEqual(self.digest(), C_DIGEST)
+
+    def test_a_page_with_no_spec_has_no_row(self):
+        self.shipped["pages"][0].pop("registryRow")
+        self.assertIsNone(registry_row_from_tree(self.root, self.shipped, "c.md"))
+        self.assertEqual(self.digest(), blob_sha(f"c.md {GAMMA_SHA}\n".encode("utf-8")))
+
+    def test_a_missing_registry_is_unresolvable_never_a_shorter_digest(self):
+        (self.root / REGISTRY).unlink()
+        with self.assertRaises(FileNotFoundError):
+            self.digest()
+        report = ledger_hash_report(
+            self.root, {"c.md": reviewed_entry(C_DIGEST)}, self.shipped, {}
+        )
+        self.assertEqual(report["unresolvable"], {"c.md": [REGISTRY]})
+
+    def test_no_matching_row_or_two_is_unresolvable(self):
+        for weeks in ([DOG_ROW], [CAT_ROW, dict(CAT_ROW, tldr="twin")]):
+            with self.subTest(rows=len(weeks)):
+                self.write_registry(weeks)
+                with self.assertRaises(AttestationHashError):
+                    self.digest()
+                report = ledger_hash_report(
+                    self.root, {"c.md": reviewed_entry(C_DIGEST)}, self.shipped, {}
+                )
+                self.assertEqual(list(report["unresolvable"]), ["c.md"])
+                self.assertEqual(report["bound"], {})
+
+    def test_the_ledger_report_binds_and_drifts_on_the_row(self):
+        ledger = {"c.md": reviewed_entry(C_DIGEST)}
+        self.assertEqual(ledger_hash_report(self.root, ledger, self.shipped, {})["bound"],
+                         {"c.md": C_DIGEST})
+        self.write_registry([dict(CAT_ROW, tldr="hold nothing"), DOG_ROW])
+        stale = ledger_hash_report(self.root, ledger, self.shipped, {})["stale"]
+        self.assertEqual(list(stale), ["c.md"])
+        self.assertIn("cotw_registry ", stale["c.md"]["manifest"])
+
+
+class RealRegistryRowsTest(unittest.TestCase):
+    """Every Case-of-the-Week page in the real listing resolves to exactly one row."""
+
+    def test_every_cotw_page_binds_exactly_one_row_of_the_registry(self):
+        shipped = json.loads(
+            (ROOT / "13_Faculty_Resources/_automation/site_build/shipped_pages.json")
+            .read_text(encoding="utf-8")
+        )
+        cotw = [page for page in shipped["pages"] if page["producer"] == "cotw_registry"]
+        self.assertGreater(len(cotw), 0)
+        for page in cotw:
+            label, row = registry_row_from_tree(ROOT, shipped, page["slug"])
+            self.assertEqual(label, "cotw_registry", page["slug"])
+            self.assertTrue(page["source"].endswith(row["ms3_src"] if page["slug"].endswith(
+                "_ms3.md") else row["res_src"]), page["slug"])
+        others = [page for page in shipped["pages"]
+                  if page["producer"] != "cotw_registry" and "registryRow" in page]
+        self.assertEqual(others, [])
 
 
 class ProjectTopicMetaFacultyReviewTest(unittest.TestCase):

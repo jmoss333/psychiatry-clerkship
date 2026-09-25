@@ -2,9 +2,13 @@
 // Secrets remain server-side. The browser supplies only x-faculty-key.
 
 import {
+  AttestationHashError,
   STALE_REASON,
   digestFromManifest,
   manifestForSlug,
+  registryRowLabel,
+  registryRowSpec,
+  selectRegistryRow,
   sourcesForSlug,
 } from '../../attestation-hash.mjs';
 import { deriveContentUniverse } from '../../content-universe.mjs';
@@ -1093,7 +1097,7 @@ function contentApiStatus(entry) {
  * `shipped` is the RAW shipped_pages document: deriveContentUniverse drops `source` and
  * `extraSources`, so a universe entry knows the page's title and not its text.
  */
-function digestForSlug(slug, { shipped, tree, topicMeta }) {
+function digestForSlug(slug, { shipped, tree, topicMeta, registries }) {
   const paths = sourcesForSlug(shipped, slug);
   if (!paths.length) return null;
   const sources = {};
@@ -1105,7 +1109,33 @@ function digestForSlug(slug, { shipped, tree, topicMeta }) {
   // Own properties only: `topicMeta.constructor` would otherwise hand a function to a rule
   // whose "is this a record?" test is about what topic_meta.json actually contains.
   const record = isRecord(topicMeta) && Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : null;
-  return digestFromManifest(manifestForSlug(slug, sources, record));
+  // A page whose metadata is derived from one registry row (a Case-of-the-Week week) binds
+  // that row. A registry that was not read, or a row that is absent or ambiguous, is the same
+  // class as a missing source: null, never a digest over less than the page ships from.
+  let registryRow = null;
+  try {
+    const spec = registryRowSpec(shipped, slug);
+    if (spec) {
+      if (!(registries instanceof Map) || !registries.has(spec.path)) return null;
+      const row = selectRegistryRow(registries.get(spec.path), spec, slug);
+      registryRow = { label: registryRowLabel(spec), row };
+    }
+  } catch (error) {
+    if (error instanceof AttestationHashError) return null;
+    throw error;
+  }
+  return digestFromManifest(manifestForSlug(slug, sources, record, registryRow));
+}
+
+/** Every registry file a shipped page's `registryRow` names, each once. */
+function registryPaths(shipped) {
+  const pages = isRecord(shipped) && Array.isArray(shipped.pages) ? shipped.pages : [];
+  const paths = new Set();
+  for (const page of pages) {
+    const path = isRecord(page) && isRecord(page.registryRow) ? page.registryRow.path : null;
+    if (typeof path === 'string' && path) paths.add(path);
+  }
+  return [...paths].sort();
 }
 
 /**
@@ -1123,7 +1153,15 @@ async function readDigestInputs(repository, shipped, branch) {
   // "the repository request failed, try again later" — the 2026-09-04 misdiagnosis.
   const topicMetaFile = await readRequired(repository, TOPIC_META_PATH, branch);
   if (!isRecord(topicMetaFile.json)) invalidRepositoryFile();
-  return { tree, shipped, topicMeta: topicMetaFile.json };
+  // The registries registry-row pages derive their metadata from, read at the same ref as
+  // everything else here; readRequired for the same reason as topic_meta above.
+  const registries = new Map();
+  for (const path of registryPaths(shipped)) {
+    const file = await readRequired(repository, path, branch);
+    if (!isRecord(file.json)) invalidRepositoryFile();
+    registries.set(path, file.json);
+  }
+  return { tree, shipped, topicMeta: topicMetaFile.json, registries };
 }
 
 /**

@@ -37,9 +37,13 @@ import {
   PENDING_SENTINEL,
   STALE_REASON,
   blobSha,
+  canonicalRecord,
   canonicalTopicMetaRecord,
   digestFromManifest,
   manifestForSlug,
+  registryRowLabel,
+  registryRowSpec,
+  selectRegistryRow,
   sourcesForSlug,
 } from '../faculty-console/attestation-hash.mjs';
 
@@ -70,7 +74,9 @@ for slug in payload["slugs"]:
     paths = ah.sources_for_slug(shipped, slug)
     sources = {p: (root / p).read_bytes() for p in paths}
     try:
-        manifest = ah.manifest_for_slug(slug, sources, meta.get(slug))
+        manifest = ah.manifest_for_slug(
+            slug, sources, meta.get(slug), ah.registry_row_from_tree(root, shipped, slug)
+        )
     except ah.AttestationHashError:
         out["slugs"][slug] = {"error": "AttestationHashError"}
         continue
@@ -111,7 +117,13 @@ function jsManifest(root, shipped, topicMeta, slug) {
     sources[source] = blobSha(fs.readFileSync(path.join(root, source)));
   }
   const record = Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : undefined;
-  return manifestForSlug(slug, sources, record);
+  // The registry row is resolved the way the console resolves it: the spec from the listing,
+  // the registry read once, exactly one matching row.
+  const spec = registryRowSpec(shipped, slug);
+  const registryRow = spec
+    ? { label: registryRowLabel(spec), row: selectRegistryRow(readJson(root, spec.path), spec, slug) }
+    : null;
+  return manifestForSlug(slug, sources, record, registryRow);
 }
 
 const shippedDoc = readJson(repo, SHIPPED_PAGES);
@@ -142,6 +154,10 @@ test('every reviewed shipped slug hashes identically in both implementations', (
     assert.equal(digestFromManifest(manifest), live.slugs[slug].digest,
       `digest differs for ${slug}`);
   }
+  // Non-vacuity: the loop above must have compared at least one registry-row line, or it
+  // would pass while both sides silently omitted it.
+  const withRow = reviewedShipped.filter(slug => live.slugs[slug].manifest?.includes('\ncotw_registry '));
+  assert.ok(withRow.length > 0, 'no reviewed page carried a cotw_registry line — the row rule went unexercised');
 });
 
 test('the governance strings are byte-identical across the two implementations', () => {
@@ -194,6 +210,11 @@ test('a two-source slug, a non-record topic_meta value, and an unshipped slug ag
         source: 'zz_second/resident.md',
         extraSources: ['aa_first/ms3.md'],
       }, {
+        // A derived-metadata page: its line covers ONE row of reg/weeks.json, found by match.
+        slug: 'row.md',
+        source: 'aa_first/ms3.md',
+        registryRow: { path: 'reg/weeks.json', list: 'weeks', match: { date: '2026-08-31', topic: 'cat' } },
+      }, {
         // plain.md must be SHIPPED here, or Python returns AttestationHashError for it
         // (no sources) and the non-record comparison below never happens — the JS side
         // would be asserting against itself while reading as a parity check.
@@ -210,10 +231,15 @@ test('a two-source slug, a non-record topic_meta value, and an unshipped slug ag
       },
       'plain.md': 'not a record at all',
     };
+    fs.mkdirSync(path.join(root, 'reg'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'reg/weeks.json'), JSON.stringify({ weeks: [
+      { topic: 'dog', date: '2026-09-07', tldr: 'other' },
+      { topic: 'cat', tldr: 'Catatonia — rule out NMS · ≥ 2 signs', date: '2026-08-31', n: [2, 1] },
+    ] }));
     fs.writeFileSync(path.join(root, 'shipped.json'), JSON.stringify(shipped));
     fs.writeFileSync(path.join(root, 'meta.json'), JSON.stringify(topicMeta));
 
-    const slugs = ['pair.md', 'plain.md', 'absent.md'];
+    const slugs = ['pair.md', 'row.md', 'plain.md', 'absent.md'];
     const expected = python({
       root,
       shipped: 'shipped.json',
@@ -228,6 +254,14 @@ test('a two-source slug, a non-record topic_meta value, and an unshipped slug ag
       'sources are hashed in sorted path order');
     assert.equal(pair.split('\n')[2], 'topic_meta ' + blobSha(
       canonicalTopicMetaRecord(topicMeta['pair.md'])));
+
+    // A registry-row page: a `weeks` line between the source and topic_meta, over the one
+    // matching row canonicalised like a topic_meta record (key order in the file is not content).
+    const row = jsManifest(root, shipped, topicMeta, 'row.md');
+    assert.equal(row, expected.slugs['row.md'].manifest, 'Python and JS disagree about a registry row');
+    assert.equal(digestFromManifest(row), expected.slugs['row.md'].digest);
+    assert.equal(row.split('\n')[1], 'weeks ' + blobSha(canonicalRecord(
+      { date: '2026-08-31', n: [2, 1], tldr: 'Catatonia — rule out NMS · ≥ 2 signs', topic: 'cat' })));
 
     // A topic_meta value that is not a mapping is NO record: one source line, no topic_meta
     // line — the same decision on both sides, or the two disagree about every such slug.

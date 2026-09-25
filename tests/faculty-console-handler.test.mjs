@@ -79,6 +79,18 @@ function expectedDigest(files, sources, slug) {
   const lines = [page.source, ...(page.extraSources || [])]
     .sort()
     .map(source => `${source} ${blobShaOf(sources[source])}`);
+  // A derived-metadata page binds its OWN registry row, named for the registry's stem.
+  // Written out independently of attestation-hash.mjs so this stays a second oracle.
+  if (page.registryRow) {
+    const { path: registryPath, list, match } = page.registryRow;
+    const rows = files[registryPath]?.json?.[list] ?? [];
+    const hits = rows.filter(row => Object.entries(match).every(([key, value]) => row[key] === value));
+    if (hits.length === 1) {
+      const body = { ...hits[0] };
+      delete body.facultyReview;
+      lines.push(`${registryPath.split('/').pop().replace(/\.json$/, '')} ${blobShaOf(canonicalJson(body))}`);
+    }
+  }
   const record = files[TOPIC_META_PATH]?.json?.[slug];
   if (record !== null && typeof record === 'object' && !Array.isArray(record)) {
     const body = { ...record };
@@ -2856,6 +2868,89 @@ test('a two-source slug hashes both of its sources', async () => {
   other['14_Tracks/Resident/resident_welcome.md'] = Buffer
     .from('Resident welcome, revised.\n', 'utf8');
   assert.notEqual(expectedDigest(files, other, 'welcome.md'), saved['welcome.md'].contentHash);
+});
+
+const COTW_REGISTRY_PATH = '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json';
+const OTHER_WEEK = {
+  date: '2026-09-07',
+  topic: 'nms',
+  label: 'NMS (Sep 7)',
+  ms3_src: '2026-09-07_nms_MS3.md',
+  res_src: '2026-09-07_nms_Resident.md',
+  tldr: 'A different case.',
+};
+
+// Case-of-the-Week pages as shipped_pages.py now writes them: each carries a `registryRow`
+// spec naming its own week, and the registry itself is served at the attestation branch.
+function registryRowFiles(tldr = 'Hold the antipsychotics; test with lorazepam.') {
+  const files = cotwFiles();
+  for (const page of files[SHIPPED_PAGES_PATH].json.pages) {
+    if (page.producer !== 'cotw_registry') continue;
+    page.registryRow = {
+      path: COTW_REGISTRY_PATH,
+      list: 'weeks',
+      match: { date: COTW_WEEK.date, topic: COTW_WEEK.topic },
+    };
+  }
+  files[COTW_REGISTRY_PATH] = {
+    json: { weeks: [OTHER_WEEK, { ...COTW_WEEK, tldr }] },
+    sha: '8'.repeat(40),
+  };
+  return files;
+}
+
+test('a Case-of-the-Week page binds its own registry row, and only that row', async () => {
+  const files = registryRowFiles();
+  const sources = cotwSources();
+  const mock = createGithubMock({ files, sources });
+  const slug = 'cotw_20260831_catatonia_ms3.md';
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { [slug]: true } },
+  }));
+
+  assert.equal(response.status, 200);
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  assert.equal(saved[slug].contentHash, expectedDigest(files, sources, slug));
+  assert.ok(mock.calls.some(call => call.path === COTW_REGISTRY_PATH),
+    'the registry is read at the attestation branch, like topic_meta.json');
+
+  // Teeth, both directions: this week's summary line is attested text; another week is not.
+  const edited = registryRowFiles('Start the antipsychotic.');
+  assert.notEqual(expectedDigest(edited, sources, slug), saved[slug].contentHash);
+  const neighbour = registryRowFiles();
+  neighbour[COTW_REGISTRY_PATH].json.weeks[0].tldr = 'Rewritten neighbour.';
+  neighbour[COTW_REGISTRY_PATH].json.weeks.unshift({ ...OTHER_WEEK, date: '2026-09-14', topic: 'new' });
+  assert.equal(expectedDigest(neighbour, sources, slug), saved[slug].contentHash);
+});
+
+test('GET reports a reviewed Case-of-the-Week page whose registry row changed as drifted', async () => {
+  const slug = 'cotw_20260831_catatonia_res.md';
+  const sources = cotwSources();
+  const bound = registryRowFiles();
+  const contentHash = expectedDigest(bound, sources, slug);
+
+  for (const [label, tldr, stale] of [['unchanged', undefined, false], ['edited', 'Start the antipsychotic.', true]]) {
+    const files = tldr === undefined ? registryRowFiles() : registryRowFiles(tldr);
+    files[REVIEWED_PATH].json[slug].contentHash = contentHash;
+    const mock = createGithubMock({ files, sources });
+    const payload = await (await handlerWith(mock)(apiRequest('GET'))).json();
+    assert.equal(payload.freshness, 'verified', label);
+    const item = payload.items.find(entry => entry.slug === slug);
+    assert.equal(item.stale === true, stale, label);
+    assert.equal(item.status, stale ? 'unreviewed' : 'reviewed', label);
+  }
+});
+
+test('a Case-of-the-Week page whose registry row is missing is refused, not bound to its source alone', async () => {
+  const files = registryRowFiles();
+  files[COTW_REGISTRY_PATH].json.weeks = [OTHER_WEEK];
+  const mock = createGithubMock({ files, sources: cotwSources() });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 'cotw_20260831_catatonia_ms3.md': true } },
+  }));
+
+  await expectError(response, { status: 400, code: 'content.no_source' });
+  assert.equal(mock.putBodies.length, 0);
 });
 
 test('reopening preserves the stored hash rather than rebinding it', async () => {

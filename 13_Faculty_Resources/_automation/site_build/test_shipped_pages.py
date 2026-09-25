@@ -120,6 +120,30 @@ class DeriveTests(unittest.TestCase):
             ["cotw_index.md", "welcome.md"],
         )
 
+    def test_every_case_page_names_its_own_registry_row(self):
+        """A Case-of-the-Week page's metadata is derived from ONE week of the registry.
+
+        attestation_hash binds that row through this spec, so a case's summary line
+        (its `tldr`, read as the page lead) is attested text while adding a week drifts no
+        existing case. Both twins of a week name the same row; no other page names one.
+        """
+        from cotw_slug import COTW_REGISTRY, cotw_weeks
+
+        pages = shipped_pages.derive(ROOT)["pages"]
+        weeks = {(week["date"], week["topic"]) for week in cotw_weeks(ROOT)}
+        cases = [page for page in pages if page["producer"] == "cotw_registry"]
+        self.assertEqual(len(cases), 2 * len(weeks))
+        for page in cases:
+            spec = page["registryRow"]
+            self.assertEqual(spec["path"], COTW_REGISTRY, page["slug"])
+            self.assertEqual(spec["list"], "weeks", page["slug"])
+            self.assertIn((spec["match"]["date"], spec["match"]["topic"]), weeks, page["slug"])
+        self.assertEqual(
+            [page["slug"] for page in pages
+             if "registryRow" in page and page["producer"] != "cotw_registry"],
+            [],
+        )
+
     def test_synthetic_root_derives_the_expected_shape(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = synthetic_root(tmp)

@@ -408,7 +408,10 @@ the container when the Bash 5 environment is part of the evidence.
 - **An attestation names the text it attested, and the name has to still fit.** A reviewed row's
   `contentHash` in `13_Faculty_Resources/reviewed.json` is a **git blob SHA over a manifest** —
   one line per input, each line itself a blob SHA: the slug's shipped source file(s) (`source`
-  plus any `extraSources` in `site_build/shipped_pages.json`, sorted by path) and its
+  plus any `extraSources` in `site_build/shipped_pages.json`, sorted by path); for a
+  Case-of-the-Week page, its OWN week of `cotw_registry.json` (the page's `registryRow`), because
+  the build derives that page's metadata — the `tldr` learners read as its lead — from that row,
+  and binding the whole registry would drift every case each week one is added; and its
   `topic_meta.json` record canonicalised with `facultyReview` removed, because governance state is
   not content and attesting a page must not depend on the block that records the attesting. The
   rule lives once in `13_Faculty_Resources/_automation/attestation_hash.py`;

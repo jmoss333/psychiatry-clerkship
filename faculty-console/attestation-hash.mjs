@@ -14,8 +14,11 @@
  *     topic_meta e51494b9a628601e078505913ea6ff67d2039bad
  *
  * one line per source path the slug ships from, sorted by path, each line carrying that
- * file's git blob sha; then, only when the slug HAS a topic_meta record, one `topic_meta`
- * line over that record canonicalised with `facultyReview` removed. The digest is the git
+ * file's git blob sha; then, only when shipped_pages.json gives the slug a `registryRow`
+ * spec, one `<registry stem>` line over its OWN row of that registry (a Case-of-the-Week
+ * page's week in cotw_registry.json — its metadata is derived from that row at build
+ * time); then, only when the slug HAS a topic_meta record, one `topic_meta` line. Both
+ * records are canonicalised the same way, `facultyReview` removed. The digest is the git
  * blob sha of that manifest text.
  *
  * Choosing a git blob sha is what makes the console's read cheap: every value on the left is
@@ -99,12 +102,68 @@ function serialize(value) {
  * Takes a mapping. Whether a given topic_meta value IS one is `manifestForSlug`'s decision,
  * made once there; do not re-decide it here or in a caller.
  */
-export function canonicalTopicMetaRecord(record) {
+export function canonicalRecord(record) {
   const body = {};
   for (const [key, value] of Object.entries(record)) {
     if (key !== 'facultyReview') body[key] = value;
   }
   return Buffer.from(serialize(body), 'utf8');
+}
+
+/** `canonicalRecord` under the name its first callers use. */
+export function canonicalTopicMetaRecord(record) {
+  return canonicalRecord(record);
+}
+
+/**
+ * The slug's `registryRow` spec from shipped_pages.json, or null when it has none.
+ *
+ * Shape: {path, list, match}. Throws on any other shape, exactly as the Python twin does:
+ * a malformed spec read as "no row" would quietly drop the line it exists to add.
+ */
+export function registryRowSpec(shippedDoc, slug) {
+  const pages = shippedDoc && typeof shippedDoc === 'object' ? shippedDoc.pages : null;
+  if (!Array.isArray(pages)) return null;
+  for (const page of pages) {
+    if (!page || typeof page !== 'object' || page.slug !== slug) continue;
+    if (!Object.hasOwn(page, 'registryRow')) continue;
+    const spec = page.registryRow;
+    const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+    if (!isObject(spec) || typeof spec.path !== 'string' || !spec.path
+      || typeof spec.list !== 'string' || !isObject(spec.match)
+      || !Object.keys(spec.match).length) {
+      throw new AttestationHashError(`${slug}: malformed registryRow in shipped_pages.json`);
+    }
+    return spec;
+  }
+  return null;
+}
+
+/** The manifest line's name: the registry file's stem (`cotw_registry`). */
+export function registryRowLabel(spec) {
+  const base = spec.path.split('/').pop();
+  const dot = base.lastIndexOf('.');
+  return dot > 0 ? base.slice(0, dot) : base;
+}
+
+/**
+ * The ONE row of `document[spec.list]` whose keys equal `spec.match`. Zero rows or two
+ * throws, never a guess — a digest over the wrong row looks exactly like the right one.
+ */
+export function selectRegistryRow(document, spec, slug) {
+  const rows = document && typeof document === 'object' ? document[spec.list] : null;
+  if (!Array.isArray(rows)) {
+    throw new AttestationHashError(`${slug}: ${spec.path} has no '${spec.list}' list`);
+  }
+  const hits = rows.filter(row => row !== null && typeof row === 'object' && !Array.isArray(row)
+    && Object.entries(spec.match).every(([key, value]) => Object.hasOwn(row, key)
+      && row[key] === value));
+  if (hits.length !== 1) {
+    throw new AttestationHashError(
+      `${slug}: ${hits.length} rows of ${spec.path} match — expected one`,
+    );
+  }
+  return hits[0];
 }
 
 /**
@@ -141,7 +200,7 @@ export function sourcesForSlug(shippedDoc, slug) {
  * A `record` that is not a mapping counts as NO record, decided here so every caller
  * inherits it, exactly as the Python module decides it once in `manifest_for_slug`.
  */
-export function manifestForSlug(slug, sources, record) {
+export function manifestForSlug(slug, sources, record, registryRow = null) {
   const paths = Object.keys(sources || {}).sort(compareCodePoints);
   if (!paths.length) {
     throw new AttestationHashError(
@@ -149,6 +208,10 @@ export function manifestForSlug(slug, sources, record) {
     );
   }
   const lines = paths.map(path => `${path} ${sources[path]}`);
+  // `registryRow` is {label, row} from registryRowSpec + selectRegistryRow, or null.
+  if (registryRow) {
+    lines.push(`${registryRow.label} ${blobSha(canonicalRecord(registryRow.row))}`);
+  }
   if (record !== null && typeof record === 'object' && !Array.isArray(record)) {
     lines.push(`topic_meta ${blobSha(canonicalTopicMetaRecord(record))}`);
   }

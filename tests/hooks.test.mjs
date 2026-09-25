@@ -336,7 +336,10 @@ test('post_edit_validate blocks when a producer edit leaves shipped_pages.json s
     assert.equal(r.decision, 'block');
     assert.match(r.reason, /shipped_pages\.json is stale/);
     assert.match(r.reason, /shipped_pages\.py --write/);
-    assert.match(r.reason, /cotw_20990101_synthetic_ms3\.md/);
+    // The hook shows the diff's last 20 lines, so WHICH twin of the new week lands in that
+    // window depends on how many lines a page entry takes (a case page grew by its
+    // `registryRow` spec). What matters is that the message names the new week's page.
+    assert.match(r.reason, /cotw_20990101_synthetic_(ms3|res)\.md/);
   } finally {
     fs.writeFileSync(registry, original);
   }

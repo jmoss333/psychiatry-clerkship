@@ -64,11 +64,15 @@ sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 from attestation_hash import (  # noqa: E402
     AttestationHashError,
     blob_sha,
+    canonical_record,
     canonical_topic_meta_record,
     digest,
     digest_from_tree,
     ledger_hash_report,
     manifest_for_slug,
+    registry_row_label,
+    registry_row_spec,
+    select_registry_row,
     sources_for_slug,
 )
 
@@ -347,7 +351,9 @@ def run_explain(root, slug, rev=None, stream=None):
                                            entry.get("at"), notes)
         record = _topic_meta_at(root, resolved, {}).get(slug)
 
-    manifest = manifest_for_slug(slug, sources, record)
+    registry_row, spec = _registry_row_for_explain(root, shipped, slug,
+                                                   None if rev is None else resolved)
+    manifest = manifest_for_slug(slug, sources, record, registry_row)
     actual = blob_sha(manifest.encode("utf-8"))
 
     print("%s — the inputs its attestation covers%s"
@@ -357,6 +363,13 @@ def run_explain(root, slug, rev=None, stream=None):
         print("  %s %s" % (path, blob_sha(sources[path])), file=stream)
         print("      %s" % ("working-tree bytes of %s" % path if rev is None
                             else "%s at %s" % (path, origins[path][:7])), file=stream)
+    if registry_row is not None:
+        label, row = registry_row
+        print("  %s %s" % (label, blob_sha(canonical_record(row))), file=stream)
+        print("      the one row of %s[%r] matching %s%s, facultyReview removed, key-sorted, "
+              "no whitespace" % (spec["path"], spec["list"], json.dumps(spec["match"],
+                                 sort_keys=True, ensure_ascii=False),
+                                 "" if rev is None else " at %s" % resolved[:7]), file=stream)
     # Mirrors `manifest_for_slug`'s rule exactly: a value that is not a mapping is no
     # record, so there is no `topic_meta` line to print. Printing one would crash inside
     # `canonical_topic_meta_record` (AttributeError on a str) and turn an explanation of a
@@ -396,6 +409,15 @@ def run_explain(root, slug, rev=None, stream=None):
     for path in sorted(sources):
         print("  %s" % ("git hash-object --no-filters %s" % path if rev is None
                         else "git rev-parse %s:%s" % (origins[path][:7], path)), file=stream)
+    if registry_row is not None:
+        # jq -cS emits the same compact, key-sorted UTF-8 as canonical_record for the
+        # string/integer rows a registry holds; checked against the real registry.
+        where = " and ".join(".%s==%s" % (key, json.dumps(value, ensure_ascii=False))
+                             for key, value in sorted(spec["match"].items()))
+        source = spec["path"] if rev is None else "<(git show %s:%s)" % (resolved[:7],
+                                                                         spec["path"])
+        print("  jq -cS '.[\"%s\"][] | select(%s) | del(.facultyReview)' %s | tr -d '\\n' "
+              "| git hash-object --stdin" % (spec["list"], where, source), file=stream)
     quoted = " ".join("'%s'" % line for line in manifest.splitlines())
     print("  printf '%%s\\n' %s | git hash-object --stdin" % quoted, file=stream)
     return 0
@@ -404,6 +426,36 @@ def run_explain(root, slug, rev=None, stream=None):
 # --------------------------------------------------------------------------------------
 # --write-backfill: bind each existing attestation to the inputs as of its own `at` date
 # --------------------------------------------------------------------------------------
+
+
+def _registry_row_for_explain(root, shipped, slug, rev):
+    """`((label, row), spec)` for the slug's registry row, or `(None, None)` without a spec.
+
+    `rev` None reads the working tree; a commit SHA reads the registry as of that commit, as
+    `--rev` does for every other input. A registry that is absent or does not hold exactly
+    one matching row is exit 2 — an explanation over a manifest missing its row line would
+    print a digest nothing ever stored.
+    """
+    try:
+        spec = registry_row_spec(shipped, slug)
+    except AttestationHashError as exc:
+        raise InputError(str(exc))
+    if spec is None:
+        return None, None
+    if rev is None:
+        path = root / spec["path"]
+        data = path.read_bytes() if path.is_file() else None
+    else:
+        data = _blob_at(root, rev, spec["path"])
+    if data is None:
+        raise InputError("%s: registry %s is absent%s" % (
+            slug, spec["path"], "" if rev is None else " at %s" % rev[:7]))
+    try:
+        document = json.loads(data.decode("utf-8"))
+        row = select_registry_row(document, spec, slug)
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise InputError("%s: cannot read %s: %s" % (slug, spec["path"], exc))
+    return (registry_row_label(spec), row), spec
 
 
 def _topic_meta_at(root, rev, cache):

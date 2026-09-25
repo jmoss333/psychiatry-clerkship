@@ -171,6 +171,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-09",
+          "topic": "ssnms"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -181,6 +189,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-09",
+          "topic": "ssnms"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],
@@ -191,6 +207,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-13",
+          "topic": "agitation"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -201,6 +225,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-13",
+          "topic": "agitation"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],
@@ -211,6 +243,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-20",
+          "topic": "bipolar"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -221,6 +261,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-20",
+          "topic": "bipolar"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],
@@ -231,6 +279,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-20",
+          "topic": "mdd"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -241,6 +297,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-20",
+          "topic": "mdd"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],
@@ -251,6 +315,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-23",
+          "topic": "suiciderisk"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -261,6 +333,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-23",
+          "topic": "suiciderisk"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],
@@ -271,6 +351,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-26",
+          "topic": "etohwd"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -281,6 +369,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-26",
+          "topic": "etohwd"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],
@@ -291,6 +387,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-27",
+          "topic": "oud"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -301,6 +405,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-07-27",
+          "topic": "oud"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],
@@ -311,6 +423,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-08-03",
+          "topic": "lithium"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -321,6 +441,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-08-03",
+          "topic": "lithium"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],
@@ -331,6 +459,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-08-10",
+          "topic": "panic"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -341,6 +477,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-08-10",
+          "topic": "panic"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],
@@ -351,6 +495,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-08-27",
+          "topic": "bpd"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -361,6 +513,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-08-27",
+          "topic": "bpd"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],
@@ -371,6 +531,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-08-31",
+          "topic": "catatonia"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -381,6 +549,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-08-31",
+          "topic": "catatonia"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],
@@ -391,6 +567,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-09-07",
+          "topic": "fep"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -401,6 +585,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-09-07",
+          "topic": "fep"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],
@@ -411,6 +603,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-09-14",
+          "topic": "ssnms"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -421,6 +621,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-09-14",
+          "topic": "ssnms"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],
@@ -431,6 +639,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-09-23",
+          "topic": "agitation"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "ms3"
       ],
@@ -441,6 +657,14 @@
     {
       "kind": "page",
       "producer": "cotw_registry",
+      "registryRow": {
+        "list": "weeks",
+        "match": {
+          "date": "2026-09-23",
+          "topic": "agitation"
+        },
+        "path": "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+      },
       "sites": [
         "res"
       ],

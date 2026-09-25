@@ -17,6 +17,11 @@ input that review covered, one line each, itself a blob SHA:
 
 - the source file(s) the slug ships from (`source` plus any `extraSources` in
   `site_build/shipped_pages.json`), sorted by path;
+- the slug's OWN row of a shared registry, when the listing gives it a `registryRow`
+  spec, as one `<registry name> <sha>` line canonicalised like a topic_meta record. A
+  Case-of-the-Week page has no topic_meta.json record: the build derives one from its row
+  of cotw_registry.json, whose `tldr` learners read as the page's lead. Binding the whole
+  registry instead would drift every case each time a week is added;
 - the slug's `topic_meta.json` record, if it has one, canonicalised with `facultyReview`
   removed — governance state is not content, so attesting a page must not depend on the
   attestation block that records the attesting.
@@ -76,7 +81,10 @@ _REFUSALS = (
         "{slug}: unbound — reviewed with no contentHash; bind it through the faculty console",
     ),
     ("malformed", "{slug}: malformed contentHash — expected a 40-hex git blob SHA"),
-    ("unresolvable", "{slug}: unresolvable — an attested source is missing from the tree"),
+    (
+        "unresolvable",
+        "{slug}: unresolvable — an attested input is missing from the tree or ambiguous",
+    ),
     (
         "unshipped_unlisted",
         "{slug}: unshipped and unlisted — reviewed but no site ships it and it is not on "
@@ -94,20 +102,27 @@ def blob_sha(data: bytes) -> str:
     return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
 
 
-def canonical_topic_meta_record(record: dict) -> bytes:
-    """Canonical bytes of a topic_meta record: key-sorted, no whitespace, raw UTF-8.
+def canonical_record(record: dict) -> bytes:
+    """Canonical bytes of a metadata record: key-sorted, no whitespace, raw UTF-8.
 
     `facultyReview` is dropped: it records the act of attesting, so including it would
     make every attestation invalidate itself. `ensure_ascii=False` keeps non-ASCII as
-    real UTF-8 rather than `\\u` escapes, which is what the JS twin produces.
+    real UTF-8 rather than `\\u` escapes, which is what the JS twin produces. Used for a
+    topic_meta record and for a registry row alike, so the two can never canonicalise
+    differently.
 
-    Takes a mapping. Whether a given topic_meta value IS one is `manifest_for_slug`'s
-    decision, made once there; do not re-decide it here or in a caller.
+    Takes a mapping. Whether a given value IS one is `manifest_for_slug`'s decision, made
+    once there; do not re-decide it here or in a caller.
     """
     body = {key: value for key, value in record.items() if key != "facultyReview"}
     return json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
         "utf-8"
     )
+
+
+def canonical_topic_meta_record(record: dict) -> bytes:
+    """`canonical_record` under the name its first callers use."""
+    return canonical_record(record)
 
 
 def sources_for_slug(shipped_doc: dict, slug: str) -> list[str]:
@@ -130,8 +145,81 @@ def sources_for_slug(shipped_doc: dict, slug: str) -> list[str]:
     return paths
 
 
-def manifest_for_slug(slug: str, sources: dict[str, bytes], record: dict | None) -> str:
-    """The manifest text for one slug: `path <blob sha>` per source, then `topic_meta`.
+def registry_row_spec(shipped_doc: dict, slug: str) -> dict | None:
+    """The slug's `registryRow` spec from shipped_pages.json, or None when it has none.
+
+    Shape: {"path": <registry file>, "list": <key of its row list>, "match": {key: value}}.
+    Raises AttestationHashError on any other shape: a malformed spec would otherwise read
+    as "no row" and quietly drop the line it exists to add.
+    """
+    for page in shipped_doc.get("pages", []):
+        if page.get("slug") != slug or "registryRow" not in page:
+            continue
+        spec = page["registryRow"]
+        if (
+            not isinstance(spec, dict)
+            or not isinstance(spec.get("path"), str)
+            or not spec["path"]
+            or not isinstance(spec.get("list"), str)
+            or not isinstance(spec.get("match"), dict)
+            or not spec["match"]
+        ):
+            raise AttestationHashError(f"{slug}: malformed registryRow in shipped_pages.json")
+        return spec
+    return None
+
+
+def registry_row_label(spec: dict) -> str:
+    """The manifest line's name: the registry file's stem (`cotw_registry`)."""
+    return Path(spec["path"]).stem
+
+
+def select_registry_row(document, spec: dict, slug: str) -> dict:
+    """The ONE row of `document[spec["list"]]` whose keys equal `spec["match"]`.
+
+    Zero rows or two is an AttestationHashError, never a guess: a digest over the wrong
+    row, or over none, would look exactly like a digest over the right one.
+    """
+    rows = document.get(spec["list"]) if isinstance(document, dict) else None
+    if not isinstance(rows, list):
+        raise AttestationHashError(f"{slug}: {spec['path']} has no {spec['list']!r} list")
+    hits = [
+        row
+        for row in rows
+        if isinstance(row, dict)
+        and all(key in row and row[key] == value for key, value in spec["match"].items())
+    ]
+    if len(hits) != 1:
+        raise AttestationHashError(
+            f"{slug}: {len(hits)} rows of {spec['path']} match {spec['match']} — expected one"
+        )
+    return hits[0]
+
+
+def registry_row_from_tree(root, shipped_doc: dict, slug: str):
+    """`(label, row)` for the slug's registry row as the working tree holds it, or None.
+
+    Raises FileNotFoundError when the registry is absent and AttestationHashError when it
+    does not parse or does not hold exactly one matching row.
+    """
+    spec = registry_row_spec(shipped_doc, slug)
+    if spec is None:
+        return None
+    text = (Path(root) / spec["path"]).read_text(encoding="utf-8")
+    try:
+        document = json.loads(text)
+    except ValueError as error:
+        raise AttestationHashError(f"{slug}: {spec['path']} is not JSON ({error})") from error
+    return registry_row_label(spec), select_registry_row(document, spec, slug)
+
+
+def manifest_for_slug(
+    slug: str, sources: dict[str, bytes], record: dict | None, registry_row=None
+) -> str:
+    """The manifest text: `path <blob sha>` per source, the registry row, then `topic_meta`.
+
+    `registry_row` is `(label, row)` from `registry_row_from_tree`, or None when the slug
+    has no `registryRow` spec.
 
     `sources` maps each source path to its working-tree bytes. Refuses an empty mapping:
     a manifest over no sources would still produce a plausible-looking digest, which is
@@ -161,14 +249,17 @@ def manifest_for_slug(slug: str, sources: dict[str, bytes], record: dict | None)
             f"{slug}: no attested sources — its digest would cover nothing"
         )
     lines = [f"{path} {blob_sha(sources[path])}" for path in sorted(sources)]
+    if registry_row is not None:
+        label, row = registry_row
+        lines.append(f"{label} {blob_sha(canonical_record(row))}")
     if isinstance(record, dict):
         lines.append(f"topic_meta {blob_sha(canonical_topic_meta_record(record))}")
     return "\n".join(lines) + "\n"
 
 
-def digest(slug: str, sources: dict[str, bytes], record: dict | None) -> str:
+def digest(slug: str, sources: dict[str, bytes], record: dict | None, registry_row=None) -> str:
     """The slug's `contentHash`: the blob SHA of its manifest."""
-    return blob_sha(manifest_for_slug(slug, sources, record).encode("utf-8"))
+    return blob_sha(manifest_for_slug(slug, sources, record, registry_row).encode("utf-8"))
 
 
 def _read_sources(root: Path, paths: list[str]) -> dict[str, bytes]:
@@ -185,7 +276,8 @@ def digest_from_tree(root, shipped_doc: dict, topic_meta: dict, slug: str) -> st
     exactly like a digest over something.
     """
     sources = _read_sources(Path(root), sources_for_slug(shipped_doc, slug))
-    return digest(slug, sources, topic_meta.get(slug))
+    registry_row = registry_row_from_tree(root, shipped_doc, slug)
+    return digest(slug, sources, topic_meta.get(slug), registry_row)
 
 
 def ledger_hash_report(root, ledger: dict, shipped_doc: dict, topic_meta: dict) -> dict:
@@ -234,12 +326,28 @@ def ledger_hash_report(root, ledger: dict, shipped_doc: dict, topic_meta: dict) 
             report["malformed"].append(slug)
             continue
 
+        # A registry row that cannot be found is the same class as a missing source: the
+        # digest would cover less than the attestation claims, so it is never computed.
+        try:
+            spec = registry_row_spec(shipped_doc, slug)
+        except AttestationHashError as error:
+            report["unresolvable"][slug] = [str(error)]
+            continue
         missing = [path for path in paths if not (root / path).is_file()]
+        if spec is not None and not (root / spec["path"]).is_file():
+            missing.append(spec["path"])
         if missing:
             report["unresolvable"][slug] = missing
             continue
+        try:
+            registry_row = registry_row_from_tree(root, shipped_doc, slug)
+        except AttestationHashError as error:
+            report["unresolvable"][slug] = [str(error)]
+            continue
 
-        manifest = manifest_for_slug(slug, _read_sources(root, paths), topic_meta.get(slug))
+        manifest = manifest_for_slug(
+            slug, _read_sources(root, paths), topic_meta.get(slug), registry_row
+        )
         actual = blob_sha(manifest.encode("utf-8"))
         if actual == stored:
             report["bound"][slug] = stored

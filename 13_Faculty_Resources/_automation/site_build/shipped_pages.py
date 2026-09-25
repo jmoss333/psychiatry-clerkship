@@ -160,16 +160,23 @@ def derive(root=ROOT):
                 raise ShippedPagesError(
                     "cotw_registry.json: week %r is missing %s" % (label, source_key)
                 )
-            add(
-                _page(
-                    cotw_slug(week, level),
-                    "page",
-                    [level],
-                    "%s — %s" % (label, LEVEL_TITLES[level]),
-                    os.path.join(COTW_DIR, source),
-                    "cotw_registry",
-                )
+            page = _page(
+                cotw_slug(week, level),
+                "page",
+                [level],
+                "%s — %s" % (label, LEVEL_TITLES[level]),
+                os.path.join(COTW_DIR, source),
+                "cotw_registry",
             )
+            # The page's metadata (its `tldr` lead among it) is DERIVED from this row at
+            # build time, so the row is an attested input: attestation_hash binds exactly
+            # this row, found by the week's own identity, never the whole registry.
+            page["registryRow"] = {
+                "path": COTW_REGISTRY,
+                "list": "weeks",
+                "match": {"date": week.get("date"), "topic": week.get("topic")},
+            }
+            add(page)
 
     # 4 -- resident-only markdown. Two entries deliberately reuse a slug the
     # manifest already ships (welcome.md, cotw_index.md): the resident build
