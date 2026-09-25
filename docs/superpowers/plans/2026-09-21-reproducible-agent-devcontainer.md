@@ -1,5 +1,9 @@
 # Reproducible Agent Dev Container Implementation Plan
 
+**Completed:** Tasks 1–4 merged in #736 and #737; native VS Code proof and receipt/status
+follow-up merged in #745 on 2026-09-23. Checkboxes and examples below preserve the original
+implementation instructions, not remaining work. Use `.devcontainer/README.md` for current onboarding.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give local developers and coding agents one containerized environment, with no new paid repository service, that matches the repository's supported Node, Python, Bash, Git LFS, and Playwright contracts.

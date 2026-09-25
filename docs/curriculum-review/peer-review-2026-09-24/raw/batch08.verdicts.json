@@ -1,0 +1,136 @@
+[
+ {
+  "id": "R03-004",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "Valid: the line sits under 'If she leaves anyway' on a page whose preferred option is methadone, and a methadone-for-OUD discharge prescription is unlawful. The same page already says it correctly in the Q2 table ('discharge continuity requires OTP linkage') and in Workup item 11. The reviewer's fix is incomplete, though. Since the DEA's August 2023 final rule, a hospital practitioner may dispense (not prescribe) up to a 3-day supply at one time, so a methadone bridge at discharge is lawful. The reviewer's parenthetical also placed the 'same-week appointment' on the methadone path.",
+  "evidence": "21 CFR 1306.07(b) as amended by DEA final rule 88 FR 53347 (2023-08-08, FR Doc 2023-16892, 'Dispensing of Narcotic Drugs To Relieve Acute Withdrawal Symptoms of OUD'); The Hospitalist, 'Bridge to Care for OUD: Three-Day Methadone Dispensed at Hospital Discharge'; page's own Q2 table and Workup item 11.",
+  "correction": "- **Bridge MOUD supply**: a buprenorphine prescription plus a same-week appointment. Methadone for OUD cannot be prescribed, so arrange OTP dosing for the next day, or, where your hospital does this, dispense up to a three-day supply under the DEA three-day rule.",
+  "problem": "The line does not say that a discharge 'bridge' prescription exists only for buprenorphine. Methadone continuity requires OTP linkage or a dispensed (not prescribed) supply of up to 3 days.",
+  "confidence": "high"
+ },
+ {
+  "id": "R02-008",
+  "verdict": "modified",
+  "severity": "Minor",
+  "reason": "The substance is right: in some states a surrogate cannot consent to ECT. California Probate Code §4652 excludes 'convulsive treatment' from what an agent or surrogate may consent to, and conservatee ECT needs a court determination. But the quote already hedges ('per jurisdiction'), so the problem is incompleteness, not a universal claim; I downgrade to Minor. The reviewer's Texas citation (Estates Code §1151.054) did not check out on the statute text I fetched, so I cite only California, and I soften 'many states' to 'some states'.",
+  "evidence": "Cal. Probate Code §4652 (FindLaw text: 'does not authorize consent to ... convulsive treatment'); Cal. Welf. & Inst. Code §5326.7; Texas Estates Code ch. 1151 text (tcss.legis.texas.gov) showed no such restriction in §1151.051 as fetched.",
+  "correction": "catatonic patients usually lack capacity; know your state's substitute-consent rule for ECT (in some states, e.g., California, a health-care agent or surrogate cannot consent to ECT and court authorization is required) and your local emergency-treatment pathway.",
+  "problem": "The line implies surrogate consent is the route to ECT for an incapacitated patient. In some states a surrogate or agent cannot consent to ECT and court authorization is needed, which can delay treatment of malignant catatonia.",
+  "confidence": "high"
+ },
+ {
+  "id": "M06-008",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "The Key-points card states the duty as universal. The page prose hedges ('Specifics vary by state (some mandate warning, some permit it)'), but the overlay card renders on its own above the prose. State law is mandatory, permissive or absent; Texas has no common-law duty to warn (Thapar v. Zezulka). The correction is minimal, accurate and grammatical.",
+  "evidence": "Tarasoff v. Regents, 17 Cal.3d 425 (1976); Thapar v. Zezulka, 994 S.W.2d 635 (Tex. 1999); NCSL duty-to-warn survey; 45 CFR 164.512(j) (recall for case law).",
+  "correction": "- Duty to protect (Tarasoff): a serious threat to a reasonably identifiable person can override confidentiality: warn, notify police, or hospitalize. Whether this is mandatory, permissive, or absent depends on your state's statute.",
+  "confidence": "high"
+ },
+ {
+  "id": "M06-009",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "Verified: New York has no general mandatory elder-abuse reporting duty for physicians in community settings, and reform bills have been introduced repeatedly (e.g., 2025-S6136). The page's own prose on mandatory reporting is not hedged for elder abuse either, so nothing nearby rescues the card. The correction is accurate and drop-in.",
+  "evidence": "NYC Elder Abuse Center, 'New York State Doesn't Have Mandatory Reporting'; NY Courts Elder Abuse Bench Guide (elderjustice.nycourts.gov); NY Senate bill 2025-S6136; NY Public Health Law §2803-d (facility-limited).",
+  "correction": "- Child abuse is a mandated report on reasonable suspicion, not proof, and elder/dependent-adult abuse is mandated in most (not all) states; good-faith reporters are protected.",
+  "confidence": "high"
+ },
+ {
+  "id": "M06-010",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "This is the same defect in the page's High-yield pearls, and the surrounding prose does not hedge elder-abuse reporting. New York's lack of a general physician mandate is verified. The correction matches M06-009 and is drop-in.",
+  "evidence": "NYCEAC 'New York State Doesn't Have Mandatory Reporting'; NY Courts Elder Abuse Bench Guide; NY PHL §2803-d.",
+  "correction": "- Child abuse is a mandated report on *reasonable suspicion*; elder/dependent-adult abuse is mandated in most states (check yours); good-faith reporters are protected.",
+  "confidence": "high"
+ },
+ {
+  "id": "M12-001",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "Confirmed that Harper (prison inmates), Riggins (a defendant at trial) and Sell (competency restoration) all concern the criminal-justice setting. The section is headed 'Involuntary Treatment' and gives no civil-law framing, so a learner could import Harper-style administrative review into civil commitment. I modified the correction for two reasons. 'Commitment alone does not authorise' is not universal: some states, e.g., Utah, build an incapacity finding into commitment (see Q1-010). The curriculum is US-facing, so I use US spelling.",
+  "evidence": "Washington v. Harper, 494 U.S. 210 (1990); Riggins v. Nevada, 504 U.S. 127 (1992); Sell v. United States, 539 U.S. 166 (2003); Rogers v. Commissioner (Mass. 1983); Rivers v. Katz (N.Y. 1986); Utah Code §26B-5-332 (recall for case law).",
+  "correction": "Three landmark U.S. Supreme Court cases define the legal landscape for involuntary medication of prisoners and criminal defendants. Civil involuntary medication of committed inpatients is governed by state law and varies, from a court order in some states to administrative or clinical review in others; in most states, commitment alone does not authorize treatment over refusal:",
+  "problem": "All three cases concern prisoners or criminal defendants. The page presents them as the whole legal landscape and does not say that civil involuntary medication is governed by state law, which varies.",
+  "confidence": "high"
+ },
+ {
+  "id": "M09-010",
+  "verdict": "modified",
+  "severity": "Minor",
+  "reason": "Asking permission is the correct first move, and the rubric line is not wrong. The real gap is that nothing in this high-risk station (goodbye letter, firearm) teaches what happens if the patient declines. Receiving information is not a disclosure, and 45 CFR 164.512(j) permits disclosure to someone able to lessen a serious and imminent threat. That is an omission in an attested OSCE rubric, so I downgrade it to Minor. I also reworded the item into an observable behavior, because a rater cannot score 'knows'.",
+  "evidence": "45 CFR 164.510(b), 164.512(j); HHS OCR, 'HIPAA Privacy Rule and Sharing Information Related to Mental Health' (recall).",
+  "correction": "- Asks permission for collateral; if the patient declines, explains that the team may still listen to family and may share what is needed to avert serious, imminent harm — 1",
+  "problem": "The station scores asking permission for collateral but never teaches that refusal does not end collateral in a high-risk case. Family can still be heard, and disclosure to avert serious, imminent harm is permitted.",
+  "confidence": "medium"
+ },
+ {
+  "id": "Q1-009",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "Valid: the rationale teaches a universal duty, while qb_eth_007 and the page hedge. The reviewer's correction is internally contradictory: it says 'a duty ... in most states (... permissive in others)', but a permissive statute is not a duty. I reworded it. The keyed answer still stands, because protective action is the professional standard everywhere. Note also that the reviewer's evidence mis-cites Thapar as 997 S.W.2d; the correct reporter cite is 994 S.W.2d 635.",
+  "evidence": "Tarasoff v. Regents (Cal. 1976); Thapar v. Zezulka, 994 S.W.2d 635 (Tex. 1999); NCSL state duty-to-warn survey (recall).",
+  "correction": "A specific, credible threat to a named, identifiable person — with described means and timeline — triggers a duty to take reasonable protective steps (mandatory in some states; in others the law permits rather than requires disclosure, so know your state's statute).",
+  "problem": "The rationale presents the duty to protect as a universal legal obligation. State law makes it mandatory in some states, permissive in others, and absent in a few.",
+  "confidence": "high"
+ },
+ {
+  "id": "Q1-010",
+  "verdict": "confirmed",
+  "severity": "Minor",
+  "reason": "Utah Code §26B-5-332 exists, and its commitment findings include lacking the ability to make rational decisions about accepting mental-health treatment, so the exception is real. It is a minority exception. The error runs in the rights-protective direction: a learner would seek a separate process that turns out to be unnecessary. So I downgrade to Minor. The correction is accurate and drop-in. qb_eth_003 is attested, so this edit demotes it to draft under the governance rule.",
+  "evidence": "Utah Code §26B-5-332 (le.utah.gov, Justia 2025) — section confirmed; criterion wording from recall.",
+  "correction": "In most states, commitment status and medication consent are independent legal states (a few states build an incapacity finding into the commitment criteria — know your state's rule).",
+  "confidence": "medium"
+ },
+ {
+  "id": "Q1-012",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "New York's lack of a general physician mandate is verified (see M06-009), so 'similar duties' overstates elder-abuse reporting as uniform. The correction is minimal and accurate. The item is a draft, so there is no attestation impact.",
+  "evidence": "NYCEAC 'New York State Doesn't Have Mandatory Reporting'; NY Courts Elder Abuse Bench Guide.",
+  "correction": "Elder/dependent-adult abuse carries similar duties in most states, though who must report and in which settings varies by state.",
+  "confidence": "high"
+ },
+ {
+  "id": "Q1-016",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "Valid: the stem says 'requests discharge'. The item keys 'continued inpatient care is indicated' and labels the right to leave 'Autonomy over safety', but nothing separates a clinical recommendation from legal authority to hold a voluntary patient. 'None' is also inaccurate: PHQ-9 fell from 24 to 17, so the page's 'improving mood' criterion is partly met. I tightened the reviewer's long correction.",
+  "evidence": "State voluntary-admission statutes (written release request, then discharge or initiation of involuntary proceedings within a statutory window); O'Connor v. Donaldson (1975) (recall).",
+  "correction": "None of these criteria is fully met, so the recommendation is to continue inpatient care. But if a voluntary patient still asks to leave, he can be held only if he meets involuntary criteria under state law; otherwise, complete the safety plan and follow-up before he goes rather than using them as grounds to hold him.",
+  "problem": "The rationale treats incomplete discharge tasks as grounds for continued stay without saying that a voluntary patient's discharge request is governed by state law. It also says 'none' of the criteria are met when mood has partly improved.",
+  "confidence": "medium"
+ },
+ {
+  "id": "Q3-008",
+  "verdict": "modified",
+  "severity": "Minor",
+  "reason": "The rule as written is conservative rather than wrong. Many state mental-health confidentiality laws and 42 CFR Part 2 are stricter than HIPAA, and the patient has not agreed. The real omission is the practical first step: ask her. The reviewer's parenthetical overstated what HIPAA allows. 164.510(b) limits disclosure to information relevant to the family member's involvement in care, and incapacity disclosures must be in the patient's best interest. Downgraded to Minor.",
+  "evidence": "45 CFR 164.510(b)(1)–(3); HHS OCR, 'HIPAA Privacy Rule and Sharing Information Related to Mental Health' (recall).",
+  "correction": "Without the patient's agreement, do not confirm or share specific diagnosis or medication information. The first step is to ask her whether she agrees. HIPAA permits sharing what is relevant to a family member's involvement in her care if she agrees or does not object, or in her best interest if she lacks capacity, but state mental-health law and 42 CFR Part 2 may be stricter.",
+  "problem": "The rationale gives a no-consent rule but not the practical first step (ask the patient). It also omits the federal floor: HIPAA permits limited sharing with involved family if the patient does not object or is incapacitated.",
+  "confidence": "high"
+ },
+ {
+  "id": "M09-006",
+  "verdict": "confirmed",
+  "severity": "Minor",
+  "reason": "The finding is correct, but I downgrade it. This is a one-line shelf recall aid whose footer sends learners to the topic page, and that topic page hedges ('Specifics vary by state'), as does the shelf page in the same chunk ('Duty to protect/warn varies by jurisdiction'). The correction is short enough for a recall line.",
+  "evidence": "Tarasoff v. Regents (Cal. 1976); NCSL duty-to-warn survey; M09 line 639 and ethics_legal.md prose (recall for law).",
+  "correction": "Identifiable threatened victim → **duty to protect (Tarasoff)**: mandatory, permissive or absent depending on the state; know your state's rule.",
+  "confidence": "high"
+ },
+ {
+  "id": "M04-017",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "Valid: there is no general clinician duty to report a patient's disclosed past offences against competent adults. Breaching confidentiality there depends on the state's duty-to-protect law or 45 CFR 164.512(j). I widened the correction, because abuse of an elder or dependent adult can also be reportable. Coordinator: the same overbroad claim recurs on t_sexual.md in the Can't-miss prose, 'What the student does' ('Recognize reporting/safety duties when ... non-consenting person') and the pearl ('Non-consenting paraphilic behavior triggers safety and reporting duties'), and all of them need the same fix.",
+  "evidence": "State child-abuse reporting statutes (universal); state APS statutes (variable); Tarasoff and state duty-to-protect statutes; 45 CFR 164.512(j) (recall).",
+  "correction": "Paraphilic disorders involving a child (or a vulnerable adult) can trigger mandated abuse reporting; with non-consenting adults, confidentiality holds unless your state's duty-to-protect law is triggered by a credible threat to an identifiable person.",
+  "problem": "The card implies that paraphilic behavior against any non-consenting person creates a reporting duty. Mandated reporting covers child abuse and, by state, elder or dependent-adult abuse. For competent adult victims, disclosure is justified only under duty-to-protect law.",
+  "confidence": "medium"
+ }
+]

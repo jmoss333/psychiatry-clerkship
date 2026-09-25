@@ -27,8 +27,8 @@ Do not wait for rounds. Do not carry it alone.
 
 Escalate immediately for:
 
-- Current suicidal intent, new plan, access to lethal means, or sudden worsening.
-- Threats toward others or escalating agitation.
+- Any new or newly disclosed suicidal thoughts (even passive or without a plan), current suicidal intent, new plan, preparatory behavior, access to lethal means, or sudden worsening.
+- Thoughts of harming or killing someone (especially a named person), threats toward others, or escalating agitation.
 - Confusion, fluctuating consciousness, fever, rigidity, autonomic instability, or possible delirium/catatonia.
 - Alcohol, benzodiazepine, opioid, or other withdrawal concern.
 - Medication adverse effect that could be urgent.

@@ -1,0 +1,228 @@
+[
+ {
+  "rule": "SR-01",
+  "wp": "WP-3",
+  "files": [
+   "07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
+   "_prototypes/canon-quiz/quizzes.json"
+  ],
+  "scope": "*",
+  "pattern": "(?i)rewrite the item|re-key the item|the key is the false claim|A3C2-F\\d|keyed to '|e\\.g\\. stem:",
+  "why": "Pattern A: remediation instructions pasted into learner-facing quiz text (AR-34 Q6, AR-20 Q2, AR-27 Q3)."
+ },
+ {
+  "rule": "SR-02",
+  "wp": "WP-3",
+  "files": [
+   "07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
+   "_prototypes/canon-quiz/quizzes.json"
+  ],
+  "scope": "deck:AR-18",
+  "pattern": "(?i)superior to (either|both) pharmacotherapy (or|and) psychotherapy|better than (both|either) (treatment|monotherap)",
+  "why": "AQ3-016..019 siblings: combined was not better than CBT alone (Cuijpers 2023)."
+ },
+ {
+  "rule": "SR-03",
+  "wp": "WP-3",
+  "files": [
+   "07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
+   "_prototypes/canon-quiz/quizzes.json"
+  ],
+  "scope": "deck:AR-20",
+  "pattern": "(?i)satisfaction and (engagement|knowledge) (improve|improved)",
+  "why": "AQ3-001..004 siblings: Aoki 2022 was uncertain on satisfaction/knowledge."
+ },
+ {
+  "rule": "SR-04",
+  "wp": "WP-3",
+  "files": [
+   "07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
+   "_prototypes/canon-quiz/quizzes.json"
+  ],
+  "scope": "deck:AR-23",
+  "pattern": "(?i)(\u2212|-)2\\.4[- ]point (difference|decline in the antipsychotic group compared)",
+  "why": "AQ3-013/014 siblings: -2.4 is the whole-sample decline."
+ },
+ {
+  "rule": "SR-05",
+  "wp": "WP-3",
+  "files": [
+   "07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
+   "_prototypes/canon-quiz/quizzes.json"
+  ],
+  "scope": "deck:AR-26",
+  "pattern": "(?i)medication-only outcomes",
+  "why": "AQ3-008..010 siblings: both STEP-BD arms received medication."
+ },
+ {
+  "rule": "SR-06",
+  "wp": "WP-3",
+  "files": [
+   "07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
+   "_prototypes/canon-quiz/quizzes.json"
+  ],
+  "scope": "deck:AR-29",
+  "pattern": "Kirkbride",
+  "why": "AQ3-011 siblings: the umbrella review is Alon et al., Psychiatry Res 2024."
+ },
+ {
+  "rule": "SR-07",
+  "wp": "WP-3",
+  "files": [
+   "07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
+   "_prototypes/canon-quiz/quizzes.json"
+  ],
+  "scope": "deck:AR-13",
+  "pattern": "(?i)specialized monitoring system required",
+  "why": "AQ4-004: clozapine REMS eliminated 2025."
+ },
+ {
+  "rule": "SR-08",
+  "wp": "WP-4",
+  "files": [
+   "question_bank.json"
+  ],
+  "scope": "qb:qb_anx_003",
+  "pattern": "(?i)strongest evidence",
+  "why": "Q1-001..003 siblings incl. the evidence line."
+ },
+ {
+  "rule": "SR-09",
+  "wp": "WP-4",
+  "files": [
+   "question_bank.json"
+  ],
+  "scope": "qb:qb_mood_005",
+  "pattern": "(?i)(mixed features?[^.]{0,120}(agitation|insomnia))|((agitation|insomnia)[^.]{0,120}mixed features?)",
+  "why": "Q1-013/014: DSM-5-TR excludes agitation/insomnia from the mixed-features count."
+ },
+ {
+  "rule": "SR-10",
+  "wp": "WP-1",
+  "files": [
+   "question_bank.json"
+  ],
+  "scope": "qb:qb_sud_014",
+  "pattern": "(?i)CIWA-Ar-guided benzodiazepines \\+ DT monitoring is the standard|CIWA-Ar-guided (dosing|benzodiazepines) (is|as) the (treatment|standard)",
+  "why": "Q4-001/002: key was fixed, rationale+pearl were not (persists from A1C3-F001)."
+ },
+ {
+  "rule": "SR-11",
+  "wp": "WP-1",
+  "files": [
+   "question_bank.json"
+  ],
+  "scope": "qb:qb_cog_014",
+  "pattern": "(?i)benzodiazepines (are|alone are) insufficient",
+  "why": "Q2-003: tier-2 contradicts tier-1 (benzodiazepines remain first-line)."
+ },
+ {
+  "rule": "SR-12",
+  "wp": "WP-1",
+  "files": [
+   "topic_meta.json",
+   "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md"
+  ],
+  "scope": "*",
+  "pattern": "(?i)(refeed\\w*|calori\\w*)[^.]{0,80}start low,? go slow|start low,? go slow[^.]{0,80}(phosph\\w*|refeed\\w*|calori\\w*|thiamine)",
+  "why": "M04-001/002: refeeding card/pearl contradict the remediated prose (SAHM 2022). Coordinate with the architecture review's refeeding reconciliation."
+ },
+ {
+  "rule": "SR-13",
+  "wp": "WP-10",
+  "files": [
+   "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+   "topic_meta.json"
+  ],
+  "scope": "*",
+  "pattern": "(?i)SSRIs and SNRIs are first-line across anxiety disorders, OCD",
+  "why": "M03-001/002: SNRIs are not first-line for OCD."
+ },
+ {
+  "rule": "SR-14",
+  "wp": "WP-1",
+  "files": [
+   "08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_MS3.md",
+   "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json",
+   "topic_meta.json"
+  ],
+  "scope": "*",
+  "pattern": "(?i)COWS-threshold buprenorphine start precipitated withdrawal",
+  "why": "M11-001: TL;DR and Shelf-level takeaway describe a different case."
+ },
+ {
+  "rule": "SR-15",
+  "wp": "WP-1",
+  "files": [
+   "topic_meta.json",
+   "04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md"
+  ],
+  "scope": "*",
+  "pattern": "(?i)until catatonia is excluded(?! or has responded)",
+  "why": "M05-007 + the catatonia pearl the verifier flagged: the hold needs an end point."
+ },
+ {
+  "rule": "SR-16",
+  "wp": "WP-1",
+  "files": [
+   "topic_meta.json",
+   "13_Faculty_Resources/Rotation_Curation/rotation-curator.html"
+  ],
+  "scope": "*",
+  "pattern": "(?i)CIWA-Ar q4h through the risk window",
+  "why": "M13-001: shared catalog string; fix in topic_meta.json and regenerate the curator catalog."
+ },
+ {
+  "rule": "SR-17",
+  "wp": "WP-1",
+  "files": [
+   "14_Tracks/Resident/cl_reference.md",
+   "topic_meta.json"
+  ],
+  "scope": "*",
+  "pattern": "(?i)>\\s*\\**2\\.5\\**\\s*(mEq/L\\s*)?with severe",
+  "why": "R01-001/002: pre-EXTRIP dialysis floor."
+ },
+ {
+  "rule": "SR-18",
+  "wp": "WP-5",
+  "files": [
+   "_prototypes/sp-interview/sp-interview.pack.json"
+  ],
+  "scope": "*",
+  "pattern": "(?i)mixed-features 'flicker'|mixed states",
+  "why": "M02-001/002 siblings: a single fleeting thought is not DSM-5-TR mixed features."
+ },
+ {
+  "rule": "SR-19",
+  "wp": "WP-1",
+  "files": [
+   "09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md"
+  ],
+  "scope": "*",
+  "pattern": "(?i)buprenorphine/methadone/naltrexone\\) reduces mortality",
+  "why": "M09-001: naltrexone has no shown mortality benefit (Larochelle 2018)."
+ },
+ {
+  "rule": "SR-20",
+  "wp": "WP-6",
+  "files": [
+   "03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md",
+   "topic_meta.json"
+  ],
+  "scope": "*",
+  "pattern": "(?i)non-?consent\\w*[^.]{0,160}report(ing)? dut",
+  "why": "M04-017/018 + two verifier-flagged siblings on t_sexual: mandated reporting covers children/elders/dependent adults, not all non-consenting paraphilic behaviour."
+ },
+ {
+  "rule": "SR-21",
+  "wp": "WP-9",
+  "files": [
+   "evidence_registry.json"
+  ],
+  "scope": "*",
+  "raw": true,
+  "pattern": "\"id\":\\s*\"sall-2019\"",
+  "why": "E1-001: superseded VA/DoD 2019 synopsis still registered as the current guideline."
+ }
+]

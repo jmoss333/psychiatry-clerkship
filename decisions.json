@@ -153,6 +153,16 @@
         "vocabulary.json"
       ],
       "note": "Closes the one deliberately undecided unit in the standards spine. PR 4.11.q and 6.3 place QI at program level, which is why this was arguable either way; it is ruled required because safety-event reporting, disclosure and RCA participation happen on an inpatient unit, and restraint-and-seclusion reduction and suicide-risk QI are inpatient-specific. Ruling `elsewhere` would have asserted a negative about where learning happens — the shape that failed as RQ-10 f3. The ruling creates a real content obligation and does NOT create coverage: SBP1 remains mapped to nothing and is now reported as blocked-on-vocabulary until `safety` splits into safety-risk / safety-systems. Discharging the obligation is RQ-2. All 21 units remain review: pending; this decision is a placement, not an attestation. As of the vocabulary registry, SBP1's only route to being mapped is the proposed `safety-systems` code, which is why vocabulary.json is governed by this decision too."
+    },
+    {
+      "id": "canonical-values-2026-09",
+      "title": "One canonical statement each for refeeding, lithium levels, buprenorphine start, RLS, malignant hyperthermia and the cultural-psychiatry sentence",
+      "status": "active",
+      "decided": "2026-09-24",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md §7-A–F (D1) and docs/curriculum-review/peer-review-2026-09-24/HANDOFF_CLAUDE_CODE.md §0A (J0, J1)",
+      "note": "D1: the architecture review's §7-A–F statements were approved as written, and any rewording beyond fitting a sentence to its surface needs approval again. J1: the §7-C sentence is the one buprenorphine-start wording for both the architecture and the peer-review remediation. In short — refeeding: higher-calorie start with daily phosphate/K/Mg in mild–moderate malnutrition, a cautious start only for the highest risk, thiamine and other vitamins, no delay to correct electrolytes (SAHM 2022, StRONG 2021, MEED). Lithium: acute 0.8–1.2 mmol/L; maintenance 0.6–0.8 (0.4–0.6 or 0.8–1.0 by response and tolerance); older adults usually 0.4–0.6; 12-h trough about 5 days after a change (Nolen 2019, CANMAT 2018). Buprenorphine: start once objective withdrawal is present, roughly COWS ≥ 8–12 depending on the guideline, and teach no single cutoff (TIP 63, ASAM 2020, ASAM 2023 HPSO). RLS: iron when ferritin/TSAT is low, alpha-2-delta ligands first-line, dopamine agonists no longer standard (AASM 2025). Malignant hyperthermia row and succinylcholine history for ECT (Rosenberg 2015). Cultural sentence per §7-F (Selten 2020). One override is recorded with it (J0): the peer review's EXTRIP 2015 lithium-dialysis wording (R01-001/-002) replaces §7-B's note to leave the EXTRIP lines alone. Governs nothing yet: architecture WP-1b fills the pending canonical_claims.json slots, which is where these values become regex-guarded.",
+      "governs": []
     }
   ]
 }

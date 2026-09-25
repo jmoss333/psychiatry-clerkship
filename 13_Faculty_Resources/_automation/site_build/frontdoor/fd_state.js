@@ -187,6 +187,22 @@ function fdExamCountdown(week, weeks, nowMs, rotationStart){
   return '· exam in ~'+days+' day'+(days===1?'':'s');
 }
 
+/* WHOSE countdown it is -- the gate Today calls (fd_today.js); fdExamCountdown above is only the
+   arithmetic. Only the MS3 path ends in a scheduled exam. The resident path is a four-week block
+   with no end-of-block exam, yet until 2026-09-24 the countdown fired in the final two weeks of
+   ANY path, so residents read "exam in ~N days" about an exam that does not exist. A stored exam
+   date is the learner saying there is one, so it opens the countdown on any path -- the settings
+   panel's Pacing field ships to both sites. "Stored" means parseable, the same test
+   fdExamCountdown and phasePolicy apply: a junk value is no date. Path ids are the ones
+   frontdoor_catalog.py pins; a missing id is not the exam path, so it fails closed. */
+var FD_EXAM_PATH_ID='ms3-six-week';
+function fdPathExamCountdown(pathId, week, weeks, nowMs, rotationStart){
+  var stored=null;
+  try{ stored=localStorage.getItem('cw_shelf_date'); }catch(_){ }
+  if(pathId!==FD_EXAM_PATH_ID&&shelfDaysUntil(stored, nowMs)===null) return '';
+  return fdExamCountdown(week, weeks, nowMs, rotationStart);
+}
+
 /* The write half of the key fdExamCountdown reads, and the settings panel's only persistence.
    It lives HERE rather than in fd_wire.js's fdApplyEffect, beside its reader, because the key
    spells an audience token the controller's copy rule bans FILE-WIDE
