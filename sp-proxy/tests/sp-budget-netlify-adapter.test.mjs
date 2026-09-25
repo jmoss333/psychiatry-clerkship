@@ -39,13 +39,18 @@ const REQUEST = Object.freeze({
   maximumUsage: Object.freeze({ inputTokens: 100, outputTokens: 0 }),
 });
 
+// adapterWrites = calls the ledger makes into the store (one per CAS attempt); httpAttempts =
+// PUTs the SDK sends to the signed URL; apiRequests = signed-URL fetches from the Netlify API.
+// The pinned SDK (@netlify/blobs 11.1.0) performs the initial request plus five retries for 429
+// and 5xx and, since 11.0.3, for 403 as well, minting a FRESH signed URL from the API before each
+// retry — so a retried failure costs six API calls and six PUTs while the ledger still writes
+// once and fails closed. 401 is never retried; 412 is the ledger's own five-attempt CAS loop.
 const FAILURE_MATRIX = Object.freeze([
-  Object.freeze({ status: 401, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 1 }),
-  Object.freeze({ status: 403, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 1 }),
-  // The pinned SDK performs the initial request plus its five retries for 429 and 5xx.
-  Object.freeze({ status: 429, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 6 }),
-  Object.freeze({ status: 500, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 6 }),
-  Object.freeze({ status: 412, code: 'budget_contention', adapterWrites: 5, httpAttempts: 5 }),
+  Object.freeze({ status: 401, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 1, apiRequests: 1 }),
+  Object.freeze({ status: 403, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 6, apiRequests: 6 }),
+  Object.freeze({ status: 429, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 6, apiRequests: 6 }),
+  Object.freeze({ status: 500, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 6, apiRequests: 6 }),
+  Object.freeze({ status: 412, code: 'budget_contention', adapterWrites: 5, httpAttempts: 5, apiRequests: 5 }),
 ]);
 
 function clone(value) {
@@ -160,9 +165,10 @@ function operationStatus(harness) {
 function assertConditionalRequests(harness, {
   adapterWrites,
   httpAttempts,
+  apiRequests = adapterWrites,
   condition,
 }) {
-  assert.equal(harness.apiRequests.length, adapterWrites);
+  assert.equal(harness.apiRequests.length, apiRequests);
   assert.equal(harness.observedResults.length, adapterWrites);
   assert.equal(harness.signedRequests.length, httpAttempts);
   assert.equal(harness.signedRequests.every((request) => (
@@ -170,7 +176,7 @@ function assertConditionalRequests(harness, {
   )), true);
 }
 
-test('Netlify Blobs 10.7.9 reserve matrix fails closed except for HTTP 200 with an ETag', async (t) => {
+test('Netlify Blobs 11.1.0 reserve matrix fails closed except for HTTP 200 with an ETag', async (t) => {
   for (const entry of FAILURE_MATRIX) {
     await t.test(`HTTP ${entry.status}`, async () => {
       const harness = makeAdapterHarness({
@@ -218,7 +224,7 @@ test('Netlify Blobs 10.7.9 reserve matrix fails closed except for HTTP 200 with 
   });
 });
 
-test('Netlify Blobs 10.7.9 provider-start matrix never authorizes HTTP failures or 412', async (t) => {
+test('Netlify Blobs 11.1.0 provider-start matrix never authorizes HTTP failures or 412', async (t) => {
   for (const entry of FAILURE_MATRIX) {
     await t.test(`HTTP ${entry.status}`, async () => {
       const harness = makeAdapterHarness({ rotationId: `mark-${entry.status}` });
