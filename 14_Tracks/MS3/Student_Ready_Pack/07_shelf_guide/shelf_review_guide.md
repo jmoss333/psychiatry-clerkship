@@ -2,7 +2,7 @@
 
 Audience: MS3 students.
 
-**Your exam is the COMAT.** UNE COM uses the **NBOME COMAT Clinical Psychiatry** subject exam (not the NBME shelf) for the Medical Knowledge grade. The high-yield content below serves both; for the official content blueprint and sample items, see the [COMAT Clinical Psychiatry page (NBOME)](https://www.nbome.org/assessments/comat/clinical-subject-exams/comat-clinical-psychiatry/).
+**At UNE COM your exam is the COMAT** (MD programs typically use the NBME Psychiatry shelf). UNE COM uses the **NBOME COMAT Clinical Psychiatry** subject exam (not the NBME shelf) for the Medical Knowledge grade. The high-yield content below serves both; for the official content blueprint and sample items, see the [COMAT Clinical Psychiatry page (NBOME)](https://www.nbome.org/assessments/comat/clinical-subject-exams/comat-clinical-psychiatry/).
 
 ## How To Study During The Rotation
 
@@ -16,6 +16,8 @@ Use patients to organize exam review:
 - Name one discharge barrier.
 
 ## High-Yield Domains
+
+The domains below anchor inpatient care; the exam blueprint also covers eating, somatic symptom/factitious, sleep-wake and neurodevelopmental/child disorders — see the Rapid Review and the official blueprint.
 
 ### Mood Disorders
 

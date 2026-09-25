@@ -267,7 +267,7 @@
         },
         {
           "id": "b",
-          "text": "I am sorry that what you read landed that way. I can see why it felt hurtful. I want to understand what felt most invalidating, and then we can look together at how to describe the crisis accurately.",
+          "text": "I'm sorry. Reading that hurt, and I can see why. I want to understand what felt most invalidating, and then we can look together at how to describe the crisis accurately.",
           "quality": "best",
           "feedback": "Best choice. It repairs impact without abandoning accuracy, and it invites collaboration on language and meaning."
         },
@@ -639,7 +639,7 @@
         },
         {
           "id": "b",
-          "text": "That's a fair question. I'm a medical student on the team here to understand how you're doing, at whatever pace works for you. We don't have to start with the whole story — is it okay if I just ask how last night went for you?",
+          "text": "That's a fair question. I'm one of the trainees on the team, here to understand how you're doing, at whatever pace works for you. We don't have to start with the whole story — is it okay if I just ask how last night went for you?",
           "quality": "best",
           "feedback": "Best choice. It treats the suspicion as reasonable, states your role plainly, hands back control over pace, and swaps the broad question for a small, low-stakes one a guarded patient can answer."
         },
@@ -707,7 +707,7 @@
         },
         {
           "id": "b",
-          "text": "My leading formulation is bipolar mania, given the decreased sleep and grandiosity — but I haven't ruled out a substance-induced picture, and the toxicology is still pending. I'm watching the trajectory over the next 24 hours and I'll flag it as soon as the tox screen is back.",
+          "text": "My leading formulation is bipolar mania, given the decreased sleep and grandiosity — but I haven't ruled out a substance-induced picture. The tox screen will show what she was exposed to, not which one this is — the timeline against her use, collateral on any prior episodes off substances, and whether symptoms persist as the substance clears will. I'll have collateral today and we'll track the course over the coming days.",
           "quality": "best",
           "feedback": "Best choice. It gives the team a working answer, names the real competing possibility, and says what specific information would resolve it and when. That's what naming uncertainty sounds like."
         },

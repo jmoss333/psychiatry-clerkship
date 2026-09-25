@@ -92,7 +92,9 @@ test('nav items: exact inventory + HTTP 200 + non-empty content', async ({ reque
   // 11 registry weeks then shipping). +2 per audience within that baseline: WP-T3's
   // therapy_on_the_unit.md and therapy_reading_room.md.
   // res 100 → 101 on 2026-09-04: +rp-post-event-huddle.html (resident-only tool).
-  expect(items).toHaveLength((isResidentProject(testInfo.project.name) ? 101 : 92) + COTW_WEEKS);
+  // ms3 92 → 91 on 2026-09-25: -orientation-video.html (the MS3-only orientation tool retired
+  // with the welcome and orientation videos).
+  expect(items).toHaveLength((isResidentProject(testInfo.project.name) ? 101 : 91) + COTW_WEEKS);
   expect(items.filter(item => item.f === 'rotation-curator.html').map(({
     t, f, k, hidden,
   }) => ({ t, f, k, hidden }))).toEqual([{

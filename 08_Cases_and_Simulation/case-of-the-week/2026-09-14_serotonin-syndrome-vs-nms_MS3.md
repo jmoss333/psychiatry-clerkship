@@ -50,7 +50,7 @@ The patient has never taken an antipsychotic. There is no history of alcohol or 
 
 ### Teaching points, question by question
 
-**1. Diagnosis and triad.** This is **serotonin syndrome** (also called serotonin toxicity): the classic triad is **(1) altered mental status, (2) autonomic hyperactivity** (fever, tachycardia, hypertension, diaphoresis, mydriasis, hyperactive bowel sounds/diarrhea), and **(3) neuromuscular abnormalities** (tremor, hyperreflexia, clonus) in a patient with new or increased serotonergic drug exposure [1]. The trigger here is the **sertraline + linezolid** interaction — linezolid's MAO-inhibiting activity blocks serotonin breakdown while the SSRI blocks reuptake [3]. Onset is typically **rapid (within 24 hours of the provoking change)** [1].
+**1. Diagnosis and triad.** This is **serotonin syndrome** (also called serotonin toxicity): the classic triad is **(1) altered mental status, (2) autonomic hyperactivity** (fever, tachycardia, hypertension, diaphoresis, mydriasis, hyperactive bowel sounds/diarrhea), and **(3) neuromuscular abnormalities** (tremor, hyperreflexia, clonus) in a patient with new or increased serotonergic drug exposure [1]. The trigger here is the **sertraline + linezolid** interaction — linezolid's MAO-inhibiting activity blocks serotonin breakdown while the SSRI blocks reuptake [3]. Onset is typically **rapid (within 24 hours of the provoking change)** [1] — though when an interacting drug such as linezolid is added, it can appear a day or more later, as here.
 
 **2. The discriminating exam findings.** **Clonus and hyperreflexia, worse in the lower extremities**, are the most useful bedside pointers toward serotonin syndrome [1,2]. NMS produces the opposite neuromuscular picture: **diffuse "lead-pipe" rigidity with slowed or absent reflexes** [4]. Mydriasis and hyperactive bowel sounds also favor serotonin syndrome; NMS patients typically have normal pupils and normal or decreased bowel sounds [1].
 
@@ -66,6 +66,7 @@ The patient has never taken an antipsychotic. There is no history of alcohol or 
 | Pupils | Dilated [1] | Normal |
 | Bowel sounds | Hyperactive, diarrhea [1] | Normal or decreased |
 | Resolution after stopping drug | Usually < 24–48 h [1] | Days to 2 weeks [4] |
+| First treatment | Stop serotonergics; benzodiazepines, cooling; cyproheptadine if not responding [1] | Stop the dopamine blocker; ICU supportive care, cooling, benzodiazepines; dantrolene or bromocriptine considered in severe cases (case-series evidence only) |
 
 **5. Management.** First: **stop all serotonergic agents** (here, hold linezolid — discuss an alternative antibiotic with ID — and hold sertraline). Then **supportive care**: IV fluids, continuous cardiac monitoring, external cooling for hyperthermia, and **benzodiazepines** for agitation and to blunt the neuromuscular hyperactivity; avoid physical restraints, which increase isometric muscle activity, hyperthermia and lactic acidosis [1]. For moderate-to-severe cases not responding to supportive care, **cyproheptadine** (an oral serotonin 5-HT2A antagonist) can be considered [1]. Antipyretics like acetaminophen do **not** help — the fever is from muscle activity, not a hypothalamic set-point change [1].
 

@@ -172,14 +172,14 @@
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
-     "c": true,
-     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "t": "American Psychiatric Association · 2026",
+     "sourceId": "apa-practice-guidelines",
      "key": "A"
     },
     {
-     "t": "Cuijpers et al. · 2026 · Clin Psychol Rev",
-     "sourceId": "cuijpers-2026",
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "c": true,
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
      "key": "B"
     },
     {
@@ -188,8 +188,8 @@
      "key": "C"
     },
     {
-     "t": "Tetzlaff et al. · 2025 · Clin Psychol Rev",
-     "sourceId": "tetzlaff-2025",
+     "t": "Volkow et al. · 2016 · New England Journal of Medicine",
+     "sourceId": "volkow-2016-addiction-brain-disease",
      "key": "D"
     }
    ],
@@ -217,19 +217,19 @@
      "key": "A"
     },
     {
-     "t": "U.S. Food and Drug Administration · 2026",
-     "c": true,
-     "sourceId": "fda-prozac-label-maoi-switching",
+     "t": "Decker et al. · 2015 · Clin J Am Soc Nephrol",
+     "sourceId": "decker-2015-extrip-lithium",
      "key": "B"
     },
     {
-     "t": "Nolen et al. · 2019 · Bipolar Disord",
-     "sourceId": "nolen-2019-lithium-levels",
+     "t": "U.S. Food and Drug Administration · 2026",
+     "c": true,
+     "sourceId": "fda-prozac-label-maoi-switching",
      "key": "C"
     },
     {
-     "t": "Substance Abuse and Mental Health Services Administration · 2021 · Treatment Improvement Protocol (TIP) Series 63",
-     "sourceId": "samhsa-tip63-2021",
+     "t": "Saxler et al. · 2024 · Front Psychol",
+     "sourceId": "saxler-2024",
      "key": "D"
     }
    ],
@@ -263,8 +263,8 @@
      "key": "B"
     },
     {
-     "t": "Diefenbach et al. · 2024 · JAMA Psychiatry",
-     "sourceId": "diefenbach-2024-primary",
+     "t": "Gurrera et al. · 2011 · J Clin Psychiatry",
+     "sourceId": "gurrera-2011-nms-criteria",
      "key": "C"
     },
     {
@@ -292,24 +292,24 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Appel et al. · 2026 · Psychodyn Psychiatry",
-     "sourceId": "appel-2026",
-     "key": "A"
-    },
-    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "B"
+     "key": "A"
     },
     {
      "t": "Cipriani et al. · 2013 · BMJ",
      "c": true,
      "sourceId": "cipriani-2013-lithium-suicide",
-     "key": "C"
+     "key": "B"
     },
     {
      "t": "Nolen et al. · 2019 · Bipolar Disord",
      "sourceId": "nolen-2019-lithium-levels",
+     "key": "C"
+    },
+    {
+     "t": "Vigen et al. · 2011 · Am J Psychiatry",
+     "sourceId": "vigen-2011-catie-ad-cognition",
      "key": "D"
     }
    ],
@@ -328,7 +328,7 @@
    "review": null,
    "page": "t_mood.md",
    "sourceId": "nolen-2019-lithium-levels",
-   "claim": "Lithium runs a narrow therapeutic window (acute ~0.8–1.2 mEq/L; maintenance ~0.6–0.8, lower in older adults): check baseline and periodic renal and thyroid function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
+   "claim": "Lithium runs a narrow therapeutic window (acute ~0.8–1.2 mEq/L; maintenance ~0.6–0.8, lower in older adults): check baseline and periodic renal, thyroid and calcium (parathyroid) function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -342,14 +342,14 @@
      "key": "B"
     },
     {
-     "t": "Mahon · 2024 · Community Ment Health J",
-     "sourceId": "mahon-2024",
-     "key": "C"
-    },
-    {
      "t": "Nolen et al. · 2019 · Bipolar Disord",
      "c": true,
      "sourceId": "nolen-2019-lithium-levels",
+     "key": "C"
+    },
+    {
+     "t": "Penzenik et al. · 2026 · J Rural Health",
+     "sourceId": "penzenik-2026",
      "key": "D"
     }
    ],
@@ -368,7 +368,7 @@
    "review": null,
    "page": "t_neurocog.md",
    "sourceId": "fda-drug-safety",
-   "claim": "Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis — use the lowest dose for the shortest time, document informed consent, and reassess.",
+   "claim": "Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis (it applies equally to brexpiprazole, FDA-approved in 2023 for agitation associated with Alzheimer dementia) — use the lowest dose for the shortest time, document informed consent, and reassess.",
    "stem": "This claim on t_neurocog.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -532,19 +532,19 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Bastos et al. · 2025 · J Dual Diagn",
-     "sourceId": "bastos-maia-2025",
+     "t": "Bot et al. · 2026 · Acta Psychiatr Scand",
+     "sourceId": "bot-2026-benzodiazepines-catatonia",
      "key": "A"
+    },
+    {
+     "t": "De et al. · 2025 · Clin Psychol Psychother",
+     "sourceId": "desalve-2025",
+     "key": "B"
     },
     {
      "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
      "c": true,
      "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
-     "key": "B"
-    },
-    {
-     "t": "Volkow et al. · 2016 · New England Journal of Medicine",
-     "sourceId": "volkow-2016-addiction-brain-disease",
      "key": "C"
     },
     {
@@ -572,18 +572,18 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Schefft et al. · 2019 · Acta Psychiatr Scand",
-     "sourceId": "schefft-2019",
+     "t": "Rush et al. · 2006 · American Journal of Psychiatry",
+     "sourceId": "rush-2006-stard",
      "key": "A"
+    },
+    {
+     "t": "Studdert et al. · 2020 · The New England Journal of Medicine",
+     "sourceId": "studdert-2020-handgun-suicide",
+     "key": "B"
     },
     {
      "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
      "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
-     "key": "B"
-    },
-    {
-     "t": "Varese et al. · 2025 · Health Technol Assess",
-     "sourceId": "varese-2025",
      "key": "C"
     },
     {
