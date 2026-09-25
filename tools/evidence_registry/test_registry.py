@@ -218,7 +218,6 @@ PEER_REVIEW_WP9_2026_09_IDS = {
     "hatcher-2011-pst-self-harm",
     "jonas-2014-aud-pharmacotherapy",
     "linehan-2006-dbt-vs-experts",
-    "mcmain-2009-dbt-vs-gpm",
     "miklowitz-2021-bipolar-psychotherapy-nma",
     "schonnop-2022-missed-delirium-ed",
     "scull-2023-rosenhan-revisited",
@@ -231,7 +230,6 @@ PEER_REVIEW_WP9_2026_09_IDS = {
 PEER_REVIEW_WP9_2026_09_CORRECTED_IDS = {
     "haselden-2019-family-involvement-followup",
     "linehan-2006-dbt-vs-experts",
-    "mcmain-2009-dbt-vs-gpm",
     "sullivan-2020-ketamine-agitation-meta",
 }
 # Added by curriculum-review remediation WP-5a (finding RSAF-F010): cl_reference.md put

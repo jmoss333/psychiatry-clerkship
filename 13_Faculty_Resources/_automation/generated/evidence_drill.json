@@ -172,24 +172,24 @@
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
-     "c": true,
-     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "t": "American Academy of Child and Adolescent Psychiatry · 2026",
+     "sourceId": "aacap-parameters",
      "key": "A"
     },
     {
-     "t": "Brenner et al. · 2025 · Ann Intern Med",
-     "sourceId": "brenner-2025-va-dod-suicide-synopsis",
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "c": true,
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
      "key": "B"
-    },
-    {
-     "t": "Yatham et al. · 2018 · Bipolar Disorders",
-     "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "C"
     },
     {
      "t": "U.S. Food and Drug Administration · 2026",
      "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "C"
+    },
+    {
+     "t": "Schnurr et al. · 2024 · Ann Intern Med",
+     "sourceId": "schnurr-2024-vadod-ptsd-cpg-synopsis",
      "key": "D"
     }
    ],
@@ -223,13 +223,13 @@
      "key": "B"
     },
     {
-     "t": "Tetzlaff et al. · 2025 · Clin Psychol Rev",
-     "sourceId": "tetzlaff-2025",
+     "t": "Felitti et al. · 1998 · American Journal of Preventive Medicine",
+     "sourceId": "felitti-1998-ace",
      "key": "C"
     },
     {
-     "t": "Uphoff et al. · 2020 · Cochrane Database Syst Rev",
-     "sourceId": "uphoff-2020-behavioural-activation",
+     "t": "Man et al. · 2023 · Clin Psychol Psychother",
+     "sourceId": "man-2023",
      "key": "D"
     }
    ],
@@ -263,13 +263,13 @@
      "key": "B"
     },
     {
-     "t": "Nolen et al. · 2019 · Bipolar Disord",
-     "sourceId": "nolen-2019-lithium-levels",
+     "t": "Jonas et al. · 2014 · JAMA",
+     "sourceId": "jonas-2014-aud-pharmacotherapy",
      "key": "C"
     },
     {
-     "t": "Pharoah et al. · 2010 · Cochrane Database of Systematic Reviews",
-     "sourceId": "pharoah-2010-family-intervention",
+     "t": "Nolen et al. · 2019 · Bipolar Disord",
+     "sourceId": "nolen-2019-lithium-levels",
      "key": "D"
     }
    ],
@@ -308,8 +308,8 @@
      "key": "C"
     },
     {
-     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
-     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "t": "Volkow et al. · 2016 · New England Journal of Medicine",
+     "sourceId": "volkow-2016-addiction-brain-disease",
      "key": "D"
     }
    ],
@@ -332,8 +332,8 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "American Academy of Child and Adolescent Psychiatry · 2026",
-     "sourceId": "aacap-parameters",
+     "t": "Boggs et al. · 2020 · J Gen Intern Med",
+     "sourceId": "boggs-2020-lethal-means-assessment",
      "key": "A"
     },
     {
@@ -532,13 +532,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Shaffer et al. · 2015 · Psychiatr Serv",
-     "sourceId": "shaffer-2015-brief-cti",
+     "t": "Katz et al. · 2022 · JAMA Psychiatry",
+     "sourceId": "katz-2022-lithium-va",
      "key": "A"
     },
     {
-     "t": "U.S. Preventive Services Task Force · 2026",
-     "sourceId": "uspstf-mental-health",
+     "t": "Uphoff et al. · 2020 · Cochrane Database Syst Rev",
+     "sourceId": "uphoff-2020-behavioural-activation",
      "key": "B"
     },
     {
@@ -572,13 +572,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Schünemann et al. · 2025 · Clin Psychol Eur",
-     "sourceId": "schunemann-2025",
+     "t": "Driessen et al. · 2023 · Psychol Med",
+     "sourceId": "driessen-2023",
      "key": "A"
     },
     {
-     "t": "Tarrier et al. · 2004 · Behav Res Ther",
-     "sourceId": "tarrier-wykes-2004",
+     "t": "Soler et al. · 2022 · Acta Psychiatr Scand",
+     "sourceId": "soler-2022",
      "key": "B"
     },
     {

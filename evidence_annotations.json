@@ -1343,31 +1343,6 @@
       ]
     },
     {
-      "sourceId": "mcmain-2009-dbt-vs-gpm",
-      "verifiedAgainst": {
-        "spanType": "abstract",
-        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
-        "retrievedAt": "2026-09-24",
-        "pmid": "19755574",
-        "doi": "10.1176/appi.ajp.2009.09010039",
-        "sourceSpan": "This was a single-blind trial in which 180 patients diagnosed with borderline personality disorder who had at least two suicidal or nonsuicidal self-injurious episodes in the past 5 years were randomly assigned to receive 1 year of dialectical behavior therapy or general psychiatric management. Both groups showed improvement on the majority of clinical outcome measures after 1 year of treatment, including significant reductions in the frequency and severity of suicidal and nonsuicidal self-injurious episodes and significant improvements in most secondary clinical outcomes. No significant differences across any outcomes were found between groups."
-      },
-      "claims": [
-        {
-          "claimId": "gpm-comparable-to-dbt",
-          "claimText": "In a single-blind trial, 180 patients with borderline personality disorder were randomly assigned to 1 year of dialectical behavior therapy or general psychiatric management; both groups improved, and no significant differences across any outcomes were found between groups.",
-          "claimTerms": [
-            "No significant differences across any outcomes were found between groups",
-            "general psychiatric management"
-          ],
-          "direction": "negative",
-          "usedBy": [
-            "cotw_20260827_bpd_res"
-          ]
-        }
-      ]
-    },
-    {
       "sourceId": "hatcher-2011-pst-self-harm",
       "verifiedAgainst": {
         "spanType": "abstract",
