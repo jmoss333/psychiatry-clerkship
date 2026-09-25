@@ -1,9 +1,7 @@
 DRAFT — FOR JOSHUA MOSS, MD TO ADAPT AND SUBMIT. NOT SUBMITTED. Everything in [square brackets]
 is a placeholder to fill or confirm; nothing here has been checked with any IRB office. Companion
-to `evaluation_protocol_draft.md` (WP-17, step 4). Josh's July letter,
-`docs/_planning/IRB_DETERMINATION_REQUEST_2026-07-04.md`, exists only in his local checkout (the
-folder is git-excluded). This version adds the multi-site question, exemption (d)(2), the
-honest-broker arrangement and the Sim-to-Ward component. Send one letter, not both.
+to `evaluation_protocol_draft.md` (WP-17, step 4). The author's earlier local planning notes are
+not part of this repository.
 
 ---
 
@@ -35,9 +33,15 @@ categories and their current institutional interpretation with the IRB office.]
 ### 1. The activity
 
 The Psychiatry Clerkship Library is a free, public teaching website for third-year medical
-students on a six-week adult inpatient psychiatry clerkship. It has no accounts or logins and
-collects no learner identity. Students use it as part of the clerkship: reading, practice
-questions, and simulated patient interviews with fictional cases.
+students on a six-week adult inpatient psychiatry clerkship. Students use it as part of the
+clerkship: reading, practice questions, and simulated patient interviews with fictional cases.
+It has no learner accounts or personal logins. Two features touch access or contact, and neither
+identifies a learner to the evaluation:
+
+- the simulated-patient interview tool is opened with one passcode shared by the whole rotation;
+- an optional site-feedback form, hosted outside the code repository, is anonymous unless the
+  user chooses to leave a name or email for a reply. Its submissions are not part of this
+  evaluation.
 
 The evaluation asks three questions, following Kirkpatrick's levels 1-3:
 
@@ -118,7 +122,7 @@ support are needed from [UNE COM IRB], [MaineHealth IRB] and [Sanford site IRB].
 
 ### 7. Enclosures [to prepare]
 
-- Evaluation protocol (draft): `docs/_planning/evaluation_protocol_draft.md`
+- Evaluation protocol (draft): `docs/program-evaluation/evaluation_protocol_draft.md`
 - Information sheet / consent form [to draft]
 - End-of-clerkship survey [to draft; original items, no borrowed instrument]
 - Direct-observation cards and encounter card [from the clerkship assessment pack, WP-3]

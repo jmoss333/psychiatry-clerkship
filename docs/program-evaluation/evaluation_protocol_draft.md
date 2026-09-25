@@ -9,10 +9,7 @@ DETERMINATION IS ON FILE (see `irb_qi_determination_request_draft.md` beside thi
 - **Scope:** the six-week MS3 inpatient psychiatry clerkship that uses the library
   (`une-ms3-psychiatry`). The resident site is out of scope for this version.
 - **Status:** draft. It creates no obligation and authorizes nothing.
-- **Predecessor:** Josh's July draft, `docs/_planning/CURRICULUM_EVALUATION_PROTOCOL_2026-07-04.md`,
-  exists only in his local checkout (`docs/_planning/` is in the shared `.git/info/exclude`, so it
-  was never committed). This draft builds on it rather than replacing it silently; §11 lists what
-  carries forward and what changes. Merge the two, or retire the July one, before submission.
+- **Note:** the author's earlier local planning notes are not part of this repository.
 
 ## 1. Why evaluate, and for whom
 
@@ -171,8 +168,13 @@ This section is binding on every contributor, human or AI.
 **Why the repository can promise this.** The library was designed so learner data never needs
 to exist in it:
 
-- **No identity.** No accounts, no login, no learner cookie. The only credential in the
-  platform belongs to the faculty console.
+- **No learner identity.** No learner accounts, personal logins or learner cookies. The
+  Interview Room is opened with a single passcode shared by the whole rotation, not a personal
+  login (`sp-proxy/README.md`). The faculty console's credential is for faculty only.
+- **One optional exception, outside this repository.** The feedback form
+  (`13_Faculty_Resources/Feedback/feedback.html`) is anonymous by default. It has an optional
+  name-or-email field for anyone who wants a reply. Submissions go to the site host's form
+  service, not to this repository, and this protocol does not use them as a data source.
 - **Learner state stays on the learner's device,** under `cw_*` and `rp_*` browser-storage keys.
   None of it is transmitted.
 - **Usage analytics store integers, never events.** When enabled per site, the metrics
@@ -223,16 +225,3 @@ to exist in it:
 3. **Custodian and consent:** who is the honest broker, and who takes consent (§8)?
 4. **Sim-to-Ward pairs:** which skills are pre-registered for the first term (§5.2)?
 5. **Determination route:** QI, exempt research, or both split by component (companion letter)?
-6. **The July draft:** merge it into this one, or keep it as the research-aims version (§11)?
-
-## 11. Relationship to the July 2026 draft
-
-| Element of the July draft | Here |
-| --- | --- |
-| Aim 1: engagement (from the opt-in export) predicts subject-exam percentile | Kept as a **secondary** analysis. The export it asked for has shipped (§4.1). The primary Level 2 measure is now pre/post (§4.3), because an engagement association cannot separate the library's effect from who chooses to engage. |
-| Aim 2: OSCE checklist scores and critical-fail rate | Kept (§5.1), with scores captured outside the repository. |
-| Aim 3: pre/post self-efficacy scale (its Appendix B items) | Kept as a candidate Level 1/2 measure. It is original, so the instrument-reproduction rule does not block it. Add it to the §3 survey if Josh wants it. |
-| Historical comparison with pre-platform blocks; stepped-wedge option | Not adopted here. A historical comparison of cohort-aggregate exam scores is cheap and can be added to §6. A stepped wedge needs multiple sites, which this protocol does not assume. |
-| Study-code key held by the PI | **Changed:** held by an honest broker (§8), because the PI grades the participants. |
-| Exempt categories 1 and 4 | The companion letter asks about (d)(1), (d)(2) and (d)(4). |
-| New here | Kirkpatrick level 3 via the Sim-to-Ward pairing study (§5.2); the stated limits of the shipped placement (§4.2); the binding no-learner-data section (§7); alignment with `standards.json` (§2). |
