@@ -10,10 +10,10 @@
 // The pull itself is exercised against a throwaway repo with a `git-lfs` SHIM on PATH — never
 // against the real checkout — so this suite can run inside a Netlify build (it does: the build
 // runs tests/*.test.mjs before the pull step) without spending a byte of LFS bandwidth.
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, chmodSync, statSync, utimesSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, chmodSync, statSync, utimesSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,6 +24,13 @@ const SCRIPT = join(SITE_BUILD, 'lfs_pull_cached.sh');
 const BUILD_AND_CHECK = readFileSync(join(SITE_BUILD, 'build_and_check.sh'), 'utf8');
 
 const POINTER = 'version https://git-lfs.github.com/spec/v1\noid sha256:' + 'ab'.repeat(32) + '\nsize 1234\n';
+
+// Every repo, shim and cache below lives under this one root, removed when the file finishes.
+// Each run used to leave 21 directories in $TMPDIR, each pulled cache holding the shim's 2 MiB
+// object; ~45,000 had piled up on one Mac by 2026-09-24 (roughly 7 GiB), enough to stall
+// bin/preview-site.sh (see tests/preview-site-isolation.test.mjs).
+const SCRATCH = mkdtempSync(join(tmpdir(), 'lfs-suite-'));
+after(() => rmSync(SCRATCH, { recursive: true, force: true }));
 
 // Env with every Netlify / CI marker removed, so the result does not depend on where the suite
 // itself runs (a laptop, GitHub Actions, or inside a Netlify build).
@@ -44,7 +51,7 @@ function git(cwd, args) {
 
 // A throwaway repo shaped like ours: .gitattributes tracks *.m4a via LFS, two pointer stubs.
 function makeRepo() {
-  const repo = mkdtempSync(join(tmpdir(), 'lfs-repo-'));
+  const repo = mkdtempSync(join(SCRATCH, 'lfs-repo-'));
   git(repo, ['init', '-q']);
   git(repo, ['config', 'user.email', 'test@example.invalid']);
   git(repo, ['config', 'user.name', 'test']);
@@ -67,7 +74,7 @@ function makeRepo() {
 // `git lfs …` resolves to a `git-lfs` executable on PATH; this shim records the pull args,
 // simulates a pull (pointer → bytes, one object into lfs.storage) or a failure on demand.
 function makeShim() {
-  const dir = mkdtempSync(join(tmpdir(), 'lfs-shim-'));
+  const dir = mkdtempSync(join(SCRATCH, 'lfs-shim-'));
   const shim = join(dir, 'git-lfs');
   writeFileSync(shim, `#!/usr/bin/env bash
 case "\${1:-}" in
@@ -122,7 +129,7 @@ test('inside GitHub Actions the step defers to the deliberate lfs:false checkout
 
 test('deploy previews keep shipping stubs unless opted in — they never spent LFS bandwidth and must not start', () => {
   const repo = makeRepo();
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   const log = join(cache, 'shim.log');
   const base = { NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, LFS_SHIM_LOG: log, PATH: `${makeShim()}:${process.env.PATH}` };
   const skipped = run(scrubbedEnv({ ...base, CONTEXT: 'deploy-preview' }), repo);
@@ -140,7 +147,7 @@ test('deploy previews keep shipping stubs unless opted in — they never spent L
 
 test('on Netlify it pulls through lfs.storage under the persistent cache and reports the download', () => {
   const repo = makeRepo();
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   const log = join(cache, 'shim.log');
   const env = scrubbedEnv({ NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, LFS_SHIM_LOG: log, PATH: `${makeShim()}:${process.env.PATH}` });
   const r = run(env, repo);
@@ -156,7 +163,7 @@ test('on Netlify it pulls through lfs.storage under the persistent cache and rep
 
 test('a second build with a warm cache downloads nothing', () => {
   const repo = makeRepo();
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   const log = join(cache, 'shim.log');
   const env = scrubbedEnv({ NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, LFS_SHIM_LOG: log, PATH: `${makeShim()}:${process.env.PATH}` });
   assert.equal(run(env, repo).status, 0);
@@ -175,7 +182,7 @@ test('a second build with a warm cache downloads nothing', () => {
 
 test('GIT_LFS_FETCH_INCLUDE is honoured and files it excludes are reported, not failed', () => {
   const repo = makeRepo();
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   const log = join(cache, 'shim.log');
   const env = scrubbedEnv({ NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, LFS_SHIM_LOG: log, GIT_LFS_FETCH_INCLUDE: '*.mp4', PATH: `${makeShim()}:${process.env.PATH}` });
   const r = run(env, repo);
@@ -188,7 +195,7 @@ test('when the checkout already materialised real bytes it does nothing and repo
   const repo = makeRepo();
   writeFileSync(join(repo, 'audio', 'a.m4a'), 'REALBYTES');
   writeFileSync(join(repo, 'audio', 'b.m4a'), 'REALBYTES');
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   const env = scrubbedEnv({ NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, PATH: `${makeShim()}:${process.env.PATH}` });
   const r = run(env, repo);
   assert.equal(r.status, 0, r.stdout + r.stderr);
@@ -208,7 +215,7 @@ test('when the checkout already materialised real bytes it does nothing and repo
 
 test('a quota refusal from GitHub fails the build early and names the cause', () => {
   const repo = makeRepo();
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   const log = join(cache, 'shim.log');
   const env = scrubbedEnv({
     NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, LFS_SHIM_LOG: log, PATH: `${makeShim()}:${process.env.PATH}`,
@@ -224,9 +231,9 @@ test('a quota refusal from GitHub fails the build early and names the cause', ()
 
 test('without git-lfs on PATH it steps aside and leaves the failure to the media gate', () => {
   const repo = makeRepo();
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   // A shim that reports no git-lfs at all: `git lfs version` must fail.
-  const dir = mkdtempSync(join(tmpdir(), 'lfs-noshim-'));
+  const dir = mkdtempSync(join(SCRATCH, 'lfs-noshim-'));
   const shim = join(dir, 'git-lfs');
   writeFileSync(shim, '#!/usr/bin/env bash\nexit 1\n');
   chmodSync(shim, 0o755);
