@@ -21,7 +21,14 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
   in `netlify.toml` (kept intentionally minimal — one toml can't express two sites, and it's read
   *after* the clone). The legacy `GIT_LFS_ENABLED` / `GIT_LFS_FETCH_INCLUDE` env vars also live
   there and are being **retired** (next bullet but one). See `13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md`.
-- Deploy-on-push to `main`. Deploy previews: `https://deploy-preview-{PR}--{slug}.netlify.app`.
+- **The two learner sites publish from `release`, not `main`** (since 2026-09-25). A merge to
+  `main` deploys nothing learner-facing: `.github/workflows/production-release-train.yml`
+  fast-forwards `release` to the newest main commit whose required checks are BOTH green, at
+  09:05, 15:05 and 21:05 UTC, and its "Run workflow" button is the publish-now path for an
+  urgent (e.g. safety) fix. Why: every Netlify production deploy is billed (15 credits) and
+  publishing per merge cost two per merge. Never push to `release` by hand except to repair it;
+  it only ever fast-forwards. The satellite sites (sp-proxy, faculty console, workforce tour)
+  still build from `main`. Deploy previews: `https://deploy-preview-{PR}--{slug}.netlify.app`.
 - **Git LFS** tracks `*.mp3 *.m4a *.wav *.mp4`. Never commit LFS **pointer stubs** (~133 B) in place
   of real media — the build's LFS gate fails the deploy. In sandboxes without LFS installed, audio
   shows as false "modified"; don't commit those.
