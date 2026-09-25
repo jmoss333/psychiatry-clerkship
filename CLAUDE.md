@@ -222,6 +222,14 @@ the container when the Bash 5 environment is part of the evidence.
   from committed tables under `bin/data/`; `retiring` fires BEFORE the October 1 boundary).
   All three state what they examined beside the verdict, exit 2 rather than pass over a
   partial set, and only the self-tests (plus the offline ICD scan) run in `verify.sh`.
+  `check_claim_direction.py` is the step after a supersession finding: given a source id
+  and the newer DOI/PMID it fetches the newer abstract (Europe PMC) and reports, per stored
+  claim, whether the span survives verbatim, whether the sentences carrying the claim's
+  terms keep the stored direction (C5's own marker list, imported), and which quoted
+  statistics vanished — `consistent` / `contradicts` / `unlocated` / `unclear`. Advisory:
+  exit 0, the located sentences are the evidence; `--strict` for scripts. First case
+  (2026-09-19): `williams-2022` pub3 → pub4 — span 2/2 verbatim, direction consistent, the
+  update changed nothing taught.
 - **Egress is an allowlist, and which side of it a host falls on decides which tasks are possible
   today.** `bin/probe_egress.py` reports that in the repo's own terms — not "itunes.apple.com is
   unreachable" but "the podcast canonical backfill cannot run here". The SessionStart hook prints
