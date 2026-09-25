@@ -18,7 +18,7 @@ The **SAD PERSONS scale should not be used**: multiple studies demonstrate it pe
 
 The **Diefenbach et al. (2024) RCT** in JAMA Psychiatry (n=200) is the largest inpatient suicide prevention trial: up to 4 sessions of Brief Cognitive Behavioral Therapy produced a **60% reduction in the odds of a post-discharge suicide attempt** (OR 0.40, 95% CI 0.20–0.80; NNT = 7 — at this event rate the reduction in risk is nearer 50%) and a 71% reduction in readmissions among patients without substance use disorders.
 
-The Doupnik et al. (2020) meta-analysis of 14 studies found brief inpatient/acute-care suicide prevention interventions reduced subsequent attempts (pooled OR 0.69) and increased linkage to follow-up (OR 2.74). The following figure summarizes these outcomes:
+The Doupnik et al. (2020) meta-analysis of 14 studies found brief inpatient/acute-care suicide prevention interventions reduced subsequent attempts (pooled OR 0.69) and increased linkage to follow-up (OR 3.04). The following figure summarizes these outcomes:
 
 Figure 2 Forest Plots for 3 Study Outcomes: Depression, Linkage to Follow-up Care, and Subsequent Suicide Attempts
 
@@ -297,9 +297,9 @@ The post-discharge period carries the **highest risk for suicide**: pooled rates
 
 Thirty-day psychiatric readmission rates range from 7–17% across studies. The strongest and most consistent predictor is **previous psychiatric hospitalizations**. Other predictors include homelessness, schizophrenia/bipolar/personality disorder diagnoses, medical comorbidity, and co-occurring substance use disorders.
 
-Unmet social needs stack **dose-dependently**: 30-day readmission climbs from ~11.5% for patients with no documented social risk to ~63.5% for those with five domains of need (adjusted OR up to ~12.55; Bensken et al., *JGIM* 2021). This reframes the social history as a readmission-risk instrument, not a formality — and ties directly to §11's finding that follow-up within 7 days of discharge is associated with reduced suicide risk.
+Unmet social needs stack **dose-dependently**: in an all-cause analysis of US hospital readmissions (not limited to psychiatric admissions), 30-day readmission climbed from ~11.5% for patients with no documented social risk to ~63.5% for those with five domains of need (adjusted OR up to ~12.55; Bensken et al., *JGIM* 2021; doi:10.1007/s11606-021-06646-3). This reframes the social history as a readmission-risk instrument, not a formality — and ties directly to §11's finding that follow-up within 7 days of discharge is associated with reduced suicide risk.
 
-**Critical Time Intervention (CTI)** has the strongest RCT evidence for readmission reduction. The landmark Herman et al. trial (n=150, formerly homeless with SMI) found CTI significantly reduced rehospitalization (OR 0.11, 95% CI 0.01–0.96) and homelessness (OR 0.22). Brief CTI reduced 30-day readmission from 47% to 28% (P < .001).
+**Critical Time Intervention (CTI)** has the strongest RCT evidence for readmission reduction. The landmark Herman et al. trial (n=150, formerly homeless with SMI) found CTI significantly reduced rehospitalization (OR 0.11, 95% CI 0.01–0.96) and homelessness (OR 0.22). In a non-randomised comparison with a pre-implementation cohort, Brief CTI was associated with lower 30-day readmission (28% vs 47%, P < .001; Shaffer et al., 2015).
 
 However, meta-analyses of transitional interventions overall show **modest, often non-significant** effects on readmission (pooled OR 0.76, 95% CI 0.55–1.05). The **ENRICH trial** (n=590), the definitive RCT of peer support for psychiatric discharge, found **no significant effect** on readmission (RR 0.97, 95% CI 0.82–1.14).
 
@@ -319,7 +319,7 @@ However, meta-analyses of transitional interventions overall show **modest, ofte
 
 ### Post-Discharge Follow-Up
 
-The **Safety Planning Intervention with structured telephone follow-up (SPI+)** was associated with ~50% fewer suicidal behaviors over 6 months and more than double the odds of engaging in outpatient care. The VA/DoD 2024 guideline recommends periodic caring communications for 12 months post-discharge, with moderate-quality evidence showing a 43% reduction in suicide attempts at 1 year.
+The **Safety Planning Intervention with structured telephone follow-up (SPI+)**, studied in suicidal VHA emergency-department patients not requiring admission, was associated with 45% fewer suicidal behaviors over 6 months and more than double the odds of engaging in outpatient care. The VA/DoD 2024 guideline recommends periodic caring communications for 12 months post-discharge, with moderate-quality evidence showing a 43% reduction in suicide attempts at 1 year.
 
 Telehealth follow-up shows promise: the ATTEND pilot reduced wait times by 18.6 days and showed lower readmission rates (5% vs. 19%). Telehealth partial hospitalization was as effective as in-person treatment with higher completion rates (72.9% vs. 62.3%).
 
@@ -367,7 +367,7 @@ The **DIAMOND initiative** highlights the implementation gap: despite increased 
 | Discharge planning | Individualized planning | RR 0.89 for readmission | Cochrane review 2022, 33 RCTs (§11) |
 | Readmission reduction | Critical Time Intervention | OR 0.11 for rehospitalization | RCT, n=150 — Herman et al. (§12) |
 | Collaborative care | CoCM (IMPACT model) | OR 3.45 for treatment response | RCT, n=1,801 — IMPACT trial (§13) |
-| Post-discharge follow-up | SPI + telephone follow-up | ~50% fewer suicidal behaviors | Propensity-scored cohort — Stanley 2018 (§13) |
+| Post-discharge follow-up | SPI + telephone follow-up | 45% fewer suicidal behaviors | Propensity-scored cohort — Stanley 2018 (§13) |
 
 This table is an index, not a substitute for the sections it points to. Each § marks where the full estimate, its interval, and its caveats appear above, and every study named here has a DOI in the Sources list at the end of this page. "Strongest" means the strongest *available* evidence for that domain — for agitation pharmacotherapy that is still evidence the original authors rated very low in confidence.
 
@@ -624,6 +624,8 @@ Would you like to explore any of these domains in greater depth — for example,
 - Herman DB, Conover S, Gorroochurn P, et al. Psychiatric Services (Washington, D.C.). 2011;62(7):713-9. doi:10.1176/ps.62.7.pss6207_0713.
 
 - Shaffer SL, Hutchison SL, Ayers AM, et al. Psychiatric Services (Washington, D.C.). 2015;66(11):1155-61. doi:10.1176/appi.ps.201400362.
+
+- Bensken WP, Alberti PM, Koroukian SM. Journal of General Internal Medicine. 2021;36(5):1173-1180. doi:10.1007/s11606-021-06646-3.
 
 - Hegedüs A, Kozel B, Richter D, Behrens J. Frontiers in Psychiatry. 2019;10:969. doi:10.3389/fpsyt.2019.00969.
 
