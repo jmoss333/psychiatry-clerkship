@@ -36,6 +36,12 @@
 [build.environment]
   NODE_VERSION = "24"
 
+# Attestation ledger publisher (ADR-003): every 10 minutes, rebuild a learner site whose
+# served ledger-receipt.json is behind the ledger head once sign-offs have gone quiet.
+# Returns immediately while ATTEST_LEDGER is not "on".
+[functions."ledger-publish"]
+  schedule = "*/10 * * * *"
+
 # Private governance tool — never index it.
 [[headers]]
   for = "/*"

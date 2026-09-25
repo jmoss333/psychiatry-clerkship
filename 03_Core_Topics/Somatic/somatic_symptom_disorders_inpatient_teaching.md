@@ -28,7 +28,7 @@
 **Disposition & discharge essentials** — Consolidate care under a single outpatient clinician with scheduled follow-up and a shared plan to limit fragmented, escalating workups. Communicate the formulation to the receiving team in function-focused language. Arrange psychotherapy (CBT) and treat comorbidities. For factitious-by-proxy concerns, ensure protective services and safe disposition for the dependent.
 
 **High-yield pearls**
-- SSD is defined by the *excessive response* to symptoms, not by whether they're medically explained (a key DSM-5-TR shift from "medically unexplained").
+- SSD is defined by the *excessive response* to symptoms, not by whether they're medically explained (a key DSM-5 shift, retained in DSM-5-TR, from "medically unexplained").
 - Conversion/functional neurological disorder is a *rule-in* diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures.
 - Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder).
 - Factitious disorder imposed on another is child (or vulnerable-adult) abuse — a reporting duty.

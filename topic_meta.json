@@ -518,7 +518,7 @@
           "t": "Order a brain MRI before any treatment"
         }
       ],
-      "why": "This is bipolar mania; discontinue the antidepressant and begin an antimanic agent while protecting sleep."
+      "why": "Treat this as mania now: discontinue the antidepressant and begin an antimanic agent while protecting sleep. If full mania persists beyond the antidepressant's physiological effect, DSM-5-TR counts it toward bipolar I."
     },
     "cta": [
       {
@@ -854,7 +854,7 @@
       "Treat comorbid depression or PTSD; medications target symptoms, not the disorder.",
       "Name and tolerate countertransference rather than acting on it."
     ],
-    "cant": "Avoid polypharmacy and reactive medication changes driven by crises — they rarely help and can harm.",
+    "cant": "Don't let a BPD label overshadow an acute mood, psychotic, substance or medical illness, or an acute rise above chronic suicide risk; avoid polypharmacy and reactive medication changes driven by crises.",
     "quiz": {
       "q": "Best inpatient response to staff splitting around a patient with borderline personality disorder?",
       "o": [
@@ -1176,7 +1176,7 @@
       "Normal reaction / prolonged grief",
       "Substance-induced / medical"
     ],
-    "firstMove": "Anchor the timeline to the stressor, confirm criteria for other disorders aren't met, quantify suicide risk, and start brief supportive therapy.",
+    "firstMove": "Anchor the timeline to the stressor, confirm criteria for other disorders aren't met, assess suicide risk directly and formulate it, and start brief supportive therapy.",
     "quiz": {
       "q": "Two months after a divorce, a patient has low mood and impaired work function but does not meet criteria for major depression. Best diagnosis and first-line treatment?",
       "o": [
@@ -1537,7 +1537,7 @@
       "A paraphilia (interest) becomes a paraphilic disorder only with distress/impairment or harm to non-consenting others.",
       "Gender dysphoria names the distress; use affirming care and screen the elevated suicide risk."
     ],
-    "cant": "Paraphilic disorders involving a child or non-consenting person raise safety and reporting duties.",
+    "cant": "Paraphilic disorders involving a child (or a vulnerable adult) can trigger mandated abuse reporting; with non-consenting adults, confidentiality holds unless your state's duty-to-protect law is triggered by a credible threat to an identifiable person. Check your state's statute; in Maine, see 22 M.R.S. §4011-A (children) and §3477 (incapacitated or dependent adults).",
     "ruleOut": [
       "Medication-induced (SSRI, antipsychotic, beta-blocker)",
       "Endocrine / vascular / neurologic cause",
@@ -1774,8 +1774,8 @@
     "hy": true,
     "tldr": "Confidentiality is the default — know exactly when it yields: a credible threat to an identifiable victim, suspected child/elder abuse, and danger-based commitment — and remember commitment does not equal consent to medicate.",
     "points": [
-      "Duty to protect (Tarasoff): a serious threat to a reasonably identifiable person overrides confidentiality — warn, notify police, or hospitalize.",
-      "Child and elder abuse are mandated reports on reasonable suspicion, not proof; good-faith reporters are protected.",
+      "Duty to protect (Tarasoff): a serious threat to a reasonably identifiable person can override confidentiality: warn, notify police, or hospitalize. Whether this is mandatory, permissive, or absent depends on your state's statute. In Maine, see 34-B M.R.S. §1207(6-A) (disclosure to avert a serious and imminent threat).",
+      "Child abuse is a mandated report on reasonable suspicion, not proof, and elder/dependent-adult abuse is mandated in most (not all) states; good-faith reporters are protected. Check your state's statute; in Maine, the trigger is an incapacitated or dependent adult, not age alone (22 M.R.S. §3477).",
       "Capacity is clinical and decision-specific; competence is a legal (court) determination."
     ],
     "cant": "Involuntary hospitalization does not authorize involuntary medication — refusal stands absent a true emergency or a separate legal process.",
@@ -1803,7 +1803,7 @@
           "t": "Ask his family to pass along a warning"
         }
       ],
-      "why": "A serious threat against a reasonably identifiable victim triggers the duty to protect (Tarasoff): confidentiality yields, and reasonable steps include warning the victim, notifying police, and continued hospitalization."
+      "why": "A serious threat against a reasonably identifiable victim is the classic duty-to-protect (Tarasoff) situation: confidentiality yields, and reasonable steps include warning the victim, notifying police, and continued hospitalization. Whether the duty is mandatory, permissive, or absent varies by state; check your state's statute (in Maine, 34-B M.R.S. §1207(6-A))."
     },
     "cta": [
       {
@@ -2067,7 +2067,7 @@
     "tldr": "Separate delirium vs dementia vs depression in every confused elder, treat the reversible, and deprescribe before you prescribe — the drug list is often the diagnosis.",
     "points": [
       "Inattention is the fingerprint of delirium — test it at the bedside (digit span, months backward) rather than inferring it.",
-      "Effortful 'I don't know' answers with disengagement suggest pseudodementia — treat the depression and cognition improves.",
+      "Effortful 'I don't know' answers with disengagement suggest pseudodementia — treat the depression and retest cognition; follow it after remission, because depression with cognitive impairment often precedes dementia.",
       "Beers Criteria plus anticholinergic-burden review on every med list; start low, go slow on anything new."
     ],
     "cant": "New psychosis in an older adult is delirium or another medical cause until proven otherwise — work it up before you call it psychiatric.",
@@ -3617,7 +3617,7 @@
     "points": [
       "Behavioral activation is the highest-yield, lowest cognitive-demand inpatient move for the withdrawn anhedonic patient — it works by scheduling one small valued activity, not by asking a depressed person to think their way out.",
       "Psychoeducation has strong inpatient numbers — readmission NNT 5, relapse NNT 9 (Xia 2011 Cochrane; limited-quality hospital-based trials, and the reviewers judge the true effect likely smaller) — give it as a conversation with family looped in, not a packet dump.",
-      "Safety planning with follow-up reduces suicidal behaviors by approximately 50%; no-suicide contracts have no evidence and create false reassurance — abandon them."
+      "Safety planning with follow-up was associated with ~45% fewer suicidal behaviors in a large VA ED cohort (Stanley 2018; not an RCT); no-suicide contracts have no evidence and create false reassurance — abandon them."
     ],
     "cant": "No-suicide contracts have no evidence and can create false reassurance — replace every contract with a collaborative safety plan in the patient's own words, with a scheduled follow-up contact.",
     "quiz": {
@@ -3834,7 +3834,7 @@
     "points": [
       "The Compass is a wayfinding map, not a checklist, clinical protocol, or measure of readiness.",
       "Review the Orientation Packet's safety and supervision boundaries before using bedside tools.",
-      "Use the optional captioned orientation overview when a narrated walkthrough helps; the transcript provides the non-video route."
+      "Pick one page, one tool, and one question to bring to your team; the library is a reference, not a reading list."
     ],
     "workflowStages": [
       "encounter",
@@ -4068,7 +4068,7 @@
     "points": [
       "The skill of the week is the psychopharmacology primer — work through the top-10 inpatient classes and apply the CATIE lesson: choose antipsychotics by side-effect profile (metabolic, QTc, EPS), not by generation.",
       "Suggested landmarks: CATIE (Lieberman 2005), STAR*D (Rush 2006), and Bush 1996 (catatonia) — Journal Clubs 1 and 5 pair with these readings.",
-      "On the unit: run a Bush-Francis catatonia screen on any mute or immobile patient — the screen is diagnostic and the lorazepam challenge can be therapeutic."
+      "On the unit: run a Bush-Francis catatonia screen on any mute or immobile patient — a positive screen prompts a supervised diagnostic assessment, and a lorazepam challenge both supports the diagnosis and begins treatment."
     ],
     "cta": {
       "label": "Open the Psychopharmacology Primer",
@@ -5464,7 +5464,7 @@
     "points": [
       "Lithium: 12-h trough drawn ~5 days after any dose change; target: acute mania 0.8–1.2, maintenance usually 0.6–0.8 (older adults ~0.4–0.6); NSAIDs/thiazides/ACE-inhibitors raise levels.",
       "Clozapine ANC weekly ×6 mo → every 2 wk ×6 mo → monthly (per prescribing information; FDA eliminated the REMS in 2025); myocarditis is the early killer.",
-      "Valproate and lithium are teratogens — β-hCG before starting; carbamazepine needs CBC/LFTs/sodium, HLA-B*1502 in at-risk ancestry, and watch for SIADH."
+      "Valproate and lithium are teratogens — β-hCG before starting; carbamazepine is also a teratogen that lowers hormonal-contraceptive levels (β-hCG, contraception counselling) and needs CBC/LFTs/sodium, HLA-B*1502 in at-risk ancestry, and watch for SIADH."
     ],
     "cant": "Do not treat monitoring as optional or after-the-fact — baseline and ongoing metabolic labs, β-hCG, and a QTc before QT-prolonging agents are part of the prescription.",
     "safetyLevel": "high",
@@ -5673,7 +5673,7 @@
     "tldr": "The admission itself is a treatment window: every patient gets the non-negotiable three — a personalized safety plan, structured psychoeducation, discharge bridging — and every encounter is a chance for a 5-minute micro-intervention matched to the presentation.",
     "points": [
       "Inpatient psychotherapy adds a real, modest benefit (SMD ~0.24-0.43, NNT ~7) and no modality is clearly superior — common factors carry the effect, which is exactly the part an MS3 can deliver from day one.",
-      "The non-negotiable three for every admission: a personalized, quality-checked safety plan (associated with ~45% fewer suicidal behaviors when paired with follow-up), structured psychoeducation (readmission NNT ~5 in psychosis), and discharge bridging — the first weeks out are the riskiest of the whole episode.",
+      "The non-negotiable three for every admission: a personalized, quality-checked safety plan (associated with ~45% fewer suicidal behaviors when paired with follow-up), structured psychoeducation (readmission NNT ~5 in psychosis, from 206 participants in limited-quality trials — likely an overestimate), and discharge bridging — the first weeks out are the riskiest of the whole episode.",
       "Match the move to the presentation: BA micro-dose for the withdrawn, one distress-tolerance skill for the flooded, MI readiness ruler for the ambivalent — and the more acute the disorganization, the more behavioral and supportive the intervention."
     ],
     "cant": "No no-suicide contracts, no trauma processing mid-crisis, no 16-session manual compressed into a 4-day stay — and don't diagnose a comorbidity out of a BPD affective storm: trigger-linked shifts lasting hours are the disorder's expected physiology, not new-onset MDD.",
@@ -5729,7 +5729,7 @@
       "mse": "Track engagement, affect regulation, and cognitive load — the more disorganized the sensorium, the more behavioral and supportive the intervention has to be.",
       "safety": "Every admission: a personalized safety plan whose quality is checked (not a pasted template), collaborative lethal-means counseling, and discharge bridging before the highest-risk first weeks out.",
       "say": "We can use these few days: one skill, one scheduled activity, and one plan for the first week home.",
-      "collateral": "You can always listen to a family without the patient's permission — consent governs what you share, not what you hear.",
+      "collateral": "You can listen to a family without the patient's permission — but without it (and absent a recognized exception such as incapacity or emergency) don't confirm the admission or share anything back; consent governs what you share, including that they are here, not what you hear.",
       "rounds": "Name the mechanism, the 5-minute intervention delivered, the patient's response, and the discharge-bridge status.",
       "exam": "Safety planning with follow-up beats no-suicide contracts; behavioral activation matches the anergic patient; psychoeducation carries the strongest single-intervention numbers in psychosis.",
       "actions": [

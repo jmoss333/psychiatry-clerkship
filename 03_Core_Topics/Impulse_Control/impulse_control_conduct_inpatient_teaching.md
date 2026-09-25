@@ -33,7 +33,9 @@
 - Assess violence/suicide risk and victim safety; document.
 - Recommend behavioral/family interventions first; reserve medication for comorbidities.
 
-**Disposition & discharge essentials** — Coordinate with family, school, primary care, and (where relevant) juvenile-justice or social services. Set up the psychosocial interventions (parent training, MST, skills therapy), continuity for ADHD/mood/substance treatment, and a safety plan. Reconcile medications with clear, comorbidity-based indications.
+**Disposition & discharge essentials** — Coordinate with family, school, primary care, and (where relevant) juvenile-justice or social services. Set up the psychosocial interventions (parent training, MST, skills therapy), continuity for ADHD/mood/substance treatment, and a safety plan with crisis contacts (see below). Reconcile medications with clear, comorbidity-based indications.
+
+<!-- crisis-block -->
 
 **High-yield pearls**
 - ODD → conduct disorder → antisocial personality disorder is the developmental spine; antisocial PD *requires* conduct disorder onset before age 15 (and the patient must be ≥18).

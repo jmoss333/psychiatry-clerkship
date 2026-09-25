@@ -10,6 +10,7 @@ import sqlite3
 import tempfile
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
+import genanki
 import pytest
 
 from pcl_anki.contract import (
@@ -47,6 +48,7 @@ from pcl_anki.package import (
     CSV_ARTIFACT_FILENAME,
     RECEIPT_ARTIFACT_FILENAME,
     PackageWriteError,
+    write_apkg,
     write_release,
 )
 from pcl_anki.qbank import qbank_item_sha256
@@ -1063,3 +1065,47 @@ def test_atomic_publisher_preserves_preexisting_nonempty_destination(candidate, 
     assert sentinel.read_text(encoding="utf-8") == "preexisting"
     assert {path.name for path in out_dir.iterdir()} == {"owner.txt"}
     assert not tuple(tmp_path.glob(".pcl-anki-release-*"))
+
+
+def _probe_deck() -> genanki.Deck:
+    deck = genanki.Deck(2059400110, "Temp-file probe")
+    deck.add_note(genanki.Note(model=genanki.BASIC_MODEL, fields=["front", "back"]))
+    return deck
+
+
+def test_write_apkg_leaves_nothing_in_the_system_temp_directory(tmp_path, monkeypatch):
+    # genanki 0.13.1 builds the collection in tempfile.mkstemp() and never deletes it, so every
+    # package written used to leave one SQLite file in $TMPDIR: ~13,600 on one Mac by
+    # 2026-09-24, 253 per run of this suite.
+    system_tmp = tmp_path / "system-tmp"
+    system_tmp.mkdir()
+    monkeypatch.setattr(tempfile, "tempdir", str(system_tmp))
+    out = tmp_path / "probe.apkg"
+
+    write_apkg(_probe_deck(), out, 1_700_000_000)
+
+    assert tuple(system_tmp.iterdir()) == ()
+    assert tempfile.tempdir == str(system_tmp)
+    with ZipFile(out) as archive:
+        collection = tmp_path / "collection.anki2"
+        collection.write_bytes(archive.read("collection.anki2"))
+    with sqlite3.connect(collection) as db:
+        assert db.execute("SELECT count(*) FROM notes").fetchone() == (1,)
+
+
+def test_write_apkg_restores_the_temp_directory_when_genanki_fails(tmp_path, monkeypatch):
+    system_tmp = tmp_path / "system-tmp"
+    system_tmp.mkdir()
+    monkeypatch.setattr(tempfile, "tempdir", str(system_tmp))
+
+    def failing_write(self, file, timestamp=None):
+        tempfile.mkstemp()
+        raise RuntimeError("simulated genanki failure")
+
+    monkeypatch.setattr(genanki.Package, "write_to_file", failing_write)
+
+    with pytest.raises(RuntimeError, match="simulated genanki failure"):
+        write_apkg(_probe_deck(), tmp_path / "probe.apkg", 1_700_000_000)
+
+    assert tempfile.tempdir == str(system_tmp)
+    assert tuple(system_tmp.iterdir()) == ()

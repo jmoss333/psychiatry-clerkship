@@ -443,13 +443,11 @@
     },
     {
       "query": "cut her wrist",
-      "protocol": "pg_suicide.md",
-      "accidental": "Reached only because 'cut' sits inside 'acute' in the safety cards' text, and today it arrives third, behind the Delirium and Consult sheets that match the same way. No trigger names it. This is why the safety-kit pass keeps substring matching; the durable fix is a trigger that makes it lead (faculty)."
+      "protocol": "pg_suicide.md"
     },
     {
       "query": "she cut herself",
-      "protocol": "pg_suicide.md",
-      "accidental": "Reached only because 'cut' sits inside 'acute' in the safety cards' text, and today it arrives third, behind the Delirium and Consult sheets that match the same way. No trigger names it. This is why the safety-kit pass keeps substring matching; the durable fix is a trigger that makes it lead (faculty)."
+      "protocol": "pg_suicide.md"
     },
     {
       "query": "patient wants to leave ama",

@@ -7,6 +7,10 @@ import {execFileSync, spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {readExpected, checkRelease, DEFAULT_URL} from '../qa/release-check.mjs';
+import {scrubInheritedGitEnv} from '../../tests/_git_env.mjs';
+
+// Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrubInheritedGitEnv();
 
 const hash = value => createHash('sha256').update(value).digest('hex');
 const files = {'index.html':'<h1>Room</h1>', 'app.js':'new room', 'styles.css':'body{}'};
