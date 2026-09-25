@@ -1,0 +1,102 @@
+[
+ {
+  "id": "AQ1-001",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "Bowden 1994 abstract confirms all eight rapid-cycling patients were randomised to divalproex, so no divalproex-vs-lithium subgroup comparison was possible; the trial says only that divalproex was as effective in rapid cyclers as in others. The mixed/depressive-mania signal is from the Swann 1997 secondary analysis. Downgraded to Moderate: it misattributes a trial result, but the clinical preference it teaches is still mainstream.",
+  "evidence": "Bowden CL et al., JAMA 1994;271:918-24 (PMID 8120960), abstract; Swann AC et al., Arch Gen Psychiatry 1997;54:37-42 (PMID 9006398)",
+  "correction": "In the Bowden trial and its secondary analyses, divalproex was effective in which patient subgroups, in whom lithium has historically performed less well?",
+  "confidence": "high"
+ },
+ {
+  "id": "AQ1-002",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "The finding's premise is partly wrong. The 2018 full text does name a balance group, in the sentence 'Some antidepressants, such as escitalopram, mirtazapine, paroxetine, agomelatine, and sertraline had a relatively higher response and lower dropout rate than the other antidepressants.' So escitalopram and sertraline are in it, but as two of five and not as a pair. That sentence also supports the distractor 'Paroxetine and agomelatine', so the item has two defensible answers. The escitalopram–sertraline pairing is from the 2009 MANGA analysis.",
+  "evidence": "Cipriani A et al., Lancet 2018;391:1357-66 (PMID 29477251, doi:10.1016/S0140-6736(17)32802-7), Europe PMC full text PMC5889788, Discussion; Cipriani A et al., Lancet 2009;373:746-58 (recall)",
+  "correction": "Both appear among the five agents (escitalopram, mirtazapine, paroxetine, agomelatine and sertraline) that the 2018 analysis noted had relatively higher response and lower dropout; the escitalopram–sertraline pairing as the single best balance comes from Cipriani's earlier 2009 analysis of 12 antidepressants.",
+  "problem": "The feedback says the 2018 NMA specifically highlighted escitalopram and sertraline as the best-balance pair. The paper names five agents with relatively higher response and lower dropout, and paroxetine and agomelatine are among them, so distractor A is also supported. The feedback misattributes the 2009 pairing, and the stem or distractor needs rewriting to leave one best answer. A feedback-only fix does not remove the ambiguity.",
+  "confidence": "high"
+ },
+ {
+  "id": "M11-002",
+  "verdict": "confirmed",
+  "severity": "Major",
+  "reason": "The Ferguson 1996 abstract confirms that more days since the last drink independently predicted DT (OR 1.3). PAWSS has no interval item. The page's 'shorter interval' has no support and reverses the only cited association. The evidence is one retrospective cohort, possibly confounded by late presentation, so confidence stays medium; simply deleting the item would also be acceptable.",
+  "evidence": "Ferguson JA et al., J Gen Intern Med 1996;11:410-4 (PMID 8842933, doi:10.1007/BF02600188), abstract",
+  "correction": "a longer interval since the last drink at presentation (already late in the withdrawal timeline)",
+  "confidence": "medium"
+ },
+ {
+  "id": "M11-001",
+  "verdict": "confirmed",
+  "severity": "Major",
+  "reason": "The MS3 page body describes naloxone-precipitated withdrawal and no buprenorphine given, and Q5 says 'Buprenorphine is the practical answer — start it here'. The TL;DR is copied verbatim from the resident COTW (R03), where a buprenorphine-precipitated withdrawal case does make methadone or low-dose initiation the live options. The same text is also the MS3 'exam' Shelf-level takeaway line (M11.md line 303), which needs the same replacement.",
+  "evidence": "Page text of cotw_20260727_oud_ms3.md (Q1, Q2, Q5, Q7) compared with the resident page in R03.md; recall for precipitated-withdrawal management",
+  "correction": "> Two toxidromes, one encounter: naloxone reversed the overdose and precipitated withdrawal. Observe for re-sedation, treat the withdrawal, start buprenorphine in the building, and send him out with naloxone and a named follow-up.",
+  "confidence": "high"
+ },
+ {
+  "id": "Q1-001",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "The item's own rationale says the Cochrane review (Lima 2004) judged the data insufficient to recommend beta-blockers. The 2024 JAMA Netw Open NMA ranks mirtazapine, biperiden and B6 above propranolol, and propranolol's effect was not robust. The 2026 Schizophr Bull NMA puts 5-HT2A antagonists above beta-blockers, both at low certainty. Downgraded to Moderate: propranolol stays a reasonable conventional first-line add-on, so the defect is the mis-cited evidence and the self-contradiction, not the action. The stem ('strongest evidence as first-line'), the pearl ('strongest evidence') and the evidence line repeat the claim and need the same fix.",
+  "evidence": "Gerolymos C et al., JAMA Netw Open 2024;7:e241527 (PMID 38451521, doi:10.1001/jamanetworkopen.2024.1527); Furukawa Y et al., Schizophr Bull 2026;52(2) (PMID 38869177, doi:10.1093/schbul/sbae098); Lima AR et al., Cochrane CD001946 (recall, and quoted in the item's rationale)",
+  "correction": "Propranolol 20–40 mg BID — a lipophilic non-selective beta-blocker and the conventional first-line add-on for akathisia, although its trial evidence is small and low-certainty.",
+  "confidence": "high"
+ },
+ {
+  "id": "Q1-013",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "DSM-5-TR's 'with mixed features' specifier for a major depressive episode needs ≥3 of: elevated mood, grandiosity, pressured speech, racing thoughts/flight of ideas, increased energy or goal-directed activity, risky activities, and decreased need for sleep. Overlapping symptoms (psychomotor agitation, insomnia) are not counted. As written, the stem meets only one criterion. Downgraded to Moderate: the keyed action (heightened suicide vigilance) is correct whatever the specifier. The pearl ('racing thoughts/agitation/decreased sleep') and the t_mood.md evidence line ('activation/agitation') carry the same conflation.",
+  "evidence": "DSM-5-TR (APA 2022), depressive disorders, 'With mixed features' specifier (recall)",
+  "correction": "he also has racing thoughts, pressured speech, and increased goal-directed activity, and is sleeping only 3 hours per night yet feels rested",
+  "confidence": "high"
+ },
+ {
+  "id": "M09-001",
+  "verdict": "modified",
+  "severity": "Major",
+  "reason": "Larochelle 2018 confirms mortality reductions for methadone (AHR 0.47) and buprenorphine (AHR 0.63) and no association for naltrexone (AHR 1.44, CI 0.84-2.46; few events). The finding stands. The correction is reworded to keep lowercase after the semicolon in the bullet and to avoid the informal 'full detox'.",
+  "evidence": "Larochelle MR et al., Ann Intern Med 2018;169:137-145 (PMID 29913516, doi:10.7326/M17-3107), abstract",
+  "correction": "methadone and buprenorphine reduce mortality; naltrexone has not been shown to (and requires an opioid-free window before starting).",
+  "confidence": "high"
+ },
+ {
+  "id": "M08-001",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "The pearl drops DSM-5-TR schizoaffective Criterion C (mood episodes for the majority of the total illness duration). The item's Answer, directly above, states the criterion correctly. Downgraded to Moderate as an internal pearl/answer conflict, but the pearl is the line learners will memorise and it is wrong as written.",
+  "evidence": "DSM-5-TR schizoaffective disorder Criteria A-C (recall); the item's own Answer at M08.md line 538",
+  "correction": "If yes (for ≥2 weeks) → schizoaffective disorder only if mood episodes have also been present for the majority of the total illness duration; otherwise schizophrenia. If psychosis only occurs during mood episodes → mood disorder with psychotic features.",
+  "confidence": "high"
+ },
+ {
+  "id": "M08-002",
+  "verdict": "confirmed",
+  "severity": "Major",
+  "reason": "DSM-5-TR manic episode Criterion B requires ≥3 symptoms, or ≥4 if the mood is only irritable. The answer is presented as 'the DSM-5 criteria' and nothing nearby carries the qualifier. The correction is minimal and pastes in cleanly.",
+  "evidence": "DSM-5-TR manic episode Criterion B (recall)",
+  "correction": "lasting ≥7 days (or any duration if hospitalization required), plus ≥3 (≥4 if mood is only irritable) of: **DIG FAST**",
+  "confidence": "high"
+ },
+ {
+  "id": "M02-001",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "The SP script (M02.md line 1938) gives one fleeting 'what's even the point' thought during an hour-long irritable flip, which falls far short of DSM-5-TR mixed features (≥3 depressive symptoms nearly every day for most of the episode). Downgraded to Moderate: the clinical action taught (screen SI plainly in mania) is correct and only the specifier label is wrong. The same mislabel also appears in the checklist labels at lines 1544 and 2030 ('(mixed features)'), the tag at line 1311, and criticalMiss.missed at line 2124 ('Mixed states carry real risk'); the coordinator should sweep those. sp-interview.html is attested content, so editing it reopens attestation.",
+  "evidence": "DSM-5-TR bipolar 'with mixed features' specifier (recall); the Marcus script in M02.md",
+  "correction": "Marcus had a fleeting 'what's the point' flicker during an irritable crash this week that scared him — elevated does not mean safe.",
+  "confidence": "high"
+ },
+ {
+  "id": "M02-002",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "Same defect as M02-001, confirmed. The reviewer's correction puts a long parenthetical inside a debrief bullet; a shorter drop-in keeps the valid point (SI hides inside mania) without misusing the specifier. Downgraded to Moderate for the same reason as M02-001.",
+  "evidence": "DSM-5-TR bipolar 'with mixed features' specifier (recall)",
+  "correction": "Suicidal thoughts can hide inside the velocity even when full mixed features are absent; Marcus's Tuesday 'flicker' only surfaces when asked plainly",
+  "confidence": "high"
+ }
+]

@@ -19,7 +19,7 @@ var FD_STORE='cw_frontdoor_v1';
    not clinical progress or route state, so this store is its single home. browsing is the
    learner's explicit "not on rotation" choice (#425): with no rotation start left to derive a
    week from, it is the only thing that says the app -- not week setup -- is where a reload lands. */
-var FD_KEYS=['role','tab','viewWeek','openId','fromTab','scrollPos','toolExpanded','browsing'];
+var FD_KEYS=['role','tab','viewWeek','openId','fromTab','scrollPos','toolExpanded','browsing','appBridge','readingPlaces'];
 
 function fdLoad(){
   try{ return JSON.parse(localStorage.getItem(FD_STORE)||'{}')||{}; }catch(_){ return {}; }
@@ -28,9 +28,9 @@ function fdSave(o){
   var out={}, src=o||{};
   for(var i=0;i<FD_KEYS.length;i++){
     var k=FD_KEYS[i];
-    if(src[k]!==undefined) out[k]=src[k];
+    if(src[k]!==undefined) out[k]=k==='readingPlaces'?fdReadingPlaces(src[k]):src[k];
   }
-  try{ localStorage.setItem(FD_STORE, JSON.stringify(out)); }catch(_){ }
+  try{ localStorage.setItem(FD_STORE, JSON.stringify(out)); return true; }catch(_){ return false; }
 }
 
 /* cw_progress_v1 keeps reading history in its original {done,at} shape. Repeated practice
@@ -185,6 +185,22 @@ function fdExamCountdown(week, weeks, nowMs, rotationStart){
   if(days<0) return '';
   if(days===0) return '· exam day — good luck';
   return '· exam in ~'+days+' day'+(days===1?'':'s');
+}
+
+/* WHOSE countdown it is -- the gate Today calls (fd_today.js); fdExamCountdown above is only the
+   arithmetic. Only the MS3 path ends in a scheduled exam. The resident path is a four-week block
+   with no end-of-block exam, yet until 2026-09-24 the countdown fired in the final two weeks of
+   ANY path, so residents read "exam in ~N days" about an exam that does not exist. A stored exam
+   date is the learner saying there is one, so it opens the countdown on any path -- the settings
+   panel's Pacing field ships to both sites. "Stored" means parseable, the same test
+   fdExamCountdown and phasePolicy apply: a junk value is no date. Path ids are the ones
+   frontdoor_catalog.py pins; a missing id is not the exam path, so it fails closed. */
+var FD_EXAM_PATH_ID='ms3-six-week';
+function fdPathExamCountdown(pathId, week, weeks, nowMs, rotationStart){
+  var stored=null;
+  try{ stored=localStorage.getItem('cw_shelf_date'); }catch(_){ }
+  if(pathId!==FD_EXAM_PATH_ID&&shelfDaysUntil(stored, nowMs)===null) return '';
+  return fdExamCountdown(week, weeks, nowMs, rotationStart);
 }
 
 /* The write half of the key fdExamCountdown reads, and the settings panel's only persistence.

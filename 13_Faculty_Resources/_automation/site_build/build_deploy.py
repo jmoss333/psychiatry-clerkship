@@ -175,7 +175,7 @@ _missing_req=[]
 _copy_required(LIB+"/07_Evidence_and_Reading/Landmark_Trials/quizzes.json", OUT+"/tools/quizzes.json", _missing_req)
 _abort_missing(_missing_req)
 _aud=LIB+"/07_Evidence_and_Reading/Landmark_Trials/audio"
-if os.path.isdir(_aud): shutil.copytree(_aud, OUT+"/audio")
+if os.path.isdir(_aud): common.copytree_with_virtiofs_retry(_aud, OUT+"/audio")
 
 # ---- OE NotebookLM brief audio: copy + deck-align into quizzes.json (exact-title join) ----
 import csv as _csv, re as _re2

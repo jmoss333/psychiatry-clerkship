@@ -6,9 +6,9 @@ Pipeline:
   1. Load findings (array conforming to config/finding.schema.json).
   2. Resolve affects[] via citation_index.json; escalate severity (acute paths).
   3. Ensure a stable fingerprint on each finding.
-  4. Dedup: fetch fingerprints already present in ANY surveillance issue
-     (state=all — open or closed), so re-runs never open duplicates and a
-     dismissed fingerprint is never reopened.
+  4. Dedup: fetch fingerprints already present in surveillance issues. An open
+     issue is updated when its automation-managed labels no longer match fresh
+     routing; a dismissed fingerprint is never reopened.
   5. P0/P1 with a NEW fingerprint -> open an issue. P2 -> monthly digest.
   6. Write a dated report, checked-source freshness stamps, and issue snapshot.
 
@@ -29,6 +29,13 @@ import lib_surveillance as L
 
 API = "https://api.github.com"
 DEFAULT_REPO = "jmoss333/psychiatry-clerkship"
+MANAGED_JOB_LABELS = {
+    "guideline-surveillance",
+    "link-source-monitor",
+    "citation-monitor",
+    "resource-intake",
+}
+MANAGED_SEVERITY_LABELS = set(L.SEVERITY_ORDER)
 
 
 def _gh(method, url, token, data=None):
@@ -134,7 +141,40 @@ def create_issue(repo, token, f):
     return res
 
 
-def main():
+def reconcile_open_issue(repo, token, issue, finding):
+    """Refresh generated fields when fresh routing disagrees with an open issue.
+
+    Severity and job labels are automation-owned. Other labels may record human
+    workflow decisions, so preserve them while replacing only the managed set.
+    A managed-label change also refreshes the generated title/body; this keeps
+    the issue's visible severity and evidence consistent with the fresh report.
+    """
+    current_labels = set(issue.get("labels") or [])
+    managed = MANAGED_SEVERITY_LABELS | MANAGED_JOB_LABELS | {"surveillance"}
+    labels = sorted((current_labels - managed) | set(L.issue_labels(finding)))
+    if labels == sorted(current_labels):
+        return False
+
+    data = {
+        "title": L.issue_title(finding),
+        "body": L.issue_body(finding),
+        "labels": labels,
+    }
+    updated, _ = _gh(
+        "PATCH",
+        f"{API}/repos/{repo}/issues/{issue['number']}",
+        token,
+        data,
+    )
+    normalized = normalize_issue_snapshot([updated])
+    if not normalized:
+        raise RuntimeError("GitHub issue update returned no surveillance fingerprint")
+    issue.clear()
+    issue.update(normalized[0])
+    return True
+
+
+def build_parser():
     ap = argparse.ArgumentParser()
     ap.add_argument("--findings", required=True, help="JSON array of findings")
     ap.add_argument("--job", required=True,
@@ -147,7 +187,18 @@ def main():
     ap.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPO))
     ap.add_argument("--dry-run", action="store_true", help="No GitHub calls; print intended actions")
     ap.add_argument("--existing-fixture", help="(dry-run) JSON array of fingerprints to treat as already-issued")
-    ap.add_argument("--out-dir", help="Override history/ output dir (used by tests)")
+    # DEFAULTS TO THE REAL history/ DIR, never None. Every scheduled workflow invokes this
+    # script WITHOUT --out-dir while every test passes one, so a None default is a code path
+    # only production takes — which is exactly what happened: from #711 (2026-09-19) until
+    # this fix, `os.makedirs(args.out_dir)` below raised TypeError on every scheduled run of
+    # all four surveillance jobs while the suite stayed green. Same shape as build_status.py.
+    ap.add_argument("--out-dir", default=L.HISTORY,
+                    help="Override history/ output dir (used by tests); defaults to history/")
+    return ap
+
+
+def main():
+    ap = build_parser()
     args = ap.parse_args()
 
     with open(args.findings, encoding="utf-8") as fh:
@@ -185,12 +236,22 @@ def main():
         existing = suppressed_fingerprints(issue_snapshot, dismissed)
 
     max_new = int(os.environ.get("MAX_NEW_ISSUES", "25"))
-    created, deduped, overflow = [], [], []
+    open_issues = {
+        item["fingerprint"]: item
+        for item in issue_snapshot
+        if str(item.get("state") or "").upper() == "OPEN"
+    }
+    created, deduped, reconciled, overflow = [], [], [], []
     stop_creating = False
     for f in issue_findings:
         if f["fingerprint"] in existing:
             f["status"] = "triaged"
             deduped.append(f)
+            open_issue = open_issues.get(f["fingerprint"])
+            if not args.dry_run and open_issue is not None:
+                if reconcile_open_issue(args.repo, token, open_issue, f):
+                    reconciled.append(f)
+                    print(f"UPDATED {open_issue['url']}  {L.issue_title(f)}")
             continue
         if args.dry_run:
             print(f"[dry-run] CREATE  {L.issue_title(f)}")
@@ -236,6 +297,7 @@ def main():
         json.dump({"schemaVersion": 1, "capturedAt": L.utcnow(), "issues": ordered}, fh, indent=2)
 
     print(f"\nSummary [{args.job}]: {len(created)} created, {len(deduped)} deduped, "
+          f"{len(reconciled)} reconciled, "
           f"{len(digest_findings)} P2 digested, {len(overflow)} overflow->digest.")
     print(f"Suppression: {len(dismissed)} registered dismissal(s) in config/dismissed.json; "
           f"a closed issue no longer suppresses its fingerprint.")

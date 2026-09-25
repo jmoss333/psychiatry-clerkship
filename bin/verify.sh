@@ -234,6 +234,13 @@ step "unit — claim direction"                python3 bin/check_claim_direction
 # Ratchet against bin/check_qbank_coherence_baseline.json (pairs = 0 today); the pin is what
 # the --self-test step above asserts the exit code against. See the span-audit comment above.
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
+# Reviewer instructions pasted as learner text ("Rewrite the item…, e.g. stem: '…' keyed to '…'"):
+# the 2026-09-01 remediation shipped three into the audio-quiz decks and every validator passed,
+# because each is a valid string (2026-09-24 peer review, pattern A / decision J5). A ratchet
+# against bin/editorial_leaks_baseline.json (16 today, all in those three items across both deck
+# copies); the self-test plants every pattern and asserts the live tree agrees with the pin.
+step "unit — editorial leaks"               python3 bin/check_editorial_leaks.py --self-test
+step "editorial leaks in learner text"      python3 bin/check_editorial_leaks.py
 step "twin parity (audience copies)"        python3 bin/check_twin_parity.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py
 step "evidence drill is regenerated"        python3 $A/generate_evidence_drill.py --check
@@ -258,6 +265,7 @@ step "production rotation edition locked"   python3 bin/check-rotation-edition-l
 # Scoped to the *.test.mjs glob on purpose: tests/smoke/*.spec.js is a separate Playwright
 # suite with its own deps and is not runnable from repo root.
 step "node --test tests/*.test.mjs"         bash -c 'node --test tests/*.test.mjs'
+step "runtime contract"                     node bin/check-runtime-contract.mjs
 step "contrast-check"                       node tests/contrast-check.mjs
 
 # --- "what ships" is one derived file, and it must be current (ADR-002) ---

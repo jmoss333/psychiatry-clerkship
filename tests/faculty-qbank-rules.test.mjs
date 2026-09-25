@@ -607,12 +607,17 @@ test('current repository bank has 189 blocker-free active items with a balanced 
   // attest/pending, and landed 2026-08-27 — this time the replay was verified against that
   // doctrine first: the item's content is byte-identical (status aside) between the branch
   // base and main, so the status still describes the content it was given for.
+  // The 2026-09-24 joint safety PR (peer-review WP-1 + architecture WP-1a) corrected ten
+  // attested items and demoted each attested->draft in the same diff, as Gate B requires
+  // (J4 cap: <= 10 per PR): qb_cog_002, qb_cog_014, qb_eth_007, qb_mood_002, qb_mood_013,
+  // qb_oth_001, qb_otherdx_001, qb_sud_002, qb_sud_005, qb_sud_014. Their correct keys join
+  // the draft spread (still balanced); the counts return as the faculty console re-attests them.
   assert.equal(result.counts.total, 189);
-  assert.equal(result.counts.draft, 45);
-  assert.equal(result.counts.attested, 144);
+  assert.equal(result.counts.draft, 55);
+  assert.equal(result.counts.attested, 134);
   assert.equal(Object.keys(result.byId).length, 189);
   assert.equal(Object.values(result.byId).flatMap(entry => entry.blockers).length, 0);
-  assert.deepEqual(result.answerKeys, { A: 12, B: 12, C: 11, D: 10 });
+  assert.deepEqual(result.answerKeys, { A: 15, B: 13, C: 14, D: 13 });
   for (const item of bank.items.filter(entry => entry.retired)) {
     assert.equal(Object.hasOwn(result.byId, item.id), false);
   }

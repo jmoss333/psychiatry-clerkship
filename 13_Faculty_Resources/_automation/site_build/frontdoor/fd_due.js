@@ -2,7 +2,7 @@
    resolves capture matches; this module only receives normalized values and returns escaped,
    audience-neutral markup. */
 
-var FD_CAPTURE_PURPOSE='Questions you captured on the unit. Open the matching page, schedule one for review, or copy the list to raise in supervision. Stays on this device — no patient details.';
+var FD_CAPTURE_PURPOSE='Saved on this device. Nothing leaves unless you choose Copy or Email. No patient details.';
 
 function fdDueCount(breakdown){
   var b=breakdown||{}, names=['daily','qb','fam','comm','reason','other'], total=0;
@@ -13,23 +13,46 @@ function fdDueCount(breakdown){
   return total;
 }
 
+/* Where each due card can actually be cleared. Daily Review (review.html) serves every bucket
+   but one: the practice bank's own QB# cards, which it never builds (its sources are the
+   landmark decks, topic quizzes and the family / communication / reasoning cards) and which the
+   bank serves first in its own session (dueQbItems, question-bank-practice.html). Until
+   2026-09-24 this row sent every learner to Daily Review regardless, so after a bank session the
+   count could never clear there and the one cue Today is built around taught learners to ignore
+   it.
+
+   The row still COUNTS everything due -- that total is what Today's One Thing First picker ranks
+   -- but each share now opens where it can be served: the row's own control goes to Daily Review
+   when anything there is due and to the bank when only bank cards are; when both are due the
+   bank's share gets one secondary control beside the row. That is a second button, not a second
+   primary: it carries no dock source, so Today still has exactly one primary action. The count it
+   shows is the same QB# servability rule the bank's own "Due for review (N)" button applies
+   (tests/fd-due-bank-parity.test.mjs runs both on one store). */
+var FD_DUE_BANK_REF='question-bank-practice.html';
+
 /* primary===true marks the row as Today's one primary action: it gains is-primary and a
    kicker naming the move. Anything else renders the row exactly as before. */
 function fdDueRow(breakdown, primary){
   var b=breakdown||{}, total=fdDueCount(b), parts=[], isPrimary=primary===true;
   if(!total) return '';
+  var bank=(b.qb&&typeof b.qb.due==='number'&&b.qb.due>0)?b.qb.due:0, bankOnly=bank===total;
   if(b.daily&&b.daily.due) parts.push(b.daily.due+' daily');
   if(b.qb&&b.qb.due) parts.push(b.qb.due+' practice');
   if(b.fam&&b.fam.due) parts.push(b.fam.due+' family');
   if(b.comm&&b.comm.due) parts.push(b.comm.due+' communication');
   if(b.reason&&b.reason.due) parts.push(b.reason.due+' reasoning');
   if(b.other&&b.other.due) parts.push(b.other.due+' other');
-  return '<button type="button" class="'+(isPrimary?'fd-due is-primary':'fd-due')+'" data-fd-open="review.html">'+
+  var row='<button type="button" class="'+(isPrimary?'fd-due is-primary':'fd-due')+'" data-fd-open="'+(bankOnly?FD_DUE_BANK_REF:'review.html')+'"'+
+    (isPrimary?' data-fd-dock-source="primary-due" data-fd-dock-label="'+(bankOnly?'Open practice bank':'Start review')+'"':'')+'>'+
     (isPrimary?'<span class="fd-due__kicker">Clear what’s due</span>':'')+
     '<span class="fd-due__label">'+total+' review'+(total===1?'':'s')+' due</span>'+
     '<span class="fd-due__breakdown">'+fdEsc(parts.join(' · '))+'</span>'+
-    '<span class="fd-due__action">Start review →</span>'+
+    '<span class="fd-due__action">'+(bankOnly?'Open practice bank →':'Start review →')+'</span>'+
   '</button>';
+  if(!bank||bankOnly) return row;
+  return '<div class="fd-due-group">'+row+
+    '<button type="button" class="fd-due-group__bank" data-fd-open="'+FD_DUE_BANK_REF+'">'+
+      'Practice bank · '+bank+' due for review →</button></div>';
 }
 
 /* Questions left in a capsule, or 0 for anything malformed. The shape rule lives here once so
@@ -55,7 +78,8 @@ function fdResumeCard(capsule, primary, block){
   var blockLine=resumeSearch?'<span class="fd-resume__block">Block · '+b.done+' of '+b.total+' done</span>':'';
   return '<section class="'+(isPrimary?'fd-resume is-primary':'fd-resume')+'">'+
     '<h2 class="fd-sectionhead">'+(isPrimary?'Pick up where you left off':'Continue where you left off')+'</h2>'+
-    '<a class="fd-resume__link" href="'+href+'">'+
+    '<a class="fd-resume__link" href="'+href+'"'+
+      (isPrimary?' data-fd-dock-source="primary-resume" data-fd-dock-label="Resume question bank"':'')+'>'+
       '<span>Resume question bank — '+left+' left, ~'+minutes+' min'+blockLine+'</span>'+
       '<span>Resume →</span>'+
     '</a></section>';
@@ -69,38 +93,33 @@ function fdLastReadRow(item, primary){
   var it=item||{}, isPrimary=primary===true;
   if(typeof it.ref!=='string'||!it.ref||it.kind!=='read') return '';
   var min=(typeof it.minutes==='number')?(' — '+it.minutes+' min'):'';
-  return '<button type="button" class="'+(isPrimary?'fd-lastread is-primary':'fd-lastread')+'" data-fd-open="'+fdEsc(it.ref)+'">'+
+  return '<button type="button" class="'+(isPrimary?'fd-lastread is-primary':'fd-lastread')+'" data-fd-open="'+fdEsc(it.ref)+'" data-fd-reading-resume="1"'+
+    (isPrimary?' data-fd-dock-source="primary-read" data-fd-dock-label="Open →"':'')+'>'+
     (isPrimary?'<span class="fd-lastread__kicker">Pick up where you left off</span>':'')+
     '<span class="fd-lastread__title">You were reading: '+fdEsc(it.title||it.ref)+fdEsc(min)+'</span>'+
     '<span class="fd-lastread__action">Open →</span>'+
   '</button>';
 }
 
-function fdCaptureTriage(items){
-  var list=items||[], open=[];
+function fdCaptureSummary(items){
+  var list=Object.prototype.toString.call(items)==='[object Array]'?items:[], oldest=null, total=0, unrouted=0;
   for(var i=0;i<list.length;i++){
-    if(list[i]&&list[i].triaged!==true) open.push(list[i]);
+    var item=list[i];
+    if(!item||item.state!=='open')continue;
+    total++;
+    if(item.route!==null)continue;
+    unrouted++;
+    if(!oldest||item.at<oldest.at||(item.at===oldest.at&&String(item.id)<String(oldest.id)))oldest=item;
   }
-  if(!open.length) return '';
-  var out='<section class="fd-capture"><div class="fd-capture__head">'+
-    '<h2 class="fd-sectionhead">Questions from the unit</h2>'+
-    '<button type="button" class="fd-capture__new" data-capture-open>+ Capture</button></div>'+
-    '<p class="fd-capture__purpose">'+fdEsc(FD_CAPTURE_PURPOSE)+'</p>';
-  for(var j=0;j<open.length;j++){
-    var item=open[j]||{}, id=fdEsc(item.id||''), match=item.match;
-    out+='<div class="fd-capture__item"><p class="fd-capture__question">'+fdEsc(item.text||'')+'</p>';
-    if(match&&match.ref){
-      var ref=fdEsc(match.ref);
-      out+='<button type="button" class="fd-capture__action" data-cap-open="'+id+'" data-cap-ref="'+ref+'">'+
-        '<span>'+fdEsc(match.title||match.ref)+'</span><span>Open →</span></button>';
-      if(match.hasQuiz){
-        out+='<button type="button" class="fd-capture__action" data-cap-review="'+id+'" data-cap-ref="'+ref+'">'+
-          '<span>Review this topic</span><span>Schedule →</span></button>';
-      }
-    }
-    out+='<button type="button" class="fd-capture__action" data-cap-drop="'+id+'">'+
-      '<span>Done with this one</span><span>Dismiss</span></button></div>';
-  }
-  out+='<button type="button" class="fd-capture__copy" data-cap-copy="1">Ask my attending</button>';
-  return out+'</section>';
+  return {oldest:oldest,total:total,unrouted:unrouted};
+}
+
+function fdCaptureTriage(items){
+  var summary=fdCaptureSummary(items), item=summary.oldest;
+  if(!item)return '';
+  return '<section class="fd-capture"><div class="fd-capture__head">'+
+    '<h2 class="fd-sectionhead">Questions from the unit</h2></div>'+
+    '<p class="fd-capture__question">'+fdEsc(item.text||'')+'</p>'+
+    '<button type="button" class="fd-capture__new" data-capture-open aria-haspopup="dialog" aria-expanded="false">View all '+summary.total+'</button>'+
+    '<p class="fd-capture__purpose">'+fdEsc(FD_CAPTURE_PURPOSE)+'</p></section>';
 }

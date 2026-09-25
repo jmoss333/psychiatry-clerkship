@@ -108,7 +108,7 @@ test('normalizes all review surfaces with collision-proof keys', () => {
   ]);
   assert.deepEqual(Object.keys(items[0]), [
     'key', 'type', 'identity', 'site', 'sites', 'title', 'savedStatus', 'completion',
-    'revision', 'gate', 'risk', 'searchText', 'record',
+    'revision', 'gate', 'risk', 'essential', 'essentialSites', 'searchText', 'record',
   ]);
   // `site` names the learner deployment that serves the item. Absent (an older server
   // payload) means the MS3 site, where every manifest page and tool has always lived.
@@ -122,6 +122,7 @@ test('normalizes all review surfaces with collision-proof keys', () => {
   assert.deepEqual(items.map(item => item.sites), [null, null, null]);
   assert.deepEqual(deriveReviewCounts(items), {
     total: 3, needsReview: 2, complete: 1, page: 1, tool: 1, question: 1,
+    essentialTotal: 0, essentialNeedsReview: 0,
   });
 });
 
@@ -593,4 +594,49 @@ test('isValidReopenReason accepts 1-240 trimmed characters and rejects empty, wh
   for (const value of ['', '   ', '\n\t', 'a'.repeat(241), undefined, null, 42, {}, []]) {
     assert.equal(isValidReopenReason(value), false, JSON.stringify(value));
   }
+});
+
+/* The Essentials first (2026-09-20): an item either site lists in curriculum.json's
+   essentials selection sorts ahead of the long tail within its type, carries an
+   `essential` flag the queue label and summary read, and is searchable as "essentials".
+   Questions are never essential. */
+test('essential items sort first within their type, and only within it', () => {
+  const items = normalizeReviewItems({
+    items: [
+      { slug: 'zz_tail.md', title: 'Aardvark (tail)', kind: 'page', status: 'unreviewed' },
+      { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed', essentialSites: ['ms3', 'res'] },
+      { slug: 'a_tool.html', title: 'A tool (tail)', kind: 'tool', status: 'unreviewed' },
+      { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed', essentialSites: ['res'] },
+    ],
+    qbank: server.qbank,
+  });
+  assert.deepEqual(items.map(item => item.key), [
+    'page:t_mood.md', 'page:zz_tail.md', 'tool:mse.html', 'tool:a_tool.html', 'question:qb_moo_902',
+  ]);
+  const mood = items.find(item => item.key === 'page:t_mood.md');
+  assert.equal(mood.essential, true);
+  assert.deepEqual(mood.essentialSites, ['ms3', 'res']);
+  assert.equal(items.find(item => item.key === 'page:zz_tail.md').essential, false);
+  assert.equal(items.find(item => item.key === 'question:qb_moo_902').essential, false);
+  assert.ok(mood.searchText.includes('essentials'));
+  assert.equal(filterReviewItems(items, { search: 'essentials' }).length, 2);
+});
+
+test('a malformed essentialSites value fails closed for that item, and the counts name the subset', () => {
+  assert.throws(() => normalizeReviewItems({
+    items: [{ slug: 'x.md', title: 'X', kind: 'page', status: 'unreviewed', essentialSites: ['ms3', 'faculty'] }],
+    qbank: [],
+  }), TypeError);
+  const items = normalizeReviewItems({
+    items: [
+      { slug: 'a.md', title: 'A', kind: 'page', status: 'unreviewed', essentialSites: ['ms3'] },
+      { slug: 'b.md', title: 'B', kind: 'page', status: 'reviewed', essentialSites: ['res'] },
+      { slug: 'c.md', title: 'C', kind: 'page', status: 'unreviewed' },
+    ],
+    qbank: [],
+  });
+  const counts = deriveReviewCounts(items);
+  assert.equal(counts.essentialTotal, 2);
+  assert.equal(counts.essentialNeedsReview, 1);
+  assert.equal(counts.needsReview, 2);
 });

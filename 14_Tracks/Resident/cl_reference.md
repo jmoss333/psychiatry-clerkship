@@ -27,10 +27,10 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 - *By design, the MS3 catatonia teaching page stays dose-free; these numbers live here on the resident reference.*
 
 ## Lithium toxicity
-- Therapeutic 0.6–1.2 mEq/L; **toxicity generally ≥1.5**, severe ≥2.5. In *chronic* toxicity (especially older adults) symptoms may be severe even when the level looks only mildly elevated — **treat the patient, not the number.**
+- Target (12-h trough; mEq/L = mmol/L): acute mania 0.8–1.2; maintenance usually 0.6–0.8 (0.4–0.6 if the response is good but tolerance poor, 0.8–1.0 if the response is inadequate and tolerance good); older adults usually 0.4–0.6. **Toxicity generally ≥1.5**, severe ≥2.5. In *chronic* toxicity (especially older adults) symptoms may be severe even when the level looks only mildly elevated — **treat the patient, not the number.**
 - Precipitants: dehydration, AKI, low sodium, NSAIDs, thiazides, ACE-inhibitors/ARBs.
 - **Before dialysis is even the question:** hold lithium, stop the contributors (NSAID, thiazide, ACEi/ARB), send a level with renal function and electrolytes, and start **IV isotonic saline** to restore volume and renal lithium clearance. Repeat the level every 2–4 h until it is falling; nephrogenic diabetes insipidus can drive hypernatremia, so follow sodium as you hydrate.
-- **Hemodialysis** if level **>4.0** mEq/L (any patient), or **>2.5** with severe neuro/renal signs or life-threatening features.
+- **Hemodialysis (EXTRIP 2015):** recommended if level **>4.0** mEq/L with impaired kidney function, or with decreased consciousness, seizures, or life-threatening dysrhythmias **at any level**; suggested if **>5.0**, significant confusion, or expected time to <1.0 mEq/L exceeds 36 h despite optimal care.
 - **Activated charcoal does not bind lithium** — consider whole-bowel irrigation for sustained-release ingestions.
 - Recheck levels after dialysis — **rebound** from tissue redistribution is expected.
 
@@ -54,7 +54,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 
 ## Psychopharmacology in organ dysfunction
 - **Liver disease:** prefer benzodiazepines cleared by conjugation — **"LOT": Lorazepam, Oxazepam, Temazepam** (no oxidative metabolism) — but even these accumulate in advanced disease and can tip a patient into hepatic encephalopathy, so they are the safer choice, not a free one. **Duloxetine is contraindicated in chronic liver disease.** **Valproate is contraindicated in significant hepatic impairment**, and is the one you will most often be asked to continue: valproate-induced **hyperammonaemic encephalopathy** presents as worsening delirium and can occur with normal LFTs, so send an **ammonia level**, not just a hepatic panel. Carbamazepine is a poor choice here for the same reason.
-- **Renal impairment:** dose-reduce **lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride**; paliperidone is heavily renally cleared.
+- **Renal impairment:** dose-reduce **lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride** — lithium is not recommended at CrCl <30 and paliperidone palmitate LAI at CrCl <50; paliperidone is heavily renally cleared.
 
 ## The escalation line
 Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell someone now"** findings. Your job on the consult is rapid recognition, the first safe step (stop the offending agent, correct electrolytes, sedate rather than restrain in SS), and escalation — not solo management.

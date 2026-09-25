@@ -23,7 +23,7 @@
 **What the student does** —
 - Tie the symptoms to a specific stressor and to the 3-month/6-month timeline.
 - Confirm the patient does *not* meet criteria for MDD, an anxiety disorder, or PTSD before choosing this label.
-- Screen and *quantify* suicide risk — don't be lulled by "mild."
+- Assess suicide risk directly and formulate it (drivers, protective factors, safety plan) — don't be lulled by "mild."
 - Recommend supportive/problem-solving therapy first; keep any medication short and symptom-targeted.
 - Re-evaluate over time; escalate the diagnosis if the syndrome evolves.
 

@@ -1,0 +1,136 @@
+[
+ {
+  "id": "M01-007",
+  "verdict": "modified",
+  "severity": "Minor",
+  "reason": "The Week 5 row is headed 'Acute/consult psychiatry deep practice', so it already signals deepening a skill rather than introducing it. Risk also appears earlier: the Week 1 required safety set and suicide card, a daily 'Risk update', a feedback prompt on chronic vs acute risk, and Week 3 text saying the C-SSRS 'structures the risk assessment that comes before' the safety plan. So there is a sequencing ambiguity in one table cell, not a real gap. The reviewer's clarifying correction is accurate and harmless; I downgraded it to Minor.",
+  "evidence": "Internal: orientation.md weekly table, presentation 'Risk update' and feedback prompts (M01 ll.176-232); week1.md safety set (l.471); week3 overlay (ll.585-597).",
+  "correction": "| 5 | Acute/consult psychiatry deep practice | Deepen the suicide/violence risk formulation practised since Week 1 (and used for Week 3 safety planning), recognize delirium/catatonia/withdrawal, and document supervised escalation reasoning |",
+  "problem": "Ambiguous wording: read alone, the Week 5 cell could suggest that risk formulation starts in Week 5, although the rest of the page and weeks 1 and 3 show that it starts earlier.",
+  "confidence": "medium"
+ },
+ {
+  "id": "M02-008",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "Confirmed that Dana's hints, debrief and reveals never mention firearms. The only firearm references are in means regex patterns. Debrief point 3 says 'means and access' but never says that means safety follows the disclosure. Asking about firearms even after another method is named, and lethal-means counselling, are standard. The reviewer's 'with Tom involved if she agrees' sits awkwardly beside 'do not negotiate confidentiality you cannot keep', so I reworded it to 'with her knowledge'. The new wording also stays at the level of assessment and planning, which suits an MS3 interview debrief.",
+  "evidence": "recall: VA/DoD Suicide Risk CPG 2024 (lethal-means safety counselling); Joint Commission NPSG.15.01.01 (2019); CALM. Internal: M02 ll.1035, 1063, 1256-1262; grep shows no firearm text in any case's hints, debriefs or reveals.",
+  "correction": "Her plea about Tom and the pills is a values moment, not a promise to extract. Notice it; do not negotiate confidentiality you cannot keep. Means safety still follows: plan with her, and with her knowledge Tom, how the pills get secured, and ask whether there are firearms in the home even though she named pills — done openly with her, not around her.",
+  "confidence": "high"
+ },
+ {
+  "id": "M02-006",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "The defect is real. si_direct ('best', critical c_si) credits passive death-wish questions, so a learner can finish without ever asking about active thoughts of killing herself. That contradicts the case anchor and the ASQ/C-SSRS pattern of asking the passive and active items separately. But the reviewer's deletion introduces a new error and is incomplete; see problem.",
+  "evidence": "Internal: M02 ll.593-617 (si_direct), 1029-1046 (gate requiresIntents si_direct), 1151-1160 (c_si), rubric anchor l.1229; M01 pg_interview Safety Questions (passive question first, then active). recall: C-SSRS screener Q1 vs Q2; ASQ.",
+  "correction": "\"take (your|her) (own )?life\",\n      \"better off dead\",",
+  "problem": "NOT a drop-in-only fix. Applied alone, the deletion breaks the case. The si_active gate (and g_si_mixed for Marcus) requires si_direct, so a learner who asks exactly the question the house pocket guide lists first ('Have you wished you would not wake up?', pg_interview Safety Questions) would get no match. Dana or Marcus would then withhold the passive ideation they actually have, which is unrealistic and teaches that the passive question fails. The deletion also leaves most passive patterns in si_direct: 'better off dead' (PHQ-9 item-9 wording), 'want to die', 'thoughts about death/not waking up', 'better off without', 'not worth living', 'what's the point of living', and 'wish you weren't here'. The required fix: move all passive-wish patterns into a new intent si_passive (quality partial); add si_passive to the gate's requiresIntents so the disclosure still unlocks; add si_passive to c_si.partialIfOnly so full critical credit needs an active-ideation question.",
+  "confidence": "medium"
+ },
+ {
+  "id": "M02-005",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "Marcus's case defines only si_direct and si_euphemism. There are no si_plan, si_means, si_intent or si_behavior intents and no follow-up checklist item, so his disclosure of a flicker ends the safety thread with full critical credit. Mixed features and impulsivity are recognised acute risk factors, and following up a positive screen is standard. The hint edit is a safe, minimal drop-in. A matching debrief point and follow-up intents would be the fuller fix.",
+  "evidence": "Internal: M02 ll.1543-1575 (only si_direct/si_euphemism), 1934-1945 (g_si_mixed has no unlocks), 2029-2037, 2130, 2139. recall: VA/DoD 2024 CPG; Joint Commission NPSG.15.01.01.",
+  "correction": "He's up — which is exactly why you screen. Ask plainly about thoughts of killing himself, especially about the crash windows — and if he names anything, follow it: plan, intent, access to means including firearms, and past attempts.",
+  "confidence": "medium"
+ },
+ {
+  "id": "M02-007",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "The same defect as M02-006, in Marcus's si_direct: passive patterns satisfy the critical c_si item. The reviewer's deletion has the same problems. The g_si_mixed reveal even opens 'Dying? No —', which is the natural answer to 'thoughts of dying', so deleting that pattern would make Marcus withhold his answer to a legitimate passive question. The deletion also leaves 'better off dead', 'want to die' and other passive patterns in place.",
+  "evidence": "Internal: M02 ll.1543-1566, 1934-1945 (g_si_mixed requires si_direct), 2029-2037. recall: C-SSRS screener Q1 vs Q2.",
+  "correction": "\"take (your|his) (own )?life\",",
+  "problem": "NOT a drop-in-only fix. Applied alone, the deletion breaks the case. The g_si_mixed gate requires si_direct, so a learner who asks exactly the question the house pocket guide lists first ('Have you wished you would not wake up?', pg_interview Safety Questions) would get no match. Marcus would then withhold the passive ideation they actually have, which is unrealistic and teaches that the passive question fails. The deletion also leaves most passive patterns in si_direct: 'better off dead' (PHQ-9 item-9 wording), 'want to die', 'thoughts about death/not waking up', 'better off without', 'not worth living', 'what's the point of living', and 'wish you weren't here'. The required fix: move all passive-wish patterns into a new intent si_passive (quality partial); add si_passive to the gate's requiresIntents so the disclosure still unlocks; add si_passive to c_si.partialIfOnly so full critical credit needs an active-ideation question.",
+  "confidence": "medium"
+ },
+ {
+  "id": "M02-012",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "Ray's 'open' si_direct answer discloses a passive wish not to wake up (M02 l.2641). Ray's case has no follow-up item, c_si is not even critical, and neither the debrief nor the hints return to the wish. Elevated suicide risk in first-episode psychosis is well established. The hint edit is minimal and accurate.",
+  "evidence": "Internal: M02 ll.2335-2360, 2637-2641, 2893-2901, 3000-3013. recall: APA Practice Guideline for Schizophrenia 2020 (suicide risk assessment); FEP suicide-risk literature.",
+  "correction": "Screen suicide plainly; his exhaustion is real even though the danger feels external — and if he names even a wish not to wake up, follow it: plan, intent, means, past attempts.",
+  "confidence": "medium"
+ },
+ {
+  "id": "R01-003",
+  "verdict": "rejected",
+  "severity": "Minor",
+  "reason": "The prose is supported. It concerns clinician-judged risk at the last contact, not the Large 2016 high-vs-lower categorisation meta-analysis (sensitivity 56%). UK national inquiry (NCISH) data show that immediate risk at final contact was judged low or not present in 76-89% of patients who died by suicide, i.e. 'most'. Replacing it with 'about half' would swap an accurate statement for one about a different construct. The page's key-point overlay ('about half ... last classified low-risk', from Large-type categorisation) does disagree on its face. If the two should be harmonised, fix the overlay by attributing each figure, not the prose.",
+  "evidence": "NCISH Annual Report Oct 2018 (documents.manchester.ac.uk DocID=38469): immediate risk judged low/not present in 76% (recent self-harm) and 89% (no self-harm) at last contact; Frontiers Psychiatry 2020 doi:10.3389/fpsyt.2020.00502 (about 80% in early post-discharge suicides); Large et al. PLoS One 2016, PMID 27285387, doi:10.1371/journal.pone.0156322 (sensitivity 56% for high-risk categorisation).",
+  "correction": "",
+  "confidence": "high"
+ },
+ {
+  "id": "R01-004",
+  "verdict": "modified",
+  "severity": "Minor",
+  "reason": "'Most' is supported (see R01-003: NCISH 76-89% judged low or no immediate risk at last contact), so the numeric change to 'about half' is wrong. The reviewer's second point is valid, though: 'screen low-risk' conflates screening with clinical risk judgement. I changed the wording only.",
+  "evidence": "NCISH Annual Report 2018 (DocID=38469); Large et al. 2016 PMID 27285387.",
+  "correction": "a number without a formulation protects no one, since most who die by suicide were judged low-risk at their last contact.",
+  "problem": "'Screen low-risk' conflates screening with risk assessment. The 'most' figure itself is correct for clinician-judged risk at the last contact.",
+  "confidence": "high"
+ },
+ {
+  "id": "M04-019",
+  "verdict": "modified",
+  "severity": "Minor",
+  "reason": "'Quantify' is loose wording, and the same page already says 'assess suicide risk directly/explicitly' (can't-miss line, workup, pearls). The reviewer's '(no risk-level label)' is wrong for US practice: it imports NICE NG225 (UK) as universal, while the Joint Commission requires documenting the patient's overall level of risk for suicide, and US inpatient practice pairs a risk level with a formulation. I changed the verb and kept the risk-level labelling out of the correction. Downgraded to Minor (terminology).",
+  "evidence": "Joint Commission NPSG.15.01.01 EP 4 (2019): 'Document patients' overall level of risk for suicide and the plan to mitigate the risk for suicide' (quoted via patientsafetysolutions.com, Jan 2019); NICE NG225 (UK). Internal: M04 ll.1250-1320.",
+  "correction": "confirm criteria for other disorders aren't met, assess suicide risk directly and formulate it, and start brief supportive therapy.",
+  "problem": "'Quantify' suggests actuarial scoring. The page elsewhere says to assess directly. The fix is a change of verb, not a ban on risk levels, which US accreditation requires to be documented alongside the formulation.",
+  "confidence": "high"
+ },
+ {
+  "id": "M04-020",
+  "verdict": "modified",
+  "severity": "Minor",
+  "reason": "Same issue as M04-019: the wording is loose, and the page already says 'Assess suicide risk explicitly' and 'Provide a safety plan'. The reviewer's correction is accurate and does not forbid a risk level, so I kept it. Downgraded to Minor because the surrounding text already carries the right action.",
+  "evidence": "Internal: M04 ll.1300-1330; Joint Commission NPSG.15.01.01 EP 4.",
+  "correction": "- Assess suicide risk directly and formulate it (drivers, protective factors, safety plan) — don't be lulled by \"mild.\"",
+  "problem": "'Quantify' suggests actuarial scoring. The sibling text on the same page already says to assess directly.",
+  "confidence": "high"
+ },
+ {
+  "id": "M13-002",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "I confirmed that Shank 2026 covers population-level, ecological firearm studies. The annotation's 'counsel about means honestly, on population-level evidence' can be read as saying that individual counselling rests only on that weak base. The reviewer's correction overstates Studdert: it is a cohort of handgun owners, not 'household firearm access', and it shows association ('raises' is causal). I tightened the wording to match the abstract. Per CLAUDE.md, a new claim about Studdert needs an evidence_annotations.json sourceSpan from the paper's results in the same change.",
+  "evidence": "PubMed PMID 40185617 (Shank et al., Inj Prev 2026;32:7-15, doi:10.1136/ip-2024-045611): 'The ecological level of analysis precluded individual-level causal inference.' PubMed PMID 32492303 (Studdert et al., NEJM 2020;382:2220-9, doi:10.1056/NEJMsa1916744): suicide by any method, adjusted HR 3.34 in male and 7.16 in female handgun owners.",
+  "correction": "counsel about means honestly — this review's evidence is population-level, but individual cohort data link handgun ownership to a three- to sevenfold higher suicide rate (Studdert et al., NEJM 2020); Shank et al. 2026",
+  "problem": "The annotation frames means counselling as resting on weak population-level evidence and omits strong individual-level cohort evidence that firearm ownership is associated with higher suicide risk.",
+  "confidence": "high"
+ },
+ {
+  "id": "M01-003",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "The Week 1 escalation sentence starts at intent, but the pocket guide sends any positive answer to the resident now. The Week 1 set also has no item for disclosed homicidal thoughts; the agitation bullet covers threats and behaviour only. The correction fits in place after the preceding sentence, says 'new' (sensible on an inpatient unit where known SI is common), and keeps the immediate-escalation list intact.",
+  "evidence": "Internal: M01 l.471 (week1.md), ll.990-1011 (pg_interview 'A positive answer anywhere above goes to your resident or attending now'), ll.140-151 (Single Safety Rule).",
+  "correction": "Tell the resident the same encounter about any new suicidal or homicidal thoughts, and escalate immediately for current intent, preparatory behavior, means access, intoxication/withdrawal, severe agitation, psychosis, or contradictory collateral.",
+  "confidence": "high"
+ },
+ {
+  "id": "AQ2-006",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "The antidepressant class label says 'especially during the initial few months of drug therapy, and at times of dosage changes, either increases or decreases'. The 4-8 week figure echoes the 2004 visit schedule, which was later removed. Coordinator note: once dose changes are in the key, the 'tapering phase' distractor overlaps it, since a taper is a dose decrease. Its feedback ('the primary safety warning focuses on ... initiation') should be adjusted to say tapering is covered but is not the primary window.",
+  "evidence": "FDA antidepressant class labelling, Boxed Warning / W&P 5.1 (e.g., fluoxetine label on DailyMed, setid 32afb28a-dc4c-4a7e-9701-1825f805e7df); recall for wording.",
+  "correction": "The first few months of treatment and after any dose change.",
+  "confidence": "high"
+ },
+ {
+  "id": "AQ1-006",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "The substance is right: withdrawal-threshold induction is standard, not universal; low-dose initiation is a recognised alternative; and fentanyl can precipitate withdrawal even at usual COWS thresholds. COWS (Wesson & Ling 2003) was not Fudala's instrument (recall; unverified). The reviewer's appended clause says 'these COWS scores' where the feedback has none, and 'accepted alternative' is a little strong. I rewrote it. Coordinator: the stem ('critical requirement ... clinical pearls from Fudala') and the key still present a threshold as universal and attribute it to Fudala. Rewording the stem to 'standard buprenorphine induction' is needed for full consistency.",
+  "evidence": "recall: ASAM National Practice Guideline 2020 Focused Update (low-dose initiation); SAMHSA TIP 63 (2021); Wesson & Ling, J Psychoactive Drugs 2003 (COWS).",
+  "correction": "For standard induction, buprenorphine — a high-affinity partial agonist — given to a patient not yet in withdrawal can displace full agonists and precipitate acute withdrawal. This threshold is general induction practice, not a Fudala 2003 finding; low-dose ('micro') initiation without a withdrawal period is a recognized alternative, and after fentanyl use precipitated withdrawal can occur even at COWS 8–12.",
+  "problem": "The item presents a withdrawal threshold (COWS ≥8–12) as a universal 'critical requirement' and attributes it to Fudala 2003. It omits low-dose initiation and the fentanyl-era risk of precipitated withdrawal.",
+  "confidence": "medium"
+ }
+]

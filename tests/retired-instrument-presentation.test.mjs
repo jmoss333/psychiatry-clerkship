@@ -133,3 +133,53 @@ for (const [ref, week] of [['cssrs.html', 5], ['bfcrs.html', null]]) {
     assert.match(html, /id="fd-tool-region"/);
   });
 }
+
+// ---- wayfinding labels may not promise to SCORE a retired or restricted instrument -----------
+// Architecture review 2026-09-24, WP-1a(g): after the CIWA-Ar retired and the BFCRS was
+// restricted, two chips still read "Screen & score — Bush-Francis (BFCRS)" and "Score at the
+// bedside — CIWA-Ar / COWS", and a question-bank link carried the second one. No test pinned
+// either string. Prose may still teach that a unit scores the CIWA-Ar on its own form (that is
+// administration, which the rule permits); what may not happen is a LABEL that promises the site
+// will do the scoring. The set of shipped sources comes from shipped_pages.json (ADR-002).
+
+const SHIPPED = readJson('../13_Faculty_Resources/_automation/site_build/shipped_pages.json');
+const QB = readJson('../question_bank.json');
+const SCORED_HERE = /\bscor(?:e|es|ing)\b[^<>\n]{0,30}\b(?:CIWA-Ar|BFCRS|Bush-Francis|C-SSRS)\b|\b(?:CIWA-Ar|BFCRS|Bush-Francis|C-SSRS)\b[^<>\n]{0,20}\bscor(?:e|er|ing)\b/i;
+const decode = (s) => s.replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ');
+
+function chipLabels() {
+  const sources = [...new Set(SHIPPED.pages.flatMap((p) => [p.source, ...(p.extraSources || [])]).filter(Boolean))];
+  const labels = [];
+  for (const rel of sources) {
+    const text = readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
+    for (const m of text.matchAll(/<a class="tl-chip"[^>]*>([^<]*)<\/a>/g)) labels.push([rel, decode(m[1])]);
+  }
+  return labels;
+}
+
+test('the "scored here" pattern catches the retired phrasings and spares their replacements', () => {
+  assert.match('Screen & score — Bush-Francis (BFCRS)', SCORED_HERE);
+  assert.match('Score at the bedside — CIWA-Ar / COWS', SCORED_HERE);
+  assert.doesNotMatch('Bush-Francis — official form & how to administer', SCORED_HERE);
+  assert.doesNotMatch('Withdrawal recognition card (COWS)', SCORED_HERE);
+});
+
+test('no shipped chip label promises to score a retired or restricted instrument', () => {
+  const labels = chipLabels();
+  // Chips are few, so a count floor proves little; instead the scan must reach the two pages
+  // whose chips this guard was written for. If the regex or the source list breaks, it fails here.
+  const reached = new Set(labels.map(([rel]) => rel));
+  for (const rel of ['04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md',
+    '03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md']) {
+    assert.ok(reached.has(rel), `the chip scan never reached ${rel}`);
+  }
+  const bad = labels.filter(([, label]) => SCORED_HERE.test(label));
+  assert.deepEqual(bad, [], `chips that promise scoring: ${JSON.stringify(bad)}`);
+});
+
+test('no question-bank link label promises to score a retired or restricted instrument', () => {
+  const labels = QB.items.filter((it) => it.link && it.link.label).map((it) => [it.id, it.link.label]);
+  assert.ok(labels.length >= 50, `expected many question-bank link labels, saw ${labels.length}`);
+  const bad = labels.filter(([, label]) => SCORED_HERE.test(label));
+  assert.deepEqual(bad, [], `link labels that promise scoring: ${JSON.stringify(bad)}`);
+});

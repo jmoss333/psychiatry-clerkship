@@ -11,6 +11,7 @@ import test from 'node:test';
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const phase = readFileSync(new URL(`${BUILD}/phase_policy.js`, import.meta.url), 'utf8');
 const fdState = readFileSync(new URL(`${BUILD}/frontdoor/fd_state.js`, import.meta.url), 'utf8');
+const readingPlace = readFileSync(new URL(`${BUILD}/frontdoor/fd_reading_place.js`, import.meta.url), 'utf8');
 
 function memStorage() {
   const m = new Map();
@@ -25,6 +26,7 @@ function memStorage() {
 const make = new Function('localStorage', `
   ${phase}
   ${fdState}
+  ${readingPlace}
   return {
     FD_STORE: FD_STORE,
     fdLoad: fdLoad,
@@ -35,6 +37,7 @@ const make = new Function('localStorage', `
     fdRotationWeek: fdRotationWeek,
     fdRotationStartForWeek: fdRotationStartForWeek,
     fdExamCountdown: fdExamCountdown,
+    fdPathExamCountdown: fdPathExamCountdown,
     fdDailyPick: fdDailyPick,
     fdRingStep: fdRingStep,
     fdActivityDays: fdActivityDays,
@@ -77,17 +80,86 @@ test('fdSave round-trips through fdLoad', () => {
     'the focused preference must overwrite an earlier expanded preference');
 });
 
+test('fdSave retains other allowlisted state while persisting bounded reading places', () => {
+  const ls = memStorage();
+  const { fdSave, fdLoad } = make(ls);
+  const readingPlaces = {};
+  for (let i = 0; i < 51; i++) {
+    readingPlaces[`page-${i}.md`] = { heading: `heading-${i}`, offset: i, updatedAt: i };
+  }
+  assert.equal(fdSave({ role: 'ms3', tab: 'path', viewWeek: 4, scrollPos: 120, readingPlaces }), true);
+  const loaded = fdLoad();
+  assert.equal(loaded.role, 'ms3');
+  assert.equal(loaded.tab, 'path');
+  assert.equal(loaded.viewWeek, 4);
+  assert.equal(loaded.scrollPos, 120);
+  assert.equal(Object.keys(loaded.readingPlaces).length, 50);
+  assert.equal(loaded.readingPlaces['page-0.md'], undefined);
+  assert.deepEqual(loaded.readingPlaces['page-50.md'], {
+    heading: 'heading-50', offset: 50, updatedAt: 50,
+  });
+});
+
+test('fdSave drops malformed and prototype-like reading-place entries before writing', () => {
+  const ls = memStorage();
+  const { fdSave } = make(ls);
+  const readingPlaces = {
+    'good.md': { heading: 'chapter-one', offset: 4, updatedAt: 7 },
+    'bad.md': { heading: '', offset: -2 },
+    'wrong.md': { heading: 'chapter-two', offset: Infinity, updatedAt: 8 },
+  };
+  Object.defineProperty(readingPlaces, '__proto__', {
+    value: { heading: 'injected', offset: 1, updatedAt: 9 }, enumerable: true,
+  });
+  readingPlaces.constructor = { heading: 'injected', offset: 1, updatedAt: 9 };
+  assert.equal(fdSave({ tab: 'today', readingPlaces }), true);
+  assert.deepEqual(JSON.parse(ls.getItem('cw_frontdoor_v1')), {
+    tab: 'today', readingPlaces: {
+      'good.md': { heading: 'chapter-one', offset: 4, updatedAt: 7 },
+    },
+  });
+  assert.equal(fdSave({ tab: 'today', readingPlaces: { 'bad.md': { heading: '', offset: -2 } } }), true);
+  assert.deepEqual(JSON.parse(ls.getItem('cw_frontdoor_v1')), { tab: 'today', readingPlaces: {} });
+});
+
+test('fdSave reports a failed write without changing the previously stored value', () => {
+  const ls = memStorage();
+  const first = make(ls);
+  assert.equal(first.fdSave({ tab: 'path' }), true);
+  const prior = ls.getItem('cw_frontdoor_v1');
+  const failingStorage = {
+    getItem: key => ls.getItem(key),
+    setItem: () => { throw new Error('QuotaExceededError'); },
+  };
+  assert.equal(make(failingStorage).fdSave({ tab: 'today', readingPlaces: {
+    'good.md': { heading: 'chapter-one', offset: 4, updatedAt: 7 },
+  } }), false);
+  assert.equal(ls.getItem('cw_frontdoor_v1'), prior);
+});
+
 test('fdSave persists only whitelisted keys, never done/streak/week', () => {
   const ls = memStorage();
   const { fdSave, fdLoad } = make(ls);
   // done lives in cw_progress_v1, streak in cw_srs_v1, week in cw_rotation_start.
   // Duplicating them here is exactly the desync the spec forbids.
-  fdSave({ role: 'ms3', done: { 'x.md': true }, streak: 9, week: 3 });
+  fdSave({ role: 'ms3', done: { 'x.md': true }, streak: 9, week: 3,
+    careIntentId: 'services' });
   const out = fdLoad();
   assert.equal(out.role, 'ms3');
   assert.equal(out.done, undefined);
   assert.equal(out.streak, undefined);
   assert.equal(out.week, undefined);
+  assert.equal(out.careIntentId, undefined);
+});
+
+test('APP bridge is the only APP choice persisted; reflection, work-task, and practice state stay in memory', () => {
+  const ls = memStorage();
+  const { fdSave, fdLoad } = make(ls);
+  fdSave({ role: 'app', appBridge: 'pmhnp', appActivity: 'initial-evaluation',
+    appInvite: true,
+    appReflection: 'supervisor', appPractice: { pack: { id: 'training-briefing' }, revealed: true,
+      classifications: { 'review-time': 'still-known' }, questionId: 'confirm-owner' } });
+  assert.deepEqual(fdLoad(), { role: 'app', appBridge: 'pmhnp' });
 });
 
 // A resource may recur in the plan; doing its practice once must not complete every week.
@@ -340,6 +412,56 @@ test('one day out is singular', () => {
   const { fdExamCountdown } = make(memStorage());
   const thu = new Date(2026, 7, 13, 9, 0, 0).getTime();
   assert.equal(fdExamCountdown(6, SIX, thu), '· exam in ~1 day');
+});
+
+// ---- whose countdown it is (2026-09-24) ----------------------------------------------
+//
+// fdExamCountdown is arithmetic; fdPathExamCountdown decides whether Today shows it at all. Only
+// the MS3 path ends in a scheduled exam. Before this gate the resident Today read "exam in ~N
+// days" through the last two weeks of a block that has no exam.
+const MS3_PATH = 'ms3-six-week';
+const RES_PATH = 'resident-four-week';
+
+test('the MS3 path shows the countdown exactly as the arithmetic computes it', () => {
+  const { fdExamCountdown, fdPathExamCountdown } = make(memStorage());
+  for (let d = 0; d < 7; d += 1) {
+    for (const w of [4, 5, 6]) {
+      const now = new Date(2026, 7, 10 + d, 9, 0, 0).getTime();
+      assert.equal(fdPathExamCountdown(MS3_PATH, w, SIX, now), fdExamCountdown(w, SIX, now),
+        `week ${w}, day ${d}: the gate must not change the number, only whether it shows`);
+    }
+  }
+  assert.equal(fdPathExamCountdown(MS3_PATH, 6, SIX, new Date(2026, 7, 12, 9, 0, 0).getTime()),
+    '· exam in ~2 days');
+});
+
+test('the resident path shows no countdown without a stored date, in any week, on any day', () => {
+  const { fdPathExamCountdown } = make(memStorage());
+  for (let d = 0; d < 14; d += 1) {
+    for (const w of [1, 2, 3, 4]) {
+      assert.equal(fdPathExamCountdown(RES_PATH, w, FOUR, new Date(2026, 7, 10 + d, 9, 0, 0).getTime()), '');
+    }
+  }
+});
+
+test('a stored date opens the countdown on the resident path; a junk one does not', () => {
+  const wed = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  const ls = memStorage();
+  ls.setItem('cw_shelf_date', '2026-08-21');
+  assert.equal(make(ls).fdPathExamCountdown(RES_PATH, 4, FOUR, wed), '· exam in ~9 days');
+  assert.equal(make(ls).fdPathExamCountdown(RES_PATH, 2, FOUR, wed), '',
+    'the final-two-weeks window still applies once a date is stored');
+  ls.setItem('cw_shelf_date', 'banana');
+  assert.equal(make(ls).fdPathExamCountdown(RES_PATH, 4, FOUR, wed), '',
+    'an unparseable value is no date: phasePolicy and the arithmetic read it the same way');
+});
+
+test('a missing or unknown path id fails closed', () => {
+  const { fdPathExamCountdown } = make(memStorage());
+  const wed = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  for (const id of [undefined, null, '', 'ms3', 'MS3-six-week']) {
+    assert.equal(fdPathExamCountdown(id, 6, SIX, wed), '', String(id));
+  }
 });
 
 // Scoped to the RETURNED strings, not the file. AUDIENCE_TOKEN_RE bans tokens in

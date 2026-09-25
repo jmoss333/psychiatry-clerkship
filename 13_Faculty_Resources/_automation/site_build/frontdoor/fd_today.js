@@ -199,10 +199,11 @@ function fdContinue(index, state, wk, progress, primary){
   var kickerCls=isComplete?'fd-continue__kicker is-complete':'fd-continue__kicker';
   var kickerText=isComplete?('Week '+fdEsc(state.week)+(suggested?' activities complete':' complete')):('Continue · Week '+fdEsc(state.week));
   var ringPct=(typeof state.ringPct==='number'&&!isNaN(state.ringPct))?state.ringPct:0;
-  var titleText, openAttrs, chip='';
+  var titleText, openAttrs, chip='', dockLabel='Continue';
   if(progress.next){
     titleText=progress.next.title;
-    openAttrs=' data-fd-open="'+fdEsc(progress.next.ref)+'"';
+    openAttrs=' data-fd-open="'+fdEsc(progress.next.ref)+'"'+
+      (progress.next.kind==='read'?' data-fd-reading-resume="1"':'');
     /* Same chip rule as fdRow: a rights reference reads "reference", never "tool". */
     var nx=progress.next;
     chip='<span class="'+((nx.kind==='tool')?'fd-chip is-tool':'fd-chip')+'">'+
@@ -211,6 +212,7 @@ function fdContinue(index, state, wk, progress, primary){
     var nextWeek=fdNextWeek(index,state.week);
     var target=nextWeek?nextWeek.n:state.week;
     titleText=(nextWeek?'Preview Week ':'Review Week ')+target;
+    dockLabel=nextWeek?'Preview week':'Review week';
     openAttrs=' data-fd-tab="path" data-fd-view-week="'+fdEsc(target)+'"';
   }
   var done=fdProgressForWeek(index,state,state.week), leftMin=0;
@@ -218,7 +220,8 @@ function fdContinue(index, state, wk, progress, primary){
     if(done[wk.items[i].ref]!==true&&typeof wk.items[i].minutes==='number') leftMin+=wk.items[i].minutes;
   }
   var leftLabel=leftMin>0?('~'+leftMin+' min left'):'';
-  var out='<button type="button" class="'+(isPrimary?'fd-continue':'fd-continue is-secondary')+'"'+openAttrs+'>'+
+  var out='<button type="button" class="'+(isPrimary?'fd-continue':'fd-continue is-secondary')+'"'+openAttrs+
+    (isPrimary?' data-fd-dock-source="primary-'+(isComplete?'ahead':'week')+'" data-fd-dock-label="'+dockLabel+'"':'')+'>'+
     '<span class="fd-ring" style="--fd-ring-pct:'+ringPct+'%">'+
       '<span class="fd-ring__inner">'+ringPct+'%</span>'+
     '</span>'+
@@ -240,8 +243,9 @@ function fdContinue(index, state, wk, progress, primary){
   return out;
 }
 
-function fdSetupCta(){
-  return '<button type="button" class="fd-setupcta" data-fd-change-week>'+
+function fdSetupCta(primary){
+  return '<button type="button" class="fd-setupcta" data-fd-change-week'+
+    (primary===false?'':' data-fd-dock-source="primary-setup" data-fd-dock-label="Set rotation week"')+'>'+
     '<span style="flex:1">'+
       '<span class="fd-setupcta__kicker">30-second setup</span>'+
       '<span class="fd-setupcta__title">Set your rotation week → get a real Today</span>'+
@@ -345,6 +349,20 @@ function fdConsistency(activityDays, nowMs){
   '</div>';
 }
 
+/* Shared pilot invitation. The pgfb-b class deliberately routes through the shell's existing
+   private feedback launcher, while data-fb-context tells the form this came from Today rather
+   than from a specific learning page. */
+function fdPilotFeedback(){
+  return '<section class="fd-pilot" aria-labelledby="fd-pilot-title">'+
+    '<span class="fd-pilot__eyebrow">Active testing</span>'+
+    '<div class="fd-pilot__copy">'+
+      '<h2 class="fd-pilot__title" id="fd-pilot-title">This learning site is in active testing</h2>'+
+      '<p>Use it alongside your official rotation materials and supervision. Tell us what helped, what was unclear, or what did not work.</p>'+
+    '</div>'+
+    '<button type="button" class="fd-btn fd-btn--ghost fd-pilot__button pgfb-b" data-fb-context="Today landing page">Share feedback</button>'+
+  '</section>';
+}
+
 function fdToday(index, state){
   var st=state||{};
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
@@ -380,13 +398,17 @@ function fdToday(index, state){
      The subhead no longer carries the Daily-Review-only streak clause; the seven-day
      activity strip rendered by fdConsistency directly below it replaced that clause (see
      fdActivityDays in fd_state.js for why). */
-  var countdown=fdExamCountdown(st.week,idx.weeks,nowMs,st.rotationStart);
+  /* fdPathExamCountdown is the audience gate in front of that arithmetic: no countdown on a path
+     that does not end in an exam unless the learner stored a date (fd_state.js says why). */
+  var countdown=fdPathExamCountdown(idx.path&&idx.path.id,st.week,idx.weeks,nowMs,st.rotationStart);
   if(countdown) sub+=' '+countdown;
 
   var out='<section class="fd-today">';
   out+='<h1 class="fd-today__h1">'+greeting+'</h1>';
   out+='<p class="fd-today__sub">'+sub+'</p>';
+  out+=fdPilotFeedback();
   out+=fdConsistency(st.activityDays, nowMs);
+  out+='<button type="button" class="fd-care-entry" data-fd-tab="care">Patient care resources<span aria-hidden="true">→</span></button>';
   out+='<div class="fd-today__cols"><div class="fd-today__main">';
 
   /* One Thing First: state.primaryKind arrives from the shell's picker. The lead card is
@@ -394,8 +416,9 @@ function fdToday(index, state){
      that follows is where the shell splices the secondary section (see FD_TODAY_LEAD_END). */
   var pk=st.primaryKind;
   var leadPrimary=(pk===undefined||pk==='week'||pk==='ahead'||pk==='setup');
-  out+=hasWeek?fdContinue(idx,st, wk, progress, leadPrimary):fdSetupCta();
+  out+=hasWeek?fdContinue(idx,st, wk, progress, leadPrimary):fdSetupCta(leadPrimary);
   out+=FD_TODAY_LEAD_END;
+  if(st.offlineHtml)out+=st.offlineHtml;
 
 
   if(hasWeek){

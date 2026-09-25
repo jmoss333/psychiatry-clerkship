@@ -55,14 +55,15 @@
    Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. */
 
-var FD_READER_TAB_LABELS={ today:'Today', path:'Path', library:'Library' };
+var FD_READER_TAB_LABELS={ today:'Today', path:'Path', library:'Library', care:'Patient care resources' };
 
 /* backLabel names whichever tab the reader was opened FROM (state.fromTab), not the item's own
    week -- a page can be reached from Today, Path, or Library, and "back" always means "return to
    that tab", which fd_shell.js's data-fd-back handler reads from state.fromTab directly (this
    file never needs to know the URL/routing mechanics, only the label). Defaults to 'Today',
    matching fd_shell.js's fdTabs() fallback for an unrecognised tab id. */
-function fdReaderBackLabel(fromTab){
+function fdReaderBackLabel(fromTab, roleId, appMode){
+  if(fromTab==='today'&&(roleId==='app'||appMode===true)) return 'On shift';
   return FD_READER_TAB_LABELS[fromTab]||'Today';
 }
 
@@ -262,7 +263,7 @@ function fdReaderActionBar(item, doneLabel, isDone, backLabel){
   return '<div class="fd-actionbar">'+
     '<button type="button" class="fd-btn fd-btn--ghost" data-fd-back aria-label="Back to '+fdEsc(backLabel)+'">‹</button>'+
     '<button type="button" class="fd-btn fd-btn--primary" data-fd-toggle="'+fdEsc(item.ref)+'" '+
-      'aria-pressed="'+(isDone?'true':'false')+'">'+
+      'aria-pressed="'+(isDone?'true':'false')+'" data-fd-dock-source="primary-reader" data-fd-dock-label="'+fdEsc(doneLabel)+'">'+
       '<span>'+fdEsc(doneLabel)+'</span></button>'+
   '</div>';
 }
@@ -331,7 +332,7 @@ function fdReader(index, state, bodyHtml){
   var neighbours=fdReaderNeighbours(idx, item.ref, readerWeek);
   var nextAfter=inWeek?fdReaderNextUnread(weekItems, item.ref, doneMap):null;
   var isDone=!!doneMap[item.ref];
-  var backLabel=fdReaderBackLabel(st.fromTab);
+  var backLabel=fdReaderBackLabel(st.fromTab,st.roleId,st.appMode);
   var doneLabel=fdReaderDoneLabel(isDone, nextAfter, backLabel);
   var blockHandoff=typeof fdBlockPageHandoff==='function'
     ?fdBlockPageHandoff(st.block, item.ref, doneMap):null;
@@ -369,6 +370,10 @@ function fdReader(index, state, bodyHtml){
   article+=fdReaderTryNow(item, idx);
   article+='<div class="fd-article__source"><span>Source:</span>'+
     '<span class="fd-src">'+fdEsc(item.ref)+'</span></div>';
+  if(!isTool&&st.readingPlaceEligible!==false){
+    article+='<p class="fd-reading-place" data-fd-reading-status></p>'+
+      '<button type="button" class="fd-reading-place__top" data-fd-reading-top hidden>Start at top</button>';
+  }
   article+=fdReaderActions(item, doneLabel, backLabel, isDone);
   article+=fdReaderPrevNext(neighbours);
   article+='</div>'; /* .fd-article */

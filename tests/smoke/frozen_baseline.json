@@ -31,7 +31,7 @@
       "tools/decision-aids.html": {
         "frozen": 20,
         "lowLight": 0,
-        "lowDark": 53
+        "lowDark": 55
       },
       "tools/diagnostic-reasoning.html": {
         "frozen": 0,
@@ -126,7 +126,7 @@
     },
     "res": {
       "index.html": {
-        "frozen": 12,
+        "frozen": 16,
         "lowLight": 0,
         "lowDark": 0
       },
@@ -153,7 +153,7 @@
       "tools/decision-aids.html": {
         "frozen": 20,
         "lowLight": 0,
-        "lowDark": 53
+        "lowDark": 55
       },
       "tools/diagnostic-reasoning.html": {
         "frozen": 0,

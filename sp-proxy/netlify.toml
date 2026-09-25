@@ -30,7 +30,7 @@
   ignore = 'bash ../13_Faculty_Resources/_automation/site_build/netlify_ignore_scoped.sh sp-proxy'
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "22"
 
 [functions]
   directory = "netlify/functions"

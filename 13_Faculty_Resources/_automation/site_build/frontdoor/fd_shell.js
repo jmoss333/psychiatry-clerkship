@@ -20,16 +20,62 @@
    fragments naively concatenated would land .fd-tabs outside <header> and silently break that.
    fdTabs stays separately exported/callable for anything that only needs to re-render the row. */
 
-function fdTabs(tab){
-  var cur=(tab==='path'||tab==='library')?tab:'today';
-  var defs=[{id:'today',label:'Today'},{id:'path',label:'Path'},{id:'library',label:'The Essentials'}];
+function fdAppMode(state){
+  var s=state||{};
+  return s.appMode===true||s.appInvite===true||s.roleId==='app'||s.role==='app';
+}
+
+function fdTabs(tab, appMode){
+  var cur=(tab==='path'||tab==='library'||tab==='care')?tab:'today';
+  var defs=appMode
+    ?[{id:'today',label:'On shift'},{id:'library',label:'The Essentials',short:'Essentials'},
+      {id:'care',label:'Patient care resources',short:'Care'}]
+    :[{id:'today',label:'Today'},{id:'path',label:'Path'},
+      {id:'library',label:'The Essentials',short:'Essentials'},
+      {id:'care',label:'Patient care resources',short:'Care'}];
   var out='<nav class="fd-tabs">';
   for(var i=0;i<defs.length;i++){
     var t=defs[i];
     var active=(t.id===cur);
-    var cls=active?'fd-tab is-active':'fd-tab';
+    var cls='fd-tab'+(t.id==='care'?' fd-tab--care':'')+(active?' is-active':'');
     out+='<button type="button" class="'+cls+'" data-fd-tab="'+t.id+'"'+
-      (active?' aria-current="page"':'')+'>'+t.label+'</button>';
+      (active?' aria-current="page"':'')+(t.short?' aria-label="'+fdEsc(t.label)+'"':'')+'>'+
+      (t.short?'<span class="fd-tab__label" data-compact="'+fdEsc(t.short)+'">'+fdEsc(t.label)+'</span>':fdEsc(t.label))+'</button>';
+  }
+  out+='</nav>';
+  return out;
+}
+
+/* The five-slot phone dock is a pure projection of the current audience and primary action.
+   The center item can forward to an action owned by another surface; without one, it is the
+   stable Library browse route. Rendering stays here so every dynamic value is escaped once. */
+function fdDockModel(state){
+  var s=state||{}, app=fdAppMode(s);
+  return {
+    items:[
+      {id:'today',label:app?'On shift':'Today',attr:'data-fd-tab',value:'today'},
+      {id:'structure',label:app?'The Essentials':'Path',attr:'data-fd-tab',value:app?'library':'path'},
+      {id:'search',label:'Search',attr:'data-fd-search',value:''},
+      {id:'capture',label:'Capture',attr:'data-capture-open',value:''}
+    ],
+    context:s.dockAction&&s.dockAction.sourceId
+      ?{label:s.dockAction.label,attr:'data-fd-dock-forward',value:s.dockAction.sourceId}
+      :{label:'Browse',attr:'data-fd-tab',value:'library'}
+  };
+}
+
+function fdDock(state){
+  var model=fdDockModel(state), out='<nav class="fd-dock" aria-label="Learning actions">';
+  for(var i=0;i<model.items.length;i++){
+    var item=model.items[i];
+    out+='<button type="button" class="fd-dock__item" '+item.attr+'="'+
+      fdEsc(item.value)+'"'+(item.id==='capture'?' aria-haspopup="dialog" aria-expanded="false"':'')+
+      '>'+fdEsc(item.label)+'</button>';
+    if(i===1){
+      var context=model.context;
+      out+='<button type="button" class="fd-dock__item fd-dock__item--context" '+
+        context.attr+'="'+fdEsc(context.value)+'">'+fdEsc(context.label)+'</button>';
+    }
   }
   out+='</nav>';
   return out;
@@ -37,6 +83,7 @@ function fdTabs(tab){
 
 function fdHeader(state){
   var s=state||{};
+  var appMode=fdAppMode(s);
   var weekLabel=(typeof s.week==='number'&&!isNaN(s.week))?('Week '+fdEsc(s.week)):'Set week';
   var out='<header class="fd-header"><div class="fd-header__bar">';
   out+='<button type="button" class="fd-brand" data-fd-home>'+
@@ -51,14 +98,18 @@ function fdHeader(state){
     '<span class="fd-kbd">⌘K</span>'+
     '</button>';
   out+='<div class="fd-header__actions">'+
+    (appMode?'<span class="fd-weekpill fd-weekpill--identity">APP</span>':
     '<button type="button" class="fd-weekpill" data-fd-change-week title="Change week">'+
-    weekLabel+' ▾</button>'+
+    weekLabel+' ▾</button>')+
     '<button type="button" class="fd-safetybtn" data-fd-safety>✚ Safety</button>'+
+    '<button type="button" class="fd-carebtn'+(s.tab==='care'?' is-active':'')+'" '+
+    'data-fd-tab="care" aria-label="Patient care resources"'+
+    (s.tab==='care'?' aria-current="page"':'')+'>Care</button>'+
     '<button type="button" class="fd-settingsbtn" data-fd-settings '+
     'aria-label="Settings">⚙</button>'+
     '</div>';
   out+='</div>';
-  out+=fdTabs(s.tab);
+  out+=fdTabs(s.tab,appMode);
   out+='</header>';
   return out;
 }
@@ -145,8 +196,9 @@ function fdKeyAction(key, opts){
     if(!o.reading) return null;
     return {type:'nav', dir:(key==='ArrowLeft')?-1:1};
   }
-  if(key==='1'||key==='2'||key==='3'){
-    var tabs=['today','path','library'];
+  if(key==='1'||key==='2'||key==='3'||key==='4'){
+    var tabs=o.appMode?['today','library','care']:['today','path','library','care'];
+    if(parseInt(key,10)>tabs.length) return null;
     return {type:'tab', tab:tabs[parseInt(key,10)-1]};
   }
   return null;

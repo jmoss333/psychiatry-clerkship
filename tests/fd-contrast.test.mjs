@@ -80,6 +80,7 @@ const PAIRS = [
   ['fd-danger', 'fd-surface', 4.5], ['fd-danger', 'fd-danger-wash', 4.5], ['fd-danger', 'fd-surface-warm', 4.5],
   ['fd-olive-deep', 'fd-bg', 4.5], ['fd-olive-deep', 'fd-surface', 4.5], ['fd-olive-deep', 'fd-surface-warm', 4.5],
   ['fd-olive-deep', 'fd-olive-wash', 4.5],
+  ['fd-on-accent', 'fd-olive-deep', 4.5],
   ['fd-on-accent', 'fd-terracotta', 4.5], ['fd-on-accent', 'fd-terracotta-dark', 4.5],
   ['fd-on-accent', 'fd-danger', 4.5], ['fd-on-accent', 'fd-danger-dark', 4.5],
   ['fd-on-accent', 'fd-success', 4.5], ['fd-on-accent', 'fd-teal', 4.5],
