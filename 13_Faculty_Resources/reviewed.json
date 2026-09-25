@@ -648,9 +648,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-21",
+    "at": "2026-09-25",
     "by": "Joshua Moss, MD",
-    "contentHash": "75dea44f1958c6355c631260ef838919636b889a"
+    "contentHash": "0fdefc75fd11363e130a10ec2b5788b9b54eebcc"
   },
   "ect_neuromodulation.md": {
     "status": "reviewed",
