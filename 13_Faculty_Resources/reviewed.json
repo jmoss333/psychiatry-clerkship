@@ -718,9 +718,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-21",
+    "at": "2026-09-25",
     "by": "Joshua Moss, MD",
-    "contentHash": "c565c7baa254779f7ad8879c4a7b3a176154238d"
+    "contentHash": "eaebf3336aee7e76d0b99198d5f96ec69948530f"
   },
   "psychopharm_primer.md": {
     "status": "reviewed",
