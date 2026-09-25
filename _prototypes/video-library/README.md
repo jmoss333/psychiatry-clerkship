@@ -1,5 +1,11 @@
 # Video library — drop exported .mp4s here
 
+> **Retired 2026-09-25:** the welcome and orientation videos left both learner sites —
+> `day-in-the-life.mp4` (was inline in `orientation.md`), `resident-onboarding.mp4` + poster
+> (was on the resident Welcome), and the MS3 orientation-video tool
+> (`_prototypes/orientation-video/`). The source files stay here as provenance and are no longer
+> copied or referenced by either build. The placement map below is historical for those rows.
+
 Source design files: `13_Faculty_Resources/Handoffs/Clerkship_video_handoff/` (MS3: intro trailer,
 day-in-the-life, week stingers ×6, tool spotlights ×6 · Resident: onboarding trailer — all built as Design
 Components on a timeline engine). Those `.dc.html` / `.jsx` files are **design references, not production

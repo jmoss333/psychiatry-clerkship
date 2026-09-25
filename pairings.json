@@ -19,11 +19,11 @@
       "topic": "Choosing an antipsychotic",
       "weeks": [2],
       "audiences": ["ms3", "res"],
-      "blurb": "Efficacy differences are small; the side-effect profile is what you are actually choosing.",
+      "blurb": "Efficacy differences are small (except clozapine for treatment-resistant illness); the side-effect profile is what you are usually choosing.",
       "items": [
         { "role": "read",     "kind": "page",     "ref": "t_psychosis.md" },
         { "role": "listen",   "kind": "audio_oe", "ref": "28" },
-        { "role": "practice", "kind": "tool",     "ref": "decision-aids.html" }
+        { "role": "practice", "kind": "tool",     "ref": "sp-interview.html" }
       ]
     },
     {
@@ -52,7 +52,7 @@
     },
     {
       "id": "pair_delirium",
-      "topic": "Delirium",
+      "topic": "Delirium and capacity",
       "weeks": [5],
       "audiences": ["ms3", "res"],
       "blurb": "The medical emergency that looks psychiatric — and the one you prevent rather than treat.",

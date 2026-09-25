@@ -145,7 +145,7 @@ def local_url(reference, page_url):
 def asset_sources(root, manifest, site):
     """The builders' file-copy routes, keyed by URL inside a single deployment.
 
-    toolAssets and orientation media come from their existing canonical lists.
+    toolAssets come from their existing canonical list.
     Resident packs follow resident_section.py's sibling-pack copy rule. The root
     JSON and quizzes routes below mirror build_deploy.py; --check-build verifies
     that tools' loaded assets actually ship. Never infer a source merely because
@@ -170,9 +170,6 @@ def asset_sources(root, manifest, site):
             pack = source[:-5] + ".pack.json"
             if (Path(root) / pack).is_file():
                 add(pack, "tools/" + slug[:-5] + ".pack.json")
-    else:
-        for source, dest, _title in site_extras.MS3_ORIENT_VIDEO:
-            add(source, "tools/" + dest)
     add("07_Evidence_and_Reading/Landmark_Trials/quizzes.json", "tools/quizzes.json")
     return assets
 

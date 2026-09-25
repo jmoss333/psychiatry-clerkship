@@ -9,7 +9,7 @@ import common
 import frontdoor_catalog
 import shipped_pages
 import welcome_compass
-from site_extras import MS3_ORIENT_VIDEO as ORIENT_VIDEO
+from site_extras import MS3_EXTRA_TOOLS
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location instead of a
 # hard-coded sandbox mount, so the build runs under any Cowork session or the real filesystem.
 HERE=os.path.dirname(os.path.abspath(__file__))
@@ -68,12 +68,6 @@ _bootstrap_missing=[
 ]
 _abort_missing(_bootstrap_missing)
 
-# The same source triples are deliberately projected into separate source and
-# built paths: source validation must never be confused with output validation.
-_orientation_source_paths=[src for src,_dst,_title in ORIENT_VIDEO]
-_orientation_built_paths=[
-    os.path.join("tools",dst) for _src,dst,_title in ORIENT_VIDEO
-]
 try:
     _curriculum,_orientation_packet=welcome_compass.load_ms3_preflight_sources(
         CURRICULUM,ORIENTATION_PACKET
@@ -85,9 +79,6 @@ try:
     )
     _safety_text=welcome_compass.extract_safety_rule(_orientation_packet)
     _compass_fragment=welcome_compass.render_compass(_compass_cards,_safety_text)
-    welcome_compass.require_real_files(LIB,_orientation_source_paths)
-    with open(os.path.join(LIB,"media_manifest.json"),encoding="utf-8") as _media_manifest_handle:
-        welcome_compass.validate_media_manifest(json.load(_media_manifest_handle))
 except welcome_compass.CompassPreflightError as error:
     print(error)
     raise SystemExit(1)
@@ -138,25 +129,23 @@ for src,dst in tool_assets:
     _copy_required(os.path.join(LIB,src), OUT+"/tools/"+dst, _missing_req)
 _abort_missing(_missing_req)
 
-# ---- orientation video (MS3 "start here") ----
-# The list lives in site_extras.py, not here: orientation-video.html is a shipped,
-# attestable tool that is NOT in site_manifest.json, so shipped_pages.py has to be able
-# to enumerate it without executing this script. Same list, one importable home.
-_missing_orientation=[]
-for src,dst,_title in ORIENT_VIDEO:
-    out_path=os.path.join(OUT,"tools",dst)
-    _copy_required(os.path.join(LIB,src),out_path,_missing_orientation)
-    if os.path.isfile(out_path):
-        os.chmod(out_path,0o644)   # source MP4 arrives with mode 400 (LFS/download artifact); world-readable required
-_abort_missing(_missing_orientation)
+# ---- MS3-only tools ----
+# The list lives in site_extras.py, not here: an MS3-only tool is shipped and attestable
+# but NOT in site_manifest.json, so shipped_pages.py has to be able to enumerate it without
+# executing this script. Empty since 2026-09-25, when the orientation video tool it held
+# was retired with the welcome and orientation videos.
+_missing_ms3_extra=[]
+for src,dst,_title in MS3_EXTRA_TOOLS:
+    _copy_required(os.path.join(LIB,src),os.path.join(OUT,"tools",dst),_missing_ms3_extra)
+_abort_missing(_missing_ms3_extra)
 
-# ---- video library (active day-in-the-life, week stingers, and tool spotlights) ----
+# ---- video library (week stingers and tool spotlights; the day-in-the-life orientation clip
+# was retired from both sites on 2026-09-25 with the welcome and orientation videos) ----
 # Design source: Clerkship_video_handoff package (2026-07-02/03). Each .mp4 is exported by hand
 # from the design tool (Cowork can't click "Export"). This list copies active source files that exist;
 # page embedding and missing-media treatment are handled separately by the generated-site media guard.
 # See _prototypes/video-library/README.md for the exact export filenames + placement map.
 VIDEO_MEDIA=[
- "day-in-the-life.mp4",
  "week-intro-1.mp4","week-intro-2.mp4","week-intro-3.mp4","week-intro-4.mp4","week-intro-5.mp4","week-intro-6.mp4",
  "tool-spotlight-interview-circle.mp4","tool-spotlight-capacity.mp4","tool-spotlight-violence.mp4",
  "tool-spotlight-withdrawal.mp4","tool-spotlight-bfcrs.mp4","tool-spotlight-decision-aids.mp4",
@@ -348,6 +337,13 @@ _CRISIS_REQUIRED_MD={
     "cotw_20260723_suiciderisk_ms3.md",
     "cotw_20260810_panic_ms3.md",
     "cotw_20260827_bpd_ms3.md",
+    # Q7 is a passive-SI assessment and safety-planning exercise, the same work the panic
+    # case's Q6 does (peer-review M11-008; author's scope call J3, 2026-09-24).
+    "cotw_20260720_mdd_ms3.md",
+    # OSCE Station 1 has the student conduct a focused suicide risk assessment and state an
+    # acute risk impression -- rehearsed risk work (M09-011; J3). The marker sits in the
+    # learner-facing Student task, not in examiner material a build-time strip may remove.
+    "osce.md",
 }
 _crisis_tools_done=set()
 for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.join(OUT,"tools")) if _f.endswith(".html")]:
@@ -447,7 +443,7 @@ if _week_title_drift:
     for _slug,_have,_want in _week_title_drift: print("   -",_slug,"manifest",repr(_have),"curriculum",repr(_want))
     raise SystemExit(1)
 nav=[
- {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md"),_tool("orientation-video.html","Orientation Video",True)]+_week_items},
+ {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md")]+_week_items},
  {"section":"Start the Encounter","items":[_md("Interview & MSE","pg_interview.md"),_tool("mse.html","Mental Status Exam"),_tool("interview-circle.html","The Interview Circle"),_tool("sp-interview.html","The Interview Room — AI Standardized Patient"),_tool("screeners.html","Screeners: PHQ-9 & GAD-7")]},
  {"section":"Understand the Problem","items":[_md("Differential Dx Scaffolds","ddx.md"),_tool("diagnostic-reasoning.html","Diagnostic Reasoning Workbench"),_md("Formulation & DDx","pg_formulation.md"),_md("Case Formulation","case_formulation.md"),_md("Medical Workup & Mimics","medical_workup.md"),_md("Mood","t_mood.md"),_md("Psychosis","t_psychosis.md"),_md("Anxiety/Trauma/OCD","t_anxiety.md"),_md("Personality","t_personality.md"),_md("Substance Use","t_sud.md"),_md("Geriatric","t_geri.md"),_md("Perinatal","t_perinatal.md"),_md("Neurodevelopmental Disorders","t_neurodev.md"),_md("Eating Disorders","t_eating.md"),_md("Neurocognitive (Dementia)","t_neurocog.md"),_md("Somatic Symptom & Related","t_somatic.md"),_md("Sleep-Wake Disorders","t_sleep.md"),_md("Dissociative Disorders","t_dissociative.md"),_md("Sexual, Paraphilic & Gender","t_sexual.md"),_md("Impulse-Control & Conduct","t_impulse.md"),_md("Adjustment Disorders","t_adjustment.md"),_md("Culture, Disparities & Formulation","cultural_psychiatry.md")]},
  {"section":"Assess Safety and Acuity","pinned":True,"items":[_md("Suicide Risk & Safety","pg_suicide.md"),_md("Suicide Risk & Safety Planning","suicide.md"),_tool("cssrs.html","Columbia C-SSRS — Official Form & Training"),_md("Violence Risk","violence.md"),_tool("violence.html","Violence Risk (FRST)"),_md("Agitation & Restraint","agitation.md"),_md("Catatonia","catatonia.md"),_tool("bfcrs.html","Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training"),_md("Hyperthermia & Toxidromes","toxidromes.md"),_md("Delirium","delirium.md"),_tool("withdrawal.html","Withdrawal: COWS Tool · CIWA-Ar Official Form & Training"),_tool("capacity.html","Decisional Capacity"),_md("Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","exp_consult.md"),_md("Ethics & the Law: Confidentiality, Tarasoff, Reporting","ethics_legal.md")]},
@@ -735,7 +731,7 @@ print("tool governance: emitted", len(_governance["items"]), "items")
 # published-artifact file tree, not an intermediate one.
 common.emit_service_worker(OUT)
 try:
-    welcome_compass.assert_ms3_output(OUT, _compass_cards, _safety_text, _orientation_built_paths)
+    welcome_compass.assert_ms3_output(OUT, _compass_cards, _safety_text)
 except welcome_compass.CompassContractError as _compass_error:
     print("BUILD ABORTED — MS3 Compass output:", _compass_error)
     raise SystemExit(1)

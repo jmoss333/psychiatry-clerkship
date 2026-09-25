@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 from types import SimpleNamespace
 
 import pytest
@@ -13,6 +14,30 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ANKI_AUTOMATION = REPO_ROOT / "13_Faculty_Resources" / "_automation" / "anki"
 sys.path.insert(0, str(ANKI_AUTOMATION))
+sys.path.append(str(REPO_ROOT / "bin"))
+from _git_env import scrub_inherited_git_env  # noqa: E402
+
+# Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrub_inherited_git_env()
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _contain_default_tempfiles(tmp_path_factory):
+    """Keep this suite's default-temp-directory writes out of the real $TMPDIR.
+
+    genanki 0.13.1 leaves its mkstemp() collection behind on every write. The release writer
+    contains that itself (pcl_anki.package.write_apkg), but several tests build independent
+    fixtures with genanki directly and must stay independent of the code under test. This
+    points the default at a pytest-managed directory instead, so it is retired with the run.
+    Session scope, not function: test_migration.py builds packages in module-scoped fixtures,
+    which a function-scoped fixture is set up too late to cover. Before this, one run of the
+    suite left 253 SQLite files in $TMPDIR. A subprocess still follows $TMPDIR itself.
+    """
+
+    previous = tempfile.tempdir
+    tempfile.tempdir = str(tmp_path_factory.mktemp("default-tempdir"))
+    yield
+    tempfile.tempdir = previous
 
 
 @pytest.fixture

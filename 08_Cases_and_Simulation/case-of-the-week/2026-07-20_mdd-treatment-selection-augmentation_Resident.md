@@ -49,6 +49,8 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 **Q8 (Safety).** She has **passive SI without plan/intent**. Structure the assessment and disposition.
 *Teaching point:* Conduct a structured risk assessment (ideation, intent, plan, access to means, protective factors, prior attempts, recent losses), formulate **acute vs. chronic risk**, and build a **collaborative safety plan** with means-safety counseling. Consider lithium's anti-suicidal evidence when weighing augmentation. Keep the teaching oriented to recognition, formulation, and escalation — not method detail. Reassess risk at each visit during cross-titration.
 
+<!-- crisis-block -->
+
 ---
 
 ### Ranked Differential / Diagnostic Reconsideration
@@ -67,7 +69,7 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 
 **Management sequence for this patient:**
 1. **Augment** the (adequately dosed) sertraline with a **low-metabolic-risk agent** — aripiprazole/brexpiprazole/cariprazine or lithium — chosen collaboratively around her weight and sexual-function priorities [2,6,7].
-2. If augmentation fails or is not tolerated → **switch class** (e.g., SNRI or bupropion), or escalate to **esketamine** adjunct given emerging TRD status and passive SI [8].
+2. If augmentation fails or is not tolerated → **switch class** (e.g., SNRI or bupropion), or escalate to **esketamine** adjunct given emerging TRD status (not as a treatment for her passive SI) [8].
 3. Add **structured psychotherapy** (sequential model) for residual symptoms and relapse prevention [4].
 4. **Reserve ECT** for severe, refractory, catatonic, psychotic, or high-acuity presentations; discuss rTMS as a non-pharmacologic option for moderate TRD.
 5. **Maintenance:** given ≥3 lifetime episodes, plan long-term/indefinite maintenance and monitor for residual-symptom relapse predictors.

@@ -469,6 +469,29 @@ for `une-ms3-psychiatry` and `mmc-psychiatry-residents-sanford` (they still alwa
 so the email never fires on a no-op); turn it OFF for `sp-interview-proxy`,
 `clerkship-faculty-attest` and `psychiatry-workforce-tour`.
 
+### The preview gate (since 2026-09-25)
+
+The same daily run also runs `bin/check_preview_gate.py`: every Netlify preview that
+`main`'s ruleset REQUIRES must be one its site can actually build. On 2026-09-25 #802 moved
+the learner sites' production branch to `release`. Netlify builds a PR preview only when the
+PR's base is the production branch or a branch-deploy branch, so PRs into `main` stopped
+getting learner-site previews while the ruleset still required them. Every PR sat blocked for
+seven hours with all its own checks green. Nothing flagged it: production was fine, and the
+ruleset had not changed.
+
+It checks two things, independently:
+
+| Check | What it reads | Rings when |
+| --- | --- | --- |
+| Settings (predictive) | the committed ruleset fixture + each site's Netlify settings | a required site cannot build a preview for a PR into `main`: previews off, builds stopped, linked elsewhere, or `main` is neither its production nor a branch-deploy branch |
+| Evidence (symptom) | the deploy records this run already paged | a PR got previews on the sibling sites more than an hour ago but has none (in any state) on a required site |
+
+A finding fails the canary step exactly like a failed production deploy; the receipt's
+`previewGate` section names the site, the check it strands, and the fix. The usual fix is
+free: Netlify → the site → Branches and deploy contexts → Branch deploys → add `main`
+(previews and branch deploys cost 0 credits). Its `--self-test` runs in `bin/verify.sh` and
+also fails any push whose ruleset requires a preview from a site missing from `SITES`.
+
 ## Operator response
 
 When a gate fails, preserve the artifact, identify whether the evidence is repository,

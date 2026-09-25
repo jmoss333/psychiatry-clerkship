@@ -9,6 +9,11 @@
  * a red that has nothing to do with the contract the caller is pinning, cannot be fixed
  * by editing any source, and trains readers to discount the whole suite.
  *
+ * Since 2026-09-25 that premise no longer holds for build_deploy.py: require_real_files() was
+ * retired with the orientation videos, so a spawned build no longer aborts on stubs and this
+ * guard now errs toward SKIPPING in a no-LFS sandbox. CI is unaffected (soft context -> null
+ * -> run). Narrowing or retiring it is a follow-up; CLAUDE.md describes it.
+ *
  * WHY IT SHELLS OUT: "is this a pointer stub" is already defined once, in
  * site_build/check_lfs_media.py, alongside the deploy gate that enforces it. A second
  * definition here in JS could drift from the one production actually uses, so this asks

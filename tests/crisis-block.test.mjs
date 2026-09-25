@@ -55,11 +55,17 @@ const markedSources = new Map([
   ['08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md', MD],
   ['08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_MS3.md', MD],
   ['08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md', MD],
+  // J3 (2026-09-24): the MS3 MDD case's passive-SI safety-planning question, and OSCE Station 1
+  ['08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md', MD],
+  ['14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md', MD],
   // resident-only Case-of-the-Week pages that rehearse risk work. These do NOT reach
   // build_deploy.py's md loop — resident_section.py writes them fresh from source and runs
   // its own crisis_block.inject_markdown pass, gated by _CRISIS_REQUIRED_RES_MD there.
   ['08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md', MD],
   ['08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_Resident.md', MD],
+  // J3 (2026-09-24): FEP discharge disposition with a safety plan; MDD passive-SI assessment
+  ['08_Cases_and_Simulation/case-of-the-week/2026-09-07_first-episode-psychosis_Resident.md', MD],
+  ['08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md', MD],
   // tools where the learner is actively assessing or rehearsing risk
   ['04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html', HTML],
   ['04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html', HTML],

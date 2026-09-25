@@ -14,6 +14,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -304,7 +305,21 @@ class DeriveTests(unittest.TestCase):
             )
             # The resident-only extras come from the real site_extras.py.
             self.assertEqual(pages["rp-agitation.html"]["sites"], ["res"])
-            self.assertEqual(pages["orientation-video.html"]["sites"], ["ms3"])
+            # Retired with the welcome/orientation videos on 2026-09-25.
+            self.assertNotIn("orientation-video.html", pages)
+
+    def test_an_ms3_only_extra_derives_as_an_ms3_only_tool(self):
+        # MS3_EXTRA_TOOLS is empty today, so inject one: the producer must still place an
+        # MS3-only tool on the MS3 site alone, under its own producer name.
+        extra = ("_prototypes/example/ms3-only.html", "ms3-only.html", "MS3-only example")
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.object(shipped_pages.site_extras, "MS3_EXTRA_TOOLS", [extra]):
+            root = synthetic_root(tmp)  # writes a source for every site_extras entry
+            self.assertTrue((root / extra[0]).is_file())
+            pages = {p["slug"]: p for p in shipped_pages.derive(root)["pages"]}
+            self.assertEqual(pages["ms3-only.html"]["sites"], ["ms3"])
+            self.assertEqual(pages["ms3-only.html"]["kind"], "tool")
+            self.assertEqual(pages["ms3-only.html"]["producer"], "ms3_extra_tool")
 
     def test_a_malformed_registry_raises_rather_than_skipping_a_week(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -617,6 +617,14 @@
 
 /* One compact device-cache receipt beneath the route's primary action. The detailed panel
  * stays in document flow, so Tab can leave it naturally and the fixed phone dock stays five items. */
+/* Today's exam-date prompt (fd_today.js): the settings panel's Pacing field, asked once on the exam path.
+   Mirrors .fd-set__label/.fd-set__date/.fd-set__note so the two read as one control family; the input keeps
+   its intrinsic width here (a full-width date field would read as the page's primary control). */
+.fd-today__exam{margin:0 0 var(--fd-space-6);padding:var(--fd-space-5);border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
+.fd-today__examlabel{display:block;margin:0 0 var(--fd-space-4);font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-text)}
+.fd-today__examdate{max-width:100%;padding:var(--fd-space-5) var(--fd-space-4);border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm)}
+@media (pointer:coarse){.fd-today__examdate{min-height:var(--fd-target-touch)}}
+.fd-today__examnote{margin:var(--fd-space-4) 0 0;font-size:var(--fd-font-xs);color:var(--fd-text-mid)}
 .fd-offline{margin:0 0 var(--fd-space-6);border:1px solid var(--fd-line-strong);border-left:var(--fd-space-2) solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text)}
 .fd-offline.is-checking{border-left-style:dashed;background:var(--fd-callout)}
 .fd-offline.is-ready{border-left-color:var(--fd-olive);background:var(--fd-olive-wash)}
@@ -951,10 +959,10 @@
 .fd-compass .fd-compass__week{min-width:0;margin:0;padding:14px;border:1px solid var(--fd-line);border-top:3px solid var(--fd-terracotta);border-radius:var(--fd-radius-md);background:var(--fd-surface-warm);box-shadow:var(--fd-shadow-sm)}
 .fd-compass .fd-compass__heading{margin:0 0 10px;overflow-wrap:anywhere}
 .fd-compass .fd-compass__kicker{display:block;margin:0 0 4px;color:var(--fd-terracotta-dark);font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
-[data-fd-compass-safety] a,[data-fd-compass-link],[data-fd-compass-orientation]{display:inline-flex;align-items:center}
+[data-fd-compass-safety] a,[data-fd-compass-link]{display:inline-flex;align-items:center}
 @container fd-compass (min-width:22rem){.fd-compass .fd-compass__weeks{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @container fd-compass (min-width:30rem){.fd-compass .fd-compass__weeks{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (pointer:coarse){[data-fd-compass-safety] a,[data-fd-compass-link],[data-fd-compass-orientation]{min-inline-size:44px;min-block-size:44px}}
+@media (pointer:coarse){[data-fd-compass-safety] a,[data-fd-compass-link]{min-inline-size:44px;min-block-size:44px}}
 
 .fd-article__source{display:flex;align-items:center;gap:var(--fd-space-4);font-size:var(--fd-font-sm);color:var(--fd-text-dim);padding:10px 0;border-top:1px solid var(--fd-line)}
 .fd-reading-place{margin:var(--fd-space-6) 0 0;font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-dim)}

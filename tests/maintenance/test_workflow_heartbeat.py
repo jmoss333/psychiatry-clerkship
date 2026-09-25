@@ -14,6 +14,11 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
+sys.path.append(str(ROOT / "bin"))
+from _git_env import scrub_inherited_git_env  # noqa: E402
+
+# Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrub_inherited_git_env()
 
 from maintenance import workflow_heartbeat as heartbeat_module  # noqa: E402
 from maintenance.receipt_summary import (  # noqa: E402
@@ -122,6 +127,7 @@ class WorkflowHeartbeatTests(unittest.TestCase):
             EXPECTATIONS,
             {
                 "maintenance-sp-health-monitor.yml": 16,
+                "production-release-train.yml": 14,
                 "maintenance-production-canary.yml": 30,
                 "maintenance-queue-runner.yml": 30,
                 "maintenance-rotation-readiness.yml": 30,
@@ -1240,10 +1246,13 @@ class DelegationHandoffTests(unittest.TestCase):
     def test_the_exclusion_is_not_vacuous(self):
         # If EXPECTATIONS ever became all-maintenance/surveillance, the test
         # above would pass over an empty set and stop meaning anything. Today
-        # ci.yml is the one row the escalation does not cover; when that stops
-        # being true this assertion is the prompt to re-read the pair.
+        # ci.yml and production-release-train.yml are the rows the escalation does
+        # not cover (neither is maintenance-*/surveillance-*), so a failed run of
+        # either keeps the heartbeat itself red; when that stops being true this
+        # assertion is the prompt to re-read the pair.
         self.assertEqual(
-            set(EXPECTATIONS) - heartbeat_module.ESCALATED_WORKFLOWS, {"ci.yml"}
+            set(EXPECTATIONS) - heartbeat_module.ESCALATED_WORKFLOWS,
+            {"ci.yml", "production-release-train.yml"},
         )
 
 
