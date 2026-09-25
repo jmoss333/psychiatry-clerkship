@@ -14,7 +14,7 @@ A 34-year-old woman presents to an outpatient clinic with 8 weeks of low mood, l
 
 She scores 16 on the PHQ-9 (a 9-item self-report depression severity scale; scores of 15–19 indicate moderately severe depression). Routine labs including TSH and CBC are within normal limits.
 
-You diagnose major depressive disorder (MDD) — a syndrome defined by ≥2 weeks of depressed mood and/or anhedonia (loss of pleasure) plus associated neurovegetative and cognitive symptoms, causing functional impairment. You and the patient agree to start an antidepressant.
+You diagnose major depressive disorder (MDD) — a syndrome defined by ≥5 of 9 symptoms over the same ≥2-week period — at least one being depressed mood or anhedonia (loss of pleasure), the rest neurovegetative and cognitive symptoms — causing clinically significant distress or impairment. You and the patient agree to start an antidepressant.
 
 She returns at **6 weeks** on an adequately dosed selective serotonin reuptake inhibitor (SSRI). She reports "maybe a little better" but is still not functioning well. PHQ-9 is now 13.
 
@@ -57,7 +57,7 @@ What is true in every case is that **abrupt cessation** of a short-half-life SSR
 
 1. **Major depressive disorder, unipolar** — best fit given ≥2 weeks of anhedonia/depressed mood + neurovegetative symptoms and normal workup.
 2. **Bipolar depression** — must be excluded by history of mania/hypomania; changes treatment entirely.
-3. **Persistent depressive disorder (dysthymia)** — depressive symptoms ≥2 years at lower intensity.
+3. **Persistent depressive disorder (dysthymia)** — depressed mood most days for ≥2 years (severity may reach full MDD criteria), with ≥2 associated depressive symptoms.
 4. **Adjustment disorder with depressed mood** — identifiable stressor, does not meet full MDD criteria.
 5. **Depression due to a medical condition / substance** — e.g., hypothyroidism, anemia, alcohol; screened out here by normal TSH/CBC and minimal alcohol use.
 
