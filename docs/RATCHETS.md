@@ -6,9 +6,9 @@ gain in). A **rise fails** and blocks the push. Nobody has to drive the number t
 gate to be useful, and nobody can let it drift upward without a diff a reviewer sees. Hard
 checks — the ones that must be zero regardless — live *beside* the ratchets, never inside them.
 
-Three tools use it. Each ships its own falsification (`--self-test`) that proves a synthetic
+Four tools use it. Each ships its own falsification (`--self-test`) that proves a synthetic
 regression exits 1 and the live tree exits 0, and `bin/verify.sh` runs both the self-test and the
-gate, so the pre-push hook is the enforcement. None of the three is in `ci.yml`: adding a step
+gate, so the pre-push hook is the enforcement. None of them is in `ci.yml`: adding a step
 there trips three separate contracts (`bin/check-verify-coverage.py`, the step inventory and the
 workflow digest in `validate_scheduled_workflows.py`), and `verify.sh` runs before every push
 anyway. See `CLAUDE.md`, "Validate & test".
@@ -18,6 +18,7 @@ anyway. See `CLAUDE.md`, "Validate & test".
 | `bin/check_design_drift.py` | `13_Faculty_Resources/_automation/site_build/design_drift_baseline.json` | raw dimension declarations, distinct font sizes, sub-floor font sizes, non-standard breakpoints (per file) | C1–C9, see `docs/DESIGN_SYSTEM.md` §3 |
 | `bin/verify_spans.py` | `bin/verify_spans_baseline.json` | `rows_flagged`, `sentences_truncated`, `sentences_edited`, `rows_uncached` | any **REWORDED** sentence (a sentence the paper never wrote) fails whatever the baseline says |
 | `bin/check_qbank_coherence.py` | `bin/check_qbank_coherence_baseline.json` | `pairs` (0 today) | none — the pin is the floor |
+| `bin/check_editorial_leaks.py` | `bin/editorial_leaks_baseline.json` | `leaks` (16 at 2026-09-24: the three pasted-instruction audio-quiz items, both deck copies) | could-not-check is exit 2: a required registry missing or unparsable, a listed shipped source missing, no pack, nothing examined |
 
 ## Lowering the ratchet
 
@@ -35,6 +36,10 @@ python3 bin/verify_spans.py --update-baseline
 
 ```bash
 python3 bin/check_qbank_coherence.py --update-baseline
+```
+
+```bash
+python3 bin/check_editorial_leaks.py --update-baseline
 ```
 
 Each command rewrites its baseline from what the tool measures right now, prints the new pins,

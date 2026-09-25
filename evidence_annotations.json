@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-09-18",
+  "updated": "2026-09-24",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -1421,6 +1421,476 @@
           "direction": "descriptive",
           "usedBy": [
             "t_sud"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "decker-2015-extrip-lithium",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "25583292",
+        "doi": "10.2215/CJN.10021014",
+        "sourceSpan": "In total, 166 articles met inclusion criteria, which were mostly case reports, yielding a very low quality of evidence for all recommendations. A total of 418 patients were reviewed, 228 of which allowed extraction of patient-level data. The workgroup concluded that lithium is dialyzable (Level of evidence=A) and made the following recommendations: Extracorporeal treatment is recommended in severe lithium poisoning (1D). Extracorporeal treatment is recommended if kidney function is impaired and the [Li(+)] is >4.0 mEq/L, or in the presence of a decreased level of consciousness, seizures, or life-threatening dysrhythmias irrespective of the [Li(+)] (1D). Extracorporeal treatment is suggested if the [Li(+)] is >5.0 mEq/L, significant confusion is present, or the expected time to reduce the [Li(+)] to <1.0 mEq/L is >36 hours (2D)."
+      },
+      "claims": [
+        {
+          "claimId": "extrip-lithium-ecr-recommended",
+          "claimText": "EXTRIP recommends extracorporeal treatment in lithium poisoning if kidney function is impaired and the [Li+] is >4.0 mEq/L, or in the presence of a decreased level of consciousness, seizures, or life-threatening dysrhythmias irrespective of the [Li+] (grade 1D, very low quality of evidence).",
+          "claimTerms": [
+            "kidney function is impaired",
+            "decreased level of consciousness, seizures, or life-threatening dysrhythmias irrespective of",
+            "very low quality of evidence"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "cl_reference"
+          ]
+        },
+        {
+          "claimId": "extrip-lithium-ecr-suggested",
+          "claimText": "EXTRIP suggests extracorporeal treatment if the [Li+] is >5.0 mEq/L, significant confusion is present, or the expected time to reduce the [Li+] to <1.0 mEq/L is >36 hours (grade 2D).",
+          "claimTerms": [
+            "significant confusion is present",
+            "expected time to reduce the"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "cl_reference"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "larochelle-2018-moud-mortality",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "29913516",
+        "doi": "10.7326/M17-3107",
+        "sourceSpan": "17 568 Massachusetts adults without cancer who survived an opioid overdose between 2012 and 2014. Compared with no MOUD, MMT was associated with decreased all-cause mortality (adjusted hazard ratio [AHR], 0.47 [CI, 0.32 to 0.71]) and opioid-related mortality (AHR, 0.41 [CI, 0.24 to 0.70]). Buprenorphine was associated with decreased all-cause mortality (AHR, 0.63 [CI, 0.46 to 0.87]) and opioid-related mortality (AHR, 0.62 [CI, 0.41 to 0.92]). No associations between naltrexone and all-cause mortality (AHR, 1.44 [CI, 0.84 to 2.46]) or opioid-related mortality (AHR, 1.42 [CI, 0.73 to 2.79]) were identified. Few events among naltrexone recipients preclude confident conclusions."
+      },
+      "claims": [
+        {
+          "claimId": "moud-after-overdose-mortality",
+          "claimText": "Among 17 568 adults who survived a nonfatal opioid overdose, methadone maintenance treatment (AHR 0.47) and buprenorphine (AHR 0.63) were associated with decreased all-cause mortality compared with no MOUD; no association between naltrexone and all-cause mortality was identified (AHR 1.44), and few events among naltrexone recipients preclude confident conclusions, so naltrexone has not been shown to reduce mortality.",
+          "claimTerms": [
+            "decreased all-cause mortality",
+            "No associations between naltrexone and all-cause mortality",
+            "preclude confident conclusions"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "rapid_review"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "nolen-2019-lithium-levels",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "31112628",
+        "doi": "10.1111/bdi.12805",
+        "sourceSpan": "For adults with bipolar disorder there was consensus that the standard lithium serum level should be 0.60-0.80 mmol/L with the option to reduce it to 0.40-0.60 mmol/L in case of good response but poor tolerance or to increase it to 0.80-1.00 mmol/L in case of insufficient response and good tolerance. For children and adolescents there was no consensus, but the majority of the members endorsed the same recommendation. For the elderly there was also no consensus, but the majority of the members endorsed a more conservative approach: usually 0.40-0.60 mmol/L, with the option to go to maximally 0.70 or 0.80 mmol/L at ages 65-79 years, and to maximally 0.70 mmol/L over age 80 years."
+      },
+      "claims": [
+        {
+          "claimId": "lithium-maintenance-level-adults",
+          "claimText": "For adults with bipolar disorder there was consensus that the standard maintenance lithium serum level should be 0.60-0.80 mmol/L, with the option to reduce it to 0.40-0.60 mmol/L in case of good response but poor tolerance or to increase it to 0.80-1.00 mmol/L in case of insufficient response and good tolerance.",
+          "claimTerms": [
+            "standard lithium serum level should be 0.60-0.80 mmol/L",
+            "good response but poor tolerance",
+            "insufficient response and good tolerance"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "med_monitoring",
+            "t_mood",
+            "cl_reference",
+            "rounds_questions"
+          ]
+        },
+        {
+          "claimId": "lithium-maintenance-level-older-adults",
+          "claimText": "For older adults there was no consensus, but the majority of the Task Force endorsed a more conservative approach: usually 0.40-0.60 mmol/L, with the option to go to maximally 0.70 or 0.80 mmol/L at ages 65-79 years, and to maximally 0.70 mmol/L over age 80 years.",
+          "claimTerms": [
+            "For the elderly there was also no consensus",
+            "usually 0.40-0.60 mmol/L",
+            "maximally 0.70 mmol/L over age 80 years"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "med_monitoring",
+            "t_mood",
+            "cl_reference",
+            "rounds_questions"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "sahm-2022-restrictive-ed",
+      "verifiedAgainst": {
+        "spanType": "fulltext",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pmc&id=PMC10864000 (NIHMS1949954 author manuscript, section 'Position 7' and its Recommendations list; the manuscript prints no full stop after '<1,200 kcals/day' before 'Refeeding hypophosphatemia', which the span does not cross)",
+        "retrievedAt": "2026-09-24",
+        "pmid": "36058805",
+        "doi": "10.1016/j.jadohealth.2022.08.006",
+        "sourceSpan": "Refeeding hypophosphatemia, the hallmark biochemical feature of refeeding syndrome, is correlated with the degree of malnutrition on admission rather than the initial calories prescribed in hospitalized adolescents with AN [31]. Research supports inpatient refeeding protocols with close medical monitoring that include initial higher calorie content and advance more rapidly than protocols starting at <1,200 kcals/day. Inpatient refeeding protocols for AYAs with AN include higher calorie content and increase more rapidly than the historical standard of care, which commenced with lower calories and advanced slowly (Grade IA). Prospective clinical trials are required to better understand the safety and efficacy of refeeding approaches in AYAs with AN and extreme malnutrition (<60% mBMI) and in AYA with AAN and ARFID (Grade IV C)."
+      },
+      "claims": [
+        {
+          "claimId": "higher-calorie-inpatient-refeeding-supported",
+          "claimText": "For adolescents and young adults with anorexia nervosa, research supports inpatient refeeding protocols with close medical monitoring that include initial higher calorie content and advance more rapidly than protocols starting at <1,200 kcals/day (Grade IA); prospective trials are still required for extreme malnutrition (<60% mBMI), atypical anorexia nervosa and ARFID.",
+          "claimTerms": [
+            "close medical monitoring",
+            "initial higher calorie content",
+            "protocols starting at <1,200 kcals/day",
+            "extreme malnutrition (<60% mBMI)"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_eating"
+          ]
+        },
+        {
+          "claimId": "refeeding-hypophosphatemia-tracks-malnutrition",
+          "claimText": "Refeeding hypophosphatemia, the hallmark biochemical feature of refeeding syndrome, is correlated with the degree of malnutrition on admission rather than the initial calories prescribed in hospitalized adolescents with anorexia nervosa.",
+          "claimTerms": [
+            "degree of malnutrition on admission rather than the initial calories prescribed"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_eating"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "asam-hpso-bup-2023",
+      "verifiedAgainst": {
+        "spanType": "fulltext",
+        "sourceEndpoint": "ovid:journaladdictionmedicine fulltext 10.1097/adm.0000000000001202 (version of record; KQ2 Evidence Summary and Table 3; superscript reference numbers omitted; Table 3 linearised as 'TABLE 3 (caption): row || row' with ' | ' between cells)",
+        "retrievedAt": "2026-09-24",
+        "pmid": "37934520",
+        "doi": "10.1097/ADM.0000000000001202",
+        "sourceSpan": "For OWS after buprenorphine initiation, the most effective treatment remains administration of additional buprenorphine. TABLE 3 (Considerations for Buprenorphine Initiation Approach Based on High-Tolerance and High-Potency Synthetic Opioid Exposure—Clinical Setting and Opioid Withdrawal): Situation | Outpatient | Emergency Department | Residential/Hospital Setting* || Opioid withdrawal, COWS ≥8 with 1 objective sign of opioid withdrawal | Standard initiation or HDB | Standard initiation or HDB | Standard initiation or HDB"
+      },
+      "claims": [
+        {
+          "claimId": "hpso-cows-8-standard-or-high-dose-initiation",
+          "claimText": "In ASAM's clinical considerations for patients using high-potency synthetic opioids, Table 3 lists opioid withdrawal with COWS ≥8 with 1 objective sign of opioid withdrawal as a situation for standard initiation or HDB (high-dose buprenorphine initiation) in outpatient, emergency department, and residential/hospital settings.",
+          "claimTerms": [
+            "COWS ≥8 with 1 objective sign of opioid withdrawal",
+            "Standard initiation or HDB",
+            "Emergency Department"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_sud",
+            "rounds_questions",
+            "rapid_review"
+          ]
+        },
+        {
+          "claimId": "hpso-additional-buprenorphine-for-withdrawal",
+          "claimText": "For opioid withdrawal after buprenorphine initiation, the most effective treatment remains administration of additional buprenorphine.",
+          "claimTerms": [
+            "the most effective treatment remains administration of additional buprenorphine"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_sud",
+            "rounds_questions",
+            "rapid_review"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "asam-oud-2020",
+      "verifiedAgainst": {
+        "spanType": "fulltext",
+        "sourceEndpoint": "ovid:journaladdictionmedicine fulltext 10.1097/adm.0000000000000633 (version of record, Part 5: Buprenorphine > Initiation, supplement p. 42; superscript reference numbers omitted; identical text in the ASAM-hosted PDF npg-jam-supplement.pdf)",
+        "retrievedAt": "2026-09-24",
+        "pmid": "32511106",
+        "doi": "10.1097/ADM.0000000000000633",
+        "sourceSpan": "During office-based initiation of buprenorphine, the use of the COWS can be helpful in determining if patients are experiencing mild to moderate withdrawal. A COWS score of 11–12 or more is generally indicative of sufficient withdrawal to allow a safe and comfortable initiation onto buprenorphine. Some clinicians have recommended waiting until patients are in at least moderate withdrawal (COWS score of 13 or higher) before initiating buprenorphine. However, there is little existing evidence addressing this issue."
+      },
+      "claims": [
+        {
+          "claimId": "asam-2020-cows-11-12-generally-sufficient",
+          "claimText": "During office-based initiation, a COWS score of 11–12 or more is generally indicative of sufficient withdrawal to allow a safe and comfortable initiation onto buprenorphine.",
+          "claimTerms": [
+            "A COWS score of 11–12 or more is generally indicative of sufficient withdrawal",
+            "office-based initiation"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_sud",
+            "rounds_questions"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "samhsa-tip63-2021",
+      "verifiedAgainst": {
+        "spanType": "fulltext",
+        "sourceEndpoint": "samhsa:library.samhsa.gov/sites/default/files/pep21-02-01-002.pdf (TIP 63, Updated 2021; Part 3, Chapter 3D: Buprenorphine, p. 3-61; pdftotext, 'fi' ligature restored). Same edition as NCBI Bookshelf NBK574910 (PMID 34928548), whose pages returned a browser challenge",
+        "retrievedAt": "2026-09-24",
+        "pmid": "34928548",
+        "sourceSpan": "The patient should exhibit signs of opioid withdrawal before taking the first dose of buprenorphine to avoid precipitated withdrawal. For example, the Risk Evaluation and Mitigation Strategy (REMS) for buprenorphine indicates that a COWS score of 12 or higher is typically adequate for a first dose."
+      },
+      "claims": [
+        {
+          "claimId": "tip63-withdrawal-before-first-dose-rems-cows-12",
+          "claimText": "The patient should exhibit signs of opioid withdrawal before taking the first dose of buprenorphine to avoid precipitated withdrawal; as an example, the buprenorphine REMS indicates that a COWS score of 12 or higher is typically adequate for a first dose.",
+          "claimTerms": [
+            "should exhibit signs of opioid withdrawal before taking the first dose of buprenorphine",
+            "COWS score of 12 or higher is typically adequate for a first dose"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_sud",
+            "rounds_questions"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "donofrio-2026-ed-bup",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "41670966",
+        "doi": "10.1001/jama.2025.27019",
+        "sourceSpan": "Among 2000 patients randomized, 6 who were enrolled twice were excluded, resulting in 991 in the extended-release group and 1003 in the sublingual group. The median age was 37 (IQR, 30-47) years, 68% were male, 31% had an initial COWS score of 4 to 7, and 76% tested positive for fentanyl. Precipitated withdrawal was rare: 6 (0.6%) with extended-release buprenorphine and 8 (0.8%) with sublingual buprenorphine. Both buprenorphine formulations were well tolerated; precipitated withdrawal was rare despite a high prevalence of fentanyl."
+      },
+      "claims": [
+        {
+          "claimId": "ed-buprenorphine-precipitated-withdrawal-rare-with-fentanyl",
+          "claimText": "In an emergency department trial of extended-release vs sublingual buprenorphine (991 and 1003 patients; 31% with an initial COWS score of 4 to 7; 76% tested positive for fentanyl), precipitated withdrawal was rare: 6 (0.6%) with extended-release buprenorphine and 8 (0.8%) with sublingual buprenorphine.",
+          "claimTerms": [
+            "76% tested positive for fentanyl",
+            "Precipitated withdrawal was rare",
+            "despite a high prevalence of fentanyl"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_sud",
+            "rounds_questions"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "winkelman-2025-aasm-rls",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "39324694",
+        "doi": "10.5664/jcsm.11390",
+        "sourceSpan": "Consensus guidelines, which have not been empirically tested, suggest that supplementation of iron in adults with RLS should be instituted with oral or IV iron if serum ferritin ≤ 75 ng/mL or transferrin saturation < 20%, and only with IV iron if serum ferritin is between 75 and 100 ng/mL. In adults with RLS, the AASM recommends the use of gabapentin enacarbil over no gabapentin enacarbil (strong recommendation, moderate certainty of evidence). In adults with RLS, the AASM recommends the use of gabapentin over no gabapentin (strong recommendation, moderate certainty of evidence). In adults with RLS, the AASM recommends the use of pregabalin over no pregabalin (strong recommendation, moderate certainty of evidence). In adults with RLS, the AASM recommends the use of IV ferric carboxymaltose over no IV ferric carboxymaltose in patients with appropriate iron status (see good practice statement for iron parameters) (strong recommendation, moderate certainty of evidence). In adults with RLS, the AASM suggests against the standard use of pramipexole (conditional recommendation, moderate certainty of evidence). Remarks: pramipexole may be used to treat RLS in patients who place a higher value on the reduction of restless legs symptoms with short-term use and a lower value on adverse effects with long-term use (particularly augmentation). In adults with RLS, the AASM suggests against the standard use of transdermal rotigotine (conditional recommendation, low certainty of evidence). In adults with RLS, the AASM suggests against the standard use of ropinirole (conditional recommendation, moderate certainty of evidence)."
+      },
+      "claims": [
+        {
+          "claimId": "rls-iron-thresholds-good-practice",
+          "claimText": "As a good practice statement based on consensus guidelines that have not been empirically tested, iron supplementation in adults with RLS should be instituted with oral or IV iron if serum ferritin ≤ 75 ng/mL or transferrin saturation < 20%, and only with IV iron if serum ferritin is between 75 and 100 ng/mL.",
+          "claimTerms": [
+            "which have not been empirically tested",
+            "serum ferritin ≤ 75 ng/mL or transferrin saturation < 20%"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_sleep"
+          ]
+        },
+        {
+          "claimId": "rls-alpha2delta-strong-recommendations",
+          "claimText": "In adults with RLS, the AASM recommends gabapentin enacarbil, gabapentin and pregabalin (each a strong recommendation, moderate certainty of evidence).",
+          "claimTerms": [
+            "recommends the use of gabapentin enacarbil",
+            "recommends the use of gabapentin over no gabapentin",
+            "recommends the use of pregabalin",
+            "strong recommendation, moderate certainty of evidence"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_sleep"
+          ]
+        },
+        {
+          "claimId": "rls-dopamine-agonists-against-standard-use",
+          "claimText": "In adults with RLS, the AASM suggests against the standard use of pramipexole, transdermal rotigotine and ropinirole (conditional recommendations); each may still be used in patients who place a higher value on short-term symptom reduction and a lower value on adverse effects with long-term use (particularly augmentation).",
+          "claimTerms": [
+            "suggests against the standard use of pramipexole",
+            "suggests against the standard use of transdermal rotigotine",
+            "suggests against the standard use of ropinirole",
+            "particularly augmentation"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "t_sleep"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "rosenberg-2015-malignant-hyperthermia",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "26238698",
+        "doi": "10.1186/s13023-015-0310-1",
+        "sourceSpan": "Malignant hyperthermia (MH) is a pharmacogenetic disorder of skeletal muscle that presents as a hypermetabolic response to potent volatile anesthetic gases such as halothane, sevoflurane, desflurane, isoflurane and the depolarizing muscle relaxant succinylcholine, and rarely, in humans, to stressors such as vigorous exercise and heat. The classic signs of MH include hyperthermia, tachycardia, tachypnea, increased carbon dioxide production, increased oxygen consumption, acidosis, hyperkalaemia, muscle rigidity, and rhabdomyolysis, all related to a hypermetabolic response. The syndrome is likely to be fatal if untreated. An increase in end-tidal carbon dioxide despite increased minute ventilation provides an early diagnostic clue. Dantrolene sodium is a specific antagonist and should be available wherever general anesthesia is administered."
+      },
+      "claims": [
+        {
+          "claimId": "mh-pharmacogenetic-trigger-agents",
+          "claimText": "Malignant hyperthermia is a pharmacogenetic disorder of skeletal muscle that presents as a hypermetabolic response to potent volatile anesthetic gases and the depolarizing muscle relaxant succinylcholine.",
+          "claimTerms": [
+            "pharmacogenetic disorder of skeletal muscle",
+            "potent volatile anesthetic gases",
+            "succinylcholine"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "toxidromes",
+            "ect_neuromodulation"
+          ]
+        },
+        {
+          "claimId": "mh-rising-etco2-early-clue",
+          "claimText": "An increase in end-tidal carbon dioxide despite increased minute ventilation provides an early diagnostic clue to malignant hyperthermia.",
+          "claimTerms": [
+            "increase in end-tidal carbon dioxide despite increased minute ventilation",
+            "early diagnostic clue"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "toxidromes",
+            "ect_neuromodulation"
+          ]
+        },
+        {
+          "claimId": "mh-dantrolene-specific-antagonist",
+          "claimText": "Dantrolene sodium is a specific antagonist for malignant hyperthermia and should be available wherever general anesthesia is administered.",
+          "claimTerms": [
+            "Dantrolene sodium is a specific antagonist"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "toxidromes",
+            "ect_neuromodulation"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "selten-2020-migration-psychosis",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "30722795",
+        "doi": "10.1017/S0033291719000035",
+        "sourceSpan": "The aims of this meta-analysis are (i) to estimate the pooled relative risk (RR) of developing non-affective psychotic disorder (NAPD) and affective psychotic disorder (APD) among migrants and their children; (ii) to adjust these results for socioeconomic status (SES); (iii) to examine the sources of heterogeneity that underlie the risk of NAPD. The meta-analysis yielded a RR, adjusted for age and sex, of 2.13 (95% CI 1.99-2.27) for NAPD and 2.94 (95% CI 2.28-3.79) for APD. The RRs diminished, but persisted after adjustment for SES. With reference to NAPD: a personal or parental history of migration to Europe from countries outside Europe was associated with a higher RR (RR = 2.94, 95% CI 2.63-3.29) than migration within Europe (RR = 1.88, 95% 1.62-2.18). The corresponding RR was lower in Israel (RR = 1.22; 0.99-1.50) and Canada (RR = 1.21; 0.85-1.74)."
+      },
+      "claims": [
+        {
+          "claimId": "migrant-napd-relative-risk",
+          "claimText": "Among migrants and their children, the pooled relative risk of non-affective psychotic disorder, adjusted for age and sex, was 2.13 (95% CI 1.99-2.27); the relative risks diminished, but persisted after adjustment for socioeconomic status.",
+          "claimTerms": [
+            "among migrants and their children",
+            "diminished, but persisted after adjustment for SES"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "cultural_psychiatry"
+          ]
+        },
+        {
+          "claimId": "migrant-napd-risk-varies-by-setting",
+          "claimText": "The excess risk of non-affective psychotic disorder varied by setting and origin: it was higher for migration to Europe from outside Europe (RR 2.94) than for migration within Europe (RR 1.88), and lower in Israel (RR 1.22; 0.99-1.50) and Canada (RR 1.21; 0.85-1.74), where the confidence intervals include the null.",
+          "claimTerms": [
+            "migration to Europe from countries outside Europe",
+            "The corresponding RR was lower in Israel"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "cultural_psychiatry"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "bourque-2011-migration-psychosis",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "20663257",
+        "doi": "10.1017/S0033291710001406",
+        "sourceSpan": "A meta-analysis of 61 effect sizes for FGIs and 28 for SGIs yielded mean-weighted incidence rate ratios (IRRs) of 2.3 [95% confidence interval (CI) 2.0-2.7] for FGIs and 2.1 (95% CI 1.8-2.5) for SGIs. There was no significant risk difference between generations, but there were significant differences according to ethno-racial status and host country. The increased risk of schizophrenia and related disorders among immigrants clearly persists into the second generation, suggesting that post-migration factors play a more important role than pre-migration factors or migration per se. The observed variability suggests that the risk is mediated by the social context."
+      },
+      "claims": [
+        {
+          "claimId": "second-generation-risk-persists",
+          "claimText": "The increased risk of schizophrenia and related disorders among immigrants persists into the second generation (IRR 2.3 for first-generation and 2.1 for second-generation immigrants, no significant risk difference between generations), suggesting that post-migration factors play a more important role than pre-migration factors or migration per se; the authors read the observed variability as suggesting the risk is mediated by the social context.",
+          "claimTerms": [
+            "persists into the second generation",
+            "post-migration factors play a more important role than pre-migration factors or migration per se",
+            "mediated by the social context"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "cultural_psychiatry"
+          ]
+        },
+        {
+          "claimId": "migrant-psychosis-risk-differs-by-host-country",
+          "claimText": "The risk of psychotic disorders among immigrants differed significantly according to ethno-racial status and host country.",
+          "claimTerms": [
+            "significant differences according to ethno-racial status and host country"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "cultural_psychiatry"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "gurrera-2011-nms-criteria",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-24",
+        "pmid": "21733489",
+        "doi": "10.4088/JCP.10m06438",
+        "sourceSpan": "Consensus was reached on the fifth round regarding the following criteria: recent dopamine antagonist exposure, or dopamine agonist withdrawal; hyperthermia; rigidity; mental status alteration; creatine kinase elevation; sympathetic nervous system lability; tachycardia plus tachypnea; and a negative work-up for other causes. The panel also reached a consensus on the relative importance of these criteria and on the following critical values for quantitative criteria: hyperthermia, > 100.4°F or > 38.0°C on at least 2 occasions; creatine kinase elevation, at least 4 times the upper limit of normal; blood pressure elevation, ≥ 25% above baseline; blood pressure fluctuation, ≥ 20 mm Hg (diastolic) or ≥ 25 mm Hg (systolic) change within 24 hours; tachycardia, ≥ 25% above baseline; and tachypnea, ≥ 50% above baseline. They require validation before being applied in clinical settings."
+      },
+      "claims": [
+        {
+          "claimId": "nms-consensus-ck-threshold",
+          "claimText": "The international Delphi consensus set the critical value for creatine kinase elevation in NMS at at least 4 times the upper limit of normal; the authors state the criteria require validation before being applied in clinical settings.",
+          "claimTerms": [
+            "creatine kinase elevation, at least 4 times the upper limit of normal",
+            "require validation before being applied in clinical settings"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "rounds_questions"
           ]
         }
       ]
