@@ -72,6 +72,15 @@ EXISTING_IDS = {
     "project-beta-psychopharm-agitation-2012",
     "canmat-isbd-bipolar-2018",
 }
+# Added by peer-review remediation WP8 (2026-09-24): therapy_reading_room.md now cites individual
+# cohort data for handgun ownership and suicide (Studdert 2020), and canon_200.md reads Cipriani
+# 2013 beside the VA Li+ trial stopped for futility (Katz 2022). Asserting what a paper found
+# requires a stored span, so both enter the registry with one. Defined here, not at the end of the
+# file, so it cannot collide with batches appended below.
+PEER_REVIEW_WP8_2026_09_IDS = {
+    "studdert-2020-handgun-suicide",
+    "katz-2022-lithium-va",
+}
 TIER1_IDS = {
     "appelbaum-grisso-1988-capacity",
     "border-2019-candidate-gene",
@@ -251,11 +260,32 @@ ISSUE_441_PTSD_IDS = {
     "schnurr-2024-vadod-ptsd-cpg-synopsis",
     "williams-2022-cochrane-ptsd-pharmacotherapy",
 }
+# Added by the 2026-09-24 peer-review remediation, WP-1 (joint clinical-safety PR): lithium
+# dialysis and target levels, MOUD mortality, refeeding, buprenorphine initiation and COWS,
+# RLS, malignant hyperthermia, NMS criteria and migration/psychosis. Each corrected page
+# sentence asserts what one of these found, so each enters with a stored span (MEED's is
+# held out: it has no PMID, and the span-audit cache is keyed by PMID). One set, alphabetical.
+PEER_REVIEW_WP1_2026_09_IDS = {
+    "asam-hpso-bup-2023",
+    "asam-oud-2020",
+    "bourque-2011-migration-psychosis",
+    "decker-2015-extrip-lithium",
+    "donofrio-2026-ed-bup",
+    "gurrera-2011-nms-criteria",
+    "larochelle-2018-moud-mortality",
+    "nolen-2019-lithium-levels",
+    "rcpsych-meed-2022",
+    "rosenberg-2015-malignant-hyperthermia",
+    "sahm-2022-restrictive-ed",
+    "samhsa-tip63-2021",
+    "selten-2020-migration-psychosis",
+    "winkelman-2025-aasm-rls",
+}
 
 ALL_SOURCE_IDS = (
-    EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS | THERAPY_WP_T2_IDS
+    EXISTING_IDS | PEER_REVIEW_WP8_2026_09_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS | THERAPY_WP_T2_IDS
     | POSTDISCHARGE_CORRECTION_IDS | CURRICULUM_REVIEW_WP5A_IDS | CURRICULUM_REVIEW_WP5B_IDS
-    | CURRICULUM_REVIEW_WP5C_IDS | ISSUE_441_PTSD_IDS
+    | CURRICULUM_REVIEW_WP5C_IDS | ISSUE_441_PTSD_IDS | PEER_REVIEW_WP1_2026_09_IDS
 )
 REFERENCE_FILES = (
     "topic_meta.json",
@@ -557,7 +587,10 @@ def test_published_schema_governance_is_required_for_every_canonical_source():
     # 2026-08-21 Scholar Sidekick canonical pass and recorded in each entry's noteHistory.
     # Anything else claiming a correction status (or any expression-of-concern/retracted
     # source) still fails: the allow-list is the record of what faculty knowingly kept.
-    CORRECTED_IDS = {"abbass-2020", "linehan-2015"}
+    # asam-oud-2020 and donofrio-2026-ed-bup (WP-1, 2026-09-24) carry PubMed ErratumIn links
+    # (PMIDs 32487948 and 41915466; the JAMA one reverses Figure 2's labels only) — recorded in
+    # each entry's identity note, pending faculty review with the rest of the WP-1 sources.
+    CORRECTED_IDS = {"abbass-2020", "linehan-2015", "asam-oud-2020", "donofrio-2026-ed-bup"}
 
     registry = load_evidence_registry(REGISTRY_PATH)
     assert len(registry["sources"]) == len(ALL_SOURCE_IDS)
@@ -1534,7 +1567,9 @@ def _spawned_build_blocked() -> "str | None":
     file IS its pointer stub -- and build_deploy.py hard-fails those outside the CI and
     deploy-preview contexts. That aborts the build below for a reason no source edit can
     fix. Reporting it as a skip keeps the signal honest; any OTHER build failure still
-    hits the returncode assertions.
+    hits the returncode assertions. (Since 2026-09-25 build_deploy.py no longer aborts on
+    stubs -- its only stub gate was retired with the orientation videos -- so in a no-LFS
+    sandbox this skip is now conservative rather than necessary; CI runs it either way.)
 
     An import that cannot be resolved returns None on purpose: "cannot tell" must run the
     test and fail loudly, never silence it.

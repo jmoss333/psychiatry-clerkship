@@ -113,7 +113,8 @@
         "EPA10"
       ],
       "read": 9,
-      "tldr": "One encounter, two failures: a COWS-threshold buprenorphine start precipitated withdrawal in a fentanyl-exposed patient, and the recovery is methadone or low-dose initiation - with acute pain treated alongside the MOUD, never instead of it."
+      "tldr_ms3": "Two toxidromes, one encounter: naloxone reversed the overdose and precipitated withdrawal. Observe for re-sedation, treat the withdrawal, start buprenorphine in the building, and send him out with naloxone and a named follow-up.",
+      "tldr_res": "Standard buprenorphine initiation precipitated withdrawal in a fentanyl-exposed patient: the first treatment is usually more buprenorphine, but after a traumatic start her live options are methadone or low-dose initiation - with acute pain treated alongside the MOUD, never instead of it."
     },
     {
       "date": "2026-07-26",

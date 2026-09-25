@@ -79,9 +79,15 @@ authored quality. So the tools schedule silently on the choice the learner alrea
 
 | quality | grade |
 |---|---|
-| `best` | 3 (Good) |
-| `partial` | 2 (Hard) |
-| anything else | 1 (Again) |
+| `best` | `'Good'` |
+| `partial` | `'Hard'` |
+| anything else | `'Again'` |
+
+> **Corrected 2026-09-24.** This table first gave the grades as 3 / 2 / 1, and ca62dbb shipped
+> those numbers. `applyGrade` only recognises the strings `'Again'` / `'Hard'` / `'Good'`. Any other
+> value goes to its Easy branch, so every COMM# and REASON# card was graded Easy until the fix.
+> `tests/comm-reason-cards.test.mjs` now checks each derived grade against the names `applyGrade`
+> compares, and checks the resulting interval and lapse count.
 
 `best` maps to Good rather than Easy deliberately: Easy stretches the interval hard, and this is
 four-way recognition the learner may have guessed. Unknown qualities fail to a lapse, so a quality

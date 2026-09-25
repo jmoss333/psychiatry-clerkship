@@ -50,7 +50,7 @@
 ## ADHD (Russell Barkley)
 - **[Taking Charge of Adult ADHD](https://www.amazon.com/dp/1462546854)** — Russell Barkley. Evidence-based guide from leading ADHD researcher—comprehensive strategies for managing adult ADHD.  ISBN 9781462546855
 - **[Driven to Distraction](https://www.amazon.com/dp/0307743152)** — Edward Hallowell & John Ratey. The classic guide to understanding ADHD across the lifespan—helps you recognize symptoms, understand the diagnosis, and develop practical coping strategies.  ISBN 9780307743152
-- **[Scattered Minds](https://www.amazon.com/dp/0593714377)** — Gabor Maté. Gabor Maté's trauma-informed understanding of ADHD—links attention challenges to stress and development.  ISBN 9780593714379
+- **[Scattered Minds](https://www.amazon.com/dp/0593714377)** — Gabor Maté. Gabor Maté's trauma-informed understanding of ADHD—links attention challenges to stress and development; note that this environmental view departs from the consensus that ADHD is a highly heritable neurodevelopmental disorder.  ISBN 9780593714379
 
 ## Child development & the brain (Dan Siegel)
 - **[Whole-Brain Child](https://www.amazon.com/dp/0553386697)** — Daniel Siegel & Tina Payne Bryson.  ISBN 9780553386691

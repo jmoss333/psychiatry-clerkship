@@ -1,0 +1,586 @@
+{
+  "description": "Ward-language search benchmark, 2026-09-24 (review task #3, first PR). 'served' are phrases a learner types on the unit and the page that answers them. 'crisis' phrasings must open on the named safety protocol, except those marked 'accidental', which must still reach it. 'itemFirst' medication and ward terms must not open on a protocol that matched by accident. 'protocolOutrankingAliases' are the ONLY alias phrases allowed to rank above a safety protocol, each a recorded decision (#429 and earlier); a new alias that moves a protocol fails until faculty add it here. 'deferred' are known gaps, with the reason each is not fixed yet. No phrase anywhere may carry a dose.",
+  "served": [
+    {
+      "query": "haldol",
+      "acceptable": [
+        "med_monitoring.md",
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 2,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "haldol im",
+      "acceptable": [
+        "med_monitoring.md",
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 2,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "zyprexa",
+      "acceptable": [
+        "med_monitoring.md",
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 2,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "seroquel",
+      "acceptable": [
+        "med_monitoring.md",
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 2,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "risperdal",
+      "acceptable": [
+        "med_monitoring.md",
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 2,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "abilify",
+      "acceptable": [
+        "med_monitoring.md",
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 2,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "geodon",
+      "acceptable": [
+        "med_monitoring.md",
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 2,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "clozaril",
+      "acceptable": [
+        "med_monitoring.md",
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 2,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "clozapine",
+      "acceptable": [
+        "med_monitoring.md",
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 2,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "depakote",
+      "acceptable": [
+        "med_monitoring.md",
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 2,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "tegretol",
+      "acceptable": [
+        "med_monitoring.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "celexa",
+      "acceptable": [
+        "med_monitoring.md",
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 2,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "zoloft",
+      "acceptable": [
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "prozac",
+      "acceptable": [
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "lexapro",
+      "acceptable": [
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "lithium level",
+      "acceptable": [
+        "med_monitoring.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "qtc",
+      "acceptable": [
+        "psychopharm_primer.md",
+        "med_monitoring.md"
+      ],
+      "maxRank": 2,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "akathisia",
+      "acceptable": [
+        "med_monitoring.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "eps",
+      "acceptable": [
+        "med_monitoring.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "tardive dyskinesia",
+      "acceptable": [
+        "med_monitoring.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "td",
+      "acceptable": [
+        "med_monitoring.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "aims",
+      "acceptable": [
+        "med_monitoring.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "insomnia",
+      "acceptable": [
+        "t_sleep.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "can't sleep",
+      "acceptable": [
+        "t_sleep.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "trouble sleeping",
+      "acceptable": [
+        "t_sleep.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "nms",
+      "acceptable": [
+        "toxidromes.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "fever and rigidity",
+      "acceptable": [
+        "toxidromes.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "hyperthermia",
+      "acceptable": [
+        "toxidromes.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "tms",
+      "acceptable": [
+        "ect_neuromodulation.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "blue paper",
+      "acceptable": [
+        "ethics_legal.md",
+        "systems_medlegal.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "involuntary commitment",
+      "acceptable": [
+        "ethics_legal.md",
+        "systems_medlegal.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "od on tylenol",
+      "acceptable": [
+        "toxidromes.md"
+      ],
+      "maxRank": 5,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "refusing meds",
+      "acceptable": [
+        "capacity.html"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "ciwa",
+      "acceptable": [
+        "withdrawal.html"
+      ],
+      "maxRank": 3,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "catatonia",
+      "acceptable": [
+        "catatonia.md"
+      ],
+      "maxRank": 3,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "help me get ready for rounds",
+      "acceptable": [
+        "oral.html"
+      ],
+      "maxRank": 6,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    }
+  ],
+  "crisis": [
+    {
+      "query": "i want to kill myself",
+      "protocol": "pg_suicide.md"
+    },
+    {
+      "query": "she wants to die",
+      "protocol": "pg_suicide.md"
+    },
+    {
+      "query": "si",
+      "protocol": "pg_suicide.md"
+    },
+    {
+      "query": "pt is violent",
+      "protocol": "agitation.md"
+    },
+    {
+      "query": "combative in the ed",
+      "protocol": "agitation.md"
+    },
+    {
+      "query": "withdrawing from alcohol",
+      "protocol": "t_sud.md"
+    },
+    {
+      "query": "confused at night",
+      "protocol": "delirium.md"
+    },
+    {
+      "query": "cut her wrist",
+      "protocol": "pg_suicide.md"
+    },
+    {
+      "query": "she cut herself",
+      "protocol": "pg_suicide.md"
+    },
+    {
+      "query": "patient wants to leave ama",
+      "protocol": "pg_suicide.md"
+    }
+  ],
+  "itemFirst": [
+    "haldol",
+    "haldol im",
+    "im haldol",
+    "zyprexa",
+    "clozapine",
+    "akathisia",
+    "insomnia",
+    "tms",
+    "lithium level"
+  ],
+  "protocolOutrankingAliases": {
+    "capacity.html": [
+      "capacity",
+      "decisional capacity",
+      "refuses medication",
+      "refuses medications",
+      "refusing medication",
+      "refusing medications",
+      "refused medication",
+      "refused medications",
+      "refuses meds",
+      "refusing meds",
+      "refused meds",
+      "declines medication",
+      "declining medication",
+      "declined medication",
+      "refuses treatment",
+      "refusing treatment",
+      "refuses",
+      "refused",
+      "refusing",
+      "refuses to take medication",
+      "refusing to take medication",
+      "refused to take medication",
+      "declines medications",
+      "declining medications",
+      "declined medications",
+      "declines treatment",
+      "declining treatment",
+      "declined treatment"
+    ],
+    "oral.html": [
+      "rounds prep"
+    ],
+    "collateral_workflow.md": [
+      "collateral call"
+    ],
+    "t_mood.md": [
+      "not sleeping and full of energy"
+    ],
+    "motivational_interviewing.md": [
+      "mi"
+    ],
+    "bfcrs.html": [
+      "bush francis catatonia rating scale"
+    ],
+    "withdrawal.html": [
+      "clinical institute withdrawal assessment for alcohol",
+      "clinical opiate withdrawal scale",
+      "ciwa ar",
+      "cows"
+    ],
+    "suicide.md": [
+      "stanley brown safety plan"
+    ]
+  },
+  "deferred": [
+    {
+      "query": "serotonin syndrome",
+      "reason": "An alias to toxidromes.md would move the Substance Use protocol (matched on 'syndrome') off the top row. The review holds that placement for faculty until after cohort day 3."
+    },
+    {
+      "query": "neuroleptic malignant syndrome",
+      "reason": "Same as serotonin syndrome; only 'nms' is aliased."
+    },
+    {
+      "query": "ss",
+      "reason": "Reached the serotonin syndrome / NMS cases only because 'ss' sat inside 'ssnms' in their filenames. Any real route touches the held placement above."
+    },
+    {
+      "query": "ativan",
+      "reason": "Benzodiazepine names: lorazepam at 3 a.m. is as often agitation, alcohol withdrawal or a catatonia challenge, and an alias would rank the primer above those protocols in combined queries ('lorazepam catatonia'). Faculty to choose the destination."
+    },
+    {
+      "query": "cogentin",
+      "reason": "Anticholinergics: the only page naming benztropine or diphenhydramine is the toxidromes page's anticholinergic-toxicity content; routing a dystonia question there could mislead. Acute dystonia is taught nowhere yet (review task #7)."
+    },
+    {
+      "query": "dystonia",
+      "reason": "Taught nowhere yet (review task #7). Do not route to a no-anticholinergic card."
+    },
+    {
+      "query": "rigid",
+      "reason": "Ambiguous between catatonia, EPS and NMS; belongs to the fever-and-rigidity workstream (review task #7)."
+    },
+    {
+      "query": "clonus",
+      "reason": "Serotonin syndrome sign; held with serotonin syndrome."
+    },
+    {
+      "query": "wellbutrin",
+      "reason": "The primer teaches SSRIs; bupropion, SNRIs, mirtazapine and trazodone are not named on any page."
+    },
+    {
+      "query": "lamictal",
+      "reason": "Only the resident advanced psychopharmacology page names lamotrigine; nothing on the MS3 site."
+    },
+    {
+      "query": "anc",
+      "reason": "An alias would demote two protocols that 'anc' matches inside other words; retry once the protocol pass is strict."
+    },
+    {
+      "query": "emergency hold",
+      "reason": "An alias would demote the Delirium protocol ('emergency' in its summary)."
+    },
+    {
+      "query": "ect",
+      "reason": "Still opens on the suicide protocol: the safety-kit pass keeps substring matching ('ect' inside a word in that card) until faculty turn accidental crisis routes into explicit triggers."
+    },
+    {
+      "query": "hi",
+      "reason": "Still leads with the Delirium protocol for the same reason as 'ect'."
+    },
+    {
+      "query": "pulled out iv",
+      "reason": "Reaches the agitation protocol only through 'iv' inside another word; an explicit trigger (or delirium routing) is a faculty decision."
+    }
+  ]
+}

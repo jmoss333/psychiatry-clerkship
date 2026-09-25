@@ -951,10 +951,10 @@
 .fd-compass .fd-compass__week{min-width:0;margin:0;padding:14px;border:1px solid var(--fd-line);border-top:3px solid var(--fd-terracotta);border-radius:var(--fd-radius-md);background:var(--fd-surface-warm);box-shadow:var(--fd-shadow-sm)}
 .fd-compass .fd-compass__heading{margin:0 0 10px;overflow-wrap:anywhere}
 .fd-compass .fd-compass__kicker{display:block;margin:0 0 4px;color:var(--fd-terracotta-dark);font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
-[data-fd-compass-safety] a,[data-fd-compass-link],[data-fd-compass-orientation]{display:inline-flex;align-items:center}
+[data-fd-compass-safety] a,[data-fd-compass-link]{display:inline-flex;align-items:center}
 @container fd-compass (min-width:22rem){.fd-compass .fd-compass__weeks{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @container fd-compass (min-width:30rem){.fd-compass .fd-compass__weeks{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (pointer:coarse){[data-fd-compass-safety] a,[data-fd-compass-link],[data-fd-compass-orientation]{min-inline-size:44px;min-block-size:44px}}
+@media (pointer:coarse){[data-fd-compass-safety] a,[data-fd-compass-link]{min-inline-size:44px;min-block-size:44px}}
 
 .fd-article__source{display:flex;align-items:center;gap:var(--fd-space-4);font-size:var(--fd-font-sm);color:var(--fd-text-dim);padding:10px 0;border-top:1px solid var(--fd-line)}
 .fd-reading-place{margin:var(--fd-space-6) 0 0;font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-dim)}
@@ -1870,6 +1870,17 @@
 .fd-freshset{margin:0 0 var(--fd-space-9)}
 @media (max-width:640px){
   .fd-due,.fd-resume__link,.fd-lastread,.fd-freshset{min-height:44px}
+}
+/* Today's due row when practice-bank cards are due beside Daily Review ones (2026-09-24): the row
+ * keeps its look and its route to Daily Review, and the bank's share is one quieter control under
+ * it on the same terracotta rule, so the two read as one unit. Neither the group nor the control
+ * carries .fd-due, so selectors that count due rows still find exactly one. */
+.fd-due-group{margin:0 0 var(--fd-space-6)}
+.fd-due-group .fd-due,.fd-primary .fd-due-group{margin:0}
+.fd-due-group__bank{display:block;width:100%;text-align:left;margin:var(--fd-space-2) 0 0;padding:var(--fd-space-4) var(--fd-space-7);border:0;border-left:3px solid var(--fd-terracotta);background:transparent;color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-sm);font-weight:700;cursor:pointer}
+.fd-due-group__bank:hover{text-decoration:underline}
+@media (max-width:640px){
+  .fd-due-group__bank{min-height:44px}
 }
 /* Phase 2: the Resume card's block progress line ("Block · 1 of 2 done"). */
 .fd-resume__block{display:block;font-size:var(--fd-font-xs);color:var(--fd-text-dim)}

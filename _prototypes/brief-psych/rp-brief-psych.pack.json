@@ -85,7 +85,7 @@
           "“Breathe out slower than you breathe in — I’ll count with you.”"
         ],
         "evidence": "Skills-containing DBT arms outperform for self-injury in dismantling trials.",
-        "caution": "A distress-tolerance skill is for riding out a wave — not a substitute for a safety assessment when risk is present.",
+        "caution": "A distress-tolerance skill is for riding out a wave — not a substitute for a safety assessment when risk is present. Check with the medical team before using the cold-water or intense-exercise steps in a patient with a heart condition, a low baseline heart rate (including from an eating disorder), or heart-rate-lowering medication such as a beta-blocker.",
         "handoff": "Note which skill helped so it can be rehearsed and carried to outpatient DBT.",
         "localHookId": "bp.local_groups",
         "citationIds": ["linehan2015"]
@@ -127,7 +127,7 @@
       {
         "id": "mi", "name": "Motivational Interviewing (brief)", "mechanism": "Motivational conflict",
         "steps": [
-          { "n": 1, "t": "Roll with resistance — don’t argue the change side; that entrenches it." },
+          { "n": 1, "t": "Respond to sustain talk and discord without arguing — don’t argue the change side; that entrenches it." },
           { "n": 2, "t": "Ask open questions; reflect and affirm autonomy." },
           { "n": 3, "t": "Evoke change talk: “what would be different if…?”, importance/confidence rulers (0–10)." },
           { "n": 4, "t": "Summarize the patient’s own reasons; ask permission before advising." }

@@ -1,0 +1,132 @@
+[
+ {
+  "id": "M02-011",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "The Ray persona does build in a smell, headaches on waking, feeling worse 'whenever the heat kicked on' and a metallic taste, all tied to the vents, and nothing in the hints or debrief prompts an environmental or neurologic rule-out. The finding stands. The reviewer's correction asks for 'a carbon-monoxide check', but on day 2 of an inpatient stay a COHb level will be normal, since the exposure ended at admission. CO is also odorless, so the smell and taste do not point to CO specifically. The correction is narrowed to the actionable questions: is anyone else in the building affected, and is there a working CO detector. The olfactory/gustatory point is kept as a neurologic differential.",
+  "evidence": "recall (standard CO-poisoning teaching: headache worse at home and with heating in use, others in the household affected; COHb falls within hours once exposure ends; olfactory/gustatory phenomena prompt a neurologic workup). Case text: M02 Ray explore_belief_neutral and onset_function lines.",
+  "correction": "Medications, head injury, fever — the organic screen matters in new psychosis. His morning headaches that worsen when the heat runs, the smell and the metallic taste deserve a real answer too: ask whether anyone else in the building has symptoms and whether the apartment has a working carbon-monoxide detector, and remember that smell/taste phenomena widen the neurologic differential.",
+  "problem": "Ray's scripted environmental and sensory symptoms (headaches on waking that worsen with the heat, a smell, a metallic taste) fit a combustion-gas/CO exposure and also widen the neurologic differential. The organic-screen hint never prompts either, so learners are taught to fold these symptoms into the delusion. A COHb level would not help on hospital day 2, so the prompt should be an exposure history, not a lab.",
+  "confidence": "medium"
+ },
+ {
+  "id": "M05-001",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "The gap is confirmed. The toxidromes rule-out list for a febrile, altered or rigid patient leaves out alcohol/sedative withdrawal (DTs) and sympathomimetic toxicity, both standard parts of the drug-associated hyperthermia differential. Severity is lowered from Major to Moderate. This is an omission in a list scoped to psychotropic-associated syndromes, not a false statement, and the sibling Delirium and consult pages cover withdrawal explicitly.",
+  "evidence": "recall (ASAM Alcohol Withdrawal Management Guideline 2020; standard toxicology texts on the hyperthermic differential); page context M05 toxidromes.md and delirium.md.",
+  "correction": "- Malignant hyperthermia\n- Alcohol/sedative-hypnotic withdrawal (delirium tremens)\n- Sympathomimetic toxicity (cocaine, amphetamines)",
+  "problem": "The rule-out list leaves out alcohol/sedative withdrawal (DTs) and sympathomimetic toxicity, two common causes of fever, altered mental status and autonomic instability. It is an omission, not a misstatement.",
+  "confidence": "high"
+ },
+ {
+  "id": "M05-002",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "The page's universal first-move sentence names only infection and heat stroke before narrowing to the four drug syndromes. No other sentence on toxidromes.md brings in withdrawal or stimulants. The correction drops in grammatically and adds no error.",
+  "evidence": "recall (ASAM Alcohol Withdrawal Management Guideline 2020; standard toxicology teaching).",
+  "correction": "rule out infection, heat stroke, alcohol/sedative withdrawal, and stimulant toxicity — then discriminate",
+  "confidence": "high"
+ },
+ {
+  "id": "M05-003",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "The firstMove card has the same gap as the page sentence, and it is shown without the page around it. The correction is a grammatical drop-in, and the card's text continues '— then discriminate by reflexes and skin'.",
+  "evidence": "recall (ASAM Alcohol Withdrawal Management Guideline 2020).",
+  "correction": "send a CK, and rule out infection, heat stroke, alcohol/sedative withdrawal, and stimulant toxicity",
+  "confidence": "high"
+ },
+ {
+  "id": "M01-004",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "The week2 key point calls the Bush-Francis screen 'diagnostic'. The screening items are a screen: a positive screen prompts a full rating and assessment against diagnostic criteria. The lorazepam challenge is what both supports the diagnosis and begins treatment, which is how ddx.md frames it ('diagnostic and therapeutic'). The correction does not claim that a negative challenge excludes catatonia, which is right, because non-response does not rule it out.",
+  "evidence": "recall: Bush G et al., Acta Psychiatr Scand 1996;93:129-136 (14-item screening instrument, 2 or more items positive); DSM-5-TR catatonia criteria (3 or more of 12); internal cross-check with M03 ddx.md §5.",
+  "correction": "a positive screen prompts a supervised diagnostic assessment, and a lorazepam challenge both supports the diagnosis and begins treatment",
+  "confidence": "high"
+ },
+ {
+  "id": "RD-001",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "Confirmed: the resident welcome drops the MS3 page's safety/escalation aside and says 'run the acute calls ... with the bedside tools'. Neither the welcome page nor supervision_teaching.md (R01) lists the circumstances that need real-time attending communication, and ACGME requires programs to define them. The reviewer's enumerated list is plausible, but written as bare fact it becomes program policy. The correction therefore ties the list to the program's supervision policy and adds 'whenever you are unsure'.",
+  "evidence": "ACGME Common Program Requirements (Residency) VI.A.2 (programs set guidelines for circumstances requiring communication with supervising faculty), by recall; 42 CFR 482.13(e) restraint/seclusion, by recall. Page context: RD welcome.md diff; R01 supervision_teaching.md has no notification list.",
+  "correction": "**Your responsibilities** — Own the workup and plan for your patients; run the acute calls (suicide, violence, agitation, capacity, withdrawal, delirium, catatonia) with the bedside tools, bringing your supervising attending in real time, per the program's supervision policy, for restraint or seclusion, involuntary holds or treatment over objection, high-risk or against-medical-advice discharges, consequential capacity determinations, any acute deterioration, and whenever you are unsure; document defensibly; and teach the student — orienting them, giving feedback, and modeling the work.",
+  "problem": "The resident welcome replaces the MS3 page's escalation aside with 'run the acute calls ... with the bedside tools'. No resident page states which decisions need real-time attending involvement. The list added here is a program-policy statement, and the program director should confirm it matches MMC's written supervision policy.",
+  "confidence": "medium"
+ },
+ {
+  "id": "AQ1-008",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "The PubMed abstract confirms the tested intervention was SPI+ (SPI plus at least 2 telephone follow-up contacts) in a non-randomized cohort comparison at 9 VA EDs: 3.03% vs 5.29%, OR 0.56 (0.33-0.95), described as '45% fewer suicidal behaviors, approximately halving the odds'. 'Dramatic 50% reduction' credited to the plan alone overstates the result. The keyed option's 'halve' matches the paper's own 'approximately halving the odds' and can stay.",
+  "evidence": "Stanley B et al., JAMA Psychiatry 2018;75(9):894-900, PMID 29998307, doi:10.1001/jamapsychiatry.2018.1776 (PubMed abstract).",
+  "correction": "Paired with structured follow-up phone calls, the intervention was associated with about 45% fewer suicidal behaviors over 6 months (3.0% vs 5.3%; OR 0.56) in a large non-randomized VA emergency-department cohort comparison (Stanley et al., 2018).",
+  "confidence": "high"
+ },
+ {
+  "id": "R05-001",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "The Cipriani 2013 figures are correct (48 RCTs, 6,674 participants, suicide OR 0.13, all-cause death OR 0.38). The PubMed abstract confirms Katz 2022 (n=519, veterans with a recent suicide-related event) was stopped for futility, HR 1.10 (0.77-1.55). 'The strongest evidence for any pharmacological anti-suicide intervention' ignores that null trial and also clozapine's RCT evidence in schizophrenia. The correction's 'in mood disorders' scoping avoids that conflict, and it also drops 'completed suicides'.",
+  "evidence": "Katz IR et al., JAMA Psychiatry 2022;79(1):24-32, PMID 34787653, doi:10.1001/jamapsychiatry.2021.3170 (PubMed abstract); Cipriani A et al., BMJ 2013;346:f3646 (recall).",
+  "correction": "Meta-analysis of 48 RCTs (6,674 participants) finding fewer suicides with lithium than placebo (OR 0.13, based on few events) and fewer deaths from any cause (OR 0.38). Still the main pharmacological anti-suicide signal in mood disorders, but read it with the VA Li+ Plus RCT (Katz et al., JAMA Psychiatry 2022), which was stopped for futility after lithium added to usual care did not reduce suicide-related events.",
+  "confidence": "high"
+ },
+ {
+  "id": "M11-008",
+  "verdict": "confirmed",
+  "severity": "Minor",
+  "reason": "The MDD MS3 case has no crisis-block hook, but its Q7 is a passive-SI assessment and safety-planning exercise. The panic COTW (MS3 and res), whose Q6 is a comparable screen-and-safety-plan question, does carry the block, so the scope rule is being applied unevenly. The 2026-09-01 remediation applied the supervision sentence from MS3V10-F010 and not the marker, and the finding is not on rejected.json. Severity is lowered to Minor: this is a policy-consistency gap, with no clinical misstatement and no patient-harm pathway.",
+  "evidence": "Chunk survey of every COTW page for crisis-block-hook (M10/M11/M12/R02-R05); prior_findings_2026-09-01.json MS3V10-F010; rejected.json; CLAUDE.md crisis-block scope rule.",
+  "correction": "When in doubt about safety, arrange same-day evaluation, and bring your supervising resident or attending in before any disposition is settled.\n\n<!-- crisis-block -->",
+  "confidence": "medium"
+ },
+ {
+  "id": "R02-006",
+  "verdict": "confirmed",
+  "severity": "Minor",
+  "reason": "The FEP resident Q7 has the resident plan a discharge disposition with a written safety plan that names 'crisis resources'. That is squarely 'planning disposition' under the scope rule, and the page carries no hook, while the BPD and panic resident COTWs do. Severity is lowered to Minor: this is policy conformance, and the clinical teaching is sound.",
+  "evidence": "Chunk survey of COTW pages for crisis-block-hook; R02 cotw_20260907_fep_res.md Q7 text; CLAUDE.md crisis-block scope rule.",
+  "correction": "Keep documentation at the level of recognition, protective factors, and escalation thresholds.\n\n<!-- crisis-block -->",
+  "confidence": "high"
+ },
+ {
+  "id": "M03-004",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "ddx.md §3 makes 'explicit C-SSRS + collaborative safety plan' the whole first move. The scaffold says nothing about means/firearm access, intoxication or collateral, which the curriculum teaches elsewhere as the assessment. The correction keeps C-SSRS as a named structure only, which is consistent with the no-reproduction rule. It adds the missing elements and drops in grammatically.",
+  "evidence": "recall: Joint Commission NPSG 15.01.01 EP 2 (validated screening tool) vs EP 3 (evidence-based assessment); APA Practice Guideline for the Psychiatric Evaluation of Adults (2016).",
+  "correction": "- **First move:** a direct suicide risk assessment (C-SSRS can structure the questions; add means/firearm access, intoxication and collateral) + collaborative safety plan;",
+  "confidence": "medium"
+ },
+ {
+  "id": "M01-010",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "In the mse.html pearl, '\"Denies SI/HI\" is not optional' reads as requiring that shorthand. The pocket guide in the same chunk warns against exactly that shorthand ('\"Denies\" alone -> include what you asked...'; '\"Denies SI/HI — no risk\" is not a risk assessment'). The correction resolves the conflict and drops in as a drop-in.",
+  "evidence": "Internal cross-check: M01 lines 911 and 1097 against 1184.",
+  "correction": "Always document suicidal and homicidal ideation explicitly — including their absence, with what you asked (e.g., \"denies SI/HI when asked directly about thoughts, plan, and recent steps\").",
+  "confidence": "medium"
+ },
+ {
+  "id": "M01-001",
+  "verdict": "confirmed",
+  "severity": "Moderate",
+  "reason": "The orientation 'Escalate immediately' list sets the threshold at intent/plan/means and 'threats'. The Interview & MSE pocket guide says any positive answer to the SI/HI questions goes to the resident or attending now. The Single Safety Rule above the list ('worried about immediate safety') does not close the gap, because students cannot judge intent reliably. 'Newly disclosed' in the correction keeps the rule workable on a unit where many admissions carry known SI.",
+  "evidence": "Internal cross-check with M01 pg_interview.md ('A positive answer anywhere above goes to your resident or attending now'); recall for Joint Commission NPSG 15.01.01.",
+  "correction": "- Any new or newly disclosed suicidal thoughts (even passive or without a plan), current suicidal intent, new plan, preparatory behavior, access to lethal means, or sudden worsening.\n- Thoughts of harming or killing someone (especially a named person), threats toward others, or escalating agitation.",
+  "confidence": "high"
+ },
+ {
+  "id": "M01-002",
+  "verdict": "modified",
+  "severity": "Moderate",
+  "reason": "The key-point card has the same threshold gap as M01-001. The correction adds 'or newly disclosed' so the card matches the M01-001 page text and does not suggest that known, previously assessed SI on an admitted patient is a new emergency every time it is mentioned. It stays a grammatical drop-in before ', confusion/fever/rigidity ...'.",
+  "evidence": "Internal cross-check with M01 pg_interview.md and orientation.md.",
+  "correction": "Escalate immediately for: any new or newly disclosed suicidal or homicidal thoughts, current suicidal intent or new plan, threats or escalating agitation",
+  "problem": "The key-point card sets escalation at intent/new plan and 'threats', leaving out SI/HI disclosed without intent or an overt threat. The wording should match the corrected page list (M01-001).",
+  "confidence": "high"
+ }
+]

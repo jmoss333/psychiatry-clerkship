@@ -84,7 +84,7 @@ The definitive meta-analysis establishing ECT's superiority over sham (SES −0.
 
 **17. Cipriani et al., "Lithium in the Prevention of Suicide in Mood Disorders," BMJ 2013**
 
-Meta-analysis of 48 RCTs (6,674 participants) demonstrating lithium reduces completed suicides (OR 0.13) and deaths from any cause (OR 0.38). The strongest evidence for any pharmacological anti-suicide intervention.
+Meta-analysis of 48 RCTs (6,674 participants) finding fewer suicides with lithium than placebo (OR 0.13, based on few events) and fewer deaths from any cause (OR 0.38). Still the main pharmacological anti-suicide signal in mood disorders, but read it with the VA Li+ plus RCT (Katz et al., JAMA Psychiatry 2022) in veterans with a recent suicide-related event, which was stopped for futility after lithium added to usual care did not reduce repeat suicide-related events.
 
 **18. BALANCE Trial — Geddes et al., "Lithium Plus Valproate Combination Therapy vs Monotherapy for Bipolar I Disorder," Lancet 2010**
 
@@ -326,7 +326,7 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 
 **116.** Raskind et al., "Trial of Prazosin for PTSD in Military Veterans (PACT)," NEJM 2018 — Pivotal negative trial: prazosin no benefit over placebo
 
-**117.** Mitchell et al., "MDMA-Assisted Therapy for Severe PTSD (Phase 3)," Nature Medicine 2021 — CAPS-5 d=0.91; 67% no longer met PTSD criteria
+**117.** Mitchell et al., "MDMA-Assisted Therapy for Severe PTSD (Phase 3)," Nature Medicine 2021 — CAPS-5 d=0.91; 67% no longer met PTSD criteria. Not FDA-approved: the FDA declined approval in 2024 (complete response letter) over trial-design and data concerns
 
 **118.** Shalev et al., "Post-Traumatic Stress Disorder," NEJM 2017 — Definitive clinical review
 
@@ -482,7 +482,7 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 
 **186.** HEALing Communities Study Consortium, "Community-Based Cluster-Randomized Trial to Reduce Opioid Overdose Deaths," NEJM 2024 — No significant reduction in OOD (aRR 0.91)
 
-**187.** ASAM/AAAP, "Clinical Practice Guideline on Management of Stimulant Use Disorder," 2024 — CM only efficacious intervention; strong recommendation
+**187.** ASAM/AAAP, "Clinical Practice Guideline on Management of Stimulant Use Disorder," 2024 — CM is the standard of care and has the strongest evidence; CBT and community reinforcement approach also recommended, and off-label pharmacotherapy (e.g., bupropion + naltrexone for methamphetamine use disorder) may be considered
 
 **188.** Gray et al., "N-Acetylcysteine in Cannabis-Dependent Adolescents," AJP 2012 — First positive pharmacotherapy RCT (OR 2.4 with CM)
 

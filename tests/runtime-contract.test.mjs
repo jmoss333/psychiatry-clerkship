@@ -14,8 +14,21 @@ import {
   currentRuntimeErrors,
 } from '../bin/check-runtime-contract.mjs';
 import { evaluateReceipt } from '../bin/devcontainer-receipt.mjs';
+import { scrubInheritedGitEnv } from './_git_env.mjs';
+
+// Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrubInheritedGitEnv();
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+test('full-clone onboarding initializes only clone-local LFS filters, never inherited hooks', () => {
+  const guide = readFileSync(resolve(ROOT, '.devcontainer/README.md'), 'utf8');
+  const install = guide.match(/^git -C .* lfs install (.+)$/m);
+  assert.ok(install, 'onboarding must initialize LFS filters');
+  assert.deepEqual(install[1].trim().split(/\s+/).sort(), ['--local', '--skip-repo', '--skip-smudge']);
+  assert.match(guide, /GIT_LFS_SKIP_SMUDGE=1 git -c core\.hooksPath="\$clone_parent\/repo\/\.git\/hooks" clone --no-hardlinks/);
+  assert.match(guide, /git -C "\$clone_parent\/repo" -c core\.hooksPath="\$clone_parent\/repo\/\.git\/hooks" lfs checkout/);
+});
 
 for (const file of ['README.md', 'CLAUDE.md']) {
   test(`Dev Container receipt documentation states manual proof and status boundaries in ${file}`, () => {
@@ -23,7 +36,9 @@ for (const file of ['README.md', 'CLAUDE.md']) {
     assert.match(source, /Verify Dev Container/);
     assert.match(source, /output\/devcontainer\/verification-receipt\.json/);
     assert.match(source, /full gate is deliberately manual/i);
-    assert.match(source, /automatically installs locked dependencies and runs only the fast runtime contract/i);
+    assert.match(source, /python3 bin\/devcontainer-preflight\.py/);
+    assert.match(source, /fast runtime contract/i);
+    assert.match(source, /not that it is the latest remote main/i);
     assert.match(source, /green means the receipt passed for the current clean tracked commit/i);
     assert.match(source, /red means the current commit's latest attempt failed/i);
     assert.match(source, /gray means no current proof exists[\s\S]*?stale[\s\S]*?different commit/i);
@@ -189,11 +204,8 @@ test('container builds and installs only the repository-owned receipt status VSI
   assert.doesNotMatch(`${dockerfile}\n${bootstrap}`, /marketplace|https?:\/\//i);
 });
 
-test('container bootstrap retains LFS, forwarded-credential, and final runtime checks', () => {
+test('container bootstrap retains final runtime check after preflight and installation', () => {
   const bootstrap = readFileSync(resolve(ROOT, '.devcontainer/post-create.sh'), 'utf8');
-  assert.match(bootstrap, /check_lfs_media\.py --worktree-stubs \./);
-  assert.match(bootstrap, /SSH_AUTH_SOCK/);
-  assert.match(bootstrap, /git config --get-all credential\.helper/);
   assert.match(bootstrap, /check-runtime-contract\.mjs --current/);
 });
 
@@ -377,20 +389,31 @@ test('smoke verification passes a hostile-space artifact override as one argumen
   assert.deepEqual(args.slice(-3), ['--reporter=list', '--output', 'override path/[odd]']);
 });
 
-test('container verifier clears inherited smoke selectors before its authoritative smoke stage', () => {
+for (const shellPython of [false, true]) test(`container verifier clears inherited smoke selectors before its authoritative smoke stage (shell Python: ${shellPython})`, () => {
   const fixture = mkdtempSync(resolve(tmpdir(), 'verify-devcontainer-'));
   const trace = resolve(fixture, 'trace.log');
   const fakeBin = resolve(fixture, 'fake-bin');
+  const inheritedBin = resolve(fixture, 'inherited-bin');
 
   try {
     mkdirSync(resolve(fixture, 'bin'), { recursive: true });
     mkdirSync(resolve(fixture, '.venv/bin'), { recursive: true });
     mkdirSync(fakeBin);
+    mkdirSync(inheritedBin);
+    if (shellPython) {
+      // Reproduce a pyenv-style launcher without requiring pyenv on this host.
+      // It resolves bash through PATH, where this test's traced bash comes first.
+      writeFileSync(resolve(inheritedBin, 'python3'), '#!/usr/bin/env bash\nexit 0\n');
+      chmodSync(resolve(inheritedBin, 'python3'), 0o755);
+    }
     writeFileSync(
       resolve(fixture, 'bin/verify-devcontainer.sh'),
       readFileSync(resolve(ROOT, 'bin/verify-devcontainer.sh')),
     );
     writeFileSync(resolve(fixture, '.venv/bin/python3'), '');
+    writeFileSync(resolve(fixture, 'bin/devcontainer-preflight.py'), '');
+    // This fixture tests verifier routing, not the host's Python launcher.
+    writeFileSync(resolve(fakeBin, 'python3'), '#!/bin/sh\ntest "$#" -eq 3 && test "$1" = bin/devcontainer-preflight.py && test "$2" = --context && test "$3" = container\n');
     writeFileSync(resolve(fakeBin, 'node'), '#!/bin/sh\nprintf "runtime\\n" >> "$TRACE"\n');
     writeFileSync(resolve(fakeBin, 'bash'), `#!/bin/sh
 printf '%s:%s\\n' "$1" "\${SPECS-<unset>}" >> "$TRACE"
@@ -403,6 +426,7 @@ esac
     for (const path of [
       resolve(fixture, 'bin/verify-devcontainer.sh'),
       resolve(fixture, '.venv/bin/python3'),
+      resolve(fakeBin, 'python3'),
       resolve(fakeBin, 'node'),
       resolve(fakeBin, 'bash'),
     ]) chmodSync(path, 0o755);
@@ -413,7 +437,7 @@ esac
       env: {
         ...process.env,
         CLERKSHIP_DEVCONTAINER: '1',
-        PATH: `${fakeBin}:${process.env.PATH}`,
+        PATH: `${fakeBin}:${inheritedBin}:${process.env.PATH}`,
         SPECS: 'visual.spec.js --update-snapshots',
         TRACE: trace,
       },
@@ -445,6 +469,7 @@ function withVerifierFixture(run) {
     writeFileSync(resolve(fixture, 'bin/devcontainer-receipt.mjs'), readFileSync(resolve(ROOT, 'bin/devcontainer-receipt.mjs')));
     writeFileSync(resolve(fixture, '.gitignore'), '.venv/\noutput/\ntrace.log\ngate-started.marker\n');
     writeFileSync(resolve(fixture, 'tests/smoke/package.json'), JSON.stringify({ devDependencies: { '@playwright/test': '1.63.0' } }));
+    writeFileSync(resolve(fixture, 'bin/devcontainer-preflight.py'), 'import os, sys\nwith open(os.environ["TRACE"], "a") as f: f.write("preflight\\n")\nsys.exit(1 if os.environ.get("FAIL_STAGE") == "preflight" else 0)\n');
     writeFileSync(resolve(fixture, '.venv/bin/python3'), '#!/bin/sh\necho "Python 3.11.9"\n');
     writeFileSync(resolve(fixture, '.devcontainer/install-dependencies.sh'), '#!/bin/bash\necho dependencies >> "$TRACE"\nif [ "${FAIL_STAGE:-}" = dependencies ]; then exit 1; fi\nmkdir -p .venv/bin\nprintf "#!/bin/sh\\necho Python 3.11.9\\n" > .venv/bin/python3\nchmod +x .venv/bin/python3\n');
     writeFileSync(resolve(fixture, 'bin/check-runtime-contract.mjs'), 'import { appendFileSync } from "node:fs";\nappendFileSync(process.env.TRACE, "runtime-contract\\n");\nif (process.env.FAIL_STAGE === "runtime-contract") process.exit(1);\n');
@@ -493,12 +518,50 @@ test('receipt-enabled verifier records success only after every authoritative st
     deployLfsBrowserCoverage: 'not-proved-without-deploy-url',
   });
   assert.deepEqual(readFileSync(trace, 'utf8').trim().split('\n'), [
-    'dependencies', 'runtime-contract', 'full-gate:<unset>',
+    'preflight', 'dependencies', 'runtime-contract', 'full-gate:<unset>',
     'nonvisual-smoke:<unset>:/tmp/clerkship-playwright-artifacts',
   ]);
   assert.equal(existsSync(receiptPath), true, 'the receipt must remain at its normal path');
   assert.match(result.stdout, /Playwright artifacts: \/tmp\/clerkship-playwright-artifacts/);
 }));
+
+test('failed preflight revokes old green before dependency installation', () => withVerifierFixture(({ fixture, receiptPath, trace, env, args }) => {
+  assert.equal(spawnSync('/bin/bash', args, { cwd: fixture, env }).status, 0);
+  writeFileSync(trace, '');
+  const result = spawnSync('/bin/bash', args, { cwd: fixture, env: { ...env, FAIL_STAGE: 'preflight' }, encoding: 'utf8' });
+  assert.equal(result.status, 1, result.stderr);
+  assert.equal(readFileSync(trace, 'utf8'), 'preflight\n');
+  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+  assert.equal(receipt.stage, 'preflight');
+  assert.equal(receipt.status, 'failed');
+  assert.equal(receiptStatus(fixture, receiptPath).state, 'failed');
+}));
+
+test('bootstrap refuses failed or unknown preflight before installing dependencies or extensions', () => {
+  const fixture = mkdtempSync(resolve(tmpdir(), 'bootstrap-preflight-'));
+  try {
+    mkdirSync(resolve(fixture, '.devcontainer'));
+    mkdirSync(resolve(fixture, 'bin'));
+    const trace = resolve(fixture, 'trace');
+    writeFileSync(resolve(fixture, '.devcontainer/post-create.sh'), readFileSync(resolve(ROOT, '.devcontainer/post-create.sh')));
+    writeFileSync(resolve(fixture, 'bin/devcontainer-preflight.py'), 'import os, sys\nwith open(os.environ["TRACE"], "a") as f: f.write("preflight\\n")\nsys.exit(int(os.environ["PREFLIGHT_CODE"]))\n');
+    for (const step of ['install-dependencies', 'install-local-extension']) {
+      writeFileSync(resolve(fixture, `.devcontainer/${step}.sh`), `echo ${step} >> "$TRACE"\n`);
+    }
+    writeFileSync(resolve(fixture, 'bin/check-runtime-contract.mjs'), 'import {appendFileSync} from "node:fs"; appendFileSync(process.env.TRACE,"runtime\\n");');
+    for (const code of [1, 2, 0]) {
+      writeFileSync(trace, '');
+      const result = spawnSync('/bin/bash', ['.devcontainer/post-create.sh'], {
+        cwd: fixture, encoding: 'utf8', env: { ...process.env, CLERKSHIP_DEVCONTAINER: '1', TRACE: trace, PREFLIGHT_CODE: String(code) },
+      });
+      assert.equal(result.status, code, result.stderr);
+      assert.equal(readFileSync(trace, 'utf8'), code === 0
+        ? 'preflight\ninstall-dependencies\ninstall-local-extension\nruntime\n' : 'preflight\n');
+    }
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
 
 test('receipt-enabled verifier cannot certify a dirty start after the tracked file is restored', () => withVerifierFixture(({ fixture, receiptPath, head, env, args }) => {
   const tracked = resolve(fixture, 'bin/verify.sh');

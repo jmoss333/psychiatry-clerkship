@@ -52,7 +52,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 14. **Fudala et al.** — Buprenorphine/Naloxone for Opioid Use Disorder (Buprenorphine)
 15. **Saitz et al.** — Symptom-Triggered Benzodiazepine Dosing for Alcohol Withdrawal (Benzodiazepines)
 16. **Pillinger et al.** — Metabolic Effects of 18 Antipsychotics (Antipsychotics)
-17. **Kaul et al.** — Xanomeline-Trospium: The First Non-Dopaminergic Antipsychotic (Novel Mechanism)
+17. **Kaul et al.** — Xanomeline-Trospium: The First Non-D2-Blocking (Muscarinic) Antipsychotic for Schizophrenia (Novel Mechanism)
 18. **Hammad et al. / Bridge et al.** — The FDA Black Box Warning (Antidepressants in Youth) · *(in the landmark set)*
 19. **Furukawa et al.** — Optimal SSRI Dosing (SSRIs)
 20. **Lichtenstein et al.** — ADHD Medication Reduces Criminality (Stimulants)

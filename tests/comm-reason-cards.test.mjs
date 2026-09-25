@@ -103,26 +103,110 @@ test('malformed or absent data yields no cards rather than throwing', () => {
 
 // ---- derived grade --------------------------------------------------------------------------
 
+// applyGrade compares its grade against string literals and sends EVERYTHING else — a number, a
+// lowercase 'good', undefined — to its final branch, which is Easy. From ca62dbb until this was
+// pinned, srsGradeForQuality returned 3/2/1, so every COMM# and REASON# card was graded Easy: a
+// 'harmful' choice came back in four days with no lapse counted. The set is read from the
+// grader's own source so a derived grade is checked against what applyGrade actually names.
+const DAY = 86400000;
+const NAMED_GRADES = new Set([
+  ...repo('13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js')
+    .matchAll(/grade===\s*'(\w+)'/g)].map((m) => m[1]));
+
+// Every quality the three datasets actually author — so a quality added to the data is checked
+// the day it lands, not when someone remembers to list it here.
+const AUTHORED_QUALITIES = new Set();
+for (const data of [commCases, reasonCases, reasonResident]) {
+  for (const c of data.cases) {
+    for (const ch of c.choices || []) AUTHORED_QUALITIES.add(ch.quality);
+    for (const s of c.steps || []) for (const ch of s.choices || []) AUTHORED_QUALITIES.add(ch.quality);
+  }
+}
+
+// Grade through the real store and the real applyGrade, bracketing the clock so `due` is checked
+// against the wall time the grader itself read — no Date stub.
+function gradeTimed(api, id, quality) {
+  const before = Date.now();
+  const card = api.srsGradeCard(id, api.srsGradeForQuality(quality));
+  return { card, before, after: Date.now() };
+}
+const near = (a, b) => Math.abs(a - b) < 1e-9;
+
 test('the grade follows the option quality, and an unknown quality is a lapse', () => {
   const { api } = evalStore();
-  assert.equal(api.srsGradeForQuality('best'), 3, 'a best answer is Good, never Easy');
-  assert.equal(api.srsGradeForQuality('partial'), 2);
-  assert.equal(api.srsGradeForQuality('missed'), 1);
-  assert.equal(api.srsGradeForQuality('harmful'), 1);
-  assert.equal(api.srsGradeForQuality('some_new_quality'), 1,
+  assert.equal(api.srsGradeForQuality('best'), 'Good', 'a best answer is Good, never Easy');
+  assert.equal(api.srsGradeForQuality('partial'), 'Hard');
+  assert.equal(api.srsGradeForQuality('missed'), 'Again');
+  assert.equal(api.srsGradeForQuality('harmful'), 'Again');
+  assert.equal(api.srsGradeForQuality('some_new_quality'), 'Again',
     'a quality added to the data later must not quietly lengthen an interval');
-  assert.equal(api.srsGradeForQuality(undefined), 1);
+  assert.equal(api.srsGradeForQuality(undefined), 'Again');
+});
+
+test('every derived grade is one applyGrade names — anything else falls through to Easy', () => {
+  assert.ok(NAMED_GRADES.size >= 3 && NAMED_GRADES.has('Again'),
+    `read the grader's named grades, got ${JSON.stringify([...NAMED_GRADES])}`);
+  assert.equal(NAMED_GRADES.has('Easy'), false, 'Easy is the fall-through branch, not a named one');
+  for (const q of ['best', 'partial', 'missed', 'harmful']) {
+    assert.ok(AUTHORED_QUALITIES.has(q), `the datasets no longer author '${q}' — re-read this pin`);
+  }
+  const { api } = evalStore();
+  for (const q of [...AUTHORED_QUALITIES, 'some_new_quality', undefined, null, 3]) {
+    const g = api.srsGradeForQuality(q);
+    assert.ok(NAMED_GRADES.has(g),
+      `quality ${JSON.stringify(q)} -> grade ${JSON.stringify(g)}, which applyGrade treats as Easy`);
+  }
+});
+
+test('a first rep through the real grader: best and partial return in a day, worse is due now', () => {
+  const { api } = evalStore();
+  for (const q of ['best', 'partial']) {
+    const { card, before, after } = gradeTimed(api, `COMM#first-${q}`, q);
+    assert.equal(card.ivl, 1, `${q}: a one-day interval, not Easy's four`);
+    assert.equal(card.lapses, 0, `${q}: not a lapse`);
+    assert.ok(card.due >= before + DAY && card.due <= after + DAY,
+      `${q}: due in one day, got ${(card.due - before) / DAY} days`);
+  }
+  for (const q of ['missed', 'harmful', 'some_new_quality', undefined]) {
+    const { card, before, after } = gradeTimed(api, `REASON#c#first-${q}`, q);
+    assert.equal(card.lapses, 1, `${q}: a wrong choice counts as a lapse`);
+    assert.ok(card.due >= before && card.due <= after,
+      `${q}: due now, got ${(card.due - before) / DAY} days out`);
+  }
+});
+
+test('a later rep: best keeps ease, partial lowers it, a wrong choice lapses and is due now', () => {
+  // After the first rep the interval alone cannot tell Good from Easy (both round to 3 days
+  // from a 1-day card); ease can — Easy adds 0.15 every time.
+  const { api } = evalStore();
+  const secondRep = (q) => {
+    const id = `COMM#later-${q}`;
+    api.srsGradeCard(id, api.srsGradeForQuality('best'));
+    return gradeTimed(api, id, q);
+  };
+  let r = secondRep('best');
+  assert.ok(near(r.card.ease, 2.5), `best: Good leaves ease at 2.5, got ${r.card.ease}`);
+  assert.equal(r.card.lapses, 0);
+  r = secondRep('partial');
+  assert.ok(near(r.card.ease, 2.35), `partial: Hard lowers ease to 2.35, got ${r.card.ease}`);
+  assert.equal(r.card.lapses, 0);
+  for (const q of ['missed', 'harmful']) {
+    r = secondRep(q);
+    assert.equal(r.card.lapses, 1, `${q}: lapse counted on a started card`);
+    assert.ok(near(r.card.ease, 2.3), `${q}: Again lowers ease to 2.3, got ${r.card.ease}`);
+    assert.ok(r.card.due >= r.before && r.card.due <= r.after, `${q}: re-dued immediately`);
+  }
 });
 
 test('srsGradeCard writes cards and never touches the retention stats', () => {
   const { api, mem } = evalStore();
-  const card = api.srsGradeCard('COMM#x', 3);
+  const card = api.srsGradeCard('COMM#x', 'Good');
   assert.ok(card && card.due > 0 && card.reps === 1);
   const saved = JSON.parse(mem.get('cw_srs_v1'));
   assert.ok(saved.cards['COMM#x'], 'the card is persisted under its id');
   assert.deepEqual(saved.stats, { streak: 0, lastStudy: '', totalReviews: 0, correct: 0, seen: 0 },
     'Retention counts only what Daily Review itself served');
-  assert.equal(api.srsGradeCard('', 3), null, 'an empty id writes nothing');
+  assert.equal(api.srsGradeCard('', 'Good'), null, 'an empty id writes nothing');
 });
 
 // ---- wiring ---------------------------------------------------------------------------------

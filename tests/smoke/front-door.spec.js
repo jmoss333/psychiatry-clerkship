@@ -17,7 +17,15 @@ const READING_FAILURE = 'Reading place could not be saved on this device';
 
 // Three synthetic sections keep this an ordinary reading (the field-guide enhancer owns H2s).
 // Long neutral paragraphs make the second and third anchors reachable at phone height.
+// The page's governance is pinned too, not read from the live ledger. A high-risk page that is
+// pending (or has drifted since its attestation) renders a pending-high notice whose deferred
+// focus -- taken when the startup gate opens or governance.json settles -- scrolls the notice
+// into view. That can land after the reading-place restore and reads as the learner scrolling
+// to the top. t_mood.md drifted on 2026-09-24 (#763) and this suite went intermittently red for
+// it: a test of the reading place, failing on the faculty's queue (CLAUDE.md: never depend on
+// live governance state). Pinning it reviewed/low keeps these tests about the reading place.
 async function controlledReading(page, ref = READING_REF) {
+  await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
   const filler = 'A short note about organizing study time. '.repeat(28);
   const markdown = '# Study notes\n\n' + [1, 2, 3].map(n =>
     `### Section ${n}\n\n${filler}\n\n${filler}\n`).join('\n');
@@ -128,6 +136,23 @@ test('reading place: a removed heading opens at top and deletes only that readin
   await expectHealthy(page);
 });
 
+// "Before the debounce" is arranged inside ONE page task, not across Playwright round trips.
+// The controller binds the page's own setTimeout when the reader mounts, so a page.clock
+// installed afterwards does not hold its 150 ms debounce: it runs on real time. These tests
+// used to install the clock and fast-forward it; on a loaded runner the real debounce fired
+// between two round trips and the test either failed (the abandoned section was saved first,
+// then the top anchor) or passed without reaching the path it names (resize found nothing
+// pending to flush). The debounce logic itself is pinned with injected timers in
+// tests/fd-wire.test.mjs; these pin the same behaviour in a real browser.
+async function scrollThen(page, index, after) {
+  await page.locator('.fd-article__body h3').nth(index).evaluate((heading, then) => {
+    window.scrollTo(0, heading.getBoundingClientRect().top + window.scrollY + 85);
+    window.dispatchEvent(new Event('scroll'));
+    if (then === 'resize') window.dispatchEvent(new Event('resize'));
+    if (then === 'top') { window.scrollTo(0, 0); window.dispatchEvent(new Event('scroll')); }
+  }, after);
+}
+
 test('reading place: pending scroll survives resize before the debounce', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 900, height: 650 });
   await seedApp(page, testInfo);
@@ -136,10 +161,10 @@ test('reading place: pending scroll survives resize before the debounce', async 
   await readingReady(page);
   await scrollReadingTo(page, 1);
   await expectReadingAnchor(page, 1);
-  await page.clock.install();
-  await scrollReadingTo(page, 2);
+  // Section 3 is still pending when the resize lands, so only the resize's flush can save it:
+  // were the flush lost, the reflow would restore the saved section 2 over it.
+  await scrollThen(page, 2, 'resize');
   await page.setViewportSize(PHONE);
-  await page.clock.fastForward(200);
   await expectReadingAnchor(page, 2);
   await expectHealthy(page);
 });
@@ -151,17 +176,15 @@ test('reading place: returning to the fresh position cancels an abandoned pendin
   await page.goto(`/?page=${READING_REF}`);
   const reader = await readingReady(page);
   await expect(reader.locator('[data-fd-reading-status]')).toHaveText(READING_SUCCESS);
-  await page.clock.install();
-  await scrollReadingTo(page, 2);
-  await page.evaluate(() => { window.scrollTo(0, 0); window.dispatchEvent(new Event('scroll')); });
-  await page.clock.fastForward(200);
+  await scrollThen(page, 2, 'top');
+  // Real time, well past the 150 ms debounce: a cancelled section must stay unsaved.
+  await page.waitForTimeout(400);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.setViewportSize(PHONE);
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
   await scrollReadingTo(page, 1);
-  await page.clock.fastForward(200);
   await expectReadingAnchor(page, 1);
   await expectHealthy(page);
 });
@@ -1145,11 +1168,13 @@ test('Compass native Tab sequence keeps every link above the mobile dock', async
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await seedApp(page, testInfo);
   await page.goto('/?page=welcome.md');
+  // The safety link plus six week links (the optional orientation-video link was retired
+  // with the video on 2026-09-25).
   const links = page.locator('[data-fd-compass-root] a');
-  await expect(links).toHaveCount(8);
+  await expect(links).toHaveCount(7);
   await links.first().focus();
   // Let the browser scroll on native Tab. No scrollIntoView, click or focus on later links.
-  for (let index = 0; index < 8; index += 1) {
+  for (let index = 0; index < 7; index += 1) {
     if (index) await page.keyboard.press('Tab');
     await expect(links.nth(index)).toBeFocused();
     const focus = await links.nth(index).evaluate(link => {
@@ -1217,10 +1242,8 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     await expect(reader.locator('.fd-article__lead')).toContainText('four-week');
     await expect(reader.locator('.governance-notice.pending-compact')).toContainText('Pending faculty review');
     await expect(reader.locator('.governance-notice.reviewed-receipt')).toHaveCount(0);
-    const onboarding = page.locator(
-      'video[src="media/resident-onboarding.mp4"][poster="media/resident-onboarding-poster.jpg"]',
-    );
-    await expect(onboarding).toHaveCount(1);
+    // The resident onboarding video was retired from the Welcome on 2026-09-25.
+    await expect(reader.locator('video')).toHaveCount(0);
     await expectHealthy(page);
     return;
   }
@@ -1231,20 +1254,19 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     if (child.hasAttribute('data-fd-compass-scope')) return 'scope';
     if (child.hasAttribute('data-fd-compass')) return 'compass';
     if (child.hasAttribute('data-fd-compass-prompt')) return 'prompt';
-    if (child.hasAttribute('data-fd-compass-orientation')) return 'optional-video';
     return 'unexpected';
-  }))).toEqual(['safety', 'scope', 'compass', 'prompt', 'optional-video']);
+  }))).toEqual(['safety', 'scope', 'compass', 'prompt']);
 
   const safetyCopy = 'If you are worried about immediate safety, tell the resident or attending now. Do not wait for rounds. Do not carry it alone.';
   const scopeCopy = 'This map supports orientation, supervised practice, and reflection. It is not a checklist, clinical protocol, or measure of readiness. Using or viewing this map does not establish competence, entrustment, or permission to act independently.';
   const promptCopy = 'Choose the week or task you are preparing to discuss with your supervising team.';
-  const optionalCopy = 'Optional: watch the captioned orientation overview (transcript available)';
   await expect(compassRoot.locator('[role="note"]')).toHaveCount(1);
   await expect(compassRoot.locator('[data-fd-compass-safety] > p')).toHaveText(safetyCopy);
   await expect(compassRoot.locator('[data-fd-compass-safety] > a')).toHaveText('Open the Orientation Packet');
   await expect(compassRoot.locator('[data-fd-compass-scope]')).toHaveText(scopeCopy);
   await expect(compassRoot.locator('[data-fd-compass-prompt]')).toHaveText(promptCopy);
-  await expect(compassRoot.locator('[data-fd-compass-orientation]')).toHaveText(optionalCopy);
+  // The optional orientation-video link was retired with the video on 2026-09-25.
+  await expect(compassRoot.locator('video, [href*="orientation-video"]')).toHaveCount(0);
   await expect(compassRoot.locator('section[aria-labelledby="fd-compass-title"]')).toHaveCount(1);
   await expect(compassRoot.locator('ol')).toHaveCount(1);
 
@@ -1282,10 +1304,6 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     await expect(weekLinks.nth(index)).toBeFocused();
     await expect(weekLinks.nth(index)).toHaveAttribute('href', expectedWeeks[index].href);
   }
-  await page.keyboard.press('Tab');
-  const optionalLink = compassRoot.locator('[data-fd-compass-orientation]');
-  await expect(optionalLink).toBeFocused();
-  await expect(optionalLink).toHaveAttribute('href', '?tool=orientation-video.html');
 
   const widthCases = [
     { viewport: 736, bucket: 'three', tracks: 3 },
@@ -1358,13 +1376,18 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     const touchPage = await touchContext.newPage();
     await seedApp(touchPage, testInfo);
     await touchPage.goto('/?page=welcome.md');
+    await expect(touchPage.locator('[data-fd-compass-root]')).toHaveCount(1);
+    // This context does not emulate reduced motion, so the reader's fdPopIn entrance
+    // (scale(.985) -> none) can still be running at first paint; measuring then read a
+    // 44px target as 43.9998px under load. Touch size is a property of the settled layout.
+    await touchPage.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => null))));
     const touchTargets = await touchPage.locator(
-      '[data-fd-compass-safety] a, [data-fd-compass-link], [data-fd-compass-orientation]',
+      '[data-fd-compass-safety] a, [data-fd-compass-link]',
     ).evaluateAll(links => links.map(link => {
       const box = link.getBoundingClientRect();
       return { width: box.width, height: box.height };
     }));
-    expect(touchTargets).toHaveLength(8);
+    expect(touchTargets).toHaveLength(7);
     for (const box of touchTargets) {
       expect(box.width).toBeGreaterThanOrEqual(44);
       expect(box.height).toBeGreaterThanOrEqual(44);
@@ -2132,8 +2155,9 @@ test.describe('Clinical field guide', () => {
 //
 // Seeds go through seedApp's `storage` so every store exists before the shell boots. Time is
 // frozen at FROZEN_NOW: a block created an hour earlier is live (12 h TTL) and an SRS card due
-// an hour earlier counts as due. deck# ids land in the daily bucket and are not TOPIC# cards, so
-// srsDropPhantomTopics leaves them alone once topic_meta loads. Both audience projects run every
+// an hour earlier counts as due. Landmark-deck ids (`<deck>#<index>`, as review.html builds them)
+// land in the daily bucket and are not TOPIC# cards, so srsDropPhantomTopics leaves them alone
+// once topic_meta loads. Both audience projects run every
 // test here with the same seed, which is A4 (same primary kind for the same seed) by construction.
 const OTF_NOW = FROZEN_NOW.getTime();
 const OTF_HOUR = 60 * 60 * 1000;
@@ -2144,8 +2168,8 @@ const OTF = {
     { kind: 'qb', ref: 'question-bank-practice.html', title: '4 practice questions', min: 3, n: 4, cat: null },
   ] },
   srs: { v: 1, cards: {
-    'deck#otf-1': { ease: 2.5, ivl: 1, reps: 1, lapses: 0, due: OTF_NOW - OTF_HOUR, last: OTF_NOW - 25 * OTF_HOUR },
-    'deck#otf-2': { ease: 2.5, ivl: 1, reps: 1, lapses: 0, due: OTF_NOW - OTF_HOUR, last: OTF_NOW - 25 * OTF_HOUR },
+    'AR-50#0': { ease: 2.5, ivl: 1, reps: 1, lapses: 0, due: OTF_NOW - OTF_HOUR, last: OTF_NOW - 25 * OTF_HOUR },
+    'AR-50#1': { ease: 2.5, ivl: 1, reps: 1, lapses: 0, due: OTF_NOW - OTF_HOUR, last: OTF_NOW - 25 * OTF_HOUR },
   }, day: { lastDay: '', newToday: 0 }, stats: { streak: 0, lastStudy: '', totalReviews: 0, correct: 0, seen: 0 }, settings: { newPerDay: 12 } },
   capture: { v: 1, items: [{ id: 'otf-c1', text: 'Why hold the lithium tonight?', at: OTF_NOW - 10 * 60 * 1000, ctx: null, triaged: false }] },
 };
@@ -2859,6 +2883,14 @@ test('Patient care resources stays reachable through an in-flow phone entry and 
   await expect(entry).toBeVisible();
   await expect(entry).toHaveAccessibleName('Patient care resources');
   expect(await entry.evaluate(el => getComputedStyle(el).position)).not.toBe('fixed');
+  // Today fades in (fdFadeUp: translateY 8px -> none, 0.24 s), and mid-fade the entry's box is
+  // mapped through a fractional transform in float: seeked frame by frame, the 44 px target read
+  // 44.00003 at 90 ms and CI measured 43.999969 on both attempts of one run (#788). Measure where
+  // it settles, on the fade's own `finished` promises rather than a clock; an infinite animation
+  // never settles, so it is not waited on.
+  await entry.evaluate(el => Promise.all(el.closest('.fd-today').getAnimations({ subtree: true })
+    .filter(animation => animation.effect?.getComputedTiming().endTime !== Infinity)
+    .map(animation => animation.finished)));
   expect((await entry.boundingBox()).height).toBeGreaterThanOrEqual(44);
   await expect(page.locator('.fd-dock:visible button')).toHaveCount(5);
   await entry.click();

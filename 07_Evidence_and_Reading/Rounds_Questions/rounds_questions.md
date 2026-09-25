@@ -4,7 +4,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 ## PSYCHOTIC DISORDERS (Questions 1–15)
 
-**1. What are the DSM-5 Criterion A symptoms of schizophrenia?**
+**1. What are the DSM-5-TR Criterion A symptoms of schizophrenia?**
 
 - **Answer:** Delusions, hallucinations, disorganized speech, grossly disorganized/catatonic behavior, and negative symptoms. At least one must be delusions, hallucinations, or disorganized speech.
 
@@ -36,7 +36,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **4. What is the mechanism of action of antipsychotics?**
 
-- **Answer:** All current antipsychotics modulate dopamine — most are D2 receptor antagonists or partial agonists. Therapeutic efficacy correlates with ~65–80% D2 receptor occupancy.
+- **Answer:** Nearly all current antipsychotics act directly at the D2 receptor, as antagonists or partial agonists. Exceptions include xanomeline–trospium (FDA-approved 2024 for schizophrenia), a muscarinic M1/M4 agonist with no direct D2 binding that is thought to modulate dopamine indirectly, and pimavanserin (a 5-HT2A inverse agonist approved for Parkinson's disease psychosis). Therapeutic efficacy correlates with ~65–80% D2 receptor occupancy.
 
 - **Evidence:** SGAs add potent 5-HT2A antagonism, which may reduce EPS and modestly improve negative symptoms.
 
@@ -72,11 +72,11 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Marder & Cannon, NEJM 2019.
 
-- **Pearl:** The starting dose is 12.5 mg — titrate slowly. Other serious risks include seizures (~4%), myocarditis (~1%), and severe metabolic effects.
+- **Pearl:** The starting dose is 12.5 mg — titrate slowly. Other serious risks include seizures (~4%), myocarditis (~1%), gastrointestinal hypomotility (ask about bowel habits daily and treat constipation proactively; ileus can be fatal), and severe metabolic effects.
 
 **8. What is neuroleptic malignant syndrome (NMS)?**
 
-- **Answer:** A life-threatening reaction to dopamine-blocking agents characterized by **fever, lead-pipe rigidity, altered mental status, and autonomic instability**. CK is typically markedly elevated (often >10,000 U/L).
+- **Answer:** A life-threatening reaction to dopamine-blocking agents characterized by **fever, lead-pipe rigidity, altered mental status, and autonomic instability**. CK is usually elevated (consensus threshold ≥4× the upper limit of normal; it can exceed 10,000 U/L) but may be only modestly raised early, so a lower CK does not exclude NMS.
 
 - **Evidence:** Incidence 0.01–0.2%; virtually all cases occur within 30 days of starting or dose-changing the offending agent.
 
@@ -112,7 +112,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Kane et al., Am J Psychiatry 2016 (RAISE-ETP).
 
-- **Pearl:** Response in FEP is typically visible within **2 weeks** — if no improvement by then, reassess adherence and consider switching rather than waiting months.
+- **Pearl:** Early improvement is often visible within **2 weeks**, and its absence is a warning sign — check adherence and dose — but first-episode patients can respond late, so give an adequate trial (≥4–6 weeks at a therapeutic dose) before switching.
 
 **12. How does schizoaffective disorder differ from schizophrenia and bipolar disorder with psychotic features?**
 
@@ -122,7 +122,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Malaspina et al., Schizophr Res 2013.
 
-- **Pearl:** The key question is: "Has this patient ever had psychosis **without** a mood episode?" If yes → schizoaffective. If psychosis only occurs during mood episodes → mood disorder with psychotic features.
+- **Pearl:** The key question is: "Has this patient ever had psychosis **without** a mood episode?" If yes (for ≥2 weeks) → schizoaffective disorder only if mood episodes have also been present for the majority of the total illness duration (active and residual phases); otherwise schizophrenia. If psychosis only occurs during mood episodes → mood disorder with psychotic features.
 
 **13. What metabolic monitoring is required for patients on antipsychotics?**
 
@@ -156,7 +156,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 ## MOOD DISORDERS (Questions 16–35)
 
-**16. What are the DSM-5 criteria for a major depressive episode?**
+**16. What are the DSM-5-TR criteria for a major depressive episode?**
 
 - **Answer:** ≥5 of 9 symptoms during the same 2-week period, with at least one being depressed mood or anhedonia. Mnemonic: **SIG E CAPS** — Sleep, Interest (anhedonia), Guilt, Energy, Concentration, Appetite, Psychomotor changes, Suicidality.
 
@@ -216,9 +216,9 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Pearl:** The "5-week fluoxetine rule" is one of the most commonly tested pharmacology facts on shelf exams.
 
-**22. What are the DSM-5 criteria for a manic episode?**
+**22. What are the DSM-5-TR criteria for a manic episode?**
 
-- **Answer:** A distinct period of abnormally elevated, expansive, or irritable mood AND increased energy/activity lasting ≥7 days (or any duration if hospitalization required), plus ≥3 of: **DIG FAST** — Distractibility, Impulsivity/Indiscretion, Grandiosity, Flight of ideas, Activity increase, Sleep decreased, Talkativeness.
+- **Answer:** A distinct period of abnormally elevated, expansive, or irritable mood AND increased energy/activity lasting ≥7 days (or any duration if hospitalization required), plus ≥3 (≥4 if mood is only irritable) of: **DIG FAST** — Distractibility, Impulsivity/Indiscretion, Grandiosity, Flight of ideas, Activity increase, Sleep decreased, Talkativeness.
 
 - **Evidence:** Bipolar I requires at least one manic episode; bipolar II requires hypomania (≥4 days, no hospitalization/psychosis) + major depressive episode.
 
@@ -238,7 +238,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **24. What are the therapeutic levels and key toxicities of lithium?**
 
-- **Answer:** Acute mania: 0.8–1.2 mEq/L; maintenance: 0.6–0.8 mEq/L. Toxic at ≥1.5 mEq/L. Key toxicities: fine tremor, polyuria/polydipsia (nephrogenic DI), hypothyroidism, hyperparathyroidism, renal impairment.
+- **Answer:** Acute mania: 0.8–1.2 mEq/L; maintenance: 0.6–0.8 mEq/L (older adults usually 0.4–0.6). Toxic at ≥1.5 mEq/L. Key toxicities: fine tremor, polyuria/polydipsia (nephrogenic DI), hypothyroidism, hyperparathyroidism, renal impairment.
 
 - **Evidence:** Hypothyroidism occurs in ~14% of lithium-treated patients (OR 5.78 vs. placebo).
 
@@ -300,7 +300,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Psychiatric illness (mood disorders, schizophrenia, substance use), prior attempts (strongest predictor), male sex, older age, access to lethal means, recent discharge from psychiatric hospitalization, hopelessness, social isolation.
 
-- **Evidence:** Mood disorders are present in one-third to one-half of completed suicides. Suicidal prevalence is greater in bipolar disorder than MDD.
+- **Evidence:** Mood disorders are present in one-third to one-half of suicide deaths. Suicidal prevalence is greater in bipolar disorder than MDD.
 
 - **Key paper:** Fazel & Runeson, NEJM 2020.
 
@@ -308,7 +308,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **31. How do you screen for suicidality?**
 
-- **Answer:** PHQ-9 Item 9 for universal screening; Columbia-Suicide Severity Rating Scale (C-SSRS) for structured assessment. No tool reliably predicts completed suicide.
+- **Answer:** PHQ-9 Item 9 for universal screening; Columbia-Suicide Severity Rating Scale (C-SSRS) for structured assessment. No tool reliably predicts suicide death.
 
 - **Evidence:** Screening instruments identify ideation but have limited predictive value for suicidal behaviour. The USPSTF (2023) found the evidence **insufficient** to assess the balance of benefits and harms of screening asymptomatic adults for suicide risk in primary care (I statement) — which is a verdict on population screening, not a licence to skip risk assessment in a patient who has disclosed.
 
@@ -338,7 +338,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **34. What is the role of lamotrigine in bipolar disorder?**
 
-- **Answer:** Effective for preventing depressive episodes but NOT mania. Requires slow titration (starting 25 mg/day, increasing every 2 weeks) to minimize risk of Stevens-Johnson syndrome (SJS).
+- **Answer:** Effective for preventing depressive episodes but NOT mania. Requires slow titration (starting 25 mg/day, increasing every 2 weeks; halve the schedule — 25 mg every other day — in patients taking valproate) to minimize risk of Stevens-Johnson syndrome (SJS).
 
 - **Evidence:** NNT = 8 vs. placebo for preventing depressive episodes at 1 year.
 
@@ -348,7 +348,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **35. What is a mixed episode/mixed features specifier?**
 
-- **Answer:** DSM-5 replaced the DSM-IV "mixed episode" with a **"with mixed features" specifier** that can be applied to manic, hypomanic, or depressive episodes. A manic episode with mixed features includes ≥3 depressive symptoms; a depressive episode with mixed features includes ≥3 manic symptoms.
+- **Answer:** DSM-5 replaced the DSM-IV "mixed episode" with a **"with mixed features" specifier** that can be applied to manic, hypomanic, or depressive episodes. A manic episode with mixed features includes ≥3 depressive symptoms; a depressive episode with mixed features includes ≥3 manic symptoms — in both cases counting only symptoms that do not overlap between the poles (psychomotor agitation, insomnia, irritability and distractibility/indecisiveness are excluded), present nearly every day for most of the episode.
 
 - **Evidence:** Mixed features are associated with higher suicide risk, poorer treatment response, and more rapid cycling.
 
@@ -426,7 +426,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** POTS Team, JAMA 2004.
 
-- **Pearl:** ERP works by **habituation** — the patient confronts feared stimuli while resisting compulsions until anxiety naturally decreases. Avoidance reinforces OCD.
+- **Pearl:** ERP works mainly through **inhibitory learning** — the patient confronts feared stimuli while resisting compulsions and learns that the feared outcome does not occur and that distress is tolerable; anxiety need not fall within the session. Avoidance reinforces OCD.
 
 **43. What augmentation strategies exist for SSRI-refractory OCD?**
 
@@ -452,7 +452,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Persistent fear of social situations due to fear of scrutiny/negative evaluation, lasting ≥6 months. First-line: SSRIs/SNRIs and/or CBT. Beta-blockers (propranolol) are used for performance-only subtype.
 
-- **Evidence:** Social anxiety disorder is the most common anxiety disorder with onset typically in adolescence.
+- **Evidence:** Social anxiety disorder is among the most common anxiety disorders (second to specific phobia), with onset typically in adolescence.
 
 - **Key paper:** Penninx et al., Lancet 2021.
 
@@ -504,7 +504,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** The Clinical Opiate Withdrawal Scale — an 11-item clinician-administered tool (score 0–48) assessing opioid withdrawal severity. Scores 5–12: mild; 13–24: moderate; 25–36: moderately severe; >36: severe.
 
-- **Evidence:** Validated against CINA scale (Pearson r = 0.85). For buprenorphine induction, COWS should ideally be ≥10–12.
+- **Evidence:** Validated against CINA scale (Pearson r = 0.85). For buprenorphine initiation, guidelines put the start at roughly COWS ≥ 8–12 (ASAM's 2023 fentanyl guidance: ≥ 8 with at least one objective sign).
 
 - **Key paper:** Wesson & Ling, J Psychoactive Drugs 2003.
 
@@ -518,7 +518,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Nosyk et al., JAMA 2024.
 
-- **Pearl:** Buprenorphine is a **partial agonist** — it can precipitate withdrawal if given while full agonists are still present. Wait for adequate withdrawal (COWS ≥10–12) before initiating.
+- **Pearl:** Buprenorphine is a **partial agonist** — it can precipitate withdrawal if given while full agonists are still present. Start buprenorphine once objective withdrawal is present — roughly COWS ≥ 8–12 depending on the guideline (ASAM's 2023 fentanyl guidance: ≥ 8 with at least one objective sign). With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.
 
 **52. How does naloxone work and when is it used?**
 
@@ -564,7 +564,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Wernicke's encephalopathy (acute: confusion, ataxia, ophthalmoplegia from thiamine deficiency) can progress to Korsakoff's syndrome (chronic: anterograde amnesia, confabulation) if untreated.
 
-- **Evidence:** Treat with high-dose parenteral thiamine (500 mg IV TID for 3 days per some protocols); oral thiamine is inadequately absorbed in alcoholism.
+- **Evidence:** Treat with high-dose parenteral thiamine (500 mg IV TID for 3 days per some protocols); oral thiamine is inadequately absorbed in people with alcohol use disorder.
 
 - **Key paper:** Haber, NEJM 2025.
 
@@ -588,7 +588,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Schwenker et al., Cochrane 2023.
 
-- **Pearl:** The key MI skill is **rolling with resistance** — arguing with a patient about their substance use increases resistance; reflecting their ambivalence back to them promotes change.
+- **Pearl:** The key MI skill is **responding to sustain talk and discord with reflection rather than argument** (formerly called "rolling with resistance") — arguing with a patient about their substance use increases sustain talk and discord; reflecting their ambivalence back to them promotes change.
 
 **59. What are the stages of change?**
 
@@ -704,7 +704,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Pearl:** The cluster mnemonic: "**A** is weird, **B** is wild, **C** is worried."
 
-**70. What are the DSM-5 criteria for borderline personality disorder?**
+**70. What are the DSM-5-TR criteria for borderline personality disorder?**
 
 - **Answer:** ≥5 of 9 criteria: abandonment fears, unstable relationships (idealization/devaluation), identity disturbance, impulsivity, recurrent suicidality/self-harm, affective instability, chronic emptiness, inappropriate anger, transient paranoia/dissociation.
 
@@ -816,7 +816,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 ## NEURODEVELOPMENTAL DISORDERS (Questions 81–87)
 
-**81. What are the DSM-5 criteria for ADHD?**
+**81. What are the DSM-5-TR criteria for ADHD?**
 
 - **Answer:** ≥6 of 9 symptoms (≥5 for adults ≥17) in inattention and/or hyperactivity-impulsivity domains, persisting ≥6 months, with several symptoms present before age 12, in ≥2 settings, with functional impairment.
 
@@ -838,7 +838,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **83. When are non-stimulant ADHD medications preferred?**
 
-- **Answer:** When there is risk of stimulant misuse/diversion, comorbid substance use disorder, anxiety, tics, or intolerable stimulant side effects. Options: atomoxetine (NRI), guanfacine XR, clonidine XR.
+- **Answer:** When there is risk of stimulant misuse/diversion, comorbid substance use disorder, anxiety, tics, or intolerable stimulant side effects. Options: atomoxetine (NRI), viloxazine ER, guanfacine XR, clonidine XR.
 
 - **Evidence:** Atomoxetine effect size ~0.64 in children, ~0.33 in adults — lower than stimulants but still clinically meaningful.
 
@@ -848,7 +848,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **84. How is ADHD diagnosed in adults?**
 
-- **Answer:** Same DSM-5 criteria but with ≥5 symptoms (vs. 6 for children), symptoms present before age 12, and adult-specific examples (difficulty returning calls, paying bills, keeping appointments). Informant reports are more reliable than self-report.
+- **Answer:** Same DSM-5-TR criteria but with ≥5 symptoms (vs. 6 for children), symptoms present before age 12, and adult-specific examples (difficulty returning calls, paying bills, keeping appointments). Informant reports are more reliable than self-report.
 
 - **Evidence:** Adult ADHD prevalence ~2.5–2.8%; symptoms persist into adulthood in up to 70% of childhood cases.
 
@@ -856,11 +856,11 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Pearl:** Hyperactivity in adults often manifests as **internal restlessness** rather than overt motor hyperactivity — ask about feeling "driven by a motor" or inability to relax.
 
-**85. What are the DSM-5 criteria for autism spectrum disorder?**
+**85. What are the DSM-5-TR criteria for autism spectrum disorder?**
 
 - **Answer:** Persistent deficits in all 3 social communication subdomains (reciprocity, nonverbal communication, relationships) PLUS ≥2 of 4 restricted/repetitive behaviors (stereotypies, insistence on sameness, fixated interests, sensory hyper/hyporeactivity).
 
-- **Evidence:** DSM-5 consolidated Asperger's, PDD-NOS, and under one ASD diagnosis and added sensory features.
+- **Evidence:** DSM-5 consolidated autistic disorder, Asperger's, childhood disintegrative disorder, and PDD-NOS under one ASD diagnosis and added sensory features.
 
 - **Key paper:** Hirota & King, JAMA 2023.
 
@@ -878,7 +878,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **87. What is the difference between intellectual disability and autism spectrum disorder?**
 
-- **Answer:** Intellectual disability involves deficits in intellectual functioning (IQ <70) AND adaptive functioning. ASD involves social communication deficits and restricted/repetitive behaviors regardless of IQ. They frequently co-occur (~30% of ASD cases).
+- **Answer:** Intellectual developmental disorder (intellectual disability) involves deficits in intellectual functioning (typically IQ about two SDs below the mean, ~65–75 allowing for measurement error) AND adaptive functioning, with severity set by adaptive functioning. ASD involves social communication deficits and restricted/repetitive behaviors regardless of IQ. They frequently co-occur (~30% of ASD cases).
 
 - **Evidence:** Nearly one-third of individuals with ASD have intellectual disability or minimal verbal ability.
 
@@ -916,7 +916,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Furukawa et al., JAMA Psychiatry 2024.
 
-- **Pearl:** Telling a patient to "practice good sleep hygiene" without offering CBT-I is like telling a diabetic to "eat better" without providing structured dietary counseling — it's necessary but insufficient.
+- **Pearl:** Telling a patient to "practice good sleep hygiene" without offering CBT-I is like telling a person with diabetes to "eat better" without providing structured dietary counseling — it's necessary but insufficient.
 
 ## EATING DISORDERS (Questions 91–93)
 
@@ -924,7 +924,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Cardiovascular (bradycardia, QT prolongation, arrhythmias), endocrine (amenorrhea in ~78%, hypothalamic), skeletal (osteoporosis), hematologic (pancytopenia), GI (delayed gastric emptying), neurologic (cortical atrophy — reversible), and refeeding syndrome.
 
-- **Evidence:** AN has the **highest mortality rate among psychiatric conditions**; ~one-third of deaths are cardiovascular.
+- **Evidence:** AN has **one of the highest mortality rates among psychiatric conditions**; ~one-third of deaths are cardiovascular.
 
 - **Key paper:** Trapani & Rubino, Pediatrics 2025.
 
@@ -974,7 +974,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **96. What is pharmacogenomic testing in psychiatry?**
 
-- **Answer:** Testing for CYP2D6 and CYP2C19 polymorphisms to predict drug metabolism. Poor metabolizers have higher drug exposure; ultrarapid metabolizers may have subtherapeutic levels.
+- **Answer:** Testing for CYP2D6 and CYP2C19 polymorphisms to predict drug metabolism — plus HLA-B*15:02 screening before carbamazepine in patients of Asian ancestry (FDA boxed warning; SJS/TEN risk). Poor metabolizers have higher drug exposure; ultrarapid metabolizers may have subtherapeutic levels.
 
 - **Evidence:** CYP2D6 and CYP2C19 poor/intermediate metabolizer status significantly affects exposure to aripiprazole, haloperidol, risperidone, escitalopram, and sertraline.
 

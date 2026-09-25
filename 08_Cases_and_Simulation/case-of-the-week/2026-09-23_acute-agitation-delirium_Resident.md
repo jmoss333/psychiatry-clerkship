@@ -34,7 +34,7 @@ The ED attending asks you to advise on immediate pharmacologic management for bo
 
 **Q4. The pharmacy pages: "droperidol — isn't that black-boxed?" What is the actual state of the QT question?**
 
-*Teaching point:* The 2001 FDA boxed warning was based largely on case reports at high/off-label doses; subsequent ED literature and the drug's return to availability have driven re-adoption. Reviews of the reintegration of droperidol conclude that at ED agitation doses (2.5–10 mg) torsades is rare, and large ED cohorts (including Cole et al.) observed no torsades events [5,7]. Reasonable practice: screen for known long-QT/recent QT-prolonging drug load when feasible, obtain ECG when the clinical situation allows, and avoid routine "QTc paralysis" that delays treatment of dangerous agitation. Residents should be able to articulate both the warning's origin and the evidence limits.
+*Teaching point:* The 2001 FDA boxed warning was based largely on case reports at high/off-label doses; subsequent ED literature and the drug's return to availability have driven re-adoption. Reviews of the reintegration of droperidol conclude that at ED agitation doses (2.5–10 mg) torsades is rare, and large ED cohorts (including Cole et al.) observed no torsades events [5,7]. Reasonable practice: know that the boxed warning is still on the label (pre-dose 12-lead ECG, ECG monitoring for 2–3 h) and that agitation is an off-label use; follow an institutional ED droperidol protocol, screen for known long-QT/recent QT-prolonging drug load when feasible, obtain ECG when the clinical situation allows, monitor after dosing, and avoid routine "QTc paralysis" that delays treatment of dangerous agitation. Residents should be able to articulate both the warning's origin and the evidence limits.
 
 **Q5. Where does ketamine fit — and what are its liabilities?**
 
@@ -46,7 +46,7 @@ The ED attending asks you to advise on immediate pharmacologic management for bo
 
 **Q7. Design the disposition and documentation for both patients — including restraint governance and the consult note's medicolegal spine.**
 
-*Teaching point:* Patient A: medical admission (urosepsis/anticholinergic delirium workup), not psychiatry; document capacity assessment, least-restrictive-alternatives sequence, specific behavioral indications for each PRN, and deliriogenic-medication reconciliation. Patient B: reassess post-sedation with serial exams and collateral; undifferentiated agitation is a medical evaluation until toxidrome/metabolic causes are excluded; document the de-escalation attempts, indication, agent, dose, response, and monitoring (vitals, SpO2, ECG when obtainable). For any physical restraint: time-limited orders, face-to-face evaluation, frequent reassessment, and early release criteria. Frame all dangerousness documentation around risk recognition, escalation pathways, and safety planning [1,2,12].
+*Teaching point:* Patient A: medical admission (urosepsis/anticholinergic delirium workup), not psychiatry; document capacity assessment, least-restrictive-alternatives sequence, specific behavioral indications for each PRN, and deliriogenic-medication reconciliation. Patient B: reassess post-sedation with serial exams and collateral; undifferentiated agitation is a medical evaluation until toxidrome/metabolic causes are excluded; document the de-escalation attempts, indication, agent, dose, response, and monitoring (vitals, SpO2, ECG when obtainable). For any physical restraint for violent behavior (CMS 42 CFR 482.13(e); state law and hospital policy may be stricter): a non-PRN, time-limited order (≤4 h for adults, renewable only after reassessment, up to 24 h before a new in-person physician/LIP assessment), a face-to-face evaluation within 1 hour of initiation, monitoring at the interval hospital policy sets (continuous if restraint and seclusion are combined; never prone; airway, circulation, temperature), release at the earliest safe time, and a post-event debrief as best practice. Frame all dangerousness documentation around risk recognition, escalation pathways, and safety planning [1,2,12].
 
 ---
 
@@ -59,7 +59,9 @@ The ED attending asks you to advise on immediate pharmacologic management for bo
 4. Structural/intracranial (subdural, stroke) — lower probability without focal signs or anticoagulation; threshold to image if course unexplained.
 5. Delirium superimposed on unrecognized major neurocognitive disorder.
 6. Nonconvulsive status epilepticus — consider if fluctuation persists despite source control.
-7. Late-onset primary psychiatric illness — diagnosis of exclusion.
+7. Alcohol or sedative-hypnotic withdrawal — obtain substance history/collateral before endorsing 'avoid benzodiazepines'.
+8. CNS infection (meningitis/encephalitis) — LP if the source is uncertain, meningismus is present, or he fails to improve with source control.
+9. Late-onset primary psychiatric illness — diagnosis of exclusion.
 
 **Patient B (undifferentiated agitation):**
 1. Sympathomimetic intoxication (methamphetamine, cocaine, synthetic cathinones).
@@ -68,6 +70,8 @@ The ED attending asks you to advise on immediate pharmacologic management for bo
 4. Hypoglycemia or hypoxia — check immediately.
 5. Thyroid storm, thermodysregulation, CNS infection — keep on the list if fever climbs or sensorium clouds.
 6. Hyperactive delirium of medical origin (metabolic, post-ictal).
+7. Traumatic brain injury/intracranial hemorrhage — brought in after an altercation; examine for head trauma before and after sedation.
+8. Excited catatonia or serotonin toxicity — check catatonic signs and clonus/hyperreflexia before a dopamine antagonist.
 
 ---
 
@@ -75,9 +79,9 @@ The ED attending asks you to advise on immediate pharmacologic management for bo
 
 **Both:** immediate glucose and SpO2; environment control; one-voice de-escalation per the 10 domains [1]; explicit team roles before any hands-on intervention.
 
-**Patient A:** CBC, BMP, Ca/Mg/Phos, UA + culture, blood cultures, bladder scan → catheterize if retention; stop oxybutynin (and audit total anticholinergic burden); ECG for QTc baseline; CXR; head CT only for trauma/anticoagulation/focal signs/unexplained course; consider EEG if fluctuating unresponsiveness persists. If dangerous agitation despite the above: haloperidol 0.5–1 mg IV/IM (or low-dose SGA), reassess q30–60 min, cumulative-dose cap and EPS/QTc vigilance [2]. Avoid benzodiazepines. Delirium prevention bundle on admission [11].
+**Patient A:** CBC, BMP, Ca/Mg/Phos, UA + culture, blood cultures, bladder scan → catheterize if retention; stop oxybutynin (and audit total anticholinergic burden); ECG for QTc baseline; CXR; head CT only for trauma/anticoagulation/focal signs/unexplained course; consider EEG if fluctuating unresponsiveness persists. If dangerous agitation despite the above: haloperidol 0.5–1 mg IV/IM (or low-dose SGA), reassess q30–60 min, cumulative-dose cap and EPS/QTc vigilance [2] (IV haloperidol is off-label — ECG monitoring); avoid haloperidol if Parkinson disease or Lewy body dementia is known or suspected (baseline parkinsonism or pre-existing hallucinations/fluctuations) — very-low-dose oral quetiapine if an antipsychotic is unavoidable. Avoid benzodiazepines. Delirium prevention bundle on admission [11].
 
-**Patient B:** attempt PO olanzapine or SL/PO SGA first if any engagement possible [2]; if IM required: droperidol 5 mg or olanzapine 10 mg IM as effective single agents [3,5]; midazolam 5 mg IM when speed is paramount and airway monitoring is available [3]; combination midazolam-droperidol shortens time-to-sedation in IV-access settings [4]; dissociative-dose ketamine reserved for immediately life-threatening agitation with airway-capable staffing [6]. Post-sedation: vitals q15 min, SpO2/capnography where available, ECG when feasible, toxicologic and metabolic workup, serial reassessment; avoid olanzapine + parenteral benzodiazepine stacking in alcohol-intoxicated patients [2].
+**Patient B:** attempt PO olanzapine or SL/PO SGA first if any engagement possible [2]; if IM required and a sympathomimetic toxidrome is likely: a benzodiazepine first (e.g., midazolam 5 mg IM, with airway monitoring) per BETA [2,3], adding or substituting an antipsychotic if psychotic features predominate; droperidol 5 mg or olanzapine 10 mg IM are effective alternatives (note Cole's cohort was 86% alcohol-intoxicated; do not stack IM olanzapine on a parenteral benzodiazepine) [3,5]; combination midazolam-droperidol shortens time-to-sedation in IV-access settings [4]; dissociative-dose ketamine reserved for immediately life-threatening agitation with airway-capable staffing [6]. Post-sedation: vitals q15 min including temperature, SpO2/capnography where available, ECG when feasible, CK and toxicologic/metabolic workup (hyperthermia and rhabdomyolysis risk, especially if he struggled against restraint; avoid prone positioning), serial reassessment; avoid combining IM olanzapine with a parenteral benzodiazepine (not recommended per FDA label; cardiorespiratory depression), especially in alcohol-intoxicated patients [2].
 
 ---
 

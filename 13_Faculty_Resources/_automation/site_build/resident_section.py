@@ -45,11 +45,11 @@ if os.path.exists(_copied_surface_governance): os.remove(_copied_surface_governa
 # nothing is rewritten or printed.
 common.apply_preview_headers(OUT, label="res")
 
-# ---- orientation video is MS3-scoped (its own narration says "clerkship") — strip the files
-# that rode along via the MS3 copytree above; resident gets its own prototypes only (below).
-# The package is declared once in site_extras.py, so this strip cannot drift from the copy.
-from site_extras import MS3_ORIENT_VIDEO
-for _src,_f,_t in MS3_ORIENT_VIDEO:
+# ---- MS3-only tools (site_extras.MS3_EXTRA_TOOLS) ride along via the MS3 copytree above;
+# strip them so the resident site serves only its own prototypes (below). Declared once in
+# site_extras.py, so this strip cannot drift from the copy. Empty since 2026-09-25.
+from site_extras import MS3_EXTRA_TOOLS
+for _src,_f,_t in MS3_EXTRA_TOOLS:
     _p=os.path.join(OUT,"tools",_f)
     if os.path.exists(_p): os.remove(_p)
 
@@ -57,15 +57,6 @@ for _src,_f,_t in MS3_ORIENT_VIDEO:
 # the resident site shows only the resident versions (added via RES_EXTRA below). The shared
 # cotw_index.md is intentionally kept and then overwritten with the resident index in RES_EXTRA.
 for _f in glob.glob(OUT+"/content/cotw_*_ms3.md"): os.remove(_f)
-
-# ---- resident onboarding trailer ("Yours to Run.", ~87s, silent/kinetic-text) — resident-only,
-# so it's copied here rather than added to build_deploy.py's VIDEO_MEDIA (which would also ship it,
-# unused, on the MS3 site). Embed lives in resident_welcome.md -> welcome.md.
-from site_extras import RESIDENT_ONBOARDING_MEDIA
-os.makedirs(OUT+"/media",exist_ok=True)
-# Fail closed (2026-09-05 review): assert_resident_output hard-requires these two files at
-# the end of the build, so a silent WARN here only delayed the same failure by a full build.
-common.copy_required_sources(RESIDENT_ONBOARDING_MEDIA, LIB, OUT+"/media", label="resident onboarding media")
 
 # ---- resident-only pages (welcome overrides the MS3 welcome.md) ----
 # ---- Case of the Week: resident per-week pages are registry-driven (single source of truth:
@@ -141,6 +132,11 @@ _CRISIS_REQUIRED_RES_MD={
     "cotw_20260827_bpd_res.md",
     # The suicide-risk case itself: assessment, safety planning, and disposition throughout.
     "cotw_20260723_suiciderisk_res.md",
+    # Q7 plans a first-episode discharge disposition with a written safety plan naming crisis
+    # resources (peer-review R02-006; author's scope call J3, 2026-09-24).
+    "cotw_20260907_fep_res.md",
+    # Q8 structures the assessment and disposition of passive SI (J3, 2026-09-24).
+    "cotw_20260720_mdd_res.md",
 }
 _crisis_res_gap=sorted(_CRISIS_REQUIRED_RES_MD-_crisis_res_done)
 if _crisis_res_gap:

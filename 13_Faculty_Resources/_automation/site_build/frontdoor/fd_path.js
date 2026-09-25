@@ -71,11 +71,11 @@ var FD_PATH_PRACTICE=[
     feedback:'Can you watch my MSE language today?'},
   {skill:'Build a differential beyond the primary psychiatric diagnosis',
     feedback:'Can you review whether my differential shows reasoning?'},
-  {skill:'Explain why a medication and one non-medication intervention fit the formulation',
+  {skill:'Explain why one non-medication intervention fits the formulation and complete a supervised collaborative safety plan',
     feedback:'Can you review my rationale for this treatment plan?'},
   {skill:'Draft a family-meeting agenda and discharge barrier map',
     feedback:'Can you review my family-meeting agenda and discharge barriers?'},
-  {skill:'Formulate suicide/violence risk, recognize delirium/catatonia/withdrawal, and document supervised escalation reasoning',
+  {skill:'Deepen the suicide/violence risk formulation practised since Week 1 (and used for Week 3 safety planning), recognize delirium/catatonia/withdrawal, and document supervised escalation reasoning',
     feedback:'Can you tell me if my risk formulation separates chronic and acute risk?'},
   {skill:'Present a full case with formulation, risk reasoning, and plan',
     feedback:'Can you help me make my presentation more concise?'}

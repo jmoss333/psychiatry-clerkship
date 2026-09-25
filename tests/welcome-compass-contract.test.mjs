@@ -26,24 +26,6 @@ const retiredIntroPaths = [
   "_prototypes/video-library/intro-trailer-poster.jpg",
 ];
 const siteBuildPath = join(repoRoot, "13_Faculty_Resources/_automation/site_build");
-const canonicalOrientationEntries = JSON.parse(
-  execFileSync(
-    "python3",
-    [
-      "-c",
-      "import json, sys; sys.path.insert(0, sys.argv[1]); from site_extras import MS3_ORIENT_VIDEO; print(json.dumps(MS3_ORIENT_VIDEO))",
-      siteBuildPath,
-    ],
-    { encoding: "utf8" },
-  ),
-);
-const optionalOrientationIdentities = new Set(
-  canonicalOrientationEntries.flatMap(([sourcePath, builtName]) => [
-    sourcePath,
-    `tools/${builtName}`,
-  ]),
-);
-
 const COMPASS_MARKER = "<!-- ms3-six-week-compass -->";
 const SAFETY_START = "<!-- single-safety-rule:start -->";
 const SAFETY_END = "<!-- single-safety-rule:end -->";
@@ -93,8 +75,6 @@ const EXPECTED_COMPASS_FRAGMENT =
   '</ol></section>' +
   '<p data-fd-compass-prompt>Choose the week or task you are preparing to discuss with your ' +
   'supervising team.</p>' +
-  '<a data-fd-compass-orientation href="?tool=orientation-video.html">Optional: watch the ' +
-  'captioned orientation overview (transcript available)</a>' +
   '</div>';
 
 const welcome = readFileSync(welcomePath, "utf8");
@@ -125,20 +105,6 @@ function occurrenceCount(haystack, needle) {
 
 function normalizeWhitespace(value) {
   return value.trim().replace(/\s+/g, " ");
-}
-
-function validateMediaManifest(manifest) {
-  const script = `
-import json
-import sys
-sys.path.insert(0, sys.argv[1])
-import welcome_compass
-welcome_compass.validate_media_manifest(json.loads(sys.argv[2]))
-`;
-  execFileSync("python3", ["-c", script, siteBuildPath, JSON.stringify(manifest)], {
-    encoding: "utf8",
-    stdio: "pipe",
-  });
 }
 
 function escapeHtml(value) {
@@ -276,7 +242,6 @@ test("retired intro remains source provenance but is absent from generated media
 });
 
 test("media manifest records exactly one unserved retired intro", () => {
-  assert.doesNotThrow(() => validateMediaManifest(mediaManifest));
   const retired = mediaManifest.video.filter((entry) => entry.kind === "retired-intro-trailer");
   assert.deepEqual(retired, [
     {
@@ -292,21 +257,6 @@ test("media manifest records exactly one unserved retired intro", () => {
       note: "The source MP4 and _prototypes/video-library/intro-trailer-poster.jpg both remain on disk for provenance; neither is copied into or referenced by either generated learner site.",
     },
   ]);
-});
-
-test("orientation package rows are allowed unless marked served", () => {
-  for (const identity of optionalOrientationIdentities) {
-    const described = [...mediaManifest.video, { file: identity, served: false, captions: true }];
-    assert.doesNotThrow(() => validateMediaManifest({ ...mediaManifest, video: described }));
-    const served = [...mediaManifest.video, { file: identity, served: true }];
-    assert.throws(
-      () => validateMediaManifest({ ...mediaManifest, video: served }),
-      // execFileSync's own Error.message echoes the whole argv, JSON manifest included, so
-      // it always contains "served"; only the captured Python stderr proves which rule fired.
-      (err) => /served/.test(String(err.stderr ?? "")),
-      `served orientation row must be rejected: ${identity}`,
-    );
-  }
 });
 
 test("Orientation Packet preserves one exact marked Single Safety Rule", () => {
