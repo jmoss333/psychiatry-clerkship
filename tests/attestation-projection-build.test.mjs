@@ -97,6 +97,14 @@ const SERVED_JSON = [
 const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'));
 
 const SOURCE_META = readJson(join(root, 'topic_meta.json'));
+
+// A drifted page can only be DEMOTED in the built topic_meta if the source authors a reviewed
+// facultyReview block for it. A drifted tool (sp-interview.html has no topic_meta record) is
+// pending in governance.json with nothing to demote, so the non-vacuity implications below are
+// stated over this subset -- not over every drifted page, which made the first tool-only drift
+// (peer-review WP-5, 2026-09-24) read as "the projection never reached the built registry".
+const demotable = (slugs) =>
+  [...slugs].filter((slug) => facultyReview(SOURCE_META, slug)?.status === 'reviewed');
 const LEDGER = readJson(join(root, '13_Faculty_Resources/reviewed.json'));
 
 const facultyReview = (meta, slug) => {
@@ -167,11 +175,13 @@ test('a drifted page renders pending in governance.json and keeps its attributio
     }
 
     // Non-vacuity, stated as the implication rather than a floor: zero drifted pages is the
-    // GOAL state of the re-attestation queue, so it must not fail here -- but drift with no
-    // demoted block at all would mean the projection never reached the built registry.
-    if (drifted.length > 0) {
+    // GOAL state of the re-attestation queue, so it must not fail here -- but a drifted page
+    // whose source block reads reviewed, with no demoted block at all, would mean the
+    // projection never reached the built registry.
+    const canDemote = demotable(drifted);
+    if (canDemote.length > 0) {
       assert.ok(withBlock > 0,
-        `${site}: ${drifted.length} drifted page(s) but not one demoted facultyReview block`);
+        `${site}: ${canDemote.length} drifted page(s) with an authored block but not one demoted facultyReview block`);
     }
     t.diagnostic(`${site}: ${drifted.length} drifted page(s), ${withBlock} with a topic_meta block`);
   });
@@ -288,8 +298,9 @@ test('no facultyReview block is demoted unless this site\'s governance says the 
       assert.ok(drifted.has(slug),
         `${site}: ${slug} was demoted in the built topic_meta without a stale governance row`);
     }
-    assert.ok(demoted > 0 || drifted.size === 0,
-      `${site}: ${drifted.size} drifted page(s) but no demoted block to attribute to them`);
+    const canDemote = demotable(drifted);
+    assert.ok(demoted > 0 || canDemote.length === 0,
+      `${site}: ${canDemote.length} drifted page(s) with an authored block but no demoted block to attribute to them`);
     t.diagnostic(`${site}: ${demoted} block(s) demoted relative to the source topic_meta.json`);
   });
 });
