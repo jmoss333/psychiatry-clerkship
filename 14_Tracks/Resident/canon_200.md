@@ -326,7 +326,7 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 
 **116.** Raskind et al., "Trial of Prazosin for PTSD in Military Veterans (PACT)," NEJM 2018 — Pivotal negative trial: prazosin no benefit over placebo
 
-**117.** Mitchell et al., "MDMA-Assisted Therapy for Severe PTSD (Phase 3)," Nature Medicine 2021 — CAPS-5 d=0.91; 67% no longer met PTSD criteria
+**117.** Mitchell et al., "MDMA-Assisted Therapy for Severe PTSD (Phase 3)," Nature Medicine 2021 — CAPS-5 d=0.91; 67% no longer met PTSD criteria. Not FDA-approved: the FDA declined approval in 2024 (complete response letter) over trial-design and data concerns
 
 **118.** Shalev et al., "Post-Traumatic Stress Disorder," NEJM 2017 — Definitive clinical review
 
@@ -482,7 +482,7 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 
 **186.** HEALing Communities Study Consortium, "Community-Based Cluster-Randomized Trial to Reduce Opioid Overdose Deaths," NEJM 2024 — No significant reduction in OOD (aRR 0.91)
 
-**187.** ASAM/AAAP, "Clinical Practice Guideline on Management of Stimulant Use Disorder," 2024 — CM only efficacious intervention; strong recommendation
+**187.** ASAM/AAAP, "Clinical Practice Guideline on Management of Stimulant Use Disorder," 2024 — CM is the standard of care and has the strongest evidence; CBT and community reinforcement approach also recommended, and off-label pharmacotherapy (e.g., bupropion + naltrexone for methamphetamine use disorder) may be considered
 
 **188.** Gray et al., "N-Acetylcysteine in Cannabis-Dependent Adolescents," AJP 2012 — First positive pharmacotherapy RCT (OR 2.4 with CM)
 

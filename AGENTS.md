@@ -21,7 +21,14 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
   in `netlify.toml` (kept intentionally minimal — one toml can't express two sites, and it's read
   *after* the clone). The legacy `GIT_LFS_ENABLED` / `GIT_LFS_FETCH_INCLUDE` env vars also live
   there and are being **retired** (next bullet but one). See `13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md`.
-- Deploy-on-push to `main`. Deploy previews: `https://deploy-preview-{PR}--{slug}.netlify.app`.
+- **The two learner sites publish from `release`, not `main`** (since 2026-09-25). A merge to
+  `main` deploys nothing learner-facing: `.github/workflows/production-release-train.yml`
+  fast-forwards `release` to the newest main commit whose required checks are BOTH green, at
+  09:05, 15:05 and 21:05 UTC, and its "Run workflow" button is the publish-now path for an
+  urgent (e.g. safety) fix. Why: every Netlify production deploy is billed (15 credits) and
+  publishing per merge cost two per merge. Never push to `release` by hand except to repair it;
+  it only ever fast-forwards. The satellite sites (sp-proxy, faculty console, workforce tour)
+  still build from `main`. Deploy previews: `https://deploy-preview-{PR}--{slug}.netlify.app`.
 - **Git LFS** tracks `*.mp3 *.m4a *.wav *.mp4`. Never commit LFS **pointer stubs** (~133 B) in place
   of real media — the build's LFS gate fails the deploy. In sandboxes without LFS installed, audio
   shows as false "modified"; don't commit those.
@@ -64,11 +71,17 @@ cd tests/smoke && npm ci && npx playwright test
 
 VS Code can reopen this repository in `.devcontainer/`, which supplies Node 22,
 Python 3.11, Bash 5+, Git LFS, the locked NPM dependencies, and Chromium.
-Container creation automatically installs locked dependencies and runs only the fast runtime contract
-through `.devcontainer/post-create.sh`. The full gate is deliberately manual: run the VS Code task
+Run `python3 bin/devcontainer-preflight.py` on the host first (`--json` for tooling).
+It checks Git/LFS accessibility, memory capacity, and credential-forwarding warnings without
+repairs, downloads, helper execution, or secret output. Exit 1 blocks setup, 2 means could-not-check,
+and advisory warnings exit 0. `.devcontainer/post-create.sh` runs it before dependency installation
+and the fast runtime contract. The full gate is deliberately manual: run the VS Code task
 **Verify Dev Container** via **Tasks: Run Task**, or the receipt-enabled command below. Open a full clone,
 not a linked worktree whose Git directory is outside the mounted workspace, and materialize
-LFS files with `git lfs pull` before reopening it in the container.
+LFS files with `git lfs checkout` from cached objects first; `git lfs pull` may consume metered
+bandwidth. See `.devcontainer/README.md` for the full-clone/cache procedure and troubleshooting.
+The tested Colima allocation is 6 GiB after an OOM at 2 GiB, not a universal minimum; low memory
+and recognizable broken helper paths are advisory, never automatic host configuration changes.
 
 ```bash
 node bin/check-runtime-contract.mjs --current  # fast environment proof
@@ -81,6 +94,8 @@ red means the current commit's latest attempt failed; gray means no current proo
 (missing, malformed, running/interrupted, stale, a different commit, or tracked edits).
 Clicking the item runs the manual task. Without deploy URLs, the local LFS browser projects remain
 skipped: deploy-only LFS browser coverage is not proved, and the receipt says so even after a pass.
+Green certifies this checkout's commit, not that it is the latest remote main. Full verification
+also runs preflight before refreshing dependencies; a blocker records the failed preflight stage.
 The image-supplied `CLERKSHIP_DEVCONTAINER=1` check prevents accidental host invocation; it is a
 forgeable environment guard, not authentication or proof that a deliberate caller used the container.
 If the receipt directory is wholly unwritable, the task fails but the last atomically completed receipt
@@ -214,6 +229,14 @@ the container when the Bash 5 environment is part of the evidence.
   from committed tables under `bin/data/`; `retiring` fires BEFORE the October 1 boundary).
   All three state what they examined beside the verdict, exit 2 rather than pass over a
   partial set, and only the self-tests (plus the offline ICD scan) run in `verify.sh`.
+  `check_claim_direction.py` is the step after a supersession finding: given a source id
+  and the newer DOI/PMID it fetches the newer abstract (Europe PMC) and reports, per stored
+  claim, whether the span survives verbatim, whether the sentences carrying the claim's
+  terms keep the stored direction (C5's own marker list, imported), and which quoted
+  statistics vanished — `consistent` / `contradicts` / `unlocated` / `unclear`. Advisory:
+  exit 0, the located sentences are the evidence; `--strict` for scripts. First case
+  (2026-09-19): `williams-2022` pub3 → pub4 — span 2/2 verbatim, direction consistent, the
+  update changed nothing taught.
 - **Egress is an allowlist, and which side of it a host falls on decides which tasks are possible
   today.** `bin/probe_egress.py` reports that in the repo's own terms — not "itunes.apple.com is
   unreachable" but "the podcast canonical backfill cannot run here". The SessionStart hook prints
@@ -490,7 +513,9 @@ the container when the Bash 5 environment is part of the evidence.
   `13_Faculty_Resources/reviewed.json`, `CLAUDE.md`, `AGENTS.md`, `decisions.json`,
   `standards.json`, `instrument_rights.json`, `vocabulary.json`, `.gitattributes`,
   `reviewed.schema.json`, and `_automation/`'s `attestation_hash.py`, `surface_governance.py`,
-  `validate_attestation_consistency.py`, `validate_curriculum.py`, `validate_topic_meta.py`;
+  `validate_attestation_consistency.py`, `validate_curriculum.py`, `validate_topic_meta.py`,
+  `site_build/ledger_overlay.mjs` (the attestation ledger's build-side reader), and everything
+  under `13_Faculty_Resources/ledger/` (its public keys);
   everything under `.claude/` (skills, hooks, subagents, settings), `.github/` **in full** — not
   only `workflows/`: an action, a template or CODEOWNERS decides how work is reviewed too —
   `bin/` (every gate and audit tool, this one and `verify.sh` included), `faculty-console/`
@@ -513,7 +538,12 @@ the container when the Bash 5 environment is part of the evidence.
   matching `^(0\d|1[0-4]|99)_[^/]+/` that is not under `13_Faculty_Resources/` — a directory
   segment is required, so a top-level `03_notes.md` is not content — the derived listing because
   a page can ship from a path the regex misses (`welcome.md`'s resident override), the regex
-  because a path can be content before any site lists it. A **promotion** is a claim that a
+  because a path can be content before any site lists it. **One exception:**
+  `question_bank.json` has been content since #783 listed it in the question tools'
+  `extraSources`, but a diff that changes nothing except items' `status` is not a content
+  change — a question's attestation *is* its status, and counting the flip as content made
+  every console question sign-off fail L3 against itself (rolling PR #781). Any other edit to
+  the bank, `retired` included, is still content. A **promotion** is a claim that a
   review happened: in `reviewed.json`, a row whose `status` becomes `reviewed`, a row born
   `reviewed`, or a row reviewed on BOTH sides whose `at`, `by`, `risk`, `note`, `contentHash`,
   `claimsHash`, `evidenceHash` or `evidenceThrough` changes — **a missing key is a value**,
@@ -590,6 +620,30 @@ the container when the Bash 5 environment is part of the evidence.
   machine user so `faculty@clerkship.local` is an identity nobody else holds, and add a ruleset
   restricting pushes to `attest/pending` to it. Until that lands, this gate raises the cost of a
   forged promotion; it does not make one impossible.
+- **The attestation ledger (ADR-003) — sign-offs that never merge.** Built and DARK: nothing
+  changes until `13_Faculty_Resources/ledger/ACTIVATION.md` is followed. Once on, a faculty
+  sign-off is one Ed25519-signed, hash-chained line appended to `ledger/events.jsonl` on the
+  orphan branch `attestations` (never merged; pushes to it trigger no CI and no Netlify build),
+  written only by the console in ledger mode (`ATTEST_LEDGER=on`), which hashes the page AS IT
+  STANDS ON `main`. Each learner-site build runs `site_build/ledger_overlay.mjs` FIRST
+  (`CLERKSHIP_LEDGER=on`): it verifies every signature and link against
+  `13_Faculty_Resources/ledger/keys.json` and projects the latest event per item onto the
+  working copies of `reviewed.json` / `topic_meta.json` / `question_bank.json`, so every
+  validator, projection and test below it judges the combined record unchanged. A tampered
+  ledger fails the build (last good deploy stays live); an unreachable one builds the baseline
+  and says so; `CLERKSHIP_LEDGER=off` is the emergency override. The console's scheduled
+  `ledger-publish` function rebuilds a site ~10 min after sign-offs go quiet, reading the
+  `ledger-receipt.json` each site serves. Rules that follow: **`reviewed.json` stays the
+  registration record** — content PRs still register and demote there, and a baseline row dated
+  LATER than a ledger event wins over it; **an agent never runs `bin/ledger_keygen.mjs`** (whoever
+  runs it briefly holds the signing key — it is Josh's step) and never writes the ledger branch;
+  **git-side report tools read the baseline only** — `node bin/ledger.mjs materialize --out DIR`
+  gives them the combined view; `node bin/ledger.mjs verify|status|audit` inspect the ledger.
+  Core: `faculty-console/ledger.mjs`; tests: `tests/ledger-*.test.mjs`,
+  `tests/faculty-console-ledger.test.mjs` (every guard in them was broken once to watch its test
+  go red). Also note `question_bank.json`'s manifest line is hashed WITHOUT item `status`
+  (`canonical_question_bank` / `canonicalQuestionBank`, parity-pinned) — signing a question must
+  not drift the question tools.
 - **Adding a step to `ci.yml` trips three separate contracts.** `bin/check-verify-coverage.py`
   (mirror it in `bin/verify.sh` or justify an `ALLOWED` exemption);
   `_automation/maintenance/validate_scheduled_workflows.py`, which pins the workflow by **exact step
@@ -655,10 +709,13 @@ the container when the Bash 5 environment is part of the evidence.
   retires (WP-06R-a); Stanley-Brown is never programmed (WP-06R-b); PHQ-9/GAD-7 provisionally stay
   pending a check of the current permission footer (WP-02c); **BFCRS is RESTRICTED** (URMC written
   consent required) and **CIWA-Ar RETIRES** (2026-08-28, author's call — rights unestablishable, so
-  the descriptors came down; WP-20 is closed with it). **COWS alone remains open**: permission real,
-  scope wrong, its 45 verbatim anchors in `withdrawal.html` published under a recorded interim
-  waiver pending the Taylor & Francis letter — that waiver is the one thing still blocking Wave 4,
-  and an agent must not narrow or lift it. An instrument is exempt only once its status is recorded
+  the descriptors came down; WP-20 is closed with it). **COWS anchors retired 2026-09-10**
+  (decision `cows-anchors-retired`, superseding the 2026-08-23 interim waiver, which is closed):
+  the permission that exists covers clinical copying, not publication on a teaching site, so the
+  45 verbatim anchor strings in `withdrawal.html` were replaced with in-house descriptors; the
+  item names and legal score values are facts and stay, and the page still scores. A Taylor &
+  Francis permission request runs in parallel — a license would move COWS to cleared, and that is
+  the author's call, not an agent's. An instrument is exempt only once its status is recorded
   in the audit's decision table — Option A settles scope, not individual cases.
   **A withdrawal must leave a route (INV-IR2, 2026-09-03).** Retiring an instrument may not leave
   a dead end: every removed or link-only instrument ships the custodian's official `formUrl` from

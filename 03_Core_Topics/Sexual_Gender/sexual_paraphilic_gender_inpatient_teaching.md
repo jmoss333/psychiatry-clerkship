@@ -16,7 +16,7 @@
 
 **The key distinction** — A **paraphilia** is an atypical sexual interest; a **paraphilic disorder** requires that it causes **distress or impairment to the person, or entails harm/risk of harm to others (non-consenting persons)**. An interest alone is not a diagnosis. Examples include voyeuristic, exhibitionistic, frotteuristic, sexual sadism, sexual masochism, pedophilic, fetishistic, and transvestic disorders.
 
-**Can't-miss** — Disorders involving **non-consenting victims (pedophilic, exhibitionistic, voyeuristic, frotteuristic, sadism)** raise **safety and legal/reporting duties** — child protection reporting where a child is at risk ([Ethics & the Law](?page=ethics_legal.md)). **Pedophilic disorder is a chronic sexual interest, not the same as a "child molester,"** but any current risk to an identifiable child is a protection issue.
+**Can't-miss** — Disorders involving **non-consenting victims (pedophilic, exhibitionistic, voyeuristic, frotteuristic, sadism)** raise **safety duties**. Mandated reporting applies when a **child** is at risk (every state) or, in most states, an **elder or dependent adult**; with a competent adult victim, disclosure depends on your state's duty-to-protect law and a credible threat to an identifiable person ([Ethics & the Law](?page=ethics_legal.md)). Check your state's statute; in Maine, physicians, residents and mental health professionals must report when they know or have reasonable cause to suspect that a child has been or is likely to be abused or neglected (22 M.R.S. §4011-A) — for a licensed mental health professional, even when the knowledge comes from treating the person responsible (§4011-A(4)) — and adult-protective reporting covers incapacitated or dependent adults (22 M.R.S. §3477). **Pedophilic disorder is a chronic sexual interest, not the same as a "child molester,"** but any current risk to an identifiable child is a protection issue.
 
 **Management** — Specialized psychotherapy (relapse-prevention/CBT); pharmacologic options for high-risk offending include SSRIs and, in severe cases, antiandrogen/GnRH agents. Screen for comorbid mood, substance, and personality disorders.
 
@@ -31,14 +31,14 @@
 **What the student does** —
 - For sexual dysfunction: review meds first (SSRIs, antipsychotics) and screen medical/endocrine/vascular causes before a primary diagnosis.
 - Separate a paraphilia (interest) from a paraphilic *disorder* (distress/impairment or non-consent).
-- Recognize reporting/safety duties when a paraphilic disorder involves a child or non-consenting person.
+- Recognize the reporting duty when a child (or, in most states, an elder or dependent adult) is at risk, and the safety duty when a paraphilic disorder involves any non-consenting person.
 - Use affirming language for gender-diverse patients; treat the *distress* and screen suicide risk.
 - Coordinate continuity of gender-affirming care and outpatient sexual-health follow-up.
 
 **High-yield pearls**
 - SSRIs are a top cause of sexual dysfunction; switch to bupropion/mirtazapine or add a PDE5 inhibitor.
 - Paraphilia ≠ paraphilic disorder — the disorder requires distress/impairment or harm to others.
-- Non-consenting paraphilic behavior triggers safety and reporting duties.
+- A child (or, in most states, an elder or dependent adult) at risk triggers protective-services reporting; other non-consenting paraphilic behavior triggers a safety assessment and, only for a credible threat to an identifiable person, your state's duty-to-protect rules.
 - Gender dysphoria names *distress from incongruence*; transgender identity is not a disorder.
 - Elevated suicidality in gender-diverse patients reflects minority stress — screen and support.
 - Depression lowers libido — treat the mood disorder, and mind the medication's sexual side effects.

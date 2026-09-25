@@ -206,6 +206,16 @@
       "rationaleRef": "13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md §2 (D8) and §4 WP-16 — lands via PR #766",
       "note": "D8, chosen over CC BY-NC-ND and all rights reserved. Covers the library's own authored content (CC BY-NC-SA 4.0) and code (MIT); third-party assets keep their own rights, and the instrument-reproduction rule (instrument-scope-option-a) is unchanged by it. The handoff also gates WP-16 on counsel for the license. Implementation (WP-16: LICENSE and LICENSE-content, plus a README section on third-party rights) is pending, so no file carries it yet.",
       "governs": []
+    },
+    {
+      "id": "canonical-values-2026-09",
+      "title": "One canonical statement each for refeeding, lithium levels, buprenorphine start, RLS, malignant hyperthermia and the cultural-psychiatry sentence",
+      "status": "active",
+      "decided": "2026-09-24",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md §7-A–F (D1) and docs/curriculum-review/peer-review-2026-09-24/HANDOFF_CLAUDE_CODE.md §0A (J0, J1)",
+      "note": "D1: the architecture review's §7-A–F statements were approved as written, and any rewording beyond fitting a sentence to its surface needs approval again. J1: the §7-C sentence is the one buprenorphine-start wording for both the architecture and the peer-review remediation. In short — refeeding: higher-calorie start with daily phosphate/K/Mg in mild–moderate malnutrition, a cautious start only for the highest risk, thiamine and other vitamins, no delay to correct electrolytes (SAHM 2022, StRONG 2021, MEED). Lithium: acute 0.8–1.2 mmol/L; maintenance 0.6–0.8 (0.4–0.6 or 0.8–1.0 by response and tolerance); older adults usually 0.4–0.6; 12-h trough about 5 days after a change (Nolen 2019, CANMAT 2018). Buprenorphine: start once objective withdrawal is present, roughly COWS ≥ 8–12 depending on the guideline, and teach no single cutoff (TIP 63, ASAM 2020, ASAM 2023 HPSO). RLS: iron when ferritin/TSAT is low, alpha-2-delta ligands first-line, dopamine agonists no longer standard (AASM 2025). Malignant hyperthermia row and succinylcholine history for ECT (Rosenberg 2015). Cultural sentence per §7-F (Selten 2020). One override is recorded with it (J0): the peer review's EXTRIP 2015 lithium-dialysis wording (R01-001/-002) replaces §7-B's note to leave the EXTRIP lines alone. Governs nothing yet: architecture WP-1b fills the pending canonical_claims.json slots, which is where these values become regex-guarded.",
+      "governs": []
     }
   ]
 }
