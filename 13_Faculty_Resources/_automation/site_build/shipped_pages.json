@@ -147,6 +147,9 @@
       "title": "I Need Collateral: 10-Minute Workflow"
     },
     {
+      "extraSources": [
+        "communication_cases.json"
+      ],
       "kind": "tool",
       "producer": "site_manifest",
       "sites": [
@@ -518,6 +521,10 @@
       "title": "Delirium"
     },
     {
+      "extraSources": [
+        "reasoning_cases.json",
+        "reasoning_cases_resident.json"
+      ],
       "kind": "tool",
       "producer": "site_manifest",
       "sites": [
@@ -606,6 +613,9 @@
       "title": "Treatment Basics"
     },
     {
+      "extraSources": [
+        "family_systems_scenarios.json"
+      ],
       "kind": "tool",
       "producer": "site_manifest",
       "sites": [
@@ -749,6 +759,9 @@
       "title": "Osteopathic (OMM) Resources"
     },
     {
+      "extraSources": [
+        "longitudinal_case.json"
+      ],
       "kind": "tool",
       "producer": "site_manifest",
       "sites": [
@@ -771,6 +784,9 @@
       "title": "Treatment Team Rounding Prep"
     },
     {
+      "extraSources": [
+        "_prototypes/orientation-video/Inpatient_Psych_Orientation.vtt"
+      ],
       "kind": "tool",
       "producer": "ms3_extra_tool",
       "sites": [
@@ -880,6 +896,9 @@
       "title": "Psychotherapies at a Glance"
     },
     {
+      "extraSources": [
+        "question_bank.json"
+      ],
       "kind": "tool",
       "producer": "site_manifest",
       "sites": [
@@ -924,6 +943,13 @@
       "title": "Reflection & Identity"
     },
     {
+      "extraSources": [
+        "07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
+        "communication_cases.json",
+        "family_systems_scenarios.json",
+        "reasoning_cases.json",
+        "reasoning_cases_resident.json"
+      ],
       "kind": "tool",
       "producer": "site_manifest",
       "sites": [
@@ -967,6 +993,9 @@
       "title": "High-Yield Rounds Questions"
     },
     {
+      "extraSources": [
+        "_prototypes/agitation-trainer/rp-agitation.pack.json"
+      ],
       "kind": "tool",
       "producer": "resident_tool",
       "sites": [
@@ -977,6 +1006,9 @@
       "title": "Agitation Ladder — PRN Trainer"
     },
     {
+      "extraSources": [
+        "_prototypes/brief-psych/rp-brief-psych.pack.json"
+      ],
       "kind": "tool",
       "producer": "resident_tool",
       "sites": [
@@ -987,6 +1019,9 @@
       "title": "Five Good Minutes — Brief Psych Coach"
     },
     {
+      "extraSources": [
+        "07_Evidence_and_Reading/Landmark_Trials/quizzes.json"
+      ],
       "kind": "tool",
       "producer": "resident_tool",
       "sites": [
@@ -1018,6 +1053,9 @@
       "title": "Screeners: PHQ-9 & GAD-7"
     },
     {
+      "extraSources": [
+        "question_bank.json"
+      ],
       "kind": "tool",
       "producer": "site_manifest",
       "sites": [
@@ -1040,6 +1078,10 @@
       "title": "Shelf Review Guide"
     },
     {
+      "extraSources": [
+        "_prototypes/sp-interview/sp-interview.pack.json",
+        "_prototypes/sp-interview/sp-interview.voice.js"
+      ],
       "kind": "tool",
       "producer": "site_manifest",
       "sites": [

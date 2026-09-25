@@ -39,6 +39,15 @@ build sandbox (the agent proxy returns 403), so abstracts are fetched via the
 PubMed MCP tool and written to the cache by hand or by a dev script. The cache
 is git-tracked, so rows_uncached is deterministic across checkouts and pinnable.
 
+The cache is keyed by PMID. A source with NO PMID -- a college report or guideline PDF,
+such as RCPsych MEED (CR233) -- is keyed "id:<sourceId>" instead, and its value is the
+source's own passage as extracted from the document named in the row's
+verifiedAgainst.sourceEndpoint (never a copy of the span: the span must be FOUND inside
+it, exactly as with an abstract). Until 2026-09-24 such a row could only ever read as
+uncached, so a verified guideline span could not land without raising rows_uncached.
+The "id:" prefix cannot collide with a numeric PMID, and a row that HAS a PMID is never
+looked up by id, so a PubMed source cannot be satisfied by a hand-pasted passage.
+
     python3 bin/verify_spans.py                    # the gate (bin/verify.sh runs it)
     python3 bin/verify_spans.py --id pott-2022     # one row; ratchet not evaluated
     python3 bin/verify_spans.py --self-test        # a regression exits 1, the tree exits 0
@@ -140,6 +149,12 @@ def longest_prefix(span: str, abstract: str) -> int:
 
 # ---------------------------------------------------------------- audit (finding logic, unchanged)
 
+def cache_key(sid, va):
+    """The cache key for one annotation row: its PMID, or "id:<sourceId>" when it has none."""
+    pmid = str(va.get("pmid") or "").strip()
+    return pmid if pmid else f"id:{sid}"
+
+
 def audit(doc, cache, only_id=None):
     """Classify every stored span. Returns (counts, findings).
 
@@ -152,7 +167,7 @@ def audit(doc, cache, only_id=None):
         if only_id and sid != only_id:
             continue
         va = row.get("verifiedAgainst") or {}
-        pmid, span = str(va.get("pmid") or ""), va.get("sourceSpan") or ""
+        pmid, span = cache_key(sid, va), va.get("sourceSpan") or ""
         if not span:
             continue
         audited += 1
@@ -403,6 +418,23 @@ def self_test() -> int:
     # 5. an uncached pmid is a rise in rows_uncached -- the wrong-cache silent pass is closed
     rc, out = run(_fx(unc=("999", _FX_S1)), _FX_CACHE, zero)
     expect("uncached row raises rows_uncached and exits 1", rc == 1 and "rows_uncached rose 0 -> 1" in out)
+
+    # 5b. a source with NO PMID (a guideline PDF) is audited against its "id:<sourceId>"
+    # passage -- and only its own: not another source's, and never instead of a PMID.
+    id_cache = dict(_FX_CACHE, **{"id:guide": _FX_ABSTRACT})
+    rc, out = run(_fx(guide=("", _FX_S1 + " " + _FX_S2)), id_cache, zero)
+    expect("a no-PMID span found in its id:<sourceId> passage is clean",
+           rc == 0 and "0 uncached of 1" in out)
+    rc, out = run(_fx(guide=("", _FX_S1)), _FX_CACHE, zero)
+    expect("a no-PMID row with no id:<sourceId> passage is uncached, exit 1",
+           rc == 1 and "rows_uncached rose 0 -> 1" in out)
+    rc, out = run(_fx(other=("", _FX_S1)), id_cache, zero)
+    expect("a no-PMID row cannot borrow another source's passage", rc == 1 and "rows_uncached rose 0 -> 1" in out)
+    rc, out = run(_fx(guide=("999", _FX_S1)), id_cache, zero)
+    expect("a row WITH a PMID is never satisfied by an id: passage",
+           rc == 1 and "rows_uncached rose 0 -> 1" in out)
+    rc, out = run(_fx(guide=("", _FX_REWORD)), id_cache, generous)
+    expect("the REWORDED hard floor applies to a no-PMID source too", rc == 1 and "REWORDED" in out)
 
     # 6. a truncated sentence is a rise in sentences_truncated
     rc, out = run(_fx(tr=("1", _FX_TRUNC)), _FX_CACHE, zero)

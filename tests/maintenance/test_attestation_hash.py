@@ -187,17 +187,6 @@ class RealShippedPagesSourcesTest(unittest.TestCase):
             ],
         )
 
-    def test_no_other_shipped_page_carries_extra_sources(self):
-        self.assertEqual(
-            sorted(
-                page["slug"]
-                for page in self.document["pages"]
-                if "extraSources" in page
-            ),
-            ["cotw_index.md", "welcome.md"],
-        )
-
-
 class ManifestForSlugTest(unittest.TestCase):
     def test_one_source_plus_topic_meta_record(self):
         manifest = manifest_for_slug("x.md", {"a.md": b"alpha\n"}, topic_meta_document()["x.md"])

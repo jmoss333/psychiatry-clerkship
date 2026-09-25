@@ -301,14 +301,23 @@ test('post_edit_validate checks shipped_pages.json after a producer edit', () =>
 test('post_edit_validate blocks when a producer edit leaves shipped_pages.json stale', (t) => {
   const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'clerkship-stale-producer-'));
   t.after(() => fs.rmSync(fixture, { recursive: true, force: true }));
-  for (const rel of [
+  // Discovery now reads actual tool inputs. Give the isolated producer fixture
+  // those inputs so this test still fails for the deliberately added week,
+  // rather than an absent module or a missing teaching file.
+  const shipped = JSON.parse(fs.readFileSync(path.join(repo,
+    '13_Faculty_Resources/_automation/site_build/shipped_pages.json'), 'utf8'));
+  const toolInputs = shipped.pages.filter(page => page.kind === 'tool')
+    .flatMap(page => [page.source, ...(page.extraSources || [])]);
+  for (const rel of new Set([
     '13_Faculty_Resources/_automation/site_build/shipped_pages.py',
+    '13_Faculty_Resources/_automation/site_build/teaching_dependencies.py',
     '13_Faculty_Resources/_automation/site_build/site_extras.py',
     '13_Faculty_Resources/_automation/site_build/cotw_slug.py',
     '13_Faculty_Resources/_automation/site_build/site_manifest.json',
     '13_Faculty_Resources/_automation/site_build/shipped_pages.json',
     '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json',
-  ]) {
+    ...toolInputs,
+  ])) {
     const target = path.join(fixture, rel);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.copyFileSync(path.join(repo, rel), target);

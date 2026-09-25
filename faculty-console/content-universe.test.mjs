@@ -206,11 +206,6 @@ test('a resident override is recorded on the shared page as extraSources', () =>
     bySlug.get('cotw_index.md').extraSources,
     ['08_Cases_and_Simulation/case-of-the-week/index_resident.md'],
   );
-  assert.deepEqual(
-    SHIPPED.pages.filter(page => page.extraSources !== undefined).map(page => page.slug).sort(),
-    ['cotw_index.md', 'welcome.md'],
-    'only the two resident overrides reuse a slug the manifest already ships',
-  );
 });
 
 test('the derived slug is byte-identical to cotw_slug() in the shared Python helper', () => {
