@@ -928,9 +928,9 @@
       "kind": "general",
       "level": "low"
     },
-    "at": "2026-09-21",
+    "at": "2026-09-25",
     "by": "Joshua Moss, MD",
-    "contentHash": "e3fd8daabd09f0358cd97c471b900c2f17a0618e"
+    "contentHash": "65fbe11345c08753bd66104a5e4b34e3bcc1c3ea"
   },
   "book_library.md": {
     "status": "reviewed",
