@@ -618,9 +618,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-21",
+    "at": "2026-09-25",
     "by": "Joshua Moss, MD",
-    "contentHash": "75c2d7328d730cdacb248afd95598b4abbfeebad"
+    "contentHash": "640c45e6481c6f282b38e1329ec2adab1f54c3bf"
   },
   "t_somatic.md": {
     "status": "reviewed",
