@@ -13,6 +13,10 @@ import { generateKeyPairSync } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 import { appendEvents, loadSigner } from '../faculty-console/ledger.mjs';
+import { scrubInheritedGitEnv } from './_git_env.mjs';
+
+// Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrubInheritedGitEnv();
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = path.join(repo, '13_Faculty_Resources/_automation/site_build/ledger_overlay.mjs');
