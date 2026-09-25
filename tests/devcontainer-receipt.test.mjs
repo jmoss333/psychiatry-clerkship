@@ -6,6 +6,10 @@ import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildReceipt, evaluateReceipt, writeReceiptAtomic } from '../bin/devcontainer-receipt.mjs';
+import { scrubInheritedGitEnv } from './_git_env.mjs';
+
+// Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrubInheritedGitEnv();
 
 const RECEIPT_CLI = resolve(dirname(fileURLToPath(import.meta.url)), '../bin/devcontainer-receipt.mjs');
 const COMMIT = 'a'.repeat(40);

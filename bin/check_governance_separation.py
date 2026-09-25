@@ -1030,6 +1030,10 @@ class _env:
 
 
 def self_test():  # noqa: C901 — a flat list of cases reads better than helpers here
+    # Every git call below already drops GIT_*; scrubbing the process too makes the rule the
+    # same for every repo-building self-test (tests/git-env-isolation.test.mjs pins it).
+    from _git_env import scrub_inherited_git_env
+    scrub_inherited_git_env()
     failures, total = [], []
 
     def check(name, got, want):
