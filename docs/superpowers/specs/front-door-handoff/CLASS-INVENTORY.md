@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(485 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(486 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -663,7 +663,7 @@ preview. Full behavior and content-preservation contract:
       .fd-article__body
         .fd-guide-arrival
         .fd-guide-section | .sec-c        (section target)
-          h2
+          h2 | p.fd-guide-lead            (authored H2, or a promoted bold-lead paragraph)
           original content
           .fd-guide-table-controls       (optional comparison/row toggles)
           .table-scroll
@@ -684,6 +684,7 @@ preview. Full behavior and content-preservation contract:
 | `.fd-guide-find` | Page-scoped finder form. The narrow desktop margin stacks its field and action; the wider mobile flow pairs them. The label spans all form columns; input shrinks safely and action remains visible. |
 | `.fd-guide-results` | Finder feedback/results. Result buttons fill their container and wrap text. |
 | `.fd-guide-section` | Wrapper preserving a non-collapsible authored heading and its following content. `.sec-c` keeps the existing explicit disclosure behavior where allowed. |
+| `.fd-guide-lead` | The authored paragraph that opens a section on a page with no H2: its first element is a bold label followed by a separator (`—`, `:`) or ending in `.`/`:`, or standing alone. It stays a `<p>` with its inline `<strong>` untouched; the class adds only the landing scroll margin. The section's navigation label is the bold text without trailing punctuation. A page qualifies only with no H2 anywhere (an embedded component's own heading keeps it out), at least four leads and 500 words — the rotation week pages stay plain. **Trap:** such a page keeps its reading place (`[data-fd-reading-status]`, Start at top), unlike an H2 guide, and the reading-place anchor is the lead's `<strong>`, not the paragraph, so editing the prose keeps a saved place. |
 | `.fd-guide-orientation` | Teal summary/orientation treatment applied to an authored section by a narrow heading match. |
 | `.fd-guide-caution` | Olive rule and wash for an explicitly titled caution section. Meaning remains in the original heading. |
 | `.fd-guide-example` | Teal rule and smaller supporting type for an explicitly identified example block. |
