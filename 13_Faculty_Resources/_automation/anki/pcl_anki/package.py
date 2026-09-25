@@ -155,9 +155,21 @@ def _validate_candidate(candidate: CandidateRelease) -> tuple[RenderedNote, ...]
 
 
 def write_apkg(decks, path: Path, build_epoch: int) -> None:
-    """Write a real APKG using the candidate's explicit monotonic epoch."""
+    """Write a real APKG using the candidate's explicit monotonic epoch.
 
-    genanki.Package(decks).write_to_file(str(path), timestamp=float(build_epoch))
+    genanki 0.13.1 builds the collection in a ``tempfile.mkstemp()`` SQLite file and never
+    deletes it, so every package written used to leave one in $TMPDIR (~13,600 on one Mac by
+    2026-09-24). For the duration of the call the default temp directory is one this function
+    owns, so the file goes with it. The zip arcname is fixed, so the package is unchanged.
+    """
+
+    with tempfile.TemporaryDirectory(prefix="pcl-anki-apkg-") as scratch:
+        previous = tempfile.tempdir
+        tempfile.tempdir = scratch
+        try:
+            genanki.Package(decks).write_to_file(str(path), timestamp=float(build_epoch))
+        finally:
+            tempfile.tempdir = previous
 
 
 def _deck(deck_id: int, deck_name: str, notes: Sequence[RenderedNote]) -> genanki.Deck:
