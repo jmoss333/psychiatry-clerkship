@@ -603,7 +603,11 @@ def self_test() -> int:
            classify({"id": "clean", "surveillance": {"job": CREDITED_JOB},
                      "governance": {"reviewCadence": "monthly"}}, today, ev)["bucket"] == "unknown")
     with tempfile.TemporaryDirectory() as tmp:
-        hist = Path(tmp)
+        # history/ and config/ are siblings, as under surveillance/. `hist = Path(tmp)` made
+        # hist.parent the shared TMPDIR itself, so every run wrote config/dismissed.json there
+        # and nothing ever removed it (verify.sh's private-TMPDIR leak check found it).
+        hist = Path(tmp) / "history"
+        hist.mkdir()
         (hist / "baselines").mkdir()
         (hist / "baselines" / "clean.json").write_text(
             json.dumps({"hash": "x", "chars": 10, "checked_at": "2026-09-01T06:08:48+00:00"}))

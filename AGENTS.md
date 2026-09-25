@@ -140,6 +140,15 @@ the container when the Bash 5 environment is part of the evidence.
   empty array as unbound and aborts with an empty message (PR #469). Write
   `${ARR[@]+"${ARR[@]}"}`. Prove whose fault it is by running the failing gate on clean `main`
   before reaching for `--no-verify` (which is never the answer).
+- **Every `verify.sh` step runs with its own `TMPDIR`** — a `verify-step.*` directory removed
+  when the step ends. Anything still in it prints as `LEAK <step> N entries left … (removed):
+  <prefix>* (count), …` and fails the run; the prefix greps to the test that made the fixture.
+  Fix the test (`t.after(() => fs.rmSync(dir, { recursive: true, force: true }))`, Python
+  `addCleanup`/`TemporaryDirectory`), never the report. Why: on 2026-09-24 the Mac's shared
+  `$TMPDIR` held ~122,700 entries, ~103k of them fixtures from three test files that never
+  cleaned up; `python3` importing from that directory took ~20 s and `preview-site.test.mjs`
+  blocked pushes while no test failed. A bare `node --test` outside verify.sh is not sandboxed.
+  `bin/tmp_leak_report.sh`, pinned by `tests/verify-tmp-sandbox.test.mjs`.
 - **Visual baselines must be generated on Ubuntu/Chromium** (the CI runner), not a macOS laptop —
   regenerate via the "Refresh visual baselines" workflow_dispatch, not locally.
 

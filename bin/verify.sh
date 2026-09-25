@@ -41,10 +41,25 @@ QUICK=0
 [ "${1:-}" = "--quick" ] && QUICK=1
 
 FAILED=()
+# Every step runs with TMPDIR pointed at a private directory of its own, which is removed as soon
+# as the step ends; anything still in it is a LEAK, printed by prefix and counted as a failure.
+# On 2026-09-24 the Mac's shared $TMPDIR held ~122,700 entries, ~103k of them fixtures three test
+# files never removed — invisible until python3 started taking 20 s to import from that
+# directory and tests/preview-site.test.mjs blocked pushes. See bin/tmp_leak_report.sh. The
+# export is inside the $(…), so step() itself still sees the caller's TMPDIR.
+CUR_STEP_TMP=''
+trap '[ -n "$CUR_STEP_TMP" ] && rm -rf "$CUR_STEP_TMP"' EXIT
+trap 'exit 129' HUP; trap 'exit 130' INT; trap 'exit 143' TERM
 step() {
   local name="$1"; shift
-  local out rc
-  out="$("$@" 2>&1)"; rc=$?
+  local out rc tmp leaks
+  tmp="${TMPDIR:-/tmp}"
+  CUR_STEP_TMP="$(mktemp -d "${tmp%/}/verify-step.XXXXXX")" || CUR_STEP_TMP=''
+  if [ -n "$CUR_STEP_TMP" ]; then
+    out="$(export TMPDIR="$CUR_STEP_TMP"; "$@" 2>&1)"; rc=$?
+  else
+    out="could not create a private TMPDIR under $tmp"; rc=2
+  fi
   if [ $rc -eq 0 ]; then
     printf '  PASS  %-42s %s\n' "$name" "$(printf '%s' "$out" | tail -1 | cut -c1-58)"
   else
@@ -52,6 +67,11 @@ step() {
     printf '%s\n' "$out" | tail -15 | sed 's/^/        | /'
     FAILED+=("$name")
   fi
+  if [ -n "$CUR_STEP_TMP" ] && ! leaks="$("$BASH" "$REPO/bin/tmp_leak_report.sh" "$CUR_STEP_TMP")"; then
+    printf '  LEAK  %-42s %s\n' "$name" "$leaks"
+    FAILED+=("$name (temp-dir leak)")
+  fi
+  CUR_STEP_TMP=''
 }
 
 # ci.yml greps for machine-specific paths and fails when it FINDS them, so the exit codes

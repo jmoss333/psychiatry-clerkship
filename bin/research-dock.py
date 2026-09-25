@@ -664,18 +664,17 @@ def _self_test():
                      findings=[{"id": "f1", "claim": "Some claim worth checking here.",
                                 "disposition": "needs-primary"}]), today="2026-09-06"),
            "still needs-primary")
-    import tempfile as _tf
-    _tmp = _tf.mkdtemp()
-    with open(os.path.join(_tmp, "dirty.md"), "w", encoding="utf-8") as _fh:
-        _fh.write("visible text \ue202turn1view0 more text")
-    with open(os.path.join(_tmp, "research_returns.json"), "w", encoding="utf-8") as _fh:
-        _fh.write("{}")
-    expect("invisible characters in a return file are caught",
-           check(one(returnFile="dirty.md"), today="2026-09-02", root=_tmp),
-           "invisible character")
-    expect("a clean return file is not flagged",
-           check(one(returnFile="research_returns.json"), today="2026-09-02", root=_tmp),
-           "invisible character", want=False)
+    with tempfile.TemporaryDirectory() as _tmp:
+        with open(os.path.join(_tmp, "dirty.md"), "w", encoding="utf-8") as _fh:
+            _fh.write("visible text \ue202turn1view0 more text")
+        with open(os.path.join(_tmp, "research_returns.json"), "w", encoding="utf-8") as _fh:
+            _fh.write("{}")
+        expect("invisible characters in a return file are caught",
+               check(one(returnFile="dirty.md"), today="2026-09-02", root=_tmp),
+               "invisible character")
+        expect("a clean return file is not flagged",
+               check(one(returnFile="research_returns.json"), today="2026-09-02", root=_tmp),
+               "invisible character", want=False)
     # Root-explicit on purpose. With a default root this case silently changed meaning with
     # the checkout it ran in — blocking in the tree that owns the returns, advisory in every
     # other worktree — which is exactly the ambiguity the advisory split exists to name.
