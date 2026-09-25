@@ -9,7 +9,8 @@ every ref it names is a page the build actually ships:
   - weeks are exactly 1..6, each present once
   - every item ref resolves to a shipped slug
   - item kind agrees with the slug's type (.html => tool, .md => read)
-  - refs within a week are unique
+  - items within a week are unique by (ref, query): a tool may repeat on distinct
+    queries, and a read (which cannot carry one) never repeats
   - every shipped slug is placed in a library column or explicitly excluded
   - every MS3 week's landingRef is a shipped MS3 Markdown page (welcome_compass.prepare_cards)
   - Essentials fails closed: E1 shape, E2 shipped audience, E3 Library subset,
@@ -297,7 +298,7 @@ def main(argv):
             if not isinstance(items, list):
                 bad(week_label, "items must be a list")
                 continue
-            seen_refs = set()
+            seen_items = set()
             week_n = week.get("n")
             is_week_one = week_n == 1 and not isinstance(week_n, bool)
             required_minutes = []
@@ -309,9 +310,18 @@ def main(argv):
                 if not isinstance(ref, str):
                     bad(week_label, "item ref must be a string (got %r)" % (ref,))
                     continue
-                if ref in seen_refs:
-                    bad(week_label, "duplicate ref '%s' within the week" % ref)
-                seen_refs.add(ref)
+                # Uniqueness is per (ref, query): the adopted spine opens one tool twice in a
+                # week on two different cases (sp-interview.html, two case= deep links). A read
+                # cannot carry a query (below), so a read still never repeats within a week.
+                query = item.get("query")
+                query_key = query if query is None or isinstance(query, str) else repr(query)
+                if (ref, query_key) in seen_items:
+                    if query is None:
+                        bad(week_label, "duplicate ref '%s' within the week" % ref)
+                    else:
+                        bad(week_label, "duplicate ref '%s' with query %r within the week"
+                            % (ref, query))
+                seen_items.add((ref, query_key))
                 # Required Core tier (required-core-tier, above). An unknown priority fails
                 # closed: a misspelt `required` would otherwise escape the minutes budget.
                 priority = item.get("priority", DEFAULT_PATH_PRIORITY)

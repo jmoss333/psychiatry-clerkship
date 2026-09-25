@@ -720,14 +720,14 @@ class RequiredCoreTierTest(unittest.TestCase):
     `window` only in week 1. Every case is a synthetic curriculum; none reads live state.
     """
 
-    def _result(self, mutate, minutes=None):
+    def _result(self, mutate, minutes=None, shipped_pages=None):
         cur = _curriculum([])
         mutate(cur)
         meta = _topic_meta()
         for ref, value in (minutes or {}).items():
             meta.setdefault(ref, {})["read"] = value
         with tempfile.TemporaryDirectory() as tmp:
-            cpath, root = _write(tmp, cur, topic_meta=meta)
+            cpath, root = _write(tmp, cur, topic_meta=meta, shipped_pages=shipped_pages)
             return _run(cpath, root)
 
     def assert_ok(self, result):
@@ -822,6 +822,50 @@ class RequiredCoreTierTest(unittest.TestCase):
             self.assert_rejected(self._result(_set_items("ms3", 0, [
                 {"ref": "welcome.md", "kind": "read", "query": "week=1"}])),
                 "learningPaths.ms3 week 1", "welcome.md", "query")
+
+    def _with_sp_interview(self, items):
+        """The adopted D3 spine's week-1 shape needs sp-interview.html, which this fixture's
+        synthetic listing does not ship. Ship it here and exclude it from the Library, so the
+        totality guard stays quiet and within-week uniqueness is the only thing judged."""
+        shipped = _shipped_document()
+        shipped["pages"].append({
+            "slug": "sp-interview.html", "kind": "tool", "sites": ["ms3", "res"],
+            "title": "The Interview Room", "source": "src/sp-interview.html",
+            "producer": "site_manifest"})
+
+        def mutate(cur):
+            _set_items("ms3", 0, items)(cur)
+            cur["libraryExclude"].append(
+                {"ref": "sp-interview.html", "reason": "outside this fixture — spine shape"})
+
+        return self._result(mutate, shipped_pages=shipped)
+
+    def test_a_tool_may_repeat_in_a_week_with_distinct_queries(self):
+        # The D3 spine's week 1 opens The Interview Room twice, on two different cases.
+        self.assert_ok(self._with_sp_interview([
+            {"ref": "sp-interview.html", "kind": "tool", "priority": "required",
+             "window": "days-1-3", "query": "case=sp_depression_gated_si_001"},
+            {"ref": "sp-interview.html", "kind": "tool",
+             "query": "case=sp_psychosis_paranoid_001"},
+        ]))
+
+    def test_a_tool_repeated_with_the_same_query_is_a_duplicate(self):
+        item = {"ref": "sp-interview.html", "kind": "tool",
+                "query": "case=sp_depression_gated_si_001"}
+        self.assert_rejected(self._with_sp_interview([item, dict(item)]),
+                             "learningPaths.ms3 week 1",
+                             "duplicate ref 'sp-interview.html' with query "
+                             "'case=sp_depression_gated_si_001' within the week")
+
+    def test_a_ref_repeated_without_a_query_is_still_a_duplicate(self):
+        # A read cannot carry a query at all, so a read can never repeat within a week; a
+        # tool with no query keeps the original error text word for word.
+        for label, item in (("tool", {"ref": "sp-interview.html", "kind": "tool"}),
+                            ("read", {"ref": "welcome.md", "kind": "read"})):
+            with self.subTest(label=label):
+                self.assert_rejected(self._with_sp_interview([item, dict(item)]),
+                                     "learningPaths.ms3 week 1",
+                                     "duplicate ref '%s' within the week" % item["ref"])
 
     def test_window_is_only_allowed_in_week_1(self):
         item = [{"ref": "welcome.md", "kind": "read", "window": "days-1-3"}]
