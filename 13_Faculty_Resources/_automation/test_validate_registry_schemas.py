@@ -117,6 +117,189 @@ class RegistrySchemaGateTests(unittest.TestCase):
             self.assertIn(f"{document}: OK", result.stdout)
             self.assertIn(schema, result.stdout)
 
+    def test_accepted_limitation_with_advisory_past_revisit_date_passes(self) -> None:
+        """A revisit date is recorded and validated, but never expires the registry."""
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "decisions.json").read_text(encoding="utf-8"))
+            document["decisions"].append(
+                {
+                    "id": "example-accepted-limitation",
+                    "title": "An example accepted limitation remains advisory after its revisit date",
+                    "status": "active",
+                    "decided": "2020-01-01",
+                    "decidedBy": "Example Faculty",
+                    "rationaleRef": "example decision record",
+                    "decisionBasis": "accepted-limitation",
+                    "acceptedOn": "2020-01-01",
+                    "revisitTrigger": "faculty review of the example limitation",
+                    "revisitBy": "2020-01-02",
+                    "governs": [],
+                }
+            )
+            (root / "decisions.json").write_text(
+                json.dumps(document, indent=2) + "\n", encoding="utf-8"
+            )
+
+            result = run_validator(root)
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("decisions.json: OK", result.stdout)
+
+    def test_accepted_limitation_with_impossible_revisit_date_fails(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "decisions.json").read_text(encoding="utf-8"))
+            decision = next(
+                row
+                for row in document["decisions"]
+                if row["id"] == "interview-third-person-accepted-limitation"
+            )
+            decision["revisitBy"] = "2027-02-30"
+            (root / "decisions.json").write_text(
+                json.dumps(document, indent=2) + "\n", encoding="utf-8"
+            )
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("'2027-02-30' is not a 'date'", result.stdout)
+
+    def test_accepted_limitation_without_acceptance_date_fails(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "decisions.json").read_text(encoding="utf-8"))
+            document["decisions"].append(
+                {
+                    "id": "undated-accepted-limitation",
+                    "title": "An accepted limitation cannot silently omit its acceptance date",
+                    "status": "active",
+                    "decided": "2020-01-01",
+                    "decidedBy": "Example Faculty",
+                    "rationaleRef": "example decision record",
+                    "decisionBasis": "accepted-limitation",
+                    "revisitBy": "2021-01-01",
+                    "governs": [],
+                }
+            )
+            (root / "decisions.json").write_text(
+                json.dumps(document, indent=2) + "\n", encoding="utf-8"
+            )
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("'acceptedOn' is a required property", result.stdout)
+
+    def test_dated_accepted_limitation_without_revisit_trigger_fails(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "decisions.json").read_text(encoding="utf-8"))
+            document["decisions"].append(
+                {
+                    "id": "untriggered-accepted-limitation",
+                    "title": "A dated accepted limitation also needs an event-driven revisit trigger",
+                    "status": "active",
+                    "decided": "2020-01-01",
+                    "decidedBy": "Example Faculty",
+                    "rationaleRef": "example decision record",
+                    "decisionBasis": "accepted-limitation",
+                    "acceptedOn": "2020-01-01",
+                    "revisitBy": "2021-01-01",
+                    "governs": [],
+                }
+            )
+            (root / "decisions.json").write_text(
+                json.dumps(document, indent=2) + "\n", encoding="utf-8"
+            )
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("'revisitTrigger' is a required property", result.stdout)
+
+    def test_accepted_limitation_without_revisit_or_permanent_fails(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "decisions.json").read_text(encoding="utf-8"))
+            document["decisions"].append(
+                {
+                    "id": "open-ended-accepted-limitation",
+                    "title": "An accepted limitation cannot become permanent through silence",
+                    "status": "active",
+                    "decided": "2020-01-01",
+                    "decidedBy": "Example Faculty",
+                    "rationaleRef": "example decision record",
+                    "decisionBasis": "accepted-limitation",
+                    "acceptedOn": "2020-01-01",
+                    "governs": [],
+                }
+            )
+            (root / "decisions.json").write_text(
+                json.dumps(document, indent=2) + "\n", encoding="utf-8"
+            )
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("is not valid under any of the given schemas", result.stdout)
+
+    def test_permanent_accepted_limitation_passes_without_revisit_date(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "decisions.json").read_text(encoding="utf-8"))
+            document["decisions"].append(
+                {
+                    "id": "permanent-accepted-limitation",
+                    "title": "A permanent accepted limitation needs no calendar revisit date",
+                    "status": "active",
+                    "decided": "2020-01-01",
+                    "decidedBy": "Example Faculty",
+                    "rationaleRef": "example decision record",
+                    "decisionBasis": "accepted-limitation",
+                    "acceptedOn": "2020-01-01",
+                    "permanent": True,
+                    "governs": [],
+                }
+            )
+            (root / "decisions.json").write_text(
+                json.dumps(document, indent=2) + "\n", encoding="utf-8"
+            )
+
+            result = run_validator(root)
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("decisions.json: OK", result.stdout)
+
+    def test_accepted_limitation_cannot_be_permanent_and_dated(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "decisions.json").read_text(encoding="utf-8"))
+            document["decisions"].append(
+                {
+                    "id": "contradictory-accepted-limitation",
+                    "title": "An accepted limitation cannot be both permanent and scheduled for review",
+                    "status": "active",
+                    "decided": "2020-01-01",
+                    "decidedBy": "Example Faculty",
+                    "rationaleRef": "example decision record",
+                    "decisionBasis": "accepted-limitation",
+                    "acceptedOn": "2020-01-01",
+                    "revisitTrigger": "faculty review of the example limitation",
+                    "revisitBy": "2021-01-01",
+                    "permanent": True,
+                    "governs": [],
+                }
+            )
+            (root / "decisions.json").write_text(
+                json.dumps(document, indent=2) + "\n", encoding="utf-8"
+            )
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("is valid under each of", result.stdout)
+
     def _mutated_pairings(self, root: Path, mutate) -> str:
         document = json.loads((root / "pairings.json").read_text(encoding="utf-8"))
         mutate(document)
