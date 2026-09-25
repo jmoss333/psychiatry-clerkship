@@ -45,7 +45,7 @@ Two distinctions worth over-learning: (1) **hallucinosis ≠ DT** — hallucinos
 
 **Q3. Which features here predict that he will get *complicated* (moderate-to-severe) withdrawal — not just the shakes?**
 
-*Teaching point:* The best predictor of severe withdrawal is **what happened last time**. The high-yield risk factors: prior withdrawal seizures, **prior delirium tremens**, prior withdrawal episodes generally ("kindling" — each episode makes the next worse), high daily intake, a shorter interval since the last drink at presentation, and a **detectable blood alcohol level while appearing sober** (evidence of marked tolerance). Comorbid acute illness, trauma, or surgery adds risk [1,2].
+*Teaching point:* The best predictor of severe withdrawal is **what happened last time**. The high-yield risk factors: prior withdrawal seizures, **prior delirium tremens**, prior withdrawal episodes generally ("kindling" — each episode makes the next worse), high daily intake, a longer interval since the last drink at presentation (already late in the withdrawal timeline), and a **detectable blood alcohol level while appearing sober** (evidence of marked tolerance). Comorbid acute illness, trauma, or surgery adds risk [1,2].
 
 The **PAWSS** (Prediction of Alcohol Withdrawal Severity Scale) packages exactly these into a 10-item screen used *on admission*, before symptoms appear; a threshold score of **≥4** identifies patients at risk for complicated withdrawal [5]. This is the conceptual complement to CIWA-Ar: **PAWSS predicts, CIWA-Ar measures.**
 

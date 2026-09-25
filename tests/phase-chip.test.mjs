@@ -19,7 +19,9 @@ test('the canonical phase-policy snippet remains injected once with no local clo
 
 test('the old renderHome phase chip is retired, and Today uses the Front Door countdown', () => {
   assert.doesNotMatch(shell, /window\.renderHome|\/\* ---- phase chip ---- \*\/|class="hm-phase"/);
-  assert.match(today, /var countdown=fdExamCountdown\(st\.week,idx\.weeks,nowMs,st\.rotationStart\)/);
+  // Through the audience gate since 2026-09-24 (fdPathExamCountdown, fd_state.js), which passes
+  // the same arguments on to fdExamCountdown: residents have no end-of-block exam.
+  assert.match(today, /var countdown=fdPathExamCountdown\(idx\.path&&idx\.path\.id,st\.week,idx\.weeks,nowMs,st\.rotationStart\)/);
   assert.match(today, /if\(countdown\) sub\+=' '\+countdown/);
 });
 

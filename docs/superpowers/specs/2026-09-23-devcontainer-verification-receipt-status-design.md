@@ -1,7 +1,10 @@
 # Dev Container Verification Receipt and VS Code Status Design
 
 **Date:** 2026-09-23
-**Status:** Approved for implementation
+**Status:** Implemented and merged in #745 on 2026-09-23. The native VS Code task passed on merged commit `4df9c6e` (68 nonvisual browser tests passed; two deploy-only LFS tests skipped).
+
+That receipt proves the named checkout, not later main revisions. This historical design
+is retained; use `.devcontainer/README.md` for current setup and proof boundaries.
 **Scope:** Development tooling only; no clinical content, deployment configuration, credentials, or production behavior
 
 ## Purpose

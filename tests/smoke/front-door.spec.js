@@ -17,7 +17,15 @@ const READING_FAILURE = 'Reading place could not be saved on this device';
 
 // Three synthetic sections keep this an ordinary reading (the field-guide enhancer owns H2s).
 // Long neutral paragraphs make the second and third anchors reachable at phone height.
+// The page's governance is pinned too, not read from the live ledger. A high-risk page that is
+// pending (or has drifted since its attestation) renders a pending-high notice whose deferred
+// focus -- taken when the startup gate opens or governance.json settles -- scrolls the notice
+// into view. That can land after the reading-place restore and reads as the learner scrolling
+// to the top. t_mood.md drifted on 2026-09-24 (#763) and this suite went intermittently red for
+// it: a test of the reading place, failing on the faculty's queue (CLAUDE.md: never depend on
+// live governance state). Pinning it reviewed/low keeps these tests about the reading place.
 async function controlledReading(page, ref = READING_REF) {
+  await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
   const filler = 'A short note about organizing study time. '.repeat(28);
   const markdown = '# Study notes\n\n' + [1, 2, 3].map(n =>
     `### Section ${n}\n\n${filler}\n\n${filler}\n`).join('\n');
@@ -128,6 +136,23 @@ test('reading place: a removed heading opens at top and deletes only that readin
   await expectHealthy(page);
 });
 
+// "Before the debounce" is arranged inside ONE page task, not across Playwright round trips.
+// The controller binds the page's own setTimeout when the reader mounts, so a page.clock
+// installed afterwards does not hold its 150 ms debounce: it runs on real time. These tests
+// used to install the clock and fast-forward it; on a loaded runner the real debounce fired
+// between two round trips and the test either failed (the abandoned section was saved first,
+// then the top anchor) or passed without reaching the path it names (resize found nothing
+// pending to flush). The debounce logic itself is pinned with injected timers in
+// tests/fd-wire.test.mjs; these pin the same behaviour in a real browser.
+async function scrollThen(page, index, after) {
+  await page.locator('.fd-article__body h3').nth(index).evaluate((heading, then) => {
+    window.scrollTo(0, heading.getBoundingClientRect().top + window.scrollY + 85);
+    window.dispatchEvent(new Event('scroll'));
+    if (then === 'resize') window.dispatchEvent(new Event('resize'));
+    if (then === 'top') { window.scrollTo(0, 0); window.dispatchEvent(new Event('scroll')); }
+  }, after);
+}
+
 test('reading place: pending scroll survives resize before the debounce', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 900, height: 650 });
   await seedApp(page, testInfo);
@@ -136,10 +161,10 @@ test('reading place: pending scroll survives resize before the debounce', async 
   await readingReady(page);
   await scrollReadingTo(page, 1);
   await expectReadingAnchor(page, 1);
-  await page.clock.install();
-  await scrollReadingTo(page, 2);
+  // Section 3 is still pending when the resize lands, so only the resize's flush can save it:
+  // were the flush lost, the reflow would restore the saved section 2 over it.
+  await scrollThen(page, 2, 'resize');
   await page.setViewportSize(PHONE);
-  await page.clock.fastForward(200);
   await expectReadingAnchor(page, 2);
   await expectHealthy(page);
 });
@@ -151,17 +176,15 @@ test('reading place: returning to the fresh position cancels an abandoned pendin
   await page.goto(`/?page=${READING_REF}`);
   const reader = await readingReady(page);
   await expect(reader.locator('[data-fd-reading-status]')).toHaveText(READING_SUCCESS);
-  await page.clock.install();
-  await scrollReadingTo(page, 2);
-  await page.evaluate(() => { window.scrollTo(0, 0); window.dispatchEvent(new Event('scroll')); });
-  await page.clock.fastForward(200);
+  await scrollThen(page, 2, 'top');
+  // Real time, well past the 150 ms debounce: a cancelled section must stay unsaved.
+  await page.waitForTimeout(400);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.setViewportSize(PHONE);
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
   await scrollReadingTo(page, 1);
-  await page.clock.fastForward(200);
   await expectReadingAnchor(page, 1);
   await expectHealthy(page);
 });
@@ -2132,8 +2155,9 @@ test.describe('Clinical field guide', () => {
 //
 // Seeds go through seedApp's `storage` so every store exists before the shell boots. Time is
 // frozen at FROZEN_NOW: a block created an hour earlier is live (12 h TTL) and an SRS card due
-// an hour earlier counts as due. deck# ids land in the daily bucket and are not TOPIC# cards, so
-// srsDropPhantomTopics leaves them alone once topic_meta loads. Both audience projects run every
+// an hour earlier counts as due. Landmark-deck ids (`<deck>#<index>`, as review.html builds them)
+// land in the daily bucket and are not TOPIC# cards, so srsDropPhantomTopics leaves them alone
+// once topic_meta loads. Both audience projects run every
 // test here with the same seed, which is A4 (same primary kind for the same seed) by construction.
 const OTF_NOW = FROZEN_NOW.getTime();
 const OTF_HOUR = 60 * 60 * 1000;
@@ -2144,8 +2168,8 @@ const OTF = {
     { kind: 'qb', ref: 'question-bank-practice.html', title: '4 practice questions', min: 3, n: 4, cat: null },
   ] },
   srs: { v: 1, cards: {
-    'deck#otf-1': { ease: 2.5, ivl: 1, reps: 1, lapses: 0, due: OTF_NOW - OTF_HOUR, last: OTF_NOW - 25 * OTF_HOUR },
-    'deck#otf-2': { ease: 2.5, ivl: 1, reps: 1, lapses: 0, due: OTF_NOW - OTF_HOUR, last: OTF_NOW - 25 * OTF_HOUR },
+    'AR-50#0': { ease: 2.5, ivl: 1, reps: 1, lapses: 0, due: OTF_NOW - OTF_HOUR, last: OTF_NOW - 25 * OTF_HOUR },
+    'AR-50#1': { ease: 2.5, ivl: 1, reps: 1, lapses: 0, due: OTF_NOW - OTF_HOUR, last: OTF_NOW - 25 * OTF_HOUR },
   }, day: { lastDay: '', newToday: 0 }, stats: { streak: 0, lastStudy: '', totalReviews: 0, correct: 0, seen: 0 }, settings: { newPerDay: 12 } },
   capture: { v: 1, items: [{ id: 'otf-c1', text: 'Why hold the lithium tonight?', at: OTF_NOW - 10 * 60 * 1000, ctx: null, triaged: false }] },
 };

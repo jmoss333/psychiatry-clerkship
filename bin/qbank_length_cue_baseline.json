@@ -1,7 +1,7 @@
 {
   "_note": "Pinned by bin/check_qbank_length_cue.py (WP-7). Counts may fall, never rise. Regenerate with --update-baseline as part of a reviewed reduction, never to absorb a rise -- the diff is in the PR. See docs/RATCHETS.md.",
   "counts": {
-    "attested_uniquely_longest": 133,
-    "live_uniquely_longest": 156
+    "attested_uniquely_longest": 125,
+    "live_uniquely_longest": 155
   }
 }

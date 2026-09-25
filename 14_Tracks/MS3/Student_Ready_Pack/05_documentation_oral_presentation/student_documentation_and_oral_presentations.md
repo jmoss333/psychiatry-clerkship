@@ -110,9 +110,10 @@ Example:
 > lithium and olanzapine, mild tremor this morning. He reports thoughts are
 > slower but still believes neighbors are monitoring him. MSE shows less
 > pressured speech, still grandiose. Acute violence risk is lower than admission
-> because sleep and agitation improved, but discharge risk remains high because
-> he refuses family collateral. My question is whether today is the right time to
-> revisit collateral with a limited call."
+> because sleep and agitation improved, but discharge risk is still uncertain because
+> he has not agreed to family collateral, so we lack baseline and home-safety data.
+> My question is whether today is the right time to revisit collateral with a
+> limited call."
 
 ## Two Micro-Updates To Practice Out Loud
 

@@ -56,7 +56,65 @@ test('due row is omitted at zero and uses exact singular/plural labels', () => {
   assert.match(many, /2 daily/);
   assert.match(many, /3 practice/);
   assert.match(many, /1 family/);
-  assert.match(many, /data-fd-open="review\.html"/);
+  // Re-pinned 2026-09-24. This used to assert the whole row opened review.html -- which was the
+  // defect: Daily Review cannot serve QB# cards, so the 3 practice cards could never clear there.
+  // The row's control still opens Daily Review (it serves the daily and family cards); the bank's
+  // share gets its own control, pinned in the tests below.
+  assert.match(many, /<button type="button" class="fd-due" data-fd-open="review\.html">/);
+  assert.match(many, /data-fd-open="question-bank-practice\.html">Practice bank · 3 due for review →</);
+});
+
+// ---- where each share of what is due can be cleared (2026-09-24) --------------------------------
+//
+// review.html builds its queue from the landmark decks, topic quizzes and the family,
+// communication and reasoning cards; it never builds a QB# card. The practice bank serves its
+// own due cards first (dueQbItems). So a row that routes everything to Daily Review promises a
+// count the destination cannot clear -- after a bank session the number never went down.
+
+const BANK_ONLY = { daily: { due: 0 }, qb: { due: 3 }, fam: { due: 0 }, other: { due: 0 } };
+const MIXED = { daily: { due: 2 }, qb: { due: 1 }, fam: { due: 0 }, other: { due: 0 } };
+
+test('only bank cards due: the row itself opens the practice bank, never Daily Review', () => {
+  for (const primary of [true, false]) {
+    const out = F.fdDueRow(BANK_ONLY, primary);
+    assert.match(out, /data-fd-open="question-bank-practice\.html"/);
+    assert.doesNotMatch(out, /review\.html/, 'Daily Review has nothing to serve here');
+    assert.match(out, /<span class="fd-due__label">3 reviews due<\/span>/, 'the count is unchanged');
+    assert.match(out, /<span class="fd-due__action">Open practice bank →<\/span>/);
+    assert.doesNotMatch(out, /fd-due-group/, 'one destination, so no secondary control');
+  }
+  assert.match(F.fdDueRow(BANK_ONLY, true), /data-fd-dock-source="primary-due" data-fd-dock-label="Open practice bank"/,
+    'the phone dock names where the primary actually goes');
+});
+
+test('no bank cards due: markup is exactly the pre-2026-09-24 row, still Daily Review', () => {
+  const out = F.fdDueRow({ daily: { due: 2 }, qb: { due: 0 }, comm: { due: 1 } }, true);
+  assert.match(out, /^<button type="button" class="fd-due is-primary" data-fd-open="review\.html"/);
+  assert.doesNotMatch(out, /question-bank-practice|fd-due-group/);
+});
+
+test('both due: Daily Review keeps the row, the bank gets one secondary control with its own count', () => {
+  const out = F.fdDueRow(MIXED, true);
+  const opens = out.match(/data-fd-open="[^"]+"/g);
+  assert.deepEqual(opens, ['data-fd-open="review.html"', 'data-fd-open="question-bank-practice.html"'],
+    'the row first, then the bank -- and nothing else routes');
+  assert.match(out, /^<div class="fd-due-group"><button type="button" class="fd-due is-primary" data-fd-open="review\.html"/);
+  assert.match(out, />3 reviews due</, 'the label still counts everything due -- it is what the picker ranks');
+  assert.match(out, /<button type="button" class="fd-due-group__bank" data-fd-open="question-bank-practice\.html">Practice bank · 1 due for review →<\/button><\/div>$/);
+});
+
+test('the secondary control is never a second primary and never nested in the row', () => {
+  for (const primary of [true, false]) {
+    const out = F.fdDueRow(MIXED, primary);
+    assert.equal((out.match(/data-fd-dock-source=/g) || []).length, primary ? 1 : 0,
+      'One Thing First: the dock mirrors exactly one control, and only when the row won');
+    assert.equal((out.match(/is-primary/g) || []).length, primary ? 1 : 0);
+    // A <button> may not contain interactive content: the bank control must follow the row's
+    // closing tag, not sit inside it.
+    const row = out.slice(out.indexOf('<button'), out.indexOf('</button>') + '</button>'.length);
+    assert.equal((row.match(/<button/g) || []).length, 1, 'no button inside the row button');
+  }
+  assert.equal(F.fdDueRow({ qb: { due: 0 }, daily: { due: 0 } }, true), '', 'nothing due is still nothing');
 });
 
 test('resume card renders only a valid capsule and retains the exact resume route', () => {

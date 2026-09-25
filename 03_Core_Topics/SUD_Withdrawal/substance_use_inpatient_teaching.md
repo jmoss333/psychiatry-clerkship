@@ -18,7 +18,7 @@
 
 > **Reviewed and attested by Joshua Moss, MD (2026-07-09).**
 
-<a class="tl-chip" href="?tool=withdrawal.html" data-tool="withdrawal.html" data-icon="withdrawal">Score at the bedside — CIWA-Ar / COWS</a>
+<a class="tl-chip" href="?tool=withdrawal.html" data-tool="withdrawal.html" data-icon="withdrawal">Withdrawal recognition card (COWS)</a>
 
 **What the student does**
 - Perform and document serial **CIWA-Ar** or **COWS** scores at the bedside and flag trends to the team.
@@ -40,7 +40,7 @@ External listings can change. Confirm current details with the organization, and
 - Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.
 - In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not.
 - Thiamine before (or with) glucose in withdrawal and refeeding — but never delay dextrose for documented hypoglycemia; give the sugar immediately and the thiamine as soon as it is in hand.
-- Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal.
+- Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal. With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.
 - A patient who uses substances with new confusion gets a real differential — Wernicke, trauma, infection, hepatic encephalopathy — not a reflex withdrawal label.
 - Naloxone plus MOUD linkage at discharge is a concrete, evidence-based way to save a life.
 

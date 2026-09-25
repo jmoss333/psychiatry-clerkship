@@ -235,10 +235,21 @@ step "unit — source integrity"              python3 bin/check_source_integrity
 step "unit — review cadence"                python3 bin/check_review_cadence.py --self-test
 step "unit — icd-10-cm codes"               python3 bin/check_icd_codes.py --self-test
 step "icd-10-cm codes in force"             python3 bin/check_icd_codes.py
+# Only the SELF-TEST runs here: the real comparison fetches a newer abstract from Europe PMC
+# for one (source, DOI) pair a human names, after the source-integrity job has reported a
+# supersession. Advisory by design -- the located sentences are the evidence, the verdict a pointer.
+step "unit — claim direction"                python3 bin/check_claim_direction.py --self-test
 # Ratchet against bin/check_qbank_coherence_baseline.json (pairs = 0 today); the pin is what
 # the --self-test step above asserts the exit code against. See the span-audit comment above.
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
-# Ratchet against bin/qbank_length_cue_baseline.json (attested 133, live 156 on 2026-09-24): an
+# Reviewer instructions pasted as learner text ("Rewrite the item…, e.g. stem: '…' keyed to '…'"):
+# the 2026-09-01 remediation shipped three into the audio-quiz decks and every validator passed,
+# because each is a valid string (2026-09-24 peer review, pattern A / decision J5). A ratchet
+# against bin/editorial_leaks_baseline.json (16 today, all in those three items across both deck
+# copies); the self-test plants every pattern and asserts the live tree agrees with the pin.
+step "unit — editorial leaks"               python3 bin/check_editorial_leaks.py --self-test
+step "editorial leaks in learner text"      python3 bin/check_editorial_leaks.py
+# Ratchet against bin/qbank_length_cue_baseline.json (attested 125, live 155 on 2026-09-25): an
 # item whose keyed option is the UNIQUELY longest rewards test-wiseness, not knowledge (WP-7,
 # target attested <= 35%). A rise fails; a rewrite batch lowers the pin with --update-baseline.
 step "qbank length cue (WP-7)"              python3 bin/check_qbank_length_cue.py
