@@ -1374,12 +1374,23 @@
   }
   .fd-dock__browse summary::-webkit-details-marker{display:none}
   .fd-dock__browse[open] summary{color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
+  /* display:none by default -- NOT just relying on the UA's details:not([open]) rule, which an
+     unconditional display:flex here would outrank (author styles beat UA styles regardless of
+     specificity). Without this, the menu stays part of the layout while closed: real, overflowing
+     geometry an assistive tech or a hit-test can reach, not just an invisible one. Confirmed live:
+     the closed menu measured a real box past the viewport's right edge, opacity stuck at 0 from an
+     animation that kept re-triggering on every dock refresh rather than actually being absent. */
+  /* Right-anchored to Browse's own right edge, not centered under it: Browse sits fourth of
+     five dock columns, close enough to the right edge that a centered, transform-shifted 168px
+     menu pushes past a 375px phone viewport (measured live: right edge at ~430px). Right-aligning
+     keeps the menu inside the dock's own width on every phone size the dock supports. */
   .fd-dock__browsemenu{
-    position:absolute;left:50%;bottom:calc(100% + var(--fd-space-2));transform:translateX(-50%);
-    display:flex;flex-direction:column;gap:var(--fd-space-1);min-width:168px;
+    display:none;position:absolute;right:0;bottom:calc(100% + var(--fd-space-2));
+    flex-direction:column;gap:var(--fd-space-1);min-width:168px;
     background:var(--fd-surface);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);
-    box-shadow:var(--fd-shadow-lift);padding:var(--fd-space-2);z-index:61;animation:fdPopIn .15s ease;
+    box-shadow:var(--fd-shadow-lift);padding:var(--fd-space-2);z-index:61;
   }
+  .fd-dock__browse[open] .fd-dock__browsemenu{display:flex;animation:fdPopIn .15s ease}
   .fd-dock__browseitem{
     border:0;background:transparent;color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm);
     font-weight:700;text-align:left;white-space:nowrap;cursor:pointer;
