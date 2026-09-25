@@ -243,7 +243,7 @@
     },
     {
       "id": "qb_mood_002",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "mood",
       "competency": [
@@ -293,7 +293,7 @@
       ],
       "why": "Treat the number not the patient, Missing the interaction, and Wrong toxidrome are the traps. Lithium has a narrow therapeutic window; NSAIDs reduce prostaglandin-mediated renal clearance and push lithium levels into the toxic range — a textbook drug interaction. The 2-day picture of tremor, confusion, and vomiting in a lithium-maintained patient who just started an NSAID is lithium toxicity until proven otherwise.",
       "pearl": "NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push lithium levels toward toxicity — check the list when lithium patients deteriorate.",
-      "evidence": "t_mood.md 'Lithium' — lithium runs a narrow therapeutic window (~0.6–1.2 mEq/L); NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
+      "evidence": "t_mood.md 'Lithium' — lithium runs a narrow therapeutic window (acute ~0.8–1.2 mEq/L; maintenance ~0.6–0.8, lower in older adults); NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
       "tier2": {
         "q": "Why does ibuprofen raise lithium levels?",
         "options": [
@@ -532,7 +532,7 @@
     },
     {
       "id": "qb_sud_002",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -544,7 +544,7 @@
         "t_sud.md"
       ],
       "link": {
-        "label": "Score at the bedside — CIWA-Ar / COWS",
+        "label": "Withdrawal recognition card (COWS)",
         "href": "tools/withdrawal.html"
       },
       "stem": "A 52-year-old man with a history of heavy daily alcohol use is admitted in early withdrawal — tremulous and tachycardic. A nurse is about to start an IV dextrose infusion for a fingerstick glucose in the low-normal range. The most important step before administering the glucose is which of the following?",
@@ -585,7 +585,7 @@
     },
     {
       "id": "qb_cog_002",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -633,8 +633,8 @@
         }
       ],
       "why": "Psychosis = schizophrenia drives the dangerous action: haloperidol in an unexcluded catatonia can precipitate NMS. Waxy flexibility (sustained posturing) is a catatonic sign — catatonia must be rated before any dopamine blocker is started. Restraint first violates least-restrictive principle; Quiet patient = stable patient defers an urgent evaluation.",
-      "pearl": "Avoid antipsychotics until catatonia is excluded — they can precipitate or worsen NMS and malignant catatonia; the lorazepam challenge is both diagnostic and therapeutic.",
-      "evidence": "catatonia.md 'Management principles' — avoid antipsychotics until catatonia is excluded — they can precipitate or worsen NMS and malignant catatonia. A positive lorazepam challenge both supports the diagnosis and begins treatment."
+      "pearl": "Avoid antipsychotics until catatonia is excluded or has responded to treatment — they can precipitate or worsen NMS and malignant catatonia; the lorazepam challenge is both diagnostic and therapeutic.",
+      "evidence": "catatonia.md 'Management principles' — avoid antipsychotics until catatonia is excluded or has responded to treatment — they can precipitate or worsen NMS and malignant catatonia; if the underlying psychosis then needs one, the team introduces it cautiously, with benzodiazepine cover. A positive lorazepam challenge both supports the diagnosis and begins treatment."
     },
     {
       "id": "qb_pha_001",
@@ -1085,7 +1085,7 @@
     },
     {
       "id": "qb_oth_001",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "otherdx",
       "competency": [
@@ -1101,41 +1101,41 @@
         "label": "Open the Eating Disorders page",
         "href": "?page=t_eating.md"
       },
-      "stem": "A 16-year-old with severe anorexia nervosa has been restrictive for 4 months and is medically admitted with critically low weight. Before nutritional rehabilitation begins, which approach most directly reduces the risk of refeeding syndrome?",
+      "stem": "A 16-year-old with anorexia nervosa is medically admitted at about 75% of median BMI with a resting heart rate of 42 bpm. Potassium, phosphate, and magnesium are normal, and she has no other acute illness. Which initial nutrition plan is most appropriate?",
       "options": [
         {
           "key": "A",
-          "t": "Start full nutritional rehabilitation immediately at a standard adult caloric target to restore weight as rapidly as possible.",
+          "t": "Start at no more than 1,000 kcal/day and advance slowly over the first one to two weeks, because a low starting target is the safest way to prevent refeeding syndrome.",
           "trap": {
-            "name": "Faster is safer",
-            "note": "Rapid nutritional restoration in the severely malnourished is the trigger for refeeding syndrome — the metabolic shift to anabolism precipitates life-threatening electrolyte shifts; starting at a conservative rate is essential."
+            "name": "Underfeeding as safety",
+            "note": "Her malnutrition is moderate and she has no highest-risk features, so a low start prolongs underfeeding without making refeeding safer — refeeding risk tracks the degree of malnutrition, not the starting calories. A cautious start is kept for the highest-risk patients."
           }
         },
         {
           "key": "B",
-          "t": "Give prophylactic anxiolytics and monitor for 24 hours before introducing nutrition — anxiety increases metabolic demand in malnourished patients.",
+          "t": "Give a prophylactic anxiolytic and observe for 24 hours before introducing any nutrition, because anxiety raises metabolic demand.",
           "trap": {
             "name": "Sedation before nutrition",
-            "note": "Refeeding syndrome risk is metabolic (phosphate, potassium, and magnesium shifts), not anxiety-driven — benzodiazepines are not part of the refeeding protocol; the intervention is conservative caloric refeeding with electrolyte monitoring."
+            "note": "Refeeding risk is metabolic (phosphate, potassium, and magnesium shifts), not anxiety-driven; sedation is not part of refeeding, and delaying nutrition only prolongs starvation."
           }
         },
         {
           "key": "C",
-          "t": "Correct all electrolyte abnormalities to normal before introducing any nutrition — electrolyte imbalances worsen if nutrition begins before they are stable.",
+          "t": "Hold all nutrition until her electrolytes have been stable for 48 hours, then begin feeding.",
           "trap": {
             "name": "Normalize first",
-            "note": "Waiting for perfect electrolytes before any nutrition is not standard — some electrolyte correction runs in parallel with conservative refeeding; withholding all nutrition delays recovery without preventing the syndrome."
+            "note": "Her electrolytes are already normal, and feeding is not delayed to normalise electrolytes in any case — monitoring and repletion run alongside refeeding."
           }
         },
         {
           "key": "D",
-          "t": "Start caloric refeeding at a conservative initial target and advance slowly; administer thiamine before or with carbohydrate and check phosphate, potassium, and magnesium at least daily early in refeeding.",
+          "t": "Start at a higher-calorie target, advance daily, and check phosphate, potassium, and magnesium closely; give thiamine.",
           "c": true
         }
       ],
-      "why": "Faster is safer, Sedation before nutrition, and Normalize first all create delay or metabolic risk. The source's 'start low, go slow' principle is the safety framework: conservative start, daily electrolyte checks, and thiamine before carbohydrate to prevent Wernicke encephalopathy.",
-      "pearl": "Refeeding syndrome prevention: start low, go slow, give thiamine before carbohydrate, check phosphate daily.",
-      "evidence": "t_eating.md — Refeeding syndrome: the safe posture is 'start low, go slow': begin conservative caloric refeeding, check phosphate/potassium/magnesium at least daily early, supplement phosphate and give thiamine before or with carbohydrate, and advance calories per protocol as electrolytes stay stable."
+      "why": "Underfeeding as safety, Sedation before nutrition, and Normalize first all delay nutrition without making refeeding safer. For a medically admitted adolescent with moderate malnutrition and no highest-risk features, current guidance supports starting at a higher-calorie target and advancing daily with close phosphate, potassium, and magnesium monitoring, because refeeding risk tracks the degree of malnutrition rather than the starting calories. A cautious start is reserved for the highest-risk patients — for example adults with BMI < 13 plus acute illness or abnormal electrolytes.",
+      "pearl": "Refeeding: risk tracks malnutrition, not the starting calories — start higher unless highest-risk, check phosphate/K/Mg daily, give thiamine, and don't underfeed.",
+      "evidence": "t_eating.md — Refeeding syndrome = watch the phosphate — risk tracks the degree of malnutrition, not the starting calories; most patients can start higher with daily phosphate/K/Mg checks, and the most malnourished or medically unstable start cautiously; give thiamine."
     },
     {
       "id": "qb_oth_002",
@@ -2001,7 +2001,7 @@
     },
     {
       "id": "qb_cog_014",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "neurocog",
       "competency": [
@@ -2035,7 +2035,7 @@
         },
         {
           "key": "C",
-          "t": "Stop all antipsychotics immediately, transfer to a medical unit for hemodynamic monitoring and supportive care, and obtain urgent psychiatric and neurology consultation — ECT should be considered for malignant or refractory catatonia.",
+          "t": "Stop all antipsychotics immediately, transfer to a medical unit for hemodynamic monitoring and supportive care, continue lorazepam, and obtain urgent psychiatric and neurology consultation — ECT should be considered for malignant or refractory catatonia.",
           "c": true
         },
         {
@@ -2048,7 +2048,7 @@
         }
       ],
       "why": "Underestimate the emergency and Agitation = antipsychotic are the two clinical catastrophes. This is NMS/malignant catatonia: fever, autonomic instability, lead-pipe rigidity, elevated CK after antipsychotic escalation. The correct sequence is stop all antipsychotics, transfer to a medical unit for hemodynamic monitoring, continue lorazepam — benzodiazepines remain first-line pharmacotherapy for malignant catatonia while ECT is arranged — and pursue ECT emergently if the patient does not rapidly improve; the error in option A is observation on the psychiatric unit, not the lorazepam, and certainly not more antipsychotic.",
-      "pearl": "Malignant catatonia overlaps with NMS: fever + rigidity + elevated CK + autonomic instability after antipsychotic exposure — stop antipsychotics, transfer to medical, and consider ECT urgently.",
+      "pearl": "Malignant catatonia overlaps with NMS: fever + rigidity + elevated CK + autonomic instability after antipsychotic exposure — stop antipsychotics, transfer to medical, continue lorazepam, and consider ECT urgently.",
       "evidence": "catatonia.md — The emergency you must never miss is malignant catatonia: autonomic instability, hyperthermia, and rigidity that clinically overlaps with neuroleptic malignant syndrome (NMS). ECT is the treatment for severe, malignant, or benzodiazepine-refractory catatonia and should not be delayed when the patient is deteriorating.",
       "tier2": {
         "q": "Why does ECT have a role in malignant catatonia when benzodiazepines have not been effective?",
@@ -2063,7 +2063,7 @@
           },
           {
             "key": "C",
-            "t": "ECT directly treats the catatonic syndrome regardless of etiology — it is the definitive treatment for malignant or benzodiazepine-refractory catatonia and its effectiveness does not depend on removing the antipsychotic.",
+            "t": "ECT directly treats the catatonic syndrome regardless of etiology — it is the definitive treatment for malignant or benzodiazepine-refractory catatonia and it can work before the antipsychotic has fully cleared (the antipsychotic is still stopped).",
             "c": true
           },
           {
@@ -2071,7 +2071,7 @@
             "t": "ECT is a last resort used only after a second antipsychotic trial has failed in treatment-resistant psychosis."
           }
         ],
-        "why": "ECT acts directly on the motor and autonomic systems driving catatonia — its mechanism bypasses the pharmacologic state that triggered the syndrome. The BAP 2023 catatonia guideline endorses ECT for severe, refractory, or malignant catatonia as a treatment that should not be delayed when the patient is deteriorating. The example here illustrates this: benzodiazepines are insufficient for malignant presentations; ECT can be lifesaving even when the antipsychotic cannot be fully cleared."
+        "why": "ECT acts directly on the motor and autonomic systems driving catatonia — its mechanism bypasses the pharmacologic state that triggered the syndrome. The BAP 2023 catatonia guideline endorses ECT for severe, refractory, or malignant catatonia as a treatment that should not be delayed when the patient is deteriorating. The example here illustrates this: benzodiazepines alone may be insufficient for malignant presentations, so ECT should not be delayed if lorazepam does not produce rapid improvement — the antipsychotic is still stopped, and ECT can be lifesaving before it has fully cleared."
       }
     },
     {
@@ -2845,7 +2845,7 @@
     },
     {
       "id": "qb_sud_005",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -2872,7 +2872,7 @@
         },
         {
           "key": "B",
-          "t": "Wait until objective withdrawal is established (COWS roughly ≥8–12) before initiating buprenorphine induction — this is required to avoid precipitating withdrawal.",
+          "t": "Wait until objective withdrawal is established (COWS roughly ≥8–12) before initiating standard buprenorphine induction — this is how standard induction avoids precipitating withdrawal (low-dose initiation is a separate, structured multi-day protocol, not a single test dose).",
           "c": true
         },
         {
@@ -2892,7 +2892,7 @@
           }
         }
       ],
-      "why": "Comfort-first induction in two forms is the central trap. Buprenorphine is a partial agonist with high receptor affinity — it displaces full agonists. If taken before sufficient withdrawal, it precipitates sudden, severe withdrawal. The COWS threshold (≥8–12) ensures residual full agonist has cleared enough receptors that induction is safe.",
+      "why": "Comfort-first induction in two forms is the central trap. Buprenorphine is a partial agonist with high receptor affinity — it displaces full agonists. If taken before sufficient withdrawal, it precipitates sudden, severe withdrawal. The COWS threshold (≥8–12) makes it likely that residual full agonist has cleared enough receptors for induction to be tolerated — though with fentanyl, precipitated withdrawal can still occur at these scores.",
       "pearl": "COWS ≥8–12 before buprenorphine induction — the scoring threshold prevents precipitated withdrawal, not patient readiness.",
       "evidence": "t_sud.md — Begin buprenorphine induction only once objective withdrawal is present (roughly COWS ≥8 to 12) to avoid precipitated withdrawal from displacing residual full agonist too early."
     },
@@ -3342,7 +3342,7 @@
     },
     {
       "id": "qb_sud_014",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "substance",
       "competency": [
@@ -3388,8 +3388,8 @@
           "c": true
         }
       ],
-      "why": "Underestimate the emergency in two forms, and Agitation = antipsychotic. Prior withdrawal seizure is explicitly the most robust predictor of future seizure risk. Antipsychotics lower seizure threshold and are contraindicated for seizure prevention in alcohol withdrawal. CIWA-Ar-guided benzodiazepines are the treatment, and DT vigilance is the priority.",
-      "pearl": "Prior withdrawal seizure = highest predictor of future seizures; aggressive CIWA-Ar-guided benzodiazepines + DT monitoring is the standard.",
+      "why": "Underestimate the emergency in two forms, and Agitation = antipsychotic. Prior withdrawal seizure is explicitly the most robust predictor of future seizure risk. Antipsychotics lower seizure threshold and are contraindicated for seizure prevention in alcohol withdrawal. Prompt benzodiazepine with front-loaded or fixed-schedule dosing, supplemented by CIWA-Ar-triggered doses, is the treatment, and DT vigilance is the priority.",
+      "pearl": "Prior withdrawal seizure = strong predictor of future seizures; give a benzodiazepine promptly with front-loaded or fixed-schedule dosing plus symptom-triggered supplementation (not score-gated dosing alone) + DT monitoring.",
       "evidence": "t_sud.md — Alcohol withdrawal: score serially with the CIWA-Ar and treat symptom-driven with benzodiazepines, escalating vigilance for seizures and delirium tremens in high-risk patients.",
       "tier2": {
         "q": "Why does abrupt alcohol cessation cause seizures, whereas opioid withdrawal does not?",
@@ -4782,7 +4782,7 @@
     },
     {
       "id": "qb_mood_013",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4828,7 +4828,7 @@
           }
         }
       ],
-      "why": "Psychosis = schizophrenia, All psychosis in elderly = delirium, and Concurrent = schizoaffective all misdiagnose the presentation. Psychotic depression produces mood-congruent delusions (nihilistic, guilt-laden) within the context of a severe depressive episode — the alert, attentive patient without fluctuating consciousness rules out delirium.",
+      "why": "Psychosis = schizophrenia, All psychosis in elderly = delirium, and Concurrent = schizoaffective all misdiagnose the presentation. Psychotic depression produces mood-congruent delusions (nihilistic, guilt-laden) within the context of a severe depressive episode — the alert, attentive patient makes delirium less likely — though one exam cannot exclude a fluctuating course, so reassess and complete the medical workup.",
       "pearl": "Mood-congruent psychotic features (nihilistic/guilt-laden delusions) in severe depression = psychotic depression, not schizophrenia — psychosis confined to the mood episode is the discriminator.",
       "evidence": "t_mood.md — Severe unipolar depression can include mood-congruent psychosis (nihilistic or guilt-laden delusions)."
     },
@@ -6265,7 +6265,7 @@
     },
     {
       "id": "qb_eth_007",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6281,7 +6281,7 @@
         "label": "Open the Ethics & Law page",
         "href": "?page=ethics_legal.md"
       },
-      "stem": "During an outpatient psychiatry session, a 34-year-old man with paranoid schizophrenia states, 'I have a gun at home. When John Smith gets out of prison next month, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
+      "stem": "During an outpatient psychiatry session, a 34-year-old man with schizophrenia (prominent persecutory delusions) states, 'I have a gun at home. When John Smith gets out of prison next month, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
       "options": [
         {
           "key": "A",
@@ -7590,7 +7590,7 @@
     },
     {
       "id": "qb_otherdx_001",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "otherdx",
       "competency": [
@@ -7634,13 +7634,13 @@
           "t": "Thiamine deficiency — the neurological symptoms indicate Wernicke encephalopathy from B1 deficiency.",
           "trap": {
             "name": "Thiamine over phosphate",
-            "note": "Thiamine deficiency is a real risk in eating disorders and requires prophylactic replacement before carbohydrate loading, but a falling phosphate on day 3 of refeeding with weakness and confusion is the classic refeeding syndrome presentation — phosphate is the hallmark electrolyte."
+            "note": "Thiamine deficiency is a real risk in eating disorders and requires prophylactic replacement when refeeding starts, but a falling phosphate on day 3 of refeeding with weakness and confusion is the classic refeeding syndrome presentation — phosphate is the hallmark electrolyte."
           }
         }
       ],
-      "why": "Pre-existing deficiency only, Functional explanation for metabolic emergency, and Thiamine over phosphate all miss the refeeding-specific mechanism. The page calls refeeding syndrome 'the complication that kills' — hypophosphatemia is the hallmark. Note that D (thiamine) is also clinically relevant and the page specifically says 'give thiamine before or with carbohydrate' — but the presenting electrolyte abnormality and timing point to refeeding syndrome as the primary diagnosis.",
-      "pearl": "Refeeding syndrome: watch phosphate — the hallmark is hypophosphatemia after starting nutrition in the severely malnourished; start low, go slow; supplement phosphate; give thiamine before carbs.",
-      "evidence": "t_eating.md — Refeeding syndrome — the complication that kills: hypophosphatemia is the hallmark; the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Supplement phosphate and give thiamine before or with carbohydrate.",
+      "why": "Pre-existing deficiency only, Functional explanation for metabolic emergency, and Thiamine over phosphate all miss the refeeding-specific mechanism. The page calls refeeding syndrome 'the complication that kills' — hypophosphatemia is the hallmark. Note that D (thiamine) is also clinically relevant and the page specifically says to give thiamine (and other vitamins) when refeeding starts — but the presenting electrolyte abnormality and timing point to refeeding syndrome as the primary diagnosis.",
+      "pearl": "Refeeding syndrome: watch phosphate — the hallmark is hypophosphatemia after starting nutrition; risk tracks malnutrition, so monitor phosphate daily; supplement phosphate; give thiamine.",
+      "evidence": "t_eating.md — Refeeding syndrome — the complication that kills: hypophosphatemia is the hallmark; the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Supplement phosphate and give thiamine (and other vitamins) when refeeding starts.",
       "tier2": {
         "q": "Why does hypophosphatemia develop after initiating refeeding in a severely malnourished patient, rather than during the starvation period itself?",
         "options": [

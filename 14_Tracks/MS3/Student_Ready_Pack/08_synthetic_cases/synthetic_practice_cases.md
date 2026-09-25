@@ -92,6 +92,7 @@ started antipsychotic for suspected psychotic depression.
 - Catatonia can be missed when behavior is framed as refusal.
 - Poor intake and immobility are safety issues.
 - Catatonia and delirium can overlap; ask for help early.
+- The recently started antipsychotic may be causing or worsening the picture — flag it for the team to hold/reassess, and check vitals, rigidity, and CK to screen for NMS.
 
 ## Case 5 - Capacity To Refuse Treatment
 

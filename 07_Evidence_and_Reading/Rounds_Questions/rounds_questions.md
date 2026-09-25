@@ -4,7 +4,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 ## PSYCHOTIC DISORDERS (Questions 1–15)
 
-**1. What are the DSM-5 Criterion A symptoms of schizophrenia?**
+**1. What are the DSM-5-TR Criterion A symptoms of schizophrenia?**
 
 - **Answer:** Delusions, hallucinations, disorganized speech, grossly disorganized/catatonic behavior, and negative symptoms. At least one must be delusions, hallucinations, or disorganized speech.
 
@@ -76,7 +76,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **8. What is neuroleptic malignant syndrome (NMS)?**
 
-- **Answer:** A life-threatening reaction to dopamine-blocking agents characterized by **fever, lead-pipe rigidity, altered mental status, and autonomic instability**. CK is typically markedly elevated (often >10,000 U/L).
+- **Answer:** A life-threatening reaction to dopamine-blocking agents characterized by **fever, lead-pipe rigidity, altered mental status, and autonomic instability**. CK is usually elevated (consensus threshold ≥4× the upper limit of normal; it can exceed 10,000 U/L) but may be only modestly raised early, so a lower CK does not exclude NMS.
 
 - **Evidence:** Incidence 0.01–0.2%; virtually all cases occur within 30 days of starting or dose-changing the offending agent.
 
@@ -122,7 +122,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Malaspina et al., Schizophr Res 2013.
 
-- **Pearl:** The key question is: "Has this patient ever had psychosis **without** a mood episode?" If yes → schizoaffective. If psychosis only occurs during mood episodes → mood disorder with psychotic features.
+- **Pearl:** The key question is: "Has this patient ever had psychosis **without** a mood episode?" If yes (for ≥2 weeks) → schizoaffective disorder only if mood episodes have also been present for the majority of the total illness duration (active and residual phases); otherwise schizophrenia. If psychosis only occurs during mood episodes → mood disorder with psychotic features.
 
 **13. What metabolic monitoring is required for patients on antipsychotics?**
 
@@ -156,7 +156,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 ## MOOD DISORDERS (Questions 16–35)
 
-**16. What are the DSM-5 criteria for a major depressive episode?**
+**16. What are the DSM-5-TR criteria for a major depressive episode?**
 
 - **Answer:** ≥5 of 9 symptoms during the same 2-week period, with at least one being depressed mood or anhedonia. Mnemonic: **SIG E CAPS** — Sleep, Interest (anhedonia), Guilt, Energy, Concentration, Appetite, Psychomotor changes, Suicidality.
 
@@ -216,9 +216,9 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Pearl:** The "5-week fluoxetine rule" is one of the most commonly tested pharmacology facts on shelf exams.
 
-**22. What are the DSM-5 criteria for a manic episode?**
+**22. What are the DSM-5-TR criteria for a manic episode?**
 
-- **Answer:** A distinct period of abnormally elevated, expansive, or irritable mood AND increased energy/activity lasting ≥7 days (or any duration if hospitalization required), plus ≥3 of: **DIG FAST** — Distractibility, Impulsivity/Indiscretion, Grandiosity, Flight of ideas, Activity increase, Sleep decreased, Talkativeness.
+- **Answer:** A distinct period of abnormally elevated, expansive, or irritable mood AND increased energy/activity lasting ≥7 days (or any duration if hospitalization required), plus ≥3 (≥4 if mood is only irritable) of: **DIG FAST** — Distractibility, Impulsivity/Indiscretion, Grandiosity, Flight of ideas, Activity increase, Sleep decreased, Talkativeness.
 
 - **Evidence:** Bipolar I requires at least one manic episode; bipolar II requires hypomania (≥4 days, no hospitalization/psychosis) + major depressive episode.
 
@@ -238,7 +238,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **24. What are the therapeutic levels and key toxicities of lithium?**
 
-- **Answer:** Acute mania: 0.8–1.2 mEq/L; maintenance: 0.6–0.8 mEq/L. Toxic at ≥1.5 mEq/L. Key toxicities: fine tremor, polyuria/polydipsia (nephrogenic DI), hypothyroidism, hyperparathyroidism, renal impairment.
+- **Answer:** Acute mania: 0.8–1.2 mEq/L; maintenance: 0.6–0.8 mEq/L (older adults usually 0.4–0.6). Toxic at ≥1.5 mEq/L. Key toxicities: fine tremor, polyuria/polydipsia (nephrogenic DI), hypothyroidism, hyperparathyroidism, renal impairment.
 
 - **Evidence:** Hypothyroidism occurs in ~14% of lithium-treated patients (OR 5.78 vs. placebo).
 
@@ -348,7 +348,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **35. What is a mixed episode/mixed features specifier?**
 
-- **Answer:** DSM-5 replaced the DSM-IV "mixed episode" with a **"with mixed features" specifier** that can be applied to manic, hypomanic, or depressive episodes. A manic episode with mixed features includes ≥3 depressive symptoms; a depressive episode with mixed features includes ≥3 manic symptoms.
+- **Answer:** DSM-5 replaced the DSM-IV "mixed episode" with a **"with mixed features" specifier** that can be applied to manic, hypomanic, or depressive episodes. A manic episode with mixed features includes ≥3 depressive symptoms; a depressive episode with mixed features includes ≥3 manic symptoms — in both cases counting only symptoms that do not overlap between the poles (psychomotor agitation, insomnia, irritability and distractibility/indecisiveness are excluded), present nearly every day for most of the episode.
 
 - **Evidence:** Mixed features are associated with higher suicide risk, poorer treatment response, and more rapid cycling.
 
@@ -504,7 +504,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** The Clinical Opiate Withdrawal Scale — an 11-item clinician-administered tool (score 0–48) assessing opioid withdrawal severity. Scores 5–12: mild; 13–24: moderate; 25–36: moderately severe; >36: severe.
 
-- **Evidence:** Validated against CINA scale (Pearson r = 0.85). For buprenorphine induction, COWS should ideally be ≥10–12.
+- **Evidence:** Validated against CINA scale (Pearson r = 0.85). For buprenorphine initiation, guidelines put the start at roughly COWS ≥ 8–12 (ASAM's 2023 fentanyl guidance: ≥ 8 with at least one objective sign).
 
 - **Key paper:** Wesson & Ling, J Psychoactive Drugs 2003.
 
@@ -518,7 +518,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Nosyk et al., JAMA 2024.
 
-- **Pearl:** Buprenorphine is a **partial agonist** — it can precipitate withdrawal if given while full agonists are still present. Wait for adequate withdrawal (COWS ≥10–12) before initiating.
+- **Pearl:** Buprenorphine is a **partial agonist** — it can precipitate withdrawal if given while full agonists are still present. Start buprenorphine once objective withdrawal is present — roughly COWS ≥ 8–12 depending on the guideline (ASAM's 2023 fentanyl guidance: ≥ 8 with at least one objective sign). With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.
 
 **52. How does naloxone work and when is it used?**
 
@@ -704,7 +704,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Pearl:** The cluster mnemonic: "**A** is weird, **B** is wild, **C** is worried."
 
-**70. What are the DSM-5 criteria for borderline personality disorder?**
+**70. What are the DSM-5-TR criteria for borderline personality disorder?**
 
 - **Answer:** ≥5 of 9 criteria: abandonment fears, unstable relationships (idealization/devaluation), identity disturbance, impulsivity, recurrent suicidality/self-harm, affective instability, chronic emptiness, inappropriate anger, transient paranoia/dissociation.
 
@@ -816,7 +816,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 ## NEURODEVELOPMENTAL DISORDERS (Questions 81–87)
 
-**81. What are the DSM-5 criteria for ADHD?**
+**81. What are the DSM-5-TR criteria for ADHD?**
 
 - **Answer:** ≥6 of 9 symptoms (≥5 for adults ≥17) in inattention and/or hyperactivity-impulsivity domains, persisting ≥6 months, with several symptoms present before age 12, in ≥2 settings, with functional impairment.
 
@@ -856,7 +856,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Pearl:** Hyperactivity in adults often manifests as **internal restlessness** rather than overt motor hyperactivity — ask about feeling "driven by a motor" or inability to relax.
 
-**85. What are the DSM-5 criteria for autism spectrum disorder?**
+**85. What are the DSM-5-TR criteria for autism spectrum disorder?**
 
 - **Answer:** Persistent deficits in all 3 social communication subdomains (reciprocity, nonverbal communication, relationships) PLUS ≥2 of 4 restricted/repetitive behaviors (stereotypies, insistence on sameness, fixated interests, sensory hyper/hyporeactivity).
 
@@ -878,7 +878,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **87. What is the difference between intellectual disability and autism spectrum disorder?**
 
-- **Answer:** Intellectual disability involves deficits in intellectual functioning (IQ <70) AND adaptive functioning. ASD involves social communication deficits and restricted/repetitive behaviors regardless of IQ. They frequently co-occur (~30% of ASD cases).
+- **Answer:** Intellectual developmental disorder (intellectual disability) involves deficits in intellectual functioning (typically IQ about two SDs below the mean, ~65–75 allowing for measurement error) AND adaptive functioning, with severity set by adaptive functioning. ASD involves social communication deficits and restricted/repetitive behaviors regardless of IQ. They frequently co-occur (~30% of ASD cases).
 
 - **Evidence:** Nearly one-third of individuals with ASD have intellectual disability or minimal verbal ability.
 

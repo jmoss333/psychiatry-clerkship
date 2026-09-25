@@ -90,7 +90,7 @@ Address the modifiable drivers first:
 If she leaves anyway, the plan should already exist:
 - **Naloxone and overdose-prevention counseling regardless of disposition** [1].
 - The **highest-risk window for fatal overdose follows any period of reduced use** — hospitalization included. Mortality is roughly **six-fold higher in the four weeks after opioid agonist treatment stops** compared with time in treatment [9]. Say this to her plainly, as information rather than as a threat.
-- **Bridge MOUD supply** and a same-week appointment.
+- **Bridge MOUD supply**: a buprenorphine prescription plus a same-week appointment. Methadone for OUD cannot be prescribed, so arrange OTP dosing for the next day, or, where your hospital does this, dispense up to a three-day supply under the DEA three-day rule.
 - Discuss oral antibiotic alternatives with ID rather than framing the choice as full IV course or nothing.
 - **Capacity assessment** if refusal appears driven by delirium, untreated withdrawal, or a treatable psychiatric state — but note that a capacitated refusal of recommended care is a right, not a psychiatric emergency.
 
@@ -126,7 +126,7 @@ For **mortality**, the agonist evidence is the strongest thing we have: all-caus
 2. **Progression of spinal infection** — worsening epidural collection or new neurologic compromise; the fever and rising inflammatory markers demand this stay live, and any new deficit is an emergency
 3. **Systemic complications of bacteremia** — endocarditis, septic emboli, metastatic foci
 4. **Delirium** — infection, sepsis, medication effects; distinguish from withdrawal-driven agitation
-5. **Occult sedative or alcohol withdrawal** — negative UDS and history make this less likely but it remains the dangerous miss
+5. **Occult sedative or alcohol withdrawal** — history makes this less likely, but a negative UDS is weak reassurance (standard benzodiazepine immunoassays often miss clonazepam, lorazepam and some novel benzodiazepines such as bromazolam, and do not detect xylazine — both of the latter now common fentanyl adulterants); it remains the dangerous miss
 6. **Co-occurring psychiatric illness** — depression, PTSD, and suicidality are highly prevalent and worsen acutely in withdrawal
 7. **Opioid-induced hyperalgesia** contributing to the pain-request escalation
 

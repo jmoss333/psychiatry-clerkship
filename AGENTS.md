@@ -64,11 +64,17 @@ cd tests/smoke && npm ci && npx playwright test
 
 VS Code can reopen this repository in `.devcontainer/`, which supplies Node 22,
 Python 3.11, Bash 5+, Git LFS, the locked NPM dependencies, and Chromium.
-Container creation automatically installs locked dependencies and runs only the fast runtime contract
-through `.devcontainer/post-create.sh`. The full gate is deliberately manual: run the VS Code task
+Run `python3 bin/devcontainer-preflight.py` on the host first (`--json` for tooling).
+It checks Git/LFS accessibility, memory capacity, and credential-forwarding warnings without
+repairs, downloads, helper execution, or secret output. Exit 1 blocks setup, 2 means could-not-check,
+and advisory warnings exit 0. `.devcontainer/post-create.sh` runs it before dependency installation
+and the fast runtime contract. The full gate is deliberately manual: run the VS Code task
 **Verify Dev Container** via **Tasks: Run Task**, or the receipt-enabled command below. Open a full clone,
 not a linked worktree whose Git directory is outside the mounted workspace, and materialize
-LFS files with `git lfs pull` before reopening it in the container.
+LFS files with `git lfs checkout` from cached objects first; `git lfs pull` may consume metered
+bandwidth. See `.devcontainer/README.md` for the full-clone/cache procedure and troubleshooting.
+The tested Colima allocation is 6 GiB after an OOM at 2 GiB, not a universal minimum; low memory
+and recognizable broken helper paths are advisory, never automatic host configuration changes.
 
 ```bash
 node bin/check-runtime-contract.mjs --current  # fast environment proof
@@ -81,6 +87,8 @@ red means the current commit's latest attempt failed; gray means no current proo
 (missing, malformed, running/interrupted, stale, a different commit, or tracked edits).
 Clicking the item runs the manual task. Without deploy URLs, the local LFS browser projects remain
 skipped: deploy-only LFS browser coverage is not proved, and the receipt says so even after a pass.
+Green certifies this checkout's commit, not that it is the latest remote main. Full verification
+also runs preflight before refreshing dependencies; a blocker records the failed preflight stage.
 The image-supplied `CLERKSHIP_DEVCONTAINER=1` check prevents accidental host invocation; it is a
 forgeable environment guard, not authentication or proof that a deliberate caller used the container.
 If the receipt directory is wholly unwritable, the task fails but the last atomically completed receipt
@@ -655,10 +663,13 @@ the container when the Bash 5 environment is part of the evidence.
   retires (WP-06R-a); Stanley-Brown is never programmed (WP-06R-b); PHQ-9/GAD-7 provisionally stay
   pending a check of the current permission footer (WP-02c); **BFCRS is RESTRICTED** (URMC written
   consent required) and **CIWA-Ar RETIRES** (2026-08-28, author's call — rights unestablishable, so
-  the descriptors came down; WP-20 is closed with it). **COWS alone remains open**: permission real,
-  scope wrong, its 45 verbatim anchors in `withdrawal.html` published under a recorded interim
-  waiver pending the Taylor & Francis letter — that waiver is the one thing still blocking Wave 4,
-  and an agent must not narrow or lift it. An instrument is exempt only once its status is recorded
+  the descriptors came down; WP-20 is closed with it). **COWS anchors retired 2026-09-10**
+  (decision `cows-anchors-retired`, superseding the 2026-08-23 interim waiver, which is closed):
+  the permission that exists covers clinical copying, not publication on a teaching site, so the
+  45 verbatim anchor strings in `withdrawal.html` were replaced with in-house descriptors; the
+  item names and legal score values are facts and stay, and the page still scores. A Taylor &
+  Francis permission request runs in parallel — a license would move COWS to cleared, and that is
+  the author's call, not an agent's. An instrument is exempt only once its status is recorded
   in the audit's decision table — Option A settles scope, not individual cases.
   **A withdrawal must leave a route (INV-IR2, 2026-09-03).** Retiring an instrument may not leave
   a dead end: every removed or link-only instrument ships the custodian's official `formUrl` from

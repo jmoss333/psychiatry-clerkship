@@ -40,7 +40,7 @@ One de-identified MSE plus a one-paragraph formulation and one sentence that sep
 
 **Skill**
 
-Explain why one medication fits the patient; recognize and score catatonia with the BFCRS.
+Explain why one medication fits the patient; recognize catatonia and know where the official BFCRS lives.
 
 **Assignment**
 

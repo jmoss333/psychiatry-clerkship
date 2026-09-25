@@ -1,0 +1,77 @@
+[
+ {
+  "id": "R01-003",
+  "chunk": "R01",
+  "audience": "Resident",
+  "pattern": "low-risk-suicide-overstatement",
+  "persistsFrom": null,
+  "surface": "systems_medlegal.md",
+  "locus": "page",
+  "severity": "Moderate",
+  "category": "suicide assessment",
+  "quote": "most patients who die by suicide are rated low risk at last contact",
+  "problem": "This overstates the evidence. In the Large et al. 2016 meta-analysis, high-risk categorisation had 56% sensitivity, so about 44% of suicides came from lower-risk groups: about half, not most. The page's own overlay says 'about half', so overlay and prose disagree.",
+  "whyItMatters": "Residents will repeat a wrong statistic when teaching and in documentation. The correct point, that categorisation is poorly predictive, does not need the exaggeration.",
+  "evidence": "Large M et al. PLoS One 2016;11:e0156322 (PMID 27285387): sensitivity 56%, specificity 79% for high-risk categorisation, 53 samples.",
+  "correction": "about half of patients who die by suicide had been categorised as lower risk at their last assessment",
+  "confidence": "high",
+  "verified": "PubMed abstract PMID 27285387",
+  "firstPassSeverity": "Moderate",
+  "verification": {
+   "verdict": "rejected",
+   "reason": "The prose is supported. It concerns clinician-judged risk at the last contact, not the Large 2016 high-vs-lower categorisation meta-analysis (sensitivity 56%). UK national inquiry (NCISH) data show that immediate risk at final contact was judged low or not present in 76-89% of patients who died by suicide, i.e. 'most'. Replacing it with 'about half' would swap an accurate statement for one about a different construct. The page's key-point overlay ('about half ... last classified low-risk', from Large-type categorisation) does disagree on its face. If the two should be harmonised, fix the overlay by attributing each figure, not the prose.",
+   "evidence": "NCISH Annual Report Oct 2018 (documents.manchester.ac.uk DocID=38469): immediate risk judged low/not present in 76% (recent self-harm) and 89% (no self-harm) at last contact; Frontiers Psychiatry 2020 doi:10.3389/fpsyt.2020.00502 (about 80% in early post-discharge suicides); Large et al. PLoS One 2016, PMID 27285387, doi:10.1371/journal.pone.0156322 (sensitivity 56% for high-risk categorisation).",
+   "confidence": "high"
+  }
+ },
+ {
+  "chunk": "R04",
+  "audience": "Resident",
+  "pattern": "lithium-labelled-low-metabolic-risk",
+  "persistsFrom": null,
+  "surface": "cotw_20260720_mdd_res.md",
+  "locus": "page",
+  "severity": "Moderate",
+  "category": "current psychopharmacology",
+  "quote": "1. **Augment** the (adequately dosed) sertraline with a **low-metabolic-risk agent** — aripiprazole/brexpiprazole/cariprazine or lithium —",
+  "problem": "Lithium is grouped as a 'low-metabolic-risk agent' for a patient whose stated priority is weight (BMI 31); weight gain is one of lithium's most common adverse effects and it also causes hypothyroidism. The same framing recurs in Q3 ('or lithium is more rational than quetiapine or mirtazapine') and Q7.",
+  "whyItMatters": "A resident may present lithium to a weight-concerned patient as weight-sparing, undermining the shared decision-making the case is built around and leading to discontinuation when weight rises.",
+  "evidence": "Lithium labeling (weight gain listed among common adverse reactions); Gomes-da-Costa et al., 'Lithium therapy and weight change in people with bipolar disorder', Neurosci Biobehav Rev 2022; CANMAT 2023 MDD update lists weight gain as a lithium tolerability concern.",
+  "correction": "1. **Augment** the (adequately dosed) sertraline with a **lower-metabolic-risk partial agonist** (aripiprazole/brexpiprazole/cariprazine) or with lithium (which can also cause weight gain and hypothyroidism) —",
+  "confidence": "medium",
+  "verified": "recall",
+  "id": "R04-003",
+  "firstPassSeverity": "Moderate",
+  "verification": {
+   "verdict": "rejected",
+   "reason": "The finding's premise is that weight gain is one of lithium's most common adverse effects, making it inappropriate to group with low-metabolic-risk agents. The reviewer's own cited meta-analysis says the opposite: lithium weight gain was non-significant (+0.46 kg), no different from placebo, and significantly less than with active comparators. Grouping lithium with the partial agonists as preferable to quetiapine/mirtazapine for a weight-concerned patient is therefore defensible. The page already builds TSH into the pre-lithium workup and notes lithium's monitoring burden. Applying the correction would teach an overstated claim.",
+   "evidence": "Gomes-da-Costa S et al., Neurosci Biobehav Rev 2021;134:104266, PMID 34265322, doi:10.1016/j.neubiorev.2021.07.011 (PubMed abstract)",
+   "confidence": "medium"
+  }
+ },
+ {
+  "chunk": "R04",
+  "audience": "Resident",
+  "pattern": null,
+  "persistsFrom": null,
+  "surface": "cotw_20260726_etohwd_res.md",
+  "locus": "page",
+  "severity": "Moderate",
+  "category": "emergency psychiatry",
+  "quote": "High PAWSS should have driven a **front-loaded or fixed-schedule** regimen and an appropriate level of care from hour 0 — not a reactive, symptom-triggered protocol on a general floor.",
+  "problem": "Overstates ASAM 2020, which the page itself summarises two sentences later: symptom-triggered dosing remains preferred where it can be validly applied with adequate monitoring; high predicted risk drives level of care and makes front-loading/fixed dosing an option, not a mandate. On admission this patient was communicative and CIWA-assessable.",
+  "whyItMatters": "Residents may put every PAWSS>=4 patient on fixed-schedule benzodiazepines — including elderly or cirrhotic patients like this one — increasing oversedation and cumulative dosing risk.",
+  "evidence": "ASAM Clinical Practice Guideline on Alcohol Withdrawal Management (2020), inpatient recommendations on symptom-triggered vs fixed/front-loaded regimens; Ganatra et al., J Hosp Med 2022 (page ref [6]).",
+  "correction": "High PAWSS should have driven an appropriate level of care and monitoring intensity from hour 0 and prompted consideration of a **front-loaded or fixed-schedule** regimen — rather than a reactive, symptom-triggered protocol on a general floor with no plan for when the scale stopped being valid.",
+  "confidence": "medium",
+  "verified": "recall",
+  "id": "R04-008",
+  "firstPassSeverity": "Moderate",
+  "verification": {
+   "verdict": "rejected",
+   "reason": "The sentence is about this specific patient, not every patient with PAWSS ≥4. He had a documented prior withdrawal SEIZURE and an ORIF planned, which predictably invalidates CIWA-Ar, and the very next point on the page carries the ASAM nuance: symptom-triggered dosing is preferred where it can be validly applied, with fixed or front-loaded dosing for higher-risk or non-assessable patients. That is exactly this patient, so the two sentences agree. The finding also calls him elderly; he is 54. The proposed softening would weaken a correct retrospective teaching point.",
+   "evidence": "Chunk R04 cotw_20260726_etohwd_res.md Q2 point 2 (ASAM 2020 framing on the same page); ASAM Clinical Practice Guideline on Alcohol Withdrawal Management 2020 (recall: prior withdrawal seizure/DT marks high risk warranting prophylactic or scheduled treatment and a higher level of care).",
+   "confidence": "medium"
+  }
+ }
+]

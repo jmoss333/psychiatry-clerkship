@@ -518,7 +518,7 @@
           "t": "Order a brain MRI before any treatment"
         }
       ],
-      "why": "This is bipolar mania; discontinue the antidepressant and begin an antimanic agent while protecting sleep."
+      "why": "Treat this as mania now: discontinue the antidepressant and begin an antimanic agent while protecting sleep. If full mania persists beyond the antidepressant's physiological effect, DSM-5-TR counts it toward bipolar I."
     },
     "cta": [
       {
@@ -605,7 +605,8 @@
     "safetyLevel": "high",
     "evidenceIds": [
       "cipriani-2013-lithium-suicide",
-      "canmat-isbd-bipolar-2018"
+      "canmat-isbd-bipolar-2018",
+      "nolen-2019-lithium-levels"
     ],
     "facultyReview": {
       "status": "reviewed",
@@ -765,7 +766,11 @@
       "schwenker-2023",
       "bastos-maia-2025",
       "pott-2022",
-      "volkow-2016-addiction-brain-disease"
+      "volkow-2016-addiction-brain-disease",
+      "asam-oud-2020",
+      "asam-hpso-bup-2023",
+      "samhsa-tip63-2021",
+      "donofrio-2026-ed-bup"
     ],
     "relatedTools": [
       "withdrawal.html",
@@ -784,7 +789,7 @@
       "medication_ambivalence_001"
     ],
     "safetySteps": [
-      "Alcohol: CIWA-Ar q4h through the risk window; step down only after sustained low scores",
+      "Alcohol: CIWA-Ar q1h while scores are at or above the treatment threshold, then q4h once below it, through the risk window; step down only after sustained low scores",
       "Thiamine before or with glucose — never delay dextrose for hypoglycemia",
       "CIWA ≥ 15 or seizure history → escalate protocol",
       "Opioid: COWS to time buprenorphine induction — typically COWS 8-12"
@@ -1068,7 +1073,7 @@
     "points": [
       "AN, BN, BED: get weight, orthostatic vitals, temperature, and an ECG; check phosphate/K/Mg.",
       "Decide the level of care by medical instability (bradycardia, orthostasis, electrolytes, QTc), not diagnosis alone.",
-      "Refeeding syndrome — start low, go slow, watch phosphate, give thiamine."
+      "Refeeding syndrome — watch phosphate daily; start higher unless highest-risk; give thiamine."
     ],
     "cant": "Refeeding hypophosphatemia can be fatal — monitor phosphate/K/Mg daily early and advance calories per protocol; the most malnourished are highest risk.",
     "ruleOut": [
@@ -1145,7 +1150,9 @@
     ],
     "safetyLevel": "high",
     "evidenceIds": [
-      "apa-eating-disorders-2023"
+      "apa-eating-disorders-2023",
+      "sahm-2022-restrictive-ed",
+      "rcpsych-meed-2022"
     ],
     "facultyReview": {
       "status": "reviewed",
@@ -1676,6 +1683,9 @@
     "epa": [
       "EPA1",
       "EPA2"
+    ],
+    "evidenceIds": [
+      "winkelman-2025-aasm-rls"
     ]
   },
   "t_somatic.md": {
@@ -1958,6 +1968,10 @@
     "epa": [
       "EPA1",
       "EPA9"
+    ],
+    "evidenceIds": [
+      "selten-2020-migration-psychosis",
+      "bourque-2011-migration-psychosis"
     ]
   },
   "ect_neuromodulation.md": {
@@ -1966,7 +1980,7 @@
     "tldr": "ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications; anterograde memory effects resolve over weeks, though some retrograde gaps around the treatment period can persist — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.",
     "points": [
       "Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, or prior ECT response — pregnancy is not a fifth trigger, it is what makes ECT preferred over drugs once one of those is present.",
-      "Hold benzodiazepines and anticonvulsants pre-ECT (they blunt the seizure), and plan continuation treatment — relapse is the rule without it.",
+      "Minimise or time benzodiazepines and mood-stabilising anticonvulsants pre-ECT (they blunt the seizure) — continue antiepileptics prescribed for epilepsy, and don't abruptly stop lorazepam in catatonia, and plan continuation treatment — relapse is the rule without it.",
       "rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours on depressive symptoms — not on suicidality itself, so they never replace monitoring, means restriction, or safety planning (esketamine requires REMS monitoring)."
     ],
     "cant": "There are no absolute contraindications to ECT — raised intracranial pressure and recent MI/unstable cardiac disease are the key relative risks.",
@@ -2042,6 +2056,9 @@
     "epa": [
       "EPA2",
       "EPA4"
+    ],
+    "evidenceIds": [
+      "rosenberg-2015-malignant-hyperthermia"
     ]
   },
   "t_geri.md": {
@@ -3862,7 +3879,7 @@
     "read": 5,
     "tldr": "One safety rule above all: if you are worried about immediate safety, tell the resident or attending now — do not wait, do not carry it alone; the four daily questions, PHI discipline, and student boundary rules structure everything else.",
     "points": [
-      "Escalate immediately for: current suicidal intent or new plan, threats or escalating agitation, confusion/fever/rigidity suggesting delirium or catatonia, or any withdrawal concern — these cannot wait for rounds and belong in Week 1 safety recognition.",
+      "Escalate immediately for: any new or newly disclosed suicidal or homicidal thoughts, current suicidal intent or new plan, threats or escalating agitation, confusion/fever/rigidity suggesting delirium or catatonia, or any withdrawal concern — these cannot wait for rounds and belong in Week 1 safety recognition.",
       "Use four questions for every patient: what is the syndrome? What medical/substance/sleep/medication factor is driving it? What family/social/discharge context changes the plan? What must be safer before discharge?",
       "Students may interview patients, draft notes, suggest differentials, and observe family meetings with a defined role — but may not make independent safety or discharge decisions, promise anything, or provide unsupervised therapy."
     ],
@@ -4016,7 +4033,7 @@
     "clinicalWorkflow": {
       "ask": "Open with the patient's story, then make sure suicide risk, violence risk, vulnerability, substances/withdrawal, medical contributors, and collateral needs are covered before you close.",
       "mse": "Write one concrete example for each MSE domain instead of only using adjectives.",
-      "safety": "Escalate immediately for current suicidal intent or preparation, escalating threats/agitation, delirium/catatonia signs, withdrawal concern, or any interaction that feels unsafe.",
+      "safety": "Tell the resident the same encounter about any new or newly disclosed suicidal or homicidal thoughts; escalate immediately for current suicidal intent or preparation, escalating threats/agitation, delirium/catatonia signs, withdrawal concern, or any interaction that feels unsafe.",
       "say": "You can choose what you answer. I do have to tell the team if there is an immediate safety concern, and my goal is to understand what would help.",
       "collateral": "Ask what the patient is like at baseline, what changed, when it changed, and what safety or function concerns have appeared.",
       "rounds": "Give a one-liner, the key MSE findings, the safety read, and one capacity or collateral question.",
@@ -4797,6 +4814,14 @@
     },
     "epa": [
       "EPA6"
+    ],
+    "evidenceIds": [
+      "nolen-2019-lithium-levels",
+      "gurrera-2011-nms-criteria",
+      "asam-oud-2020",
+      "asam-hpso-bup-2023",
+      "samhsa-tip63-2021",
+      "donofrio-2026-ed-bup"
     ]
   },
   "omm_resources.md": {
@@ -4915,7 +4940,7 @@
     "points": [
       "\"Treatment-resistant\" is a measurement claim: confirm adequate dose and duration, verify adherence, and track with a repeated scale before escalating.",
       "Two failed adequate antipsychotic trials defines treatment-resistant schizophrenia — clozapine is the only superior agent and is started too late; do not keep cycling.",
-      "Build monitoring at order entry: lithium renal/thyroid/PTH, clozapine ANC + bowel regimen, antipsychotic metabolic panel, QTc when stacking."
+      "Build monitoring at order entry: lithium levels + renal/thyroid/PTH, clozapine ANC + baseline and early troponin/CRP (myocarditis) + bowel regimen, antipsychotic metabolic panel, QTc when stacking."
     ],
     "cant": "Clozapine-associated constipation can progress to a fatal ileus — a bowel regimen is part of the prescription; and smoking induces CYP1A2, so a patient who quits at admission loses that induction, clozapine levels rise, and they may need a dose decrease, not an increase.",
     "quiz": {
@@ -4999,7 +5024,7 @@
     "points": [
       "Serotonin syndrome is fast with clonus and hyperreflexia; NMS is slow with lead-pipe rigidity and CK often >1,000 — tempo and the neuromuscular exam separate them.",
       "Catatonia: a ≥50% BFCRS drop after a 2 mg IV lorazepam challenge is diagnostic and therapeutic; avoid antipsychotics; ECT is definitive.",
-      "Lithium: toxicity generally ≥1.5 mEq/L, dialysis if >4.0 (or >2.5 with severe signs) — treat the patient, not the number, in chronic toxicity."
+      "Lithium: toxicity generally ≥1.5 mEq/L; dialysis for >4.0 with impaired kidney function, >5.0 regardless, or decreased consciousness, seizures or life-threatening dysrhythmias at any level — treat the patient, not the number, in chronic toxicity."
     ],
     "cant": "In serotonin syndrome, physical restraints are contraindicated — isometric contraction worsens hyperthermia and lactic acidosis; sedate instead.",
     "ruleOut": [
@@ -5076,7 +5101,11 @@
           "href": "?tool=decision-aids.html"
         }
       ]
-    }
+    },
+    "evidenceIds": [
+      "decker-2015-extrip-lithium",
+      "nolen-2019-lithium-levels"
+    ]
   },
   "systems_medlegal.md": {
     "read": 7,
@@ -5380,7 +5409,7 @@
     "points": [
       "Lead-pipe rigidity + hyporeflexia after a dopamine blocker → NMS; clonus + hyperreflexia, legs>arms, after a serotonergic agent → serotonin syndrome.",
       "Dry, flushed skin + mydriasis + urinary retention → anticholinergic toxicity; waxy flexibility/posturing without a clear drug trigger → malignant catatonia (ECT is definitive).",
-      "Reconstruct every medication change in the last 72 hours — that history usually names the syndrome."
+      "Reconstruct the medication history, especially changes in the last 72 hours (NMS can still arise on a stable dose) — that history usually names the syndrome."
     ],
     "cant": "Never give an antipsychotic to a rigid, febrile patient in NMS or malignant catatonia — antipsychotics are the cause, not the treatment; stop the offending agent, cool and support, and escalate.",
     "ruleOut": [
@@ -5390,9 +5419,11 @@
       "Serotonin syndrome",
       "Anticholinergic toxicity",
       "Malignant catatonia",
-      "Malignant hyperthermia"
+      "Malignant hyperthermia",
+      "Alcohol/sedative-hypnotic withdrawal (delirium tremens)",
+      "Sympathomimetic toxicity (cocaine, amphetamines)"
     ],
-    "firstMove": "Stop the likely offending agent, support and cool aggressively, send a CK, and rule out infection/heat stroke — then discriminate by reflexes and skin.",
+    "firstMove": "Stop the likely offending agent, support and cool aggressively, send a CK, and rule out infection, heat stroke, alcohol/sedative withdrawal, and stimulant toxicity — then discriminate by reflexes and skin.",
     "safetyLevel": "high",
     "workflowModes": [
       "ward",
@@ -5422,7 +5453,8 @@
     "evidenceIds": [
       "boyer-shannon-2005-serotonin-syndrome",
       "strawn-2007-neuroleptic-malignant-syndrome",
-      "bap-catatonia-2023"
+      "bap-catatonia-2023",
+      "rosenberg-2015-malignant-hyperthermia"
     ]
   },
   "med_monitoring.md": {
@@ -5430,7 +5462,7 @@
     "hy": true,
     "tldr": "Every psychotropic with a monitoring requirement has a baseline and an ongoing schedule; ordering the labs, β-hCG, and EKG before the first dose and tracking the next level is concrete bedside safety work.",
     "points": [
-      "Lithium: 12-h trough drawn ~5 days after any dose change; target ≈ 0.6–1.0 (up to ~1.2 in acute mania); NSAIDs/thiazides/ACE-inhibitors raise levels.",
+      "Lithium: 12-h trough drawn ~5 days after any dose change; target: acute mania 0.8–1.2, maintenance usually 0.6–0.8 (older adults ~0.4–0.6); NSAIDs/thiazides/ACE-inhibitors raise levels.",
       "Clozapine ANC weekly ×6 mo → every 2 wk ×6 mo → monthly (per prescribing information; FDA eliminated the REMS in 2025); myocarditis is the early killer.",
       "Valproate and lithium are teratogens — β-hCG before starting; carbamazepine needs CBC/LFTs/sodium, HLA-B*1502 in at-risk ancestry, and watch for SIADH."
     ],
@@ -5460,7 +5492,8 @@
     "evidenceIds": [
       "clozapine-rems",
       "fda-drug-safety",
-      "canmat-isbd-bipolar-2018"
+      "canmat-isbd-bipolar-2018",
+      "nolen-2019-lithium-levels"
     ]
   },
   "psychotherapy.md": {

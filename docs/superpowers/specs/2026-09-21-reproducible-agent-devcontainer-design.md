@@ -1,7 +1,10 @@
 # Reproducible Agent Dev Container Design
 
 **Date:** 2026-09-21
-**Status:** approved in conversation; Task 1 implemented, Tasks 2–4 pending
+**Status:** Implemented — Task 1 merged in #736; Tasks 2–4 merged in #737. Native VS Code verification and commit-bound status followed in #745 (2026-09-23).
+
+This is the historical design, not a pending implementation queue. Current setup and
+evidence boundaries live in `.devcontainer/README.md` and `CLAUDE.md`.
 
 ## Decision
 

@@ -38,9 +38,15 @@ function srsGradeCard(id,grade){
    recall (Good, not Easy — Easy would stretch the interval on a four-way
    recognition task the learner may well have guessed); `partial` is a hesitant
    one; anything worse is a lapse. Unknown qualities fail to a lapse so a new
-   quality added to the data can never quietly lengthen an interval. */
+   quality added to the data can never quietly lengthen an interval.
+   The return values MUST be applyGrade's own grade strings. applyGrade names
+   'Again' | 'Hard' | 'Good' and sends every other value to its Easy branch, so
+   the 3/2/1 this returned from ca62dbb until 2026-09-24 graded every COMM# and
+   REASON# card Easy — a harmful choice came back in four days, no lapse
+   counted. tests/comm-reason-cards.test.mjs checks each grade against the
+   names applyGrade actually compares. */
 function srsGradeForQuality(quality){
-  if(quality==='best') return 3;
-  if(quality==='partial') return 2;
-  return 1;
+  if(quality==='best') return 'Good';
+  if(quality==='partial') return 'Hard';
+  return 'Again';
 }

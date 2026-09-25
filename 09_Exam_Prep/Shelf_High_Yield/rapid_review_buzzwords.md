@@ -6,14 +6,14 @@
 
 ## Mood
 - Depression ≥2 weeks, ≥5 SIGECAPS incl. mood or anhedonia → **major depressive episode** → SSRI + therapy. *(→ Mood)*
-- Manic ≥1 week (or any duration if hospitalized), elevated/irritable + DIGFAST → **bipolar I** → mood stabilizer/SGA; **antidepressant monotherapy contraindicated**. *(→ Mood)*
+- Manic ≥1 week (or any duration if hospitalized), elevated/irritable mood **plus increased activity/energy** + ≥3 DIGFAST (≥4 if only irritable) → **bipolar I** → mood stabilizer/SGA; **antidepressant monotherapy contraindicated**. *(→ Mood)*
 - Antidepressant "works" but patient becomes activated/grandiose → uncovered **bipolar** → screen for bipolarity before any antidepressant.
 - Severe, psychotic, catatonic, food-refusing, or high suicide risk → **ECT** (and preferred over drugs when that patient is pregnant). *(→ ECT)*
 - Grief-specific yearning/preoccupation >12 months, impairing → **prolonged grief disorder (DSM-5-TR)** — not normal bereavement.
 
 ## Psychosis
 - Psychosis <1 mo → **brief psychotic**; 1–6 mo → **schizophreniform**; ≥6 mo → **schizophrenia**. *(→ Psychosis)*
-- ≥2 wk psychosis *without* mood symptoms + mood episodes most of illness → **schizoaffective**; psychosis only during mood episodes → **mood disorder with psychotic features**.
+- ≥2 wk psychosis *without* a major mood episode + major mood episodes for most of the total (active + residual) illness → **schizoaffective**; psychosis only during mood episodes → **mood disorder with psychotic features**.
 - Two failed adequate antipsychotic trials → **treatment-resistant** → **clozapine** (ANC monitoring per prescribing info; REMS eliminated 2025). *(→ Psychosis, Med Monitoring)*
 - Clozapine + fever/chest pain early → **myocarditis**; + abdominal distension → **ileus**. *(→ Psychosis)*
 - First-episode psychosis → **coordinated specialty care (RAISE)** — meds + family + psychosocial.
@@ -22,7 +22,7 @@
 - Chronic worry ≥6 mo, multiple domains → **GAD** → SSRI/SNRI + CBT. *(→ Anxiety)*
 - Recurrent unexpected attacks + worry about attacks → **panic disorder** → SSRI + CBT; benzo bridge only.
 - Ego-dystonic obsessions + rituals → **OCD** → SSRI (higher dose) + **ERP**; clomipramine 2nd-line.
-- Trauma + re-experiencing/avoidance/hyperarousal → **PTSD** → trauma-focused therapy ± SSRI/SNRI; prazosin for nightmares; **avoid benzodiazepines**.
+- Trauma + intrusion/avoidance/negative cognition-mood/hyperarousal >1 month → **PTSD** → trauma-focused therapy ± SSRI/SNRI; prazosin for nightmares; **avoid benzodiazepines**.
 - Anxiety only when performing → **performance-type social anxiety** → PRN beta-blocker.
 
 ## Personality
@@ -36,9 +36,9 @@
 ## Substance / Withdrawal
 - Confusion + ophthalmoplegia + ataxia in alcohol use → **Wernicke** → **thiamine before or with glucose** (never delay dextrose for true hypoglycemia). *(→ SUD)*
 - Alcohol withdrawal peak 48–96 h, autonomic instability + confusion → **delirium tremens** → benzodiazepines — scheduled/front-loaded, titrated to light sedation (CIWA symptom-triggered dosing is for withdrawal *without* delirium). *(→ Withdrawal card)*
-- Opioid withdrawal → track with **COWS**; start buprenorphine only when objective withdrawal present (COWS ≈ 8–12). *(→ SUD)*
+- Opioid withdrawal → track with **COWS**; start buprenorphine once objective withdrawal is present — roughly COWS ≥ 8–12 depending on the guideline (ASAM's 2023 fentanyl guidance: ≥ 8 with at least one objective sign); low-dose/high-dose initiation are alternatives. *(→ SUD)*
 - AUD maintenance → **naltrexone or acamprosate** first-line; disulfiram adherence-dependent.
-- Opioid overdose → **naloxone**; MOUD (buprenorphine/methadone/naltrexone) reduces mortality.
+- Opioid overdose → **naloxone**; methadone and buprenorphine reduce mortality; naltrexone has not been shown to (and requires an opioid-free window before starting).
 
 ## Neurocognitive / Delirium / Mimics
 - Acute, fluctuating, inattentive → **delirium** → find and treat the cause; avoid benzodiazepines (except alcohol/sedative withdrawal). *(→ Delirium)*
@@ -48,8 +48,8 @@
 - Psychosis + movement disorder + seizures/autonomic instability → **anti-NMDA-receptor encephalitis**.
 
 ## Safety / Toxidromes
-- Dopamine blocker + **lead-pipe rigidity + hyporeflexia** + high CK → **NMS** → stop antipsychotic; dantrolene/bromocriptine. *(→ Toxidromes)*
-- Serotonergic agent + **clonus + hyperreflexia (legs)** + diaphoresis → **serotonin syndrome** → cyproheptadine.
+- Dopamine blocker + **fever + lead-pipe rigidity + hyporeflexia** + altered mental status + autonomic instability + high CK → **NMS** → stop antipsychotic + supportive care (cooling, fluids, ICU-level monitoring); benzodiazepines, dantrolene/bromocriptine as adjuncts. *(→ Toxidromes)*
+- Serotonergic agent + **clonus + hyperreflexia (legs)** + diaphoresis → **serotonin syndrome** → stop serotonergic agents, supportive care + benzodiazepines; cyproheptadine if moderate/persistent.
 - **Dry, flushed, mydriasis, retention** → **anticholinergic toxicity**.
 - Waxy flexibility/posturing/mutism → **catatonia** → **lorazepam challenge**; malignant/refractory → **ECT**. *(→ Catatonia)*
 - Strongest suicide risk factor = **prior attempt**; highest-yield prevention = **means restriction (firearms)**; highest-risk window = **post-discharge**. *(→ Suicide)*
