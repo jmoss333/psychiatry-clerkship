@@ -12,6 +12,18 @@ command -v git >/dev/null 2>&1 || { echo "vitals: git not available"; exit 0; }
 echo "== clerkship vitals =="
 echo "branch: $(git rev-parse --abbrev-ref HEAD 2>/dev/null) @ $(git rev-parse --short HEAD 2>/dev/null)"
 
+# The shared .git/config — every worktree reads it, and a test fixture that inherited a hook's
+# GIT_DIR has corrupted it twice (core.bare=true, a fixture [user], LFS filters set to `cat`).
+# When that happens every git probe below prints nonsense and the gates can fail open, so say it
+# first and loudly. Report-only: the repair is per line and the owner's (the tool prints it).
+if [ -f bin/check_git_config_health.py ]; then
+  if CFG_HEALTH="$(python3 bin/check_git_config_health.py --root "$ROOT" 2>&1)"; then
+    echo "git config: healthy (no core.bare=true, fixture identity or non-git-lfs filter)"
+  else
+    echo "!!! $CFG_HEALTH" | sed '2,$s/^/    /'
+  fi
+fi
+
 # Offline and report-only: stale remote knowledge is explicitly labelled as cached.
 # Run before the slower network probes so divergence is visible even if they time out.
 if [ -f bin/sync_status.py ]; then
