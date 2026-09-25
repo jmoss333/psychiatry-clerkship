@@ -10,8 +10,12 @@
  *
  * So the comparison here is deliberately not "both are 40 hex characters":
  *
- *   · every reviewed shipped slug's MANIFEST is compared as text before its digest, so a
- *     divergence names the line that differs rather than an opaque hash mismatch;
+ *   · every shipped slug's MANIFEST is compared as text before its digest, so a divergence
+ *     names the line that differs rather than an opaque hash mismatch. Every SHIPPED slug, not
+ *     every reviewed one: the console computes a digest when it attests a pending page, so the
+ *     pages that most need parity are the ones not yet reviewed — and a set read off
+ *     reviewed.json is the faculty's queue, which demoting or draining would shrink under the
+ *     test (CLAUDE.md: a test may not depend on live governance state);
  *   · every topic_meta record's canonical bytes are compared as bytes (base64 over the wire),
  *     because key order, float formatting and `ensure_ascii=False` are exactly where a JSON
  *     canonicaliser silently disagrees, and comparing digests alone would only say "one of the
@@ -118,8 +122,14 @@ const shippedDoc = readJson(repo, SHIPPED_PAGES);
 const topicMetaDoc = readJson(repo, TOPIC_META);
 const ledger = readJson(repo, REVIEWED);
 
-// Reviewed rows for pages a site actually ships. A reviewed row with no source is a
-// governance question (attestation_hash.LEDGER_ONLY_LEGACY), not a digest question.
+// The parity set is the derived shipped listing, so the ledger decides nothing about what is
+// compared. Its size is not pinned here: shipped_pages.py --check-build binds the listing to
+// the real build output, and a floor on it would be one more number to move by hand.
+const shippedSlugs = [...new Set(shippedDoc.pages.map(page => page.slug))].sort();
+
+// Reviewed rows for pages a site actually ships -- read ONLY by the stored-hash format test
+// at the bottom, which reports its counts rather than asserting them. A reviewed row with no
+// source is a governance question (attestation_hash.LEDGER_ONLY_LEGACY), not a digest one.
 const reviewedShipped = Object.keys(ledger)
   .filter(slug => ledger[slug]?.status === 'reviewed')
   .filter(slug => sourcesForSlug(shippedDoc, slug).length > 0)
@@ -129,19 +139,23 @@ const live = python({
   root: repo,
   shipped: SHIPPED_PAGES,
   topicMeta: TOPIC_META,
-  slugs: reviewedShipped,
+  slugs: shippedSlugs,
 });
 
-test('every reviewed shipped slug hashes identically in both implementations', () => {
-  assert.ok(reviewedShipped.length > 100,
-    `expected the live ledger's reviewed rows, got ${reviewedShipped.length}`);
-  for (const slug of reviewedShipped) {
+test('every shipped slug hashes identically in both implementations, reviewed or not', (t) => {
+  assert.ok(shippedSlugs.length > 0, 'shipped_pages.json lists no pages: nothing was compared');
+  for (const slug of shippedSlugs) {
+    // A shipped slug Python refuses to hash would otherwise surface as "manifest differs"
+    // against undefined; name it for what it is.
+    assert.equal(live.slugs[slug]?.error, undefined, `${slug} ships but Python cannot hash it`);
     const manifest = jsManifest(repo, shippedDoc, topicMetaDoc, slug);
     // Manifest before digest: a text diff names the line, a hash diff names nothing.
     assert.equal(manifest, live.slugs[slug].manifest, `manifest differs for ${slug}`);
     assert.equal(digestFromManifest(manifest), live.slugs[slug].digest,
       `digest differs for ${slug}`);
   }
+  t.diagnostic(`${shippedSlugs.length} shipped slugs compared `
+    + `(${reviewedShipped.length} reviewed, ${shippedSlugs.length - reviewedShipped.length} not)`);
 });
 
 test('the governance strings are byte-identical across the two implementations', () => {
