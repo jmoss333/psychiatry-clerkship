@@ -23,7 +23,7 @@
       "items": [
         { "role": "read",     "kind": "page",     "ref": "t_psychosis.md" },
         { "role": "listen",   "kind": "audio_oe", "ref": "28" },
-        { "role": "practice", "kind": "tool",     "ref": "decision-aids.html" }
+        { "role": "practice", "kind": "tool",     "ref": "sp-interview.html" }
       ]
     },
     {
@@ -52,7 +52,7 @@
     },
     {
       "id": "pair_delirium",
-      "topic": "Delirium",
+      "topic": "Delirium and capacity",
       "weeks": [5],
       "audiences": ["ms3", "res"],
       "blurb": "The medical emergency that looks psychiatric — and the one you prevent rather than treat.",
