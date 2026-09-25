@@ -1001,17 +1001,17 @@
       ],
       "correct_option": "A",
       "why": "Reintroducing nutrition drives an insulin-mediated intracellular shift of phosphate (and potassium and magnesium), so falling phosphate is the key refeeding-syndrome signal to monitor and correct. 'Fixating on sodium,' 'wrong electrolyte,' and 'irrelevant marker' each miss hypophosphatemia as the danger.",
-      "complete_correct_answer_explanation": "Refeeding syndrome occurs when carbohydrate reintroduction after starvation triggers an insulin surge that drives phosphate, potassium, and magnesium into cells, depleting already low stores. Hypophosphatemia is the hallmark and can cause cardiac and respiratory failure, arrhythmia, rhabdomyolysis, and death. Management is to advance calories cautiously, monitor electrolytes closely, and supplement phosphate (and potassium/magnesium and thiamine) as needed. Sodium, calcium, and BUN are not the defining safety signals.",
+      "complete_correct_answer_explanation": "Refeeding syndrome occurs when carbohydrate reintroduction after starvation triggers an insulin surge that drives phosphate, potassium, and magnesium into cells, depleting already low stores. Hypophosphatemia is the hallmark and can cause cardiac and respiratory failure, arrhythmia, rhabdomyolysis, and death. Management is to advance calories at a risk-matched pace, monitor electrolytes closely, and supplement phosphate (and potassium/magnesium and thiamine) as needed. Sodium, calcium, and BUN are not the defining safety signals.",
       "explanation_for_each_distractor": {
         "B": "Hypernatremia is not the hallmark of refeeding; hypophosphatemia is.",
         "C": "Calcium is not the defining refeeding abnormality.",
         "D": "BUN trends do not signal refeeding risk; phosphate does."
       },
-      "pearl": "Refeeding syndrome = falling phosphate (and K, Mg) as feeding starts — advance calories slowly and replete electrolytes.",
+      "pearl": "Refeeding syndrome = falling phosphate (and K, Mg) as feeding starts — match the starting calories to risk (higher for most, cautious for the most malnourished or unstable), check electrolytes daily, and replete them.",
       "key_takeaway": "Monitor and correct falling phosphate during refeeding in anorexia nervosa.",
       "common_reasoning_error": "Feeding aggressively to restore weight without anticipating the intracellular electrolyte shift.",
-      "management_or_safety_caveat": "Start low and go slow with calories; supplement phosphate/potassium/magnesium/thiamine and monitor cardiac status on telemetry.",
-      "evidence": "Refeeding syndrome is characterized by hypophosphatemia (and hypokalemia/hypomagnesemia) with cautious caloric advancement and electrolyte repletion (eating disorder refeeding guidance).",
+      "management_or_safety_caveat": "Match the start to risk — a higher-calorie start with daily electrolytes for most, a cautious start for the most malnourished or medically unstable; supplement phosphate/potassium/magnesium/thiamine and monitor cardiac status on telemetry.",
+      "evidence": "Refeeding syndrome is characterized by hypophosphatemia (and hypokalemia/hypomagnesemia) with electrolyte monitoring and repletion as calories advance at a risk-matched pace (eating disorder refeeding guidance).",
       "references": [
         { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Feeding and eating disorders context." },
         { "citation": "Mehanna HM, Moledina J, Travis J. Refeeding syndrome: what it is, and how to prevent and treat it. BMJ. 2008;336(7659):1495-1498.", "type": "guideline", "doi": "10.1136/bmj.a301", "access_date": "2026-07-13", "verified": false, "note": "Identifier from record; faculty to confirm. Refeeding pathophysiology and management." }

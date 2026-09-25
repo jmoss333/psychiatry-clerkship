@@ -131,7 +131,7 @@ Note the structure of those criteria: **impaired kidney function and clinical se
 - **Baseline before starting:** renal function, electrolytes, thyroid function, calcium, pregnancy test where applicable, and an ECG in patients with cardiac risk factors.
 - **Levels:** drawn as a **12-hour post-dose trough**, checked about **5–7 days after any dose change** and after adding any interacting drug, then at routine intervals (commonly every 3–6 months once stable).
 - **Renal and thyroid function (and calcium)** at least every 6–12 months.
-- **In older adults**, an international expert Delphi panel recommended **lower target ranges** — roughly 0.4–0.8 mmol/L for ages 60–79, and 0.4–0.7 mmol/L for ages 80 and over — and suggested laboratories report the therapeutic range for older adults separately [9]. Our 58-year-old is at the edge of that conversation.
+- **In older adults**, an international expert Delphi panel recommended **lower target ranges** — roughly 0.4–0.8 mmol/L for ages 60–79, and 0.4–0.7 mmol/L for ages 80 and over — and suggested laboratories report the therapeutic range for older adults separately [9]. The ISBD/IGSLI task force on lithium put the usual older-adult maintenance level lower still — usually 0.4–0.6 mmol/L, at most 0.7–0.8 at 65–79 and 0.7 over 80 — a majority view rather than a consensus [13]. Our 58-year-old is at the edge of that conversation.
 
 **And here is the uncomfortable data point:** real-world monitoring is frequently *not* done. In a Swedish cohort of 4,428 adults starting lithium, only about **16%** had both lithium and creatinine tested annually across their entire time on the drug, and 21% started lithium without a baseline creatinine at all [10]. A Dutch ambulatory cohort found a nearly identical figure — about **16%** monitored in compliance with guidelines for lithium level, creatinine, *and* TSH [11]. This is one of the clearest gaps between what guidelines say and what happens.
 
@@ -214,6 +214,7 @@ And on the clinician side: **whoever adds the thiazide should check a lithium le
 10. Bosi A, Ceriani L, Elinder CG, et al. Quality of laboratory biomarker monitoring during treatment with lithium in patients with bipolar disorder. *Bipolar Disord.* 2023. [DOI](https://doi.org/10.1111/bdi.13302) (PMID 36651925)
 11. Nederlof M, Egberts TCG, van Londen L, et al. Compliance with the guidelines for laboratory monitoring of patients treated with lithium: a retrospective follow-up study among ambulatory patients in the Netherlands. *Bipolar Disord.* 2019. [DOI](https://doi.org/10.1111/bdi.12730) (PMID 30472760)
 12. Patorno E, Huybrechts KF, Bateman BT, et al. Lithium use in pregnancy and the risk of cardiac malformations. *N Engl J Med.* 2017. [DOI](https://doi.org/10.1056/NEJMoa1612222) (PMID 28591541)
+13. Nolen WA, Licht RW, Young AH, et al. What is the optimal serum level for lithium in the maintenance treatment of bipolar disorder? A systematic review and recommendations from the ISBD/IGSLI Task Force on treatment with lithium. *Bipolar Disord.* 2019. [DOI](https://doi.org/10.1111/bdi.12805) (PMID 31112628)
 
 *Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only. Monitoring intervals and target ranges vary between guidelines; follow your institution's protocol.*
 
