@@ -1,13 +1,13 @@
 {
   "cotw_20260923_agitation_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New Case of the Week (agitation & delirium in the ED) awaiting faculty attestation",
-    "at": "2026-09-23",
-    "by": "Pending faculty review"
+    "at": "2026-09-25",
+    "by": "Joshua Moss, MD",
+    "contentHash": "9d3053fdeb067dccedfa97937b9e38578e9c5e42"
   },
   "cotw_20260923_agitation_res.md": {
     "status": "pending",
