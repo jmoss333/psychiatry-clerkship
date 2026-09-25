@@ -612,12 +612,13 @@ test('current repository bank has 189 blocker-free active items with a balanced 
   // (J4 cap: <= 10 per PR): qb_cog_002, qb_cog_014, qb_eth_007, qb_mood_002, qb_mood_013,
   // qb_oth_001, qb_otherdx_001, qb_sud_002, qb_sud_005, qb_sud_014. Their correct keys join
   // the draft spread (still balanced); the counts return as the faculty console re-attests them.
+  // WP-4 batch 1 (safety) demoted 7 more: qb_per_002/005, qb_saf_005/006/010, qb_sud_007/013.
   assert.equal(result.counts.total, 189);
-  assert.equal(result.counts.draft, 55);
-  assert.equal(result.counts.attested, 134);
+  assert.equal(result.counts.draft, 62);
+  assert.equal(result.counts.attested, 127);
   assert.equal(Object.keys(result.byId).length, 189);
   assert.equal(Object.values(result.byId).flatMap(entry => entry.blockers).length, 0);
-  assert.deepEqual(result.answerKeys, { A: 15, B: 13, C: 14, D: 13 });
+  assert.deepEqual(result.answerKeys, { A: 17, B: 15, C: 16, D: 14 });
   for (const item of bank.items.filter(entry => entry.retired)) {
     assert.equal(Object.hasOwn(result.byId, item.id), false);
   }
