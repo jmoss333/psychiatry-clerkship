@@ -98,6 +98,34 @@ await run('direct SI, no rapport — discloses',[
   return errs;
 });
 
+// Scenario 3b (peer-review M02-006, 2026-09-24): a passive death-wish question is a real question —
+// Dana still discloses — but it is not the question about killing yourself, so the must-ask row is
+// partial until that one is asked too.
+await run('passive-wish question — discloses, c_si partial until the active question',[
+ "Do you ever wish you could go to sleep and not wake up?"
+],(s,cov,rub,nar,replies)=>{
+  const errs=[];
+  if(!s.unlocked['si_active'])errs.push('a passive-wish question must still earn the disclosure');
+  if(!(replies[0]||'').includes('didn'))errs.push('SI reveal text not returned: '+replies[0]);
+  if(!s.covered['si_passive'])errs.push('si_passive not counted as asked');
+  if(s.covered['si_direct'])errs.push('si_direct credited for a passive wish — M02-006');
+  const si=cov.find(c=>c.id==='c_si');
+  if(si.status!=='partial')errs.push('c_si = '+si.status+' (expected partial)');
+  if(!nar.growth.some(g=>g.t.includes('passive-wish wording')))errs.push('passive-wish growth point missing');
+  return errs;
+});
+await run('passive wish, then the active question — c_si observed',[
+ "Have you ever wished you were dead?",
+ "Have you had thoughts of killing yourself?"
+],(s,cov,rub,nar,replies)=>{
+  const errs=[];
+  if(!s.covered['si_passive']||!s.covered['si_direct'])errs.push('both questions should count as asked');
+  const si=cov.find(c=>c.id==='c_si');
+  if(si.status!=='observed')errs.push('c_si = '+si.status+' (expected observed)');
+  if(!(replies[1]||'').includes('three a.m.'))errs.push('second ask should replay repeatAsk: '+replies[1]);
+  return errs;
+});
+
 // Scenario 4: judgmental blocks, injection deflected, locked sub-gate deflects
 await run('flags + injection + locked sub-gate',[
  "You should just snap out of it, other people have it worse.",

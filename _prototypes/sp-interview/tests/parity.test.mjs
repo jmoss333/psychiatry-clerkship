@@ -32,6 +32,10 @@ const scenarios = [
   { c: 0, name: 'dana flag+SI same turn (2-msg, #209)', msgs: ["Tell me more about what's been going on, in your own words.","What's the diagnosis? Have you had thoughts of killing yourself?"] },
   { c: 0, name: 'dana SI+plan same message (#209)', msgs: ["Hi, my name is Alex, I'm the medical student on the team. Before we start — what would you most want us to understand today?","Tell me more about what's been going on, in your own words.","It sounds like everything has felt really heavy.","Have you thought about killing yourself, and do you have a plan?"] },
   { c: 0, name: 'dana compound secondary (plan+means one msg, #209)', msgs: ["Hi, my name is Alex, I'm the medical student on the team. Before we start — what would you most want us to understand today?","Tell me more about what's been going on, in your own words.","It sounds like everything has felt really heavy.","Have you had thoughts of killing yourself?","Do you have a plan, and access to any means at home?"] },
+  // ---- Dana passive-wish split (peer-review M02-006, 2026-09-24) ----
+  { c: 0, name: 'dana passive-wish only', msgs: ["Do you ever wish you could go to sleep and not wake up?"] },
+  { c: 0, name: 'dana passive then direct', msgs: ["Have you ever wished you were dead?","Have you had thoughts of killing yourself?","Do you have a plan?"] },
+  { c: 0, name: 'dana passive + euphemism same message', msgs: ["Do you ever think about hurting yourself, or wish you weren't here?"] },
   // ---- Marcus ----
   { c: 1, name: 'marcus skilled', msgs: ["Hi, my name is Alex, I'm the medical student on the team — before we start, what would you most want from this conversation?","Tell me what's been going on, in your own words.","It sounds like everything sped up fast — and that must be really intense.","I do want to hear about the irrigation fix — first, let's start with your sleep. How many hours are you actually getting?","Do your thoughts feel like they're racing?","What have you been spending money on lately?","Any new partners, or times you weren't as careful as usual?","With everything moving this fast — have you had thoughts of killing yourself, even for a second?"] },
   { c: 1, name: 'marcus cold SI (unlocks at 0)', msgs: ["Have you had thoughts of killing yourself?"] },
@@ -39,12 +43,18 @@ const scenarios = [
   { c: 1, name: 'marcus argue blocks fear gate', msgs: ["That's not realistic — you can't possibly fix campus irrigation.","Do your thoughts feel like they're racing?"] },
   { c: 1, name: 'marcus two gates one message', msgs: ["What are you spending money on — and any new partners?"] },
   { c: 1, name: 'marcus flag+SI same message', msgs: ["You should be honest with me — have you had thoughts of killing yourself?"] },
+  { c: 1, name: 'marcus passive-wish (unlocks at 0)', msgs: ["Have you had thoughts of dying?"] },
+  { c: 1, name: 'marcus calm-down blocks passive', msgs: ["You need to calm down, okay?","Do you ever wish you were dead?"] },
   // ---- Ray (psychosis) ----
   { c: 2, name: 'ray skilled', msgs: ["Hi, I'm Alex, one of the medical students — and no, this isn't being recorded. You're in control of what we talk about.","We can stop whenever you want. What has this been like for you, these last few weeks?","That sounds really frightening — living like that.","Help me understand what you've noticed at home.","That sounds exhausting — carrying all of this by yourself.","Have you been hearing anything — like sounds or voices — that other people don't seem to?","When the voice talks, does it ever tell you to do anything?","Have you had thoughts of hurting the people you're afraid of?","When did you last eat or drink something?"] },
   { c: 2, name: 'ray command cold (locked)', msgs: ["Do the voices tell you to do anything?"] },
   { c: 2, name: 'ray challenge blocks command', msgs: ["No one is poisoning you — that's not real.","Okay, but do the voices tell you to do anything?"] },
   { c: 2, name: 'ray collude flag', msgs: ["You're right, they really are after you — we need to stop them."] },
   { c: 2, name: 'ray target locked without command', msgs: ["Have you thought about hurting the neighbors?"] },
+  // ---- Ray peer-review 2026-09-24: M02-013 honest recording answer, M02-011 exposure, passive wish ----
+  { c: 2, name: 'ray honest recording answer (not a challenge)', msgs: ["No one is recording this. I'm Alex, one of the medical students.","When the voice talks, does it ever tell you to do anything?"] },
+  { c: 2, name: 'ray exposure history', msgs: ["Hi, I'm Alex — you're in control of what we talk about.","Does anyone else in the building have headaches, and is there a working carbon monoxide detector?"] },
+  { c: 2, name: 'ray passive-wish', msgs: ["Do you ever wish you could go to sleep and not wake up?"] },
 ];
 
 let fails = 0;
