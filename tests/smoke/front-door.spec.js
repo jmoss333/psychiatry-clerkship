@@ -522,12 +522,15 @@ async function expectAdaptiveDock(page, expectedFirst, expectedSecond, expectedC
       bottom: bar.bottom,
       // Excludes Browse's own menu buttons while its <details> is closed: querySelectorAll finds
       // them regardless of display, and a real tap target's box is meaningless at display:none.
+      // getComputedStyle(button).display is NOT display:none here even when hidden -- that reads
+      // the button's OWN display property, which display:none on the .fd-dock__browsemenu
+      // ANCESTOR never changes; only the rendered box collapses to zero, which is what to filter.
       targets: [...dock.querySelectorAll('button')]
-        .filter(button => getComputedStyle(button).display !== 'none')
         .map(button => {
           const box = button.getBoundingClientRect();
           return { left: box.left, right: box.right, width: box.width, height: box.height };
-        }),
+        })
+        .filter(box => box.width > 0 || box.height > 0),
       pageWidth: document.documentElement.scrollWidth,
       viewportWidth: document.documentElement.clientWidth,
     };
