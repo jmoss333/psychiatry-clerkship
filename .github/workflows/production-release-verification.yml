@@ -28,7 +28,7 @@ jobs:
         with:
           fetch-depth: 0
           lfs: false
-          ref: ${{ github.event.inputs.revision || github.sha }}
+          ref: ${{ github.sha }}
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
@@ -67,19 +67,26 @@ jobs:
           set +e
           python3 13_Faculty_Resources/_automation/maintenance/production_release_receipt.py collect \
             --release-sha "${{ steps.release.outputs.release_sha }}" \
+            --verifier-sha "$GITHUB_SHA" \
             --repository "$GITHUB_REPOSITORY" \
             --wait-seconds 3600 \
             --poll-seconds 20 \
             --out "$RUNNER_TEMP/production-release-core.json"
           code=$?
+          ms3_url=$(jq -r '.deployments.sites[] | select(.name == "ms3") | .permalinkUrl // empty' "$RUNNER_TEMP/production-release-core.json" 2>/dev/null)
+          res_url=$(jq -r '.deployments.sites[] | select(.name == "res") | .permalinkUrl // empty' "$RUNNER_TEMP/production-release-core.json" 2>/dev/null)
+          if [[ ! "$ms3_url" =~ ^https://[0-9a-f]{24}--une-ms3-psychiatry\.netlify\.app$ ]]; then ms3_url=""; fi
+          if [[ ! "$res_url" =~ ^https://[0-9a-f]{24}--mmc-psychiatry-residents-sanford\.netlify\.app$ ]]; then res_url=""; fi
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          echo "ms3_url=$ms3_url" >> "$GITHUB_OUTPUT"
+          echo "res_url=$res_url" >> "$GITHUB_OUTPUT"
           exit 0
 
       - name: Run focused production browser journeys
         id: journeys
         env:
-          MS3_BASE_URL: https://une-ms3-psychiatry.netlify.app
-          RES_BASE_URL: https://mmc-psychiatry-residents-sanford.netlify.app
+          MS3_BASE_URL: ${{ steps.core.outputs.ms3_url }}
+          RES_BASE_URL: ${{ steps.core.outputs.res_url }}
           RELEASE_SHA: ${{ steps.release.outputs.release_sha }}
           RELEASE_JOURNEY_REPORT: ${{ runner.temp }}/production-release-journeys.json
         run: |
