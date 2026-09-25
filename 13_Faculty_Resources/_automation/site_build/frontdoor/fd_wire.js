@@ -1394,10 +1394,14 @@ function fdWire(root, initialState, opts){
      what the segment-cursor reasoning in changeHandler depends on.
 
      THREE settlement sites, and they are exhaustive because the debt has exactly one creator.
-     Only changeHandler sets it, which means the panel is open; the panel can be left only through
+     Only changeHandler sets it, from one of two fields of the same type: the panel's, or Today's
+     prompt (fd_today.js, shown on the exam path until a date is stored). From the panel's field:
+     the panel can be left only through
      apply() (its close control, the backdrop, Escape) or through history, and the nudge timeout
      is the one other render a learner can reach while it is still open -- fdCloseSheet schedules
-     it for 8s, long enough to open the gear and set a date. inputHandler is deliberately NOT a
+     it for 8s, long enough to open the gear and set a date. From Today's field no overlay is
+     open, so the learner's next apply() or history step pays it, and until then the prompt keeps
+     showing the date just chosen -- the same feedback the panel's field gives. inputHandler is deliberately NOT a
      site: reaching it needs search open, opening search is an apply(), and the gear patches
      searchOpen:false, so the two overlays cannot coexist. A call there would have been a line
      that looks load-bearing and can never run.
@@ -1904,7 +1908,8 @@ function fdWire(root, initialState, opts){
       }
     }
   }
-  /* The settings panel's one non-button control, and the only action in the file that does not go
+  /* The settings panel's one non-button control -- and Today's exam-date prompt, which renders the
+     same field type -- and the only action in the file that does not go
      through apply(). Three deliberate differences from the click path, each of which is a defect
      if it is "made consistent":
 

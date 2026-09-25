@@ -420,6 +420,24 @@ function fdToday(index, state){
   out+=FD_TODAY_LEAD_END;
   if(st.offlineHtml)out+=st.offlineHtml;
 
+  /* The exam-date prompt, BELOW the lead card: One Thing First keeps its single primary action,
+     and nothing here can push that card past the phone fold. It is the settings panel's own field
+     type (data-fd-exam-date), not a second way to open the panel -- a second settings opener would
+     become restoreInvoker's equivalent of the gear, so closing the panel after a theme change
+     could land focus here instead. fd_wire.js commits this input on change exactly as it commits
+     the panel's: it stores the date, renders nothing and moves no focus, so the field is never
+     rebuilt under the learner, and the next navigation's render drops the prompt. The id differs
+     from the panel's (fdSetExam) because both can be in the document while the panel is open.
+     fdExamDatePrompt (fd_state.js) decides whether to ask and names the field. */
+  var examLabel=hasWeek?fdExamDatePrompt(idx.path&&idx.path.id,nowMs):'';
+  if(examLabel){
+    out+='<div class="fd-today__exam">'+
+      '<label class="fd-today__examlabel" for="fdTodayExam">'+fdEsc(examLabel)+'</label>'+
+      '<input id="fdTodayExam" class="fd-today__examdate" type="date" data-fd-exam-date value="">'+
+      '<p class="fd-today__examnote">Set it once on this device and Today paces your reviews toward it. '+
+      'You can change it later in settings.</p></div>';
+  }
+
 
   if(hasWeek){
     out+='<div class="fd-listhead"><h2 class="fd-sectionhead">'+(idx.path&&idx.path.id==='ms3-six-week'?'Suggested this week':'This week')+'</h2>'+
