@@ -828,9 +828,9 @@
       "kind": "local-policy",
       "level": "high"
     },
-    "at": "2026-09-21",
+    "at": "2026-09-25",
     "by": "Joshua Moss, MD",
-    "contentHash": "5c1c97591248114e6c3ea213cdf6b29629d0dc99"
+    "contentHash": "d7507a0b26dd5ec63522c14b582b451b474f1363"
   },
   "week1.md": {
     "status": "reviewed",
