@@ -172,14 +172,14 @@
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
-     "c": true,
-     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "t": "American Psychiatric Association · 2026",
+     "sourceId": "apa-practice-guidelines",
      "key": "A"
     },
     {
-     "t": "Caspi et al. · 2003 · Science",
-     "sourceId": "caspi-2003-5htt-stress",
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "c": true,
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
      "key": "B"
     },
     {
@@ -188,8 +188,8 @@
      "key": "C"
     },
     {
-     "t": "Royal College of Psychiatrists · 2022 · College Report CR233",
-     "sourceId": "rcpsych-meed-2022",
+     "t": "Volkow et al. · 2016 · New England Journal of Medicine",
+     "sourceId": "volkow-2016-addiction-brain-disease",
      "key": "D"
     }
    ],
@@ -217,19 +217,19 @@
      "key": "A"
     },
     {
-     "t": "U.S. Food and Drug Administration · 2026",
-     "c": true,
-     "sourceId": "fda-prozac-label-maoi-switching",
+     "t": "Decker et al. · 2015 · Clin J Am Soc Nephrol",
+     "sourceId": "decker-2015-extrip-lithium",
      "key": "B"
     },
     {
-     "t": "Pott et al. · 2022 · J Subst Abuse Treat",
-     "sourceId": "pott-2022",
+     "t": "U.S. Food and Drug Administration · 2026",
+     "c": true,
+     "sourceId": "fda-prozac-label-maoi-switching",
      "key": "C"
     },
     {
-     "t": "Stanley et al. · 2018 · JAMA Psychiatry",
-     "sourceId": "stanley-brown-2018",
+     "t": "Saxler et al. · 2024 · Front Psychol",
+     "sourceId": "saxler-2024",
      "key": "D"
     }
    ],
@@ -263,8 +263,8 @@
      "key": "B"
     },
     {
-     "t": "Lieberman et al. · 2005 · The New England Journal of Medicine",
-     "sourceId": "lieberman-2005-catie",
+     "t": "Gurrera et al. · 2011 · J Clin Psychiatry",
+     "sourceId": "gurrera-2011-nms-criteria",
      "key": "C"
     },
     {
@@ -308,8 +308,8 @@
      "key": "C"
     },
     {
-     "t": "Penzenik et al. · 2026 · J Rural Health",
-     "sourceId": "penzenik-2026",
+     "t": "Vigen et al. · 2011 · Am J Psychiatry",
+     "sourceId": "vigen-2011-catie-ad-cognition",
      "key": "D"
     }
    ],
@@ -348,8 +348,8 @@
      "key": "C"
     },
     {
-     "t": "Williams et al. · 2022 · Cochrane Database Syst Rev",
-     "sourceId": "williams-2022-cochrane-ptsd-pharmacotherapy",
+     "t": "Penzenik et al. · 2026 · J Rural Health",
+     "sourceId": "penzenik-2026",
      "key": "D"
     }
    ],
@@ -532,13 +532,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Diefenbach et al. · 2025 · Gen Hosp Psychiatry",
-     "sourceId": "diefenbach-2025",
+     "t": "Bot et al. · 2026 · Acta Psychiatr Scand",
+     "sourceId": "bot-2026-benzodiazepines-catatonia",
      "key": "A"
     },
     {
-     "t": "Pharoah et al. · 2010 · Cochrane Database of Systematic Reviews",
-     "sourceId": "pharoah-2010-family-intervention",
+     "t": "De et al. · 2025 · Clin Psychol Psychother",
+     "sourceId": "desalve-2025",
      "key": "B"
     },
     {
@@ -572,13 +572,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Nolen et al. · 2019 · Bipolar Disord",
-     "sourceId": "nolen-2019-lithium-levels",
+     "t": "Rush et al. · 2006 · American Journal of Psychiatry",
+     "sourceId": "rush-2006-stard",
      "key": "A"
     },
     {
-     "t": "Gunturu et al. · 2026",
-     "sourceId": "statpearls-mcp-2026",
+     "t": "Studdert et al. · 2020 · The New England Journal of Medicine",
+     "sourceId": "studdert-2020-handgun-suicide",
      "key": "B"
     },
     {
