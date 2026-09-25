@@ -21,9 +21,10 @@ through it, and you need to replace them before your learners see it.
 
 ## Licence, in brief
 
-The content is under CC BY-NC-SA 4.0 and the code is under MIT. You may use and adapt the content
-for non-commercial teaching if you credit the source, note your changes and share your adaptation
-under the same licence. Third-party instruments, quoted papers, AI-generated media, vendored
+Teaching material is under CC BY-NC-SA 4.0 wherever it appears, including copies in tests and
+documentation. Code, including every schema, is under MIT wherever it lives. You may use and adapt
+the content for non-commercial teaching if you credit the source, note your changes and share your
+adaptation under the same licence. Third-party instruments, quoted papers, AI-generated media, vendored
 libraries and institution names are **not** covered. Read
 [Licensing and third-party material](../README.md#licensing-and-third-party-material) in the README
 and [`LICENSE-content`](../LICENSE-content), then check with your institution before you publish.

@@ -44,12 +44,12 @@ MS3 is the default build; later tracks are overlays.
 
 ## Licensing and third-party material
 
-Two licences cover what the author owns. The line between them is "does it teach, or does it build?"
+Two licences cover what the author owns. The line between them is drawn by the kind of material, not by folder: does it teach, or does it build?
 
 | What | Licence | File |
 |---|---|---|
-| **Curriculum content.** The numbered trees `00_START_HERE/` to `14_Tracks/` and `99_Archive/` (but not `13_Faculty_Resources/_automation/`), the curriculum registries (`topic_meta.json`, `question_bank.json`, `curriculum.json`, the case files and the rest), the learner-facing text in `_prototypes/`, and the built learner pages. | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) | [`LICENSE-content`](LICENSE-content) |
-| **Code.** The build pipeline and validators, `bin/`, `tools/`, `tests/`, the faculty console, the Interview Room proxy, the schemas, the program logic of the HTML tools, and the developer documentation. | MIT | [`LICENSE`](LICENSE) |
+| **Curriculum content.** Teaching material (text, cases, questions and rationales, feedback, scripts) wherever it appears. It lives mainly in the numbered trees `00_START_HERE/` to `14_Tracks/` and `99_Archive/`, the curriculum registries (`topic_meta.json`, `question_bank.json`, `curriculum.json`, the case files and the rest), the learner-facing text in `_prototypes/`, and the built learner pages. Copies stay content: the review transcripts, test snapshots such as `tests/__panels__/`, benchmark corpora, case-pack text in tests, and pages quoted in documentation. | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) | [`LICENSE-content`](LICENSE-content) |
+| **Code.** Source files (`.py`, `.js`, `.mjs`, `.jsx`, `.sh` and the like), every `*.schema.json`, build, test and CI configuration, the program logic of the HTML tools, and the developer documentation, wherever they live (inside the numbered trees too). That includes the build pipeline and validators, `bin/`, `tools/`, `tests/`, the faculty console and the Interview Room proxy, except copies of curriculum content in any of them. | MIT | [`LICENSE`](LICENSE) |
 
 `LICENSE-content` gives the exact boundary, how to handle files that mix code and teaching text, and the attribution line to use. In short, CC BY-NC-SA 4.0 means you may share and adapt the content for non-commercial use if you credit the source, say what you changed, and release your adaptation under the same licence.
 
