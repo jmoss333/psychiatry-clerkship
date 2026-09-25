@@ -13,24 +13,46 @@ function fdDueCount(breakdown){
   return total;
 }
 
+/* Where each due card can actually be cleared. Daily Review (review.html) serves every bucket
+   but one: the practice bank's own QB# cards, which it never builds (its sources are the
+   landmark decks, topic quizzes and the family / communication / reasoning cards) and which the
+   bank serves first in its own session (dueQbItems, question-bank-practice.html). Until
+   2026-09-24 this row sent every learner to Daily Review regardless, so after a bank session the
+   count could never clear there and the one cue Today is built around taught learners to ignore
+   it.
+
+   The row still COUNTS everything due -- that total is what Today's One Thing First picker ranks
+   -- but each share now opens where it can be served: the row's own control goes to Daily Review
+   when anything there is due and to the bank when only bank cards are; when both are due the
+   bank's share gets one secondary control beside the row. That is a second button, not a second
+   primary: it carries no dock source, so Today still has exactly one primary action. The count it
+   shows is the same QB# servability rule the bank's own "Due for review (N)" button applies
+   (tests/fd-due-bank-parity.test.mjs runs both on one store). */
+var FD_DUE_BANK_REF='question-bank-practice.html';
+
 /* primary===true marks the row as Today's one primary action: it gains is-primary and a
    kicker naming the move. Anything else renders the row exactly as before. */
 function fdDueRow(breakdown, primary){
   var b=breakdown||{}, total=fdDueCount(b), parts=[], isPrimary=primary===true;
   if(!total) return '';
+  var bank=(b.qb&&typeof b.qb.due==='number'&&b.qb.due>0)?b.qb.due:0, bankOnly=bank===total;
   if(b.daily&&b.daily.due) parts.push(b.daily.due+' daily');
   if(b.qb&&b.qb.due) parts.push(b.qb.due+' practice');
   if(b.fam&&b.fam.due) parts.push(b.fam.due+' family');
   if(b.comm&&b.comm.due) parts.push(b.comm.due+' communication');
   if(b.reason&&b.reason.due) parts.push(b.reason.due+' reasoning');
   if(b.other&&b.other.due) parts.push(b.other.due+' other');
-  return '<button type="button" class="'+(isPrimary?'fd-due is-primary':'fd-due')+'" data-fd-open="review.html"'+
-    (isPrimary?' data-fd-dock-source="primary-due" data-fd-dock-label="Start review"':'')+'>'+
+  var row='<button type="button" class="'+(isPrimary?'fd-due is-primary':'fd-due')+'" data-fd-open="'+(bankOnly?FD_DUE_BANK_REF:'review.html')+'"'+
+    (isPrimary?' data-fd-dock-source="primary-due" data-fd-dock-label="'+(bankOnly?'Open practice bank':'Start review')+'"':'')+'>'+
     (isPrimary?'<span class="fd-due__kicker">Clear what’s due</span>':'')+
     '<span class="fd-due__label">'+total+' review'+(total===1?'':'s')+' due</span>'+
     '<span class="fd-due__breakdown">'+fdEsc(parts.join(' · '))+'</span>'+
-    '<span class="fd-due__action">Start review →</span>'+
+    '<span class="fd-due__action">'+(bankOnly?'Open practice bank →':'Start review →')+'</span>'+
   '</button>';
+  if(!bank||bankOnly) return row;
+  return '<div class="fd-due-group">'+row+
+    '<button type="button" class="fd-due-group__bank" data-fd-open="'+FD_DUE_BANK_REF+'">'+
+      'Practice bank · '+bank+' due for review →</button></div>';
 }
 
 /* Questions left in a capsule, or 0 for anything malformed. The shape rule lives here once so
