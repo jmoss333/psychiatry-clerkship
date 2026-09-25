@@ -698,9 +698,9 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-21",
+    "at": "2026-09-25",
     "by": "Joshua Moss, MD",
-    "contentHash": "8c35be5e4b997087affad2acb08e835db139e6f2"
+    "contentHash": "f5c793ae719764aa005e65091a513a0248cc9059"
   },
   "nutrition_metabolic.md": {
     "status": "reviewed",
