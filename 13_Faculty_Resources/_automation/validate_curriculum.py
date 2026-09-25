@@ -106,6 +106,26 @@ FOCUS_CATEGORIES = frozenset({
     "anxiety", "childdev", "ethics", "mood", "neurocog", "otherdx",
     "personality", "pharm", "psychosis", "relational", "safety", "substance",
 })
+APP_BRIDGE_NAMES = {
+    "pa": "PA psychiatry bridge",
+    "pmhnp": "PMHNP medical-systems bridge",
+}
+APP_SELF_CHECK_ACTIONS = ["revisit", "supervisor", "another"]
+APP_ACTIVITY_ACTIONS = ["prepare", "rehearse", "observe"]
+APP_ACTIVITIES = [
+    ("initial-evaluation", "Initial psychiatric evaluation and presentation", "training-briefing"),
+    ("medication-follow-through", "Medication plan and follow-through", "workshop-equipment-checkout"),
+    ("collateral-transition", "Collateral and safe transition", "community-event-handoff"),
+]
+APP_PRACTICE_FORBIDDEN_RE = re.compile(
+    r"clinical|patient|diagnos|medicat|dose|treatment|capacity|suicide|agitation|"
+    r"symptom|disease|disorder|score|pass|fail|correct|answer|competent|entrust|ready",
+    re.IGNORECASE,
+)
+APP_PRACTICE_KEYS = {
+    "id", "title", "snapshot", "change", "statements", "supervisorQuestions",
+}
+APP_PRACTICE_TEXT_KEYS = {"id", "text"}
 
 
 def main(argv):
@@ -548,6 +568,133 @@ def main(argv):
             bad("safetyKit %s" % ref,
                 "evidenceIds contains no canonical evidence ID (got %r)" % refs)
 
+    # ---- APP pathway: exactly two resident-preview bridges and three shared activities ----
+    app_pathway = cur.get("appPathway")
+    if not isinstance(app_pathway, dict):
+        bad("appPathway", "must be an object")
+        app_pathway = {}
+    if not isinstance(app_pathway.get("intro"), str) or not app_pathway.get("intro", "").strip():
+        bad("appPathway.intro", "must be a non-empty string")
+    bridges = app_pathway.get("bridges")
+    if not isinstance(bridges, dict) or set(bridges) != set(APP_BRIDGE_NAMES):
+        bad("appPathway.bridges", "must contain exactly pa and pmhnp")
+        bridges = bridges if isinstance(bridges, dict) else {}
+    for bridge_id, expected_name in APP_BRIDGE_NAMES.items():
+        bridge = bridges.get(bridge_id)
+        label = "appPathway.bridges.%s" % bridge_id
+        if not isinstance(bridge, dict):
+            bad(label, "must be an object")
+            continue
+        if bridge.get("name") != expected_name:
+            bad(label, "name must be %r" % expected_name)
+        if not isinstance(bridge.get("summary"), str) or not bridge.get("summary", "").strip():
+            bad(label, "summary must be a non-empty string")
+        refs = bridge.get("refs")
+        if not isinstance(refs, list) or len(refs) != 8:
+            bad(label, "refs must contain exactly eight entries")
+            refs = refs if isinstance(refs, list) else []
+        if len({ref for ref in refs if isinstance(ref, str)}) != len(refs):
+            bad(label, "refs must be unique strings")
+        for ref in refs:
+            if not isinstance(ref, str) or ref not in site_shipped["resident"]:
+                bad(label, "ref %r is not shipped on resident" % ref)
+        self_check = bridge.get("selfCheck")
+        if not isinstance(self_check, dict):
+            bad(label, "selfCheck must be an object")
+        else:
+            if (not isinstance(self_check.get("prompt"), str)
+                    or not self_check.get("prompt", "").strip()):
+                bad(label, "selfCheck.prompt must be a non-empty string")
+            if self_check.get("actions") != APP_SELF_CHECK_ACTIONS:
+                bad(label, "selfCheck.actions must be %r" % APP_SELF_CHECK_ACTIONS)
+
+    practice_packs = app_pathway.get("practicePacks")
+    if not isinstance(practice_packs, list) or len(practice_packs) != 3:
+        bad("appPathway.practicePacks", "must contain exactly three packs")
+        practice_packs = practice_packs if isinstance(practice_packs, list) else []
+    pack_ids = []
+    for pack_index, pack in enumerate(practice_packs):
+        label = "appPathway.practicePacks[%d]" % pack_index
+        if not isinstance(pack, dict):
+            bad(label, "must be an object")
+            continue
+        if set(pack) != APP_PRACTICE_KEYS:
+            bad(label, "must contain exactly %r" % sorted(APP_PRACTICE_KEYS))
+        pack_id = pack.get("id")
+        if not isinstance(pack_id, str) or not re.match(r"^[a-z0-9]+(?:-[a-z0-9]+)*$", pack_id):
+            bad(label, "id must be kebab-case")
+        else:
+            pack_ids.append(pack_id)
+        snapshot = pack.get("snapshot")
+        snapshot_values = snapshot if isinstance(snapshot, list) else []
+        if not isinstance(snapshot, list) or not 2 <= len(snapshot) <= 3:
+            bad(label, "snapshot must contain two or three strings")
+        practice_text_rows = []
+        for field in ("statements", "supervisorQuestions"):
+            rows = pack.get(field)
+            if not isinstance(rows, list) or len(rows) != 3:
+                bad(label, "%s must contain exactly three entries" % field)
+                rows = rows if isinstance(rows, list) else []
+            practice_text_rows.extend(rows)
+            row_ids = []
+            for row in rows:
+                if not isinstance(row, dict) or set(row) != APP_PRACTICE_TEXT_KEYS:
+                    bad(label, "%s entries must contain exactly id and text" % field)
+                    continue
+                row_id = row.get("id")
+                if not isinstance(row_id, str):
+                    bad(label, "%s ids must be strings" % field)
+                else:
+                    row_ids.append(row_id)
+            if len(set(row_ids)) != len(row_ids):
+                bad(label, "%s ids must be unique" % field)
+        for value in [pack.get("title"), pack.get("change")] + snapshot_values + [
+            row.get("text") for row in practice_text_rows if isinstance(row, dict)
+        ]:
+            if not isinstance(value, str) or not value.strip():
+                bad(label, "display strings must be non-empty")
+            elif APP_PRACTICE_FORBIDDEN_RE.search(value):
+                bad(label, "display strings must remain nonclinical and non-evaluative")
+    if pack_ids != [row[2] for row in APP_ACTIVITIES]:
+        bad("appPathway.practicePacks", "pack ids must match the three activity contracts")
+
+    activities = app_pathway.get("activities")
+    if not isinstance(activities, list) or len(activities) != len(APP_ACTIVITIES):
+        bad("appPathway.activities", "must contain exactly three activities")
+        activities = activities if isinstance(activities, list) else []
+    for index, (expected_id, expected_name, expected_practice_id) in enumerate(APP_ACTIVITIES):
+        label = "appPathway.activities[%d]" % index
+        if index >= len(activities) or not isinstance(activities[index], dict):
+            bad(label, "must be an object")
+            continue
+        activity = activities[index]
+        if activity.get("id") != expected_id:
+            bad(label, "id must be %r" % expected_id)
+        if activity.get("name") != expected_name:
+            bad(label, "name must be %r" % expected_name)
+        if activity.get("practiceId") != expected_practice_id:
+            bad(label, "practiceId must be %r" % expected_practice_id)
+        if not isinstance(activity.get("purpose"), str) or not activity.get("purpose", "").strip():
+            bad(label, "purpose must be a non-empty string")
+        refs = activity.get("refs")
+        if not isinstance(refs, list) or not refs:
+            bad(label, "refs must be a non-empty list")
+            refs = refs if isinstance(refs, list) else []
+        if len({ref for ref in refs if isinstance(ref, str)}) != len(refs):
+            bad(label, "refs must be unique strings")
+        for ref in refs:
+            if not isinstance(ref, str) or ref not in site_shipped["resident"]:
+                bad(label, "ref %r is not shipped on resident" % ref)
+        if activity.get("actions") != APP_ACTIVITY_ACTIONS:
+            bad(label, "actions must be %r" % APP_ACTIVITY_ACTIONS)
+    activity_practice_ids = [
+        activity.get("practiceId") if isinstance(activity, dict) else None
+        for activity in activities
+    ]
+    if activity_practice_ids != pack_ids:
+        bad("appPathway.practicePacks",
+            "activity practice ids must resolve to exactly one pack each")
+
     # ---- roles: id/name/desc non-empty, and the displayed text is audience-neutral ----
     # curriculum.json is one document read by both site builds, so a role's displayed name/desc
     # (id is an identifier, not copy, and is exempt) must not carry an audience-specific token —
@@ -574,6 +721,14 @@ def main(argv):
                 val = r.get(field)
                 if isinstance(val, str) and ROLE_AUDIENCE_TOKEN_RE.search(val):
                     bad(label, "'%s' contains an audience-specific token: %r" % (field, val))
+    ms3_role_ids = [role.get("id") for role in roles.get("ms3", []) if isinstance(role, dict)]
+    resident_role_ids = [
+        role.get("id") for role in roles.get("resident", []) if isinstance(role, dict)
+    ]
+    if "app" in ms3_role_ids:
+        bad("roles.ms3", "must not expose the APP preview")
+    if resident_role_ids.count("app") != 1:
+        bad("roles.resident", "must contain exactly one app role")
 
     if errs:
         print("curriculum.json INVALID — %d issue(s):" % len(errs))

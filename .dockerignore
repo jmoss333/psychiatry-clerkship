@@ -1,0 +1,11 @@
+*
+!.devcontainer/
+!.devcontainer/Dockerfile
+!.devcontainer/receipt-status/
+!.devcontainer/receipt-status/**
+!tests/
+tests/*
+!tests/smoke/
+tests/smoke/*
+!tests/smoke/package.json
+!tests/smoke/package-lock.json

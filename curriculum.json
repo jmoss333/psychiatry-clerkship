@@ -273,6 +273,117 @@
     { "ref": "canon_200.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
     { "ref": "cl_reference.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" }
   ],
+  "careResources": [
+    {
+      "id": "resource-finder",
+      "group": "support",
+      "title": "Find services and community supports",
+      "description": "Treatment, housing, food, transportation, and family supports.",
+      "url": "https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html",
+      "searchTerms": [
+        "resource finder", "community resources", "treatment resources",
+        "substance use treatment", "detox", "rehab", "housing", "housing help",
+        "food assistance", "transportation", "transportation help", "family support"
+      ]
+    },
+    {
+      "id": "meeting-calendar",
+      "group": "support",
+      "title": "Find a recovery meeting",
+      "description": "Current recovery-meeting options from ReConnect.",
+      "url": "https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html",
+      "searchTerms": [
+        "recovery meeting", "meeting near me", "aa meeting", "na meeting",
+        "peer support meeting", "twelve step meeting"
+      ]
+    },
+    {
+      "id": "education-library",
+      "group": "education",
+      "title": "Patient and family education",
+      "description": "Plain-language guides to diagnoses, treatment, recovery, and family support.",
+      "url": "https://mental-health-education-library.netlify.app/patient",
+      "searchTerms": [
+        "patient education", "family education", "diagnosis handout",
+        "psychoeducation", "patient guide", "family guide"
+      ]
+    },
+    {
+      "id": "podcast-navigator",
+      "group": "education",
+      "title": "Find a podcast to share",
+      "description": "Curated psychiatric listening organized by topic and audience.",
+      "url": "https://reconnect-tools.netlify.app/tools/podcast-navigator.html",
+      "searchTerms": [
+        "podcast navigator", "mental health podcast", "psychiatry podcast",
+        "patient podcast", "family podcast", "recommended podcast"
+      ]
+    },
+    {
+      "id": "book-shelf",
+      "group": "education",
+      "title": "Browse recommended books",
+      "description": "Curated books organized by topic, reader, and relationship pattern.",
+      "url": "https://reconnect-tools.netlify.app/tools/relational-bibliotherapy.html",
+      "searchTerms": [
+        "book shelf", "bookshelf", "recommended books", "mental health books", "psychiatry books",
+        "books for patients", "books for families", "bibliotherapy"
+      ]
+    }
+  ],
+  "careNavigator": [
+    {
+      "id": "services",
+      "label": "Find community services",
+      "explanation": "Start with the Resource Finder to review practical and treatment supports by need.",
+      "primaryResourceId": "resource-finder",
+      "alternativeResourceIds": ["meeting-calendar"]
+    },
+    {
+      "id": "meetings",
+      "label": "Locate recovery meetings",
+      "explanation": "Start with the meeting calendar when the immediate task is locating recovery support.",
+      "primaryResourceId": "meeting-calendar",
+      "alternativeResourceIds": ["resource-finder"]
+    },
+    {
+      "id": "explain",
+      "label": "Explain something to a patient or family",
+      "explanation": "Start with the education library for plain-language information patients and families can review.",
+      "primaryResourceId": "education-library",
+      "alternativeResourceIds": ["book-shelf", "podcast-navigator"]
+    },
+    {
+      "id": "listen",
+      "label": "Find a podcast or listening resource",
+      "explanation": "Start with Podcast Navigator to find curated listening by topic and audience.",
+      "primaryResourceId": "podcast-navigator",
+      "alternativeResourceIds": ["education-library", "book-shelf"]
+    },
+    {
+      "id": "books",
+      "label": "Recommend a book",
+      "explanation": "Start with Recommended Books to browse curated reading by topic, reader, and relationship pattern.",
+      "primaryResourceId": "book-shelf",
+      "alternativeResourceIds": ["education-library", "podcast-navigator"]
+    },
+    {
+      "id": "family-conversation",
+      "label": "Prepare for a family conversation",
+      "explanation": "Start with the education library for material that can support a clear, shared family conversation.",
+      "primaryResourceId": "education-library",
+      "alternativeResourceIds": ["book-shelf", "podcast-navigator"]
+    }
+  ],
+  "teachingResources": [
+    {
+      "id": "family-therapy-companion",
+      "title": "Family Therapy Seminar Companion",
+      "description": "Practice family-meeting structure with de-identified teaching cases.",
+      "url": "https://family-therapy-seminar-companion.netlify.app/",
+      "note": "Answers stay on this device. Do not enter names or identifying details."
+    }
+  ],
   "siteLibrary": {
     "ms3": {
       "additions": [],
@@ -322,11 +433,19 @@
         "kill himself", "kill themselves", "want to die", "wants to die", "wanted to die",
         "better off dead", "end my life", "end her life", "end his life", "end it all",
         "self harm", "self-harm", "hurt myself", "hurt herself", "hurt himself",
-        "cutting", "overdose", "hanging", "wants to leave", "eloping"] },
+        "cutting", "cut myself", "cut herself", "cut himself", "cut themselves", "cut themself",
+        "cut yourself", "cuts herself", "cuts himself", "cuts themselves", "cut my wrist",
+        "cut her wrist", "cut his wrist", "cut their wrist", "cut my wrists", "cut her wrists",
+        "cut his wrists", "cut their wrists",
+        "overdose", "overdosed", "overdoses", "overdosing", "od", "od'd",
+        "hanging", "wants to leave", "eloping"] },
     { "ref": "agitation.md", "sub": "Verbal first · PO before IM",
       "triggers": ["agitated", "agitation", "combative", "aggressive", "violent", "threatening",
         "hitting", "throwing", "restraint", "restraints", "seclusion", "escalating",
-        "out of control", "swinging"] },
+        "out of control", "swinging",
+        "pulled out iv", "pulled out her iv", "pulled out his iv", "pulled out their iv",
+        "pulling out iv", "pulling out her iv", "pulling out his iv", "pulling out their iv",
+        "pulled her iv", "pulled his iv", "pulled their iv"] },
     { "ref": "exp_consult.md", "sub": "Choice · understand · appreciate · reason",
       "triggers": [
         "ama",
@@ -341,8 +460,137 @@
         "alcohol withdrawal", "opioid withdrawal"] },
     { "ref": "delirium.md", "sub": "Vitals · meds · CAM",
       "triggers": ["delirious", "confused", "confusion", "disoriented", "altered mental status",
-        "ams", "sundowning", "waxing and waning", "inattentive", "not making sense"] }
+        "ams", "sundowning", "waxing and waning", "inattentive", "not making sense",
+        "pulled out iv", "pulled out her iv", "pulled out his iv", "pulled out their iv",
+        "pulling out iv", "pulling out her iv", "pulling out his iv", "pulling out their iv",
+        "pulled her iv", "pulled his iv", "pulled their iv"] }
   ],
+  "appPathway": {
+    "intro": "Choose the starting route that fits what you want to revisit. You can use either route.",
+    "practicePacks": [
+      {
+        "id": "training-briefing",
+        "title": "Training-room briefing",
+        "snapshot": [
+          "A facilitator asks you to prepare a two-minute update from a shared brief.",
+          "The update has a named owner and a scheduled review time."
+        ],
+        "change": "A source note is now marked unconfirmed.",
+        "statements": [
+          { "id": "review-time", "text": "The scheduled review time has not changed." },
+          { "id": "source-status", "text": "Every source in the brief is confirmed." },
+          { "id": "verification-owner", "text": "The person responsible for checking the source note is clear." }
+        ],
+        "supervisorQuestions": [
+          { "id": "name-uncertainty", "text": "Which uncertainty should I name in the update?" },
+          { "id": "confirm-owner", "text": "Who should confirm the source note?" },
+          { "id": "prepare-review", "text": "What should I prepare before we review it together?" }
+        ]
+      },
+      {
+        "id": "workshop-equipment-checkout",
+        "title": "Workshop equipment checkout",
+        "snapshot": [
+          "A workshop kit has a named setup owner.",
+          "The delivery window is listed on the shared schedule."
+        ],
+        "change": "The delivery window moves to after the setup owner leaves.",
+        "statements": [
+          { "id": "setup-owner", "text": "The setup owner is still named." },
+          { "id": "delivery-window", "text": "The kit will arrive during the original delivery window." },
+          { "id": "new-time-owner", "text": "The person who will receive the kit at the new time is clear." }
+        ],
+        "supervisorQuestions": [
+          { "id": "handoff-owner", "text": "Who should own the handoff at the new time?" },
+          { "id": "plan-parts", "text": "Which parts of the original plan still hold?" },
+          { "id": "confirm-before-start", "text": "What needs confirmation before the workshop starts?" }
+        ]
+      },
+      {
+        "id": "community-event-handoff",
+        "title": "Community event handoff",
+        "snapshot": [
+          "A volunteer says the welcome table is set up.",
+          "One volunteer owns the remaining setup checklist."
+        ],
+        "change": "The accessibility signs have not arrived.",
+        "statements": [
+          { "id": "table-status", "text": "The welcome table is set up." },
+          { "id": "item-status", "text": "Every setup item has arrived." },
+          { "id": "sign-owner", "text": "The person who will obtain the signs is clear." }
+        ],
+        "supervisorQuestions": [
+          { "id": "remaining-owner", "text": "Who should own the remaining setup?" },
+          { "id": "handoff-check", "text": "Which part of the handoff needs confirmation?" },
+          { "id": "opening-check", "text": "What should be checked before the event opens?" }
+        ]
+      }
+    ],
+    "bridges": {
+      "pa": {
+        "name": "PA psychiatry bridge",
+        "summary": "Start with interviewing, formulation, communication, medication foundations, and presentation.",
+        "refs": [
+          "pg_interview.md",
+          "case_formulation.md",
+          "communication-practice.html",
+          "psychopharm_primer.md",
+          "adv_psychopharm.md",
+          "one-patient-six-weeks.html",
+          "systems_medlegal.md",
+          "oral.html"
+        ],
+        "selfCheck": {
+          "prompt": "After a synthetic case, privately choose what to revisit before supervised practice.",
+          "actions": ["revisit", "supervisor", "another"]
+        }
+      },
+      "pmhnp": {
+        "name": "PMHNP medical-systems bridge",
+        "summary": "Start with medical assessment, differential diagnosis, monitoring, consultation, and transitions.",
+        "refs": [
+          "medical_workup.md",
+          "ddx.md",
+          "diagnostic-reasoning.html",
+          "med_monitoring.md",
+          "interaction-cards.html",
+          "exp_consult.md",
+          "toxidromes.md",
+          "exp_family.md"
+        ],
+        "selfCheck": {
+          "prompt": "After a synthetic case, privately choose what to revisit before supervised practice.",
+          "actions": ["revisit", "supervisor", "another"]
+        }
+      }
+    },
+    "activities": [
+      {
+        "id": "initial-evaluation",
+        "name": "Initial psychiatric evaluation and presentation",
+        "practiceId": "training-briefing",
+        "purpose": "Prepare a focused work sample and a question for supervision.",
+        "refs": ["pg_interview.md", "case_formulation.md", "diagnostic-reasoning.html", "oral.html"],
+        "actions": ["prepare", "rehearse", "observe"]
+      },
+      {
+        "id": "medication-follow-through",
+        "name": "Medication plan and follow-through",
+        "practiceId": "workshop-equipment-checkout",
+        "purpose": "Prepare to explain a plan, follow-through responsibilities, and questions for supervision.",
+        "refs": ["psychopharm_primer.md", "adv_psychopharm.md", "med_monitoring.md", "interaction-cards.html"],
+        "actions": ["prepare", "rehearse", "observe"]
+      },
+      {
+        "id": "collateral-transition",
+        "name": "Collateral and safe transition",
+        "practiceId": "community-event-handoff",
+        "purpose": "Prepare to gather, organize, and transfer information with supervised follow-through.",
+        "refs": ["collateral_workflow.md", "family-systems.html", "exp_family.md"],
+        "actions": ["prepare", "rehearse", "observe"]
+      }
+    ]
+  },
   "roles": {
     "ms3": [
       { "id": "student", "name": "Core rotation", "desc": "The six-week inpatient rotation", "hint": "most common" },
@@ -352,6 +600,7 @@
     "resident": [
       { "id": "pgy1", "name": "PGY-1", "desc": "First year on inpatient psychiatry", "hint": "most common" },
       { "id": "pgy2", "name": "PGY-2 and above", "desc": "Senior on the unit", "hint": "" },
+      { "id": "app", "name": "APP / PA / NP", "desc": "Clinical practice on the inpatient unit", "hint": "" },
       { "id": "staff", "name": "Nursing · SW · family", "desc": "Unit staff and families", "hint": "" }
     ]
   },
@@ -496,6 +745,96 @@
     "rp-post-event-huddle.html": [
       "post event debrief",
       "debrief after restraint"
+    ],
+    "med_monitoring.md": [
+      "haldol",
+      "haloperidol",
+      "zyprexa",
+      "olanzapine",
+      "seroquel",
+      "quetiapine",
+      "risperdal",
+      "risperidone",
+      "abilify",
+      "aripiprazole",
+      "geodon",
+      "ziprasidone",
+      "invega",
+      "paliperidone",
+      "clozaril",
+      "clozapine",
+      "depakote",
+      "valproate",
+      "divalproex",
+      "tegretol",
+      "carbamazepine",
+      "celexa",
+      "citalopram",
+      "lithium level",
+      "lithium levels",
+      "akathisia",
+      "eps",
+      "extrapyramidal",
+      "tardive",
+      "tardive dyskinesia",
+      "td",
+      "aims"
+    ],
+    "psychopharm_primer.md": [
+      "haldol",
+      "haloperidol",
+      "zyprexa",
+      "olanzapine",
+      "seroquel",
+      "quetiapine",
+      "risperdal",
+      "risperidone",
+      "abilify",
+      "aripiprazole",
+      "geodon",
+      "ziprasidone",
+      "invega",
+      "paliperidone",
+      "clozaril",
+      "clozapine",
+      "zoloft",
+      "sertraline",
+      "prozac",
+      "fluoxetine",
+      "lexapro",
+      "escitalopram",
+      "celexa",
+      "citalopram",
+      "paxil",
+      "paroxetine",
+      "depakote",
+      "valproate",
+      "divalproex"
+    ],
+    "toxidromes.md": [
+      "nms"
+    ],
+    "t_sleep.md": [
+      "insomnia",
+      "trouble sleeping",
+      "cannot sleep",
+      "cant sleep",
+      "can t sleep"
+    ],
+    "ect_neuromodulation.md": [
+      "tms",
+      "rtms",
+      "transcranial magnetic stimulation"
+    ],
+    "ethics_legal.md": [
+      "blue paper",
+      "involuntary hold",
+      "involuntary commitment"
+    ],
+    "systems_medlegal.md": [
+      "blue paper",
+      "involuntary hold",
+      "involuntary commitment"
     ]
   },
   "searchExclude": [

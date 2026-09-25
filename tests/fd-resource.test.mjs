@@ -344,6 +344,7 @@ test('initial faculty tool preview reaches governed preflight, iframe load, and 
     var failFacultyPreviewTool=function(){throw new Error('preview failed');};
     var marked={parse:function(s){return s;}}, TOPIC_META={}, buildTpl=function(){return '';};
     var makeCollapsible=function(){}, enhanceTables=function(){}, buildReviewLedger=function(){return '';};
+    var fdDisposeReadingPlace=function(){};
     var installTitleReviewButton=function(){return null;}, announceRoute=function(){}, focusGovernanceNotice=function(){};
     ${wire}
     ${previewCode}

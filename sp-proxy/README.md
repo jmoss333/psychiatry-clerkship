@@ -120,7 +120,7 @@ draft-pack receipt skips actor probing. Neither replaces a red-team pass.
 
 1. **Add new site → Import from Git →** `jmoss333/psychiatry-clerkship`
    - Base directory: `sp-proxy` · Build command: `npm ci --omit=dev` · Publish: `sp-proxy`
-   - Functions auto-detect from `sp-proxy/netlify/functions`; `netlify.toml` pins Node 20.
+   - Functions auto-detect from `sp-proxy/netlify/functions`; `netlify.toml` pins Node 22.
 2. **Environment variables:**
 
 | Variable | Value |

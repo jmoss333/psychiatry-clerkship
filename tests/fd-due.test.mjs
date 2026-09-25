@@ -15,11 +15,28 @@ const make = new Function(`${read('phase_policy.js')}\n${read('frontdoor/fd_stat
   fdDueRow: fdDueRow,
   fdResumeCard: fdResumeCard,
   fdCaptureTriage: fdCaptureTriage,
+  fdCaptureSummary: fdCaptureSummary,
   fdCapsuleLeft: fdCapsuleLeft,
   fdLastReadRow: fdLastReadRow,
 };`);
 
 const F = make();
+
+test('due, resume, and last-read cards mark only their primary control', () => {
+  const due = { daily: { due: 2 } };
+  const capsule = { queueIds: ['a', 'b'], idx: 0 };
+  const last = { ref: 'a.md', kind: 'read', title: '<Learner title>' };
+  for (const [primary, secondary, id] of [
+    [F.fdDueRow(due, true), F.fdDueRow(due, false), 'primary-due'],
+    [F.fdResumeCard(capsule, true), F.fdResumeCard(capsule, false), 'primary-resume'],
+    [F.fdLastReadRow(last, true), F.fdLastReadRow(last, false), 'primary-read'],
+  ]) {
+    assert.equal((primary.match(/data-fd-dock-source=/g) || []).length, 1);
+    assert.match(primary, new RegExp(`data-fd-dock-source="${id}"`));
+    assert.doesNotMatch(secondary, /data-fd-dock-source=/);
+    assert.doesNotMatch(primary, /data-fd-dock-source="[^"]*Learner/);
+  }
+});
 
 test('due row is omitted at zero and uses exact singular/plural labels', () => {
   assert.equal(F.fdDueRow({
@@ -39,7 +56,65 @@ test('due row is omitted at zero and uses exact singular/plural labels', () => {
   assert.match(many, /2 daily/);
   assert.match(many, /3 practice/);
   assert.match(many, /1 family/);
-  assert.match(many, /data-fd-open="review\.html"/);
+  // Re-pinned 2026-09-24. This used to assert the whole row opened review.html -- which was the
+  // defect: Daily Review cannot serve QB# cards, so the 3 practice cards could never clear there.
+  // The row's control still opens Daily Review (it serves the daily and family cards); the bank's
+  // share gets its own control, pinned in the tests below.
+  assert.match(many, /<button type="button" class="fd-due" data-fd-open="review\.html">/);
+  assert.match(many, /data-fd-open="question-bank-practice\.html">Practice bank · 3 due for review →</);
+});
+
+// ---- where each share of what is due can be cleared (2026-09-24) --------------------------------
+//
+// review.html builds its queue from the landmark decks, topic quizzes and the family,
+// communication and reasoning cards; it never builds a QB# card. The practice bank serves its
+// own due cards first (dueQbItems). So a row that routes everything to Daily Review promises a
+// count the destination cannot clear -- after a bank session the number never went down.
+
+const BANK_ONLY = { daily: { due: 0 }, qb: { due: 3 }, fam: { due: 0 }, other: { due: 0 } };
+const MIXED = { daily: { due: 2 }, qb: { due: 1 }, fam: { due: 0 }, other: { due: 0 } };
+
+test('only bank cards due: the row itself opens the practice bank, never Daily Review', () => {
+  for (const primary of [true, false]) {
+    const out = F.fdDueRow(BANK_ONLY, primary);
+    assert.match(out, /data-fd-open="question-bank-practice\.html"/);
+    assert.doesNotMatch(out, /review\.html/, 'Daily Review has nothing to serve here');
+    assert.match(out, /<span class="fd-due__label">3 reviews due<\/span>/, 'the count is unchanged');
+    assert.match(out, /<span class="fd-due__action">Open practice bank →<\/span>/);
+    assert.doesNotMatch(out, /fd-due-group/, 'one destination, so no secondary control');
+  }
+  assert.match(F.fdDueRow(BANK_ONLY, true), /data-fd-dock-source="primary-due" data-fd-dock-label="Open practice bank"/,
+    'the phone dock names where the primary actually goes');
+});
+
+test('no bank cards due: markup is exactly the pre-2026-09-24 row, still Daily Review', () => {
+  const out = F.fdDueRow({ daily: { due: 2 }, qb: { due: 0 }, comm: { due: 1 } }, true);
+  assert.match(out, /^<button type="button" class="fd-due is-primary" data-fd-open="review\.html"/);
+  assert.doesNotMatch(out, /question-bank-practice|fd-due-group/);
+});
+
+test('both due: Daily Review keeps the row, the bank gets one secondary control with its own count', () => {
+  const out = F.fdDueRow(MIXED, true);
+  const opens = out.match(/data-fd-open="[^"]+"/g);
+  assert.deepEqual(opens, ['data-fd-open="review.html"', 'data-fd-open="question-bank-practice.html"'],
+    'the row first, then the bank -- and nothing else routes');
+  assert.match(out, /^<div class="fd-due-group"><button type="button" class="fd-due is-primary" data-fd-open="review\.html"/);
+  assert.match(out, />3 reviews due</, 'the label still counts everything due -- it is what the picker ranks');
+  assert.match(out, /<button type="button" class="fd-due-group__bank" data-fd-open="question-bank-practice\.html">Practice bank · 1 due for review →<\/button><\/div>$/);
+});
+
+test('the secondary control is never a second primary and never nested in the row', () => {
+  for (const primary of [true, false]) {
+    const out = F.fdDueRow(MIXED, primary);
+    assert.equal((out.match(/data-fd-dock-source=/g) || []).length, primary ? 1 : 0,
+      'One Thing First: the dock mirrors exactly one control, and only when the row won');
+    assert.equal((out.match(/is-primary/g) || []).length, primary ? 1 : 0);
+    // A <button> may not contain interactive content: the bank control must follow the row's
+    // closing tag, not sit inside it.
+    const row = out.slice(out.indexOf('<button'), out.indexOf('</button>') + '</button>'.length);
+    assert.equal((row.match(/<button/g) || []).length, 1, 'no button inside the row button');
+  }
+  assert.equal(F.fdDueRow({ qb: { due: 0 }, daily: { due: 0 } }, true), '', 'nothing due is still nothing');
 });
 
 test('resume card renders only a valid capsule and retains the exact resume route', () => {
@@ -56,32 +131,34 @@ test('resume card renders only a valid capsule and retains the exact resume rout
     'the route-aware retained link must not be reduced to an action that drops resume=1');
 });
 
-test('capture triage is omitted when empty and keeps the approved no-PHI warning byte-for-byte', () => {
-  assert.equal(F.fdCaptureTriage([]), '');
-  const out = F.fdCaptureTriage([{ id: 'c1', text: 'Why this choice?', match: null }]);
-  assert.match(out, /Questions you captured on the unit\. Open the matching page, schedule one for review, or copy the list to raise in supervision\. Stays on this device — no patient details\./);
-  assert.match(out, /data-cap-drop="c1"/);
-  assert.match(out, /data-cap-copy="1"/);
+test('capture summary chooses the oldest open unrouted question and counts all open items', () => {
+  const summary = F.fdCaptureSummary([
+    { id: 'newer', at: 20, route: null, state: 'open' },
+    { id: 'older', at: 10, route: null, state: 'open' },
+    { id: 'routed', at: 1, route: 'rounds', state: 'open' },
+    { id: 'done', at: 0, route: null, state: 'done' },
+  ]);
+  assert.equal(summary.oldest.id, 'older');
+  assert.equal(summary.total, 3);
+  assert.equal(summary.unrouted, 2);
 });
 
-test('capture triage escapes every interpolated value and exposes only valid matched actions', () => {
-  const out = F.fdCaptureTriage([{
-    id: 'c&quot;<id>',
-    text: '<img src=x onerror=alert(1)>',
-    match: { ref: 'topic&quot;<.md', title: '<b>Unsafe</b>', hasQuiz: true },
-  }]);
+test('capture follow-up is omitted without an unrouted question', () => {
+  assert.equal(F.fdCaptureTriage([]), '');
+  assert.equal(F.fdCaptureTriage([{ id: 'c1', at: 1, text: 'Routed', route: 'later', state: 'open' }]), '');
+});
+
+test('capture follow-up shows one escaped oldest question and View all N for every open item', () => {
+  const out = F.fdCaptureTriage([
+    { id: 'newer', at: 20, text: 'Second question', route: null, state: 'open' },
+    { id: 'older', at: 10, text: '<img src=x onerror=alert(1)>', route: null, state: 'open' },
+    { id: 'routed', at: 1, text: 'Routed question', route: 'rounds', state: 'open' },
+  ]);
   assert.doesNotMatch(out, /<img\b|<b>Unsafe/);
   assert.match(out, /&lt;img/);
-  assert.match(out, /&lt;b&gt;Unsafe&lt;\/b&gt;/);
-  assert.match(out, /data-cap-open="c&amp;quot;&lt;id&gt;"/);
-  assert.match(out, /data-cap-review="c&amp;quot;&lt;id&gt;"/);
-  assert.match(out, /data-cap-ref="topic&amp;quot;&lt;\.md"/);
-
-  const noQuiz = F.fdCaptureTriage([{
-    id: 'c2', text: 'Question', match: { ref: 'plain.md', title: 'Plain', hasQuiz: false },
-  }]);
-  assert.match(noQuiz, /data-cap-open="c2"/);
-  assert.doesNotMatch(noQuiz, /data-cap-review=/);
+  assert.match(out, /View all 3/);
+  assert.match(out, /data-capture-open/);
+  assert.doesNotMatch(out, /Second question|Routed question|data-cap-open|data-cap-review/);
 });
 
 test('fd_due stays ES5, audience-neutral, and does not introduce storage', () => {
@@ -111,8 +188,8 @@ test('fdDueRow(b, true) is the primary: is-primary plus the kicker; false or und
   assert.equal(F.fdDueRow(DUE_ONE, undefined), plain);
   assert.doesNotMatch(plain, /is-primary|fd-due__kicker/);
   const primary = F.fdDueRow(DUE_ONE, true);
-  assert.match(primary, /^<button type="button" class="fd-due is-primary" data-fd-open="review\.html"><span class="fd-due__kicker">Clear what’s due<\/span><span class="fd-due__label">1 review due<\/span>/);
-  assert.equal(primary.replace(' is-primary', '').replace('<span class="fd-due__kicker">Clear what’s due</span>', ''), plain);
+  assert.match(primary, /^<button type="button" class="fd-due is-primary" data-fd-open="review\.html" data-fd-dock-source="primary-due" data-fd-dock-label="Start review"><span class="fd-due__kicker">Clear what’s due<\/span><span class="fd-due__label">1 review due<\/span>/);
+  assert.equal(primary.replace(' is-primary', '').replace(' data-fd-dock-source="primary-due" data-fd-dock-label="Start review"', '').replace('<span class="fd-due__kicker">Clear what’s due</span>', ''), plain);
   assert.equal(F.fdDueRow({ daily: { due: 0 } }, true), '', 'nothing due renders nothing, primary or not');
 });
 
@@ -130,20 +207,26 @@ test('fdResumeCard(c, true) is the primary: is-primary and the "Pick up" heading
 test('fdLastReadRow renders "You were reading" for an undone week read, escapes the title, never for a tool', () => {
   const read = { ref: 'a&b.md', kind: 'read', title: '<Page> & Co', minutes: 6, done: false, isContinueTarget: false };
   const plain = F.fdLastReadRow(read);
-  assert.match(plain, /^<button type="button" class="fd-lastread" data-fd-open="a&amp;b\.md">/);
+  assert.match(plain, /^<button type="button" class="fd-lastread" data-fd-open="a&amp;b\.md" data-fd-reading-resume="1">/);
   assert.match(plain, /<span class="fd-lastread__title">You were reading: &lt;Page&gt; &amp; Co — 6 min<\/span>/);
   assert.match(plain, /<span class="fd-lastread__action">Open →<\/span><\/button>$/);
   assert.doesNotMatch(plain, /<Page>|fd-lastread__kicker|is-primary/);
   assert.equal(F.fdLastReadRow(read, false), plain);
 
   const primary = F.fdLastReadRow(read, true);
-  assert.match(primary, /^<button type="button" class="fd-lastread is-primary" data-fd-open="a&amp;b\.md"><span class="fd-lastread__kicker">Pick up where you left off<\/span><span class="fd-lastread__title">You were reading: /);
+  assert.match(primary, /^<button type="button" class="fd-lastread is-primary" data-fd-open="a&amp;b\.md" data-fd-reading-resume="1" data-fd-dock-source="primary-read" data-fd-dock-label="Open →"><span class="fd-lastread__kicker">Pick up where you left off<\/span><span class="fd-lastread__title">You were reading: /);
 
   assert.equal(F.fdLastReadRow(Object.assign({}, read, { kind: 'tool' }), true), '', 'a tool is not reading');
   assert.equal(F.fdLastReadRow(null, true), '');
   assert.equal(F.fdLastReadRow({ ref: '', kind: 'read' }), '');
   assert.match(F.fdLastReadRow({ ref: 'x.md', kind: 'read', title: 'X', minutes: null }), /You were reading: X<\/span>/,
     'no minutes, no dash');
+});
+
+test('last-read action marks a reading resume without marking question-bank resume', () => {
+  assert.match(F.fdLastReadRow({ ref: 'a.md', kind: 'read', title: 'A' }),
+    /data-fd-open="a\.md" data-fd-reading-resume="1"/);
+  assert.doesNotMatch(F.fdResumeCard({ queueIds: ['q1'], idx: 0 }), /data-fd-reading-resume/);
 });
 
 test('the primary variants are audience-neutral', () => {

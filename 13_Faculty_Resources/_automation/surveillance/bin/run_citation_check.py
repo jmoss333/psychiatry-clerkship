@@ -374,13 +374,14 @@ def check_registry_sources(checked=None):
                   "source feeds guideline surveillance — fixing it restores monitoring."
                   % (s.get("id"), detail))
         f = _finding(s.get("id"), s.get("name", s.get("id")), url, ct, code, redir, [], action)
-        # Seed severity from the registry (acute paths still auto-escalate in sync),
-        # capping the two ambiguous results -- see _capped_severity.
+        # Seed severity from the registry. Sync still applies its acute-path rule,
+        # but it cannot exceed an explicit lower-confidence cap.
         sev, cap_reason = _capped_severity(s, code)
         if cap_reason:
             f["recommended_action"] += (
                 " (%s; capped to P1. Verify from a non-runner network before acting: "
                 "`python3 bin/verify_findings_offrunner.py`.)" % cap_reason)
+            f["severity_cap"] = sev
         f["severity"] = sev
         findings.append(f)
     return findings

@@ -44,6 +44,11 @@
       "enum": ["P0", "P1", "P2"],
       "description": "P0 issue immediately + notify; P1 issue; P2 batched digest. See REVIEW_RULES.md."
     },
+    "severity_cap": {
+      "type": "string",
+      "enum": ["P0", "P1", "P2"],
+      "description": "Maximum severity allowed after routing escalation when the collector has explicit lower-confidence evidence."
+    },
     "summary": {
       "type": "string",
       "description": "Human-readable one-liner. This becomes the GitHub issue title (prefixed with severity + source_id for idempotent search)."

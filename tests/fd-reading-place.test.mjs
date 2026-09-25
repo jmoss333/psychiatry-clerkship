@@ -1,0 +1,180 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import test from 'node:test';
+
+const SOURCE = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_reading_place.js', import.meta.url,
+), 'utf8');
+// eslint-disable-next-line no-new-func
+const make = new Function(`${SOURCE}\nreturn {
+  fdReadingPlaces: fdReadingPlaces,
+  fdReadingPlaceUpdate: fdReadingPlaceUpdate,
+  fdReadingPlaceDrop: fdReadingPlaceDrop,
+  fdReadingHeadingIds: fdReadingHeadingIds,
+  fdReadingResume: fdReadingResume
+};`);
+
+test('sanitizing keeps valid own records and ignores inherited and prototype-like keys', () => {
+  const inherited = Object.create({ 'inherited.md': { heading: 'h', offset: 1, updatedAt: 2 } });
+  inherited['valid.md'] = { heading: 'h-1', offset: 3, updatedAt: 4 };
+  Object.defineProperty(inherited, '__proto__', {
+    value: { heading: 'bad', offset: 4, updatedAt: 5 }, enumerable: true,
+  });
+  inherited.constructor = { heading: 'bad', offset: 4, updatedAt: 5 };
+  assert.deepEqual(make().fdReadingPlaces(inherited), {
+    'valid.md': { heading: 'h-1', offset: 3, updatedAt: 4 },
+  });
+});
+
+test('sanitizing rejects malformed records, refs, headings, and non-finite values', () => {
+  const places = make().fdReadingPlaces({
+    'bad.md': { heading: '', offset: -1, updatedAt: 'x' },
+    '../escape.md': { heading: 'h', offset: 1, updatedAt: 2 },
+    '/root.md': { heading: 'h', offset: 1, updatedAt: 2 },
+    'unsafe name.md': { heading: 'h', offset: 1, updatedAt: 2 },
+    'nan.md': { heading: 'h', offset: NaN, updatedAt: 2 },
+    'infinite.md': { heading: 'h', offset: Infinity, updatedAt: 2 },
+    'bad-time.md': { heading: 'h', offset: 1, updatedAt: Infinity },
+    'array.md': [{ heading: 'h', offset: 1, updatedAt: 2 }],
+  });
+  assert.deepEqual(places, {});
+});
+
+test('updates clamp offsets, require valid values, clone input, and leave it unchanged', () => {
+  const original = { 'keep.md': { heading: 'section-1', offset: 7, updatedAt: 8 } };
+  const F = make();
+  const high = F.fdReadingPlaceUpdate(original, 'new.md', 'fd-reading-next', 200000, 9000);
+  assert.deepEqual(high['new.md'], { heading: 'fd-reading-next', offset: 100000, updatedAt: 9000 });
+  assert.deepEqual(original, { 'keep.md': { heading: 'section-1', offset: 7, updatedAt: 8 } });
+  assert.notEqual(high, original);
+  const low = F.fdReadingPlaceUpdate(original, 'low.md', 'fd-reading-low', -8, 10);
+  assert.equal(low['low.md'].offset, 0);
+  assert.equal(F.fdReadingPlaceUpdate(original, '../bad.md', 'h', 1, 2)['../bad.md'], undefined);
+  assert.equal(F.fdReadingPlaceUpdate(original, 'bad.md', '', 1, 2)['bad.md'], undefined);
+  assert.equal(F.fdReadingPlaceUpdate(original, 'bad.md', 'ok', NaN, 2)['bad.md'], undefined);
+  assert.equal(F.fdReadingPlaceUpdate(original, 'bad.md', 'ok', 1, Infinity)['bad.md'], undefined);
+});
+
+test('keeps at most fifty places and evicts the oldest timestamp first', () => {
+  const F = make();
+  let places = {};
+  for (let i = 0; i < 51; i += 1) {
+    places = F.fdReadingPlaceUpdate(places, `p-${i}.md`, `h-${i}`, i, 1000 + i);
+  }
+  assert.equal(Object.keys(places).length, 50);
+  assert.equal(places['p-0.md'], undefined);
+  assert.equal(places['p-50.md'].updatedAt, 1050);
+});
+
+test('breaks tied eviction timestamps by ref deterministically', () => {
+  const F = make();
+  let places = {};
+  for (let i = 50; i >= 0; i -= 1) {
+    places = F.fdReadingPlaceUpdate(places, `p-${String(i).padStart(2, '0')}.md`, `h-${i}`, i, 7);
+  }
+  assert.equal(Object.keys(places).length, 50);
+  assert.equal(places['p-00.md'], undefined);
+  assert.ok(places['p-01.md']);
+});
+
+test('heading ids normalize punctuation, handle empty labels, and resolve collisions in order', () => {
+  const F = make();
+  const ids = F.fdReadingHeadingIds([
+    'Thought Process', 'Thought Process', '...', '!!!', 'A & B', 'A B', 'café', 'Café',
+    'Earlier', 'section 11', '???',
+  ]);
+  assert.match(ids[0], /^fd-reading-thought-process--[0-9a-f]{16}--1of2$/);
+  assert.match(ids[1], /^fd-reading-thought-process--[0-9a-f]{16}--2of2$/);
+  assert.equal(ids[0].split('--')[1], ids[1].split('--')[1]);
+  assert.match(ids[2], /^fd-reading-section--[0-9a-f]{16}$/);
+  assert.match(ids[3], /^fd-reading-section--[0-9a-f]{16}$/);
+  assert.notEqual(ids[2], ids[3]);
+  assert.notEqual(ids[4], ids[5], 'different full labels keep separate ids after normalization');
+  assert.notEqual(ids[6], ids[7], 'case-different full labels keep separate ids');
+  assert.match(ids[10], /^fd-reading-section--[0-9a-f]{16}$/);
+  const nonStringIds = F.fdReadingHeadingIds(['', null, 42]);
+  assert.equal(new Set(nonStringIds).size, 3);
+  assert.ok(nonStringIds.every((id) => id.length <= 200));
+});
+
+test('removing one duplicate heading invalidates every bookmark from its old duplicate group', () => {
+  const F = make();
+  const oldIds = F.fdReadingHeadingIds(['Thought Process', 'Thought Process']);
+  const currentIds = F.fdReadingHeadingIds(['Thought Process']);
+  assert.match(oldIds[0], /^fd-reading-thought-process--[0-9a-f]{16}--1of2$/);
+  assert.match(oldIds[1], /^fd-reading-thought-process--[0-9a-f]{16}--2of2$/);
+  for (let i = 0; i < oldIds.length; i += 1) {
+    const saved = F.fdReadingPlaceUpdate({}, `duplicate-${i}.md`, oldIds[i], 12, 100 + i);
+    assert.equal(F.fdReadingResume(saved[`duplicate-${i}.md`], currentIds), null);
+  }
+});
+
+test('duplicate suffix syntax cannot reassign a duplicate bookmark to a distinct heading', () => {
+  const F = make();
+  const oldIds = F.fdReadingHeadingIds(['X', 'X', 'X-1of2']);
+  const currentIds = F.fdReadingHeadingIds(['X', 'X-1of2']);
+  assert.notEqual(oldIds[0], currentIds[1]);
+  const saved = F.fdReadingPlaceUpdate({}, 'old-x.md', oldIds[0], 4, 7);
+  assert.equal(F.fdReadingResume(saved['old-x.md'], currentIds), null);
+  assert.equal(currentIds[1], oldIds[2], 'the unchanged distinct label keeps its id');
+});
+
+test('normalized-label collisions keep the remaining label id stable', () => {
+  const F = make();
+  const oldIds = F.fdReadingHeadingIds(['A & B', 'A B']);
+  const currentIds = F.fdReadingHeadingIds(['A B']);
+  assert.notEqual(oldIds[0], oldIds[1]);
+  assert.equal(currentIds[0], oldIds[1]);
+  const saved = F.fdReadingPlaceUpdate({}, 'removed.md', oldIds[0], 4, 7);
+  assert.equal(F.fdReadingResume(saved['removed.md'], currentIds), null);
+});
+
+test('punctuation-only ids stay stable when neighboring headings change order', () => {
+  const F = make();
+  const before = F.fdReadingHeadingIds(['!!!', 'Introduction']);
+  const after = F.fdReadingHeadingIds(['Introduction', '!!!']);
+  assert.equal(before[0], after[1]);
+});
+
+test('generated ids stay bounded, unique after truncation, and round-trip through save and resume', () => {
+  const F = make();
+  const longPrefix = 'Long heading ' + 'a'.repeat(240) + ' ';
+  const labels = [
+    'Thought Process', 'Thought Process', '...', 'Section 11', '???',
+    longPrefix + 'alpha', longPrefix + 'beta',
+  ];
+  const ids = F.fdReadingHeadingIds(labels);
+  assert.deepEqual(F.fdReadingHeadingIds(labels), ids, 'an unchanged list has unchanged IDs');
+  assert.equal(new Set(ids).size, ids.length);
+  assert.ok(ids.every((id) => id.length <= 200));
+  for (let i = 0; i < ids.length; i += 1) {
+    const ref = `round-trip-${i}.md`;
+    const saved = F.fdReadingPlaceUpdate({}, ref, ids[i], i, 1000 + i);
+    assert.deepEqual(F.fdReadingResume(saved[ref], ids), {
+      heading: ids[i], offset: i, updatedAt: 1000 + i,
+    });
+  }
+  const withoutFirstLongHeading = F.fdReadingHeadingIds(labels.slice(0, -2).concat(labels[6]));
+  assert.equal(withoutFirstLongHeading[withoutFirstLongHeading.length - 1], ids[6]);
+});
+
+test('resume returns a valid place only while its heading id is still available', () => {
+  const F = make();
+  const place = { heading: 'fd-reading-current', offset: 20, updatedAt: 30 };
+  assert.deepEqual(F.fdReadingResume(place, ['fd-reading-old', 'fd-reading-current']), place);
+  assert.equal(F.fdReadingResume(place, ['fd-reading-new']), null);
+  assert.equal(F.fdReadingResume({ heading: 'old', offset: Infinity, updatedAt: 30 }, ['old']), null);
+  assert.equal(F.fdReadingResume(place, Object.assign([], { extra: 'fd-reading-current' })), null);
+});
+
+test('dropping a page clones and preserves every other valid page', () => {
+  const F = make();
+  const original = {
+    'a.md': { heading: 'a', offset: 1, updatedAt: 1 },
+    'b.md': { heading: 'b', offset: 2, updatedAt: 2 },
+  };
+  const dropped = F.fdReadingPlaceDrop(original, 'a.md');
+  assert.deepEqual(dropped, { 'b.md': { heading: 'b', offset: 2, updatedAt: 2 } });
+  assert.deepEqual(Object.keys(original), ['a.md', 'b.md']);
+  assert.notEqual(dropped, original);
+});

@@ -196,7 +196,7 @@ Use this structure:
 
 | Presentation | Must Consider |
 |---|---|
-| New psychosis | substance/medication, delirium, mania, trauma, primary psychotic disorder |
+| New psychosis | substance/medication, delirium, medical/neurologic illness (e.g., encephalitis, seizure, endocrine), mania, trauma, primary psychotic disorder |
 | Agitation | delirium, intoxication/withdrawal, mania, psychosis, pain, fear, akathisia |
 | Mutism/withdrawal | catatonia, severe depression, psychosis, delirium, trauma response, neurologic illness |
 | Refusal of care | capacity, fear/mistrust, psychosis, delirium, values, communication failure |

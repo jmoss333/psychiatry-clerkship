@@ -144,7 +144,7 @@ var COWS_GAUGE={
   labels:[{t:'5–12 mild',c:'var(--success)'},{t:'13–24 mod',c:'var(--warning)'},{t:'25–36 mod-sev',c:'var(--danger)'},{t:'37–48 severe',c:'var(--danger)'}],
   info:function(t){
     if(t<=4) return {tier:'Minimal',color:'var(--success)',bg:'var(--success-light)',pill:'None / minimal',action:'No or very early withdrawal — supportive care; reassess.',timeline:null};
-    if(t<=12) return {tier:'Mild',color:'var(--accent-dark)',bg:'var(--accent-light)',pill:'Mild withdrawal',action:'Objective signs emerging — for buprenorphine, generally wait for COWS ≥8–12 to avoid precipitated withdrawal.',timeline:null};
+    if(t<=12) return {tier:'Mild',color:'var(--accent-dark)',bg:'var(--accent-light)',pill:'Mild withdrawal',action:'Objective signs emerging — confirm with your team whether withdrawal is enough to start buprenorphine (commonly COWS ≥8–12). With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are alternatives.',timeline:null};
     if(t<=24) return {tier:'Moderate',color:'var(--warning)',bg:'var(--warning-light)',pill:'Moderate withdrawal',action:'Comfort medications; consider buprenorphine induction per protocol.',timeline:null};
     if(t<=36) return {tier:'Moderately severe',color:'var(--danger)',bg:'var(--danger-light)',pill:'Moderately severe withdrawal',action:'Significant distress — treat per protocol.',timeline:null};
     return {tier:'Severe',color:'var(--danger)',bg:'var(--danger-light)',pill:'Severe withdrawal',action:'Significant distress — treat per protocol.',timeline:null};

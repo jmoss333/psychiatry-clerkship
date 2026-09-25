@@ -59,6 +59,50 @@ bash bin/verify.sh            # --quick for the fast subset
 # Playwright smoke suite (nav crawl · LFS integrity · visual regression)
 cd tests/smoke && npm ci && npx playwright test
 ```
+
+### Local Dev Container
+
+VS Code can reopen this repository in `.devcontainer/`, which supplies Node 22,
+Python 3.11, Bash 5+, Git LFS, the locked NPM dependencies, and Chromium.
+Run `python3 bin/devcontainer-preflight.py` on the host first (`--json` for tooling).
+It checks Git/LFS accessibility, memory capacity, and credential-forwarding warnings without
+repairs, downloads, helper execution, or secret output. Exit 1 blocks setup, 2 means could-not-check,
+and advisory warnings exit 0. `.devcontainer/post-create.sh` runs it before dependency installation
+and the fast runtime contract. The full gate is deliberately manual: run the VS Code task
+**Verify Dev Container** via **Tasks: Run Task**, or the receipt-enabled command below. Open a full clone,
+not a linked worktree whose Git directory is outside the mounted workspace, and materialize
+LFS files with `git lfs checkout` from cached objects first; `git lfs pull` may consume metered
+bandwidth. See `.devcontainer/README.md` for the full-clone/cache procedure and troubleshooting.
+The tested Colima allocation is 6 GiB after an OOM at 2 GiB, not a universal minimum; low memory
+and recognizable broken helper paths are advisory, never automatic host configuration changes.
+
+```bash
+node bin/check-runtime-contract.mjs --current  # fast environment proof
+bash bin/verify-devcontainer.sh --refresh-deps --receipt output/devcontainer/verification-receipt.json
+```
+
+A completed attempt writes `output/devcontainer/verification-receipt.json` (local, ignored by Git).
+The status bar stays visible: green means the receipt passed for the current clean tracked commit;
+red means the current commit's latest attempt failed; gray means no current proof exists
+(missing, malformed, running/interrupted, stale, a different commit, or tracked edits).
+Clicking the item runs the manual task. Without deploy URLs, the local LFS browser projects remain
+skipped: deploy-only LFS browser coverage is not proved, and the receipt says so even after a pass.
+Green certifies this checkout's commit, not that it is the latest remote main. Full verification
+also runs preflight before refreshing dependencies; a blocker records the failed preflight stage.
+The image-supplied `CLERKSHIP_DEVCONTAINER=1` check prevents accidental host invocation; it is a
+forgeable environment guard, not authentication or proof that a deliberate caller used the container.
+If the receipt directory is wholly unwritable, the task fails but the last atomically completed receipt
+may remain readable until permissions or repository freshness change.
+
+The container declares no repository-managed credential or Docker-socket mount. VS Code
+may still forward the host SSH agent or Git credential helper; setup reports either state.
+It does not prove deployment, provider behavior, microphone/headphone behavior,
+VoiceOver, faculty approval, clinical correctness, local LFS browser coverage, or Ubuntu
+visual-baseline parity. The local LFS Playwright project skips without a deploy URL.
+Never regenerate visual baselines from it; use the existing workflow_dispatch job. A push
+made from the host Mac still runs its pre-push gate under host Bash 3.2; run the push from
+the container when the Bash 5 environment is part of the evidence.
+
 - CI (`.github/workflows/ci.yml`) runs on every PR: path-lint → media/topic_meta/longitudinal
   validators → build+QA gate (ms3 & res) → smoke tests. It mirrors Netlify, so breakage turns a PR
   red instead of only failing at deploy.
@@ -97,6 +141,32 @@ cd tests/smoke && npm ci && npx playwright test
   derived listing, `site_build/shipped_pages.json` — `load_shipped_pages()` in `shipped_pages.py`
   (Python) or `deriveContentUniverse()` in `faculty-console/content-universe.mjs` (JS) — never the
   manifest alone. See the gotcha below.
+- `site_build/frontdoor/` — **the Front Door: the learner shell both sites run.** Twenty `fd_*.js`
+  modules plus `frontdoor.css`, assembled into `site_build/spa_index.html` at build time. The
+  modules are the surfaces: `fd_today.js` (the Today landing page and its one primary action),
+  `fd_library.js` (the Library and **The Essentials**), `fd_reader.js`, `fd_search.js`,
+  `fd_path.js` + `fd_edition_*.js` (rotation weeks and curator editions), `fd_wire.js` (the
+  controller that binds them), `fd_state.js` (`cw_*` / `rp_*` storage). Everything else is
+  support. **The Essentials** (shipped 2026-09-19→21 across #706 #713 #716 #717 #719) is a
+  readings-first view of the Library: a section index, a `This week · N` filter that follows the
+  active Path including curator editions, and selectable tool preview cards sharing one
+  description/action pane. Selection is **transient** — it is not persisted, not in the URL, and
+  a new filter must not change that. Contracts: `tests/fd-library.test.mjs`,
+  `fd-edition-project.test.mjs`, `fd-action-contract.test.mjs`, `fd-wire.test.mjs`, and the
+  browser suite `tests/smoke/front-door.spec.js` with its `essentials-inventory.js` helper.
+  **`docs/superpowers/specs/front-door-handoff/CLASS-INVENTORY.md` is the CSS contract** — 335
+  `fd-*` selectors and 22 `is-*` state classes, with the load-bearing nesting and the traps called
+  out per surface. It is a **human** contract, not a gate: nothing fails a build when markup
+  misses a rule, the page just renders wrong while tests stay green. Read the surface's entry
+  before writing its markup, and update the inventory in the same PR that changes the stylesheet —
+  every recent Front Door PR does.
+- `13_Faculty_Resources/Feedback/feedback.html` + the Today banner in `fd_today.js` — the
+  **active-testing feedback channel** (#726, 2026-09-21): an audience-neutral banner inviting
+  trainee feedback during site testing, routed to the private form with page context prefilled.
+  Contact is optional; the **no-PHI** rule and the "this is not the official rotation evaluation"
+  boundary are load-bearing, not copy. It is a *pilot* surface: when testing ends, retiring the
+  banner is a deliberate edit, not something that expires on its own. Pinned by
+  `tests/fd-today.test.mjs` and `tests/feedback-form.test.mjs`.
 - `NN_Category/` (00–14, 99) — curriculum **content source**, not build output. `14_Tracks/<audience>/`
   are link-only overlays; content never forks (see README).
 - Root data + schemas: `question_bank.json`, `topic_meta.json`, `communication_cases.json`, etc. —
@@ -246,6 +316,28 @@ cd tests/smoke && npm ci && npx playwright test
   viewport-height frame; `tests/tool-frame.test.mjs` pins the set of such tools and
   `tool-expand.spec.js` measures the live frame. Surveyed before the default flipped (2026-09-19):
   no shipped tool sets html/body height or overflow, so the html box is the content height.
+- **A test may not depend on live governance state.** An assertion that reads the real
+  `reviewed.json` — "some page is pending", "the pending count is nonzero", "this dot is
+  visible" — is a test of the faculty's queue, not of the code, and **faculty draining that
+  queue turns it red**. That is exactly what happened on 2026-09-21: Josh attested 101 pages in
+  #725, the learner UI correctly stopped showing pending notices, and four `front-door.spec.js`
+  assertions failed for being right. #729 fixed them by pinning each branch with a **controlled
+  governance fixture** and leaving the deterministic pending-dot coverage to the unit and
+  governance suites. Write the fixture; never assert a live count. The inverse also holds — a
+  test that passes only while a backlog exists retires itself silently when the backlog clears.
+- **An optional flag every test passes and production never passes is an untested production
+  path.** `sync_findings.py --out-dir` was documented "used by tests", had no default, and #711
+  then added an unconditional `os.makedirs(args.out_dir)`. Every test in
+  `tests/maintenance/test_surveillance_maintenance.py` passes `--out-dir`; all four scheduled
+  surveillance workflows pass none. So the suite stayed green while every scheduled run of the
+  citation, link, guideline and resource-intake jobs died with `TypeError: expected str, bytes
+  or os.PathLike object, not NoneType` — after creating issues and before writing `STATUS.md`,
+  so the monitors looked like they were reporting and the offline `issue_snapshot.json` the
+  cadence guard reads was never produced at all. A test-only flag therefore takes the
+  **production value as its `default=`** (`build_status.py` is the pattern), and the pin is two
+  assertions, not one: the default is what production uses, **and** production still takes the
+  default. This is §D of `docs/SILENT_SHRINK_CHECKLIST.md` in its cheapest disguise — the check
+  never ran the path it claims to cover.
 - **Crisis contacts (988 etc.) live in `crisis_resources.json` only.** Never hard-code a crisis
   number in a content page or tool. A page opts in with a `<!-- crisis-block -->` marker
   (`<!-- crisis-block-html -->` in tools); `site_build/crisis_block.py` renders it and
@@ -571,10 +663,13 @@ cd tests/smoke && npm ci && npx playwright test
   retires (WP-06R-a); Stanley-Brown is never programmed (WP-06R-b); PHQ-9/GAD-7 provisionally stay
   pending a check of the current permission footer (WP-02c); **BFCRS is RESTRICTED** (URMC written
   consent required) and **CIWA-Ar RETIRES** (2026-08-28, author's call — rights unestablishable, so
-  the descriptors came down; WP-20 is closed with it). **COWS alone remains open**: permission real,
-  scope wrong, its 45 verbatim anchors in `withdrawal.html` published under a recorded interim
-  waiver pending the Taylor & Francis letter — that waiver is the one thing still blocking Wave 4,
-  and an agent must not narrow or lift it. An instrument is exempt only once its status is recorded
+  the descriptors came down; WP-20 is closed with it). **COWS anchors retired 2026-09-10**
+  (decision `cows-anchors-retired`, superseding the 2026-08-23 interim waiver, which is closed):
+  the permission that exists covers clinical copying, not publication on a teaching site, so the
+  45 verbatim anchor strings in `withdrawal.html` were replaced with in-house descriptors; the
+  item names and legal score values are facts and stay, and the page still scores. A Taylor &
+  Francis permission request runs in parallel — a license would move COWS to cleared, and that is
+  the author's call, not an agent's. An instrument is exempt only once its status is recorded
   in the audit's decision table — Option A settles scope, not individual cases.
   **A withdrawal must leave a route (INV-IR2, 2026-09-03).** Retiring an instrument may not leave
   a dead end: every removed or link-only instrument ships the custodian's official `formUrl` from

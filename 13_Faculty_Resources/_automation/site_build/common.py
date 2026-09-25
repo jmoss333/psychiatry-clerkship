@@ -25,6 +25,7 @@ the build script's source to assert the learner CSP, so it must remain a single
 statically-inspectable literal in that file.
 """
 
+import errno
 import glob
 import hashlib
 import json
@@ -32,6 +33,42 @@ import os
 import re
 import shutil
 import sys
+import time
+
+
+def _copytree_error_is_all_eperm(error):
+    """Return whether a shutil.Error contains only EPERM copy failures."""
+    if not error.args or not isinstance(error.args[0], (list, tuple)) or not error.args[0]:
+        return False
+    for item in error.args[0]:
+        if not isinstance(item, (list, tuple)) or len(item) < 3:
+            return False
+        detail = item[2]
+        if isinstance(detail, OSError):
+            if detail.errno != errno.EPERM:
+                return False
+        else:
+            errno_token = "[Errno %d]" % errno.EPERM
+            text = str(detail)
+            if text != errno_token and not text.startswith(errno_token + " "):
+                return False
+    return True
+
+
+def copytree_with_virtiofs_retry(source, destination, *, sleeper=time.sleep):
+    """Copy a tree, retrying once after transient virtiofs EPERM metadata errors.
+
+    Colima virtiofs can briefly expose newly created bind-mounted output entries
+    with host ownership after their bytes have already copied.  Only that
+    aggregate EPERM shape is retried; mixed and subsequent errors remain fatal.
+    """
+    try:
+        return shutil.copytree(source, destination)
+    except shutil.Error as error:
+        if not _copytree_error_is_all_eperm(error):
+            raise
+    sleeper(2)
+    return shutil.copytree(source, destination, dirs_exist_ok=True)
 
 # ---------------------------------------------------------------------------
 # Tokenizer (was duplicated: build_deploy.py + resident_section.py)
@@ -799,7 +836,10 @@ SNIPPET_MARKERS = {
     "/*__SRS_STORE__*/": "srs_store.js",
     "/*__FAM_RETRIEVAL__*/": "fam_retrieval.js",
     "/*__FD_STATE__*/": "frontdoor/fd_state.js",
+    "/*__FD_READING_PLACE__*/": "frontdoor/fd_reading_place.js",
+    "/*__FD_CAPTURE_EMAIL__*/": "frontdoor/fd_capture_email.js",
     "/*__FD_DATA__*/": "frontdoor/fd_data.js",
+    "/*__FD_OFFLINE__*/": "frontdoor/fd_offline.js",
     "/*__FD_EDITION_CATALOG__*/": "frontdoor/fd_edition_catalog.js",
     "/*__FD_EDITION_CONTRACT__*/": "frontdoor/fd_edition_contract.js",
     "/*__FD_EDITION_PROJECT__*/": "frontdoor/fd_edition_project.js",
@@ -810,9 +850,14 @@ SNIPPET_MARKERS = {
     "/*__FD_TODAY__*/": "frontdoor/fd_today.js",
     "/*__FD_DUE__*/": "frontdoor/fd_due.js",
     "/*__FD_BLOCK__*/": "frontdoor/fd_block.js",
+    "/*__FD_APP_PRACTICE__*/": "frontdoor/fd_app_practice.js",
+    "/*__FD_APP__*/": "frontdoor/fd_app.js",
     "/*__FD_SHELL__*/": "frontdoor/fd_shell.js",
     "/*__FD_PATH__*/": "frontdoor/fd_path.js",
     "/*__FD_LIBRARY__*/": "frontdoor/fd_library.js",
+    "/*__FD_CARE_NAVIGATOR__*/": "frontdoor/fd_care_navigator.js",
+    "/*__FD_CARE_PACK__*/": "frontdoor/fd_care_pack.js",
+    "/*__FD_CARE__*/": "frontdoor/fd_care.js",
     "/*__FD_READER__*/": "frontdoor/fd_reader.js",
     "/*__FD_GUIDE__*/": "frontdoor/fd_guide.js",
     "/*__FD_SEARCH__*/": "frontdoor/fd_search.js",

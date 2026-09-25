@@ -691,6 +691,9 @@ test('GET surfaces both Case-of-the-Week twins with the site that serves each', 
     slug: 'cotw_20260831_catatonia_ms3.md',
     title: 'Catatonia (Aug 31) — MS3',
     kind: 'page',
+    // Queue order only: which deployments list the page in The Essentials. Empty here
+    // because this fixture carries no curriculum.json (essentialsSource 'unavailable').
+    essentialSites: [],
     site: 'ms3',
     // Audience, sent separately from the preview site — they disagree for every page
     // that ships to both deployments (2026-09-14 attestation review).
@@ -854,6 +857,88 @@ test('GET derives the queue from the base branch when the attestation branch lac
   assert.deepEqual(refsFor(mock, QBANK_PATH), [ATTEST_BRANCH]);
   assert.deepEqual(refsFor(mock, SHIPPED_PAGES_PATH), [ATTEST_BRANCH, BASE_BRANCH],
     'the branch is tried first; the base is the fallback');
+});
+
+/* The Essentials ordering (2026-09-20). curriculum.json's essentials selection is read for
+   queue ORDER only — advisory in every direction. The item field is essentialSites (which
+   deployments list the slug), the payload says where it came from, and nothing about a
+   load or an attestation depends on it. */
+const CURRICULUM_PATH = 'curriculum.json';
+const CURRICULUM_SHA = 'cd'.repeat(20);
+
+function curriculumWith(essentials) {
+  const json = { learningPaths: {}, libraryColumns: [] };
+  if (essentials) json.essentials = essentials;
+  return { json, sha: CURRICULUM_SHA };
+}
+
+function contentsResponse(file) {
+  const bytes = Buffer.from(`${JSON.stringify(file.json, null, 2)}\n`, 'utf8');
+  return jsonResponse(200, {
+    sha: file.sha, size: bytes.byteLength, encoding: 'base64', content: bytes.toString('base64'),
+  });
+}
+
+test('GET flags the items either site lists in The Essentials, and says the branch supplied it', async () => {
+  const files = defaultFiles();
+  files[CURRICULUM_PATH] = curriculumWith({
+    ms3: [{ name: 'Core diagnoses', accent: 'topic', refs: ['t_mood.md'] }],
+    resident: [{ name: 'Tools', accent: 'tool', refs: ['t_mood.md', 'ghost.html'] }],
+  });
+  const mock = createGithubMock({ files });
+  const payload = await (await handlerWith(mock)(apiRequest('GET'))).json();
+  assert.equal(payload.essentialsSource, 'branch');
+  const bySlug = Object.fromEntries(payload.items.map(item => [item.slug, item.essentialSites]));
+  assert.deepEqual(bySlug['t_mood.md'], ['ms3', 'res']);
+  assert.deepEqual(bySlug['mse-tool'], [], 'an item outside the selection is simply unflagged');
+  assert.equal(payload.items.some(item => item.slug === 'ghost.html'), false,
+    'a selection ref that does not ship never enters the universe');
+});
+
+test('GET with no readable Essentials selection still loads, orders as before, and says so', async () => {
+  const mock = createGithubMock({ files: defaultFiles() });
+  const response = await handlerWith(mock)(apiRequest('GET'));
+  assert.equal(response.status, 200, 'the ordering is advisory; a missing file is not a failed load');
+  const payload = await response.json();
+  assert.equal(payload.essentialsSource, 'unavailable');
+  assert.ok(payload.items.every(item => Array.isArray(item.essentialSites) && !item.essentialSites.length));
+  assert.equal(payload.counts.pagesTotal, 2, 'the queue is populated, not short');
+});
+
+test('a malformed Essentials selection is ignored rather than failing the load', async () => {
+  const files = defaultFiles();
+  files[CURRICULUM_PATH] = curriculumWith({ ms3: 'not-a-list', resident: [{ refs: 'nope' }] });
+  const payload = await (await handlerWith(createGithubMock({ files }))(apiRequest('GET'))).json();
+  assert.equal(payload.essentialsSource, 'unavailable');
+  assert.ok(payload.items.every(item => !item.essentialSites.length));
+});
+
+test('an attestation branch whose curriculum.json predates the key falls through to the base selection', async () => {
+  const baseFile = curriculumWith({
+    ms3: [{ name: 'Tools', accent: 'tool', refs: ['mse-tool'] }],
+    resident: [],
+  });
+  const files = defaultFiles();
+  files[CURRICULUM_PATH] = curriculumWith(null); // the branch copy: present, keyless
+  const mock = createGithubMock({
+    files,
+    beforeRequest: async call => {
+      const routed = await isolatedBranch({ shippedOn: [ATTEST_BRANCH, BASE_BRANCH] })(call);
+      if (routed) return routed;
+      const ref = call.method === 'GET' && call.path ? new URL(call.url).searchParams.get('ref') : null;
+      if (call.path === CURRICULUM_PATH && ref === BASE_BRANCH) return contentsResponse(baseFile);
+      return null;
+    },
+  });
+  const payload = await (await handlerWith(mock, ISOLATED_ENV)(apiRequest('GET'))).json();
+  assert.equal(payload.essentialsSource, 'base');
+  const bySlug = Object.fromEntries(payload.items.map(item => [item.slug, item.essentialSites]));
+  assert.deepEqual(bySlug['mse-tool'], ['ms3']);
+  assert.deepEqual(bySlug['t_mood.md'], []);
+  assert.deepEqual(refsFor(mock, CURRICULUM_PATH), [ATTEST_BRANCH, BASE_BRANCH],
+    'the branch is tried first; the base is the fallback');
+  // The ledger never follows the selection off the attestation branch.
+  assert.deepEqual(refsFor(mock, REVIEWED_PATH), [ATTEST_BRANCH]);
 });
 
 test('GET reports the ordinary case as branch-sourced with the branch revision', async () => {

@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -110,26 +111,42 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
         path.write_text(json.dumps([finding]), encoding="utf-8")
         return path
 
-    def run_sync(self, *, findings, checked_sources, out_dir, job):
+    def surveillance_sandbox(self):
+        """A copy of the surveillance tree whose lib_surveillance derives its own history/.
+
+        A test that omits --out-dir is asking where the default points, so it must not point
+        into the repository. Copying is what relocates it: Python realpath-resolves
+        sys.path[0], so a symlinked bin/ would still import the repository's lib_surveillance
+        and write the repository's history/ -- passing while dirtying the tree.
+        """
+        sandbox = self.temp_dir / "surveillance"
+        sandbox.mkdir()
+        shutil.copytree(BIN, sandbox / "bin", ignore=shutil.ignore_patterns("__pycache__"))
+        shutil.copytree(SURV / "config", sandbox / "config")
+        return sandbox
+
+    def run_sync(self, *, findings, checked_sources, out_dir, job, bin_dir=BIN):
+        """out_dir=None omits the flag -- the shape every scheduled workflow passes."""
         findings_path = self.temp_dir / "findings.json"
         findings_path.write_text(json.dumps(findings), encoding="utf-8")
         issues_out = self.temp_dir / "issue-state.json"
+        command = [
+            sys.executable,
+            str(bin_dir / "sync_findings.py"),
+            "--findings",
+            str(findings_path),
+            "--job",
+            job,
+            "--checked-sources",
+            str(checked_sources),
+            "--issues-out",
+            str(issues_out),
+            "--dry-run",
+        ]
+        if out_dir is not None:
+            command += ["--out-dir", str(out_dir)]
         return subprocess.run(
-            [
-                sys.executable,
-                str(BIN / "sync_findings.py"),
-                "--findings",
-                str(findings_path),
-                "--job",
-                job,
-                "--checked-sources",
-                str(checked_sources),
-                "--issues-out",
-                str(issues_out),
-                "--dry-run",
-                "--out-dir",
-                str(out_dir),
-            ],
+            command,
             cwd=ROOT,
             text=True,
             capture_output=True,
@@ -174,6 +191,74 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
             set(json.loads((self.temp_dir / "last_run.json").read_text(encoding="utf-8"))),
             {"apa-practice-guidelines", "doi:10.1/example"},
         )
+
+    def test_out_dir_defaults_to_history_because_production_never_passes_it(self):
+        # #711 added an unconditional os.makedirs(args.out_dir) while --out-dir had no
+        # default. Every test here passes --out-dir and every scheduled workflow does not,
+        # so the suite stayed green while all four surveillance jobs crashed nightly with
+        # "TypeError: expected str, bytes or os.PathLike object, not NoneType". Break this
+        # test by restoring `ap.add_argument("--out-dir", help=...)` with no default.
+        args = sync_findings.build_parser().parse_args(
+            [
+                "--findings", "f.json",
+                "--job", "citation-monitor",
+                "--checked-sources", "c.json",
+                "--issues-out", "i.json",
+                "--dry-run",
+            ]
+        )
+        self.assertIsNotNone(args.out_dir)
+        self.assertEqual(str(args.out_dir), str(L.HISTORY))
+
+    def test_every_scheduled_workflow_invokes_sync_findings_without_out_dir(self):
+        # The assertion above only means something while production really takes the
+        # default. If a workflow starts passing --out-dir, that job leaves the defaulted
+        # path and this pin has to be re-argued rather than silently weakened.
+        workflows = sorted((ROOT / ".github" / "workflows").glob("surveillance-*.yml"))
+        self.assertTrue(workflows, "no surveillance workflows found")
+        callers = []
+        for path in workflows:
+            text = path.read_text(encoding="utf-8")
+            if "sync_findings.py" not in text:
+                continue
+            callers.append(path.name)
+            block = text.split("sync_findings.py", 1)[1].split("\n      - ", 1)[0]
+            self.assertNotIn(
+                "--out-dir",
+                block,
+                f"{path.name} passes --out-dir; the production default is no longer exercised",
+            )
+        self.assertEqual(len(callers), 4, f"expected 4 surveillance callers, got {callers}")
+
+    def test_sync_completes_end_to_end_on_the_production_flag_set(self):
+        """The two pins above read the parsed value and the workflow files; neither RUNS the
+        line that crashed. #711's os.makedirs(args.out_dir) was reached only after the issues
+        had been created, so the failure was a partial completion, and a default that parses
+        correctly but resolves somewhere unwritable would still lose every report.
+
+        This one executes the whole production flag set and checks where the output landed.
+        --dry-run is the single addition, to stay off the network; the absence of --out-dir is
+        the variable under test. Break it by restoring the undefaulted add_argument, or by
+        pointing the default anywhere but lib_surveillance's own history/.
+        """
+        sandbox = self.surveillance_sandbox()
+        checked = self.temp_dir / "checked.json"
+        checked.write_text('["apa-practice-guidelines"]', encoding="utf-8")
+
+        result = self.run_sync(
+            findings=[],
+            checked_sources=checked,
+            out_dir=None,
+            job="citation-monitor",
+            bin_dir=sandbox / "bin",
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        history = sandbox / "history"
+        snapshot = history / "issue_snapshot.json"
+        self.assertTrue(snapshot.is_file(), f"no issue_snapshot.json under {history}")
+        self.assertEqual(json.loads(snapshot.read_text(encoding="utf-8"))["schemaVersion"], 1)
+        self.assertTrue((history / "last_run.json").is_file())
 
     def test_checked_source_contract_rejects_malformed_duplicate_and_blank_values(self):
         invalid_values = (
@@ -476,6 +561,124 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
             [item["fingerprint"] for item in snapshot],
             ["source::modified::label-removed"],
         )
+
+    def test_open_issue_is_reconciled_when_fresh_severity_is_lower(self):
+        fingerprint = "fda-drug-safety::broken-link::7415e355b41cccda"
+        finding = {
+            "finding_id": fingerprint,
+            "fingerprint": fingerprint,
+            "job": "link-source-monitor",
+            "source_id": "fda-drug-safety",
+            "source_name": "FDA Drug Safety Communications",
+            "source_url": "https://www.fda.gov/drugs/example",
+            "source_type": "html",
+            "detected_at": "2026-09-22T10:43:02+00:00",
+            "change_type": "broken-link",
+            "severity": "P1",
+            "severity_cap": "P1",
+            "summary": "FDA citation issue (broken-link)",
+            "evidence": {"http_status": 404},
+            "affects": ["04_Acute_and_Safety/suicide-risk.md"],
+            "recommended_action": "Verify from a non-runner network.",
+            "status": "new",
+        }
+        findings_path = self.temp_dir / "findings.json"
+        findings_path.write_text(json.dumps([finding]), encoding="utf-8")
+        checked_path = self.temp_dir / "checked.json"
+        checked_path.write_text(json.dumps(["fda-drug-safety"]), encoding="utf-8")
+        issues_out = self.temp_dir / "issues.json"
+        history = self.temp_dir / "history"
+        existing_issue = {
+            "number": 721,
+            "url": "https://github.com/owner/repo/issues/721",
+            "state": "OPEN",
+            "closedAt": None,
+            "fingerprint": fingerprint,
+            "labels": ["P0", "faculty-review", "link-source-monitor", "surveillance"],
+        }
+        calls = []
+
+        def fake_gh(method, url, token, data=None):
+            calls.append((method, url, token, data))
+            return {
+                "number": 721,
+                "html_url": "https://github.com/owner/repo/issues/721",
+                "state": "open",
+                "closed_at": None,
+                "title": data["title"],
+                "body": data["body"],
+                "labels": [{"name": label} for label in data["labels"]],
+            }, {}
+
+        argv = [
+            "sync_findings.py",
+            "--findings", str(findings_path),
+            "--job", "citation-monitor",
+            "--checked-sources", str(checked_path),
+            "--issues-out", str(issues_out),
+            "--repo", "owner/repo",
+            "--out-dir", str(history),
+        ]
+        with (
+            mock.patch.object(sys, "argv", argv),
+            mock.patch.object(sync_findings, "fetch_issue_snapshot", return_value=[existing_issue]),
+            mock.patch.object(sync_findings, "_gh", side_effect=fake_gh),
+            mock.patch.object(L, "load_dismissed", return_value={}),
+            mock.patch.dict(sync_findings.os.environ, {"GITHUB_TOKEN": "token"}),
+        ):
+            sync_findings.main()
+
+        self.assertEqual(len(calls), 1)
+        method, url, token, data = calls[0]
+        self.assertEqual(method, "PATCH")
+        self.assertTrue(url.endswith("/repos/owner/repo/issues/721"))
+        self.assertEqual(token, "token")
+        self.assertTrue(data["title"].startswith("[P1][fda-drug-safety]"))
+        self.assertIn("**Severity:** P1", data["body"])
+        self.assertNotIn("**Severity:** P0", data["body"])
+        self.assertEqual(
+            data["labels"],
+            ["P1", "faculty-review", "link-source-monitor", "surveillance"],
+        )
+        saved = json.loads(issues_out.read_text(encoding="utf-8"))
+        self.assertEqual(saved[0]["labels"], data["labels"])
+
+    def test_acute_path_escalation_respects_explicit_severity_cap(self):
+        finding = {
+            "severity": "P1",
+            "severity_cap": "P1",
+            "affects": ["04_Acute_and_Safety/suicide-risk.md"],
+        }
+
+        self.assertEqual(L.escalate(finding), "P1")
+        self.assertNotIn("_escalation", finding)
+
+    def test_browser_required_404_carries_its_p1_cap_into_sync(self):
+        source = {
+            "id": "fda-drug-safety",
+            "name": "FDA Drug Safety Communications",
+            "url": "https://www.fda.gov/drugs/example",
+            "type": "html",
+            "severity_default": "P0",
+            "link_check": "browser_required",
+        }
+        with (
+            mock.patch.object(L, "load_registry", return_value={"sources": [source]}),
+            mock.patch.object(
+                run_citation_check,
+                "classify",
+                return_value=(False, "broken-link", 404, None, "http 404"),
+            ),
+            mock.patch.object(run_citation_check.time, "sleep"),
+        ):
+            findings = run_citation_check.check_registry_sources()
+
+        self.assertEqual(len(findings), 1)
+        finding = findings[0]
+        self.assertEqual(finding["severity"], "P1")
+        self.assertEqual(finding["severity_cap"], "P1")
+        finding["affects"] = ["04_Acute_and_Safety/suicide-risk.md"]
+        self.assertEqual(L.escalate(finding), "P1")
 
     def test_closed_issue_overrides_historical_open_status(self):
         self.write_report_fixture(
@@ -1437,4 +1640,3 @@ class GuidelinePdfSourceTests(unittest.TestCase):
                 run_guideline_surv.main()
             self.assertEqual(sorted(calls), [("apify", "h"), ("pdf", "p")])
             self.assertEqual(json.loads((Path(tmp) / "c.json").read_text()), ["h", "p"])
-

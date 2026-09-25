@@ -6,15 +6,22 @@ const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf8');
 const phase = read('phase_policy.js');
 const state = read('frontdoor/fd_state.js');
+const readingPlace = read('frontdoor/fd_reading_place.js');
 const data = read('frontdoor/fd_data.js');
+const careNavigator = read('frontdoor/fd_care_navigator.js');
 const today = read('frontdoor/fd_today.js');
 const block = read('frontdoor/fd_block.js');
 const reader = read('frontdoor/fd_reader.js');
 const shell = read('frontdoor/fd_shell.js');
+const practice = read('frontdoor/fd_app_practice.js');
+const path = read('frontdoor/fd_path.js');
 const wire = read('frontdoor/fd_wire.js');
+const offline = read('frontdoor/fd_offline.js');
+const spa = read('spa_index.html');
+const CUR = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 
 // eslint-disable-next-line no-new-func
-const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${today}\n${block}\n${reader}\n${shell}\n${wire}\nreturn {
+const make = new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n${data}\n${careNavigator}\n${offline}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${wire}\nreturn {
   fdResolveState: fdResolveState,
   fdDispatch: fdDispatch,
   fdIsTypingTarget: fdIsTypingTarget,
@@ -22,6 +29,10 @@ const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${today}
   fdOpenResource: fdOpenResource,
   fdReader: fdReader,
   fdWire: fdWire,
+  fdInstallReadingPlace: fdInstallReadingPlace,
+  fdReadingFocusAllowed: fdReadingFocusAllowed,
+  fdDockSource: typeof fdDockSource === 'function' ? fdDockSource : null,
+  fdForwardDockAction: typeof fdForwardDockAction === 'function' ? fdForwardDockAction : null,
   fdThemeMode: fdThemeMode,
   fdClearDeviceData: fdClearDeviceData,
 };`);
@@ -42,12 +53,282 @@ function memStorage(seed = {}) {
 }
 
 const F = make(memStorage());
+// eslint-disable-next-line no-new-func
+const Offline = new Function(`${offline}\nreturn { fdOfflineMonitor };`)();
+
+test('live route transitions invalidate a pending offline check before the old reply arrives', async () => {
+  const posts = [];
+  const channels = [];
+  const timers = new Map();
+  let timerId = 0;
+  function MessageChannel() {
+    this.port1 = { onmessage: null, close() {} };
+    this.port2 = { close() {} };
+    channels.push(this);
+  }
+  const worker = { postMessage(value) { posts.push(value); } };
+  const serviceWorker = { controller: worker, addEventListener() {}, removeEventListener() {} };
+  const idx = {
+    weeks: [{ n: 2, items: [{ ref: 'two.md', kind: 'read' }] },
+      { n: 3, items: [{ ref: 'three.md', kind: 'read' }] }],
+    byRef: { 'two.md': { ref: 'two.md', kind: 'read' },
+      'three.md': { ref: 'three.md', kind: 'read' } },
+  };
+  const monitor = Offline.fdOfflineMonitor({ serviceWorker, MessageChannel,
+    setTimer(fn) { const id = ++timerId; timers.set(id, fn); return id; },
+    clearTimer(id) { timers.delete(id); } });
+  const sync = (state) => monitor.sync(idx, { ...state, appMode: false });
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F, index: idx, render: sync, renderTransient: sync,
+  });
+  sync(h.controller.getState());
+  const oldReply = channels[0].port1.onmessage;
+  h.controller.dispatch({ 'data-fd-setweek': '3' });
+  assert.deepEqual(posts[0].urls, ['/', '/search-index.json', '/content/two.md']);
+  assert.deepEqual(posts[1].urls, ['/', '/search-index.json', '/content/three.md']);
+  oldReply({ data: { version: 'old', ready: true, present: posts[0].urls, missing: [] } });
+  assert.equal(monitor.status().checking, true);
+  channels[1].port1.onmessage({ data: { version: 'new', ready: true,
+    present: posts[1].urls, missing: [] } });
+  await Promise.resolve();
+  assert.equal(monitor.status().response.version, 'new');
+  h.controller.dispatch({ 'data-fd-tab': 'library' });
+  assert.equal(monitor.status(), null);
+  monitor.destroy();
+  h.controller.destroy();
+});
+
+test('offline disclosure actions are visit-only and refresh never changes route or resource', () => {
+  const state = { ...roleContext, screen: 'app', tab: 'today', openId: null };
+  assert.deepEqual(F.fdDispatch({ 'data-fd-offline-open': '' }, {}, state),
+    { patch: { offlineOpen: true }, route: null, effect: null });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-offline-close': '' }, {}, { ...state, offlineOpen: true }),
+    { patch: { offlineOpen: false }, route: null, effect: null });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-offline-refresh': '' }, {}, { ...state, offlineOpen: true }),
+    { patch: {}, route: null, effect: { type: 'refresh-offline' } });
+});
+
+test('offline refresh stays on Today and never writes controller state', () => {
+  const storage = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'today' }) });
+  const LocalF = make(storage);
+  const initial = storage.dump().cw_frontdoor_v1;
+  const messages = [];
+  let updates = 0;
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', offlineOpen: true }, {
+    F: LocalF,
+    offlineStatus: () => ({ expected: ['/', '/search-index.json', '/content/two.md'],
+      response: { version: 'v1', ready: true,
+        present: ['/', '/search-index.json', '/content/two.md'], missing: [] } }),
+    online: () => false,
+    reportOfflineRefresh: (message) => messages.push(message),
+    requestSWUpdate: () => { updates += 1; return Promise.resolve(true); },
+  });
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  assert.equal(updates, 0);
+  assert.deepEqual(messages, ['Refresh needs a connection; your verified copy remains available.']);
+  assert.equal(h.controller.getState().tab, 'today');
+  assert.equal(storage.dump().cw_frontdoor_v1, initial);
+  h.controller.destroy();
+});
+
+test('online refresh calls the existing worker update once and reports its result', async () => {
+  let updates = 0;
+  const messages = [];
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', offlineOpen: true }, {
+    F,
+    offlineStatus: () => ({ expected: ['/', '/search-index.json', '/content/two.md'],
+      response: { version: 'v1', ready: true,
+        present: ['/', '/search-index.json', '/content/two.md'], missing: [] } }),
+    online: () => true,
+    reportOfflineRefresh: (message) => messages.push(message),
+    requestSWUpdate: () => { updates += 1; return Promise.resolve(true); },
+  });
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(updates, 1);
+  assert.match(messages.at(-1), /Update check complete/);
+  assert.equal(h.controller.getState().offlineOpen, true);
+  h.controller.destroy();
+});
+
+test('an update failure reports failure without closing the detailed check', async () => {
+  const messages = [];
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', offlineOpen: true }, {
+    F, online: () => true,
+    reportOfflineRefresh: (message) => messages.push(message),
+    requestSWUpdate: () => Promise.reject(new Error('network unavailable')),
+  });
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.match(messages.at(-1), /Could not check/);
+  assert.equal(h.controller.getState().offlineOpen, true);
+  h.controller.destroy();
+});
+
+test('a stalled update times out, permits retry, and ignores its late completion', async () => {
+  const messages = [], timers = new Map(), resolves = [];
+  let timerId = 0, updates = 0;
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', offlineOpen: true }, {
+    F, online: () => true,
+    setTimer(fn, ms) { const id = ++timerId; timers.set(id, { fn, ms }); return id; },
+    clearTimer(id) { timers.delete(id); },
+    reportOfflineRefresh: (message) => messages.push(message),
+    requestSWUpdate() { updates += 1; return new Promise((resolve) => resolves.push(resolve)); },
+  });
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  assert.equal(updates, 1, 'one worker update request while pending');
+  assert.equal([...timers.values()][0].ms, 8000);
+  [...timers.values()][0].fn();
+  assert.match(messages.at(-1), /timed out/i);
+  h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+  assert.equal(updates, 2, 'timeout releases the control for retry');
+  const beforeLate = messages.length;
+  resolves[0](true);
+  await Promise.resolve();
+  assert.equal(messages.length, beforeLate, 'late result cannot replace retry status');
+  resolves[1](true);
+  await Promise.resolve();
+  assert.match(messages.at(-1), /Update check complete/);
+  assert.equal(timers.size, 0);
+  h.controller.destroy();
+});
+
+test('closing details, changing APP route, and teardown cancel late update messages', async () => {
+  for (const transition of ['close', 'route', 'destroy']) {
+    const messages = [], timers = new Map(), resolves = [];
+    let timerId = 0;
+    const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today',
+      appBridge: 'pa', offlineOpen: true }, {
+      F, online: () => true,
+      setTimer(fn) { const id = ++timerId; timers.set(id, fn); return id; },
+      clearTimer(id) { timers.delete(id); },
+      reportOfflineRefresh: (message) => messages.push(message),
+      requestSWUpdate: () => new Promise((resolve, reject) => resolves.push({ resolve, reject })),
+    });
+    h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+    if (transition === 'close') h.controller.dispatch({ 'data-fd-offline-close': '' });
+    else if (transition === 'route') h.controller.dispatch({ 'data-fd-app-bridge': 'pmhnp' });
+    else h.controller.destroy();
+    assert.equal(timers.size, 0, `${transition} clears the timeout`);
+    const count = messages.length;
+    resolves[0].reject(new Error('late network failure'));
+    await Promise.resolve();
+    assert.equal(messages.length, count, `${transition} ignores late rejection`);
+    if (transition === 'route') {
+      h.controller.dispatch({ 'data-fd-offline-refresh': '' });
+      assert.equal(resolves.length, 2, 'new route permits a fresh update check');
+    }
+    h.controller.destroy();
+  }
+});
+
+test('offline details move focus to Close and return it to the disclosure', () => {
+  const storage = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'today' }) });
+  const initial = storage.dump().cw_frontdoor_v1;
+  const opener = { focused: 0, focus() { this.focused += 1; } };
+  const closer = { focused: 0, focus() { this.focused += 1; } };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F: make(storage), querySelector(selector) {
+      if (selector === '[data-fd-offline-open]') return opener;
+      if (selector === '[data-fd-offline-close]') return closer;
+      return null;
+    },
+  });
+  h.controller.dispatch({ 'data-fd-offline-open': '' });
+  assert.equal(closer.focused, 1);
+  h.controller.dispatch({ 'data-fd-offline-close': '' });
+  assert.equal(opener.focused, 1);
+  assert.equal(storage.dump().cw_frontdoor_v1, initial);
+  h.controller.destroy();
+});
+
+test('dock forwards once to the current connected source and rejects a stale id', () => {
+  let clicks = 0;
+  const source = { isConnected: true, click() { clicks++; },
+    getAttribute(name) { return name === 'data-fd-dock-label' ? 'Continue' : 'primary-week'; } };
+  const root = { querySelector() { return source; }, querySelectorAll() { return [source]; } };
+  assert.deepEqual(F.fdDockSource(root), { id: 'primary-week', label: 'Continue' });
+  assert.equal(F.fdForwardDockAction(root, 'primary-week'), true);
+  assert.equal(clicks, 1);
+  assert.equal(F.fdForwardDockAction(root, 'stale-id'), false);
+  assert.equal(clicks, 1);
+  source.isConnected = false;
+  assert.equal(F.fdDockSource(root), null);
+  assert.equal(F.fdForwardDockAction(root, 'primary-week'), false);
+  assert.equal(clicks, 1);
+});
+
+test('dock click forwards to the source; a removed source browses Library', () => {
+  let clicks = 0;
+  const source = actionTarget({ 'data-fd-dock-source': 'primary-week', 'data-fd-dock-label': 'Continue' },
+    { click() { clicks++; } });
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F, querySelectorAll: () => [source],
+  });
+  const dock = actionTarget({ 'data-fd-dock-forward': 'primary-week' });
+  h.rootHandlers.click({ target: dock, preventDefault() {} });
+  assert.equal(clicks, 1);
+  assert.equal(h.controller.getState().tab, 'today');
+  source.isConnected = false;
+  h.rootHandlers.click({ target: dock, preventDefault() {} });
+  assert.equal(clicks, 1);
+  assert.equal(h.controller.getState().tab, 'library');
+});
 const FOUR_INDEX = { weeks: [1, 2, 3, 4].map((n) => ({ n, items: [] })) };
+const CARE_INDEX = {
+  byRef: {}, weeks: FOUR_INDEX.weeks,
+  careResources: [
+    { id: 'resource-finder', title: 'Find services', description: 'Find support',
+      url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html' },
+    { id: 'meeting-calendar', title: 'Find meetings', description: 'Find recovery meetings',
+      url: 'https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html' },
+  ],
+  careNavigator: [
+    { id: 'services', label: 'Find community services', explanation: 'Start with services.',
+      primaryResourceId: 'resource-finder', alternativeResourceIds: ['meeting-calendar'] },
+  ],
+};
 const roleContext = {
   roles: [{ id: 'first-role' }, { id: 'second-role' }],
   role: 'first-role',
   week: 2,
 };
+
+test('care intent selection and clear are route-free visit-only patches', () => {
+  assert.deepEqual(F.fdDispatch({ 'data-fd-care-intent': 'services' },
+    { index: CARE_INDEX }, { ...roleContext, tab: 'care' }), {
+    patch: { careIntentId: 'services' }, route: null, effect: null,
+  });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-care-intent': 'missing' },
+    { index: CARE_INDEX }, { ...roleContext, tab: 'care' }), {
+    patch: { careIntentId: '' }, route: null, effect: null,
+  });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-care-clear': '' },
+    { index: CARE_INDEX }, { ...roleContext, tab: 'care', careIntentId: 'services' }), {
+    patch: { careIntentId: '' }, route: null, effect: null,
+  });
+});
+
+test('dispatch rejects non-string Care selections instead of coercing them', () => {
+  for (const value of [['services'], { toString: () => 'services' }]) {
+    assert.deepEqual(F.fdDispatch({ 'data-fd-care-intent': value },
+      { index: CARE_INDEX }, { ...roleContext, tab: 'care' }), {
+      patch: { careIntentId: '' }, route: null, effect: null,
+    });
+  }
+});
+
+test('leaving Care clears a transient intent while Care-to-Care does not invent one', () => {
+  const away = F.fdDispatch({ 'data-fd-tab': 'library' }, { search: '?tab=care' },
+    { ...roleContext, tab: 'care', careIntentId: 'services' });
+  assert.equal(away.patch.careIntentId, '');
+  const enter = F.fdDispatch({ 'data-fd-tab': 'care' }, { search: '?tab=library' },
+    { ...roleContext, tab: 'library' });
+  assert.equal(Object.hasOwn(enter.patch, 'careIntentId'), false);
+});
 
 test('guide context never leaks into another resource or a practice iframe', () => {
   const context = { search: '?page=source.md&guideFind=private+query&guideSection=one&case=c1' };
@@ -86,6 +367,33 @@ test('URL page/tool/tab values beat persisted Front Door state', () => {
   assert.equal(F.fdResolveState('/', { ...stored, toolExpanded: 'true' }).toolExpanded, false,
     'only the literal persisted boolean enables the wide layout');
   assert.equal(F.fdResolveState('/', { ...stored, toolExpanded: false }).toolExpanded, false);
+});
+
+test('the resident APP invitation is transient and leaves the stored identity intact', () => {
+  const invited = F.fdResolveState('/?audience=app', {
+    role: 'first-role', tab: 'path', week: 2, appBridge: 'pmhnp',
+  }, { allowAppInvite: true });
+  assert.equal(invited.role, 'first-role');
+  assert.equal(invited.appInvite, true);
+  assert.equal(invited.screen, 'app');
+  assert.equal(invited.tab, 'today');
+  assert.equal(invited.appBridge, 'pmhnp');
+
+  const firstVisit = F.fdResolveState('/?audience=app', {}, { allowAppInvite: true });
+  assert.equal(firstVisit.role, undefined);
+  assert.equal(firstVisit.appInvite, true);
+  assert.equal(firstVisit.screen, 'app');
+});
+
+test('APP invitation is opt-in, exact, and cannot expose the APP route on another audience build', () => {
+  for (const url of [
+    '/?audience=app', '/?audience=APP', '/?audience=app&audience=app', '/?audience=resident',
+  ]) {
+    const options = url === '/?audience=app' ? {} : { allowAppInvite: true };
+    const resolved = F.fdResolveState(url, {}, options);
+    assert.equal(resolved.appInvite, undefined, url);
+    assert.equal(resolved.screen, 'setup-role', url);
+  }
 });
 
 test('legacy special-route aliases resolve to canonical Front Door state without becoming resources', () => {
@@ -217,7 +525,12 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     { ...roleContext, screen: 'setup-role' }).patch,
   { role: 'second-role', screen: 'setup-week' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'library' }, {}, roleContext).patch,
-    { tab: 'library', openId: null, searchOpen: false, libraryView: 'essentials', kitSection: 'all' });
+    { tab: 'library', openId: null, searchOpen: false, careIntentId: '', carePackIds: [],
+      libraryView: 'essentials', kitSection: 'all' });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'care' }, {}, roleContext), {
+    patch: { tab: 'care', openId: null, searchOpen: false },
+    route: '?tab=care', effect: null,
+  });
   assert.equal(F.fdDispatch({ 'data-fd-back': '' }, {}, { ...roleContext, openId: 'x.md', fromTab: 'path' }).route,
     '?tab=path');
   assert.equal(F.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).route, '/');
@@ -245,6 +558,158 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     { stepsDone: { 2: false } });
   assert.equal(F.fdDispatch({ 'data-fd-try-now': 'scale.html' }, {}, roleContext).patch.sheet,
     'item:scale.html');
+});
+
+test('the patient-care destination survives direct links and reader return context', () => {
+  const direct = F.fdResolveState('/?tab=care', { role: 'first-role' });
+  assert.equal(direct.screen, 'app');
+  assert.equal(direct.tab, 'care');
+  const opened = F.fdDispatch({ 'data-fd-open': 'a.md' }, { search: '?tab=care' }, direct);
+  assert.equal(opened.patch.fromTab, 'care');
+  assert.equal(new URLSearchParams(opened.route).get('tab'), 'care');
+  assert.equal(F.fdReader({ weeks: [] }, { ref: 'a.md', fromTab: 'care' }, '<p>x</p>').includes('Patient care resources'), true);
+});
+
+test('choosing APP enters the On shift workspace without asking for a rotation week', () => {
+  assert.deepEqual(F.fdDispatch({ 'data-fd-role': 'app' }, { search: '' }, {
+    ...roleContext, role: null, screen: 'setup-role', week: undefined,
+  }), {
+    patch: {
+      role: 'app', screen: 'app', tab: 'today', week: null, browsing: true,
+      openId: null, searchOpen: false,
+    },
+    route: '/',
+    effect: { type: 'browse-without-rotation' },
+  });
+});
+
+test('a stored APP never re-enters the rotation wizard or restores the Path tab', () => {
+  assert.deepEqual(F.fdResolveState('/?tab=path', {
+    role: 'app', tab: 'path', browsing: true, viewWeek: 3,
+  }), {
+    role: 'app', tab: 'today', libraryView: 'essentials', kitSection: 'all',
+    viewWeek: 3, autoAdvance: true, browsing: true, screen: 'app',
+  });
+});
+
+test('APP bridge persists while work-task and private reflection choices remain controller-only', () => {
+  assert.deepEqual(F.fdResolveState('/', {
+    role: 'app', browsing: true, appBridge: 'pmhnp', appActivity: 'initial-evaluation',
+    appReflection: 'supervisor',
+  }).appBridge, 'pmhnp');
+  assert.deepEqual(F.fdDispatch({ 'data-fd-app-bridge': 'pmhnp' }, { search: '' }, {
+    role: 'app', appBridge: 'pa', appActivity: 'initial-evaluation', appReflection: 'revisit',
+    appPractice: { pack: { id: 'training-briefing' } },
+  }), {
+    patch: { appBridge: 'pmhnp', appActivity: null, appReflection: null, appPractice: null },
+    route: null, effect: null,
+  });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-app-shift': 'collateral-transition' }, {}, {
+    role: 'app', appActivity: null,
+  }).patch, { appActivity: 'collateral-transition', appReflection: null });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-app-reflect': 'supervisor' }, {}, {
+    role: 'app', appReflection: null,
+  }).patch, { appReflection: 'supervisor' });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-app-reset': '' }, {}, {
+    role: 'app', appActivity: 'collateral-transition', appReflection: 'supervisor',
+    appPractice: { pack: { id: 'training-briefing' } },
+  }).patch, { appActivity: null, appReflection: null, appPractice: null });
+});
+
+test('APP practice actions advance only transient immutable state', () => {
+  const packs = CUR.appPathway.practicePacks;
+  const opened = F.fdDispatch(
+    { 'data-fd-app-practice-open': 'training-briefing' },
+    { appPracticePacks: packs }, { role: 'app' });
+  assert.equal(opened.patch.appPractice.pack.id, 'training-briefing');
+  assert.equal(opened.patch.appPractice.revealed, false);
+
+  let session = F.fdDispatch({ 'data-fd-app-practice-reveal': '' }, {},
+    { role: 'app', appPractice: opened.patch.appPractice }).patch.appPractice;
+  for (const value of [
+    'review-time:still-known', 'source-status:changed', 'verification-owner:clarify',
+  ]) {
+    session = F.fdDispatch({ 'data-fd-app-practice-classify': value }, {},
+      { role: 'app', appPractice: session }).patch.appPractice;
+  }
+  session = F.fdDispatch({ 'data-fd-app-practice-question': 'confirm-owner' }, {},
+    { role: 'app', appPractice: session }).patch.appPractice;
+  assert.equal(session.questionId, 'confirm-owner');
+  assert.equal(F.fdDispatch({ 'data-fd-app-practice-reset': '' }, {},
+    { role: 'app', appPractice: session }).patch.appPractice.revealed, false);
+  assert.deepEqual(F.fdDispatch({ 'data-fd-app-practice-close': '' }, {},
+    { role: 'app', appPractice: session }).patch, { appPractice: null });
+});
+
+test('APP practice repaint moves or restores focus within the keyboard sequence', () => {
+  const pack = CUR.appPathway.practicePacks[0];
+  const openSelector = `[data-fd-app-practice-open="${pack.id}"]`;
+  let controls = new Map();
+  let focused = null;
+  function add(attrs) {
+    const node = actionTarget(attrs, { focus() { focused = this; } });
+    for (const [name, value] of Object.entries(attrs)) {
+      controls.set(`[${name}="${value}"]`, node);
+      if (!controls.has(`[${name}]`)) controls.set(`[${name}]`, node);
+    }
+    return node;
+  }
+  function repaint(state) {
+    controls = new Map();
+    add({ 'data-fd-app-practice-open': pack.id });
+    if (!state.appPractice) return;
+    add({ 'data-fd-app-practice-close': '' });
+    if (!state.appPractice.revealed) {
+      add({ 'data-fd-app-practice-reveal': '' });
+      return;
+    }
+    for (const statement of pack.statements) {
+      for (const category of ['still-known', 'changed', 'clarify']) {
+        add({ 'data-fd-app-practice-classify': `${statement.id}:${category}` });
+      }
+    }
+    add({ 'data-fd-app-practice-reset': '' });
+    if (Object.keys(state.appPractice.classifications).length === pack.statements.length) {
+      for (const question of pack.supervisorQuestions) {
+        add({ 'data-fd-app-practice-question': question.id });
+      }
+    }
+  }
+  repaint({});
+  const h = fakeHarness({ role: 'app', screen: 'app', tab: 'today' }, {
+    F, appPracticePacks: CUR.appPathway.practicePacks,
+    querySelector: (selector) => controls.get(selector) || null,
+    renderTransient: (state) => repaint(state),
+  });
+  function activate(selector, expectedFocus) {
+    const target = controls.get(selector);
+    assert.ok(target, `missing ${selector}`);
+    focused = target;
+    h.rootHandlers.click({ target, preventDefault() {} });
+    assert.equal(focused, controls.get(expectedFocus), `focus after ${selector}`);
+  }
+  activate(openSelector, '[data-fd-app-practice-reveal]');
+  activate('[data-fd-app-practice-reveal]', '[data-fd-app-practice-classify]');
+  for (const value of [
+    'review-time:still-known', 'source-status:changed', 'verification-owner:clarify',
+  ]) {
+    const selector = `[data-fd-app-practice-classify="${value}"]`;
+    activate(selector, selector);
+  }
+  activate('[data-fd-app-practice-question="confirm-owner"]',
+    '[data-fd-app-practice-question="confirm-owner"]');
+  activate('[data-fd-app-practice-reset]', '[data-fd-app-practice-reveal]');
+  activate('[data-fd-app-practice-close]', openSelector);
+});
+
+test('APP resource starts reuse the canonical reader route and preserve On shift as origin', () => {
+  const result = F.fdDispatch({ 'data-fd-app-start': 'pg_interview.md' }, { search: '' }, {
+    role: 'app', tab: 'today', appBridge: 'pa',
+  });
+  assert.deepEqual(result, {
+    patch: { openId: 'pg_interview.md', fromTab: 'today', searchOpen: false, sheet: null },
+    route: '?page=pg_interview.md', effect: { type: 'open-resource', ref: 'pg_interview.md' },
+  });
 });
 
 test('change-week uses a reader origin only while a reader is open', () => {
@@ -483,7 +948,7 @@ test('Tab trapping wraps at both ends of a dialog', () => {
   assert.equal(prevented, 2);
 });
 
-test('fdWire registers and destroys one delegated click/input/change/focusin/keydown/popstate listener for the live shell', () => {
+test('fdWire registers and destroys delegated root and window listeners for the live shell', () => {
   const rootCalls = [];
   const windowCalls = [];
   const rootRemoves = [];
@@ -501,7 +966,7 @@ test('fdWire registers and destroys one delegated click/input/change/focusin/key
   assert.equal(controller.ok, true);
   // 'change' is the settings panel's date field -- the one control not on the delegated click
   // path. Registered through listen() like the rest, so destroy() takes it down too.
-  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input', 'change', 'focusin']);
+  assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input', 'change', 'focusin', 'keydown']);
   assert.deepEqual(windowCalls.map(([type]) => type), ['keydown', 'popstate']);
   controller.destroy();
   assert.deepEqual(rootRemoves, rootCalls.slice().reverse());
@@ -581,7 +1046,10 @@ test('fdWire reports a partial window registration failure and unwinds every ins
 function actionTarget(attrs, extra = {}) {
   return {
     tagName: 'BUTTON', isContentEditable: false, isConnected: true,
-    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-settings],[data-fd-analytics],[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
+    closest(selector) {
+      if(selector==='[data-fd-kit-tool]'&&Object.hasOwn(attrs,'data-fd-kit-tool')) return this;
+      return Object.keys(attrs).some((name) => selector.includes(`[${name}]`)) ? this : null;
+    },
     hasAttribute(name) { return Object.hasOwn(attrs, name); },
     getAttribute(name) { return Object.hasOwn(attrs, name) ? attrs[name] : null; },
     focus() { this.focused = (this.focused || 0) + 1; },
@@ -599,7 +1067,7 @@ function fakeHarness(initial, options = {}) {
     ...(options.querySelectorAll ? { querySelectorAll: options.querySelectorAll } : {}),
     matches: options.matches || (() => false),
   };
-  const fakeWindow = {
+  const fakeWindow = options.window || {
     addEventListener(type, fn) { windowHandlers[type] = fn; },
     removeEventListener() {},
     location: options.location || { href: 'https://example.test/', search: '', pathname: '/' },
@@ -615,6 +1083,8 @@ function fakeHarness(initial, options = {}) {
     renderTransient: options.renderTransient,
     searchResults: options.searchResults,
     openResource: options.openResource,
+    readingPlaceSession: options.readingPlaceSession,
+    disposeReadingPlace: options.disposeReadingPlace,
     route: options.route,
     document: options.document,
     setTimer: options.setTimer,
@@ -626,12 +1096,98 @@ function fakeHarness(initial, options = {}) {
     facultyPreview: options.facultyPreview,
     facultyPreviewLock: options.facultyPreviewLock,
     externalModalOpen: options.externalModalOpen,
+    appPracticePacks: options.appPracticePacks,
     releaseStartupGate: options.releaseStartupGate,
     loadBlock: options.loadBlock,
+    offlineStatus: options.offlineStatus,
+    online: options.online,
+    reportOfflineRefresh: options.reportOfflineRefresh,
+    requestSWUpdate: options.requestSWUpdate,
+    offlineRefreshTimeoutMs: options.offlineRefreshTimeoutMs,
   });
   if (options.commitStartup !== false) controller.commitStartup();
   return { root, rootHandlers, fakeWindow, windowHandlers, controller };
 }
+
+test('care selection rerenders, stays out of storage and history, and restores focus', () => {
+  const storage = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'care' }) });
+  const LocalF = make(storage);
+  const renders = [];
+  const historyCalls = [];
+  const selected = { focused: 0, focus() { this.focused += 1; } };
+  const first = { focused: 0, focus() { this.focused += 1; } };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'care' }, {
+    F: LocalF,
+    index: CARE_INDEX,
+    render: (...args) => renders.push(args),
+    querySelector: (selector) => {
+      if (selector === '[data-fd-care-intent="services"]') return selected;
+      if (selector === '[data-fd-care-intent]') return first;
+      return null;
+    },
+    history: {
+      replaceState: (...args) => historyCalls.push(['replace', ...args]),
+      pushState: (...args) => historyCalls.push(['push', ...args]),
+    },
+  });
+  const initialHistoryCount = historyCalls.length;
+  const beforeStorage = storage.dump();
+
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-care-intent': 'services' }), preventDefault() {},
+  });
+  assert.equal(h.controller.getState().careIntentId, 'services');
+  assert.equal(renders.length, 1);
+  assert.deepEqual(storage.dump(), beforeStorage);
+  assert.equal(historyCalls.length, initialHistoryCount);
+  assert.equal(selected.focused, 1);
+
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-care-clear': '' }), preventDefault() {},
+  });
+  assert.equal(h.controller.getState().careIntentId, '');
+  assert.equal(first.focused, 1);
+});
+
+test('Home discards the visit-only Care intent', () => {
+  const home = fakeHarness({ ...roleContext, screen: 'app', tab: 'care',
+    careIntentId: 'services' }, { F, index: CARE_INDEX });
+  home.rootHandlers.click({ target: actionTarget({ 'data-fd-home': '' }), preventDefault() {} });
+  assert.equal(home.controller.getState().tab, 'today');
+  assert.equal(home.controller.getState().careIntentId, '');
+});
+
+test('browser history discards the visit-only Care intent even when returning to Care', () => {
+  const location = { href: 'https://example.test/?tab=care', pathname: '/', search: '?tab=care' };
+  const history = fakeHarness({ ...roleContext, screen: 'app', tab: 'care',
+    careIntentId: 'services' }, { F, index: CARE_INDEX, location });
+  history.windowHandlers.popstate({ state: { fd: true, state: { tab: 'care', openId: null } } });
+  assert.equal(history.controller.getState().tab, 'care');
+  assert.equal(history.controller.getState().careIntentId, '',
+    'history cannot revive a selection it does not own');
+});
+
+test('Path arrow navigation activates the projected adjacent week and prevents page scrolling', () => {
+  let clicked = 0;
+  let prevented = 0;
+  const next = { click() { clicked += 1; } };
+  const current = actionTarget({ 'data-fd-view-week': '2' });
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'path', viewWeek: 2 }, {
+    F,
+    index: FOUR_INDEX,
+    querySelector: (selector) => selector.includes('data-fd-view-week="3"') ? next : null,
+  });
+  h.rootHandlers.keydown({
+    key: 'ArrowRight', target: current, preventDefault() { prevented += 1; },
+  });
+  assert.equal(clicked, 1);
+  assert.equal(prevented, 1);
+  h.rootHandlers.keydown({
+    key: 'Enter', target: current, preventDefault() { prevented += 1; },
+  });
+  assert.equal(clicked, 1, 'ordinary button activation remains native');
+  assert.equal(prevented, 1);
+});
 
 test('pre-commit handlers prevent click, input, keyboard, and popstate without changing ownership', () => {
   const storage = memStorage();
@@ -783,6 +1339,44 @@ test('live search input rerenders and Enter opens the first ordinary result dire
   assert.equal(h.controller.getState().searchOpen, false);
   assert.equal(prevented, 1);
   assert.ok(renders.length >= 2);
+});
+
+test('Enter activates the exact first external care result without routing or forwarding the query', () => {
+  let clicked = 0;
+  let selected = '';
+  let prevented = 0;
+  const routes = [];
+  const careLink = { click() { clicked += 1; } };
+  const h = fakeHarness({ ...roleContext, searchOpen: true, query: 'housing help' }, {
+    F,
+    route: (value) => routes.push(value),
+    querySelector: (selector) => {
+      selected = selector;
+      return selector === '.fd-result.is-care[data-care-resource="resource-finder"]' ? careLink : null;
+    },
+    searchResults: () => [{
+      kind: 'care',
+      item: {
+        id: 'resource-finder',
+        url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html',
+      },
+    }],
+  });
+  const input = {
+    tagName: 'INPUT', isContentEditable: false, value: 'housing help',
+    matches: (selector) => selector === '.fd-searchpanel__input',
+  };
+
+  h.windowHandlers.keydown({
+    key: 'Enter', target: input, preventDefault() { prevented += 1; },
+  });
+
+  assert.equal(selected, '.fd-result.is-care[data-care-resource="resource-finder"]');
+  assert.equal(clicked, 1);
+  assert.equal(prevented, 1);
+  assert.deepEqual(routes, []);
+  assert.equal(h.controller.getState().query, 'housing help');
+  assert.equal(h.controller.getState().openId, undefined);
 });
 
 test('opening and closing a dialog captures, focuses, and restores the connected invoker', () => {
@@ -2747,6 +3341,442 @@ test('fdResolveState carries a persisted scroll offset through startup, and drop
   assert.equal(F.fdResolveState('https://example.test/', { role: 'ms3', tab: 'library', scrollPos: '640' }).scrollPos, undefined);
 });
 
+test('a reloaded reading place survives an ordinary navigation save', () => {
+  const store = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'today', browsing: true,
+    readingPlaces: { 'a.md': { heading: 'heading-1', offset: 28, updatedAt: 8 } } }) });
+  const LocalF = make(store);
+  const restored = LocalF.fdResolveState('https://example.test/?page=a.md', JSON.parse(store.getItem('cw_frontdoor_v1')));
+  const h = fakeHarness(restored, { F: LocalF });
+  h.controller.dispatch({ 'data-fd-tab': 'library' });
+  assert.deepEqual(JSON.parse(store.getItem('cw_frontdoor_v1')).readingPlaces,
+    { 'a.md': { heading: 'heading-1', offset: 28, updatedAt: 8 } });
+});
+
+function readingPlaceHarness(saved = {}, options = {}) {
+  let y = 0;
+  const listeners = new Map();
+  const pending = new Map();
+  let nextTimer = 1;
+  const win = {
+    get scrollY() { return y; },
+    scrollTo(_x, next) { y = next; },
+    addEventListener(type, fn) { listeners.set(type, fn); },
+    removeEventListener(type) { listeners.delete(type); },
+    requestAnimationFrame(fn) { pending.set(`frame-${nextTimer++}`, fn); },
+  };
+  const heights = options.heights || [100, 450, 900, 1400];
+  const labels = options.labels || ['A reading', 'Thought process', 'Thought process', '...'];
+  const headings = labels.map((textContent, i) => ({
+    id: (options.authoredIds || [])[i] || '', textContent, tagName: i ? 'H2' : 'H1',
+    getBoundingClientRect() { return { top: heights[i] - y }; },
+    focus(opts) { this.focused = opts; },
+    setAttribute(name, value) { this[name] = value; },
+    getAttribute(name) { return name === 'id' ? this.id : this[name] || null; },
+  }));
+  const status = { textContent: '' };
+  const top = { hidden: true };
+  const reader = {
+    querySelectorAll(selector) {
+      assert.equal(selector, '.fd-article > .fd-article__h1,.fd-article__body h2,.fd-article__body h3,.fd-article__body h4');
+      return headings;
+    },
+    querySelector(selector) {
+      if (selector === '[data-fd-reading-status]') return status;
+      if (selector === '[data-fd-reading-top]') return top;
+      return null;
+    },
+  };
+  const state = { role: 'first-role', screen: 'app', readingPlaces: saved };
+  const writes = [];
+  const save = options.save || ((value) => { writes.push(JSON.parse(JSON.stringify(value.readingPlaces))); return true; });
+  const install = (focusOnRestore = false, liveState = state) => F.fdInstallReadingPlace(reader, 'a.md', liveState, {
+    window: win, allowStorage: options.allowStorage !== false, focusOnRestore,
+    canFocusOnRestore: options.canFocusOnRestore,
+    save, now: () => 1000 + writes.length,
+    setTimer(fn, delay) { assert.equal(delay, 150); const id = nextTimer++; pending.set(id, fn); return id; },
+    clearTimer(id) { pending.delete(id); },
+    requestAnimationFrame(fn) { pending.set(`frame-${nextTimer++}`, fn); },
+  });
+  const flush = () => { const jobs = [...pending.values()]; pending.clear(); jobs.forEach((fn) => fn()); };
+  return { install, flush, listeners, headings, status, top, state, writes, win,
+    setScroll(next) { y = next; }, setHeadingTop(index, next) { heights[index] = next; },
+    get scrollY() { return y; },
+  };
+}
+
+test('reading place assigns deterministic heading ids, saves the latest debounced heading, and flushes pagehide', () => {
+  const h = readingPlaceHarness();
+  const session = h.install();
+  h.flush();
+  assert.equal(new Set(h.headings.map((node) => node.id)).size, 4);
+  assert.match(h.headings[3].id, /^fd-reading-section--[0-9a-f]{16}$/);
+  assert.equal(h.status.textContent, 'Reading place saved on this device only', 'fresh storage is verified without inventing a place');
+  assert.equal(h.state.readingPlaces['a.md'], undefined);
+  h.setScroll(500); h.listeners.get('scroll')();
+  h.setScroll(960); h.listeners.get('scroll')();
+  h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[2].id);
+  assert.equal(h.state.readingPlaces['a.md'].offset, 60);
+  assert.equal(h.status.textContent, 'Reading place saved on this device only');
+  h.setScroll(1000); h.listeners.get('pagehide')();
+  assert.equal(h.state.readingPlaces['a.md'].offset, 100);
+  session.destroy();
+  assert.equal(h.listeners.size, 0);
+});
+
+test('Compass labelled section keeps its authored H2 id while private anchors drive save and restore', () => {
+  // Welcome renders <section aria-labelledby="fd-compass-title"> with this authored H2;
+  // the browser test checks the real component, while this drives the installer directly.
+  const options = {
+    labels: ['Welcome', 'Six-Week Compass', 'Week 1 Foundations & the MSE',
+      'Week 1 Foundations & the MSE', '!!!'],
+    authoredIds: ['', 'fd-compass-title', '', '', ''],
+    heights: [100, 450, 900, 1400, 1800],
+  };
+  const h = readingPlaceHarness({}, options);
+  h.install(); h.flush();
+  const section = { labelledBy: 'fd-compass-title' };
+  assert.equal(h.headings[1].id, 'fd-compass-title');
+  assert.equal(h.headings.find(node => node.id === section.labelledBy)?.textContent, 'Six-Week Compass');
+  const anchors = h.headings.map(node => node.getAttribute('data-fd-reading-anchor'));
+  assert.match(anchors[1], /^fd-reading-six-week-compass--[0-9a-f]{16}$/);
+  assert.notEqual(anchors[1], h.headings[1].id);
+  assert.equal(new Set(anchors).size, anchors.length, 'duplicate headings retain distinct bookmark identities');
+  assert.equal(h.headings[2].id, anchors[2], 'a heading without an authored id remains linkable');
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, anchors[1], 'the authored H2 saves its private identity');
+  const compassRestored = readingPlaceHarness(h.state.readingPlaces, options);
+  compassRestored.install(); compassRestored.flush();
+  assert.equal(compassRestored.scrollY, 500);
+  assert.equal(compassRestored.headings[1].id, 'fd-compass-title');
+  h.setScroll(960); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, anchors[2]);
+  h.setScroll(1460); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, anchors[3]);
+
+  const restored = readingPlaceHarness(h.state.readingPlaces, options);
+  restored.install(); restored.flush();
+  assert.equal(restored.scrollY, 1460, 'duplicate bookmark restores relative to its own heading');
+  assert.equal(restored.headings[1].id, 'fd-compass-title');
+  assert.equal(restored.headings[3].getAttribute('data-fd-reading-anchor'), anchors[3]);
+
+  const stale = readingPlaceHarness({ 'a.md': { heading: 'fd-compass-title', offset: 10, updatedAt: 1 } }, options);
+  stale.install(); stale.flush();
+  assert.equal(stale.state.readingPlaces['a.md'], undefined, 'an authored DOM id is not a bookmark identity');
+  assert.equal(stale.headings[1].id, 'fd-compass-title');
+
+  const collision = readingPlaceHarness({}, { ...options, authoredIds: ['', anchors[2], '', '', ''] });
+  collision.install(); collision.flush();
+  assert.equal(collision.headings[1].id, anchors[2], 'an authored id is never displaced by a generated one');
+  assert.equal(collision.headings[2].id, '', 'a colliding generated DOM id is omitted');
+  assert.equal(collision.headings[2].getAttribute('data-fd-reading-anchor'), anchors[2]);
+
+  const guest = readingPlaceHarness({}, { ...options, allowStorage: false });
+  guest.install(); guest.flush();
+  assert.equal(guest.headings[1].id, 'fd-compass-title', 'guest install also preserves the label target');
+  assert.equal(guest.headings[1].getAttribute('data-fd-reading-anchor'), anchors[1]);
+  assert.equal(guest.writes.length, 0);
+});
+
+test('reading place keeps its heading through responsive reflow without treating resize as learner scroll', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  const heading = h.state.readingPlaces['a.md'].heading;
+  h.setHeadingTop(1, 600);
+  h.listeners.get('resize')(); h.flush();
+  assert.equal(h.scrollY, 650);
+  assert.equal(h.state.readingPlaces['a.md'].heading, heading);
+});
+
+test('reading place flushes a pending learner scroll before responsive reflow', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  const oldHeading = h.state.readingPlaces['a.md'].heading;
+  h.setScroll(960); h.listeners.get('scroll')(); // 150 ms has not elapsed
+  h.setHeadingTop(2, 1100);
+  h.listeners.get('resize')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[2].id);
+  assert.notEqual(h.state.readingPlaces['a.md'].heading, oldHeading);
+  assert.equal(h.state.readingPlaces['a.md'].offset, 60);
+  assert.equal(h.scrollY, 1160, 'new relative position follows the reflowed heading');
+  const writes = h.writes.length;
+  h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.writes.length, writes, 'programmatic reflow makes no write loop');
+  assert.equal(h.headings[2].focused, undefined, 'resize does not take focus');
+});
+
+test('returning to the fresh baseline cancels the pending debounce without blocking a later move', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  const writes = h.writes.length;
+  h.setScroll(960); h.listeners.get('scroll')();
+  h.setScroll(0); h.listeners.get('scroll')();
+  h.flush();
+  assert.equal(h.state.readingPlaces['a.md'], undefined, 'abandoned section is not saved');
+  assert.equal(h.writes.length, writes, 'debounce does not write after the reversal');
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[1].id,
+    'a later meaningful scroll still saves normally');
+});
+
+test('returning to the fresh baseline cannot be flushed by resize or pagehide', () => {
+  for (const exit of ['resize', 'pagehide']) {
+    const h = readingPlaceHarness();
+    h.install(); h.flush();
+    const writes = h.writes.length;
+    h.setScroll(960); h.listeners.get('scroll')();
+    h.setScroll(0); h.listeners.get('scroll')();
+    h.listeners.get(exit)(); h.flush();
+    assert.equal(h.state.readingPlaces['a.md'], undefined, `${exit} cannot persist the abandoned section`);
+    assert.equal(h.writes.length, writes, `${exit} makes no stale write`);
+    assert.equal(h.scrollY, 0, `${exit} cannot restore the abandoned section`);
+  }
+});
+
+test('pagehide drops a pending position when the return scroll event has not fired yet', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  const writes = h.writes.length;
+  h.setScroll(960); h.listeners.get('scroll')();
+  h.setScroll(0); // the browser may coalesce this scroll event with pagehide
+  h.listeners.get('pagehide')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'], undefined);
+  assert.equal(h.writes.length, writes);
+});
+
+test('returning to an earlier position after a settled save is still meaningful movement', () => {
+  const h = readingPlaceHarness();
+  h.install(); h.flush();
+  h.setScroll(960); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[2].id);
+  h.setScroll(0); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[0].id);
+  assert.equal(h.state.readingPlaces['a.md'].offset, 0);
+});
+
+test('Start at top stays clear through two untouched exits, then learner movement saves again', () => {
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  const restored = readingPlaceHarness({ 'a.md': { heading: seed.headings[1].id, offset: 40, updatedAt: 8 } });
+  const first = restored.install(); restored.flush();
+  first.startAtTop(); restored.listeners.get('pagehide')(); first.destroy();
+  let saved = restored.state.readingPlaces;
+  assert.equal(saved['a.md'], undefined);
+  for (let cycle = 0; cycle < 2; cycle++) {
+    const h = readingPlaceHarness(saved);
+    const session = h.install(); h.flush();
+    assert.equal(h.status.textContent, 'Reading place saved on this device only');
+    assert.deepEqual(h.writes.at(-1), saved, 'verification writes the unchanged map');
+    assert.equal(h.state.readingPlaces['a.md'], undefined);
+    h.listeners.get('pagehide')(); session.destroy();
+    assert.equal(h.state.readingPlaces['a.md'], undefined);
+    saved = h.state.readingPlaces;
+  }
+  const h = readingPlaceHarness(saved);
+  h.install(); h.flush();
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[1].id);
+});
+
+test('reading place restores relative to the heading and focuses the section only for Continue', () => {
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  const id = seed.headings[1].id;
+  const h = readingPlaceHarness({ 'a.md': { heading: id, offset: 75, updatedAt: 9 } });
+  h.install(true);
+  assert.equal(h.scrollY, 0, 'restore waits for a layout frame');
+  assert.equal(h.status.textContent, '', 'no success claim before the verified write');
+  h.setHeadingTop(1, 600);
+  h.flush();
+  assert.equal(h.scrollY, 675, 'the stored offset follows the heading after reflow');
+  assert.deepEqual(h.headings[1].focused, { preventScroll: true });
+  assert.equal(h.top.hidden, false);
+  const ordinary = readingPlaceHarness({ 'a.md': { heading: id, offset: 75, updatedAt: 9 } });
+  ordinary.install(false); ordinary.flush();
+  assert.equal(ordinary.headings[1].focused, undefined);
+  assert.deepEqual(ordinary.headings[0].focused, { preventScroll: true }, 'ordinary open retains document-heading focus');
+  const owned = readingPlaceHarness({ 'a.md': { heading: id, offset: 75, updatedAt: 9 } },
+    { canFocusOnRestore: () => false });
+  owned.install(false); owned.flush();
+  assert.equal(owned.headings[0].focused, undefined, 'a foreground focus owner is not stolen');
+});
+
+test('stale heading clears only its page and Start at top clears a restored place', () => {
+  const other = { heading: 'other', offset: 4, updatedAt: 3 };
+  const stale = readingPlaceHarness({ 'a.md': { heading: 'missing', offset: 80, updatedAt: 8 }, 'b.md': other });
+  stale.install(); stale.flush();
+  assert.equal(stale.scrollY, 0);
+  assert.deepEqual(stale.state.readingPlaces, { 'b.md': other });
+  assert.deepEqual(stale.writes.at(-1), { 'b.md': other }, 'stale cleanup reaches the device store');
+  assert.equal(stale.top.hidden, true);
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  const restored = readingPlaceHarness({ 'a.md': { heading: seed.headings[1].id, offset: 40, updatedAt: 8 }, 'b.md': other });
+  const session = restored.install(); restored.flush();
+  session.startAtTop();
+  assert.equal(restored.scrollY, 100);
+  assert.deepEqual(restored.state.readingPlaces, { 'b.md': other });
+  assert.equal(restored.top.hidden, true);
+  assert.deepEqual(restored.headings[0].focused, { preventScroll: true });
+});
+
+test('dropped reading places stay dropped through queued scroll and pagehide, then a real move saves again', () => {
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  for (const stale of [false, true]) {
+    const h = readingPlaceHarness({ 'a.md': { heading: stale ? 'missing' : seed.headings[1].id, offset: 40, updatedAt: 8 } });
+    const session = h.install(); h.flush();
+    if (!stale) session.startAtTop();
+    h.listeners.get('scroll')(); // scrollTo's queued programmatic scroll event
+    h.listeners.get('pagehide')();
+    assert.equal(h.state.readingPlaces['a.md'], undefined, 'page exit must not recreate the dropped place');
+    h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+    assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[1].id,
+      'a later learner movement resumes normal capture');
+    session.destroy();
+  }
+});
+
+test('restore focus checks the live owner at the frame, not only the Continue click', () => {
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  const place = { 'a.md': { heading: seed.headings[1].id, offset: 40, updatedAt: 8 } };
+  const base = { ref: 'a.md', currentRef: 'a.md', readerConnected: true };
+  const owners = [
+    ['pending-high', {}, { pendingHigh: true }],
+    ['search', { searchOpen: true }, {}],
+    ['settings', { sheet: 'settings' }, {}],
+    ['capture', {}, { externalModal: true }],
+  ];
+  for (const [owner, statePatch, contextPatch] of owners) {
+    let state = { screen: 'app' }, context = base;
+    const h = readingPlaceHarness(place, { canFocusOnRestore: () => F.fdReadingFocusAllowed(state, context) });
+    h.install(true);
+    state = { ...state, ...statePatch };
+    context = { ...context, ...contextPatch }; // owner takes focus during fetch or before layout
+    h.flush();
+    assert.equal(h.scrollY, 490, `${owner} still gets reading-place scroll restore`);
+    assert.equal(h.headings[1].focused, undefined, `${owner} retains focus`);
+  }
+  const clear = readingPlaceHarness(place, { canFocusOnRestore: () => F.fdReadingFocusAllowed({ screen: 'app' }, base) });
+  clear.install(true); clear.flush();
+  assert.deepEqual(clear.headings[1].focused, { preventScroll: true });
+  assert.equal(F.fdReadingFocusAllowed({ screen: 'app' }, { ...base, readerConnected: false }), false);
+  assert.equal(F.fdReadingFocusAllowed({ screen: 'app' }, { ...base, currentRef: 'else.md' }), false);
+});
+
+test('the live reader install supplies current overlays and governance to the focus guard', () => {
+  assert.match(spa, /canFocusOnRestore:function\(\)\{\s*return fdReadingFocusAllowed\(readState\(\),\{/);
+  assert.match(spa, /externalModal:!!capSheet/);
+  assert.match(spa, /pendingHigh:!!contentEl\.querySelector\('\.governance-notice\.pending-high'\)/);
+  assert.match(spa, /readerConnected:document\.documentElement\.contains\(mountedReader\)/);
+});
+
+test('erase dispatch disposes the live reader before pagehide can resurrect its storage', () => {
+  const store = memStorage();
+  const LocalF = make(store);
+  const reading = readingPlaceHarness({}, { save(value) {
+    store.setItem('cw_frontdoor_v1', JSON.stringify(value)); return true;
+  } });
+  let live;
+  let reloaded = 0;
+  reading.win.location = { href: 'https://example.test/?page=a.md', search: '?page=a.md', pathname: '/', reload() { reloaded++; } };
+  reading.win.history = { replaceState() {}, pushState() {} };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', openId: 'a.md' }, {
+    F: LocalF, window: reading.win, renderTransient() {},
+    disposeReadingPlace() { if (live) { live.destroy(); live = null; } },
+  });
+  assert.equal(h.controller.startupCommitted(), true, 'integrated erase harness must finish startup');
+  assert.equal(h.fakeWindow, reading.win);
+  live = reading.install(false, h.controller.getState()); reading.flush();
+  reading.setScroll(520); reading.listeners.get('scroll')();
+  assert.deepEqual(LocalF.fdDispatch({ 'data-fd-clear-confirm': '' }, {}, h.controller.getState()).effect,
+    { type: 'clear-device-data' });
+  h.controller.dispatch({ 'data-fd-clear-confirm': '' });
+  assert.equal(h.controller.getState().settingsConfirmClear, false);
+  const pagehide = reading.listeners.get('pagehide');
+  if (pagehide) pagehide();
+  assert.equal(reloaded, 1);
+  assert.deepEqual(store.dump(), {}, 'erase must survive the browser pagehide fired by reload');
+});
+
+test('Back flushes pending reading scroll before cloning and saving the next state', () => {
+  const store = memStorage();
+  const LocalF = make(store);
+  const reading = readingPlaceHarness({}, { save(value) {
+    store.setItem('cw_frontdoor_v1', JSON.stringify(value)); return true;
+  } });
+  let live;
+  reading.win.location = { href: 'https://example.test/', search: '', pathname: '/' };
+  reading.win.history = { replaceState() {}, pushState() {} };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', openId: 'a.md' }, {
+    F: LocalF, window: reading.win,
+    render() { if (live) { live.destroy(); live = null; } },
+    disposeReadingPlace() { if (live) { live.destroy(); live = null; } },
+  });
+  assert.equal(h.controller.startupCommitted(), true, 'integrated Back harness must finish startup');
+  live = reading.install(false, h.controller.getState()); reading.flush();
+  reading.setScroll(960); reading.listeners.get('scroll')(); // do not run the 150 ms timer
+  reading.listeners.get('popstate')({ state: { fd: true, state: { tab: 'today', openId: null } } });
+  assert.equal(h.controller.getState().readingPlaces['a.md'].heading, reading.headings[2].id);
+  assert.equal(h.controller.getState().readingPlaces['a.md'].offset, 60);
+  assert.deepEqual(JSON.parse(store.getItem('cw_frontdoor_v1')).readingPlaces,
+    h.controller.getState().readingPlaces);
+});
+
+test('disallowed and throwing storage show failure and install no false success', () => {
+  const guest = readingPlaceHarness({}, { allowStorage: false });
+  guest.install(); guest.flush();
+  assert.equal(guest.status.textContent, 'Reading place could not be saved on this device');
+  assert.equal(guest.listeners.size, 0);
+  assert.equal(guest.writes.length, 0);
+  const failure = readingPlaceHarness({}, { save: () => false });
+  failure.install(); failure.flush();
+  assert.equal(failure.status.textContent, 'Reading place could not be saved on this device');
+  failure.setScroll(480); failure.listeners.get('scroll')(); failure.flush();
+  assert.equal(failure.status.textContent, 'Reading place could not be saved on this device');
+  const throwing = readingPlaceHarness({}, { save: () => { throw new Error('quota'); } });
+  throwing.install(); throwing.flush();
+  assert.equal(throwing.status.textContent, 'Reading place could not be saved on this device');
+  throwing.setScroll(480); throwing.listeners.get('scroll')(); throwing.flush();
+  assert.equal(throwing.status.textContent, 'Reading place could not be saved on this device');
+  const changing = readingPlaceHarness({}, { save: (() => { let n = 0; return () => ++n === 1; })() });
+  changing.install(); changing.flush();
+  assert.equal(changing.status.textContent, 'Reading place saved on this device only');
+  changing.setScroll(480); changing.listeners.get('scroll')(); changing.flush();
+  assert.equal(changing.status.textContent, 'Reading place could not be saved on this device');
+});
+
+test('destroy flushes the last scroll once and removes listeners before replacing the reader', () => {
+  const h = readingPlaceHarness();
+  const session = h.install(); h.flush();
+  const writesBefore = h.writes.length;
+  h.setScroll(800); h.listeners.get('scroll')();
+  session.destroy(); h.flush();
+  assert.equal(h.writes.length, writesBefore + 1);
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[1].id);
+  assert.equal(h.listeners.size, 0);
+});
+
+test('Continue focus metadata applies to one resource open and does not leak into ordinary opens', () => {
+  const opens = [];
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F, openResource: (_ref, opts) => opens.push(opts),
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'a.md', 'data-fd-reading-resume': '1' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'b.md' }), preventDefault() {} });
+  assert.deepEqual(opens.map((opts) => opts.focusOnRestore), [true, false]);
+});
+
+test('Start at top acts on the live reading session without changing the route', () => {
+  let starts = 0;
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', openId: 'a.md' }, {
+    F, readingPlaceSession: () => ({ startAtTop() { starts++; } }),
+  });
+  let prevented = 0;
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-reading-top': '' }), preventDefault() { prevented++; } });
+  assert.equal(starts, 1);
+  assert.equal(prevented, 1);
+  assert.equal(h.controller.getState().openId, 'a.md');
+});
+
 test('a hidden duplicate of the opener is skipped in favour of one that is shown (#427)', () => {
   // Today's Quick Tools pill row precedes the desktop rail in the DOM and is display:none there.
   const hidden = { ...opener(), getClientRects: () => [] };
@@ -3051,16 +4081,16 @@ test('plain Today Progress keeps its existing route while Path keeps its return 
 });
 
 
-test('Essentials section change rerenders and focuses the select without writing storage or history', () => {
+test('Essentials section button rerenders and focuses its rebuilt rail control without writing storage or history', () => {
   const storage=memStorage(), local=make(storage), routes=[], renders=[], focused=[];
-  const select={focus(){focused.push(true);}};
+  const fresh={focus(){focused.push(true);}};
   const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials'}, {
     F:local,route:(...a)=>routes.push(a),render:(...a)=>renders.push(a),
-    querySelector:sel=>sel==='[data-fd-kit-section]'?select:null
+    querySelector:sel=>sel==='[data-fd-kit-section="tools"]'?fresh:null
   });
   let writes=0; storage.setItem=()=>{writes++;}; storage.removeItem=()=>{writes++;};
   const before=storage.dump(); routes.length=0; renders.length=0;
-  h.rootHandlers.change({target:{hasAttribute:k=>k==='data-fd-kit-section',value:'tools'}});
+  h.rootHandlers.click({target:actionTarget({'data-fd-kit-section':'tools'}),preventDefault(){}});
   assert.equal(h.controller.getState().kitSection,'tools');
   assert.equal(renders.length,1); assert.equal(renders[0][1].surfaces.base,true);
   assert.equal(focused.length,1); assert.equal(writes,0);
@@ -3072,17 +4102,52 @@ test('Essentials section change rerenders and focuses the select without writing
   assert.equal(local.fdResolveState('/?tab=library&kitSection=tools',filtered).kitSection,'all');
 });
 
-test('Essentials select respects startup and faculty preview guards', () => {
+test('Essentials section rail respects startup and faculty preview guards', () => {
   for(const options of [{commitStartup:false},{facultyPreview:()=>true}]){
     const storage=memStorage(), renders=[];
     const h=fakeHarness({...roleContext,screen:'app',tab:'library',kitSection:'all'}, {
       F:make(storage),render:(...a)=>renders.push(a),...options
     });
     const before=storage.dump(); renders.length=0;
-    h.rootHandlers.change({target:{hasAttribute:k=>k==='data-fd-kit-section',value:'tools'}});
+    h.rootHandlers.click({target:actionTarget({'data-fd-kit-section':'tools'}),preventDefault(){}});
     assert.equal(h.controller.getState().kitSection,'all'); assert.equal(renders.length,0);
     assert.deepEqual(storage.dump(),before);
   }
+});
+
+test('Essentials tool preview selection rerenders and focuses its rebuilt card without persistence or routing', () => {
+  const storage=memStorage(), local=make(storage), routes=[], renders=[], focused=[];
+  const fresh={focus(){focused.push(true);}};
+  const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials'}, {
+    F:local,route:(...args)=>routes.push(args),render:(...args)=>renders.push(args),
+    querySelector:selector=>selector==='[data-fd-kit-tool="second.html"]'?fresh:null
+  });
+  let writes=0; storage.setItem=()=>{writes++;}; storage.removeItem=()=>{writes++;};
+  const before=storage.dump(); routes.length=0; renders.length=0;
+  h.rootHandlers.click({target:actionTarget({'data-fd-kit-tool':'second.html'}),preventDefault(){}});
+  assert.equal(h.controller.getState().kitToolPreview,'second.html');
+  assert.equal(renders.length,1); assert.equal(renders[0][1].surfaces.base,true);
+  assert.equal(focused.length,1); assert.equal(writes,0);
+  assert.deepEqual(storage.dump(),before); assert.deepEqual(routes,[]);
+});
+
+test('Essentials tool preview tabs move with arrow, Home, and End keys', () => {
+  const local=make(memStorage()), renders=[], focused=[];
+  const refs=['first.html','second.html','third.html'];
+  const makeTab=ref=>actionTarget({'data-fd-kit-tool':ref},{focus(){focused.push(ref);}});
+  let liveTabs=refs.map(makeTab);
+  const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials'}, {
+    F:local,render:(...args)=>{renders.push(args);liveTabs=refs.map(makeTab);},
+    querySelector:selector=>liveTabs.find(tab=>selector===`[data-fd-kit-tool="${tab.getAttribute('data-fd-kit-tool')}"]`)||null,
+    querySelectorAll:selector=>selector==='[data-fd-kit-tool]'?liveTabs:[]
+  });
+  const press=(key,index)=>h.windowHandlers.keydown({key,target:liveTabs[index],preventDefault(){}});
+  press('ArrowRight',0); assert.equal(h.controller.getState().kitToolPreview,'second.html');
+  press('ArrowLeft',1); assert.equal(h.controller.getState().kitToolPreview,'first.html');
+  press('End',0); assert.equal(h.controller.getState().kitToolPreview,'third.html');
+  press('Home',2); assert.equal(h.controller.getState().kitToolPreview,'first.html');
+  assert.deepEqual(focused,['second.html','first.html','third.html','first.html']);
+  assert.equal(renders.length,4);
 });
 
 
@@ -3098,7 +4163,7 @@ test('explicit Essentials revisit rerenders even when All was already selected',
   assert.equal(renders.length,2);
 });
 
-test('Essentials tool focus reveals both clipped edges without route, state, storage, or page scrolling', () => {
+test('Essentials horizontal controls reveal both clipped edges without route, state, storage, or page scrolling', () => {
   const storage=memStorage(), routes=[], scrolls=[];
   const h=fakeHarness({...roleContext,screen:'app',tab:'library'}, {
     F:make(storage),route:(...args)=>routes.push(args),scrollTo:(...args)=>scrolls.push(args)
@@ -3106,7 +4171,7 @@ test('Essentials tool focus reveals both clipped edges without route, state, sto
   h.fakeWindow.getComputedStyle=node=>node===strip ? {paddingLeft:'6px',paddingRight:'6px'} : {outlineWidth:'2px',outlineOffset:'2px'};
   const strip={scrollLeft:0,clientLeft:0,clientWidth:362,getBoundingClientRect:()=>({left:14,right:376})};
   let bounds={left:308,right:588};
-  const target={closest:selector=>selector==='.fd-kit__tool-list [data-fd-open]'?target:strip,getBoundingClientRect:()=>bounds};
+  const target={closest:selector=>selector==='.fd-kit__tool-tabs [data-fd-kit-tool],.fd-kit__index-track [data-fd-kit-section]'?target:strip,getBoundingClientRect:()=>bounds};
   const state=JSON.stringify(h.controller.getState()), saved=storage.dump(); routes.length=0;
   assert.equal(typeof h.rootHandlers.focusin,'function');
   h.rootHandlers.focusin({target}); assert.equal(strip.scrollLeft,218);

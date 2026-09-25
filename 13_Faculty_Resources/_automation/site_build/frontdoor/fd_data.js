@@ -192,8 +192,49 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     essentials.push({ name:ce[ec].name, accent:ce[ec].accent, items:eitems });
   }
 
+  /* These are stable navigation destinations, not Clerkship pages. Keep them outside byRef/known
+     so they never enter attestation, completion, or shipped-page accounting. Copy every field;
+     careResources also feed local search, which never forwards its query across sites. */
+  var careResources=[], cr=Array.isArray(cur.careResources)?cur.careResources:[];
+  for(var cri=0;cri<cr.length;cri++){
+    careResources.push({
+      id:cr[cri].id,
+      group:cr[cri].group,
+      title:cr[cri].title,
+      description:cr[cri].description,
+      url:cr[cri].url,
+      searchTerms:(cr[cri].searchTerms||[]).slice()
+    });
+  }
+
+  var careNavigator=[], cn=Array.isArray(cur.careNavigator)?cur.careNavigator:[];
+  for(var cni=0;cni<cn.length;cni++){
+    var navigatorIntent=cn[cni];
+    if(!navigatorIntent||typeof navigatorIntent!=='object') continue;
+    careNavigator.push({
+      id:navigatorIntent.id,
+      label:navigatorIntent.label,
+      explanation:navigatorIntent.explanation,
+      primaryResourceId:navigatorIntent.primaryResourceId,
+      alternativeResourceIds:Array.isArray(navigatorIntent.alternativeResourceIds)
+        ?navigatorIntent.alternativeResourceIds.slice():[]
+    });
+  }
+
+  var teachingResources=[], tr=Array.isArray(cur.teachingResources)?cur.teachingResources:[];
+  for(var tri=0;tri<tr.length;tri++){
+    teachingResources.push({
+      id:tr[tri].id,
+      title:tr[tri].title,
+      description:tr[tri].description,
+      url:tr[tri].url,
+      note:tr[tri].note
+    });
+  }
+
   return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known,
-    titles:titles, essentials:essentials, essentialsDropped:essentialsDropped };
+    titles:titles, essentials:essentials, essentialsDropped:essentialsDropped,
+    careResources:careResources, careNavigator:careNavigator, teachingResources:teachingResources };
 }
 
 /* The browser receives exactly one projected path. Treat that small object as untrusted at the
