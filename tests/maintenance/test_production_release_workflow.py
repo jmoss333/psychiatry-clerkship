@@ -21,8 +21,11 @@ class ProductionReleaseWorkflowTests(unittest.TestCase):
         self.job = self.workflow["jobs"]["verify-release"]
         self.steps = self.job["steps"]
 
-    def test_push_and_manual_triggers_are_both_reachable(self):
-        self.assertEqual(self.trigger["push"]["branches"], ["main"])
+    def test_dispatch_is_the_only_trigger_and_names_the_release_revision(self):
+        # The learner sites publish from `release` via production-release-train.yml,
+        # which dispatches this verifier for each published SHA. A push-to-main
+        # trigger would wait for a production deploy that no longer happens.
+        self.assertNotIn("push", self.trigger)
         self.assertIn("workflow_dispatch", self.trigger)
         revision = self.trigger["workflow_dispatch"]["inputs"]["revision"]
         self.assertFalse(revision["required"])

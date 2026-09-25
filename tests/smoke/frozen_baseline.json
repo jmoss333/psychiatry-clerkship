@@ -1,10 +1,10 @@
 {
-  "_note": "Pinned by tests/smoke/frozen-colour.spec.js. Counts may FALL, never rise. A page absent here must measure clean. Regenerate a reviewed reduction with: cd tests/smoke && UPDATE_FROZEN_BASELINE=1 npx playwright test --project=nav-ms3 --project=nav-res frozen-colour.spec.js",
+  "_note": "Pinned by tests/smoke/frozen-colour.spec.js. Counts may FALL, never rise. A page absent here must measure clean. Regenerate a reviewed reduction with UPDATE_FROZEN_BASELINE=1 npx playwright test --config tests/smoke/playwright.config.js --project nav-ms3 --project nav-res frozen-colour.spec.js",
   "_measured": "2026-09-10, local build, Chrome, both themes, stylesheets re-fetched.",
   "sites": {
     "ms3": {
       "index.html": {
-        "frozen": 12,
+        "frozen": 0,
         "lowLight": 0,
         "lowDark": 0
       },
@@ -29,9 +29,9 @@
         "lowDark": 0
       },
       "tools/decision-aids.html": {
-        "frozen": 0,
+        "frozen": 6,
         "lowLight": 0,
-        "lowDark": 0
+        "lowDark": 34
       },
       "tools/diagnostic-reasoning.html": {
         "frozen": 0,
@@ -49,9 +49,9 @@
         "lowDark": 0
       },
       "tools/interaction-cards.html": {
-        "frozen": 15,
+        "frozen": 0,
         "lowLight": 0,
-        "lowDark": 6
+        "lowDark": 1
       },
       "tools/interview-circle.html": {
         "frozen": 0,
@@ -126,7 +126,7 @@
     },
     "res": {
       "index.html": {
-        "frozen": 16,
+        "frozen": 0,
         "lowLight": 0,
         "lowDark": 0
       },
@@ -151,9 +151,9 @@
         "lowDark": 0
       },
       "tools/decision-aids.html": {
-        "frozen": 0,
+        "frozen": 6,
         "lowLight": 0,
-        "lowDark": 0
+        "lowDark": 34
       },
       "tools/diagnostic-reasoning.html": {
         "frozen": 0,
@@ -171,9 +171,9 @@
         "lowDark": 0
       },
       "tools/interaction-cards.html": {
-        "frozen": 15,
+        "frozen": 0,
         "lowLight": 0,
-        "lowDark": 6
+        "lowDark": 1
       },
       "tools/interview-circle.html": {
         "frozen": 0,

@@ -19,7 +19,7 @@
       "topic": "Choosing an antipsychotic",
       "weeks": [2],
       "audiences": ["ms3", "res"],
-      "blurb": "Efficacy differences are small; the side-effect profile is what you are actually choosing.",
+      "blurb": "Efficacy differences are small (except clozapine for treatment-resistant illness); the side-effect profile is what you are usually choosing.",
       "items": [
         { "role": "read",     "kind": "page",     "ref": "t_psychosis.md" },
         { "role": "listen",   "kind": "audio_oe", "ref": "28" },
