@@ -36,7 +36,7 @@ import test from 'node:test';
 
 import {
   evaluate, linksIn, mapProse, compileThemes, parseWeekTable, parseWeekSections,
-  parseFdPractice, resolveLink, runLive,
+  parseFdPractice, resolveLink, runLive, loadThemeTable,
 } from './_schedule_consistency.mjs';
 
 const weeks = (obj) => new Map(Object.entries(obj).map(([n, refs]) => [Number(n), new Set(refs)]));
@@ -157,6 +157,55 @@ test('prose: longest keyword wins, whole words only, and leftover phrases stay v
   assert.deepEqual(mapProse('Familyish MSEs, then plan', compiled),
     { themes: ['theme:mse'], unmapped: ['then plan'] });
   assert.deepEqual(mapProse('Familyish', compiled), { themes: [], unmapped: ['Familyish'] });
+});
+
+// Peer-review finding M01-007 rewrites the Week 5 skill (orientation table + FD_PATH_PRACTICE[5])
+// to this sentence. "risk formulation" is suicide/violence risk, not the case-formulation theme.
+const M01_007 = 'Deepen the suicide/violence risk formulation practised since Week 1 (and used for '
+  + 'Week 3 safety planning), recognize delirium/catatonia/withdrawal, and document supervised '
+  + 'escalation reasoning';
+
+test('prose: an exclude phrase suppresses only its own theme, and only inside that phrase', () => {
+  const compiled = compileThemes({
+    formulation: { keywords: ['formulation'], exclude: ['risk formulation'], refs: ['a.md'] },
+    violence: { keywords: ['violence'], refs: ['b.md'] },
+    'risk-word': { keywords: ['risk'], refs: ['x.md'] },
+  }, MS3);
+  assert.deepEqual(mapProse('violence risk formulation', compiled),
+    { themes: ['theme:violence', 'theme:risk-word'], unmapped: [] },
+    'the excluded span still lets OTHER themes match inside it');
+  assert.deepEqual(mapProse('risk formulations', compiled),
+    { themes: ['theme:risk-word'], unmapped: [] }, 'plural exclude');
+  for (const text of ['formulation', 'case formulation', 'biopsychosocial formulation',
+    'Formulation, not just diagnosis', 'Present a full case with formulation']) {
+    assert.ok(mapProse(text, compiled).themes.includes('theme:formulation'), text);
+  }
+  assert.deepEqual(mapProse('a risk-free formulation', compiled).themes, ['theme:formulation']);
+});
+
+test('prose: exclude must be strings that contain one of the theme\'s own keywords', () => {
+  const t = (exclude) => ({ f: { keywords: ['formulation'], exclude, refs: ['a.md'] } });
+  assert.throws(() => compileThemes(t(['risk assessment']), MS3), /contains none of its keywords/);
+  assert.throws(() => compileThemes(t('risk formulation'), MS3), /exclude must be a list/);
+  assert.throws(() => compileThemes(t(['']), MS3), /exclude must be a list/);
+});
+
+test('prose: the committed theme table reads M01-007 as risk work, not case formulation', () => {
+  const table = loadThemeTable();
+  assert.deepEqual(mapProse(M01_007, table), {
+    themes: ['theme:suicide', 'theme:violence', 'theme:safety-plan', 'theme:delirium',
+      'theme:catatonia', 'theme:substance'],
+    unmapped: ['document supervised escalation reasoning'],
+  });
+  for (const text of ['formulation', 'case formulation', 'biopsychosocial formulation',
+    'Formulation, not just diagnosis', 'Present a full case with formulation']) {
+    assert.ok(mapProse(text, table).themes.includes('theme:formulation'), text);
+  }
+  // The same collision shape elsewhere: Stanley–Brown is the safety-planning intervention, not
+  // the Brown expressed-emotion landmark, and "safety planning" is safety-plan, not bare safety.
+  assert.deepEqual(mapProse('complete a Stanley–Brown safety plan', table).themes,
+    ['theme:safety-plan']);
+  assert.deepEqual(mapProse('Brown EE', table).themes, ['theme:landmark', 'theme:family']);
 });
 
 test('prose: the theme table refuses refs that are not MS3 pages and duplicate keywords', () => {

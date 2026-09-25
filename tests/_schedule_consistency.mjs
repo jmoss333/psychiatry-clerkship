@@ -131,6 +131,12 @@ const WORD = String.raw`[\p{L}\p{N}#*-]`;
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const SPLIT = /\s*(?:[,;·+/&()[\]]|\s[—–]\s|\band\b|\bor\b)\s*/i;
 
+const wordRe = (phrase) => new RegExp(
+  `(?<!${WORD})${escapeRe(phrase).replace(/\s+/g, String.raw`\s+`)}s?(?!${WORD})`, 'giu');
+
+/** Compile the theme table. A theme may carry `exclude`: phrases in which its own keywords do
+    not count ("risk formulation" is not case formulation). Every exclude phrase must contain one
+    of that theme's keywords, so an entry that could never suppress anything is refused. */
 export function compileThemes(themes, ms3) {
   if (!isRecord(themes) || !Object.keys(themes).length) {
     throw new Error(`${FIXTURE}: the theme table is missing or empty`);
@@ -138,8 +144,9 @@ export function compileThemes(themes, ms3) {
   const owner = new Map();
   const refsOf = {};
   const matchers = [];
+  const excludes = {};
   for (const id of Object.keys(themes).sort()) {
-    const { keywords, refs } = isRecord(themes[id]) ? themes[id] : {};
+    const { keywords, refs, exclude = [] } = isRecord(themes[id]) ? themes[id] : {};
     if (!/^[a-z0-9-]+$/.test(id)) throw new Error(`theme id "${id}" must be lowercase-kebab`);
     if (!Array.isArray(keywords) || !keywords.length
       || keywords.some((k) => typeof k !== 'string' || !k.trim())) {
@@ -154,30 +161,49 @@ export function compileThemes(themes, ms3) {
       }
     }
     refsOf[id] = [...refs];
+    const own = [];
     for (const raw of keywords) {
       const kw = raw.trim().toLowerCase();
       if (owner.has(kw)) throw new Error(`keyword "${kw}" is in both ${owner.get(kw)} and ${id}`);
       owner.set(kw, id);
-      const body = escapeRe(kw).replace(/\s+/g, String.raw`\s+`);
-      matchers.push({ kw, id, re: new RegExp(`(?<!${WORD})${body}s?(?!${WORD})`, 'giu') });
+      const re = wordRe(kw);
+      own.push(re);
+      matchers.push({ kw, id, re });
+    }
+    if (!Array.isArray(exclude) || exclude.some((x) => typeof x !== 'string' || !x.trim())) {
+      throw new Error(`theme ${id}: exclude must be a list of non-empty strings`);
+    }
+    for (const raw of exclude) {
+      const phrase = raw.trim().toLowerCase();
+      if (!own.some((re) => phrase.match(re))) {
+        throw new Error(`theme ${id}: exclude "${phrase}" contains none of its keywords`);
+      }
+      (excludes[id] ??= []).push(wordRe(phrase));
     }
   }
   matchers.sort((a, b) => b.kw.length - a.kw.length || cmp(a.kw, b.kw));
-  return { matchers, refsOf };
+  return { matchers, refsOf, excludes };
 }
 
 /** Split prose into list phrases; each phrase maps to the themes whose keywords it contains
-    (longest keyword first, non-overlapping) or, if it contains none, is returned as unmapped. */
+    (longest keyword first, non-overlapping) or, if it contains none, is returned as unmapped.
+    A keyword match inside one of its own theme's `exclude` phrases does not count. */
 export function mapProse(text, compiled) {
   const themes = [];
   const unmapped = [];
   const phrases = text.replace(/\*\*|`/g, '').split(SPLIT).map((s) => s.trim()).filter(Boolean);
   for (const phrase of phrases) {
+    const excluded = {};
+    for (const [id, res] of Object.entries(compiled.excludes ?? {})) {
+      excluded[id] = res.flatMap((re) => [...phrase.matchAll(re)]
+        .map((m) => ({ start: m.index, end: m.index + m[0].length })));
+    }
     const taken = [];
     for (const { id, re } of compiled.matchers) {
       for (const m of phrase.matchAll(re)) {
         const [start, end] = [m.index, m.index + m[0].length];
         if (taken.some((t) => start < t.end && t.start < end)) continue;
+        if ((excluded[id] ?? []).some((x) => x.start <= start && end <= x.end)) continue;
         taken.push({ start, end, id });
       }
     }
@@ -426,6 +452,7 @@ export function evaluate({ weeks, themeRefs, surfaces, known }) {
 export function serializeFixture({ _note, _themesNote, themes, mismatches, unmapped }) {
   const themeLines = Object.keys(themes).sort(cmp).map((id) => `    ${JSON.stringify(id)}: `
     + JSON.stringify({
+      ...(themes[id].exclude?.length ? { exclude: [...themes[id].exclude].sort(cmp) } : {}),
       keywords: [...themes[id].keywords].sort(cmp),
       refs: [...themes[id].refs].sort(cmp),
     }));
@@ -438,6 +465,12 @@ export function serializeFixture({ _note, _themesNote, themes, mismatches, unmap
     + `  "themes": {\n${themeLines.join(',\n')}\n  },\n`
     + `  "mismatches": ${list(mismatches, pickMismatch)},\n`
     + `  "unmapped": ${list(unmapped, pickUnmapped)}\n}\n`;
+}
+
+/** The committed theme table, compiled against the MS3 slugs that ship. */
+export function loadThemeTable(root = ROOT) {
+  const shipped = loadShippedMs3(JSON.parse(read(root, SHIPPED)));
+  return compileThemes(JSON.parse(read(root, FIXTURE)).themes, shipped.ms3);
 }
 
 /** The live check. With write=true, rewrites the fixture's drift lists from the tree — never
