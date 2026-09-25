@@ -63,6 +63,12 @@ def worktree_stub_reason(root=None) -> str | None:
     file checks out AS its ~133-byte pointer text -- and a build spawned there aborts for
     a reason that has nothing to do with whatever contract the caller meant to pin.
 
+    Since 2026-09-25 this premise no longer holds for build_deploy.py itself: its only stub
+    gate, welcome_compass.require_real_files(), was retired with the orientation videos, so a
+    spawned build no longer aborts on stubs and this predicate now errs toward SKIPPING in a
+    no-LFS sandbox. CI is unaffected (a soft context returns None, so everything runs there);
+    narrowing or retiring the predicate is a follow-up, and CLAUDE.md describes it.
+
     This exists so such a caller can SKIP, naming the remedy, instead of reporting a
     failure nobody can act on. It is a test-side predicate and NEVER softens the deploy
     gate: production is not a soft context, main() below still exits 1 there, and nothing

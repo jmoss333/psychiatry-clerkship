@@ -26,7 +26,7 @@
  * WHY A RATCHET AND NOT ZERO
  * --------------------------
  * The honest starting position is 183 frozen colours and 381 AA failures across the two sites,
- * concentrated in pages this work has not reached (decision-aids, orientation-video, sp-interview,
+ * concentrated in pages this work has not reached (decision-aids, sp-interview,
  * rp-canon-quiz, withdrawal). A gate that fails on day one teaches everyone to bypass it. This
  * fails only on the commit that makes a page worse — which is the commit that can still fix it
  * cheaply — and every reduction re-pins lower and can never be given back. Same shape as

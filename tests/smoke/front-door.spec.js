@@ -1168,11 +1168,13 @@ test('Compass native Tab sequence keeps every link above the mobile dock', async
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await seedApp(page, testInfo);
   await page.goto('/?page=welcome.md');
+  // The safety link plus six week links (the optional orientation-video link was retired
+  // with the video on 2026-09-25).
   const links = page.locator('[data-fd-compass-root] a');
-  await expect(links).toHaveCount(8);
+  await expect(links).toHaveCount(7);
   await links.first().focus();
   // Let the browser scroll on native Tab. No scrollIntoView, click or focus on later links.
-  for (let index = 0; index < 8; index += 1) {
+  for (let index = 0; index < 7; index += 1) {
     if (index) await page.keyboard.press('Tab');
     await expect(links.nth(index)).toBeFocused();
     const focus = await links.nth(index).evaluate(link => {
@@ -1240,10 +1242,8 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     await expect(reader.locator('.fd-article__lead')).toContainText('four-week');
     await expect(reader.locator('.governance-notice.pending-compact')).toContainText('Pending faculty review');
     await expect(reader.locator('.governance-notice.reviewed-receipt')).toHaveCount(0);
-    const onboarding = page.locator(
-      'video[src="media/resident-onboarding.mp4"][poster="media/resident-onboarding-poster.jpg"]',
-    );
-    await expect(onboarding).toHaveCount(1);
+    // The resident onboarding video was retired from the Welcome on 2026-09-25.
+    await expect(reader.locator('video')).toHaveCount(0);
     await expectHealthy(page);
     return;
   }
@@ -1254,20 +1254,19 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     if (child.hasAttribute('data-fd-compass-scope')) return 'scope';
     if (child.hasAttribute('data-fd-compass')) return 'compass';
     if (child.hasAttribute('data-fd-compass-prompt')) return 'prompt';
-    if (child.hasAttribute('data-fd-compass-orientation')) return 'optional-video';
     return 'unexpected';
-  }))).toEqual(['safety', 'scope', 'compass', 'prompt', 'optional-video']);
+  }))).toEqual(['safety', 'scope', 'compass', 'prompt']);
 
   const safetyCopy = 'If you are worried about immediate safety, tell the resident or attending now. Do not wait for rounds. Do not carry it alone.';
   const scopeCopy = 'This map supports orientation, supervised practice, and reflection. It is not a checklist, clinical protocol, or measure of readiness. Using or viewing this map does not establish competence, entrustment, or permission to act independently.';
   const promptCopy = 'Choose the week or task you are preparing to discuss with your supervising team.';
-  const optionalCopy = 'Optional: watch the captioned orientation overview (transcript available)';
   await expect(compassRoot.locator('[role="note"]')).toHaveCount(1);
   await expect(compassRoot.locator('[data-fd-compass-safety] > p')).toHaveText(safetyCopy);
   await expect(compassRoot.locator('[data-fd-compass-safety] > a')).toHaveText('Open the Orientation Packet');
   await expect(compassRoot.locator('[data-fd-compass-scope]')).toHaveText(scopeCopy);
   await expect(compassRoot.locator('[data-fd-compass-prompt]')).toHaveText(promptCopy);
-  await expect(compassRoot.locator('[data-fd-compass-orientation]')).toHaveText(optionalCopy);
+  // The optional orientation-video link was retired with the video on 2026-09-25.
+  await expect(compassRoot.locator('video, [href*="orientation-video"]')).toHaveCount(0);
   await expect(compassRoot.locator('section[aria-labelledby="fd-compass-title"]')).toHaveCount(1);
   await expect(compassRoot.locator('ol')).toHaveCount(1);
 
@@ -1305,10 +1304,6 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     await expect(weekLinks.nth(index)).toBeFocused();
     await expect(weekLinks.nth(index)).toHaveAttribute('href', expectedWeeks[index].href);
   }
-  await page.keyboard.press('Tab');
-  const optionalLink = compassRoot.locator('[data-fd-compass-orientation]');
-  await expect(optionalLink).toBeFocused();
-  await expect(optionalLink).toHaveAttribute('href', '?tool=orientation-video.html');
 
   const widthCases = [
     { viewport: 736, bucket: 'three', tracks: 3 },
@@ -1381,13 +1376,18 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     const touchPage = await touchContext.newPage();
     await seedApp(touchPage, testInfo);
     await touchPage.goto('/?page=welcome.md');
+    await expect(touchPage.locator('[data-fd-compass-root]')).toHaveCount(1);
+    // This context does not emulate reduced motion, so the reader's fdPopIn entrance
+    // (scale(.985) -> none) can still be running at first paint; measuring then read a
+    // 44px target as 43.9998px under load. Touch size is a property of the settled layout.
+    await touchPage.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => null))));
     const touchTargets = await touchPage.locator(
-      '[data-fd-compass-safety] a, [data-fd-compass-link], [data-fd-compass-orientation]',
+      '[data-fd-compass-safety] a, [data-fd-compass-link]',
     ).evaluateAll(links => links.map(link => {
       const box = link.getBoundingClientRect();
       return { width: box.width, height: box.height };
     }));
-    expect(touchTargets).toHaveLength(8);
+    expect(touchTargets).toHaveLength(7);
     for (const box of touchTargets) {
       expect(box.width).toBeGreaterThanOrEqual(44);
       expect(box.height).toBeGreaterThanOrEqual(44);
