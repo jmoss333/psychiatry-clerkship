@@ -72,6 +72,15 @@ lint_machine_paths() {
 echo "verify.sh — $(git rev-parse --abbrev-ref HEAD) @ $(git rev-parse --short HEAD)"
 echo "─────────────────────────────────────────────────────────────────────"
 
+# --- the shared .git/config is still this repository's own ---
+# Every worktree reads one .git/config, and a fixture that inherits a hook's GIT_DIR writes into
+# it: core.bare=true + a fixture [user] on 2026-08-20, and again on 2026-09-24 with a
+# `filter.lfs … = cat` that switched Git-LFS off. Checked FIRST, so a corrupted config is named
+# before forty steps fail for no stated reason, and again as the LAST step below, so a suite that
+# corrupts it during this very run fails the run instead of breaking the next session.
+step "unit — git config health"             python3 bin/check_git_config_health.py --self-test
+step "git config health (before the run)"   python3 bin/check_git_config_health.py
+
 # --- contract: CLAUDE.md and AGENTS.md are byte-identical (CI enforces this) ---
 step "CLAUDE.md/AGENTS.md byte-parity"      diff -q CLAUDE.md AGENTS.md
 
@@ -227,6 +236,10 @@ step "unit — source integrity"              python3 bin/check_source_integrity
 step "unit — review cadence"                python3 bin/check_review_cadence.py --self-test
 step "unit — icd-10-cm codes"               python3 bin/check_icd_codes.py --self-test
 step "icd-10-cm codes in force"             python3 bin/check_icd_codes.py
+# Only the SELF-TEST runs here: the real comparison fetches a newer abstract from Europe PMC
+# for one (source, DOI) pair a human names, after the source-integrity job has reported a
+# supersession. Advisory by design -- the located sentences are the evidence, the verdict a pointer.
+step "unit — claim direction"                python3 bin/check_claim_direction.py --self-test
 # Ratchet against bin/check_qbank_coherence_baseline.json (pairs = 0 today); the pin is what
 # the --self-test step above asserts the exit code against. See the span-audit comment above.
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
@@ -341,6 +354,10 @@ step "crisis contacts in the built sites"   python3 bin/check_crisis_surfaces.py
 # after both builds, for the same reason check_crisis_surfaces.py is.
 step "unit — design drift checker"          python3 bin/check_design_drift.py --self-test
 step "design system drift"                  python3 bin/check_design_drift.py
+
+# Last on purpose: every suite above has run, and a fixture that wrote into the shared config
+# while doing so (see the first step) fails this push here rather than the next session.
+step "git config health (after the run)"    python3 bin/check_git_config_health.py
 
 echo "─────────────────────────────────────────────────────────────────────"
 if [ ${#FAILED[@]} -eq 0 ]; then

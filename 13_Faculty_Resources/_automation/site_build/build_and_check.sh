@@ -35,6 +35,36 @@ LIB="$(cd "$HERE/../../.." && pwd)"   # repo root
 MS3_OUT="$LIB/_build/ms3"
 RES_OUT="$LIB/_build/res"
 
+# ── Attestation ledger (ADR-003, docs/superpowers/specs/2026-09-25-attestation-ledger-design.md).
+# OFF unless CLERKSHIP_LEDGER=on, which is set per learner site in the Netlify UI at activation.
+# It runs BEFORE every validator, test and builder below, so all of them judge the combined
+# record: the git baseline plus the faculty's signed sign-offs. A tampered ledger exits 1 here
+# and stops the build (the last good deploy stays live); an unreachable one builds the baseline
+# and says so. Off Netlify the three overlaid files are backed up and restored on exit, so a
+# developer's tree is never left carrying sign-offs that are not in git.
+LEDGER_RECEIPT="$LIB/_build/ledger-receipt.json"
+rm -f "$LEDGER_RECEIPT"
+if [ "${CLERKSHIP_LEDGER:-off}" = "on" ]; then
+  LEDGER_BACKUP=""
+  if [ -z "${NETLIFY:-}" ]; then
+    LEDGER_BACKUP="$(mktemp -d)"
+    trap 'node "$HERE/ledger_overlay.mjs" --root "$LIB" --restore "$LEDGER_BACKUP" >/dev/null; rm -rf "$LEDGER_BACKUP"' EXIT
+  fi
+  echo "── Attestation ledger overlay"
+  node "$HERE/ledger_overlay.mjs" --root "$LIB" --receipt "$LEDGER_RECEIPT" ${LEDGER_BACKUP:+--backup "$LEDGER_BACKUP"}
+  # A ledger build that wrote no receipt did not run the overlay at all. That is how a first
+  # draft of this step exited 0 over a TAMPERED ledger (a symlinked /tmp defeated the CLI's
+  # "am I the entry point" check), so it is a failure here, never a quiet baseline build.
+  if [ ! -f "$LEDGER_RECEIPT" ]; then
+    echo "ledger overlay: produced no receipt — refusing to build without knowing what it applied" >&2
+    exit 1
+  fi
+fi
+# The receipt is what the console's publish job reads to know which sign-offs a site serves.
+ledger_receipt_into() {
+  if [ -f "$LEDGER_RECEIPT" ]; then cp "$LEDGER_RECEIPT" "$1/ledger-receipt.json"; fi
+}
+
 python3 "$LIB/13_Faculty_Resources/_automation/test_validate_curriculum.py"
 python3 "$HERE/test_welcome_compass.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_topic_meta.py"
@@ -72,6 +102,7 @@ case "$SITE" in
   ms3)
     echo "── build: MS3 → $MS3_OUT"
     OUT_DIR="$MS3_OUT" python3 "$HERE/build_deploy.py"
+    ledger_receipt_into "$MS3_OUT"
     echo "── LFS media preflight: $MS3_OUT"
     python3 "$HERE/check_lfs_media.py" "$MS3_OUT"
     echo "── QA gate: $MS3_OUT"
@@ -89,6 +120,7 @@ case "$SITE" in
     OUT_DIR="$MS3_OUT" python3 "$HERE/build_deploy.py"
     echo "── build: Resident → $RES_OUT"
     MS3_DIR="$MS3_OUT" OUT_DIR="$RES_OUT" python3 "$HERE/resident_section.py"
+    ledger_receipt_into "$RES_OUT"
     echo "── LFS media preflight: $RES_OUT"
     python3 "$HERE/check_lfs_media.py" "$RES_OUT"
     echo "── QA gate: $RES_OUT"

@@ -206,7 +206,7 @@ and present clearly.
 - Elicits the goodbye letter / preparation by asking directly (not volunteered) — 1
 - Asks about **means access, including the firearm at the parent's home** — 2
 - Separates chronic from acute risk factors; notes protective factors — 1
-- Asks permission for collateral — 1
+- Asks permission for collateral; if the patient declines, explains that the team may still listen to family and may share what is needed to avert serious, imminent harm — 1
 - Responds empathically to the "burden on family" worry — 1
 - States an acute risk impression **and** one concrete next step — 1
 

@@ -98,9 +98,18 @@ Cause: GitHub meters LFS **bandwidth** per account — 10 GB/month on the curren
 
 Recovery, in order:
 
-1. **Stop the bleed:** switch both sites to the cached-pull path (see Switch-over above). This is the fix.
+1. **Stop the bleed: stop forcing fresh clones.** Do not press "Clear cache and deploy" and
+   do not retry with a cleared cache — each one is a fresh clone at ~455 MB. An ordinary
+   cache-reusing build downloads nothing, so merging is not what spends the quota. (This
+   step used to read "switch both sites to the cached-pull path — this is the fix". That
+   switch-over was performed on 2026-09-14, is already in place on both sites, and changed
+   neither number — see the measurement above. There is no env var left to remove.)
 2. **Need a deploy before the reset?** Buy a GitHub data pack (50 GB bandwidth + 50 GB storage per pack, github.com/settings/billing) — it applies immediately — or wait for the 1st. Nothing in the repo can route around a refused download.
-3. Watch the meter: each build now logs `~N MB downloaded from GitHub this build`. Anything but `~0` outside a cache-clear or a media change is a regression.
+3. **Watch the checkout gap, not an MB line.** In the deploy log, time from `Preparing Git
+   Reference` to the next line: ~2 s means the cached repo was reused and nothing was
+   downloaded; ~70 s means a fresh clone paid ~455 MB. The `~N MB downloaded from GitHub
+   this build` line belongs to the cached pull, which has never engaged, so it never prints.
+   A ~70 s gap on a build nobody cache-cleared is the regression to chase.
 
 ## Recovery (pattern 1)
 
@@ -116,9 +125,13 @@ git lfs push --all origin
 
 Then in Netlify:
 
-1. Confirm the site is on the cached-pull path (legacy env vars removed) — or, if still on the legacy path, that both legacy env vars are present.
+1. Nothing to configure: the legacy env vars were removed from both sites on 2026-09-14 and
+   are not needed — Netlify's checkout materialises LFS objects whether or not they are set
+   (measured above). Do not re-add them.
 2. Trigger a production deploy from `main`.
-3. If the build still sees stubs, retry with cleared build cache (this also empties the LFS object store, so the next build fetches everything once).
+3. If the build still sees stubs, retry with cleared build cache. This forces a fresh clone
+   (~455 MB of the 10 GB/month quota), so do it once, after step 2 has failed — never as a
+   first move.
 
 ## Local Verification
 
@@ -134,6 +147,9 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
 The dedicated LFS preflight is intentionally stricter in local/production builds and softer in GitHub Actions/deploy-preview contexts, where LFS bandwidth may be intentionally skipped. `lfs_pull_cached.sh` is a no-op outside Netlify (and inside GitHub Actions), so local builds behave exactly as before; its behaviour is pinned by `tests/lfs-pull-cached.test.mjs` against a shimmed `git-lfs` so the suite never spends bandwidth.
 
 ## Known Good State
+
+Historical record. The env vars it names were removed from both sites on 2026-09-14 and are
+not part of the current configuration.
 
 On 2026-07-07, MS3 production was recovered after:
 
