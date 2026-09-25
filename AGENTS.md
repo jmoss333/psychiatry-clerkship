@@ -506,7 +506,9 @@ the container when the Bash 5 environment is part of the evidence.
   `13_Faculty_Resources/reviewed.json`, `CLAUDE.md`, `AGENTS.md`, `decisions.json`,
   `standards.json`, `instrument_rights.json`, `vocabulary.json`, `.gitattributes`,
   `reviewed.schema.json`, and `_automation/`'s `attestation_hash.py`, `surface_governance.py`,
-  `validate_attestation_consistency.py`, `validate_curriculum.py`, `validate_topic_meta.py`;
+  `validate_attestation_consistency.py`, `validate_curriculum.py`, `validate_topic_meta.py`,
+  `site_build/ledger_overlay.mjs` (the attestation ledger's build-side reader), and everything
+  under `13_Faculty_Resources/ledger/` (its public keys);
   everything under `.claude/` (skills, hooks, subagents, settings), `.github/` **in full** — not
   only `workflows/`: an action, a template or CODEOWNERS decides how work is reviewed too —
   `bin/` (every gate and audit tool, this one and `verify.sh` included), `faculty-console/`
@@ -611,6 +613,30 @@ the container when the Bash 5 environment is part of the evidence.
   machine user so `faculty@clerkship.local` is an identity nobody else holds, and add a ruleset
   restricting pushes to `attest/pending` to it. Until that lands, this gate raises the cost of a
   forged promotion; it does not make one impossible.
+- **The attestation ledger (ADR-003) — sign-offs that never merge.** Built and DARK: nothing
+  changes until `13_Faculty_Resources/ledger/ACTIVATION.md` is followed. Once on, a faculty
+  sign-off is one Ed25519-signed, hash-chained line appended to `ledger/events.jsonl` on the
+  orphan branch `attestations` (never merged; pushes to it trigger no CI and no Netlify build),
+  written only by the console in ledger mode (`ATTEST_LEDGER=on`), which hashes the page AS IT
+  STANDS ON `main`. Each learner-site build runs `site_build/ledger_overlay.mjs` FIRST
+  (`CLERKSHIP_LEDGER=on`): it verifies every signature and link against
+  `13_Faculty_Resources/ledger/keys.json` and projects the latest event per item onto the
+  working copies of `reviewed.json` / `topic_meta.json` / `question_bank.json`, so every
+  validator, projection and test below it judges the combined record unchanged. A tampered
+  ledger fails the build (last good deploy stays live); an unreachable one builds the baseline
+  and says so; `CLERKSHIP_LEDGER=off` is the emergency override. The console's scheduled
+  `ledger-publish` function rebuilds a site ~10 min after sign-offs go quiet, reading the
+  `ledger-receipt.json` each site serves. Rules that follow: **`reviewed.json` stays the
+  registration record** — content PRs still register and demote there, and a baseline row dated
+  LATER than a ledger event wins over it; **an agent never runs `bin/ledger_keygen.mjs`** (whoever
+  runs it briefly holds the signing key — it is Josh's step) and never writes the ledger branch;
+  **git-side report tools read the baseline only** — `node bin/ledger.mjs materialize --out DIR`
+  gives them the combined view; `node bin/ledger.mjs verify|status|audit` inspect the ledger.
+  Core: `faculty-console/ledger.mjs`; tests: `tests/ledger-*.test.mjs`,
+  `tests/faculty-console-ledger.test.mjs` (every guard in them was broken once to watch its test
+  go red). Also note `question_bank.json`'s manifest line is hashed WITHOUT item `status`
+  (`canonical_question_bank` / `canonicalQuestionBank`, parity-pinned) — signing a question must
+  not drift the question tools.
 - **Adding a step to `ci.yml` trips three separate contracts.** `bin/check-verify-coverage.py`
   (mirror it in `bin/verify.sh` or justify an `ALLOWED` exemption);
   `_automation/maintenance/validate_scheduled_workflows.py`, which pins the workflow by **exact step
