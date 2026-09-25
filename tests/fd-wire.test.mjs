@@ -3377,7 +3377,9 @@ function readingPlaceHarness(saved = {}, options = {}) {
   const top = { hidden: true };
   const reader = {
     querySelectorAll(selector) {
-      assert.equal(selector, '.fd-article > .fd-article__h1,.fd-article__body h2,.fd-article__body h3,.fd-article__body h4');
+      assert.equal(selector, '.fd-article > .fd-article__h1,.fd-guide-header > .fd-article__h1,' +
+        '.fd-article__body h2,.fd-article__body h3,.fd-article__body h4,' +
+        '.fd-article__body .fd-guide-lead > strong:first-child,.fd-article__body .fd-guide-lead > b:first-child');
       return headings;
     },
     querySelector(selector) {
@@ -3391,7 +3393,7 @@ function readingPlaceHarness(saved = {}, options = {}) {
   const save = options.save || ((value) => { writes.push(JSON.parse(JSON.stringify(value.readingPlaces))); return true; });
   const install = (focusOnRestore = false, liveState = state) => F.fdInstallReadingPlace(reader, 'a.md', liveState, {
     window: win, allowStorage: options.allowStorage !== false, focusOnRestore,
-    canFocusOnRestore: options.canFocusOnRestore,
+    canFocusOnRestore: options.canFocusOnRestore, restore: options.restore,
     save, now: () => 1000 + writes.length,
     setTimer(fn, delay) { assert.equal(delay, 150); const id = nextTimer++; pending.set(id, fn); return id; },
     clearTimer(id) { pending.delete(id); },
@@ -3660,6 +3662,38 @@ test('restore focus checks the live owner at the frame, not only the Continue cl
   assert.deepEqual(clear.headings[1].focused, { preventScroll: true });
   assert.equal(F.fdReadingFocusAllowed({ screen: 'app' }, { ...base, readerConnected: false }), false);
   assert.equal(F.fdReadingFocusAllowed({ screen: 'app' }, { ...base, currentRef: 'else.md' }), false);
+});
+
+test('restore:false keeps saving but leaves arrival, scroll and focus to the guide', () => {
+  // A lead-promoted guide page arrives at a passage link or a practice return: the saved place
+  // must neither scroll over that arrival nor take focus from it, and must not be dropped.
+  const saved = { 'a.md': { heading: '', offset: 40, updatedAt: 5 } };
+  const probe = readingPlaceHarness();
+  probe.install(); probe.flush();
+  saved['a.md'].heading = probe.headings[1].getAttribute('data-fd-reading-anchor');
+  const h = readingPlaceHarness(saved, { restore: false, canFocusOnRestore: () => true });
+  h.setScroll(1400); // the guide's own arrival already put the learner on a later section
+  h.install(true); h.flush();
+  assert.equal(h.scrollY, 1400, 'the saved place does not scroll over the arrival');
+  assert.equal(h.headings.some((node) => node.focused), false, 'focus stays with the guide');
+  assert.equal(h.top.hidden, true, 'no Start at top for a place that was not restored');
+  assert.equal(h.status.textContent, 'Reading place saved on this device only');
+  assert.deepEqual(h.state.readingPlaces['a.md'], saved['a.md'], 'an unrestored place is kept, not dropped');
+  h.setScroll(960); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[2].getAttribute('data-fd-reading-anchor'),
+    'reading on from the arrival saves the new place');
+  const ordinary = readingPlaceHarness(saved);
+  ordinary.install(); ordinary.flush();
+  assert.equal(ordinary.scrollY, 490, 'the default still restores');
+});
+
+test('a lead-promoted guide keeps its reading place; an H2 guide still drops it', () => {
+  assert.match(spa, /if\(guide\.leads\)\{/);
+  assert.match(spa, /installReadingPlace\(!\(returning\|\|passage\.has\('guideSection'\)\|\|passage\.has\('guideFind'\)\)\);/,
+    'a passage link or practice return owns arrival; the saved place only saves');
+  assert.match(spa, /\}else\{\s*var statusNode=contentEl\.querySelector\('\[data-fd-reading-status\]'\);/,
+    'an H2 guide still removes the reading-place controls');
+  assert.match(spa, /\}else installReadingPlace\(true\);/, 'a plain reader restores as before');
 });
 
 test('the live reader install supplies current overlays and governance to the focus guard', () => {

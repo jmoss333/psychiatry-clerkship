@@ -2962,20 +2962,45 @@
         if(!facultyPreviewRequest)setLearnerTitle(currentItem);
         announceRoute(currentItem); focusGovernanceNotice({fromHistory:!!options.fromHistory});
         if(!facultyPreviewRequest&&body&&!fdIsTool(ref)){
+          var installReadingPlace=function(restore){
+            var mountedReader=contentEl.querySelector('.fd-reader');
+            var readingState=options.getState?options.getState():(fdController&&fdController.getState());
+            if(mountedReader&&readingState)fdReadingPlaceSession=fdInstallReadingPlace(mountedReader,ref,readingState,{
+              window:window,restore:restore,
+              allowStorage:readingState.screen==='app'&&!!readingState.role&&!readingState.guest&&!facultyPreviewRequest,
+              focusOnRestore:options.focusOnRestore===true,
+              canFocusOnRestore:function(){
+                return fdReadingFocusAllowed(readState(),{
+                  ref:ref,currentRef:currentItem&&currentItem.f,
+                  facultyPreview:!!facultyPreviewRequest,externalModal:!!capSheet,
+                  pendingHigh:!!contentEl.querySelector('.governance-notice.pending-high'),
+                  readerConnected:document.documentElement.contains(mountedReader)
+                });
+              }
+            });
+          };
           fdGuideSession=fdGuideMount(body,{
             ref:ref,
             isPractice:function(target){return fdIsTool(target)&&!!((FD_INDEX.byRef||{})[target]||(FD_INDEX.known||{})[target]);},
             onPractice:function(bookmark){fdGuideBookmark=bookmark;fdGuideReturning=false;}
           });
           if(fdGuideSession){
-            var statusNode=contentEl.querySelector('[data-fd-reading-status]');
-            var topNode=contentEl.querySelector('[data-fd-reading-top]');
-            if(statusNode)statusNode.remove();
-            if(topNode)topNode.remove();
             var guide=fdGuideSession, bookmark=fdGuideBookmark;
             var returning=bookmark&&bookmark.ref===ref&&(fdGuideReturning||options.fromHistory);
             var arrivalSearch=options.search===undefined?location.search:options.search;
             if(!returning)fdGuideBookmark=null;
+            if(guide.leads){
+              /* A page whose sections come from bold leads read with a saved place before it had
+                 a guide; it keeps one. An explicit passage or a return from practice still decides
+                 where it opens, so the saved place only saves on those arrivals. */
+              var passage=new URLSearchParams(arrivalSearch||'');
+              installReadingPlace(!(returning||passage.has('guideSection')||passage.has('guideFind')));
+            }else{
+              var statusNode=contentEl.querySelector('[data-fd-reading-status]');
+              var topNode=contentEl.querySelector('[data-fd-reading-top]');
+              if(statusNode)statusNode.remove();
+              if(topNode)topNode.remove();
+            }
             /* Initial resources mount behind the edition startup gate. Their promise must
                settle before focus/scroll can reach the now-visible DOM. Guard the next frame
                so an abandoned load cannot steal focus from the next route. */
@@ -2989,23 +3014,7 @@
               if(returning){guide.arrive(bookmark.search,false);guide.restore(bookmark,canFocus);}
               else guide.arrive(arrivalSearch,canFocus);
             });
-          }else{
-            var mountedReader=contentEl.querySelector('.fd-reader');
-            var readingState=options.getState?options.getState():(fdController&&fdController.getState());
-            if(mountedReader&&readingState)fdReadingPlaceSession=fdInstallReadingPlace(mountedReader,ref,readingState,{
-              window:window,
-              allowStorage:readingState.screen==='app'&&!!readingState.role&&!readingState.guest&&!facultyPreviewRequest,
-              focusOnRestore:options.focusOnRestore===true,
-              canFocusOnRestore:function(){
-                return fdReadingFocusAllowed(readState(),{
-                  ref:ref,currentRef:currentItem&&currentItem.f,
-                  facultyPreview:!!facultyPreviewRequest,externalModal:!!capSheet,
-                  pendingHigh:!!contentEl.querySelector('.governance-notice.pending-high'),
-                  readerConnected:document.documentElement.contains(mountedReader)
-                });
-              }
-            });
-          }
+          }else installReadingPlace(true);
           fdGuideReturning=false;
         }else if(!facultyPreviewRequest&&fdGuideBookmark&&fdIsTool(ref)){
           var toolbar=contentEl.querySelector('.fd-reader__toolbar');
