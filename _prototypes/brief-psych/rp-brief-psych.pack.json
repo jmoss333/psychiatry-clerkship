@@ -127,7 +127,7 @@
       {
         "id": "mi", "name": "Motivational Interviewing (brief)", "mechanism": "Motivational conflict",
         "steps": [
-          { "n": 1, "t": "Roll with resistance — don’t argue the change side; that entrenches it." },
+          { "n": 1, "t": "Respond to sustain talk and discord without arguing — don’t argue the change side; that entrenches it." },
           { "n": 2, "t": "Ask open questions; reflect and affirm autonomy." },
           { "n": 3, "t": "Evoke change talk: “what would be different if…?”, importance/confidence rulers (0–10)." },
           { "n": 4, "t": "Summarize the patient’s own reasons; ask permission before advising." }
