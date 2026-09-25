@@ -261,7 +261,6 @@
     { "ref": "week4.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
     { "ref": "week5.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
     { "ref": "week6.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
-    { "ref": "orientation-video.html", "reason": "orientation media, surfaced from the Start-here flow rather than the Library" },
     { "ref": "rp-agitation.html", "reason": "resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3" },
     { "ref": "rp-brief-psych.html", "reason": "resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3" },
     { "ref": "rp-canon-quiz.html", "reason": "resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3" },

@@ -18,7 +18,7 @@
 - **Suicide Risk Assessment & Safety Planning** (Jul 23) — risk formulation over category, the evidence on stratification limits, safety planning, and acute pharmacology.
 - **MDD — Treatment Selection, Sequencing & Augmentation** (Jul 20) — VAST-D, augmentation agent selection, pharmacogenomics, and esketamine sequencing.
 - **Bipolar Mania — Recognition & Acute Management** (Jul 20) — mixed features, secondary mania, and maintenance planning.
-- **Acute Agitation & Delirium in the ED** (Jul 13) — hyperactive vs. hypoactive delirium, workup, and pharmacologic strategy.
+- **Acute Agitation & Delirium in the ED** (Jul 13) — hyperactive vs. hypoactive delirium, workup, de-escalation before PRN, and pharmacologic strategy.
 - **Serotonin Syndrome vs. NMS** (Jul 9) — mechanism, time course, and management of the two hyperthermic syndromes.
 
 New cases are added weekly. A matching MS3-level version of each case lives on the UNE MS3 site.

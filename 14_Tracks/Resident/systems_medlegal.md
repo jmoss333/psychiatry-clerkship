@@ -27,7 +27,7 @@
 **High-yield pearls**
 - "Hold" ≠ "treat" — an involuntary admission does not by itself authorize involuntary medication; that almost always needs its own legal/administrative process. Verify Maine/MMC.
 - Capacity is clinical and decision-specific; competency is legal and court-determined. Diagnosis alone never decides either.
-- Document the *reasoning* behind risk and observation level — a number without a formulation protects no one, since most who die by suicide screen low-risk.
+- Document the *reasoning* behind risk and observation level — a number without a formulation protects no one, since most who die by suicide were judged low-risk at their last contact.
 - Least restrictive alternative is the through-line: in level of care, in voluntary-vs-involuntary status, and in restraint/seclusion.
 - Schedule the actual follow-up appointment before discharge and target ≤7 days — the post-discharge window is the highest-risk period for suicide.
 - Peer-worker–facilitated psychiatric advance directives cut compulsory admission from 39.9% to 27.0% over 12 months in a French multicentre RCT (Tinland et al., *JAMA Psychiatry* 2022) — a concrete least-restrictive tool to offer patients with prior involuntary holds, remembering that the peer-worker facilitation, not the document alone, was the intervention.

@@ -17,7 +17,7 @@
     },
     "job": {
       "type": "string",
-      "enum": ["guideline-surveillance", "link-source-monitor", "resource-intake"]
+      "enum": ["guideline-surveillance", "link-source-monitor", "resource-intake", "source-integrity"]
     },
     "source_id": {
       "type": "string",
@@ -37,7 +37,7 @@
     "detected_at": { "type": "string", "format": "date-time" },
     "change_type": {
       "type": "string",
-      "enum": ["new", "modified", "removed", "broken-link", "soft-404", "redirect", "tls-error", "candidate"]
+      "enum": ["new", "modified", "removed", "broken-link", "soft-404", "redirect", "tls-error", "candidate", "retracted", "erratum", "expression-of-concern", "superseded", "identifier-unresolved", "check-unavailable"]
     },
     "severity": {
       "type": "string",

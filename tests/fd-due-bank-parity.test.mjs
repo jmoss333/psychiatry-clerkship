@@ -10,14 +10,21 @@
 // servability cases (attested, draft with and without the opt-in, retired).
 //
 // The shell's retired/draft id lists are build-injected (build_deploy.py derives them from
-// question_bank.json); the derivation is reproduced here from the same file, so a change to
+// question_bank.json); the derivation is reproduced here over the fixture bank, so a change to
 // either rule turns this red rather than drifting.
+//
+// The bank is a CONTROLLED FIXTURE, not question_bank.json. The first version picked a real
+// draft item out of the live file, so the day faculty attested the last draft, `pick()` would
+// have thrown and the root node suite -- which runs before both site builds -- would have failed
+// for governance work being finished (CLAUDE.md: a test may not depend on live governance
+// state). Both functions under test read only `id`, `retired` and `status`, so four synthetic
+// records cover every servability case whatever the live ledger says.
 //
 // Not covered, deliberately: a QB# card whose item was DELETED from question_bank.json rather
 // than retired. The shell is only told the retired and draft ids, so it would still count that
 // card while the bank drops it. Items are retired, not deleted (retired near-duplicates stay in
-// the file with `retired: true`), so the fixture uses real, present ids only; the last test
-// pins that gap by name so it cannot pass silently for a reason nobody wrote down.
+// the file with `retired: true`); the last test pins that gap by name so it cannot pass silently
+// for a reason nobody wrote down.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -25,7 +32,16 @@ import test from 'node:test';
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const shell = readFileSync(new URL(`${BUILD}/spa_index.html`, import.meta.url), 'utf8');
 const tool = readFileSync(new URL(`${BUILD}/question-bank-practice.html`, import.meta.url), 'utf8');
-const BANK = JSON.parse(readFileSync(new URL('../question_bank.json', import.meta.url), 'utf8'));
+const ATTESTED = 'qb_fixture_attested_1';
+const ATTESTED_2 = 'qb_fixture_attested_2';
+const DRAFT_ID = 'qb_fixture_draft';
+const RETIRED_ID = 'qb_fixture_retired';
+const BANK = { items: [
+  { id: ATTESTED, status: 'attested' },
+  { id: ATTESTED_2, status: 'attested' },
+  { id: DRAFT_ID, status: 'draft' },
+  { id: RETIRED_ID, status: 'attested', retired: true },
+] };
 
 function slice(src, startMarker, endMarker) {
   const a = src.indexOf(startMarker);
@@ -66,15 +82,6 @@ const bankDue = new Function('BANK', 'localStorage', `
 
 const past = Date.now() - 2 * 86400000;
 const future = Date.now() + 2 * 86400000;
-const pick = (pred, what) => {
-  const it = items.find(pred);
-  assert.ok(it, `question_bank.json has no ${what} item to build the fixture from`);
-  return it.id;
-};
-const ATTESTED = pick((i) => !i.retired && i.status === 'attested', 'attested');
-const ATTESTED_2 = pick((i) => !i.retired && i.status === 'attested' && i.id !== ATTESTED, 'second attested');
-const DRAFT_ID = pick((i) => !i.retired && i.status !== 'attested', 'draft');
-const RETIRED_ID = pick((i) => i.retired, 'retired');
 
 function store(optIn) {
   const ls = memStorage();

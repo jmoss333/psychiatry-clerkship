@@ -12,10 +12,14 @@
     --bg:#f6f3ee; --bg2:#faf6f0; --surface:#ffffff; --surface2:#faf6f0; --border:#ddd3c6; --border2:#ebe5da;
     --text:#3b332c; --mid:#64574b; --light:#6b5d4f;
     --primary:#bc573a; --primary-d:#a84830; --primary-ink:#a8431f; --primary-l:#f3ebe5;
+    /* The build injects skip-link / h1 / nav CSS that reads the shared palette's name for
+       --primary-d; undefined here, it fell back to #a84830 in both themes. */
+    --primary-dark:var(--primary-d);
     --accent:#2a6b5e; --accent-d:#1e5248; --accent-l:#edf4f2;
     --success:#357160; --success-l:#e9f1ec;
     --warning:#7a6234; --warning-l:#f5efe2;
-    --danger:#a34132; --danger-l:#fbefec;
+    /* --danger is the fill/border; --danger-ink is danger as TEXT (same split as --primary-ink). */
+    --danger:#a34132; --danger-ink:#a34132; --danger-l:#fbefec;
     --info:#41618a; --info-l:#eef3f7;
     --on-brand:#ffffff;
     --shadow:0 1px 3px rgba(59,51,44,.06);
@@ -24,18 +28,24 @@
   }
   [data-theme="dark"]{
     --bg:#1a1816; --bg2:#211d1a; --surface:#2a2520; --surface2:#332e28; --border:#3d3630; --border2:#2f2a25;
-    --text:#e8e2da; --mid:#b3a596; --light:#8a7c6e;
+    --text:#e8e2da; --mid:#b3a596; --light:#a09488;
     --primary:#d4896e; --primary-d:#dd9277; --primary-ink:#e6a98f; --primary-l:rgba(212,137,110,.16);
     --accent:#5aad9a; --accent-d:#6cbcaa; --accent-l:rgba(90,173,154,.16);
     --success:#5aad8e; --success-l:rgba(90,173,142,.16);
     --warning:#c4a45c; --warning-l:rgba(196,164,92,.16);
-    --danger:#d46858; --danger-l:rgba(212,104,88,.16);
+    /* Danger text sits on --danger-l, a 16% tint — twice over for a chip inside .node.ro — so the
+       ink must clear AA on that composite, not on --surface: #d46858 measured 4.28:1 against the
+       surface but rendered 2.85:1 on a chip; #eaa499 (same 8deg hue) renders 4.9:1. */
+    --danger:#d46858; --danger-ink:#eaa499; --danger-l:rgba(212,104,88,.16);
     --info:#7a9ec4; --info-l:rgba(122,158,196,.16);
     --on-brand:#211d1a;
     --shadow:0 1px 3px rgba(0,0,0,.35);
   }
   *,*::before,*::after{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.5;transition:background .2s,color .2s}
+  /* No background/color transition on body: every descendant inherits the mid-fade ink, so a
+     theme flip read in the same frame (the ?theme-audit lamp, frozen-colour.spec.js) scores the
+     whole page against the old theme's colours. */
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.5}
   .wrap{max-width:840px;margin:0 auto;padding:20px 18px 70px}
   .head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
   .eyebrow{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-d)}
@@ -58,12 +68,12 @@
   .node{border-radius:11px;padding:10px 13px;margin:8px 0;border:1px solid var(--border)}
   .node .nlabel{font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:7px}
   .num{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;font-size:.72rem;color:#fff}
-  .node.ro{background:var(--danger-l);border-color:var(--danger)} .node.ro .nlabel{color:var(--danger)} .node.ro .num{background:var(--danger)}
+  .node.ro{background:var(--danger-l);border-color:var(--danger)} .node.ro .nlabel{color:var(--danger-ink)} .node.ro .num{background:var(--danger)}
   .node.dx{background:var(--surface2)} .node.dx .nlabel{color:var(--mid)} .node.dx .num{background:var(--mid)}
   .node.fm{background:var(--accent-l);border-color:var(--accent)} .node.fm .nlabel{color:var(--accent-d)} .node.fm .num{background:var(--accent)}
   .chips{display:flex;flex-wrap:wrap;gap:6px}
   .chip{font-size:.82rem;border-radius:999px;padding:4px 10px;border:1px solid var(--border);background:var(--surface)}
-  .chip.d{background:var(--danger-l);border-color:var(--danger);color:var(--danger)}
+  .chip.d{background:var(--danger-l);border-color:var(--danger);color:var(--danger-ink)}
   .fm .fmtext{font-size:.95rem;color:var(--text)}
   /* cover-and-recall quiz mode */
   .treehead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
@@ -90,7 +100,7 @@
   .mtx{width:100%;border-collapse:collapse;font-size:.86rem}
   .mtx th,.mtx td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--border);vertical-align:top}
   .mtx thead th{font-family:var(--font-head);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
-  .mtx thead th.nms{color:var(--warning)} .mtx thead th.ss{color:var(--danger)}
+  .mtx thead th.nms{color:var(--warning)} .mtx thead th.ss{color:var(--danger-ink)}
   .mtx td.f{color:var(--light);font-weight:600;width:26%}
   .both{margin-top:10px;background:var(--accent-l);border-radius:9px;padding:9px 12px;font-size:.86rem;color:var(--accent-d)}
   /* timeline */
@@ -100,7 +110,7 @@
   .tstep .tb{border-left:3px solid var(--border);padding:0 0 10px 14px;position:relative}
   .tstep .tb::before{content:"";position:absolute;left:-7px;top:3px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
   .tstep.warn .tb::before{background:var(--warning)} .tstep.dgr .tb::before{background:var(--danger)}
-  .tstep .th{font-weight:600} .tstep.dgr .th{color:var(--danger)}
+  .tstep .th{font-weight:600} .tstep.dgr .th{color:var(--danger-ink)}
   .tstep .ts{font-size:.85rem;color:var(--mid)}
   /* meter */
   .meter{display:flex;height:30px;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin:6px 0}
@@ -109,7 +119,7 @@
   .bands{display:flex;flex-direction:column;gap:6px;margin-top:8px}
   .band{display:flex;gap:9px;align-items:baseline;font-size:.88rem}
   .band .bk{font-weight:700;flex:0 0 64px}
-  .band.s1 .bk{color:var(--success)} .band.s2 .bk{color:var(--warning)} .band.s3 .bk{color:var(--danger)}
+  .band.s1 .bk{color:var(--success)} .band.s2 .bk{color:var(--warning)} .band.s3 .bk{color:var(--danger-ink)}
   .note{font-size:.84rem;color:var(--light);margin-top:8px}
   .disc{font-size:.78rem;color:var(--light);border-top:1px solid var(--border);margin-top:24px;padding-top:12px}
   a.more{color:var(--accent-d);font-size:.85rem}
@@ -336,7 +346,7 @@ function App(){
         e("div",{className:"eyebrow"},"Visual learning"),
         e("h1",null,"Algorithms & Decision Aids"),
         e("div",{className:"sub"},"The can’t-miss inpatient syndromes as pictures. One grammar throughout: ",
-          e("strong",{style:{color:"var(--danger)"}},"red = rule out first"),", ",
+          e("strong",{style:{color:"var(--danger-ink)"}},"red = rule out first"),", ",
           e("strong",{style:{color:"var(--accent-d)"}},"teal = first move"),".")
       ),
       e("button",{className:"tbtn","aria-label":"Toggle light/dark theme",title:"Toggle theme",

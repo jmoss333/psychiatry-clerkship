@@ -11,8 +11,10 @@ fixture writes that listing rather than the producers behind it. The listing it
 writes is the synthetic manifest rows PLUS the real build extras — the per-site
 tools and resident-only pages — copied from the repo's own shipped_pages.json
 rather than restated here, so the fixture cannot drift from what ships. The
-per-site assertions below (orientation-video.html is ms3-only, rp-canon-quiz.html
-is resident-only) are about those real entries.
+per-site assertions below are about those real entries (rp-canon-quiz.html is
+resident-only) plus one synthetic MS3-only tool, MS3_ONLY_FIXTURE: no MS3-only extra
+has shipped since the orientation video tool was retired on 2026-09-25, and a
+cross-site guard proved against an unknown slug would pass for the wrong reason.
 
 The weekly-case pages are dropped, matching the validator: it excludes the
 "cotw_registry" producer by the decision recorded in its docstring.
@@ -80,7 +82,16 @@ with open(os.path.join(ROOT, SHIPPED_RELATIVE), encoding="utf-8") as _fh:
         page for page in json.load(_fh)["pages"]
         if page["producer"] not in ("site_manifest", "cotw_registry")
     ]
-EXTRA_SHIPPED = frozenset(page["slug"] for page in REAL_EXTRAS)
+# No MS3-only extra ships today, so the fixture adds a synthetic one. The per-site guards
+# must be proved against a page that really is MS3-only; an unknown slug would fail them
+# for a different reason ("not shipped" anywhere) and the tests would pass vacuously.
+MS3_ONLY_FIXTURE = "ms3-only-fixture.html"
+FIXTURE_EXTRAS = REAL_EXTRAS + [{
+    "slug": MS3_ONLY_FIXTURE, "kind": "tool", "sites": ["ms3"],
+    "title": "MS3-only fixture tool", "source": "src/ms3-only-fixture.html",
+    "producer": "ms3_extra_tool",
+}]
+EXTRA_SHIPPED = frozenset(page["slug"] for page in FIXTURE_EXTRAS)
 
 
 def _shipped_document():
@@ -91,7 +102,7 @@ def _shipped_document():
         for kind, key in (("tool", "tools"), ("page", "md"))
         for source, slug, title in MANIFEST[key]
     ]
-    return {"version": 1, "pages": pages + list(REAL_EXTRAS)}
+    return {"version": 1, "pages": pages + list(FIXTURE_EXTRAS)}
 SAFETY_REFS = (
     "pg_suicide.md",
     "agitation.md",
@@ -353,7 +364,7 @@ class ValidateCurriculumTest(unittest.TestCase):
             lambda pathway: pathway["bridges"]["pa"]["refs"].append(
                 pathway["bridges"]["pa"]["refs"][0]),
             lambda pathway: pathway["bridges"]["pa"]["refs"].__setitem__(
-                0, "orientation-video.html"),
+                0, MS3_ONLY_FIXTURE),
             lambda pathway: pathway["activities"][0].__setitem__(
                 "actions", ["prepare", "score", "observe"]),
         )
@@ -600,12 +611,12 @@ class ValidateCurriculumTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([])
             cur["learningPaths"]["resident"]["weeks"][0]["items"] = [
-                {"ref": "orientation-video.html", "kind": "tool"}]
+                {"ref": MS3_ONLY_FIXTURE, "kind": "tool"}]
             c, root = _write(tmp, cur)
             result = _run(c, root)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("resident", result.stdout)
-        self.assertIn("orientation-video.html", result.stdout)
+        self.assertIn(MS3_ONLY_FIXTURE, result.stdout)
 
     def test_rejects_a_missing_or_duplicated_week_number(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -893,7 +904,7 @@ class EssentialsTest(unittest.TestCase):
 
     def test_other_audiences_page_is_E2(self):
         cases = (("ms3", "rp-agitation.html"),
-                 ("resident", "orientation-video.html"))
+                 ("resident", MS3_ONLY_FIXTURE))
         for site, ref in cases:
             with self.subTest(site=site):
                 self.assert_mutation(
@@ -1174,12 +1185,12 @@ class SiteLibraryTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([])
             cur["siteLibrary"]["resident"]["additions"] = [
-                {"column": "Tools", "refs": ["orientation-video.html"]}
+                {"column": "Tools", "refs": [MS3_ONLY_FIXTURE]}
             ]
             c, root = _write(tmp, cur)
             r = _run(c, root)
             self.assertEqual(r.returncode, 1)
-            self.assertIn("orientation-video.html", r.stdout)
+            self.assertIn(MS3_ONLY_FIXTURE, r.stdout)
             self.assertIn("not shipped on resident", r.stdout)
 
     def test_rejects_ms3_addition_of_a_resident_only_extra(self):
@@ -1196,7 +1207,7 @@ class SiteLibraryTest(unittest.TestCase):
 
     def test_rejects_cross_site_exclusions(self):
         cases = (
-            ("resident", "orientation-video.html"),
+            ("resident", MS3_ONLY_FIXTURE),
             ("ms3", "rp-agitation.html"),
         )
         for site, ref in cases:
@@ -1220,15 +1231,16 @@ class ShippedSetTest(unittest.TestCase):
 
     def test_extras_cover_the_per_site_tools_and_resident_only_pages(self):
         extras = EXTRA_SHIPPED
-        for slug in ("orientation-video.html", "rp-agitation.html",
+        for slug in ("rp-agitation.html",
                      "rp-brief-psych.html", "rp-canon-quiz.html", "rotation.md",
                      "adv_psychopharm.md", "systems_medlegal.md", "supervision_teaching.md",
                      "canon_200.md", "cl_reference.md"):
             self.assertIn(slug, extras)
 
     def test_library_exclude_accepts_a_page_outside_site_manifest(self):
-        # The spec names orientation-video.html as an exclusion example, and the guard
-        # used to reject it as "not a shipped slug" purely because it has no manifest row.
+        # The spec named orientation-video.html as an exclusion example (retired 2026-09-25),
+        # and the guard used to reject such a page as "not a shipped slug" purely because it
+        # has no manifest row. The synthetic MS3-only fixture tool stands in for it.
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([])
             cur["libraryColumns"] = [
@@ -1239,7 +1251,7 @@ class ShippedSetTest(unittest.TestCase):
             c, root = _write(tmp, cur)
             r = _run(c, root)
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-            self.assertNotIn("orientation-video.html", r.stdout)
+            self.assertNotIn(MS3_ONLY_FIXTURE, r.stdout)
 
     def test_a_build_extra_left_unplaced_and_unexcluded_still_fails(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1250,12 +1262,12 @@ class ShippedSetTest(unittest.TestCase):
                 _safety_column(),
             ]
             cur["libraryExclude"] = ([e for e in EXTRA_EXCLUDES
-                                      if e["ref"] != "orientation-video.html"]
+                                      if e["ref"] != MS3_ONLY_FIXTURE]
                                      + FIXTURE_RIGHTS_EXCLUDES + FIXTURE_WEEK_EXCLUDES)
             c, root = _write(tmp, cur)
             r = _run(c, root)
             self.assertEqual(r.returncode, 1)
-            self.assertIn("orientation-video.html", r.stdout)
+            self.assertIn(MS3_ONLY_FIXTURE, r.stdout)
 
 
 class SafetyKitTest(unittest.TestCase):

@@ -42,14 +42,24 @@ SO THE RULES ARE ASYMMETRIC.
     SITES EXAMINED, not on deploys found: five sites with zero deploys in the window is a
     quiet weekend, which is data, not blindness.
 
+ALSO: THE PREVIEW GATE (2026-09-25). The same daily run then asks bin/check_preview_gate.py
+whether every Netlify preview that main's ruleset REQUIRES is one its site can actually build,
+reusing the deploy records paged above (plus one settings read per site). It exists because on
+2026-09-25 #802 moved the learner sites' production branch to `release`, Netlify stopped
+building previews for PRs into `main`, and every PR sat blocked on a required check that could
+never report -- a break neither this alarm (production was fine) nor the ruleset-drift guard
+(the ruleset had not changed) could see. Its findings fail this step exactly like a failed
+production deploy; see that file for the rules.
+
 USAGE
   python3 bin/check_netlify_deploy_health.py                # exit 1 on a real failed deploy
   python3 bin/check_netlify_deploy_health.py --out FILE     # also write the receipt JSON
   python3 bin/check_netlify_deploy_health.py --hours 48     # widen the lookback window
   python3 bin/check_netlify_deploy_health.py --self-test    # prove it can fail; no network
 
-EXIT CODES. 0 clean, 1 a real failed production deploy, 2 the checker could not determine
-(no token, transport, HTTP status, malformed JSON, or fewer sites examined than declared).
+EXIT CODES. 0 clean, 1 a real failed production deploy OR a required preview that cannot be
+built, 2 the checker could not determine (no token, transport, HTTP status, malformed JSON,
+fewer sites examined than declared, or a preview gate that could not read its sources).
 There is no longer an exit code that means "did not look".
 """
 from __future__ import annotations
@@ -111,8 +121,10 @@ IN_FLIGHT_STATES = frozenset(
 FAILED_STATE = "error"
 
 # The five Netlify projects built from this repository. `scope` is the repo-relative path
-# whose changes gate that site's production build -- None means "the whole repository", which
-# is why the two learner sites keep building on every merge to main. `toml` is the file that
+# whose changes gate that site's production build -- None means "the whole repository" (the
+# two learner sites, which since #802 publish the `release` branch that the release train
+# moves, rather than every merge to main). bin/check_preview_gate.py also reads this table:
+# a preview main requires from a site NOT listed here is a finding. `toml` is the file that
 # has to agree with `scope`; tests/maintenance/test_netlify_ignore_scoped.py asserts it does,
 # so a future edit cannot move a site's scope in one place only.
 SITES = (
@@ -317,18 +329,49 @@ def _fetch(site_id, token, horizon):
     )
 
 
-def run(token, now, lookback_hours):
+def run(token, now, lookback_hours, deploys_by_site=None):
+    """Classify every site's production deploys. When `deploys_by_site` is a dict it is filled
+    with the raw records (previews included), so the preview gate reuses this paging."""
     findings = []
     sites = []
     horizon = now - timedelta(hours=lookback_hours)
     for site in SITES:
         deploys = _fetch(site["siteId"], token, horizon)
+        if deploys_by_site is not None:
+            deploys_by_site[site["slug"]] = deploys
         site_findings, counts = classify_site(
             site["slug"], deploys, now, lookback_hours
         )
         findings.extend(site_findings)
         sites.append({"slug": site["slug"], "counts": counts})
     return findings, sites
+
+
+def preview_gate(token, now, lookback_hours, deploys_by_site):
+    """Run bin/check_preview_gate.py over this run's data. Always returns a report dict whose
+    status is success / failed / undetermined -- a gate that could not read its sources is
+    "undetermined", never a pass. Imported lazily: tests load this file by path, without bin/
+    on sys.path."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        import check_preview_gate as gate  # noqa: E402
+    except ImportError as exc:  # pragma: no cover - a missing sibling file
+        return {"status": "undetermined", "reason": "cannot import the preview gate: %s" % exc}
+    try:
+        return gate.check(token, now, SITES, deploys_by_site, lookback_hours)
+    except gate.GateError as exc:
+        return {"status": "undetermined", "reason": str(exc)}
+
+
+def _print_gate(report):
+    if report.get("status") not in ("success", "failed"):
+        print("preview-gate: COULD NOT DETERMINE — %s" % (
+            report.get("reason") or "unrecognised status %r" % (report.get("status"),)),
+            file=sys.stderr)
+        return
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import check_preview_gate as gate  # noqa: E402
+    gate.print_report(report)
 
 
 def _self_test():
@@ -492,9 +535,35 @@ def _self_test():
     # failure they guard is "the whole run passed while reading nothing", which no
     # amount of classify_site() coverage can catch.
 
-    def _main_with(env_token, fake_sites):
+    clean_gate = {
+        "schemaVersion": 1, "status": "success", "protectedBranches": ["main"],
+        "requiredPreviewSites": ["une-ms3-psychiatry"], "sitesDeclared": len(SITES),
+        "sitesExamined": len(SITES), "evidence": None, "findings": [],
+        "sites": [{"slug": "une-ms3-psychiatry", "required": True, "buildable": True,
+                   "settings": "production 'release'; branch deploys release, main"}],
+    }
+    failed_gate = dict(
+        clean_gate, status="failed",
+        sites=[dict(clean_gate["sites"][0], buildable=False)],
+        findings=[{"site": "une-ms3-psychiatry", "kind": "base_branch_not_deployable",
+                   "detail": "synthetic: PRs into main get no preview here"}],
+    )
+    gate_seen = {}
+
+    def _main_with(env_token, fake_sites, gate=clean_gate, fake_findings=()):
         """Run main() with a stubbed network, return (exit code, receipt dict)."""
         real_run, real_env = run_module.run, os.environ.get("NETLIFY_AUTH_TOKEN")
+        real_gate = run_module.preview_gate
+
+        def fake_run(token, now, hours, deploys_by_site=None):
+            if deploys_by_site is not None:
+                deploys_by_site["une-ms3-psychiatry"] = [{"context": "deploy-preview"}]
+            return list(fake_findings), fake_sites
+
+        def fake_gate(token, now, hours, deploys_by_site):
+            gate_seen["deploys"] = deploys_by_site
+            return gate
+
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "receipt.json"
             try:
@@ -502,11 +571,13 @@ def _self_test():
                     os.environ.pop("NETLIFY_AUTH_TOKEN", None)
                 else:
                     os.environ["NETLIFY_AUTH_TOKEN"] = env_token
-                run_module.run = lambda *a, **k: ([], fake_sites)
+                run_module.run = fake_run
+                run_module.preview_gate = fake_gate
                 code = main(["--out", str(out)])
                 return code, json.loads(out.read_text(encoding="utf-8"))
             finally:
                 run_module.run = real_run
+                run_module.preview_gate = real_gate
                 if real_env is None:
                     os.environ.pop("NETLIFY_AUTH_TOKEN", None)
                 else:
@@ -541,6 +612,28 @@ def _self_test():
            and receipt["deploysExamined"] == 0)
     expect("zero deploys in a quiet window is still clean, not undetermined",
            receipt["status"] == "success")
+    expect("the receipt carries the preview gate's report",
+           receipt["previewGate"]["status"] == "success")
+    expect("the gate is handed the deploys THIS run paged (no second fetch, no empty set)",
+           gate_seen.get("deploys") == {"une-ms3-psychiatry": [{"context": "deploy-preview"}]})
+
+    # --- THE PREVIEW GATE decides the step as much as the deploys do (2026-09-25).
+    code, receipt = _main_with("t0ken", every_site, gate=failed_gate)
+    expect("a required preview that cannot be built fails the step (exit 1)",
+           code == 1 and receipt["status"] == "failed")
+    code, receipt = _main_with("t0ken", every_site,
+                               gate={"status": "undetermined", "reason": "synthetic"})
+    expect("a gate that could not read its sources is exit 2, never a pass",
+           code == 2 and receipt["status"] == "undetermined")
+    code, receipt = _main_with("t0ken", every_site, gate={"status": "surprising"})
+    expect("a gate status nobody recognises is exit 2, never a pass", code == 2)
+    real_failure = [{"site": "une-ms3-psychiatry", "kind": "failed_production_deploy",
+                     "detail": "synthetic"}]
+    code, receipt = _main_with("t0ken", every_site,
+                               gate={"status": "undetermined", "reason": "synthetic"},
+                               fake_findings=real_failure)
+    expect("a real failed deploy still reads as failed when the gate is undetermined",
+           code == 1 and receipt["status"] == "failed")
 
     expect("every declared site has an id", all(s["siteId"] for s in SITES))
     expect(
@@ -585,8 +678,9 @@ def main(argv=None):
         })
         return 2
 
+    deploys_by_site = {}
     try:
-        findings, sites = run(token, now, args.hours)
+        findings, sites = run(token, now, args.hours, deploys_by_site)
     except CheckerError as exc:
         print("netlify-deploy-health: COULD NOT DETERMINE — %s" % exc, file=sys.stderr)
         _write(args.out, {
@@ -612,10 +706,21 @@ def main(argv=None):
         })
         return 2
 
-    status = "failed" if findings else "success"
+    # The preview gate runs over the deploys paged above. A failed gate fails this step like a
+    # failed production deploy; a gate that could not read its sources is exit 2, never a pass.
+    gate = preview_gate(token, now, args.hours, deploys_by_site)
+    gate_failed = gate.get("status") == "failed"
+    gate_unknown = gate.get("status") not in ("success", "failed")
+    if findings or gate_failed:
+        status = "failed"
+    elif gate_unknown:
+        status = "undetermined"
+    else:
+        status = "success"
     _write(args.out, {
         "schemaVersion": 1,
         "status": status,
+        "previewGate": gate,
         "lookbackHours": args.hours,
         "checkedAt": now.isoformat(),
         # What this run actually looked at, so a reader never has to infer coverage from
@@ -653,14 +758,18 @@ def main(argv=None):
                 sum(s["counts"]["in_window"] for s in sites),
             )
         )
-        return 0
-    print("\nnetlify-deploy-health: %d finding(s)" % len(findings), file=sys.stderr)
-    for finding in findings:
-        print(
-            "  %s  %s  %s" % (finding["site"], finding["kind"], finding["detail"]),
-            file=sys.stderr,
-        )
-    return 1
+    else:
+        print("\nnetlify-deploy-health: %d finding(s)" % len(findings), file=sys.stderr)
+        for finding in findings:
+            print(
+                "  %s  %s  %s" % (finding["site"], finding["kind"], finding["detail"]),
+                file=sys.stderr,
+            )
+    print()
+    _print_gate(gate)
+    if findings or gate_failed:
+        return 1
+    return 2 if gate_unknown else 0
 
 
 def _write(path, payload):
