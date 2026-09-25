@@ -38,6 +38,7 @@ const make = new Function('localStorage', `
     fdRotationStartForWeek: fdRotationStartForWeek,
     fdExamCountdown: fdExamCountdown,
     fdPathExamCountdown: fdPathExamCountdown,
+    fdExamDatePrompt: fdExamDatePrompt,
     fdDailyPick: fdDailyPick,
     fdRingStep: fdRingStep,
     fdActivityDays: fdActivityDays,
@@ -454,6 +455,37 @@ test('a stored date opens the countdown on the resident path; a junk one does no
   ls.setItem('cw_shelf_date', 'banana');
   assert.equal(make(ls).fdPathExamCountdown(RES_PATH, 4, FOUR, wed), '',
     'an unparseable value is no date: phasePolicy and the arithmetic read it the same way');
+});
+
+// ---- Today's exam-date prompt (2026-09-25) --------------------------------------------
+//
+// Without a stored date phasePolicy is 'unset' -- no taper -- and the countdown guesses from the
+// path grid. The date's only home was the settings panel, so fdExamDatePrompt asks for it on
+// Today, on the exam path only, until a PARSEABLE date is stored.
+test('the exam path asks for a date until one is stored, then never again', () => {
+  const now = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  const ls = memStorage();
+  assert.equal(make(ls).fdExamDatePrompt(MS3_PATH, now), 'Exam date', 'no date: ask');
+  ls.setItem('cw_shelf_date', 'banana');
+  assert.equal(make(ls).fdExamDatePrompt(MS3_PATH, now), 'Exam date',
+    'an unparseable value is no date -- phasePolicy reads it the same way, so keep asking');
+  ls.setItem('cw_shelf_date', '2026-09-18');
+  assert.equal(make(ls).fdExamDatePrompt(MS3_PATH, now), '', 'a stored date is an answer');
+  ls.setItem('cw_shelf_date', '2026-08-01');
+  assert.equal(make(ls).fdExamDatePrompt(MS3_PATH, now), '',
+    'a past date is still an answer: the learner set it, and Settings is where to change it');
+});
+
+test('only the exam path asks: other paths and missing ids never show the prompt', () => {
+  const now = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  const { fdExamDatePrompt } = make(memStorage());
+  for (const id of [RES_PATH, '', undefined, null, 'ms3']) {
+    assert.equal(fdExamDatePrompt(id, now), '', `path ${JSON.stringify(id)}`);
+  }
+});
+
+test('the prompt label is audience-neutral', () => {
+  assert.doesNotMatch(make(memStorage()).fdExamDatePrompt(MS3_PATH, Date.now()), AUDIENCE_TOKEN_RE);
 });
 
 test('a missing or unknown path id fails closed', () => {
