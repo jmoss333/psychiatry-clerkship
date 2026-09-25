@@ -32,12 +32,17 @@ THE RULE:
                13_Faculty_Resources/_automation/surface_governance.py,
                13_Faculty_Resources/_automation/validate_attestation_consistency.py,
                13_Faculty_Resources/_automation/validate_curriculum.py,
-               13_Faculty_Resources/_automation/validate_topic_meta.py}
+               13_Faculty_Resources/_automation/validate_topic_meta.py,
+               13_Faculty_Resources/_automation/site_build/ledger_overlay.mjs}
                PLUS any path ending .schema.json
     G_DIRS  = {.claude/, .github/, bin/, faculty-console/,
-               13_Faculty_Resources/_automation/maintenance/, tests/maintenance/}
+               13_Faculty_Resources/_automation/maintenance/, tests/maintenance/,
+               13_Faculty_Resources/ledger/}
     CONTENT(path) = a `source`/`extraSources` entry of shipped_pages.json at BASE or at HEAD
                     OR (matches ^(0\\d|1[0-4]|99)_[^/]+/ AND not under 13_Faculty_Resources/)
+                    EXCEPT question_bank.json when nothing but its items' `status` changed:
+                    a question's attestation IS its status, so a status-only diff moves
+                    governance state, not the text a learner reads (see qbank_text()).
     PROMOTION, reviewed.json (JSON diff per key; a missing key is a value):
        status becomes reviewed; or an entry reviewed on BOTH sides changes any of
        at, by, risk, note, contentHash, claimsHash, evidenceHash, evidenceThrough;
@@ -169,6 +174,10 @@ G_FILES = frozenset({
     "13_Faculty_Resources/_automation/validate_attestation_consistency.py",
     "13_Faculty_Resources/_automation/validate_curriculum.py",
     "13_Faculty_Resources/_automation/validate_topic_meta.py",
+    # The attestation ledger's build-side reader (ADR-003). It lives under site_build/ with the
+    # registration data, but it decides which signed sign-offs a build honours, so it is the
+    # machinery of attestation, not data that rides with a page.
+    "13_Faculty_Resources/_automation/site_build/ledger_overlay.mjs",
 })
 # Everything under these is governance. `.github/` in FULL, not only `workflows/`: a composite
 # action, an issue template or CODEOWNERS decides how the work is reviewed just as a workflow
@@ -185,6 +194,9 @@ G_DIRS = (
     "faculty-console/",
     "13_Faculty_Resources/_automation/maintenance/",
     "tests/maintenance/",
+    # The ledger's public keys (ADR-003): whoever can change keys.json can mint sign-offs the
+    # builds will accept, so it can never ride in a content PR.
+    "13_Faculty_Resources/ledger/",
 )
 # A schema is the shape a registry must hold; loosening one is a governance act wherever the
 # file lives — including under site_build/, whose DATA rides with a page but whose CONTRACTS
@@ -204,6 +216,9 @@ TOPIC_META_PROMOTION_KEYS = ("lastReviewed", "reviewer")
 # question_bank.json's `status` enum is draft/attested; only faculty attest tooling writes
 # `attested`, and what it vouches for is the WHOLE item — stem, options, rationale, evidence.
 QBANK_ATTESTED = "attested"
+# The one field in a question_bank.json item that records governance state rather than text.
+# `retired` is deliberately NOT here: it changes which items ship, which is content.
+QBANK_GOVERNANCE_KEYS = frozenset({"status"})
 # topic_meta's schema enum is draft/pending/reviewed/retired; `attested` is named by the rule
 # and honoured here so a future rename cannot slip a promotion past this.
 PROMOTED_STATES = frozenset({"reviewed", "attested"})
@@ -522,6 +537,34 @@ def qbank_items(doc):
     return out
 
 
+def qbank_text(doc):
+    """question_bank.json with each item's governance state removed — the text a learner reads.
+
+    WHY THIS EXISTS. #783 listed question_bank.json as an `extraSources` entry of the two
+    question tools (so a pack-only edit drifts their page attestations), which made the file
+    CONTENT for this gate. But the file is also a ledger: the console attests a question by
+    flipping its `status`, and nothing else. From #783 on, every console question sign-off
+    was therefore "a promotion in a diff that also changes content" — L3 — against itself,
+    on the one branch allowed to promote. The first casualty was rolling PR #781 (39 items,
+    `status` the only field changed on any of them).
+
+    The exception is exactly as wide as the ledger: two sides whose projections are equal
+    changed nothing but `status`. A stem, option, rationale or evidence edit — or an item
+    added, removed, reordered or retired — still differs here, so question_bank.json stays
+    CONTENT and L1/L3 still fire. A shape this tool cannot read is exit 2, never "unchanged":
+    `qbank_items()` holds the shape doors for both functions.
+    """
+    if doc is None:
+        return None
+    qbank_items(doc)  # raises InputError on a wrong shape
+    items = [
+        {key: value for key, value in item.items() if key not in QBANK_GOVERNANCE_KEYS}
+        if isinstance(item, dict) else item
+        for item in doc["items"]
+    ]
+    return dict(doc, items=items)
+
+
 def qbank_promotions(base_doc, head_doc):
     """[(item id, what changed)] for every question_bank.json promotion.
 
@@ -627,8 +670,17 @@ def classify(root, base, head, head_branch, base_source=None):
     ledger = ledger_promotions(_ledger_at(root, base), head_ledger)
     topic_meta = topic_meta_promotions(_registry_at(root, base, TOPIC_META_REL),
                                        _registry_at(root, head, TOPIC_META_REL))
-    qbank = qbank_promotions(json_at(root, base, QBANK_REL), json_at(root, head, QBANK_REL))
+    base_qbank = json_at(root, base, QBANK_REL)
+    head_qbank = json_at(root, head, QBANK_REL)
+    qbank = qbank_promotions(base_qbank, head_qbank)
     promotions = bool(ledger) or bool(topic_meta) or bool(qbank)
+    # A status-only question_bank.json diff is governance state, not content — see
+    # qbank_text(). Said out loud in the report, never silently: a path leaving the content
+    # set is precisely the shrink docs/SILENT_SHRINK_CHECKLIST.md is about.
+    qbank_status_only = (QBANK_REL in content
+                         and qbank_text(base_qbank) == qbank_text(head_qbank))
+    if qbank_status_only:
+        content = [path for path in content if path != QBANK_REL]
 
     failures = []
     if governance and content:
@@ -659,7 +711,7 @@ def classify(root, base, head, head_branch, base_source=None):
         "baseSource": source, "emptyRange": empty_range,
         "changed": changed, "content": content, "governance": governance,
         "ledgerPromotions": ledger, "topicMetaPromotions": topic_meta,
-        "qbankPromotions": qbank,
+        "qbankPromotions": qbank, "qbankStatusOnly": qbank_status_only,
         "commitOffenders": offenders, "staleBaseHint": stale_base, "failures": failures,
     }
 
@@ -686,9 +738,15 @@ def _promotion_lines(verdict, indent="    "):
     return lines
 
 
+QBANK_STATUS_ONLY_NOTE = ("%s changed only item `status` — governance state, not content"
+                          % QBANK_REL)
+
+
 def report_lines(verdict):
     """One block per rule that fired, naming the offending paths, entries and commits."""
     lines = []
+    if verdict.get("qbankStatusOnly") and verdict["failures"]:
+        lines.append("note: %s" % QBANK_STATUS_ONLY_NOTE)
     for rule in verdict["failures"]:
         lines.append("%s FAIL: %s" % (rule, RULE_TEXT[rule]))
         if rule == "L1":
@@ -764,6 +822,8 @@ def run(root, base, head, head_branch, fmt="text", stream=None, base_source=None
           "%d promotion(s) on %s"
           % (where, len(verdict["changed"]), len(verdict["content"]),
              len(verdict["governance"]), promotions, verdict["headBranch"]), file=stream)
+    if verdict["qbankStatusOnly"]:
+        print("  note: %s" % QBANK_STATUS_ONLY_NOTE, file=stream)
     return 0
 
 
@@ -1234,6 +1294,61 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
                 _case(root, "attest/pending-qbank", attest_item, email=CONSOLE_IDENTITY,
                       head_branch=ATTEST_BRANCH), 0, [])
 
+        # (q2)-(q5) THE #783 SHAPE. question_bank.json registered as a tool's extraSources is
+        # CONTENT — and the console's status flip must still pass on attest/pending, because
+        # a question's attestation IS its status. Registered in the same diff: content-ness
+        # is read at BASE ∪ HEAD, so that is enough for the file to count.
+        def register_qbank_as_content():
+            shipped = _fixture_shipped()
+            shipped["pages"][0]["extraSources"] = [QBANK_REL]
+            _write(root, SHIPPED_REL, shipped)
+
+        def attest_item_registered():
+            register_qbank_as_content()
+            attest_item()
+        code, text = _case(root, "attest/pending-qbank-783", attest_item_registered,
+                           email=CONSOLE_IDENTITY, head_branch=ATTEST_BRANCH)
+        check("(q2) a console status flip on a registered question bank exits 0", code, 0)
+        check("(q2) and says why the question bank was not content",
+              QBANK_STATUS_ONLY_NOTE in text, True)
+
+        def attest_and_edit_registered():
+            register_qbank_as_content()
+            data = json.loads(json.dumps(qb))
+            data["items"][0]["status"] = QBANK_ATTESTED
+            data["items"][0]["stem"] = "a stem nobody reviewed"
+            _write(root, QBANK_REL, data)
+        code, text = _case(root, "attest/pending-qbank-783-edit", attest_and_edit_registered,
+                           email=CONSOLE_IDENTITY, head_branch=ATTEST_BRANCH)
+        check("(q3) attest + edit the same item on a registered bank exits 1", code, 1)
+        check("(q3) fires L3", _rules(text), ["L3"])
+        check("(q3) lists question_bank.json as content changed",
+              "content changed:\n      %s" % QBANK_REL in text, True)
+        check("(q3) does not claim the change was status-only",
+              QBANK_STATUS_ONLY_NOTE in text, False)
+
+        def attest_one_edit_other_registered():
+            # The flip is clean on item 0, but item 1 (already attested) gains an edit —
+            # the projection differs, so the file is content and L3 fires.
+            register_qbank_as_content()
+            data = json.loads(json.dumps(qb))
+            data["items"][0]["status"] = QBANK_ATTESTED
+            data["items"][1]["pearl"] = "a pearl nobody reviewed"
+            _write(root, QBANK_REL, data)
+        verdict("(q4) a clean flip beside an edit elsewhere in the bank",
+                _case(root, "attest/pending-qbank-783-mixed", attest_one_edit_other_registered,
+                      email=CONSOLE_IDENTITY, head_branch=ATTEST_BRANCH), 1, ["L3"])
+
+        def retire_registered():
+            # `retired` changes which items ship: content, not governance state.
+            register_qbank_as_content()
+            data = json.loads(json.dumps(qb))
+            data["items"][0]["retired"] = True
+            _write(root, QBANK_REL, data)
+            _write(root, "CLAUDE.md", "# Agent Guide\n\nrule one\nrule two\n")
+        verdict("(q5) retiring an item beside a CLAUDE.md edit is still L1",
+                _case(root, "feature-qbank-783-retire", retire_registered), 1, ["L1"])
+
         # A content-only PR is the common case and must stay silent.
         verdict("content alone", _case(root, "feature-content", touch_content), 0, [])
 
@@ -1625,6 +1740,10 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
                             "shipped_pages.schema.json"), True)
         check("is_governance covers the attestation machinery's own modules",
               is_governance("13_Faculty_Resources/_automation/attestation_hash.py"), True)
+        check("is_governance covers the ledger's public keys (ADR-003)",
+              is_governance("13_Faculty_Resources/ledger/keys.json"), True)
+        check("is_governance covers the ledger's build-side reader, despite site_build/",
+              is_governance("13_Faculty_Resources/_automation/site_build/ledger_overlay.mjs"), True)
         check("is_governance excludes site_build registration DATA", is_governance(SHIPPED_REL),
               False)
         check("is_governance excludes the build's own nav wiring",
@@ -1650,6 +1769,22 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
               [("a", "attested item edited (fields: pearl)")])
         check("a question_bank.json with no `items` list raises",
               raises(lambda: qbank_items({"items": {}})), True)
+        # qbank_text's edges: exactly `status` is dropped, nothing else, order kept.
+        check("qbank_text drops status and nothing else",
+              qbank_text({"v": 1, "items": [{"id": "a", "status": "draft", "stem": "s"}]}),
+              {"v": 1, "items": [{"id": "a", "stem": "s"}]})
+        check("qbank_text: a status flip projects equal",
+              qbank_text({"items": [{"id": "a", "status": "draft", "stem": "s"}]})
+              == qbank_text({"items": [{"id": "a", "status": QBANK_ATTESTED, "stem": "s"}]}),
+              True)
+        check("qbank_text: a reorder is not equal",
+              qbank_text({"items": [{"id": "a"}, {"id": "b"}]})
+              == qbank_text({"items": [{"id": "b"}, {"id": "a"}]}), False)
+        check("qbank_text: a top-level key change is not equal",
+              qbank_text({"v": 1, "items": []}) == qbank_text({"v": 2, "items": []}), False)
+        check("qbank_text: absent stays absent", qbank_text(None), None)
+        check("qbank_text raises on a wrong shape",
+              raises(lambda: qbank_text({"items": {}})), True)
         check("a shipped_pages.json with a non-list `pages` raises",
               raises(lambda: shipped_sources({"version": 1, "pages": 7})), True)
     finally:

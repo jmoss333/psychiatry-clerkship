@@ -1,0 +1,55 @@
+name: Production — Release train (publish main to the learner sites)
+
+# The two learner sites publish from `release`, not `main`: every Netlify production
+# deploy is billed, and publishing on every merge cost two deploys per merge. This
+# moves `release` to the newest FULLY GREEN commit of main three times a day
+# (05:05, 11:05, 17:05 US-Eastern during daylight time) — the 05:05 slot lands just
+# before the 09:20 UTC production canary. "Run workflow" is the publish-now button
+# for anything urgent (a safety fix, a crisis-contact change).
+# Logic and tests: 13_Faculty_Resources/_automation/maintenance/release_train.py,
+# tests/maintenance/test_release_train.py.
+
+on:
+  schedule:
+    - cron: "5 9,15,21 * * *"
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Why publish now (recorded in the run summary)
+        required: false
+        type: string
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: production-release-train
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          lfs: false
+          ref: main
+
+      - name: Promote the newest green main commit to release
+        id: promote
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_REASON: ${{ github.event.inputs.reason }}
+        run: python3 13_Faculty_Resources/_automation/maintenance/release_train.py
+
+      # Pushes made with GITHUB_TOKEN do not start other workflows, so the release
+      # receipt is requested explicitly for the exact commit just published.
+      - name: Request the production release receipt
+        if: steps.promote.outputs.promoted == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_SHA: ${{ steps.promote.outputs.sha }}
+        run: gh workflow run production-release-verification.yml --ref main -f revision="$RELEASE_SHA"

@@ -90,6 +90,64 @@ function serialize(value) {
 }
 
 /**
+ * The canonical JSON text of any JSON value: keys sorted by code point at every level, no
+ * whitespace, raw UTF-8. Python twin: `json.dumps(v, sort_keys=True, separators=(",", ":"),
+ * ensure_ascii=False)`. Exported because the attestation ledger (faculty-console/ledger.mjs)
+ * signs and chains exactly this form; one canonicaliser, not two.
+ */
+export function canonicalJson(value) {
+  return serialize(value);
+}
+
+// The one registry that is both page text (#783 lists it in the question tools'
+// `extraSources`) and an attestation ledger (each item's `status`). Its manifest line hashes
+// the bank WITHOUT any item's `status` — see `canonicalQuestionBank`. Python twin:
+// QUESTION_BANK_PATH / canonical_question_bank / source_blob_sha in attestation_hash.py.
+export const QUESTION_BANK_PATH = 'question_bank.json';
+const QUESTION_BANK_GOVERNANCE_KEYS = new Set(['status']);
+
+/**
+ * Canonical bytes of question_bank.json with every item's `status` removed.
+ *
+ * Signing a question must not drift the two question tools' own attestations, and a build
+ * that overlays question sign-offs from the attestation ledger (ADR-003) must not either.
+ * `retired` stays: it changes which questions ship, which is content. Anything that is not
+ * a JSON object with an `items` list is returned unchanged, exactly as the Python twin does,
+ * so a malformed bank drifts rather than throws.
+ */
+export function canonicalQuestionBank(data) {
+  const bytes = Buffer.isBuffer(data) ? data : Buffer.from(String(data), 'utf8');
+  let doc;
+  try {
+    doc = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+  } catch {
+    return bytes;
+  }
+  if (!doc || typeof doc !== 'object' || Array.isArray(doc) || !Array.isArray(doc.items)) {
+    return bytes;
+  }
+  const body = { ...doc };
+  body.items = doc.items.map((item) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return item;
+    const kept = {};
+    for (const [key, value] of Object.entries(item)) {
+      if (!QUESTION_BANK_GOVERNANCE_KEYS.has(key)) kept[key] = value;
+    }
+    return kept;
+  });
+  return Buffer.from(serialize(body), 'utf8');
+}
+
+/**
+ * The value a manifest line carries for one source file: its git blob SHA, computed over
+ * the canonical question bank when the source IS the question bank. Callers that already
+ * hold a tree's blob SHAs (the console) must replace the question bank's entry with this.
+ */
+export function sourceBlobSha(path, data) {
+  return path === QUESTION_BANK_PATH ? blobSha(canonicalQuestionBank(data)) : blobSha(data);
+}
+
+/**
  * Canonical bytes of a topic_meta record: key-sorted, no whitespace, raw UTF-8.
  *
  * `facultyReview` is dropped: it records the act of attesting, so including it would make
