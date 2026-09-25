@@ -520,10 +520,14 @@ async function expectAdaptiveDock(page, expectedFirst, expectedSecond, expectedC
       count: fixedBottomNavs.length,
       position: getComputedStyle(dock).position,
       bottom: bar.bottom,
-      targets: [...dock.querySelectorAll('button')].map(button => {
-        const box = button.getBoundingClientRect();
-        return { left: box.left, right: box.right, width: box.width, height: box.height };
-      }),
+      // Excludes Browse's own menu buttons while its <details> is closed: querySelectorAll finds
+      // them regardless of display, and a real tap target's box is meaningless at display:none.
+      targets: [...dock.querySelectorAll('button')]
+        .filter(button => getComputedStyle(button).display !== 'none')
+        .map(button => {
+          const box = button.getBoundingClientRect();
+          return { left: box.left, right: box.right, width: box.width, height: box.height };
+        }),
       pageWidth: document.documentElement.scrollWidth,
       viewportWidth: document.documentElement.clientWidth,
     };
@@ -2925,7 +2929,7 @@ test('Patient care resources is a safe, responsive fourth destination and search
 
   await page.setViewportSize(PHONE);
   await expect(careTab).toBeHidden();
-  await expect(page.locator('.fd-dock:visible button')).toHaveCount(4);
+  await expect(page.locator('.fd-dock:visible button:visible')).toHaveCount(4);
   expect(await page.locator('.fd-tabs').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
   expect(await page.locator('.fd-care-page').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
 
@@ -3001,7 +3005,7 @@ test('Patient care resources stays reachable through an in-flow phone entry and 
     .filter(animation => animation.effect?.getComputedTiming().endTime !== Infinity)
     .map(animation => animation.finished)));
   expect((await entry.boundingBox()).height).toBeGreaterThanOrEqual(44);
-  await expect(page.locator('.fd-dock:visible button')).toHaveCount(4);
+  await expect(page.locator('.fd-dock:visible button:visible')).toHaveCount(4);
   await entry.click();
   await expect(page.locator('.fd-care-page')).toBeVisible();
   await expect(page.locator('.fd-care-pack')).toBeVisible();
@@ -3061,7 +3065,7 @@ test('phone chrome: one dock stays at the bottom and the first screen belongs to
   expect(dockBox.y + dockBox.height).toBeCloseTo(PHONE.height, 0);
   const headerBox = await page.locator('.fd-header').boundingBox();
   expect(headerBox.height).toBeLessThanOrEqual(120);
-  for (const item of await dock.locator('button').all()) {
+  for (const item of await dock.locator('button:visible').all()) {
     const box = await item.boundingBox();
     expect(box.height, 'dock item keeps its touch target').toBeGreaterThanOrEqual(44);
   }
