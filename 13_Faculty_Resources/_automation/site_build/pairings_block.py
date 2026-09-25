@@ -38,6 +38,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:  # so an importer from outside site_build/ still resolves it
     sys.path.insert(0, HERE)
 
+import audio_transcripts  # noqa: E402
 import shipped_pages  # noqa: E402
 
 MARKER = "<!-- pairing-block -->"
@@ -140,6 +141,18 @@ def resolve(data, lib_root):
                 item["_source_title"] = row.get("source_title") or ""
                 item["_duration"] = (row.get("duration") or "").strip()
                 item["_filename"] = row.get("filename") or ""
+                # WCAG 1.2.1: a player this block renders must link its text alternative,
+                # and media_manifest.json's textAlt for the brief says it does. Fail closed
+                # rather than render a player whose transcript was deleted or never made.
+                tid = audio_transcripts.transcript_id(row.get("number") or key)
+                if not audio_transcripts.exists(lib_root, tid):
+                    raise SystemExit(
+                        "pairings.json: %s pairs audio_oe brief %s, which has no transcript "
+                        "at %s — a paired brief must ship its text alternative (run "
+                        "13_Faculty_Resources/_automation/transcribe_audio.py)"
+                        % (pairing["id"], tid, audio_transcripts.source_path("", tid))
+                    )
+                item["_transcript"] = audio_transcripts.served_path(tid)
             items.append(item)
         pairing = dict(pairing)
         pairing["items"] = items
@@ -179,7 +192,9 @@ def _ordered_items(pairing):
 def _render_item(item):
     """One pairing item as an <li>. Link conventions match the rest of the library:
     pages use ?page=<slug>, tools use tools/<file> in a new tab, and audio plays inline
-    rather than navigating — the same shape landmark_trials_page.md uses for /audio/."""
+    rather than navigating — the same shape landmark_trials_page.md uses for /audio/.
+    Every audio player is followed by a link to its transcript page (audio_transcripts.py),
+    opened in a new tab like a tool, so the text alternative sits where the audio does."""
     kind = item.get("kind")
     label = ROLE_LABEL.get(item.get("role"), item.get("role", ""))
 
@@ -207,13 +222,17 @@ def _render_item(item):
             '<li><strong>%s%s</strong> — %s <span class="pairing-src">— landmark brief: '
             "%s</span><br>"
             '<audio controls preload="none" src="audio_oe/%s" '
-            'aria-label="Landmark brief: %s"></audio></li>'
+            'aria-label="Landmark brief: %s"></audio><br>'
+            '<a class="pairing-transcript" href="%s" target="_blank" rel="noopener" '
+            'aria-label="Transcript: %s">Transcript</a></li>'
             % (
                 _esc(label),
                 _esc(duration),
                 _esc(item.get("_title", "")),
                 _esc(item.get("_source_title", "")),
                 _attr(item.get("_filename", "")),
+                _attr(item.get("_source_title", "")),
+                _attr(item["_transcript"]),
                 _attr(item.get("_source_title", "")),
             )
         )

@@ -204,6 +204,12 @@ if os.path.isdir(_oedir) and os.path.exists(_oedir+"/MANIFEST.csv"):
             _na+=1
     json.dump(_q, open(_qp,"w",encoding="utf-8"))
     print("OE audio: copied",len(_oemap),"files | deck-aligned",_na,"quiz decks")
+    # WP-16 step 2: the committed machine transcripts (12_Media/audio_oe/transcripts/),
+    # rendered as readable pages beside the audio. The resident build inherits them via
+    # its copytree of this output. What links them: pairings_block.py (week pages).
+    import audio_transcripts as _transcripts
+    _tids=_transcripts.publish(LIB, OUT)
+    print("OE transcripts: rendered",len(_tids),"pages ->",_transcripts.OUT_DIR)
 else:
     _abort_missing([_oedir+"/MANIFEST.csv"])
 # NOTE: reviewed.json (the raw internal review ledger) is deliberately NOT copied
