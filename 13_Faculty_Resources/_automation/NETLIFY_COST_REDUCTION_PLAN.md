@@ -157,7 +157,7 @@ Leave the two learner sites on `ignore = "/bin/false"` in this tier. They are bu
 
 ### Tier 2 — this month · a further ~$50/month · one real trade-off
 
-**B1. Put the two learner sites on a release train.** After Tier 1 the residual is almost entirely `une-ms3` + `mmc` at 2 × ~350 merges/month = ~700 production deploys ≈ $70/month. Point both sites at a `release` branch instead of `main`, and fast-forward `main → release` on a schedule (a GitHub Action, 3×/day). That is 6 production deploys/day instead of ~24.
+**B1. Put the two learner sites on a release train.** **Status: BUILT 2026-09-25** — `.github/workflows/production-release-train.yml` + `_automation/maintenance/release_train.py`; both sites' production branch switched to `release` in the Netlify UI the same day. After Tier 1 the residual is almost entirely `une-ms3` + `mmc` at 2 × ~350 merges/month = ~700 production deploys ≈ $70/month. Point both sites at a `release` branch instead of `main`, and fast-forward `main → release` on a schedule (a GitHub Action, 3×/day). That is 6 production deploys/day instead of ~24.
 
 **The trade-off, stated plainly:** learners see a change up to ~8 hours after it merges instead of within a minute. For a curriculum site that is almost certainly fine, and it buys a genuine benefit — the live site stops changing under a student mid-session. A `workflow_dispatch` on the same action gives you a one-click "ship now" for anything urgent.
 

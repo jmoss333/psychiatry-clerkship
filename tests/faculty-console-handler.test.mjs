@@ -3187,3 +3187,247 @@ test('re-attesting a row whose source left the tree is refused, never reported a
   await expectError(response, { status: 400, code: 'content.no_source' });
   assert.equal(mock.putBodies.length, 0);
 });
+
+/* Re-sign by change (2026-09-25): two read-only GET views. `?view=changes` groups every
+   drifted page by the correction (PR) that changed its source files on or after the day it
+   was signed; `?view=diff` shows what one correction — or everything since signing — did to
+   one page. The rules pinned here: they never write and never freshen a branch, they only
+   ever show what git actually holds, and a hostile parameter is refused before any read. */
+
+const CHANGE_BASE_SHA = 'c1'.repeat(20);
+const CHANGE_PARENT_SHA = 'e3'.repeat(20);
+const CHANGE_773_SHA = 'd2'.repeat(20);
+const CHANGE_700_SHA = 'f4'.repeat(20);
+const ORIGINAL_MOOD_SOURCE = defaultSources()['01_Core/t_mood.md'];
+
+function commitRecord(sha, message, date) {
+  return {
+    sha,
+    html_url: `https://github.com/synthetic/faculty-console/commit/${sha}`,
+    commit: { message, committer: { date } },
+  };
+}
+
+function contentsObject(bytes) {
+  const buffer = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes, 'utf8');
+  return { sha: blobShaOf(buffer), size: buffer.byteLength, encoding: 'base64', content: buffer.toString('base64') };
+}
+
+/* t_mood.md was signed on 2026-07-01 against ORIGINAL_MOOD_SOURCE. Two corrections touched
+   its source since: #700 on the signing day itself, and #773 on 2026-09-24, which is what
+   drifted it. `history` overrides what the commit list returns per source path. */
+function changeHistoryMock({ history, files = boundFiles(), attestBranch = false } = {}) {
+  const commitsFor = history || {
+    '01_Core/t_mood.md': [
+      commitRecord(CHANGE_773_SHA, 'fix(content): Major/Moderate peer-review findings (#773)', '2026-09-24T12:00:00Z'),
+      commitRecord(CHANGE_700_SHA, 'fix(content): lithium range wording (#700)', '2026-07-01T15:00:00Z'),
+    ],
+  };
+  const mock = createGithubMock({
+    files,
+    sources: { ...defaultSources(), '01_Core/t_mood.md': DRIFTED_MOOD_SOURCE },
+    beforeRequest: (call) => {
+      const url = new URL(call.url);
+      if (call.method !== 'GET') return undefined;
+      // The attestation branch sits one commit behind main, so an ordinary GET has a
+      // freshness question to ask (see the control half of the never-freshen test).
+      if (attestBranch && call.git === 'ref/heads/attest/pending') {
+        return jsonResponse(200, { object: { type: 'commit', sha: FIRST_COMMIT_SHA } });
+      }
+      if (url.pathname === '/repos/synthetic/faculty-console/commits') {
+        if (url.searchParams.get('until')) return jsonResponse(200, [commitRecord(CHANGE_BASE_SHA, 'older', '2026-06-30T09:00:00Z')]);
+        return jsonResponse(200, commitsFor[url.searchParams.get('path')] || []);
+      }
+      if (call.git === `commits/${CHANGE_773_SHA}`) {
+        return jsonResponse(200, {
+          sha: CHANGE_773_SHA,
+          message: 'fix(content): Major/Moderate peer-review findings (#773)',
+          committer: { date: '2026-09-24T12:00:00Z' },
+          parents: [{ sha: CHANGE_PARENT_SHA }],
+          html_url: `https://github.com/synthetic/faculty-console/commit/${CHANGE_773_SHA}`,
+        });
+      }
+      const ref = url.searchParams.get('ref');
+      if (call.path === '01_Core/t_mood.md') {
+        const old = [CHANGE_PARENT_SHA, CHANGE_BASE_SHA].includes(ref);
+        return jsonResponse(200, contentsObject(old ? ORIGINAL_MOOD_SOURCE : DRIFTED_MOOD_SOURCE));
+      }
+      // The page's record as it stood before the signing day: one shelf entry fewer.
+      if (call.path === TOPIC_META_PATH && ref === CHANGE_BASE_SHA) {
+        const older = clone(files[TOPIC_META_PATH].json);
+        older['t_mood.md'].shelfBlueprint = [];
+        return jsonResponse(200, contentsObject(`${JSON.stringify(older, null, 2)}\n`));
+      }
+      return undefined;
+    },
+  });
+  return mock;
+}
+
+function viewRequest(query, options = {}) {
+  return apiRequest('GET', { url: `${API_URL}?${new URLSearchParams(query)}`, ...options });
+}
+
+function assertReadOnly(mock) {
+  assert.deepEqual(
+    mock.calls.filter(call => call.method !== 'GET').map(call => `${call.method} ${call.url}`),
+    [],
+    'a change view never writes',
+  );
+  assertNoQbankWrite(mock);
+}
+
+test('?view=changes groups each drifted page by the correction that changed it', async () => {
+  const mock = changeHistoryMock();
+  const response = await handlerWith(mock)(viewRequest({ view: 'changes' }));
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('Cache-Control'), 'no-store');
+  const payload = await response.json();
+
+  assert.equal(payload.view, 'changes');
+  assert.equal(payload.branch, 'main');
+  assert.equal(payload.drifted, 1, 'only t_mood.md drifted; the pending tool is not a re-sign');
+  assert.equal(payload.partial, false);
+  assert.deepEqual(payload.unchecked, []);
+  assert.deepEqual(payload.unexplained, []);
+  assert.deepEqual(payload.groups.map(group => [group.id, group.pr, group.slugs]), [
+    ['pr:773', 773, ['t_mood.md']],
+    ['pr:700', 700, ['t_mood.md']],
+  ]);
+  assert.equal(payload.groups[0].title, 'fix(content): Major/Moderate peer-review findings');
+  assert.equal(payload.groups[0].sha, CHANGE_773_SHA);
+  // #700 landed on the day the page was signed, so it may already have been read: the view
+  // says so rather than guessing either way. #773 came later and certainly was not.
+  assert.deepEqual(payload.pages['t_mood.md'], {
+    title: 'Mood Disorders',
+    kind: 'page',
+    at: '2026-07-01',
+    changes: [{ id: 'pr:773', sameDay: false }, { id: 'pr:700', sameDay: true }],
+  });
+
+  // The history asked for is the signed page's own source, from the start of its signing day.
+  const listCalls = mock.calls.filter(call => new URL(call.url).pathname.endsWith('/commits'));
+  assert.equal(listCalls.length, 1);
+  const query = new URL(listCalls[0].url).searchParams;
+  assert.equal(query.get('path'), '01_Core/t_mood.md');
+  assert.equal(query.get('since'), '2026-07-01T00:00:00Z');
+  assert.equal(query.get('sha'), 'main');
+  assertReadOnly(mock);
+});
+
+test('a drifted page no correction touched is reported as unexplained, not dropped', async () => {
+  const mock = changeHistoryMock({ history: {} });
+  const payload = await (await handlerWith(mock)(viewRequest({ view: 'changes' }))).json();
+  assert.deepEqual(payload.groups, []);
+  assert.deepEqual(payload.unexplained, ['t_mood.md']);
+  assert.deepEqual(payload.pages['t_mood.md'].changes, []);
+});
+
+test('the change views never freshen or write the attestation branch', async () => {
+  const env = { GIT_BRANCH: 'attest/pending', GIT_BASE_BRANCH: 'main' };
+  const viewMock = changeHistoryMock({ attestBranch: true });
+  const viewHandler = handlerWith(viewMock, env);
+  assert.equal((await viewHandler(viewRequest({ view: 'changes' }))).status, 200);
+  assert.equal((await viewHandler(viewRequest({ view: 'diff', slug: 't_mood.md', sha: CHANGE_773_SHA }))).status, 200);
+  assertReadOnly(viewMock);
+  assert.equal(viewMock.calls.some(call => call.url.includes('/compare/')), false,
+    'a view does not even ask how far the branch trails');
+
+  // Teeth: the ordinary GET on the same branch DOES run the freshness check, so the
+  // assertion above is about the view, not about a mock that cannot see the check.
+  const plainMock = changeHistoryMock({ attestBranch: true });
+  await handlerWith(plainMock, env)(apiRequest('GET'));
+  assert.equal(plainMock.calls.some(call => call.url.includes('/compare/')), true);
+});
+
+test('?view=diff&sha= shows what one correction changed on one page, word by word', async () => {
+  const mock = changeHistoryMock();
+  const handler = handlerWith(mock);
+  const response = await handler(viewRequest({ view: 'diff', slug: 't_mood.md', sha: CHANGE_773_SHA }));
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+
+  assert.equal(payload.view, 'diff');
+  assert.equal(payload.base, CHANGE_PARENT_SHA);
+  assert.equal(payload.head, CHANGE_773_SHA);
+  assert.equal(payload.since, null);
+  assert.equal(payload.commit.pr, 773);
+  assert.equal(payload.compareUrl,
+    `https://github.com/synthetic/faculty-console/compare/${CHANGE_PARENT_SHA}...${CHANGE_773_SHA}`);
+  assert.equal(payload.files.length, 1);
+  const [file] = payload.files;
+  assert.equal(file.path, '01_Core/t_mood.md');
+  assert.equal(file.status, 'modified');
+  const rows = file.hunks.flatMap(hunk => hunk.rows);
+  const changed = rows.find(row => row.kind === 'change');
+  assert.deepEqual(changed.segments, [
+    { t: 'del', s: 'Synthetic page source' },
+    { t: 'add', s: 'Edited after the faculty review' },
+    { t: 'eq', s: '.' },
+  ]);
+  assert.deepEqual(payload.record, [], 'this correction did not touch the record');
+
+  // A second look at the same change is served from memory: no page is fetched twice.
+  const reads = () => mock.calls.filter(call => call.path === '01_Core/t_mood.md').length;
+  const before = reads();
+  assert.equal((await handler(viewRequest({ view: 'diff', slug: 't_mood.md', sha: CHANGE_773_SHA }))).status, 200);
+  assert.equal(reads(), before);
+  assertReadOnly(mock);
+});
+
+test('?view=diff without sha shows everything since the start of the signing day', async () => {
+  const mock = changeHistoryMock();
+  const payload = await (await handlerWith(mock)(viewRequest({ view: 'diff', slug: 't_mood.md' }))).json();
+
+  assert.equal(payload.since, '2026-07-01');
+  assert.equal(payload.commit, null);
+  assert.equal(payload.base, CHANGE_BASE_SHA, 'the last commit before the signing day');
+  assert.equal(payload.head, BRANCH_HEAD_SHA, 'the base branch as it stands');
+  assert.equal(payload.files[0].status, 'modified');
+  assert.deepEqual(payload.record.map(change => change.key), ['shelfBlueprint']);
+  const recordText = payload.record[0].hunks.flatMap(hunk => hunk.rows)
+    .flatMap(row => row.segments).filter(segment => segment.t === 'add').map(segment => segment.s).join('');
+  assert.match(recordText, /mood-disorders/);
+  // The base is asked for by date, from the branch the pages ship from.
+  const baseLookup = mock.calls.find(call => new URL(call.url).searchParams.get('until'));
+  assert.equal(new URL(baseLookup.url).searchParams.get('until'), '2026-07-01T00:00:00Z');
+  assertReadOnly(mock);
+});
+
+test('the change views refuse hostile or unknown parameters before reading anything', async () => {
+  const cases = [
+    [{ view: 'diff', slug: '../../etc/passwd' }, 400, 'changes.invalid_slug'],
+    [{ view: 'diff', slug: 't_mood.md', sha: 'not-a-sha' }, 400, 'changes.invalid_commit'],
+    [{ view: 'diff', slug: 't_mood.md', sha: 'a'.repeat(39) }, 400, 'changes.invalid_commit'],
+    [{ view: 'everything' }, 400, 'unknown_view'],
+  ];
+  for (const [query, status, code] of cases) {
+    const mock = changeHistoryMock();
+    await expectError(await handlerWith(mock)(viewRequest(query)), { status, code });
+    assert.equal(mock.calls.some(call => call.path === '01_Core/t_mood.md'), false, code);
+    assertReadOnly(mock);
+  }
+});
+
+test('the diff view says plainly when a page, a change, or a signature is missing', async () => {
+  let mock = changeHistoryMock();
+  await expectError(await handlerWith(mock)(viewRequest({ view: 'diff', slug: 'not-shipped.md' })),
+    { status: 404, code: 'changes.not_shipped' });
+
+  mock = changeHistoryMock();
+  await expectError(await handlerWith(mock)(viewRequest({ view: 'diff', slug: 't_mood.md', sha: 'ab'.repeat(20) })),
+    { status: 404, code: 'changes.unknown_commit' });
+
+  const files = boundFiles();
+  delete files[REVIEWED_PATH].json['t_mood.md'];
+  mock = changeHistoryMock({ files });
+  await expectError(await handlerWith(mock)(viewRequest({ view: 'diff', slug: 't_mood.md' })),
+    { status: 404, code: 'changes.no_signature' });
+});
+
+test('the change views need the faculty key like everything else', async () => {
+  const mock = changeHistoryMock();
+  const response = await handlerWith(mock)(viewRequest({ view: 'changes' }, { key: null }));
+  await expectError(response, { status: 401, code: 'unauthorized' });
+  assert.equal(mock.calls.length, 0, 'nothing is read for an unauthenticated view');
+});

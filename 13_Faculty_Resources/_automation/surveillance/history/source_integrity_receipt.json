@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-09-20T00:01:48+00:00",
+  "crossrefExamined": 90,
+  "findingCounts": {
+    "P0": 0,
+    "P1": 1,
+    "P2": 7
+  },
+  "pubmedExamined": 88,
+  "schemaVersion": 1,
+  "sourcesDeclared": 109,
+  "sourcesIdentified": 91,
+  "sourcesWithFindings": 6,
+  "state": "success",
+  "unverifiableById": 18
+}

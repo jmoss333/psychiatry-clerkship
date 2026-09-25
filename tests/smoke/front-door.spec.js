@@ -2883,6 +2883,14 @@ test('Patient care resources stays reachable through an in-flow phone entry and 
   await expect(entry).toBeVisible();
   await expect(entry).toHaveAccessibleName('Patient care resources');
   expect(await entry.evaluate(el => getComputedStyle(el).position)).not.toBe('fixed');
+  // Today fades in (fdFadeUp: translateY 8px -> none, 0.24 s), and mid-fade the entry's box is
+  // mapped through a fractional transform in float: seeked frame by frame, the 44 px target read
+  // 44.00003 at 90 ms and CI measured 43.999969 on both attempts of one run (#788). Measure where
+  // it settles, on the fade's own `finished` promises rather than a clock; an infinite animation
+  // never settles, so it is not waited on.
+  await entry.evaluate(el => Promise.all(el.closest('.fd-today').getAnimations({ subtree: true })
+    .filter(animation => animation.effect?.getComputedTiming().endTime !== Infinity)
+    .map(animation => animation.finished)));
   expect((await entry.boundingBox()).height).toBeGreaterThanOrEqual(44);
   await expect(page.locator('.fd-dock:visible button')).toHaveCount(5);
   await entry.click();
