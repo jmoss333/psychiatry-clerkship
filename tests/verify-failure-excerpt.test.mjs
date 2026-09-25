@@ -135,7 +135,7 @@ function verifyFunction(name) {
   return match[0];
 }
 
-test("verify.sh's step() names the failing test and saves the full output where it says", (t) => {
+test("verify.sh's step() names the failing test and saves every failed step's full output in one place", (t) => {
   const { dir, names, tap } = failingRun(t);
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-excerpt-tmp-'));
   t.after(() => fs.rmSync(tmp, { recursive: true, force: true }));
@@ -148,9 +148,11 @@ test("verify.sh's step() names the failing test and saves the full output where 
     verifyFunction('step'),
     `step "node --test tests/*.test.mjs" node --test --test-concurrency=1 ${names.join(' ')}`,
     'step "passing step" printf "all good\\n"',
+    'step "python validator" sh -c \'echo "3 rows invalid"; exit 2\'',
     'printf "FAILED=%s\\n" "${#FAILED[@]}"',
   ].join('\n');
-  const run = spawnSync(BASH, ['-c', script], { cwd: dir, encoding: 'utf8', env: cleanEnv({ TMPDIR: tmp }) });
+  // macOS sets TMPDIR with a trailing slash; the printed path must not double it.
+  const run = spawnSync(BASH, ['-c', script], { cwd: dir, encoding: 'utf8', env: cleanEnv({ TMPDIR: `${tmp}/` }) });
   assert.equal(run.status, 0, run.stderr);
   assert.equal(run.stderr, '');
   const out = run.stdout;
@@ -160,17 +162,26 @@ test("verify.sh's step() names the failing test and saves the full output where 
   assert.match(out, /^ {8}\| {3}location: '.*a-launcher\.test\.mjs:4:1'$/m);
   assert.match(out, /^ {8}\| # fail 3$/m);
   assert.match(out, /^ {2}PASS {2}passing step +all good$/m);
-  assert.match(out, /^FAILED=1$/m);
+  assert.match(out, /^ {2}FAIL {2}python validator +\(exit 2\)\n {8}\| 3 rows invalid\n {8}full output: /m);
+  assert.match(out, /^FAILED=2$/m);
 
-  const logLine = out.match(/^ {8}full output: (.+)$/m);
-  assert.ok(logLine, `no full-output path printed:\n${out}`);
-  const log = logLine[1];
-  // Where it landed, not just that it was named: inside TMPDIR, never the repository.
-  assert.ok(log.startsWith(path.join(tmp, 'verify-failed.')), `log outside TMPDIR: ${log}`);
-  assert.match(path.basename(log), /^01-node-test-tests-\.test\.mjs\.log$/);
-  const saved = fs.readFileSync(log, 'utf8');
+  const logs = [...out.matchAll(/^ {8}full output: (.+)$/gm)].map((match) => match[1]);
+  assert.equal(logs.length, 2, `expected one full-output path per failed step:\n${out}`);
+  // Where they landed, not just that they were named: inside TMPDIR, never the repository,
+  // and in ONE directory per run — the second failure must not start a directory of its own.
+  for (const log of logs) {
+    assert.ok(log.startsWith(path.join(tmp, 'verify-failed.')), `log outside TMPDIR: ${log}`);
+    assert.doesNotMatch(log, /\/\//);
+  }
+  assert.equal(path.dirname(logs[0]), path.dirname(logs[1]));
+  assert.deepEqual(logs.map((log) => path.basename(log)),
+    ['01-node-test-tests-.test.mjs.log', '02-python-validator.log']);
+  assert.deepEqual(fs.readdirSync(tmp), [path.basename(path.dirname(logs[0]))]);
+
+  const saved = fs.readFileSync(logs[0], 'utf8');
   // The whole run is there — the passing files' tests too, which the excerpt leaves out.
   for (const letter of 'bcdefg') assert.match(saved, new RegExp(`^ok \\d+ - ${letter} passes 4$`, 'm'));
   assert.equal(saved.split('\n').filter((line) => /^(not )?ok /.test(line)).length,
     tap.split('\n').filter((line) => /^(not )?ok /.test(line)).length);
+  assert.equal(fs.readFileSync(logs[1], 'utf8'), '3 rows invalid\n');
 });

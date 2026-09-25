@@ -48,9 +48,6 @@ FAILED=()
 FAIL_LOG_DIR=''
 save_failed_step_log() {
   local name="$1" out="$2" slug
-  if [ -z "$FAIL_LOG_DIR" ]; then
-    FAIL_LOG_DIR="$(mktemp -d "${TMPDIR:-/tmp}/verify-failed.XXXXXX")" || return 1
-  fi
   slug="$(printf '%s' "$name" | LC_ALL=C tr -cs 'A-Za-z0-9._' '-' | cut -c1-60)"
   slug="$(printf '%02d-%s' "$((${#FAILED[@]} + 1))" "$slug")"
   printf '%s\n' "$out" > "$FAIL_LOG_DIR/$slug.log" || return 1
@@ -58,14 +55,20 @@ save_failed_step_log() {
 }
 step() {
   local name="$1"; shift
-  local out rc log
+  local out rc log tmp
   out="$("$@" 2>&1)"; rc=$?
   if [ $rc -eq 0 ]; then
     printf '  PASS  %-42s %s\n' "$name" "$(printf '%s' "$out" | tail -1 | cut -c1-58)"
   else
     printf '  FAIL  %-42s (exit %d)\n' "$name" "$rc"
     printf '%s\n' "$out" | "$BASH" "$REPO/bin/step_failure_excerpt.sh" 15 | sed 's/^/        | /'
-    if log="$(save_failed_step_log "$name" "$out")"; then
+    # One directory per run, made HERE: save_failed_step_log runs in a $(…) subshell, so a
+    # directory it made would be forgotten and every failed step would start its own.
+    if [ -z "$FAIL_LOG_DIR" ]; then
+      tmp="${TMPDIR:-/tmp}"
+      FAIL_LOG_DIR="$(mktemp -d "${tmp%/}/verify-failed.XXXXXX")" || FAIL_LOG_DIR=''
+    fi
+    if [ -n "$FAIL_LOG_DIR" ] && log="$(save_failed_step_log "$name" "$out")"; then
       printf '        full output: %s\n' "$log"
     fi
     FAILED+=("$name")
