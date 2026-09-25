@@ -32,8 +32,8 @@
         },
         "unblocks": {
           "type": "array",
-          "items": { "type": "string", "pattern": "^[A-Z]+[0-9]+$" },
-          "description": "standards.json unit codes that become mappable the day this code ships. Every entry must be a real unit whose mappingStatus is 'blocked-on-vocabulary' and whose blockedByCode names THIS code — the checker verifies both directions, so a proposed code cannot claim a payoff the spine does not agree it has."
+          "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9-]*[A-Z0-9]$" },
+          "description": "standards.json unit codes that become mappable the day this code ships — an ACGME code such as SBP2, or a local student-framework code such as FC-SBP (the pattern admits the hyphen since 2026-09-24, when the Foundational Competencies, which publish no alphanumeric codes, were registered). Every entry must be a real unit whose mappingStatus is 'blocked-on-vocabulary' and whose blockedByCode names THIS code — the checker verifies both directions, so a proposed code cannot claim a payoff the spine does not agree it has."
         },
         "supersedes": {
           "type": "array",

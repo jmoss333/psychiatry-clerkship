@@ -1,0 +1,76 @@
+ARCHIVED CAPTURE — contemporaneous record of a permission statement
+====================================================================
+Retrieved:  2026-09-24
+Source URL: https://image.email.aamc.org/lib/fe8e13727c63047f73/m/1/7d5be834-0f5b-410a-b812-fb0deca10ccc.pdf
+            (the full report, linked from the landing page
+            https://engage.aamc.org/UME-Competencies-AAMC-ACGME-AACOM)
+Document:   AAMC, AACOM, ACGME. Foundational Competencies for Undergraduate
+            Medical Education. 26 pp. PDF, file created and modified 2026-04-08
+            (Adobe InDesign 21.2). sha256 of the file as fetched:
+            1de8b5945ebeeb1746018fc6aadceeaa77c90eb2cd79ec78544d8592da824f72
+Companion:  Quick-reference one-pager, same publishers, 2 pp. PDF titled
+            "AAMC-AACOM-ACGME Foundational Competencies for Undergraduate Medical
+            Education", created 2026-06-10, modified 2026-06-17:
+            https://image.email.aamc.org/lib/fe8e13727c63047f73/m/1/4af1fe88-9390-497c-8620-71a6f4b3261e.pdf
+            sha256 bcbd3b2dd03a1041c62c851aa82f93db2576bf79c8f21c4aa4575d3cf9a664e3
+            The one-pager carries no copyright or licence line of its own.
+Retrieved by: direct fetch of both primary PDFs and local text extraction
+            (pdftotext). Not a search snippet, not a third-party summary.
+Release:    2024-12-12 (AACOM news release of that date:
+            https://www.aacom.org/news-reports/news/2024/12/12/aacom--aamc-and-acgme-release-new-core-competencies-for-undergraduate-medical-education)
+
+VERBATIM COPYRIGHT / LICENCE LINE (report colophon, p. ii)
+----------------------------------------------------------
+"© 2024 AAMC et al. This is an open-access publication distributed under the
+terms of the Creative Commons CC BY-NC license."
+
+VERBATIM EDIT NOTE (same page)
+------------------------------
+"Note: This publication was edited in October 2025 to update language in two
+subcompetencies on pages 11 and 13."
+
+VERBATIM SUGGESTED CITATION (same page)
+---------------------------------------
+"Suggested citation: AAMC, AACOM, ACGME. Foundational Competencies for
+Undergraduate Medical Education. AAMC, AACOM, ACGME; 2024."
+
+WHY THIS CAPTURE EXISTS
+-----------------------
+A Creative Commons BY-NC licence is an affirmative, third-party grant: anyone may
+reuse the publication for non-commercial purposes with attribution. It is the basis
+on which standards.json records this framework's rights as `granted` and its six
+competency names as reproducible. A web licence statement can change without notice,
+so this dated capture — not the live URL — is the record of what the source said on
+the date the claim was made. (research_returns.json invariant 2, web variant.)
+
+The project posture is still PARAPHRASE ONLY for subcompetency and competency-
+statement text (curriculum-architecture remediation handoff, WP-17). The licence
+would permit verbatim non-commercial reuse with attribution; the choice not to use
+it is ours, not a restriction. The colophon names "CC BY-NC" without a version
+number; which version applies is recorded as an open question in standards.json.
+
+COMPETENCY ENUMERATION (verified same fetch; names verbatim, counts enumerated)
+-------------------------------------------------------------------------------
+Listed in the order both PDFs present them. The publication does NOT number the
+six competencies and publishes NO alphanumeric codes. Its only identifiers are the
+competency name plus a plain number restarting within each competency, e.g.
+"Systems-Based Practice 4". The FC-PROF ... FC-SBP codes in standards.json are a
+LOCAL convention of this repository and must be labelled as such wherever cited.
+
+  Professionalism                          10 for all students + 1 DO-specific (11)
+  Patient Care and Procedural Skills       11 for all students + 2 DO-specific (12, 13)
+  Medical Knowledge                         5 for all students + 1 DO-specific (6)
+  Practice-Based Learning and Improvement   5
+  Interpersonal and Communication Skills    6
+  Systems-Based Practice                    8
+
+TOTAL: 10 + 11 + 5 + 5 + 6 + 8 = 45 subcompetencies for all students, plus
+1 + 2 + 1 = 4 DO-specific = 49. Counted from the enumeration in the one-pager and
+cross-checked against the report, not taken from a stated total.
+
+CAUTION RECORDED AT CAPTURE TIME
+--------------------------------
+The report says the October 2025 edit changed the wording of two subcompetencies.
+The copy captured here is the post-edit text (file dated 2026-04-08). No pre-edit
+copy was compared, so WHICH two changed is not known from this capture. Registration
+in standards.json is at the six-competency level and does not depend on either.
