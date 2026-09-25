@@ -15,7 +15,8 @@ var FD_HANDLED_ATTRS=[
   'data-fd-app-practice-question','data-fd-app-practice-reset','data-fd-app-practice-close',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge','data-fd-dock-forward',
-  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-kit-section','data-fd-kit-tool',
+  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-dock-browse-go',
+  'data-fd-kit-section','data-fd-kit-tool',
   'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear',
   'data-fd-care-pack','data-fd-care-pack-clear',
   'data-fd-care-pack-print',
@@ -29,6 +30,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-toggle':'toggle governed progress',
   'data-fd-tab':'open top-level tab',
   'data-fd-library-view':'choose Library view',
+  'data-fd-dock-browse-go':'choose Library view from the phone dock',
   'data-fd-kit-section':'filter Essentials sections',
   'data-fd-kit-tool':'preview an Essentials tool',
   'data-fd-care-intent':'choose a transient Care navigator task',
@@ -550,6 +552,13 @@ function fdDispatch(attrs, context, state){
       route:fdRouteForTab('library',c.search,view),effect:null
     };
   }
+  /* The phone dock's Browse menu carries its own attribute rather than data-fd-library-view
+     directly: that value already marks the in-Library "Everything (N pages) -->" footer button,
+     present in the DOM (though not visible) even while this menu is closed, so reusing it here
+     would leave two elements answering to the same selector. */
+  if(fdOwn(a,'data-fd-dock-browse-go')){
+    return fdDispatch({'data-fd-library-view':String(a['data-fd-dock-browse-go']||'')},c,s);
+  }
   if(fdOwn(a,'data-fd-tab')){
     tab=String(a['data-fd-tab']||'');
     /* The Everything tab is not a fifth app-level tab -- it is the top-row entry point into the
@@ -956,7 +965,7 @@ function fdTrapFocus(event, dialog){
    opens the native picker and -- the attribute being valueless in the markup -- dispatches an
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
-var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],'+
+var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-dock-browse-go],[data-fd-kit-section],[data-fd-kit-tool],'+
   '[data-fd-care-intent],[data-fd-care-clear],[data-fd-care-pack],[data-fd-care-pack-clear],[data-fd-care-pack-print],'+
   '[data-fd-offline-open],[data-fd-offline-close],[data-fd-offline-refresh],'+
   '[data-fd-app-bridge],[data-fd-app-shift],[data-fd-app-start],[data-fd-app-reflect],[data-fd-app-reset],'+

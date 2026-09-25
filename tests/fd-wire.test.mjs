@@ -3944,6 +3944,15 @@ test('the Everything tab is an alias for the full Library view, not a new tab st
   assert.equal(viaTab.patch.libraryView, 'full');
 });
 
+test('the dock Browse menu is an alias for data-fd-library-view, not a duplicate of its attribute', () => {
+  const initial = {...roleContext, tab:'today', libraryView:'essentials', openId:'a.md', sheet:'kit', searchOpen:true};
+  for (const view of ['essentials', 'full']) {
+    const viaDock = F.fdDispatch({'data-fd-dock-browse-go':view}, {}, initial);
+    const viaLibraryView = F.fdDispatch({'data-fd-library-view':view}, {}, initial);
+    assert.deepEqual(viaDock, viaLibraryView);
+  }
+});
+
 test('full Library resource route survives reload and Back while tool frame strips shell context', () => {
   const initial = {...roleContext,tab:'library',libraryView:'full'};
   const opened = F.fdDispatch({'data-fd-open':'extra.html'}, {search:'?tab=library&library=full&case=c1'}, initial);

@@ -78,15 +78,19 @@ function fdDockModel(state){
 }
 
 /* The Browse item renders as <details>/<summary> rather than a button: its two destinations
-   (data-fd-library-view, already dispatch-handled for the desktop Essentials/Everything tabs)
    need a disclosure, and the browser owns open/closed state for free rather than this app
-   tracking yet another overlay flag. */
+   tracking yet another overlay flag. Its menu items dispatch data-fd-dock-browse-go (a thin
+   alias fd_wire.js resolves onto the existing data-fd-library-view action) rather than that
+   attribute directly: the in-Library "Everything (N pages) -->" footer button (fd_library.js)
+   already carries data-fd-library-view="full", present in the DOM even while this menu is
+   closed, and reusing the same attribute value made every plain (non-:visible-scoped)
+   [data-fd-library-view="full"] locator across the smoke suite resolve to two elements. */
 function fdDockBrowseItem(){
   return '<details class="fd-dock__item fd-dock__browse">'+
     '<summary>Browse</summary>'+
     '<div class="fd-dock__browsemenu" role="menu" aria-label="Browse the Library">'+
-    '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-library-view="essentials">The Essentials</button>'+
-    '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-library-view="full">Everything</button>'+
+    '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-dock-browse-go="essentials">The Essentials</button>'+
+    '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-dock-browse-go="full">Everything</button>'+
     '</div></details>';
 }
 

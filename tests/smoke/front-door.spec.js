@@ -543,7 +543,10 @@ async function expectAdaptiveDock(page, expectedFirst, expectedSecond, expectedC
 }
 
 async function expectDockDialogs(page, dock) {
-  const search = dock.locator('[data-fd-search]:visible');
+  // The dock no longer has its own Search opener (2026-09-25 -- replaced by Browse); the
+  // header's .fd-searchbtn is the one search entry point now, but the dialog/focus-trap
+  // behavior it opens is unchanged, so it is still worth exercising from this phone-dock test.
+  const search = page.locator('.fd-searchbtn[data-fd-search]:visible');
   await search.click();
   const searchDialog = page.getByRole('dialog', { name: 'Search' });
   await expect(searchDialog).toBeVisible();
@@ -599,7 +602,7 @@ test('adaptive mobile dock: standard audience routes, dialogs, reader forwarding
   expect(progress['t_mood.md']?.done).toBe(before !== 'true');
   await expectAdaptiveDock(page, 'Today', 'Path');
 
-  await dock.locator('[data-fd-search]:visible').click();
+  await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
   const searchDialog = page.getByRole('dialog', { name: 'Search' });
   const browse = searchDialog.getByRole('button', { name: 'Browse the Library' });
   await expect(browse).toBeVisible();

@@ -214,15 +214,16 @@ test('dock renders four buttons, one disclosure, and an escaped center action', 
     'the contextual action follows the two leading destinations');
 });
 
-test('the Browse disclosure offers both Library destinations via already-tested actions', () => {
+test('the Browse disclosure offers both Library destinations via a thin alias of the tab-row action', () => {
   const html = F.fdDock({ appMode: false, dockAction: null });
   assert.match(html, /<details class="fd-dock__item fd-dock__browse"><summary>Browse<\/summary>/);
   assert.match(html, /<div class="fd-dock__browsemenu" role="menu" aria-label="Browse the Library">/);
-  assert.match(html, /data-fd-library-view="essentials">The Essentials<\/button>/);
-  assert.match(html, /data-fd-library-view="full">Everything<\/button>/);
-  // No new dispatch logic: both actions are the same data-fd-library-view branch the desktop
-  // Essentials/Everything tabs already use (fd_wire.js), so opening the Library from the phone
-  // dock behaves identically to opening it from the tab row.
+  assert.match(html, /data-fd-dock-browse-go="essentials">The Essentials<\/button>/);
+  assert.match(html, /data-fd-dock-browse-go="full">Everything<\/button>/);
+  // data-fd-dock-browse-go, not data-fd-library-view directly: the in-Library "Everything (N
+  // pages) -->" footer button already carries data-fd-library-view="full" and stays in the DOM
+  // (just not :visible) while this menu is closed, so the dock needs its own attribute or a
+  // plain, unscoped [data-fd-library-view="full"] locator resolves to two elements.
 });
 
 test('the header carries three standing controls plus one phone-only Care shortcut', () => {
