@@ -172,8 +172,8 @@
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "American Academy of Child and Adolescent Psychiatry · 2026",
-     "sourceId": "aacap-parameters",
+     "t": "American Society of Addiction Medicine · 2020",
+     "sourceId": "asam-alcohol-withdrawal-2020",
      "key": "A"
     },
     {
@@ -188,8 +188,8 @@
      "key": "C"
     },
     {
-     "t": "Schnurr et al. · 2024 · Ann Intern Med",
-     "sourceId": "schnurr-2024-vadod-ptsd-cpg-synopsis",
+     "t": "March et al. · 2004 · JAMA",
+     "sourceId": "march-2004-tads",
      "key": "D"
     }
    ],
@@ -223,13 +223,13 @@
      "key": "B"
     },
     {
-     "t": "Felitti et al. · 1998 · American Journal of Preventive Medicine",
-     "sourceId": "felitti-1998-ace",
+     "t": "Rush et al. · 2006 · American Journal of Psychiatry",
+     "sourceId": "rush-2006-stard",
      "key": "C"
     },
     {
-     "t": "Man et al. · 2023 · Clin Psychol Psychother",
-     "sourceId": "man-2023",
+     "t": "Uphoff et al. · 2020 · Cochrane Database Syst Rev",
+     "sourceId": "uphoff-2020-behavioural-activation",
      "key": "D"
     }
    ],
@@ -252,19 +252,19 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
+     "t": "Aoki et al. · 2022 · Cochrane Database Syst Rev",
+     "sourceId": "aoki-2022-cochrane-sdm",
+     "key": "A"
+    },
+    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "c": true,
      "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "A"
+     "key": "B"
     },
     {
      "t": "Cipriani et al. · 2013 · BMJ",
      "sourceId": "cipriani-2013-lithium-suicide",
-     "key": "B"
-    },
-    {
-     "t": "Jonas et al. · 2014 · JAMA",
-     "sourceId": "jonas-2014-aud-pharmacotherapy",
      "key": "C"
     },
     {
@@ -303,13 +303,13 @@
      "key": "B"
     },
     {
-     "t": "Nolen et al. · 2019 · Bipolar Disord",
-     "sourceId": "nolen-2019-lithium-levels",
+     "t": "National Institute for Health and Care Excellence · 2023",
+     "sourceId": "nice-delirium-cg103",
      "key": "C"
     },
     {
-     "t": "Volkow et al. · 2016 · New England Journal of Medicine",
-     "sourceId": "volkow-2016-addiction-brain-disease",
+     "t": "Nolen et al. · 2019 · Bipolar Disord",
+     "sourceId": "nolen-2019-lithium-levels",
      "key": "D"
     }
    ],
@@ -332,18 +332,18 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Boggs et al. · 2020 · J Gen Intern Med",
-     "sourceId": "boggs-2020-lethal-means-assessment",
-     "key": "A"
-    },
-    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "B"
+     "key": "A"
     },
     {
      "t": "Cipriani et al. · 2013 · BMJ",
      "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "B"
+    },
+    {
+     "t": "Modini et al. · 2026 · Australas Psychiatry",
+     "sourceId": "modini-large-2026",
      "key": "C"
     },
     {
@@ -532,13 +532,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Katz et al. · 2022 · JAMA Psychiatry",
-     "sourceId": "katz-2022-lithium-va",
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "sourceId": "canmat-isbd-bipolar-2018",
      "key": "A"
     },
     {
-     "t": "Uphoff et al. · 2020 · Cochrane Database Syst Rev",
-     "sourceId": "uphoff-2020-behavioural-activation",
+     "t": "U.S. Preventive Services Task Force · 2026",
+     "sourceId": "uspstf-mental-health",
      "key": "B"
     },
     {
@@ -572,13 +572,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Driessen et al. · 2023 · Psychol Med",
-     "sourceId": "driessen-2023",
+     "t": "Cuijpers et al. · 2026 · Clin Psychol Rev",
+     "sourceId": "cuijpers-2026",
      "key": "A"
     },
     {
-     "t": "Soler et al. · 2022 · Acta Psychiatr Scand",
-     "sourceId": "soler-2022",
+     "t": "Man et al. · 2023 · Clin Psychol Psychother",
+     "sourceId": "man-2023",
      "key": "B"
     },
     {

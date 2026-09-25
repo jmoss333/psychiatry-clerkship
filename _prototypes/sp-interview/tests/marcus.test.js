@@ -59,7 +59,7 @@ await run('skilled containment interview',SKILLED,(s,cov,rub,nar,replies)=>{
   ['g_fear_passenger','g_spending','g_sexual','g_si_mixed'].forEach(g=>{if(!s.unlocked[g])errs.push(g+' did not unlock');});
   if(!(replies[7]||'').includes('passenger'))errs.push('fear reveal not returned: '+replies[7]);
   if(!(replies[9]||'').includes('nine hundred'))errs.push('spending reveal not returned: '+replies[9]);
-  if(!(replies[11]||'').includes('flicker'))errs.push('mixed-features SI reveal not returned: '+replies[11]);
+  if(!(replies[11]||'').includes('flicker'))errs.push('SI flicker reveal not returned: '+replies[11]);
   const missed=cov.filter(c=>c.status!=='observed');
   if(missed.length)errs.push('non-observed checklist items: '+missed.map(c=>c.id+'='+c.status).join(','));
   ['alliance','data','technique','organization'].forEach(k=>{if(rub[k]!=='observed')errs.push(k+'='+rub[k]);});
@@ -165,6 +165,32 @@ await run('euphemism then plain screen — the plain screen still credits and un
   if(!s.covered['si_direct'])errs.push('si_direct not counted after the plain screen');
   const si=cov.find(c=>c.id==='c_si');
   if(!si||si.status!=='observed')errs.push('c_si = '+(si&&si.status)+' (expected observed)');
+  return errs;
+});
+
+// Peer-review M02-007 (2026-09-24): a passive death-wish question still reaches the flicker —
+// "Dying? No —" is the natural answer to it — but c_si stays partial until he is asked plainly
+// about killing himself.
+await run('passive-wish question — flicker disclosed at rapport 0, c_si partial',[
+ "Have you had thoughts of dying?"
+],(s,cov,rub,nar,replies)=>{
+  const errs=[];
+  if(!s.unlocked['g_si_mixed'])errs.push('a passive-wish question must still open g_si_mixed');
+  if(!(replies[0]||'').includes('flicker'))errs.push('reveal missing: '+replies[0]);
+  if(!s.covered['si_passive'])errs.push('si_passive not counted as asked');
+  if(s.covered['si_direct'])errs.push('si_direct credited for a passive wish — M02-007');
+  const si=cov.find(c=>c.id==='c_si');
+  if(!si||si.status!=='partial')errs.push('c_si = '+(si&&si.status)+' (expected partial)');
+  return errs;
+});
+
+await run('"calm down" still blocks the gate for a passive-wish question',[
+ "You need to calm down, okay?",
+ "Do you ever wish you were dead?"
+],(s,cov,rub,nar,replies)=>{
+  const errs=[];
+  if(s.unlocked['g_si_mixed'])errs.push('gate unlocked despite recent judgmental flag');
+  if(!(replies[1]||'').includes('swinging'))errs.push('blocked deflection wrong: '+replies[1]);
   return errs;
 });
 

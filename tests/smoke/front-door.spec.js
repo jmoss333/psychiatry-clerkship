@@ -1473,6 +1473,11 @@ test('390x844 reduced-motion Reader keeps one fixed 44px dock during scroll with
 
 test('320-641px header controls remain distinct, readable, and fully tappable', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
+  // Geometry is measured at scroll 0. A pending/HIGH page focuses its alert notice on open, and
+  // on a phone a field guide's header and margin sit above that notice, so the focus scrolls the
+  // page. That is governance behaviour, not header layout — pin the row rather than inherit the
+  // live ledger (t_mood.md was pending/high when it became a bold-lead guide).
+  await pinGovernance(page, 't_mood.md', { status: 'reviewed', riskLevel: 'low' });
   // A reader collapses its header to one row on a phone (frontdoor.css "Phone chrome",
   // 2026-09-18): the week pill, the settings gear and the tab row are one Back-tap away in the
   // action bar and leave the header; the brand name is clipped but stays the home button's
@@ -2048,6 +2053,94 @@ test.describe('Clinical field guide', () => {
       await expectHealthy(page);
     });
   }
+
+  // Next Ten #10: pages authored without H2s open each section with a bold lead. The guide
+  // promotes those at render time. Pinned as a FLOOR plus the Safety-sheet kit targets, never an
+  // exact page list — a list would turn every content edit into a build breaker.
+  const LEAD_GUIDE_FLOOR = { ms3: 24, res: 27 };
+  const KIT_LEAD_PAGES = ['delirium.md', 't_sud.md'];
+
+  test('bold-lead pages gain section navigation; short week pages stay plain', async ({ page }, testInfo) => {
+    test.setTimeout(180_000);
+    const site = isResidentProject(testInfo.project.name) ? 'res' : 'ms3';
+    const nav = await (await requestGetWithRetry(page.request, '/nav.json')).json();
+    const refs = [...new Set(nav.flatMap(section => (section.items || []).map(item => item.f)))]
+      .filter(ref => /\.md$/.test(ref));
+    // Candidates come from the served markdown, so the floor follows the corpus: no H2 line and at
+    // least four paragraphs that open in bold. Whether each one qualifies is the reader's call.
+    const candidates = [];
+    for (const ref of refs) {
+      const md = await (await requestGetWithRetry(page.request, `/content/${ref}`)).text();
+      if (!/^##\s/m.test(md) && (md.match(/^\*\*[^*\n]{2,80}\*\*/gm) || []).length >= 4) candidates.push(ref);
+    }
+    for (const ref of KIT_LEAD_PAGES) expect(candidates, `${ref} is a kit target without H2s`).toContain(ref);
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    const promoted = [];
+    const plain = [];
+    for (const ref of candidates) {
+      await page.goto(`/?page=${ref}`);
+      await expect(page.locator('.fd-reader:visible .fd-src')).toHaveText(ref);
+      await expect(page.locator('.fd-reader:visible .fd-article__body')).toBeVisible();
+      const links = page.locator('[data-guide-section]');
+      if (await page.locator('.fd-reader--guide').count()) {
+        const leads = await page.locator('.fd-guide-section > .fd-guide-lead').count();
+        expect(leads, `${ref} is a guide because of its bold leads`).toBeGreaterThanOrEqual(4);
+        await expect(links).toHaveCount(leads);
+        await expect(page.locator('[data-fd-reading-status]'), `${ref} keeps its reading place`).toHaveCount(1);
+        promoted.push(ref);
+      } else {
+        await expect(links).toHaveCount(0);
+        plain.push(ref);
+      }
+    }
+    for (const ref of KIT_LEAD_PAGES) expect(promoted, `${ref} lands kit links on a section`).toContain(ref);
+    expect(promoted.length, `promoted: ${promoted.join(', ')}`).toBeGreaterThanOrEqual(LEAD_GUIDE_FLOOR[site]);
+    // The rotation week pages carry many bold leads in a few hundred words: navigation would be
+    // noise there, and the reader chrome around them must not count toward the word floor.
+    const weeks = candidates.filter(ref => /^week\d\.md$/.test(ref));
+    expect(weeks.length).toBeGreaterThan(0);
+    for (const ref of weeks) expect(plain, `${ref} stays a plain reading`).toContain(ref);
+    await expectHealthy(page);
+  });
+
+  test('a bold-lead guide keeps its reading place, and a passage link still decides arrival', async ({ page }, testInfo) => {
+    const ref = KIT_LEAD_PAGES[0];
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
+    await page.goto(`/?page=${ref}`);
+    await expect(page.locator('.fd-reader--guide')).toBeVisible();
+    await expect(page.locator('[data-fd-reading-status]')).toHaveText(READING_SUCCESS);
+    const leads = page.locator('.fd-guide-section > .fd-guide-lead');
+    expect(await leads.count()).toBeGreaterThanOrEqual(5);
+    // The reading anchor is the bold label, not the paragraph, so a prose edit keeps a saved place.
+    const label = leads.nth(2).locator('> strong:first-child');
+    const anchor = await label.getAttribute('data-fd-reading-anchor');
+    expect(anchor).toMatch(/^fd-reading-/);
+    await label.evaluate(node => {
+      window.scrollTo(0, node.getBoundingClientRect().top + window.scrollY + 85);
+      window.dispatchEvent(new Event('scroll'));
+    });
+    await expect.poll(async () => (await readingPlaces(page))[ref]?.heading).toBe(anchor);
+    await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+    await page.reload();
+    await expect(page.locator('.fd-reader--guide')).toBeVisible();
+    await expect.poll(() => page.locator(`[data-fd-reading-anchor="${anchor}"]`).evaluate(node =>
+      Math.abs(window.scrollY - (node.getBoundingClientRect().top + window.scrollY) - 85))).toBeLessThan(12);
+    await expect(page.locator('[data-fd-reading-top]')).toBeVisible();
+
+    // A passage link owns arrival: the saved place does not scroll over it or take its focus.
+    const target = leads.last();
+    const id = await target.getAttribute('id');
+    expect(id).toMatch(/^guide-/);
+    const heading = await page.getByRole('navigation', { name: 'On this page', exact: true })
+      .locator(`[data-guide-section="${id}"]`).innerText();
+    await page.goto(`/?page=${ref}&guideSection=${id.slice('guide-'.length)}`);
+    await expect(page.locator('.fd-guide-arrival')).toContainText(`Opened at “${heading}”.`);
+    await expect(page.locator(`#${id}`)).toBeFocused();
+    await expect(page.locator(`#${id}`)).toBeInViewport();
+    await expect(page.locator('[data-fd-reading-top]')).toBeHidden();
+    await expectHealthy(page);
+  });
 
   test('opens a real practice tool and restores guide focus and position through explicit return and browser Back', async ({ page }, testInfo) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
