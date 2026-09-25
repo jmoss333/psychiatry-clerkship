@@ -1,0 +1,132 @@
+[
+  {
+    "id": "M06-001",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "The card's single action for a CYP1A2 change, stopping smoking included, is to check a level in about a week and tell the prescriber 'it happened'. It never says a pre-emptive dose reduction is needed. The toxicity signs further down the card are reactive. Standard guidance on stopping smoking is to lower the clozapine dose over about a week and to check levels, and the correction adds that with no dose literal.",
+    "evidence": "recall: Maudsley Prescribing Guidelines 14th ed. (smoking and psychotropics: reduce clozapine gradually toward about 75% of the dose over about a week after stopping, and repeat the level at 1 week); CYP1A2 de-induction is largely complete in about 1 week. Hiemke et al. AGNP TDM consensus 2017.",
+    "correction": "Tell the prescriber the same day — a pre-emptive clozapine dose reduction is usually needed when smoking stops — and check a clozapine level about a week after the change.",
+    "confidence": "medium"
+  },
+  {
+    "id": "M06-002",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "I read the whole table. The valproate and lithium rows carry teratogen/β-hCG content, and the carbamazepine row has none, with no mention of enzyme induction either. Carbamazepine's neural-tube teratogenicity and its lowering of hormonal-contraceptive levels are settled label facts. The correction is a drop-in row replacement.",
+    "evidence": "recall: carbamazepine USPI, Warnings (Usage in Pregnancy: spina bifida/neural-tube defects) and Drug Interactions (CYP3A4 induction; hormonal contraceptives may be less effective).",
+    "correction": "| **Carbamazepine** | CBC, LFTs, sodium, level, β-hCG; HLA-B*1502 in at-risk ancestry | Level, CBC, LFTs, sodium | Agranulocytosis/aplastic anemia; SIADH (hyponatremia); Stevens-Johnson (HLA-B*1502); auto-induction of its own metabolism; potent enzyme inducer (lowers hormonal contraceptives and many psychotropics); teratogen (neural-tube) |",
+    "confidence": "high"
+  },
+  {
+    "id": "M06-003",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "In the key-point bullet, carbamazepine sits right after 'Valproate and lithium are teratogens — β-hCG', which invites the reading that it is the pregnancy-safe option. The page's pearls repeat the same omission. The correction stays grammatical after the semicolon.",
+    "evidence": "recall: carbamazepine USPI, Warnings (pregnancy) and Drug Interactions (hormonal contraceptives).",
+    "correction": "carbamazepine is also a teratogen that lowers hormonal-contraceptive levels (β-hCG, contraception counselling) and needs CBC/LFTs/sodium, HLA-B*1502 in at-risk ancestry, and watch for SIADH.",
+    "confidence": "high"
+  },
+  {
+    "id": "M06-004",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "The cell ties troponin/CRP to symptoms only, yet the same page calls myocarditis 'the early killer'. Early myocarditis often presents with non-specific fever or tachycardia. US health systems have adopted the Ronaldson baseline-plus-weekly-for-4-weeks protocol. The correction says 'many protocols' rather than asserting a label mandate, which is accurate, because the US label mandates no routine troponin.",
+    "evidence": "PubMed PMID 31684809 (McNutt et al., J Pharm Pract 2021; doi:10.1177/0897190019882878: a US health-system protocol based on Ronaldson 2011, with troponin and hsCRP at baseline then weekly for 4 weeks); clozapine USPI (myocarditis most frequent in the first 2 months).",
+    "correction": "**myocarditis (early, mostly weeks 1–4 — many protocols check troponin/CRP at baseline and weekly for the first 4 weeks; check urgently with fever, tachycardia, chest pain, or flu-like illness)**",
+    "confidence": "high"
+  },
+  {
+    "id": "Q1-005",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "The stem patient is 18. The risperidone approval (5–16 years) and the aripiprazole approval (6–17 years) for irritability associated with autistic disorder are pediatric only, so the keyed option implies an on-label use that does not exist for him. After the edit the keyed option is still clearly the best answer, and the text reads correctly into '...they do not treat the core social-communication features'.",
+    "evidence": "recall (settled label facts): Risperdal USPI 1.3 (irritability associated with autistic disorder, pediatrics 5–16 y); Abilify USPI 1.x (irritability associated with autistic disorder, pediatrics 6–17 y).",
+    "correction": "Risperidone and aripiprazole are FDA-approved for irritability (including aggression and self-injury) associated with autism in children and adolescents (risperidone 5–16 years, aripiprazole 6–17 years; use at 18 is off-label) — they do not treat",
+    "confidence": "high"
+  },
+  {
+    "id": "Q2-006",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "I checked the current Depakote SPL. Its boxed warning (Fetal Risk) says verbatim that valproate should not be administered to a woman of childbearing potential unless other medications have failed or are otherwise unacceptable, and that effective contraception should then be used. The key treats a pregnancy test plus contraception as enough to proceed, which conflicts with both the label and the linked page. The correction's 'per its boxed warning' attribution is accurate.",
+    "evidence": "DailyMed Depakote SPL setid 08a65cf4-7749-4ceb-6895-8f4805e2b01f (effectiveTime 2026), Boxed Warning – Fetal Risk; also 2021 FDA label 018723s065 §5.4.",
+    "correction": "Confirm she is not pregnant, discuss contraception, and first consider whether an alternative (e.g., lithium or an antipsychotic) is suitable — valproate is a known teratogen (neural tube defects and other major malformations); per its boxed warning it should not be used in any person who could become pregnant unless other medications have failed or are unacceptable.",
+    "confidence": "high"
+  },
+  {
+    "id": "Q3-001",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "The substance holds. TRRIP defines treatment resistance by symptom domain and requires confirmed adherence, and the clozapine evidence rests on persistent positive symptoms. A stem that names only negative symptoms therefore does not support the key and makes distractor B more defensible. I reworded the reviewer's correction to remove the redundancy of 'Persistent … have persisted' and to keep the negative-symptom examples, so distractor B's 'residual negative symptoms' still refers to something in the stem.",
+    "evidence": "recall: Howes et al., TRRIP consensus, Am J Psychiatry 2017;174:216-229; APA Practice Guideline for Schizophrenia 2020 (clozapine for treatment-resistant schizophrenia).",
+    "correction": "Auditory hallucinations and paranoid delusions, along with negative symptoms (flat affect, avolition, alogia), have persisted on both trials despite confirmed adherence.",
+    "problem": "The stem names only residual negative symptoms and does not confirm adherence, so it does not meet the treatment-resistant schizophrenia criteria the keyed clozapine answer relies on.",
+    "confidence": "high"
+  },
+  {
+    "id": "Q4-003",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "I confirmed ASAM 2023 HPSO guidance on individualised initiation, including low-dose initiation, so 'required' is too absolute. However, the reviewer's parenthetical 'low-dose initiation is a supervised alternative' would make distractor C (a single 0.5 mg test dose) look defensible. I reworded it so that low-dose initiation is clearly different from a one-off test dose and the key stays the only best answer.",
+    "evidence": "PubMed PMID 37934520 — Weimer MB et al., ASAM Clinical Considerations (HPSO), J Addict Med 2023;17(6):632-639, doi:10.1097/ADM.0000000000001202.",
+    "correction": "before initiating standard buprenorphine induction — this is how standard induction avoids precipitating withdrawal (low-dose initiation is a separate, structured multi-day protocol, not a single test dose).",
+    "problem": "The keyed option calls waiting for COWS ≥8–12 'required'. That holds only for standard induction; low-dose initiation is a recognised alternative. Any correction must still leave distractor C (a single test dose) clearly wrong.",
+    "confidence": "high"
+  },
+  {
+    "id": "Q4-004",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "'Ensures … is safe' overstates what the threshold does. ASAM's HPSO clinical considerations describe precipitated withdrawal and individualised strategies with fentanyl exposure. The correction is a hedged, grammatical drop-in.",
+    "evidence": "PubMed PMID 37934520 (Weimer et al., J Addict Med 2023; doi:10.1097/ADM.0000000000001202).",
+    "correction": "The COWS threshold (≥8–12) makes it likely that residual full agonist has cleared enough receptors for induction to be tolerated — though with fentanyl, precipitated withdrawal can still occur at these scores.",
+    "confidence": "high"
+  },
+  {
+    "id": "Q4-005",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "The stem specifies cirrhosis, and the rationale offers disulfiram as the routine second line without any liver caveat. Hepatology sources advise avoiding disulfiram in ALD or cirrhosis because of hepatotoxicity. The item is still in draft. The correction is minimal.",
+    "evidence": "AASLD Liver Fellow Network clinical pearl (Deutsch-Link, 2022; aasld.org): disulfiram is associated with significant DILI and should be avoided. Recall of AASLD 2019 ALD guidance (Crabb et al., Hepatology 2020) and EASL 2018 ALD CPG.",
+    "correction": "Disulfiram is second-line and adherence-dependent, and should be avoided in cirrhosis because of hepatotoxicity.",
+    "confidence": "medium"
+  },
+  {
+    "id": "Q4-006",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "The stem's teaching point is cirrhosis, but the naltrexone caveat names only acute hepatitis and opioid use. Hepatology sources say naltrexone can be considered in compensated disease and should be avoided in advanced or decompensated disease (Child-Pugh C). The oral label contraindicates it in liver failure. The correction's 'decompensated cirrhosis/liver failure' is slightly broader than 'Child-Pugh C' but is conservative and widely taught.",
+    "evidence": "AASLD Liver Fellow Network clinical pearl (2022): naltrexone can be considered in compensated disease and should be avoided in Child-Pugh C; recall of the naltrexone tablet USPI (contraindicated in acute hepatitis or liver failure).",
+    "correction": "Naltrexone (reduces heavy drinking; avoid in acute hepatitis, decompensated cirrhosis/liver failure, or opioid use; monitor LFTs in compensated cirrhosis)",
+    "confidence": "medium"
+  },
+  {
+    "id": "M09-007",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "'Only' excludes low-dose initiation, which ASAM's HPSO considerations recognise. The reviewer's 'often higher with fentanyl' asserts a threshold shift I could not verify from the guidance text, so I replaced it with the verifiable point that precipitated withdrawal can still occur at these scores. The correction still reads correctly after 'track with **COWS**;'.",
+    "evidence": "PubMed PMID 37934520 (Weimer et al., ASAM HPSO clinical considerations, J Addict Med 2023; doi:10.1097/ADM.0000000000001202).",
+    "correction": "standard buprenorphine induction starts once objective withdrawal is present (COWS ≈ 8–12; with fentanyl, precipitated withdrawal can still occur at these scores); low-dose initiation is an alternative that does not require withdrawal.",
+    "problem": "'Only when objective withdrawal is present' excludes low-dose initiation. The reviewer's '(often higher with fentanyl)' is an unverified threshold claim.",
+    "confidence": "medium"
+  },
+  {
+    "id": "M08-003",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "The finding is valid. Pimavanserin, a 5-HT2A inverse agonist approved for Parkinson's disease psychosis, has no dopaminergic action, and xanomeline–trospium (approved 2024-09-26) has no direct D2 binding, so 'all … modulate dopamine' and the implied D2-centred model are misleading. But xanomeline is thought to modulate dopamine indirectly, and the reviewer's 'The exception is xanomeline–trospium' is wrong because pimavanserin is a second exception. I corrected it to name both.",
+    "evidence": "recall: Cobenfy (xanomeline–trospium) FDA approval 2024-09-26, label mechanism M1/M4 agonism; Nuplazid (pimavanserin) USPI, 5-HT2A inverse agonist/antagonist without dopaminergic activity.",
+    "correction": "Nearly all current antipsychotics act directly at the D2 receptor, as antagonists or partial agonists. Exceptions include xanomeline–trospium (FDA-approved 2024 for schizophrenia), a muscarinic M1/M4 agonist with no direct D2 binding that is thought to modulate dopamine indirectly, and pimavanserin (a 5-HT2A inverse agonist approved for Parkinson's disease psychosis).",
+    "problem": "The sentence presents dopamine and D2 action as universal to antipsychotics, which pimavanserin and xanomeline–trospium contradict. The reviewer's correction named only one of these two exceptions.",
+    "confidence": "high"
+  },
+  {
+    "id": "M08-004",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "I searched the whole M08 page, and this monitoring answer never mentions GI hypomotility or constipation. That is a strengthened FDA warning and a leading cause of clozapine deaths. The correction is a grammatical drop-in with no dose literal.",
+    "evidence": "recall: FDA Drug Safety Communication 2020-01-28 (clozapine constipation → serious bowel complications; strengthened warning); clozapine USPI Warnings, Gastrointestinal Hypomotility with Severe Complications.",
+    "correction": "Other serious risks include seizures (~4%), myocarditis (~1%), gastrointestinal hypomotility (ask about bowel habits daily and treat constipation proactively; ileus can be fatal), and severe metabolic effects.",
+    "confidence": "high"
+  }
+]

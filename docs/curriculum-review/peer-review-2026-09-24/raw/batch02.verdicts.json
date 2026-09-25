@@ -1,0 +1,135 @@
+[
+  {
+    "id": "Q2-001",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "Re-read qb_cog_014: the keyed option omits benzodiazepines while the item's own rationale says 'continue lorazepam — benzodiazepines remain first-line ... while ECT is arranged' and that option A's error is the psych-unit observation, not the lorazepam. Adding 'continue lorazepam' makes the key match the rationale and still keeps it distinct from distractor A.",
+    "evidence": "Rogers JP et al., BAP catatonia guideline, J Psychopharmacol 2023;37(4):327-369, PMID 37039129, doi:10.1177/02698811231158232 (benzodiazepines and ECT for malignant catatonia/NMS); the item's own rationale.",
+    "correction": "Stop all antipsychotics immediately, transfer to a medical unit for hemodynamic monitoring and supportive care, continue lorazepam, and obtain urgent psychiatric and neurology consultation — ECT should be considered for malignant or refractory catatonia.",
+    "confidence": "high"
+  },
+  {
+    "id": "Q2-002",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "The pearl renders on its own and leaves out the benzodiazepine that the rationale calls first-line. The correction fits the pearl's grammar and matches the rationale.",
+    "evidence": "Rogers 2023 BAP guideline, PMID 37039129; qb_cog_014 rationale in the same item.",
+    "correction": "stop antipsychotics, transfer to medical, continue lorazepam, and consider ECT urgently.",
+    "confidence": "high"
+  },
+  {
+    "id": "Q2-003",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "Confirmed: saying 'benzodiazepines are insufficient for malignant presentations' contradicts the tier-1 rationale and BAP 2023. But the reviewer's correction drops a true teaching point: ECT works while the antipsychotic is still clearing. The revised correction keeps that point and also says the antipsychotic is stopped. Tier-2 option C ('effectiveness does not depend on removing the antipsychotic') is named in the problem but not changed by this quote; the coordinator should fix it separately, e.g. by adding 'although the antipsychotic is still stopped'.",
+    "evidence": "Rogers JP et al., J Psychopharmacol 2023, PMID 37039129 (benzodiazepines are first-line in catatonia including malignant; urgent ECT if no rapid response; stop dopamine antagonists).",
+    "correction": "benzodiazepines alone may be insufficient for malignant presentations, so ECT should not be delayed if lorazepam does not produce rapid improvement — the antipsychotic is still stopped, and ECT can be lifesaving before it has fully cleared.",
+    "problem": "The tier-2 'why' says benzodiazepines are insufficient in malignant catatonia, which contradicts tier 1 (benzodiazepines remain first-line while ECT is arranged). Separately, keyed tier-2 option C implies stopping the antipsychotic is optional and needs its own edit.",
+    "confidence": "high"
+  },
+  {
+    "id": "Q1-015",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "The stem describes one exam ('oriented, alert, attentive; no confusion on exam'). 'Rules out delirium' overstates a single cross-sectional exam for a syndrome that fluctuates, and it contradicts the library's own rapid-review rule: 'new psychiatric symptoms in an older patient → delirium/medical until proven otherwise'. The correction keeps the keyed answer intact and softens only the overclaim.",
+    "evidence": "recall — DSM-5-TR delirium Criterion B (fluctuating course); rapid_review.md 'Neurocognitive' line in chunk M09.",
+    "correction": "the alert, attentive patient makes delirium less likely — though one exam cannot exclude a fluctuating course, so reassess and complete the medical workup.",
+    "confidence": "high"
+  },
+  {
+    "id": "Q3-007",
+    "verdict": "modified",
+    "severity": "Minor",
+    "reason": "The item's scope is the charge nurse's 'don't engage' advice, and the keyed option does not tell anyone to skip wound care, so this omission is only a sequencing nuance. I downgraded it to Minor. The reviewer's reading of distractor C is not accepted: C fails because it makes privilege restriction punitive and puts engagement on hold ('before therapeutic engagement resumes'), not because observation changes are wrong. The prepended clause is still a safe drop-in and makes the sequence explicit.",
+    "evidence": "recall — Linehan DBT (matter-of-fact medical care, then chain analysis); NICE NG225 (2022) medical and psychosocial assessment after self-harm.",
+    "correction": "After wound care and a brief reassessment of suicidal intent, a chain analysis — walking the sequence of antecedents, emotions, and behaviors with the patient non-punitively — turns the incident into a clinical formulation and a coping plan; this is the DBT standard and replaces documentation-only or punitive responses.",
+    "problem": "The keyed answer goes straight to chain analysis without first naming wound assessment and a brief reassessment of suicidal intent. It is a sequencing omission, not an endorsement of skipping them. Distractor C is correctly wrong as written.",
+    "confidence": "medium"
+  },
+  {
+    "id": "Q4-001",
+    "verdict": "confirmed",
+    "severity": "Major",
+    "reason": "Checked qb_sud_014. The keyed option says 'not score-gated dosing alone', but the pearl calls CIWA-Ar-guided dosing 'the standard', so the item contradicts itself. The trial behind symptom-triggered dosing (Saitz 1994) excluded patients with any seizure history, so the pearl's claim has no evidence base in this population. Major stands because the pearl changes what order gets written for a post-seizure patient.",
+    "evidence": "Saitz R et al., JAMA 1994;272:519-23, PMID 8046805 (enrolled only patients with 'no history of seizures'); ASAM Alcohol Withdrawal Management Guideline 2020 (recall on the exact front-loading wording); keyed option in the same item.",
+    "correction": "Prior withdrawal seizure = strong predictor of future seizures; give a benzodiazepine promptly with front-loaded or fixed-schedule dosing plus symptom-triggered supplementation (not score-gated dosing alone) + DT monitoring.",
+    "confidence": "high"
+  },
+  {
+    "id": "Q4-002",
+    "verdict": "confirmed",
+    "severity": "Major",
+    "reason": "Same contradiction as Q4-001, this time in the rationale's closing sentence. The correction matches the keyed option and fits the sentence. The rationale's earlier phrase 'the most robust predictor' falls outside this quote and can stay.",
+    "evidence": "Saitz 1994, PMID 8046805 (seizure history excluded); ASAM 2020 guideline (recall); keyed option in the item.",
+    "correction": "Prompt benzodiazepine with front-loaded or fixed-schedule dosing, supplemented by CIWA-Ar-triggered doses, is the treatment, and DT vigilance is the priority.",
+    "confidence": "high"
+  },
+  {
+    "id": "M09-004",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "Confirmed: the rapid-review line omits fever and altered mental status, and it jumps to dantrolene/bromocriptine before supportive care. But this section is built on paired discriminators (NMS hyporeflexia vs serotonin syndrome clonus/hyperreflexia on the next line), and the reviewer's correction deletes 'hyporeflexia', the key contrast. The revised correction keeps it. It also lists benzodiazepines, dantrolene and bromocriptine as adjuncts without implying a fixed order.",
+    "evidence": "Gurrera RJ et al., J Clin Psychiatry 2011;72:1222-8, PMID 21733489, doi:10.4088/JCP.10m06438 (hyperthermia, rigidity, mental status alteration, CK, autonomic lability); recall for management (Strawn/Keck/Caroff 2007).",
+    "correction": "Dopamine blocker + **fever + lead-pipe rigidity + hyporeflexia** + altered mental status + autonomic instability + high CK → **NMS** → stop antipsychotic + supportive care (cooling, fluids, ICU-level monitoring); benzodiazepines, dantrolene/bromocriptine as adjuncts.",
+    "problem": "The NMS line omits hyperthermia and altered mental status, which are core criteria, and presents dantrolene/bromocriptine as the treatment instead of stopping the drug plus supportive care. Any fix must keep the hyporeflexia discriminator that the serotonin-syndrome line depends on.",
+    "confidence": "high"
+  },
+  {
+    "id": "M09-005",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "Management starts by stopping the serotonergic agents and giving supportive care plus benzodiazepines. Cyproheptadine is reserved for moderate cases that persist. The correction keeps the arrow format and the discriminators that precede the quote.",
+    "evidence": "Boyer EW, Shannon M. N Engl J Med 2005;352:1112-20 (recall).",
+    "correction": "+ diaphoresis → **serotonin syndrome** → stop serotonergic agents, supportive care + benzodiazepines; cyproheptadine if moderate/persistent.",
+    "confidence": "high"
+  },
+  {
+    "id": "M13-001",
+    "verdict": "confirmed",
+    "severity": "Moderate",
+    "reason": "A single q4h interval across the whole risk window does not describe symptom-triggered protocols. Those reassess hourly while the score is at or above the threshold (as in Saitz 1994 and typical protocols). The library's own M06 card says 'reassess hourly'. Exact intervals vary by protocol, so confidence stays medium.",
+    "evidence": "Saitz 1994, PMID 8046805 (assessment-interval detail from recall, not the abstract); M06 chunk 'symptom-triggered benzodiazepine; reassess hourly'.",
+    "correction": "Alcohol: CIWA-Ar q1h while scores are at or above the treatment threshold, then q4h once below it, through the risk window; step down only after sustained low scores",
+    "confidence": "medium"
+  },
+  {
+    "id": "M08-005",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "Gurrera 2011's consensus threshold is CK ≥4× ULN, and 'often >10,000 U/L' overstates the typical elevation, so a learner could anchor on it. The reviewer's correction is accurate but long for a one-line answer; I tightened it.",
+    "evidence": "Gurrera RJ et al., J Clin Psychiatry 2011;72:1222-8, PMID 21733489, doi:10.4088/JCP.10m06438 (CK at least 4× ULN).",
+    "correction": "CK is usually elevated (consensus threshold ≥4× the upper limit of normal; it can exceed 10,000 U/L) but may be only modestly raised early, so a lower CK does not exclude NMS.",
+    "problem": "'Often >10,000 U/L' overstates the usual CK and can anchor a learner against NMS when CK is moderately raised. The consensus criterion is ≥4× ULN.",
+    "confidence": "medium"
+  },
+  {
+    "id": "R01-006",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "Confirmed: the rp-agitation withdrawal scenario never mentions thiamine and never flags a possibly evolving DT (HR 118, BP 168/102, hallucinations on day 2). But the reviewer's 'thiamine before any glucose' conflicts with the library's standard wording elsewhere ('thiamine before or with glucose — never delay dextrose for hypoglycemia'), and it could delay treatment of true hypoglycemia. I aligned the correction with that wording. It contains no dose literals, as rp-* tools require.",
+    "evidence": "recall — ASAM Alcohol Withdrawal Management Guideline 2020 (thiamine; assess for complicated withdrawal/level of care); library house wording in M09/M13 chunks.",
+    "correction": "Alcohol/sedative-hypnotic withdrawal is the key exception where benzodiazepines are first-line — treat the withdrawal per your local protocol, give thiamine before or with any glucose (never delay dextrose for true hypoglycemia), and escalate the level of care if this is evolving delirium tremens; antipsychotics are adjuncts, not monotherapy.",
+    "problem": "The withdrawal teaching point omits thiamine and never flags possible evolving delirium tremens that needs a higher level of care.",
+    "confidence": "high"
+  },
+  {
+    "id": "R01-014",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "Confirmed: the TIPP card coaches cold water on the face and brief intense exercise with no medical caution, while Linehan's TIP handout cautions against these for heart conditions, a low baseline heart rate (including from anorexia/bulimia), and heart-rate-affecting medication. The handout says to consult a provider rather than 'skip', so I reworded the correction to match. The card's step is cool water on the face or a cold pack, not full immersion.",
+    "evidence": "recall — Linehan MM, DBT Skills Training Handouts and Worksheets, 2nd ed., 2015, Distress Tolerance Handout 6 caution.",
+    "correction": "A distress-tolerance skill is for riding out a wave — not a substitute for a safety assessment when risk is present. Check with the medical team before using the cold-water or intense-exercise steps in a patient with a heart condition, a low baseline heart rate (including from an eating disorder), or heart-rate-lowering medication such as a beta-blocker.",
+    "problem": "The TIPP card coaches cold water and intense exercise with no cardiac or eating-disorder caution, and those patients are common on inpatient units.",
+    "confidence": "high"
+  },
+  {
+    "id": "M02-010",
+    "verdict": "modified",
+    "severity": "Moderate",
+    "reason": "Confirmed: Ray's pack (hints c_violence, criticalMiss, debrief) asks about thoughts of harming others but never about access to weapons/firearms or past violence, and it never tells the learner to escalate. The reviewer's 'before the end of the encounter' is impractical mid-interview and 'supervising resident' fits only MS3. I changed it to an audience-neutral same-day escalation. sp-interview.html is attested authored content, so this edit should move its ledger row to pending.",
+    "evidence": "recall — APA Practice Guidelines for the Psychiatric Evaluation of Adults, 3rd ed. (2016), violence-risk assessment (firearm access, violence history); NICE NG10 (2015).",
+    "correction": "here the danger points outward, toward the neighbors the voice names — so also ask about access to weapons, including firearms, and any past violence, and tell your supervising team the same day.",
+    "problem": "The debrief teaches screening for thoughts of harming others but not weapon/firearm access, past violence, or same-day escalation of an identified-target disclosure.",
+    "confidence": "high"
+  }
+]

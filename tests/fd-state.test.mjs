@@ -37,6 +37,7 @@ const make = new Function('localStorage', `
     fdRotationWeek: fdRotationWeek,
     fdRotationStartForWeek: fdRotationStartForWeek,
     fdExamCountdown: fdExamCountdown,
+    fdPathExamCountdown: fdPathExamCountdown,
     fdDailyPick: fdDailyPick,
     fdRingStep: fdRingStep,
     fdActivityDays: fdActivityDays,
@@ -411,6 +412,56 @@ test('one day out is singular', () => {
   const { fdExamCountdown } = make(memStorage());
   const thu = new Date(2026, 7, 13, 9, 0, 0).getTime();
   assert.equal(fdExamCountdown(6, SIX, thu), '· exam in ~1 day');
+});
+
+// ---- whose countdown it is (2026-09-24) ----------------------------------------------
+//
+// fdExamCountdown is arithmetic; fdPathExamCountdown decides whether Today shows it at all. Only
+// the MS3 path ends in a scheduled exam. Before this gate the resident Today read "exam in ~N
+// days" through the last two weeks of a block that has no exam.
+const MS3_PATH = 'ms3-six-week';
+const RES_PATH = 'resident-four-week';
+
+test('the MS3 path shows the countdown exactly as the arithmetic computes it', () => {
+  const { fdExamCountdown, fdPathExamCountdown } = make(memStorage());
+  for (let d = 0; d < 7; d += 1) {
+    for (const w of [4, 5, 6]) {
+      const now = new Date(2026, 7, 10 + d, 9, 0, 0).getTime();
+      assert.equal(fdPathExamCountdown(MS3_PATH, w, SIX, now), fdExamCountdown(w, SIX, now),
+        `week ${w}, day ${d}: the gate must not change the number, only whether it shows`);
+    }
+  }
+  assert.equal(fdPathExamCountdown(MS3_PATH, 6, SIX, new Date(2026, 7, 12, 9, 0, 0).getTime()),
+    '· exam in ~2 days');
+});
+
+test('the resident path shows no countdown without a stored date, in any week, on any day', () => {
+  const { fdPathExamCountdown } = make(memStorage());
+  for (let d = 0; d < 14; d += 1) {
+    for (const w of [1, 2, 3, 4]) {
+      assert.equal(fdPathExamCountdown(RES_PATH, w, FOUR, new Date(2026, 7, 10 + d, 9, 0, 0).getTime()), '');
+    }
+  }
+});
+
+test('a stored date opens the countdown on the resident path; a junk one does not', () => {
+  const wed = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  const ls = memStorage();
+  ls.setItem('cw_shelf_date', '2026-08-21');
+  assert.equal(make(ls).fdPathExamCountdown(RES_PATH, 4, FOUR, wed), '· exam in ~9 days');
+  assert.equal(make(ls).fdPathExamCountdown(RES_PATH, 2, FOUR, wed), '',
+    'the final-two-weeks window still applies once a date is stored');
+  ls.setItem('cw_shelf_date', 'banana');
+  assert.equal(make(ls).fdPathExamCountdown(RES_PATH, 4, FOUR, wed), '',
+    'an unparseable value is no date: phasePolicy and the arithmetic read it the same way');
+});
+
+test('a missing or unknown path id fails closed', () => {
+  const { fdPathExamCountdown } = make(memStorage());
+  const wed = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  for (const id of [undefined, null, '', 'ms3', 'MS3-six-week']) {
+    assert.equal(fdPathExamCountdown(id, 6, SIX, wed), '', String(id));
+  }
 });
 
 // Scoped to the RETURNED strings, not the file. AUDIENCE_TOKEN_RE bans tokens in

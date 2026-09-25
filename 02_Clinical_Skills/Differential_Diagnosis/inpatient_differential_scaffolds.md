@@ -21,7 +21,7 @@
 ## 3. Depressed / suicidal
 - **Can't-miss mimics:** hypothyroidism, anemia, occult substance use, medication effects (e.g., interferon, steroids), pancreatic/CNS disease, hypoactive delirium and early neurocognitive disorder in elders.
 - **Psychiatric DDx:** MDD (± psychotic features), bipolar depression (always screen for past mania → changes treatment), adjustment disorder, persistent depressive disorder, demoralization.
-- **First move:** explicit C-SSRS + collaborative safety plan; screen for bipolarity (MDQ) before starting an antidepressant. → Suicide tools; MSE module.
+- **First move:** a direct suicide risk assessment (C-SSRS can structure the questions; add means/firearm access, intoxication and collateral) + collaborative safety plan; screen for bipolarity (MDQ) before starting an antidepressant. → Suicide tools; MSE module.
 
 ## 4. Manic / elevated / irritable
 - **Can't-miss mimics:** stimulant or steroid effect, hyperthyroidism, frontal/CNS lesion, delirium, antidepressant-induced switch.

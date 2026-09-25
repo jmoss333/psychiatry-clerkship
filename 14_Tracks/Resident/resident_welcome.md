@@ -15,7 +15,7 @@
 
 **What's different from the student hub** — Same clinical spine, pitched up. The **Resident Depth** section adds *Advanced Psychopharmacology* (augmentation, clozapine, TRD, LAIs, ECT/neuromodulation), *Inpatient Systems & Med-Legal* (documentation, civil commitment, disposition), *Supervision, EPAs & Teaching*, and the residency-level *200-paper Psychiatry Canon*. The bedside tools — the Withdrawal (CIWA-Ar/COWS) card, Violence (FRST), Decisional Capacity, and the official-form & training references for the C-SSRS and the Bush-Francis Catatonia scale — are all here in the sidebar.
 
-**Your responsibilities** — Own the workup and plan for your patients; run the acute calls (suicide, violence, agitation, capacity, withdrawal, delirium, catatonia) with the bedside tools; document defensibly; and teach the student — orienting them, giving feedback, and modeling the work.
+**Your responsibilities** — Own the workup and plan for your patients; run the acute calls (suicide, violence, agitation, capacity, withdrawal, delirium, catatonia) with the bedside tools, bringing your supervising attending in at the time your program's written supervision policy requires, and whenever you are unsure; document defensibly; and teach the student — orienting them, giving feedback, and modeling the work.
 
 **How to use this hub** — Start with the **4-Week Rotation Plan**. Use **Core Topics** and **Acute & Safety** as quick bedside reference, the **Resident Depth** pages for the deeper material, and the **Evidence & reading** section (landmark trials, the canon, the evidence reviews) to anchor your decisions. Dark mode and search (⌘K) are in the sidebar.
 

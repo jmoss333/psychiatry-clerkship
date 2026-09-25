@@ -2132,8 +2132,9 @@ test.describe('Clinical field guide', () => {
 //
 // Seeds go through seedApp's `storage` so every store exists before the shell boots. Time is
 // frozen at FROZEN_NOW: a block created an hour earlier is live (12 h TTL) and an SRS card due
-// an hour earlier counts as due. deck# ids land in the daily bucket and are not TOPIC# cards, so
-// srsDropPhantomTopics leaves them alone once topic_meta loads. Both audience projects run every
+// an hour earlier counts as due. Landmark-deck ids (`<deck>#<index>`, as review.html builds them)
+// land in the daily bucket and are not TOPIC# cards, so srsDropPhantomTopics leaves them alone
+// once topic_meta loads. Both audience projects run every
 // test here with the same seed, which is A4 (same primary kind for the same seed) by construction.
 const OTF_NOW = FROZEN_NOW.getTime();
 const OTF_HOUR = 60 * 60 * 1000;
@@ -2144,8 +2145,8 @@ const OTF = {
     { kind: 'qb', ref: 'question-bank-practice.html', title: '4 practice questions', min: 3, n: 4, cat: null },
   ] },
   srs: { v: 1, cards: {
-    'deck#otf-1': { ease: 2.5, ivl: 1, reps: 1, lapses: 0, due: OTF_NOW - OTF_HOUR, last: OTF_NOW - 25 * OTF_HOUR },
-    'deck#otf-2': { ease: 2.5, ivl: 1, reps: 1, lapses: 0, due: OTF_NOW - OTF_HOUR, last: OTF_NOW - 25 * OTF_HOUR },
+    'AR-50#0': { ease: 2.5, ivl: 1, reps: 1, lapses: 0, due: OTF_NOW - OTF_HOUR, last: OTF_NOW - 25 * OTF_HOUR },
+    'AR-50#1': { ease: 2.5, ivl: 1, reps: 1, lapses: 0, due: OTF_NOW - OTF_HOUR, last: OTF_NOW - 25 * OTF_HOUR },
   }, day: { lastDay: '', newToday: 0 }, stats: { streak: 0, lastStudy: '', totalReviews: 0, correct: 0, seen: 0 }, settings: { newPerDay: 12 } },
   capture: { v: 1, items: [{ id: 'otf-c1', text: 'Why hold the lithium tonight?', at: OTF_NOW - 10 * 60 * 1000, ctx: null, triaged: false }] },
 };
