@@ -390,6 +390,67 @@ test('a trigger matches whole words only, so "diet" does not summon the suicide 
   assert.equal(protocolRefs('diet and nutrition').includes('pg_suicide.md'), false);
 });
 
+// Cutting and overdose, the way the unit says them. Measured 2026-09-24 before these triggers
+// existed: "cut her wrist", "she cut herself" and "cut myself" reached the suicide sheet only
+// because "cut" is a substring of "acute" in its summary, and arrived SECOND or THIRD, behind the
+// Consult Questions and Delirium sheets that the same accident pulled in. "cuts herself" reached
+// no protocol at all. "od", "intentional od", "od on tylenol" and "she od'd" led with the
+// Substance Use and Consult sheets and never reached the suicide sheet, although "overdose" was
+// already a trigger; "overdosed" and "overdosing" returned nothing whatsoever. Each phrasing
+// below is now an explicit trigger, so the suicide sheet leads by the crisis contract rather than
+// by a copy-edit's accident.
+for (const q of ['cut her wrist', 'cut his wrists', 'she cut herself', 'he cut himself',
+  'cut myself', 'cuts herself', 'have you ever cut yourself', 'od', 'OD', 'intentional od',
+  'od on tylenol', "she od'd", 'she od’d', 'overdosed', 'overdosing']) {
+  test(`"${q}" leads with the suicide protocol by explicit trigger`, () => {
+    const rows = F.fdSearchResults(REAL_INDEX, q, SYN, {});
+    assert.equal(rows[0]?.kind, 'protocol', `${q}: ${rows.map((r) => r.item.ref).join(', ')}`);
+    assert.equal(rows[0]?.item.ref, 'pg_suicide.md', `${q}: ${rows.map((r) => r.item.ref).join(', ')}`);
+  });
+}
+
+test('"cut" and "od" triggers are phrase- and whole-word-bound, not bare substrings', () => {
+  // A bare "cut" trigger would route the CAGE question ("cut down on drinking") to the suicide
+  // sheet by rule; a bare-substring "od" would fire inside mood, food, period and ODT. The
+  // triggers are matched against the space-padded query (fdSearchTriggerHit), so neither can.
+  // This pins the TRIGGER route only: "cut down" still reaches the suicide sheet today through
+  // the loose protocol haystack ("cut" inside "acute"), which is a separate, pre-existing route.
+  const suicide = REAL_CUR.safetyKit.find((k) => k.ref === 'pg_suicide.md').triggers;
+  for (const q of ['cut down on drinking', 'cut down', 'cut off', 'cutoff score', 'paper cut',
+    'mood', 'food', 'odd behavior', 'period', 'olanzapine odt', 'oppositional defiant']) {
+    assert.equal(F.fdSearchTriggerHit(suicide, ` ${q} `), false, `"${q}" fired a suicide trigger`);
+  }
+});
+
+// A patient pulling out an IV. Before these triggers the agitation sheet led for these queries
+// only because the two-letter "iv" is a bare substring somewhere in its haystack -- the same
+// accident that leads with it for "iv fluids" and "haldol iv". A rank assertion alone would
+// therefore pass without the triggers, so this pins the TRIGGER route itself (which fails on the
+// old vocabulary) as well as the position, and pins that an ordinary IV query fires no trigger.
+// Pulling at lines is as much a hyperactive-delirium sign as an agitation one, so the same
+// phrases trigger both sheets. Trigger-matched protocols keep kit order, which puts Agitation
+// first and Delirium second. Delirium used to appear for some of these only by accident ("her"
+// inside a longer word), and a strict protocol pass would have dropped it.
+test('pulling out an IV reaches the agitation and delirium sheets by explicit trigger', () => {
+  const agitation = REAL_CUR.safetyKit.find((k) => k.ref === 'agitation.md').triggers;
+  const delirium = REAL_CUR.safetyKit.find((k) => k.ref === 'delirium.md').triggers;
+  for (const q of ['pulled out iv', 'pulled out her iv', 'pulling out his iv', 'pulled out IV',
+    'she pulled her iv out', 'he pulled his iv', 'pt pulled out iv overnight']) {
+    const padded = ` ${q.toLowerCase()} `;
+    assert.ok(F.fdSearchTriggerHit(agitation, padded), `"${q}" fired no agitation trigger`);
+    assert.ok(F.fdSearchTriggerHit(delirium, padded), `"${q}" fired no delirium trigger`);
+    const rows = F.fdSearchResults(REAL_INDEX, q, SYN, {});
+    const refs = rows.map((r) => r.item.ref).join(', ');
+    assert.equal(rows[0]?.item.ref, 'agitation.md', `${q}: ${refs}`);
+    assert.equal(rows[1]?.item.ref, 'delirium.md', `${q}: ${refs}`);
+    assert.equal(rows[1]?.kind, 'protocol', `${q}: ${refs}`);
+  }
+  for (const q of ['haldol iv', 'iv fluids', 'iv access', 'iv thiamine', 'ativan iv', 'iv']) {
+    assert.equal(F.fdSearchTriggerHit(agitation, ` ${q} `), false, `"${q}" fired an agitation trigger`);
+    assert.equal(F.fdSearchTriggerHit(delirium, ` ${q} `), false, `"${q}" fired a delirium trigger`);
+  }
+});
+
 test('stopwords no longer summon the safety kit for an ordinary content query', () => {
   // The A1 leak: "on"/"the" substring-matched every protocol haystack, so all five ranked above
   // the page the learner named, and pressing Enter opened the suicide sheet.
