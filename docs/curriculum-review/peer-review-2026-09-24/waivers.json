@@ -1,1 +1,8 @@
-{}
+{
+ "M03-014": {
+  "07_Evidence_and_Reading/Landmark_Library/Tier1_Primary_Source_Curriculum_Map.md": "rosenhan-1973-sane-places stays a registered Tier-1 landmark (Week 1 required reading, now read with Scull 2023 per M01-005/-006, and cited by landmark_trials.md); M03-014 concerns only ddx.md's evidenceIds, which now carry nice-delirium-cg103 in topic_meta.json (this map is generated from the registry's Tier-1 set)",
+  "evidence_annotations.json": "rosenhan-1973-sane-places stays a registered Tier-1 landmark (Week 1 required reading, now read with Scull 2023 per M01-005/-006, and cited by landmark_trials.md); M03-014 concerns only ddx.md's evidenceIds, which now carry nice-delirium-cg103 in topic_meta.json (the id appears in policy.orphanBacklog, which may only shrink)",
+  "evidence_registry.json": "rosenhan-1973-sane-places stays a registered Tier-1 landmark (Week 1 required reading, now read with Scull 2023 per M01-005/-006, and cited by landmark_trials.md); M03-014 concerns only ddx.md's evidenceIds, which now carry nice-delirium-cg103 in topic_meta.json (the id is the landmark's own registry row)",
+  "topic_meta.json": "rosenhan-1973-sane-places is still, legitimately, an evidenceId of landmark_trials.md (the Week 1 landmark reading); M03-014 concerns only ddx.md's evidenceIds, which now read nice-delirium-cg103"
+ }
+}

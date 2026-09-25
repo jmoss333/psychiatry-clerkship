@@ -22,7 +22,7 @@ Convene a family meeting for a first episode, a relapse, a high-expressed-emotio
 
 **2 · Share the picture — 0:15–0:35.** Give the team's understanding in plain language: what the diagnosis is and isn't, what the course and treatment look like, and what to expect. Avoid jargon; check understanding as you go ("What's your understanding of what we just covered?"). Let the patient speak to their own experience.
 
-**3 · Hear the family and read the emotional climate — 0:35–0:55.** Invite each member's perspective and validate it. Listen for **expressed emotion** — criticism, hostility, and emotional over-involvement — without correcting it in the moment. De-shame: frame symptoms and behavior as illness and regulation, not character or fault. This is the phase that most changes outcomes; protect the time for it.
+**3 · Hear the family and read the emotional climate — 0:35–0:55.** Invite each member's perspective and validate it. Listen for **expressed emotion** — criticism, hostility, and emotional over-involvement — without correcting it in the moment. De-shame: frame symptoms and behavior as illness and regulation, not character or fault. In our experience this is the phase most often squeezed out, and it is where expressed emotion becomes workable; protect the time for it.
 
 **4 · Problem-solve and plan — 0:55–1:20.** Move to concrete, shared goals. Agree on roles, on a few communication skills to try at home, on early warning signs and what to do about them, on the crisis and safety plan, and on the discharge logistics (medications, follow-up, transport, supports). Keep it specific and realistic.
 
