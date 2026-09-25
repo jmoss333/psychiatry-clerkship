@@ -43,6 +43,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_REASON: ${{ github.event.inputs.reason }}
+          # Read-only use: the spend tripwire counts the last 24 h of production
+          # deploys across all five Netlify sites before a scheduled publish.
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: python3 13_Faculty_Resources/_automation/maintenance/release_train.py
 
       # Pushes made with GITHUB_TOKEN do not start other workflows, so the release
