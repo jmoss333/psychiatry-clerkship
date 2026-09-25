@@ -663,10 +663,13 @@ the container when the Bash 5 environment is part of the evidence.
   retires (WP-06R-a); Stanley-Brown is never programmed (WP-06R-b); PHQ-9/GAD-7 provisionally stay
   pending a check of the current permission footer (WP-02c); **BFCRS is RESTRICTED** (URMC written
   consent required) and **CIWA-Ar RETIRES** (2026-08-28, author's call — rights unestablishable, so
-  the descriptors came down; WP-20 is closed with it). **COWS alone remains open**: permission real,
-  scope wrong, its 45 verbatim anchors in `withdrawal.html` published under a recorded interim
-  waiver pending the Taylor & Francis letter — that waiver is the one thing still blocking Wave 4,
-  and an agent must not narrow or lift it. An instrument is exempt only once its status is recorded
+  the descriptors came down; WP-20 is closed with it). **COWS anchors retired 2026-09-10**
+  (decision `cows-anchors-retired`, superseding the 2026-08-23 interim waiver, which is closed):
+  the permission that exists covers clinical copying, not publication on a teaching site, so the
+  45 verbatim anchor strings in `withdrawal.html` were replaced with in-house descriptors; the
+  item names and legal score values are facts and stay, and the page still scores. A Taylor &
+  Francis permission request runs in parallel — a license would move COWS to cleared, and that is
+  the author's call, not an agent's. An instrument is exempt only once its status is recorded
   in the audit's decision table — Option A settles scope, not individual cases.
   **A withdrawal must leave a route (INV-IR2, 2026-09-03).** Retiring an instrument may not leave
   a dead end: every removed or link-only instrument ships the custodian's official `formUrl` from
