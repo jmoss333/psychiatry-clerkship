@@ -91,13 +91,16 @@ async function waitForStableReader(page) {
 const READER_ARCHETYPES = [
   {
     slug: 'sections',
-    page: 'osce.md',
+    page: 'exp_tx.md',
     title: 'collapsed sections + tables',
     // Chosen over evidence_inpatient.md (14 h2, 21 tables) which exercises the same
     // machinery at four times the byte size: a larger page means more unrelated
     // content churn re-opening this baseline for reasons that have nothing to do
-    // with the collapse UI. osce.md is 9 h2 / 6 tables / ~10KB and carries no audio,
-    // video or iframe, so it has no nondeterministic element to mask.
+    // with the collapse UI. exp_tx.md is 9 h2 / 1 table / ~4KB, carries no audio,
+    // video or iframe, and has not changed since the baseline commit.
+    // It must never carry a crisis marker: makeCollapsible() returns early on any
+    // body with .crisis-block-hook, so a crisis surface has no .sec-c to settle on.
+    // osce.md held this slot until peer-review WP-8 (J3) made it a crisis surface.
     async settle(page) {
       // The collapse pass must have actually run — sections plus its toolbar.
       await expect(page.locator('.fd-reader .sec-c').first()).toBeVisible();
