@@ -1,0 +1,80 @@
+Psychiatry Clerkship Library — curriculum content licence
+
+Copyright (c) 2026 Joshua Moss, MD
+
+The curriculum content of this repository is licensed under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International licence (CC BY-NC-SA 4.0).
+
+  Deed (summary):  https://creativecommons.org/licenses/by-nc-sa/4.0/
+  Legal code:      https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+
+The legal code at that address is the licence. This file is the notice that applies it;
+it does not change or add to the licence terms.
+
+
+WHAT "CURRICULUM CONTENT" MEANS HERE
+
+1. The numbered content trees: 00_START_HERE/ through 14_Tracks/, and 99_Archive/.
+   Exception: 13_Faculty_Resources/_automation/ is build and validation code, not content.
+2. The root registries that carry curriculum material, for example topic_meta.json,
+   question_bank.json, curriculum.json, communication_cases.json, reasoning_cases.json,
+   reasoning_cases_resident.json, longitudinal_case.json, family_systems_scenarios.json,
+   pairings.json, evidence_registry.json and evidence_annotations.json. (Their paired
+   *.schema.json files are code.)
+3. The learner-facing text in _prototypes/, such as the scenario and standardized-patient
+   case packs (*.pack.json) and the text of the tools that ship to learners.
+4. The built learner pages of both sites (the output of
+   13_Faculty_Resources/_automation/site_build/build_and_check.sh), and the
+   curriculum-review transcripts in docs/curriculum-review/, which are copies of them.
+
+Some files mix the two. The single-file HTML clinical tools contain both program logic
+and teaching text. In those files the program logic is code under the MIT License (see
+LICENSE), and the teaching text, cases, questions, feedback and other educational
+material are content under CC BY-NC-SA 4.0.
+
+Everything else in the repository (the build pipeline, validators, tests, audit tools,
+schemas, the faculty console, the Interview Room proxy and the developer documentation) is
+code under the MIT License in LICENSE.
+
+
+NOT COVERED BY THIS LICENCE (OR BY THE MIT LICENSE)
+
+The licensor can only license what the licensor owns. The following are not licensed by
+either file. The README section "Licensing and third-party material" explains each one.
+
+- Third-party assessment instruments and their text, forms, items and anchors. The library
+  links to each custodian's official form; see instrument_rights.json.
+- Cited papers, abstracts and quotations, including the verbatim source spans in
+  evidence_annotations.json and the cached abstracts under
+  13_Faculty_Resources/_automation/span_audit/.
+- Generated media: the NotebookLM audio overviews and the orientation video overview, with
+  its captions and transcript. Until the media provenance review is recorded, treat every
+  audio and video file in the repository as outside both licences.
+- Vendored third-party code (React, marked, qrcode-generator), which keeps its own licence.
+- Trademarks and the names of institutions, hospitals, units, products and services.
+
+
+HOW TO ATTRIBUTE
+
+Unmodified:
+
+  "<Title of the page or tool>" from the Psychiatry Clerkship Library by Joshua Moss, MD
+  (https://github.com/jmoss333/psychiatry-clerkship), licensed under CC BY-NC-SA 4.0
+  (https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+Adapted:
+
+  Adapted from "<Title>" in the Psychiatry Clerkship Library by Joshua Moss, MD
+  (https://github.com/jmoss333/psychiatry-clerkship), licensed under CC BY-NC-SA 4.0
+  (https://creativecommons.org/licenses/by-nc-sa/4.0/). Changes: <what you changed>.
+  This adaptation is licensed under CC BY-NC-SA 4.0.
+
+Attribution must not suggest that the author, or any institution or site named in the
+content, endorses you or your use.
+
+
+A NOTE ON USE
+
+The content is educational material written for supervised trainees. It is not clinical
+guidance for any particular patient and does not replace local policy or protocol. It is
+provided as-is, as Section 5 of the legal code describes.
