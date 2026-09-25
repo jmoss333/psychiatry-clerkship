@@ -19,8 +19,8 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
 ```
 - **Two sites, one repo.** Build command and publish dir are set **per-site in the Netlify UI**, not
   in `netlify.toml` (kept intentionally minimal — one toml can't express two sites, and it's read
-  *after* the clone). The legacy `GIT_LFS_ENABLED` / `GIT_LFS_FETCH_INCLUDE` env vars also live
-  there and are being **retired** (next bullet but one). See `13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md`.
+  *after* the clone). The legacy `GIT_LFS_ENABLED` / `GIT_LFS_FETCH_INCLUDE` env vars were
+  **removed** from both sites on 2026-09-14 (next bullet but one). See `13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md`.
 - **The two learner sites publish from `release`, not `main`** (since 2026-09-25). A merge to
   `main` deploys nothing learner-facing: `.github/workflows/production-release-train.yml`
   fast-forwards `release` to the newest main commit whose required checks are BOTH green, at
@@ -35,8 +35,12 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
 - **LFS bandwidth is metered per GitHub account (10 GB/mo).** If *every* production deploy of both
   sites fails the LFS gate while previews and CI stay green and nothing changed, it is the quota,
   not the code (2026-08-30 outage) — see `site_build/NETLIFY_LFS_RUNBOOK.md` "Incident pattern 2".
-  `site_build/lfs_pull_cached.sh` pulls media inside the build from Netlify's persistent cache so
-  a merge costs ~0 MB; it only takes effect once `GIT_LFS_ENABLED` is removed from the site's UI.
+  **The cost is per fresh clone (~455 MB), not per build or merge:** a cache-reusing production
+  build downloads nothing, so ~11 "Clear cache and deploy"s spend the month — never clear the
+  cache to retry an LFS failure. `site_build/lfs_pull_cached.sh` is shipped but **inert**:
+  removing `GIT_LFS_ENABLED` (done 2026-09-14) did not engage it, because Netlify's checkout
+  materialises LFS objects regardless — do not repeat that switch-over expecting a saving.
+  Read the deploy log's checkout gap (~2 s reused, ~70 s fresh clone), not an MB line.
 - **`CLERKSHIP_ANALYTICS=off|ms3|res|both`** gates the usage-analytics emitter (`common.py`'s
   `analytics_enabled_for()`), **default `off`**. Per the rollout in
   `docs/superpowers/specs/2026-09-04-usage-analytics-design.md`, enabling it is the repo owner's
