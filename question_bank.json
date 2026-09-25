@@ -243,7 +243,7 @@
     },
     {
       "id": "qb_mood_002",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "mood",
       "competency": [
@@ -532,7 +532,7 @@
     },
     {
       "id": "qb_sud_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -585,7 +585,7 @@
     },
     {
       "id": "qb_cog_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -1085,7 +1085,7 @@
     },
     {
       "id": "qb_oth_001",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "otherdx",
       "competency": [
@@ -2001,7 +2001,7 @@
     },
     {
       "id": "qb_cog_014",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "neurocog",
       "competency": [
@@ -3342,7 +3342,7 @@
     },
     {
       "id": "qb_sud_014",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "substance",
       "competency": [
@@ -3865,7 +3865,7 @@
     },
     {
       "id": "qb_pha_011",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "pharm",
       "competency": [
@@ -6265,7 +6265,7 @@
     },
     {
       "id": "qb_eth_007",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -8725,7 +8725,7 @@
     },
     {
       "id": "qb_cdev_008",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "childdev",
       "competency": [
@@ -9090,7 +9090,7 @@
     },
     {
       "id": "qb_eth_012",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -9142,7 +9142,7 @@
     },
     {
       "id": "qb_eth_013",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -9408,7 +9408,7 @@
     },
     {
       "id": "qb_psy_015",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -9618,7 +9618,7 @@
     },
     {
       "id": "qb_rel_016",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "relational",
       "competency": [
@@ -9884,7 +9884,7 @@
     },
     {
       "id": "qb_saf_013",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -10513,7 +10513,7 @@
     },
     {
       "id": "qb_eth_016",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -10617,7 +10617,7 @@
     },
     {
       "id": "qb_otherdx_013",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "otherdx",
       "competency": [
