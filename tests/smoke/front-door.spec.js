@@ -1132,6 +1132,42 @@ test('Safety Kit, theme, and Progress remain usable and restore their invokers',
   await expectHealthy(page);
 });
 
+// Today's exam-date prompt (fd_today.js / fdExamDatePrompt). Without a stored date the taper in
+// phase_policy.js never engages, and the only home for the date was the settings panel. The field
+// is the panel's own type, so it must commit IN PLACE -- no render, no focus move -- and it must
+// not become a second settings opener (the gear's focus return after a theme change depends on it).
+test('Today asks once for the exam date on the exam path, stores it in place, and settings reads it back', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const field = page.locator('#fdTodayExam');
+  if (isResidentProject(testInfo.project.name)) {
+    await expect(field).toHaveCount(0);
+    await expect(page.locator('.fd-today__exam')).toHaveCount(0);
+    await expectHealthy(page);
+    return;
+  }
+  await expect(page.locator('label[for="fdTodayExam"]')).toHaveText('Exam date');
+  await expect(page.locator('[data-fd-settings]')).toHaveCount(1);
+  const typedInto = await field.elementHandle();
+  await field.fill('2026-10-30');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_shelf_date'))).toBe('2026-10-30');
+  expect(await typedInto.evaluate((el) => el.isConnected), 'the field was rebuilt under the learner').toBe(true);
+  await expect(field).toHaveValue('2026-10-30');
+
+  await page.locator('[data-fd-tab="library"]:visible').first().click();
+  await page.locator('[data-fd-tab="today"]:visible').first().click();
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator('.fd-today__exam'), 'answered once, asked no more').toHaveCount(0);
+
+  const settings = page.locator('[data-fd-settings]');
+  await settings.click();
+  await expect(page.locator('#fdSetExam')).toHaveValue('2026-10-30');
+  await page.locator('.fd-sheet__close').click();
+  await expect(settings).toBeFocused();
+  await expectHealthy(page);
+});
+
 test('malformed built protocol fails closed with every canonical crisis resource', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.route(/\/\?(?:$|#)|\/$/, async route => {
