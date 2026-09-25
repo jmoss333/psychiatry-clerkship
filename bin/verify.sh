@@ -246,6 +246,11 @@ step "unit — twin parity"                   python3 bin/check_twin_parity.py -
 # no-content-change cancel is not, and that an unrecognised deploy state is a finding rather
 # than a pass. Without that last one the alarm would quietly match nothing.
 step "unit — netlify deploy health"         python3 bin/check_netlify_deploy_health.py --self-test
+# The preview gate (2026-09-25) runs for real inside that same daily steward. Its self-test runs
+# here because it also checks the COMMITTED ruleset: every Netlify preview main requires must
+# come from a site in SITES -- so a new required preview check for a site nobody watches fails
+# this push instead of silently stranding every PR, which is what #802 did for seven hours.
+step "unit — netlify preview gate"          python3 bin/check_preview_gate.py --self-test
 # Currency guards (2026-09-18). Only the SELF-TESTS run here for the first two: the real
 # source-integrity run asks PubMed and Crossref for every identified source (~60s, real egress,
 # and a datacenter runner is bot-blocked by some hosts), and the real cadence run is a faculty

@@ -8,7 +8,7 @@ An evidence reference for the inpatient stay, admission through discharge — fo
 
 ### Strongest Evidence
 
-The **Columbia-Suicide Severity Rating Scale (C-SSRS)** is the most widely endorsed tool. A 2025 meta-analysis found prior suicidal behavior predicted future attempts (pooled OR 3.14, 95% CI 1.86–5.31), and in an inpatient cohort of 1,055 adults, the C-SSRS demonstrated AUC = 0.757 for post-discharge suicide-related behavior. The Joint Commission (NPSG 15.01.01) and the VA/DoD 2024 Clinical Practice Guideline endorse the C-SSRS for screening. However, a systematic review using GRADE found that **no instrument fulfilled requirements for sufficient diagnostic accuracy** (sensitivity >80% and specificity >50%).
+The **Columbia-Suicide Severity Rating Scale (C-SSRS)** is the most widely endorsed tool. A 2025 meta-analysis found prior suicidal behavior predicted future attempts (pooled OR 3.14, 95% CI 1.86–5.31), and in an inpatient cohort of 1,055 adults, the C-SSRS demonstrated AUC = 0.757 for post-discharge suicide-related behavior. The Joint Commission (NPSG 15.01.01, which requires a validated screening tool but names none) accepts the C-SSRS, and the VA/DoD 2024 Clinical Practice Guideline endorses it for screening. However, a systematic review using GRADE found that **no instrument fulfilled requirements for sufficient diagnostic accuracy** (sensitivity >80% and specificity >50%).
 
 The **SAD PERSONS scale should not be used**: multiple studies demonstrate it performs no better than chance (AUC 0.55–0.59), with sensitivity as low as 1% for repeat self-harm. The VA/DoD 2024 guideline explicitly excludes it.
 
@@ -113,7 +113,7 @@ For **methamphetamine-related agitation**, IV midazolam 5 mg + droperidol 5 mg a
 
 - **IV vs. IM route**: IV combinations may be faster but carry greater hemodynamic risks; most guidelines recommend avoiding IV treatments
 
-- **Droperidol availability** varies by country, limiting generalizability of evidence favoring it
+- **Droperidol availability** varies by country, limiting generalizability of evidence favoring it; in the US it carries an FDA boxed warning for QT prolongation, so QTc risk must be considered before use
 
 ---
 
@@ -331,7 +331,7 @@ The **IMPACT trial** (n=1,801) is the landmark CoCM study: 45% of intervention p
 
 ### Measurement-Based Care
 
-In a randomised trial of 120 **outpatients** with moderate-to-severe major depression, remission at 24 weeks was 73.8% with measurement-based care vs. 28.8% with standard treatment (Guo et al., *Am J Psychiatry* 2015) — a large effect, but from a single-centre outpatient trial restricted to paroxetine or mirtazapine, so treat it as proof of concept rather than an inpatient estimate. The Joint Commission requires MBC in all accredited behavioral health programs since 2018. However, **less than 20% of practitioners** engage in MBC, and the VA/DoD 2022 guideline rated the overall evidence as weak.
+In a randomised trial of 120 **outpatients** with moderate-to-severe major depression, remission at 24 weeks was 73.8% with measurement-based care vs. 28.8% with standard treatment (Guo et al., *Am J Psychiatry* 2015) — a large effect, but from a single-centre outpatient trial restricted to paroxetine or mirtazapine, so treat it as proof of concept rather than an inpatient estimate. The Joint Commission has required MBC since 2018 for organizations accredited under its Behavioral Health Care and Human Services program (standard CTS.03.01.09). However, **less than 20% of practitioners** engage in MBC, and the VA/DoD 2022 guideline rated the overall evidence as weak.
 
 ### Current Controversies
 

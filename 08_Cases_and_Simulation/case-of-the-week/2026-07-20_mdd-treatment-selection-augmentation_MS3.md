@@ -75,7 +75,7 @@ What is true in every case is that **abrupt cessation** of a short-half-life SSR
    - No response or **minimal** response (PHQ-9 change below ~5 points) → **optimize the dose** and complete the trial before calling it; then **switch** if there is still no meaningful movement.
    - **Partial** response (meaningful improvement, not remission) at an adequate dose and duration → **optimize dose** or **augment**.
    - When switching, pick the strategy for the **specific drug pair** — direct, cross-taper, or taper-and-washout [5].
-3. **After ≥2 failed adequate trials (TRD)** → augment with an atypical antipsychotic (e.g., aripiprazole), lithium, or T3; consider psychiatry referral, and consider **ECT** for severe, psychotic, or treatment-refractory depression.
+3. **After ≥2 failed adequate trials (TRD)** → augment with an atypical antipsychotic (e.g., aripiprazole, brexpiprazole, cariprazine, quetiapine XR), lithium, or T3; know that esketamine nasal spray is FDA-approved for TRD (REMS, certified setting); consider psychiatry referral, and consider **ECT** for severe, psychotic, or treatment-refractory depression.
 4. **Continue** effective treatment for ≥6–12 months after remission to prevent relapse.
 
 ---

@@ -315,7 +315,7 @@
           "choices": [
             {
               "id": "a",
-              "text": "Escalate urgently for fever, autonomic instability, worsening rigidity, rising CK, dehydration, immobility complications, or failure to improve with supervised first-line treatment.",
+              "text": "Escalate urgently for fever, autonomic instability, worsening rigidity, rising CK, dehydration, immobility complications, or failure to improve with supervised first-line treatment — and if malignant features emerge, stop antipsychotics and request urgent ECT consultation.",
               "quality": "best",
               "feedback": "Best. It names the physiologic and treatment-response signals that should change urgency."
             },

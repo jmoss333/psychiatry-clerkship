@@ -40,7 +40,7 @@ He is calm, guarded, and cooperative. He denies suicidal or homicidal ideation; 
 
 **Q6. He asks, "Do I have to take this forever?" How do you counsel on treatment duration and relapse risk?**
 
-*Teaching point:* Honest framing: after remission from a first episode, guideline consensus supports continuing the antipsychotic for at least 1–2 years, with discontinuation associated with high relapse rates; any taper should be slow, collaborative, and paired with early-warning-sign monitoring and rapid re-engagement plans [3]. Avoid both false certainty ("lifelong, period") and false reassurance. Document the shared decision. This is also the moment to consolidate cannabis abstinence counseling — continued use predicts relapse and poorer response.
+*Teaching point:* Honest framing: after remission from a first episode, guideline consensus supports continuing the antipsychotic for at least 1–2 years, with discontinuation associated with high relapse rates; any taper should be slow, collaborative, and paired with early-warning-sign monitoring and rapid re-engagement plans [3]. Offer a long-acting injectable as a choice, not a punishment — especially when the patient prefers it or adherence is uncertain, and early in the illness rather than only after repeated relapses. Avoid both false certainty ("lifelong, period") and false reassurance. Document the shared decision. This is also the moment to consolidate cannabis abstinence counseling — continued use predicts relapse and poorer response.
 
 **Q7. What is your safety assessment and disposition framework for this presentation?**
 
