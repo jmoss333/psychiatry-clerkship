@@ -1,7 +1,7 @@
 """Discover tool teaching inputs using deployed URLs, not prototype filenames.
 
-Conservatively collect local JSON/VTT URL literals from inline scripts and
-declared first-party script assets, including URLs stored in constants. This is
+Collect local fetch URLs from inline scripts and declared first-party script
+assets, plus script/track src references. This is
 not a JavaScript evaluator: unresolved fetch arguments and module loaders fail
 closed. Services and remote URLs are outside this file-backed contract.
 Unmapped local data is an error, never an implicit attestation exemption.
@@ -21,14 +21,8 @@ class DependencyError(ValueError):
     pass
 
 
-# Deliberately scan URL-shaped literals, not arbitrary JavaScript strings: a
-# quote inside a JS regexp (e.g. /'/g) must not swallow all subsequent loaders.
-# This conservative scan also includes URL examples in comments, so there is
-# no fragile imitation of a JavaScript parser silently dropping dependencies.
-_DATA_LITERAL = re.compile(
-    r"(?P<quote>['\"`])(?P<url>[^'\"`\s<>]+?\.(?:json|vtt)(?:[?#][^'\"`\s<>]*)?)(?P=quote)",
-    re.IGNORECASE,
-)
+# Inspect loader arguments, not arbitrary strings such as backup download names.
+# Matching a loader directly also avoids treating quotes in JS regexps as strings.
 _LITERAL = re.compile(r"(['\"`])([^'\"`\\]*?)\1", re.DOTALL)
 _FETCH = re.compile(r"(?<![\w$])fetch\s*\(\s*")
 
@@ -69,7 +63,7 @@ def _first_argument(script, start):
 
 
 def _fetch_references(script, source):
-    if re.search(r"\b(?:import\s*(?:\(|\{|\*|[\w'\"])|require\s*\(|importScripts\s*\(|XMLHttpRequest\b)", script):
+    if re.search(r"(?<![\w$-])(?:import\b\s*(?:\(|\{|\*|['\"]|[A-Za-z_$][\w$]*\s+from\b)|require\s*\(|importScripts\s*\(|XMLHttpRequest\b)", script):
         raise DependencyError(source + ": unsupported module/request loader; extend teaching dependency discovery")
     refs = set()
     service_calls = set()
@@ -124,16 +118,11 @@ class _ToolHTML(HTMLParser):
 
 
 def references(text, html=True, source="<script>"):
-    """Local data literals plus script/track src references; stable and deduplicated."""
+    """Fetch URLs plus script/track src references; stable and deduplicated."""
     parsed = _ToolHTML(text) if html else None
     refs = set(parsed.assets if parsed else [])
     for script in parsed.scripts if parsed else [text]:
         refs.update(_fetch_references(script, source))
-        for match in _DATA_LITERAL.finditer(script):
-            value = match.group("url")
-            if "${" in value or "\\" in value:
-                raise DependencyError("teaching URL must be a static, unescaped path: " + value)
-            refs.add(value)
     return [(ref, bool(parsed and ref in parsed.script_assets)) for ref in sorted(refs)]
 
 

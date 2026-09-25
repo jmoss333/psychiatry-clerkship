@@ -14,8 +14,7 @@ makes old HTML-only reviews pending; faculty must review the expanded scope.
 
 ## Dependency discovery and build checks
 
-- Scan inline scripts for static fetch URLs and quoted local JSON/VTT references,
-  plus script/track `src` attributes. A fetch argument must itself be a literal;
+- Scan inline scripts for static fetch URLs, plus script/track `src` attributes. A fetch argument must itself be a literal;
   variable and computed arguments fail rather than guessing at JavaScript scope. Follow declared first-party scripts regardless of filename suffix. Resolve fetch URLs relative to the deployed HTML document.
 - Resolve source files through the manifest's `toolAssets`, orientation media,
   the resident sibling-pack copy rule, and the builder's root-data/quiz routes.
@@ -48,8 +47,8 @@ extend the copy-route resolver when adding a different builder route. Regenerate
 python3 13_Faculty_Resources/_automation/site_build/shipped_pages.py --write
 ```
 
-The scanner is conservative: URL-shaped literals and loader examples in comments
-count too. Unresolved fetch expressions, computed templates, module scripts,
+The scanner is conservative: loader examples in comments count too. Ordinary
+labels and download filenames are not treated as teaching requests. Unresolved fetch expressions, computed templates, module scripts,
 imports, CommonJS loaders and XMLHttpRequest fail until discovery is extended.
 The three dynamic Interview Room service expressions have explicit, source-scoped
 exemptions; other dynamic service calls require the same review. This is not a

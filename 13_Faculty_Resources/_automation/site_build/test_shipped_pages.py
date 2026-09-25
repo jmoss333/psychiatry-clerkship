@@ -225,6 +225,16 @@ class DeriveTests(unittest.TestCase):
             page = next(p for p in shipped_pages.derive(root)["pages"] if p["slug"] == "mse.html")
             self.assertNotIn("extraSources", page)
 
+    def test_import_labels_and_download_names_are_not_module_or_teaching_loaders(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = synthetic_root(tmp)
+            (root / "04_Assessment/mse.html").write_text('''<script>
+                var importSequence=0, message="An important point", filename="backup.json";
+                button.getAttribute('data-curator-import');
+                </script>''')
+            page = next(p for p in shipped_pages.derive(root)["pages"] if p["slug"] == "mse.html")
+            self.assertNotIn("extraSources", page)
+
     def test_unresolved_fetches_and_module_loaders_cannot_silently_drop_content(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = synthetic_root(tmp)
