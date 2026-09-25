@@ -54,7 +54,7 @@ gh api -X POST repos/jmoss333/psychiatry-clerkship/rulesets --input - <<'JSON'
 JSON
 ```
 
-Pushes to this branch trigger nothing. CI runs on pushes to `main` only, and every Netlify site builds `main` only (`allowed_branches: ["main"]`).
+Pushes to this branch trigger nothing. CI runs on pushes to `main` only. The two learner sites build `release` only (`allowed_branches: ["release"]`, the release train of #802), and every other Netlify site builds `main` only.
 
 ## 3. Switch the learner sites on
 
@@ -69,7 +69,9 @@ netlify env:set CLERKSHIP_LEDGER on --site mmc-psychiatry-residents-sanford --sc
 
 ## 4. Build hooks, then the console
 
-Create one build hook per learner site (Site configuration → Build & deploy → Build hooks, branch `main`, name "attestation ledger"). Then set these on `clerkship-faculty-attest`, scope Functions:
+Create one build hook per learner site (Site configuration → Build & deploy → Build hooks, branch **`release`**, name "attestation ledger"). Then set these on `clerkship-faculty-attest`, scope Functions:
+
+> **Why `release`, not `main`.** Since #802 the learner sites publish the `release` branch, which the release train moves only to a `main` commit whose build and smoke checks passed. A hook on `release` rebuilds exactly what learners already see and adds the newest signatures. A hook on `main` would publish whatever `main` holds at that minute, so it would skip the green-checks gate. The ledger itself comes from the `attestations` branch at build time either way, so a signature still appears within one rebuild.
 
 | Variable | Value |
 |---|---|
