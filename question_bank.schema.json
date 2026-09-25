@@ -83,6 +83,40 @@
           "evidence": { "type": "string", "description": "The anchor exactly as a `pages` source states it — never a new outside citation." },
           "retired": { "type": "boolean", "description": "Non-destructive retirement flag. When true the item is excluded from the shipped/attestable set (status must be 'draft'); it is never deleted so its stable id and response history survive. Only faculty/reviewer tooling sets this; retired items cannot be re-attested." },
           "retiredReason": { "type": "string", "description": "One line explaining why the item was retired (e.g., near-duplicate of qb_sud_009)." },
+          "exam_alignment": {
+            "type": "string",
+            "enum": ["both", "shelf", "comat"],
+            "description": "Optional (WP-8). Which exam the item primarily serves: 'both' = shared core; 'shelf' = NBME emphasis; 'comat' = COMAT emphasis. Same vocabulary as 09_Exam_Prep/shelf_comat_bank/02_ITEM_SCHEMA.json."
+          },
+          "blueprint": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["nbme", "comat"],
+            "description": "Optional (WP-8): the item's place in the NBME Psychiatry subject-exam outline and the NBOME COMAT Clinical Psychiatry blueprint, the shape the pilot items in 09_Exam_Prep/shelf_comat_bank/04_pilot_batch_01.json use. Each enum is the list of category keys in bin/data/exam_blueprint_bands.json (which records the exact published names and bands); bin/qbank_blueprint_report.py --self-test fails if the two drift. That tool reports the attested pool against the bands.",
+            "properties": {
+              "nbme": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["system", "physician_task", "site_of_care", "patient_age"],
+                "properties": {
+                  "system": { "type": "string", "enum": ["General Principles", "Behavioral Health", "Nervous System & Special Senses", "Other Systems", "Social Sciences"] },
+                  "physician_task": { "type": "string", "enum": ["Diagnosis", "Pharmacotherapy/Intervention/Management"] },
+                  "site_of_care": { "type": "string", "enum": ["Ambulatory", "Emergency Department", "Inpatient"] },
+                  "patient_age": { "type": "string", "enum": ["Birth to 12", "13 and older"] }
+                }
+              },
+              "comat": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["presentation", "physician_task"],
+                "properties": {
+                  "presentation": { "type": "string", "enum": ["Anxiety/Trauma/Dissociative/OCD", "Neurocognitive", "Neurodevelopmental/Gender Dysphoria/Disruptive-Impulse-Conduct", "Depressive/Bipolar/Related", "Personality", "Schizophrenia Spectrum/Psychotic", "Psychiatric Illness due to Medical Condition/Somatic/Sleep-Wake", "Substance-Related/Addictive", "Feeding-Eating-Elimination/Sexual-Paraphilic"] },
+                  "physician_task": { "type": "string", "enum": ["Health Promotion/Prevention/Care Delivery", "History & Physical (incl. Dx)", "Diagnostic Technologies", "Management", "Scientific Mechanisms of Disease"] }
+                }
+              },
+              "osteopathic_competency": { "type": "string", "description": "Optional; only when genuinely relevant (holistic assessment, social determinants, mind-body, OMM). Never forced." }
+            }
+          },
           "tier2": {
             "type": "object",
             "required": ["q", "options", "why"],
