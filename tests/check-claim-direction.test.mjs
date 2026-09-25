@@ -96,8 +96,9 @@ except D.DirectionError as e:
   }
 });
 
-test('CLI: offline --abstract-file run; advisory exit 0, --strict exit 1 on contradicts, exit 2 on unknown source', () => {
+test('CLI: offline --abstract-file run; advisory exit 0, --strict exit 1 on contradicts, exit 2 on unknown source', (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'claim-direction-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const annp = path.join(dir, 'ann.json'); fs.writeFileSync(annp, JSON.stringify({ annotations: [ANN] }));
   const good = path.join(dir, 'good.txt'); fs.writeFileSync(good, 'Main results: ' + SPAN);
   const bad = path.join(dir, 'bad.txt'); fs.writeFileSync(bad, 'Main results: For the primary outcome of treatment response, we found no significant difference.');

@@ -80,10 +80,13 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
    `lfs-cache: ERROR … over its data quota`), deploy previews green, CI green, and a GitHub
    email "You have used 90%/100% of the Git LFS bandwidth". 10 GB/month per account, reset
    on the 1st (2026-08-30 outage). Retrying, clearing cache, or `git lfs push` cannot fix it.
-   Fix = move the site to the cached-pull path (`NETLIFY_LFS_RUNBOOK.md`, Switch-over: delete
-   `GIT_LFS_ENABLED` + `GIT_LFS_FETCH_INCLUDE`, clear-cache deploy once); need a deploy
-   *before* the reset = buy a GitHub data pack. Read `~N MB downloaded from GitHub this
-   build` in the log as the meter.
+   The cost is per **fresh clone** (~455 MB): a cache-reusing build downloads nothing, so
+   clearing the cache is what spends the quota — never clear it to retry. The cached-pull
+   switch-over (delete `GIT_LFS_ENABLED` + `GIT_LFS_FETCH_INCLUDE`) was done on both sites
+   on 2026-09-14 and is **inert**: Netlify's checkout fetches LFS objects regardless, so do
+   not repeat it. Need a deploy *before* the reset = buy a GitHub data pack. Read the
+   deploy log's checkout gap (~2 s reused, ~70 s fresh clone) as the meter; the `~N MB
+   downloaded` line never prints (`NETLIFY_LFS_RUNBOOK.md`, "How media reach the build").
 
 ## Deploy runbook
 

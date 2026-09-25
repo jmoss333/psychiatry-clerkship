@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-09-19T14:40:57+00:00",
+  "capturedAt": "2026-09-22T12:44:24+00:00",
   "issues": [
     {
       "number": 8,
@@ -1604,6 +1604,30 @@
       "state": "CLOSED",
       "closedAt": "2026-09-17T01:03:07Z",
       "fingerprint": "link:www.healthquality.va.gov::broken-link::40b119081ac9d66c",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 721,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/721",
+      "state": "OPEN",
+      "closedAt": null,
+      "fingerprint": "fda-drug-safety::broken-link::7415e355b41cccda",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 722,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/722",
+      "state": "OPEN",
+      "closedAt": null,
+      "fingerprint": "clozapine-rems::broken-link::f48ddedaa541bacf",
       "labels": [
         "P1",
         "link-source-monitor",

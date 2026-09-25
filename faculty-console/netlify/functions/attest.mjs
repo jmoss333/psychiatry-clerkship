@@ -8,6 +8,13 @@ import {
   sourceBlobSha,
   sourcesForSlug,
 } from '../../attestation-hash.mjs';
+import {
+  commitSummary,
+  groupDriftedByChange,
+  groupId,
+  lineDiffHunks,
+  recordDiff,
+} from '../../change-history.mjs';
 import { deriveContentUniverse } from '../../content-universe.mjs';
 import {
   KEYS_PATH,
@@ -694,6 +701,40 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
   }
 
   /**
+   * Commits reachable from `sha` (a branch or commit), newest first, optionally only those
+   * touching `path` and inside [since, until). Read-only; used by the Re-sign by change view.
+   */
+  async function listCommits({ sha, path = '', since = '', until = '', perPage = 100 } = {}) {
+    const query = new URLSearchParams({ sha, per_page: String(perPage) });
+    if (path) query.set('path', path);
+    if (since) query.set('since', since);
+    if (until) query.set('until', until);
+    const response = await githubRequest(
+      fetchImpl,
+      `${GITHUB_API}/repos/${settings.repo}/commits?${query}`,
+      { headers: githubHeaders(settings.token) },
+    );
+    let payload;
+    try {
+      payload = await response.json();
+    } catch {
+      throw new GithubError('github_response_invalid', 502);
+    }
+    if (!Array.isArray(payload)) throw new GithubError('github_response_invalid', 502);
+    return payload.filter(isRecord);
+  }
+
+  /** One commit's metadata (parents, message) from the git data API — no file list or patches. */
+  async function gitCommit(sha) {
+    const response = await githubRequest(
+      fetchImpl,
+      gitRepositoryUrl(settings, `commits/${normalizeGitObjectId(sha)}`),
+      { headers: githubHeaders(settings.token) },
+    );
+    return githubJson(response);
+  }
+
+  /**
    * Keep the attestation branch from drifting behind the base branch.
    *
    * A stale branch is the one failure mode that loses data: its reviewed.json
@@ -997,6 +1038,10 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
 
   return {
     read, readRaw, readText, readTree, write, writeText, head, headOf, writeAtHead,
+    listCommits, gitCommit,
+    // Identity for per-deployment memo caches (the Re-sign by change diffs): the fetch
+    // implementation, exactly as the tree cache is keyed.
+    cacheIdentity: typeof fetchImpl === 'function' ? fetchImpl : null,
     ensureBranchFresh, ensureRollingPullRequest, describeBranchSync,
   };
 }
@@ -1438,6 +1483,256 @@ async function buildState(repository, settings, branchSync) {
       qbankTotal: qbankPayload.qbank.length,
     },
   };
+}
+
+// ───────────────────────────────────────────────────────────────────────────────────────
+// Re-sign by change (read-only). Which correction changed which signed page, and what it
+// said. These views never write, never sign, and never touch the branch: they answer the
+// reviewer's first question about a drifted page — "what changed?" — so that re-signing is
+// a review of the change rather than a re-read of the whole page. One press still signs one
+// page, in the existing flow.
+// ───────────────────────────────────────────────────────────────────────────────────────
+
+const DRIFT_PREFIX = STALE_REASON.split('{at}')[0];
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const VIEW_SLUG = /^[A-Za-z0-9_.-]{1,200}$/;
+const MAX_CHANGE_QUERIES = 160;
+const CHANGE_QUERY_CONCURRENCY = 10;
+const MAX_DIFF_FILE_BYTES = 1024 * 1024;
+// Keyed by fetch implementation, like TREE_CACHE: a warm container reuses answers across
+// requests, and each test's mock GitHub gets a cache of its own. A diff between two fixed
+// commits never changes, so a hit can never be stale.
+const DIFF_CACHES = new WeakMap();
+const DIFF_CACHE_LIMIT = 40;
+
+function diffCacheFor(repository) {
+  let cache = DIFF_CACHES.get(repository.cacheIdentity);
+  if (!cache) {
+    cache = new Map();
+    if (repository.cacheIdentity) DIFF_CACHES.set(repository.cacheIdentity, cache);
+  }
+  return cache;
+}
+
+async function mapLimit(values, limit, fn) {
+  const results = new Array(values.length);
+  let next = 0;
+  async function worker() {
+    while (next < values.length) {
+      const index = next;
+      next += 1;
+      results[index] = await fn(values[index], index);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, values.length) }, worker));
+  return results;
+}
+
+/** Pages whose signature no longer fits their text — drift, not "never bound" or "unverified". */
+function driftedItems(state) {
+  return state.items.filter(item => item.stale === true
+    && typeof item.reason === 'string'
+    && item.reason.startsWith(DRIFT_PREFIX)
+    && ISO_DATE.test(item.at));
+}
+
+/**
+ * Every drifted page, grouped by the commit (PR) that changed one of its source files on or
+ * after the day it was signed. "On or after the day" is the honest bound for a row that only
+ * records a date: it can include a same-day change the reviewer had already seen, never omit
+ * one they had not. Bounded: at most MAX_CHANGE_QUERIES file histories per load; a page
+ * whose history was not read is reported as unchecked, never as unchanged.
+ */
+async function buildChangeView(repository, settings) {
+  const state = await buildState(repository, settings, null);
+  const shipped = (await readShippedPages(repository, settings)).file.json;
+  const drifted = driftedItems(state);
+  const queries = new Map();
+  const perPage = drifted.map((item) => {
+    const sources = sourcesForSlug(shipped, item.slug);
+    for (const path of sources) queries.set(`${path}\u0000${item.at}`, { path, at: item.at });
+    return { item, sources };
+  });
+  const wanted = [...queries.entries()];
+  const asked = wanted.slice(0, MAX_CHANGE_QUERIES);
+  const histories = new Map();
+  await mapLimit(asked, CHANGE_QUERY_CONCURRENCY, async ([key, { path, at }]) => {
+    const commits = await repository.listCommits({
+      sha: settings.baseBranch,
+      path,
+      since: `${at}T00:00:00Z`,
+    });
+    histories.set(key, commits.map(commitSummary));
+  });
+
+  const pages = [];
+  const unchecked = [];
+  for (const { item, sources } of perPage) {
+    const keys = sources.map(path => `${path}\u0000${item.at}`);
+    if (!keys.every(key => histories.has(key))) {
+      unchecked.push(item.slug);
+      continue;
+    }
+    const seen = new Set();
+    const commits = [];
+    for (const key of keys) {
+      for (const summary of histories.get(key)) {
+        if (seen.has(summary.sha)) continue;
+        seen.add(summary.sha);
+        commits.push(summary);
+      }
+    }
+    pages.push({ slug: item.slug, title: item.title, kind: item.kind, at: item.at, commits });
+  }
+  const { groups, unexplained } = groupDriftedByChange(pages);
+  return {
+    view: 'changes',
+    branch: settings.baseBranch,
+    generatedAt: new Date().toISOString(),
+    drifted: drifted.length,
+    partial: unchecked.length > 0,
+    groups,
+    unexplained,
+    unchecked: unchecked.sort(),
+    // `sameDay`: the change landed on the calendar day the page was signed. A row records
+    // only a date, so such a change may predate the signature and already have been read;
+    // the view says so rather than guessing either way.
+    pages: Object.fromEntries(pages.map(page => {
+      const changes = new Map();
+      for (const summary of page.commits) {
+        const id = groupId(summary);
+        const sameDay = summary.date.slice(0, 10) === page.at;
+        changes.set(id, changes.has(id) ? changes.get(id) && sameDay : sameDay);
+      }
+      return [page.slug, {
+        title: page.title,
+        kind: page.kind,
+        at: page.at,
+        changes: [...changes].map(([id, sameDay]) => ({ id, sameDay })),
+      }];
+    })),
+  };
+}
+
+async function readAt(repository, path, ref) {
+  if (!ref) return { bytes: null };
+  try {
+    const { bytes } = await repository.readRaw(path, { ref, maxBytes: MAX_DIFF_FILE_BYTES });
+    return { bytes: Buffer.from(bytes) };
+  } catch (error) {
+    if (error instanceof GithubError && error.notFound) return { bytes: null };
+    if (error instanceof HttpError && error.code === 'qbank_too_large') return { tooLarge: true };
+    throw error;
+  }
+}
+
+async function fileChange(repository, path, base, head) {
+  const [before, after] = await Promise.all([readAt(repository, path, base), readAt(repository, path, head)]);
+  if (before.tooLarge || after.tooLarge) return { path, status: 'modified', hunks: [], tooLarge: true };
+  if (before.bytes && after.bytes && before.bytes.equals(after.bytes)) return { path, status: 'unchanged', hunks: [] };
+  if (!before.bytes && !after.bytes) return { path, status: 'missing', hunks: [] };
+  if (before.bytes?.includes(0) || after.bytes?.includes(0)) return { path, status: 'binary', hunks: [] };
+  const status = !before.bytes ? 'added' : !after.bytes ? 'removed' : 'modified';
+  return {
+    path,
+    status,
+    ...lineDiffHunks(before.bytes ? before.bytes.toString('utf8') : '', after.bytes ? after.bytes.toString('utf8') : ''),
+  };
+}
+
+async function recordAt(repository, slug, ref) {
+  if (!ref) return null;
+  try {
+    const file = await repository.read(TOPIC_META_PATH, { ref });
+    return isRecord(file.json) && isRecord(file.json[slug]) ? file.json[slug] : null;
+  } catch (error) {
+    if (error instanceof GithubError && error.notFound) return null;
+    throw error;
+  }
+}
+
+/**
+ * What changed on one page: either everything since the day it was signed (no `sha`), or
+ * exactly what one commit changed (`sha`). Word-level hunks per source file, plus the page's
+ * topic_meta record key by key (quiz, key points…) — everything its fingerprint covers.
+ */
+async function buildDiffView(repository, settings, slug, sha) {
+  if (!VIEW_SLUG.test(slug)) throw new HttpError('changes.invalid_slug', 400, 'That page name is not valid.');
+  const shipped = (await readShippedPages(repository, settings)).file.json;
+  const sources = sourcesForSlug(shipped, slug);
+  if (!sources.length) throw new HttpError('changes.not_shipped', 404, 'No learner site ships that page.');
+
+  let base;
+  let head;
+  let commit = null;
+  let since = null;
+  if (sha) {
+    let info;
+    try {
+      info = await repository.gitCommit(sha);
+    } catch (error) {
+      if (error instanceof GithubError && (error.notFound || error.code === 'github_response_invalid')) {
+        throw new HttpError('changes.unknown_commit', 404, 'That change could not be found.');
+      }
+      throw error;
+    }
+    const parent = Array.isArray(info.parents) ? info.parents[0]?.sha : null;
+    if (typeof parent !== 'string') throw new HttpError('changes.no_parent', 400, 'That change has no earlier version to compare with.');
+    base = parent;
+    head = normalizeGitObjectId(info.sha || sha);
+    commit = commitSummary({ sha: head, commit: { message: info.message, committer: info.committer }, html_url: info.html_url });
+  } else {
+    const reviewedFile = await readRequired(repository, REVIEWED_PATH, settings.branch);
+    let reviewed = isRecord(reviewedFile.json) ? reviewedFile.json : {};
+    if (settings.ledger) {
+      const ledger = await readLedger(repository, settings);
+      reviewed = applyLedger({ reviewed, events: ledger.events }).reviewed;
+    }
+    const row = Object.hasOwn(reviewed, slug) && isRecord(reviewed[slug]) ? reviewed[slug] : null;
+    if (!row || !ISO_DATE.test(row.at || '')) {
+      throw new HttpError('changes.no_signature', 404, 'That page has no signing date to compare against.');
+    }
+    since = row.at;
+    const before = await repository.listCommits({ sha: settings.baseBranch, until: `${row.at}T00:00:00Z`, perPage: 1 });
+    base = typeof before[0]?.sha === 'string' ? before[0].sha : null;
+    head = await repository.headOf(settings.baseBranch);
+  }
+
+  // The mode is part of the key: one commit's change and "since the day you signed" can
+  // compare the same two versions yet describe themselves differently (commit vs. since).
+  const cacheKey = `${settings.repo}|${sha ? 'commit' : 'since'}|${slug}|${base}|${head}`;
+  const cache = diffCacheFor(repository);
+  if (cache.has(cacheKey)) return cache.get(cacheKey);
+  const [files, recordBefore, recordAfter] = await Promise.all([
+    mapLimit(sources, 3, path => fileChange(repository, path, base, head)),
+    recordAt(repository, slug, base),
+    recordAt(repository, slug, head),
+  ]);
+  const result = {
+    view: 'diff',
+    slug,
+    since,
+    base,
+    head,
+    commit,
+    compareUrl: base ? `https://github.com/${settings.repo}/compare/${base}...${head}` : null,
+    files,
+    record: recordDiff(recordBefore, recordAfter),
+  };
+  cache.set(cacheKey, result);
+  while (cache.size > DIFF_CACHE_LIMIT) cache.delete(cache.keys().next().value);
+  return result;
+}
+
+async function handleView(repository, settings, url) {
+  const view = url.searchParams.get('view');
+  if (view === 'changes') return buildChangeView(repository, settings);
+  if (view === 'diff') {
+    const sha = url.searchParams.get('sha') || '';
+    if (sha && !/^[a-f0-9]{40}$/i.test(sha)) throw new HttpError('changes.invalid_commit', 400, 'That change id is not valid.');
+    return buildDiffView(repository, settings, url.searchParams.get('slug') || '', sha);
+  }
+  throw new HttpError('unknown_view', 400, 'Choose a supported view.');
 }
 
 function today() {
@@ -2167,6 +2462,12 @@ export function createHandler({
       const repository = createRepositoryGateway({ settings, fetchImpl, treeCache });
       switch (request.method.toUpperCase()) {
         case 'GET': {
+          // The read-only change views return before anything that could move a branch:
+          // they are asked while a reviewer reads, and must never freshen or write.
+          const url = new URL(request.url);
+          if (url.searchParams.has('view')) {
+            return jsonResponse(context, 200, await handleView(repository, settings, url));
+          }
           // Freshen before reading, exactly where it is safe to: a branch that is
           // only BEHIND fast-forwards here, so the queue below is read from a branch
           // that already carries everything on the base — which is the state the

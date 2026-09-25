@@ -18,7 +18,9 @@
  * It reads COMPUTED style, flips documentElement.dataset.theme, forces a reflow, reads again,
  * and restores. Two measurements of the same elements with one variable changed. That is the
  * whole trick, and it is why this catches what a stylesheet parser cannot: the defect only
- * exists once the browser has resolved the cascade.
+ * exists once the browser has resolved the cascade. The reads happen with transitions and
+ * animations disabled (see freeze()). A reflow resolves the cascade but does not advance time, so
+ * without that step a transitioned colour would be read at its old-theme value.
  *
  * A colour identical in both themes is not automatically a defect — white ink on a brand fill is
  * deliberately invariant. So this REPORTS counts; frozen_baseline.json is what decides which
@@ -31,6 +33,7 @@
   'use strict';
 
   var PANEL_ID = 'cw-theme-audit';
+  var FREEZE_ID = 'cw-theme-scan-freeze';
   var COLOUR_PROPS = ['color', 'background-color', 'border-top-color', 'border-right-color',
                       'border-bottom-color', 'border-left-color', 'outline-color'];
   var WIDTH_OF = {
@@ -149,20 +152,48 @@
       return out;
     }
 
-    /* One navigation, both themes. Restores whatever the page had when it started. */
+    /* A forced reflow resolves the cascade but does not advance time. An element with a
+     * `transition` on a colour (or an ancestor that has one, for inherited `color`) therefore reads
+     * at t=0 right after the flip, which is still the OLD theme's value. On decision-aids.html a
+     * `body{transition:background .2s,color .2s}` inflated dark AA failures from 34 to 55 and
+     * frozen colours from 6 to 20. Chips were scored with light ink on a surface that had already
+     * turned dark, and legends against a body ground that was still cream. Disabling transitions
+     * and animations for the length of the scan measures each theme as it looks once settled.
+     * Every shipped @keyframes animates from or toward a visible base state, so `animation:none`
+     * settles an element and cannot hide one from subjects(). Inline <style> is allowed by the
+     * sites' CSP (style-src 'self' 'unsafe-inline'). */
+    function freeze() {
+      var s = doc.createElement('style');
+      s.id = FREEZE_ID;
+      s.textContent = '*,*::before,*::after{transition:none!important;animation:none!important}';
+      (doc.head || doc.documentElement).appendChild(s);
+      return s;
+    }
+
+    /* One navigation, both themes. Restores whatever the page had when it started, including
+     * after a throw: a scan that fails half-way must not leave the page in its dark flip with
+     * transitions disabled. */
     function scan() {
       var el = doc.documentElement;
       var before = el.dataset.theme || '';
-      var els = subjects();
+      // Frozen before subjects(), so an element that is mid-fade is judged by where it settles.
+      var sheet = freeze();
+      var els, light, lowLight, dark, lowDark;
+      try {
+        els = subjects();
 
-      el.dataset.theme = 'light'; void el.offsetHeight;
-      var light = readAll(els), lowLight = lowOf(els, light);
+        el.dataset.theme = 'light'; void el.offsetHeight;
+        light = readAll(els); lowLight = lowOf(els, light);
 
-      el.dataset.theme = 'dark'; void el.offsetHeight;
-      var dark = readAll(els), lowDark = lowOf(els, dark);
-
-      if (before) el.dataset.theme = before; else delete el.dataset.theme;
-      void el.offsetHeight;
+        el.dataset.theme = 'dark'; void el.offsetHeight;
+        dark = readAll(els); lowDark = lowOf(els, dark);
+      } finally {
+        // Theme first, still frozen, so putting the page back does not animate.
+        if (before) el.dataset.theme = before; else delete el.dataset.theme;
+        void el.offsetHeight;
+        if (sheet.parentNode) sheet.parentNode.removeChild(sheet);
+        void el.offsetHeight;
+      }
 
       var frozen = {};
       for (var i = 0; i < els.length; i++) {

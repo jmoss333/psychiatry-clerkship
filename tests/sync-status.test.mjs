@@ -5,6 +5,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { scrubInheritedGitEnv } from './_git_env.mjs';
+
+// Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrubInheritedGitEnv();
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const script = path.join(root, 'bin/sync_status.py');

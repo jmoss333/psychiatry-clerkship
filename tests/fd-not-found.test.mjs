@@ -7,8 +7,8 @@
 //
 // The subtle part, and what these tests mostly guard: "not in byRef" does NOT mean "not a real
 // page". curriculum.json's libraryExclude registers pages that ship and are reachable but are
-// deliberately absent from the Library projection — orientation-video.html, the week*.md pages,
-// the rp-* tools. Routing those to a not-found surface would break working links, which is a
+// deliberately absent from the Library projection — the week*.md pages and the rp-* tools
+// (orientation-video.html was the first example until it was retired on 2026-09-25). Routing those to a not-found surface would break working links, which is a
 // worse defect than the one being fixed.
 
 import assert from 'node:assert/strict';
@@ -85,8 +85,17 @@ test('libraryExclude refs are known routes and still render as real pages', () =
   }
 });
 
-test('orientation-video.html specifically survives — the case the reader comment warns about', () => {
-  assert.doesNotMatch(render('orientation-video.html'), /fd-reader--notfound/);
+test('a direct .html route absent from the Library survives — the case the reader comment warns about', () => {
+  assert.ok(CUR.libraryExclude.some(({ ref }) => ref === 'rp-agitation.html'),
+    'the example must still be a libraryExclude tool, or this test proves nothing');
+  assert.doesNotMatch(render('rp-agitation.html'), /fd-reader--notfound/);
+});
+
+test('the retired orientation-video.html lands on the not-found surface, not a broken frame', () => {
+  // Retired 2026-09-25 with the welcome and orientation videos; an old bookmark must get the
+  // honest not-found page rather than a tool frame around a 404.
+  assert.equal(INDEX.known['orientation-video.html'], undefined);
+  assert.match(render('orientation-video.html'), /fd-reader--notfound/);
 });
 
 test('every ref the index projects renders as a real page', () => {
@@ -166,7 +175,7 @@ test('a KNOWN page ref still fetches — the guard must not swallow real content
 });
 
 test('a known-but-unprojected libraryExclude ref still fetches', async () => {
-  // orientation-video.html and friends are real pages; the guard must not strand them.
+  // The week pages and rp-* tools are real pages; the guard must not strand them.
   const r = await openRef('rotation.md');
   assert.equal(r.fetched, 'content/rotation.md');
 });

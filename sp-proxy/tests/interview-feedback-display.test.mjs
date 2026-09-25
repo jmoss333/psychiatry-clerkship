@@ -210,6 +210,39 @@ test('missing and partial evidence never cite unrelated turns as proof', async (
   assert.equal(unavailable.unavailable, true);
 });
 
+// Peer-review WP-5 (M02-006/-007, 2026-09-24): a passive death-wish question is its own
+// intent, si_passive. It still earns the disclosure, grades the must-ask row PARTIAL, and gets
+// its own growth point — never the "nothing recognized" line, and never the euphemism line.
+test('a passive-wish question grades partial with its own growth point and evidence (M02-006/-007)', async () => {
+  const PASSIVE = 'Do you ever wish you could go to sleep and not wake up?';
+  for (const name of ['Dana', 'Marcus', 'Ray']) {
+    const s = await encounter(name, [PASSIVE]);
+    assert.equal(s.covered.si_passive, true, `${name}: si_passive not recognized`);
+    assert.equal(s.covered.si_direct, undefined, `${name}: a passive wish must not credit si_direct`);
+    const cov = hooks.computeCoverage(s);
+    assert.equal(cov.find(c => c.id === 'c_si').status, 'partial', name);
+    const rub = hooks.computeRubric(s, cov);
+    assert.equal(rub.technique, 'partial', name);
+    const nar = hooks.buildNarrative(s, cov, rub);
+    const point = nar.growth.find(item => item.t.includes('passive-wish wording'));
+    assert.ok(point, `${name}: passive-wish growth point missing`);
+    assert.deepEqual(Array.from(point.intents), ['si_direct', 'si_passive']);
+    assert.ok(!nar.growth.some(item => item.t.includes('did not recognize suicide-screening language')),
+      `${name}: must not claim no screening language was recognized`);
+    assert.ok(!nar.growth.some(item => item.t.includes('recognized a euphemism')), `${name}: not a euphemism`);
+    const evidence = hooks.coverageEvidence(s, 'c_si');
+    assert.deepEqual(Array.from(evidence.recognized), ['si_passive']);
+    assert.deepEqual(Array.from(evidence.unrecognized), ['si_direct']);
+    assert.ok(Array.from(hooks.rubricEvidence(s, 'technique').recognized).includes('si_passive'), name);
+  }
+  assert.equal((await encounter('Dana', [PASSIVE])).unlocked.si_active, true, 'Dana must still disclose');
+  assert.equal((await encounter('Marcus', [PASSIVE])).unlocked.g_si_mixed, true, 'Marcus must still disclose');
+  const both = await encounter('Dana', [PASSIVE, 'Have you had thoughts of killing yourself?']);
+  const cov = hooks.computeCoverage(both);
+  assert.equal(cov.find(c => c.id === 'c_si').status, 'observed', 'the active question completes the screen');
+  assert.ok(!hooks.buildNarrative(both, cov, hooks.computeRubric(both, cov)).growth.some(item => item.t.includes('passive-wish wording')));
+});
+
 test('narrative references follow the selected observations, not the first transcript turns', async () => {
   const s = await encounter('Dana', ['Have you had thoughts of killing yourself?']);
   const cov = hooks.computeCoverage(s);

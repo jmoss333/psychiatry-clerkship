@@ -45,7 +45,8 @@ EXPECTED_CONTRACT_DESCRIPTOR = {
 }
 REVIEWED_RELATIVE = Path("13_Faculty_Resources/reviewed.json")
 
-EXPECTED_TOOL_COUNTS = {"ms3": 23, "resident": 26}
+# ms3 was 23 until 2026-09-25, when the MS3-only orientation-video tool was retired.
+EXPECTED_TOOL_COUNTS = {"ms3": 22, "resident": 26}
 ALLOWED_AUDIENCES = frozenset({"trainee", "ms3", "resident", "faculty"})
 
 

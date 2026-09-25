@@ -9,11 +9,18 @@ every ref it names is a page the build actually ships:
   - weeks are exactly 1..6, each present once
   - every item ref resolves to a shipped slug
   - item kind agrees with the slug's type (.html => tool, .md => read)
-  - refs within a week are unique
+  - items within a week are unique by (ref, query): a tool may repeat on distinct
+    queries, and a read (which cannot carry one) never repeats
   - every shipped slug is placed in a library column or explicitly excluded
   - every MS3 week's landingRef is a shipped MS3 Markdown page (welcome_compass.prepare_cards)
   - Essentials fails closed: E1 shape, E2 shipped audience, E3 Library subset,
     E4 uniqueness, E5 Safety Kit coverage, and E6 tool/safety-section presence
+  - the Required Core tier (decision required-core-tier), on every path: an item's
+    priority is required, recommended or optional, and absent means recommended; one
+    week's required items total at most 120 read-minutes from topic_meta.json `read`
+    (a required read with no integer minutes is an error, a required tool counts 0
+    unless topic_meta gives it minutes); `query` only on a tool item; `window` only
+    in week 1
 
 WHAT "SHIPPED" COVERS — read this before trusting the totality guard.
 The shipped set is READ, not re-derived: site_build/shipped_pages.json is the one
@@ -102,6 +109,31 @@ PATH_CONTRACT = {
     "ms3": ("ms3-six-week", 6),
     "resident": ("resident-four-week", 4),
 }
+# DECISION: required-core-tier  (decisions.json; bin/check_decision_drift.py)
+# D2, 2026-09-24, superseding faculty decision D4a ("suggested, not required"): a Path item may
+# be `required`. An absent priority means `recommended` -- the schema's `default` is annotation
+# only, so this validator is where that meaning is applied. One week's required items may total
+# at most REQUIRED_CORE_MINUTES read-minutes, a bounded weekly minimum (<= 2 h/week). The
+# minutes come from topic_meta.json, never from curriculum.json (which holds structure only).
+PATH_PRIORITIES = ("required", "recommended", "optional")
+DEFAULT_PATH_PRIORITY = "recommended"
+REQUIRED_CORE_MINUTES = 120
+
+
+def read_minutes(topic_meta, ref):
+    """A page's read-minutes from topic_meta.json, or None when it states no usable count.
+
+    Only a non-negative integer counts, and a bool is not one. That matches the front door,
+    which shows minutes only when `read` is a number (fd_data.js); a string such as "5 min"
+    is a label, not a count, and a negative one would let a page pay for another's minutes.
+    """
+    meta = topic_meta.get(ref) if isinstance(topic_meta, dict) else None
+    value = meta.get("read") if isinstance(meta, dict) else None
+    if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+        return value
+    return None
+
+
 FOCUS_CATEGORIES = frozenset({
     "anxiety", "childdev", "ethics", "mood", "neurocog", "otherdx",
     "personality", "pharm", "psychosis", "relational", "safety", "substance",
@@ -266,7 +298,10 @@ def main(argv):
             if not isinstance(items, list):
                 bad(week_label, "items must be a list")
                 continue
-            seen_refs = set()
+            seen_items = set()
+            week_n = week.get("n")
+            is_week_one = week_n == 1 and not isinstance(week_n, bool)
+            required_minutes = []
             for item in items:
                 if not isinstance(item, dict):
                     bad(week_label, "each item must be an object")
@@ -275,9 +310,39 @@ def main(argv):
                 if not isinstance(ref, str):
                     bad(week_label, "item ref must be a string (got %r)" % (ref,))
                     continue
-                if ref in seen_refs:
-                    bad(week_label, "duplicate ref '%s' within the week" % ref)
-                seen_refs.add(ref)
+                # Uniqueness is per (ref, query): the adopted spine opens one tool twice in a
+                # week on two different cases (sp-interview.html, two case= deep links). A read
+                # cannot carry a query (below), so a read still never repeats within a week.
+                query = item.get("query")
+                query_key = query if query is None or isinstance(query, str) else repr(query)
+                if (ref, query_key) in seen_items:
+                    if query is None:
+                        bad(week_label, "duplicate ref '%s' within the week" % ref)
+                    else:
+                        bad(week_label, "duplicate ref '%s' with query %r within the week"
+                            % (ref, query))
+                seen_items.add((ref, query_key))
+                # Required Core tier (required-core-tier, above). An unknown priority fails
+                # closed: a misspelt `required` would otherwise escape the minutes budget.
+                priority = item.get("priority", DEFAULT_PATH_PRIORITY)
+                if priority not in PATH_PRIORITIES:
+                    bad(week_label, "ref '%s' has priority %r; it must be one of %s (absent "
+                        "means %s)" % (ref, priority, ", ".join(PATH_PRIORITIES),
+                                       DEFAULT_PATH_PRIORITY))
+                elif priority == "required":
+                    minutes = read_minutes(topic_meta, ref)
+                    if minutes is None and kind != "tool":
+                        bad(week_label, "required read '%s' has no read minutes in "
+                            "topic_meta.json -- the Required Core budget cannot be checked "
+                            "over a page that states none" % ref)
+                    else:
+                        required_minutes.append((ref, minutes or 0))
+                if "query" in item and kind != "tool":
+                    bad(week_label, "ref '%s' carries a query, which only a tool item may "
+                        "(it has kind %r)" % (ref, kind))
+                if "window" in item and not is_week_one:
+                    bad(week_label, "ref '%s' carries window %r; a window is only allowed in "
+                        "week 1" % (ref, item.get("window")))
                 # A rights reference exists to say an instrument is NOT reproduced here. It
                 # belongs in the Library (INV-IR2 keeps the custodian route alive), never on a
                 # path: a checklist step that opens a "no longer reproduced" stub is a dead end
@@ -292,6 +357,12 @@ def main(argv):
                 if kind != expected_kind:
                     bad(week_label, "ref '%s' has kind '%s' but the build ships it as '%s'" %
                         (ref, kind, expected_kind))
+            required_total = sum(minutes for _, minutes in required_minutes)
+            if required_total > REQUIRED_CORE_MINUTES:
+                bad(week_label, "required items total %d read-minutes, over the Required Core "
+                    "budget of %d per week (%s)" % (
+                        required_total, REQUIRED_CORE_MINUTES,
+                        ", ".join("%s %d" % pair for pair in required_minutes)))
         if site == "ms3":
             try:
                 prepare_cards(weeks, shipped_document)

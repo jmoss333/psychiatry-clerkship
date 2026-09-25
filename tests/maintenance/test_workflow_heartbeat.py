@@ -14,6 +14,11 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
+sys.path.append(str(ROOT / "bin"))
+from _git_env import scrub_inherited_git_env  # noqa: E402
+
+# Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrub_inherited_git_env()
 
 from maintenance import workflow_heartbeat as heartbeat_module  # noqa: E402
 from maintenance.receipt_summary import (  # noqa: E402

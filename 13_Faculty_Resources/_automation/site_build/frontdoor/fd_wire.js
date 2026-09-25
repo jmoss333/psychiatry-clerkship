@@ -1002,12 +1002,20 @@ function fdReadingFocusAllowed(state,context){
     !c.pendingHigh&&c.readerConnected===true&&!!c.ref&&c.currentRef===c.ref;
 }
 
-/* The rendered reader owns this lease; its listeners are removed before the next resource. */
+var FD_READING_ANCHORS='.fd-article > .fd-article__h1,.fd-guide-header > .fd-article__h1,'+
+  '.fd-article__body h2,.fd-article__body h3,.fd-article__body h4,'+
+  '.fd-article__body .fd-guide-lead > strong:first-child,.fd-article__body .fd-guide-lead > b:first-child';
+
+/* The rendered reader owns this lease; its listeners are removed before the next resource.
+   restore:false keeps saving but leaves arrival to its owner: a guide passage link or a return
+   from practice decides where the page opens, and a saved place must not scroll over it. */
 function fdInstallReadingPlace(reader,ref,state,options){
   var o=options||{}, win=o.window||(typeof window!=='undefined'?window:null);
   var status=reader&&reader.querySelector?reader.querySelector('[data-fd-reading-status]'):null;
   var top=reader&&reader.querySelector?reader.querySelector('[data-fd-reading-top]'):null;
-  var nodes=reader&&reader.querySelectorAll?Array.prototype.slice.call(reader.querySelectorAll('.fd-article > .fd-article__h1,.fd-article__body h2,.fd-article__body h3,.fd-article__body h4')):[];
+  /* A lead-promoted guide (fd_guide.js) moves the H1 into its header and anchors each section on
+     the bold label, never the whole paragraph, so an edit to the prose keeps a saved place. */
+  var nodes=reader&&reader.querySelectorAll?Array.prototype.slice.call(reader.querySelectorAll(FD_READING_ANCHORS)):[];
   var save=o.save||fdSave, now=o.now||Date.now;
   var timerSet=o.setTimer||setTimeout, timerClear=o.clearTimer||clearTimeout;
   var frame=o.requestAnimationFrame||(win&&win.requestAnimationFrame?function(fn){win.requestAnimationFrame(fn);}:function(fn){timerSet(fn,0);});
@@ -1114,7 +1122,10 @@ function fdInstallReadingPlace(reader,ref,state,options){
     if(!active)return;
     state.readingPlaces=fdReadingPlaces(state.readingPlaces);
     var place=state.readingPlaces[ref], resolved=place&&fdReadingResume(place,availableAnchors()), target=null;
-    if(place&&!resolved){
+    if(o.restore===false){
+      baselineY=scrollY();
+      write(state.readingPlaces);
+    }else if(place&&!resolved){
       win.scrollTo(0,0);
       suppressedY=scrollY();
       baselineY=scrollY();
@@ -1394,10 +1405,14 @@ function fdWire(root, initialState, opts){
      what the segment-cursor reasoning in changeHandler depends on.
 
      THREE settlement sites, and they are exhaustive because the debt has exactly one creator.
-     Only changeHandler sets it, which means the panel is open; the panel can be left only through
+     Only changeHandler sets it, from one of two fields of the same type: the panel's, or Today's
+     prompt (fd_today.js, shown on the exam path until a date is stored). From the panel's field:
+     the panel can be left only through
      apply() (its close control, the backdrop, Escape) or through history, and the nudge timeout
      is the one other render a learner can reach while it is still open -- fdCloseSheet schedules
-     it for 8s, long enough to open the gear and set a date. inputHandler is deliberately NOT a
+     it for 8s, long enough to open the gear and set a date. From Today's field no overlay is
+     open, so the learner's next apply() or history step pays it, and until then the prompt keeps
+     showing the date just chosen -- the same feedback the panel's field gives. inputHandler is deliberately NOT a
      site: reaching it needs search open, opening search is an apply(), and the gear patches
      searchOpen:false, so the two overlays cannot coexist. A call there would have been a line
      that looks load-bearing and can never run.
@@ -1904,7 +1919,8 @@ function fdWire(root, initialState, opts){
       }
     }
   }
-  /* The settings panel's one non-button control, and the only action in the file that does not go
+  /* The settings panel's one non-button control -- and Today's exam-date prompt, which renders the
+     same field type -- and the only action in the file that does not go
      through apply(). Three deliberate differences from the click path, each of which is a defect
      if it is "made consistent":
 

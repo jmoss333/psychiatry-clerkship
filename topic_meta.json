@@ -1877,7 +1877,7 @@
     "points": [
       "Kleinman's explanatory-model questions surface what the illness means to the patient.",
       "Cultural concepts of distress (e.g., ataque de nervios) can mimic panic or psychosis — ask before you label.",
-      "Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against."
+      "Black (and some other minority) patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against."
     ],
     "cant": "Never use family members — especially children — as interpreters; book a trained professional and speak directly to the patient.",
     "ruleOut": [
@@ -2836,7 +2836,7 @@
     "points": [
       "Antidepressants carry an FDA black-box warning for suicidality through age 24 — not just children; screen for bipolarity before starting any antidepressant, and monitor young adults closely in early weeks.",
       "Lithium has the strongest anti-suicidal evidence in its class and a narrow therapeutic window — levels, renal function, and thyroid monitoring are non-negotiable at every relevant interval.",
-      "Clozapine is uniquely effective for treatment-resistant schizophrenia and requires mandatory ANC monitoring for agranulocytosis; myocarditis, ileus, and lowered seizure threshold are additional red flags requiring immediate escalation."
+      "Clozapine is uniquely effective for treatment-resistant schizophrenia and requires ANC monitoring for agranulocytosis per its prescribing information (the REMS was eliminated in 2025); myocarditis, ileus, and lowered seizure threshold are additional red flags requiring immediate escalation."
     ],
     "cant": "Benzodiazepines left on a scheduled standing basis rather than short-term and targeted create dependence, falls, and delirium — autopilot benzodiazepines are a common and preventable inpatient harm.",
     "ruleOut": [
@@ -3444,7 +3444,7 @@
     "points": [
       "Family psychoeducation (OR 0.18 vs. treatment as usual) is the single strongest psychosocial intervention for schizophrenia relapse prevention, supported by 90 RCTs across more than 10,000 patients.",
       "CRAFT is the go-to modality when a family member is struggling with a patient's substance use — it changes the family's own behavior to reduce blame and invite treatment engagement, without confrontation.",
-      "Expressed emotion (high criticism, hostility, emotional over-involvement) roughly quintuples relapse odds; family warmth is protective — lowering expressed emotion is a modifiable clinical target."
+      "Expressed emotion (high criticism, hostility, emotional over-involvement) roughly quintuples the odds of relapse within 12 months (about 2-fold for later relapse); family warmth is protective — lowering expressed emotion is a modifiable clinical target."
     ],
     "cant": "≤2 family sessions is ineffective for relapse prevention — NICE recommends ≥10 sessions over ≥3 months; a single discharge meeting starts the work but is not a course of care.",
     "quiz": {
@@ -3775,7 +3775,7 @@
     "tldr": "A teaching index of the unit's order sets — always pull exact medications, doses, and monitoring from the live EHR order set; this page tells you which protocol applies and why, not what to prescribe.",
     "points": [
       "Withdrawal protocols use symptom-triggered scoring (CIWA-Ar for alcohol/benzo, COWS for opioids); give thiamine before or with glucose in any withdrawal or nutritional risk, never delaying dextrose for hypoglycemia.",
-      "Clozapine initiation requires mandatory ANC monitoring per the hematologic schedule — know the workflow before the patient starts, not after the first dose.",
+      "Clozapine initiation requires ANC monitoring per the prescribing-information schedule (REMS eliminated 2025) — know the workflow before the patient starts, not after the first dose.",
       "Delirium prevention bundles non-pharmacologic measures first; the restraint and agitation pathway is least-restrictive, time-limited, and always followed by a debrief."
     ],
     "cta": {
@@ -3834,7 +3834,7 @@
     "points": [
       "The Compass is a wayfinding map, not a checklist, clinical protocol, or measure of readiness.",
       "Review the Orientation Packet's safety and supervision boundaries before using bedside tools.",
-      "Use the optional captioned orientation overview when a narrated walkthrough helps; the transcript provides the non-video route."
+      "Pick one page, one tool, and one question to bring to your team; the library is a reference, not a reading list."
     ],
     "workflowStages": [
       "encounter",

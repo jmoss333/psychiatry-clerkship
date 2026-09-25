@@ -51,6 +51,8 @@ What is true in every case is that **abrupt cessation** of a short-half-life SSR
 **Q7 (Safety). She mentions passive thoughts that "it wouldn't matter if I woke up." What do you do?**
 *Teaching point:* Passive death wishes require **direct, non-judgmental assessment** of suicidal ideation, intent, plan, and access to means, plus collaborative **safety planning** and appropriate level-of-care escalation. Recognition and escalation — not method detail — are the objectives. Document the assessment and the plan. When in doubt about safety, arrange same-day evaluation, and bring your supervising resident or attending in before any disposition is settled.
 
+<!-- crisis-block -->
+
 ---
 
 ### Ranked Differential (before committing to MDD)
@@ -73,7 +75,7 @@ What is true in every case is that **abrupt cessation** of a short-half-life SSR
    - No response or **minimal** response (PHQ-9 change below ~5 points) → **optimize the dose** and complete the trial before calling it; then **switch** if there is still no meaningful movement.
    - **Partial** response (meaningful improvement, not remission) at an adequate dose and duration → **optimize dose** or **augment**.
    - When switching, pick the strategy for the **specific drug pair** — direct, cross-taper, or taper-and-washout [5].
-3. **After ≥2 failed adequate trials (TRD)** → augment with an atypical antipsychotic (e.g., aripiprazole), lithium, or T3; consider psychiatry referral, and consider **ECT** for severe, psychotic, or treatment-refractory depression.
+3. **After ≥2 failed adequate trials (TRD)** → augment with an atypical antipsychotic (e.g., aripiprazole, brexpiprazole, cariprazine, quetiapine XR), lithium, or T3; know that esketamine nasal spray is FDA-approved for TRD (REMS, certified setting); consider psychiatry referral, and consider **ECT** for severe, psychotic, or treatment-refractory depression.
 4. **Continue** effective treatment for ≥6–12 months after remission to prevent relapse.
 
 ---

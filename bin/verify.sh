@@ -41,10 +41,25 @@ QUICK=0
 [ "${1:-}" = "--quick" ] && QUICK=1
 
 FAILED=()
+# Every step runs with TMPDIR pointed at a private directory of its own, which is removed as soon
+# as the step ends; anything still in it is a LEAK, printed by prefix and counted as a failure.
+# On 2026-09-24 the Mac's shared $TMPDIR held ~122,700 entries, ~103k of them fixtures three test
+# files never removed — invisible until python3 started taking 20 s to import from that
+# directory and tests/preview-site.test.mjs blocked pushes. See bin/tmp_leak_report.sh. The
+# export is inside the $(…), so step() itself still sees the caller's TMPDIR.
+CUR_STEP_TMP=''
+trap '[ -n "$CUR_STEP_TMP" ] && rm -rf "$CUR_STEP_TMP"' EXIT
+trap 'exit 129' HUP; trap 'exit 130' INT; trap 'exit 143' TERM
 step() {
   local name="$1"; shift
-  local out rc
-  out="$("$@" 2>&1)"; rc=$?
+  local out rc tmp leaks
+  tmp="${TMPDIR:-/tmp}"
+  CUR_STEP_TMP="$(mktemp -d "${tmp%/}/verify-step.XXXXXX")" || CUR_STEP_TMP=''
+  if [ -n "$CUR_STEP_TMP" ]; then
+    out="$(export TMPDIR="$CUR_STEP_TMP"; "$@" 2>&1)"; rc=$?
+  else
+    out="could not create a private TMPDIR under $tmp"; rc=2
+  fi
   if [ $rc -eq 0 ]; then
     printf '  PASS  %-42s %s\n' "$name" "$(printf '%s' "$out" | tail -1 | cut -c1-58)"
   else
@@ -52,6 +67,11 @@ step() {
     printf '%s\n' "$out" | tail -15 | sed 's/^/        | /'
     FAILED+=("$name")
   fi
+  if [ -n "$CUR_STEP_TMP" ] && ! leaks="$("$BASH" "$REPO/bin/tmp_leak_report.sh" "$CUR_STEP_TMP")"; then
+    printf '  LEAK  %-42s %s\n' "$name" "$leaks"
+    FAILED+=("$name (temp-dir leak)")
+  fi
+  CUR_STEP_TMP=''
 }
 
 # ci.yml greps for machine-specific paths and fails when it FINDS them, so the exit codes
@@ -71,6 +91,15 @@ lint_machine_paths() {
 
 echo "verify.sh — $(git rev-parse --abbrev-ref HEAD) @ $(git rev-parse --short HEAD)"
 echo "─────────────────────────────────────────────────────────────────────"
+
+# --- the shared .git/config is still this repository's own ---
+# Every worktree reads one .git/config, and a fixture that inherits a hook's GIT_DIR writes into
+# it: core.bare=true + a fixture [user] on 2026-08-20, and again on 2026-09-24 with a
+# `filter.lfs … = cat` that switched Git-LFS off. Checked FIRST, so a corrupted config is named
+# before forty steps fail for no stated reason, and again as the LAST step below, so a suite that
+# corrupts it during this very run fails the run instead of breaking the next session.
+step "unit — git config health"             python3 bin/check_git_config_health.py --self-test
+step "git config health (before the run)"   python3 bin/check_git_config_health.py
 
 # --- contract: CLAUDE.md and AGENTS.md are byte-identical (CI enforces this) ---
 step "CLAUDE.md/AGENTS.md byte-parity"      diff -q CLAUDE.md AGENTS.md
@@ -217,6 +246,11 @@ step "unit — twin parity"                   python3 bin/check_twin_parity.py -
 # no-content-change cancel is not, and that an unrecognised deploy state is a finding rather
 # than a pass. Without that last one the alarm would quietly match nothing.
 step "unit — netlify deploy health"         python3 bin/check_netlify_deploy_health.py --self-test
+# The preview gate (2026-09-25) runs for real inside that same daily steward. Its self-test runs
+# here because it also checks the COMMITTED ruleset: every Netlify preview main requires must
+# come from a site in SITES -- so a new required preview check for a site nobody watches fails
+# this push instead of silently stranding every PR, which is what #802 did for seven hours.
+step "unit — netlify preview gate"          python3 bin/check_preview_gate.py --self-test
 # Currency guards (2026-09-18). Only the SELF-TESTS run here for the first two: the real
 # source-integrity run asks PubMed and Crossref for every identified source (~60s, real egress,
 # and a datacenter runner is bot-blocked by some hosts), and the real cadence run is a faculty
@@ -345,6 +379,10 @@ step "crisis contacts in the built sites"   python3 bin/check_crisis_surfaces.py
 # after both builds, for the same reason check_crisis_surfaces.py is.
 step "unit — design drift checker"          python3 bin/check_design_drift.py --self-test
 step "design system drift"                  python3 bin/check_design_drift.py
+
+# Last on purpose: every suite above has run, and a fixture that wrote into the shared config
+# while doing so (see the first step) fails this push here rather than the next session.
+step "git config health (after the run)"    python3 bin/check_git_config_health.py
 
 echo "─────────────────────────────────────────────────────────────────────"
 if [ ${#FAILED[@]} -eq 0 ]; then

@@ -24,12 +24,23 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import test from 'node:test';
+import test, { after } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { scrubInheritedGitEnv } from './_git_env.mjs';
+
+// Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrubInheritedGitEnv();
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const script = path.join(repo, 'bin', 'run_queue_task.py');
 const workflow = path.join(repo, '.github', 'workflows', 'maintenance-queue-runner.yml');
+
+// Every throwaway directory below lives under this one root, removed when the file finishes —
+// including one made by a test that threw half-way. Each run used to leave 31 directories in
+// $TMPDIR and nothing removed any of them; ~58,000 had piled up on one Mac by 2026-09-24,
+// enough to stall bin/preview-site.sh (see tests/preview-site-isolation.test.mjs).
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'queue-runner-suite-'));
+after(() => fs.rmSync(scratch, { recursive: true, force: true }));
 
 /** Evaluate a snippet against the driver module, imported from the real repository. */
 function py(snippet) {
@@ -50,7 +61,7 @@ function py(snippet) {
  * breaking the real measurement.
  */
 function fixture({ run, verify = 'true', measure = 'return (0, 5)', remaining = 5 }) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'queue-runner-'));
+  const dir = fs.mkdtempSync(path.join(scratch, 'queue-runner-'));
   const git = (...args) => execFileSync('git', ['-C', dir, ...args], { encoding: 'utf8' });
 
   fs.mkdirSync(path.join(dir, 'bin'));
@@ -92,7 +103,7 @@ function drive(dir, args = []) {
 function driveWithOutputs(dir, args = []) {
   // OUTSIDE the fixture repo: a file written inside it makes the tree dirty, and the
   // runner refuses a dirty tree -- correctly. (It caught this harness first.)
-  const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'queue-out-')), 'gh-output.txt');
+  const file = path.join(fs.mkdtempSync(path.join(scratch, 'queue-out-')), 'gh-output.txt');
   fs.writeFileSync(file, '');
   const proc = spawnSync(
     'python3', [path.join(dir, 'bin', 'run_queue_task.py'), '--github-output', file, ...args],
@@ -195,7 +206,7 @@ test('a real change is committed on its own dated branch, staged by name', () =>
   const dir = fixture({ run: 'echo changed >> seed.txt', measure: 'return (0, 5)' });
   // Evidence lives outside the checkout, as it does on the runner ($RUNNER_TEMP): an
   // out-dir inside the repository would ride along in the diff it describes.
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'queue-runner-evidence-'));
+  const out = fs.mkdtempSync(path.join(scratch, 'queue-runner-evidence-'));
   const proc = drive(dir, ['--out-dir', out]);
   assert.equal(proc.status, 0, proc.stderr);
 
@@ -351,7 +362,7 @@ test('every outcome _execute can return is a declared member of OUTCOMES', () =>
 
 test('the outcome outlives the run log, in the uploaded evidence', () => {
   const dir = fixture({ run: 'echo changed >> seed.txt' });
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'queue-evidence-'));
+  const out = fs.mkdtempSync(path.join(scratch, 'queue-evidence-'));
   const proc = drive(dir, ['--out-dir', out]);
   assert.equal(proc.status, 0, proc.stderr);
   assert.equal(fs.readFileSync(path.join(out, 'outcome.txt'), 'utf8').trim(), 'did-work');

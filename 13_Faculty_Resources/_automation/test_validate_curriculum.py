@@ -11,8 +11,10 @@ fixture writes that listing rather than the producers behind it. The listing it
 writes is the synthetic manifest rows PLUS the real build extras — the per-site
 tools and resident-only pages — copied from the repo's own shipped_pages.json
 rather than restated here, so the fixture cannot drift from what ships. The
-per-site assertions below (orientation-video.html is ms3-only, rp-canon-quiz.html
-is resident-only) are about those real entries.
+per-site assertions below are about those real entries (rp-canon-quiz.html is
+resident-only) plus one synthetic MS3-only tool, MS3_ONLY_FIXTURE: no MS3-only extra
+has shipped since the orientation video tool was retired on 2026-09-25, and a
+cross-site guard proved against an unknown slug would pass for the wrong reason.
 
 The weekly-case pages are dropped, matching the validator: it excludes the
 "cotw_registry" producer by the decision recorded in its docstring.
@@ -80,7 +82,16 @@ with open(os.path.join(ROOT, SHIPPED_RELATIVE), encoding="utf-8") as _fh:
         page for page in json.load(_fh)["pages"]
         if page["producer"] not in ("site_manifest", "cotw_registry")
     ]
-EXTRA_SHIPPED = frozenset(page["slug"] for page in REAL_EXTRAS)
+# No MS3-only extra ships today, so the fixture adds a synthetic one. The per-site guards
+# must be proved against a page that really is MS3-only; an unknown slug would fail them
+# for a different reason ("not shipped" anywhere) and the tests would pass vacuously.
+MS3_ONLY_FIXTURE = "ms3-only-fixture.html"
+FIXTURE_EXTRAS = REAL_EXTRAS + [{
+    "slug": MS3_ONLY_FIXTURE, "kind": "tool", "sites": ["ms3"],
+    "title": "MS3-only fixture tool", "source": "src/ms3-only-fixture.html",
+    "producer": "ms3_extra_tool",
+}]
+EXTRA_SHIPPED = frozenset(page["slug"] for page in FIXTURE_EXTRAS)
 
 
 def _shipped_document():
@@ -91,7 +102,7 @@ def _shipped_document():
         for kind, key in (("tool", "tools"), ("page", "md"))
         for source, slug, title in MANIFEST[key]
     ]
-    return {"version": 1, "pages": pages + list(REAL_EXTRAS)}
+    return {"version": 1, "pages": pages + list(FIXTURE_EXTRAS)}
 SAFETY_REFS = (
     "pg_suicide.md",
     "agitation.md",
@@ -353,7 +364,7 @@ class ValidateCurriculumTest(unittest.TestCase):
             lambda pathway: pathway["bridges"]["pa"]["refs"].append(
                 pathway["bridges"]["pa"]["refs"][0]),
             lambda pathway: pathway["bridges"]["pa"]["refs"].__setitem__(
-                0, "orientation-video.html"),
+                0, MS3_ONLY_FIXTURE),
             lambda pathway: pathway["activities"][0].__setitem__(
                 "actions", ["prepare", "score", "observe"]),
         )
@@ -600,12 +611,12 @@ class ValidateCurriculumTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([])
             cur["learningPaths"]["resident"]["weeks"][0]["items"] = [
-                {"ref": "orientation-video.html", "kind": "tool"}]
+                {"ref": MS3_ONLY_FIXTURE, "kind": "tool"}]
             c, root = _write(tmp, cur)
             result = _run(c, root)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("resident", result.stdout)
-        self.assertIn("orientation-video.html", result.stdout)
+        self.assertIn(MS3_ONLY_FIXTURE, result.stdout)
 
     def test_rejects_a_missing_or_duplicated_week_number(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -704,7 +715,183 @@ class ValidateCurriculumTest(unittest.TestCase):
             self.assertIn("must be a string", r.stdout)
 
 
-class CurriculumSchemaEssentialsTest(unittest.TestCase):
+def _set_items(site, week_index, items):
+    """A mutation placing `items` on one week of one audience path."""
+    return lambda cur: cur["learningPaths"][site]["weeks"][week_index].__setitem__(
+        "items", copy.deepcopy(items))
+
+
+class RequiredCoreTierTest(unittest.TestCase):
+    """Decision `required-core-tier` (D2, 2026-09-24): priority / window / query on Path items.
+
+    An absent priority means `recommended`. The `required` items of one week may total at most
+    120 read-minutes, taken from topic_meta.json `read`: a required READ with no integer minutes
+    is an error (the budget cannot be checked over a page that states none), a required TOOL
+    counts 0 unless topic_meta gives it minutes. `query` is allowed only on a tool item, and
+    `window` only in week 1. Every case is a synthetic curriculum; none reads live state.
+    """
+
+    def _result(self, mutate, minutes=None, shipped_pages=None):
+        cur = _curriculum([])
+        mutate(cur)
+        meta = _topic_meta()
+        for ref, value in (minutes or {}).items():
+            meta.setdefault(ref, {})["read"] = value
+        with tempfile.TemporaryDirectory() as tmp:
+            cpath, root = _write(tmp, cur, topic_meta=meta, shipped_pages=shipped_pages)
+            return _run(cpath, root)
+
+    def assert_ok(self, result):
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def assert_rejected(self, result, *markers):
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        for marker in markers:
+            self.assertIn(marker, result.stdout)
+
+    def test_absent_recommended_and_optional_priorities_do_not_count(self):
+        items = [
+            {"ref": "welcome.md", "kind": "read"},
+            {"ref": "agitation.md", "kind": "read", "priority": "recommended"},
+            {"ref": "delirium.md", "kind": "read", "priority": "optional"},
+        ]
+        self.assert_ok(self._result(
+            _set_items("ms3", 0, items),
+            {"welcome.md": 200, "agitation.md": 200, "delirium.md": 200}))
+
+    def test_required_minutes_pass_at_the_budget_and_fail_one_minute_over(self):
+        # The break-test for the 120-minute rule: 120 passes, 121 fails, whether the minutes
+        # come from one page or are summed across two.
+        cases = (
+            ({"welcome.md": 120}, ["welcome.md"], True),
+            ({"welcome.md": 121}, ["welcome.md"], False),
+            ({"welcome.md": 60, "agitation.md": 60}, ["welcome.md", "agitation.md"], True),
+            ({"welcome.md": 60, "agitation.md": 61}, ["welcome.md", "agitation.md"], False),
+        )
+        for minutes, refs, ok in cases:
+            items = [{"ref": ref, "kind": "read", "priority": "required"} for ref in refs]
+            with self.subTest(minutes=minutes):
+                result = self._result(_set_items("ms3", 0, items), minutes)
+                if ok:
+                    self.assert_ok(result)
+                else:
+                    self.assert_rejected(result, "learningPaths.ms3 week 1", "Required Core",
+                                         "121", "120")
+
+    def test_the_budget_is_per_week_and_applies_to_every_path(self):
+        required = [{"ref": "welcome.md", "kind": "read", "priority": "required"}]
+
+        def both_weeks(cur):
+            _set_items("ms3", 0, required)(cur)
+            _set_items("ms3", 1, required)(cur)
+
+        with self.subTest("ms3 weeks 1 and 2 at 120 each"):
+            self.assert_ok(self._result(both_weeks, {"welcome.md": 120}))
+        with self.subTest("resident week 1 at 121"):
+            self.assert_rejected(
+                self._result(_set_items("resident", 0, required), {"welcome.md": 121}),
+                "learningPaths.resident week 1", "Required Core")
+
+    def test_a_required_read_without_integer_minutes_is_an_error(self):
+        required = [{"ref": "welcome.md", "kind": "read", "priority": "required"}]
+        for label, minutes in (("no record", None), ("string", {"welcome.md": "5 min"}),
+                               ("boolean", {"welcome.md": True}),
+                               ("negative", {"welcome.md": -5})):
+            with self.subTest(label=label):
+                self.assert_rejected(self._result(_set_items("ms3", 0, required), minutes),
+                                     "learningPaths.ms3 week 1", "welcome.md", "read minutes")
+        with self.subTest("the same page, not required, is fine without minutes"):
+            self.assert_ok(self._result(_set_items("ms3", 0, [
+                {"ref": "welcome.md", "kind": "read", "priority": "recommended"}])))
+
+    def test_a_required_tool_counts_zero_unless_topic_meta_gives_minutes(self):
+        items = [
+            {"ref": "mse.html", "kind": "tool", "priority": "required"},
+            {"ref": "welcome.md", "kind": "read", "priority": "required"},
+        ]
+        with self.subTest("tool without minutes counts 0"):
+            self.assert_ok(self._result(_set_items("ms3", 0, items), {"welcome.md": 120}))
+        with self.subTest("tool with topic_meta minutes counts them"):
+            self.assert_rejected(
+                self._result(_set_items("ms3", 0, items), {"welcome.md": 120, "mse.html": 1}),
+                "Required Core", "121")
+
+    def test_rejects_an_unknown_priority_value(self):
+        # Fail closed: a misspelt `required` must not silently escape the budget.
+        for value in ("Required", "core", 1, None):
+            with self.subTest(value=value):
+                self.assert_rejected(self._result(_set_items("ms3", 0, [
+                    {"ref": "welcome.md", "kind": "read", "priority": value}])),
+                    "learningPaths.ms3 week 1", "priority")
+
+    def test_query_is_only_allowed_on_a_tool_item(self):
+        with self.subTest("tool"):
+            self.assert_ok(self._result(_set_items("ms3", 0, [
+                {"ref": "mse.html", "kind": "tool", "query": "case=demo_case_001"}])))
+        with self.subTest("read"):
+            self.assert_rejected(self._result(_set_items("ms3", 0, [
+                {"ref": "welcome.md", "kind": "read", "query": "week=1"}])),
+                "learningPaths.ms3 week 1", "welcome.md", "query")
+
+    def _with_sp_interview(self, items):
+        """The adopted D3 spine's week-1 shape needs sp-interview.html, which this fixture's
+        synthetic listing does not ship. Ship it here and exclude it from the Library, so the
+        totality guard stays quiet and within-week uniqueness is the only thing judged."""
+        shipped = _shipped_document()
+        shipped["pages"].append({
+            "slug": "sp-interview.html", "kind": "tool", "sites": ["ms3", "res"],
+            "title": "The Interview Room", "source": "src/sp-interview.html",
+            "producer": "site_manifest"})
+
+        def mutate(cur):
+            _set_items("ms3", 0, items)(cur)
+            cur["libraryExclude"].append(
+                {"ref": "sp-interview.html", "reason": "outside this fixture — spine shape"})
+
+        return self._result(mutate, shipped_pages=shipped)
+
+    def test_a_tool_may_repeat_in_a_week_with_distinct_queries(self):
+        # The D3 spine's week 1 opens The Interview Room twice, on two different cases.
+        self.assert_ok(self._with_sp_interview([
+            {"ref": "sp-interview.html", "kind": "tool", "priority": "required",
+             "window": "days-1-3", "query": "case=sp_depression_gated_si_001"},
+            {"ref": "sp-interview.html", "kind": "tool",
+             "query": "case=sp_psychosis_paranoid_001"},
+        ]))
+
+    def test_a_tool_repeated_with_the_same_query_is_a_duplicate(self):
+        item = {"ref": "sp-interview.html", "kind": "tool",
+                "query": "case=sp_depression_gated_si_001"}
+        self.assert_rejected(self._with_sp_interview([item, dict(item)]),
+                             "learningPaths.ms3 week 1",
+                             "duplicate ref 'sp-interview.html' with query "
+                             "'case=sp_depression_gated_si_001' within the week")
+
+    def test_a_ref_repeated_without_a_query_is_still_a_duplicate(self):
+        # A read cannot carry a query at all, so a read can never repeat within a week; a
+        # tool with no query keeps the original error text word for word.
+        for label, item in (("tool", {"ref": "sp-interview.html", "kind": "tool"}),
+                            ("read", {"ref": "welcome.md", "kind": "read"})):
+            with self.subTest(label=label):
+                self.assert_rejected(self._with_sp_interview([item, dict(item)]),
+                                     "learningPaths.ms3 week 1",
+                                     "duplicate ref '%s' within the week" % item["ref"])
+
+    def test_window_is_only_allowed_in_week_1(self):
+        item = [{"ref": "welcome.md", "kind": "read", "window": "days-1-3"}]
+        for site, week_index, ok in (("ms3", 0, True), ("resident", 0, True),
+                                     ("ms3", 1, False), ("resident", 2, False)):
+            with self.subTest(site=site, week=week_index + 1):
+                result = self._result(_set_items(site, week_index, item))
+                if ok:
+                    self.assert_ok(result)
+                else:
+                    self.assert_rejected(result, "learningPaths.%s week %d" %
+                                         (site, week_index + 1), "window", "week 1")
+
+
+class CurriculumSchemaCase(unittest.TestCase):
     """Exercise the checked-in Draft 7 schema directly with pinned jsonschema."""
 
     def _document(self):
@@ -741,6 +928,8 @@ class CurriculumSchemaEssentialsTest(unittest.TestCase):
         self.assertIn(marker, rendered, rendered)
         self.assertEqual(self._errors(original), [])
 
+
+class CurriculumSchemaEssentialsTest(CurriculumSchemaCase):
     def test_curriculum_accepts_essentials(self):
         document = self._document()
         document["essentials"]["ms3"].extend([
@@ -830,6 +1019,92 @@ class CurriculumSchemaEssentialsTest(unittest.TestCase):
                 self.assert_schema_mutation(mutate, marker)
 
 
+class CurriculumSchemaPathItemTest(CurriculumSchemaCase):
+    """The optional Path-item and week fields for decision `required-core-tier` (D2).
+
+    Every field is optional, so the curriculum with none of them set stays valid (the base
+    document asserts that before each mutation). Each field then has accepted and rejected
+    shapes. `week.practice` is an object, not the handoff's "practice (string)": it replaces
+    fd_path.js FD_PATH_PRACTICE, whose rows are {skill, feedback}, and a string would drop the
+    feedback prompt the Path renders.
+    """
+
+    ITEM = "/learningPaths/ms3/weeks/0/items/0"
+    WEEK = "/learningPaths/ms3/weeks/0"
+    PRACTICE = {"skill": "Present a focused interview and MSE",
+                "feedback": "Can you watch my MSE language today?", "card": "DO-1"}
+
+    @staticmethod
+    def _item(document):
+        return document["learningPaths"]["ms3"]["weeks"][0]["items"][0]
+
+    @staticmethod
+    def _week(document):
+        return document["learningPaths"]["ms3"]["weeks"][0]
+
+    def test_accepts_each_new_field_in_a_valid_shape(self):
+        accepted = [
+            lambda c: self._item(c).update({"priority": "required", "window": "days-1-3",
+                                            "query": "case=sp_depression_gated_si_001"}),
+            lambda c: self._item(c).update({"priority": "recommended", "query": "week=3"}),
+            lambda c: self._item(c).update({"priority": "optional", "query": "case=A-b_9"}),
+            lambda c: self._week(c).__setitem__("practice", dict(self.PRACTICE)),
+            lambda c: self._week(c).__setitem__(
+                "practice", {"skill": "Build a differential", "feedback": "Can you review it?"}),
+        ]
+        for index, mutate in enumerate(accepted):
+            with self.subTest(case=index):
+                document = self._document()
+                mutate(document)
+                self.assertEqual(self._render(self._errors(document)), "")
+
+    def test_rejects_malformed_priority_window_and_query(self):
+        cases = []
+        for value in ("mandatory", "Required", 1, None):
+            cases.append((lambda c, v=value: self._item(c).__setitem__("priority", v),
+                          self.ITEM + "/priority"))
+        for value in ("days-1-4", "", 1):
+            cases.append((lambda c, v=value: self._item(c).__setitem__("window", v),
+                          self.ITEM + "/window"))
+        for value in ("case=a b", "Case=x", "case=", "=x", "a=b&c=d", "case=x/y", "case", 3):
+            cases.append((lambda c, v=value: self._item(c).__setitem__("query", v),
+                          self.ITEM + "/query"))
+        # The Path item stays a closed shape: the three fields are the only additions.
+        cases.append((lambda c: self._item(c).__setitem__("order", 1), self.ITEM))
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
+
+    def test_week_practice_is_a_closed_skill_feedback_card_object(self):
+        def practice(**changes):
+            value = dict(self.PRACTICE)
+            for key, new in changes.items():
+                if new is None:
+                    value.pop(key)
+                else:
+                    value[key] = new
+            return lambda c: self._week(c).__setitem__("practice", value)
+
+        cases = [
+            (lambda c: self._week(c).__setitem__("practice", "Observed interview + MSE"),
+             self.WEEK + "/practice"),
+            (lambda c: self._week(c).__setitem__("practice", {}), self.WEEK + "/practice"),
+            (practice(feedback=None),
+             self.WEEK + "/practice: 'feedback' is a required property"),
+            (practice(skill=None), self.WEEK + "/practice: 'skill' is a required property"),
+            (practice(skill=""), self.WEEK + "/practice/skill"),
+            (practice(feedback=""), self.WEEK + "/practice/feedback"),
+            (practice(card="do-1"), self.WEEK + "/practice/card"),
+            (practice(card="DO-"), self.WEEK + "/practice/card"),
+            (practice(card="DO-1a"), self.WEEK + "/practice/card"),
+            (practice(card="OSCE-1"), self.WEEK + "/practice/card"),
+            (practice(rubric="pass"), self.WEEK + "/practice"),
+        ]
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
+
+
 class EssentialsTest(unittest.TestCase):
     def assert_mutation(self, mutate, code, marker):
         with tempfile.TemporaryDirectory() as tmp:
@@ -893,7 +1168,7 @@ class EssentialsTest(unittest.TestCase):
 
     def test_other_audiences_page_is_E2(self):
         cases = (("ms3", "rp-agitation.html"),
-                 ("resident", "orientation-video.html"))
+                 ("resident", MS3_ONLY_FIXTURE))
         for site, ref in cases:
             with self.subTest(site=site):
                 self.assert_mutation(
@@ -1174,12 +1449,12 @@ class SiteLibraryTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([])
             cur["siteLibrary"]["resident"]["additions"] = [
-                {"column": "Tools", "refs": ["orientation-video.html"]}
+                {"column": "Tools", "refs": [MS3_ONLY_FIXTURE]}
             ]
             c, root = _write(tmp, cur)
             r = _run(c, root)
             self.assertEqual(r.returncode, 1)
-            self.assertIn("orientation-video.html", r.stdout)
+            self.assertIn(MS3_ONLY_FIXTURE, r.stdout)
             self.assertIn("not shipped on resident", r.stdout)
 
     def test_rejects_ms3_addition_of_a_resident_only_extra(self):
@@ -1196,7 +1471,7 @@ class SiteLibraryTest(unittest.TestCase):
 
     def test_rejects_cross_site_exclusions(self):
         cases = (
-            ("resident", "orientation-video.html"),
+            ("resident", MS3_ONLY_FIXTURE),
             ("ms3", "rp-agitation.html"),
         )
         for site, ref in cases:
@@ -1220,15 +1495,16 @@ class ShippedSetTest(unittest.TestCase):
 
     def test_extras_cover_the_per_site_tools_and_resident_only_pages(self):
         extras = EXTRA_SHIPPED
-        for slug in ("orientation-video.html", "rp-agitation.html",
+        for slug in ("rp-agitation.html",
                      "rp-brief-psych.html", "rp-canon-quiz.html", "rotation.md",
                      "adv_psychopharm.md", "systems_medlegal.md", "supervision_teaching.md",
                      "canon_200.md", "cl_reference.md"):
             self.assertIn(slug, extras)
 
     def test_library_exclude_accepts_a_page_outside_site_manifest(self):
-        # The spec names orientation-video.html as an exclusion example, and the guard
-        # used to reject it as "not a shipped slug" purely because it has no manifest row.
+        # The spec named orientation-video.html as an exclusion example (retired 2026-09-25),
+        # and the guard used to reject such a page as "not a shipped slug" purely because it
+        # has no manifest row. The synthetic MS3-only fixture tool stands in for it.
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([])
             cur["libraryColumns"] = [
@@ -1239,7 +1515,7 @@ class ShippedSetTest(unittest.TestCase):
             c, root = _write(tmp, cur)
             r = _run(c, root)
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-            self.assertNotIn("orientation-video.html", r.stdout)
+            self.assertNotIn(MS3_ONLY_FIXTURE, r.stdout)
 
     def test_a_build_extra_left_unplaced_and_unexcluded_still_fails(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1250,12 +1526,12 @@ class ShippedSetTest(unittest.TestCase):
                 _safety_column(),
             ]
             cur["libraryExclude"] = ([e for e in EXTRA_EXCLUDES
-                                      if e["ref"] != "orientation-video.html"]
+                                      if e["ref"] != MS3_ONLY_FIXTURE]
                                      + FIXTURE_RIGHTS_EXCLUDES + FIXTURE_WEEK_EXCLUDES)
             c, root = _write(tmp, cur)
             r = _run(c, root)
             self.assertEqual(r.returncode, 1)
-            self.assertIn("orientation-video.html", r.stdout)
+            self.assertIn(MS3_ONLY_FIXTURE, r.stdout)
 
 
 class SafetyKitTest(unittest.TestCase):
