@@ -1247,9 +1247,9 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-21",
+    "at": "2026-09-25",
     "by": "Joshua Moss, MD",
-    "contentHash": "2781751844f92d7246eeb39863d760bc37937090"
+    "contentHash": "e528edb85e32026040971dd64ab0b7edf6b1ef1e"
   },
   "one-patient-six-weeks.html": {
     "status": "reviewed",
